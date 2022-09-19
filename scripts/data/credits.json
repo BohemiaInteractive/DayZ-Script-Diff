@@ -1,0 +1,1107 @@
+{
+    "Departments": [
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#project_lead",
+                    "SectionLines": [
+                        "Adam Franců",
+                        "David Durčák",
+                        "Eugen Harton"
+                    ]
+                }
+            ]
+        },
+		{
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#executive_producer",
+                    "SectionLines": [
+						"Julien Vida"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#production",
+                    "SectionLines": [
+                        "Tim Pulsmeier",
+                        "Tomáš Přibyl",
+						"Ľuboš Kubiš",
+                        "Roman Múdry"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#creative_directors",
+                    "SectionLines": [
+                        "Brian Hicks",
+                        "Dean Hall"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#lead_designer",
+                    "SectionLines": [
+					    "Tomáš Pulkrábek",
+                        "Peter Nespešný"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#designer",
+                    "SectionLines": [
+                        "Alberto Paparella",
+                        "Jan Tomášik",
+                        "Marek Žilavý",
+                        "Martin Palaugari",
+                        "Martin Strnad",
+                        "Michal Břinda",
+                        "Ondřej Malota"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#lead_scripter",
+                    "SectionLines": [
+                        "Ivan Klčo"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#scripters",
+                    "SectionLines": [
+                        "Boris Vacula",
+                        "Daniel Dička",
+                        "David Soška",
+                        "Kamil Komínek",
+                        "Jakub Palkovič",
+                        "Ľuboš Kováč",
+                        "Martin Strapko",
+                        "Martin Weiser",
+                        "Peter Jánošík",
+                        "Pierre Rencurel",
+                        "Radek Řáda",
+                        "Vratislav Jindřich"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#environment_designers",
+                    "SectionLines": [
+                        "Arseniy Smirnov",
+                        "Florian Pelloux",
+                        "Ivan Buchta",
+                        "Mark Gill",
+                        "Martin Hochman",
+                        "Martin Pezlar",
+                        "Petr Sedláček",
+                        "Radim Vitek"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#lead_programmers",
+                    "SectionLines": [
+                        "Miroslav Maněna",
+                        "Lukáš Jagelka",
+                        "Martin Slavkov",
+                        "Mikuláš Florek"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#programmers",
+                    "SectionLines": [
+                        "Adrian Turcanu",
+                        "Aleš Renner",
+                        "Eduard Pribula",
+						"Elias Mittet Hernes",
+						"Floris Leysen",
+                        "František Bidlo",
+                        "Jakub Horyna",
+                        "Jakub Lukašík",
+                        "Jan Huňka",
+                        "Jaroslav Vinarčík",
+                        "Jozef Vavro",
+                        "Juraj Bleho",
+                        "László Nagy",
+                        "Lukáš Igaz",
+                        "Marek Zeman",
+                        "Matúš Štefánik",
+                        "Mojmír Svoboda",
+                        "Ondrej Ritomský",
+						"Patrik Kalabus",
+                        "Peter Uličiansky",
+						"Peter Ševčík",
+                        "Petr Soviš",
+                        "Rastislav Tisovčík",
+                        "Tomáš Vajda",
+                        "Vlad Mihai Baderca",
+                        "Volodymyr Syvochka",
+                        "Zuzana Péteriová"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#art_directors",
+                    "SectionLines": [
+                        "Ľuboš Lednár",
+                        "Chris Torchia"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#art_lead",
+                    "SectionLines": [
+                        "Michal Ištok"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#artists",
+                    "SectionLines": [
+                        "Art Shiryaev",
+                        "Boris Joanovič",
+                        "Darko Miladinovikj",
+                        "Jakub Mirola",
+                        "Jan Kudrnáč",
+                        "Kristýna Duhárová",
+                        "Marcin Pindara",
+                        "Marián Ferko",
+                        "Mario Kurty",
+                        "Martin Fiffik",
+                        "Martin Škrabák",
+                        "Martin Sušila",
+                        "Michal Horňák",
+                        "Michal Kačík",
+                        "Michal Zajíček",
+                        "Miloš Palguta",
+                        "Ondřej Hanuš",
+                        "Paulína Poláková",
+                        "Peter Blažej",
+                        "Peter Rendoš",
+                        "Peter Švaral",
+                        "Roman Gašperík",
+                        "Sebastian Davies",
+                        "Vadim Spiridonov",
+                        "Vladimír Holík",
+                        "Zdeněk Vespalec"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#animation_leads",
+                    "SectionLines": [
+                        "Viktor Kostik",
+                        "Jozef Mitaľ"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#animators",
+                    "SectionLines": [
+                        "Adam Oresten",
+                        "Branislav Hollý",
+                        "Jan Germala",
+                        "Jozef Střelec",
+                        "Kakee Lau",
+                        "Marek Syřínek",
+                        "Martin Michalík",
+                        "Michal Panda",
+                        "Miloš Černý",
+                        "Peter Skala",
+                        "Rastislav Hlavatý",
+                        "Roman Straponček",
+                        "Théo Escamez",
+						"Yogesh Batra"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#mocap_lead_engineer",
+                    "SectionLines": [
+                        "Štěpán Kment"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#mocap_operators",
+                    "SectionLines": [
+                        "Jakub Fried",
+                        "Laura Millar"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#audio_lead",
+                    "SectionLines": [
+                        "Jan Dušek",
+						"Tomáš Bayer"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#audio_designers",
+                    "SectionLines": [
+                        "Andrej Novosad",
+                        "Andrej Sinkević",
+                        "Filip Čenžák",
+                        "Kryštof Havel",
+                        "Marek Lacena",
+                        "Miguel Salas",
+						"Zuzana Čapandová"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#deployment_engineers",
+                    "SectionLines": [
+                        "David Komínek",
+                        "Martin Vitouš",
+						"Pavel Fitz",
+                        "Petr Vnenk"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#quality_assurance_lead",
+                    "SectionLines": [
+                        "Filip Konupka",
+                        "Ondřej Klíma"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#quality_assurance_specialists",
+                    "SectionLines": [
+                        "Daniel Fialka",
+						"Dominik Novák",
+                        "Erik Vrškový",
+                        "Jan Jirák",
+                        "Lauren Dytrych",
+                        "Ketrin Bitomská",
+                        "Martin Polma",
+                        "Rastislav Kluka"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#enfusion_project_lead",
+                    "SectionLines": [
+                        "Pavel Šafář"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#enfusion_programmers",
+                    "SectionLines": [
+                        "Andrej Török",
+                        "Daniel Sierra Hernandez",
+                        "Filip Doksanský",
+                        "Jan Zelený",
+                        "Jana Machutová",
+                        "Martin Cmar",
+                        "Martin Krošlák",
+                        "Michal Varnuška",
+						"Michal Žák",
+                        "Miroslav Horváth",
+                        "Peter Čimo",
+                        "Vincent Mahnke"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#additional_art_lead",
+                    "SectionLines": [
+                        "Jiří Jakubec"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#additional_artists",
+                    "SectionLines": [
+                        "Chaisiri Yuenying",
+                        "Chaluemch Khuenkhiew",
+                        "Chanunsit Tanapuriyothin",
+                        "Jaratpong Sukavinya",
+                        "Jutamas Petsri",
+                        "Karan Kumar",
+                        "Keadtisak Khwagosom",
+                        "Khathawut Lasuwan",
+                        "Khomsan Suphom",
+                        "Krit Nawaritloha",
+                        "Nattavut Mantanakul",
+                        "Nawin Sapchinda",
+                        "Pajaree Rodsomboon",
+                        "Pantira Pengwaha",
+                        "Panuwitpong Pariyawathee",
+                        "Pianpat Ronruangrit",
+                        "Pooriwat Waikula",
+                        "Prasittichai Daengma",
+                        "Shinawat Thurdnampetch",
+                        "Sontat Chaisiripant",
+                        "Tanate Wilawankamon",
+                        "Tatiya Junsong",
+                        "Yosaphon Issarasenanaayudthaya"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#additional_programmers",
+                    "SectionLines": [
+                        "František Novák",
+                        "Martin Stanjek",
+                        "Richard Biely",
+                        "Tomáš Nezval"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#voice_actors",
+                    "SectionLines": [
+                        "Jan Gehr",
+                        "Anne Lantz",
+                        "Daniel Janák",
+                        "Emanuel von Malburg",
+                        "Eva Rýznarová",
+                        "Hal James Rothwell",
+                        "Howard Lotker",
+                        "Irena Tereza Prpic",
+                        "Isabel McCallum Stewart",
+                        "Jeff Koch",
+                        "Julia Dehnisch",
+                        "László Nagy",
+                        "Maelika Eberhard",
+                        "Mark Fitzhenry",
+                        "Míša Krejčíková",
+                        "Rudolf Klenovský",
+                        "Sarah Giercksky",
+                        "Seif Jamoussi",
+                        "Sigurbjörg Lovísa Árnadóttir",
+                        "Sinead Phelps",
+                        "Tomás Verdejo",
+                        "Vansh Luthra",
+                        "Victor Dohlsten",
+                        "Xander Turian"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#motion_capture_actors",
+                    "SectionLines": [
+                        "Aleš Blažej",
+                        "Herbert Heissler",
+                        "Marek Holeček",
+                        "Tadeáš Krofta",
+                        "Tomáš Junas",
+                        "Marek Syřínek",
+                        "Marek Španěl",
+                        "Martin Michalík"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#bohemia_interactive_development_teams",
+                    "SectionLines": [
+                        "Contact Team",
+						"Livonia Terrain Team"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#brand_and_pr_manager",
+                    "SectionLines": [
+                        "Anna Buenafe",
+                        "Martin Baar",
+                        "Matěj Smrček",
+                        "Dustin Hucks",
+                        "Scott Bowen"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#brand_and_pr_management_team",
+                    "SectionLines": [
+                        "Jakub Vamberský",
+                        "Karolina Havelkova",
+                        "Lynn Thun Zaw",
+                        "Miguel Raimundo",
+                        "Michael Christensen",
+                        "Zuzana Cinková"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#publishing_director",
+                    "SectionLines": [
+                        "Vojtěch Ješátko"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#publishing_team",
+                    "SectionLines": [
+                        "Alex Sutton",
+                        "Chelsea Steeb",
+                        "David Foltýn",
+                        "Filip Hauer",
+                        "Ivo Stružinský",
+                        "Jan Kunt",
+                        "Jan Libich",
+                        "Martin Janoušek",
+                        "Matt Lightfoot",
+                        "Michal Staněk",
+                        "Mikuláš Kozák",
+                        "Nela Wojaczková",
+                        "Ota Vrťátko",
+                        "Paul R. Statham",
+                        "Petr Hovanec",
+                        "Vanessa Itriago Ramos"
+                    ]
+                }
+            ]
+        },
+		{
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#technical_publishing_manager",
+                    "SectionLines": [
+                        "David Kolečkář"
+                    ]
+                }
+            ]
+        },
+		{
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#platform_support_lead",
+                    "SectionLines": [
+                        "Filip Rybář",
+                        "Nikolas Rašín"
+                    ]
+                }
+            ]
+        },
+		{
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#platform_support_specialists",
+                    "SectionLines": [
+                        "Kristýna Valíková",
+						"Richard Kužidlo",
+                        "Patrik Šedivý"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#localization_producer",
+                    "SectionLines": [
+                        "Vojtěch Schubert"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#localization_team",
+                    "SectionLines": [
+                        "Andrea Luciano Damico",
+                        "Andrew Zhu (S&H Entertainment Localization)",
+                        "Artemiy Mikheev",
+                        "Aya Pickard (Loekalization)",
+                        "Bartosz Klofik (Biuro tłumaczeń Locsmith)",
+						"Carmen Simio",
+                        "Curri Barceló",
+                        "David Livingstone",
+                        "Dmitry Kornyukhov",
+						"Doris Liang",
+						"Eliška Boudová",
+                        "Felix Tappe",
+                        "Fernando Moreiras",
+                        "Goulven Le Goff",
+						"Hiroya Ishida",
+                        "Igor Savenkov",
+                        "Jiří Petrů",
+						"Joanna Kinga Král",
+                        "Lincoln Hui",
+						"Liu Dasheng",
+                        "Loek van Kooten (Loekalization)",
+                        "Mathilde Sperduto",
+                        "Marco Piccinnu",
+                        "Martin Kořenek",
+                        "Paolo Panena",
+                        "Ramón Méndez",
+                        "Rafael Galhardi",
+                        "Raphaël Rouby",
+                        "Rumi Tasaki (Loekalization)",
+                        "Sara Cascianelli",
+                        "Scott Liang",
+                        "Sibel Wu (S&H Entertainment Localization)",
+                        "Thiago Hilger",
+                        "Tobiáš Zíka",
+                        "Vojtěch Schubert",
+						"William Wang (S&H Entertainment Localization)"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#additional_quality_assurance_leads",
+                    "SectionLines": [
+                        "Patrik Mateašák",
+                        "Jan Hauer",
+                        "Rakpon Malarote",
+                        "Tomáš Matoušek"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#additional_quality_assurance_testers",
+                    "SectionLines": [
+                        "Adam Benža",
+                        "Adam David",
+                        "Adam Procházka",
+                        "Adam Vondra",
+                        "Adéla Větrovcová",
+                        "Akkharapoom Saranupan",
+                        "Alisa Chomrit",
+                        "Aneta Laudová",
+                        "Aneta Steimarová",
+                        "Anna Švecová",
+                        "Anna Wrnatová",
+                        "Antonín Karoch",
+                        "Antonio Janeček",
+                        "Artchawin Khempila",
+                        "Barbara Krajčovič",
+                        "Bartoloměj Eliáš",
+                        "Benjamin Hanzl",
+                        "Bodin Suksamran",
+                        "Dalibor Feber",
+                        "Daniel Kádner",
+                        "Daniel Otta",
+                        "Danila Konrad",
+                        "David Mařák",
+                        "Dominik Kučera",
+                        "Dominik Skoupil",
+                        "Doubravka Ježková",
+                        "Egor Ploskov",
+                        "Emil Zima",
+                        "Filip Čort",
+                        "Filip Faschingbauer",
+                        "Filip Knotek",
+                        "František Bláha",
+                        "František Pichnarčík",
+                        "Hynek Svoboda",
+                        "Jakub Drahoš",
+                        "Jakub Filko",
+                        "Jakub Lietavec",
+                        "Jan Doležal",
+                        "Jan Kaleta",
+                        "Jan Kočur",
+                        "Jan Parma",
+                        "Jan Švihálek",
+                        "Jan Uher",
+                        "Jan Voldřich",
+                        "Jana Michailidu",
+                        "Jana Vorlíčková",
+                        "Jaroslav Hlaváč",
+                        "Jindřich Cink",
+                        "Jindřich Lička",
+                        "Jiří Javornický",
+                        "Jiří Kocura",
+                        "Jiří Papica",
+                        "Jiří Voborský",
+                        "Josef Vozáb",
+                        "Josefína Juhasová",
+                        "Kamil Beer",
+                        "Karolina Komárková",
+                        "Karolína Skalová",
+                        "Kateřina Szerudová",
+						"Kristina Kirichenko",
+                        "Kryštof Verner",
+                        "Lalisa Leakakul",
+                        "Le Do",
+                        "Lucie Svobodová",
+						"Lukáš Jaro",
+						"Marek Hvizdoš",
+                        "Marek Vítek",
+                        "Marta Hlinková",
+                        "Martin Bílek",
+                        "Martin Dettelbacher",
+                        "Martin Juráš",
+                        "Martin Mayer",
+                        "Martin Mokrejš",
+						"Martin Pivon",
+                        "Martin Suriak",
+                        "Matěj Müller",
+						"Matouš Hrdlicka",
+                        "Matyáš Soviš",
+                        "Max Hejtmánek",
+                        "Michal Jandura",
+                        "Michal Kolman",
+                        "Michal Měřinský",
+                        "Michal Rychetník",
+                        "Michal Skramuský",
+						"Miroslav Kovář",
+                        "Nuthapon Pudpaput",
+                        "Oldřich Kalous",
+                        "Ondřej Borz",
+                        "Ondřej Stejskal",
+                        "Ondřej Vanáč",
+                        "Ondřej Vanča",
+                        "Pankaj Singh",
+						"Pavel Fronek",
+                        "Pavel Hamata",
+                        "Pavol Sočuvka",
+                        "Pavel Štaud",
+                        "Pavla Justicová",
+                        "Peter Šoltés",
+                        "Petr Hlaváč",
+                        "Petr Juklíček",
+                        "Petr Schiebel",
+                        "Petr Secký",
+                        "Petr Vlach",
+                        "Petra Kočí",
+                        "Pinatee Panichauttra",
+                        "Pitsanu Jittamart",
+                        "Raffaele Galbani",
+                        "Rakpon Malarote",
+                        "Richard Rondoš",
+                        "Rittikiat Khemphet",
+                        "Robert Michalič",
+                        "Roman Tuzar",
+                        "Sabina Bagarová",
+                        "Samuel Castillo",
+                        "Sittiporn Lapasuwan",
+                        "Soňa Cicoňová",
+                        "Stanislav Zolotuchin",
+                        "Štěpán Riedl",
+						"Štěpán Šach",
+                        "Štěpán Šikýř",
+                        "Tadeáš Varga",
+                        "Teo Kryštůfek",
+                        "Tomáš Herout",
+                        "Tomáš Jelínek",
+                        "Tomáš Jeřábek",
+                        "Tomáš Kulík",
+                        "Tomáš Novák",
+                        "Tomáš Vančo",
+                        "Tomáš Weiser",
+                        "Tossapon Suppisan",
+                        "Trang Huyen Tran",
+                        "Vít Chocholoušek",
+                        "Vít Faragula",
+                        "Vít Jašek",
+                        "Vladimír Krejčík",
+                        "Vladimír Pech",
+                        "Vojtěch Matouš",
+                        "Vojtěch Neoral",
+                        "Vojtěch Ondrůj",
+                        "Wannivat Damrongwet",
+                        "Zdenka Šlosárová",
+                        "Zuzana Hotová"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Bohemia Interactive",
+            "Sections": [
+                {
+                    "SectionName": "#ceo",
+                    "SectionLines": [
+                        "Marek Španěl"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#operations",
+                    "SectionLines": [
+                        "Alena Dostálová",
+                        "Anežka Tesárková",
+                        "Anna Krčmářová",
+                        "Barbora Nitrová",
+                        "Caroline Rook",
+                        "Demeter Macik",
+                        "Dominik Jícha",
+                        "Ellina Hybnerová",
+                        "Eliška Křížová",
+                        "Eva Goldová",
+                        "Eva Matějková",
+                        "František Farkaš",
+                        "Ivan Platonov",
+                        "Ivana Musilová",
+                        "Jan Geidl",
+                        "Jan Jeník",
+                        "Jan Kněžíček",
+                        "Jan Král",
+                        "Jan Vošahlík",
+                        "Jan Vrba",
+                        "Jan Vrzák",
+                        "Jaroslava Syslová",
+                        "Jervant Malakjan",
+                        "Jindřiška Musilová",
+                        "Jiří Halama",
+                        "Jiří Kunt",
+                        "Jiří Lemberger",
+                        "Jiří Raška",
+                        "Josef Plachý",
+                        "Juraj Šimon",
+                        "Kateřina Adams",
+                        "Kateřina Skalická",
+                        "Kateřina Štěpánková",
+                        "Lenka Prokešová",
+                        "Libor Hájek",
+                        "Lucie Main",
+                        "Lucie Zitterbartová",
+                        "Lukáš Karel",
+                        "Lukáš Lada",
+                        "Lukáš Nožička",
+                        "Lukáš Válka",
+                        "Magdaléna Havelková",
+                        "Marián Severín Weis",
+                        "Markéta Wiesnerová",
+                        "Martin Batel",
+                        "Martin Civáň",
+                        "Martin Horák",
+                        "Martin Juda",
+                        "Martin Liška",
+                        "Martin Procházka",
+                        "Martin Šalling",
+                        "Michal Doleček",
+                        "Michal Lhotský",
+                        "Mikuláš Cséfalvay",
+                        "Miloslav Cinko",
+                        "Miloslav Matějka",
+                        "Mojmír Snopek",
+                        "Monika Růžičková",
+                        "Naděžda Foglarová",
+                        "Nelli Kvan",
+                        "Nikola Bornová",
+                        "Nikola Fialová",
+                        "Ondřej Vořechovský",
+                        "Ondriska Dominik",
+                        "Peter Dučai",
+                        "Petr Benýšek",
+                        "Petr Jirouch",
+                        "Petr Šimůnek",
+                        "Radek Bolemant",
+                        "Šárka Vávrová",
+                        "Slavomír Pavlíček",
+                        "Tereza Vejvodová",
+                        "Tomáš Chromý",
+                        "Tomáš Horák",
+                        "Tomáš Madara",
+                        "Tomáš Rokos",
+                        "Tomáš Wittenberger",
+                        "Václav Líkař",
+                        "Veronika Vyškovská",
+                        "Zbyněk Schwarz"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#community_moderators",
+                    "SectionLines": [
+                        "Accolyte",
+                        "AmberHelios",
+                        "Ander",
+                        "boneboys",
+                        "Cortez",
+                        "Dancing.Russian.Man",
+                        "DemonGroover",
+                        "Derpy_Hooves",
+                        "ferstaberinde",
+                        "Fireball",
+                        "-FM-",
+                        "Fraggle",
+                        "Inception.",
+                        "kichilron",
+                        "Max Planck",
+                        "Mos1ey",
+                        "OrLoK",
+                        "Pacifist",
+                        "purepassion",
+                        "r4z0r49",
+                        "smasht",
+                        "Steak and Potatoes",
+                        "Sula"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "#special_thanks",
+                    "SectionLines": [
+                        "Bořivoj Hlava",
+                        "Dmitry Sorokin",
+                        "Filip Kraucher",
+                        "Harry Ridgeway",
+                        "Jakub Luknár",
+                        "James Crowe",
+                        "Joshua Dampman",
+                        "Karel Taufman",
+                        "Lloyd XXX",
+                        "Lukáš Miláček",
+                        "Patrik Kollár",
+                        "Pavel Guglava",
+                        "Pavel Mázl",
+                        "Pawel Smolewski",
+                        "Peter Gonda",
+                        "Peter Rjapoš",
+                        "Petr Kolář",
+                        "Petr Rak",
+                        "Quirin Eberle",
+                        "Roman Roba",
+                        "and You"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "#legal_notices",
+            "Sections": [
+                {
+                    "SectionName": "NVIDIA GameWorks",
+                    "SectionLines": [
+                        "© 2007- 2016 NVIDIA Corporation. All rights reserved."
+                    ]
+                },
+                {
+                    "SectionName": "Ogg Vorbis",
+                    "SectionLines": [
+                        "Copyright (c) 2002-2008 Xiph.org Foundation",
+                        "TrueSky",
+                        "Portions of this software utilize True Sky technology",
+                        "(© 2015 Simul Software Ltd, all rights reserved.)"
+                    ]
+                },
+                {
+                    "SectionName": "libcurl",
+                    "SectionLines": [
+                        "Copyright (c) 1996 - 2018, Daniel Stenberg"
+                    ]
+                },
+                {
+                    "SectionName": "OpenSSL",
+                    "SectionLines": [
+                        "Copyright (c) 1998-2018 The OpenSSL Project. All rights reserved.",
+                        "Copyright (c) 1995-1998 Eric Young (eay@cryptsoft.com)"
+                    ]
+                },
+                {
+                    "SectionName": "rapidjson",
+                    "SectionLines": [
+                        "Copyright (c) 2015 THL A29 Limited, a Tencent company, and Milo Yip.",
+                        "All rights reserved.",
+                        "json.org, Copyright (c) 2002 JSON.org, All Rights Reserved.",
+                        "JSON_checker, Copyright (c) 2002 JSON.org, All Rights Reserved."
+                    ]
+                },
+                {
+                    "SectionName": "Speex",
+                    "SectionLines": [
+                        "© 2002-2003, Jean-Marc Valin/Xiph.Org Foundation"
+                    ]
+                },
+                {
+                    "SectionName": "hashlib++",
+                    "SectionLines": [
+                        "Copyright (c) 2007-2011 Benjamin Grüdelbach"
+                    ]
+                },
+                {
+                    "SectionName": "Bullet Physics Library",
+                    "SectionLines": [
+                        ""
+                    ]
+                },
+                {
+                    "SectionName": "zLib",
+                    "SectionLines": [
+                        "Copyright (c) 1995-2017 Jean-loup Gailly and Mark Adler"
+                    ]
+                },
+                {
+                    "SectionName": "Recast & Detour",
+                    "SectionLines": [
+                        "Copyright (c) 2009 Mikko Mononen memon@inside.org"
+                    ]
+                },
+                {
+                    "SectionName": "AGS",
+                    "SectionLines": [
+                        "Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved."
+                    ]
+                },
+                {
+                    "SectionName": "Data compression by oberhumer.com",
+                    "SectionLines": [
+                        ""
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,4 @@
+class HelmetBase extends ClothingBase
+{
+	
+};

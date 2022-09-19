@@ -1,0 +1,1 @@
+class PlateCarrierHolster extends Clothing {};

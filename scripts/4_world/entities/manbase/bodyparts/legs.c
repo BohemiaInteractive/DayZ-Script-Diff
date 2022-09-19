@@ -1,0 +1,34 @@
+class MaleLegs_Base extends InventoryItem {};
+class FemaleLegs_Base extends InventoryItem {};
+
+class MaleAdamLegs extends MaleLegs_Base {};
+class MaleBorisLegs extends MaleLegs_Base {};
+class MaleCyrilLegs extends MaleLegs_Base {};
+class MaleDenisLegs extends MaleLegs_Base {};
+class MaleEliasLegs extends MaleLegs_Base {};
+class MaleFrancisLegs extends MaleLegs_Base {};
+class MaleGuoLegs extends MaleLegs_Base {};
+class MaleHassanLegs extends MaleLegs_Base {};
+class MaleIndarLegs extends MaleLegs_Base {};
+class MaleJoseLegs extends MaleLegs_Base {};
+class MaleKaitoLegs extends MaleLegs_Base {};
+class MaleLewisLegs extends MaleLegs_Base {};
+class MaleManuaLegs extends MaleLegs_Base {};
+class MaleNikiLegs extends MaleLegs_Base {};
+class MaleOliverLegs extends MaleLegs_Base {};
+class MalePeterLegs extends MaleLegs_Base {};
+class MaleQuinnLegs extends MaleLegs_Base {};
+class MaleRolfLegs extends MaleLegs_Base {};
+class MaleSethLegs extends MaleLegs_Base {};
+class MaleTaikiLegs extends MaleLegs_Base {};
+
+class FemaleEvaLegs extends FemaleLegs_Base {};
+class FemaleFridaLegs extends FemaleLegs_Base {};
+class FemaleGabiLegs extends FemaleLegs_Base {};
+class FemaleHelgaLegs extends FemaleLegs_Base {};
+class FemaleIrenaLegs extends FemaleLegs_Base {};
+class FemaleJudyLegs extends FemaleLegs_Base {};
+class FemaleKeikoLegs extends FemaleLegs_Base {};
+class FemaleLindaLegs extends FemaleLegs_Base {};
+class FemaleMariaLegs extends FemaleLegs_Base {};
+class FemaleNaomiLegs extends FemaleLegs_Base {};

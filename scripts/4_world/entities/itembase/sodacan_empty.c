@@ -1,0 +1,1 @@
+class SodaCan_Empty extends ItemBase {}

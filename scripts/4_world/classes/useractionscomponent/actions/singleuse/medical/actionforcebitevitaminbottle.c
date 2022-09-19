@@ -1,0 +1,3 @@
+class ActionForceBiteVitaminBottle: ActionForceConsumeSingle
+{
+};

@@ -1,0 +1,4 @@
+class MissionBaseWorld extends Mission
+{
+
+}

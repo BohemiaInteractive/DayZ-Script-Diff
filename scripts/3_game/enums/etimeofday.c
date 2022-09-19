@@ -1,0 +1,5 @@
+enum ETimeOfDay
+{
+	Day,
+	Night,
+}

@@ -1,0 +1,3 @@
+prefix=scripts\
+product=dayz
+version=97832

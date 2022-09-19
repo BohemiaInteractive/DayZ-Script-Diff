@@ -1,0 +1,1 @@
+class ImprovisedBag : Clothing {};

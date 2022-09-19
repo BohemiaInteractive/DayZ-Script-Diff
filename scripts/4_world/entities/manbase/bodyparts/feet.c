@@ -1,0 +1,35 @@
+class MaleFeet_Base extends InventoryItem {};
+class FemaleFeet_Base extends InventoryItem {};
+
+class MaleAdamFeet extends MaleFeet_Base {};
+class MaleBorisFeet extends MaleFeet_Base {};
+class MaleCyrilFeet extends MaleFeet_Base {};
+class MaleDenisFeet extends MaleFeet_Base {};
+class MaleEliasFeet extends MaleFeet_Base {};
+class MaleFrancisFeet extends MaleFeet_Base {};
+class MaleGuoFeet extends MaleFeet_Base {};
+class MaleHassanFeet extends MaleFeet_Base {};
+class MaleIndarFeet extends MaleFeet_Base {};
+class MaleJoseFeet extends MaleFeet_Base {};
+class MaleKaitoFeet extends MaleFeet_Base {};
+class MaleLewisFeet extends MaleFeet_Base {};
+class MaleManuaFeet extends MaleFeet_Base {};
+class MaleNikiFeet extends MaleFeet_Base {};
+class MaleOliverFeet extends MaleFeet_Base {};
+class MalePeterFeet extends MaleFeet_Base {};
+class MaleQuinnFeet extends MaleFeet_Base {};
+class MaleRolfFeet extends MaleFeet_Base {};
+class MaleSethFeet extends MaleFeet_Base {};
+class MaleTaikiFeet extends MaleFeet_Base {};
+class MaleDeanFeet extends MaleFeet_Base {};
+
+class FemaleEvaFeet extends FemaleFeet_Base {};
+class FemaleFridaFeet extends FemaleFeet_Base {};
+class FemaleGabiFeet extends FemaleFeet_Base {};
+class FemaleHelgaFeet extends FemaleFeet_Base {};
+class FemaleIrenaFeet extends FemaleFeet_Base {};
+class FemaleJudyFeet extends FemaleFeet_Base {};
+class FemaleKeikoFeet extends FemaleFeet_Base {};
+class FemaleLindaFeet extends FemaleFeet_Base {};
+class FemaleMariaFeet extends FemaleFeet_Base {};
+class FemaleNaomiFeet extends FemaleFeet_Base {};

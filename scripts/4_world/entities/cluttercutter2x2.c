@@ -1,0 +1,1 @@
+class ClutterCutter2x2 : BuildingSuper {};

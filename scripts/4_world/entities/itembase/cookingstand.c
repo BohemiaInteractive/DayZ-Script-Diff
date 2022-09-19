@@ -1,0 +1,4 @@
+class CookingStand extends TripodBase
+{
+
+}

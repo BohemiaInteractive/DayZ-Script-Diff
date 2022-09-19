@@ -1,0 +1,35 @@
+class MaleHands_Base extends InventoryItem {};
+class FemaleHands_Base extends InventoryItem {};
+
+class MaleAdamHands extends MaleHands_Base {};
+class MaleBorisHands extends MaleHands_Base {};
+class MaleCyrilHands extends MaleHands_Base {};
+class MaleDenisHands extends MaleHands_Base {};
+class MaleEliasHands extends MaleHands_Base {};
+class MaleFrancisHands extends MaleHands_Base {};
+class MaleGuoHands extends MaleHands_Base {};
+class MaleHassanHands extends MaleHands_Base {};
+class MaleIndarHands extends MaleHands_Base {};
+class MaleJoseHands extends MaleHands_Base {};
+class MaleKaitoHands extends MaleHands_Base {};
+class MaleLewisHands extends MaleHands_Base {};
+class MaleManuaHands extends MaleHands_Base {};
+class MaleNikiHands extends MaleHands_Base {};
+class MaleOliverHands extends MaleHands_Base {};
+class MalePeterHands extends MaleHands_Base {};
+class MaleQuinnHands extends MaleHands_Base {};
+class MaleRolfHands extends MaleHands_Base {};
+class MaleSethHands extends MaleHands_Base {};
+class MaleTaikiHands extends MaleHands_Base {};
+class MaleDeanHands extends MaleHands_Base {};
+
+class FemaleEvaHands extends FemaleHands_Base {};
+class FemaleFridaHands extends FemaleHands_Base {};
+class FemaleGabiHands extends FemaleHands_Base {};
+class FemaleHelgaHands extends FemaleHands_Base {};
+class FemaleIrenaHands extends FemaleHands_Base {};
+class FemaleJudyHands extends FemaleHands_Base {};
+class FemaleKeikoHands extends FemaleHands_Base {};
+class FemaleLindaHands extends FemaleHands_Base {};
+class FemaleMariaHands extends FemaleHands_Base {};
+class FemaleNaomiHands extends FemaleHands_Base {};

@@ -1,0 +1,3 @@
+class NBCHood extends Clothing
+{
+}

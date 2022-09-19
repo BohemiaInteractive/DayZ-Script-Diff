@@ -1,0 +1,1 @@
+class ChestHolster extends Clothing {};

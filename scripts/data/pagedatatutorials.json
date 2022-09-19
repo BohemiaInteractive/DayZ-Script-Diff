@@ -1,0 +1,140 @@
+[
+    {
+    "m_TabID": 0,
+        "m_TextWidgetID": 15,
+        "m_ButtonName": "hydration_indicator",
+        "m_InfoText": "#pc_tutorial_status_hydration"
+    },
+    {
+    "m_TabID": 0,
+        "m_TextWidgetID": 16,
+        "m_ButtonName": "food_indicator",
+        "m_InfoText": "#pc_tutorial_status_food"
+    },
+	{
+    "m_TabID": 0,
+        "m_TextWidgetID": 17,
+        "m_ButtonName": "temperature_indicator",
+        "m_InfoText": "#pc_tutorial_status_temparature"
+    },
+	{
+    "m_TabID": 0,
+        "m_TextWidgetID": 18,
+        "m_ButtonName": "blood_indicator",
+        "m_InfoText": "#pc_tutorial_status_blood"
+    },
+	{
+    "m_TabID": 0,
+        "m_TextWidgetID": 19,
+        "m_ButtonName": "health_indicator",
+        "m_InfoText": "#pc_tutorial_status_health"
+    },
+	{
+    "m_TabID": 0,
+        "m_TextWidgetID": 8,
+        "m_ButtonName": "decrease_tendency",
+        "m_InfoText": "#pc_tutorial_status_decrease"
+    },
+	{
+    "m_TabID": 0,
+        "m_TextWidgetID": 9,
+        "m_ButtonName": "strong_decrease_tendency",
+        "m_InfoText": "#pc_tutorial_status_strongDecrease"
+    },
+	{
+ 		"m_TabID": 1,
+        "m_TextWidgetID": 3,
+        "m_ButtonName": "hand",
+        "m_InfoText": "#pc_tutorial_melee3"
+    },
+    {
+    "m_TabID": 1,
+        "m_TextWidgetID": 17,
+        "m_ButtonName": "axe",
+        "m_InfoText": "#pc_tutorial_melee1"
+    },
+    {
+    "m_TabID": 1,
+        "m_TextWidgetID": 21,
+        "m_ButtonName": "hammer",
+        "m_InfoText": "#pc_tutorial_melee2"
+    },
+    {
+    "m_TabID": 2,
+        "m_TextWidgetID": 17,
+        "m_ButtonName": "suppressor",
+        "m_InfoText": "#pc_tutorial_guns1"
+    },
+    {
+    "m_TabID": 2,
+        "m_TextWidgetID": 21,
+        "m_ButtonName": "magazine",
+        "m_InfoText": "#pc_tutorial_guns2"
+    },
+    {
+    "m_TabID": 2,
+        "m_TextWidgetID": 5,
+        "m_ButtonName": "trigger",
+        "m_InfoText": "#pc_tutorial_guns3"
+    },
+    {
+    "m_TabID": 3,
+        "m_TextWidgetID": 5,
+        "m_ButtonName": "infected1",
+        "m_InfoText": "#pc_tutorial_infected1"
+    },
+    {
+    "m_TabID": 3,
+        "m_TextWidgetID": 21,
+        "m_ButtonName": "infected2",
+        "m_InfoText": "#pc_tutorial_infected2"
+    },
+    {
+    "m_TabID": 4,
+        "m_TextWidgetID": 3,
+        "m_ButtonName": "inv1",
+        "m_InfoText": "#pc_tutorial_inventory1"
+    },
+    {
+    "m_TabID": 4,
+        "m_TextWidgetID": 9,
+        "m_ButtonName": "inv2",
+        "m_InfoText": "#pc_tutorial_inventory2"
+    },
+    {
+    "m_TabID": 4,
+        "m_TextWidgetID": 14,
+        "m_ButtonName": "inv3",
+        "m_InfoText": "#pc_tutorial_inventory3"
+    },
+    {
+    "m_TabID": 4,
+        "m_TextWidgetID": 24,
+        "m_ButtonName": "inv4",
+        "m_InfoText": "#pc_tutorial_inventory4"
+    },
+    {
+    "m_TabID": 4,
+        "m_TextWidgetID": 21,
+        "m_ButtonName": "inv5",
+        "m_InfoText": "#pc_tutorial_inventory5"
+    },
+    {
+    "m_TabID": 4,
+        "m_TextWidgetID": 15,
+        "m_ButtonName": "inv6",
+        "m_InfoText": "#pc_tutorial_inventory6"
+    },
+    {
+    "m_TabID": 5,
+        "m_TextWidgetID": 5,
+        "m_ButtonName": "loot1",
+        "m_InfoText": "#pc_tutorial_loot1"
+    },
+    {
+    "m_TabID": 5,
+        "m_TextWidgetID": 17,
+        "m_ButtonName": "loot2",
+        "m_InfoText": "#pc_tutorial_loot2"
+    }
+]

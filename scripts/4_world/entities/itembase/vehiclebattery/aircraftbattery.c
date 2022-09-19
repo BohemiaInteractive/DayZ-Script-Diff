@@ -1,0 +1,1 @@
+class AircraftBattery : VehicleBattery {}

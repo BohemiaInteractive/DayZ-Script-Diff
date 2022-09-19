@@ -1,0 +1,3 @@
+class OfficerHat extends Clothing
+{
+}

@@ -1,0 +1,3 @@
+class PoliceCap extends Clothing
+{
+}

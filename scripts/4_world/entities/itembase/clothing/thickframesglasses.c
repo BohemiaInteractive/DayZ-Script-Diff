@@ -1,0 +1,3 @@
+class ThickFramesGlasses extends Clothing 
+{
+};

@@ -1,0 +1,3 @@
+class PUScopeOptic extends ItemOptics
+{
+}

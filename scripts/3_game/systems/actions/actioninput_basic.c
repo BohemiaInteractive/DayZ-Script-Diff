@@ -1,0 +1,4 @@
+class ActionInput_Basic
+{
+} 
+
