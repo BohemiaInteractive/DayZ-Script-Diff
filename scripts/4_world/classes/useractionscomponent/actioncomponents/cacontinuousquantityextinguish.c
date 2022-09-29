@@ -8,7 +8,14 @@ class CAContinuousQuantityExtinguish : CAContinuousQuantityRepeat
 		m_DefaultTimeToRepeat = time_to_repeat;
 		m_WetnessGainMultiplier = wetness_gain_multiplier;
 	}
+	
+	override void Setup( ActionData action_data )
+	{
+		super.Setup(action_data);
 		
+		m_QuantityUsedPerSecond *= action_data.m_MainItem.GetLiquidThroughputCoef(); //no comparison here
+	}
+	
 	override void CalcAndSetQuantity( ActionData action_data )
 	{	
 		if ( GetGame().IsServer() ) 

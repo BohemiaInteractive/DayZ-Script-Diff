@@ -83,7 +83,7 @@ class ReplaceItemWithNewLambdaBase
 	 * @brief	Step B. - free location for new item
 	 * @NOTE	this operation does not delete the object, only removes it from inventory location
 	 **/
-	protected void RemoveOldItemFromLocation ()
+	protected void RemoveOldItemFromLocation()
 	{
 		if (!GameInventory.LocationRemoveEntity(m_OldLocation)) // B) remove entity from old inventory location (making it free for new item)
 		{
@@ -93,7 +93,7 @@ class ReplaceItemWithNewLambdaBase
 		Print("[inv] ReplaceItemWithNewLambdaBase Step B) remove OK, loc=" + InventoryLocation.DumpToStringNullSafe(m_OldLocation));
 		m_RemoveFromLocationPassed = true;
 	}
-	protected void UndoRemoveOldItemFromLocation ()
+	protected void UndoRemoveOldItemFromLocation()
 	{
 		if (!GameInventory.LocationAddEntity(m_OldLocation)) // B) undo
 			Error("[inv] ReplaceItemWithNewLambdaBase Step B) failed to undo remove");
@@ -104,13 +104,13 @@ class ReplaceItemWithNewLambdaBase
 	 * @brief	Step C. - remove network part of the object
 	 * @NOTE	this operation does not delete the object, only removes its network part (and deletes it on client)
 	 **/
-	protected void RemoveNetworkObjectInfo ()
+	protected void RemoveNetworkObjectInfo()
 	{
 		GetGame().RemoteObjectTreeDelete(m_OldItem); // C) this forces server to send DeleteObject Message to client. This is needed for preserving the appearance of network operations on client (so that DeleteObject(old) arrives before CreateVehicle(new)). @NOTE: this does not delete the object on server, only it's network representation.
 		// @NOTE: the item is not deleted right now on server, but rather after copying the properties in Step E)
 		m_RemoveNetworkObjectInfoPassed = true;
 	}
-	protected void UndoRemoveNetworkObjectInfo ()
+	protected void UndoRemoveNetworkObjectInfo()
 	{
 		GetGame().RemoteObjectTreeCreate(m_OldItem);
 	}
@@ -120,7 +120,7 @@ class ReplaceItemWithNewLambdaBase
 	 *
 	 * @NOTE: if (!m_NewLocation || m_NewItemType.Empty) ==> this function does not create a new entity
 	 **/
-	protected EntityAI CreateNewEntity ()
+	protected EntityAI CreateNewEntity()
 	{
 		if (WantCreateNewEntity())
 		{

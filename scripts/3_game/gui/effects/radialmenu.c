@@ -41,7 +41,7 @@ class RadialMenu : ScriptedWidgetEventHandler
 	
 	//mouse
 	protected bool 						m_WidgetInitialized;
-	protected const float 				MOUSE_SAFE_ZONE_RADIUS = 50;		//Radius [px] of safe zone where every previous selection is deselected
+	protected const float 				MOUSE_SAFE_ZONE_RADIUS = 120;		//Radius [px] of safe zone where every previous selection is deselected
 	
 	//References
 	protected float 					m_RadiusOffset;					//Radius [% of the main container size]
@@ -60,12 +60,14 @@ class RadialMenu : ScriptedWidgetEventHandler
 	Mouse:
 		OnMouseSelect
 		OnMouseDeselect
-		OnMouseExecute
+		OnMouseExecute - unused, press events used instead
+		OnMousePressLeft
+		OnMousePressRight
 	
 	Controller:
 		OnControllerSelect
 		OnControllerDeselect
-		OnControllerExecute
+		OnControllerExecute - unused, press events used instead
 		OnControllerPressSelect
 		OnControllerPressBack
 	
@@ -83,13 +85,20 @@ class RadialMenu : ScriptedWidgetEventHandler
 		m_Instance = this;
 		
 		//set default control type
-		#ifdef PLATFORM_CONSOLE
-				m_ControlType = RadialMenuControlType.CONTROLLER;
-		#endif				
-		#ifdef PLATFORM_WINDOWS
-				m_ControlType = RadialMenuControlType.MOUSE;
-		#endif				
-			
+#ifdef PLATFORM_CONSOLE
+		Input inp = GetGame().GetInput();
+		if (inp && inp.IsEnabledMouseAndKeyboardEvenOnServer())
+		{
+			m_ControlType = RadialMenuControlType.MOUSE;
+		}
+		else
+		{
+			m_ControlType = RadialMenuControlType.CONTROLLER;
+		}
+#endif
+#ifdef PLATFORM_WINDOWS
+		m_ControlType = RadialMenuControlType.MOUSE;
+#endif
 		//radial cards
 		m_RadialItemCards = new map<Widget, float>;
 		m_UpdateTimer = new Timer();
@@ -507,6 +516,9 @@ class RadialMenu : ScriptedWidgetEventHandler
 			m_UpdateTimer.Stop();
 			return;
 		}
+		
+		Input input = GetGame().GetInput();
+		
 		//get delta time
 		if ( last_time < 0 )
 		{
@@ -533,7 +545,6 @@ class RadialMenu : ScriptedWidgetEventHandler
 					//hide selector
 					HideRadialSelector();
 				}
-				//----------------------------
 				else
 				{
 					//Deselect
@@ -544,14 +555,6 @@ class RadialMenu : ScriptedWidgetEventHandler
 					GetGame().GameScript.CallFunction( m_RegisteredClass, "OnMouseSelect", NULL, m_SelectedObject );				
 					//show selector
 					ShowRadialSelector( m_SelectedObject );
-					
-					//PARAM --execute distance--
-					if ( mouse_distance >= GetRadius() * m_ExecuteDistanceOffset )
-					{
-						//Execute
-						GetGame().GameScript.CallFunction( m_RegisteredClass, "OnMouseExecute", NULL, m_SelectedObject );
-					}
-					//--------------------------
 				}
 			}
 			//controller controls
@@ -588,14 +591,7 @@ class RadialMenu : ScriptedWidgetEventHandler
 						m_SelectedObject = NULL;
 						//hide selector
 						HideRadialSelector();						
-					}
-					
-					//Execute
-					if ( m_ControllerTilt >= CONTROLLER_TILT_TRESHOLD_EXECUTE )
-					{
-						//Execute
-						GetGame().GameScript.CallFunction( m_RegisteredClass, "OnControllerExecute", NULL, m_SelectedObject );
-					}				
+					}		
 				}
 				//if controller is giving no feedback
 				else
@@ -663,5 +659,26 @@ class RadialMenu : ScriptedWidgetEventHandler
 		{
 			GetGame().GameScript.CallFunction( m_RegisteredClass, "OnControllerPressBack", NULL, m_SelectedObject );
 		}
+	}
+	
+	override bool OnMouseButtonUp(Widget w, int x, int y, int button)
+	{
+		if (button == MouseState.LEFT && m_SelectedObject/* && w == m_SelectedObject*/)
+		{
+			//Execute
+			GetGame().GameScript.CallFunction( m_RegisteredClass, "OnMousePressLeft", NULL, m_SelectedObject );
+			
+			return true;
+		}
+		
+		if (button == MouseState.RIGHT)
+		{
+			//Back one level
+			GetGame().GameScript.CallFunction( m_RegisteredClass, "OnMousePressRight", NULL, NULL );
+			
+			return true;
+		}
+		
+		return false;
 	}
 }

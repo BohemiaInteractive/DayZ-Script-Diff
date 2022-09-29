@@ -465,6 +465,17 @@ class OptionsMenu extends UIScriptedMenu
 		#endif
 	}
 	
+	//! Controls visibility and sometimes even state of specific, dependent options across sub-menus
+	void ToggleDependentOptions(int mode, bool state)
+	{
+		m_GameTab.ToggleDependentOptions(mode,state);
+		m_SoundsTab.ToggleDependentOptions(mode,state);
+		m_ControlsTab.ToggleDependentOptions(mode,state);
+		#ifndef PLATFORM_XBOX
+			m_VideoTab.ToggleDependentOptions(mode,state);
+		#endif
+	}
+	
 	void ReloadOptions()
 	{
 		m_Options = new GameOptions();

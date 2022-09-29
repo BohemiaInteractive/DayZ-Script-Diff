@@ -99,8 +99,6 @@ class Cauldron extends Bottle_Base
 		
 		RemoveAction(ActionDrink);
 		RemoveAction(ActionEmptyBottleBase);
-		AddAction(ActionFillGeneratorTank);
-		AddAction(ActionExtinguishFireplaceByLiquid);
 		AddAction(ActionFillBottleBase);
 		AddAction(ActionWaterGardenSlot);
 		AddAction(ActionWaterPlant);

@@ -1226,7 +1226,7 @@ class Inventory: LayoutHolder
 			IngameHud hud = IngameHud.Cast( mission.GetHud() );
 			if ( hud )
 			{
-				hud.ShowQuickbarUI( g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR) );
+				hud.ShowQuickbarUI( true );
 				hud.ShowHudInventory( false );
 			}
 		}

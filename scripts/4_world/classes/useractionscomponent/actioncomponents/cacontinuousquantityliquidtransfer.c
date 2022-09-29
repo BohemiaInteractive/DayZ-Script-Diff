@@ -34,6 +34,8 @@ class CAContinuousQuantityLiquidTransfer : CAContinuousBase
 			m_SpentUnits.param1 = 0;
 		}
 		
+		m_QuantityUsedPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(),target_item.GetLiquidThroughputCoef());
+		
 		if ( m_TendencyDrain == 1 )
 		{
 			if ( target_item.GetQuantity() > (action_data.m_MainItem.GetQuantityMax() - action_data.m_MainItem.GetQuantity()) )

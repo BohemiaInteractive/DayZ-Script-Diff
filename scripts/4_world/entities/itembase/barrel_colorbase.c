@@ -543,7 +543,6 @@ class Barrel_ColorBase : DeployableContainer_Base
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================
-	
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		super.OnPlacementComplete( player, position, orientation );
@@ -554,6 +553,12 @@ class Barrel_ColorBase : DeployableContainer_Base
 	override string GetPlaceSoundset()
 	{
 		return "placeBarrel_SoundSet";
+	}
+	//================================================================
+	
+	override float GetLiquidThroughputCoef()
+	{
+		return LIQUID_THROUGHPUT_BARREL;
 	}
 	
 	override void SetActions()

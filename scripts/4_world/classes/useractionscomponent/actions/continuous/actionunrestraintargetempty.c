@@ -40,14 +40,16 @@ class ActionUnrestrainTargetHands: ActionContinuousBase
 		return ContinuousInteractActionInput;
 	}
 	
-	override void OnStartClient(ActionData action_data)
-	{
-		action_data.m_Player.TryHideItemInHands(true);
-	}
+	
 	
 	override void OnStartServer(ActionData action_data)
 	{
 		action_data.m_Player.TryHideItemInHands(true);
+	}
+
+	override void OnEndServer(ActionData action_data)
+	{
+		action_data.m_Player.TryHideItemInHands(false);
 	}
 	
 	override void CreateConditionComponents()  
@@ -62,19 +64,13 @@ class ActionUnrestrainTargetHands: ActionContinuousBase
 		return targetPlayer && targetPlayer.IsRestrained();
 	}
 
-	override void OnEndServer(ActionData action_data)
-	{
-		PlayerBase targetPlayer = PlayerBase.Cast(action_data.m_Target.GetObject());
-		targetPlayer.SetRestrained(false);
-	}
-	
 	override void OnFinishProgressServer( ActionData action_data )
 	{
 		PlayerBase targetPlayer = PlayerBase.Cast(action_data.m_Target.GetObject());
-		action_data.m_Player.TryHideItemInHands(false);
+		
 		
 		EntityAI item_in_hands = targetPlayer.GetItemInHands();
-		
+		targetPlayer.SetRestrained(false);
 		if (item_in_hands)
 		{
 			MiscGameplayFunctions.TransformRestrainItem(item_in_hands, null, action_data.m_Player, targetPlayer);
@@ -83,6 +79,11 @@ class ActionUnrestrainTargetHands: ActionContinuousBase
 		{
 			ErrorEx("Failed to obtain item in target player's hands during empty handed unrestraining");
 		}
+	}
+	
+	override void OnStartClient(ActionData action_data)
+	{
+		action_data.m_Player.TryHideItemInHands(true);
 	}
 	
 	override void OnEndClient( ActionData action_data )

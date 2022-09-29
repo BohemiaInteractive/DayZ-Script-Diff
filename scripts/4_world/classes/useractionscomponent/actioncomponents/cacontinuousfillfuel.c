@@ -36,7 +36,9 @@ class CAContinuousFillFuel : CAContinuousBase
 		{
 			m_SpentUnits.param1 = 0;
 		}
-
+		
+		m_QuantityUsedPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(),car.GetLiquidThroughputCoef());
+		
 		float fuelCapacity = car.GetFluidCapacity( CarFluid.FUEL );
 		float currentFuel = car.GetFluidFraction( CarFluid.FUEL );
 		currentFuel = currentFuel * fuelCapacity;

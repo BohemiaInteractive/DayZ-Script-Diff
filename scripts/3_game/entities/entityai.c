@@ -2619,6 +2619,12 @@ class EntityAI extends Entity
 			AddHealth("","Health",-MELEE_ITEM_DAMAGE);
 		return this;
 	}
+
+	//! Returns liquid throughput coeficient
+	float GetLiquidThroughputCoef()
+	{
+		return LIQUID_THROUGHPUT_DEFAULT;
+	}
 	
 	string GetInvulnerabilityTypeString()
 	{

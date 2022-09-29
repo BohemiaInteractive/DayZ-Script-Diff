@@ -19,8 +19,10 @@ class CAContinuousFillPowerGenerator : CAContinuousFill
 			m_SpentUnits.param1 = 0;
 		}
 		
-		m_ItemQuantity = action_data.m_MainItem.GetQuantity();
 		EntityAI pg = EntityAI.Cast(action_data.m_Target.GetObject()); // get power generator
+		m_QuantityFilledPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(),pg.GetLiquidThroughputCoef());
+		
+		m_ItemQuantity = action_data.m_MainItem.GetQuantity();
 		m_TargetUnits = pg.GetCompEM().GetEnergyMax() - pg.GetCompEM().GetEnergy();
 		m_AdjustedQuantityFilledPerSecond = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_QuantityFilledPerSecond, m_Action.GetSpecialtyWeight(), true );
 	}

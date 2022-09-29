@@ -495,6 +495,22 @@ const int LIQUID_SOLUTION = 65536;
 const int GROUP_LIQUID_BLOOD = 255;
 const int GROUP_LIQUID_ALL = -1;//-1 = all bits to 1
 /** @}*/
+
+/**
+ * \defgroup LiquidThroughputs
+ * \desc Constants for liquid transfer speeds
+ * @{
+ */
+const float LIQUID_THROUGHPUT_TINY = 0.1;
+const float LIQUID_THROUGHPUT_DEFAULT = 1.0;
+const float LIQUID_THROUGHPUT_GASOLINECANISTER = 10.0;
+const float LIQUID_THROUGHPUT_CAR_DEFAULT = 10.0;
+const float LIQUID_THROUGHPUT_GENERATOR = 10.0;
+const float LIQUID_THROUGHPUT_FUELSTATION = 20.0;
+const float LIQUID_THROUGHPUT_WELL = 15.0;
+const float LIQUID_THROUGHPUT_BARREL = 100.0;
+
+/** @}*/
 	
 /**
  * \defgroup ChatMessagesVisibility

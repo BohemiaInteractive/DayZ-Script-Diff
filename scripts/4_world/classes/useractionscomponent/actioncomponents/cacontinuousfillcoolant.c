@@ -39,7 +39,9 @@ class CAContinuousFillCoolant : CAContinuousBase
 		{
 			m_SpentUnits.param1 = 0;
 		}
-
+		
+		m_QuantityUsedPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(),car.GetLiquidThroughputCoef());
+		
 		float coolCapacity = car.GetFluidCapacity( CarFluid.COOLANT );
 		float currentCool = car.GetFluidFraction( CarFluid.COOLANT );
 		currentCool = currentCool * coolCapacity;

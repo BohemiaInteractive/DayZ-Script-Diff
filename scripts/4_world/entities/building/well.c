@@ -10,6 +10,11 @@ class Well extends BuildingSuper
 		return true;
 	}
 	
+	override float GetLiquidThroughputCoef()
+	{
+		return LIQUID_THROUGHPUT_WELL;
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -17,6 +22,4 @@ class Well extends BuildingSuper
 		AddAction(ActionWashHandsWellOne);
 		AddAction(ActionDrinkWellContinuous);
 	}
-	
-
 }

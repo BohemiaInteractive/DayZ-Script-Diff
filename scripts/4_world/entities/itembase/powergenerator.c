@@ -69,6 +69,11 @@ class PowerGenerator extends ItemBase
 		UpdateFuelMeter();
 	}
 	
+	override float GetLiquidThroughputCoef()
+	{
+		return LIQUID_THROUGHPUT_GENERATOR;
+	}
+	
 	// Play the loop sound
 	void StartLoopSound()
 	{

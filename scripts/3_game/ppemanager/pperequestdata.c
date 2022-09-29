@@ -146,13 +146,11 @@ class PPERequestParamDataFloat extends PPERequestParamDataBase
 	
 	override void InitValues()
 	{
-		m_FloatCurrent = -1;
-		m_FloatLast = -1;
-		m_FloatTarget = 0.0;
-		m_FloatCurrent = 0.0;
-		m_FloatLast = 0.0;
-		m_FloatFormerTarget = 0.0;
-		m_FloatStart = 0.0;
+		m_FloatTarget = float.LOWEST;
+		m_FloatCurrent = float.LOWEST;
+		m_FloatLast = float.LOWEST;
+		m_FloatFormerTarget = float.LOWEST;
+		m_FloatStart = float.LOWEST;
 	}
 }
 

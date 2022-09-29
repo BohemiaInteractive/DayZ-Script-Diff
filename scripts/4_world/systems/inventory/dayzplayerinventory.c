@@ -678,7 +678,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 				#endif
 				
-				if (!GameInventory.LocationCanMoveEntity(src, dst))
+				if (!GameInventory.LocationCanMoveEntitySyncCheck(src, dst))
 				{
 					#ifdef DEVELOPER
 					DumpInventoryDebug();

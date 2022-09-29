@@ -365,6 +365,11 @@ class CarScript extends Car
 	{	
 		return ModelToWorld( m_side_2_2Pos );
 	}
+	
+	override float GetLiquidThroughputCoef()
+	{
+		return LIQUID_THROUGHPUT_CAR_DEFAULT;
+	}
 
 	//here we should handle the damage dealt in OnContact event, but maybe we will react even in that event 
 	override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
@@ -699,7 +704,7 @@ class CarScript extends Car
 					if ( EngineGetRPM() >= EngineGetRPMRedline() )
 					{
 						if (EngineGetRPM() > EngineGetRPMMax())
-							AddHealth( "Engine", "Health", -GetMaxHealth("Engine", "")); //CAR_RPM_DMG
+							AddHealth( "Engine", "Health", -GetMaxHealth("Engine", "") * 0.05 ); //CAR_RPM_DMG
 							
 						dmg = EngineGetRPM() * 0.001 * Math.RandomFloat( 0.02, 1.0 );  //CARS_TICK_DMG_MIN; //CARS_TICK_DMG_MAX
 						ProcessDirectDamage(DamageType.CUSTOM, null, "Engine", "EnviroDmg", vector.Zero, dmg);
@@ -927,19 +932,22 @@ class CarScript extends Car
 			int contactCount = data.Count();
 			for (int j = 0; j < contactCount; ++j)
 				dmg = data[j].impulse * m_dmgContactCoef;
-			
-			if (dmg < GameConstants.CARS_CONTACT_DMG_MIN)
+		
+			if ( dmg < GameConstants.CARS_CONTACT_DMG_MIN )
 				continue;
-			
+
 			int pddfFlags;
 
 			if (dmg < GameConstants.CARS_CONTACT_DMG_THRESHOLD)
 			{				
+				//Print(string.Format("[Vehiles:Damage]:: DMG %1 to the %2 zone is SMALL (threshold: %3), SPEED: %4", dmg, zoneName, GameConstants.CARS_CONTACT_DMG_THRESHOLD, GetSpeedometer() ));
+
 				SynchCrashLightSound(true);
 				pddfFlags = ProcessDirectDamageFlags.NO_TRANSFER;
 			}
 			else
-			{		
+			{
+				//Print(string.Format("[Vehiles:Damage]:: DMG %1 to the %2 zone is BIG (threshold: %3), SPEED: %4", dmg, zoneName, GameConstants.CARS_CONTACT_DMG_THRESHOLD, GetSpeedometer() ));
 				DamageCrew(dmg);
 				SynchCrashHeavySound(true);
 				pddfFlags = 0;
@@ -972,14 +980,17 @@ class CarScript extends Car
 			{
 				if ( dmg > GameConstants.CARS_CONTACT_DMG_KILLCREW )
 				{		
+					//Print(string.Format("KILL player: %1", dmg));
 					player.SetHealth(0.0);
 				}
 				else
 				{
 					float shockTemp = Math.InverseLerp(GameConstants.CARS_CONTACT_DMG_THRESHOLD, GameConstants.CARS_CONTACT_DMG_KILLCREW, dmg);
-					float shock = Math.Lerp( 50, 100, shockTemp );
-					float hp = Math.Lerp( 2, 60, shockTemp );
+					float shock = Math.Lerp( 50, 110, shockTemp );
+					float hp = Math.Lerp( 2, 99, shockTemp );
 
+					//Print(string.Format("[Vehiles:Damage]:: Damage to player: %1", hp));
+					//Print(string.Format("[Vehiles:Damage]:: Shock to player: %1", shock));
 					// These should ideally be ProcessDirectDamage...
 					player.AddHealth("", "Shock", -shock );
 					player.AddHealth("", "Health", -hp );
@@ -2215,7 +2226,12 @@ class CarScript extends Car
 			}
 		}
 	}
-	
+
+	override vector GetDefaultHitPosition()
+	{
+		return vector.Zero;
+	}
+
 	void SetEngineZoneReceivedHit(bool pState)
 	{
 		m_EngineZoneReceivedHit = pState;

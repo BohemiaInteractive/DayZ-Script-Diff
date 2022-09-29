@@ -78,7 +78,21 @@ class World: Managed
 	*/	
 	proto void GetGridCoords(vector pos, float gridSize, out int gridX, out int gridZ);
 
+	/**
+	load light config 
+	*/
 	proto native void LoadNewLightingCfg(string path);
+
+	/**
+	load user light config (just first item is used) 
+	*/
+	proto native void LoadUserLightingCfg(string path, string name);
+
+	/**
+	set lerp to user lighting cfg
+	*/
+	proto native void SetUserLightingLerp(float val);
+
 	
 	proto native AIWorld GetAIWorld();
 	

@@ -9,4 +9,9 @@ class FuelStation extends BuildingSuper
 	{
 		return true;
 	}
+	
+	override float GetLiquidThroughputCoef()
+	{
+		return LIQUID_THROUGHPUT_FUELSTATION;
+	}
 }

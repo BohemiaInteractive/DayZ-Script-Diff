@@ -231,7 +231,7 @@ class Man extends EntityAI
 	}
 
 	///@{ !hand -> !hand replace
-	protected bool ReplaceItemWithNewImpl (InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
+	protected bool ReplaceItemWithNewImpl(InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
 	{
 		syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " Replace !HND lambda=" + lambda.DumpToString());
 		bool code = GetHumanInventory().ReplaceItemWithNew(mode, lambda);
@@ -239,12 +239,12 @@ class Man extends EntityAI
 		return code;
 	}
 
-	bool LocalReplaceItemWithNew (ReplaceItemWithNewLambdaBase lambda)
+	bool LocalReplaceItemWithNew(ReplaceItemWithNewLambdaBase lambda)
 	{
 		return ReplaceItemWithNewImpl(InventoryMode.LOCAL, lambda);
 	}
 
-	bool ServerReplaceItemWithNew (ReplaceItemWithNewLambdaBase lambda)
+	bool ServerReplaceItemWithNew(ReplaceItemWithNewLambdaBase lambda)
 	{
 		return ReplaceItemWithNewImpl(InventoryMode.SERVER, lambda);
 	}

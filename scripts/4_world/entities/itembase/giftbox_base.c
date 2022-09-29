@@ -12,8 +12,11 @@ class GiftBox_Base extends Container_Base
 	{
 		if( !super.CanReceiveItemIntoCargo(item) ) {return false;}
 		
-		if(!GetGame().IsDedicatedServer())
-			return IsOpen();
+		if (GameInventory.GetInventoryCheckContext() == InventoryCheckContext.DEFAULT )
+		{
+			if(!GetGame().IsDedicatedServer())
+				return IsOpen();
+		}
 		
 		return true;
 	}

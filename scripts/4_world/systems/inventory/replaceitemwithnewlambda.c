@@ -6,7 +6,7 @@ class ReplaceItemWithNewLambda : ReplaceItemWithNewLambdaBase
 	PlayerBase m_Player;
 	int m_IndexQB;
 
-	void ReplaceItemWithNewLambda (EntityAI old_item, string new_item_type, PlayerBase player)
+	void ReplaceItemWithNewLambda(EntityAI old_item, string new_item_type, PlayerBase player)
 	{
 		m_Player = player;
 		m_IndexQB = -1;
@@ -20,7 +20,7 @@ class ReplaceItemWithNewLambda : ReplaceItemWithNewLambdaBase
 	 *
 	 * @NOTE:	This is supposed to be overriden in derived classes, like for example right now.
 	 **/
-	override void CopyOldPropertiesToNew (notnull EntityAI old_item, EntityAI new_item)
+	override void CopyOldPropertiesToNew(notnull EntityAI old_item, EntityAI new_item)
 	{
 		super.CopyOldPropertiesToNew(old_item, new_item);
 
@@ -30,7 +30,7 @@ class ReplaceItemWithNewLambda : ReplaceItemWithNewLambdaBase
 		}
 	}
 	
-	override void OnSuccess (EntityAI new_item)
+	override void OnSuccess(EntityAI new_item)
 	{
 		super.OnSuccess(new_item);
 		

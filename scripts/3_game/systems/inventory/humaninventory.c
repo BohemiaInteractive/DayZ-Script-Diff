@@ -441,7 +441,7 @@ class HumanInventory : GameInventory
 		return false;
 	}
 
-	override bool ReplaceItemWithNew (InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
+	override bool ReplaceItemWithNew(InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
 	{
 		EntityAI itemInHands = GetEntityInHands();
 		if (itemInHands == lambda.m_OldItem)

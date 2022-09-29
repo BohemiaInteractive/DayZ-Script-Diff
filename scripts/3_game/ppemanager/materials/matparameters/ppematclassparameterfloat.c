@@ -42,6 +42,7 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 		protected bool setting_value_zero = false;
 		
 		protected float float_value_temp = 0.0;
+		protected float float_value_default = 0.0;
 		protected float float_value_total = 0.0;
 		
 		if (p_total == null)
@@ -130,6 +131,9 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 		else
 			float_value_total = m_ValueDefault / m_ValueMax;
 		
+		//float_value_total = Math.InverseLerp(m_ValueMin,m_ValueMax,m_ValueDefault);
+		float_value_default = float_value_total;
+		
 		for ( i = 0; i < m_LayerInfo.Count(); i++ )
 		{
 			if ( override_active )
@@ -149,6 +153,7 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 				break;
 				
 				case PPOperators.ADD:
+					//float_value_total = float_value_total + value - float_value_default;
 					float_value_total = float_value_total + value;
 				break;
 				
@@ -157,6 +162,7 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 				break;
 				
 				case PPOperators.SUBSTRACT:
+					//float_value_total = float_value_total - value + float_value_default;
 					float_value_total = float_value_total - value;
 				break;
 				
@@ -165,6 +171,7 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 				break;
 				
 				case PPOperators.SUBSTRACT_REVERSE:
+					//float_value_total = value - float_value_default - float_value_total;
 					float_value_total = value - float_value_total;
 				break;
 				
@@ -173,6 +180,7 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 				break;
 				
 				case PPOperators.MULTIPLICATIVE:
+					//float_value_total = Math.Lerp(float_value_default, float_value_total, value);
 					float_value_total = float_value_total * value;
 				break;
 				

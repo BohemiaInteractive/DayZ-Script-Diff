@@ -69,6 +69,8 @@ class Land_Underground_WaterReservoir : BuildingBase
 	protected const string SOUND_NAME_UPIPE_SPRINKLING_START	= "WaterObjectUndergroundUnderwaterPipe_Start_SoundSet";
 	protected const string SOUND_NAME_UPIPE_SPRINKLING_END		= "WaterObjectUndergroundUnderwaterPipe_End_SoundSet";
 	protected const string SOUND_NAME_UPIPE_SPRINKLING_LOOP		= "WaterObjectUndergroundUnderwaterPipe_Loop_SoundSet";
+	protected const string SOUND_NAME_WATER_FILL_LOOP			= "WaterObjectUndergroundUnderwaterFill_Loop_SoundSet";
+	protected const string SOUND_NAME_WATER_DRAIN_LOOP			= "WaterObjectUndergroundUnderwaterEmpty_Loop_SoundSet";
 	
 	protected const int PARTICLE_DRAIN_PIPE_MAX_PRESSURE 		= ParticleList.WATER_SPILLING;
 	protected const int PARTICLE_FILL_PIPE_MAX_PRESSURE 		= ParticleList.WATER_SPILLING;
@@ -131,6 +133,8 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	protected bool 						m_PipeUnderwaterSoundRunning
 	protected ref EffectSound 			m_PipeUnderwaterSound;
+	
+	protected ref EffectSound 			m_WaterLevelMovementSound;
 	
 	protected const int PIPE_CREAKING_MIN_TIME_DELAY_MS		= 10000;
 	protected const int PIPE_CREAKING_MAX_TIME_DELAY_MS		= 15000;
@@ -495,6 +499,10 @@ class Land_Underground_WaterReservoir : BuildingBase
 		{
 			return WL_AVERAGE;
 		}
+		else if (pHeight < m_WaterLevelsAvailable[WATER_LEVEL_MAX][1] && pHeight >= m_WaterLevelsAvailable[WATER_LEVEL_AVERAGE][1])
+		{
+			return WL_AVERAGE;
+		}
 
 		return WL_MAX;
 	}
@@ -759,23 +767,10 @@ class Land_Underground_WaterReservoir : BuildingBase
 		
 		return 0.0;
 	}
-	/*
-	protected float AdjustTime(float originalTime)
-	{
-		#ifdef DEVELOPER
-		if (PluginDiagMenu.ENABLE_UNDERGROUND_TIME_ACCEL)
-		{
-			return originalTime * 10;
-		}
-		#endif
-
-		return originalTime;
-	}	
-	*/
 	
 	protected float AdjustTime(float originalTime)
 	{
-		#ifdef DIAG_DEVELOPER
+		#ifdef DEVELOPER
 		float timeAccel = 1;
 		if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.UNDERGROUND_RESERVOIR))
 		{
@@ -808,6 +803,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 		HandleSoundEffectsPipeCreaking();
 		HandleSoundEffectsPipeSprinkling();
 		HandleSoundEffectsUnderwaterPipeSounds();
+		HandleSoundEffectsWaterLevelMovementSounds();
 	}
 	
 	protected void PlayValveManipulationSound()
@@ -928,8 +924,31 @@ class Land_Underground_WaterReservoir : BuildingBase
 				}
 			}
 		}
+	}
 		
-
+	protected void HandleSoundEffectsWaterLevelMovementSounds()
+	{
+		if (m_WaterLevelActual < m_WaterLevelPrev)
+		{
+			if (m_WaterLevelMovementSound == null)
+			{
+				PlaySoundSetAtMemoryPointLooped(m_WaterLevelMovementSound, SOUND_NAME_WATER_DRAIN_LOOP, PIPE_NAME_BROKEN1, 0.0, 0.5);
+			}
+		}
+		else if (m_WaterLevelActual > m_WaterLevelPrev)
+		{
+			if (m_WaterLevelMovementSound == null)
+			{
+				PlaySoundSetAtMemoryPointLooped(m_WaterLevelMovementSound, SOUND_NAME_WATER_FILL_LOOP, PIPE_NAME_BROKEN1, 0.0, 0.5);
+			}	
+		}
+		else if (m_WaterLevelActual == m_WaterLevelPrev)
+		{
+			if (m_WaterLevelMovementSound)
+			{
+				StopSoundSet(m_WaterLevelMovementSound);
+			}
+		}
 	}
 	
 	protected void CleanSoundEffects()

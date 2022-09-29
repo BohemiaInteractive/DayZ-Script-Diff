@@ -128,10 +128,11 @@ class IngameHud extends Hud
 	protected bool								m_HudHideUI;
 	protected bool								m_HudHidePlayer;
 	protected bool								m_HudInventory;
-	protected bool								m_HudState;
+	protected bool								m_HudState; //options-driven global setting
 	protected bool								m_QuickbarHideUI;
 	protected bool								m_QuickbarHidePlayer;
-	protected bool								m_QuickbarState;
+	protected bool								m_QuickbarState; //options-driven global setting
+	protected bool								m_IsQuickbarVisible;
 	protected bool								m_Faded;
 	protected bool								m_ZeroingKeyPressed;
 	
@@ -277,9 +278,7 @@ class IngameHud extends Hud
 		
 		SetLeftStatsVisibility( true );
 		m_HudState = g_Game.GetProfileOption( EDayZProfilesOptions.HUD );
-		#ifndef PLATFORM_CONSOLE
-		m_QuickbarState = g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR);
-		#endif
+		ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR));
 	}
 	
 	void InitBadgesAndNotifiers()
@@ -1014,9 +1013,15 @@ class IngameHud extends Hud
 		return m_Quickbar;
 	}
 	
+	bool IsQuickbarVisible()
+	{
+		return m_IsQuickbarVisible;
+	}
+	
 	void RefreshQuickbarVisibility()
 	{
-		m_QuickbarWidget.Show( !m_QuickbarHideUI && !m_QuickbarHidePlayer && m_QuickbarState );
+		m_IsQuickbarVisible = !m_QuickbarHideUI && !m_QuickbarHidePlayer && m_QuickbarState;
+		m_QuickbarWidget.Show( m_IsQuickbarVisible );
 	}
 	
 	void RefreshHudVisibility()
@@ -1089,10 +1094,6 @@ class IngameHud extends Hud
 	//! global setting; is quickbar visibility allowed?
 	override void ShowQuickBar( bool show )
 	{
-		#ifdef PLATFORM_CONSOLE
-			return;
-		#endif
-		
 		m_QuickbarState = show;
 		//shown by default
 		m_QuickbarHidePlayer = false;

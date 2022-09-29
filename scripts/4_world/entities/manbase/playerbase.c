@@ -1173,6 +1173,11 @@ class PlayerBase extends ManBase
 		
 		return m_UndergroundHandler;
 	}
+	
+	void KillUndergroundHandler()
+	{
+		m_UndergroundHandler = null;
+	}
 	// --------------------------------------------------
 	// User Actions
 	//---------------------------------------------------
@@ -3736,7 +3741,7 @@ class PlayerBase extends ManBase
 			return false;
 		}
 		
-		return IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE | DayZPlayerConstants.STANCEMASK_RAISEDPRONE);
+		return IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE | DayZPlayerConstants.STANCEMASK_RAISEDPRONE) && GetCommand_Move() && !GetCommand_Move().IsOnBack();
 	}
 	
 	override void OnRollStart(bool isToTheRight)
@@ -5726,13 +5731,18 @@ class PlayerBase extends ManBase
 		{
 			BurlapSackCover attachment;
 			Class.CastTo(attachment, GetInventory().FindAttachment(InventorySlots.HEADGEAR));
-			if ( attachment )
+			
+			PPERequester_BurlapSackEffects req;
+			if (Class.CastTo(req,PPERequesterBank.GetRequester(PPERequesterBank.REQ_BURLAPSACK)))
 			{
-				PPERequesterBank.GetRequester(PPERequester_BurlapSackEffects).Start();
-			}
-			else
-			{
-				PPERequesterBank.GetRequester(PPERequester_BurlapSackEffects).Stop();
+				if ( attachment )
+				{
+					req.Start();
+				}
+				else if (req.IsRequesterRunning())
+				{
+					PPERequesterBank.GetRequester(PPERequester_BurlapSackEffects).Stop();
+				}
 			}
 		}
 	}
@@ -7606,10 +7616,6 @@ class PlayerBase extends ManBase
 					}
 				}
 				break;
-/*			case DayZPlayerSyncJunctures.SJ_ACTION_TARGET_START:
-			case DayZPlayerSyncJunctures.SJ_ACTION_TARGET_END:
-				OnBeActionTargetJuncture(pJunctureID,pCtx);
-				break;*/
 			case DayZPlayerSyncJunctures.SJ_GESTURE_REQUEST :
 				m_EmoteManager.OnSyncJuncture(pJunctureID, pCtx);
 				break;
@@ -7639,7 +7645,7 @@ class PlayerBase extends ManBase
 	
 	bool IsItemsToDelete()
 	{
-		return m_ItemsToDelete.Count()>0;
+		return m_ItemsToDelete.Count() > 0;
 	}
 	
 	void SetToDelete(ParamsReadContext pCtx)
@@ -7649,9 +7655,9 @@ class PlayerBase extends ManBase
 		AddItemToDelete(item);
 	}
 	
-	override void AddItemToDelete( EntityAI item )
+	override void AddItemToDelete(EntityAI item)
 	{
-		if( item )
+		if (item)
 		{
 			item.SetPrepareToDelete();
 			m_ItemsToDelete.Insert(item);
@@ -7660,46 +7666,44 @@ class PlayerBase extends ManBase
 	
 	bool CanDeleteItems()
 	{
-		if( IsEmotePlaying() || GetThrowing().IsThrowingAnimationPlaying() || GetDayZPlayerInventory().IsProcessing() || (GetActionManager() && GetActionManager().GetRunningAction()) )
-			return false;
-		
-		return true;
+		return !(IsEmotePlaying() || GetThrowing().IsThrowingAnimationPlaying() || GetDayZPlayerInventory().IsProcessing() || (GetActionManager() && GetActionManager().GetRunningAction()));
 	}
 	
 	override void JunctureDeleteItem(EntityAI item)
 	{
-		DayZPlayerSyncJunctures.SendDeleteItem( this, item );
+		DayZPlayerSyncJunctures.SendDeleteItem(this, item);
 	} 
 	
 	void UpdateDelete()
 	{
 		if (m_ItemsToDelete.Count() > 0)
 		{
-			if(CanDeleteItems())
+			if (CanDeleteItems())
 			{
-				if(GetGame().IsClient() && GetGame().IsMultiplayer())
+				if (GetGame().IsClient() && GetGame().IsMultiplayer())
 				{
-					for(int i = m_ItemsToDelete.Count() - 1; i >= 0 ; i--)
+					InventoryLocation il = new InventoryLocation();
+					for (int i = m_ItemsToDelete.Count() - 1; i >= 0 ; i--)
 					{
-						if(m_ItemsToDelete.Get(i) == NULL)
+						m_ItemsToDelete[i].GetInventory().GetCurrentInventoryLocation(il);
+						if (m_ItemsToDelete.Get(i) == null || (GetItemInHands() == null && il.GetType() == InventoryLocationType.UNKNOWN))
 						{
-							
 							m_ItemsToDelete.Remove(i);
 						}
 					}
 				}
 				else
 				{
-					for(int j = m_ItemsToDelete.Count() - 1; j >= 0 ; j--)
+					for (int j = m_ItemsToDelete.Count() - 1; j >= 0 ; j--)
 					{
-						EntityAI item_to_delete = m_ItemsToDelete.Get(j);
-						if( item_to_delete == NULL)
+						EntityAI itemToDelete = m_ItemsToDelete.Get(j);
+						if (itemToDelete == null)
 						{
 							m_ItemsToDelete.Remove(j);
 						}
 						else
 						{
-							item_to_delete.Delete();
+							itemToDelete.Delete();
 							m_ItemsToDelete.Remove(j);
 						}
 					}
@@ -7709,30 +7713,7 @@ class PlayerBase extends ManBase
 			}
 		}
 	}
-	
-	
-/*	void OnBeActionTargetJuncture(int pJunctureID, ParamsReadContext pCtx)
-	{
-		if (!GetGame().IsDedicatedServer() )
-		{
-			int action;
-			PlayerBase player;
-			
-			switch ( pJunctureID )
-			{
-				case DayZPlayerSyncJunctures.SJ_ACTION_TARGET_START:
-					pCtx.Read(action);
-					pCtx.Read(player);
-					break;
-				case DayZPlayerSyncJunctures.SJ_ACTION_TARGET_END:
-					pCtx.Read(action);
-					pCtx.Read(player);
-					break;
-			}
-		}
-	
-	}
-	*/
+
 	override bool	HeadingModel(float pDt, SDayZPlayerHeadingModel pModel)
 	{
 		//! during fullbody gestures - disables character turning
@@ -8671,7 +8652,7 @@ class PlayerBase extends ManBase
 		{
 			//HOTFIX
 			return PredictiveDropEntity(item);
-			
+
 			if (entity.ConfigGetString("physLayer") != "item_large" && heavy_item_only)
 			{
 				return PredictiveDropEntity(item);

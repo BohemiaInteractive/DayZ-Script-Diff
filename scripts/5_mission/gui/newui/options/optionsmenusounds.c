@@ -319,6 +319,14 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		Revert();
 	}
 	
+	void ToggleDependentOptions(int mode, bool state)
+	{
+	}
+	
+	void InitDependentOptionsVisibility()
+	{
+	}
+	
 	void UpdateMaster(float value)
 	{
 		m_MasterOption.WriteValue(value);

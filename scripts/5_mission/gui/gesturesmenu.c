@@ -281,6 +281,7 @@ class GesturesMenu extends UIScriptedMenu
 		{
 			GetGestureItems( m_GestureItems, GestureCategories.CATEGORIES );
 			m_CurrentCategory = -1;
+			instance.m_IsCategorySelected = false;
 		}
 		
 		CreateGestureContent();
@@ -483,7 +484,25 @@ class GesturesMenu extends UIScriptedMenu
 
 	void OnMouseExecute( Widget w )
 	{
-		ExecuteSelectedCategory( w );
+	}
+	
+	//! LMB
+	void OnMousePressLeft( Widget w )
+	{
+		if (instance.m_IsCategorySelected)
+		{
+			ExecuteSelectedItem();
+		}
+		else
+		{
+			ExecuteSelectedCategory( w );
+		}
+	}
+	
+	//! RMB
+	void OnMousePressRight( Widget w )
+	{
+		BackOneLevel();
 	}
 			
 	//Controller
@@ -499,26 +518,23 @@ class GesturesMenu extends UIScriptedMenu
 
 	void OnControllerExecute( Widget w )
 	{
-		ExecuteSelectedCategory( w );
 	}
 	
 	void OnControllerPressSelect( Widget w )
 	{
-		ExecuteSelectedItem();
+		if (instance.m_IsCategorySelected)
+		{
+			ExecuteSelectedItem();
+		}
+		else
+		{
+			ExecuteSelectedCategory( w );
+		}
 	}
 	
 	void OnControllerPressBack( Widget w )
 	{
-	}		
-	
-	//Gestures Menu
-	protected void OnMenuRelease()
-	{
-		//execute on release (mouse only)
-		if ( RadialMenu.GetInstance().IsUsingMouse() )
-		{
-			ExecuteSelectedItem();
-		}
+		BackOneLevel();
 	}
 	
 	//Actions
@@ -562,18 +578,18 @@ class GesturesMenu extends UIScriptedMenu
 			}
 			*/
 		}
-	}	
+	}
 	
 	protected void ExecuteSelectedCategory( Widget w )
 	{
 		//only when category is not picked yet
-		if ( w && !instance.m_IsCategorySelected )
+		if ( w )
 		{
 			GestureMenuItem gesture_item;
 			w.GetUserData( gesture_item );
 			
 			//is category
-			if ( gesture_item.GetCategory() == GestureCategories.CATEGORIES )
+			if ( !instance.m_IsCategorySelected && gesture_item.GetCategory() == GestureCategories.CATEGORIES )
 			{
 				//set category selected
 				instance.m_IsCategorySelected = true;
@@ -586,6 +602,10 @@ class GesturesMenu extends UIScriptedMenu
 				//update category name text
 				UpdateCategoryName( gesture_item.GetName() );
 			}
+			/*else
+			{
+				ExecuteSelectedItem();
+			}*/
 		}
 	}
 	
@@ -609,6 +629,13 @@ class GesturesMenu extends UIScriptedMenu
 				}
 			}
 		}
+	}
+	
+	//only moves to the GestureCategories.CATEGORIES for now
+	protected void BackOneLevel()
+	{
+		RefreshGestures();
+		UpdateCategoryName( "" );
 	}
 	
 	bool IsMenuClosing()
@@ -637,5 +664,11 @@ class GesturesMenu extends UIScriptedMenu
 			toolbar_select.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIRadialMenuStickHelper", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 			//toolbar_back.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));	
 		}
+	}
+	
+//-----------------------------------------------------------------
+	//!DEPRECATED
+	protected void OnMenuRelease()
+	{
 	}
 }	

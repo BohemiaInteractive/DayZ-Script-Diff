@@ -30,6 +30,14 @@ class CAContinuousFill : CAContinuousBase
 			m_SpentUnits.param1 = 0;
 		}
 		
+		float throughputCoef = action_data.m_MainItem.GetLiquidThroughputCoef();
+		EntityAI entity;
+		if (action_data.m_Target && action_data.m_Target.GetObject() && Class.CastTo(entity,action_data.m_Target.GetObject()))
+		{
+			throughputCoef = Math.Min(throughputCoef,entity.GetLiquidThroughputCoef());
+		}
+		m_QuantityFilledPerSecond *= throughputCoef;
+		
 		m_ItemQuantity = action_data.m_MainItem.GetQuantity();
 		m_TargetUnits = action_data.m_MainItem.GetQuantityMax() - action_data.m_MainItem.GetQuantity();	
 		m_AdjustedQuantityFilledPerSecond = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_QuantityFilledPerSecond, m_Action.GetSpecialtyWeight(), true );

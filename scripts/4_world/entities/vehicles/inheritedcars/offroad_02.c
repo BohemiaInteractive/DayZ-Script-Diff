@@ -6,7 +6,7 @@ class Offroad_02 extends CarScript
 
 	void Offroad_02()
 	{
-		m_dmgContactCoef		= 0.130;
+		m_dmgContactCoef		= 0.0365;
 
 		m_EngineStartOK			= "Offroad_02_engine_start_SoundSet";
 		m_EngineStartBattery	= "Offroad_02_engine_failed_start_battery_SoundSet";
@@ -78,6 +78,11 @@ class Offroad_02 extends CarScript
 	override int GetAnimInstance()
 	{
 		return VehicleAnimInstances.HMMWV;
+	}
+	
+	override float GetTransportCameraDistance()
+	{
+		return 5.1;
 	}
 
 	override int GetSeatAnimationType(int posIdx)

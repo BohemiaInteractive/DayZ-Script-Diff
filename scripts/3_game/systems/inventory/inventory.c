@@ -24,11 +24,18 @@ enum InventoryMode
 	SERVER,			///< 'Server' mode operation is required if and only if the operation runs only on server (creates and/or destroys objects)
 };
 
+enum InventoryCheckContext
+{
+	DEFAULT,
+	SYNC_CHECK,
+}
+
 /**@class		GameInventory
  * @brief		script counterpart to engine's class Inventory
  **/
 class GameInventory
-{	
+{
+	protected static int m_inventory_check_context = InventoryCheckContext.DEFAULT;	
 //-------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///@{ Engine native functions
@@ -304,6 +311,20 @@ class GameInventory
 	 * @return true if can be moved, false otherwise
 	 **/
 	static proto native bool LocationCanMoveEntity(notnull InventoryLocation src, notnull InventoryLocation dst);
+	
+	static int GetInventoryCheckContext()
+	{
+		return m_inventory_check_context;
+	}
+	
+	static bool LocationCanMoveEntitySyncCheck(notnull InventoryLocation src, notnull InventoryLocation dst)
+	{
+		m_inventory_check_context = InventoryCheckContext.SYNC_CHECK;
+		bool result = LocationCanMoveEntity(src, dst);
+		m_inventory_check_context = InventoryCheckContext.DEFAULT;
+		return result;
+		
+	}
 	/**
 	 * @fn		LocationCanAddEntity
 	 * @brief	query the entity at the specific inventory location

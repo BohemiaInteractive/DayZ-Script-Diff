@@ -332,6 +332,14 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 		#endif
 	}
 	
+	void ToggleDependentOptions(int mode, bool state)
+	{
+	}
+	
+	void InitDependentOptionsVisibility()
+	{
+	}
+	
 	void RefreshCustom()
 	{
 		#ifdef PLATFORM_CONSOLE

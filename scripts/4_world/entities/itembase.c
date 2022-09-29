@@ -328,7 +328,15 @@ class ItemBase extends InventoryItem
 		{
 			Debug.ActionLog(action.ToString() + " -> " + ai, this.ToString() , "n/a", "Add action" );
 		}
-		action_array.Insert(action);
+		
+		if (action_array.Find(action) != -1)
+		{
+			Debug.Log("Action " + action.Type() + " already added to " + this + ", skipping!");
+		}
+		else
+		{
+			action_array.Insert(action);
+		}
 	}
 	
 	void RemoveAction(typename actionName)

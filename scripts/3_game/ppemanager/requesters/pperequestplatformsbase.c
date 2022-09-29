@@ -86,10 +86,14 @@ class PPERequesterBase
 		
 		data.m_BoolTarget = val;
 		data.m_BoolLast = data.m_BoolCurrent;
-		data.SetSettingDefaultValues(false);
-		data.SetDataActive(true);
 		
-		QueueValuesSend();
+		if (data.m_BoolTarget != data.m_BoolCurrent || data.IsSettingDefaultValues())
+		{
+			data.SetSettingDefaultValues(false);
+			data.SetDataActive(true);
+			
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueBool | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -101,9 +105,12 @@ class PPERequesterBase
 		
 		PPERequestParamDataBool data = PPERequestParamDataBool.Cast(GetRequestData(mat_id,param_idx,PPEConstants.VAR_TYPE_BOOL));
 		data.m_BoolLast = data.m_BoolCurrent;
-		data.SetSettingDefaultValues(true);
-		
-		QueueValuesSend();
+		if (!data.IsSettingDefaultValues())
+		{
+			data.SetSettingDefaultValues(true);
+			
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueBoolDefault | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -118,10 +125,13 @@ class PPERequesterBase
 		
 		data.m_IntTarget = val;
 		data.m_IntLast = data.m_IntCurrent;
-		data.SetSettingDefaultValues(false);
-		data.SetDataActive(true);
-		
-		QueueValuesSend();
+		if (data.m_IntTarget != data.m_IntCurrent || data.IsSettingDefaultValues())
+		{
+			data.SetSettingDefaultValues(false);
+			data.SetDataActive(true);
+			
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueInt | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -133,9 +143,12 @@ class PPERequesterBase
 		
 		PPERequestParamDataInt data = PPERequestParamDataInt.Cast(GetRequestData(mat_id,param_idx,PPEConstants.VAR_TYPE_INT));
 		data.m_IntLast = data.m_IntCurrent;
-		data.SetSettingDefaultValues(true);
-		
-		QueueValuesSend();
+		if (!data.IsSettingDefaultValues())
+		{
+			data.SetSettingDefaultValues(true);
+			
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueIntDefault | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -152,10 +165,13 @@ class PPERequesterBase
 		data.m_FloatTarget = RelativizeValue(val,PPEConstants.VAR_TYPE_FLOAT,mat_id,param_idx,relative);
 		data.m_FloatLast = data.m_FloatCurrent;
 		data.m_FloatStart = data.m_FloatCurrent;
-		data.SetSettingDefaultValues(false);
-		data.SetDataActive(true);
-		
-		QueueValuesSend();
+		if (data.m_FloatTarget != data.m_FloatCurrent || data.IsSettingDefaultValues())
+		{
+			data.SetSettingDefaultValues(false);
+			data.SetDataActive(true);
+			
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueFloat | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -169,9 +185,12 @@ class PPERequesterBase
 		data.m_FloatFormerTarget = data.m_FloatTarget;
 		data.m_FloatLast = data.m_FloatCurrent;
 		data.m_FloatStart = data.m_FloatCurrent;
-		data.SetSettingDefaultValues(true);
-		
-		QueueValuesSend();
+		if (!data.IsSettingDefaultValues())
+		{
+			data.SetSettingDefaultValues(true);
+			
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueFloatDefault | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -189,10 +208,13 @@ class PPERequesterBase
 		
 		data.m_ColorLast = data.m_ColorCurrent;
 		data.m_ColorStart = data.m_ColorCurrent;
-		data.SetSettingDefaultValues(false);
-		data.SetDataActive(true);
-				
-		QueueValuesSend();
+		//if (data.m_ColorTarget != data.m_ColorCurrent)
+		{
+			data.SetSettingDefaultValues(false);
+			data.SetDataActive(true);
+					
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueColor | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -206,9 +228,12 @@ class PPERequesterBase
 		data.m_ColorFormerTarget = data.m_ColorTarget;
 		data.m_ColorLast = data.m_ColorCurrent;
 		data.m_ColorStart = data.m_ColorCurrent;
-		data.SetSettingDefaultValues(true);
-		
-		QueueValuesSend();
+		if (!data.IsSettingDefaultValues())
+		{
+			data.SetSettingDefaultValues(true);
+			
+			QueueValuesSend();
+		}
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueColorDefault | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
@@ -339,11 +364,11 @@ class PPERequesterBase
 		SetDefaultValuesAll();
 	}
 	
-	//! converts all values used to relative values (if not relative already) //TODO - remove relativization (WB min/max not actually min/max!!)
+	//! converts all values used to relative values (if not relative already)
 	protected float RelativizeValue(float value, int var_type, int mat_id, int param_id, bool relative)
 	{
 		float ret = value;
-		if (!relative)
+		if (!relative) //if not already relative...
 		{
 			switch (var_type)
 			{

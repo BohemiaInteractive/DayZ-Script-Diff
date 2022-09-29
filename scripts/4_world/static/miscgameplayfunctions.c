@@ -663,25 +663,25 @@ class MiscGameplayFunctions
 	{
 		bool type;
 		
-		if( tool )
+		if ( tool )
 		{
 			//is unrestrain and not struggle
 			type = tool.ConfigGetBool("RestrainUnlockType");
 		}
 		string new_item_name = current_item.ConfigGetString( "OnRestrainChange");
 		
-		if( new_item_name != "" )
+		if ( new_item_name != "" )
 		{
-			if( player_target )
+			if ( player_target )
 			{
 				if (player_target.IsAlive())
-					MiscGameplayFunctions.TurnItemIntoItemEx(player_target, new ReplaceAndDestroyLambda(current_item, new_item_name, player_target, type));
+					MiscGameplayFunctions.TurnItemIntoItemEx(player_target, new ReplaceAndDestroyLambdaEx(current_item, new_item_name, player_target, type));
 				else
 					MiscGameplayFunctions.TurnItemIntoItemEx(player_source, new DestroyItemInCorpsesHandsAndCreateNewOnGndLambda(current_item, new_item_name, player_target, type));
 			}
 			else
 			{
-				MiscGameplayFunctions.TurnItemIntoItemEx(player_target, new ReplaceAndDestroyLambda(current_item, new_item_name, player_target, type));
+				MiscGameplayFunctions.TurnItemIntoItemEx(player_target, new ReplaceAndDestroyLambdaEx(current_item, new_item_name, player_target, type));
 			}
 		}
 		else
@@ -698,7 +698,7 @@ class MiscGameplayFunctions
 	//! Check if player direction(based on cone of defined angle) is oriented to target position
 	static bool IsPlayerOrientedTowardPos(notnull DayZPlayerImplement player, vector target_pos, float cone_angle)
 	{
-		if(player)
+		if (player)
 		{
 			vector player_dir = player.GetDirection();
 			vector to_target_dir = target_pos - player.GetPosition();
@@ -1613,7 +1613,7 @@ class MiscGameplayFunctions
 class DestroyItemInCorpsesHandsAndCreateNewOnGndLambda : ReplaceAndDestroyLambda
 {
 	// @NOTE m_Player == target player - i.e. restrained one
-	void DestroyItemInCorpsesHandsAndCreateNewOnGndLambda (EntityAI old_item, string new_item_type, PlayerBase player, bool destroy = false)
+	void DestroyItemInCorpsesHandsAndCreateNewOnGndLambda(EntityAI old_item, string new_item_type, PlayerBase player, bool destroy = false)
 	{
 		InventoryLocation gnd = new InventoryLocation;
 		vector mtx[4];
@@ -1625,7 +1625,7 @@ class DestroyItemInCorpsesHandsAndCreateNewOnGndLambda : ReplaceAndDestroyLambda
 		OverrideNewLocation(gnd);
 	}
 	
-	protected override void RemoveOldItemFromLocation ()
+	protected override void RemoveOldItemFromLocation()
 	{
 		super.RemoveOldItemFromLocation();
 		m_Player.GetHumanInventory().OnEntityInHandsDestroyed(m_OldLocation);

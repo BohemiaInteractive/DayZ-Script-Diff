@@ -39,6 +39,7 @@ class AlarmLight : SpotlightLight
 		SetLifetime(1000);
 		SetDisableShadowsWithinRadius(-1);
 		SetFadeOutTime(1);
+		SetCastShadow(false);
 		m_FadeInTime = 0.25;
 	}
 }
@@ -53,7 +54,7 @@ class Land_Underground_EntranceBase : House
 	EUndegroundEntranceState m_DoorStatePrev 	= EUndegroundEntranceState.UNINITIALIZED;
 	float 									m_AnimPhase;
 	ref AnimationTimer 						m_AnimTimerDoorServer;
-	bool 									m_NavmeshNeedsUpdate;
+	ref Timer								m_NavmeshTimer;
 	ref array<Land_Underground_Panel> 		m_ConnectedPanels;
 	EUndegroundDoorType						m_DoorType;
 
@@ -104,6 +105,11 @@ class Land_Underground_EntranceBase : House
 		OpenServer();
 	}
 	
+	void NavmeshUpdate()
+	{
+		GetGame().UpdatePathgraphRegionByObject(this);
+	}
+	
 	void OnUpdateClient(float timeSlice);
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
@@ -116,24 +122,6 @@ class Land_Underground_EntranceBase : House
 	void OnUpdateServer()
 	{
 		m_AnimPhase = m_AnimTimerDoorServer.GetValue() / AdjustTime(GetOpeningTime());// make 0..1
-		
-		if ( m_DoorState == EUndegroundEntranceState.OPENING_D)
-		{
-			if (m_NavmeshNeedsUpdate && m_AnimPhase > 0.35)
-			{
-				GetGame().UpdatePathgraphRegionByObject(this);
-				m_NavmeshNeedsUpdate = false;
-			}
-		}
-		else if ( m_DoorState == EUndegroundEntranceState.CLOSING_C)
-		{
-			if (m_NavmeshNeedsUpdate && m_AnimPhase < 0.35)
-			{
-				GetGame().UpdatePathgraphRegionByObject(this);
-				m_NavmeshNeedsUpdate = false;
-			}
-		}
-		
 		SetAnimationPhaseNow("EntranceDoor",m_AnimPhase);
 		SetSynchDirty();
 	}
@@ -204,16 +192,14 @@ class Land_Underground_EntranceBase : House
 	
 	void OnDoorStateChangedClient(EUndegroundEntranceState newState, EUndegroundEntranceState prevState)
 	{
-		//Print("OnDoorStateChangedClient " + typename.EnumToString(EUndegroundEntranceState, newState));
-		
-		if (newState == EUndegroundEntranceState.CLOSED)
+		if (newState > EUndegroundEntranceState.CLOSED)
 		{
-			ClearEventMask(EntityEvent.POSTSIMULATE);
-			CleanUpOnClosedClient();
+			SetEventMask(EntityEvent.POSTSIMULATE);
 		}
 		else
 		{
-			SetEventMask(EntityEvent.POSTSIMULATE);
+			ClearEventMask(EntityEvent.POSTSIMULATE);
+			CleanUpOnClosedClient();
 		}
 		
 		HandleAudioPlayback(newState, prevState);
@@ -380,11 +366,14 @@ class Land_Underground_Entrance : Land_Underground_EntranceBase
 			case EUndegroundEntranceState.OPENING_D:
 				m_AnimTimerDoorServer = new AnimationTimer();
 				m_AnimTimerDoorServer.Run(AdjustTime(GetOpeningTime()), this, "OnUpdateServer", "OnFinishedTimerServer",0, false,/*1/ AdjustTime(1)*/ 1);
-				m_NavmeshNeedsUpdate = true;
+				m_NavmeshTimer = new Timer();
+				m_NavmeshTimer.Run(3, this, "NavmeshUpdate", NULL, true);
 				RequestLatentTransition(AdjustTime(GetOpeningTime()));
 			break;
 			case EUndegroundEntranceState.OPENING_E:
 				m_AnimTimerDoorServer.Stop();
+				NavmeshUpdate();
+				m_NavmeshTimer = null;
 				RequestLatentTransition(AdjustTime(3));
 			break;
 			case EUndegroundEntranceState.OPENING_F:
@@ -400,11 +389,14 @@ class Land_Underground_Entrance : Land_Underground_EntranceBase
 				RequestLatentTransition(AdjustTime(3));
 			break;
 			case EUndegroundEntranceState.CLOSING_C:
-				m_NavmeshNeedsUpdate = true;
+				m_NavmeshTimer = new Timer();
+				m_NavmeshTimer.Run(3, this, "NavmeshUpdate", NULL, true);
 				m_AnimTimerDoorServer.Run(0, this, "OnUpdateServer", "OnFinishedTimerServer", AdjustTime(GetOpeningTime()),false, /*1/ AdjustTime(1)*/ 1);
 				RequestLatentTransition(AdjustTime(GetOpeningTime()));
 			break;
 			case EUndegroundEntranceState.CLOSING_D:
+				NavmeshUpdate();
+				m_NavmeshTimer = null;
 				RequestLatentTransition(AdjustTime(2));
 			break;
 			case EUndegroundEntranceState.CLOSING_E:
@@ -570,14 +562,12 @@ class Land_Underground_Entrance : Land_Underground_EntranceBase
 		if ( CheckShouldPlayPersistent(EUndegroundEntranceState.OPENING_A, EUndegroundEntranceState.OPENING_F) || CheckShouldPlayPersistent(EUndegroundEntranceState.CLOSING_A, EUndegroundEntranceState.CLOSING_F))
 		{
 			m_AlarmLight = AlarmLight.Cast( ScriptedLightBase.CreateLight( AlarmLight, GetLightPosition()) );
-			SetAnimationPhase("EntranceLight",1);
 		}
 		if ( newState == EUndegroundEntranceState.CLOSING_G || newState == EUndegroundEntranceState.CLOSED || newState == EUndegroundEntranceState.OPENING_G )
 		{
 			if (m_AlarmLight)
 			{
 				m_AlarmLight.Destroy();
-				SetAnimationPhaseNow("EntranceLight",0);
 			}
 		}
 	}

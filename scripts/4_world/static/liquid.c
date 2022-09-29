@@ -43,7 +43,7 @@ class Liquid
 		ItemBase source = source_ent;
 		ItemBase target = target_ent;
 		
-		Debug.Log("Transfer, source:"+source.ToString()+" target: "+target.ToString(), "LiquidTransfer");
+//		Debug.Log("Transfer, source:"+source.ToString()+" target: "+target.ToString(), "LiquidTransfer");
 		
 		float source_quantity 	= source.GetQuantity();
 		float target_quantity 	= target.GetQuantity();
@@ -54,10 +54,10 @@ class Liquid
 		
 		float available_capacity = target.GetQuantityMax() - target_quantity;
 		
-		Debug.Log("target_mask ="+target_mask.ToString(), "LiquidTransfer");
-		Debug.Log("source_mask ="+source_mask.ToString(), "LiquidTransfer");
-		Debug.Log("source_liquid_type ="+source_liquid_type.ToString(), "LiquidTransfer");
-		Debug.Log("target_liquid_type ="+target_liquid_type.ToString(), "LiquidTransfer");
+//		Debug.Log("target_mask ="+target_mask.ToString(), "LiquidTransfer");
+//		Debug.Log("source_mask ="+source_mask.ToString(), "LiquidTransfer");
+//		Debug.Log("source_liquid_type ="+source_liquid_type.ToString(), "LiquidTransfer");
+//		Debug.Log("target_liquid_type ="+target_liquid_type.ToString(), "LiquidTransfer");
 		
 		//target.GetBloodType(source_liquid_type);//override target liquidType
 		float quantity_to_transfer;

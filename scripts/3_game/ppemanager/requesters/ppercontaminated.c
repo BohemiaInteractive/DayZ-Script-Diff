@@ -21,8 +21,6 @@ class PPERequester_ContaminatedAreaTint extends PPERequester_GameplayBase
 		m_FadeIn = true;
 		m_FadeOut = false;
 		
-		//SetTargetValueColor(PostProcessEffectType.Glow,PPEGlow.PARAM_COLORIZATIONCOLOR,{0.858, 0.85, 0.560,0.0},PPEGlow.L_23_TOXIC_TINT,PPOperators.MULTIPLICATIVE);
-		//SetTargetValueFloat(PPEExceptions.EXPOSURE,PPEExposureNative.PARAM_INTENSITY,false,7,PPEExposureNative.L_0_NVG_GOGGLES,PPOperators.ADD);
 		SetTargetValueFloat(PostProcessEffectType.FilmGrain,PPEFilmGrain.PARAM_SHARPNESS,false,10.0,PPEFilmGrain.L_1_TOXIC_TINT,PPOperators.HIGHEST);
 		SetTargetValueFloat(PostProcessEffectType.FilmGrain,PPEFilmGrain.PARAM_GRAINSIZE,false,1.0,PPEFilmGrain.L_2_TOXIC_TINT,PPOperators.LOWEST);
 	}

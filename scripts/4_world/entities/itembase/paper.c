@@ -1,8 +1,3 @@
-
-//typedef Param3<string, string, int> 			WritePaperParams; //message, pen, font
-//typedef Param1<array<ref WritePaperParams>> 	PaperParams;
-//-----------------------
-
 class Paper extends ItemBase
 {
 	protected ref WrittenNoteData m_NoteContents;
@@ -12,13 +7,11 @@ class Paper extends ItemBase
 		m_NoteContents = new WrittenNoteData(this);
 	}
 	
-	void ~Paper()
-	{
-	}
+	void ~Paper() {}
 	
 	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{   
-		if ( !super.OnStoreLoad(ctx, version) )
+		if (!super.OnStoreLoad(ctx, version))
 			return false;
 		
 		if (version >= 108 && !ctx.Read(m_NoteContents))
@@ -47,38 +40,31 @@ class Paper extends ItemBase
 		return true;
 	}
 	
-	override bool CanBeIgnitedBy( EntityAI igniter = NULL )
+	override bool CanBeIgnitedBy(EntityAI igniter = null)
 	{
-		if ( GetHierarchyParent() ) return false;
-		
-		return true;
+		return !GetHierarchyParent();
 	}
 	
-	override bool CanIgniteItem( EntityAI ignite_target = NULL )
+	override bool CanIgniteItem(EntityAI ignite_target = null)
 	{
 		return false;
 	}
 	
-	override void OnIgnitedTarget( EntityAI ignited_item )
-	{
-	}
+	override void OnIgnitedTarget(EntityAI ignited_item) {}
 	
-	override void OnIgnitedThis( EntityAI fire_source )
+	override void OnIgnitedThis(EntityAI fire_source)
 	{
-		Fireplace.IgniteEntityAsFireplace( this, fire_source );
+		Fireplace.IgniteEntityAsFireplace(this, fire_source);
 	}
 
-	override bool IsThisIgnitionSuccessful( EntityAI item_source = NULL )
+	override bool IsThisIgnitionSuccessful(EntityAI item_source = null)
 	{
-		return Fireplace.CanIgniteEntityAsFireplace( this );
+		return Fireplace.CanIgniteEntityAsFireplace(this);
 	}
 	
 	override void SetActions()
 	{
 		super.SetActions();
-		
-		//AddAction(ActionReadPaper);
-		//AddAction(ActionWritePaper);
 
 		AddAction(ActionCreateIndoorFireplace);
 		AddAction(ActionCreateIndoorOven);

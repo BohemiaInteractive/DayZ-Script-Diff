@@ -58,7 +58,6 @@ class Land_Underground_Stairs_Exit : Land_Underground_EntranceBase
 			case EUndegroundEntranceState.CLOSING_A:
 				m_AnimTimerDoorServer = new AnimationTimer();
 				m_AnimTimerDoorServer.Run(0, this, "OnUpdateServer", "OnFinishedTimerServer", GetOpeningTime(), false,1/ AdjustTime(1));
-				m_NavmeshNeedsUpdate = true;
 				RequestLatentTransition(AdjustTime(3));
 			break;
 			case EUndegroundEntranceState.CLOSING_B:
