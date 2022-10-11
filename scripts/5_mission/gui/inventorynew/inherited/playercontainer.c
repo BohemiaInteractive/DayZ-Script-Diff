@@ -439,7 +439,7 @@ class PlayerContainer: CollapsibleContainer
 		}
 	}
 	
-	void ExpandCollapseContainer()
+	override void ExpandCollapseContainer()
 	{
 		if( m_PlayerAttachmentsContainer.IsActive() )
 		{
@@ -1053,21 +1053,11 @@ class PlayerContainer: CollapsibleContainer
 		item.GetInventory().GetCurrentInventoryLocation( il );
 		SlotsIcon icon = m_InventorySlots.Get( il.GetSlot() );
 		ClosableContainer c = ClosableContainer.Cast( m_ShowedItems.Get( item ) );
-		if( c == null )
+		if (c)
 		{
-			return;
+			c.Toggle();
+			Refresh();
 		}
-
-		if( c.IsOpened() )
-		{
-			c.Close();
-		}
-		else
-		{
-			c.Open();
-		}
-		
-		Refresh();
 	}
 
 	// Mouse button UP or Call other fn

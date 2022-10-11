@@ -16,7 +16,38 @@ class ActionLightItemOnFireWithBlowtorch : ActionLightItemOnFire
 			return false;
 		}
 		
-		return super.ActionCondition(player, target, item);
+		ItemBase target_item = ItemBase.Cast(target.GetObject());	
+		if (target_item && item)
+		{
+			// when igniting item on the ground with igniter in hands
+			if (!target_item.IsIgnited() && !IsItemInCargoOfSomething(target_item) && target_item.CanBeIgnitedBy(item))
+			{
+				// oven stage of standard fireplace
+				if (target_item.IsKindOf("Fireplace"))
+				{
+					if (Fireplace.Cast(target_item).IsOven())
+					{
+						return true;
+					}
+					
+					if (Fireplace.CanIgniteEntityAsFireplace(target_item))
+					{
+						return true;
+					}
+
+					return false;
+				}
+				
+				return true;
+			}
+			// when igniting item in hands from something on ground
+			else if (!item.IsIgnited() && !IsItemInCargoOfSomething(item) && target_item.CanIgniteItem(item) && item.CanBeIgnitedBy(target_item))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	override void OnUpdate(ActionData action_data)

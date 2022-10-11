@@ -101,7 +101,7 @@ class RightArea: Container
 		return m_PlayerContainer.IsPlayerEquipmentActive();
 	}
 	
-	void ExpandCollapseContainer()
+	override void ExpandCollapseContainer()
 	{
 		m_PlayerContainer.ExpandCollapseContainer();
 	}
@@ -153,14 +153,6 @@ class RightArea: Container
 		CheckScrollbarVisibility();
 	}
 	
-		
-	override void MoveGridCursor(int direction)
-	{
-		super.MoveGridCursor(direction);
-		m_ProcessGridMovement = true;
-		UpdateSelectionIcons();
-	}
-	
 	void MoveUpDownIcons()
 	{
 		if (m_UpIcon && m_DownIcon)
@@ -193,43 +185,16 @@ class RightArea: Container
 		/*else
 		{
 			ErrorEx("up/down icons not present!");
-		}*/
+		}
+		#else
+		m_ScrollWidget.Update();
+		#endif*/
+		
 	}
-
-	void ScrollToActiveContainer()
+	
+	override ScrollWidget GetScrollWidget()
 	{
-		if (m_ProcessGridMovement)
-		{
-			float x, y, y_s;
-			m_ScrollWidget.GetScreenPos( x, y );
-			m_ScrollWidget.GetScreenSize( x, y_s );
-			float target_pos = y + y_s;
-			float f_y,f_h;
-			float amount;
-			f_y = GetFocusedContainerYScreenPos( true );
-			f_h = GetFocusedContainerHeight( true );
-			float next_pos	= f_y + f_h;
-			
-			if( next_pos > ( y + y_s ) )
-			{
-				amount	= y + f_y;
-				m_ScrollWidget.VScrollToPos( m_ScrollWidget.GetVScrollPos() + amount + 2 );
-			}
-			else if( f_y < y )
-			{
-				amount = f_y - y;
-				m_ScrollWidget.VScrollToPos( m_ScrollWidget.GetVScrollPos() + amount - 2 );
-			}
-			m_ProcessGridMovement = false;
-		}
-		else if (!m_ScrollWidget.IsScrollbarVisible())
-		{
-			m_ScrollWidget.VScrollToPos01( 0.0 );
-		}
-		else if (m_ScrollWidget.GetVScrollPos01() > 1.0)
-		{
-			m_ScrollWidget.VScrollToPos01( 1.0 );
-		}
+		return m_ScrollWidget;
 	}
 	
 	override void UpdateSelectionIcons()
@@ -257,14 +222,5 @@ class RightArea: Container
 		float cont_screen_pos		= GetFocusedContainerYScreenPos();
 		float cont_screen_height	= GetFocusedContainerHeight();
 		return cont_screen_pos - y + cont_screen_height;
-	}
-	
-	void CheckScrollbarVisibility()
-	{
-		m_MainWidget.Update();
-		m_RootWidget.Update();
-		m_ScrollWidget.Update();
-		
-		UpdateSelectionIcons();
 	}
 }

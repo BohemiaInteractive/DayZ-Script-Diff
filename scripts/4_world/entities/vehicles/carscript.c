@@ -152,7 +152,6 @@ class CarScript extends Car
 	protected bool m_HeadlightsOn;
 	protected bool m_HeadlightsState;
 	protected bool m_BrakesArePressed;
-	protected bool m_HandbrakeActive;
 	protected bool m_RearLightType;
 	
 	protected bool m_ForceUpdateLights;
@@ -223,7 +222,6 @@ class CarScript extends Car
 		
 		RegisterNetSyncVariableBool("m_HeadlightsOn");
 		RegisterNetSyncVariableBool("m_BrakesArePressed");
-		RegisterNetSyncVariableBool("m_HandbrakeActive");
 		RegisterNetSyncVariableBool("m_ForceUpdateLights");
 		RegisterNetSyncVariableBoolSignal("m_PlayCrashSoundLight");
 		RegisterNetSyncVariableBoolSignal("m_PlayCrashSoundHeavy");
@@ -402,16 +400,16 @@ class CarScript extends Car
 		SEffectManager.DestroyEffect(m_exhaustFx);
 		SEffectManager.DestroyEffect(m_engineFx);
 			
-		if ( m_Headlight )
+		if (m_Headlight)
 			m_Headlight.Destroy();
 			
-		if ( m_RearLight )
+		if (m_RearLight)
 			m_RearLight.Destroy();
 			
-		SEffectManager.DestroyEffect( m_CrashSoundLight );			
-		SEffectManager.DestroyEffect( m_CrashSoundHeavy );			
-		SEffectManager.DestroyEffect( m_WindowSmall );			
-		SEffectManager.DestroyEffect( m_WindowLarge );
+		SEffectManager.DestroyEffect(m_CrashSoundLight);
+		SEffectManager.DestroyEffect(m_CrashSoundHeavy);
+		SEffectManager.DestroyEffect(m_WindowSmall);
+		SEffectManager.DestroyEffect(m_WindowLarge);
 		CleanupSound(m_CarHornSoundEffect);
 	}
 	
@@ -664,7 +662,7 @@ class CarScript extends Car
 			}
 			#endif
 		}
-
+		
 		if ( m_Time >= GameConstants.CARS_FLUIDS_TICK )
 		{
 			m_Time = 0;
@@ -742,35 +740,34 @@ class CarScript extends Car
 				}
 				
 				//FX only on Client and in Single
-				if ( !GetGame().IsDedicatedServer() )
+				if (!GetGame().IsDedicatedServer())
 				{
-					if ( !SEffectManager.IsEffectExist( m_exhaustPtcFx ) )
+					if (!SEffectManager.IsEffectExist(m_exhaustPtcFx))
 					{
 						m_exhaustFx = new EffExhaustSmoke();
 						m_exhaustPtcFx = SEffectManager.PlayOnObject( m_exhaustFx, this, m_exhaustPtcPos, m_exhaustPtcDir );
+						m_exhaustFx.SetParticleStateLight();
 					}
-
-					m_exhaustFx.SetParticleStateLight();
 				
-					if ( IsVitalRadiator() && SEffectManager.IsEffectExist( m_coolantPtcFx ) )
-						SEffectManager.Stop(m_coolantPtcFx);
-					
-					if ( IsVitalRadiator() && GetFluidFraction( CarFluid.COOLANT ) < 0.5 )
+					if (IsVitalRadiator() && GetFluidFraction(CarFluid.COOLANT) < 0.5)
 					{
-						if ( !SEffectManager.IsEffectExist( m_coolantPtcFx ) )
+						if (!SEffectManager.IsEffectExist(m_coolantPtcFx))
 						{
 							m_coolantFx = new EffCoolantSteam();
-							m_coolantPtcFx = SEffectManager.PlayOnObject( m_coolantFx, this, m_coolantPtcPos, Vector(0,0,0));
+							m_coolantPtcFx = SEffectManager.PlayOnObject(m_coolantFx, this, m_coolantPtcPos, vector.Zero);
 						}
 
-						if ( GetFluidFraction( CarFluid.COOLANT ) > 0 )
-							m_coolantFx.SetParticleStateLight();
-						else
-							m_coolantFx.SetParticleStateHeavy();
+						if (m_coolantFx)
+						{
+							if (GetFluidFraction(CarFluid.COOLANT) > 0)
+								m_coolantFx.SetParticleStateLight();
+							else
+								m_coolantFx.SetParticleStateHeavy();
+						}
 					}
 					else
 					{
-						if ( SEffectManager.IsEffectExist( m_coolantPtcFx ) )
+						if (SEffectManager.IsEffectExist(m_coolantPtcFx))
 							SEffectManager.Stop(m_coolantPtcFx);
 					}
 				}
@@ -786,8 +783,11 @@ class CarScript extends Car
 						m_exhaustPtcFx = -1;
 					}
 					
-					if ( SEffectManager.IsEffectExist( m_coolantPtcFx ) )
+					if (SEffectManager.IsEffectExist(m_coolantPtcFx))
+					{
 						SEffectManager.Stop(m_coolantPtcFx);
+						m_coolantPtcFx = -1;
+					}
 				}
 			}
 		}
@@ -870,19 +870,6 @@ class CarScript extends Car
 				SetSynchDirty();
 				OnBrakesReleased();
 			}
-		}
-		
-		m_HandbrakeActive = GetHandbrake() > 0;
-		if (GetGame().GetInput().LocalPress("UACarHandbrake", false))
-		{
-			SetHandbrake(1.0);
-			SetSynchDirty();
-		}
-		
-		if (GetGame().GetInput().LocalRelease("UACarHandbrake", false))
-		{
-			SetHandbrake(0.0);
-			SetSynchDirty();
 		}
 		
 		if ( (!GetGame().IsDedicatedServer()) && m_ForceUpdateLights )
@@ -1941,18 +1928,14 @@ class CarScript extends Car
 		return m_Radiator;
 	}
 	
-	//!
 	bool IsMoving()
 	{
-		if ( GetSpeedometer() > 3.5 )
-			return true;
-		
-		return false;
+		return GetSpeedometerAbsolute() > 3.5;
 	}
 	
 	bool IsHandbrakeActive()
 	{
-		return m_HandbrakeActive;
+		return GetHandbrake() > 0.0;
 	}
 
 	//! camera type
@@ -2211,7 +2194,7 @@ class CarScript extends Car
 		}
 	}
 	
-	void GenerateCarHornAINoise(int pState)
+	protected void GenerateCarHornAINoise(int pState)
 	{
 		if (pState != ECarHornState.OFF)
 		{
@@ -2219,9 +2202,8 @@ class CarScript extends Car
 			{
 				float noiseMultiplier = 1.0;
 				if (pState == ECarHornState.LONG)
-				{
 					noiseMultiplier = 2.0;
-				}
+
 				m_NoiseSystem.AddNoiseTarget(GetPosition(), 5, m_NoisePar, noiseMultiplier);
 			}
 		}

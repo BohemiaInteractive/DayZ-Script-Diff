@@ -78,9 +78,22 @@ class Blowtorch extends ItemBase
 		return GetCompEM().IsWorking();
 	}
 	
+	override void OnIgnitedTarget(EntityAI ignited_item)
+	{
+		if (GetGame().IsServer())
+		{
+			if (GetGasCanister())
+			{
+				ComponentEnergyManager canisterEM = GetGasCanister().GetCompEM();
+				if (canisterEM)
+					canisterEM.AddEnergy(-1 * (GetCompEM().GetEnergyUsage() * UATimeSpent.FIREPLACE_IGNITE));
+			}
+		}
+	}
+	
 	override bool CanIgniteItem(EntityAI ignite_target = NULL)
 	{
-		return true; GetCompEM().IsWorking();
+		return ignite_target.CanBeIgnitedBy(this);
 	}
 
 	override void SetActions()
@@ -94,17 +107,21 @@ class Blowtorch extends ItemBase
 		AddAction(ActionRepairItemWithBlowtorch);
 	}
 	
+	protected EntityAI GetGasCanister()
+	{
+		if (GetInventory().AttachmentCount() != 0)
+		{
+			return GetInventory().GetAttachmentFromIndex(0);
+		}
+		
+		return null;
+	}
+	
 	bool HasEnoughEnergyForRepair(float pTime)
 	{
-		if (GetInventory().AttachmentCount() == 0)
+		if (GetGasCanister())
 		{
-			return false;
-		}
-
-		EntityAI canister = GetInventory().GetAttachmentFromIndex(0);
-		if (canister)
-		{
-			ComponentEnergyManager canisterEM = canister.GetCompEM();
+			ComponentEnergyManager canisterEM = GetGasCanister().GetCompEM();
 			if (canisterEM)
 			{
 				return canisterEM.GetEnergy() > GetCompEM().GetEnergyUsage() * pTime;

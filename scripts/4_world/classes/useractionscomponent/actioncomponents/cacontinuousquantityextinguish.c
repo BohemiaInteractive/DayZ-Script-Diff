@@ -9,13 +9,6 @@ class CAContinuousQuantityExtinguish : CAContinuousQuantityRepeat
 		m_WetnessGainMultiplier = wetness_gain_multiplier;
 	}
 	
-	override void Setup( ActionData action_data )
-	{
-		super.Setup(action_data);
-		
-		m_QuantityUsedPerSecond *= action_data.m_MainItem.GetLiquidThroughputCoef(); //no comparison here
-	}
-	
 	override void CalcAndSetQuantity( ActionData action_data )
 	{	
 		if ( GetGame().IsServer() ) 
@@ -50,5 +43,10 @@ class CAContinuousQuantityExtinguish : CAContinuousQuantityRepeat
 		}
 		
 		return super.Interrupt( action_data );
+	}
+	
+	void MultiplyQuantityUsed(float coef)
+	{
+		m_QuantityUsedPerSecond *= coef;
 	}
 }

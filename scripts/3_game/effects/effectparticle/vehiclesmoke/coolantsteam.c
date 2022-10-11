@@ -19,7 +19,7 @@ class EffCoolantSteam : EffVehicleSmoke
 		
 		if (parent && p)
 		{
-			float speed = parent.GetSpeedometer();
+			float speed = parent.GetSpeedometerAbsolute();
 				
 			float lifetime_scale = (100 - speed) / 100;
 			if (lifetime_scale < 0.1)

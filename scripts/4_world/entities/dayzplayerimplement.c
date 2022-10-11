@@ -1981,7 +1981,11 @@ class DayZPlayerImplement extends DayZPlayer
 				}
 				else if (m_FallYDiff < 1.0)
 				{
-					landType = HumanCommandFall.LANDTYPE_LIGHT;
+					if (m_MovementState.IsInProne() || m_MovementState.IsInRaisedProne())
+						landType = HumanCommandFall.LANDTYPE_NONE;
+					else
+						landType = HumanCommandFall.LANDTYPE_LIGHT;
+					
 					fall.Land(landType);
 					npar = type.GetNoiseParamsLandLight();
 					AddNoise(npar);

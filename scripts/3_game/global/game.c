@@ -1024,7 +1024,7 @@ class CGame
 		for (int i = 0; i < positions.Count(); i++)
 		{
 			vector pos = positions.Get(i);
-			pos[1] = SurfaceY( pos[0], pos[2]);
+			pos[1] = SurfaceRoadY( pos[0], pos[2]);
 			float y = pos[1];
 			
 			if ( y > high )

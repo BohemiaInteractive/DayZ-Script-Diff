@@ -146,6 +146,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 	protected ref HandAnimatedMovingToAtt m_MovingTo;
 	protected ref HandAnimatedSwapping m_Swapping;
 	protected ref HandAnimatedForceSwapping m_FSwapping;
+	protected ref HandAnimatedForceSwapping_Inst m_FSwappingInst;
 
 	void DayZPlayerInventory () 
 	{
@@ -163,6 +164,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		m_MovingTo = new HandAnimatedMovingToAtt(GetManOwner(), null);
 		m_Swapping = new HandAnimatedSwapping(GetManOwner(), null);
 		m_FSwapping = new HandAnimatedForceSwapping(GetManOwner(), null);
+		m_FSwappingInst = new HandAnimatedForceSwapping_Inst(GetManOwner(), null);
 
 		// events
 		HandEventBase _fin_ = new HandEventHumanCommandActionFinished;
@@ -194,6 +196,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		m_FSM.AddTransition(new HandTransition( m_Swapping, _fin_,  m_Empty, null, new HandGuardNot(new HandGuardHasItemInHands(GetManOwner()))));
 		m_FSM.AddTransition(new HandTransition( m_Swapping, _fin_,  m_Equipped, null, null));
 		m_FSM.AddTransition(new HandTransition( m_Swapping, _abt_,  m_Equipped, null, null));
+		
+		m_FSM.AddTransition(new HandTransition( m_Equipped, __F__, m_FSwappingInst, NULL, new HandGuardAnd( new HandSelectAnimationOfForceSwapInHandsEvent(GetManOwner()), new HandGuardInstantForceSwap(GetManOwner()) ) ));
+		m_FSM.AddTransition(new HandTransition(m_FSwappingInst, _fin_,  m_Equipped, null, new HandGuardHasItemInHands(GetManOwner())));
+		m_FSM.AddTransition(new HandTransition(m_FSwappingInst, _fin_,  m_Empty, null, null));
+		m_FSM.AddTransition(new HandTransition(m_FSwappingInst, __Xd_,  m_Empty, new HandActionDestroyed, new HandGuardHasDestroyedItemInHands(GetManOwner())));
+		m_FSM.AddTransition(new HandTransition( m_FSwappingInst, _abt_,  m_Equipped, null, null));
 
 		m_FSM.AddTransition(new HandTransition( m_Equipped, __F__, m_FSwapping, NULL, new HandSelectAnimationOfForceSwapInHandsEvent(GetManOwner())));
 		m_FSM.AddTransition(new HandTransition(m_FSwapping, _fin_,  m_Equipped, null, new HandGuardHasItemInHands(GetManOwner())));
@@ -1282,9 +1290,20 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					}
 					#endif
 				
-				
-					InventoryInputUserData.SendInputUserDataMove(InventoryCommandType.SYNC_MOVE, deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
-					LocationSyncMoveEntity(deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+					if (LocationCanMoveEntity(deferred_take_to_dst.m_src,deferred_take_to_dst.m_dst))
+					{
+						InventoryInputUserData.SendInputUserDataMove(InventoryCommandType.SYNC_MOVE, deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+						LocationSyncMoveEntity(deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+					}
+					else
+					{
+						#ifdef DEVELOPER
+						if ( LogManager.IsInventoryMoveLogEnable() )
+						{
+							Debug.InventoryMoveLog("Can not move entity (PREDICTIVE) STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " item = " + deferred_take_to_dst.m_dst.GetItem() + " dst=" + InventoryLocation.DumpToStringNullSafe(deferred_take_to_dst.m_dst), "n/a" , "n/a", "HandleTakeToDst", GetDayZPlayerOwner().ToString() );	
+						}
+						#endif
+					}
 					break;
 				case InventoryMode.JUNCTURE:
 					#ifdef DEVELOPER
@@ -1293,10 +1312,23 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 						Debug.InventoryHFSMLog("JUNCTURE ", "n/a" , "n/a", "HandleTakeToDst", GetDayZPlayerOwner().ToString() );
 					}
 					#endif
-					DayZPlayer player = GetGame().GetPlayer();
-					player.GetHumanInventory().AddInventoryReservationEx(deferred_take_to_dst.m_dst.GetItem(), deferred_take_to_dst.m_dst, GameInventory.c_InventoryReservationTimeoutShortMS);
-					EnableMovableOverride(deferred_take_to_dst.m_dst.GetItem());	
-					InventoryInputUserData.SendInputUserDataMove(InventoryCommandType.SYNC_MOVE, deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+				
+					if (LocationCanMoveEntity(deferred_take_to_dst.m_src,deferred_take_to_dst.m_dst))
+					{
+						DayZPlayer player = GetGame().GetPlayer();
+						player.GetHumanInventory().AddInventoryReservationEx(deferred_take_to_dst.m_dst.GetItem(), deferred_take_to_dst.m_dst, GameInventory.c_InventoryReservationTimeoutShortMS);
+						EnableMovableOverride(deferred_take_to_dst.m_dst.GetItem());	
+						InventoryInputUserData.SendInputUserDataMove(InventoryCommandType.SYNC_MOVE, deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+					}
+					else
+					{
+						#ifdef DEVELOPER
+						if ( LogManager.IsInventoryMoveLogEnable() )
+						{
+							Debug.InventoryMoveLog("Can not move entity (JUNCTURE) STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " item = " + deferred_take_to_dst.m_dst.GetItem() + " dst=" + InventoryLocation.DumpToStringNullSafe(deferred_take_to_dst.m_dst), "n/a" , "n/a", "HandleTakeToDst", GetDayZPlayerOwner().ToString() );	
+						}
+						#endif
+					}
 					break;
 				case InventoryMode.LOCAL:
 					#ifdef DEVELOPER
@@ -1745,8 +1777,11 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					}
 					#endif
 					deferred_hand_event.ClearInventoryReservation(this);
-					InventoryInputUserData.SendInputUserDataHandEvent(deferred_hand_event.m_event);
-					ProcessHandEvent(deferred_hand_event.m_event);
+					if ( deferred_hand_event.m_event.CanPerformEvent() )
+					{
+						InventoryInputUserData.SendInputUserDataHandEvent(deferred_hand_event.m_event);
+						ProcessHandEvent(deferred_hand_event.m_event);
+					}
 					break;
 
 				case InventoryMode.JUNCTURE:
@@ -1756,16 +1791,22 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 						Debug.InventoryHFSMLog("JUNCTURE", "n/a" , "n/a", "HandleHandEvent", GetDayZPlayerOwner().ToString() );
 					}
 					#endif
-					InventoryInputUserData.SendInputUserDataHandEvent(deferred_hand_event.m_event);
-					//Functionality to prevent desync when two players perform interfering action at the same time
-					EntityAI itemSrc = deferred_hand_event.m_event.GetSrcEntity();
-					EntityAI itemDst = null;
-					if (deferred_hand_event.m_event.GetDst())
-						itemDst = deferred_hand_event.m_event.GetDst().GetItem();
-					if (itemSrc)
-						EnableMovableOverride(itemSrc);
-					if (itemDst)
-						EnableMovableOverride(itemDst);
+					deferred_hand_event.ClearInventoryReservation(this);
+					if ( deferred_hand_event.m_event.CanPerformEvent() )
+					{
+						deferred_hand_event.ReserveInventory(this);
+						InventoryInputUserData.SendInputUserDataHandEvent(deferred_hand_event.m_event);
+					
+						//Functionality to prevent desync when two players perform interfering action at the same time
+						EntityAI itemSrc = deferred_hand_event.m_event.GetSrcEntity();
+						EntityAI itemDst = null;
+						if (deferred_hand_event.m_event.GetDst())
+							itemDst = deferred_hand_event.m_event.GetDst().GetItem();
+						if (itemSrc)
+							EnableMovableOverride(itemSrc);
+						if (itemDst)
+							EnableMovableOverride(itemDst);
+					}
 					break;
 
 				case InventoryMode.LOCAL:

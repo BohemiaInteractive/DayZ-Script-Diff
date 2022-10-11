@@ -1,7 +1,7 @@
 class Container extends LayoutHolder
 {
 	protected ref array<ref LayoutHolder>	m_Body;
-	protected ref array<LayoutHolder>	m_OpenedContainers;
+	protected ref array<LayoutHolder>		m_OpenedContainers;
 	protected int							m_ActiveIndex = 0;
 	protected bool							m_LastIndex; //deprecated 
 	protected bool							m_Closed;
@@ -47,7 +47,7 @@ class Container extends LayoutHolder
 	
 	Container GetFocusedContainer()
 	{
-		if (m_OpenedContainers.Count())
+		if (m_ActiveIndex < m_OpenedContainers.Count())
 		{
 			return Container.Cast(m_OpenedContainers[m_ActiveIndex]);
 		}
@@ -56,7 +56,7 @@ class Container extends LayoutHolder
 	
 	Container GetContainer(int index)
 	{
-		if (m_Body.Count() < index )
+		if (index < m_Body.Count())
 		{
 			return Container.Cast( m_Body[index] );
 		}
@@ -89,6 +89,10 @@ class Container extends LayoutHolder
 		m_ActiveIndex = index;
 	}
 	
+	ScrollWidget GetScrollWidget()
+	{
+		return null;
+	}
 	
 	void UpdateRadialIcon()
 	{
@@ -141,7 +145,56 @@ class Container extends LayoutHolder
 			SetNextLeftActive();
 		}
 		
+		UpdateSelectionIcons();
+		
 		Inventory.GetInstance().UpdateConsoleToolbar();
+	}
+
+	void ScrollToActiveContainer()
+	{
+		ScrollWidget sw = GetScrollWidget();
+		if (sw)
+		{
+			float x, y, y_s;
+			
+			sw.GetScreenPos( x, y );
+			sw.GetScreenSize( x, y_s );
+			float f_y,f_h;
+			float amount;
+			f_y = GetFocusedContainerYScreenPos( true );
+			f_h = GetFocusedContainerHeight( true );
+			
+			float next_pos	= f_y + f_h;
+				
+			if (next_pos > ( y + y_s ))
+			{
+				amount	=  sw.GetVScrollPos() + next_pos - ( y + y_s ) + 2;
+				sw.VScrollToPos( amount );
+			}
+			else if (f_y < y)
+			{
+				amount = sw.GetVScrollPos() + f_y - y - 2;
+				sw.VScrollToPos(amount);
+			}
+			
+			//CheckScrollbarVisibility();
+		}
+	}
+	
+	void CheckScrollbarVisibility()
+	{
+		ScrollWidget sw = GetScrollWidget();
+		if (sw)
+		{
+			if (!sw.IsScrollbarVisible())
+			{
+				sw.VScrollToPos01(0.0);
+			}
+			else if (sw.GetVScrollPos01() > 1.0)
+			{
+				sw.VScrollToPos01(1.0);
+			}
+		}
 	}
 	
 	void Open()
@@ -177,6 +230,19 @@ class Container extends LayoutHolder
 		{
 			ErrorEx("Dbg No Icon");
 		}*/
+	}
+	
+	void Toggle()
+	{
+		if (IsOpened())
+		{
+			Close();
+		}
+		else
+		{
+			Open();
+		}
+		SetOpenForSlotIcon(IsOpened());
 	}
 	
 	float GetFocusedContainerHeight( bool contents = false )
@@ -740,16 +806,21 @@ class Container extends LayoutHolder
 			int index = m_Body.Find( container );
 			if( index > -1 )
 			{
-				if( index <= m_ActiveIndex )
+				index = m_OpenedContainers.Find( container );
+				if (index > -1)
 				{
-					if( GetFocusedContainer() == container )
+					if (index <= m_ActiveIndex)
 					{
-						SetPreviousActive( true );
+						if (GetFocusedContainer() == container)
+						{
+							SetPreviousActive( true );
+						}
+						else
+						{
+							m_ActiveIndex--;
+						}
 					}
-					else
-					{
-						m_ActiveIndex--;
-					}
+					m_OpenedContainers.RemoveItem( container );
 				}
 				m_Body.RemoveItem( container );
 			}
@@ -823,4 +894,6 @@ class Container extends LayoutHolder
 	{
 		m_Parent.UpdateSelectionIcons();
 	}
+	
+	void ExpandCollapseContainer(){}
 }

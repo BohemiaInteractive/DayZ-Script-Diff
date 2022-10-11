@@ -330,5 +330,37 @@ class HandGuardCanForceSwap extends HandGuardBase
 	}
 };
 
+class HandGuardInstantForceSwap extends HandGuardBase
+{
+	protected Man m_Player;
+	void HandGuardInstantForceSwap(Man p = NULL) { m_Player = p; }
+
+	override bool GuardCondition(HandEventBase e)
+	{
+		HandEventForceSwap es = HandEventForceSwap.Cast(e);
+		
+		InventoryLocation src1 = es.m_Src;
+		InventoryLocation dst2 = es.m_Dst2;
+		
+		bool result = false;
+		if (src1.GetType() == InventoryLocationType.CARGO && dst2.GetType() == InventoryLocationType.CARGO)
+		{
+			if (src1.GetParent() == dst2.GetParent())
+			{
+				result = true;
+			}
+		}
+
+		#ifdef DEVELOPER
+		if (LogManager.IsInventoryHFSMLogEnable())
+		{	
+			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardInstantForceSwap" , "n/a", "GuardCondition", m_Player.ToString() );
+		}
+		#endif
+
+		return result;
+	}
+};
+
 ///@} guards
 

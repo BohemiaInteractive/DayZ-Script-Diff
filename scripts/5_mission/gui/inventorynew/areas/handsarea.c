@@ -38,6 +38,16 @@ class HandsArea: Container
 		else
 			return false;
 	}
+	
+	override ScrollWidget GetScrollWidget()
+	{
+		return m_Scroller;
+	}
+	
+	override void UpdateSelectionIcons()
+	{
+		ScrollToActiveContainer();
+	}
 
 	override void UpdateInterval()
 	{

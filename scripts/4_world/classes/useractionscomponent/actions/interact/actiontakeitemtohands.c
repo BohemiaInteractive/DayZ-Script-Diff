@@ -85,11 +85,11 @@ class ActionTakeItemToHands: ActionInteractBase
 			//Print("else - SHOULD NOT BE HERE");
 			if( action_data.m_Player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT) )
 			{
-				Class.CastTo(callback, action_data.m_Player.AddCommandModifier_Action(DayZPlayerConstants.CMD_ACTIONMOD_PICKUP_HANDS,GetCallbackClassTypename()));
+				Class.CastTo(callback, action_data.m_Player.AddCommandModifier_Action(m_CommandUID,GetCallbackClassTypename()));
 			}
 			else
 			{
-				Class.CastTo(callback, action_data.m_Player.StartCommand_Action(DayZPlayerConstants.CMD_ACTIONFB_PICKUP_HANDS,GetCallbackClassTypename(),DayZPlayerConstants.STANCEMASK_PRONE));
+				Class.CastTo(callback, action_data.m_Player.StartCommand_Action(m_CommandUIDProne,GetCallbackClassTypename(),DayZPlayerConstants.STANCEMASK_PRONE));
 			}
 		}
 		//Print(callback);

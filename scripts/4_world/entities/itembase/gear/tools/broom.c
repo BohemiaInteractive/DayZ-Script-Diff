@@ -5,7 +5,6 @@ class BroomBase : FlammableBase
 		super.Init();
 		m_DecraftResult = "LongWoodenStick";
 		m_ParticleLocalPos = Vector(0, 1.2, 0);
-		//GetCompEM().SetEnergyUsage(20);
 	}
 	
 	override void SetActions()

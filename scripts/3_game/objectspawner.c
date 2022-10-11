@@ -26,7 +26,7 @@ class ObjectSpawnerHandler
 	//---------------------------------------------------------------------------------------
 	static void SpawnObject(ITEM_SpawnerObject item)
 	{
-		Object object = GetGame().CreateObjectEx(item.name, vector.ArrayToVec(item.pos), ECE_SETUP | ECE_UPDATEPATHGRAPH | ECE_CREATEPHYSICS);
+		Object object = GetGame().CreateObjectEx(item.name, vector.ArrayToVec(item.pos), ECE_SETUP | ECE_UPDATEPATHGRAPH | ECE_CREATEPHYSICS | ECE_NOLIFETIME);
 		if ( object )
 		{
 			object.SetOrientation( vector.ArrayToVec(item.ypr));

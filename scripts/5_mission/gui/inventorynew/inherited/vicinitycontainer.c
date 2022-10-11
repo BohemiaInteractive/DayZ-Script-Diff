@@ -601,76 +601,17 @@ class VicinityContainer: CollapsibleContainer
 		
 		if (c)
 		{
-			if ( c.IsOpened() )
-			{
-				c.Close();
-			}
-			else
-			{
-				c.Open();
-			}
-			
-			SetOpenForSlotIcon(c.IsOpened(),slots_icon);
-			
-			if (c.GetHeader())
-			{
-				CollapsibleHeader header = CollapsibleHeader.Cast(c.GetHeader());
-				if (header)
-				{
-					//header.SetHeaderVisible(c.IsOpened());
-				}
-			}
+			ToggleContainer(c);
 		}
 	}
 
 	//Call from ExpandCollapseContainer - not call
 	void ToggleContainer( Container conta )
 	{
-		Container cont = conta;
-		ClosableContainer c;
-		if ( cont )
-		{
-			if ( cont.IsInherited( ClosableContainer ) )
-			{
-				c = ClosableContainer.Cast( cont );
-				if ( c.IsOpened() )
-				{
-					c.Close();
-				}
-				else
-				{
-					c.Open();
-				}
-			}
-			else if ( cont.IsInherited( VicinitySlotsContainer ) )
-			{
-				VicinitySlotsContainer c2 = VicinitySlotsContainer.Cast( cont );
-				if ( m_VicinityIconsContainer == c2 )
-				{
-					EntityAI e = c2.GetFocusedItem();
-					c = ClosableContainer.Cast( m_ShowedItems.Get( e ) );
-					if ( c )
-					{
-						if ( c.IsOpened() )
-						{
-							c.Close();
-						}
-						else
-						{
-							c.Open();
-						}
-					}
-				}
-			}
-			else if ( cont.IsInherited( CollapsibleContainer ) )
-			{
-				CollapsibleContainer c3 = CollapsibleContainer.Cast( cont );
-				c3.CollapseButtonOnMouseButtonDown( null );
-			}
-		}
+		conta.Toggle();
 	}
 	
-	void ExpandCollapseContainer()
+	override void ExpandCollapseContainer()
 	{
 		EntityAI item = GetFocusedItem();
 		Container conta;

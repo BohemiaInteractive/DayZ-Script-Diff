@@ -16,23 +16,21 @@ class UndergroundHandlerClient
 	const float ACCO_MODIFIER = 1;//when we calculate eye accommodation between 0..1 based on the breadcrumbs values and distances, we multiply the result by this modifier to get the final eye accommodation value
 	const float DEFAULT_INTERPOLATION_SPEED = 7;
 	const string UNDERGROUND_LIGHTING = "dz\\data\\lighting\\lighting_underground.txt";
-	ref AnimationTimer 	m_AnimTimerLightBlend;
+	private ref AnimationTimer 	m_AnimTimerLightBlend;
 	
-	PlayerBase m_Player;
-	PPERUndergroundAcco m_Requester;
-	PPERequester_CameraNV m_NVRequester;
-	ref set<UndergroundTrigger> m_InsideTriggers = new set<UndergroundTrigger>();
+	private PlayerBase 				m_Player;
+	private PPERUndergroundAcco 	m_Requester;
+	private PPERequester_CameraNV 	m_NVRequester;
+	private ref set<UndergroundTrigger> m_InsideTriggers = new set<UndergroundTrigger>();
 	
-	float 		m_EyeAccoTarget = 1;
-	float 		m_AccoInterpolationSpeed;
-	float 		m_EyeAcco = 1;
-	//bool 		m_EyeAccoAdjust;
-	float 		m_LightingLerpTarget;
-	float 		m_LightingLerp;
-	EffectSound m_AmbientSound;
+	private float 		m_EyeAccoTarget = 1;
+	private float 		m_AccoInterpolationSpeed;
+	private float 		m_EyeAcco = 1;
+	private float 		m_LightingLerpTarget;
+	private float 		m_LightingLerp;
+	private EffectSound m_AmbientSound;
 	
-	
-	UndergroundTrigger m_TransitionalTrigger;
+	private UndergroundTrigger m_TransitionalTrigger;
 	
 	void UndergroundHandlerClient(PlayerBase player)
 	{
@@ -53,7 +51,7 @@ class UndergroundHandlerClient
 		}
 	}
 	
-	PPERUndergroundAcco GetRequester()
+	private PPERUndergroundAcco GetRequester()
 	{
 		if (!m_Requester)
 		{
@@ -80,7 +78,7 @@ class UndergroundHandlerClient
 		OnTriggerInsiderUpdate();
 	}
 	
-	void CalculateEyeAccoTarget()
+	private void CalculateEyeAccoTarget()
 	{
 		if (m_TransitionalTrigger && m_TransitionalTrigger.m_Data.Breadcrumbs.Count() >= 2)
 		{
@@ -174,13 +172,8 @@ class UndergroundHandlerClient
 		}
 	}
 	
-	void ProcessEyeAcco(float timeSlice)
+	private void ProcessEyeAcco(float timeSlice)
 	{
-		/*
-		if (!m_EyeAccoAdjust)
-			return;
-		*/
-		
 		CalculateEyeAccoTarget();
 		bool reachedTarget = CalculateEyeAcco(timeSlice);
 		ApplyEyeAcco();
@@ -189,17 +182,12 @@ class UndergroundHandlerClient
 			GetRequester().Stop();
 			m_NVRequester.SetUndergroundExposureCoef(1.0);
 			m_Player.KillUndergroundHandler();
-			//m_EyeAccoAdjust = false;
 		}
 
 	}
 	
-	void ProcessLighting(float timeSlice)
+	private void ProcessLighting(float timeSlice)
 	{
-		//float currentEyeAcco = GetGame().GetWorld().GetEyeAccom();
-		//m_LightingLerp = 1-m_EyeAcco;
-		//Print(m_EyeAcco);
-		
 		#ifdef DEVELOPER
 		if (!DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_DISABLE_DARKENING) )
 		{
@@ -214,14 +202,15 @@ class UndergroundHandlerClient
 		#endif
 	}
 	
-	/*
-	float ProcessLighting(float timeSlice)
+	private void ProcessSound(float timeSlice)
 	{
-		m_LightingLerp = Math.Lerp(m_LightingLerp, m_LightingLerpTarget, timeSlice * 2);
-		GetGame().GetWorld().SetUserLightingLerp(m_LightingLerp);
-		return m_LightingLerp;
-	}	
-	*/
+		GetGame().GetWorld().SetExplicitVolumeFactor_EnvSounds2D(m_EyeAcco, 0);
+		if (m_AmbientSound)
+		{
+			m_AmbientSound.SetSoundVolume(1-m_EyeAcco);
+			//Print(m_AmbientSound.GetSoundVolume());
+		}
+	}
 	
 	void Tick(float timeSlice)
 	{
@@ -230,6 +219,7 @@ class UndergroundHandlerClient
 		
 		ProcessEyeAcco(timeSlice);
 		ProcessLighting(timeSlice);
+		ProcessSound(timeSlice);
 		
 		#ifdef DEVELOPER
 		if ( DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_SHOW_BREADCRUMB) )
@@ -240,7 +230,7 @@ class UndergroundHandlerClient
 		
 	}
 	
-	void ApplyEyeAcco()
+	private void ApplyEyeAcco()
 	{
 		#ifdef DEVELOPER
 		if (!DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_DISABLE_DARKENING) )
@@ -263,7 +253,7 @@ class UndergroundHandlerClient
 		m_NVRequester.SetUndergroundExposureCoef(undergrounNVExposureCoef);
 	}
 	
-	bool CalculateEyeAcco(float timeSlice)
+	private bool CalculateEyeAcco(float timeSlice)
 	{
 		if (m_TransitionalTrigger || !m_Player.m_UndergroundPresence || (m_EyeAccoTarget == 1))
 		{
@@ -286,7 +276,7 @@ class UndergroundHandlerClient
 	
 	
 	
-	void OnTriggerInsiderUpdate()
+	private void OnTriggerInsiderUpdate()
 	{
 		EUndergroundTriggerType bestType = EUndergroundTriggerType.UNDEFINED;
 		m_TransitionalTrigger = null;
@@ -302,7 +292,6 @@ class UndergroundHandlerClient
 				bestType = t.m_Type; 
 			}
 		}
-		
 		//Print(m_InsideTriggers.Count());
 		//Print(bestType);
 		if (bestTrigger)
@@ -317,11 +306,10 @@ class UndergroundHandlerClient
 		}
 		
 		SetUndergroundPresence(bestTrigger);
-		//m_EyeAccoAdjust = true;
 	}
 	
 	
-	void SetUndergroundPresence(UndergroundTrigger trigger)
+	private void SetUndergroundPresence(UndergroundTrigger trigger)
 	{
 		EUndergroundPresence newPresence = EUndergroundPresence.NONE;
 		EUndergroundPresence oldPresence = m_Player.m_UndergroundPresence;
@@ -351,7 +339,7 @@ class UndergroundHandlerClient
 		
 	}
 	
-	void EnableLights(bool enable)
+	private void EnableLights(bool enable)
 	{
 		foreach (ScriptedLightBase light:ScriptedLightBase.m_NightTimeOnlyLights)
 		{
@@ -381,7 +369,7 @@ class UndergroundHandlerClient
 	}
 	
 	
-	void OnUndergroundPresenceUpdate(EUndergroundPresence newPresence, EUndergroundPresence oldPresence)
+	private void OnUndergroundPresenceUpdate(EUndergroundPresence newPresence, EUndergroundPresence oldPresence)
 	{
 		//Print("-----> On Undeground Presence update " + EnumTools.EnumToString(EUndergroundPresence, newPresence) + " " + EnumTools.EnumToString(EUndergroundPresence, oldPresence));
 		if (newPresence > EUndergroundPresence.NONE)
@@ -392,7 +380,6 @@ class UndergroundHandlerClient
 			}
 			if (newPresence > EUndergroundPresence.OUTER && oldPresence <= EUndergroundPresence.OUTER)
 			{
-				GetGame().GetWorld().SetExplicitVolumeFactor_EnvSounds2D(0, 0.5);
 				GetGame().GetWeather().SuppressLightningSimulation(true);
 				m_Player.PlaySoundSetLoop(m_AmbientSound, "Underground_SoundSet",3,3);
 			}
@@ -409,7 +396,6 @@ class UndergroundHandlerClient
 		}
 		if (newPresence <= EUndergroundPresence.OUTER && oldPresence > EUndergroundPresence.OUTER)
 		{
-			GetGame().GetWorld().SetExplicitVolumeFactor_EnvSounds2D(1, 0.5);
 			GetGame().GetWeather().SuppressLightningSimulation(false);
 			if (m_AmbientSound)
 				m_Player.StopSoundSet(m_AmbientSound);

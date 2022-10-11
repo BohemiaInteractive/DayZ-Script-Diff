@@ -2728,7 +2728,7 @@ class EntityAI extends Entity
 	
 	void RegisterTransportHit(Transport transport)
 	{
-		if ( !m_TransportHitRegistered )
+		if (!m_TransportHitRegistered)
 		{	
 			m_TransportHitRegistered = true; 
 			m_TransportHitVelocity = GetVelocity(transport);
@@ -2737,20 +2737,20 @@ class EntityAI extends Entity
 			vector impulse;
 			
 			// a different attempt to solve hits from "standing" car to the players
-			if ( car.CastTo(car, transport) )
+			if (Car.CastTo(car, transport))
 			{
-				if ( car.GetSpeedometer() > 2 )
+				if (car.GetSpeedometerAbsolute() > 2 )
 				{
 					damage = m_TransportHitVelocity.Length();
-					ProcessDirectDamage( DT_CUSTOM, transport, "", "TransportHit", "0 0 0", damage );
+					ProcessDirectDamage(DT_CUSTOM, transport, "", "TransportHit", "0 0 0", damage);
 				}
 				else
 				{
-					m_TransportHitRegistered = false; // EEHitBy is not called if no damage
+					m_TransportHitRegistered = false;
 				}
 
 				// compute impulse and apply only if the body dies
-				if ( IsDamageDestroyed() && car.GetSpeedometer() > 3 )
+				if (IsDamageDestroyed() && car.GetSpeedometerAbsolute() > 3)
 				{
 					impulse = 40 * m_TransportHitVelocity;
 					impulse[1] = 40 * 1.5;
@@ -2760,19 +2760,18 @@ class EntityAI extends Entity
 			else //old solution just in case if somebody use it
 			{
 				// avoid damage because of small movements
-				if ( m_TransportHitVelocity.Length() > 0.1 )
+				if (m_TransportHitVelocity.Length() > 0.1)
 				{
 					damage = m_TransportHitVelocity.Length();
-					//Print("Transport damage: " + damage.ToString() + " velocity: " +  m_TransportHitVelocity.Length().ToString());
-					ProcessDirectDamage( DT_CUSTOM, transport, "", "TransportHit", "0 0 0", damage );
+					ProcessDirectDamage(DT_CUSTOM, transport, "", "TransportHit", "0 0 0", damage);
 				}
 				else
 				{
-					m_TransportHitRegistered = false; // EEHitBy is not called if no damage
+					m_TransportHitRegistered = false;
 				}
 				
 				// compute impulse and apply only if the body dies
-				if ( IsDamageDestroyed() && m_TransportHitVelocity.Length() > 0.3 )
+				if (IsDamageDestroyed() && m_TransportHitVelocity.Length() > 0.3)
 				{
 					impulse = 40 * m_TransportHitVelocity;
 					impulse[1] = 40 * 1.5;

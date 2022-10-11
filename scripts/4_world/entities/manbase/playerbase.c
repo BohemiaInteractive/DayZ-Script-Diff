@@ -5346,8 +5346,7 @@ class PlayerBase extends ManBase
 			#endif
 		}
 	
-
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 			PluginDeveloper module_rc = PluginDeveloper.Cast( GetPlugin(PluginDeveloper) );
 			if ( module_rc ) 
 				module_rc.OnRPC(this, rpc_type, ctx);
@@ -5355,7 +5354,8 @@ class PlayerBase extends ManBase
 			PluginDeveloperSync module_rcs = PluginDeveloperSync.Cast( GetPlugin(PluginDeveloperSync) );
 			if ( module_rcs ) 
 				module_rcs.OnRPC(this, rpc_type, ctx);
-			
+		#endif
+		#ifdef DEVELOPER
 			PluginDiagMenu plugin_diag_menu = PluginDiagMenu.Cast( GetPlugin(PluginDiagMenu) );
 			if ( plugin_diag_menu ) 
 				plugin_diag_menu.OnRPC(this, rpc_type, ctx);

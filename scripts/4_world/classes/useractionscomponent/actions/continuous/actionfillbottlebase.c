@@ -27,7 +27,7 @@ class ActionFillBottleBase: ActionContinuousBase
 		m_CallbackClass = ActionFillBottleBaseCB;
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_FILLBOTTLEPOND;
 		m_FullBody = true;
-		m_StanceMask = 0;
+		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;;
 		m_SpecialtyWeight = UASoftSkillsWeight.PRECISE_LOW;
 		m_Text = "#fill";
 	}

@@ -48,11 +48,8 @@ class FlammableBase : ItemBase
 			m_BurnTimePerFullFuelDoseEx = GetGame().ConfigGetFloat( cfg_path + " burnTimePerFullFuelDose" );
 			m_MaxConsumableLardQuantityEx = GetGame().ConfigGetFloat( cfg_path + " maxConsumableLardDose" );
 			m_MaxConsumableFuelQuantityEx = GetGame().ConfigGetFloat( cfg_path + " maxConsumableFuelDose" );
-			
-			
 		}
 		RegisterNetSyncVariableBool("m_CanReceiveUpgrade");
-		//GetCompEM().SetEnergyUsage(20);
 	}
 	
 	override void EEInit()
@@ -61,7 +58,6 @@ class FlammableBase : ItemBase
 		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			
  			m_UTSSettings 					= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_Updateable		= true;
 			m_UTSSettings.m_UpdateInterval	= 1;

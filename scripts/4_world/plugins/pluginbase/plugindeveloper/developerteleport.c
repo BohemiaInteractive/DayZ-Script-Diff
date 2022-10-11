@@ -73,7 +73,7 @@ class DeveloperTeleport
 		}
 		else
 		{
-			ref Param3<float, float, float> params = new Param3<float, float, float>(position[0], position[1], position[2]);
+			Param3<float, float, float> params = new Param3<float, float, float>(position[0], position[1], position[2]);
 			player.RPCSingleParam(ERPCs.DEV_RPC_TELEPORT, params, true);
 		}
 	}
@@ -100,18 +100,14 @@ class DeveloperTeleport
 		}
 		else
 		{
-			ref Param3<float, float, float> params = new Param3<float, float, float>(direction[0], direction[1], direction[2]);
+			Param3<float, float, float> params = new Param3<float, float, float>(direction[0], direction[1], direction[2]);
 			player.RPCSingleParam(ERPCs.DEV_RPC_SET_PLAYER_DIRECTION, params, true);
 		}
 	}
 	
 	static void OnRPC(PlayerBase player, int rpc_type, ParamsReadContext ctx)
 	{
-		if ( !GetGame().IsDebug() )
-		{
-			return;
-		}
-	
+		#ifdef DIAG_DEVELOPER
 		if ( rpc_type == ERPCs.DEV_RPC_TELEPORT )
 		{
 			OnRPCSetPlayerPosition(player, ctx);
@@ -120,11 +116,12 @@ class DeveloperTeleport
 		{
 			OnRPCSetPlayerDirection(player, ctx);
 		}
+		#endif
 	}
 	
 	static protected void OnRPCSetPlayerPosition(PlayerBase player, ParamsReadContext ctx)
 	{
-		ref Param3<float, float, float> p = new Param3<float, float, float>(0, 0, 0);
+		Param3<float, float, float> p = new Param3<float, float, float>(0, 0, 0);
 		if (ctx.Read(p))
 		{
 			vector v = "0 0 0";
@@ -137,7 +134,7 @@ class DeveloperTeleport
 	
 	static protected void OnRPCSetPlayerDirection(PlayerBase player, ParamsReadContext ctx)
 	{
-		ref Param3<float, float, float> p = new Param3<float, float, float>(0, 0, 0);
+		Param3<float, float, float> p = new Param3<float, float, float>(0, 0, 0);
 		if (ctx.Read(p))
 		{
 			vector v = "0 0 0";

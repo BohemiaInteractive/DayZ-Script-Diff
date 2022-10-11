@@ -847,10 +847,10 @@ class IngameHud extends Hud
 			m_VehiclePanel.Show(true);
 			float rpm_value		= m_CurrentVehicle.EngineGetRPM() / m_CurrentVehicle.EngineGetRPMMax();
 			float rpm_value_red	= m_CurrentVehicle.EngineGetRPMRedline() / m_CurrentVehicle.EngineGetRPMMax();
-			float speed_value	= m_CurrentVehicle.GetSpeedometer() / 200;
+			float speed_value	= m_CurrentVehicle.GetSpeedometerAbsolute() / 200;
 			
 			m_VehicleRPMPointer.SetRotation(0, 0, rpm_value * 270 - 130, true);
-			m_VehicleSpeedPointer.SetRotation(0, 0, Math.AbsFloat(speed_value) * 260 - 130, true);
+			m_VehicleSpeedPointer.SetRotation(0, 0, speed_value * 260 - 130, true);
 			m_VehicleSpeedValue.SetText(Math.AbsInt(m_CurrentVehicle.GetSpeedometer()).ToString());
 
 			int engineHealthLevel	= m_CurrentVehicle.GetHealthLevel("Engine");
@@ -1020,7 +1020,11 @@ class IngameHud extends Hud
 	
 	void RefreshQuickbarVisibility()
 	{
+		#ifndef PLATFORM_CONSOLE
 		m_IsQuickbarVisible = !m_QuickbarHideUI && !m_QuickbarHidePlayer && m_QuickbarState;
+		#else
+		m_IsQuickbarVisible = false;
+		#endif
 		m_QuickbarWidget.Show( m_IsQuickbarVisible );
 	}
 	

@@ -1256,12 +1256,13 @@ class Inventory: LayoutHolder
 	
 	void RefreshQuickbar()
 	{
-		m_QuickbarWidget.Show( GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() );
-		#ifdef PLATFORM_WINDOWS
-		if ( m_Quickbar )
+		#ifndef PLATFORM_CONSOLE
+		m_QuickbarWidget.Show(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 		#else
-		if ( m_Quickbar && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
+		m_QuickbarWidget.Show(false);
 		#endif
+		
+		if ( m_Quickbar )
 		{
 			m_Quickbar.UpdateItems( m_QuickbarWidget );
 		}

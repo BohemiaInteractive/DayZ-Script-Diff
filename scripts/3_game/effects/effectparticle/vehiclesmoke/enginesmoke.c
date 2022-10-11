@@ -35,7 +35,7 @@ class EffEngineSmoke : EffVehicleSmoke
 				{
 					SetParticleState( p.GetParticleID() );
 					
-					float speed = parent.GetSpeedometer();
+					float speed = parent.GetSpeedometerAbsolute();
 					float lifetime_scale;
 						
 					if (speed < 100)

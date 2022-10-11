@@ -95,7 +95,7 @@ class ActionGetOutTransport: ActionBase
 				{
 					got_action_data.m_StartLocation = got_action_data.m_Player.GetPosition();
 					got_action_data.m_Car = car;
-					float speed = car.GetSpeedometer();
+					float speed = car.GetSpeedometerAbsolute();
 					got_action_data.m_CarSpeed = speed;
 					got_action_data.m_DmgTaken = (got_action_data.m_CarSpeed * got_action_data.m_CarSpeed) / m_DmgFactor; //When using multiplications, wrong value is returned
 					got_action_data.m_ShockTaken = (got_action_data.m_CarSpeed * got_action_data.m_CarSpeed) / m_ShockFactor;

@@ -24,7 +24,7 @@ class ActionStopEngine: ActionSingleUseBase
 				Car car;
 				if (Class.CastTo(car, trans) && car.EngineIsOn())
 				{
-					return car.GetSpeedometer() <= 8;
+					return car.GetSpeedometerAbsolute() <= 8;
 				}
 			}
 		}

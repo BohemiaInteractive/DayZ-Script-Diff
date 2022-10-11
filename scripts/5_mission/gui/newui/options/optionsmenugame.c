@@ -337,8 +337,8 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		{
 			case EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR:
 			{
-				m_QuickbarContainer.Show(state);
-				m_ShowQuickbarSelector.SetValue(state,true);
+				//m_QuickbarContainer.Show(state);
+				//m_ShowQuickbarSelector.SetValue(state,true);
 				break;
 			}
 		}
@@ -346,7 +346,11 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	
 	void InitDependentOptionsVisibility()
 	{
-		m_QuickbarContainer.Show(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+		#ifdef PLATFORM_CONSOLE
+		m_QuickbarContainer.Show(false);
+		#else
+		m_QuickbarContainer.Show(true);
+		#endif
 	}
 	
 	void UpdateLanguageOption( int new_index )
@@ -508,12 +512,12 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		m_TextMap.Insert( OptionAccessType.AT_OPTIONS_FIELD_OF_VIEW, new Param2<string, string>( "#options_game_field_of_view", "#options_game_field_of_view_desc" ) );
 		m_TextMap.Insert( OptionIDsScript.OPTION_HUD, new Param2<string, string>( "#options_game_show_HUD", "#options_game_show_HUD_desc" ) );
 		m_TextMap.Insert( OptionIDsScript.OPTION_CROSSHAIR, new Param2<string, string>( "#options_game_show_crosshair", "#options_game_show_crosshair_desc" ) );
+		m_TextMap.Insert( OptionIDsScript.OPTION_QUICKBAR, new Param2<string, string>( "#options_game_show_quickbar",	"#options_game_show_quickbar_desc" ) );
 		m_TextMap.Insert( OptionIDsScript.OPTION_SERVER_INFO, new Param2<string, string>( "#options_game_show_serverinfo", "#options_game_show_serverinfo_desc" ) );
 		m_TextMap.Insert( OptionIDsScript.OPTION_BLEEDINGINDICATION, new Param2<string, string>( "#options_game_show_bleedingindication", "#options_game_show_bleedingindication_desc" ) );
 	
 		#ifdef PLATFORM_WINDOWS
 		m_TextMap.Insert( OptionAccessType.AT_OPTIONS_PAUSE, new Param2<string, string>( "#layout_options_pc_nopause_title", "#layout_options_pc_nopause_tooltip" ) );
-		m_TextMap.Insert( OptionIDsScript.OPTION_QUICKBAR, new Param2<string, string>( "#options_game_show_quickbar",	"#options_game_show_quickbar_desc" ) );
 		m_TextMap.Insert( OptionIDsScript.OPTION_GAME_MESSAGES, new Param2<string, string>( "#options_pc_game_messages",	"#options_game_show_game_msg" ) );
 		m_TextMap.Insert( OptionIDsScript.OPTION_ADMIN_MESSAGES, new Param2<string, string>( "#options_pc_admin_mes",		"#options_game_show_admin_msg" ) );
 		m_TextMap.Insert( OptionIDsScript.OPTION_PLAYER_MESSAGES, new Param2<string, string>( "#options_pc_player_messages",	"#options_game_show_player_msg" ) );

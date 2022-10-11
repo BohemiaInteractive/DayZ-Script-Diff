@@ -30,7 +30,7 @@ class ActionDrinkWellContinuous: ActionContinuousBase
 	override void CreateConditionComponents()  
 	{
 		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTObject(UAMaxDistances.DEFAULT);
+		m_ConditionTarget = new CCTCursor(UAMaxDistances.DEFAULT);
 	}
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )

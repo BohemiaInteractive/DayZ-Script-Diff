@@ -90,7 +90,7 @@ class ZombieContainer: CollapsibleContainer
 		return !GetFocusedItem();
 	}
 	
-	void ExpandCollapseContainer()
+	override void ExpandCollapseContainer()
 	{
 		if( IsZombieEquipmentActive() )
 		{
@@ -325,9 +325,9 @@ class ZombieContainer: CollapsibleContainer
 		SlotsIcon slots_icon; 
 		ClosableContainer c;
 		w.GetUserData(slots_icon);
-		if(slots_icon)
+		if (slots_icon)
 			item = slots_icon.GetEntity();
-		if( item )
+		if (item)
 		{
 			c = ClosableContainer.Cast( m_ShowedItems.Get( item ) );
 		}
@@ -337,24 +337,9 @@ class ZombieContainer: CollapsibleContainer
 		}
 		
 		
-		if ( c )
+		if (c)
 		{
-			if ( c.IsOpened() )
-			{
-				c.Close();
-			}
-			else
-			{
-				c.Open();
-			}
-		
-			if ( slots_icon )
-			{
-				Widget icon_open = slots_icon.GetRadialIcon();
-				Widget icon_closed = slots_icon.GetRadialIconClosed();
-				icon_open.Show( c.IsOpened() );
-				icon_closed.Show( !c.IsOpened() );
-			}
+			c.Toggle();
 		}
 		RecomputeOpenedContainers();
 	}

@@ -21,32 +21,12 @@ class CCTCursorParent : CCTBase
 		if ( !player || !parentObject || parentObject.IsDamageDestroyed() )
 			return false;
 		
-		vector playerHeadPos = player.GetPosition();
-		
-		switch (player.m_MovementState.m_iStanceIdx)
-		{
-			case DayZPlayerConstants.STANCEIDX_ERECT:
-				playerHeadPos[1] = playerHeadPos[1] + HEIGHT_ERECT;
-			break;
-			
-			case DayZPlayerConstants.STANCEIDX_CROUCH:
-				playerHeadPos[1] = playerHeadPos[1] + HEIGHT_CROUCH;
-			break;
-			
-			case DayZPlayerConstants.STANCEIDX_PRONE:
-				playerHeadPos[1] = playerHeadPos[1] + HEIGHT_PRONE;
-			break;
-		}
+		vector playerHeadPos;
+		MiscGameplayFunctions.GetHeadBonePos(player, playerHeadPos);
 		
 		float distanceRoot = vector.DistanceSq(target.GetCursorHitPos(), player.GetPosition());
 		float distanceHead = vector.DistanceSq(target.GetCursorHitPos(), playerHeadPos);
 		
-		bool b1 = distanceRoot <= m_MaximalActionDistanceSq;
-		bool b2 = distanceHead <= m_MaximalActionDistanceSq;
-		
-		if ( b1 || b2 )
-			return true;
-		
-		return false;
+		return ( distanceRoot <= m_MaximalActionDistanceSq || distanceHead <= m_MaximalActionDistanceSq );
 	}
 };

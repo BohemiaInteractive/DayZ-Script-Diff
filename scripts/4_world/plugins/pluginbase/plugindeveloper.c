@@ -58,11 +58,7 @@ class PluginDeveloper extends PluginBase
 	
 	void OnRPC(PlayerBase player, int rpc_type, ParamsReadContext ctx)
 	{
-		if ( !GetGame().IsDebug() )
-		{
-			return;
-		}
-		
+	#ifdef DIAG_DEVELOPER
 		switch (rpc_type)
 		{
 			case ERPCs.DEV_RPC_SPAWN_ITEM_ON_GROUND:
@@ -107,7 +103,8 @@ class PluginDeveloper extends PluginBase
 			}
 		}
 		
-		DeveloperTeleport.OnRPC(player, rpc_type, ctx);
+		DeveloperTeleport.OnRPC(player, rpc_type, ctx);		
+	#endif
 	}
 	
 	// Public API

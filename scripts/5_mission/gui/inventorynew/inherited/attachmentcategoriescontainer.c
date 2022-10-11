@@ -248,35 +248,27 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 		}
 	}
 	
-	void ExpandCollapseContainer()
+	override void ExpandCollapseContainer()
 	{
-		if( m_OpenedContainers.Count() > m_ActiveIndex )
+		if (m_OpenedContainers.Count() > m_ActiveIndex)
 		{
-			AttachmentCategoriesSlotsContainer acsc = AttachmentCategoriesSlotsContainer.Cast( m_OpenedContainers.Get( m_ActiveIndex ) );
-			if( acsc )
+			//c - container where selected icon is part of
+			Container c = Container.Cast(m_OpenedContainers.Get( m_ActiveIndex ));
+			//cc - container connected to selected icon (this container will be close/open)
+			ClosableContainer cc;
+			//icon - selected icon
+			SlotsIcon icon = c.GetFocusedSlotsIcon();
+			
+			if (icon)
 			{
-				int index = acsc.GetParentID() * ITEMS_IN_ROW + acsc.GetFocusedID() + m_SlotsCount;
+				cc = ClosableContainer.Cast(icon.GetContainer());
+			}
+			
+			if (cc)
+			{
 				
-				ClosableContainer c = ClosableContainer.Cast( m_Body.Get( index ) );
-				
-				if( c )
-				{
-					string icon_name_open = "RadialIcon" + ( acsc.GetFocusedID() );
-					string icon_name_closed = "RadialIconClosed" + ( acsc.GetFocusedID() );
-					if( c.IsOpened() )
-					{
-						c.Close();
-						acsc.GetRootWidget().FindAnyWidget( icon_name_open ).Show( false );
-						acsc.GetRootWidget().FindAnyWidget( icon_name_closed ).Show( true );
-					}
-					else
-					{
-						c.Open();
-						acsc.GetRootWidget().FindAnyWidget( icon_name_closed ).Show( false );
-						acsc.GetRootWidget().FindAnyWidget( icon_name_open ).Show( true );
-					}
-					RecomputeOpenedContainers();
-				}
+				cc.Toggle();
+				RecomputeOpenedContainers();
 			}
 		}
 	}
@@ -356,12 +348,14 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 				ar = new AttachmentCategoriesRow( this, -1 );
 				ar.Init(attachments_categories_count, i, attachment_category, config_path_attachment_categories, m_Entity, m_Body.Count() );
 
-				Insert(ar);
+				//Insert(ar);
 				ar.SetSlotIcon(icon);
-				icon.SetContainer(ar);
+				//icon.SetContainer(ar);
 				
 				icon.GetRadialIconPanel().Show( true );
-				ar.Open();
+				ar.Open();		
+				icon.SetContainer(ar);
+				Insert(ar);
 			}
 		}
 		

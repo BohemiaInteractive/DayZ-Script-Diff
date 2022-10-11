@@ -445,7 +445,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		m_KeyboardSelector.Focus();
 		ShowConsoleSensitivityOptions(index);
 		m_Menu.OnChanged();
-		m_Menu.ToggleDependentOptions(EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,index == 1);
+		//m_Menu.ToggleDependentOptions(EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,index == 1);
 	}
 	
 	void UpdateAimHelper( int index )

@@ -88,11 +88,7 @@ class OptionsMenu extends UIScriptedMenu
 		m_Tabber.m_OnAttemptTabSwitch.Insert(OnAttemptTabSwitch);
 		
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
-		
 		OnChanged();
-		
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 		
 		return layoutRoot;
 	}
@@ -110,24 +106,6 @@ class OptionsMenu extends UIScriptedMenu
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		switch (pInputDeviceType)
-		{
-		case EInputDeviceType.CONTROLLER:
-			#ifdef PLATFORM_CONSOLE
-			UpdateControlsElements();
-			layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
-			#endif
-		break;
-
-		default:
-			#ifdef PLATFORM_CONSOLE
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
-			{
-				layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
-			}
-			#endif
-		break;
-		}
 	}
 	
 	override bool OnClick( Widget w, int x, int y, int button )
@@ -788,31 +766,40 @@ class OptionsMenu extends UIScriptedMenu
 	
 	protected void UpdateControlsElements()
 	{
-		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
-		string text = "";
-		if (m_CanToggle)
-		{
-			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#dialog_change", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		}
-		if (m_CanApplyOrReset)
-		{
-			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Apply_ApplyText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		}
-		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#menu_default", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		if (m_CanApplyOrReset)
-		{
-			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_undo", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		}
-		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		toolbar_text.SetText(text);
+		bool toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
 		
-		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
-		RichTextWidget toolbar_x2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ApplyIcon0"));
-		RichTextWidget toolbar_y2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ResetIcon0"));
-		RichTextWidget toolbar_def2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("DefaultIcon0"));
-		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_x2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_y2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_def2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER));
+		if (toolbarShow)
+		{
+			RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
+			string text = "";
+			if (m_CanToggle)
+			{
+				text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#dialog_change", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			}
+			if (m_CanApplyOrReset)
+			{
+				text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Apply_ApplyText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			}
+			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#menu_default", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			if (m_CanApplyOrReset)
+			{
+				text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_undo", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			}
+			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			toolbar_text.SetText(text);
+		}
+		else
+		{
+			RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
+			RichTextWidget toolbar_x2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ApplyIcon0"));
+			RichTextWidget toolbar_y2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ResetIcon0"));
+			RichTextWidget toolbar_def2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("DefaultIcon0"));
+			toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER));
+			toolbar_x2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER));
+			toolbar_y2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "", EUAINPUT_DEVICE_CONTROLLER));
+			toolbar_def2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER));
+		}
+		
+		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
 	}
 }

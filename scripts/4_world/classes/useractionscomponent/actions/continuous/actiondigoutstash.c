@@ -4,122 +4,109 @@ class ActionDigOutStashCB : ActionContinuousBaseCB
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DIG_STASH);
 	}
-};
+}
 
 class ActionDigOutStash: ActionContinuousBase
 {	
 	void ActionDigOutStash()
 	{
-		m_CallbackClass = ActionDigOutStashCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_DIGUPCACHE;
-		m_FullBody = true;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
-		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_LOW;
-		
-		m_Text = "#dig_stash";
+		m_CallbackClass 	= ActionDigOutStashCB;
+		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_DIGUPCACHE;
+		m_FullBody 			= true;
+		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_ERECT;
+		m_SpecialtyWeight 	= UASoftSkillsWeight.ROUGH_LOW;
+		m_Text 				= "#dig_stash";
 	}
 	
 	override void CreateConditionComponents()  
-	{	
-		
-		m_ConditionTarget = new CCTObject(UAMaxDistances.DEFAULT);
-		m_ConditionItem = new CCINonRuined;
+	{
+		m_ConditionTarget	= new CCTObject(UAMaxDistances.DEFAULT);
+		m_ConditionItem 	= new CCINonRuined();
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		ItemBase target_IB;
-		
-		if ( Class.CastTo(target_IB, target.GetObject()) )
+		if (Class.CastTo(target_IB, target.GetObject()))
 		{			
-			if ( target_IB.CanBeDigged() )
+			if (target_IB.CanBeDigged())
 			{
-				if ( target_IB.IsInherited(UndergroundStash) )
-				{
-					return true;
-				}
+				return target_IB.IsInherited(UndergroundStash);
 			}
 		}
 		
 		return false;
 	}
 
-	override void OnExecuteClient( ActionData action_data )
+	override void OnExecuteClient(ActionData action_data)
 	{
-		super.OnExecuteClient( action_data );
+		super.OnExecuteClient(action_data);
 		
-		SpawnParticleShovelRaise( action_data );
+		SpawnParticleShovelRaise(action_data);
 	}
 	
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{
-		super.OnExecuteServer( action_data );
+		super.OnExecuteServer(action_data);
 		
-		if ( !GetGame().IsMultiplayer() ) // Only in singleplayer
+		if (!GetGame().IsMultiplayer())
 		{
-			SpawnParticleShovelRaise( action_data );
+			SpawnParticleShovelRaise(action_data);
 		}
 	}
 	
-	void SpawnParticleShovelRaise( ActionData action_data )
+	void SpawnParticleShovelRaise(ActionData action_data)
 	{
-		PlayerBase player = action_data.m_Player;
-		ParticleManager.GetInstance().PlayOnObject( ParticleList.DIGGING_STASH, player );
+		ParticleManager.GetInstance().PlayOnObject(ParticleList.DIGGING_STASH, action_data.m_Player);
 	}
-	
-	
+
 	override void OnFinishProgressServer( ActionData action_data )
 	{
-		Object targetObject = action_data.m_Target.GetObject();
-		EntityAI targetEntity = EntityAI.Cast(targetObject);
-		UndergroundStash target_stash;
+		EntityAI targetEntity = EntityAI.Cast(action_data.m_Target.GetObject());
 		if (!targetEntity)
 		{
-			Error("ActionDigStash - Cannot get inventory of targetObject=" + targetObject);
+			ErrorEx("Cannot get entity=" + targetEntity);
 			return;
 		}
 		
-		InventoryLocation target_IL = new InventoryLocation;
+		InventoryLocation target_IL = new InventoryLocation();
 		if (!targetEntity.GetInventory().GetCurrentInventoryLocation(target_IL))
 		{
-			Error("ActionDigStash: Cannot get inventory location of targetObject=" + targetObject);
+			ErrorEx("Cannot get inventory location of entity=" + targetEntity);
 			return;
 		}
 		
 		// Dig out of stash
-		if ( Class.CastTo(target_stash, targetEntity) )
+		UndergroundStash stash;
+		if (Class.CastTo(stash, targetEntity))
 		{
-			ItemBase chest = target_stash.GetStashedItem();
-			
-			if (chest)
+			ItemBase stashedItem = stash.GetStashedItem();
+			if (stashedItem)
 			{
-				DigOutStashLambda lambda(target_stash, "", action_data.m_Player);
+				DigOutStashLambda lambda(stash, "", action_data.m_Player);
 				action_data.m_Player.ServerReplaceItemWithNew(lambda);
 			}
 			else
-				g_Game.ObjectDelete( target_stash );
+				g_Game.ObjectDelete(stash);
 		}
 
 		//Apply tool damage
 		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 10);
-		
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 	}
 	
-	override string GetAdminLogMessage( ActionData action_data )
+	override string GetAdminLogMessage(ActionData action_data)
 	{
-		string message = string.Format("Player %1 Dug out %2 at position %3", action_data.m_Player, action_data.m_Target.GetObject(), action_data.m_Target.GetObject().GetPosition() );
-		return message;
+		return string.Format("Player %1 Dug out %2 at position %3", action_data.m_Player, action_data.m_Target.GetObject(), action_data.m_Target.GetObject().GetPosition());
 	}
-};
+}
 
 class DigOutStashLambda : DropEquipAndDestroyRootLambda
 {
-	void DigOutStashLambda(EntityAI old_item, string new_item_type, PlayerBase player)
-	{ }
+	void DigOutStashLambda(EntityAI old_item, string new_item_type, PlayerBase player) {}
 
 	override void CopyOldPropertiesToNew(notnull EntityAI old_item, EntityAI new_item)
 	{
 		super.CopyOldPropertiesToNew(old_item, new_item);
 	}
-};
+}

@@ -130,7 +130,12 @@ class CollapsibleContainer: Container
 	
 	void CollapseButtonOnMouseButtonDown( Widget w )
 	{
-		if( !m_Hidden )
+		Toggle();
+	}
+	
+	override void Toggle()
+	{
+		if (!m_Hidden)
 		{
 			for (int i = 1; i < m_Body.Count(); i++)
 			{
@@ -141,13 +146,10 @@ class CollapsibleContainer: Container
 					c.Close();
 				}
 			}
-
-			//m_Hidden = true;
 			OnHide();
 		}
 		else
 		{
-			//m_Hidden = false;
 			OnShow();
 		}
 		m_Closed = m_Hidden;

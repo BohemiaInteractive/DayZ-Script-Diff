@@ -6,6 +6,7 @@ class ActionExtinguishFireplaceByLiquidCB : ActionContinuousBaseCB
 	override void CreateActionComponent()
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousQuantityExtinguish( UAQuantityConsumed.FIREPLACE_LIQUID, TIME_TO_REPEAT, WETNESS_GAIN_MULTIPLIER );
+		CAContinuousQuantityExtinguish.Cast(m_ActionData.m_ActionComponent).MultiplyQuantityUsed(m_ActionData.m_MainItem.GetLiquidThroughputCoef());
 	}
 };
 

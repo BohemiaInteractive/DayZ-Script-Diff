@@ -11,7 +11,7 @@ class InfluenzaAgent extends AgentBase
 		m_MaxCount 				= 1000;
 		m_Digestibility			= 0.1;
 		m_AntibioticsResistance = 0;
-		m_AutoinfectProbability = CalculateAutoinfectProbability( 0.65 );
+		m_AutoinfectProbability = CalculateAutoinfectProbability( 0.40 );
 		m_TransferabilityAirOut = 1;
 		m_Potency 				= EStatLevels.MEDIUM;
 		m_DieOffSpeed 			= 0.66;

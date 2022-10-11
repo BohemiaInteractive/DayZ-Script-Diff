@@ -203,7 +203,7 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 		if ( inspect_menu )
 		{
 			GetGame().GetMission().GetHud().ShowHudUI( false );
-			GetGame().GetMission().GetHud().ShowQuickbarPlayer( false );
+			GetGame().GetMission().GetHud().ShowQuickbarUI( false );
 			inspect_menu.SetItem( item );
 		}
 	}

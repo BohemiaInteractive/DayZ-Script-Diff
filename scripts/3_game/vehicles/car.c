@@ -83,20 +83,28 @@ class Car extends Transport
 	
 	//!	Returns the current speed of the vehicle in km/h.
 	proto native float GetSpeedometer();
+	
+	//! Returns the current speed of the vehicle in km/h. Value is absolute
+	float GetSpeedometerAbsolute()
+	{
+		return Math.AbsFloat(GetSpeedometer());
+	}
 
 	override bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
 	{
-		float speed = GetSpeedometer();
+		float speed = GetSpeedometerAbsolute();
 		vector direction = GetDirection();
 		vector crewPos;
 		vector crewDir;
 		CrewEntryWS( currentSeat, crewPos, crewDir );
 		crewPos[1] = crewPos[1] + maxAllowedObjHeight + playerHeight * 0.5;
 		float vExtents = horizontalExtents;
+
 		if (speed > 8)
 			vExtents *= 6;
 		if (speed > 8)
 			horizontalExtents = 2;
+
 		array<Object> excluded = new array<Object>;
 		array<Object> collided = new array<Object>;
 		excluded.Insert(this);
@@ -105,30 +113,32 @@ class Car extends Transport
 		foreach (Object o : collided)
 		{
 			EntityAI e = EntityAI.Cast(o);			
-			// CanBeSkinned means it is a dead entity which should not block the door
-			if ( IsIgnoredObject(o) )
+			if (IsIgnoredObject(o))
 				continue;
 			
 			vector minmax[2];
-			if ( o.GetCollisionBox(minmax) )
+			if (o.GetCollisionBox(minmax))
 				return false;
 		}
+
 		return true;
 	}
 	
 	override Shape DebugFreeAreaAtDoor( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
 	{
-		float speed = GetSpeedometer();
+		float speed = GetSpeedometerAbsolute();
 		vector direction = GetDirection();
 		vector crewPos;
 		vector crewDir;
 		CrewEntryWS( currentSeat, crewPos, crewDir );
 		crewPos[1] = crewPos[1] + maxAllowedObjHeight + playerHeight * 0.5;
 		float vExtents = horizontalExtents;
+
 		if (speed > 8)
 			vExtents *= 6;
 		if (speed > 8)
 			horizontalExtents = 2;
+
 		array<Object> excluded = new array<Object>;
 		array<Object> collided = new array<Object>;
 		excluded.Insert(this);
