@@ -182,7 +182,7 @@ class Inventory: LayoutHolder
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		//OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 		
 		UpdateConsoleToolbar();
 		#endif
@@ -199,20 +199,20 @@ class Inventory: LayoutHolder
 	{
 		switch (pInputDeviceType)
 		{
-		case EInputDeviceType.CONTROLLER:
-			UpdateConsoleToolbar();
-			m_BottomConsoleToolbar.Show(true);
-		break;
-
-		default:
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
-			{
-				m_BottomConsoleToolbar.Show(false);
-				m_TopConsoleToolbarVicinity.Show(false);
-				m_TopConsoleToolbarHands.Show(false);
-				m_TopConsoleToolbarEquipment.Show(false);
-			}
-		break;
+			case EInputDeviceType.CONTROLLER:
+				m_BottomConsoleToolbar.Show(true);
+				UpdateConsoleToolbar();
+			break;
+	
+			default:
+				if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+				{
+					m_BottomConsoleToolbar.Show(false);
+					m_TopConsoleToolbarVicinity.Show(false);
+					m_TopConsoleToolbarHands.Show(false);
+					m_TopConsoleToolbarEquipment.Show(false);
+				}
+			break;
 		}
 	}
 	
@@ -1257,12 +1257,16 @@ class Inventory: LayoutHolder
 	void RefreshQuickbar()
 	{
 		#ifndef PLATFORM_CONSOLE
-		m_QuickbarWidget.Show(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+		m_QuickbarWidget.Show(true);
 		#else
-		m_QuickbarWidget.Show(false);
+		m_QuickbarWidget.Show(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 		#endif
 		
+		#ifndef PLATFORM_CONSOLE
 		if ( m_Quickbar )
+		#else
+		if ( m_Quickbar && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
+		#endif
 		{
 			m_Quickbar.UpdateItems( m_QuickbarWidget );
 		}
@@ -1849,52 +1853,17 @@ class Inventory: LayoutHolder
 	{
 		HideOwnedTooltip();
 		
-		if (direction == Direction.UP)
+		if (m_LeftArea.IsActive())
 		{
-			if ( !ItemManager.GetInstance().IsMicromanagmentMode() ) //TODO: do we leave the focus when moving like that?
-			{
-				m_RightArea.UnfocusGrid();
-				m_LeftArea.UnfocusGrid();
-				m_HandsArea.UnfocusGrid();
-			}
-			if ( m_LeftArea.IsActive() )
-			{
-				m_LeftArea.SetPreviousActive();
-			}
-			else if ( m_RightArea.IsActive() )
-			{
-				m_RightArea.SetPreviousActive();
-			}
-			else if ( m_HandsArea.IsActive() )
-			{
-				m_HandsArea.SetPreviousActive();
-			}
-			
-			UpdateConsoleToolbar();
+			m_LeftArea.MoveGridCursor(direction);
 		}
-		else if (direction == Direction.DOWN)
+		else if (m_RightArea.IsActive())
 		{
-			if ( !ItemManager.GetInstance().IsMicromanagmentMode() ) //TODO: do we leave the focus when moving like that?
-			{
-				m_RightArea.UnfocusGrid();
-				m_LeftArea.UnfocusGrid();
-				m_HandsArea.UnfocusGrid();
-			}
-			
-			if ( m_LeftArea.IsActive() )
-			{
-				m_LeftArea.SetNextActive();
-			}
-			else if ( m_RightArea.IsActive() )
-			{
-				m_RightArea.SetNextActive();
-			}
-			else if ( m_HandsArea.IsActive() )
-			{
-				m_HandsArea.SetNextActive();
-			}
-			
-			UpdateConsoleToolbar();
+			m_RightArea.MoveGridCursor(direction);
+		}
+		else if (m_HandsArea.IsActive())
+		{
+			m_HandsArea.MoveGridCursor(direction);
 		}
 	}
 	

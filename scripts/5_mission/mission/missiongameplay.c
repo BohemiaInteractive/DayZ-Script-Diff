@@ -290,6 +290,8 @@ class MissionGameplay extends MissionBase
 			GetUApi().GetInputByName("UAPersonView").Unlock();
 			GetUApi().GetInputByName("UALeanLeft").Unlock();
 			GetUApi().GetInputByName("UALeanRight").Unlock();
+			
+			RefreshExcludes();
 		}
 		
 		//Radial quickbar

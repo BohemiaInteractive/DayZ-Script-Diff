@@ -214,5 +214,29 @@ class ZmbM_NBC_Grey extends ZombieMaleBase
 	}
 };
 
+class ZmbM_Mummy extends ZombieMaleBase
+{
+	#ifndef SERVER
+	protected ZombieMummyLight m_EyeLight;
+	#endif
+	
+	void ZmbM_Mummy()
+	{
+		#ifndef SERVER
+		m_EyeLight = ZombieMummyLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(ZombieMummyLight, this, "MummyLight"));
+		#endif
+	}
 
+	void ~ZmbM_Mummy()
+	{
+		#ifndef SERVER
+		if (m_EyeLight)
+			m_EyeLight.Destroy();
+		#endif
+	}
 
+	override bool ResistContaminatedEffect()
+	{
+		return true;
+	}
+};

@@ -6,5 +6,6 @@ class CombinationLock4 extends CombinationLock
 		m_LockDigits 			= 4;
 		m_Combination		 	= 1111;
 		m_CombinationLocked 	= 9999;
+		m_IsLocked 				= false;
 	}	
 }

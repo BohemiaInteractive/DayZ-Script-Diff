@@ -153,6 +153,12 @@ class OptionSelector extends OptionSelectorBase
 		return m_SelectedOptionIndex == 1;
 	}
 	
+	//! Returns false for the selector in 'disabled' states
+	bool IsSelectorEnabled()
+	{
+		return m_Enabled;
+	}
+	
 	/*
 	int GetOptionIndex()
 	{
@@ -223,6 +229,9 @@ class OptionSelector extends OptionSelectorBase
 			m_NextOption.Show( true );
 			m_PreviousOption.ClearFlags( WidgetFlags.IGNOREPOINTER );
 			m_PreviousOption.Show( true );
+		#else
+			m_Parent.ClearFlags(WidgetFlags.NOFOCUS);
+			//m_Parent.Show(true);
 		#endif
 	}
 	
@@ -234,6 +243,37 @@ class OptionSelector extends OptionSelectorBase
 			m_NextOption.Show( false );
 			m_PreviousOption.SetFlags( WidgetFlags.IGNOREPOINTER );
 			m_PreviousOption.Show( false );
+		#else
+			m_Parent.SetFlags(WidgetFlags.NOFOCUS);
+			//m_Parent.Show(false);
 		#endif
+	}
+	
+	override void ColorNormalConsole(Widget w)
+	{
+		super.ColorNormalConsole(w);
+		
+		if (!w)
+			return;
+		
+		if (m_SelectedOption)
+		{
+			m_SelectedOption.SetColor(ARGB(255,255,255,255));
+			//m_Root.SetColor(ARGB(255,0,0,255));
+		}
+	}
+	
+	override void ColorDisabledConsole(Widget w)
+	{
+		super.ColorDisabledConsole(w);
+		
+		if (!w)
+			return;
+		
+		if (m_SelectedOption)
+		{
+			m_SelectedOption.SetColor(ARGB(120,255,255,255));
+			//m_Root.SetColor(ARGB(120,0,255,0));
+		}
 	}
 }

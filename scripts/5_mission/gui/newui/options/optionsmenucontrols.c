@@ -5,6 +5,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	protected Widget						m_SettingsRoot;
 	protected Widget						m_DetailsRoot;
 #ifdef PLATFORM_CONSOLE
+	protected bool 							m_MaKOptionAvailable;
 	protected Widget						m_ConsoleControllerSensitivityWidget;
 	protected Widget						m_ConsoleMouseSensitivityWidget;
 #endif
@@ -113,6 +114,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 
 		// controller (consoles only)
 		#ifdef PLATFORM_CONSOLE
+			m_MaKOptionAvailable = g_Game.GetGameState() != DayZGameState.IN_GAME || GetGame().GetWorld().IsMouseAndKeyboardEnabledOnServer();
 			m_ConsoleControllerSensitivityWidget = m_Root.FindAnyWidget( "controller_settings_root" );
 			m_ConsoleMouseSensitivityWidget = m_Root.FindAnyWidget( "mouse_settings_root" );
 		
@@ -143,10 +145,10 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			controllerRS_AimMod_VSensitivitySettingOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_YAXIS_AIM_MOD );
 			controllerRS_AimMod_HSensitivitySettingOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_XAXIS_AIM_MOD );
 			controllerRS_AimMod_CurvatureSettingOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_CURVATURE_AIM_MOD );
-
-			m_KeyboardSelector = new OptionSelectorMultistate( keyboardSettingOption, m_KeyboardOption.GetIndex(), this, false, opt );
+		
+			m_KeyboardSelector = new OptionSelectorMultistate( keyboardSettingOption, m_KeyboardOption.GetIndex(), this, !m_MaKOptionAvailable, opt );
 			m_AimHelperSelector = new OptionSelectorMultistate( aimHelperSettingOption, m_AimHelperOption.GetIndex(), this, false, opt );
-
+		
 			m_ControllerLS_VSensitivitySelector = new OptionSelectorSlider( controllerLS_VSensitivitySettingOption, m_ControllerLS_VSensitivityOption.ReadValue(), this, false, m_ControllerLS_VSensitivityOption.GetMin(), m_ControllerLS_VSensitivityOption.GetMax() );
 			m_ControllerLS_VSensitivitySelector.SetStep(SLIDER_STEP);
 			m_ControllerLS_HSensitivitySelector = new OptionSelectorSlider( controllerLS_HSensitivitySettingOption, m_ControllerLS_HSensitivityOption.ReadValue(), this, false, m_ControllerLS_HSensitivityOption.GetMin(), m_ControllerLS_HSensitivityOption.GetMax() );
@@ -182,6 +184,9 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			m_ControllerRS_AimMod_CurvatureSelector.m_OptionChanged.Insert( UpdateControllerRS_AimMod_Curvature );
 		
 			ShowConsoleSensitivityOptions(m_KeyboardOption.GetIndex());
+		
+			bool MaKState = m_KeyboardSelector.IsEnabled() && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(m_Menu.ToggleDependentOptions,EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,MaKState);
 		#endif
 				
 		FillTextMap();
@@ -209,10 +214,18 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		m_Menu.EnterScriptedMenu( MENU_KEYBINDINGS );
 	}
 	
+	//! Focuses the first viable item
 	void Focus()
 	{
 		#ifdef PLATFORM_CONSOLE
+		if (m_KeyboardSelector && m_KeyboardSelector.IsSelectorEnabled())
+		{
 			m_KeyboardSelector.Focus();
+		}
+		else if (m_AimHelperSelector)
+		{
+			m_AimHelperSelector.Focus();
+		}
 		#endif
 	}
 	
@@ -308,11 +321,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 
 	bool IsFocusable( Widget w )
 	{
-		if( w )
-		{
-			return ( w == m_Keybindings );
-		}
-		return false;
+		return w && (w.GetFlags() & ~WidgetFlags.NOFOCUS);
 	}
 	
 	bool IsChanged()
@@ -327,23 +336,27 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	void Apply()
 	{
 		#ifdef PLATFORM_CONSOLE
-			if( m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0 )
+			if (m_MaKOptionAvailable)
 			{
-				m_KeyboardOption.Switch();
-				g_Game.DeleteGamepadDisconnectMenu();
-			}
-			else if( !m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1 )
-			{
-				m_KeyboardOption.Switch();
-				m_KeyboardSelector.Focus();
-				if( g_Game.ShouldShowControllerDisconnect() || ( GetGame().IsClient() && !GetGame().GetWorld().IsMouseAndKeyboardEnabledOnServer() ) )
+				if (m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0)
 				{
-					g_Game.CreateGamepadDisconnectMenu();
+					m_KeyboardOption.Switch();
+					g_Game.DeleteGamepadDisconnectMenu();
+				}
+				else if (!m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1)
+				{
+					m_KeyboardOption.Switch();
+					if (!GetGame().GetInput().IsActiveGamepadSelected())
+					{
+						g_Game.CreateGamepadDisconnectMenu();
+					}
 				}
 			}
 			
-			GetGame().GetInput().EnableMouseAndKeyboard( m_KeyboardSelector.IsEnabled() );
-			GetGame().GetUIManager().ShowUICursor( m_KeyboardSelector.IsEnabled() );
+			Focus();
+			
+			GetGame().GetInput().EnableMouseAndKeyboard( m_KeyboardOption.GetIndex() );
+			GetGame().GetUIManager().ShowUICursor( m_MaKOptionAvailable && m_KeyboardOption.GetIndex() );
 			m_Menu.Refresh();
 		#endif
 	}
@@ -430,6 +443,8 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 				m_ControllerRS_AimMod_HSensitivitySelector.SetValue( m_ControllerRS_AimMod_HSensitivityOption.GetDefault(), true );
 			if( m_ControllerRS_AimMod_CurvatureSelector )
 				m_ControllerRS_AimMod_CurvatureSelector.SetValue( m_ControllerRS_AimMod_CurvatureOption.GetDefault(), true );
+		
+			Focus();
 		#endif
 		
 	}
@@ -437,15 +452,15 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 #ifdef PLATFORM_CONSOLE
 	void ShowConsoleSensitivityOptions(int index)
 	{
-		m_ConsoleMouseSensitivityWidget.Show(index == 1);
+		m_ConsoleMouseSensitivityWidget.Show(index == 1 && m_MaKOptionAvailable);
 	}
 	
 	void UpdateKeyboard( int index )
 	{
-		m_KeyboardSelector.Focus();
+		Focus();
 		ShowConsoleSensitivityOptions(index);
 		m_Menu.OnChanged();
-		//m_Menu.ToggleDependentOptions(EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,index == 1);
+		//m_Menu.ToggleDependentOptions(EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,index == 1 && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 	}
 	
 	void UpdateAimHelper( int index )
@@ -628,9 +643,9 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	void ColorRed( Widget w )
 	{
 		SetFocus( w );
-		if( w.IsInherited( ButtonWidget ) )
+		ButtonWidget button;
+		if (Class.CastTo(button,w))
 		{
-			ButtonWidget button = ButtonWidget.Cast( w );
 			button.SetTextColor( ARGB( 255, 255, 0, 0 ) );
 			button.SetAlpha( 0.9 );
 		}
@@ -638,11 +653,11 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	
 	void ColorWhite( Widget w, Widget enterW )
 	{
-		if( w.IsInherited( ButtonWidget ) )
+		ButtonWidget button;
+		if (Class.CastTo(button,w))
 		{
-			ButtonWidget button = ButtonWidget.Cast( w );
 			button.SetTextColor( ARGB( 255, 255, 255, 255 ) );
-			button.SetAlpha( 0.75 );
+			button.SetAlpha( 0.0 );
 		}
 	}
 }

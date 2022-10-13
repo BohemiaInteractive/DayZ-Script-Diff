@@ -22,6 +22,8 @@ class OptionSelectorMultistate extends OptionSelector
 			m_SelectedOptionIndex = current_index;
 		}
 		
+		/*
+		//handled in the 'OptionSelector'
 		m_Enabled = !disabled;
 		if( m_Enabled )
 		{
@@ -30,8 +32,8 @@ class OptionSelectorMultistate extends OptionSelector
 		else
 		{
 			Disable();
-		}
-		
+		}*/
+	
 		m_SelectedOption.SetText( m_Options.Get( m_SelectedOptionIndex ) );
 	}
 	

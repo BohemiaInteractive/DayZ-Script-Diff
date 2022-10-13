@@ -136,8 +136,8 @@ class MapMenu extends UIScriptedMenu
 			
 			if (m_Hud)
 			{
-				m_Hud.ShowHudPlayer(false);
-				m_Hud.ShowQuickbarPlayer(false);
+				m_Hud.ShowHudUI(false);
+				m_Hud.ShowQuickbarUI(false);
 			}
 		}
 		
@@ -325,8 +325,8 @@ class MapMenu extends UIScriptedMenu
 
 		if (m_Hud)
 		{
-			m_Hud.ShowHudPlayer(m_Hud.IsHideHudPlayer());
-			m_Hud.ShowQuickbarPlayer(m_Hud.IsHideQuickbarPlayer());
+			m_Hud.ShowHudUI(true);
+			m_Hud.ShowQuickbarUI(true);
 		}
 
 		if (CfgGameplayHandler.GetMapIgnoreMapOwnership())

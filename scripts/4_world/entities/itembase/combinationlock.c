@@ -15,6 +15,7 @@ class CombinationLock extends ItemBase
 	int m_Combination;					//actual combination that is dialed on lock
 	int m_CombinationLocked;			//combination that was dialed on lock before the shuffle
 	int m_DialIndex;					//index of current combination dial
+	protected bool m_IsLocked;
 	
 	protected LockAction m_LockActionPerformed 		= LockAction.NONE;
 	
@@ -35,8 +36,8 @@ class CombinationLock extends ItemBase
 		
 		//synchronized variables
 		int combination_length = Math.Pow( 10, m_LockDigits );
+		RegisterNetSyncVariableBool( "m_IsLocked" );
 		RegisterNetSyncVariableInt( "m_Combination", 0, combination_length - 1 );
-		RegisterNetSyncVariableInt( "m_CombinationLocked", 0, combination_length - 1 );
 		RegisterNetSyncVariableInt( "m_DialIndex", 0, m_LockDigits - 1 );
 		RegisterNetSyncVariableInt( "m_LockActionPerformed", 0, LockAction.COUNT );
 	}
@@ -47,6 +48,7 @@ class CombinationLock extends ItemBase
 		m_LockDigits 			= 3;
 		m_Combination		 	= 111;
 		m_CombinationLocked 	= 999;		
+		m_IsLocked 				= false;
 	}
 
 	override void EEInit()
@@ -231,6 +233,7 @@ class CombinationLock extends ItemBase
 		//set new number		
 		SetCombination( dialed_text.ToInt() );
 		m_LockActionPerformed = LockAction.DIAL_INDEX_CHANGED;
+		CheckLockedStateServer();
 		
 		//synchronize
 		Synchronize();
@@ -261,7 +264,6 @@ class CombinationLock extends ItemBase
 		
 		//performed action
 		m_LockActionPerformed = LockAction.DIAL_NUMBER_CHANED;
-		
 		//synchronize
 		Synchronize();
 	}	
@@ -285,6 +287,7 @@ class CombinationLock extends ItemBase
 			}
 			ShuffleLock();
 			SetTakeable(false);
+			CheckLockedStateServer();
 			//synchronize
 			Synchronize();
 		}
@@ -315,6 +318,7 @@ class CombinationLock extends ItemBase
 			
 			m_LockActionPerformed = LockAction.UNLOCKED;
 			SetTakeable(true);
+			CheckLockedStateServer();
 			//synchronize
 			Synchronize();
 		}
@@ -349,12 +353,12 @@ class CombinationLock extends ItemBase
 	
 	bool IsLocked()
 	{
-		if ( m_Combination != m_CombinationLocked )
-		{
-			return true;
-		}
-		
-		return false;
+		return m_IsLocked;
+	}
+	
+	void CheckLockedStateServer()
+	{
+		m_IsLocked = m_Combination != m_CombinationLocked;
 	}
 	
 	bool IsLockedOnGate()

@@ -10,12 +10,6 @@ class UndergroundStash extends ItemBase
 		SetPosition(pos);
 	}
 	
-	void PlaceOnGround(EntityAI pEntity)
-	{
-		PlaceOnGround();
-		SetOrientation(pEntity.GetOrientation());
-	}
-	
 	ItemBase GetStashedItem()
 	{
 		ItemBase item;		

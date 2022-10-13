@@ -179,7 +179,7 @@ class OptionsMenu extends UIScriptedMenu
 	{
 		m_ControlsTab.Apply();
 		
-		if ( m_GameTab.IsChanged() )
+		//if ( m_GameTab.IsChanged() )
 		{
 			m_GameTab.Apply();
 		}
@@ -193,7 +193,7 @@ class OptionsMenu extends UIScriptedMenu
 		// save input configuration
 		GetUApi().Export();
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+		if (GetGame().GetInput().IsEnabledMouseAndKeyboard()) //useless on consoles
 		{
 			m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
 			ColorDisable(m_Apply);
@@ -240,7 +240,6 @@ class OptionsMenu extends UIScriptedMenu
 		}
 		else
 		{
-			//m_Options.Revert();
 			ResetCurrentTab();
 		}
 		
@@ -627,7 +626,7 @@ class OptionsMenu extends UIScriptedMenu
 				Apply();
 			}
 		}
-		else if ( GetGame().GetInput().LocalPress("UAUICredits",false) ) //TODO: use unique input action!
+		else if ( GetGame().GetInput().LocalPress("UAUICredits",false) )
 		{
 			if (m_CanApplyOrReset)
 			{

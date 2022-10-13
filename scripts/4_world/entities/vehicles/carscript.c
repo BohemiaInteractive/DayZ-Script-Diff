@@ -223,9 +223,9 @@ class CarScript extends Car
 		RegisterNetSyncVariableBool("m_HeadlightsOn");
 		RegisterNetSyncVariableBool("m_BrakesArePressed");
 		RegisterNetSyncVariableBool("m_ForceUpdateLights");
+		RegisterNetSyncVariableBool("m_EngineZoneReceivedHit");
 		RegisterNetSyncVariableBoolSignal("m_PlayCrashSoundLight");
 		RegisterNetSyncVariableBoolSignal("m_PlayCrashSoundHeavy");
-		RegisterNetSyncVariableBoolSignal("m_EngineZoneReceivedHit");
 		RegisterNetSyncVariableInt("m_CarHornState", ECarHornState.OFF, ECarHornState.LONG);
 		
 		if ( MemoryPointExists("ptcExhaust_end") )
@@ -707,6 +707,10 @@ class CarScript extends Car
 						dmg = EngineGetRPM() * 0.001 * Math.RandomFloat( 0.02, 1.0 );  //CARS_TICK_DMG_MIN; //CARS_TICK_DMG_MAX
 						ProcessDirectDamage(DamageType.CUSTOM, null, "Engine", "EnviroDmg", vector.Zero, dmg);
 						SetEngineZoneReceivedHit(true);
+					}
+					else
+					{
+						SetEngineZoneReceivedHit(false);
 					}
 
 					//! leaking of coolant from radiator when damaged
@@ -1252,6 +1256,7 @@ class CarScript extends Car
 		UpdateLights();
 		
 		HandleEngineSound(CarEngineSoundState.STOP_OK);
+		SetEngineZoneReceivedHit(false);
 		
 		m_EngineBeforeStart = false;
 	}
@@ -1288,123 +1293,112 @@ class CarScript extends Car
 	
 	void UpdateLightsClient(int newGear = -1)
 	{
-		if (EngineIsOn())
+		int gear;
+		
+		if (newGear == -1)
 		{
-			int gear;
+			gear = GetGear();
+		}
+		else
+		{
+			gear = newGear;
+		}
+		
+		if (m_HeadlightsOn)
+		{
+			if (!m_Headlight && m_HeadlightsState != CarHeadlightBulbsState.NONE)
+			{
+				m_Headlight = CreateFrontLight();
+			}
 			
-			if (newGear == -1)
+			if (m_Headlight)
 			{
-				gear = GetGear();
-			}
-			else
-			{
-				gear = newGear;
-			}
-			
-			if (m_HeadlightsOn)
-			{
-				if (!m_Headlight && m_HeadlightsState != CarHeadlightBulbsState.NONE)
+				switch (m_HeadlightsState)
 				{
-					m_Headlight = CreateFrontLight();
-				}
-				
-				if (m_Headlight)
-				{
-					switch (m_HeadlightsState)
-					{
-					case CarHeadlightBulbsState.LEFT:
-						m_Headlight.AttachOnMemoryPoint(this, m_LeftHeadlightPoint, m_LeftHeadlightTargetPoint);
-						m_Headlight.SegregateLight();
-						break;
-					case CarHeadlightBulbsState.RIGHT:
-						m_Headlight.AttachOnMemoryPoint(this, m_RightHeadlightPoint, m_RightHeadlightTargetPoint);
-						m_Headlight.SegregateLight();
-						break;
-					case CarHeadlightBulbsState.BOTH:
-						vector local_pos_left = GetMemoryPointPos(m_LeftHeadlightPoint);
-						vector local_pos_right = GetMemoryPointPos(m_RightHeadlightPoint);
-						
-						vector local_pos_middle = (local_pos_left + local_pos_right) * 0.5;
-						m_Headlight.AttachOnObject(this, local_pos_middle);
-						m_Headlight.AggregateLight();
-						break;
-					default:
-						m_Headlight.FadeOut();
-						m_Headlight = null;
-					}
-				}
-			}
-			else
-			{
-				if (m_Headlight)
-				{
+				case CarHeadlightBulbsState.LEFT:
+					m_Headlight.AttachOnMemoryPoint(this, m_LeftHeadlightPoint, m_LeftHeadlightTargetPoint);
+					m_Headlight.SegregateLight();
+					break;
+				case CarHeadlightBulbsState.RIGHT:
+					m_Headlight.AttachOnMemoryPoint(this, m_RightHeadlightPoint, m_RightHeadlightTargetPoint);
+					m_Headlight.SegregateLight();
+					break;
+				case CarHeadlightBulbsState.BOTH:
+					vector local_pos_left = GetMemoryPointPos(m_LeftHeadlightPoint);
+					vector local_pos_right = GetMemoryPointPos(m_RightHeadlightPoint);
+					
+					vector local_pos_middle = (local_pos_left + local_pos_right) * 0.5;
+					m_Headlight.AttachOnObject(this, local_pos_middle);
+					m_Headlight.AggregateLight();
+					break;
+				default:
 					m_Headlight.FadeOut();
 					m_Headlight = null;
 				}
 			}
-				
-			// brakes
-			if (m_BrakesArePressed)
+		}
+		else
+		{
+			if (m_Headlight)
 			{
-				switch (gear)
-				{
-				case CarGear.REVERSE:
-				case CarAutomaticGearboxMode.R:
-					m_RearLightType = CarRearLightType.BRAKES_AND_REVERSE;
-					break;
-				default:
-					m_RearLightType = CarRearLightType.BRAKES_ONLY;
-				}
-				//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
+				m_Headlight.FadeOut();
+				m_Headlight = null;
 			}
-			else
+		}
+			
+		// brakes
+		if (m_BrakesArePressed)
+		{
+			switch (gear)
 			{
-				switch (gear)
-				{
-				case CarGear.REVERSE:
-				case CarAutomaticGearboxMode.R:
-					m_RearLightType = CarRearLightType.REVERSE_ONLY;
-					break;
-				default:
-					m_RearLightType = CarRearLightType.NONE;
-				}
-				//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
+			case CarGear.REVERSE:
+			case CarAutomaticGearboxMode.R:
+				m_RearLightType = CarRearLightType.BRAKES_AND_REVERSE;
+				break;
+			default:
+				m_RearLightType = CarRearLightType.BRAKES_ONLY;
 			}
+			//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
+		}
+		else
+		{
+			switch (gear)
+			{
+			case CarGear.REVERSE:
+			case CarAutomaticGearboxMode.R:
+				m_RearLightType = CarRearLightType.REVERSE_ONLY;
+				break;
+			default:
+				m_RearLightType = CarRearLightType.NONE;
+			}
+			//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
+		}
 
-			if (!m_RearLight && m_RearLightType != CarRearLightType.NONE && m_HeadlightsState != CarHeadlightBulbsState.NONE)
-			{
-				m_RearLight = CreateRearLight();
-				vector local_pos = GetMemoryPointPos(m_ReverseLightPoint);
-				m_RearLight.AttachOnObject(this, local_pos, "180 0 0");
-			}
+		if (!m_RearLight && m_RearLightType != CarRearLightType.NONE && m_HeadlightsState != CarHeadlightBulbsState.NONE)
+		{
+			m_RearLight = CreateRearLight();
+			vector local_pos = GetMemoryPointPos(m_ReverseLightPoint);
+			m_RearLight.AttachOnObject(this, local_pos, "180 0 0");
+		}
 
-			// rear lights
-			if (m_RearLight && m_RearLightType != CarRearLightType.NONE && m_HeadlightsState != CarHeadlightBulbsState.NONE)
+		// rear lights
+		if (m_RearLight && m_RearLightType != CarRearLightType.NONE && m_HeadlightsState != CarHeadlightBulbsState.NONE)
+		{
+			switch (m_RearLightType)
 			{
-				switch (m_RearLightType)
-				{
-				case CarRearLightType.BRAKES_ONLY:
-					m_RearLight.SetAsSegregatedBrakeLight();
-					break;
-				case CarRearLightType.REVERSE_ONLY:
-					m_RearLight.SetAsSegregatedReverseLight();
-					break;
-				case CarRearLightType.BRAKES_AND_REVERSE:
-					m_RearLight.AggregateLight();
-					m_RearLight.SetFadeOutTime(1);
-					break;
-				default:
-					m_RearLight.FadeOut();
-					m_RearLight = null;
-				}
-			}
-			else
-			{
-				if (m_RearLight)
-				{
-					m_RearLight.FadeOut();
-					m_RearLight = null;
-				}
+			case CarRearLightType.BRAKES_ONLY:
+				m_RearLight.SetAsSegregatedBrakeLight();
+				break;
+			case CarRearLightType.REVERSE_ONLY:
+				m_RearLight.SetAsSegregatedReverseLight();
+				break;
+			case CarRearLightType.BRAKES_AND_REVERSE:
+				m_RearLight.AggregateLight();
+				m_RearLight.SetFadeOutTime(1);
+				break;
+			default:
+				m_RearLight.FadeOut();
+				m_RearLight = null;
 			}
 		}
 		else
@@ -1414,134 +1408,116 @@ class CarScript extends Car
 				m_RearLight.FadeOut();
 				m_RearLight = null;
 			}
-			
-			if (m_Headlight)
-			{
-				m_Headlight.FadeOut();
-				m_Headlight = null;
-			}
 		}
 	}
 	
 	void UpdateLightsServer(int newGear = -1)
 	{
-		if (EngineIsOn())
+		int gear;
+		
+		if (newGear == -1)
 		{
-			int gear;
-			
-			if (newGear == -1)
+			gear = GetGear();
+			if (GearboxGetType() == CarGearboxType.AUTOMATIC)
 			{
-				gear = GetGear();
-				if (GearboxGetType() == CarGearboxType.AUTOMATIC)
-				{
-					gear = GearboxGetMode();
-				}
-					
-			}
-			else
-			{
-				gear = newGear;
-			}
-			
-			if (m_HeadlightsOn)
-			{
-				DashboardShineOn();
-				TailLightsShineOn();
-				
-				switch (m_HeadlightsState)
-				{
-				case CarHeadlightBulbsState.LEFT:
-					LeftFrontLightShineOn();
-					RightFrontLightShineOff();
-					break;
-				case CarHeadlightBulbsState.RIGHT:
-					LeftFrontLightShineOff();
-					RightFrontLightShineOn();
-					break;
-				case CarHeadlightBulbsState.BOTH:
-					LeftFrontLightShineOn();
-					RightFrontLightShineOn();
-					break;
-				default:
-					LeftFrontLightShineOff();
-					RightFrontLightShineOff();
-				}
-				
-				//Debug.Log(string.Format("m_HeadlightsOn=%1, m_HeadlightsState=%2", m_HeadlightsOn.ToString(), EnumTools.EnumToString(CarHeadlightBulbsState, m_HeadlightsState)));
-			}
-			else
-			{
-				TailLightsShineOff();
-				DashboardShineOff();
-				LeftFrontLightShineOff();
-				RightFrontLightShineOff();
-			}
-				
-			// brakes
-			if (m_BrakesArePressed)
-			{
-				switch (gear)
-				{
-				case CarGear.REVERSE:
-				case CarAutomaticGearboxMode.R:
-					m_RearLightType = CarRearLightType.BRAKES_AND_REVERSE;
-					break;
-				default:
-					m_RearLightType = CarRearLightType.BRAKES_ONLY;
-				}
-
-				//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
-			}
-			else
-			{
-				switch (gear)
-				{
-				case CarGear.REVERSE:
-				case CarAutomaticGearboxMode.R:
-					m_RearLightType = CarRearLightType.REVERSE_ONLY;
-					break;
-				default:
-					m_RearLightType = CarRearLightType.NONE;
-				}
-
-				//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
-			}
-				
-			
-			// rear lights
-			if (m_RearLightType != CarRearLightType.NONE && m_HeadlightsState != CarHeadlightBulbsState.NONE)
-			{
-				switch (m_RearLightType)
-				{
-				case CarRearLightType.BRAKES_ONLY:
-					ReverseLightsShineOff();
-					BrakeLightsShineOn();
-					break;
-				case CarRearLightType.REVERSE_ONLY:
-					ReverseLightsShineOn();
-					BrakeLightsShineOff();
-					break;
-				case CarRearLightType.BRAKES_AND_REVERSE:
-					BrakeLightsShineOn();
-					ReverseLightsShineOn();
-					break;
-				default:
-					ReverseLightsShineOff();
-				}
-			}
-			else
-			{
-				ReverseLightsShineOff();
-				BrakeLightsShineOff();
+				gear = GearboxGetMode();
 			}
 		}
 		else
 		{
+			gear = newGear;
+		}
+		
+		if (m_HeadlightsOn)
+		{
+			DashboardShineOn();
+			TailLightsShineOn();
+			
+			switch (m_HeadlightsState)
+			{
+			case CarHeadlightBulbsState.LEFT:
+				LeftFrontLightShineOn();
+				RightFrontLightShineOff();
+				break;
+			case CarHeadlightBulbsState.RIGHT:
+				LeftFrontLightShineOff();
+				RightFrontLightShineOn();
+				break;
+			case CarHeadlightBulbsState.BOTH:
+				LeftFrontLightShineOn();
+				RightFrontLightShineOn();
+				break;
+			default:
+				LeftFrontLightShineOff();
+				RightFrontLightShineOff();
+			}
+			
+			//Debug.Log(string.Format("m_HeadlightsOn=%1, m_HeadlightsState=%2", m_HeadlightsOn.ToString(), EnumTools.EnumToString(CarHeadlightBulbsState, m_HeadlightsState)));
+		}
+		else
+		{
+			TailLightsShineOff();
+			DashboardShineOff();
 			LeftFrontLightShineOff();
 			RightFrontLightShineOff();
-			DashboardShineOff();
-			BrakeLightsShineOff();
+		}
+			
+		// brakes
+		if (m_BrakesArePressed)
+		{
+			switch (gear)
+			{
+			case CarGear.REVERSE:
+			case CarAutomaticGearboxMode.R:
+				m_RearLightType = CarRearLightType.BRAKES_AND_REVERSE;
+				break;
+			default:
+				m_RearLightType = CarRearLightType.BRAKES_ONLY;
+			}
+
+			//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
+		}
+		else
+		{
+			switch (gear)
+			{
+			case CarGear.REVERSE:
+			case CarAutomaticGearboxMode.R:
+				m_RearLightType = CarRearLightType.REVERSE_ONLY;
+				break;
+			default:
+				m_RearLightType = CarRearLightType.NONE;
+			}
+
+			//Debug.Log(string.Format("m_BrakesArePressed=%1, m_RearLightType=%2", m_BrakesArePressed.ToString(), EnumTools.EnumToString(CarRearLightType, m_RearLightType)));
+		}
+			
+		
+		// rear lights
+		if (m_RearLightType != CarRearLightType.NONE && m_HeadlightsState != CarHeadlightBulbsState.NONE)
+		{
+			switch (m_RearLightType)
+			{
+			case CarRearLightType.BRAKES_ONLY:
+				ReverseLightsShineOff();
+				BrakeLightsShineOn();
+				break;
+			case CarRearLightType.REVERSE_ONLY:
+				ReverseLightsShineOn();
+				BrakeLightsShineOff();
+				break;
+			case CarRearLightType.BRAKES_AND_REVERSE:
+				BrakeLightsShineOn();
+				ReverseLightsShineOn();
+				break;
+			default:
+				ReverseLightsShineOff();
+			}
+		}
+		else
+		{
 			ReverseLightsShineOff();
+			BrakeLightsShineOff();
 		}
 	}
 	

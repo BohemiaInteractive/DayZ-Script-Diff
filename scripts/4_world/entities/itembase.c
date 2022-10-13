@@ -808,10 +808,7 @@ class ItemBase extends InventoryItem
 				
 				if ( IsCombineAll(item2, use_stack_max) )
 				{
-					InventoryLocation il = new InventoryLocation;
-					item2.GetInventory().GetCurrentInventoryLocation(il);
-					GetGame().GetPlayer().GetInventory().AddInventoryReservationEx(item2,il,GameInventory.c_InventoryReservationTimeoutShortMS);
-					//entity2.GetInventory().GetCurrentInventoryLocation
+					GetGame().GetPlayer().GetInventory().AddInventoryReservationEx(item2,null,GameInventory.c_InventoryReservationTimeoutShortMS);
 				}
 			}
 		}

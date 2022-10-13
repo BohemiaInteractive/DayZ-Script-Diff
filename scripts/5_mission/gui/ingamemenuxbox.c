@@ -45,7 +45,8 @@ class InGameMenuXbox extends UIScriptedMenu
 			IngameHud hud = IngameHud.Cast( mission.GetHud() );
 			if ( hud )
 			{
-				hud.ShowHudUI( true );
+				hud.ShowHudUI(true);
+				hud.ShowQuickbarUI(true);
 			}
 		}
 		PPERequesterBank.GetRequester(PPERequester_MenuEffects).Stop();
@@ -190,7 +191,8 @@ class InGameMenuXbox extends UIScriptedMenu
 			IngameHud hud = IngameHud.Cast( mission.GetHud() );
 			if ( hud )
 			{
-				hud.ShowHudUI( false );
+				hud.ShowHudUI(false);
+				hud.ShowQuickbarUI(false);
 			}
 		}
 		

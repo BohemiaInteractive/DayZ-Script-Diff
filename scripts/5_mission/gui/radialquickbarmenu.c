@@ -89,6 +89,7 @@ class RadialQuickbarMenu extends UIScriptedMenu
 {
 	protected Widget 								m_ItemCardPanel;
 	protected ref array<ref RadialQuickbarItem> 	m_Items;
+	protected Widget 								m_ToolbarPanel;
 	
 	protected bool 									m_IsMenuClosing;
 	protected int 									m_CurrentCategory;
@@ -195,10 +196,8 @@ class RadialQuickbarMenu extends UIScriptedMenu
 		UpdateControlsElements();
 		#endif
 		
-		#ifdef PLATFORM_WINDOWS
-		Widget toolbar_panel = layoutRoot.FindAnyWidget("toolbar_bg");
-		toolbar_panel.Show(!RadialMenu.GetInstance().IsUsingMouse());
-		#endif
+		m_ToolbarPanel = layoutRoot.FindAnyWidget( "toolbar_bg" );
+		m_ToolbarPanel.Show( true );
 				
 		return layoutRoot;
 	}
@@ -511,16 +510,6 @@ class RadialQuickbarMenu extends UIScriptedMenu
 	//Common
 	void OnControlsChanged( RadialMenuControlType type )
 	{
-		//show/hide controller toolbar
-		Widget toolbar_panel = layoutRoot.FindAnyWidget( "toolbar_bg" );
-		if ( type == RadialMenuControlType.CONTROLLER )
-		{
-			toolbar_panel.Show( true );
-		}
-		else
-		{
-			toolbar_panel.Show( true );
-		}
 	}
 	
 	//Mouse
@@ -796,12 +785,31 @@ class RadialQuickbarMenu extends UIScriptedMenu
 
 	protected void UpdateControlsElements()
 	{
-		RichTextWidget toolbar_select 	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("SelectIcon"));
-		RichTextWidget toolbar_back 	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
-		toolbar_select.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		toolbar_back.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		Widget toolbarBackSpacer = layoutRoot.FindAnyWidget("BackSpacer");
+		//Widget toolbarNavigateSpacer = layoutRoot.FindAnyWidget("Navigate");
 		
-		Widget toolbar_back_container = layoutRoot.FindAnyWidget("BackFrame");
-		toolbar_back_container.Show(m_CurrentCategory != RadialQuickbarCategory.DEFAULT);
+		RichTextWidget toolbarSelectIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("SelectIcon"));
+		RichTextWidget toolbarBackIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
+		
+		string selectAction;
+		string backAction;
+		int controllerID;
+		
+		if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+		{
+			selectAction = "UAMenuSelect";
+			backAction = "UAMenuBack";
+			controllerID = EUAINPUT_DEVICE_KEYBOARDMOUSE;
+		}
+		else
+		{
+			selectAction = "UAUISelect";
+			backAction = "UAUIBack";
+			controllerID = EUAINPUT_DEVICE_CONTROLLER;
+		}
+		
+		toolbarSelectIcon.SetText(InputUtils.GetRichtextButtonIconFromInputAction(selectAction, "", controllerID, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbarBackIcon.SetText(InputUtils.GetRichtextButtonIconFromInputAction(backAction, "", controllerID, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbarBackSpacer.Show(m_CurrentCategory != RadialQuickbarCategory.DEFAULT);
 	}
 }

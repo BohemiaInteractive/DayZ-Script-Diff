@@ -4,7 +4,7 @@ class ActionSwitchLights: ActionInteractBase
 	{
 		m_CommandUID        = DayZPlayerConstants.CMD_ACTIONMOD_HEADLIGHT;
 		m_StanceMask        = DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
-		m_Text = "#switch_lights";
+		m_Text 				= "#switch_lights";
 	}
 
 	override void CreateConditionComponents()  
@@ -43,11 +43,11 @@ class ActionSwitchLights: ActionInteractBase
 
 							if ( car.IsVitalCarBattery() ) neededItem = car.FindAttachmentBySlotName("CarBattery");
 							if ( car.IsVitalTruckBattery() ) neededItem = car.FindAttachmentBySlotName("TruckBattery");
-
-							if ( !neededItem || (neededItem && neededItem.IsRuined()) )
-								return false;
 							
-							return true;
+							if (neededItem && !neededItem.IsRuined())
+							{
+								return neededItem.GetCompEM() && neededItem.GetCompEM().GetEnergy() > 0;
+							}
 						}
 						else
 						{
@@ -57,6 +57,7 @@ class ActionSwitchLights: ActionInteractBase
 				}
 			}
 		}
+
 		return false;
 	}
 

@@ -1976,6 +1976,11 @@ class PlayerBase extends ManBase
 				
 				m_Hud.ShowHudUI( true );
 				m_Hud.ShowQuickbarUI(true);
+				#ifdef PLATFORM_CONSOLE
+					m_Hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer()); //temporary solution
+				#else
+					m_Hud.ShowQuickBar(g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR));
+				#endif
 			}
 			m_EffectWidgets = GetGame().GetMission().GetEffectWidgets();
 		}
@@ -4623,13 +4628,6 @@ class PlayerBase extends ManBase
 		}
 
 		m_Weight = loadTotal;
-		
-		OnPlayerWeightUpdate();
-	}
-	
-	protected void OnPlayerWeightUpdate()
-	{
-		UpdateMovementInertiaBasedOnStaminaAvailable();
 	}
 
 	void CalculateVisibilityForAI()
@@ -8918,18 +8916,6 @@ class PlayerBase extends ManBase
 				PPERequesterBank.GetRequester(m_ProcessAddGlassesEffects[i]).Start();
 			}
 			m_ProcessAddGlassesEffects.Clear();
-		}
-	}
-	
-	void UpdateMovementInertiaBasedOnStaminaAvailable()
-	{
-		HumanCommandMove hcm = GetCommand_Move();
-		if (hcm)
-		{
-			float staminaPercentage = GetStaminaHandler().GetStaminaCap() / 100;
-			hcm.SetTurnSpanSprintModifier(2 - staminaPercentage);
-			hcm.SetRunSprintFilterModifier((2 - staminaPercentage) * 0.5);
-			hcm.SetDirectionSprintFilterModifier(2 - staminaPercentage);				
 		}
 	}
 }

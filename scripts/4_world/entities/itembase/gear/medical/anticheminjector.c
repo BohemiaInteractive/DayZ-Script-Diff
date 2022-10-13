@@ -10,6 +10,8 @@ class AntiChemInjector: Inventory_Base
 	
 	override void OnApply(PlayerBase player)
 	{
+		if (!player)
+			return;
 		player.GiveShock(100);
 		bool in_cont_stage3 = player.GetModifiersManager().IsModifierActive(eModifiers.MDF_CONTAMINATION3);
 		

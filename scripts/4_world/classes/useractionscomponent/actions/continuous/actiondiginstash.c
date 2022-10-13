@@ -142,7 +142,7 @@ class ActionDigInStash: ActionContinuousBase
 		UndergroundStash stash = UndergroundStash.Cast(GetGame().CreateObjectEx("UndergroundStash", targetEntity.GetPosition(), ECE_PLACE_ON_SURFACE));  
 		if (stash)
 		{
-			stash.PlaceOnGround(targetEntity);			
+			stash.PlaceOnGround();
 			if (GameInventory.LocationCanRemoveEntity(targetIL))
 			{
 				action_data.m_Player.ServerTakeEntityToTargetCargo(stash, targetEntity);

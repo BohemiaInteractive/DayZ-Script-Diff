@@ -278,7 +278,7 @@ class IngameHud extends Hud
 		
 		SetLeftStatsVisibility( true );
 		m_HudState = g_Game.GetProfileOption( EDayZProfilesOptions.HUD );
-		ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR));
+		//ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR)); //unreliable
 	}
 	
 	void InitBadgesAndNotifiers()
@@ -1020,11 +1020,7 @@ class IngameHud extends Hud
 	
 	void RefreshQuickbarVisibility()
 	{
-		#ifndef PLATFORM_CONSOLE
 		m_IsQuickbarVisible = !m_QuickbarHideUI && !m_QuickbarHidePlayer && m_QuickbarState;
-		#else
-		m_IsQuickbarVisible = false;
-		#endif
 		m_QuickbarWidget.Show( m_IsQuickbarVisible );
 	}
 	
@@ -1051,7 +1047,7 @@ class IngameHud extends Hud
 	override void ShowQuickbarUI( bool show )
 	{
 		m_QuickbarHideUI = !show;
-		if (m_QuickbarState)
+		//if (m_QuickbarState)
 		{
 			RefreshQuickbarVisibility();
 		}
@@ -1060,7 +1056,7 @@ class IngameHud extends Hud
 	override void ShowQuickbarPlayer( bool show )
 	{
 		m_QuickbarHidePlayer = !show;
-		if (m_QuickbarState)
+		//if (m_QuickbarState)
 		{
 			RefreshQuickbarVisibility();
 		}

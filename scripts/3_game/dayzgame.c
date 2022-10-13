@@ -1801,9 +1801,14 @@ class DayZGame extends CGame
 	
 	void CreateGamepadDisconnectMenu()
 	{
-		DeleteGamepadDisconnectMenu();
+		if (m_GamepadDisconnectMenu)
+		{
+			//DeleteGamepadDisconnectMenu();
+			m_ShouldShowControllerDisconnect = false;
+			return;
+		}
 		
-		if( !GetInput().IsEnabledMouseAndKeyboard() || ( m_GameState == DayZGameState.IN_GAME && !GetWorld().IsMouseAndKeyboardEnabledOnServer() ) )
+		if ((m_GameState != DayZGameState.IN_GAME && !GetInput().IsEnabledMouseAndKeyboard()) || ( m_GameState == DayZGameState.IN_GAME && !GetWorld().IsMouseAndKeyboardEnabledOnServer() ))
 		{
 			PPERequesterBank.GetRequester(PPERequester_ControllerDisconnectBlur).Start();
 			m_GamepadDisconnectMenu = GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_gamepad_connect.layout");

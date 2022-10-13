@@ -6,7 +6,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	protected Widget						m_DetailsRoot;
 	protected TextWidget					m_DetailsLabel;
 	protected RichTextWidget				m_DetailsText;
-	protected Widget 						m_QuickbarContainer;
+	protected ButtonWidget					m_QuickbarButton;
 	
 	protected ref NumericOptionsAccess		m_FOVOption;
 	protected ref ListOptionsAccess			m_LanguageOption;
@@ -57,9 +57,9 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		m_Root.FindAnyWidget( "language_setting_option" ).SetUserID( OptionAccessType.AT_OPTIONS_LANGUAGE );
 		m_Root.FindAnyWidget( "bleeding_indication_option" ).SetUserID( OptionIDsScript.OPTION_BLEEDINGINDICATION );
 		m_Root.FindAnyWidget( "quickbar_setting_option" ).SetUserID( OptionIDsScript.OPTION_QUICKBAR );
-		m_QuickbarContainer = m_Root.FindAnyWidget( "quickbar_setting_container" );
 		
 		#ifdef PLATFORM_CONSOLE
+		m_QuickbarButton = ButtonWidget.Cast(m_Root.FindAnyWidget( "quickbar_button" ));
 		m_Root.FindAnyWidget( "brightness_setting_option" ).SetUserID( OptionAccessType.AT_OPTIONS_BRIGHT_SLIDER );
 		#else
 		m_Root.FindAnyWidget( "serverinfo_setting_option" ).SetUserID( OptionIDsScript.OPTION_SERVER_INFO );
@@ -159,7 +159,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		universal = universal || m_LanguageOption.IsChanged();
 		
 		#ifdef PLATFORM_CONSOLE
-		return universal || m_ShowQuickbarSelector.GetValue() != g_Game.GetProfileOption( EDayZProfilesOptions.QUICKBAR );
+		return universal/* || m_ShowQuickbarSelector.GetValue() != g_Game.GetProfileOption( EDayZProfilesOptions.QUICKBAR )*/;
 		#else
 		return ( universal || m_ShowQuickbarSelector.GetValue() != g_Game.GetProfileOption( EDayZProfilesOptions.QUICKBAR ) || m_ShowServerInfoSelector.GetValue() != g_Game.GetProfileOption( EDayZProfilesOptions.SERVERINFO_DISPLAY ) );
 		#endif
@@ -176,16 +176,20 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		g_Game.SetProfileOption( EDayZProfilesOptions.GAME_MESSAGES, m_ShowGameSelector.GetValue() );
 		g_Game.SetProfileOption( EDayZProfilesOptions.ADMIN_MESSAGES, m_ShowAdminSelector.GetValue() );
 		g_Game.SetProfileOption( EDayZProfilesOptions.PLAYER_MESSAGES, m_ShowPlayerSelector.GetValue() );
-		g_Game.SetProfileOption( EDayZProfilesOptions.QUICKBAR, m_ShowQuickbarSelector.GetValue() );
 		
 		#ifndef PLATFORM_CONSOLE
+			g_Game.SetProfileOption( EDayZProfilesOptions.QUICKBAR, m_ShowQuickbarSelector.GetValue() );
 			g_Game.SetProfileOption( EDayZProfilesOptions.SERVERINFO_DISPLAY, m_ShowServerInfoSelector.GetValue() );
 		#endif
 		
-		if ( hud )
+		if (hud)
 		{
-			hud.ShowQuickBar( m_ShowQuickbarSelector.GetValue() );
-			hud.ShowHud( m_ShowHUDSelector.GetValue() );
+			#ifndef PLATFORM_CONSOLE
+				hud.ShowQuickBar(m_ShowQuickbarSelector.GetValue());
+			#else
+				hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+			#endif
+			hud.ShowHud(m_ShowHUDSelector.GetValue());
 		}
 		
 		//BLEEDINGINDICATION changed
@@ -244,13 +248,13 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			m_ShowPlayerSelector.SetValue( g_Game.GetProfileOption( EDayZProfilesOptions.PLAYER_MESSAGES ), false );
 		if ( m_BleedingIndication )
 			m_BleedingIndication.SetValue( g_Game.GetProfileOption( EDayZProfilesOptions.BLEEDINGINDICATION ), false );
-		if ( m_ShowQuickbarSelector )
-				m_ShowQuickbarSelector.SetValue( g_Game.GetProfileOption( EDayZProfilesOptions.QUICKBAR ), false );
 		
 		#ifdef PLATFORM_CONSOLE
 			if ( m_BrightnessSelector )
 				m_BrightnessSelector.SetValue( m_BrightnessOption.ReadValue(), false );
 		#else
+			if ( m_ShowQuickbarSelector )
+				m_ShowQuickbarSelector.SetValue( g_Game.GetProfileOption( EDayZProfilesOptions.QUICKBAR ), false );
 			if ( m_ShowServerInfoSelector )
 				m_ShowServerInfoSelector.SetValue( g_Game.GetProfileOption( EDayZProfilesOptions.SERVERINFO_DISPLAY ), false );
 			if ( m_PauseOption )
@@ -284,8 +288,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			m_ShowPlayerSelector.SetValue( g_Game.GetProfileOptionDefault( EDayZProfilesOptions.PLAYER_MESSAGES ), false );
 		if ( m_BleedingIndication )
 			m_BleedingIndication.SetValue( g_Game.GetProfileOptionDefault( EDayZProfilesOptions.BLEEDINGINDICATION ), false );
-		if ( m_ShowQuickbarSelector )
-				m_ShowQuickbarSelector.SetValue( g_Game.GetProfileOptionDefault( EDayZProfilesOptions.QUICKBAR ), false );
 		
 		#ifdef PLATFORM_CONSOLE
 			if ( m_BrightnessSelector )
@@ -294,6 +296,8 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 				m_BrightnessSelector.SetValue( m_BrightnessOption.GetDefault(), false );
 			}
 		#else
+			if ( m_ShowQuickbarSelector )
+				m_ShowQuickbarSelector.SetValue( g_Game.GetProfileOptionDefault( EDayZProfilesOptions.QUICKBAR ), false );
 			if ( m_ShowServerInfoSelector )
 				m_ShowServerInfoSelector.SetValue( g_Game.GetProfileOptionDefault( EDayZProfilesOptions.SERVERINFO_DISPLAY ), false );
 			if ( m_PauseOption )
@@ -333,23 +337,29 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	
 	void ToggleDependentOptions(int mode, bool state)
 	{
-		switch (mode)
+		/*switch (mode)
 		{
+			#ifdef PLATFORM_CONSOLE
 			case EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR:
 			{
-				//m_QuickbarContainer.Show(state);
-				//m_ShowQuickbarSelector.SetValue(state,true);
+				m_QuickbarButton.Show(state);
+				IngameHud hud = GetHud();
+				if (hud)
+					hud.ShowQuickBar(m_ShowQuickbarSelector.GetValue() && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 				break;
 			}
-		}
+			#endif
+		}*/
 	}
 	
 	void InitDependentOptionsVisibility()
 	{
+		/*#ifdef PLATFORM_CONSOLE
+		bool visible = g_Game.GetGameState() != DayZGameState.IN_GAME || GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		m_QuickbarButton.Show(visible);
+		#endif*/
 		#ifdef PLATFORM_CONSOLE
-		m_QuickbarContainer.Show(false);
-		#else
-		m_QuickbarContainer.Show(true);
+		m_QuickbarButton.Show(false);
 		#endif
 	}
 	

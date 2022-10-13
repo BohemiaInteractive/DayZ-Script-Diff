@@ -42,7 +42,7 @@ class GestureMenuItem
 	string GetBoundButtonText()
 	{
 		string ret = "";
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard() && m_EmoteClass && m_EmoteClass.GetInputActionName() != "")
+		if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && m_EmoteClass && m_EmoteClass.GetInputActionName() != "")
 		{
 			map<int,ref TStringArray> button_map = InputUtils.GetComboButtonNamesFromInput(m_EmoteClass.GetInputActionName(), EInputDeviceType.MOUSE_AND_KEYBOARD);
 			
@@ -107,6 +107,7 @@ class GesturesMenu extends UIScriptedMenu
 {
 	protected Widget 							m_GestureItemCardPanel;
 	protected ref array<ref GestureMenuItem> 	m_GestureItems;
+	protected Widget 							m_ToolbarPanel;
 	
 	protected TextWidget						m_CategoryNameText;
 	
@@ -194,10 +195,8 @@ class GesturesMenu extends UIScriptedMenu
 		//create content (widgets) for items
 		RefreshGestures();
 		
-#ifdef PLATFORM_WINDOWS
-		Widget toolbar_panel = layoutRoot.FindAnyWidget( "toolbar_bg" );
-		toolbar_panel.Show( !RadialMenu.GetInstance().IsUsingMouse() );
-#endif	
+		m_ToolbarPanel = layoutRoot.FindAnyWidget( "toolbar_bg" );
+		m_ToolbarPanel.Show( true );
 		
 		//clear category name text
 		UpdateCategoryName( "" );
@@ -457,18 +456,6 @@ class GesturesMenu extends UIScriptedMenu
 	//Common
 	void OnControlsChanged( RadialMenuControlType type )
 	{
-		//show/hide controller toolbar
-		Widget toolbar_panel = layoutRoot.FindAnyWidget( "toolbar_bg" );
-		if ( type == RadialMenuControlType.CONTROLLER )
-		{
-#ifdef PLATFORM_CONSOLE
-			toolbar_panel.Show( true );
-#endif
-		}
-		else
-		{
-			toolbar_panel.Show( false );
-		}
 	}
 	
 	//Mouse
@@ -650,20 +637,32 @@ class GesturesMenu extends UIScriptedMenu
 	
 	protected void UpdateControlsElements()
 	{
-		RichTextWidget toolbar_select = RichTextWidget.Cast(layoutRoot.FindAnyWidget("SelectIcon"));
-		//RichTextWidget toolbar_back = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
-							 
-		if ( instance.m_IsCategorySelected )
+		Widget toolbarBackSpacer = layoutRoot.FindAnyWidget("BackSpacer");
+		//Widget toolbarNavigateSpacer = layoutRoot.FindAnyWidget("NavigateSpacer");
+		
+		RichTextWidget toolbarSelectIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("SelectIcon"));
+		RichTextWidget toolbarBackIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
+		
+		string selectAction;
+		string backAction;
+		int controllerID;
+		
+		if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
 		{
-			toolbar_select.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-			//toolbar_back.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			selectAction = "UAMenuSelect";
+			backAction = "UAMenuBack";
+			controllerID = EUAINPUT_DEVICE_KEYBOARDMOUSE;
 		}
 		else
 		{
-			// TODO: need a proper InputAction, ideally connected from RadialMenu. (Right thumb stick input needs to be swapped to new inputs)
-			toolbar_select.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIRadialMenuStickHelper", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-			//toolbar_back.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));	
+			selectAction = "UAUISelect";
+			backAction = "UAUIBack";
+			controllerID = EUAINPUT_DEVICE_CONTROLLER;
 		}
+		
+		toolbarSelectIcon.SetText(InputUtils.GetRichtextButtonIconFromInputAction(selectAction, "", controllerID, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbarBackIcon.SetText(InputUtils.GetRichtextButtonIconFromInputAction(backAction, "", controllerID, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbarBackSpacer.Show(instance.m_IsCategorySelected);
 	}
 	
 //-----------------------------------------------------------------
