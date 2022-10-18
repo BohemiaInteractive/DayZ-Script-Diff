@@ -292,8 +292,13 @@ class CarWheel extends InventoryItemSuper
 	override void SetActions()
 	{
 		super.SetActions();
-		AddAction(ActionDetach);
-		AddAction(ActionAttachOnSelection);
+		//AddAction(ActionDetach);
+		//AddAction(ActionAttachOnSelection);
+	}
+	
+	override bool EEOnDamageCalculated(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
+	{
+		return false;
 	}
 };
 

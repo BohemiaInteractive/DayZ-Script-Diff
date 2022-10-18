@@ -620,7 +620,7 @@ class CarScript extends Car
 		{
 			return false;
 		}
-		
+
 		if (attachment && attachment.Type().IsInherited(CarWheel))
 		{
 			InventoryLocation attachmentInventoryLocation = new InventoryLocation();
@@ -635,6 +635,9 @@ class CarScript extends Car
 			case "wheel_spare_2":
 				return CanManipulateSpareWheel(slotSelectionName);
 			break;
+				
+			default:
+				return false;
 			}
 		}
 

@@ -68,11 +68,11 @@ class DayZPlayerImplementHeading
 	{
 		float		aDiff = pModel.m_fHeadingAngle - pModel.m_fOrientationAngle;
 
-		if (aDiff < -Math.PI)
+		while (aDiff < -Math.PI)
 		{
 			aDiff += Math.PI2;
 		}
-		else if (aDiff > Math.PI)
+		while (aDiff > Math.PI)
 		{
 			aDiff -= Math.PI2;
 		}
@@ -89,14 +89,27 @@ class DayZPlayerImplementHeading
 		}
 
 		pLastHeadingDiff	= aDiff;		
-
 		if (aDiff < -CONST_ROTLIMIT)
 		{
+			// character is somehow stucked (happens in prone stance)
+			if (aDiff < -(Math.PI_HALF + CONST_ROTLIMIT))
+			{
+				pLastHeadingDiff = 0;
+				return false;
+			}
+			
 			pModel.m_fOrientationAngle += aDiff +  CONST_ROTLIMIT;
 			return true;
 		}
 		else if (aDiff > CONST_ROTLIMIT)
 		{
+			// character is somehow stucked (happens in prone stance)
+			if (aDiff > (Math.PI_HALF + CONST_ROTLIMIT))
+			{
+				pLastHeadingDiff = 0;
+				return false;
+			}
+			
 			pModel.m_fOrientationAngle += aDiff - CONST_ROTLIMIT;
 			return true;
 		}
