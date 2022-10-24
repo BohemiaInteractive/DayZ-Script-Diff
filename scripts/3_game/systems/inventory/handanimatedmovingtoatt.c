@@ -29,10 +29,9 @@ class HandAnimatedMoveToDst_W4T extends HandStartAction
 	override void OnEntry (HandEventBase e)
 	{
 		Man player = e.m_Player;
-		EntityAI item = m_Dst.GetItem();
-
 		if (m_Dst && m_Dst.IsValid())
 		{
+			EntityAI item = m_Dst.GetItem();
 			InventoryLocation src = new InventoryLocation;
 			if (item.GetInventory().GetCurrentInventoryLocation(src))
 			{

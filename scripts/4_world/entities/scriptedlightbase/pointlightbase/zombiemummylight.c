@@ -6,7 +6,7 @@ class ZombieMummyLight extends PointLightBase
 		SetRadiusTo(2.1);
 		SetBrightnessTo(3.1);
 		SetCastShadow(false);
-		SetFadeOutTime(0.2);
+		SetFadeOutTime(15);
 		SetDiffuseColor(0.6, 0.5, 0.1);
 		SetAmbientColor(0.6, 0.5, 0.1);
 		SetFlareVisible(false);

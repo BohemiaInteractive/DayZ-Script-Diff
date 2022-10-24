@@ -218,23 +218,23 @@ class ZmbM_Mummy extends ZombieMaleBase
 {
 	#ifndef SERVER
 	protected ZombieMummyLight m_EyeLight;
-	#endif
-	
 	void ZmbM_Mummy()
 	{
-		#ifndef SERVER
-		m_EyeLight = ZombieMummyLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(ZombieMummyLight, this, "MummyLight"));
-		#endif
+		if (!IsDamageDestroyed())//walking up to or connecting to already dead zombies check
+			m_EyeLight = ZombieMummyLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(ZombieMummyLight, this, "MummyLight"));
 	}
 
 	void ~ZmbM_Mummy()
 	{
-		#ifndef SERVER
 		if (m_EyeLight)
 			m_EyeLight.Destroy();
-		#endif
 	}
-
+	override void OnDamageDestroyed(int oldLevel)
+	{
+		if (m_EyeLight)
+			m_EyeLight.FadeOut(15);
+	}
+	#endif
 	override bool ResistContaminatedEffect()
 	{
 		return true;

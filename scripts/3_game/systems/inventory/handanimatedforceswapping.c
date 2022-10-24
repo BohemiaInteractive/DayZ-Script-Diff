@@ -5,10 +5,10 @@ class HandAnimatedMoveToDst_W4T_Basic extends HandStateBase
 	override void OnEntry (HandEventBase e)
 	{
 		Man player = e.m_Player;
-		EntityAI item = m_Dst.GetItem();
 
 		if (m_Dst && m_Dst.IsValid())
 		{
+			EntityAI item = m_Dst.GetItem();
 			InventoryLocation src = new InventoryLocation;
 			if (item.GetInventory().GetCurrentInventoryLocation(src))
 			{
@@ -124,18 +124,32 @@ class HandAnimatedForceSwapping extends HandStateBase
 		HandEventForceSwap efs = HandEventForceSwap.Cast(e);
 		if (efs)
 		{
-			m_Start.m_ActionType = efs.m_AnimationID;
+			if ( efs.GetSrc().GetType() == InventoryLocationType.HANDS )
+			{
+				m_Start.m_ActionType = efs.m_AnimationID;
 			
-			m_Src1 = efs.GetSrc();
-			m_Src2 = efs.m_Src2;
-			m_Dst1 = efs.GetDst();
-			m_Dst2 = efs.m_Dst2;
+				m_Src1 = efs.GetSrc();
+				m_Src2 = efs.m_Src2;
+				m_Dst1 = efs.GetDst();
+				m_Dst2 = efs.m_Dst2;
+			
+				m_Show.m_ActionType = efs.m_Animation2ID;
+			}
+			else
+			{
+				m_Start.m_ActionType = efs.m_Animation2ID;
+			
+				m_Src1 = efs.m_Src2;
+				m_Src2 = efs.GetSrc();
+				m_Dst1 = efs.m_Dst2;
+				m_Dst2 = efs.GetDst();
+			
+				m_Show.m_ActionType = efs.m_AnimationID;
+			}
+			
+			m_Hide.m_Dst = m_Dst1;
+			m_Show.m_Dst = m_Dst2;
 
-			m_Show.m_Dst = m_Dst1;
-			m_Hide.m_Dst = m_Dst2;
-			
-			m_Show.m_ActionType = efs.m_Animation2ID;
-			
 			if (!GetGame().IsDedicatedServer())
 			{
 				e.m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst1.GetItem(), m_Dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
@@ -224,19 +238,33 @@ class HandAnimatedForceSwapping_Inst extends HandStateBase
 		HandEventForceSwap efs = HandEventForceSwap.Cast(e);
 		if (efs)
 		{
-			m_Start.m_ActionType = efs.m_AnimationID;
+			if ( efs.GetSrc().GetType() == InventoryLocationType.HANDS )
+			{
+				m_Start.m_ActionType = efs.m_AnimationID;
 			
-			m_Src1 = efs.GetSrc();
-			m_Src2 = efs.m_Src2;
-			m_Dst1 = efs.GetDst();
-			m_Dst2 = efs.m_Dst2;
+				m_Src1 = efs.GetSrc();
+				m_Src2 = efs.m_Src2;
+				m_Dst1 = efs.GetDst();
+				m_Dst2 = efs.m_Dst2;
 
+				m_Swap.m_ActionType = efs.m_Animation2ID;
+			}
+			else
+			{
+				m_Start.m_ActionType = efs.m_Animation2ID;
+			
+				m_Src1 = efs.m_Src2;
+				m_Src2 = efs.GetSrc();
+				m_Dst1 = efs.m_Dst2;
+				m_Dst2 = efs.GetDst();
+
+				m_Swap.m_ActionType = efs.m_AnimationID;				
+			}
+			
 			m_Swap.m_Src1 = m_Src1;
 			m_Swap.m_Dst1 = m_Dst1;
 			m_Swap.m_Src2 = m_Src2;
 			m_Swap.m_Dst2 = m_Dst2;
-			
-			m_Swap.m_ActionType = efs.m_Animation2ID;
 			
 			if (!GetGame().IsDedicatedServer())
 			{

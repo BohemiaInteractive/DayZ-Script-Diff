@@ -23,5 +23,5 @@ In the first bunch of Stress Tests, we'll mostly focus on watching server perfor
 <image set="dayz_gui" name="icon_pin" />  Important Note
 </h>
 <h scale="0.6">
-Stress Tests do not represent a typical DayZ 0.63 gameplay experience. Spawn points, starting gear, loot, and also the available feature set are all modified for the purpose of specific test cases. 
+Stress Tests do not represent a typical DayZ 0.63 gameplay experience. Spawn points, starting gear, loot, and also the available feature set are all modified for the purpose of specific test cases.
 </h>

@@ -122,7 +122,7 @@ class Input
 	proto native int	SetProfile(int index);
 
 
-	// devices
+	// devices - joystick only!
 	proto native int		GetDevicesCount();
 	proto int				GetDeviceName(int device_index, out string name);
 	proto native int		IsDeviceXInput(int device_index);
@@ -164,7 +164,7 @@ class Input
 		#ifdef PLATFORM_PS4
 		BiosUser user;
 		GetGamepadUser( gamepad, user );
-		if( user && user == GetGame().GetUserManager().GetSelectedUser() )
+		if (user && user == GetGame().GetUserManager().GetSelectedUser())
 		{
 			SelectActiveGamepad(gamepad);
 			g_Game.DeleteGamepadDisconnectMenu();
@@ -172,7 +172,7 @@ class Input
 		#endif
 		
 		#ifdef PLATFORM_XBOX
-		if( IsEnabledMouseAndKeyboardEvenOnServer() && gamepad == g_Game.GetPreviousGamepad() )
+		if (gamepad == g_Game.GetPreviousGamepad())
 		{
 			SelectActiveGamepad(g_Game.GetPreviousGamepad());
 		}
@@ -182,30 +182,22 @@ class Input
 	//! callback that is fired when gamepad is disconnected
 	void OnGamepadDisconnected(int gamepad)
 	{
-		if( IsInactiveGamepadOrUserSelected(gamepad) )
+		if (IsInactiveGamepadOrUserSelected(gamepad))
 		{
 			#ifdef PLATFORM_PS4
 			ResetActiveGamepad();
 			#endif
 			
-			if( !g_Game.IsLoading() )
+			if (!g_Game.IsLoading())
 			{
 				DayZLoadState state = g_Game.GetLoadState();
-				if( state != DayZLoadState.MAIN_MENU_START && state != DayZLoadState.MAIN_MENU_USER_SELECT )
+				if (state != DayZLoadState.MAIN_MENU_START && state != DayZLoadState.MAIN_MENU_USER_SELECT)
 				{
-					//#ifdef PLATFORM_XBOX
-					//if ( !IsEnabledMouseAndKeyboard() || GetCurrentInputDevice() != EInputDeviceType.MOUSE_AND_KEYBOARD )
-					//{
-					//	g_Game.CreateGamepadDisconnectMenu();	
-					//}
-					//#else
 					g_Game.CreateGamepadDisconnectMenu();
-					//#endif
 				}
 				
 				#ifdef PLATFORM_XBOX
-				if( !IsEnabledMouseAndKeyboardEvenOnServer() )
-					IdentifyGamepad( GetEnterButton() );
+				IdentifyGamepad(GetEnterButton());
 				#endif
 			}
 		}
@@ -263,13 +255,6 @@ class Input
 		{
 			GetGame().GetMission().GetOnInputDeviceChanged().Invoke(inputDevice);
 		}
-
-		//#ifdef PLATFORM_XBOX
-		//if ( !IsActiveGamepadSelected() && inputDevice == EInputDeviceType.CONTROLLER )
-		//{
-		//	g_Game.CreateGamepadDisconnectMenu();
-		//}
-		//#endif
 	}
 };
 

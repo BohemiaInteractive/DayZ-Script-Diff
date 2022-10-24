@@ -1120,7 +1120,18 @@ class IngameHud extends Hud
 	//! eg. stamina bar...
 	void SetLeftStatsVisibility(bool visible)
 	{
-		m_LeftHudPanelWidget.Show(visible);
+		Widget child = m_LeftHudPanelWidget.GetChildren();
+		while (child)
+		{
+			if (child.GetName() == "ChatFrameWidget")
+			{
+				child = child.GetSibling();
+				continue
+			}
+			
+			child.Show(visible);
+			child = child.GetSibling();
+		}
 	}
 	
 	override void RefreshQuickbar( bool itemChanged = false )

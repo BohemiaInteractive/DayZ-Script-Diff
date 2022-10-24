@@ -102,10 +102,14 @@ class ScriptedLightBase extends EntityLightSource
 	{
 		DetachFromParent(); // This is the reason for the delay
 		
-		if (!m_DeleteTimer)
-			m_DeleteTimer = new Timer( CALL_CATEGORY_SYSTEM );
-			
-		m_DeleteTimer.Run( 0.03 , this, "DeleteLightNow", NULL, true);
+		if (GetGame())
+		{
+			if (!m_DeleteTimer)
+				m_DeleteTimer = new Timer( CALL_CATEGORY_SYSTEM );
+	
+			m_DeleteTimer.Run( 0.03 , this, "DeleteLightNow", NULL, true);
+		}
+		
 	}
 	
 	// Deletes light now. Do not call this directly. Call Destroy() instead. Otherwise you might get errors related to hierarchy.

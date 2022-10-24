@@ -133,27 +133,21 @@ class ActionRepairCarEngine: ActionContinuousBase
 				float dmgStateValue = zoneMax * GameConstants.DAMAGE_WORN_VALUE;
 				float randomValue = Math.RandomFloatInclusive( zoneMax * 0.05, zoneMax * 0.15);
 				
-				//TODO:: CHECK
-				//GetHealthLevelValue
 				switch ( newDmgLevel )
 				{
 					case GameConstants.STATE_BADLY_DAMAGED:
-						Print( zoneMax * GameConstants.DAMAGE_RUINED_VALUE );
 						car.SetHealth( damageZone, "", (zoneMax * GameConstants.DAMAGE_RUINED_VALUE) + randomValue );
 						break;
 
 					case GameConstants.STATE_DAMAGED:
-						Print(zoneMax * GameConstants.DAMAGE_BADLY_DAMAGED_VALUE );
 						car.SetHealth( damageZone, "", (zoneMax * GameConstants.DAMAGE_BADLY_DAMAGED_VALUE) + randomValue );
 						break;
 
 					case GameConstants.STATE_WORN:
-						Print(zoneMax * GameConstants.DAMAGE_DAMAGED_VALUE );
 						car.SetHealth( damageZone, "", (zoneMax * GameConstants.DAMAGE_DAMAGED_VALUE) + randomValue );
 						break;
 					
 					case GameConstants.STATE_PRISTINE:
-						Print(zoneMax * GameConstants.DAMAGE_WORN_VALUE );
 						car.SetHealth( damageZone, "", (zoneMax * GameConstants.DAMAGE_WORN_VALUE) + randomValue );
 						break;
 					
@@ -161,7 +155,7 @@ class ActionRepairCarEngine: ActionContinuousBase
 						break;
 				}
 
-				MiscGameplayFunctions.DealAbsoluteDmg(usedItem, 35); //Placeholder until proper balancing and functions are deployed
+				MiscGameplayFunctions.DealAbsoluteDmg(usedItem, UADamageApplied.BUILD);
 				
 			}
 		}

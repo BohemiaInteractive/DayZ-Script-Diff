@@ -514,6 +514,16 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		OnlineServices.GetFavoriteServers(m_Favorites);
 #else
 		GetGame().GetProfileStringList( "SB_Favorites", m_Favorites );
+		
+		// only handle MAX_FAVORITES on consoles
+		if (m_Favorites.Count() > MAX_FAVORITES)
+		{
+			// favorites are ordered by when they were favorited
+			// so keep most recent favorites and ignore oldest favorites
+			m_Favorites.Invert();
+			m_Favorites.Resize(MAX_FAVORITES);
+			m_Favorites.Invert();
+		}
 #endif
 	}
 	

@@ -152,27 +152,27 @@ class CfgGameplayHandler
 	//----------------------------------------------------------------------------------	
 	static float GetMovementTimeToStrafeJog()
 	{
-		return m_Data.PlayerData.MovementData.timeToStrafeJog;
+		return Math.Max(0.01, m_Data.PlayerData.MovementData.timeToStrafeJog);
 	}
 	//----------------------------------------------------------------------------------
 	static float GetMovementTimeToSprint()
 	{
-		return m_Data.PlayerData.MovementData.timeToSprint;
+		return Math.Max(0.01, m_Data.PlayerData.MovementData.timeToSprint);
 	}
 	//----------------------------------------------------------------------------------
 	static float GetMovementTimeToStrafeSprint()
 	{
-		return m_Data.PlayerData.MovementData.timeToStrafeSprint;
+		return Math.Max(0.01, m_Data.PlayerData.MovementData.timeToStrafeSprint);
 	}
 	//----------------------------------------------------------------------------------
 	static float GetMovementRotationSpeedJog()
 	{
-		return m_Data.PlayerData.MovementData.rotationSpeedJog;
+		return Math.Max(0.01, m_Data.PlayerData.MovementData.rotationSpeedJog);
 	}
 	//----------------------------------------------------------------------------------
 	static float GetMovementRotationSpeedSprint()
 	{
-		return m_Data.PlayerData.MovementData.rotationSpeedSprint;
+		return Math.Max(0.01, m_Data.PlayerData.MovementData.rotationSpeedSprint);
 	}
 	//----------------------------------------------------------------------------------
 	static bool GetDisable2dMap()

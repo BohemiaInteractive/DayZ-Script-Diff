@@ -349,7 +349,7 @@ class HumanInventory : GameInventory
 				case InventoryLocationType.HANDS:
 				{
 					hndDebugPrint("[inv] HumanInventory::Swap HandEventSwap2(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " IH=src2=" + InventoryLocation.DumpToStringNullSafe(src2));
-					HandEvent(mode, new HandEventSwap(GetManOwner(), src1, src2, dst1, dst2));
+					HandEvent(mode, new HandEventSwap(GetManOwner(), src2, src1, dst2, dst1));
 					handled = true;
 					break;
 				}

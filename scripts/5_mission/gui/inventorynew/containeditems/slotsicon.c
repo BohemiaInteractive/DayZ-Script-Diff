@@ -550,6 +550,7 @@ class SlotsIcon: LayoutHolder
 		
 		m_ColWidget.Show( false );
 		m_SelectedPanel.Show( false );
+		m_EmptySelectedPanel.Show( false );
 		m_MountedWidget.Show( false );
 		m_OutOfReachWidget.Show( false );
 		m_ReservedWidget.Show( false );
@@ -744,6 +745,7 @@ class SlotsIcon: LayoutHolder
 		w.SetSize( 1, 1 );
 		m_ColWidget.Show( false );
 		m_SelectedPanel.Show( false );
+		m_EmptySelectedPanel.Show( false );
 		m_SelectedPanel.SetColor( ARGBF( 1, 1, 1, 1 ) );
 		m_ItemPreview.SetForceFlipEnable(true);
 	}

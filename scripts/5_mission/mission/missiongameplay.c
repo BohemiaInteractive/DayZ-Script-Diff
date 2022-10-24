@@ -1059,20 +1059,6 @@ class MissionGameplay extends MissionBase
 	
 	void MoveHudForInventory( bool inv_open )
 	{
-		#ifdef PLATFORM_CONSOLE
-		IngameHud hud = IngameHud.Cast( GetHud() );
-		if( hud )
-		{
-			if( inv_open )
-			{
-				hud.GetHudPanelWidget().SetPos( 0, -0.055 );
-			}
-			else
-			{
-				hud.GetHudPanelWidget().SetPos( 0, 0 );
-			}
-		}
-		#endif
 	}
 	
 	override void ShowInventory()
@@ -1091,7 +1077,6 @@ class MissionGameplay extends MissionBase
 				GetUIManager().ShowScriptedMenu(m_InventoryMenu, null);
 				PlayerBase.Cast(GetGame().GetPlayer()).OnInventoryMenuOpen();
 			}
-			MoveHudForInventory( true );
 			AddActiveInputExcludes({"inventory"});
 			AddActiveInputRestriction(EInputRestrictors.INVENTORY);
 		}
@@ -1102,7 +1087,6 @@ class MissionGameplay extends MissionBase
 		if ( m_InventoryMenu )
 		{
 			GetUIManager().HideScriptedMenu(m_InventoryMenu);
-			MoveHudForInventory( false );
 			RemoveActiveInputExcludes({"inventory"},false);
 			RemoveActiveInputRestriction(EInputRestrictors.INVENTORY);
 			PlayerBase.Cast(GetGame().GetPlayer()).OnInventoryMenuClose();

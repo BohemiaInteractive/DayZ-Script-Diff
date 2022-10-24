@@ -1262,7 +1262,7 @@ class DayZGame extends CGame
 					#endif
 				}
 					
-				if ( m_ShouldShowControllerDisconnect && !GetWorld().IsMouseAndKeyboardEnabledOnServer() )
+				if (m_ShouldShowControllerDisconnect)
 					CreateGamepadDisconnectMenu();
 				
 				break;
@@ -1804,38 +1804,35 @@ class DayZGame extends CGame
 		if (m_GamepadDisconnectMenu)
 		{
 			//DeleteGamepadDisconnectMenu();
-			m_ShouldShowControllerDisconnect = false;
+			//m_ShouldShowControllerDisconnect = false;
 			return;
 		}
 		
-		if ((m_GameState != DayZGameState.IN_GAME && !GetInput().IsEnabledMouseAndKeyboard()) || ( m_GameState == DayZGameState.IN_GAME && !GetWorld().IsMouseAndKeyboardEnabledOnServer() ))
+		PPERequesterBank.GetRequester(PPERequester_ControllerDisconnectBlur).Start();
+		m_GamepadDisconnectMenu = GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_gamepad_connect.layout");
+		RichTextWidget text_widget = RichTextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Text") );
+		TextWidget caption_widget = TextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Caption") );
+		if (text_widget)
 		{
-			PPERequesterBank.GetRequester(PPERequester_ControllerDisconnectBlur).Start();
-			m_GamepadDisconnectMenu = GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_gamepad_connect.layout");
-			RichTextWidget text_widget = RichTextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Text") );
-			TextWidget caption_widget = TextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Caption") );
-			if (text_widget)
-			{
-				string text = Widget.TranslateString( "#console_reconect" );
-				#ifdef PLATFORM_XBOX
-					text_widget.SetText( string.Format( text, "<image set=\"xbox_buttons\" name=\"A\" />" ) );
-					caption_widget.SetText("#STR_TitleScreenLayout_Caption0");
-				#endif
+			string text = Widget.TranslateString( "#console_reconect" );
+			#ifdef PLATFORM_XBOX
+				text_widget.SetText( string.Format( text, "<image set=\"xbox_buttons\" name=\"A\" />" ) );
+				caption_widget.SetText("#STR_TitleScreenLayout_Caption0");
+			#endif
 
-				#ifdef PLATFORM_PS4
-					string confirm = "cross";
-					if( GetInput().GetEnterButton() == GamepadButton.A )
-					{
-						confirm = "cross";
-					}
-					else
-					{
-						confirm = "circle";
-					}
-					text_widget.SetText( string.Format( text, "<image set=\"playstation_buttons\" name=\"" + confirm + "\" />" ) );
-					caption_widget.SetText("#ps4_STR_TitleScreenLayout_Caption0");
-				#endif
-			}
+			#ifdef PLATFORM_PS4
+				string confirm = "cross";
+				if( GetInput().GetEnterButton() == GamepadButton.A )
+				{
+					confirm = "cross";
+				}
+				else
+				{
+					confirm = "circle";
+				}
+				text_widget.SetText( string.Format( text, "<image set=\"playstation_buttons\" name=\"" + confirm + "\" />" ) );
+				caption_widget.SetText("#ps4_STR_TitleScreenLayout_Caption0");
+			#endif
 		}
 
 		m_ShouldShowControllerDisconnect = true;

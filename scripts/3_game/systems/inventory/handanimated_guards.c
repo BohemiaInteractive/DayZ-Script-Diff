@@ -161,8 +161,8 @@ bool SelectAnimationOfForceSwapInHands (notnull Man player, notnull InventoryLoc
 
 	if (old_src.GetItem().GetHierarchyRootPlayer() == player || new_src.GetItem().GetHierarchyRootPlayer() == player)
 	{
-		animType1 = SlotToAnimType(player, new_dst, new_src);
-		animType2 = SlotToAnimType(player, old_src, old_dst);
+		animType1 = SlotToAnimType(player, old_src, old_dst);
+		animType2 = SlotToAnimType(player, new_src, new_dst);
 		//Print("animType1 = " + animType1);
 		//Print("animType2 = " + animType2);
 		if (animType1 != -1 && animType2 != -1)

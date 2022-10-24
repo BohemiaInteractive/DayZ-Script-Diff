@@ -120,7 +120,7 @@ class Offroad_02 extends CarScript
 		{
 			return false;
 		}
-		/*
+
 		string attType = attachment.GetType();
 		switch (attType)
 		{
@@ -137,15 +137,8 @@ class Offroad_02 extends CarScript
 				return false;
 			}
 			break;
-
-		case "CarRadiator":
-			if (GetCarDoorsState("Offroad_02_Hood") == CarDoorState.DOORS_CLOSED || EngineIsOn())
-			{
-				return false;
-			}
-			break;
 		}
-		*/
+
 		return true;
 	}
 
@@ -161,7 +154,6 @@ class Offroad_02 extends CarScript
 			return false;
 		}
 	
-		/*
 		category_name.ToLower();
 		if (category_name.Contains("engine"))
 		{
@@ -170,7 +162,6 @@ class Offroad_02 extends CarScript
 				return false;
 			}
 		}
-		*/
 
 		return true;
 	}
