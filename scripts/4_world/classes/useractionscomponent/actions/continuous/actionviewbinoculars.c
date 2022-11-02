@@ -27,11 +27,12 @@ class ActionViewBinoculars : ActionViewOptics
 	
 	override void EnterOptics(ItemOptics optic, PlayerBase player)
 	{
+		player.SetIronsights(false);
 		player.SetHandheldOpticsInUse(true);
 		player.SetOptics(true);
 		optic.EnterOptics();
 		optic.HideSelection("hide");
-		if ( NVGoggles.Cast(optic) && optic.ConfigIsExisting("simpleHiddenSelections") ) //HACK
+		if ( NVGoggles.Cast(optic) && optic.ConfigIsExisting("simpleHiddenSelections") )
 		{
 			optic.SetSimpleHiddenSelectionState(0,false);
 		}
@@ -51,11 +52,10 @@ class ActionViewBinoculars : ActionViewOptics
 	override void ExitOptics(ItemOptics optic, PlayerBase player)
 	{
 		optic.ShowSelection("hide");
-		if ( NVGoggles.Cast(optic) && optic.ConfigIsExisting("simpleHiddenSelections") ) //HACK
+		if ( NVGoggles.Cast(optic) && optic.ConfigIsExisting("simpleHiddenSelections") )
 		{
 			optic.SetSimpleHiddenSelectionState(0,true);
 		}
-		optic.ExitOptics();
 		player.SetHandheldOpticsInUse(false);
 		player.ExitSights();
 		if ( optic.HasEnergyManager() )

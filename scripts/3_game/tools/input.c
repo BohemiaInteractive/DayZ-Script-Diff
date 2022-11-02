@@ -195,10 +195,6 @@ class Input
 				{
 					g_Game.CreateGamepadDisconnectMenu();
 				}
-				
-				#ifdef PLATFORM_XBOX
-				IdentifyGamepad(GetEnterButton());
-				#endif
 			}
 		}
 	}

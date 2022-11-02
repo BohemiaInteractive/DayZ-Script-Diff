@@ -832,7 +832,6 @@ class WeaponManager
 	
 	void Update( float deltaT )
 	{
-
 		if (m_WeaponInHand != m_player.GetItemInHands())
 		{
 			if( m_WeaponInHand )
@@ -899,7 +898,6 @@ class WeaponManager
 		
 			if(m_canEnd)
 			{
-			
 				if(m_WeaponInHand.IsIdle())
 				{
 					OnWeaponActionEnd();
@@ -911,7 +909,7 @@ class WeaponManager
 		
 					if(m_InIronSight || m_InOptic)
 					{
-						m_player.GetInputController().ResetADS();
+						//'RequestResetADSSync' can be called here, if ADS reset is desired
 						m_player.ExitSights();
 					}
 				
@@ -972,17 +970,6 @@ class WeaponManager
 			}
 		}
 		
-		if(m_WeaponInHand && !m_justStart && m_player.IsRaised())
-		{
-			if(m_InIronSight)
-				m_player.SetIronsights(m_InIronSight);
-			if(m_InOptic)
-			{
-				ItemOptics optic = m_WeaponInHand.GetAttachedOptics();
-				if(optic)
-					m_player.SwitchOptics(optic,true);
-			}
-		}
 		m_ControlAction = NULL;
 		m_PendingWeaponAction = -1;
 		m_PendingTargetMagazine = NULL;

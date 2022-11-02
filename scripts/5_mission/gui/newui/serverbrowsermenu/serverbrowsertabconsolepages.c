@@ -188,6 +188,12 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 			return;
 		}
 		
+		// only load servers if they correspond to current page
+		if (cur_page_index != m_CurrentPageNum)
+		{
+			return;
+		}
+		
 		if ( m_PagesCount && page_entries )
 		{
 			foreach ( GetServersResultRow result : page_entries )

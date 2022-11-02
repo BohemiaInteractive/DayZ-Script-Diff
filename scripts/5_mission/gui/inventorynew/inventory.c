@@ -183,7 +183,7 @@ class Inventory: LayoutHolder
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
 		//OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
-		
+		m_SpecializationPanel.Show(false);
 		UpdateConsoleToolbar();
 		#endif
 	}
@@ -1235,12 +1235,21 @@ class Inventory: LayoutHolder
 	
 	void UpdateSpecialtyMeter()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		if ( player && player.GetSoftSkillsManager() )
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		if (player && player.GetSoftSkillsManager())
 		{
 			float x = player.GetSoftSkillsManager().GetSpecialtyLevel() / 2;
 			float y = -0.75;
-			m_SpecializationIcon.SetPos( x, y, true );	
+			#ifndef PLATFORM_CONSOLE
+			m_SpecializationIcon.SetPos(x, y, true);
+			#else
+			Mission mission = GetGame().GetMission();
+			IngameHud hud = IngameHud.Cast(mission.GetHud());
+			if (hud)
+			{
+				hud.UpdateSpecialtyMeter(x,y);
+			}
+			#endif
 		}
 	}
 	

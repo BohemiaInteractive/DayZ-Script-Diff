@@ -125,6 +125,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	protected float 					m_WaterLevelHeightActual;
 	
 	//! VFX/SFX
+	protected bool						m_ValveManipulationSoundRequested;
 	protected ref EffectSound			m_ValveManipulationSound;
 	protected ref array<EffectSound>	m_PipeSounds;
 
@@ -148,6 +149,19 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	protected ref ParticleSourceArray	m_ValveParticles;
 	protected ref ParticleSourceArray	m_PipeBrokenParticles;	
+	
+	void Land_Underground_WaterReservoir()
+	{
+		SetEventMask(EntityEvent.POSTSIMULATE);
+		
+		Init();
+	}
+	
+	void ~Land_Underground_WaterReservoir()
+	{
+		CleanSoundEffects();
+		CleanVisualEffects();
+	}
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
@@ -297,7 +311,11 @@ class Land_Underground_WaterReservoir : BuildingBase
 		
 		m_ValveStates = UnpackBitsToArrayOfBoolStates(m_ValveStatesPacked, VALVES_COUNT);
 		
-		PlayValveManipulationSound();
+		if (!m_ValveManipulationSoundRequested)
+			PlayValveManipulationSound();
+		
+		if (m_ValveManipulatedIndex == -1)
+			m_ValveManipulationSoundRequested = false;
 	}
 	
 	override void SetActions()
@@ -310,6 +328,118 @@ class Land_Underground_WaterReservoir : BuildingBase
 	override bool HasTurnableValveBehavior()
 	{
 		return true;
+	}
+	
+	protected void Init()
+	{
+		m_ValveNames 							= new array<string>();
+		m_ValveStates 							= new array<bool>();
+		m_PressureAnimationRequests				= new array<bool>();
+		m_PressureDeanimationRequests			= new array<bool>();
+		m_WaterLevelTimesAccumulated			= new array<float>();
+		m_PressureTimesAccumulated				= new array<float>();
+		m_WaterLevelsAvailable					= new map<string, vector>();
+		m_DrainValveWaterStageSettings 			= new array<ref WaterLevelSettings>();	
+		m_DrainValvePressureStageSettings 		= new array<ref PressureLevelSettings>();		
+		m_DrainValvePressureDeanimationSettings	= new array<ref PressureLevelSettings>();		
+		m_FillValveWaterStageSettings 			= new array<ref WaterLevelSettings>();
+	 	m_FillValvePressureStageSettings		= new array<ref PressureLevelSettings>();
+	 	m_FillValvePressureDeanimationSettings	= new array<ref PressureLevelSettings>();
+		m_WaterLevelSnapshot 					= null;
+		
+		m_WaterLevelActual						= WL_AVERAGE;
+		m_WaterLevelPrev						= WL_AVERAGE;
+
+		m_LastActiveValve						= INDEX_NOT_FOUND;
+		m_ValveManipulatedIndex					= -1;
+		m_ValveManipulatedIndexPrev				= -1;
+		
+		m_PipeSounds							= new array<EffectSound>();
+		m_ValveParticles						= new ParticleSourceArray();
+		m_PipeBrokenParticles					= new ParticleSourceArray();
+		
+		//! pre-init arrays
+		int i = 0;
+		for (i = 0; i < VALVES_COUNT; ++i)
+		{
+			m_ValveNames.Insert("none");
+			m_ValveStates.Insert(false);
+			m_PressureAnimationRequests.Insert(false);
+			m_PressureDeanimationRequests.Insert(false);
+			m_WaterLevelTimesAccumulated.Insert(-1);
+			m_PressureTimesAccumulated.Insert(-1);
+			m_PipeSounds.Insert(null);
+			m_ValveParticles.Insert(null);
+		}
+		
+		for (i = 0; i < PIPES_BROKEN_COUNT; ++i)
+		{
+			m_PipeBrokenParticles.Insert(null);
+		}
+
+		RegisterNetSyncVariableInt("m_ValveStatesPacked", 0);
+		RegisterNetSyncVariableInt("m_ValveManipulatedIndex", -1, VALVES_COUNT - 1);
+		RegisterNetSyncVariableInt("m_WaterLevelActual", WL_MIN, WL_MAX);
+		RegisterNetSyncVariableInt("m_WaterLevelPrev", WL_MIN, WL_MAX);
+
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(LateInit, 250);
+	}
+	
+	protected void LateInit()
+	{
+		RegisterValve(VALVE_NAME_DRAIN, VALVE_INDEX_DRAIN);
+		RegisterValve(VALVE_NAME_FILL, VALVE_INDEX_FILL);
+
+		TranslateMemoryPointsToWaterLevels();
+		
+		ConfigureValvesAndGaugesCourse();
+		
+		m_WaterLevelDefault	= m_WaterLevelsAvailable[WATER_LEVEL_AVERAGE];
+
+		if (GetGame().IsServer())
+		{
+			m_SpawnedWaterObject = GetGame().CreateObjectEx(OBJECT_NAME_WATER_PLANE, m_WaterLevelDefault, ECE_CREATEPHYSICS);
+			m_SpawnedWaterObject.SetOrientation(GetOrientation());
+			SetWaterLevelHeight(m_WaterLevelDefault[1]);
+		}
+		
+		GetGame().RegisterNetworkStaticObject(this);
+		SetSynchDirty();
+	}
+	
+	protected void ConfigureValvesAndGaugesCourse()
+	{
+		//! drain - water level
+		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, -1.0));
+		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MIN, 40.0));
+		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MIN, 200.0));
+		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, 360.0));
+		
+		//! drain - pressure
+		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, -1.0));
+		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, 40.0));
+		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, 200.0));
+		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, 360.0));
+		
+		//! for deanimation purposes only while valves activation overllaps
+		m_DrainValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_AVERAGE, -1));
+		m_DrainValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_MIN, 5.0));
+		
+		//! fill - water level
+		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, -1.0));
+		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MAX, 40.0));
+		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MAX, 100.0));
+		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, 40.0));
+
+		//! fill - pressure
+		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, -1.0));
+		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, 40.0));
+		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, 100.0));
+		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, 40.0));
+		
+		//! for deanimation purposes only while valves activation overllaps
+		m_FillValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_AVERAGE, -1.0));
+		m_FillValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_MAX, 5.0));
 	}
 	
 	override bool IsValveTurnable(int pValveIndex)
@@ -810,12 +940,12 @@ class Land_Underground_WaterReservoir : BuildingBase
 	{
 		switch (m_ValveManipulatedIndex)
 		{
-		case VALVE_INDEX_DRAIN:
-			PlaySoundSetAtMemoryPoint(m_ValveManipulationSound, SOUND_NAME_VALVE_MANIPULATION, VALVE_NAME_DRAIN);
-		break;
-		case VALVE_INDEX_FILL:
-			PlaySoundSetAtMemoryPoint(m_ValveManipulationSound, SOUND_NAME_VALVE_MANIPULATION, VALVE_NAME_FILL);
-		break;
+			case VALVE_INDEX_DRAIN:
+				m_ValveManipulationSoundRequested = PlaySoundSetAtMemoryPoint(m_ValveManipulationSound, SOUND_NAME_VALVE_MANIPULATION, VALVE_NAME_DRAIN);
+				break;
+			case VALVE_INDEX_FILL:
+				m_ValveManipulationSoundRequested = PlaySoundSetAtMemoryPoint(m_ValveManipulationSound, SOUND_NAME_VALVE_MANIPULATION, VALVE_NAME_FILL);
+				break;
 		}
 	}
 	
@@ -970,7 +1100,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 		{
 			if (m_ValveParticles[VALVE_INDEX_DRAIN] == null)
 			{
-				m_ValveParticles[VALVE_INDEX_DRAIN] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_DRAIN_PIPE_MAX_PRESSURE, null, GetMemoryPointPosition(PIPE_NAME_LEAKING_DRAIN), "0 90 165", true);
+				m_ValveParticles[VALVE_INDEX_DRAIN] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_DRAIN_PIPE_MAX_PRESSURE, null, GetMemoryPointPosition(PIPE_NAME_LEAKING_DRAIN), GetOrientation() + "0 -90 165", true);
 			}
 		}
 		
@@ -987,7 +1117,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 		{
 			if (m_ValveParticles[VALVE_INDEX_FILL] == null)
 			{
-				m_ValveParticles[VALVE_INDEX_FILL] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_FILL_PIPE_MAX_PRESSURE, null, GetMemoryPointPosition(PIPE_NAME_LEAKING_FILL), "0 90 90", true);
+				m_ValveParticles[VALVE_INDEX_FILL] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_FILL_PIPE_MAX_PRESSURE, null, GetMemoryPointPosition(PIPE_NAME_LEAKING_FILL), GetOrientation() + "0 90 -90", true);
 			}
 		}
 		
@@ -1008,7 +1138,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 			{
 				if (m_PipeBrokenParticles[PIPE_INDEX_BROKEN1] == null)
 				{
-					m_PipeBrokenParticles[PIPE_INDEX_BROKEN1] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_FILL_PIPE_JET, null, GetMemoryPointPosition(PIPE_NAME_BROKEN1), "0 0 0", true);
+					m_PipeBrokenParticles[PIPE_INDEX_BROKEN1] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_FILL_PIPE_JET, null, GetMemoryPointPosition(PIPE_NAME_BROKEN1), GetOrientation() + "0 0 0", true);
 				}
 				
 				//! we don't need the weak jet stream
@@ -1025,7 +1155,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 		{
 			if (m_PipeBrokenParticles[PIPE_INDEX_BROKEN2] == null)
 			{
-				m_PipeBrokenParticles[PIPE_INDEX_BROKEN2] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_FILL_PIPE_JET_WEAK, null, GetMemoryPointPosition(PIPE_NAME_BROKEN2), "0 0 0", true);
+				m_PipeBrokenParticles[PIPE_INDEX_BROKEN2] = ParticleManager.GetInstance().PlayInWorldEx(PARTICLE_FILL_PIPE_JET_WEAK, null, GetMemoryPointPosition(PIPE_NAME_BROKEN2), GetOrientation() + "0 0 0", true);
 			}
 		}
 		
@@ -1063,26 +1193,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 		}
 	}
 	
-	protected void LateInit()
-	{
-		RegisterValve(VALVE_NAME_DRAIN, VALVE_INDEX_DRAIN);
-		RegisterValve(VALVE_NAME_FILL, VALVE_INDEX_FILL);
 
-		TranslateMemoryPointsToWaterLevels();
-		
-		ConfigureValvesAndGaugesCourse();
-		
-		m_WaterLevelDefault	= m_WaterLevelsAvailable[WATER_LEVEL_AVERAGE];
-
-		if (GetGame().IsServer())
-		{
-			m_SpawnedWaterObject = GetGame().CreateObjectEx(OBJECT_NAME_WATER_PLANE, m_WaterLevelDefault, ECE_CREATEPHYSICS);
-			SetWaterLevelHeight(m_WaterLevelDefault[1]);
-		}
-		
-		GetGame().RegisterNetworkStaticObject(this);
-		SetSynchDirty();
-	}
 	
 	protected void ResetState()
 	{
@@ -1107,41 +1218,6 @@ class Land_Underground_WaterReservoir : BuildingBase
 		CleanSoundEffects();
 	}
 	
-	protected void ConfigureValvesAndGaugesCourse()
-	{
-		//! drain - water level
-		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, -1.0));
-		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MIN, 40.0));
-		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MIN, 200.0));
-		m_DrainValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, 360.0));
-		
-		//! drain - pressure
-		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, -1.0));
-		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, 40.0));
-		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, 200.0));
-		m_DrainValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, 360.0));
-		
-		//! for deanimation purposes only while valves activation overllaps
-		m_DrainValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_AVERAGE, -1));
-		m_DrainValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_MIN, 5.0));
-		
-		//! fill - water level
-		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, -1.0));
-		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MAX, 40.0));
-		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_MAX, 100.0));
-		m_FillValveWaterStageSettings.Insert(new WaterLevelSettings(WL_AVERAGE, 40.0));
-
-		//! fill - pressure
-		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, -1.0));
-		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, 40.0));
-		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MIN, 100.0));
-		m_FillValvePressureStageSettings.Insert(new PressureLevelSettings(PL_MAX, 40.0));
-		
-		//! for deanimation purposes only while valves activation overllaps
-		m_FillValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_AVERAGE, -1.0));
-		m_FillValvePressureDeanimationSettings.Insert(new PressureLevelSettings(PL_MAX, 5.0));
-	}
-	
 	protected void SyncValveVariables()
 	{
 		if (GetGame())
@@ -1153,74 +1229,6 @@ class Land_Underground_WaterReservoir : BuildingBase
 				SetSynchDirty();
 			}
 		}
-	}
-	
-	protected void Init()
-	{
-		m_ValveNames 							= new array<string>();
-		m_ValveStates 							= new array<bool>();
-		m_PressureAnimationRequests				= new array<bool>();
-		m_PressureDeanimationRequests			= new array<bool>();
-		m_WaterLevelTimesAccumulated			= new array<float>();
-		m_PressureTimesAccumulated				= new array<float>();
-		m_WaterLevelsAvailable					= new map<string, vector>();
-		m_DrainValveWaterStageSettings 			= new array<ref WaterLevelSettings>();	
-		m_DrainValvePressureStageSettings 		= new array<ref PressureLevelSettings>();		
-		m_DrainValvePressureDeanimationSettings	= new array<ref PressureLevelSettings>();		
-		m_FillValveWaterStageSettings 			= new array<ref WaterLevelSettings>();
-	 	m_FillValvePressureStageSettings		= new array<ref PressureLevelSettings>();
-	 	m_FillValvePressureDeanimationSettings	= new array<ref PressureLevelSettings>();
-		m_WaterLevelSnapshot 					= null;
-		
-		m_WaterLevelActual						= WL_AVERAGE;
-		m_WaterLevelPrev						= WL_AVERAGE;
-
-		m_LastActiveValve						= INDEX_NOT_FOUND;
-		m_ValveManipulatedIndex					= -1;
-		m_ValveManipulatedIndexPrev				= -1;
-		
-		m_PipeSounds							= new array<EffectSound>();
-		m_ValveParticles						= new ParticleSourceArray();
-		m_PipeBrokenParticles					= new ParticleSourceArray();
-		
-		//! pre-init arrays
-		int i = 0;
-		for (i = 0; i < VALVES_COUNT; ++i)
-		{
-			m_ValveNames.Insert("none");
-			m_ValveStates.Insert(false);
-			m_PressureAnimationRequests.Insert(false);
-			m_PressureDeanimationRequests.Insert(false);
-			m_WaterLevelTimesAccumulated.Insert(-1);
-			m_PressureTimesAccumulated.Insert(-1);
-			m_PipeSounds.Insert(null);
-			m_ValveParticles.Insert(null);
-		}
-		
-		for (i = 0; i < PIPES_BROKEN_COUNT; ++i)
-		{
-			m_PipeBrokenParticles.Insert(null);
-		}
-
-		RegisterNetSyncVariableInt("m_ValveStatesPacked", 0);
-		RegisterNetSyncVariableInt("m_ValveManipulatedIndex", -1, VALVES_COUNT - 1);
-		RegisterNetSyncVariableInt("m_WaterLevelActual", WL_MIN, WL_MAX);
-		RegisterNetSyncVariableInt("m_WaterLevelPrev", WL_MIN, WL_MAX);
-
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(LateInit, 250);
-	}
-
-	void Land_Underground_WaterReservoir()
-	{
-		SetEventMask(EntityEvent.POSTSIMULATE);
-		
-		Init();
-	}
-	
-	void ~Land_Underground_WaterReservoir()
-	{
-		CleanSoundEffects();
-		CleanVisualEffects();
 	}
 	
 	protected int PackArrayOfBoolStatesIntoBits(array<bool> pStates)

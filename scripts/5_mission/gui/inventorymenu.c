@@ -114,6 +114,12 @@ class InventoryMenu extends UIScriptedMenu
 		
 		SetFocus( layoutRoot );
 		
+		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
+		if( mission )
+		{
+			mission.MoveHudForInventory( true );
+		}
+		
 		ItemManager.GetInstance().SetItemMicromanagmentMode( false );
 		ItemManager.GetInstance().SetSelectedItem( null, null, null, null );
 
@@ -140,6 +146,11 @@ class InventoryMenu extends UIScriptedMenu
 		PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR).Stop();
 		if(m_Inventory)
 			m_Inventory.OnHide();
+		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
+		if( mission )
+		{
+			mission.MoveHudForInventory( false );
+		}
 		
 		ItemManager.GetInstance().SetItemMicromanagmentMode( false );
 		ItemManager.GetInstance().SetSelectedItem( null, null, null, null );

@@ -250,7 +250,6 @@ class StaminaHandler
 	protected bool 							m_Debug; 						//! DEPRECATED
 	protected bool							m_StaminaDepleted;
 
-	//protected ref Timer					m_CooldownTimer;
 	protected ref map<int,ref Timer> 		m_TimerMap;
 	ref map<EStaminaMultiplierTypes, float>	m_RegisteredDepletionModifiers;
 	ref set<EStaminaMultiplierTypes>		m_ActiveDepletionModifiers;
@@ -282,7 +281,6 @@ class StaminaHandler
 		m_StaminaRecoveryMultiplier 	= 1;
 		m_Time 							= 0;
 		m_StaminaDepleted				= false;
-		//m_CooldownTimer				= new Timer(CALL_CATEGORY_SYSTEM);
 		m_IsInCooldown					= false;
 
 		RegisterStaminaConsumers();
@@ -318,7 +316,7 @@ class StaminaHandler
 	
 	void ActivateDepletionModifier(EStaminaMultiplierTypes type)
 	{
-		if( m_RegisteredDepletionModifiers.Contains(type))
+		if (m_RegisteredDepletionModifiers.Contains(type))
 		{
 			m_ActiveDepletionModifiers.Insert(type);
 			RecalculateDepletionMultiplier();
@@ -332,7 +330,7 @@ class StaminaHandler
 	void DeactivateDepletionModifier(EStaminaMultiplierTypes type)
 	{
 		int index = m_ActiveDepletionModifiers.Find(type);
-		if( index != -1 )
+		if (index != -1)
 		{
 			m_ActiveDepletionModifiers.Remove(index);
 			RecalculateDepletionMultiplier();
@@ -343,18 +341,18 @@ class StaminaHandler
 	{
 		float value = 1;
 		
-		foreach(int multiplier: m_ActiveDepletionModifiers)
+		foreach (int multiplier: m_ActiveDepletionModifiers)
 		{
 			value *= m_RegisteredDepletionModifiers.Get(multiplier);
 		}
+
 		if (value != m_StaminaDepletionMultiplier)
 			SetDepletionMultiplier(value);
-		//Print("m_StaminaDepletionMultiplier = " + m_StaminaDepletionMultiplier);
 	}
 	
 	void ActivateRecoveryModifier(EStaminaMultiplierTypes type)
 	{
-		if( m_RegisteredRecoveryModifiers.Contains(type))
+		if (m_RegisteredRecoveryModifiers.Contains(type))
 		{
 			m_ActiveRecoveryModifiers.Insert(type);
 			RecalculateRecoveryMultiplier();
@@ -369,7 +367,7 @@ class StaminaHandler
 	void DeactivateRecoveryModifier(EStaminaMultiplierTypes type)
 	{
 		int index = m_ActiveRecoveryModifiers.Find(type);
-		if( index != -1 )
+		if (index != -1)
 		{
 			m_ActiveRecoveryModifiers.Remove(index);
 			RecalculateRecoveryMultiplier();
@@ -389,7 +387,6 @@ class StaminaHandler
 		{
 			SetRecoveryMultiplier(value);
 		}
-		//Print("m_StaminaRecoveryMultiplier = " + m_StaminaRecoveryMultiplier);
 	}
 	
 	void Update(float deltaT, int pCurrentCommandID)
@@ -405,8 +402,6 @@ class StaminaHandler
 			// Calculates actual max stamina based on player's load
 			if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 			{
-				//! gets stamina from PlayerStat
-				m_Stamina = m_Player.GetStatStamina().Get();
 				//! gets the actual players load
 				m_PlayerLoad = m_Player.GetPlayerLoad();
 
@@ -474,7 +469,7 @@ class StaminaHandler
 			}
 
 			#ifndef SERVER
-			m_Player.SetStamina(m_Stamina, m_StaminaCap);
+			m_Player.SetStamina(m_StaminaSynced, m_StaminaCap);
 			#endif
 
 			ApplyExhaustion();
@@ -763,7 +758,6 @@ class StaminaHandler
 	//! set cooldown timer between each consume of stamina	
 	protected void SetCooldown(float time, int modifier = -1)
 	{
-		//StaminaModifier sm = m_StaminaModifiers.GetModifierData(modifier);
 		if ( m_StaminaDepleted || m_Stamina <= 0.0 )
 		{
 			ResetCooldown(modifier);
@@ -771,9 +765,6 @@ class StaminaHandler
 		}
 
 		m_IsInCooldown = true;
-		/*if( m_CooldownTimer.IsRunning() )
-			m_CooldownTimer.Stop();
-		m_CooldownTimer.Run(time, this, "ResetCooldown",  new Param1<int>( modifier ));*/
 		
 		Timer timer;
 		if (m_TimerMap.Find(modifier, timer) && timer.IsRunning())

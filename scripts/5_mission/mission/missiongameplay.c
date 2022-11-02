@@ -157,9 +157,6 @@ class MissionGameplay extends MissionBase
 				PluginConfigDebugProfile.GetInstance().SetLogsEnabled(LogManager.IsLogsEnable());
 			}
 		#endif
-
-		//AIBehaviourHL.RegAIBehaviour("zombie2",AIBehaviourHLZombie2,AIBehaviourHLDataZombie2);
-		//RegBehaviour("zombie2",AIBehaviourHLZombie2,AIBehaviourHLDataZombie2);
 		
 		if ( GetGame().IsMultiplayer() )
 		{
@@ -175,8 +172,6 @@ class MissionGameplay extends MissionBase
 	override void OnMissionStart()
 	{
 		g_Game.SetConnecting(false);
-		//does not display HUD until player is fully loaded
-		//m_HudRootWidget.Show(true);
 		GetUIManager().ShowUICursor(false);
 		g_Game.SetMissionState( DayZGame.MISSION_STATE_GAME );
 	}
@@ -1059,6 +1054,20 @@ class MissionGameplay extends MissionBase
 	
 	void MoveHudForInventory( bool inv_open )
 	{
+		#ifdef PLATFORM_CONSOLE
+		IngameHud hud = IngameHud.Cast( GetHud() );
+		if( hud )
+		{
+			if( inv_open )
+			{
+				hud.GetHudPanelWidget().SetPos( 0, -0.055 );
+			}
+			else
+			{
+				hud.GetHudPanelWidget().SetPos( 0, 0 );
+			}
+		}
+		#endif
 	}
 	
 	override void ShowInventory()
@@ -1515,7 +1524,19 @@ class MissionGameplay extends MissionBase
 		#ifdef DEVELOPER
 			if (m_HudDebug)
 				m_HudDebug.RefreshByLocalProfile();
-		#endif	
+		#endif
+		
+		PlayerBase playerBase = PlayerBase.Cast(player);
+		if (playerBase)
+		{
+			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(playerBase.ShowDeadScreen, DayZPlayerImplement.DEAD_SCREEN_DELAY, false, false, 0);
+		}
+		
+		GetGame().GetSoundScene().SetSoundVolume(g_Game.m_volume_sound,1);
+		GetGame().GetSoundScene().SetSpeechExVolume(g_Game.m_volume_speechEX,1);
+		GetGame().GetSoundScene().SetMusicVolume(g_Game.m_volume_music,1);
+		GetGame().GetSoundScene().SetVOIPVolume(g_Game.m_volume_VOIP,1);
+		GetGame().GetSoundScene().SetRadioVolume(g_Game.m_volume_radio,1);
 	}
 	
 	override void SetPlayerRespawning(bool state)

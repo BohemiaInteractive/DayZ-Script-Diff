@@ -1,3 +1,3 @@
 prefix=scripts\
 product=dayz
-version=98743
+version=98952

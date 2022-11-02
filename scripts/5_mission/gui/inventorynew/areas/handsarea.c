@@ -46,7 +46,9 @@ class HandsArea: Container
 	
 	override void UpdateSelectionIcons()
 	{
+		#ifdef PLATFORM_CONSOLE
 		ScrollToActiveContainer();
+		#endif
 	}
 
 	override void UpdateInterval()
@@ -96,6 +98,7 @@ class HandsArea: Container
 
 	override void Refresh()
 	{
+		UpdateSelectionIcons();
 		m_ShouldChangeSize = true;
 	}
 	

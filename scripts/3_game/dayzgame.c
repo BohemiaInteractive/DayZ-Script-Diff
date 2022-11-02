@@ -1216,22 +1216,14 @@ class DayZGame extends CGame
 				LoadingHide(true);
 				ProgressAsync.DestroyAllPendingProgresses();
 				
-				SetGameState( DayZGameState.IN_GAME );
-	
-				// fade out from the black screen
-				#ifndef NO_GUI
-				if ( GetUIManager().ScreenFadeVisible() )
-				{
-					GetUIManager().ScreenFadeOut(0.5);
-				}
-				#endif
+				SetGameState(DayZGameState.IN_GAME);
 				
 				// analytics - spawned
 				StatsEventSpawnedData spawnData = new StatsEventSpawnedData();
 				spawnData.m_CharacterId = g_Game.GetDatabaseID();
 				spawnData.m_Lifetime = 0;
 				spawnData.m_Position = vector.Zero;
-				if ( GetPlayer() )
+				if (GetPlayer())
 				{
 					spawnData.m_Position = GetPlayer().GetPosition();
 				}
@@ -1241,19 +1233,19 @@ class DayZGame extends CGame
 				
 				#ifdef PLATFORM_CONSOLE
 				m_Notifications.ClearVoiceNotifications();
-				OnlineServices.SetMultiplayState( true );
+				OnlineServices.SetMultiplayState(true);
 				#endif
-				if ( m_FirstConnect )
+				if (m_FirstConnect)
 				{
 					m_FirstConnect = false;
-					if ( GetHostAddress( address, port ) )
+					if (GetHostAddress(address, port))
 					{
-						AddVisitedServer( address, port );
+						AddVisitedServer(address, port);
 					}
 					
 					#ifdef PLATFORM_CONSOLE
 						#ifndef PLATFORM_WINDOWS // if app is not on Windows with -XBOX parameter
-							if ( null != GetUserManager().GetSelectedUser() )
+							if (null != GetUserManager().GetSelectedUser())
 							{
 								OnlineServices.EnterGameplaySession();
 								OnlineServices.LoadVoicePrivilege();
@@ -1803,38 +1795,45 @@ class DayZGame extends CGame
 	{
 		if (m_GamepadDisconnectMenu)
 		{
-			//DeleteGamepadDisconnectMenu();
-			//m_ShouldShowControllerDisconnect = false;
 			return;
 		}
 		
-		PPERequesterBank.GetRequester(PPERequester_ControllerDisconnectBlur).Start();
-		m_GamepadDisconnectMenu = GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_gamepad_connect.layout");
-		RichTextWidget text_widget = RichTextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Text") );
-		TextWidget caption_widget = TextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Caption") );
-		if (text_widget)
+		bool canBeCreated = m_GameState != DayZGameState.IN_GAME && !GetInput().IsEnabledMouseAndKeyboard();
+		canBeCreated = canBeCreated || (m_GameState == DayZGameState.IN_GAME && (!GetWorld().IsMouseAndKeyboardEnabledOnServer() || (GetWorld().IsMouseAndKeyboardEnabledOnServer() && !GetInput().IsEnabledMouseAndKeyboard())));
+		if (canBeCreated)
 		{
-			string text = Widget.TranslateString( "#console_reconect" );
+			PPERequesterBank.GetRequester(PPERequester_ControllerDisconnectBlur).Start();
+			m_GamepadDisconnectMenu = GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_gamepad_connect.layout");
+			RichTextWidget text_widget = RichTextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Text") );
+			TextWidget caption_widget = TextWidget.Cast( m_GamepadDisconnectMenu.FindAnyWidget("Caption") );
+			if (text_widget)
+			{
+				string text = Widget.TranslateString( "#console_reconect" );
+				#ifdef PLATFORM_XBOX
+					text_widget.SetText( string.Format( text, "<image set=\"xbox_buttons\" name=\"A\" />" ) );
+					caption_widget.SetText("#STR_TitleScreenLayout_Caption0");
+				#endif
+	
+				#ifdef PLATFORM_PS4
+					string confirm = "cross";
+					if( GetInput().GetEnterButton() == GamepadButton.A )
+					{
+						confirm = "cross";
+					}
+					else
+					{
+						confirm = "circle";
+					}
+					text_widget.SetText( string.Format( text, "<image set=\"playstation_buttons\" name=\"" + confirm + "\" />" ) );
+					caption_widget.SetText("#ps4_STR_TitleScreenLayout_Caption0");
+				#endif
+			}
+			
 			#ifdef PLATFORM_XBOX
-				text_widget.SetText( string.Format( text, "<image set=\"xbox_buttons\" name=\"A\" />" ) );
-				caption_widget.SetText("#STR_TitleScreenLayout_Caption0");
+				GetInput().IdentifyGamepad(GetInput().GetEnterButton());
 			#endif
-
-			#ifdef PLATFORM_PS4
-				string confirm = "cross";
-				if( GetInput().GetEnterButton() == GamepadButton.A )
-				{
-					confirm = "cross";
-				}
-				else
-				{
-					confirm = "circle";
-				}
-				text_widget.SetText( string.Format( text, "<image set=\"playstation_buttons\" name=\"" + confirm + "\" />" ) );
-				caption_widget.SetText("#ps4_STR_TitleScreenLayout_Caption0");
-			#endif
+			GetMission().AddActiveInputExcludes({"gamepaddisconnect"});
 		}
-
 		m_ShouldShowControllerDisconnect = true;
 	}
 	
@@ -1846,6 +1845,7 @@ class DayZGame extends CGame
 		if( GetUIManager().IsDialogVisible() )
 			GetUIManager().CloseDialog();
 		m_ShouldShowControllerDisconnect = false;
+		GetMission().RemoveActiveInputExcludes({"gamepaddisconnect"},true);
 	}
 	
 	void JoinLaunch()

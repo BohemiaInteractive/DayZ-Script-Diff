@@ -35,11 +35,6 @@ class FirearmActionBase : ActionBase
 	{
 		super.Start( action_data );
 		action_data.m_State = UA_PROCESSING;
-		bool in_iron_sights = action_data.m_Player.IsInIronsights();
-		if(in_iron_sights)
-		{
-			action_data.m_Player.ExitSights();
-		}
 	}
 	
 	override bool CanBePerformedFromInventory()

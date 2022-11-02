@@ -26,6 +26,7 @@ enum EClientKicked
 	INPUT_HACK,			// Player is sending more Inputs than possible
 	
 	QUIT,				// Player closed the game
+	LEAVE,				// Player pressed the Leave button
 	
 	// LoginMachine kicks (0x0030)
 	LOGIN_MACHINE_ERROR = 48,	// Generic LoginMachine error (fallback)
@@ -212,6 +213,7 @@ class ClientKickedModule : ErrorHandlerModuleScript
 		InsertDialogueErrorProperties(EClientKicked.INPUT_HACK,							"#STR_INPUT_HACK");
 		
 		InsertErrorProperties(EClientKicked.QUIT); // No handling, just register it exists
+		InsertErrorProperties(EClientKicked.LEAVE); // No handling, just register it exists
 
 		// LoginMachine kicks			
 		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.LOGIN_MACHINE_ERROR,				"#server_browser_error_unknown", LOGIN_PREFIX);

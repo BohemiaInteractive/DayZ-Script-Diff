@@ -99,6 +99,7 @@ class Cauldron extends Bottle_Base
 		
 		RemoveAction(ActionDrink);
 		RemoveAction(ActionEmptyBottleBase);
+		AddAction(ActionDrinkCookingPot);
 		AddAction(ActionFillBottleBase);
 		AddAction(ActionWaterGardenSlot);
 		AddAction(ActionWaterPlant);
@@ -107,6 +108,6 @@ class Cauldron extends Bottle_Base
 		AddAction(ActionPourLiquid);
 		//AddAction(ActionTransferLiquid);
 		AddAction(ActionEmptyCookingPot);
-		AddAction(ActionDrinkCookingPot);
+
 	}
 }

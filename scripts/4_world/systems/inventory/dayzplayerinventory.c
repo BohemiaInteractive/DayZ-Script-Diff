@@ -560,7 +560,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 
 				EnableMovableOverride(src.GetItem());
-				if (!GameInventory.CheckRequestSrc(GetManOwner(), src, GameInventory.c_MaxItemDistanceRadius))
+				if (!PlayerCheckRequestSrc(src, GameInventory.c_MaxItemDistanceRadius))
 				{
 					if( GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER )
 					{
@@ -588,7 +588,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 				
 				//Players should not try to determine whether some other player is cheater or not, this is up to that player and the server
-				if ( IsServerOrLocalPlayer() &&  !GameInventory.CheckMoveToDstRequest(GetManOwner(), src, dst, GameInventory.c_MaxItemDistanceRadius) )
+				if ( IsServerOrLocalPlayer() && !PlayerCheckRequestDst(src, dst, GameInventory.c_MaxItemDistanceRadius) )
 				{
 					/*if( GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER )
 					{
@@ -903,7 +903,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				EnableMovableOverride(src1.GetItem());
 				EnableMovableOverride(src2.GetItem());
 				
-				if (false == GameInventory.CheckRequestSrc(GetManOwner(), src1, GameInventory.c_MaxItemDistanceRadius))
+				if (false == PlayerCheckRequestSrc(src1, GameInventory.c_MaxItemDistanceRadius))
 				{
 					#ifdef DEVELOPER
 					if ( LogManager.IsInventoryMoveLogEnable() )
@@ -916,7 +916,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					RemoveMovableOverride(src2.GetItem());
 					return false; // stale packet
 				}
-				if (false == GameInventory.CheckRequestSrc(GetManOwner(), src2, GameInventory.c_MaxItemDistanceRadius))
+				if (false == PlayerCheckRequestSrc(src2, GameInventory.c_MaxItemDistanceRadius))
 				{
 					#ifdef DEVELOPER
 					if ( LogManager.IsInventoryMoveLogEnable() )
@@ -931,7 +931,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 
 				//Players should not try to determine whether some other player is cheater or not, this is up to that player and the server
-				if ( IsServerOrLocalPlayer() && !GameInventory.CheckSwapItemsRequest(GetManOwner(), src1, src2, dst1, dst2, GameInventory.c_MaxItemDistanceRadius))
+				if ( IsServerOrLocalPlayer() && !PlayerCheckSwapItemsRequest(src1, src2, dst1, dst2, GameInventory.c_MaxItemDistanceRadius))
 				{
 					#ifdef DEVELOPER
 					if ( LogManager.IsInventoryMoveLogEnable() )
@@ -1080,7 +1080,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					break; // not in bubble
 				}
 				
-				if (false == GameInventory.CheckRequestSrc(GetManOwner(), src, GameInventory.c_MaxItemDistanceRadius))
+				if (!PlayerCheckRequestSrc(src, GameInventory.c_MaxItemDistanceRadius))
 				{
 					#ifdef DEVELOPER
 					if ( LogManager.IsInventoryMoveLogEnable() )
@@ -1093,7 +1093,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 
 				//Players should not try to determine whether some other player is cheater or not, this is up to that player and the server
-				if ( IsServerOrLocalPlayer() && !GameInventory.CheckDropRequest(GetManOwner(), src, GameInventory.c_MaxItemDistanceRadius))
+				if ( IsServerOrLocalPlayer() && !PlayerCheckDropRequest(src, GameInventory.c_MaxItemDistanceRadius))
 				{
 					#ifdef DEVELOPER
 					if ( LogManager.IsInventoryMoveLogEnable() )
@@ -1871,6 +1871,152 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 	bool IsProcessing()
 	{
 		return !m_FSM.GetCurrentState().IsIdle() || m_DeferredEvent || m_DeferredPostedHandEvent;
+	}
+	
+	bool PlayerCheckRequestSrc ( notnull InventoryLocation src, float radius )
+	{
+		bool result = true;
+		
+		EntityAI ent = src.GetParent();
+		if ( ent )
+		{
+			PlayerBase player = PlayerBase.Cast(ent.GetHierarchyRootPlayer());
+			if (player)
+			{
+				if ( GetDayZPlayerOwner() != player )
+				{
+					if (player.IsAlive())
+					{
+						if (!player.IsRestrained() && !player.IsUnconscious())
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		
+		if ( result )
+		{
+			result = CheckRequestSrc( GetManOwner(), src, radius);
+		}
+		
+		return result;
+	}
+
+	bool PlayerCheckRequestDst ( notnull InventoryLocation src, notnull InventoryLocation dst, float radius )
+	{
+		bool result = true;
+		
+		EntityAI ent = dst.GetParent();
+		if ( ent )
+		{
+			PlayerBase player = PlayerBase.Cast(ent.GetHierarchyRootPlayer());
+			if (player)
+			{
+				if ( GetDayZPlayerOwner() != player )
+				{
+					if (player.IsAlive())
+					{
+						if (!player.IsRestrained() && !player.IsUnconscious())
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		
+		if ( result )
+		{
+			result = CheckMoveToDstRequest( GetManOwner(), src, dst, radius);
+		}
+		
+		return result;
+	}	
+	
+	bool PlayerCheckSwapItemsRequest( notnull InventoryLocation src1,  notnull InventoryLocation src2, notnull InventoryLocation dst1, notnull InventoryLocation dst2, float radius)
+	{
+		bool result = true;
+		
+		EntityAI ent = dst1.GetParent();
+		PlayerBase player;
+		if ( ent )
+		{
+			player = PlayerBase.Cast(ent.GetHierarchyRootPlayer());
+			if (player)
+			{
+				if ( GetDayZPlayerOwner() != player )
+				{
+					if (player.IsAlive())
+					{
+						if (!player.IsRestrained() && !player.IsUnconscious())
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		
+		ent = dst2.GetParent();
+		if ( ent )
+		{
+			player = PlayerBase.Cast(ent.GetHierarchyRootPlayer());
+			if (player)
+			{
+				if ( GetDayZPlayerOwner() != player )
+				{
+					if (player.IsAlive())
+					{
+						if (!player.IsRestrained() && !player.IsUnconscious())
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		
+		
+		if ( result )
+		{
+			result = CheckSwapItemsRequest( GetManOwner(), src1, src2, dst1, dst2, GameInventory.c_MaxItemDistanceRadius);
+		}
+		
+		return result;
+		
+	}
+	
+	bool PlayerCheckDropRequest ( notnull InventoryLocation src, float radius )
+	{
+		bool result = true;
+		
+		EntityAI ent = src.GetParent();
+		if ( ent )
+		{
+			PlayerBase player = PlayerBase.Cast(ent.GetHierarchyRootPlayer());
+			if (player)
+			{
+				if ( GetDayZPlayerOwner() != player )
+				{
+					if (player.IsAlive())
+					{
+						if (!player.IsRestrained() && !player.IsUnconscious())
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		
+		if ( result )
+		{
+			result = CheckDropRequest( GetManOwner(), src, radius);
+		}
+		
+		return result;
 	}
 };
 

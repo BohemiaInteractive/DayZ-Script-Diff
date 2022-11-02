@@ -17,6 +17,16 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 		super.OnLoadServersAsyncFinished();
 	}
 	
+	protected override void LoadEntries( int cur_page_index , GetServersResultRowArray page_entries )
+	{
+		if (cur_page_index == 1)
+		{
+			m_OnlineFavServers.Clear();
+		}
+		
+		super.LoadEntries(cur_page_index, page_entries);
+	}
+	
 	protected override void LoadExtraEntries(int index)
 	{
 		if ( !m_Menu || m_Menu.GetServersLoadingTab() != m_TabType )
@@ -28,13 +38,24 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 		TStringArray favIds = m_Menu.GetFavoritedServerIds();
 		m_PagesCount = Math.Ceil((float)favIds.Count() /  SERVER_BROWSER_PAGE_SIZE);
 		
+		// offlineFavIds will always have same order, even across pages,
+		// to ensure we display only fav servers that HAVEN'T been displayed yet
+		TStringArray offlineFavIds = new TStringArray();
+		offlineFavIds.Reserve(favIds.Count() - m_OnlineFavServers.Count());
+		foreach (string ipPort : favIds)
+		{
+			if (m_OnlineFavServers.Find(ipPort) == -1)
+			{
+				offlineFavIds.Insert(ipPort);
+			}
+		}
+		
 		// appending offline servers to server list
 		int totalServersAlreadyShown = (GetCurrentPage() - 1) * SERVER_BROWSER_PAGE_SIZE + index;
 		int startingIndex = totalServersAlreadyShown - m_OnlineFavServers.Count();
-		
-		for (int i = startingIndex; i < favIds.Count(); ++i)
+		for (int i = startingIndex; i < offlineFavIds.Count(); ++i)
 		{
-			string favServerId = favIds[i];
+			string favServerId = offlineFavIds[i];
 			
 			// only append server if there is a free entry left on the page
 			if (index >= SERVER_BROWSER_PAGE_SIZE)
@@ -46,6 +67,7 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 			{
 				continue;
 			}
+			
 			array<string> parts = new array<string>;
 			favServerId.Split(":", parts);
 			

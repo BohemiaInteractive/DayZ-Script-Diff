@@ -199,7 +199,9 @@ class RightArea: Container
 	
 	override void UpdateSelectionIcons()
 	{
-		ScrollToActiveContainer();
+		#ifdef PLATFORM_CONSOLE
+			ScrollToActiveContainer();
+		#endif
 		MoveUpDownIcons();
 	}
 	

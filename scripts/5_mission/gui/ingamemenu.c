@@ -351,20 +351,19 @@ class InGameMenu extends UIScriptedMenu
 	protected void GameRespawn(bool random)
 	{
 		GetGame().GetMenuDefaultCharacterData(false).SetRandomCharacterForced(random);
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().RespawnPlayer);
-		//turns off dead screen, hides HUD for countdown
-		//---------------------------------------------------
+		GetGame().RespawnPlayer();
+		
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		if (player)
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(player.ShowDeadScreen, DayZPlayerImplement.DEAD_SCREEN_DELAY, false, false, 0);
+			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(player.ShowDeadScreen, DayZPlayerImplement.DEAD_SCREEN_DELAY, false, true, 0);
 		}
 		
 		MissionGameplay missionGP = MissionGameplay.Cast(GetGame().GetMission());
 		missionGP.DestroyAllMenus();
 		missionGP.SetPlayerRespawning(true);
-		//---------------------------------------------------
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().Continue);
+
+		GetGame().GetMission().Continue();
 		Close();
 	}
 	

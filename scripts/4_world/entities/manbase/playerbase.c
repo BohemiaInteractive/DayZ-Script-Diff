@@ -1960,7 +1960,7 @@ class PlayerBase extends ManBase
 			m_ModuleLifespan.SynchLifespanVisual( this, m_LifeSpanState, m_HasBloodyHandsVisible, m_HasBloodTypeVisible, m_BloodType );
 		}
 		
-		if(IsControlledPlayer())//true only on client for the controlled character
+		if (IsControlledPlayer())//true only on client for the controlled character
 		{
 			if (!m_VirtualHud)
 				m_VirtualHud = new VirtualHud(this);
@@ -1974,19 +1974,19 @@ class PlayerBase extends ManBase
 				GetGame().GetMission().SetPlayerRespawning(false);
 				GetGame().GetMission().OnPlayerRespawned(this);
 				
-				m_Hud.ShowHudUI( true );
+				m_Hud.ShowHudUI(true);
 				m_Hud.ShowQuickbarUI(true);
 				#ifdef PLATFORM_CONSOLE
-					m_Hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer()); //temporary solution
+				m_Hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer()); //temporary solution
 				#else
-					m_Hud.ShowQuickBar(g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR));
+				m_Hud.ShowQuickBar(g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR));
 				#endif
 			}
 			m_EffectWidgets = GetGame().GetMission().GetEffectWidgets();
 		}
-		if (  !GetGame().IsDedicatedServer()  )
+		if (!GetGame().IsDedicatedServer())
 		{
-			GetGame().GetCallQueue( CALL_CATEGORY_GUI ).CallLater( UpdateCorpseStateVisual, 2000, false);//sometimes it takes a while to load in
+			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCorpseStateVisual, 2000, false);//sometimes it takes a while to load in
 			m_PlayerSoundEventHandler = new PlayerSoundEventHandler(this);
 		}
 		int slot_id = InventorySlots.GetSlotIdFromString("Head");
@@ -2173,27 +2173,30 @@ class PlayerBase extends ManBase
 		return false;
 	}
 	
-	void RequestResetADSSync() //temporary solution, to be solved by special input
+	void RequestResetADSSync()
 	{
-		if ( GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT && GetGame().IsMultiplayer() )
+		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT && GetGame().IsMultiplayer())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
 				ScriptInputUserData ctx = new ScriptInputUserData;
 				ctx.Write(INPUT_UDT_RESET_ADS);
 				ctx.Send();
-				m_ResetADS = true;
 			}
 		}
-		else
+		else if (!GetGame().IsMultiplayer())
+		{
 			m_ResetADS = true;
+		}
 	}
 	
+	//! server only
 	bool ResetADSPlayerSync( int userDataType, ParamsReadContext ctx )
 	{
 		if ( userDataType == INPUT_UDT_RESET_ADS )
 		{
-			m_ResetADS = true;
+			ScriptJunctureData pCtx = new ScriptJunctureData;
+			SendSyncJuncture(DayZPlayerSyncJunctures.SJ_ADS_RESET,pCtx);
 			return true;
 		}
 		
@@ -3995,9 +3998,11 @@ class PlayerBase extends ManBase
 		return val;
 	}
 	
+	//! DEPRECATED
 	bool HasStaminaRemaining()
 	{
-		if(!GetStaminaHandler()) return false;
+		if (!GetStaminaHandler())
+			return false;
 		
 		return GetStaminaHandler().GetStamina() > 0;
 	}
@@ -5666,7 +5671,7 @@ class PlayerBase extends ManBase
 		if ( GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT )
 		{
 			//m_PlayerLightManager = new PlayerLightManager(this);
-			if ( GetGame().GetMission() )
+			if (GetGame().GetMission())
 			{
 				GetGame().GetMission().ResetGUI();
 				// force update player
@@ -5674,20 +5679,15 @@ class PlayerBase extends ManBase
 			}
 					
 			m_DeathCheckTimer = new Timer();
-			m_DeathCheckTimer.Run(0.1, this, "CheckDeath", NULL, true);
+			m_DeathCheckTimer.Run(0.1, this, "CheckDeath", null, true);
 			PPEManagerStatic.GetPPEManager().StopAllEffects(PPERequesterCategory.ALL);
 			CheckForBurlap();
 			
-			int char_count = GetGame().GetMenuData().GetCharactersCount() - 1;
+			int characterCount = GetGame().GetMenuData().GetCharactersCount() - 1;
 			int idx = GetGame().GetMenuData().GetLastPlayedCharacter();
-			if ( idx == GameConstants.DEFAULT_CHARACTER_MENU_ID || idx > char_count )
+			if ( idx == GameConstants.DEFAULT_CHARACTER_MENU_ID || idx > characterCount )
 			{
 				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(SetNewCharName);
-			}
-			
-			if ( IsAlive() )
-			{
-				SimulateDeath(false);
 			}
 
 			GetGame().GetMission().EnableAllInputs(true);
@@ -5706,6 +5706,7 @@ class PlayerBase extends ManBase
 	override void SimulateDeath(bool state)
 	{
 		super.SimulateDeath(state);
+
 		m_UndergroundHandler = null;
 		if (m_EffectWidgets)
 		{
@@ -6551,7 +6552,7 @@ class PlayerBase extends ManBase
 	
 	void CheckDeath()
 	{
-		if( IsPlayerSelected() && !IsAlive() )
+		if (IsPlayerSelected() && !IsAlive())
 		{
 			SimulateDeath(true);
 			m_DeathCheckTimer.Stop();
@@ -7620,9 +7621,10 @@ class PlayerBase extends ManBase
 			case DayZPlayerSyncJunctures.SJ_WEAPON_LIFT:
 				SetLiftWeapon(pJunctureID, pCtx);
 				break;
-			
+			case DayZPlayerSyncJunctures.SJ_ADS_RESET:
+				m_ResetADS = true;
+				break;
 			case DayZPlayerSyncJunctures.SJ_DELETE_ITEM:
-
 				SetToDelete(pCtx);
 				break;
 			case DayZPlayerSyncJunctures.SJ_BROKEN_LEGS:

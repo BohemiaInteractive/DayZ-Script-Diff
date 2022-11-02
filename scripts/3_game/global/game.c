@@ -1004,8 +1004,8 @@ class CGame
 	proto native float		SurfaceRoadY(float x, float z);
 	proto void				SurfaceGetType(float x, float z, out string type);
 	proto void				SurfaceGetType3D(float x, float y, float z, out string type);
-	proto void				SurfaceUnderObject(Object object, out string type, out int liquidType);
-	proto void				SurfaceUnderObjectByBone(Object object, int boneType, out string type, out int liquidType);
+	proto void				SurfaceUnderObject(notnull Object object, out string type, out int liquidType);
+	proto void				SurfaceUnderObjectByBone(notnull Object object, int boneType, out string type, out int liquidType);
 	proto native float		SurfaceGetNoiseMultiplier(Object directHit, vector pos, int componentIndex);
 	proto native vector		SurfaceGetNormal(float x, float z);
 	proto native float		SurfaceGetSeaLevel();

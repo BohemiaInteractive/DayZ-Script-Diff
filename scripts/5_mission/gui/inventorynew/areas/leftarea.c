@@ -65,7 +65,9 @@ class LeftArea: Container
 	
 	override void UpdateSelectionIcons()
 	{
-		ScrollToActiveContainer();
+		#ifdef PLATFORM_CONSOLE
+			ScrollToActiveContainer();
+		#endif
 		m_UpIcon.Show( m_IsActive );
 		m_DownIcon.Show( m_IsActive );
 		if( m_IsActive )

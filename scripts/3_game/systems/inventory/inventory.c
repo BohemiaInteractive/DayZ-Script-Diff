@@ -109,6 +109,8 @@ class GameInventory
 	proto native bool CanAddEntityInCargo (notnull EntityAI e, bool flip);
 	proto native bool CanAddEntityInCargoEx (notnull EntityAI e, int idx, int row, int col, bool flip);
 	proto native bool CanAddEntityInCargoExLoc (InventoryLocation loc);
+	proto native bool TestAddEntityInCargoEx (notnull EntityAI e, int idx, int row, int col, bool flip, bool do_resevation_check, bool do_item_check, bool do_lock_check, bool do_occupancy_test, bool do_script_check, bool do_script_load_check);
+	proto native bool TestAddEntityInCargoExLoc (notnull InventoryLocation loc, bool do_resevation_check, bool do_item_check, bool do_lock_check, bool do_occupancy_test, bool do_script_check, bool do_script_load_check);
 	//proto native bool AddEntityInCargo (notnull EntityAI owner, EntityAI cargo);
 	//proto native bool AddEntityInCargoEx (notnull EntityAI owner, notnull EntityAI e, int idx, int row, int col);
 	proto native bool CanRemoveEntityInCargo (notnull EntityAI e);

@@ -1013,9 +1013,16 @@ class ItemBase extends InventoryItem
 			
 			if (new_player == old_player)
 			{
+				
 				if ( oldLoc.GetParent() && !(oldLoc.GetParent() != new_player && oldLoc.GetType() == InventoryLocationType.ATTACHMENT) && new_player.GetHumanInventory().LocationGetEntity(oldLoc) == NULL )
 				{
-					new_player.GetHumanInventory().SetUserReservedLocation(this,oldLoc);
+					if ( oldLoc.GetType() == InventoryLocationType.CARGO)
+					{
+						if ( oldLoc.GetParent().GetInventory().TestAddEntityInCargoExLoc(oldLoc, false, false, false, true, false, false) )
+						{
+							new_player.GetHumanInventory().SetUserReservedLocation(this,oldLoc);
+						}
+					}
 				}
 				
 				if ( new_player.GetHumanInventory().FindUserReservedLocationIndex( this ) >= 0 )
