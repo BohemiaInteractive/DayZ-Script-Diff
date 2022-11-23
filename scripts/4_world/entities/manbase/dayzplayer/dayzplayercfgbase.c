@@ -9,6 +9,11 @@ void DayZPlayerTypeCreate(DayZPlayerType pType)
 	DayZPlayerTypeUtils.DayZPlayerTypeCreate(pType);
 }
 
+void DayZPlayerTypeInitMovement(DayZPlayerType pType)
+{
+	DayZPlayerTypeUtils.DayZPlayerTypeInitMovement(pType);
+}
+
 class DayZPlayerTypeUtils
 {
 	static void DayZPlayerTypeCreate(DayZPlayerType pType)
@@ -38,8 +43,10 @@ class DayZPlayerTypeUtils
 		
 		//! register hit components for AI melee
 		pType.RegisterHitComponentsForAI();
-		
+	}
 	
+	static void DayZPlayerTypeInitMovement(DayZPlayerType pType)
+	{
 		//--------------------------------------------------------------
 	    // VIKTOR, JOHNNY - nastaveni Movu !!!
 	
@@ -86,12 +93,6 @@ class DayZPlayerTypeUtils
 		hmcs.m_iMaxSpeedFast_WaterLevelLow		= -1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionLow when character wants to sprint (-1 means no change)
 		hmcs.m_iMaxSpeedNormal_WaterLevelHigh	= 1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character doesn't want to sprint (-1 means no change)
 		hmcs.m_iMaxSpeedFast_WaterLevelHigh		= 2;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character wants to sprint (-1 means no change)
-
-		// swim settings
-			
-	
-		SHumanCommandClimbSettings hcls = pType.CommandClimbSettingsW();
-	
 	
 		//--------------------------------------------------------------
 	    // VIKTOR, JOHNNY, PETERN - nastaveni speedu animaci

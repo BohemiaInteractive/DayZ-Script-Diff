@@ -245,25 +245,25 @@ class Hologram
 	// update loop for visuals and collisions of the hologram
 	void UpdateHologram( float timeslice )
 	{
-		if (!m_Parent)
+		if ( !m_Parent )
 		{
 			m_Player.TogglePlacingLocal();
 			
 			return;
 		}
 		
-		if (m_Player.IsSwimming() || m_Player.IsClimbingLadder() || m_Player.IsRaised() || m_Player.IsClimbing() || m_Player.IsRestrained() || m_Player.IsUnconscious())
+		if ( m_Player.IsSwimming() || m_Player.IsClimbingLadder() || m_Player.IsRaised() || m_Player.IsClimbing() || m_Player.IsRestrained() || m_Player.IsUnconscious() )
 		{
 			m_Player.TogglePlacingLocal();
 			
 			return;
 		}
 
-		if (!GetUpdatePosition())
+		if ( !GetUpdatePosition() )
 		{
 			return;
 		} 
-
+		
 		
 		#ifdef DEVELOPER
 		DebugConfigValues();	
@@ -271,15 +271,15 @@ class Hologram
 		#endif
 
 		// update hologram position	
-		SetProjectionPosition(GetProjectionEntityPosition(m_Player));
-		SetProjectionOrientation(AlignProjectionOnTerrain(timeslice));
+		SetProjectionPosition( GetProjectionEntityPosition( m_Player ) );
+		SetProjectionOrientation( AlignProjectionOnTerrain( timeslice ) );
 
 		EvaluateCollision();
 		RefreshTrigger();
 		CheckPowerSource();	
 		RefreshVisual();
 
-		m_Projection.OnHologramBeingPlaced(m_Player);
+		m_Projection.OnHologramBeingPlaced( m_Player );
 	}
 	
 	vector AlignProjectionOnTerrain( float timeslice )
@@ -422,7 +422,7 @@ class Hologram
 	#endif
 
 	void EvaluateCollision(ItemBase action_item = null)
-	{
+	{	
 		if ( IsFloating() || IsHidden() || IsCollidingBBox(action_item) || IsCollidingPlayer() || IsClippingRoof() || !IsBaseViable() || IsCollidingGPlot() || IsCollidingZeroPos() || IsCollidingAngle() || !IsPlacementPermitted() || !HeightPlacementCheck() || IsUnderwater() || IsInTerrain() )
 		{
 			SetIsColliding( true );
@@ -649,7 +649,7 @@ class Hologram
 	
 	//! DEPRECATED
 	bool IsBehindObstacle()
-	{		
+	{			
 		ErrorEx("Deprecated check - do not use", ErrorExSeverity.WARNING);
 		return false;
 	}
@@ -670,7 +670,7 @@ class Hologram
 	
 	bool IsObjectStatic( Object obj )
 	{
-		return obj.IsBuilding() || obj.IsPlainObject() || (!m_Parent.IsInherited(KitBase) && obj.IsInherited(BaseBuildingBase) && (m_WatchtowerBlockedComponentNames.Find(obj.GetActionComponentName(m_ContactComponent, "view")) == -1));
+		return obj.IsBuilding() || obj.IsPlainObject() || (!m_Parent.IsInherited(KitBase) && obj.IsInherited(BaseBuildingBase) && (m_WatchtowerBlockedComponentNames.Find(obj.GetActionComponentName(m_ContactComponent, LOD.NAME_VIEW)) == -1));
 	}
 
 	bool IsBaseIntact( Object under_left_close, Object under_right_close, Object under_left_far, Object under_right_far )
@@ -777,8 +777,8 @@ class Hologram
 		#endif
 
 		return isTrue;
-	}
-	
+		}
+		
 	//! Checks if the item can be legally placed (usually checked by action as well)
 	bool IsPlacementPermitted()
 	{
@@ -951,13 +951,13 @@ class Hologram
 	void CheckPowerSource()
 	{
 		//in range of its power source.
-		if (m_Player && m_Parent && m_Parent.HasEnergyManager() && m_Parent.GetCompEM().IsPlugged())
+		if ( m_Player && m_Parent && m_Parent.HasEnergyManager() && m_Parent.GetCompEM().IsPlugged() )
 		{
 			// Unplug the device when the player is too far from the power source.
 			m_Parent.GetCompEM().UpdatePlugState();
 			
 			// Delete local hologram when plug is rippled out and advanced placement is active
-			if (GetGame().IsMultiplayer() && GetGame().IsClient())
+			if( GetGame().IsMultiplayer() && GetGame().IsClient() )
 			{
 				if (!m_Parent.GetCompEM().IsPlugged())
 					m_Player.TogglePlacingLocal();
@@ -980,7 +980,7 @@ class Hologram
 		}
 		
 		//inheritance comparison
-		if (!GetProjectionEntity().IsKindOf(m_Parent.GetType()))
+		if( !GetProjectionEntity().IsKindOf( m_Parent.GetType() ))
 		{
 			Class.CastTo(entity_for_placing, GetGame().CreateObjectEx( m_Projection.GetType(), m_Projection.GetPosition(), ECE_OBJECT_SWAP ));
 		}
@@ -996,11 +996,6 @@ class Hologram
 			min_max[1] = m_Projection.GetMemoryPointPos( "box_placing_max" );
 			//Debug.DrawSphere(m_Projection.ModelToWorld(min_max[0]) , 0.8,Colors.RED, ShapeFlags.ONCE);
 			//Debug.DrawSphere(m_Projection.ModelToWorld(min_max[1]), 0.8,Colors.RED, ShapeFlags.ONCE);
-		}
-		else
-		{
-			//Debug.DrawSphere(m_Projection.ModelToWorld(min_max[0]) , 0.8,Colors.GREEN, ShapeFlags.ONCE);
-			//Debug.DrawSphere(m_Projection.ModelToWorld(min_max[1]), 0.8,Colors.GREEN, ShapeFlags.ONCE);
 		}
 	}
 	
@@ -1064,7 +1059,7 @@ class Hologram
 		return game.SurfaceIsSea( position[0], position[2] );
 	}
 
-	protected vector GetProjectionEntityPosition(PlayerBase player)
+	protected vector GetProjectionEntityPosition( PlayerBase player )
 	{
 		float minProjectionDistance;
 		float maxProjectionDistance; 
@@ -1087,7 +1082,7 @@ class Hologram
 		
 		vector from = GetGame().GetCurrentCameraPosition();
 		//adjusts raycast origin to player head approx. level (limits results behind the character)
-		if (DayZPlayerCamera3rdPerson.Cast(player.GetCurrentCamera()))
+		if ( DayZPlayerCamera3rdPerson.Cast(player.GetCurrentCamera()) )
 		{
 			vector head_pos;
 			MiscGameplayFunctions.GetHeadBonePos(player,head_pos);
@@ -1097,15 +1092,25 @@ class Hologram
 		
 		vector to = from + (GetGame().GetCurrentCameraDirection() * (maxProjectionDistance + cameraToPlayerDistance));
 		vector contactPosition;
-		set<Object> hitObjects = new set<Object>;
+		set<Object> hitObjects = new set<Object>();
 
 		DayZPhysics.RaycastRV(from, to, contactPosition, m_ContactDir, m_ContactComponent, hitObjects, player, m_Projection, false, false, ObjIntersectFire);
 		
+		bool contactHitProcessed = false;
 		//! will not push hologram up when there is direct hit of an item
 		if (!CfgGameplayHandler.GetDisableIsCollidingBBoxCheck())
 		{
-			if (hitObjects.Count() > 0 && hitObjects[0].IsInherited(InventoryItem))
-				contactPosition = hitObjects[0].GetPosition();
+			if (hitObjects.Count() > 0)
+			{
+				if (hitObjects[0].IsInherited(Watchtower))
+				{
+					contactHitProcessed = true;
+					contactPosition = CorrectForWatchtower(m_ContactComponent, contactPosition, player, hitObjects[0]);
+				}
+				
+				if (!contactHitProcessed && hitObjects[0].IsInherited(InventoryItem))
+					contactPosition = hitObjects[0].GetPosition();
+			}
 		}
 
 		static const float raycastOriginOffsetOnFail = 0.25;
@@ -1117,9 +1122,6 @@ class Hologram
 			DayZPhysics.RaycastRV( from, to, contactPosition, m_ContactDir, m_ContactComponent, hitObjects, player, m_Projection, false, false, ObjIntersectFire );
 		}
 		
-		if ((hitObjects.Count() > 0) && hitObjects[0].IsInherited(Watchtower))
-			contactPosition = CorrectForWatchtower( m_ContactComponent, contactPosition, player, hitObjects[0] );
-
 		bool isFloating = SetHologramPosition(player.GetPosition(), minProjectionDistance, maxProjectionDistance, contactPosition);
 		SetIsFloating(isFloating);
 
@@ -1132,20 +1134,30 @@ class Hologram
 		#endif
 		
 		m_FromAdjusted = from;
-		
+
 		return contactPosition;
 	}
 	
 	/**  
 	\brief Sets hologram position based on player and projection distance
 	@param startPosition start position
-	@param out contactPosition is position of the hologram contact with ground/object 	
+	@param minProjectionDistance lower distance limit
+	@param maxProjectionDistance higher distance limit
+	@param inout contactPosition is position of the hologram contact with ground/object 	
 	@return true if hologram is floating (is on the near or far edge)
 	*/
 	protected bool SetHologramPosition(vector startPosition, float minProjectionDistance, float maxProjectionDistance, inout vector contactPosition)
 	{
 		float playerToProjectionDistance = vector.Distance(startPosition, contactPosition);
 		vector playerToProjection;
+
+		#ifdef DEVELOPER
+		DebugText("SetHologramPosition::startPosition: ", false, m_IsHidden, string.Format(" | %1", startPosition));
+		DebugText("SetHologramPosition::contactPosition [in]: ", false, m_IsHidden, string.Format(" | %1", contactPosition));
+		DebugText("SetHologramPosition::minProjectionDistance: ", false, m_IsHidden, string.Format(" | %1", minProjectionDistance));
+		DebugText("SetHologramPosition::maxProjectionDistance: ", false, m_IsHidden, string.Format(" | %1", maxProjectionDistance));
+		DebugText("SetHologramPosition::playerToProjectionDistance: ", false, m_IsHidden, string.Format(" | %1", playerToProjectionDistance));
+		#endif
 
 		//hologram is at min distance from player
 		if (playerToProjectionDistance <= minProjectionDistance)
@@ -1156,6 +1168,10 @@ class Hologram
 			playerToProjection[1] = playerToProjection[1] + PROJECTION_TRANSITION_MIN;
 			
 			contactPosition = startPosition + (playerToProjection * minProjectionDistance);
+
+			#ifdef DEVELOPER
+			DebugText("SetHologramPosition::contactPosition[out] (< minProjectDistance): ", false, m_IsHidden, string.Format(" | %1", contactPosition));
+			#endif
 
 			return true;
 		}
@@ -1168,7 +1184,11 @@ class Hologram
 			playerToProjection[1] = playerToProjection[1] + PROJECTION_TRANSITION_MAX;
 			
 			contactPosition = startPosition + (playerToProjection * maxProjectionDistance);
-
+		
+			#ifdef DEVELOPER
+			DebugText("SetHologramPosition::contactPosition[out] (< maxProjectionDistance): ", false, m_IsHidden, string.Format(" | %1", contactPosition));
+			#endif
+		
 			return true;
 		}
 		
@@ -1183,8 +1203,8 @@ class Hologram
 	vector CorrectForWatchtower( int contactComponent, vector contactPos, PlayerBase player, Object hitObject )
 	{
 		// Raycast has hit one of the trigger boxes that show construction prompts, so projection would be floating in the air without this correction
-		if ( m_WatchtowerIgnoreComponentNames.Find(hitObject.GetActionComponentName( contactComponent, "view" )) != -1 )
-			contactPos[1] = hitObject.GetActionComponentPosition(contactComponent, "view")[1];
+		if (m_WatchtowerIgnoreComponentNames.Find(hitObject.GetActionComponentName(contactComponent, LOD.NAME_VIEW)) != -1 )
+			contactPos[1] = hitObject.GetActionComponentPosition(contactComponent, LOD.NAME_VIEW)[1];
 		
 		return contactPos;
 	}
@@ -1381,7 +1401,7 @@ class Hologram
 			
 			if (DayZPhysics.RaycastRV(from, to, check_pos, check_dir, check_component, hit_object, null, m_Player, false, false, ObjIntersectFire))
 			{
-				if ((hit_object.Count() > 0)&& (!hit_object[0].IsInherited(Watchtower) || (hit_object[0].IsInherited(Watchtower) && (m_WatchtowerIgnoreComponentNames.Find(hit_object[0].GetActionComponentName( check_component, "view" )) == -1))))
+				if ((hit_object.Count() > 0)&& (!hit_object[0].IsInherited(Watchtower) || (hit_object[0].IsInherited(Watchtower) && (m_WatchtowerIgnoreComponentNames.Find(hit_object[0].GetActionComponentName(check_component, LOD.NAME_VIEW)) == -1))))
 				{
 					contact_pos = "0 0 0";
 				}
@@ -1454,7 +1474,7 @@ class Hologram
 	//overloaded function to accept array of strings
 	void SetSelectionToRefresh( array<string> selection )
 	{
-		for( int i = 0; i < selection.Count(); i++ )
+		for ( int i = 0; i < selection.Count(); i++ )
 		{
 			m_SelectionsToRefresh.Insert( selection.Get(i) );
 		}

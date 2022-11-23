@@ -71,6 +71,7 @@ class DayZPlayerImplementMeleeCombat
 
 	//! Hit result - cache
 	protected int 						m_HitZoneIdx; 		//!< Most recent target HitZone index
+	protected int 						m_FinisherType;
 	protected string					m_HitZoneName; 		//!< Most recent target HitZone name
 	protected vector					m_HitPositionWS;	//!< Most recent target position
 	
@@ -79,6 +80,8 @@ class DayZPlayerImplementMeleeCombat
 	protected string					m_PreviousHitZoneName; 		//!< Most recent target HitZone name
 	protected vector					m_PreviousHitPositionWS;	//!< Most recent target position
 	#endif
+	
+	protected int 						m_DebugForcedFinisherType;
 
 	// ------------------------------------------------------------
 	// CONSTRUCTOR
@@ -97,6 +100,7 @@ class DayZPlayerImplementMeleeCombat
 		
 		m_HitZoneName	= "";
 		m_HitZoneIdx 	= -1;
+		m_FinisherType	= -1;
 		m_HitPositionWS = vector.Zero;
 		
 		m_SprintAttack 	= false;
@@ -107,6 +111,7 @@ class DayZPlayerImplementMeleeCombat
 		m_AllTargetObjects 	= new array<Object>;
 		#ifdef DEVELOPER
 		m_AllPreviousTargetObjects = new array<Object>;
+		m_DebugForcedFinisherType =  -1;
 		#endif
 
 		m_TargetableObjects = new array<typename>; //checks against CONFIG hierarchy
@@ -168,6 +173,16 @@ class DayZPlayerImplementMeleeCombat
 		m_HitPositionWS = pHitPos;
 	}
 	
+	int GetFinisherType()
+	{
+		return m_FinisherType;
+	}
+	
+	void SetFinisherType(int pFinisherType)
+	{
+		m_FinisherType = pFinisherType;
+	}
+	
 	int GetWeaponMode()
 	{
 		return m_WeaponMode;
@@ -182,7 +197,7 @@ class DayZPlayerImplementMeleeCombat
 		m_WeaponMode 				= SelectWeaponMode(weapon);
 		m_WeaponRange 				= GetWeaponRange(weapon, m_WeaponMode);
 		m_WasHit 					= wasHitEvent;
-
+		
 		#ifdef DEVELOPER
 		m_AllPreviousTargetObjects	= m_AllTargetObjects;
 		#endif
@@ -204,7 +219,7 @@ class DayZPlayerImplementMeleeCombat
 	void Update(InventoryItem weapon, EMeleeHitType hitMask, bool wasHitEvent = false)
 	{
 		Reset(weapon, hitMask, wasHitEvent);
-
+		
 		#ifndef SERVER
 		if (!ScriptInputUserData.CanStoreInputUserData())
 		{
@@ -212,17 +227,18 @@ class DayZPlayerImplementMeleeCombat
 			return;
 		}
 		
-		//! Select target
 		TargetSelection();
+		SetFinisherType(TrySelectFinisherType(weapon, GetTargetEntity()));
 
 		//! Store target into input packet
 		if (GetGame().IsMultiplayer())
 		{
-			ScriptInputUserData ctx = new ScriptInputUserData;
+			ScriptInputUserData ctx = new ScriptInputUserData();
 			ctx.Write(INPUT_UDT_MELEE_TARGET);
 			ctx.Write(m_TargetObject);
 			ctx.Write(m_HitPositionWS);
 			ctx.Write(m_HitZoneIdx);
+			ctx.Write(m_FinisherType);
 			ctx.Send();
 		}
 		#endif
@@ -251,7 +267,7 @@ class DayZPlayerImplementMeleeCombat
 
 	protected int SelectWeaponMode(InventoryItem weapon)
 	{
-		if ( weapon )
+		if (weapon)
 		{
 			//! melee with firearm
 			if (weapon.IsInherited(Weapon))
@@ -260,13 +276,10 @@ class DayZPlayerImplementMeleeCombat
 				{
 					case EMeleeHitType.WPN_HIT:
 						return 0;
-					break;
 					case EMeleeHitType.WPN_HIT_BUTTSTOCK:
 						return 1;
-					break;
 					case EMeleeHitType.WPN_STAB:
 						return 2;
-					break;
 				}
 			}
 			else
@@ -276,13 +289,10 @@ class DayZPlayerImplementMeleeCombat
 				{
 					case EMeleeHitType.LIGHT:
 						return weapon.GetMeleeMode();
-					break;
 					case EMeleeHitType.HEAVY:
 						return weapon.GetMeleeHeavyMode();
-					break;
 					case EMeleeHitType.SPRINT:
 						return weapon.GetMeleeSprintMode();
-					break;
 				}
 			}
 		}
@@ -292,11 +302,10 @@ class DayZPlayerImplementMeleeCombat
 		{
 			case EMeleeHitType.HEAVY:
 				return 1;
-			break;
 			case EMeleeHitType.SPRINT:
 				return 2;
-			break;
 		}
+
 		return 0; //! default bare-hand light attack
 	}
 	
@@ -395,6 +404,93 @@ class DayZPlayerImplementMeleeCombat
 			SetTarget(target, hitPos, hitZone);
 			return;
 		}
+	}
+	
+	/**
+	\brief General condition for finisher attacks
+		\param weapon \p Weapon used in the attack
+		\param target \p Target entity
+		\return \p int - type of finisher (-1 == no finisher)
+	*/
+	protected int TrySelectFinisherType(InventoryItem weapon, EntityAI target)
+	{
+		if (m_WasHit)
+			return -1;
+
+		//! perform only for finisher suitable weapons
+		if (target && target.CanBeBackstabbed() && weapon && (weapon.IsMeleeFinisher() || m_HitType == EMeleeHitType.WPN_STAB) && !weapon.IsRuined() )
+		{
+			bool playGenericFinisherAnimation = false;
+			ZombieBase targetZombie = ZombieBase.Cast(target);
+			if (targetZombie && m_DebugForcedFinisherType == -1)
+			{
+				//! check if attacker is in right pos and angle against victim
+				if (!IsEntityBehindEntityInAngle(m_DZPlayer, target, 60))
+				{
+					return -1;
+				}
+				
+				int mindState = targetZombie.GetMindStateSynced();
+				//! Check if the infected is aware of the player
+				if (mindState >= DayZInfectedConstants.MINDSTATE_DISTURBED)
+				{
+					return -1;
+				}
+			}
+
+			PlayerBase targetPlayer = PlayerBase.Cast(target);			
+			//! prone checks
+			if (targetZombie)
+			{
+				playGenericFinisherAnimation = targetZombie.IsCrawling();
+			}
+			else if (targetPlayer)
+			{
+				playGenericFinisherAnimation = targetPlayer.IsInProne();
+			}
+			else
+			{
+				playGenericFinisherAnimation = true;
+			}
+			
+			//! firearm
+			if (weapon.IsWeapon())
+			{
+				return EMeleeHitType.WPN_STAB_FINISHER;
+			}
+			else if (playGenericFinisherAnimation)
+			{
+				return EMeleeHitType.FINISHER_GENERIC;
+			}
+			else //specific hit depending on the component hit (gotten from the target)
+			{
+				return DetermineSpecificFinisherType(ItemBase.Cast(weapon));
+			}
+		}
+
+		return -1;
+	}
+	
+	protected int DetermineSpecificFinisherType(ItemBase weapon)
+	{
+		if (m_DebugForcedFinisherType > -1)
+		{
+			array<int> finishers = {
+				EMeleeHitType.FINISHER_LIVERSTAB,
+				EMeleeHitType.FINISHER_NECKSTAB
+			};
+
+			return finishers[m_DebugForcedFinisherType];
+		}
+		
+		if (!weapon || !weapon.GetValidFinishers() || weapon.GetValidFinishers().Count() == 0)
+		{
+			return EMeleeHitType.FINISHER_LIVERSTAB;
+		}
+		
+		PlayerBase player = PlayerBase.Cast(m_DZPlayer);
+		int idx = Math.Round(Math.Lerp(0, weapon.GetValidFinishers().Count() - 1, player.GetRandomGeneratorSyncManager().GetRandom01(RandomGeneratorSyncUsage.RGSGeneric)));
+		return weapon.GetValidFinishers()[idx];
 	}
 	
 	protected void InternalResetTarget()
@@ -578,6 +674,34 @@ class DayZPlayerImplementMeleeCombat
 		return false;
 	}
 	
+	private bool IsEntityBehindEntityInAngle(EntityAI source, EntityAI target, float angle)
+	{
+		vector targetDirection = target.GetDirection();
+		ZombieBase targetZombie;
+		if (Class.CastTo(targetZombie, target))
+		{
+			targetDirection = Vector(targetZombie.GetOrientationSynced(),0,0);
+			targetDirection = targetDirection.AnglesToVector();
+		}
+		vector toSourceDirection = (source.GetPosition() - target.GetPosition());
+
+		targetDirection[1] = 0;
+		toSourceDirection[1] = 0;
+
+		targetDirection.Normalize();
+		toSourceDirection.Normalize();
+
+		float cosFi = vector.Dot(targetDirection, toSourceDirection);
+		vector cross = targetDirection * toSourceDirection;
+
+		int hitDir = Math.Acos(cosFi) * Math.RAD2DEG;
+		
+		if (cross[1] < 0)
+			hitDir = -hitDir;
+		
+		return hitDir <= (-180 + angle) || hitDir >= (180 - angle);
+	}
+	
 #ifdef DEVELOPER
 	// ------------------------------------------------------------
 	// DEBUG
@@ -614,6 +738,16 @@ class DayZPlayerImplementMeleeCombat
 		if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DRAW_BLOCK_RANGE_PVP))
 			DrawDebugBlockCone(GameConstants.PVP_MAX_BLOCKABLE_ANGLE, COLOR_YELLOW);
 	}
+	
+	int DebugGetForcedFinisherType()
+	{
+		return m_DebugForcedFinisherType;
+	}
+	
+	void DebugSetForcedFinisherType(int pFinisherType)
+	{
+		m_DebugForcedFinisherType = pFinisherType;
+	}	
 
 	//! shows target in DbgUI 'window'
 	protected void ShowDebugMeleeTarget()
@@ -621,13 +755,13 @@ class DayZPlayerImplementMeleeCombat
 		int windowPosX = 0;
 		int windowPosY = 500;
 
-		//DbgUI.BeginCleanupScope();
 		DbgUI.Begin("Melee Target", windowPosX, windowPosY);
 		HumanCommandMelee2 hmc2 = m_DZPlayer.GetCommand_Melee2();
 		if (hmc2)		
 		{
 			DbgUI.Text("Current combo: " + hmc2.GetComboCount());
 		}
+
 		if (m_PreviousTargetObject)
 		{
 			DbgUI.Text("Previous Character: " + m_PreviousTargetObject.GetDisplayName());
@@ -635,6 +769,7 @@ class DayZPlayerImplementMeleeCombat
 			DbgUI.Text("Previous HitPosWS:" + m_PreviousHitPositionWS);
 			DbgUI.Text("Previous Distance:" + vector.Distance(m_PreviousHitPositionWS, m_DZPlayer.GetPosition()));
 		}
+
 		if (m_TargetObject)
 		{
 			DbgUI.Text("Character: " + m_TargetObject.GetDisplayName());
@@ -643,7 +778,6 @@ class DayZPlayerImplementMeleeCombat
 			DbgUI.Text("Distance:" + vector.Distance(m_HitPositionWS, m_DZPlayer.GetPosition()));
 		}
 		DbgUI.End();
-		//DbgUI.EndCleanupScope();
 	}
 
 	//! shows debug sphere above the target

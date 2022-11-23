@@ -204,10 +204,10 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	
 	void AddFavoritesToFilter( GetServersInput input )
 	{
-		foreach ( string uid : m_Favorites )
+		foreach ( string id : m_Favorites )
 		{
 			array<string> output = new array<string>;
-			uid.Split( ":", output );
+			id.Split( ":", output );
 			if ( output.Count() == 2 )
 			{
 				string ip = output[0];
@@ -514,6 +514,20 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		OnlineServices.GetFavoriteServers(m_Favorites);
 #else
 		GetGame().GetProfileStringList( "SB_Favorites", m_Favorites );
+		
+		// ignore any ids that do not follow correct IP:PORT format
+		for (int i = 0; i < m_Favorites.Count(); ++i)
+		{
+			string id = m_Favorites[i];
+			array<string> output = new array<string>;
+						
+			id.Split( ":", output );
+			if ( output.Count() != 2 )
+			{
+				m_Favorites.Remove(i);
+				--i;
+			}
+		}
 		
 		// only handle MAX_FAVORITES on consoles
 		if (m_Favorites.Count() > MAX_FAVORITES)

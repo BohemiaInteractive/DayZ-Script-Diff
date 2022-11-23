@@ -69,6 +69,7 @@ class Icon: LayoutHolder
 		
 		if( m_IsDragged)
 		{
+			RevertToOriginalFlip();
 			ItemManager.GetInstance().HideDropzones();
 			ItemManager.GetInstance().SetIsDragging( false );
 			m_IsDragged = false;
@@ -1228,19 +1229,7 @@ class Icon: LayoutHolder
 		ItemManager.GetInstance().SetIsDragging( false );
 		m_IsDragged = false;
 		
-		if ( m_Item )
-		{
-			m_Item.GetInventory().SetFlipCargo( m_PreviousFlipOrientation );
-			int ww, hh;
-			GetGame().GetInventoryItemSize( m_Item, ww, hh );
-			
-			if ( m_PreviousFlipOrientation )
-				SetSize( hh, ww );
-			else
-				SetSize( ww, hh );
-
-			SetSize();
-		}
+		RevertToOriginalFlip();
 		
 		if ( m_HandsIcon )
 		{
@@ -1338,6 +1327,23 @@ class Icon: LayoutHolder
 					item.DropReceived(w, m_PosY + pa.y, m_PosX + pa.x );
 				}
 			}
+		}
+	}
+	
+	void RevertToOriginalFlip()
+	{
+		if (m_Item)
+		{
+			m_Item.GetInventory().SetFlipCargo(m_PreviousFlipOrientation);
+			int ww, hh;
+			GetGame().GetInventoryItemSize(m_Item, ww, hh);
+			
+			if (m_PreviousFlipOrientation)
+				SetSize(hh, ww);
+			else
+				SetSize(ww, hh);
+
+			SetSize();
 		}
 	}
 
@@ -1865,6 +1871,7 @@ class Icon: LayoutHolder
 	{
 		CargoContainer c_parent = CargoContainer.Cast( m_Parent );
 		HandsPreview h_parent = HandsPreview.Cast( m_Parent );
+		Widget rootWidget = GetRootWidget();
 		float icon_size, space_size;
 		if ( c_parent )
 		{
@@ -1874,18 +1881,24 @@ class Icon: LayoutHolder
 		else if ( h_parent )
 		{
 			icon_size = h_parent.GetIconSize();
-			GetRootWidget().SetFlags( WidgetFlags.EXACTSIZE, refresh );
+			if (rootWidget)
+			{
+				rootWidget.SetFlags( WidgetFlags.EXACTSIZE, refresh );
+			}
 		}
 		
-		#ifndef PLATFORM_CONSOLE
-			GetRootWidget().SetPos( icon_size * GetPosX() + ( GetPosX() + 1 ) * space_size, icon_size * GetPosY() + ( GetPosY() + 1 ) * space_size, refresh );
-			GetRootWidget().SetSize( icon_size * m_SizeX + ( m_SizeX ) * space_size, icon_size * m_SizeY + ( m_SizeY ) * space_size, refresh );
-		#else
-			int row = m_CargoPos / 5;
-			int column = m_CargoPos % 5;
-			GetRootWidget().SetPos( icon_size * column, icon_size * row, refresh );
-			GetRootWidget().SetSize( icon_size, icon_size, refresh );
-		#endif
+		if (rootWidget)
+		{
+			#ifndef PLATFORM_CONSOLE
+				rootWidget.SetPos( icon_size * GetPosX() + ( GetPosX() + 1 ) * space_size, icon_size * GetPosY() + ( GetPosY() + 1 ) * space_size, refresh );
+				rootWidget.SetSize( icon_size * m_SizeX + ( m_SizeX ) * space_size, icon_size * m_SizeY + ( m_SizeY ) * space_size, refresh );
+			#else
+				int row = m_CargoPos / 5;
+				int column = m_CargoPos % 5;
+				rootWidget.SetPos( icon_size * column, icon_size * row, refresh );
+				rootWidget.SetSize( icon_size, icon_size, refresh );
+			#endif
+		}
 	}
 	
 	void SetPos()
@@ -1898,6 +1911,7 @@ class Icon: LayoutHolder
 		CargoContainer c_parent = CargoContainer.Cast( m_Parent );
 		HandsPreview h_parent = HandsPreview.Cast( m_Parent );
 		float icon_size, space_size;
+		Widget rootWidget = GetRootWidget();
 		if( c_parent )
 		{
 			icon_size = c_parent.GetIconSize();
@@ -1906,14 +1920,20 @@ class Icon: LayoutHolder
 		else if( h_parent )
 		{
 			icon_size = h_parent.GetIconSize();
-			GetRootWidget().SetFlags( WidgetFlags.EXACTSIZE );
+			if (rootWidget)
+			{
+				GetRootWidget().SetFlags( WidgetFlags.EXACTSIZE );
+			}
 		}
-		
+	
+		if (rootWidget)
+		{
 		#ifndef PLATFORM_CONSOLE
 			GetRootWidget().SetSize( icon_size * m_SizeX + ( m_SizeX ) * space_size, icon_size * m_SizeY + ( m_SizeY ) * space_size );
 		#else
 			GetRootWidget().SetSize( icon_size, icon_size );
 		#endif
+		}
 	}
 	
 	override void UpdateInterval()

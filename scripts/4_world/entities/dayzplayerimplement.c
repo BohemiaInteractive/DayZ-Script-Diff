@@ -2595,6 +2595,12 @@ class DayZPlayerImplement extends DayZPlayer
 			{
 				m_MeleeCombat.SetHitZoneIdx(hitZoneIdx);
 			}
+
+			int finisherType = -1;
+			if (ctx.Read(finisherType))
+			{
+				m_MeleeCombat.SetFinisherType(finisherType);
+			}
 			
 			return true;
 		}

@@ -327,32 +327,28 @@ class ZombieBase extends DayZInfected
 	
 	void HandleOrientation(float pDt, int pCurrentCommandID)
 	{
-		//DayZInfectedInputController ic = GetInputController();
-		//ic.GetLookAtDirectionWS(); //TODO: implement actual look direction check??
-		
 		m_OrientationTimer += pDt;
 		
-		int yaw;
-		yaw = Math.Round(GetOrientation()[0]);
+		int yaw = Math.Round(GetOrientation()[0]);
 		yaw = Math.NormalizeAngle(yaw);
 		
 		//atan2(sin(x-y), cos(x-y))
-		float rad_src = m_OrientationSynced * Math.DEG2RAD;
-		float rad_tgt = yaw * Math.DEG2RAD;
+		float angleSourceRad = m_OrientationSynced * Math.DEG2RAD;
+		float angleTargetRad = yaw * Math.DEG2RAD;
 		
-		float diff = Math.Atan2(Math.Sin(rad_tgt - rad_src),Math.Cos(rad_src - rad_tgt));
-		diff *= Math.RAD2DEG;
-		diff = Math.Round(diff);
+		float angleDiffRad = Math.Atan2(Math.Sin(angleTargetRad - angleSourceRad), Math.Cos(angleSourceRad - angleTargetRad));
+		angleDiffRad *= Math.RAD2DEG;
+		angleDiffRad = Math.Round(angleDiffRad);
 		
-		if ( m_OrientationTimer >= 2.0 || m_OrientationSynced == -1 || Math.AbsInt(diff) > ORIENTATION_SYNC_THRESHOLD )
+		if (m_OrientationTimer >= 2.0 || m_OrientationSynced == -1 || Math.AbsInt(angleDiffRad) > ORIENTATION_SYNC_THRESHOLD)
 		{
 			m_OrientationTimer = 0.0;
 			
-			if ( m_OrientationSynced == -1 || Math.AbsInt(diff) > 5 )
+			if (m_OrientationSynced == -1 || Math.AbsInt(angleDiffRad) > 5)
 			{
-				//Print("DbgSyncOrientation | HandleMove | original: " + m_OrientationSynced + " | target: " + yaw + " | diff: " + diff);
-				SetSynchDirty();
+				//Print("DbgSyncOrientation | HandleMove | original: " + m_OrientationSynced + " | target: " + yaw + " | diff: " + angleDiffRad);
 				m_OrientationSynced = yaw;
+				SetSynchDirty();
 			}
 		}
 	}

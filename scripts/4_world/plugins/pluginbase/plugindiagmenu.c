@@ -1021,9 +1021,9 @@ class PluginDiagMenu extends PluginBase
 	{
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		int value = DiagMenu.GetValue(DiagMenuIDs.DM_FINISHERS_FINISHER_FORCED) - 1;
-		if ( player && player.GetMeleeFightLogic() && player.GetMeleeFightLogic().m_DbgForcedFinisherType != value )
+		if ( player && player.GetMeleeCombat() && player.GetMeleeCombat().DebugGetForcedFinisherType() != value )
 		{
-			player.GetMeleeFightLogic().m_DbgForcedFinisherType = value;
+			player.GetMeleeCombat().DebugSetForcedFinisherType(value);
 			SendForceFinisherType(value);
 		}
 	}
@@ -2560,7 +2560,7 @@ class PluginDiagMenu extends PluginBase
 			break;
 			case ERPCs.DEV_RPC_FORCE_FINISHER:
 				ctx.Read(CachedObjectsParams.PARAM1_INT);
-				player.GetMeleeFightLogic().m_DbgForcedFinisherType = CachedObjectsParams.PARAM1_INT.param1;
+				player.GetMeleeCombat().DebugSetForcedFinisherType(CachedObjectsParams.PARAM1_INT.param1);
 			break;
 			case ERPCs.RPC_BUILD_GATE:
 				ctx.Read(CachedObjectsParams.PARAM1_BOOL);
