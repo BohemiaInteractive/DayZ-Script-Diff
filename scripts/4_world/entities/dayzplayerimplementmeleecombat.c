@@ -81,7 +81,7 @@ class DayZPlayerImplementMeleeCombat
 	protected vector					m_PreviousHitPositionWS;	//!< Most recent target position
 	#endif
 	
-	private int 						m_DebugForcedFinisherType;
+	protected int 						m_DebugForcedFinisherType;
 
 	// ------------------------------------------------------------
 	// CONSTRUCTOR
@@ -111,9 +111,8 @@ class DayZPlayerImplementMeleeCombat
 		m_AllTargetObjects 	= new array<Object>;
 		#ifdef DEVELOPER
 		m_AllPreviousTargetObjects = new array<Object>;
-		#endif
-		
 		m_DebugForcedFinisherType =  -1;
+		#endif
 
 		m_TargetableObjects = new array<typename>; //checks against CONFIG hierarchy
 		m_TargetableObjects.Insert(DayZPlayer);
