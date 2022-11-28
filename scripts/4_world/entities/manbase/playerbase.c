@@ -1843,7 +1843,6 @@ class PlayerBase extends ManBase
 		GetStaminaHandler().DepleteStamina(EStaminaModifiers.DROWN,dT );
 		PPERequester_Drowning req = PPERequester_Drowning.Cast(PPERequesterBank.GetRequester( PPERequesterBank.REQ_DROWNING ));
 		
-		//req.SetHealth01(GetTransferValues().GetHealth());
 		req.SetStamina01(GetStaminaHandler().GetStaminaNormalized());
 		
 	}
@@ -7676,17 +7675,25 @@ class PlayerBase extends ManBase
 	
 	void UpdateDelete()
 	{
-		if (m_ItemsToDelete.Count() > 0)
+		int count = m_ItemsToDelete.Count();
+		if (count > 0)
 		{
 			if (CanDeleteItems())
 			{
+				EntityAI itemToDelete;
+				
 				if (GetGame().IsClient() && GetGame().IsMultiplayer())
 				{
 					InventoryLocation il = new InventoryLocation();
-					for (int i = m_ItemsToDelete.Count() - 1; i >= 0 ; i--)
+					for (int i = count - 1; i >= 0 ; i--)
 					{
-						m_ItemsToDelete[i].GetInventory().GetCurrentInventoryLocation(il);
-						if (m_ItemsToDelete.Get(i) == null || (GetItemInHands() == null && il.GetType() == InventoryLocationType.UNKNOWN))
+						itemToDelete = m_ItemsToDelete.Get(i);
+						if (itemToDelete != null)
+						{
+							itemToDelete.GetInventory().GetCurrentInventoryLocation(il);
+						}
+						
+						if (itemToDelete == null || (GetItemInHands() == null && il.GetType() == InventoryLocationType.UNKNOWN))
 						{
 							m_ItemsToDelete.Remove(i);
 						}
@@ -7694,9 +7701,9 @@ class PlayerBase extends ManBase
 				}
 				else
 				{
-					for (int j = m_ItemsToDelete.Count() - 1; j >= 0 ; j--)
+					for (int j = count - 1; j >= 0 ; j--)
 					{
-						EntityAI itemToDelete = m_ItemsToDelete.Get(j);
+						itemToDelete = m_ItemsToDelete.Get(j);
 						if (itemToDelete == null)
 						{
 							m_ItemsToDelete.Remove(j);
@@ -7708,8 +7715,6 @@ class PlayerBase extends ManBase
 						}
 					}
 				}
-			
-			
 			}
 		}
 	}
