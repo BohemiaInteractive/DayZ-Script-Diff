@@ -99,7 +99,7 @@ class BleedingIndicatorDropData
 			m_ProgressBreakpointTime = m_Duration * BleedingIndicationConstants.DROP_PROGRESS_THRESHOLD;
 			m_ProgressBreakpoint = BleedingIndicationConstants.DROP_PROGRESS_THRESHOLD;
 		}
-		m_ProgressFadingDuration = m_Duration - m_ProgressBreakpointTime;
+		m_ProgressFadingDuration = Math.Max(0.0001, m_Duration - m_ProgressBreakpointTime);
 		
 		m_SpeedCoef = 1.0; //TODO ??
 #ifdef DIAG_DEVELOPER
@@ -273,8 +273,8 @@ class BleedingIndicatorDropData
 		if (m_IsRunning)
 		{
 			float progress, progressFade;
-			progress = m_TimeTotal/m_Duration;
-			progressFade = (m_TimeTotal - m_ProgressBreakpointTime)/m_ProgressFadingDuration;
+			progress = m_TimeTotal / m_Duration;
+			progressFade = (m_TimeTotal - m_ProgressBreakpointTime) / m_ProgressFadingDuration;
 			
 			//alpha
 			UpdateAlpha(progress,progressFade);

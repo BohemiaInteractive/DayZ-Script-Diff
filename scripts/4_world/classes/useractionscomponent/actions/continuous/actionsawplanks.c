@@ -50,6 +50,7 @@ class ActionSawPlanks: ActionContinuousBase
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_MEDIUM;
 		m_Text = "#saw_planks";
+		m_LockTargetOnUse = false;
 	}
 	
 	override void CreateConditionComponents()  

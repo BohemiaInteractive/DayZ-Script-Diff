@@ -117,7 +117,7 @@ class Component
 	//=============================================
 	void LogThis(string msg, string fnc_name = "n/a")
 	{
-		Debug.Log(msg, GetCompName(), "n/a", fnc_name, m_ThisEntityAI.ToString());
+		//Debug.Log(msg, GetCompName(), "n/a", fnc_name, m_ThisEntityAI.ToString());
 	}
 
 	//=======================================public

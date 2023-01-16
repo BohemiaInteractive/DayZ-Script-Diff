@@ -63,7 +63,7 @@ class SymptomBase
 	
 	bool CanBeInterupted()
 	{
-		if(m_AnimPlayRequested) 
+		if (m_AnimPlayRequested) 
 		{
 			//Print("--------- preventing interrupt ---------");
 			return false;
@@ -114,7 +114,7 @@ class SymptomBase
 
 	void GetPersistentParams(array<Param> params)
 	{
-		for(int i = 0; i < m_PersistentParams.Count(); i++)
+		for (int i = 0; i < m_PersistentParams.Count(); i++)
 		{
 			params.Insert(m_PersistentParams.Get(i));
 		}
@@ -122,7 +122,7 @@ class SymptomBase
 
 	void MakeParamObjectPersistent(Param object)
 	{
-		if( !GetGame().IsServer() && !GetGame().IsMultiplayer() ) return;
+		if ( !GetGame().IsServer() && !GetGame().IsMultiplayer() ) return;
 		
 		m_PersistentParams.Insert(object);
 	}
@@ -134,7 +134,7 @@ class SymptomBase
 	
 	bool IsPrimary()
 	{
-		if( m_SymptomType == SymptomTypes.PRIMARY)
+		if ( m_SymptomType == SymptomTypes.PRIMARY)
 			return true;
 		else return false;
 	}
@@ -156,26 +156,26 @@ class SymptomBase
 	
 	void OnDestructed()
 	{
-		if( IsActivated() ) Deactivate();
-		if( GetManager() ) m_Manager.OnSymptomExit(this, m_UID);
+		if ( IsActivated() ) Deactivate();
+		if ( GetManager() ) m_Manager.OnSymptomExit(this, m_UID);
 	}
 
 	void Activate()
 	{
 		m_IsActivated = true;
-		if( GetGame() && GetGame().IsServer() )
+		if ( GetGame() && GetGame().IsServer() )
 		{
 			OnGetActivatedServer(m_Player);
-			if( GetGame().IsMultiplayer() )
+			if ( GetGame().IsMultiplayer() )
 			{
-				if( IsSyncToClient() ) 
+				if ( IsSyncToClient() ) 
 					SyncToClientActivated( GetType(), GetUID() );
-				#ifdef DEVELOPER
+				#ifdef DIAG_DEVELOPER
 				GetManager().SendServerDebugToClient();
 				#endif
 			}
 		}
-		if( !GetGame().IsDedicatedServer() )
+		if ( !GetGame().IsDedicatedServer() )
 		{
 			OnGetActivatedClient(m_Player);
 		}
@@ -183,17 +183,17 @@ class SymptomBase
 	
 	void Deactivate()
 	{
-		if( !GetGame() ) return;
+		if ( !GetGame() ) return;
 		m_IsActivated = false;
-		if( GetGame().IsServer() ) 
+		if ( GetGame().IsServer() ) 
 		{
 			OnGetDeactivatedServer(m_Player);
-			if( GetGame().IsMultiplayer() && IsSyncToClient() )
+			if ( GetGame().IsMultiplayer() && IsSyncToClient() )
 			{
 				SyncToClientDeactivated( GetType(), GetUID() );
 			}
 		}
-		if( !GetGame().IsDedicatedServer() )
+		if ( !GetGame().IsDedicatedServer() )
 		{
 			OnGetDeactivatedClient(m_Player);
 		}
@@ -209,22 +209,21 @@ class SymptomBase
 	
 	void Update(float deltatime)
 	{
-		if( GetGame().IsServer() ) 
+		if ( GetGame().IsServer() ) 
 		{
-			
 			m_ServerUpdateDelta += deltatime;
-			if(m_ServerUpdateDelta > m_ServerUpdateInterval )
+			if (m_ServerUpdateDelta > m_ServerUpdateInterval )
 			{
 				m_ActivatedTime += m_ServerUpdateDelta;
 				OnUpdateServer(m_Player, m_ServerUpdateDelta);
 				m_ServerUpdateDelta = 0;
 			}
 		}
-		if( GetGame().IsClient() )
+		if ( GetGame().IsClient() )
 		{
 			OnUpdateClient(m_Player, deltatime);
 		}
-		if( GetGame().IsServer() && !GetGame().IsMultiplayer() && !GetGame().IsMissionMainMenu() )
+		if ( GetGame().IsServer() && !GetGame().IsMultiplayer() && !GetGame().IsMissionMainMenu() )
 		{
 			OnUpdateClient(m_Player, deltatime);
 		}
@@ -251,7 +250,7 @@ class SymptomBase
 
 	void SyncToClientActivated( int SYMPTOM_id, int uid )
 	{
-		if( !GetPlayer() ) return;
+		if ( !GetPlayer() ) return;
 		
 		CachedObjectsParams.PARAM2_INT_INT.param1 = SYMPTOM_id;
 		CachedObjectsParams.PARAM2_INT_INT.param2 = uid;
@@ -260,7 +259,7 @@ class SymptomBase
 	
 	void SyncToClientDeactivated( int SYMPTOM_id, int uid )
 	{
-		if( !GetPlayer() ) return;
+		if ( !GetPlayer() ) return;
 		CachedObjectsParams.PARAM2_INT_INT.param1 = SYMPTOM_id;
 		CachedObjectsParams.PARAM2_INT_INT.param2 = uid;
 		GetGame().RPCSingleParam(GetPlayer(), ERPCs.RPC_PLAYER_SYMPTOM_OFF, CachedObjectsParams.PARAM2_INT_INT,true,GetPlayer().GetIdentity() );
@@ -268,9 +267,9 @@ class SymptomBase
 
 	void CheckSoundFinished()
 	{
-		if(GetGame().IsServer())
+		if (GetGame().IsServer())
 		{
-			if(m_PlayedSound && m_ActivatedTime >= m_Duration)
+			if (m_PlayedSound && m_ActivatedTime >= m_Duration)
 				RequestDestroy();
 		}
 	}
@@ -278,7 +277,7 @@ class SymptomBase
 	void CheckDestroy()
 	{
 		CheckSoundFinished();
-		if( IsPrimary() && m_ActivatedTime > MAX_TIME_ACTIVE_SAVEGUARD)
+		if ( IsPrimary() && m_ActivatedTime > MAX_TIME_ACTIVE_SAVEGUARD)
 		{
 			RequestDestroy();
 		}
@@ -301,7 +300,7 @@ class SymptomBase
 
 	void Destroy()
 	{
-		if(!m_IsTemplate)
+		if (!m_IsTemplate)
 			OnDestructed();
 	}
 	
@@ -309,7 +308,7 @@ class SymptomBase
 	void AnimationFinish()
 	{
 		//Print("*********** OnAnimationFinish ************");
-		if( m_DestroyOnAnimFinish ) RequestDestroy();
+		if ( m_DestroyOnAnimFinish ) RequestDestroy();
 		OnAnimationFinish();
 	}
 	
@@ -330,17 +329,17 @@ class SymptomBase
 
 	
 	//!this is just for the Symptom parameters set-up and is called even if the Symptom doesn't execute, don't put any gameplay code in here
-	void OnInit(){}
+	void OnInit();
 	
 	//!gets called every frame
-	void OnUpdateServer(PlayerBase player, float deltatime){}
+	void OnUpdateServer(PlayerBase player, float deltatime);
 	bool CanActivate(){return true;}//server only
 	//!gets called every frame
-	void OnUpdateClient(PlayerBase player, float deltatime){}
+	void OnUpdateClient(PlayerBase player, float deltatime);
 	//!gets called once on an Symptom which is being activated
-	void OnGetActivatedServer(PlayerBase player){}
-	void OnGetActivatedClient(PlayerBase player){}
+	void OnGetActivatedServer(PlayerBase player);
+	void OnGetActivatedClient(PlayerBase player);
 	//!only gets called once on an active Symptom that is being deactivated
-	void OnGetDeactivatedServer(PlayerBase player){}
-	void OnGetDeactivatedClient(PlayerBase player){}
+	void OnGetDeactivatedServer(PlayerBase player);
+	void OnGetDeactivatedClient(PlayerBase player);
 }

@@ -151,7 +151,7 @@ class Land_Underground_EntranceBase : House
 	
 	float AdjustTime(float originalTime, float adjustedTime = -1)
 	{
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		float timeAccel = 1;
 		
 		if (adjustedTime != -1)

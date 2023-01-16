@@ -2,18 +2,18 @@ class PluginRepairing extends PluginBase
 {
 	bool Repair(PlayerBase player, ItemBase repair_kit, Object item, float specialty_weight, string damage_zone = "", bool use_kit_qty = true)
 	{
-		switch ( item.GetHealthLevel(damage_zone) ) 
+		switch (item.GetHealthLevel(damage_zone))
 		{
 			case GameConstants.STATE_PRISTINE:
 				break;
 			case GameConstants.STATE_RUINED:
-#ifdef DEVELOPER
-				Print("PluginRepairing - repairing from GameConstants.STATE_RUINED");
-#endif
+				#ifdef DEVELOPER
+				Debug.Log("repairing from GameConstants.STATE_RUINED");
+				#endif
 				CalculateHealth( player, repair_kit, item, specialty_weight, damage_zone, use_kit_qty );
 				break;
 			case GameConstants.STATE_WORN:
-				if( CanRepairToPristine( player ) || CanBeRepairedToPristine( item ) )
+				if (CanRepairToPristine(player) || CanBeRepairedToPristine(item))
 				{
 					CalculateHealth( player, repair_kit, item, specialty_weight,/* GameConstants.DAMAGE_PRISTINE_VALUE,*/ damage_zone, use_kit_qty );
 				}
@@ -33,7 +33,6 @@ class PluginRepairing extends PluginBase
 		
 		if (entity != null)
 		{
-			//Print("" + item + " - damage allowed");
 			entity.SetAllowDamage(true);
 		}
 		
@@ -94,7 +93,7 @@ class PluginRepairing extends PluginBase
 		{
 			int repair_kit_type = repair_kit.ConfigGetInt( "repairKitType" );
 			
-			ref array<int> repairable_with_types = new array<int>;
+			array<int> repairable_with_types = new array<int>;
 			item.ConfigGetIntArray( "repairableWithKits", repairable_with_types );	
 			
 			for ( int i = 0; i < repairable_with_types.Count(); i++ )
@@ -113,63 +112,44 @@ class PluginRepairing extends PluginBase
 	
 	private bool IsRepairValid(int repair_kit_type, int repairable_with_type)
 	{
-		if ( repair_kit_type > 0 && repairable_with_type > 0 )
+		if (repair_kit_type > 0 && repairable_with_type > 0)
 		{
-			if ( repair_kit_type == repairable_with_type )
-			{
-				return true;
-			}
+			return repair_kit_type == repairable_with_type;
 		}
 		
 		return false;
 	}
 
 	//! Player can repair items to 100%; currently unused
-	private bool CanRepairToPristine( PlayerBase player )
+	private bool CanRepairToPristine(PlayerBase player)
 	{
-// temporary disabled
-/*
-		float specialty = player.GetStatSpecialty().Get();
-		
-		if ( specialty <= -0.5 || specialty >= 0.5 )
-		{
-			return true;
-		}
-		else
-		{
-			return false; 
-		}
-*/
 		return false; 
 	}
 	
 	//! Item can be repaired to 100%
-	private bool CanBeRepairedToPristine( Object item )
+	private bool CanBeRepairedToPristine(Object item)
 	{
 		return item.CanBeRepairedToPristine();
 	}
 	
-	private float GetKitRepairCost( ItemBase repair_kit, Object item )
+	private float GetKitRepairCost(ItemBase repair_kit, Object item)
 	{
-		ref array<int> repair_kit_types = new array<int>;	
-		ref array<float> repair_kit_costs = new array<float>;	
+		array<int> allowedRepairKitTypes 	= new array<int>();	
+		array<float> repairKitCosts 		= new array<float>();
 		
-		item.ConfigGetIntArray( "repairableWithKits", repair_kit_types );
-		item.ConfigGetFloatArray( "repairCosts", repair_kit_costs );
+		item.ConfigGetIntArray("repairableWithKits", allowedRepairKitTypes);
+		item.ConfigGetFloatArray("repairCosts", repairKitCosts);
 		
-		int eligible_kit;
-		int kit_in_hands = repair_kit.ConfigGetInt( "repairKitType" );
+		int repairKitType = repair_kit.ConfigGetInt("repairKitType");
 		
-		for ( int i = 0; i < repair_kit_types.Count(); i++ )
+		foreach (int i, int allowedKitType : allowedRepairKitTypes)
 		{
-			eligible_kit = repair_kit_types.Get(i);
-			
-			if ( eligible_kit == kit_in_hands )
+			if (allowedKitType == repairKitType)
 			{
-				float repair_cost = repair_kit_costs.Get(i);
+				return repairKitCosts.Get(i);
 			}
 		} 
 					
-		return repair_cost;
+		return 0;
 	}
 }

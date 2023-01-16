@@ -106,7 +106,7 @@ class BiosUserManager
 					
 				g_Game.GamepadCheck();
 				
-				g_Game.DeleteGamepadDisconnectMenu();
+				//g_Game.UpdateInputDeviceDisconnectWarning();
 			}
 			else
 			{
@@ -146,8 +146,6 @@ class BiosUserManager
 				{
 					GetGame().GetUIManager().CloseDialog();
 				}
-				
-				g_Game.DeleteGamepadDisconnectMenu();
 			}
 			
 			if ( GetGame().GetMission() != null )
@@ -232,8 +230,6 @@ class BiosUserManager
 				{
 					GetGame().GetUIManager().CloseDialog();
 				}
-				
-				g_Game.DeleteGamepadDisconnectMenu();
 			}
 			
 			if ( GetGame().GetMission() != null )

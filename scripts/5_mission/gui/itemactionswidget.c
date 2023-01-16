@@ -8,6 +8,8 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 	protected ActionBase				m_Continuous;
 	protected ActionManagerClient	 	m_AM;
 	protected IngameHud					m_Hud;
+	
+	protected UAIDWrapper 				m_UseActionWrapper;
 
 	protected int						m_InteractActionsNum;
 	protected int						m_ContinuousInteractActionsNum;
@@ -45,6 +47,8 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		m_Hud					= GetHud();
 		m_Hidden 				= true;
 		
+		m_UseActionWrapper 		= GetUApi().GetInputByID(UAAction).GetPersistentWrapper();
+		
 		GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
@@ -71,8 +75,8 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 
 	protected void ShowXboxHidePCIcons(string widget, bool show_xbox_icon)
 	{
-		m_Root.FindAnyWidget(widget + "_btn_icon_xbox" ).Show(show_xbox_icon);
-		m_Root.FindAnyWidget(widget + "_btn_icon" ).Show(!show_xbox_icon);
+		m_Root.FindAnyWidget(widget + "_btn_icon_xbox").Show(show_xbox_icon);
+		m_Root.FindAnyWidget(widget + "_btn_icon").Show(!show_xbox_icon);
 	}
 
 	protected void OnWidgetScriptInit(Widget w)
@@ -82,57 +86,45 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		m_Root.Show(false);		
 
 		m_ItemLeft = w.FindAnyWidget("ia_item_left");
-
-		bool isMouseEnabled = true;
-		#ifdef PLATFORM_CONSOLE
-		isMouseEnabled = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
-		#endif
 		
 		//! UA -> widget icon
-		SetControllerIcon("ia_interact", "UAAction");
-		SetControllerIcon("ia_continuous_interact", "UAAction");
-		SetControllerIcon("ia_single", "UADefaultAction");
-		SetControllerIcon("ia_continuous", "UADefaultAction");
-
-		ShowXboxHidePCIcons("ia_interact", !isMouseEnabled);
-		ShowXboxHidePCIcons("ia_continuous_interact", !isMouseEnabled);
-		ShowXboxHidePCIcons("ia_single", !isMouseEnabled);
-		ShowXboxHidePCIcons("ia_continuous", !isMouseEnabled);
+		UpdateControllerInputIcons();
+		UpdatePCIconsVisibility();
 	}
 	
 	protected void OnInputPresetChanged()
 	{
 		#ifdef PLATFORM_CONSOLE
-		SetControllerIcon("ia_interact", "UAAction");
-		SetControllerIcon("ia_continuous_interact", "UAAction");
-		SetControllerIcon("ia_single", "UADefaultAction");
-		SetControllerIcon("ia_continuous", "UADefaultAction");
+		UpdateControllerInputIcons();
 		#endif
 	}
 
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		switch (pInputDeviceType)
-		{
-		case EInputDeviceType.CONTROLLER:
-			ShowXboxHidePCIcons("ia_interact", true);
-			ShowXboxHidePCIcons("ia_continuous_interact", true);
-			ShowXboxHidePCIcons("ia_continuous", true);
-			ShowXboxHidePCIcons("ia_single", true);
-		break;
-
-		default:
-			bool isMouseEnabled = true;
-			#ifdef PLATFORM_CONSOLE
-			isMouseEnabled = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
-			#endif
-
-			ShowXboxHidePCIcons("ia_interact", !isMouseEnabled);
-			ShowXboxHidePCIcons("ia_continuous_interact", !isMouseEnabled);
-			ShowXboxHidePCIcons("ia_continuous", !isMouseEnabled);
-			ShowXboxHidePCIcons("ia_single", !isMouseEnabled);
-		break;
-		}
+		UpdatePCIconsVisibility();
+	}
+	
+	//! Loads icons from the latest keybinds
+	private void UpdateControllerInputIcons()
+	{
+		SetControllerIcon("ia_interact", "UAAction");
+		SetControllerIcon("ia_continuous_interact", "UAAction");
+		SetControllerIcon("ia_single", "UADefaultAction");
+		SetControllerIcon("ia_continuous", "UADefaultAction");
+	}
+	
+	//! Contains logic for icon set switching (Gamepad/M&K)
+	private void UpdatePCIconsVisibility()
+	{
+		bool showConsoleIcons = false;
+		#ifdef PLATFORM_CONSOLE
+		showConsoleIcons = GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER || !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		#endif
+		
+		ShowXboxHidePCIcons("ia_interact", showConsoleIcons);
+		ShowXboxHidePCIcons("ia_continuous_interact", showConsoleIcons);
+		ShowXboxHidePCIcons("ia_single", showConsoleIcons);
+		ShowXboxHidePCIcons("ia_continuous", showConsoleIcons);
 	}
 
 	protected void BuildCursor()
@@ -219,7 +211,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 	// getters
     protected void GetPlayer()
 	{
-		Class.CastTo( m_Player, GetGame().GetPlayer() );
+		Class.CastTo(m_Player, GetGame().GetPlayer());
 	}
 
 	protected void GetActionManager()
@@ -299,7 +291,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 
 	protected void GetItemQuantity(out int q_type, out float q_cur, out int q_min, out int q_max)
 	{
-		if ( m_EntityInHands )
+		if (m_EntityInHands)
 		{
 			InventoryItem item = InventoryItem.Cast(m_EntityInHands);
 			q_type = QuantityConversions.HasItemQuantity(m_EntityInHands);
@@ -407,7 +399,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 			widget.Show(false);
 	}
 	
-	protected void SetItemQuantity(int type, float current, int min, int max, string itemWidget, string quantityPBWidget, string quantityTextWidget, bool enabled )
+	protected void SetItemQuantity(int type, float current, int min, int max, string itemWidget, string quantityPBWidget, string quantityTextWidget, bool enabled)
 	{
 		Widget widget;
 		
@@ -477,14 +469,14 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 			Magazine maga;
 			int mag_quantity = -1;
 
-			if ( Class.CastTo(wpn, m_EntityInHands ) )
+			if (Class.CastTo(wpn, m_EntityInHands))
 			{
 				if (Magnum_Base.Cast(wpn))
 				{
 					mag_quantity = 0;
 					for (int j = 0; j < wpn.GetMuzzleCount(); j++)
 					{
-						if(wpn.IsChamberFull(j)&& !wpn.IsChamberFiredOut(j))
+						if (wpn.IsChamberFull(j)&& !wpn.IsChamberFiredOut(j))
 							mag_quantity++; 
 					}
 					wpn_qty = mag_quantity.ToString();
@@ -493,7 +485,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 				{
 					for (int i = 0; i < wpn.GetMuzzleCount(); i++)
 					{
-						if ( i > 0 && (wpn.GetMuzzleCount() < 3 ||  i%2 == 0 ) )
+						if (i > 0 && (wpn.GetMuzzleCount() < 3 ||  i%2 == 0))
 						{
 							wpn_qty = wpn_qty + " ";
 						}
@@ -524,14 +516,14 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 				
 					if (wpn.IsJammed())
 					{
-						if (mag_quantity != -1 )
+						if (mag_quantity != -1)
 							wpn_qty = string.Format("X (+%1)", mag_quantity);
 						else
 							wpn_qty = "X";
 					}
 					else
 					{
-						if(mag_quantity != -1 )
+						if (mag_quantity != -1)
 						{
 							wpn_qty = wpn_qty + " (" + mag_quantity.ToString() + ")";
 						}
@@ -676,14 +668,11 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		Class.CastTo(frameWidget, widget.FindAnyWidget(actionIconFrameWidget));
 		Class.CastTo(iconWidget, widget.FindAnyWidget(actionIconWidget));
 		Class.CastTo(textWidget, widget.FindAnyWidget(actionIconTextWidget));
-
-		//! get name of key which is used for UAAction input 
-		UAInput i1 = GetUApi().GetInputByName("UAAction"); 
 		
-		i1.SelectAlternative(0); //! select first alternative (which is the primary bind)
-		for (int c = 0; c < i1.BindKeyCount(); c++)
+		m_UseActionWrapper.InputP().SelectAlternative(0); //! select first alternative (which is the primary bind)
+		for (int c = 0; c < m_UseActionWrapper.InputP().BindKeyCount(); c++)
 		{
-		  	int _hc = i1.GetBindKey(0);
+		  	int _hc = m_UseActionWrapper.InputP().GetBindKey(0);
 		  	keyName = GetUApi().GetButtonName(_hc);
 		}
 

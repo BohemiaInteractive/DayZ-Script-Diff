@@ -6,7 +6,7 @@ class Sedan_02 extends CarScript
 
 	void Sedan_02()
 	{
-		m_dmgContactCoef		= 0.130;
+		//m_dmgContactCoef		= 0.130;
 
 		m_EngineStartOK			= "Sedan_02_engine_start_SoundSet";
 		m_EngineStartBattery	= "Sedan_02_engine_failed_start_battery_SoundSet";
@@ -64,8 +64,6 @@ class Sedan_02 extends CarScript
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
-		super.EOnPostSimulate(other, timeSlice);
-		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
 			if (m_UTSource.IsActive())
@@ -227,28 +225,28 @@ class Sedan_02 extends CarScript
 		switch( posIdx )
 		{
 			case 0:
-				if ( GetCarDoorsState( "Sedan_02_Door_1_1" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Sedan_02_Door_1_1") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
 			break;
 			
 			case 1:
-				if ( GetCarDoorsState( "Sedan_02_Door_2_1" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Sedan_02_Door_2_1") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
 			break;
 
 			case 2:
-				if ( GetCarDoorsState( "Sedan_02_Door_1_2" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Sedan_02_Door_1_2") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
 			break;
 
 			case 3:
-				if ( GetCarDoorsState( "Sedan_02_Door_2_2" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Sedan_02_Door_2_2") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
@@ -365,59 +363,41 @@ class Sedan_02 extends CarScript
 		return false;
 	}
 	
-	override bool CanReachSeatFromSeat( int currentSeat, int nextSeat )
+	override bool CanReachSeatFromSeat(int currentSeat, int nextSeat)
 	{
-		switch( currentSeat )
+		switch (currentSeat)
 		{
-		case 0:
-			if ( nextSeat == 1 )
-				return true;
-			break;
-		case 1:
-			if ( nextSeat == 0 )
-				return true;
-			break;
-		case 2:
-			if ( nextSeat == 3 )
-				return true;
-			break;
-		case 3:
-			if ( nextSeat == 2 )
-				return true;
-			break;
+			case 0:
+				return nextSeat == 1;
+	
+			case 1:
+				return nextSeat == 0;
+	
+			case 2:
+				return nextSeat == 3;
+	
+			case 3:
+				return nextSeat == 2;
 		}
 		
 		return false;
 	}
 
-	override bool CanReachDoorsFromSeat( string pDoorsSelection, int pCurrentSeat )
+	override bool CanReachDoorsFromSeat(string pDoorsSelection, int pCurrentSeat)
 	{
-		switch( pCurrentSeat )
+		switch (pCurrentSeat)
 		{
-		case 0:
-			if (pDoorsSelection == "DoorsDriver")
-			{
-				return true;
-			}
-		break;
-		case 1:
-			if (pDoorsSelection == "DoorsCoDriver")
-			{
-				return true;
-			}
-		break;
-		case 2:
-			if (pDoorsSelection == "DoorsCargo1")
-			{
-				return true;
-			}
-		break;
-		case 3:
-			if (pDoorsSelection == "DoorsCargo2")
-			{
-				return true;
-			}
-		break;
+			case 0:
+				return pDoorsSelection == "DoorsDriver";
+	
+			case 1:
+				return pDoorsSelection == "DoorsCoDriver";
+	
+			case 2:
+				return pDoorsSelection == "DoorsCargo1";
+				
+			case 3:
+				return pDoorsSelection == "DoorsCargo2";
 		}
 		
 		return false;		
@@ -425,57 +405,26 @@ class Sedan_02 extends CarScript
 
 	override void OnDebugSpawn()
 	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
-		
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
 
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
 
-			//entity.GetInventory().CreateInInventory( "Sedan_02_Door_1_1" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_1_2" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_2_1" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_2_2" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Hood" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Trunk" );
+		GetInventory().CreateInInventory("Sedan_02_Door_1_1");
+		GetInventory().CreateInInventory("Sedan_02_Door_1_2");
+		GetInventory().CreateInInventory("Sedan_02_Door_2_1");
+		GetInventory().CreateInInventory("Sedan_02_Door_2_2");
+		GetInventory().CreateInInventory("Sedan_02_Hood");
+		GetInventory().CreateInInventory("Sedan_02_Trunk");
 
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 50 );
-		Fill( CarFluid.COOLANT, 6.0 );
-		Fill( CarFluid.OIL, 4.0 );
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
 	}
 }
 
@@ -483,115 +432,50 @@ class Sedan_02_Red extends Sedan_02
 {
 	override void OnDebugSpawn()
 	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
-		
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
 
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
 
-			//entity.GetInventory().CreateInInventory( "Sedan_02_Door_1_1_Red" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_1_2_Red" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_2_1_Red" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_2_2_Red" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Hood_Red" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Trunk_Red" );
+		GetInventory().CreateInInventory("Sedan_02_Door_1_1_Red");
+		GetInventory().CreateInInventory("Sedan_02_Door_1_2_Red");
+		GetInventory().CreateInInventory("Sedan_02_Door_2_1_Red");
+		GetInventory().CreateInInventory("Sedan_02_Door_2_2_Red");
+		GetInventory().CreateInInventory("Sedan_02_Hood_Red");
+		GetInventory().CreateInInventory("Sedan_02_Trunk_Red");
 
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 50 );
-		Fill( CarFluid.COOLANT, 6.0 );
-		Fill( CarFluid.OIL, 4.0 );
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
 	}
-};
-
+}
 
 class Sedan_02_Grey extends Sedan_02
 {
 	override void OnDebugSpawn()
 	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
-		
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
 
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
 
-			//entity.GetInventory().CreateInInventory( "Sedan_02_Door_1_1_Grey" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_1_2_Grey" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_2_1_Grey" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Door_2_2_Grey" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Hood_Grey" );
-			entity.GetInventory().CreateInInventory( "Sedan_02_Trunk_Grey" );
+		GetInventory().CreateInInventory("Sedan_02_Door_1_1_Grey");
+		GetInventory().CreateInInventory("Sedan_02_Door_1_2_Grey");
+		GetInventory().CreateInInventory("Sedan_02_Door_2_1_Grey");
+		GetInventory().CreateInInventory("Sedan_02_Door_2_2_Grey");
+		GetInventory().CreateInInventory("Sedan_02_Hood_Grey");
+		GetInventory().CreateInInventory("Sedan_02_Trunk_Grey");
 
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "Sedan_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 50 );
-		Fill( CarFluid.COOLANT, 6.0 );
-		Fill( CarFluid.OIL, 4.0 );
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
+		GetInventory().CreateInInventory("Sedan_02_Wheel");
 	}
-};
+}

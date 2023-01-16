@@ -167,7 +167,7 @@ class BleedingIndicator extends Managed
 			return;
 		}
 		
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 		if (DbgBleedingIndicationStaticInfo.m_DbgUseOverrideValues)
 		{
 			m_SequenceDuration = DbgBleedingIndicationStaticInfo.m_DbgSequenceDuration;

@@ -48,6 +48,7 @@ class UATimeSpent
 	const float DEFIBRILATE = 3;
 	const float INJECT = 3;
 	const float MEASURE_TEMP = 12;
+	const float CHECK_PULSE = 5;
 	const float COVER_HEAD = 0.5;
 	const float RESTRAIN = 10;
 	const float UNRESTRAIN = 20;
@@ -140,8 +141,11 @@ class UADamageApplied
  */
 class UAWaterType
 {
-	const string ALL = "water";
-	const string FRESH = "fresh_water";
+	const string SEA 	= "sea"; //! fake
+	const string FRESH 	= "fresh_water";
+	const string STILL 	= "still_water";
+
+	const string ALL 	= string.Format("%1|%2|%3", UAWaterType.SEA, UAWaterType.FRESH, UAWaterType.STILL);
 }
 
 /**@class	Miscelaneous constants for use in actions

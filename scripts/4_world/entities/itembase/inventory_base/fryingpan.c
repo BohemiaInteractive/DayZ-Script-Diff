@@ -9,26 +9,23 @@ class FryingPan extends Inventory_Base
 	// Particles
 	protected Particle 	m_ParticleCooking;
 	protected int 		m_ParticlePlaying 	= ParticleList.INVALID;
-	// Baking
+
 	protected int PARTICLE_BAKING_START 	= ParticleList.COOKING_BAKING_START;
 	protected int PARTICLE_BAKING_DONE 		= ParticleList.COOKING_BAKING_DONE;
-	// Drying
 	protected int PARTICLE_DRYING_START 	= ParticleList.COOKING_DRYING_START;
 	protected int PARTICLE_DRYING_DONE 		= ParticleList.COOKING_DRYING_DONE;
-	// Burning
 	protected int PARTICLE_BURNING_DONE		= ParticleList.COOKING_BURNING_DONE;
 
 	// Sounds
-	protected SoundOnVehicle	m_SoundCooking;
+	protected SoundOnVehicle	m_SoundCooking;	//! DEPRECATED
+	protected EffectSound		m_SoundEffectCooking;
 	protected string			m_SoundPlaying = "";
-	// Baking
-	const string SOUND_BAKING_START 	= "bake";
-	const string SOUND_BAKING_DONE 		= "bakeDone";
-	// Drying
-	const string SOUND_DRYING_START 	= "dry";
-	const string SOUND_DRYING_DONE 		= "dryDone";	
-	// Burning
-	const string SOUND_BURNING_DONE 	= "burned";
+
+	const string SOUND_BAKING_START 	= "Baking_SoundSet";		//! DEPRECATED
+	const string SOUND_BAKING_DONE 		= "Baking_Done_SoundSet";	//! DEPRECATED
+	const string SOUND_DRYING_START 	= "Drying_SoundSet";		//! DEPRECATED
+	const string SOUND_DRYING_DONE 		= "Drying_Done_SoundSet";  	//! DEPRECATED
+	const string SOUND_BURNING_DONE 	= "Food_Burning_SoundSet"; 	//! DEPRECATED
 
 	void FryingPan()
 	{
@@ -127,7 +124,6 @@ class FryingPan extends Inventory_Base
 	{
 		m_CookingMethod	= CookingMethodType.NONE;
 		
-		//synchronize
 		Synchronize();
 	}
 
@@ -137,62 +133,44 @@ class FryingPan extends Inventory_Base
 		m_CookingIsDone 	= is_done;
 		m_CookingIsEmpty	= is_empty;
 		m_CookingIsBurned	= is_burned;
-		
-		//synchronize
+
 		Synchronize();
 	}
 
 	void RefreshAudioVisuals( CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned )
 	{
-		string sound_name;
-		int particle_id;
+		int particleId;
 		
 		//if at least one of the food items is burned
-		if ( is_burned )		
+		if (is_burned)
 		{
-			sound_name 		= SOUND_BURNING_DONE;
-			particle_id 	= PARTICLE_BURNING_DONE;
+			particleId 	= PARTICLE_BURNING_DONE;
 		}
 		//proper cooking methods
 		else
 		{
-			if ( cooking_method == CookingMethodType.BAKING )
+			if (cooking_method == CookingMethodType.BAKING)
 			{
-				if ( is_done )											//DONE
-				{
-					sound_name 		= SOUND_BAKING_DONE;
-					particle_id 	= PARTICLE_BAKING_DONE;
-				}
-				else													//START
-				{
-					sound_name 		= SOUND_BAKING_START;
-					particle_id 	= PARTICLE_BAKING_START;
-				}
+				if (is_done)
+					particleId = PARTICLE_BAKING_DONE;
+				else
+					particleId  = PARTICLE_BAKING_START;
 			}
-			else if ( cooking_method == CookingMethodType.DRYING )
+			else if (cooking_method == CookingMethodType.DRYING)
 			{
-				if ( is_done )											//DONE
-				{
-					sound_name 		= SOUND_DRYING_DONE;
-					particle_id 	= PARTICLE_DRYING_DONE;
-				}
-				else													//START
-				{
-					sound_name 		= SOUND_DRYING_START;
-					particle_id 	= PARTICLE_DRYING_START;
-				}
+				if (is_done)
+					particleId = PARTICLE_DRYING_DONE;
+				else
+					particleId = PARTICLE_DRYING_START;
 			}			
 		}
 		
-		//play effects
-		ParticleCookingStart( particle_id );
-		SoundCookingStart( sound_name );
+		ParticleCookingStart(particleId);
 	}
 	
 	void RemoveAudioVisuals()
 	{
 		ParticleCookingStop();
-		SoundCookingStop();
 	}
 
 	void ParticleCookingStart( int particle_id )
@@ -223,28 +201,7 @@ class FryingPan extends Inventory_Base
 		}
 	}
 
-	protected void SoundCookingStart( string sound_name )
-	{
-		if ( GetGame() && ( !GetGame().IsDedicatedServer() ) )
-		{	
-			if ( m_SoundPlaying != sound_name )
-			{
-				//stop previous sound
-				SoundCookingStop();
-				
-				//create new
-				m_SoundCooking = PlaySoundLoop( sound_name, 50 );
-				m_SoundPlaying = sound_name;
-			}
-		}
-	}
-	protected void SoundCookingStop()
-	{
-		if ( m_SoundCooking )
-		{
-			GetGame().ObjectDelete( m_SoundCooking );
-			m_SoundCooking = NULL;
-			m_SoundPlaying = "";
-		}
-	}	
+	//! DEPRECATED
+	protected void SoundCookingStart(string sound_name);
+	protected void SoundCookingStop();
 }

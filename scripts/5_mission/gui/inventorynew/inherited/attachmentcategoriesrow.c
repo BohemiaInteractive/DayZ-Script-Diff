@@ -851,9 +851,9 @@ class AttachmentCategoriesRow: ClosableContainer
 		w.GetUserData(slots_icon);
 		
 		Container c = Container.Cast( slots_icon.GetContainer() );
-		if( c )
+		if ( c )
 		{
-			if( c.IsOpened() )
+			if ( c.IsOpened() )
 			{
 				c.Close();
 			}
@@ -863,13 +863,12 @@ class AttachmentCategoriesRow: ClosableContainer
 			}
 		}
 		
-		#ifdef DEVELOPER
-		
-		if( GetDayZGame().IsLeftCtrlDown() && button == 1 )
+		#ifdef DIAG_DEVELOPER		
+		if ( GetDayZGame().IsLeftCtrlDown() && button == 1 )
 		{
 			SlotsIcon user_data;
 			w.GetUserData(user_data);
-			if(user_data)
+			if (user_data)
 			{
 				ShowActionMenu( user_data.GetItem() );
 				return true;

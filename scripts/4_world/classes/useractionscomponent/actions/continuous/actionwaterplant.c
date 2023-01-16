@@ -17,6 +17,7 @@ class ActionWaterPlant: ActionContinuousBase
 		m_FullBody = true;
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_LOW;
 		m_Text = "#water_plant";
+		m_LockTargetOnUse = false;
 	}
 	
 	override void CreateConditionComponents()  

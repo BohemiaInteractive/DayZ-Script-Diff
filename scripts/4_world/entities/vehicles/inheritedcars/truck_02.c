@@ -6,7 +6,7 @@ class Truck_02 extends CarScript
 
 	void Truck_02()
 	{
-		m_dmgContactCoef = 0.018;
+		//m_dmgContactCoef = 0.018;
 		m_enginePtcPos = "0 1.346 2.205";
 	}
 	
@@ -51,8 +51,6 @@ class Truck_02 extends CarScript
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
-		super.EOnPostSimulate(other, timeSlice);
-		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
 			if (m_UTSource.IsActive())

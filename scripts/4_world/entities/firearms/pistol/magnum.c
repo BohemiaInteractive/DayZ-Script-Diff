@@ -359,7 +359,47 @@ class Magnum_Base extends Weapon_Base
 	}
 };
 
-class Magnum extends Magnum_Base {};
+class Magnum extends Magnum_Base
+{
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	{
+		super.GetDebugActions(outputList);
+
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SPIN, "Spin", FadeColors.LIGHT_GREY));
+	}
+	
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (GetGame().IsServer())
+		{
+			if (action_id == EActions.SPIN)
+			{
+				const float animPhaseOffset = 0.167;
+	
+				Magnum_Cylinder cylinder = Magnum_Cylinder.Cast(GetAttachmentByType(Magnum_Cylinder));
+				Magnum_Ejector ejector = Magnum_Ejector.Cast(GetAttachmentByType(Magnum_Ejector));
+		
+				if (cylinder)
+				{
+					float animPhase = cylinder.GetAnimationPhase("Rotate_Cylinder");
+					if (animPhase + animPhaseOffset > 1.0)
+					{
+						animPhase -= 1.0;
+						cylinder.ResetAnimationPhase("Rotate_Cylinder", animPhase);
+						ejector.ResetAnimationPhase("Rotate_Ejector", animPhase);
+					}
+	
+					cylinder.SetAnimationPhase("Rotate_Cylinder", animPhase);
+					ejector.ResetAnimationPhase("Rotate_Ejector", animPhase);
+				}
+			}
+		}
+		
+		return super.OnAction(action_id, player, ctx);
+	}
+}
+
 class SawedoffMagnum extends Magnum_Base {};
 class Magnum_Cylinder extends DummyItem {};
 class Magnum_Ejector extends DummyItem {};

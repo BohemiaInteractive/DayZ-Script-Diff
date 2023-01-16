@@ -235,7 +235,7 @@ class PlayerContainer: CollapsibleContainer
 		bool reserved;
 		
 		
-		if(slots_icon)
+		if (slots_icon)
 		{
 			item = slots_icon.GetEntity();
 			reserved = slots_icon.IsReserved();
@@ -244,37 +244,37 @@ class PlayerContainer: CollapsibleContainer
 
 		ItemBase itemAtPos = ItemBase.Cast( item );
 		
-		if( item )
+		if ( item )
 		{
 			if ( button == MouseState.RIGHT )
 			{
-				#ifdef DEVELOPER
-				if( GetDayZGame().IsLeftCtrlDown() )
+				#ifdef DIAG_DEVELOPER
+				if ( GetDayZGame().IsLeftCtrlDown() )
 					ShowActionMenu( InventoryItem.Cast(item) );
 				#endif
 				
-				if( reserved )
+				if ( reserved )
 				{
-					GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocation( item );
+					GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced( item );
 					m_Player.GetOnAttachmentReleaseLock().Invoke(item, slots_icon.GetSlotID());
 				}
 			}
 			else if ( button == MouseState.MIDDLE )
 			{
-				if( !reserved )
+				if ( !reserved )
 				{
 					InspectItem( itemAtPos );
 				}
 			} 
 			else if ( button == MouseState.LEFT )
 			{
-				if( !reserved )
+				if ( !reserved )
 				{
 					if ( g_Game.IsLeftCtrlDown() )
 					{
-						if( itemAtPos && itemAtPos.GetInventory().CanRemoveEntity() && m_Player.CanDropEntity(itemAtPos) )
+						if ( itemAtPos && itemAtPos.GetInventory().CanRemoveEntity() && m_Player.CanDropEntity(itemAtPos) )
 						{
-							if( itemAtPos.GetTargetQuantityMax() < itemAtPos.GetQuantity() )
+							if ( itemAtPos.GetTargetQuantityMax() < itemAtPos.GetQuantity() )
 								itemAtPos.SplitIntoStackMaxClient( null, -1 );
 							else
 								m_Player.PhysicalPredictiveDropItem( itemAtPos );

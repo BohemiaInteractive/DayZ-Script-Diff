@@ -66,6 +66,13 @@ enum NVTypes
 	MAX
 }
 
+enum ECameraZoomType
+{
+	NONE 	= 0,
+	NORMAL 	= 1,
+	SHALLOW	= 2
+}
+
 
 class DayZPlayerCameraBase extends DayZPlayerCamera
 {
@@ -83,13 +90,18 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 		m_fFovAbsVel[0] = 0;
 		m_WeaponSwayModifier = 1;
 		
-		if (m_pPlayer.IsEyeZoom())
+		// ordered in likelihood of occurance for perf. reasons
+		if (m_pPlayer.GetEyeZoomLevel() == ECameraZoomType.NONE)
+		{
+			m_fFovAbsolute		= g_Game.GetUserFOV();
+		}
+		else if (m_pPlayer.GetEyeZoomLevel() == ECameraZoomType.NORMAL)
 		{
 			m_fFovAbsolute		= GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM;
 		}
 		else
 		{
-			m_fFovAbsolute		= g_Game.GetUserFOV();
+			m_fFovAbsolute		= GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM_SHALLOW;
 		}
 		
 		//!
@@ -217,15 +229,23 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	void 	StdFovUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
 	{
 		//! change abs FOV for naked eye zoom
-		if (m_pPlayer.IsEyeZoom())
+		switch (m_pPlayer.GetEyeZoomLevel())
 		{
-			m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM, m_fFovAbsVel, 0.1, 1000, pDt);
+			// ordered in likelihood of occurance for perf. reasons
+			case ECameraZoomType.NONE:
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, g_Game.GetUserFOV(), m_fFovAbsVel, 0.1, 1000, pDt);
+				break;
+			case ECameraZoomType.NORMAL:
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM, m_fFovAbsVel, 0.1, 1000, pDt);
+				break;
+			case ECameraZoomType.SHALLOW:
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, 0.6, m_fFovAbsVel, 0.1, 1000, pDt);
+				break;
+			default:
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, g_Game.GetUserFOV(), m_fFovAbsVel, 0.1, 1000, pDt);
+				break;
 		}
-		else
-		{
-			m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, g_Game.GetUserFOV(), m_fFovAbsVel, 0.1, 1000, pDt);
-		}
-
+		
 		pOutResult.m_fFovAbsolute = m_fFovAbsolute;
 
 		//! switch shooting from camera to weapon (firearms)

@@ -13,108 +13,95 @@ class ActionAttach: ActionSingleUseBase
 
 	override void CreateConditionComponents() 
 	{
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNonRuined( UAMaxDistances.DEFAULT );
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_ATTACHITEM;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTNonRuined(UAMaxDistances.DEFAULT);
+		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONMOD_ATTACHITEM;
+		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
 	}
 	
 	override ActionData CreateActionData()
 	{
-		AttachActionData action_data = new AttachActionData;
+		AttachActionData action_data = new AttachActionData();
 		return action_data;
 	}
 	
-	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
+	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = null)
 	{
-		ref InventoryLocation il = new InventoryLocation;
+		InventoryLocation il = new InventoryLocation();
 		if (!GetGame().IsDedicatedServer())
 		{
-			EntityAI target_entity;
-			
-			if ( target.IsProxy() )
+			EntityAI targetEntity;
+			if (target.IsProxy())
 			{
-				target_entity = EntityAI.Cast( target.GetParent() );
+				targetEntity = EntityAI.Cast(target.GetParent());
 			}
 			else
 			{
-				target_entity = EntityAI.Cast( target.GetObject() );
+				targetEntity = EntityAI.Cast(target.GetObject());
 			}
 			
-			if (!target_entity.GetInventory().FindFreeLocationFor( item, FindInventoryLocationType.ATTACHMENT, il ))
+			if (!targetEntity.GetInventory().FindFreeLocationFor(item, FindInventoryLocationType.ATTACHMENT, il))
 				return false;
 		}
 			
-		if ( super.SetupAction( player, target, item, action_data, extra_data))
+		if (super.SetupAction(player, target, item, action_data, extra_data))
 		{
-			if (!GetGame().IsDedicatedServer())
-			{
-				AttachActionData action_data_a = AttachActionData.Cast(action_data);
-				action_data_a.m_AttSlot = il.GetSlot();
-			}
+			#ifndef SERVER
+			AttachActionData action_data_a = AttachActionData.Cast(action_data);
+			action_data_a.m_AttSlot = il.GetSlot();
+			#endif
+
 			return true;
 		}
+
 		return false;
 	}
 	
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		EntityAI target_entity = EntityAI.Cast( target.GetObject() );
-		
-		if ( target_entity && item )
+		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
+		if (targetEntity && item)
 		{
-			if ( target_entity.GetInventory() && target_entity.GetInventory().CanAddAttachment( item ) )
-			{
-				return true;
-			}
-		}	
+			return targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item);
+		}
+
 		return false;
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{
 		if (GetGame().IsMultiplayer())
 			return;
 		
 		ClearInventoryReservationEx(action_data);
 		AttachActionData action_data_a = AttachActionData.Cast(action_data);
-		EntityAI target_EAI;
-			
-		if ( action_data.m_Target.IsProxy() )
-		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetParent() ); // cast to ItemBase
-		}
-		else
-		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetObject() ); // cast to ItemBase
-		}
-		
-		if (target_EAI && action_data_a.m_MainItem)
-		{
-			action_data_a.m_Player.PredictiveTakeEntityToTargetAttachmentEx(target_EAI, action_data_a.m_MainItem,action_data_a.m_AttSlot);
-		}
+		AttachItem(action_data_a);
 	}
 	
-	override void OnExecuteClient( ActionData action_data )
+	override void OnExecuteClient(ActionData action_data)
 	{
 		ClearInventoryReservationEx(action_data);
+
 		AttachActionData action_data_a = AttachActionData.Cast(action_data);
-		
-		EntityAI target_EAI;
-			
-		if ( action_data.m_Target.IsProxy() )
+		AttachItem(action_data_a);
+	}
+	
+	protected void AttachItem(AttachActionData action_data)
+	{
+		EntityAI entity;	
+		if (action_data.m_Target.IsProxy())
 		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetParent() ); // cast to ItemBase
+			entity = EntityAI.Cast(action_data.m_Target.GetParent());
 		}
 		else
 		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetObject() ); // cast to ItemBase
+			entity = EntityAI.Cast(action_data.m_Target.GetObject());
 		}
 		
-		if (target_EAI && action_data_a.m_MainItem)
+		if (entity && action_data.m_MainItem)
 		{
-			action_data_a.m_Player.PredictiveTakeEntityToTargetAttachmentEx(target_EAI, action_data_a.m_MainItem, action_data_a.m_AttSlot);
+			action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(entity, action_data.m_MainItem, action_data.m_AttSlot);
 		}
 	}
 	

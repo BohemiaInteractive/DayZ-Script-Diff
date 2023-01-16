@@ -52,6 +52,7 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 			{
 				uts = ent.GetUniversalTemperatureSource();
 				utsd = new UTemperatureSourceDebug();
+				utsd.AddHeader(ent.GetType());
 				utsd.Add("position", uts.GetPosition().ToString(false));
 				utsd.Add("fullrange", uts.GetFullRange().ToString());
 				utsd.Add("maxrange", uts.GetMaxRange().ToString());
@@ -67,6 +68,7 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 		{
 			uts = player.GetItemInHands().GetUniversalTemperatureSource();
 			utsd = new UTemperatureSourceDebug();
+			utsd.AddHeader(player.GetItemInHands().GetType());
 			utsd.Add("position", uts.GetPosition().ToString(false));
 			utsd.Add("fullrange", uts.GetFullRange().ToString());
 			utsd.Add("maxrange", uts.GetMaxRange().ToString());
@@ -80,12 +82,12 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 
 	void SendDebug()
 	{
-		for (int i = 0; i < m_ClientList.Count(); i++)
+		int clientCount = m_ClientList.Count();
+		for (int i = 0; i < clientCount; ++i)
 		{
 			PlayerBase player = m_ClientList.Get(i);
 			if (player)
-			{
-				
+			{		
 				GatherTemperatureSources(player);
 				ScriptRPC rpc = new ScriptRPC();
 				rpc.Write(m_UTemperatureSourceDebugs);
@@ -94,6 +96,7 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 			else
 			{
 				m_ClientList.Remove(i);
+				--i;
 			}
 		}
 	}

@@ -12,26 +12,26 @@ class NoteMenu extends UIScriptedMenu
 
 	void NoteMenu()
 	{
-		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
-		if( mission )
+		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		if (mission)
 		{
-			IngameHud hud = IngameHud.Cast( mission.GetHud() );
-			if ( hud )
+			IngameHud hud = IngameHud.Cast(mission.GetHud());
+			if (hud)
 			{
-				hud.ShowHudUI( false );
+				hud.ShowHudUI(false);
 			}
 		}
 	}
 
 	void ~NoteMenu()
 	{
-		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
-		if( mission )
+		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		if (mission)
 		{
-			IngameHud hud = IngameHud.Cast( mission.GetHud() );
-			if ( hud )
+			IngameHud hud = IngameHud.Cast(mission.GetHud());
+			if (hud)
 			{
-				hud.ShowHudUI( true );
+				hud.ShowHudUI(true);
 			}
 		}
 	}
@@ -88,9 +88,9 @@ class NoteMenu extends UIScriptedMenu
 	override Widget Init()
 	{
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_inventory_note.layout");
-		m_edit = MultilineEditBoxWidget.Cast( layoutRoot.FindAnyWidget("EditWidget") );
-		m_html = HtmlWidget.Cast( layoutRoot.FindAnyWidget("HtmlWidget") );
-		m_confirm_button = ButtonWidget.Cast( layoutRoot.FindAnyWidgetById(IDC_OK) );
+		m_edit = MultilineEditBoxWidget.Cast(layoutRoot.FindAnyWidget("EditWidget"));
+		m_html = HtmlWidget.Cast(layoutRoot.FindAnyWidget("HtmlWidget"));
+		m_confirm_button = ButtonWidget.Cast(layoutRoot.FindAnyWidgetById(IDC_OK));
 		
 		return layoutRoot;
 	}
@@ -127,11 +127,11 @@ class NoteMenu extends UIScriptedMenu
 		return false;
 	}
 	
-	override void Update( float timeslice )
+	override void Update(float timeslice)
 	{
-		super.Update( timeslice );
+		super.Update(timeslice);
 		
-		if( GetGame() && GetGame().GetInput() && GetGame().GetInput().LocalPress("UAUIBack", false) )
+		if (GetGame() && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Close();
 		}

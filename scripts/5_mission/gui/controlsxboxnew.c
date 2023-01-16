@@ -28,6 +28,7 @@ typedef map<int,ref array<Widget>> TButtonPairingInfo; //<button_mask,<associate
 class ControlsXboxNew extends UIScriptedMenu
 {
 	protected string 					m_BackButtonTextID;
+	protected string 					m_NextPresetText;
 	protected int 						m_CurrentTabIdx = -1;
 	protected int 						m_CurrentPresetVariant = -1;
 	
@@ -63,25 +64,13 @@ class ControlsXboxNew extends UIScriptedMenu
 	{
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 	}
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		switch (pInputDeviceType)
-		{
-		case EInputDeviceType.CONTROLLER:
-			UpdateControlsElements();
-			layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
-		break;
-
-		default:
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
-			{
-				layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
-			}
-		break;
-		}
+		UpdateControlsElementVisibility();
 	}
 	
 	void Back()
@@ -89,7 +78,7 @@ class ControlsXboxNew extends UIScriptedMenu
 		GetGame().GetUIManager().Back();
 	}
 	
-	void UpdateTabContent( int tab_index )
+	void UpdateTabContent(int tab_index)
 	{
 		Widget w;
 		//hide old
@@ -365,7 +354,7 @@ class ControlsXboxNew extends UIScriptedMenu
 
 			if (element.Count() % 2 == 0)
 			{
-				group_point_y = ( ( text_widget_pos_y + text_widget_height/2 ) - first_y ) / 2 + first_y;
+				group_point_y = ((text_widget_pos_y + text_widget_height/2) - first_y) / 2 + first_y;
 			}
 			else
 			{
@@ -418,10 +407,12 @@ class ControlsXboxNew extends UIScriptedMenu
 		m_TabberWidget = layoutRoot.FindAnyWidget("Tabber");
 		m_TabberWidget.GetScript(m_TabScript);
 		m_TabScript.m_OnTabSwitch.Insert(UpdateTabContent);
-		m_CanvasWidget = CanvasWidget.Cast( layoutRoot.FindAnyWidget("CanvasUniversal") );
+		m_CanvasWidget = CanvasWidget.Cast(layoutRoot.FindAnyWidget("CanvasUniversal"));
 		m_Back = ButtonWidget.Cast(layoutRoot.FindAnyWidget("back"));
 		
+		UpdateToolbarText();
 		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		
 		PPERequester_MenuEffects requester;
 		Class.CastTo(requester,PPERequesterBank.GetRequester(PPERequesterBank.REQ_MENUEFFECTS));
@@ -443,7 +434,7 @@ class ControlsXboxNew extends UIScriptedMenu
 	{
 		super.OnShow();
 		
-		UpdateToolbarText();
+		SetFocus(null);
 	}
 	
 	override bool OnClick(Widget w, int x, int y, int button)
@@ -459,24 +450,69 @@ class ControlsXboxNew extends UIScriptedMenu
 		return false;
 	}
 	
+	override bool OnMouseEnter(Widget w, int x, int y)
+	{
+		if (IsFocusable(w))
+		{
+			ColorHighlight(w);
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
+	{
+		if (IsFocusable(w))
+		{
+			ColorNormal(w);
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnFocus(Widget w, int x, int y)
+	{
+		if (IsFocusable(w))
+		{
+			ColorHighlight(w);
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnFocusLost(Widget w, int x, int y)
+	{
+		if (IsFocusable(w))
+		{
+			ColorNormal(w);
+			return true;
+		}
+		return false;
+	}
+	
+	bool IsFocusable(Widget w)
+	{
+		return (w && w == m_Back);
+	}
+	
 	override void Update(float timeslice)
 	{
-		if (GetGame().GetInput().LocalPress("UAUITabLeft", false))
+		if (GetUApi().GetInputByID(UAUITabLeft).LocalPress())
 		{
 			m_TabScript.PreviousTab();
 		}
 		
-		if (GetGame().GetInput().LocalPress("UAUITabRight", false))
+		if (GetUApi().GetInputByID(UAUITabRight).LocalPress())
 		{
 			m_TabScript.NextTab();
 		}
 		
-		if (GetGame().GetInput().LocalPress("UAUIBack", false))
+		if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Back();
 		}
 		
-		if (GetGame().GetInput().LocalPress("UASwitchPreset",false))
+		if (GetUApi().GetInputByID(UASwitchPreset).LocalPress())
 		{
 			PerformSwitchPreset();
 			UpdateTabContent(m_CurrentTabIdx);
@@ -539,47 +575,44 @@ class ControlsXboxNew extends UIScriptedMenu
 			index = 0;
 		}
 		
+		inputAPI.SupressNextFrame(true);
 		inputAPI.PresetSelect(index);
 		UpdateToolbarText();
 		
-		GetUApi().Export();
-		GetUApi().SaveInputPresetMiscData();
-		
 		GetGame().GetMission().GetOnInputPresetChanged().Invoke();
 		
+		#ifdef PLATFORM_WINDOWS
+			GetUApi().Export(); //works on emulated consoles (-xbox,-ps4)
+		#else
+			GetUApi().SaveInputPresetMiscData(); //default console functionality
+		#endif
+		
 		InputUtils.UpdateConsolePresetID();
+		UpdateControlsElements();
 	}
 	
 	protected void UpdateToolbarText()
 	{
-		//changer text
-		string changer_text;
 		UAInputAPI inputAPI = GetUApi();
-		TextWidget changer_widget;
-		if ( Class.CastTo(changer_widget,layoutRoot.FindAnyWidget("ChangePresetText")) )
+		int target_idx = inputAPI.PresetCurrent() + 1;
+		int count = inputAPI.PresetCount();
+		if (target_idx >= inputAPI.PresetCount())
 		{
-			int target_idx = inputAPI.PresetCurrent() + 1;
-			int count = inputAPI.PresetCount();
-			if (target_idx >= inputAPI.PresetCount())
-			{
-				target_idx = 0;
-			}
-			
-			changer_text = inputAPI.PresetName(target_idx);
-			if (changer_text == InputUtils.PRESET_OLD)
-			{
-				changer_text = "#STR_UAPRESET_ChangeTo_0";
-			}
-			else if (changer_text == InputUtils.PRESET_NEW)
-			{
-				changer_text = "#STR_UAPRESET_ChangeTo_1";
-			}
-			else
-			{
-				changer_text = "Invalid console preset name: " + changer_text;
-			}
-			
-			changer_widget.SetText(changer_text);
+			target_idx = 0;
+		}
+		
+		m_NextPresetText = inputAPI.PresetName(target_idx);
+		if (m_NextPresetText == InputUtils.PRESET_OLD)
+		{
+			m_NextPresetText = "#STR_UAPRESET_ChangeTo_0";
+		}
+		else if (m_NextPresetText == InputUtils.PRESET_NEW)
+		{
+			m_NextPresetText = "#STR_UAPRESET_ChangeTo_1";
+		}
+		else
+		{
+			m_NextPresetText = "Invalid console preset name: " + m_NextPresetText;
 		}
 	}
 	
@@ -626,12 +659,109 @@ class ControlsXboxNew extends UIScriptedMenu
 		
 		return filtered.Count();
 	}
+	
+	void ColorHighlight(Widget w)
+	{
+		if (!w)
+			return;
+				
+		int color_pnl = ARGB(255, 0, 0, 0);
+		int color_lbl = ARGB(255, 255, 0, 0);
+		
+		#ifdef PLATFORM_CONSOLE
+			color_pnl = ARGB(255, 200, 0, 0);
+			color_lbl = ARGB(255, 255, 255, 255);
+		#endif
+		
+		ButtonSetColor(w, color_pnl);
+		ButtonSetTextColor(w, color_lbl);
+	}
+	
+	void ColorNormal(Widget w)
+	{
+		if (!w)
+			return;
+		
+		int color_pnl = ARGB(0, 0, 0, 0);
+		int color_lbl = ARGB(255, 255, 255, 255);
+		
+		ButtonSetColor(w, color_pnl);
+		ButtonSetTextColor(w, color_lbl);
+	}
+	
+	void ButtonSetText(Widget w, string text)
+	{
+		if (!w)
+			return;
+				
+		TextWidget label = TextWidget.Cast(w.FindWidget(w.GetName() + "_label"));
+		
+		if (label)
+		{
+			label.SetText(text);
+		}
+		
+	}
+	
+	void ButtonSetColor(Widget w, int color)
+	{
+		if (!w)
+			return;
+		
+		Widget panel = w.FindWidget(w.GetName() + "_panel");
+		
+		if (panel)
+		{
+			panel.SetColor(color);
+		}
+	}
+	
+	void ButtonSetTextColor(Widget w, int color)
+	{
+		if (!w)
+			return;
+
+		TextWidget label	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
+		TextWidget text		= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text"));
+		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text_1"));
+				
+		if (label)
+		{
+			label.SetColor(color);
+		}
+		
+		if (text)
+		{
+			text.SetColor(color);
+		}
+		
+		if (text2)
+		{
+			text2.SetColor(color);
+		}
+	}
 
 	protected void UpdateControlsElements()
 	{
-		RichTextWidget toolbar_switch	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ChangePresetIcon"));
-		RichTextWidget toolbar_back		= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
-		toolbar_switch.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UASwitchPreset", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		toolbar_back.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		RichTextWidget toolbar_switch	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ChangePresetText"));
+		toolbar_switch.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UASwitchPreset", m_NextPresetText, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		
+		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
+		string text = string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbar_text.SetText(text);
+		
+		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
+		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+	}
+	
+	protected void UpdateControlsElementVisibility()
+	{
+		bool toolbarShow = false;
+		#ifdef PLATFORM_CONSOLE
+		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		#endif
+		
+		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
+		layoutRoot.FindAnyWidget("play_panel_root").Show(!toolbarShow);
 	}
 }

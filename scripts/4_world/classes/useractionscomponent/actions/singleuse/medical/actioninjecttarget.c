@@ -18,10 +18,13 @@ class ActionInjectTarget: ActionSingleUseBase
 
 	override void OnExecuteServer( ActionData action_data )
 	{	
-		if (action_data.m_MainItem)
+		if (CanReceiveAction(action_data.m_Target))
 		{
-			ApplyModifiers(action_data);
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			if (action_data.m_MainItem)
+			{
+				ApplyModifiers(action_data);
+				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			}
 		}
 	}
 	

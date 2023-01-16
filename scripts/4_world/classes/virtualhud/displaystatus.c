@@ -70,15 +70,15 @@ class VirtualHud
 	
 	void OnScheduledTick()
 	{
-		if( GetGame().IsServer() )
+		if ( GetGame().IsServer() )
 		{
-			if(GetGame().GetTime() > (m_LastTick + VIRTUAL_HUD_UPDATE_INTERVAL))
+			if (GetGame().GetTime() > (m_LastTick + VIRTUAL_HUD_UPDATE_INTERVAL))
 			{
 				SendRPC();
 				m_LastTick = GetGame().GetTime();
 			}
 		}
-		if( !GetGame().IsDedicatedServer() )
+		if ( !GetGame().IsDedicatedServer() )
 		{
 			ImmediateUpdate();
 			//DisplayPresence();
@@ -94,7 +94,7 @@ class VirtualHud
 	
 	DisplayElementBase GetElement(eDisplayElements element_id)
 	{
-		if( element_id < 0 || element_id >= NUMBER_OF_ELEMENTS )
+		if ( element_id < 0 || element_id >= NUMBER_OF_ELEMENTS )
 		{
 			return null;
 		}
@@ -107,11 +107,11 @@ class VirtualHud
 		int offset = 0;
 		int mask = 0;
 		
-		for(int i = 0; i < NUMBER_OF_ELEMENTS; i++)
+		for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
 		{
-			if(  GetElement(i) && !GetElement(i).IsClientOnly() )
+			if (  GetElement(i) && !GetElement(i).IsClientOnly() )
 			{
-				if( (GetElement(i).GetNumberOfBits() + offset) > BIT_INT_SIZE )
+				if ( (GetElement(i).GetNumberOfBits() + offset) > BIT_INT_SIZE )
 				{
 					mask_array.Insert(mask);
 					offset = 0;
@@ -130,12 +130,12 @@ class VirtualHud
 		int offset = 0;
 		int mask = 0;
 		
-		for(int i = 0; i < NUMBER_OF_ELEMENTS;i++)
+		for (int i = 0; i < NUMBER_OF_ELEMENTS;i++)
 		{
-			if( GetElement(i) && !GetElement(i).IsClientOnly() )
+			if ( GetElement(i) && !GetElement(i).IsClientOnly() )
 			{
 				//Log("entity> " + ToString(GetElement(i)) );
-				if(offset + GetElement(i).GetNumberOfBits() > BIT_INT_SIZE)
+				if (offset + GetElement(i).GetNumberOfBits() > BIT_INT_SIZE)
 				{
 					maskArrayIndex++;
 					offset = 0;
@@ -158,7 +158,7 @@ class VirtualHud
 
 	void PrintElements()
 	{
-		for(int i = 0; i < NUMBER_OF_ELEMENTS; i++)
+		for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
 		{
 			PrintString(i.ToString() +": "+ GetElement(i).m_Value.ToString() );
 		}
@@ -168,7 +168,7 @@ class VirtualHud
 	{
 		array<int> mask_array = new array<int>;
 		SerializeElements(mask_array);
-		if( !m_LastSentArray || !AreArraysSame(m_LastSentArray, mask_array)  )
+		if ( !m_LastSentArray || !AreArraysSame(m_LastSentArray, mask_array)  )
 		{
 			ScriptRPC rpc = new ScriptRPC();
 			rpc.Write(mask_array);
@@ -179,10 +179,10 @@ class VirtualHud
 
 	bool AreArraysSame( notnull array<int> array_a, notnull array<int> array_b )
 	{
-		if( array_a.Count() != array_b.Count() ) return false;
-		for(int i = 0; i  <array_a.Count(); i++)
+		if ( array_a.Count() != array_b.Count() ) return false;
+		for (int i = 0; i  <array_a.Count(); i++)
 		{
-			if(	array_a.Get(i) != array_b.Get(i) )
+			if ( array_a.Get(i) != array_b.Get(i) )
 			{
 				return false;
 			}
@@ -192,10 +192,11 @@ class VirtualHud
 
 	void ImmediateUpdate()
 	{
-		for(int i = 0; i < NUMBER_OF_ELEMENTS;i++)
+		for (int i = 0; i < NUMBER_OF_ELEMENTS;i++)
 		{
 			DisplayElementBase element = GetElement(i);
-			if( element && element.IsClientOnly() && element.IsValueChanged() ) element.UpdateHUD();
+			if ( element && element.IsClientOnly() && element.IsValueChanged() )
+				element.UpdateHUD();
 		}
 	}
 	/*
@@ -210,10 +211,10 @@ class VirtualHud
 	void UpdateStatus()
 	{
 		//Log("UpdateStatus called for entity: "+ToString(m_Player));
-		for(int i = 0; i < NUMBER_OF_ELEMENTS; i++)
+		for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
 		{
 			DisplayElementBase element = GetElement(i);
-			if(  element && !element.IsClientOnly() && element.IsValueChanged() ) 
+			if (  element && !element.IsClientOnly() && element.IsValueChanged() ) 
 			{
 				element.UpdateHUD();
 			}

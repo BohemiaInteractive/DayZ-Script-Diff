@@ -68,16 +68,18 @@ class ActionUnrestrainTargetHands: ActionContinuousBase
 	{
 		PlayerBase targetPlayer = PlayerBase.Cast(action_data.m_Target.GetObject());
 		
-		
-		EntityAI item_in_hands = targetPlayer.GetItemInHands();
-		targetPlayer.SetRestrained(false);
-		if (item_in_hands)
+		if (CanReceiveAction(action_data.m_Target) && targetPlayer.IsRestrained())
 		{
-			MiscGameplayFunctions.TransformRestrainItem(item_in_hands, null, action_data.m_Player, targetPlayer);
-		}
-		else
-		{
-			ErrorEx("Failed to obtain item in target player's hands during empty handed unrestraining");
+			EntityAI item_in_hands = targetPlayer.GetItemInHands();
+			targetPlayer.SetRestrained(false);
+			if (item_in_hands)
+			{
+				MiscGameplayFunctions.TransformRestrainItem(item_in_hands, null, action_data.m_Player, targetPlayer);
+			}
+			else
+			{
+				ErrorEx("Failed to obtain item in target player's hands during empty handed unrestraining");
+			}
 		}
 	}
 	

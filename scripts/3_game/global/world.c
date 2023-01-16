@@ -148,6 +148,26 @@ class World: Managed
 	proto native bool IsMouseAndKeyboardEnabledOnServer();
 	
 	/*!
+	Returns the value set in server config for notifying high ping
+	*/
+	proto native int GetPingWarningThreshold();
+
+	/*!
+	Returns the value set in server config for notifying high ping
+	*/
+	proto native int GetPingCriticalThreshold();
+
+		/*!
+	Returns the value set in server config for notifying low server fps
+	*/
+	proto native float GetServerFpsWarningThreshold();
+
+	/*!
+	Returns the value set in server config for notifying low server fps
+	*/
+	proto native float GetServerFpsCriticalThreshold();
+
+	/*!
 	enable/disable transmiting voice over network globally
 	\param disable	if true, then VoN is no more usable for transmiting voice
 	*/

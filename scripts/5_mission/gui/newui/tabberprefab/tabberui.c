@@ -18,8 +18,6 @@ class TabberUI extends ScriptedWidgetEventHandler
 	
 	protected void OnInputPresetChanged()
 	{
-		Init();
-
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
 		#endif

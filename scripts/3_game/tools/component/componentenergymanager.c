@@ -305,7 +305,7 @@ class ComponentEnergyManager : Component
 		m_ThisEntityAI.HideSelection( SEL_CORD_PLUGGED );
 		
 		
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		GetGame().m_EnergyManagerArray.Insert( this );
 		#endif
 	}
@@ -524,6 +524,7 @@ class ComponentEnergyManager : Component
 	{
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client can't change energy value.
 		{
+			m_ThisEntityAI.SetWeightDirty();
 			float old_energy = m_Energy;
 			m_Energy = new_energy;
 			
@@ -1213,13 +1214,6 @@ class ComponentEnergyManager : Component
 	//! Energy manager: Returns the number of energy this device needs to run itself (See its config >> energyUsagePerSecond)
 	float GetEnergyUsage()
 	{
-		#ifdef DIAG_DEVELOPER
-		if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.ENERGY_CONSUMPTION))
-		{
-			float timeAccel = FeatureTimeAccel.GetFeatureTimeAccelValue();
-			return m_EnergyUsage * timeAccel;
-		}
-		#endif
 		return m_EnergyUsage;
 	}
 
@@ -1234,14 +1228,15 @@ class ComponentEnergyManager : Component
 	{
 		if (added_energy != 0)
 		{
+			//Print("AddEnergy ---------> " + added_energy + " " + this + " " +m_ThisEntityAI.ClassName());
 			#ifdef DIAG_DEVELOPER
-			if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.ENERGY_RECHARGE))
+			if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.ENERGY_CONSUMPTION) && added_energy < 0)
 			{
 				float timeAccel = FeatureTimeAccel.GetFeatureTimeAccelValue();
 				added_energy *= timeAccel;
 			}
 			#endif
-
+			
 			bool energy_was_added = (added_energy > 0);
 			
 			float energy_to_clamp = GetEnergy() + added_energy;

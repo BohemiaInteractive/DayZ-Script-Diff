@@ -1,3 +1,4 @@
+typedef Param3<string, bool, vector> LocationParams;//  param1 - name, param2 - isCustom?, param3 - position
 class PluginConfigDebugProfile extends PluginConfigHandler
 {	
 	protected const string SCENE_DRAW_SELECTION				= "scene_editor_draw_selection";
@@ -29,9 +30,13 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	protected const string BATCH_RECT						= "batch_spawn_rect";
 	protected const string BATCH_QUANT						= "batch_spawn_quantity";
 	protected const string SOUNDFILTER						= "soundset_editbox";
-	
+	protected const string ITEMDEBUG						= "item_debug";
+	protected const string SPAWN_LOC_INDEX					= "spawn_loc_index";
+	protected const string FILTER_REVERSED					= "filter_order_reversed";
+
 	protected ref map<string, ref CfgParam>				m_DefaultValues;
 	protected ref TStringArray 							m_PresetList;	
+	protected const string POSITION_NAME_ROOT			= "console_positions_";
 	
 	//========================================
 	// GetInstance
@@ -305,6 +310,9 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		m_DefaultValues.Insert(BATCH_RECT,				GetNewCfgParamArray(GetDefaultBatchRectParams()) );
 		m_DefaultValues.Insert(BATCH_QUANT,				GetNewCfgParamInt(10) );
 		m_DefaultValues.Insert(SOUNDFILTER,				GetNewCfgParamString("") );
+		m_DefaultValues.Insert(ITEMDEBUG,				GetNewCfgParamString("0 0 0") );
+		m_DefaultValues.Insert(SPAWN_LOC_INDEX,			GetNewCfgParamInt(0));
+		m_DefaultValues.Insert(FILTER_REVERSED,			GetNewCfgParamBool(false));
 	}
 	
 	array<ref CfgParam> GetDefaultBatchRectParams()
@@ -402,6 +410,32 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	void SetTabSelected( int value )
 	{
 		SetInt( ITEM_TAB_SELECTED, value );
+	}
+	
+	//========================================
+	// SpawnLocIndex
+	//========================================
+	int GetSpawnLocIndex()
+	{
+		return GetInt( SPAWN_LOC_INDEX );
+	}
+	
+	void SetSpawnLocIndex( int value )
+	{
+		SetInt( SPAWN_LOC_INDEX, value );
+	}
+	
+	//========================================
+	// FilterOrder
+	//========================================
+	int GetFilterOrderReversed()
+	{
+		return GetBool( FILTER_REVERSED );
+	}
+	
+	void SetFilterOrderReversed( bool reversed )
+	{
+		SetBool( FILTER_REVERSED, reversed );
 	}
 	
 	//========================================
@@ -512,6 +546,20 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		SetBool( CHAR_LEVELS_VIS, is_visible );
 	}
 	
+	
+	//========================================
+	// ItemDebugPos
+	//========================================	
+	void SetItemDebugPos(vector pos)
+	{
+		 SetString( ITEMDEBUG ,pos.ToString(false));
+	}
+	
+
+	vector GetItemDebugPos()
+	{
+		return GetString( ITEMDEBUG ).ToVector();
+	}
 	
 	//========================================
 	// CharacterStatsVisible
@@ -686,6 +734,57 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	}
 	
 	//========================================
+	// User Location
+	//========================================
+	bool CustomLocationsAdd( string name, vector position )
+	{
+		string world = g_Game.GetWorldName();
+		world.ToLower();
+		
+		CfgParamString locationName = new CfgParamString(PluginConfigDebugProfileFixed.SUB_PARAM_POS_NAME);
+		locationName.SetValue(name);
+		CfgParamString locationPos = new CfgParamString(PluginConfigDebugProfileFixed.SUB_PARAM_POS_VEC);
+		locationPos.SetValue(position.ToString(false));
+		
+		CfgParamArray locationEntry = new CfgParamArray( locationName.GetValue() );
+		locationEntry.InsertValue( locationName );
+		locationEntry.InsertValue( locationPos );
+		
+		string paramName = POSITION_NAME_ROOT + world;
+		array<ref CfgParam> params = GetArray(paramName);
+		params.Insert(locationEntry);
+		SetArray(paramName, params);
+		SaveConfigToFile();
+		
+		return true;
+	}
+	
+	void CustomLocationsRemove( string name )
+	{
+		if (!name)
+			return;
+		string world = g_Game.GetWorldName();
+		world.ToLower();
+		string paramName = POSITION_NAME_ROOT + world;
+		array<ref CfgParam> params = GetArray(paramName);
+		
+		for (int i = 0; i < params.Count(); i++)
+		{
+			CfgParamArray param = CfgParamArray.Cast(params.Get(i));
+			array<ref CfgParam> prms = param.GetValues();
+			CfgParamString par = CfgParamString.Cast(prms.Get(0));
+			if (par.GetValue() == name)
+			{
+				params.RemoveOrdered(i);
+				break;
+			}
+		}
+		
+		//SetArray(paramName, params);
+		SaveConfigToFile();
+	}
+
+	//========================================
 	// Presets
 	//========================================
 	TStringArray GetPresets()
@@ -853,15 +952,16 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		
 		array<ref CfgParam> params = GetArray( preset_name );
 		
-		if ( item_index >= params.Count() )
+		if ( !params || item_index >= params.Count() )
 		{
 			return NULL;
 		}
+		if (params.IsValidIndex(item_index))
+			CfgParamArray params_array = CfgParamArray.Cast( params.Get( item_index ) );
+		if (params_array)
+			return params_array.GetValues();
 		
-		CfgParamArray params_array = CfgParamArray.Cast( params.Get( item_index ) );
-		array<ref CfgParam> item_params = params_array.GetValues();
-		
-		return item_params;
+		return null;
 	}
 	
 	protected CfgParam GetItemParam( string preset_name, int item_index, string param_name )
@@ -891,7 +991,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		
 		if ( param == NULL )
 		{
-			return 100;
+			return -1;
 		}
 		else
 		{
@@ -965,5 +1065,36 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		SaveConfigToFile();
 		
 		return true;
+	}
+	
+	//========================================
+	// Locations
+	//========================================
+
+	void GetLocationsData( out array<ref LocationParams> arr , bool isCustom)
+	{
+		string world = g_Game.GetWorldName();
+		world.ToLower();
+		string paramName = POSITION_NAME_ROOT + world;
+		
+		TStringArray names = new TStringArray();
+		GetSubParametersInStringArray( paramName, PluginConfigDebugProfileFixed.SUB_PARAM_POS_NAME, names );
+		TStringArray positions = new TStringArray();
+		GetSubParametersInStringArray( paramName, PluginConfigDebugProfileFixed.SUB_PARAM_POS_VEC, positions );
+		int i;
+		if (isCustom)
+		{
+			for ( i = names.Count() - 1; i >= 0 ; i--)
+			{
+				arr.Insert(new LocationParams(names.Get(i), isCustom, positions.Get(i).ToVector()));
+			}
+		}
+		else
+		{
+			for (i = 0; i < names.Count(); i++)
+			{
+				arr.Insert(new LocationParams(names.Get(i), isCustom, positions.Get(i).ToVector()));
+			}
+		}
 	}
 }

@@ -33,13 +33,13 @@ class ProjectedCrosshair extends ScriptedWidgetEventHandler
 	//! Update
 	protected void Update()
 	{
-#ifdef DEVELOPER
-		m_Debug = DiagMenu.GetBool( DiagMenuIDs.DM_WEAPON_DEBUG_ENABLE );
+#ifdef DIAG_DEVELOPER
+		m_Debug = DiagMenu.GetBool( DiagMenuIDs.WEAPON_DEBUG );
 #endif
-		if(!m_Debug) return;
-		if(!m_Player) GetPlayer();
+		if (!m_Debug) return;
+		if (!m_Player) GetPlayer();
 
-		if( m_Player && m_Player.IsPlayerSelected() && m_Player.IsRaised() && !m_Player.IsInIronsights() && !GetGame().IsInventoryOpen() )
+		if ( m_Player && m_Player.IsPlayerSelected() && m_Player.IsRaised() && !m_Player.IsInIronsights() && !GetGame().IsInventoryOpen() )
 		{
 			float sx, sy;
 
@@ -71,9 +71,9 @@ class ProjectedCrosshair extends ScriptedWidgetEventHandler
 		m_Visible = false;
 		ItemBase itemInHands;
 		itemInHands = m_Player.GetItemInHands();
-		if( itemInHands && itemInHands.IsWeapon() )
+		if ( itemInHands && itemInHands.IsWeapon() )
 		{
-			if( Class.CastTo(m_Weapon, itemInHands) )
+			if(  Class.CastTo(m_Weapon, itemInHands) )
 			{
 				//m_Visible = MiscGameplayFunctions.GetProjectedCursorPos3d(m_Position, m_Weapon);
 			}

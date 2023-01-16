@@ -106,6 +106,13 @@ class RaycastRVResult
 	bool exit;  //!< is false if end point was inside
 };
 
+class CollisionOverlapCallback : Managed
+{
+	bool OnContact(IEntity other, Contact contact)
+	{
+		return true;
+	}
+};
 
 class DayZPhysics
 {
@@ -196,4 +203,18 @@ class DayZPhysics
 	proto static bool	RayCastBullet(vector begPos, vector endPos, PhxInteractionLayers layerMask, Object ignoreObj, out Object hitObject, out vector hitPosition, out vector hitNormal, out float hitFraction);
 
 	proto static bool	SphereCastBullet(vector begPos, vector endPos, float radius, PhxInteractionLayers layerMask, Object ignoreObj, out Object hitObject, out vector hitPosition, out vector hitNormal, out float hitFraction);
+
+
+	proto static bool	GeometryOverlapBullet(vector transform[4], dGeom geometry, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+
+	proto static bool	EntityOverlapBullet(vector transform[4], IEntity entity, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+	
+	proto static bool	SphereOverlapBullet(vector position, float radius, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+	
+	proto static bool	CylinderOverlapBullet(vector transform[4], vector extents, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+
+	proto static bool	CapsuleOverlapBullet(vector transform[4], float radius, float height, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+
+	proto static bool	BoxOverlapBullet(vector transform[4], vector extents, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+
 }

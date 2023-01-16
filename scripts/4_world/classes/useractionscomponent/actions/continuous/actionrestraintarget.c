@@ -40,13 +40,26 @@ class ActionRestrainTarget: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
+		PlayerBase other_player = PlayerBase.Cast(target.GetObject());
+		if (!other_player)
+			return false;
 		if ( player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER )
 		{
-			PlayerBase other_player = PlayerBase.Cast(target.GetObject());
 			return other_player.CanBeRestrained();
 		}
-		
-		return true;
+		else
+		{
+			return !other_player.IsRestrained();
+		}
+
+	}
+	
+	override int GetStanceMask(PlayerBase player)
+	{
+		if ( player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_PRONE))
+			return DayZPlayerConstants.STANCEMASK_CROUCH;
+		else
+			return DayZPlayerConstants.STANCEMASK_ERECT;
 	}
 
 	override bool ActionConditionContinue(ActionData action_data)
@@ -105,32 +118,35 @@ class ActionRestrainTarget: ActionContinuousBase
 	{
 		PlayerBase target_player = PlayerBase.Cast(action_data.m_Target.GetObject());
 		PlayerBase source_player = PlayerBase.Cast(action_data.m_Player);
+		
+		if (CanReceiveAction(action_data.m_Target) && !target_player.IsRestrained())
+		{
+			EntityAI item_in_hands_target = target_player.GetHumanInventory().GetEntityInHands();
+			EntityAI item_in_hands_source = source_player.GetHumanInventory().GetEntityInHands();
+			
+			if ( !item_in_hands_source )
+			{
+				Error("Restraining target failed, nothing in hands");
+				return;
+			}
 	
-		EntityAI item_in_hands_target = target_player.GetHumanInventory().GetEntityInHands();
-		EntityAI item_in_hands_source = source_player.GetHumanInventory().GetEntityInHands();
-		
-		if ( !item_in_hands_source )
-		{
-			Error("Restraining target failed, nothing in hands");
-			return;
+			string new_item_name = MiscGameplayFunctions.ObtainRestrainItemTargetClassname(item_in_hands_source);
+			if (item_in_hands_target)
+			{
+				Print("Restraining player with item in hands, first drop & then restrain");
+	
+				ChainedDropAndRestrainLambda lambda2 = new ChainedDropAndRestrainLambda(item_in_hands_target, item_in_hands_target.GetType(), target_player, false, source_player);
+				MiscGameplayFunctions.TurnItemInHandsIntoItemEx(target_player, lambda2);
+			}
+			else
+			{
+				Print("Restraining player with empty hands");
+				RestrainTargetPlayerLambda lambda = new RestrainTargetPlayerLambda(item_in_hands_source, new_item_name, target_player);
+				source_player.LocalReplaceItemInHandsWithNewElsewhere(lambda);
+			}
+			
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
-
-		string new_item_name = MiscGameplayFunctions.ObtainRestrainItemTargetClassname(item_in_hands_source);
-		if (item_in_hands_target)
-		{
-			Print("Restraining player with item in hands, first drop & then restrain");
-
-			ChainedDropAndRestrainLambda lambda2 = new ChainedDropAndRestrainLambda(item_in_hands_target, item_in_hands_target.GetType(), target_player, false, source_player);
-			MiscGameplayFunctions.TurnItemInHandsIntoItemEx(target_player, lambda2);
-		}
-		else
-		{
-			Print("Restraining player with empty hands");
-			RestrainTargetPlayerLambda lambda = new RestrainTargetPlayerLambda(item_in_hands_source, new_item_name, target_player);
-			source_player.LocalReplaceItemInHandsWithNewElsewhere(lambda);
-		}
-		
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override void OnFinishProgressClient( ActionData action_data )

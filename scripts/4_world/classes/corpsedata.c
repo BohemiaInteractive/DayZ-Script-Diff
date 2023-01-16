@@ -62,6 +62,16 @@ class CorpseData
 		float fremaining_lifetime = m_Player.GetLifetime();
 		float fdecay_percentage = fremaining_lifetime/m_iMaxLifetime;
 		
+		#ifdef DIAG_DEVELOPER
+		float timeAccel = 1;
+		if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.FOOD_DECAY))
+		{
+			timeAccel = FeatureTimeAccel.GetFeatureTimeAccelValue();
+			float percetElapsed = 1-fdecay_percentage;
+			fdecay_percentage = Math.Clamp(1 - percetElapsed * timeAccel,0,1);
+		}
+		#endif
+		
 		//int current_time = GetGame().GetTime();
 		//float fdecay_percentage_by_game_time = 1 - ((current_time - m_iTimeOfDeath) / 1000 )/m_iMaxLifetime;
 		//Print("fdecay_percentage_by_game_time - " + fdecay_percentage_by_game_time);

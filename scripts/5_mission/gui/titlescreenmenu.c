@@ -5,8 +5,8 @@ class TitleScreenMenu extends UIScriptedMenu
 	
 	void TitleScreenMenu()
 	{
-		g_Game.SetGameState( DayZGameState.MAIN_MENU );
-		g_Game.SetLoadState( DayZLoadState.MAIN_MENU_START );
+		g_Game.SetGameState(DayZGameState.MAIN_MENU);
+		g_Game.SetLoadState(DayZLoadState.MAIN_MENU_START);
 	}
 	
 	void ~TitleScreenMenu()
@@ -17,25 +17,25 @@ class TitleScreenMenu extends UIScriptedMenu
 	{
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_title_screen.layout");
 		
-		MissionMainMenu mission = MissionMainMenu.Cast( g_Game.GetMission() );
+		MissionMainMenu mission = MissionMainMenu.Cast(g_Game.GetMission());
 		
-		m_TextPress = RichTextWidget.Cast( layoutRoot.FindAnyWidget("InputPromptText") );
+		m_TextPress = RichTextWidget.Cast(layoutRoot.FindAnyWidget("InputPromptText"));
 		if (m_TextPress)
 		{
 			string gamertag;
-			string text = Widget.TranslateString( "#console_start_game" );
+			string text = Widget.TranslateString("#console_start_game");
 			GetGame().GetPlayerName(gamertag);
 			#ifdef PLATFORM_XBOX
 				BiosUserManager user_manager = GetGame().GetUserManager();
-				if( user_manager && user_manager.GetSelectedUser() )
-					m_TextPress.SetText( string.Format( text, "<image set=\"xbox_buttons\" name=\"A\" />" ) );
+				if (user_manager && user_manager.GetSelectedUser())
+					m_TextPress.SetText(string.Format(text, "<image set=\"xbox_buttons\" name=\"A\" />"));
 				else
-					m_TextPress.SetText( string.Format( text, "<image set=\"xbox_buttons\" name=\"A\" />" ) );
+					m_TextPress.SetText(string.Format(text, "<image set=\"xbox_buttons\" name=\"A\" />"));
 			#endif
 					
 			#ifdef PLATFORM_PS4
 				string confirm = "cross";
-				if( GetGame().GetInput().GetEnterButton() == GamepadButton.A )
+				if (GetGame().GetInput().GetEnterButton() == GamepadButton.A)
 				{
 					confirm = "cross";
 				}
@@ -43,7 +43,7 @@ class TitleScreenMenu extends UIScriptedMenu
 				{
 					confirm = "circle";
 				}
-				m_TextPress.SetText( string.Format( text, "<image set=\"playstation_buttons\" name=\"" + confirm + "\" />" ) );
+				m_TextPress.SetText(string.Format(text, "<image set=\"playstation_buttons\" name=\"" + confirm + "\" />"));
 			#endif
 		}
 		return layoutRoot;
@@ -51,7 +51,7 @@ class TitleScreenMenu extends UIScriptedMenu
 	
 	override void OnShow()
 	{
-		if( g_Game.GetGameState() != DayZGameState.CONNECTING )
+		if (g_Game.GetGameState() != DayZGameState.CONNECTING)
 		{
 			#ifdef PLATFORM_CONSOLE
 				g_Game.GamepadCheck();
@@ -66,7 +66,7 @@ class TitleScreenMenu extends UIScriptedMenu
 		#endif
 		#endif
 		#endif
-		SetWidgetAnimAlpha( m_TextPress );
+		SetWidgetAnimAlpha(m_TextPress);
 	}
 	
 	override void OnHide()
@@ -76,9 +76,9 @@ class TitleScreenMenu extends UIScriptedMenu
 	
 	override void Update(float timeslice)
 	{
-		super.Update( timeslice );
+		super.Update(timeslice);
 		
-		if( GetGame().GetInput().LocalPress("UAUISelect",false) )
+		if (GetUApi().GetInputByID(UAUISelect).LocalPress())
 		{
 			#ifdef PLATFORM_WINDOWS
 				EnterScriptedMenu(MENU_MAIN);

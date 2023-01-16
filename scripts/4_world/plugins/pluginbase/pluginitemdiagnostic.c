@@ -8,6 +8,7 @@ class PluginItemDiagnosticEventHandler extends ScriptedWidgetEventHandler
 			GetGame().GetMission().AddActiveInputExcludes({"menu"});
 		}
 		return true;
+
 	}
 	
 	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
@@ -16,6 +17,7 @@ class PluginItemDiagnosticEventHandler extends ScriptedWidgetEventHandler
 		{
 			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
 		}
+		
 		return true;
 	}
 	
@@ -23,7 +25,15 @@ class PluginItemDiagnosticEventHandler extends ScriptedWidgetEventHandler
 	{
 		return m_Owner.OnClick( w, x, y, button );
 	}
-
+	
+	override bool OnMouseButtonDown(Widget w, int x, int y, int button)
+	{
+		return m_Owner.OnMouseButtonDown( w, x, y, button );
+	}
+	override bool OnMouseButtonUp(Widget w, int x, int y, int button)
+	{
+		return m_Owner.OnMouseButtonUp( w, x, y, button );
+	}
 }
 
 
@@ -41,8 +51,11 @@ class PluginItemDiagnostic extends PluginDeveloper
 	ref map<string,float> 			m_VarsFinalClient = new map<string,float>;
 	ref array<ref Param>		m_Properties = new array<ref Param>;
 	bool 									m_IsActive	= false;
+	bool									m_ScriptMenuOpened;
 	string									m_NoteClient;
 	ref PluginItemDiagnosticEventHandler 	m_EventHandler;
+	bool									m_IsDragging;
+	PluginConfigDebugProfile m_ConfigDebugProfile;
 	
 	Widget 				m_DebugRootWidget;
 	Widget 				m_FrameWidget;
@@ -60,17 +73,37 @@ class PluginItemDiagnostic extends PluginDeveloper
 	ButtonWidget		m_DebugButtonWidget2;
 	ButtonWidget		m_DebugButtonWidget3;
 	ButtonWidget		m_DebugButtonWidget4;
+	
+	ButtonWidget		m_CloseButton;
 
 	Shape 				m_ItemLine;
+	vector 				m_DraggingOffset;
+	
 	
 	void PluginItemDiagnostic()
 	{
+		
 		#ifndef NO_GUI
 		InitializeWidgets();
 		ShowWidgets(false);
 		#endif
 	}
 	
+	
+	override void OnInit()
+	{
+		m_ConfigDebugProfile = PluginConfigDebugProfile.Cast( GetPlugin(PluginConfigDebugProfile) );
+		if ( m_ConfigDebugProfile )
+		{
+			vector pos = m_ConfigDebugProfile.GetItemDebugPos();
+			if (m_DebugRootWidget && pos != vector.Zero)
+			{
+				float wx = pos[0];
+				float wy = pos[1];
+				m_DebugRootWidget.SetPos(wx, wy);
+			}
+		}
+	}
 	
 	void ~PluginItemDiagnostic()
 	{
@@ -82,9 +115,52 @@ class PluginItemDiagnostic extends PluginDeveloper
 		}
 	}
 
+	bool OnMouseButtonDown(Widget w, int x, int y, int button)
+	{
+		SetDragging(true);
+		return true;
+	}
+	
+	bool OnMouseButtonUp(Widget w, int x, int y, int button)
+	{
+		SetDragging(false);
+		return true;
+	}
+	
+	void SetDragging(bool enable)
+	{
+		if(enable && !m_IsDragging)
+			OnDraggingStart();
+		else if (!enable && m_IsDragging)
+			OnDraggingEnd();
+		m_IsDragging = enable;
+	}
+	
+	void OnDraggingStart()
+	{
+		int mx, my;
+		float wx, wy;
+		GetMousePos(mx,my);
+		m_DebugRootWidget.GetScreenPos(wx,wy);
+		m_DraggingOffset[0] = wx - mx;
+		m_DraggingOffset[1] = wy - my;
+	}
+	
+	void OnDraggingEnd()
+	{
+		if ( m_ConfigDebugProfile )
+		{
+			float wx, wy;
+			m_DebugRootWidget.GetScreenPos(wx,wy);
+			m_ConfigDebugProfile.SetItemDebugPos(Vector(wx,wy,0));
+		}
+	}
+	
+
 	
 	bool OnClick( Widget w, int x, int y, int button )
 	{
+		SetDragging(false);
 		int index;
 		
 		if (w == m_DebugButtonWidget1)
@@ -102,6 +178,11 @@ class PluginItemDiagnostic extends PluginDeveloper
 		else if (w == m_DebugButtonWidget4)
 		{
 			index = 4;
+		}
+		else if (w == m_CloseButton)
+		{
+			ToggleDebugWindowEvent();
+			return true;
 		}
 		
 		#ifdef DEVELOPER
@@ -148,8 +229,7 @@ class PluginItemDiagnostic extends PluginDeveloper
 
 	void OnScriptMenuOpened(bool opened/*1 - opened , 0 - closed*/)
 	{
-		if(m_DebugRootWidget && IsActive()) 
-			m_DebugRootWidget.Show(!opened);
+		m_ScriptMenuOpened = opened;
 	}
 	
 	
@@ -161,6 +241,20 @@ class PluginItemDiagnostic extends PluginDeveloper
 			m_DebugRootWidget.Show(show);
 	}
 
+	void ReleaseFocus()
+	{
+		GetGame().GetInput().ResetGameFocus();
+		GetGame().GetUIManager().ShowUICursor(false);
+		if (GetGame().GetUIManager()) 	
+		{
+			if (GetGame().GetUIManager().IsDialogVisible())
+			{
+				GetGame().GetUIManager().CloseDialog();
+				
+			}
+		}
+	}
+	
 	void ToggleDebugWindowEvent()
 	{
 		if (m_IsActive)
@@ -169,9 +263,10 @@ class PluginItemDiagnostic extends PluginDeveloper
 			GetGame().RPCSingleParam(player, ERPCs.RPC_ITEM_DIAG_CLOSE,null, true);
 			ShowWidgets(false);
 			ClearWidgets();
-			GetGame().GetInput().ChangeGameFocus(-1);
-			GetGame().GetUIManager().ShowUICursor(false);
+			
+			GetGame().GetCallQueue( CALL_CATEGORY_GUI ).CallLater( ReleaseFocus, 100);
 			//m_IsActive = false;
+			SetDragging(false);
 		}
 		else
 		{
@@ -294,7 +389,11 @@ class PluginItemDiagnostic extends PluginDeveloper
 		{
 			DisplayAll(EntityAI.Cast(entity), vars_server, vars_client, debug_output_server );
 		}
-		m_DebugRootWidget.Show(!GetDayZGame().IsInventoryOpen() && !GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE));
+		if (GetDayZGame().IsInventoryOpen() || GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE))
+			m_DebugRootWidget.SetSort(-1);
+		else
+			m_DebugRootWidget.SetSort(10);
+		m_DebugRootWidget.Show(true);
 
 			
 	}
@@ -339,11 +438,14 @@ class PluginItemDiagnostic extends PluginDeveloper
 		m_DebugButtonWidget2 = ButtonWidget.Cast(m_DebugRootWidget.FindAnyWidget("DebugButton2"));
 		m_DebugButtonWidget3 = ButtonWidget.Cast(m_DebugRootWidget.FindAnyWidget("DebugButton3"));
 		m_DebugButtonWidget4 = ButtonWidget.Cast(m_DebugRootWidget.FindAnyWidget("DebugButton4"));
+		
+		m_CloseButton = ButtonWidget.Cast(m_DebugRootWidget.FindAnyWidget("CloseButton"));
 	}
 
 	override void OnUpdate(float delta_time)
 	{
 		super.OnUpdate(delta_time);
+		
 		if (!m_Entity || !m_IsActive)
 		{
 			
@@ -353,6 +455,16 @@ class PluginItemDiagnostic extends PluginDeveloper
 				m_ItemLine = null;
 			}
 			return;
+		}
+		
+		m_ItemPreviewWidget.Show(!m_ScriptMenuOpened);
+		
+		
+		if (m_IsDragging)
+		{
+			int x,y;
+			GetMousePos(x,y);
+			m_DebugRootWidget.SetPos(x + m_DraggingOffset[0], y + m_DraggingOffset[1]);
 		}
 		vector pts[2];
 		pts[0] = GetGame().GetPlayer().GetPosition();
@@ -394,9 +506,11 @@ class PluginItemDiagnostic extends PluginDeveloper
 		m_Agents.Clear();
 		for(int i = 0; i < agents_count; i++)
 		{
-			ctx.Read(CachedObjectsParams.PARAM1_STRING);
-			string agent = CachedObjectsParams.PARAM1_STRING.param1;
-			m_Agents.Insert(agent);
+			if(ctx.Read(CachedObjectsParams.PARAM1_STRING))
+			{
+				string agent = CachedObjectsParams.PARAM1_STRING.param1;
+				m_Agents.Insert(agent);
+			}
 		}
 	}
 

@@ -122,12 +122,12 @@ class VONManagerImplementation : VONManagerBase
 		int oldLevel = GetGame().GetVoiceLevel();
 		int newLevel = -1;
 		
-		if (inp.LocalPress("UAVoiceDistanceUp",false))
+		if (inp.LocalPress_ID(UAVoiceDistanceUp,false))
 		{
 			newLevel = ( oldLevel + 1 ) % ( VoiceLevelShout + 1 );
 		}
 		
-		if (inp.LocalPress("UAVoiceDistanceDown",false))
+		if (inp.LocalPress_ID(UAVoiceDistanceDown,false))
 		{
 			newLevel = oldLevel - 1;
 			if (newLevel < VoiceLevelWhisper) //nah...

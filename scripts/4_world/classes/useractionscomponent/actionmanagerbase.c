@@ -1,32 +1,36 @@
 typedef Param3<int, int, string> TSelectableActionInfo;
+typedef Param4<int, int, string, int> TSelectableActionInfoWithColor;
 
 class TSelectableActionInfoArray extends array<ref TSelectableActionInfo>
 {
 	bool IsSameAs(TSelectableActionInfoArray other)
 	{
-		if( this.Count() != other.Count() )
+		if (this.Count() != other.Count())
 		{
 			return false;
 		}
 		
-		for( int i = 0; i < Count(); ++i )
+		for (int i = 0; i < Count(); ++i)
 		{
 			TSelectableActionInfo ai1 = this.Get(i);
 			TSelectableActionInfo ai2 = other.Get(i);
 			
-			if( ai1.param2 != ai2.param2 )
+			if (ai1.param2 != ai2.param2)
 			{
 				return false;
 			}
 			
-			if( ai1.param3 != ai2.param3 )
+			if (ai1.param3 != ai2.param3)
 			{
 				return false;
 			}
 		}
+
 		return true;
 	}
-};
+}
+
+class TSelectableActionInfoArrayEx extends array<ref Param> {}
 
 class ActionManagerBase
 {
@@ -55,7 +59,7 @@ class ActionManagerBase
 	protected bool								m_ActionsEnabled;
 	protected bool								m_ActionsAvaibale;
 		
-//Pending actions waiting for acknowledgment
+	//Pending actions waiting for acknowledgment
 	protected int 					m_PendingActionAcknowledgmentID;
 	
 	protected ref ActionData		m_CurrentActionData;
@@ -63,9 +67,9 @@ class ActionManagerBase
 	void ActionManagerBase(PlayerBase player)
 	{
 		m_Player = player;
-		if ( m_Player )
+		if (m_Player)
 		{
-			m_SelectableActions = new TSelectableActionInfoArray;
+			m_SelectableActions = new TSelectableActionInfoArray();
 			m_SelectedActionIndex = 0;
 			m_SelectableActionsHasChanged = false;
 			
@@ -74,11 +78,12 @@ class ActionManagerBase
 			m_CurrentActionData = NULL;
 			m_Interrupted = false;
 			
-			ActionConstructor ac = new ActionConstructor;
-			if ( !m_ActionsArray )
+			ActionConstructor ac = new ActionConstructor();
+			if (!m_ActionsArray)
 			{
-				ac.ConstructActions( m_ActionsArray, m_ActionNameActionMap );
+				ac.ConstructActions(m_ActionsArray, m_ActionNameActionMap);
 			}
+
 			m_ActionWantEndRequest = false;
 			m_ActionInputWantEnd = false;
 		}
@@ -89,16 +94,15 @@ class ActionManagerBase
 	
 	ActionBase GetRunningAction()
 	{
-		if ( m_CurrentActionData )
-		{
+		if (m_CurrentActionData)
 			return m_CurrentActionData.m_Action;
-		}
-		return NULL;
+		
+		return null;
 	}
 	
 	ItemBase GetRunningActionMainitem()
 	{
-		if ( m_CurrentActionData )
+		if (m_CurrentActionData)
 			return m_CurrentActionData.m_MainItem;
 		
 		return null;
@@ -146,13 +150,8 @@ class ActionManagerBase
 		}
 	}
 		
-	ActionTarget FindActionTarget()
-	{
-	}
-	
-	void StartDeliveredAction()
-	{
-	}
+	ActionTarget FindActionTarget();
+	void StartDeliveredAction();
 	
 	static ActionBase GetActionVariant(typename actionName)
 	{
@@ -174,6 +173,7 @@ class ActionManagerBase
 	{
 		if (m_ActionNameActionMap)
 			return m_ActionNameActionMap.Get(actionName);
+		
 		return null;
 	}
 	
@@ -184,22 +184,14 @@ class ActionManagerBase
 	
 	ActionBase GetContinuousAction()
 	{
-		if ( m_PrimaryAction )
-		{
-			return m_PrimaryAction;
-		}
-		return NULL;
+		return m_PrimaryAction;
 	}
 	
 	ActionBase GetSingleUseAction()
 	{
-		if ( m_SecondaryAction )
-		{ 
-			return m_SecondaryAction;
-		}
-		return NULL;
+		return m_SecondaryAction;
 	}
-			
+	
 	TSelectableActionInfoArray GetSelectableActions()
 	{
 		return m_SelectableActions;
@@ -210,47 +202,33 @@ class ActionManagerBase
 		return m_SelectedActionIndex;
 	}
 	
-	typename GetSelectedActionCategory()
-	{
-	}
-	
-	void SelectFirstActionCategory()
-	{
-	}
-	
-	void SelectNextActionCategory()
-	{	
-	}
-	
-	void SelectPrevActionCategory()
-	{
-	}
-	
-	void SelectNextAction()
-	{
-	}
-	
-	void SelectPrevAction()
-	{
-	}
+	typename GetSelectedActionCategory();
+	void SelectFirstActionCategory();
+	void SelectNextActionCategory();
+	void SelectPrevActionCategory();
+	void SelectNextAction();
+	void SelectPrevAction();
+	void RequestEndAction();
+	void EndActionInput();
 	
 	bool IsSelectableActionsChanged()
 	{
 		return m_SelectableActionsHasChanged;
 	}
+
 	//------------------------------------------------------
 	bool ActionPossibilityCheck(int pCurrentCommandID)
 	{	
-		if ( !m_ActionsEnabled || m_Player.IsSprinting() || m_Player.IsUnconscious() || m_Player.GetCommandModifier_Action() || m_Player.GetCommand_Action() || m_Player.IsEmotePlaying() || m_Player.GetThrowing().IsThrowingAnimationPlaying() || m_Player.GetDayZPlayerInventory().IsProcessing() || m_Player.IsItemsToDelete() )
+		if (!m_ActionsEnabled || m_Player.IsSprinting() || m_Player.IsUnconscious() || m_Player.GetCommandModifier_Action() || m_Player.GetCommand_Action() || m_Player.IsEmotePlaying() || m_Player.GetThrowing().IsThrowingAnimationPlaying() || m_Player.GetDayZPlayerInventory().IsProcessing() || m_Player.IsItemsToDelete())
 			return false;
 		
-		if ( m_Player.GetWeaponManager().IsRunning() )
+		if (m_Player.GetWeaponManager().IsRunning())
 			return false;
 		
 		return (pCurrentCommandID == DayZPlayerConstants.COMMANDID_ACTION || pCurrentCommandID == DayZPlayerConstants.COMMANDID_MOVE || pCurrentCommandID == DayZPlayerConstants.COMMANDID_SWIM || pCurrentCommandID == DayZPlayerConstants.COMMANDID_LADDER || pCurrentCommandID == DayZPlayerConstants.COMMANDID_VEHICLE);
 	}	
 	//------------------------------------------------------
-	protected void SetActionContext( ActionTarget target, ItemBase item )
+	protected void SetActionContext(ActionTarget target, ItemBase item)
 	{
 		m_TestedActionTarget = target;
 		m_TestedActionItem = item;
@@ -260,52 +238,37 @@ class ActionManagerBase
 		
 	int GetActionState(ActionBase action)
 	{
-		if( m_CurrentActionData )
+		if (m_CurrentActionData)
 		{
 			return m_CurrentActionData.m_State;
 		}
-		return UA_NONE; // TODO check if it is correct constant
+		return UA_NONE;
 	}
 	
 	//---------------------------------
 	// EVENTS
 	//---------------------------------
-	void OnContinuousStart()
-	{
-	}
-	
-	void OnContinuousCancel()
-	{	
-	}
-		
-	void OnSingleUse()
-	{
-	}
-	
-	void Interrupt()
-	{
-	}
+	void OnContinuousStart();
+	void OnContinuousCancel();
+	void OnSingleUse();
+	void Interrupt();
+
 	protected void LocalInterrupt()
 	{
 		if (m_CurrentActionData && m_CurrentActionData.m_Action)
 			m_CurrentActionData.m_Action.Interrupt(m_CurrentActionData);
 	} 
 	
-	void OnInteractAction() //Interact
-	{
-	}
-
-	void OnInstantAction(typename user_action_type, Param data = NULL)
-	{
-	}
+	void OnInteractAction(); //Interact
+	void OnInstantAction(typename user_action_type, Param data = null);
 	
-	void OnActionEnd( )
+	void OnActionEnd()
 	{
-		if ( LogManager.IsActionLogEnable() )
+		if (LogManager.IsActionLogEnable())
 		{
 			if (m_CurrentActionData)
-				Debug.ActionLog("n/a", m_CurrentActionData.m_Action.ToString() , "n/a", "OnActionEnd", m_CurrentActionData.m_Player.ToString() );
-			Debug.ActionLog("Action data cleared ", this.ToString() , "n/a", "ActionEnd", m_CurrentActionData.m_Player.ToString() );
+				Debug.ActionLog("n/a", m_CurrentActionData.m_Action.ToString() , "n/a", "OnActionEnd", m_CurrentActionData.m_Player.ToString());
+			Debug.ActionLog("Action data cleared ", this.ToString() , "n/a", "ActionEnd", m_CurrentActionData.m_Player.ToString());
 		}
 		if (m_CurrentActionData)
 			m_CurrentActionData.m_Action.ActionCleanup(m_CurrentActionData);
@@ -314,9 +277,7 @@ class ActionManagerBase
 		m_Player.ResetActionEndInput();
 	}
 	
-	void OnJumpStart()
-	{
-	}
+	void OnJumpStart();
 
 	bool OnInputUserDataProcess(int userDataType, ParamsReadContext ctx)
 	{
@@ -325,20 +286,22 @@ class ActionManagerBase
 	
 	float GetActionComponentProgress()
 	{
-		if(m_CurrentActionData)
+		if (m_CurrentActionData)
 			return m_CurrentActionData.m_Action.GetProgress(m_CurrentActionData);
+
 		return 0.0;
 	}
 	
 	int GetActionState()
 	{
-		if(m_CurrentActionData)
+		if (m_CurrentActionData)
 			return m_CurrentActionData.m_Action.GetState(m_CurrentActionData);
+
 		return UA_NONE;
 	}
 	
 	ActionReciveData GetReciveData()
 	{
-		return NULL;
+		return null;
 	}
-};
+}

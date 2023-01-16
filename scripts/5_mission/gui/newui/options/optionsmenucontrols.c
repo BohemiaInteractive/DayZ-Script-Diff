@@ -4,6 +4,8 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	
 	protected Widget						m_SettingsRoot;
 	protected Widget						m_DetailsRoot;
+	protected Widget						m_DetailsBodyDefault;
+	protected Widget						m_DetailsBodyConnectivity;
 #ifdef PLATFORM_CONSOLE
 	protected bool 							m_MaKOptionAvailable;
 	protected Widget						m_ConsoleControllerSensitivityWidget;
@@ -75,6 +77,8 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		m_Menu										= menu;
 		
 		m_DetailsRoot								= details_root;
+		m_DetailsBodyDefault 						= m_DetailsRoot.FindAnyWidget("settings_details_body");
+		m_DetailsBodyConnectivity 					= m_DetailsRoot.FindAnyWidget("settings_details_body_connectivity");
 		m_DetailsLabel								= TextWidget.Cast( m_DetailsRoot.FindAnyWidget( "details_label" ) );
 		m_DetailsText								= RichTextWidget.Cast( m_DetailsRoot.FindAnyWidget( "details_content" ) );
 		m_Keybindings								= GridSpacerWidget.Cast( m_Root.FindAnyWidget( "keyboard_settings_content" ) );
@@ -277,16 +281,8 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		
 		if( w )
 		{
-			Param2<string, string> p = m_TextMap.Get( w.GetUserID() );
-			
-			if( p )
+			if (TextMapUpdateWidget(w.GetUserID())) 
 			{
-				m_DetailsRoot.Show( true );
-				m_DetailsLabel.SetText( p.param1 );
-				m_DetailsText.SetText( p.param2 );
-				m_DetailsText.Update();
-				m_DetailsLabel.Update();
-				m_DetailsRoot.Update();
 				return true;
 			}
 			
@@ -324,6 +320,31 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		return w && (w.GetFlags() & ~WidgetFlags.NOFOCUS);
 	}
 	
+	bool TextMapUpdateWidget(int key)
+	{
+		bool connectivityInfoShown = key == OptionIDsScript.OPTION_CONNECTIVITY_INFO;
+		Param2<string, string> p;
+		Param tmp = m_TextMap.Get(key);
+		
+		m_DetailsBodyDefault.Show(!connectivityInfoShown);
+		m_DetailsBodyConnectivity.Show(connectivityInfoShown);
+		
+		if (Class.CastTo(p,tmp))
+		{
+			m_DetailsRoot.Show(true);
+			m_DetailsText.Show(true);
+			m_DetailsLabel.SetText(p.param1);
+			m_DetailsText.SetText(p.param2);
+			
+			m_DetailsText.Update();
+			m_DetailsLabel.Update();
+			m_DetailsRoot.Update();
+			m_DetailsBodyConnectivity.Update(); //...
+			return true;
+		}
+		return false;
+	}
+	
 	bool IsChanged()
 	{
 		#ifdef PLATFORM_CONSOLE
@@ -336,28 +357,25 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	void Apply()
 	{
 		#ifdef PLATFORM_CONSOLE
-			if (m_MaKOptionAvailable)
+		bool changed = false;
+		if (m_MaKOptionAvailable)
+		{
+			//on change
+			if ((m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0) || (!m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1))
 			{
-				if (m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0)
-				{
-					m_KeyboardOption.Switch();
-					g_Game.DeleteGamepadDisconnectMenu();
-				}
-				else if (!m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1)
-				{
-					m_KeyboardOption.Switch();
-					if (!GetGame().GetInput().IsActiveGamepadSelected())
-					{
-						g_Game.CreateGamepadDisconnectMenu();
-					}
-				}
+				m_KeyboardOption.Switch();
+				changed = true;
 			}
-			
-			Focus();
-			
-			GetGame().GetInput().EnableMouseAndKeyboard( m_KeyboardOption.GetIndex() );
-			GetGame().GetUIManager().ShowUICursor( m_MaKOptionAvailable && m_KeyboardOption.GetIndex() );
-			m_Menu.Refresh();
+		}
+		
+		Focus();
+		
+		GetGame().GetInput().EnableMouseAndKeyboard( m_KeyboardOption.GetIndex() );
+		GetGame().GetUIManager().ShowUICursor( m_MaKOptionAvailable && m_KeyboardOption.GetIndex() );
+		if (changed)
+			g_Game.UpdateInputDeviceDisconnectWarning();
+		
+		m_Menu.Refresh();
 		#endif
 	}
 	

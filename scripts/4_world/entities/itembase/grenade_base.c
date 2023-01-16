@@ -178,6 +178,7 @@ class Grenade_Base : ExplosivesBase
 		m_Pinned = true;
 		if (GetGame().IsServer())
 		{
+			ForceFarBubble(false);
 			SetSynchDirty();
 		}
 
@@ -189,6 +190,7 @@ class Grenade_Base : ExplosivesBase
 		m_Pinned = false;
 		if (GetGame().IsServer())
 		{
+			ForceFarBubble(true);
 			SetSynchDirty();
 		}
 

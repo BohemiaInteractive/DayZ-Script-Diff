@@ -35,10 +35,13 @@ class ActionSewTarget: ActionBandageBase
 	{
 		PlayerBase target = PlayerBase.Cast(action_data.m_Target.GetObject());
 		
-		if(action_data.m_MainItem && target)
+		if (CanReceiveAction(action_data.m_Target))
 		{
-			ApplyBandage( action_data.m_MainItem, target );
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			if (action_data.m_MainItem && target)
+			{
+				ApplyBandage( action_data.m_MainItem, target );
+				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			}
 		}
 	}
 	

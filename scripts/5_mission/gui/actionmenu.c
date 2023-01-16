@@ -43,11 +43,9 @@ class ActionMenu
 	
 	void UpdateWidgets()
 	{
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 		// tmp
-		bool newATSelection = true;
-
-		newATSelection = DiagMenu.GetBool( DiagMenuIDs.DM_ACTION_TARGETS_NEW, true );
+		bool newATSelection = DiagMenu.GetBool( DiagMenuIDs.MISC_ACTION_TARGETS_NEW, true );
 
 		// read the action manager
 		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
@@ -56,7 +54,7 @@ class ActionMenu
 
 		// clear state
 		m_defaultActionWidget.Show(false);
-		if( actions.Count() <= 1 )
+		if ( actions.Count() <= 1 )
 			m_FadeTimer.FadeOut(m_actionsPanelWidget, FADE_OUT_TIME, true);		
 		else
 			m_FadeTimer.FadeIn(m_actionsPanelWidget, FADE_IN_TIME, true);

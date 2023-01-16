@@ -4,9 +4,9 @@ class ActionStartCarCB : ActionContinuousBaseCB
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.START_ENGINE);
 	}
-};
+}
 
-class ActionStartEngine: ActionContinuousBase
+class ActionStartEngine : ActionContinuousBase
 {
 	private const float ROUGH_SPECIALTY_WEIGHT	= 0.5;
 	static const float MINIMUM_BATTERY_ENERGY	= 5.0;	//! DEPRECATED
@@ -23,13 +23,13 @@ class ActionStartEngine: ActionContinuousBase
 		m_StanceMask		= DayZPlayerConstants.STANCEMASK_ALL;
 		m_SpecialtyWeight	= ROUGH_SPECIALTY_WEIGHT;
 		m_LockTargetOnUse	= false;
-		m_Text = "#start_the_car";
+		m_Text 				= "#start_the_car";
 	}
 
 	override void CreateConditionComponents()  
 	{	
-		m_ConditionTarget	= new CCTNone;
-		m_ConditionItem		= new CCINone;
+		m_ConditionTarget	= new CCTNone();
+		m_ConditionItem		= new CCINone();
 	}
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
@@ -48,10 +48,7 @@ class ActionStartEngine: ActionContinuousBase
 						return false;
 					}
 					
-					if (car.CrewMemberIndex(player) == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-					{
-						return true;
-					}
+					return car.CrewMemberIndex(player) == DayZPlayerConstants.VEHICLESEAT_DRIVER);
 				}
 			}
 		}
@@ -76,7 +73,7 @@ class ActionStartEngine: ActionContinuousBase
 		}
 	}
 	
-	override void OnStartServer(ActionData action_data)
+	override void OnExecuteServer(ActionData action_data)
 	{
 		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
 		if (vehCommand)
@@ -97,4 +94,4 @@ class ActionStartEngine: ActionContinuousBase
 	{
 		return true;
 	}
-};
+}

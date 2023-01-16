@@ -2,7 +2,7 @@ class InventoryItem extends EntityAI
 {	
 	static private const float SOUND_CONTACT_SKIP = 0.33;//second
 	
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 	static private ref array<ref string> s_ImpactSoundsInfo = new array<ref string>();
 #endif
 
@@ -24,7 +24,11 @@ class InventoryItem extends EntityAI
 	proto native MeleeCombatData GetMeleeCombatData();	
 	
 	proto native void ThrowPhysically(DayZPlayer player, vector force);
-	
+
+	//! Sets the item to use the server configured 'networkRangeFar' instead of 'networkRangeNear'
+	//  This method performs an OR operation with the config 'forceFarBubble'. If set in the config 
+	//  this method has no effect. 
+	proto native void ForceFarBubble(bool state);
 	
 	void InventoryItem()
 	{
@@ -137,18 +141,30 @@ class InventoryItem extends EntityAI
 	string GetImpactSurfaceType(IEntity other, Contact impact)
 	{
 		string surface;
+		int liquid = -1;
+		return GetImpactSurfaceTypeEx(other, impact, liquid);
+	}
+	
+	// -------------------------------------------------------------------------------
+	string GetImpactSurfaceTypeEx(IEntity other, Contact impact, out int liquid)
+	{		
+		vector mins, maxs;
+		GetWorldBounds(mins, maxs);
+		vector size = maxs - mins;		
+
+		vector add = impact.RelativeVelocityBefore.Normalized() * size.Length();
+		string surfaceImpact;
 		if (DayZPhysics.GetHitSurface(
 			Object.Cast(other),
-			impact.Position + impact.RelativeVelocityBefore * 5,
-			impact.Position - impact.RelativeVelocityBefore * 5,
-			surface))
+			impact.Position + add,
+			impact.Position - add,
+			surfaceImpact))
 		{
-			return surface;
+			return surfaceImpact;
 		}
-		
-		int liquid;
-		GetGame().SurfaceUnderObject(this, surface, liquid);
-		return surface;
+		string surface;
+		GetGame().SurfaceUnderObjectEx(this, surface, surfaceImpact, liquid);
+		return surfaceImpact;
 	}
 	
 	//! returns ammo (projectile) used in melee if the item is destroyed. Override higher for specific use
@@ -160,6 +176,14 @@ class InventoryItem extends EntityAI
 	// -------------------------------------------------------------------------------
 	float ProcessImpactSound(IEntity other, Contact extra, float weight, out int surfaceHash)
 	{
+		int liquidType = -1;
+		return ProcessImpactSoundEx(other, extra, weight, surfaceHash,liquidType);
+	}
+	
+	
+	// -------------------------------------------------------------------------------
+	float ProcessImpactSoundEx(IEntity other, Contact extra, float weight, out int surfaceHash, out int liquidType)
+	{
 		float impactVelocity = extra.RelativeVelocityBefore.Length();
 		if ( impactVelocity < 0.3 )
 			return 0.0;
@@ -168,11 +192,11 @@ class InventoryItem extends EntityAI
 		if ( m_SoundContactTickTime + SOUND_CONTACT_SKIP > tickTime )
 			return 0.0;
 		
-		string surfaceName = GetImpactSurfaceType(other, extra);
+		string surfaceName = GetImpactSurfaceTypeEx(other, extra, liquidType);
 		if ( surfaceName == "" )
 			return 0.0;
 
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 		string infoText = "Surface: " + surfaceName + ", Weight: " + weight + ", Speed: " + impactVelocity;
 		
 		if ( s_ImpactSoundsInfo.Count() == 10 )
@@ -187,7 +211,7 @@ class InventoryItem extends EntityAI
 		return impactVelocity;		
 	}
 	
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 	static void DrawImpacts()
 	{
 		DbgUI.Begin("Item impact sounds", 10, 200);

@@ -24,8 +24,12 @@ class ScriptedLightBase extends EntityLightSource
 	float 		m_BrightnessSpeedOfChange = 1;
 	float 		m_RadiusSpeedOfChange = 1;
 	float 		m_OptimizeShadowsRadius = 0; // Within this range between the light source and camera the shadows will be automatically disabled to save on performance
+	
 	float 		m_DancingShadowsAmplitude;
 	float 		m_DancingShadowsSpeed;
+	
+	float		m_BlinkingSpeed;
+	
 	bool 		m_IsDebugEnabled = false;
 	
 	Object 		m_Parent; // Attachment parent
@@ -90,8 +94,7 @@ class ScriptedLightBase extends EntityLightSource
 			{
 				slotName = InventorySlots.GetSlotName(il.GetSlot());
 			}
-			UpdateLightMode(slotName);
-			
+			UpdateLightMode(slotName);			
 		}
 	}
 	
@@ -181,7 +184,6 @@ class ScriptedLightBase extends EntityLightSource
 		{
 			ErrorEx("memory point 'memory_point_start' not found when attaching light");
 		}
-		
 	}
 	
 	//! Detaches this light from its parent entity.
@@ -404,6 +406,8 @@ class ScriptedLightBase extends EntityLightSource
 		CheckIfParentIsInCargo();
 		TryShadowOptimization();
 		OnFrameLightSource(other, timeSlice);
+		
+		HandleBlinking(current_time);
 	}
 	
 	//! Sets the maximum range of the point light within the dancing shadows effect
@@ -694,5 +698,32 @@ class ScriptedLightBase extends EntityLightSource
 		{
 			SetRadius(m_Radius);
 		}
+	}
+	
+	//! Sets blinking speed (no blinking if speed <= 0)
+	void SetBlinkingSpeed(float _speed)
+	{
+		m_BlinkingSpeed = _speed;
+	}
+	
+	//! Returns the speed of blinks
+	float GetBlinkingSpeed()
+	{
+		return m_BlinkingSpeed;
+	}
+	
+	// handles blinking. Turns light  on and off on regular intervals
+	private void HandleBlinking(float time)
+	{
+		if ( m_BlinkingSpeed <= 0 )
+			return;
+		
+		float multiplier;
+
+		multiplier = Math.Sin(time * 0.001 * m_BlinkingSpeed);		// Oscillate the multiplier overtime (time normalized to sec)
+		multiplier = (multiplier + 1)/2;							// Normalized the value to 0-1 
+		
+		multiplier = Math.Round(multiplier);						// Rounding to 0 or 1 to make it blink instantly	
+		SetBrightness(m_Brightness * multiplier);
 	}
 };

@@ -1,11 +1,9 @@
 class ActionCraftBoneKnifeCB : ActionContinuousBaseCB
-{
-	private const float TIME_TO_CRAFT_KNIFE = 5.0;
-	
+{	
 	override void CreateActionComponent()
 	{
 		//float adjusted_time = m_ActionData.m_Player.GetSoftSkillsManager().AdjustCraftingTime(TIME_TO_CRAFT_KNIFE,UASoftSkillsWeight.ROUGH_HIGH);	
-		m_ActionData.m_ActionComponent = new CAContinuousTime(TIME_TO_CRAFT_KNIFE);
+		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_CRAFT);
 	}
 };
 
@@ -42,14 +40,10 @@ class ActionCraftBoneKnife: ActionContinuousBase
 	}
 	
 	override void OnFinishProgressServer( ActionData action_data )
-	{
-		EntityAI item_ingredient = action_data.m_MainItem;
-		EntityAI knife;
-		
-		knife = action_data.m_Player.SpawnEntityOnGroundPos("BoneKnife", action_data.m_Player.GetPosition());
+	{		
+		EntityAI knife = action_data.m_Player.SpawnEntityOnGroundPos("BoneKnife", action_data.m_Player.GetPosition());
 		action_data.m_MainItem.AddQuantity(-2);
 		
-		MiscGameplayFunctions.TransferItemProperties(item_ingredient, knife);
-
+		MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem, knife);
 	}
 };

@@ -158,26 +158,31 @@ class ContextMenu extends ScriptedWidgetEventHandler
 	}
 	
 	//--------------------------------------------------------------------------
-	void Add(string label, Class obj, string fn_name, Param params /*= NULL*/)
+	void Add(string label, Class obj, string fn_name, Param params)
 	{
-		//Print(label);
+		 AddEx(label, FadeColors.LIGHT_GREY, obj, fn_name, params);
+	}
+	
+	void AddEx(string label, int labelColor, Class obj, string funcName, Param params)
+	{
 		int count = Count();
-		ButtonWidget menu_button = ButtonWidget.Cast( m_context_menu_root_widget.FindAnyWidget( String( "Button" + (count+1).ToString() ) ) );
-		if ( menu_button )
+		ButtonWidget menuButton = ButtonWidget.Cast(m_context_menu_root_widget.FindAnyWidget(string.Format("Button%1", count + 1)));
+		if (menuButton)
 		{
 			label.ToUpper();
-			menu_button.SetText( label );
-			menu_button.Show( true );
-	
-			int item_width = label.Length();
-			if (m_max_item_width < item_width)
-			{
-				m_max_item_width = item_width;
-			}
+			menuButton.SetText(label);
+			menuButton.SetTextColor(labelColor);
+			menuButton.Show(true);
+			if (!funcName)
+				menuButton.SetFlags(menuButton.GetFlags() | WidgetFlags.IGNOREPOINTER);	
+
+			int itemWidth = label.Length();
+			if (m_max_item_width < itemWidth)
+				m_max_item_width = itemWidth;
 		}
-		m_count = m_count + 1;
 		
-		m_commands.Insert(new CallQueueContext(obj, fn_name, params));
+		m_count++;
+		m_commands.Insert(new CallQueueContext(obj, funcName, params));
 	}
 	
 	//--------------------------------------------------------------------------
@@ -189,7 +194,7 @@ class ContextMenu extends ScriptedWidgetEventHandler
 			ButtonWidget menu_button = ButtonWidget.Cast( m_context_menu_root_widget.FindAnyWidget( String( "Button" + ( index + 1 ).ToString() ) ) );
 			menu_button.Show( false );
 			menu_button.SetText( "" );
-			m_count = m_count - 1;
+			m_count--;
 		}
 	}
 	

@@ -1,12 +1,12 @@
 /**
- * \defgroup Constants
+ * \defgroup Constants Constants
  * \desc static script constants
  * @{
  */
 
 
 /**
- * \defgroup InputDevice
+ * \defgroup InputDevice InputDevice
  * \desc constants for input device - inputInterfaceDef.h
  * @{
  */
@@ -57,9 +57,10 @@ const string STRING_EMPTY = "";
 
 /**
 
- * \defgroup Colors
+ * \defgroup Colors Colors
  * @{
  */
+const int COLOR_WHITE = 0xFFFFFFFF;
 const int COLOR_RED = 0xFFF22613;
 const int COLOR_GREEN = 0xFF2ECC71;
 const int COLOR_BLUE = 0xFF4B77BE;
@@ -74,7 +75,7 @@ const int COLOR_YELLOW_A = 0x1fF7CA18;
 	
 /**
 
- * \defgroup Materials
+ * \defgroup Materials Materials
  * @{
  */
 

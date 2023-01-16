@@ -26,21 +26,24 @@ class ActionSplintTarget: ActionContinuousBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
 		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
-		action_data.m_MainItem.TransferModifiers(ntarget);
-		ntarget.ApplySplint();
-		
-		ItemBase new_item = ItemBase.Cast(ntarget.GetInventory().CreateInInventory("Splint_Applied"));
-		if ( new_item )
+		if (CanReceiveAction(action_data.m_Target))
 		{
-			MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem,new_item,true,false,true);
-			action_data.m_MainItem.Delete();
+			action_data.m_MainItem.TransferModifiers(ntarget);
+			ntarget.ApplySplint();
+			
+			ItemBase new_item = ItemBase.Cast(ntarget.GetInventory().CreateInInventory("Splint_Applied"));
+			if ( new_item )
+			{
+				MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem,new_item,true,false,true);
+				action_data.m_MainItem.Delete();
+				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			}
+			
+			ntarget.SetBrokenLegs(eBrokenLegs.BROKEN_LEGS_SPLINT);
+			//action_data.m_MainItem.Delete();
+	
 			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
-		
-		ntarget.SetBrokenLegs(eBrokenLegs.BROKEN_LEGS_SPLINT);
-		//action_data.m_MainItem.Delete();
-
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)

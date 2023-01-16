@@ -11,6 +11,7 @@ class ActionCarDoors: ActionInteractBase
 	{
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_OPENDOORFW;
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ALL;
+		m_LockTargetOnUse = false;
 	}
 
 	override void CreateConditionComponents()

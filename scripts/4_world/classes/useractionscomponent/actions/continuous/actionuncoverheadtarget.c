@@ -44,8 +44,12 @@ class ActionUncoverHeadTarget: ActionUncoverHeadBase
 	
 	
 	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		UncoverHead(PlayerBase.Cast( action_data.m_Target.GetObject()),action_data.m_Player);
+	{
+		PlayerBase targetPlayer = PlayerBase.Cast(action_data.m_Target.GetObject());
+		if (CanReceiveAction(action_data.m_Target))
+		{
+			UncoverHead(PlayerBase.Cast( action_data.m_Target.GetObject()),action_data.m_Player);
+		}
 	}
 	
 	

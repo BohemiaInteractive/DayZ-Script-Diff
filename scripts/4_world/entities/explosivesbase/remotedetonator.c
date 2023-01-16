@@ -201,7 +201,7 @@ class RemoteDetonatorTrigger : RemoteDetonator
 		AddAction(ActionTriggerRemotely);
 	}
 	
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 	override protected string GetDebugText()
 	{
 		string debug_output;

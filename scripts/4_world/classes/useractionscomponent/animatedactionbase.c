@@ -18,9 +18,9 @@ class ActionBaseCB : HumanCommandActionCallback
 	//Command events
 	override void OnFinish(bool pCanceled)	
 	{
-		if( LogManager.IsActionLogEnable() )
+		if ( LogManager.IsActionLogEnable() )
 		{
-			if( m_ActionData)
+			if ( m_ActionData)
 				Debug.ActionLog("Time stamp: " + m_ActionData.m_Player.GetSimulationTimeStamp(), m_ActionData.m_Action.ToString() , "n/a", "OnFinish", m_ActionData.m_Player.ToString() );
 			else
 				Debug.ActionLog("n/a", this.ToString() , "n/a", "OnFinish", "n/a" );
@@ -76,11 +76,11 @@ class ActionBaseCB : HumanCommandActionCallback
 	{
 		if ( GetGame().IsServer() )
 		{
-			if( LogManager.IsActionLogEnable() )
+			if ( LogManager.IsActionLogEnable() )
 			{
 				Debug.ActionLog("n/a", this.ToString() , "n/a", "Interrupt", m_ActionData.m_Player.ToString() );	
 			}
-			if( GetGame().IsMultiplayer() )
+			if ( GetGame().IsMultiplayer() )
 			{
 				DayZPlayerSyncJunctures.SendActionInterrupt(m_ActionData.m_Player);
 			}
@@ -195,7 +195,7 @@ class AnimatedActionBase : ActionBase
 			
 			if (action && ( !action.UseMainItem() || action_data.m_MainItem ) && ( !action.HasTarget() || action_data.m_Target ))
 			{
-				if( LogManager.IsActionLogEnable() )
+				if ( LogManager.IsActionLogEnable() )
 				{
 					Debug.ActionLog("Time stamp: " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnExecute", action_data.m_Player.ToString() );
 				}
@@ -331,8 +331,8 @@ class AnimatedActionBase : ActionBase
 	{
 		if ( state == UA_ERROR || !action_data.m_Callback || !action_data.m_Player || !action_data.m_ActionComponent ) //jtomasik - tohle mozna muze byt v CancelCondtion metodu callbacku?
 		{
-#ifdef DEVELOPER
-			if( LogManager.IsActionLogEnable() )
+#ifdef DIAG_DEVELOPER
+			if ( LogManager.IsActionLogEnable() )
 			{
 				Debug.ActionLog("ABRUPT CANCEL, CONDITIONS NOT MET", this.ToString() , "n/a", "Do", action_data.m_Player.ToString() );
 			}
@@ -488,7 +488,7 @@ class AnimatedActionBase : ActionBase
 		}
 		else
 		{
-			if( LogManager.IsActionLogEnable() )
+			if ( LogManager.IsActionLogEnable() )
 			{
 				Debug.ActionLog("Ation could not be finished right at the end", this.ToString() , "n/a", "End", action_data.m_Player.ToString() );
 			}

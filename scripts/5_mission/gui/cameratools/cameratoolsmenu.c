@@ -498,7 +498,8 @@ class CameraToolsMenu extends UIScriptedMenu
 		string camOri = MiscGameplayFunctions.TruncateVecToS(FreeDebugCamera.GetInstance().GetOrientation(),0);
 		m_CameraValues.SetText("Pos:" +camPos + " | Rot:" + camOri);
 		
-		if (DiagMenu.GetBool(DiagMenuIDs.DM_ENABLE_REMOTE_CAMERA_BROADCAST))
+		#ifdef DIAG_DEVELOPER
+		if (DiagMenu.GetBool(DiagMenuIDs.CAMERATOOLS_ENABLE_REMOTE_CAMERA_BROADCAST))
 		{
 			Camera cam = Camera.GetCurrentCamera();
 			
@@ -507,10 +508,12 @@ class CameraToolsMenu extends UIScriptedMenu
 			if (cam)
 			{
 				Param4<vector, vector,float,float> p4 = new Param4<vector, vector,float,float>(GetGame().GetCurrentCameraPosition(),GetGame().GetCurrentCameraDirection(), cam.GetNearPlane(), cam.GetCurrentFOV());
-				GetGame().RPCSingleParam(null, ERPCs.DEV_CAMERA_TOOLS_CAM_DATA, p4, false);
+				GetGame().RPCSingleParam(null, ERPCs.DIAG_CAMERATOOLS_CAM_DATA, p4, false);
 			}
 		
 		}
+		#endif
+		
 		if ( m_CameraLines && m_IsPlaying )
 		{
 			foreach ( CTEvent ev : m_Events )

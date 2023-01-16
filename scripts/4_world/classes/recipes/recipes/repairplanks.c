@@ -15,7 +15,7 @@ class RepairPlanks extends RecipeBase
 		m_MinQuantityIngredient[0] = 2;//-1 = disable check
 		m_MaxQuantityIngredient[0] = -1;//-1 = disable check
 		
-		m_MinDamageIngredient[1] = 1;//-1 = disable check
+		m_MinDamageIngredient[1] = 2;//-1 = disable check
 		m_MaxDamageIngredient[1] = 3;//-1 = disable check
 		
 		m_MinQuantityIngredient[1] = -1;//-1 = disable check
@@ -65,7 +65,7 @@ class RepairPlanks extends RecipeBase
 
 		if (ingredient1.Type() == WoodenPlank)
 		{
-			if (ingredient1.GetQuantity() >= 4)
+			if (ingredient1.GetQuantity() >= 2)
 				return true;
 			
 			return false;

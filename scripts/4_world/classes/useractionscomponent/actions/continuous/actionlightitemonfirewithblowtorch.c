@@ -11,7 +11,7 @@ class ActionLightItemOnFireWithBlowtorch : ActionLightItemOnFire
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		Blowtorch bt = Blowtorch.Cast(item);
-		if (!bt.HasEnoughEnergyForRepair(UATimeSpent.BASEBUILDING_REPAIR_FAST))
+		if (!bt.HasEnoughEnergyForRepair(UATimeSpent.FIREPLACE_IGNITE))
 		{
 			return false;
 		}

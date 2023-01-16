@@ -34,16 +34,11 @@ class Bottle_Base extends Edible_Base
 	protected bool 					m_CookingIsBurned;	
 	
 	//Boiling
-	const string SOUND_BOILING_EMPTY 		= "boilingWater";
-	const string SOUND_BOILING_START 		= "boilingWater";
-	const string SOUND_BOILING_DONE 		= "boilingWaterDone";
-	//Baking
-	// defined in Edible_Base
-	//Drying
-	const string SOUND_DRYING_START 		= "dry";
-	const string SOUND_DRYING_DONE 			= "dryDone";	
-	//Burning
-	//defined in Edible_Base
+	const string SOUND_BOILING_EMPTY 		= "Boiling_SoundSet";
+	const string SOUND_BOILING_START 		= "Boiling_SoundSet";
+	const string SOUND_BOILING_DONE 		= "Boiling_Done_SoundSet";
+	const string SOUND_DRYING_START 		= "Drying_SoundSet";
+	const string SOUND_DRYING_DONE 			= "Drying_Done_SoundSet";
 	
 	float m_LiquidEmptyRate;
 	private const float QUANTITY_EMPTIED_PER_SEC_DEFAULT = 200; //default
@@ -270,7 +265,7 @@ class Bottle_Base extends Edible_Base
 	{
 		if ( !m_PouringLoopSound || !m_PouringLoopSound.IsSoundPlaying() )
 		{
-			m_PouringLoopSound = SEffectManager.PlaySoundOnObject( GetPouringSoundset(), this );
+			m_PouringLoopSound = SEffectManager.PlaySoundOnObject( GetPouringSoundset(), this, 0, 0, true );
 		}
 	}
 	
@@ -284,7 +279,7 @@ class Bottle_Base extends Edible_Base
 	{
 		if ( !m_EmptyingLoopSound || !m_EmptyingLoopSound.IsSoundPlaying() )
 		{
-			m_EmptyingLoopSound = SEffectManager.PlaySoundOnObject( GetEmptyingLoopSoundset(), this );
+			m_EmptyingLoopSound = SEffectManager.PlaySoundOnObject( GetEmptyingLoopSoundset(), this, 0, 0, true );
 		}
 	}
 	

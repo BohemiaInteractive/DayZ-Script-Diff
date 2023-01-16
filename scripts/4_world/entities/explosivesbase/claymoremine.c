@@ -30,7 +30,7 @@ class ClaymoreMine : ExplosivesBase
 	{
 		super.EEKilled(killer);
 
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 #ifndef SERVER
 		RemoveDebugVisuals();
 #endif
@@ -41,7 +41,7 @@ class ClaymoreMine : ExplosivesBase
 	{
 		super.EEDelete(parent);
 
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 #ifndef SERVER
 		RemoveDebugVisuals();
 #endif
@@ -167,7 +167,7 @@ class ClaymoreMine : ExplosivesBase
 		UpdateVisuals();
 		UpdateLED(ERemoteDetonatorLEDState.LIT, true);
 		
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 #ifndef SERVER
 		// have to call this function a little later, after claymore transform has been finalized
 		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DrawDamageZone, 500);
@@ -179,7 +179,7 @@ class ClaymoreMine : ExplosivesBase
 	{
 		super.OnDisarmed(pWithTool);
 		
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 		RemoveDebugVisuals();
 #endif
 
@@ -241,11 +241,11 @@ class ClaymoreMine : ExplosivesBase
 
 			switch (pState)
 			{
-			case ERemoteDetonatorLEDState.LIT:
-				SetObjectTexture(selectionIdx, RemoteDetonator.COLOR_LED_LIT);
-			break;
-			default:
-				SetObjectTexture(selectionIdx, RemoteDetonator.COLOR_LED_OFF);
+				case ERemoteDetonatorLEDState.LIT:
+					SetObjectTexture(selectionIdx, RemoteDetonator.COLOR_LED_LIT);
+				break;
+				default:
+					SetObjectTexture(selectionIdx, RemoteDetonator.COLOR_LED_OFF);
 				break;
 			}
 
@@ -284,14 +284,6 @@ class ClaymoreMine : ExplosivesBase
 		
 		return 0;
 	}
-
-	
-#ifdef DEVELOPER	
-	//================================================================
-	// DEBUG
-	//================================================================
-	
-	protected Shape m_DamageZone;
 			
 	override void OnDebugSpawn()
 	{
@@ -300,6 +292,13 @@ class ClaymoreMine : ExplosivesBase
 		PairRemote(rdt);
 		Arm();
 	}
+	
+#ifdef DIAG_DEVELOPER	
+	//================================================================
+	// DEBUG
+	//================================================================
+	
+	protected Shape m_DamageZone;
 
 	override protected string GetDebugText()
 	{
@@ -313,7 +312,7 @@ class ClaymoreMine : ExplosivesBase
 	
 	protected void DrawDamageZone()
 	{
-		if (!DiagMenu.GetBool(DiagMenuIDs.DM_WEAPON_CLAYMORE_DEBUG))
+		if (!DiagMenu.GetBool(DiagMenuIDs.WEAPON_CLAYMORE_DEBUG))
 		{
 			return;
 		}

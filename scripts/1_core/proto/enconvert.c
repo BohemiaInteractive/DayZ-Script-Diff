@@ -7,6 +7,12 @@ class bool
 	}
 };
 
+class func
+{
+	//! For internal usage of VM 
+	private proto void SetInstance(Class inst);
+};
+
 enum EBool
 {
 	NO = 0,
@@ -177,7 +183,7 @@ class vector
 	proto static native float Distance(vector v1, vector v2);
 	
 	/**
-	\brief Returns the squere distance between tips of two 3D vectors.
+	\brief Returns the square distance between tips of two 3D vectors.
 		\param v1 \p vector 3D Vector 1
 		\param v2 \p vector 3D Vector 2
 		\return \p float Squere distance
@@ -489,7 +495,7 @@ class vector
 	}
 	
 	/**
-	\brief Covert static array of floats into a vector
+	\brief Convert static array of floats into a vector
 	    \param arr \p vector in array format
 		\return \p vector resulting vector
 	*/
@@ -497,8 +503,6 @@ class vector
 	{
 		return Vector(arr[0], arr[1], arr[2]);
 	}
-	
-	
 };
 
 class typename

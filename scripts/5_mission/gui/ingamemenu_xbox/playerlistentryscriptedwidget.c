@@ -46,16 +46,16 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 	
 	void LoadPermissions( BiosPrivacyPermissionResultArray results )
 	{
-		foreach( BiosPrivacyPermissionResult result : results )
+		foreach ( BiosPrivacyPermissionResult result : results )
 		{
-			if( result.m_Permission == EBiosPrivacyPermission.COMMUNICATE_VOICE )
+			if ( result.m_Permission == EBiosPrivacyPermission.COMMUNICATE_VOICE )
 			{
 				m_GlobalMute = !result.m_IsAllowed;
-				if( result.m_IsAllowed && !m_Mute )
+				if ( result.m_IsAllowed && !m_Mute )
 				{
 					m_MuteIcon.Show( false );
 				}
-				else if( !result.m_IsAllowed || m_Mute )
+				else if ( !result.m_IsAllowed || m_Mute )
 				{
 					m_MuteIcon.Show( true );
 				}
@@ -91,11 +91,6 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 			m_Mute = !m_Mute;
 			if ( ScriptInputUserData.CanStoreInputUserData() && !m_GlobalMute )
 			{
-				ScriptInputUserData ctx = new ScriptInputUserData;
-				ctx.Write( INPUT_UDT_USER_MUTE_XBOX );
-				ctx.Write( m_UID );
-				ctx.Write( m_Mute );
-				ctx.Send();
 				OnlineServices.MutePlayer( m_UID, m_Mute );
 				m_MuteIcon.Show( m_Mute );
 			}

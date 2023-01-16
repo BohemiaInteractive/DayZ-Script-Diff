@@ -208,8 +208,35 @@ class GesturesMenu extends UIScriptedMenu
 	{
 		super.OnShow();
 		
-		SetFocus( layoutRoot );
+		Mission mission = GetGame().GetMission();
+		if (mission)
+		{
+			IngameHud hud = IngameHud.Cast(mission.GetHud());
+			if (hud)
+			{
+				hud.ShowQuickbarUI(false);
+			}
+		}
+		
+		SetFocus(layoutRoot);
 		m_IsMenuClosing = false;
+	}
+	
+	override void OnHide()
+	{
+		super.OnHide();
+		
+		Mission mission = GetGame().GetMission();
+		if (mission)
+		{
+			IngameHud hud = IngameHud.Cast(mission.GetHud());
+			if (hud)
+			{
+				hud.ShowQuickbarUI(true);
+			}
+		}
+		
+		m_IsMenuClosing = true;
 	}
 	
 	override bool OnController( Widget w, int control, int value )

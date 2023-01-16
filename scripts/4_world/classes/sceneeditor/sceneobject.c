@@ -19,27 +19,28 @@ class SceneObject
 	//========================================
 	SceneObject Init(string obj_name, vector pos)
 	{
-		if ( obj_name != STRING_EMPTY )
+		if (obj_name != STRING_EMPTY)
 		{
 			m_ObjectNameOrigin = obj_name;
 			
-			bool is_ai = GetGame().IsKindOf( obj_name, "DZ_LightAI");
+			bool is_ai = GetGame().IsKindOf(obj_name, "DZ_LightAI");
 			
-			PluginDeveloper module_dev = PluginDeveloper.Cast( GetPlugin(PluginDeveloper) );
+			PluginDeveloper module_dev = PluginDeveloper.Cast(GetPlugin(PluginDeveloper));
 			EntityAI e = module_dev.SpawnEntityOnGroundPos(PluginSceneManager.PLAYER, obj_name, 100, 0.0, pos);
 			
-			if ( e != NULL )
+			if (e != NULL)
 			{
-				if ( e.IsInherited(ItemBase) ) 
+				if (e.IsInherited(ItemBase)) 
 				{		
-					ItemBase item = ItemBase.Cast( e );
-					if( item.HasQuantity() ) item.SetQuantity(item.GetQuantityMax() );
+					ItemBase item = ItemBase.Cast(e);
+					if (item.HasQuantity())
+						item.SetQuantity(item.GetQuantityMax());
 				}
 				
 				m_ObjectName = e.GetType();
 				LinkEntityAI(e);
 			}
-			else if ( obj_name != "player" )
+			else if (obj_name != "player")
 			{
 				return NULL;
 			}
@@ -87,7 +88,7 @@ class SceneObject
 	//----------------------------------------
 	// SetInitScript
 	//----------------------------------------
-	void SetInitScript( string init_script )
+	void SetInitScript(string init_script)
 	{
 		m_InitScript = init_script;
 	}
@@ -97,12 +98,12 @@ class SceneObject
 	//========================================
 	void EditorShapeUpdatePos()
 	{
-		if ( m_DebugShapeBBox != NULL )
+		if (m_DebugShapeBBox != NULL)
 		{		
 			vector mat[4];
 			GetObject().GetTransform(mat);
 		
-			if ( m_DebugShapeBBox != NULL )
+			if (m_DebugShapeBBox != NULL)
 			{
 				m_DebugShapeBBox.SetMatrix(mat);
 			}
@@ -114,7 +115,7 @@ class SceneObject
 	//========================================
 	void EditorShapeSetColor(int color)
 	{
-		if ( m_DebugShapeBBox )
+		if (m_DebugShapeBBox)
 		{
 			m_DebugShapeBBox.SetColor(color);
 		}
@@ -144,10 +145,10 @@ class SceneObject
 		vector size = Vector(1,1,1);
 		vector min_max[2];
 		
-		if ( GetObject() )
+		if (GetObject())
 		{	
 			GetObject().GetCollisionBox(min_max);
-				
+			
 			size[0] = min_max[1][0] - min_max[0][0];
 			size[2] = min_max[1][2] - min_max[0][2];
 			size[1] = min_max[1][1] - min_max[0][1];
@@ -167,10 +168,8 @@ class SceneObject
 	//========================================
 	void EditorShapeAdd()
 	{	
-		if ( m_DebugShapeBBox != NULL )
-		{
+		if (m_DebugShapeBBox != NULL)
 			return;
-		}
 		
 		vector min		= "0 0 0";
 		vector max		= "0 0 0";
@@ -204,7 +203,7 @@ class SceneObject
 	//========================================
 	void EditorShapeRemove()
 	{
-		if ( m_DebugShapeBBox != NULL )
+		if (m_DebugShapeBBox != NULL)
 		{
 			m_DebugShapeBBox.Destroy();
 			m_DebugShapeBBox = NULL;
@@ -216,12 +215,12 @@ class SceneObject
 	//========================================
 	void EditorLineRemove(SceneObject obj)
 	{
-		for ( int i = 0; i < m_LinkedSceneObjectsShapes.Count(); i++ )
+		for (int i = 0; i < m_LinkedSceneObjectsShapes.Count(); i++)
 		{
-			if ( m_LinkedSceneObjectsShapes.GetKey(i) == obj )
+			if (m_LinkedSceneObjectsShapes.GetKey(i) == obj)
 			{
 				m_LinkedSceneObjectsShapes.GetElement(i).Destroy();
-				m_LinkedSceneObjectsShapes.Remove( obj );
+				m_LinkedSceneObjectsShapes.Remove(obj);
 				break;
 			}
 		}
@@ -232,9 +231,9 @@ class SceneObject
 	//========================================
 	void EditorLineAdd(SceneObject obj)
 	{
-		if ( obj.GetObject() != NULL && GetObject() != NULL )
+		if (obj.GetObject() != NULL && GetObject() != NULL)
 		{
-			if ( m_LinkedSceneObjectsShapes.Contains(obj) )
+			if (m_LinkedSceneObjectsShapes.Contains(obj))
 			{
 				EditorLineRemove(obj);
 			}
@@ -247,7 +246,7 @@ class SceneObject
 			pos2[0] = 0; pos2[1] = pos2[1] / 2; pos2[2] = 0;
 			pos2 = pos2 + GetObject().GetPosition();
 			
-			m_LinkedSceneObjectsShapes.Insert( obj, Debug.DrawArrow( pos1, pos2 ) );
+			m_LinkedSceneObjectsShapes.Insert(obj, Debug.DrawArrow(pos1, pos2));
 		}
 	}
 	
@@ -265,7 +264,7 @@ class SceneObject
 	bool IsLinkedWithSceneObject(SceneObject scene_object)
 	{
 		int index = m_LinkedSceneObjects.Find(scene_object);
-		if ( index >= 0 )
+		if (index >= 0)
 		{
 			return true;
 		}
@@ -280,9 +279,9 @@ class SceneObject
 	//========================================
 	void LinkSceneObject(SceneObject scene_object, bool draw_line = true)
 	{
-		if ( !IsLinkedWithSceneObject(scene_object) )
+		if (!IsLinkedWithSceneObject(scene_object))
 		{
-			if ( draw_line )
+			if (draw_line)
 			{
 				EditorLineAdd(scene_object);
 			}
@@ -296,7 +295,7 @@ class SceneObject
 	void UnlinkSceneObject(SceneObject scene_object)
 	{
 		int index = m_LinkedSceneObjects.Find(scene_object);
-		if ( index >= 0 && index < m_LinkedSceneObjects.Count() )
+		if (index >= 0 && index < m_LinkedSceneObjects.Count())
 		{
 			EditorLineRemove(scene_object);
 			m_LinkedSceneObjects.Remove(index);
@@ -309,10 +308,10 @@ class SceneObject
 	void UnlinkAll()
 	{
 		int link_count = GetLinkedSceneObjectsCount();
-			
-		if ( link_count > 0 )
+		
+		if (link_count > 0)
 		{
-			for ( int i = 0; i < link_count; ++i )
+			for (int i = 0; i < link_count; ++i)
 			{
 				PluginSceneManager.GetInstance().UnlinkSceneObjects(this, GetLinkedSceneObject(0));
 			}			
@@ -338,7 +337,7 @@ class SceneObject
 	//========================================
 	// GetLinkedSceneObject
 	//========================================
-	SceneObject GetLinkedSceneObject( int i )
+	SceneObject GetLinkedSceneObject(int i)
 	{
 		return m_LinkedSceneObjects.Get(i);
 	}
@@ -346,7 +345,7 @@ class SceneObject
 	//========================================
 	// GetLinkedObject
 	//========================================
-	EntityAI GetLinkedObject( int i )
+	EntityAI GetLinkedObject(int i)
 	{
 		return GetLinkedSceneObject(i).GetObject();
 	}
@@ -356,15 +355,15 @@ class SceneObject
 	//========================================
 	void ~SceneObject()
 	{
-		if ( m_ObjectPtr && m_ObjectPtr != GetGame().GetPlayer() )
+		if (m_ObjectPtr && m_ObjectPtr != GetGame().GetPlayer())
 		{
-			GetGame().ObjectDelete( m_ObjectPtr );
+			GetGame().ObjectDelete(m_ObjectPtr);
 			m_ObjectPtr = NULL;
 		}
 		
-		for ( int i = 0; i < m_LinkedSceneObjects.Count(); i++ )
+		for (int i = 0; i < m_LinkedSceneObjects.Count(); i++)
 		{
-			EditorLineRemove( m_LinkedSceneObjects.Get(i) );
+			EditorLineRemove(m_LinkedSceneObjects.Get(i));
 		}
 		
 		EditorShapeRemove();
@@ -385,10 +384,10 @@ class SceneObject
 	{
 		if (m_ObjectPtr)
 		{
-			if ( GetGame().IsClient() && GetGame().IsMultiplayer() )
+			if (GetGame().IsClient() && GetGame().IsMultiplayer())
 			{
-				Param par = new Param3<string, EntityAI, Param>( "PlaceOnSurface" , m_ObjectPtr, NULL );
-				SceneObjectSynch( par );			
+				Param par = new Param3<string, EntityAI, Param>("PlaceOnSurface" , m_ObjectPtr, NULL);
+				SceneObjectSynch(par);			
 			}
 			else
 			{
@@ -404,10 +403,10 @@ class SceneObject
 	{
 		if (m_ObjectPtr) 
 		{
-			if ( GetGame().IsClient() && GetGame().IsMultiplayer() )
+			if (GetGame().IsClient() && GetGame().IsMultiplayer())
 			{
-				Param par = new Param3<string, EntityAI, Param>( "SetPosition" , m_ObjectPtr, new Param1<vector>( pos ) );
-				SceneObjectSynch( par );			
+				Param par = new Param3<string, EntityAI, Param>("SetPosition" , m_ObjectPtr, new Param1<vector>(pos));
+				SceneObjectSynch(par);			
 			}
 			else
 			{
@@ -423,7 +422,8 @@ class SceneObject
 	//========================================
 	vector GetPosition()
 	{
-		if (m_ObjectPtr) return m_ObjectPtr.GetPosition();
+		if (m_ObjectPtr)
+			return m_ObjectPtr.GetPosition();
 		return Vector(0,0,0);
 	}
 	
@@ -432,7 +432,8 @@ class SceneObject
 	//========================================
 	float GetHealth()
 	{
-		if (m_ObjectPtr) return m_ObjectPtr.GetHealth("", "");
+		if (m_ObjectPtr)
+			return m_ObjectPtr.GetHealth("", "");
 		return 0;
 	}
 	
@@ -441,7 +442,8 @@ class SceneObject
 	//========================================
 	float GetMaxHealth()
 	{
-		if (m_ObjectPtr) return m_ObjectPtr.GetMaxHealth("", "");
+		if (m_ObjectPtr)
+			return m_ObjectPtr.GetMaxHealth("", "");
 		return 0;
 	}
 	
@@ -452,14 +454,14 @@ class SceneObject
 	{
 		if (m_ObjectPtr)
 		{
-			if ( GetGame().IsClient() && GetGame().IsMultiplayer() )
+			if (GetGame().IsClient() && GetGame().IsMultiplayer())
 			{
-				Param par = new Param3<string, EntityAI, Param>( "SetHealth" , m_ObjectPtr, new Param1<float>( value ) );
-				SceneObjectSynch( par );			
+				Param par = new Param3<string, EntityAI, Param>("SetHealth" , m_ObjectPtr, new Param1<float>(value));
+				SceneObjectSynch(par);			
 			}
 			else
 			{
-				m_ObjectPtr.SetHealth ( "", "", value );
+				m_ObjectPtr.SetHealth("", "", value);
 			}
 		}
 	}
@@ -469,7 +471,8 @@ class SceneObject
 	//========================================
 	string GetPositionAsString()
 	{
-		if (m_ObjectPtr) return m_ObjectPtr.GetPosition().ToString(false);
+		if (m_ObjectPtr)
+			return m_ObjectPtr.GetPosition().ToString(false);
 		return Vector(0,0,0).ToString(false);
 	}
 	
@@ -509,28 +512,28 @@ class SceneObject
 		}
 	}
 	
-	void SceneObjectSynch( Param p )
+	void SceneObjectSynch(Param p)
 	{
-		GetGame().RPCSingleParam( GetGame().GetPlayer(), ERPCs.RPC_SYNC_SCENE_OBJECT, p, true, NULL );
+		GetGame().RPCSingleParam(GetGame().GetPlayer(), ERPCs.RPC_SYNC_SCENE_OBJECT, p, true, NULL);
 	}
 	
 	//========================================
 	// AddRotation
 	//========================================
-	void AddRotation( float add_rot )
+	void AddRotation(float add_rot)
 	{
-		if ( m_ObjectPtr )
+		if (m_ObjectPtr)
 		{
-			if ( GetGame().IsClient() && GetGame().IsMultiplayer() )
+			if (GetGame().IsClient() && GetGame().IsMultiplayer())
 			{
-				Param par = new Param3<string, EntityAI, Param>( "AddRotation" , m_ObjectPtr, new Param1<float>( add_rot ) );
-				SceneObjectSynch( par );			
+				Param par = new Param3<string, EntityAI, Param>("AddRotation" , m_ObjectPtr, new Param1<float>(add_rot));
+				SceneObjectSynch(par);			
 			}
 			else
 			{
 				vector v = m_ObjectPtr.GetOrientation();
 				v[0] = v[0] + add_rot;
-				m_ObjectPtr.SetOrientation( v );
+				m_ObjectPtr.SetOrientation(v);
 			
 				EditorShapeUpdatePos();
 			}
@@ -568,7 +571,7 @@ class SceneObject
 	{
 		array<EntityAI> ret = new array<EntityAI>;
 		
-		for ( int i = 0; i < GetObject().GetInventory().AttachmentCount(); ++i )
+		for (int i = 0; i < GetObject().GetInventory().AttachmentCount(); ++i)
 		{
 			ret.Insert(GetObject().GetInventory().GetAttachmentFromIndex(i));
 		}
@@ -586,15 +589,15 @@ class SceneObject
 		
 		string cfg_path;
 		
-		if ( GetGame().ConfigIsExisting(CFG_VEHICLESPATH+" "+type_name) )
+		if (GetGame().ConfigIsExisting(CFG_VEHICLESPATH+" "+type_name))
 		{
 			cfg_path = CFG_VEHICLESPATH+" "+type_name+" attachments";
 		}
-		else if ( GetGame().ConfigIsExisting(CFG_WEAPONSPATH+" "+type_name) )
+		else if (GetGame().ConfigIsExisting(CFG_WEAPONSPATH+" "+type_name))
 		{
 			cfg_path = CFG_WEAPONSPATH+" "+type_name+" attachments";
 		}
-		else if ( GetGame().ConfigIsExisting(CFG_MAGAZINESPATH+" "+type_name) )
+		else if (GetGame().ConfigIsExisting(CFG_MAGAZINESPATH+" "+type_name))
 		{
 			cfg_path = CFG_MAGAZINESPATH+" "+type_name+" attachments";
 		}

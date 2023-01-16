@@ -53,7 +53,7 @@ class ActionUncoverHeadSelf: ActionUncoverHeadBase
 	{
 		m_CallbackClass = ActionUncoverHeadSelfCB;
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_COVERHEAD_SELF;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
+		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_PRONE;
 	
 		m_Text = "#uncover_head";
 	}

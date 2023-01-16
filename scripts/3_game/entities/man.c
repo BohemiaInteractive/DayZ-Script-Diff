@@ -73,12 +73,14 @@ class Man extends EntityAI
 	
 	void EEItemIntoHands(EntityAI item)
 	{
+		SetWeightDirty();
 		if( m_OnItemAddedToHands )
 			m_OnItemAddedToHands.Invoke( item, this );
 	}
 	
 	void EEItemOutOfHands(EntityAI item)
 	{
+		SetWeightDirty();
 		if( m_OnItemRemovedFromHands )
 			m_OnItemRemovedFromHands.Invoke( item, this );
 	}

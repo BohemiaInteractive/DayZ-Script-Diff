@@ -107,7 +107,7 @@ enum EInputRestrictors
 const int VIRTUAL_HUD_UPDATE_INTERVAL = 1000;
 
 /**
- * \defgroup UI
+ * \defgroup UI UI
  * \desc constants User Interface
  * @{
  */
@@ -139,14 +139,14 @@ const int IDC_INT_EXIT				= 107;
 /** @}*/
 
 /**
- * \defgroup MenuID
+ * \defgroup MenuID MenuID
  * \desc constants for menu pages
  * @{
  */
 
 const int MENU_ANY									= 1;
 const int MENU_NONE									= 2;
-//const int MENU_***								= 3; // removed - can be recycled to something else
+const int MENU_LOC_ADD								= 3;
 const int MENU_UNKNOWN								= 4;
 const int MENU_CHARACTER							= 5;
 const int MENU_CHAT									= 6;
@@ -186,6 +186,8 @@ const int MENU_WARNING_ITEMDROP						= 39;
 const int MENU_RESPAWN_DIALOGUE						= 40;
 const int MENU_WARNING_TELEPORT						= 41;
 const int MENU_CONNECT_ERROR						= 42;
+const int MENU_WARNING_INPUTDEVICE_DISCONNECT		= 43;
+
 
 const int GUI_WINDOW_MISSION_LOADER = 1;
 
@@ -466,7 +468,7 @@ const int QUANTITY_PROGRESS = 2;
 
 			
 /**
- * \defgroup LiquidTypes
+ * \defgroup LiquidTypes LiquidTypes
  * \desc Constants for liquid types
  * @{
  */
@@ -497,14 +499,14 @@ const int GROUP_LIQUID_ALL = -1;//-1 = all bits to 1
 /** @}*/
 
 /**
- * \defgroup LiquidThroughputs
+ * \defgroup LiquidThroughputs LiquidThroughputs
  * \desc Constants for liquid transfer speeds
  * @{
  */
 const float LIQUID_THROUGHPUT_TINY = 0.1;
 const float LIQUID_THROUGHPUT_DEFAULT = 1.0;
 const float LIQUID_THROUGHPUT_GASOLINECANISTER = 10.0;
-const float LIQUID_THROUGHPUT_CAR_DEFAULT = 10.0;
+const float LIQUID_THROUGHPUT_CAR_DEFAULT = 1.0;
 const float LIQUID_THROUGHPUT_GENERATOR = 10.0;
 const float LIQUID_THROUGHPUT_FUELSTATION = 20.0;
 const float LIQUID_THROUGHPUT_WELL = 15.0;
@@ -513,7 +515,7 @@ const float LIQUID_THROUGHPUT_BARREL = 100.0;
 /** @}*/
 	
 /**
- * \defgroup ChatMessagesVisibility
+ * \defgroup ChatMessagesVisibility ChatMessagesVisibility
  * \desc Constants for toggle chat messages type visibility
  * @{
  */
@@ -528,13 +530,14 @@ const string PLAYER_CHAT_MSG 	= "player_chat_msg";
 /** @}*/
 
 /**
- * \defgroup HUDVisibility
+ * \defgroup HUDVisibility HUDVisibility
  * \desc Constants for toggling of HUD visibility
  * @{
  */
 const string SHOW_QUICKBAR 		= "show_quickbar";
 const string SHOW_HUD 			= "show_hud";
 const string ENABLE_BLEEDINGINDICATION	= "enable_bleedingindication";
+const string SHOW_CONNECTIVITYINFO	= "show_connectivityinfo";
 //const string SHOW_HUD_AUTOHIDE 	= "hud_autohide";
 const string SHOW_CROSSHAIR 	= "show_crosshair";
 const string SHOW_SERVERINFO 	= "show_serverinfo";
@@ -646,7 +649,7 @@ class GameConstants
 	 * \desc Configurations for Environment class
 	 * @{
 	 */
-	const float ENVIRO_TICK_RATE 						= 2;		//! in secs. how often should enviro effet process
+	const float ENVIRO_TICK_RATE 						= 3;		//! in secs. how often should enviro effet process
 	const float	ENVIRO_TICKS_TO_WETNESS_CALCULATION 	= 2;	  	//! each X (ticks) is processed wetness on items on player
 	const float ENVIRO_TICK_ROOF_RC_CHECK 				= 10;	  	//! in secs. how often we should check if player is under the roof (raycast)
 	const float ENVIRO_WET_INCREMENT 					= 0.01;	  	//! amount of wetness added to items wet value each tick if is raining
@@ -722,7 +725,7 @@ class GameConstants
 	 */
 	const float CARS_CONTACT_DMG_THRESHOLD = 750.0;
 	const float CARS_CONTACT_DMG_MIN = 150.0;
-	const float CARS_CONTACT_DMG_KILLCREW = 3000.0;
+	const float CARS_CONTACT_DMG_KILLCREW = 1200.0;
 	/** @}*/
 	
 	/**
@@ -761,6 +764,18 @@ class GameConstants
 	const float STATE_DRY			= 0;
 	/** @}*/
 	
+	/**
+	 * \defgroup ItemWetness Item Wetness Weight Modifiers
+	 * \desc Constants for Item Wetness States
+	 * @{
+	 */
+	const float WEIGHT_DRENCHED		= 2.0;
+	const float WEIGHT_SOAKING_WET	= 1.66;
+	const float WEIGHT_WET			= 1.33;
+	const float WEIGHT_DAMP			= 1.0;
+	const float WEIGHT_DRY			= 1.0;
+	/** @}*/
+	
 	const int OPTICS_STATE_DAY	 		= 0; //default state for most optics
 	const int OPTICS_STATE_NIGHTVISION 	= 1;
 	//const int OPTICS_STATE_OTHER	 	= 2;
@@ -795,8 +810,9 @@ class GameConstants
 	 */
 	
 	//! FOV (vertical angle/2) in radians. Take care to modify also in "basicDefines.hpp"
-	const float DZPLAYER_CAMERA_FOV_EYEZOOM		= 0.3926;	// 45deg
-	const float DZPLAYER_CAMERA_FOV_IRONSIGHTS	= 0.5236;	// 60deg
+	const float DZPLAYER_CAMERA_FOV_EYEZOOM			= 0.3926;	// 45deg
+	const float DZPLAYER_CAMERA_FOV_EYEZOOM_SHALLOW	= 0.610865;	// 70deg
+	const float DZPLAYER_CAMERA_FOV_IRONSIGHTS		= 0.5236;	// 60deg
 	
 	const string DEFAULT_CHARACTER_NAME = "#str_cfgvehicles_survivor0"; //experiment, used to be "Survivor"
 	

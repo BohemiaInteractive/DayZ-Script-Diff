@@ -34,6 +34,8 @@ class Debug
 	static Widget m_DebugLayoutCanvas;
 	static CanvasWidget m_CanvasDebug;
 	
+	
+	
 	static string GetDebugName(Managed entity)
 	{
 		if (!entity)
@@ -180,7 +182,7 @@ class Debug
 	static void	MeleeLog(Entity entity, string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT)
 	{
 		string logMessage = string.Format("%1: %2", entity.GetSimulationTimeStamp(), message);
-		LogMessage(LOG_DEBUG_MELEE, plugin, GetDebugName(entity), author, label, message);
+		LogMessage(LOG_DEBUG_MELEE, plugin, GetDebugName(entity), author, label, logMessage);
 	}
 	
 	/**
@@ -484,10 +486,13 @@ class Debug
 	
 	static private void	SaveLog(string log_message)
 	{
-		Print("" + log_message);
-
+		#ifdef DEVELOPER
+		#ifndef SERVER
+		CachedObjectsParams.PARAM1_STRING.param1 = log_message;
+		GetDispatcher().CallMethod(CALL_ID_SCR_CNSL_ADD_PRINT,CachedObjectsParams.PARAM1_STRING);
+		
 		//Previous was saved to separate file
-		/*FileHandle file_index = OpenFile(GetFileName(), FileMode.APPEND);
+		FileHandle file_index = OpenFile(GetFileName(), FileMode.APPEND);
 		
 		if ( file_index == 0 )
 		{
@@ -496,10 +501,14 @@ class Debug
 			
 		FPrintln(file_index, log_message);
 		
-		CloseFile(file_index);*/
+		CloseFile(file_index);
+		#endif
+		#endif
+		Print(log_message);
+
 	}
 	
-	static private void	ClearLogs()
+	static void	ClearLogs()
 	{
 		if ( FileExist( GetFileName() ) )
 		{
@@ -516,7 +525,7 @@ class Debug
 		}
 	}
 	
-	static private string GetFileName()
+	static string GetFileName()
 	{
 		return CFG_FILE_SCRIPT_LOG_EXT;
 	}
@@ -634,4 +643,99 @@ class LogManager
 	{
 		m_DoWeaponLog = enable;
 	}
+}
+
+enum WeightDebugType
+{
+	NONE 			= 0,
+	RECALC_FORCED 	= 1,
+	RECALC_DIRTY 	= 2,
+	DUMP_STACK		= 4,
+	SET_DIRTY_FLAG  = 8,
+}
+
+class WeightDebug
+{
+	static private ref map<EntityAI, ref WeightDebugData> m_WeightDebugData 	= new map<EntityAI, ref WeightDebugData>();
+	static WeightDebugType m_VerbosityFlags;
+	
+	//-------------------------------------------------------------
+	static WeightDebugData GetWeightDebug(EntityAI entity)
+	{
+		if (!m_WeightDebugData.Get(entity))
+		{
+			WeightDebugData data = new WeightDebugData(entity);
+			m_WeightDebugData.Insert(entity,data);
+			return data;
+		}
+		return m_WeightDebugData.Get(entity);
+	}
+	//-------------------------------------------------------------
+	static void ClearWeightDebug()
+	{
+		m_WeightDebugData.Clear();
+	}
+	//-------------------------------------------------------------
+	static void PrintAll(EntityAI entity)
+	{
+		GameInventory inv = entity.GetInventory();
+		if (!inv)
+			return;
+		array<EntityAI> items = new array<EntityAI>;
+		inv.EnumerateInventory(InventoryTraversalType.PREORDER, items);
+		for(int i = 0; i < items.Count(); i++)
+		{
+			EntityAI item = items.Get(i);
+			if (m_WeightDebugData.Get(item))
+			{
+				m_WeightDebugData.Get(item).Output();
+			}
+		}
+	}
+	//-------------------------------------------------------------
+	static void SetVerbosityFlags(WeightDebugType type)
+	{
+		m_VerbosityFlags = type;
+	}
+}
+
+class WeightDebugData
+{
+	string 	m_Classname;
+	string 	m_Weight;
+	int 	m_InventoryDepth;
+	string 	m_CalcDetails;
+	//-------------------------------------------------------------
+	void WeightDebugData(EntityAI entity)
+	{
+		m_Classname = entity.GetType();
+		m_InventoryDepth = entity.GetHierarchyLevel();
+	}
+	//-------------------------------------------------------------
+	void SetWeight(float weight)
+	{
+		m_Weight = weight.ToString();
+	}
+	//-------------------------------------------------------------
+	void SetCalcDetails(string details)
+	{
+		m_CalcDetails = details;
+	}
+	
+	//-------------------------------------------------------------
+	void AddCalcDetails(string details)
+	{
+		m_CalcDetails += "+ "+details;
+	}
+	//-------------------------------------------------------------
+	void Output()
+	{
+		string spaces;
+		for(int i = 0; i < m_InventoryDepth;i++)
+			spaces+="--------";
+
+		Print(spaces+">" + m_Classname + " Overall entity weight: "+ m_Weight + " Calculation details:" + m_CalcDetails);
+	}
+	//-------------------------------------------------------------
+
 }

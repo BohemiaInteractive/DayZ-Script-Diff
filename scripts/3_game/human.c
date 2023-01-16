@@ -684,6 +684,28 @@ class HumanCommandVehicle
 	proto native bool				WasGearChange();
 	proto native void				SetClutchState(bool pState);
 	proto native void				KeepInVehicleSpaceAfterLeave(bool pState);
+
+	bool IsObjectIgnoredOnGettingOut(IEntity entity)
+	{
+		Object object;
+		if (!Class.CastTo(object, entity))
+		{
+			return true;
+		}
+
+		Transport transport = GetTransport();
+		if (!transport)
+		{
+			return true;
+		}
+
+		if (object == transport || object.GetParent() == transport)
+		{
+			return true;
+		}
+
+		return transport.IsIgnoredObject(object);
+	}
 }
 
 // *************************************************************************************
@@ -1254,7 +1276,7 @@ class Human extends Man
 
 	//---------------------------------------------------------
 	// physic props
-	
+		
 	//! returns true if physics controller is falling 
 	proto native 	bool		PhysicsIsFalling(bool pValidate);
 
@@ -1450,6 +1472,13 @@ class Human extends Man
 
 	//! returns current item's animation instance 
 	proto native   owned string  						DebugGetItemAnimInstance();
+	
+	
+	//---------------------------------------------------------
+	// helper functions for disabling simulation upon death
+	proto native	void ResetDeathCooldown();
+	proto native	bool IsDeathProcessed();
+	proto native	bool IsDeathConditionMet();
 
 
 	//--------------------------------------------------------

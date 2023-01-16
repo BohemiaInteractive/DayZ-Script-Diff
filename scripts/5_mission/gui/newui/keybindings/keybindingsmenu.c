@@ -11,6 +11,7 @@ class KeybindingsMenu extends UIScriptedMenu
 	protected ButtonWidget						m_Back;
 	protected ButtonWidget						m_Undo;
 	protected ButtonWidget						m_Defaults;
+	protected ButtonWidget						m_HardReset;
 	
 	protected int								m_CurrentSettingKeyIndex = -1;
 	protected int								m_CurrentSettingAlternateKeyIndex = -1;
@@ -20,33 +21,37 @@ class KeybindingsMenu extends UIScriptedMenu
 	
 	const int MODAL_ID_BACK = 1337;
 	const int MODAL_ID_DEFAULT = 100;
+	const int MODAL_ID_DEFAULT_ALL = 101;
 	const int MODAL_ID_PRESET_CHANGE = 200;
+	const int MODAL_RESULT_DEFAULT_CURRENT = 0;
+	const int MODAL_RESULT_DEFAULT_ALL = 1;
 	
 	override Widget Init()
 	{
 		Input input = GetGame().GetInput();
-		layoutRoot			= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/options/pc/keybinding_menu.layout", null );
+		layoutRoot			= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/pc/keybinding_menu.layout", null);
 		
-		m_Version			= TextWidget.Cast( layoutRoot.FindAnyWidget( "version" ) );
-		m_Apply				= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "apply" ) );
-		m_Back				= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "back" ) );
-		m_Undo				= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "reset" ) );
-		m_Defaults			= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "defaults" ) );
+		m_Version			= TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
+		m_Apply				= ButtonWidget.Cast(layoutRoot.FindAnyWidget("apply"));
+		m_Back				= ButtonWidget.Cast(layoutRoot.FindAnyWidget("back"));
+		m_Undo				= ButtonWidget.Cast(layoutRoot.FindAnyWidget("undo"));
+		m_Defaults			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("reset"));
+		m_HardReset			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("reset_all"));
 		
-		layoutRoot.FindAnyWidget( "Tabber" ).GetScript( m_Tabber );
+		layoutRoot.FindAnyWidget("Tabber").GetScript(m_Tabber);
 		
 		string version;
-		GetGame().GetVersion( version );
+		GetGame().GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
 			version = "#main_menu_version" + " " + version;
 		#endif
-		m_Version.SetText( version );
+		m_Version.SetText(version);
 
 		#ifdef PLATFORM_PS4
 			string back = "circle";
-			if( GetGame().GetInput().GetEnterButton() == GamepadButton.A )
+			if (GetGame().GetInput().GetEnterButton() == GamepadButton.A)
 			{
 				back = "circle";
 			}
@@ -54,27 +59,27 @@ class KeybindingsMenu extends UIScriptedMenu
 			{
 				back = "cross";
 			}
-			ImageWidget toolbar_b = layoutRoot.FindAnyWidget( "BackIcon" );
-			toolbar_b.LoadImageFile( 0, "set:playstation_buttons image:" + back );
+			ImageWidget toolbar_b = layoutRoot.FindAnyWidget("BackIcon");
+			toolbar_b.LoadImageFile(0, "set:playstation_buttons image:" + back);
 		#endif
 		
 		InitInputSortingMap();
 		CreateTabs();
 		CreateGroupContainer();
 		
-		InitPresets( -1, layoutRoot.FindAnyWidget( "group_header" ), input );
+		InitPresets(-1, layoutRoot.FindAnyWidget("group_header"), input);
 		m_Tabber.m_OnTabSwitch.Insert(UpdateTabContent);
-		m_Tabber.SelectTabControl( 0 );
-		m_Tabber.SelectTabPanel( 0 );
-		g_Game.SetKeyboardHandle( this );
+		m_Tabber.SelectTabControl(0);
+		m_Tabber.SelectTabPanel(0);
+		g_Game.SetKeyboardHandle(this);
 		m_Tabber.RefreshTab(true);
 		
-		ColorDisabled( m_Apply );
-		m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
-		ColorDisabled( m_Undo );
-		m_Undo.SetFlags( WidgetFlags.IGNOREPOINTER );
-		ColorWhite( m_Defaults, null );
-		m_Defaults.ClearFlags( WidgetFlags.IGNOREPOINTER );
+		ColorDisabled(m_Apply);
+		m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
+		ColorDisabled(m_Undo);
+		m_Undo.SetFlags(WidgetFlags.IGNOREPOINTER);
+		ColorWhite(m_Defaults, null);
+		m_Defaults.ClearFlags(WidgetFlags.IGNOREPOINTER);
 		
 		return layoutRoot;
 	}
@@ -88,13 +93,13 @@ class KeybindingsMenu extends UIScriptedMenu
 			{
 				string group_name = GetUApi().SortingLocalization(InputUtils.GetInputActionSortingMap().GetKey(i));
 				group_name = Widget.TranslateString("#" + group_name); //oof
-				m_Tabber.AddTab( group_name );
+				m_Tabber.AddTab(group_name);
 			}
 		}
 		
 		if (InputUtils.GetUnsortedInputActions() && InputUtils.GetUnsortedInputActions().Count() > 0)
 		{
-			m_Tabber.AddTab( Widget.TranslateString("#layout_pc_keybinding_unsorted") );
+			m_Tabber.AddTab(Widget.TranslateString("#layout_pc_keybinding_unsorted"));
 		}
 		m_Tabber.DisableTabs(true);
 	}
@@ -104,28 +109,28 @@ class KeybindingsMenu extends UIScriptedMenu
 		m_GroupsContainer = new KeybindingsContainer(-1,GetGame().GetInput(),layoutRoot.FindAnyWidget("TabContentsHolder"),this);
 	}
 	
-	void UpdateTabContent( int tab_index )
+	void UpdateTabContent(int tab_index)
 	{
 		m_GroupsContainer.SwitchSubgroup(tab_index);
 	}
 	
-	void ClearKeybind( int key_index )
+	void ClearKeybind(int key_index)
 	{
-		ColorWhite( m_Apply, null );
-		m_Apply.ClearFlags( WidgetFlags.IGNOREPOINTER );
-		ColorWhite( m_Undo, null );
-		m_Undo.ClearFlags( WidgetFlags.IGNOREPOINTER );
+		ColorWhite(m_Apply, null);
+		m_Apply.ClearFlags(WidgetFlags.IGNOREPOINTER);
+		ColorWhite(m_Undo, null);
+		m_Undo.ClearFlags(WidgetFlags.IGNOREPOINTER);
 	}
 	
-	void ClearAlternativeKeybind( int key_index )
+	void ClearAlternativeKeybind(int key_index)
 	{
-		ColorWhite( m_Apply, null );
-		m_Apply.ClearFlags( WidgetFlags.IGNOREPOINTER );
-		ColorWhite( m_Undo, null );
-		m_Undo.ClearFlags( WidgetFlags.IGNOREPOINTER );
+		ColorWhite(m_Apply, null);
+		m_Apply.ClearFlags(WidgetFlags.IGNOREPOINTER);
+		ColorWhite(m_Undo, null);
+		m_Undo.ClearFlags(WidgetFlags.IGNOREPOINTER);
 	}
 	
-	void StartEnteringKeybind( int key_index )
+	void StartEnteringKeybind(int key_index)
 	{
 		m_CurrentSettingAlternateKeyIndex	= -1;
 		m_CurrentSettingKeyIndex			= key_index;
@@ -137,7 +142,7 @@ class KeybindingsMenu extends UIScriptedMenu
 		m_CurrentSettingKeyIndex = -1;
 	}
 	
-	void StartEnteringAlternateKeybind( int key_index )
+	void StartEnteringAlternateKeybind(int key_index)
 	{
 		m_CurrentSettingKeyIndex			= -1;
 		m_CurrentSettingAlternateKeyIndex	= key_index;
@@ -149,59 +154,64 @@ class KeybindingsMenu extends UIScriptedMenu
 		m_CurrentSettingAlternateKeyIndex = -1;
 	}
 	
-	void ConfirmKeybindEntry( TIntArray new_keys )
+	void ConfirmKeybindEntry(TIntArray new_keys)
 	{
 		m_CurrentSettingKeyIndex = -1;
-		ColorWhite( m_Apply, null );
-		m_Apply.ClearFlags( WidgetFlags.IGNOREPOINTER );
-		ColorWhite( m_Undo, null );
-		m_Undo.ClearFlags( WidgetFlags.IGNOREPOINTER );
+		ColorWhite(m_Apply, null);
+		m_Apply.ClearFlags(WidgetFlags.IGNOREPOINTER);
+		ColorWhite(m_Undo, null);
+		m_Undo.ClearFlags(WidgetFlags.IGNOREPOINTER);
 	}
 	
-	void ConfirmAlternateKeybindEntry( TIntArray new_keys )
+	void ConfirmAlternateKeybindEntry(TIntArray new_keys)
 	{
 		m_CurrentSettingAlternateKeyIndex = -1;
-		ColorWhite( m_Apply, null );
-		m_Apply.ClearFlags( WidgetFlags.IGNOREPOINTER );
-		ColorWhite( m_Undo, null );
-		m_Undo.ClearFlags( WidgetFlags.IGNOREPOINTER );
+		ColorWhite(m_Apply, null);
+		m_Apply.ClearFlags(WidgetFlags.IGNOREPOINTER);
+		ColorWhite(m_Undo, null);
+		m_Undo.ClearFlags(WidgetFlags.IGNOREPOINTER);
 	}
 	
 	override void Update(float timeslice)
 	{
-		if( GetGame().GetInput().LocalPress("UAUIBack",false) )
+		if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Back();
 		}
 		
-		if( m_GroupsContainer )
+		if (m_GroupsContainer)
 		{
-			m_GroupsContainer.Update( timeslice );
+			m_GroupsContainer.Update(timeslice);
 		}
 	}
 	
-	override bool OnClick( Widget w, int x, int y, int button )
+	override bool OnClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT )
+		if (button == MouseState.LEFT)
 		{
-			if( w == m_Apply )
+			if (w == m_Apply)
 			{
 				Apply();
 				return true;
 			}
-			else if( w == m_Back )
+			else if (w == m_Back)
 			{
 				Back();
 				return true;
 			}
-			else if( w == m_Undo )
+			else if (w == m_Undo)
 			{
 				Reset();
 				return true;
 			}
-			else if( w == m_Defaults )
+			else if (w == m_Defaults)
 			{
 				SetToDefaults();
+				return true;
+			}
+			else if (w == m_HardReset)
+			{
+				HardReset();
 				return true;
 			}
 		}
@@ -210,12 +220,12 @@ class KeybindingsMenu extends UIScriptedMenu
 	
 	void Apply()
 	{
-		ColorDisabled( m_Apply );
-		m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
-		ColorDisabled( m_Undo );
-		m_Undo.SetFlags( WidgetFlags.IGNOREPOINTER );
-		ColorWhite( m_Defaults, null );
-		m_Defaults.ClearFlags( WidgetFlags.IGNOREPOINTER );
+		ColorDisabled(m_Apply);
+		m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
+		ColorDisabled(m_Undo);
+		m_Undo.SetFlags(WidgetFlags.IGNOREPOINTER);
+		ColorWhite(m_Defaults, null);
+		m_Defaults.ClearFlags(WidgetFlags.IGNOREPOINTER);
 		
 		m_GroupsContainer.Apply();
 		
@@ -225,13 +235,13 @@ class KeybindingsMenu extends UIScriptedMenu
 	
 	void Back()
 	{
-		if( m_CurrentSettingKeyIndex != -1 )
+		if (m_CurrentSettingKeyIndex != -1)
 		{
 			CancelEnteringKeybind();
 			return;
 		}
 		
-		if( m_CurrentSettingAlternateKeyIndex != -1 )
+		if (m_CurrentSettingAlternateKeyIndex != -1)
 		{
 			CancelEnteringAlternateKeybind();
 			return;
@@ -239,7 +249,7 @@ class KeybindingsMenu extends UIScriptedMenu
 		
 		bool changed = m_GroupsContainer.IsChanged();
 
-		if ( changed )
+		if (changed)
 		{
 			g_Game.GetUIManager().ShowDialog("#main_menu_configure", "#main_menu_configure_desc", MODAL_ID_BACK, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
 		}
@@ -252,10 +262,10 @@ class KeybindingsMenu extends UIScriptedMenu
 	//! Undoes the unsaved changes and reverts to previous state. Does not reset to defaults!
 	void Reset()
 	{
-		ColorDisabled( m_Apply );
-		m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
-		ColorDisabled( m_Undo );
-		m_Undo.SetFlags( WidgetFlags.IGNOREPOINTER );
+		ColorDisabled(m_Apply);
+		m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
+		ColorDisabled(m_Undo);
+		m_Undo.SetFlags(WidgetFlags.IGNOREPOINTER);
 		
 		m_GroupsContainer.Reset();
 	}
@@ -265,32 +275,37 @@ class KeybindingsMenu extends UIScriptedMenu
 		g_Game.GetUIManager().ShowDialog("#menu_default_cap", "#menu_default_desc", MODAL_ID_DEFAULT, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
 	}
 	
-	void PerformSetToDefaults()
+	void HardReset()
 	{
-		ColorDisabled( m_Apply );
-		m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
-		ColorDisabled( m_Undo );
-		m_Undo.SetFlags( WidgetFlags.IGNOREPOINTER );
-		ColorDisabled( m_Defaults );
-		m_Defaults.SetFlags( WidgetFlags.IGNOREPOINTER );
+		g_Game.GetUIManager().ShowDialog("#menu_default_cap", "menu_default_all_desc", MODAL_ID_DEFAULT_ALL, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
+	}
+	
+	void PerformSetToDefaultsExt(int mode)
+	{
+		switch (mode)
+		{
+			case MODAL_RESULT_DEFAULT_CURRENT:
+				GetUApi().PresetReset();
+			break;
+			
+			case MODAL_RESULT_DEFAULT_ALL:
+				GetUApi().Revert();
+			break;
+		}
 		
-		GetUApi().Revert();
-		
+		ColorDisabled(m_Apply);
+		m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
+		ColorDisabled(m_Undo);
+		m_Undo.SetFlags(WidgetFlags.IGNOREPOINTER);
 		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().RefreshExcludes);
-		
 		m_GroupsContainer.Reset(true);
 	}
 	
-	void DeferredDefaultsInit()
+	override bool OnModalResult(Widget w, int x, int y, int code, int result)
 	{
-		//GetGame().GetMission().RefreshExcludes();
-	}
-	
-	override bool OnModalResult( Widget w, int x, int y, int code, int result )
-	{
-		if( code == MODAL_ID_BACK )
+		if (code == MODAL_ID_BACK)
 		{
-			if( result == 2 )
+			if (result == DBB_YES)
 			{
 				Reset();
 				GetGame().GetUIManager().Back();
@@ -299,15 +314,22 @@ class KeybindingsMenu extends UIScriptedMenu
 		}
 		else if (code == MODAL_ID_DEFAULT)
 		{
-			if( result == 2 )
+			if (result == DBB_YES)
 			{
-				PerformSetToDefaults();
+				PerformSetToDefaultsExt(MODAL_RESULT_DEFAULT_CURRENT);
 			}
 			return true;
 		}
+		else if (code == MODAL_ID_DEFAULT_ALL)
+		{
+			if (result == DBB_YES)
+			{
+				PerformSetToDefaultsExt(MODAL_RESULT_DEFAULT_ALL);
+			}
+		}
 		else if (code == MODAL_ID_PRESET_CHANGE)
 		{
-			if( result == 2 )
+			if (result == DBB_YES)
 			{
 				Reset();
 				m_PresetSelector.PerformSetOption(m_TargetPresetIndex);
@@ -321,36 +343,36 @@ class KeybindingsMenu extends UIScriptedMenu
 	override void Refresh()
 	{
 		string version;
-		GetGame().GetVersion( version );
+		GetGame().GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
 			version = "#main_menu_version" + " " + version;
 		#endif
-		m_Version.SetText( version );
+		m_Version.SetText(version);
 	}
 	
-	override bool OnMouseEnter( Widget w, int x, int y )
+	override bool OnMouseEnter(Widget w, int x, int y)
 	{
-		if( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			ColorRed( w );
+			ColorRed(w);
 			return true;
 		}
 		return false;
 	}
 	
-	override bool OnMouseLeave( Widget w, Widget enterW, int x, int y )
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{
-		if( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			if ( (w.GetFlags() & WidgetFlags.DISABLED) || (w.GetFlags() & WidgetFlags.IGNOREPOINTER) )
+			if ((w.GetFlags() & WidgetFlags.DISABLED) || (w.GetFlags() & WidgetFlags.IGNOREPOINTER))
 			{
 				ColorDisabled(w);
 			}
 			else
 			{
-				ColorWhite( w, enterW );
+				ColorWhite(w, enterW);
 			}
 			return true;
 		}
@@ -362,64 +384,64 @@ class KeybindingsMenu extends UIScriptedMenu
 		return super.OnMouseWheel(w, x, y, wheel);
 	}
 	
-	override bool OnFocus( Widget w, int x, int y )
+	override bool OnFocus(Widget w, int x, int y)
 	{
-		if( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			ColorRed( w );
+			ColorRed(w);
 			return true;
 		}
 		return false;
 	}
 	
-	override bool OnFocusLost( Widget w, int x, int y )
+	override bool OnFocusLost(Widget w, int x, int y)
 	{
-		if( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			if ( (w.GetFlags() & WidgetFlags.DISABLED) || (w.GetFlags() & WidgetFlags.IGNOREPOINTER) )
+			if ((w.GetFlags() & WidgetFlags.DISABLED) || (w.GetFlags() & WidgetFlags.IGNOREPOINTER))
 			{
 				ColorDisabled(w);
 			}
 			else
 			{
-				ColorWhite( w, null );
+				ColorWhite(w, null);
 			}
 			return true;
 		}
 		return false;
 	}
 	
-	bool IsFocusable( Widget w )
+	bool IsFocusable(Widget w)
 	{
-		if( w )
+		if (w)
 		{
-			return ( w == m_Apply || w == m_Back || w == m_Undo || w == m_Defaults );
+			return (w == m_Apply || w == m_Back || w == m_Undo || w == m_Defaults || w == m_HardReset);
 		}
 		return false;
 	}
 	
 	//Coloring functions (Until WidgetStyles are useful)
-	void ColorRed( Widget w )
+	void ColorRed(Widget w)
 	{
-		SetFocus( w );
+		SetFocus(w);
 		
-		ButtonWidget button = ButtonWidget.Cast( w );
-		if( button && button != m_Apply )
+		ButtonWidget button = ButtonWidget.Cast(w);
+		if (button && button != m_Apply)
 		{
-			button.SetTextColor( ARGB( 255, 200, 0, 0 ) );
+			button.SetTextColor(ARGB(255, 200, 0, 0));
 		}
 	}
 	
-	void ColorWhite( Widget w, Widget enterW )
+	void ColorWhite(Widget w, Widget enterW)
 	{
 		#ifdef PLATFORM_WINDOWS
-		SetFocus( null );
+		SetFocus(null);
 		#endif
 		
-		ButtonWidget button = ButtonWidget.Cast( w );
-		if ( button )
+		ButtonWidget button = ButtonWidget.Cast(w);
+		if (button)
 		{
-			if ( button.GetFlags() & WidgetFlags.DISABLED )
+			if (button.GetFlags() & WidgetFlags.DISABLED)
 			{
 				button.SetTextColor(ColorManager.COLOR_DISABLED_TEXT);
 			}
@@ -430,14 +452,14 @@ class KeybindingsMenu extends UIScriptedMenu
 		}
 	}
 	
-	void ColorDisabled( Widget w )
+	void ColorDisabled(Widget w)
 	{
 		#ifdef PLATFORM_WINDOWS
-		SetFocus( null );
+		SetFocus(null);
 		#endif
 		
 		ButtonWidget button = ButtonWidget.Cast(w);
-		if ( button )
+		if (button)
 		{
 			button.SetTextColor(ColorManager.COLOR_DISABLED_TEXT);
 		}
@@ -448,9 +470,9 @@ class KeybindingsMenu extends UIScriptedMenu
 		InputUtils.InitInputMetadata();
 	}
 	
-	void InitPresets( int index, Widget parent, Input input )
+	void InitPresets(int index, Widget parent, Input input)
 	{
-		Widget kb_root = parent.FindAnyWidget( "keyboard_dropown" );
+		Widget kb_root = parent.FindAnyWidget("keyboard_dropown");
 		if (kb_root)
 		{
 			kb_root.Show(false);
@@ -461,18 +483,18 @@ class KeybindingsMenu extends UIScriptedMenu
 		
 		for (int i = 0; i < input.GetProfilesCount(); i++)
 		{
-			input.GetProfileName( i, profile_text );
-			opt1.Insert( profile_text );
+			input.GetProfileName(i, profile_text);
+			opt1.Insert(profile_text);
 		}
 		
 		int current_idx = input.GetCurrentProfile();
 		m_OriginalPresetIndex = current_idx;
-		m_PresetSelector = new OptionSelectorMultistate( layoutRoot.FindAnyWidget( "profile_setting_option" ), current_idx, null, false, opt1 );
-		m_PresetSelector.m_AttemptOptionChange.Insert( OnAttemptSelectPreset );
-		m_PresetSelector.m_OptionChanged.Insert( OnSelectKBPreset );
+		m_PresetSelector = new OptionSelectorMultistate(layoutRoot.FindAnyWidget("profile_setting_option"), current_idx, null, false, opt1);
+		m_PresetSelector.m_AttemptOptionChange.Insert(OnAttemptSelectPreset);
+		m_PresetSelector.m_OptionChanged.Insert(OnSelectKBPreset);
 	}
 	
-	void OnAttemptSelectPreset( int index )
+	void OnAttemptSelectPreset(int index)
 	{
 		bool changed = m_GroupsContainer.IsChanged() && m_OriginalPresetIndex != index;
 		m_TargetPresetIndex = index;
@@ -485,12 +507,14 @@ class KeybindingsMenu extends UIScriptedMenu
 		m_PresetSelector.SetCanSwitch(!changed);
 	}
 	
-	void OnSelectKBPreset( int index )
+	void OnSelectKBPreset(int index)
 	{
 		m_OriginalPresetIndex = index;
 		m_GroupsContainer.OnSelectKBPreset(index);
 		string profile_text;
-		GetGame().GetInput().GetProfileName( index, profile_text );
+		GetGame().GetInput().GetProfileName(index, profile_text);
+		
+		GetGame().GetMission().GetOnInputPresetChanged().Invoke();
 	}
 	
 //////////////////////////////////////////////////
@@ -501,7 +525,17 @@ class KeybindingsMenu extends UIScriptedMenu
 		return m_GroupsContainer;
 	}
 	
-	void AddGroup( int index, Input input )
+	void AddGroup(int index, Input input)
+	{
+	}
+	
+	//! deprecated, resets all (as before ~1.20)
+	void PerformSetToDefaults()
+	{
+		PerformSetToDefaultsExt(MODAL_RESULT_DEFAULT_ALL);
+	}
+	//! deprecated
+	void DeferredDefaultsInit()
 	{
 	}
 }

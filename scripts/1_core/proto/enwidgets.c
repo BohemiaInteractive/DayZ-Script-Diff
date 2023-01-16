@@ -132,6 +132,8 @@ class Widget: Managed
 	proto native void SetColor(int color);
 	proto native int GetColor();
 	proto native void SetRotation(float roll, float pitch, float yaw, bool immedUpdate = true);
+	//! returns rotation of widget in order roll, pitch, yaw
+	proto native vector GetRotation();
 	proto native void SetAlpha(float alpha);
 	proto native float GetAlpha();
 	proto void GetPos(out float x, out float y);

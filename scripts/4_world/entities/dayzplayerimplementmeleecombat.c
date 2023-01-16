@@ -41,7 +41,7 @@ class DayZPlayerImplementMeleeCombat
 	protected EMeleeTargetType			m_TargetType;  			//!< DEPRECATED: Was added but never used..?
 	protected ref array<Object> 		m_AllTargetObjects; 	//!< All potential targets found during most recent TargetSelection
 	
-	#ifdef DEVELOPER
+	#ifdef DIAG_DEVELOPER
 	protected Object					m_PreviousTargetObject; 		//!< Main target found during most recent TargetSelection
 	protected ref array<Object> 		m_AllPreviousTargetObjects; 	//!< All potential targets found during most recent TargetSelection
 	#endif
@@ -75,7 +75,7 @@ class DayZPlayerImplementMeleeCombat
 	protected string					m_HitZoneName; 		//!< Most recent target HitZone name
 	protected vector					m_HitPositionWS;	//!< Most recent target position
 	
-	#ifdef DEVELOPER
+	#ifdef DIAG_DEVELOPER
 	protected int 						m_PreviousHitZoneIdx; 		//!< Most recent target HitZone index
 	protected string					m_PreviousHitZoneName; 		//!< Most recent target HitZone name
 	protected vector					m_PreviousHitPositionWS;	//!< Most recent target position
@@ -109,7 +109,7 @@ class DayZPlayerImplementMeleeCombat
 		m_TargetObject      = null;
 		m_TargetType		= EMeleeTargetType.ALIGNABLE;
 		m_AllTargetObjects 	= new array<Object>;
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		m_AllPreviousTargetObjects = new array<Object>;
 		#endif
 		
@@ -199,7 +199,7 @@ class DayZPlayerImplementMeleeCombat
 		m_WeaponRange 				= GetWeaponRange(weapon, m_WeaponMode);
 		m_WasHit 					= wasHitEvent;
 		
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		m_AllPreviousTargetObjects	= m_AllTargetObjects;
 		#endif
 		m_AllTargetObjects.Clear();
@@ -207,7 +207,7 @@ class DayZPlayerImplementMeleeCombat
 	
 	void ResetTarget()
 	{
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		m_PreviousTargetObject 	= m_TargetObject;
 		m_PreviousHitPositionWS = m_HitPositionWS;
 		m_PreviousHitZoneIdx 	= m_HitZoneIdx;
@@ -352,7 +352,8 @@ class DayZPlayerImplementMeleeCombat
 		// First to obtain target to move towards during animation
 		// Second one is to see if that target is still in range before applying damage to it
 		// m_WasHit means the hit event occured, so this is the second call
-		if ( m_WasHit )
+
+		if (m_WasHit && GetFinisherType() == -1)
 		{
 			// See if the component is still in range
 			if (CanObjectBeTargeted(m_TargetObject) && ( vector.DistanceSq(rayStart, m_TargetObject.GetDamageZonePos(m_HitZoneName)) <= dist2 ))
@@ -500,6 +501,7 @@ class DayZPlayerImplementMeleeCombat
 		m_HitPositionWS = vector.Zero;
 		m_HitZoneIdx 	= -1;
 		m_HitZoneName 	= "";
+		SetFinisherType(-1);
 	}
 	
 	protected void SetTarget(Object obj, vector hitPos, int hitZone)
@@ -703,7 +705,7 @@ class DayZPlayerImplementMeleeCombat
 		return hitDir <= (-180 + angle) || hitDir >= (180 - angle);
 	}
 	
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 	// ------------------------------------------------------------
 	// DEBUG
 	// ------------------------------------------------------------
@@ -715,28 +717,28 @@ class DayZPlayerImplementMeleeCombat
 	{
 		CleanAllDebugShapes();
 		
-		if (!DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DEBUG_ENABLE))
+		if (!DiagMenu.GetBool(DiagMenuIDs.MELEE_DEBUG))
 			return;
 
-		if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_CONTINUOUS) && (!GetGame().IsMultiplayer() || !GetGame().IsServer()))
+		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_CONTINUOUS) && (!GetGame().IsMultiplayer() || !GetGame().IsServer()))
 			Update(weapon, hitType);
 
-		if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_SHOW_TARGETS))
+		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_SHOW_TARGETS))
 			ShowDebugMeleeTarget();
 		
-		if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DRAW_TARGETS))
+		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_DRAW_TARGETS))
 			DrawDebugTargets();
 		
-		if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DRAW_RANGE))
+		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_DRAW_RANGE))
 		{
 			DrawDebugMeleeHitPosition();
 			DrawDebugMeleeCone();
 		}
 		
-		if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DRAW_BLOCK_RANGE_AI))
+		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_DRAW_BLOCK_RANGE_AI))
 			DrawDebugBlockCone(GameConstants.AI_MAX_BLOCKABLE_ANGLE, COLOR_GREEN);
 		
-		if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DRAW_BLOCK_RANGE_PVP))
+		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_DRAW_BLOCK_RANGE_PVP))
 			DrawDebugBlockCone(GameConstants.PVP_MAX_BLOCKABLE_ANGLE, COLOR_YELLOW);
 	}
 	

@@ -33,8 +33,6 @@ class Grenade_ChemGas : Grenade_Base
 	
 	override void EOnContact(IEntity other, Contact extra)
 	{
-		super.EOnContact(other, extra);
-		
 		if (GetGame().IsServer())
 		{
 			if (!m_Exploded)

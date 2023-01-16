@@ -64,17 +64,33 @@ class NotificationSystem
 	protected ref array<ref NotificationRuntimeData>			m_DeferredArray;
 	protected ref map<NotificationType, ref NotificationData>	m_DataArray;
 	
-	protected ref ScriptInvoker									m_OnNotificationAdded = new ScriptInvoker;
-	protected ref ScriptInvoker									m_OnNotificationRemoved = new ScriptInvoker;
+	ref ScriptInvoker									m_OnNotificationAdded = new ScriptInvoker;
+	ref ScriptInvoker									m_OnNotificationRemoved = new ScriptInvoker;
+	
+	static void InitInstance()
+	{
+		if (!m_Instance)
+		{
+			m_Instance = new NotificationSystem();
+			m_Instance.LoadNotificationData();
+		}
+	}
+	
+	static void CleanupInstance()
+	{
+		m_Instance = null;
+	}
+	
+	static NotificationSystem GetInstance()
+	{
+		return m_Instance;
+	}
 	
 	void NotificationSystem()
 	{
-		m_Instance = this;
 		#ifndef WORKBENCH
 		m_TimeArray = new array<ref NotificationRuntimeData>;
 		m_DeferredArray = new array<ref NotificationRuntimeData>;
-		
-		LoadNotificationData();
 		#endif
 	}
 	
@@ -179,7 +195,7 @@ class NotificationSystem
 	*/
 	static void AddNotificationExtended( float show_time, string title_text, string detail_text = "", string icon = "" )
 	{
-		if( m_Instance.m_TimeArray.Count() < MAX_NOTIFICATIONS )
+		if ( m_Instance.m_TimeArray.Count() < MAX_NOTIFICATIONS )
 		{
 			float time = GetGame().GetTickTime() + show_time;
 			
@@ -199,23 +215,23 @@ class NotificationSystem
 	
 	static void Update(float timeslice)
 	{
-		if( m_Instance )
+		if ( m_Instance )
 		{
 			array<NotificationRuntimeData> to_remove = new array<NotificationRuntimeData>;
-			foreach( NotificationRuntimeData data : m_Instance.m_TimeArray )
+			foreach ( NotificationRuntimeData data : m_Instance.m_TimeArray )
 			{
-				if( data.GetTime() < GetGame().GetTickTime() )
+				if ( data.GetTime() < GetGame().GetTickTime() )
 				{
 					to_remove.Insert( data );
 				} 
 			}
 			
-			foreach( NotificationRuntimeData data2 : to_remove )
+			foreach ( NotificationRuntimeData data2 : to_remove )
 			{
 				m_Instance.m_TimeArray.RemoveItem( data2 );
 				m_Instance.m_OnNotificationRemoved.Invoke( data2 );
 				
-				if( m_Instance.m_DeferredArray.Count() > 0 )
+				if ( m_Instance.m_DeferredArray.Count() > 0 )
 				{
 					NotificationRuntimeData data_def = m_Instance.m_DeferredArray.Get( m_Instance.m_DeferredArray.Count() - 1 );
 					float time = GetGame().GetTickTime() + data_def.GetTime();
@@ -230,7 +246,7 @@ class NotificationSystem
 	
 	protected NotificationData GetNotificationData( NotificationType type )
 	{
-		if( m_DataArray.Contains(type) )
+		if ( m_DataArray.Contains(type) )
 		{
 			return m_DataArray.Get( type );
 		}
@@ -268,25 +284,5 @@ class NotificationSystem
 			}
 			JsonFileLoader<map<NotificationType, ref NotificationData>>.JsonSaveFile( JSON_FILE_PATH, m_Instance.m_DataArray );
 		}
-	}
-	
-	static void BindOnAdd( func fn )
-	{
-		m_Instance.m_OnNotificationAdded.Insert( fn );
-	}
-	
-	static void UnbindOnAdd( func fn )
-	{
-		m_Instance.m_OnNotificationAdded.Remove( fn );
-	}
-	
-	static void BindOnRemove( func fn )
-	{
-		m_Instance.m_OnNotificationRemoved.Insert( fn );
-	}
-	
-	static void UnbindOnRemove( func fn )
-	{
-		m_Instance.m_OnNotificationRemoved.Remove( fn );
 	}
 }

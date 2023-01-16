@@ -1,6 +1,5 @@
 class TransferValues extends Managed
 {
-
 	const int TYPE_HEALTH 	= 1;
 	const int TYPE_BLOOD 	= 2;
 	
@@ -44,20 +43,13 @@ class TransferValues extends Managed
 	
 	void OnScheduledTick(float deltatime)
 	{
-		#ifdef DEVELOPER
-		if ( DiagMenu.GetBool(DiagMenuIDs.DM_TRANSFER_VALUES_SHOW) )
-		{
-			if(!GetGame().IsDedicatedServer())
-				ShowDebugValues(true);
-		}
-		else
-		{
-			if(!GetGame().IsDedicatedServer())
-				ShowDebugValues(false);
-		}
+		#ifdef DIAG_DEVELOPER
+		#ifndef SERVER
+		ShowDebugValues(DiagMenu.GetBool(DiagMenuIDs.TRANSFER_VALUES_SHOW));
+		#endif
 		#endif
 		
-		if( GetGame().IsClient() ) return;
+		if ( GetGame().IsClient() ) return;
 		
 		m_TimeSinceLastTick += deltatime;
 		
@@ -65,7 +57,7 @@ class TransferValues extends Managed
 		{
 			SendInitValues();
 		}
-		else if( m_TimeSinceLastTick > VALUE_CHECK_INTERVAL )
+		else if ( m_TimeSinceLastTick > VALUE_CHECK_INTERVAL )
 		{
 			/*
 			Print(m_TimeSinceLastTick.ToString());
@@ -108,7 +100,7 @@ class TransferValues extends Managed
 		float difference_normalized = health_normalized - m_LastHealthUpdate;
 		float diff_abs = Math.AbsFloat(difference_normalized);
 		
-		if( diff_abs > ( SENSITIVTY_PERCENTAGE /100 ) )
+		if ( diff_abs > ( SENSITIVTY_PERCENTAGE / 100 ) )
 		{
 			SendValue(TYPE_HEALTH, health_normalized);
 			m_LastHealthUpdate = health_normalized;
@@ -148,7 +140,7 @@ class TransferValues extends Managed
 		float difference_normalized = blood_normalized - m_LastBloodUpdate;
 		float diff_abs = Math.AbsFloat(difference_normalized);
 		
-		if( diff_abs > ( SENSITIVTY_PERCENTAGE /100 ) )
+		if ( diff_abs > ( SENSITIVTY_PERCENTAGE /100 ) )
 		{
 			SendValue(TYPE_BLOOD, blood_normalized);
 			m_LastBloodUpdate = blood_normalized;
@@ -185,11 +177,11 @@ class TransferValues extends Managed
 
 	void ReceiveValue(int value_type, float value)
 	{
-		if( value_type == TYPE_HEALTH )
+		if ( value_type == TYPE_HEALTH )
 		{
 			m_HealthClient = value;
 		}
-		else if( value_type == TYPE_BLOOD )
+		else if ( value_type == TYPE_BLOOD )
 		{
 			m_BloodClient = value;
 		}
@@ -206,13 +198,13 @@ class TransferValues extends Managed
 	}
 	
 	void ShowDebugValues(bool show)
-	{
-		#ifdef DEVELOPER
-		if( show )
-		{
-			
+	{		
+		#ifdef DIAG_DEVELOPER
+		if ( show )
+		{		
 			DbgUI.BeginCleanupScope();     
 	        DbgUI.Begin("Values", 50, 50);
+			
 	        DbgUI.Text("Blood: " + m_BloodClient.ToString());
 			DbgUI.Text("Health: " + m_HealthClient.ToString());
 
@@ -227,6 +219,5 @@ class TransferValues extends Managed
 	        DbgUI.EndCleanupScope();   
 		}
 		#endif
-	}
-	
+	}	
 }

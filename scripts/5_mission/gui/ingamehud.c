@@ -62,6 +62,14 @@ class IngameHud extends Hud
 	protected bool								m_InVehicleAsDriver;
 	protected CarScript							m_CurrentVehicle;
 	
+	
+	protected Widget 							m_GameStatusIconsPanel;					
+	protected ImageWidget 						m_HighPingA;					
+	protected ImageWidget 						m_HighPingB;					
+	protected ImageWidget 						m_LowServerPerfA;			
+	protected ImageWidget 						m_LowServerPerfB;			
+	protected ImageWidget 						m_ConnectionLost;			
+	
 	protected Widget							m_Notifiers;
 	protected TextWidget						m_BloodType;
 	protected TextWidget						m_BloodPosType;
@@ -184,8 +192,9 @@ class IngameHud extends Hud
 		m_VehicleGearTableAuto.Set(CarAutomaticGearboxMode.R, "R");
 		m_VehicleGearTableAuto.Set(CarAutomaticGearboxMode.N, "N");
 		m_VehicleGearTableAuto.Set(CarAutomaticGearboxMode.D, "D");
+
 	}
-	
+
 	override void Init( Widget hud_panel_widget )
 	{
 		m_HudPanelWidget = hud_panel_widget;
@@ -262,6 +271,15 @@ class IngameHud extends Hud
 
 		// heat buffer plus sign
 		m_HeatBufferPlus = ImageWidget.Cast( m_HudPanelWidget.FindAnyWidget( "HeatBuffer" ) );
+		
+		//Game State Icons
+		m_GameStatusIconsPanel			= m_HudPanelWidget.FindAnyWidget("GameStatusIcons");
+		m_HighPingA						= ImageWidget.Cast(m_HudPanelWidget.FindAnyWidget("HighPingA"));
+		m_HighPingB						= ImageWidget.Cast(m_HudPanelWidget.FindAnyWidget("HighPingB"));
+		m_LowServerPerfA				= ImageWidget.Cast(m_HudPanelWidget.FindAnyWidget("LowServerPerfA"));
+		m_LowServerPerfB				= ImageWidget.Cast(m_HudPanelWidget.FindAnyWidget("LowServerPerfB"));
+		m_ConnectionLost				= ImageWidget.Cast(m_HudPanelWidget.FindAnyWidget("ConnectionLost"));
+		
 		if ( m_HeatBufferPlus )
 			m_HeatBufferPlus.Show( false );
 
@@ -284,6 +302,8 @@ class IngameHud extends Hud
 		
 		SetLeftStatsVisibility( true );
 		m_HudState = g_Game.GetProfileOption( EDayZProfilesOptions.HUD );
+		MissionGameplay.Cast(GetGame().GetMission()).GetConnectivityInvoker().Insert(OnConnectionIconsSettingsChanged);
+		m_GameStatusIconsPanel.Show(g_Game.GetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO));
 		//ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR)); //unreliable
 	}
 	
@@ -358,6 +378,11 @@ class IngameHud extends Hud
 		m_AnyBadgeVisible = false;
 		m_BadgeNotifierDivider.Show(false);
 	
+	}
+	
+	void OnConnectionIconsSettingsChanged(bool enabled)
+	{
+		m_GameStatusIconsPanel.Show(enabled);
 	}
 	
 	override void OnResizeScreen()
@@ -435,7 +460,7 @@ class IngameHud extends Hud
 		m_CursorIcon.FindAnyWidget( type ).GetParent().SetSize( x, y );
 	}
 
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 	// Debug Crosshair
 	override void SetPermanentCrossHair( bool show )
 	{
@@ -1132,6 +1157,60 @@ class IngameHud extends Hud
 	bool GetHudState()
 	{
 		return m_HudState;
+	}
+	
+	
+	
+	override void SetConnectivityStatIcon(EConnectivityStatType type, EConnectivityStatLevel level)
+	{
+		if (type == EConnectivityStatType.PING)
+		{
+			switch (level)
+			{
+				case EConnectivityStatLevel.OFF:
+					m_HighPingA.Show(false);
+					m_HighPingB.Show(false);
+					break;
+				case EConnectivityStatLevel.LEVEL1:
+					m_HighPingA.Show(true);
+					m_HighPingB.Show(false);
+					break;
+				case EConnectivityStatLevel.LEVEL2:
+					m_HighPingA.Show(false);
+					m_HighPingB.Show(true);
+					break;
+			}
+		}
+		else if (type == EConnectivityStatType.SERVER_PERF)
+		{
+			switch (level)
+			{
+				case EConnectivityStatLevel.OFF:
+					m_LowServerPerfA.Show(false);
+					m_LowServerPerfB.Show(false);
+					break;
+				case EConnectivityStatLevel.LEVEL1:
+					m_LowServerPerfA.Show(true);
+					m_LowServerPerfB.Show(false);
+					break;
+				case EConnectivityStatLevel.LEVEL2:
+					m_LowServerPerfA.Show(false);
+					m_LowServerPerfB.Show(true);
+					break;
+			}
+		}
+		else if (type == EConnectivityStatType.CONN_LOST)
+		{
+			switch (level)
+			{
+				case EConnectivityStatLevel.OFF:
+					m_ConnectionLost.Show(false);
+					break;
+				case EConnectivityStatLevel.LEVEL1:
+					m_ConnectionLost.Show(true);
+					break
+			}
+		}
 	}
 	
 	//! eg. stamina bar...

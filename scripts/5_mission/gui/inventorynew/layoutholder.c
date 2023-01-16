@@ -42,39 +42,37 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 		if (m_am_entity1 == null)
 			return;
 
-		TSelectableActionInfoArray customActions = new TSelectableActionInfoArray;
-		ItemBase itemBase = ItemBase.Cast( item );
-		
-		///itemBase.GetRecipesActions(m_player, customActions);
+		TSelectableActionInfoArrayEx customActions = new TSelectableActionInfoArrayEx();
+		ItemBase itemBase = ItemBase.Cast(item);
 		itemBase.GetDebugActions(customActions);
-		/*
-		if( ItemBase.GetDebugActionsMask() & DebugActionType.GENERIC_ACTIONS )
-		{
-			
-		}*/
-		if ( ItemBase.GetDebugActionsMask() & DebugActionType.PLAYER_AGENTS )
+
+		if (ItemBase.GetDebugActionsMask() & DebugActionType.PLAYER_AGENTS)
 		{
 			m_player.GetDebugActions(customActions);
 		}
 
 		int actionsCount = customActions.Count();
-		for ( int i = 0; i < customActions.Count(); i++ )
+		for (int i = 0; i < customActions.Count(); i++)
 		{
-			TSelectableActionInfo actionInfo = customActions.Get(i);
-			if ( actionInfo )
+			TSelectableActionInfoWithColor actionInfo = TSelectableActionInfoWithColor.Cast(customActions.Get(i));
+			if (actionInfo)
 			{
-				int actionId = actionInfo.param2;
-				string actionText = actionInfo.param3;
+				int actionId 		= actionInfo.param2;
+				int textColor		= actionInfo.param4;
+				string actionText 	= actionInfo.param3;
 
-				cmenu.Add(actionText, this, "OnSelectAction", new Param2<ItemBase, int>(itemBase, actionId));
+				if (actionId == EActions.SEPARATOR)
+					cmenu.AddEx(actionText, textColor, this, "", null);
+				else
+					cmenu.AddEx(actionText, textColor, this, "OnSelectAction", new Param3<ItemBase, int, int>(itemBase, actionId, textColor));
 			}
 		}
 
-		int m_am_Pos_x,  m_am_Pos_y;
-		GetMousePos( m_am_Pos_x, m_am_Pos_y );
-				m_am_Pos_x -= 5;
-		m_am_Pos_y -= 5;
-		cmenu.Show(m_am_Pos_x, m_am_Pos_y);
+		int actionMenuPosX, actionMenuPosY;
+		GetMousePos(actionMenuPosX, actionMenuPosY);
+		actionMenuPosX -= 5;
+		actionMenuPosY -= 5;
+		cmenu.Show(actionMenuPosX, actionMenuPosY);
 	}
 	
 	

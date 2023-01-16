@@ -96,10 +96,4 @@ class PrepareMackerel extends PrepareFish
 	{
 		return true;
 	}
-
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
-	{
-		// Adjusts quantity of results to the quantity of the 1st ingredient
-		super.Do(ingredients, player, results, specialty_weight);
-	}
 };

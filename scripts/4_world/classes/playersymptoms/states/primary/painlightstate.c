@@ -38,7 +38,6 @@ class PainLightSymptom extends SymptomBase
 			Debug.SymptomLog("n/a", this.ToString(), "n/a", "OnGetActivated", m_Player.ToString());
 		
 		PlaySound(EPlayerSoundEventID.TAKING_DMG_LIGHT);
-		//player.AddHealth("","Shock",-10);
 	}
 
 	//!gets called once on a Symptom which is being activated

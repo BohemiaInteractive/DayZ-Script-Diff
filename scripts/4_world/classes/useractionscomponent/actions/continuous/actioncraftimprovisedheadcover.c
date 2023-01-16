@@ -17,7 +17,7 @@ class ActionCraftImprovisedHeadCover: ActionContinuousBase
 		m_CallbackClass = ActionCraftImprovisedHeadCoverCB;
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
 		m_FullBody = true;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
+		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
 		m_Text = "#STR_CraftImprovisedHeadCover";
 	}

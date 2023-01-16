@@ -4,7 +4,7 @@ class Spotlight extends ItemBase
 	private bool 	m_EvaluateDeployment;
 	SpotlightLight 	m_Light;
 	
-	static vector 	m_LightLocalPosition 	= "0 1.50668 0.134863"; // We can't use GetMemoryPointPos() on this object, so we need to remember light position like this instead.
+	static vector 	m_LightLocalPosition;
 	static vector 	m_LightLocalOrientation = "0 0 0";
 	
 	// Spotlight can be extended and compressed
@@ -21,10 +21,10 @@ class Spotlight extends ItemBase
 	static const string SEL_REFLECTOR_F				= "reflector_folded";
 	static const string SEL_REFLECTOR_U				= "reflector_unfolded";
 	
-	static const int 	ID_GLASS_UNFOLDED					= 3;
-	static const int 	ID_REFLECTOR_UNFOLDED				= 4;
-	static const int 	ID_GLASS_FOLDED						= 5;
-	static const int 	ID_REFLECTOR_FOLDED					= 6;
+	static const int 	ID_GLASS_UNFOLDED			= 3;
+	static const int 	ID_REFLECTOR_UNFOLDED		= 4;
+	static const int 	ID_GLASS_FOLDED				= 5;
+	static const int 	ID_REFLECTOR_FOLDED			= 6;
 	
 	static string 		LIGHT_OFF_GLASS 			= "dz\\gear\\camping\\Data\\spotlight_glass.rvmat";
 	static string 		LIGHT_OFF_REFLECTOR 		= "dz\\gear\\camping\\Data\\spotlight.rvmat";
@@ -35,15 +35,11 @@ class Spotlight extends ItemBase
 	const string 				SOUND_TURN_ON		= "spotlight_turn_on_SoundSet";
 	const string 				SOUND_TURN_OFF		= "spotlight_turn_off_SoundSet";
 	
-	protected EffectSound 		m_SoundTurnOn;
-	protected EffectSound 		m_SoundTurnOff;	
-	
-	ref protected EffectSound 	m_DeployLoopSound;
+	protected EffectSound 	m_SoundTurnOn;
+	protected EffectSound 	m_SoundTurnOff;
+	protected EffectSound 	m_DeployLoopSound;
 
-	/*
-		Spotlight, folded and unfolded.
-	*/
-	
+	//Spotlight, folded and unfolded
 	void Spotlight()
 	{
 		m_EvaluateDeployment = false;
@@ -55,7 +51,8 @@ class Spotlight extends ItemBase
 	
 	void ~Spotlight()
 	{
-		SEffectManager.DestroyEffect( m_DeployLoopSound );
+		if (m_DeployLoopSound)
+			SEffectManager.DestroyEffect(m_DeployLoopSound);
 	}
 	
 	override bool IsElectricAppliance()
@@ -65,15 +62,13 @@ class Spotlight extends ItemBase
 	
 	override void OnInitEnergy()
 	{
-		if ( GetCompEM().IsPlugged() )
+		if (GetCompEM().IsPlugged())
 		{
 			if (!GetHierarchyRoot())
 				Unfold();
 			else
 				Fold(true);
 		}
-		/*else if ( IsHologram() )
-			Unfold();*/
 		else
 			Fold();
 		
@@ -82,9 +77,7 @@ class Spotlight extends ItemBase
 	
 	override void EOnInit(IEntity other, int extra)
 	{
-		super.EOnInit(other, extra);
-		
-		if ( !IsHologram() ) //todo; object can't know it's a hologram at this point!
+		if (!IsHologram())
 		{
 			UpdateAllSelections();
 			HideSelection(SEL_CORD_FOLDED_F);
@@ -100,7 +93,6 @@ class Spotlight extends ItemBase
 	{
 		super.OnSwitchOn();
 		
-		//sound (client only)
 		SoundTurnOn();
 	}
 
@@ -108,7 +100,6 @@ class Spotlight extends ItemBase
 	{
 		super.OnSwitchOff();
 		
-		//sound (client only)
 		SoundTurnOff();
 		
 		if (m_Light)
@@ -120,88 +111,81 @@ class Spotlight extends ItemBase
 	
 	override void OnWorkStart()
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // client side
-		{
-			m_Light = SpotlightLight.Cast( ScriptedLightBase.CreateLight( SpotlightLight, "0 0 0") );
-			m_Light.AttachOnObject(this, m_LightLocalPosition, m_LightLocalOrientation);
-		}
+		#ifndef SERVER
+		m_Light = SpotlightLight.Cast(ScriptedLightBase.CreateLight(SpotlightLight, "0 0 0"));
+		m_Light.AttachOnObject(this, m_LightLocalPosition, m_LightLocalOrientation);
+		#endif
 		
 		UpdateAllSelections();
-		/*SetObjectMaterial(ID_GLASS_UNFOLDED, LIGHT_ON_GLASS);
-		SetObjectMaterial(ID_REFLECTOR_UNFOLDED, LIGHT_ON_REFLECTOR);
-		SetObjectMaterial(ID_GLASS_FOLDED, LIGHT_ON_GLASS);
-		SetObjectMaterial(ID_REFLECTOR_FOLDED, LIGHT_ON_REFLECTOR);*/
 	}
 
 	override void OnWorkStop()
 	{
-		if ( !GetGame().IsServer() || !GetGame().IsMultiplayer() ) // client side
-		{
-			if (m_Light)
-				m_Light.FadeOut();
-		}
+		#ifndef SERVER
+		if (m_Light)
+			m_Light.FadeOut();
+		#endif
 		
 		UpdateAllSelections();
-		/*SetObjectMaterial(ID_GLASS_UNFOLDED, LIGHT_OFF_GLASS);
-		SetObjectMaterial(ID_REFLECTOR_UNFOLDED, LIGHT_OFF_REFLECTOR);
-		SetObjectMaterial(ID_GLASS_FOLDED, LIGHT_OFF_GLASS);
-		SetObjectMaterial(ID_REFLECTOR_FOLDED, LIGHT_OFF_REFLECTOR);*/
 	}
 	
 	// Called when this device is picked up
-	override void OnItemLocationChanged( EntityAI old_owner, EntityAI new_owner ) 
+	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner)
 	{
 		super.OnItemLocationChanged(old_owner, new_owner);
 		
 		//skips folding of currently deployed spotlight
-		if ( m_EvaluateDeployment || IsBeingPlaced() )
+		if (m_EvaluateDeployment || IsBeingPlaced())
 		{
 			m_EvaluateDeployment = false;
 			if (m_Light)
 			{
 				m_Light.AttachOnObject(this, m_LightLocalPosition, m_LightLocalOrientation);
 			}
+
 			Unfold();
+
 			return;
 		}
 		
 		// When the item is picked up by a player
 		PlayerBase player = PlayerBase.Cast(new_owner);
-		if ( player && player.GetItemInHands() == this )
+		if (player && player.GetItemInHands() == this)
 		{
 			Fold(GetCompEM().IsPlugged());
-			//player.TogglePlacingLocal();
 		}
 	}
 
 	override void OnIsPlugged(EntityAI source_device)
 	{
-		Unfold(); //todo
+		Unfold();
 		UpdateAllSelections();
 	}
 	
-	void UpdateAllSelections()
+	protected void UpdateAllSelections()
 	{
-		bool is_plugged = GetCompEM().IsPlugged();		
+		bool isPlugged = GetCompEM().IsPlugged();
 		PlayerBase player = PlayerBase.Cast(GetHierarchyRootPlayer());
-		bool is_in_hands = player && player.GetItemInHands() == this;
+		bool isInHands = player && player.GetItemInHands() == this;
 		HideAllSelections();
 		
-		if ( IsFolded() || is_in_hands ) //todo
+		m_LightLocalPosition = GetSelectionPositionLS("beamStart");
+		
+		if (IsFolded() || isInHands)
 		{
-			HideSelection( SEL_REFLECTOR_COMP_U );
+			HideSelection(SEL_REFLECTOR_COMP_U);
 			
-			ShowSelection( SEL_INVENTORY );
-			ShowSelection( SEL_GLASS_F );
-			ShowSelection( SEL_REFLECTOR_F );
+			ShowSelection(SEL_INVENTORY);
+			ShowSelection(SEL_GLASS_F);
+			ShowSelection(SEL_REFLECTOR_F);
 			
-			if (is_plugged)
+			if (isPlugged)
 			{
-				ShowSelection( SEL_CORD_PLUGGED_F );
+				ShowSelection(SEL_CORD_PLUGGED_F);
 			}
 			else
 			{
-				ShowSelection( SEL_CORD_FOLDED_F );
+				ShowSelection(SEL_CORD_FOLDED_F);
 			}
 			
 			if (!IsHologram())
@@ -224,18 +208,18 @@ class Spotlight extends ItemBase
 		}
 		else
 		{
-			ShowSelection( SEL_PLACING );
-			ShowSelection( SEL_REFLECTOR_U );
-			ShowSelection( SEL_GLASS_U );
-			ShowSelection( SEL_REFLECTOR_COMP_U );
+			ShowSelection(SEL_PLACING);
+			ShowSelection(SEL_REFLECTOR_U);
+			ShowSelection(SEL_GLASS_U);
+			ShowSelection(SEL_REFLECTOR_COMP_U);
 			
-			if (is_plugged)
+			if (isPlugged)
 			{
-				ShowSelection( SEL_CORD_PLUGGED_U );
+				ShowSelection(SEL_CORD_PLUGGED_U);
 			}
 			else
 			{
-				ShowSelection( SEL_CORD_FOLDED_U );
+				ShowSelection(SEL_CORD_FOLDED_U);
 			}
 			
 			if (!IsHologram())
@@ -244,22 +228,19 @@ class Spotlight extends ItemBase
 				{
 					SetObjectMaterial(ID_GLASS_UNFOLDED, LIGHT_ON_GLASS);
 					SetObjectMaterial(ID_REFLECTOR_UNFOLDED, LIGHT_ON_REFLECTOR);
-					//SetObjectMaterial(ID_GLASS_FOLDED, LIGHT_ON_GLASS);
-					//SetObjectMaterial(ID_REFLECTOR_FOLDED, LIGHT_ON_REFLECTOR);
 				}
 				else
 				{
 					SetObjectMaterial(ID_GLASS_UNFOLDED, LIGHT_OFF_GLASS);
 					SetObjectMaterial(ID_REFLECTOR_UNFOLDED, LIGHT_OFF_REFLECTOR);
-					//SetObjectMaterial(ID_GLASS_FOLDED, LIGHT_OFF_GLASS);
-					//SetObjectMaterial(ID_REFLECTOR_FOLDED, LIGHT_OFF_REFLECTOR);
 				}
 			}
 		}
 	}
 	
-	override void OnIsUnplugged( EntityAI last_energy_source )
+	override void OnIsUnplugged(EntityAI last_energy_source)
 	{
+		Fold();
 		UpdateAllSelections();
 	}
 
@@ -267,17 +248,17 @@ class Spotlight extends ItemBase
 	{
 		super.OnVariablesSynchronized();
 		
-		if ( IsDeploySound() )
+		if (IsDeploySound())
 		{
 			PlayDeploySound();
 		}
 		
-		if ( CanPlayDeployLoopSound() )
+		if (CanPlayDeployLoopSound())
 		{
 			PlayDeployLoopSound();
 		}
 		
-		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
+		if (m_DeployLoopSound && !CanPlayDeployLoopSound())
 		{
 			StopDeployLoopSound();
 		}
@@ -291,17 +272,16 @@ class Spotlight extends ItemBase
 			GetCompEM().SwitchOff();
 			GetCompEM().UnplugThis();
 		}
-		SetSynchDirty();
-		
+
 		UpdateAllSelections();
+		SetSynchDirty();
 	}
 
 	void Unfold()
 	{
 		m_IsFolded = false;
-		SetSynchDirty();
-		
 		UpdateAllSelections();
+		SetSynchDirty();
 	}
 
 	override void OnStoreSave(ParamsWriteContext ctx)
@@ -309,12 +289,12 @@ class Spotlight extends ItemBase
 		super.OnStoreSave(ctx);
 		
 		// Save folded/unfolded state
-		ctx.Write( m_IsFolded );
+		ctx.Write(m_IsFolded);
 	}
 
 	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{   
-		if ( !super.OnStoreLoad(ctx, version) )
+		if (!super.OnStoreLoad(ctx, version))
 			return false;
 		
 		// Load folded/unfolded state
@@ -334,21 +314,22 @@ class Spotlight extends ItemBase
 		return true;
 	}
 
-	override bool CanPutInCargo( EntityAI parent )
+	override bool CanPutInCargo(EntityAI parent)
 	{
-		if( !super.CanPutInCargo(parent) ) {return false;}
+		if (!super.CanPutInCargo(parent)) 
+			return false;
 		
-		return !GetCompEM().IsPlugged(); //GetCompEM().IsCordFolded(); 
+		return !GetCompEM().IsPlugged();
 	}
 
-	override bool CanPutIntoHands ( EntityAI player ) 
+	override bool CanPutIntoHands(EntityAI player) 
 	{
-		if( !super.CanPutIntoHands( parent ) )
+		if (!super.CanPutIntoHands(parent))
 		{
 			return false;
 		}
 		// Commented out so Reposition action is possible to execute
-		return true; //GetCompEM().IsCordFolded();
+		return true;
 	}
 
 	bool IsFolded()
@@ -361,56 +342,54 @@ class Spotlight extends ItemBase
 	//================================================================
 	protected void SoundTurnOn()
 	{
-		PlaySoundSet( m_SoundTurnOn, SOUND_TURN_ON, 0, 0 );
+		PlaySoundSet(m_SoundTurnOn, SOUND_TURN_ON, 0, 0);
 	}
 
 	protected void SoundTurnOff()
 	{
-		PlaySoundSet( m_SoundTurnOff, SOUND_TURN_OFF, 0, 0 );
+		PlaySoundSet(m_SoundTurnOff, SOUND_TURN_OFF, 0, 0);
 	}
 
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================
-	override void OnPlacementStarted( Man player )
+	override void OnPlacementStarted(Man player)
 	{
-		super.OnPlacementStarted( player );
+		super.OnPlacementStarted(player);
 		
-		ref array<string> array_of_selections = {SEL_CORD_PLUGGED_F, SEL_CORD_FOLDED_F};
-		PlayerBase player_PB = PlayerBase.Cast( player );
+		array<string> selections = {
+			SEL_CORD_PLUGGED_F,
+			SEL_CORD_FOLDED_F
+		};
 		
-		if( GetGame().IsMultiplayer() && GetGame().IsServer() )
-		{
-			player_PB.GetHologramServer().SetSelectionToRefresh( array_of_selections );		
-		}
-		else
-		{
-			player_PB.GetHologramLocal().SetSelectionToRefresh( array_of_selections );
+		PlayerBase playerPB = PlayerBase.Cast(player);
+		foreach (string selection : selections)
+		{		
+			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			{
+				playerPB.GetHologramServer().SetSelectionToRefresh(selection);		
+			}
+			else
+			{
+				playerPB.GetHologramLocal().SetSelectionToRefresh(selection);
+			}
 		}
 	}
 	
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
-		super.OnPlacementComplete( player, position, orientation );
+		super.OnPlacementComplete(player, position, orientation);
 		
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			SetIsDeploySound( true );
+			SetIsDeploySound(true);
 		}
+
 		Unfold();
-		//hack
-		/*if (m_Light)
-		{
-			Print("pos1: " + GetPosition());
-			Print("pos2: " + position);
-			vector diff = position - GetPosition();
-			Print(diff);
-			m_Light.AttachOnObject(this, diff + m_LightLocalPosition, orientation);
-		}*/
 		m_EvaluateDeployment = true;
 	}
 	
-	override void OnPlacementCancelled( Man player )
+	override void OnPlacementCancelled(Man player)
 	{
 		super.OnPlacementCancelled(player);
 		
@@ -434,24 +413,36 @@ class Spotlight extends ItemBase
 	
 	void PlayDeployLoopSound()
 	{		
-		if ( !m_DeployLoopSound || !GetGame().IsDedicatedServer() )
+		if (!GetGame().IsDedicatedServer() && !m_DeployLoopSound)
 		{		
-			m_DeployLoopSound = SEffectManager.PlaySound( GetLoopDeploySoundset(), GetPosition());
+			m_DeployLoopSound = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
+			m_DeployLoopSound.SetAutodestroy(true);
 		}
 	}
 	
 	void StopDeployLoopSound()
 	{
-		if ( !GetGame().IsDedicatedServer() )
+		if (!GetGame().IsDedicatedServer())
 		{	
 			m_DeployLoopSound.SetSoundFadeOut(0.5);
 			m_DeployLoopSound.SoundStop();
 		}
 	}
 	
+	override int GetViewIndex()
+	{
+		if (MemoryPointExists( "invView2" ) && !m_IsFolded)
+		{
+			return 1;
+		}
+
+		return 0;
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();
+
 		RemoveAction(ActionTakeItemToHands);
 		
 		AddAction(ActionClapBearTrapWithThisItem);

@@ -1,3 +1,12 @@
+enum EWetnessLevel
+{
+	DRY,
+	DAMP,
+	WET,
+	SOAKING,
+	DRENCHED
+}
+
 enum SurfaceAnimationBone
 {
 	LeftFrontLimb = 0,
@@ -46,8 +55,9 @@ class EntityAI extends Entity
 	bool 								m_KilledByHeadshot;
 	bool 								m_PreparedToDelete = false;
 	bool 								m_RefresherViable = false;
-	ref DestructionEffectBase			m_DestructionBehaviourObj;
+	bool								m_WeightDirty = 1;
 	
+	ref DestructionEffectBase			m_DestructionBehaviourObj;
 	
 	
 	ref KillerData 						m_KillerData;
@@ -64,6 +74,8 @@ class EntityAI extends Entity
 	private ref map<int, string> 	m_DamageDisplayNameMap = new map<int, string>; //values are localization keys as strings, use 'Widget.TranslateString' method to get the localized one
 	
 	float							m_Weight;
+	float							m_WeightEx;
+	float 							m_ConfigWeight = ConfigGetInt("weight");
 	protected bool 					m_CanDisplayWeight;
 	private float 					m_LastUpdatedTime;
 	protected float					m_ElapsedSinceLastUpdate;
@@ -678,6 +690,17 @@ class EntityAI extends Entity
 	//! Get economy item profile (if assigned, otherwise null)
 	proto native CEItemProfile GetEconomyProfile();
 
+	// !returns the number of levels bellow the hierarchy root this entity is at
+	int GetHierarchyLevel(int lvl = 0)
+	{
+		if (!GetHierarchyParent())
+			return lvl;
+		else
+		{
+			return GetHierarchyParent().GetHierarchyLevel(lvl+1);
+		}
+	}
+	
 	//! Called upon object creation
 	void EEInit()
 	{
@@ -702,8 +725,6 @@ class EntityAI extends Entity
 					}
 				}
 			}
-
-			UpdateWeight(WeightUpdateType.RECURSIVE_ADD);
 		}
 		
 		MaxLifetimeRefreshCalc();
@@ -779,7 +800,7 @@ class EntityAI extends Entity
 
 	void EEAmmoChanged()
 	{
-		
+		SetWeightDirty();
 	}
 
 	void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
@@ -888,14 +909,8 @@ class EntityAI extends Entity
 	// !Called on PARENT when a child is attached to it.
 	void EEItemAttached(EntityAI item, string slot_name)
 	{
-		float weight = item.GetWeight();
-		if (weight > 0)
-		{
-			//Print("this: " + this + " | att: " + item + " | worldpos: " + GetWorldPosition());
-			UpdateWeight(WeightUpdateType.RECURSIVE_ADD, weight);
-		}
-		
-		//Print (slot_name);
+		SetWeightDirty();
+
 		if ( m_ComponentsBank != NULL )
 		{
 			for ( int comp_key = 0; comp_key < COMP_TYPE_COUNT; ++comp_key )
@@ -927,9 +942,7 @@ class EntityAI extends Entity
 	// !Called on PARENT when a child is detached from it.
 	void EEItemDetached(EntityAI item, string slot_name)
 	{
-		float weight = item.GetWeight();
-		if (weight > 0)
-			UpdateWeight(WeightUpdateType.RECURSIVE_REMOVE, weight);
+		SetWeightDirty();
 		
 		if ( m_ComponentsBank != NULL )
 		{
@@ -958,10 +971,8 @@ class EntityAI extends Entity
 	}
 
 	void EECargoIn(EntityAI item)
-	{		
-		float weight = item.GetWeight();
-		if (weight > 0)
-			UpdateWeight(WeightUpdateType.RECURSIVE_ADD, weight);
+	{
+		SetWeightDirty();
 		
 		if( m_OnItemAddedIntoCargo )
 			m_OnItemAddedIntoCargo.Invoke( item, this );
@@ -971,9 +982,7 @@ class EntityAI extends Entity
 
 	void EECargoOut(EntityAI item)
 	{
-		float weight = item.GetWeight();
-		if (weight > 0)
-			UpdateWeight(WeightUpdateType.RECURSIVE_REMOVE, weight);
+		SetWeightDirty();
 		
 		if( m_OnItemRemovedFromCargo )
 			m_OnItemRemovedFromCargo.Invoke( item, this );
@@ -1828,6 +1837,33 @@ class EntityAI extends Entity
 		return GetWetMax() - GetWetMin() != 0;
 	}
 	
+	void OnWetChanged(float newVal, float oldVal);
+
+	void OnWetLevelChanged(EWetnessLevel newLevel, EWetnessLevel oldLevel);
+	// ! Returns current wet level of the entity
+	EWetnessLevel GetWetLevel();
+	
+	// ! Calculates wet level from a given wetness, to get level of an entity, use 'GetWetLevel()' instead
+	static EWetnessLevel GetWetLevelInternal(float wetness)
+	{
+		if (wetness < GameConstants.STATE_DAMP)
+		{
+			return EWetnessLevel.DRY;
+		}
+		else if (wetness < GameConstants.STATE_WET)
+		{
+			return EWetnessLevel.DAMP;
+		}
+		else if (wetness < GameConstants.STATE_SOAKING_WET)
+		{
+			return EWetnessLevel.WET;
+		}
+		else if (wetness < GameConstants.STATE_DRENCHED)
+		{
+			return EWetnessLevel.SOAKING;
+		}
+		return EWetnessLevel.DRENCHED;
+	}
 	//----------------------------------------------------------------
 	
 	float GetQuantity()
@@ -1976,6 +2012,7 @@ class EntityAI extends Entity
 
 	//! Simple hidden selection state; 0 == hidden
 	proto native void SetSimpleHiddenSelectionState(int index, bool state);
+	proto native bool IsSimpleHiddenSelectionVisible(int index);
 	
 	//! Change texture in hiddenSelections
 	proto native void SetObjectTexture(int index, string texture_name);
@@ -2213,7 +2250,12 @@ class EntityAI extends Entity
 	
 	string GetDebugText()
 	{
-		return "No debug text provided\nimplement the GetDebugText()\nmethod  on this item \nto see stuff ";
+		string text = string.Empty;
+
+		text += "Weight: " + GetWeightEx() + "\n";
+		text += "Disabled: " + GetIsSimulationDisabled() + "\n";
+
+		return text;
 	}
 	
 	
@@ -2395,12 +2437,151 @@ class EntityAI extends Entity
 			}
 		}
 	}
-	///@} energy manager
+
+	#ifdef DIAG_DEVELOPER
+	void FixEntity()
+	{
+		SetFullHealth();
+		
+		if (GetInventory())
+		{
+			int i = 0;
+			int AttachmentsCount = GetInventory().AttachmentCount();
+			if (AttachmentsCount > 0)
+			{
+				for (i = 0; i < AttachmentsCount; i++)
+				{
+					GetInventory().GetAttachmentFromIndex(i).FixEntity();
+				}
+			}
+		
+			CargoBase cargo = GetInventory().GetCargo();
+			if (cargo)
+			{
+				int cargoCount = cargo.GetItemCount();
+				for (i = 0; i < cargoCount; i++)
+				{
+					cargo.GetItem(i).FixEntity();
+				}
+			}
+		}
+	}
+	#endif
+
+	float GetWetWeightModifier()
+	{
+		return CfgGameplayHandler.GetWetnessWeightModifiers()[GetWetLevel()];
+	}
+
+	float GetConfigWeightModified()
+	{
+		return m_ConfigWeight * GetWetWeightModifier();	
+	}
+
+	#ifdef DEVELOPER
+	string GetConfigWeightModifiedDebugText()
+	{
+		if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_FORCED)
+		{
+			return "(" + m_ConfigWeight + "(config weight) * " + GetWetWeightModifier() + "(Wetness Modifier))";
+		}
+		return string.Empty;
+	}
+	#endif
 	
-	//returns total weight of item
+
+	//Obsolete, use GetWeightEx()
 	int GetWeight()
 	{
-		return m_Weight;
+		return GetWeightEx();
+	}
+
+	void ClearWeightDirty()
+	{
+		//Print("ent:" + this + " - ClearWeightDirty");
+		m_WeightDirty = 0;
+	}
+
+	void SetWeightDirty()
+	{
+		#ifdef DEVELOPER
+		if (WeightDebug.m_VerbosityFlags & WeightDebugType.SET_DIRTY_FLAG)
+		{
+			Print("---------------------------------------");
+			Print("ent:" + this + " - SetWeightDirty");
+			if (WeightDebug.m_VerbosityFlags & WeightDebugType.DUMP_STACK)
+			{
+				DumpStack();
+			}
+			Print("---------------------------------------");
+		}
+		#endif
+		m_WeightDirty = 1;
+		if (GetHierarchyParent())
+		{
+			GetHierarchyParent().SetWeightDirty();
+		}
+	}
+	// returns weight of all cargo and attachments
+	float GetInventoryAndCargoWeight(bool forceRecalc = false)
+	{
+		float totalWeight;
+		if (GetInventory())
+		{
+			int i = 0;
+			int AttachmentsCount = GetInventory().AttachmentCount();
+			if (AttachmentsCount > 0)
+			{
+				for (i = 0; i < AttachmentsCount; i++)
+				{
+					totalWeight += GetInventory().GetAttachmentFromIndex(i).GetWeightEx(forceRecalc);
+				}
+			}
+		
+			CargoBase cargo = GetInventory().GetCargo();
+			if (cargo)
+			{
+				int cargoCount = cargo.GetItemCount();
+				for (i = 0; i < cargoCount; i++)
+				{
+					totalWeight += cargo.GetItem(i).GetWeightEx(forceRecalc);
+				}
+			}
+		}
+		return totalWeight;	
+	}
+	//! returns weight of the entity in a way that's specific to the entity type and is internal to the weight system calculation, to obtain entity's weight, use the 'GetWeightEx' method instead
+	protected float GetWeightSpecialized(bool forceRecalc = false)
+	{
+		return GetInventoryAndCargoWeight(forceRecalc);
+	}
+
+	//! returns overall weight of the entity, 'forceRecalc = true' is meant to be used only when debugging, using it in gameplay code is higly inadvisable as it bypasses the weight caching and has adverse effect on performance
+	//this method is not meant to be overriden, to adjust weight calculation for specific item type, override 'GetWeightSpecialized(bool forceRecalc = false)' instead
+	float GetWeightEx(bool forceRecalc = false)
+	{
+		if (m_WeightDirty || forceRecalc)//recalculate
+		{
+			m_WeightEx = GetWeightSpecialized(forceRecalc);
+			ClearWeightDirty();
+		
+			#ifdef DEVELOPER
+			if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_FORCED)
+			{
+				WeightDebug.GetWeightDebug(this).SetWeight(m_WeightEx);
+			}
+			if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_DIRTY)
+			{
+				Print("ent:" + this + " - Dirty Recalc");
+				if (WeightDebug.m_VerbosityFlags & WeightDebugType.DUMP_STACK)
+				{
+					DumpStack();
+				}
+			}
+			#endif
+		}
+
+		return m_WeightEx;
 	}
 	
 	void UpdateWeight(WeightUpdateType updateType = WeightUpdateType.FULL, float weightAdjustment = 0);

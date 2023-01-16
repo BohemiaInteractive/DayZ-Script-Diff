@@ -23,105 +23,105 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 		return m_Parent;
 	}
 	
-	bool IsFocusable( Widget w )
+	bool IsFocusable(Widget w)
 	{
-		if( w )
+		if (w)
 		{
 			return w == m_Parent;
 		}
 		return false;
 	}
 	
-	override bool OnMouseEnter( Widget w, int x, int y )
+	override bool OnMouseEnter(Widget w, int x, int y)
 	{
-		if( !IsFocusable( w ) )
+		if (!IsFocusable(w))
 			return true;
 		
-		if( m_ParentClass )
+		if (m_ParentClass)
 		{
-			m_ParentClass.OnFocus( m_Root.GetParent(), -1, m_SelectorType );
+			m_ParentClass.OnFocus(m_Root.GetParent(), -1, m_SelectorType);
 			#ifdef PLATFORM_WINDOWS
-			m_ParentClass.OnMouseEnter( m_Root.GetParent().GetParent(), x, y );
+			m_ParentClass.OnMouseEnter(m_Root.GetParent().GetParent(), x, y);
 			#endif
 		}
 		
 		UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
 		
-		if ( menu && menu.IsInherited( CharacterCreationMenu ) )
+		if (menu && menu.IsInherited(CharacterCreationMenu))
 		{
-			menu.OnFocus( m_Root.GetParent(), -1, m_SelectorType );
-			menu.OnMouseEnter( m_Root.GetParent().GetParent(), x, y );
+			menu.OnFocus(m_Root.GetParent(), -1, m_SelectorType);
+			menu.OnMouseEnter(m_Root.GetParent().GetParent(), x, y);
 		}
 		
 		#ifdef PLATFORM_WINDOWS
-		ColorHighlight( w );
+		ColorHighlight(w);
 		#else
-		ColorHighlightConsole( w );
-		if( m_ParentClass )
+		ColorHighlightConsole(w);
+		if (m_ParentClass)
 		{
-			m_ParentClass.OnFocus( m_Root.GetParent(), -1, m_SelectorType );
+			m_ParentClass.OnFocus(m_Root.GetParent(), -1, m_SelectorType);
 		}
 		#endif
 		
 		return true;
 	}
 	
-	override bool OnMouseLeave( Widget w, Widget enterW, int x, int y )
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{
 		#ifdef PLATFORM_CONSOLE
-		if( IsFocusable( enterW ) )
+		if (IsFocusable(enterW))
 			return true;
 		#endif
 		
-		if( m_ParentClass )
+		if (m_ParentClass)
 		{
-			m_ParentClass.OnFocus( null, x, y );
+			m_ParentClass.OnFocus(null, x, y);
 			#ifdef PLATFORM_WINDOWS
-			m_ParentClass.OnMouseLeave( m_Root.GetParent().GetParent(), enterW, x, y );
+			m_ParentClass.OnMouseLeave(m_Root.GetParent().GetParent(), enterW, x, y);
 			#endif
 		}
 		
 		UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
 		
-		if ( menu && menu.IsInherited( CharacterCreationMenu ) )
+		if (menu && menu.IsInherited(CharacterCreationMenu))
 		{
-			menu.OnFocus( null, x, y );
-			menu.OnMouseLeave( m_Root.GetParent().GetParent(), enterW, x, y );
+			menu.OnFocus(null, x, y);
+			menu.OnMouseLeave(m_Root.GetParent().GetParent(), enterW, x, y);
 		}
 		
 		#ifdef PLATFORM_WINDOWS
-		ColorNormal( w );
+		ColorNormal(w);
 		#else
-		ColorNormalConsole( w );
-		if( m_ParentClass )
+		ColorNormalConsole(w);
+		if (m_ParentClass)
 		{
-			m_ParentClass.OnFocusLost( w, x, y );
+			m_ParentClass.OnFocusLost(w, x, y);
 		}
 		#endif
 	
 		return true;
 	}
 	
-	override bool OnFocus( Widget w, int x, int y )
+	override bool OnFocus(Widget w, int x, int y)
 	{
-		if( IsFocusable( w ) )
+		if (IsFocusable(w))
 		{
-			ColorHighlightConsole( w );
-			if( m_ParentClass )
+			ColorHighlightConsole(w);
+			if (m_ParentClass)
 			{
-				m_ParentClass.OnFocus( m_Root.GetParent(), -1, m_SelectorType );
+				m_ParentClass.OnFocus(m_Root.GetParent(), -1, m_SelectorType);
 			}
 			return true;
 		}
 		return false;
 	}
 	
-	override bool OnFocusLost( Widget w, int x, int y )
+	override bool OnFocusLost(Widget w, int x, int y)
 	{
-		ColorNormalConsole( w );
-		if( m_ParentClass )
+		ColorNormalConsole(w);
+		if (m_ParentClass)
 		{
-			m_ParentClass.OnFocusLost( w, x, y );
+			m_ParentClass.OnFocusLost(w, x, y);
 		}
 		return true;
 	}
@@ -129,10 +129,10 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 	void Focus()
 	{
 		#ifdef PLATFORM_CONSOLE
-			SetFocus( m_Parent );
+			SetFocus(m_Parent);
 		#else
 		#ifdef PLATFORM_WINDOWS
-			SetFocus( m_Root );
+			SetFocus(m_Root);
 		#endif
 		#endif
 	}
@@ -141,7 +141,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 	{
 		m_Enabled = true;
 		
-		m_Parent.ClearFlags( WidgetFlags.IGNOREPOINTER );
+		m_Parent.ClearFlags(WidgetFlags.IGNOREPOINTER);
 		
 		#ifdef PLATFORM_CONSOLE
 			ColorNormalConsole(m_Parent);
@@ -154,7 +154,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 	{
 		m_Enabled = false;
 		
-		m_Parent.SetFlags( WidgetFlags.IGNOREPOINTER );
+		m_Parent.SetFlags(WidgetFlags.IGNOREPOINTER);
 		
 		#ifdef PLATFORM_CONSOLE
 			ColorDisabledConsole(m_Parent);
@@ -163,17 +163,17 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 		#endif
 	}
 	
-	void ColorHighlight( Widget w )
+	void ColorHighlight(Widget w)
 	{
-		if( !w )
+		if (!w)
 			return;
 				
 		ButtonSetColor(w, ARGB(255, 255, 0, 0));
 	}
 	
-	void ColorNormal( Widget w )
+	void ColorNormal(Widget w)
 	{
-		if( !w )
+		if (!w)
 			return;
 		
 		int color_pnl = ARGB(255, 255, 255, 255);
@@ -181,23 +181,23 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 		
 		ButtonSetColor(w, color_pnl);
 		
-		Widget title_label = w.FindAnyWidget( w.GetName() + "_label" );
-		Widget option_label = w.FindAnyWidget( "option_label" );
+		Widget title_label = w.FindAnyWidget(w.GetName() + "_label");
+		Widget option_label = w.FindAnyWidget("option_label");
 		
-		if ( title_label )
+		if (title_label)
 		{
-			title_label.SetColor( color_lbl );
+			title_label.SetColor(color_lbl);
 		}
 		
-		if ( option_label )
+		if (option_label)
 		{
-			option_label.SetColor( color_lbl );
+			option_label.SetColor(color_lbl);
 		}
 	}
 	
-	void ColorDisabled( Widget w )
+	void ColorDisabled(Widget w)
 	{
-		if( !w )
+		if (!w)
 			return;
 		
 		int color_pnl = ARGB(0, 0, 0, 0);
@@ -205,57 +205,57 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 		
 		ButtonSetColor(w, color_pnl);
 		
-		Widget title_label = w.FindAnyWidget( w.GetName() + "_label" );
-		Widget option_label = w.FindAnyWidget( "option_label" );
+		Widget title_label = w.FindAnyWidget(w.GetName() + "_label");
+		Widget option_label = w.FindAnyWidget("option_label");
 		
-		if ( title_label )
+		if (title_label)
 		{
-			title_label.SetColor( color_lbl );
+			title_label.SetColor(color_lbl);
 		}
 		
-		if ( option_label )
+		if (option_label)
 		{
-			option_label.SetColor( color_lbl );
+			option_label.SetColor(color_lbl);
 		}		
 	}
 	
-	void ButtonSetColor( Widget w, int color )
+	void ButtonSetColor(Widget w, int color)
 	{
-		Widget option = w.FindAnyWidget( w.GetName() + "_image" );
+		Widget option = w.FindAnyWidget(w.GetName() + "_image");
 		
-		if ( option )
+		if (option)
 		{
-			option.SetColor( color );
+			option.SetColor(color);
 		}
 	}
 	
-	void ColorHighlightConsole( Widget w )
+	void ColorHighlightConsole(Widget w)
 	{
-		if( !w )
+		if (!w)
 			return;
 		
 		int color_pnl = ARGB(255, 200, 0, 0);
 		int color_lbl = ARGB(255, 255, 255, 255);
 		
 		ButtonSetColorConsole(w, color_pnl);
-		ButtonSetAlphaAnimConsole( null );
+		ButtonSetAlphaAnimConsole(null);
 		ButtonSetTextColorConsole(w, color_lbl);
 	}
 	
-	void ColorNormalConsole( Widget w )
+	void ColorNormalConsole(Widget w)
 	{
-		if( !w )
+		if (!w)
 			return;
 		
 		int color_pnl = ARGB(0, 0, 0, 0);
 		int color_lbl = ARGB(255, 255, 255, 255);
 		
 		ButtonSetColorConsole(w, color_pnl);
-		ButtonSetAlphaAnimConsole( null );
+		ButtonSetAlphaAnimConsole(null);
 		ButtonSetTextColorConsole(w, color_lbl);
 	}
 	
-	void ColorDisabledConsole( Widget w )
+	void ColorDisabledConsole(Widget w)
 	{
 		if (!w)
 			return;
@@ -264,50 +264,50 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 		int color_lbl = ARGB(120, 255, 255, 255);
 		
 		ButtonSetColorConsole(w, color_pnl);
-		ButtonSetAlphaAnimConsole( null );
+		ButtonSetAlphaAnimConsole(null);
 		ButtonSetTextColorConsole(w, color_lbl);
 	}
 	
-	void ButtonSetColorConsole( Widget w, int color )
+	void ButtonSetColorConsole(Widget w, int color)
 	{
-		w.SetColor( color );
+		w.SetColor(color);
 	}
 	
-	void ButtonSetAlphaAnimConsole( Widget w )
+	void ButtonSetAlphaAnimConsole(Widget w)
 	{
-		if( !w )
+		if (!w)
 			return;
 		
-		Widget panel = w.FindAnyWidget( w.GetName() + "_panel" );
+		Widget panel = w.FindAnyWidget(w.GetName() + "_panel");
 		
-		if( panel )
+		if (panel)
 		{
-			//m_Root.SetWidgetAnimAlpha( panel );
+			//m_Root.SetWidgetAnimAlpha(panel);
 		}
 	}
 	
-	void ButtonSetTextColorConsole( Widget w, int color )
+	void ButtonSetTextColorConsole(Widget w, int color)
 	{
-		if( !w )
+		if (!w)
 			return;
 
-		TextWidget label	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_label" ) );
-		TextWidget text		= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_text" ) );
-		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_text_1" ) );
+		TextWidget label	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
+		TextWidget text		= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text"));
+		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text_1"));
 		
-		if( label )
+		if (label)
 		{
-			label.SetColor( color );
+			label.SetColor(color);
 		}
 		
-		if( text )
+		if (text)
 		{
-			text.SetColor( color );
+			text.SetColor(color);
 		}
 		
-		if( text2 )
+		if (text2)
 		{
-			text2.SetColor( color );
+			text2.SetColor(color);
 		}
 	}
 }

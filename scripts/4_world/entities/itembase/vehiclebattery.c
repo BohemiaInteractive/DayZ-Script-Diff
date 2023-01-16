@@ -1,14 +1,13 @@
 class VehicleBattery : ItemBase
 {
-	override bool CanPutAsAttachment( EntityAI parent )
+	override bool CanPutAsAttachment(EntityAI parent)
 	{
 		if (!super.CanPutAsAttachment(parent)) 
 			return false;
 		
-		string obj_type = parent.GetType();
-		if ( parent.IsInherited(BatteryCharger) )
+		if (parent.IsInherited(BatteryCharger))
 		{
-			BatteryCharger charger = BatteryCharger.Cast( parent );
+			BatteryCharger charger = BatteryCharger.Cast(parent);
 			return charger.CanReceiveAttachment(this, InventorySlots.INVALID);
 		}
 		
@@ -18,12 +17,12 @@ class VehicleBattery : ItemBase
 		return true;
 	}
 	
-	override bool CanDetachAttachment( EntityAI parent )
+	override bool CanDetachAttachment(EntityAI parent)
 	{
 		return true;
 	}
 	
-	override bool CanReceiveAttachment( EntityAI attachment, int slotId)
+	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
 	{
 		if (GetCompEM().IsPlugged())
 			return false;
@@ -31,22 +30,21 @@ class VehicleBattery : ItemBase
 		return super.CanReceiveAttachment(attachment, slotId);
 	}
 	
-	override bool CanPutIntoHands( EntityAI player ) 
+	override bool CanPutIntoHands(EntityAI player)
 	{
-		if ( !super.CanPutIntoHands( parent ) )
+		if (!super.CanPutIntoHands(parent))
 		{
 			return false;
 		}
 		
-		if ( HasEnergyManager() )
+		if (HasEnergyManager())
 		{
-			ItemBase powered_device = ItemBase.Cast( GetCompEM().GetPluggedDevice() ); // Should return metal wire or barbed wire attachment
-			
-			if ( powered_device  &&  powered_device.IsInherited( MetalWire ) )
+			ItemBase poweredDevice = ItemBase.Cast(GetCompEM().GetPluggedDevice());
+			if (poweredDevice && poweredDevice.IsInherited(MetalWire))
 			{
 				return true;
 			}
-			else if (powered_device)
+			else if (poweredDevice)
 			{
 				return false;
 			}
@@ -55,22 +53,16 @@ class VehicleBattery : ItemBase
 		return true;
 	}
 	
-	override bool CanPutInCargo( EntityAI parent )
+	override bool CanPutInCargo(EntityAI parent)
 	{
-		super.CanPutInCargo( parent );
-		
-		ItemBase powered_device = ItemBase.Cast( GetCompEM().GetPluggedDevice() ); // Should return metal wire or barbed wire attachment
-			
-		if ( powered_device )
+		if (!super.CanPutInCargo(parent))
 		{
-			//We block placing in cargo if metal wire is plugged
-			//metal wires plugged to batteries in cargo cause too many issues for little gameplay gain
-			if ( powered_device.IsInherited( MetalWire ) )
-			{
-				return false;
-			}
+			return false;
 		}
-		return true;
+		
+		ItemBase poweredDevice = ItemBase.Cast(GetCompEM().GetPluggedDevice());
+
+		return !(poweredDevice && poweredDevice.IsInherited(MetalWire));
 	}
 	
 	override void OnInventoryEnter(Man player)
@@ -79,17 +71,17 @@ class VehicleBattery : ItemBase
 		
 		if (GetHierarchyParent() == player || (GetHierarchyParent() && GetHierarchyParent().GetInventory().GetCargo()))
 		{
-			if ( HasEnergyManager() )
+			if (HasEnergyManager())
 			{
-				ItemBase powered_device = ItemBase.Cast( GetCompEM().GetPluggedDevice() ); // Should return metal wire or barbed wire attachment
+				ItemBase poweredDevice = ItemBase.Cast(GetCompEM().GetPluggedDevice());
 			
-				if ( powered_device )
+				if (poweredDevice)
 				{
-					if ( powered_device.IsInherited( MetalWire ) )
+					if (poweredDevice.IsInherited(MetalWire))
 					{
 						//Unplug the device the wire is powering, but keep wire plugged to battery
-						if ( powered_device.GetCompEM().IsPlugged() )
-							powered_device.GetCompEM().UnplugDevice( powered_device.GetCompEM().GetPluggedDevice() );
+						if (poweredDevice.GetCompEM().IsPlugged())
+							poweredDevice.GetCompEM().UnplugDevice(poweredDevice.GetCompEM().GetPluggedDevice());
 					}
 					else
 					{
@@ -104,16 +96,16 @@ class VehicleBattery : ItemBase
 	{
 		super.OnMovedInsideCargo(container);
 		
-		if ( HasEnergyManager() )
+		if (HasEnergyManager())
 		{
-			ItemBase powered_device = ItemBase.Cast( GetCompEM().GetPluggedDevice() ); // Should return metal wire or barbed wire attachment
+			ItemBase poweredDevice = ItemBase.Cast(GetCompEM().GetPluggedDevice());
 			
-			if ( powered_device )
+			if (poweredDevice)
 			{
 				//Should not be possible, but better safe than sorry
-				if ( powered_device.IsInherited( MetalWire ) )
+				if (poweredDevice.IsInherited(MetalWire))
 				{
-					powered_device.GetCompEM().UnplugAllDevices();
+					poweredDevice.GetCompEM().UnplugAllDevices();
 				}
 				else
 				{
@@ -123,11 +115,12 @@ class VehicleBattery : ItemBase
 		}
 	}
 	
-	override bool CanDisplayAttachmentSlot( int slot_id )
+	override bool CanDisplayAttachmentSlot(int slot_id)
 	{
-		if ( GetCompEM().IsPlugged() )
+		if (GetCompEM().IsPlugged())
 			return false;
-		return super.CanDisplayAttachmentSlot( slot_id );
+
+		return super.CanDisplayAttachmentSlot(slot_id);
 	}
 	
 	override bool DisplayNameRuinAttach()
@@ -144,16 +137,9 @@ class VehicleBattery : ItemBase
 	{
 		super.SetActions();
 		
-		//AddAction(ActionAttach);
 		AddAction(ActionAttachOnSelection);
 		AddAction(ActionDetach);
-		//AddAction(ActionAttachPowerSourceToPanel); SHOULD NOT BE USED ANYMORE
 		AddAction(ActionPlugTargetIntoThis);
-	}
-	
-	override void OnQuantityChanged(float delta)
-	{
-		super.OnQuantityChanged(delta);
 	}
 	
 	//------------------------------------
@@ -186,24 +172,25 @@ class VehicleBattery : ItemBase
 	override void SetCEBasedQuantity()
 	{
 		super.SetCEBasedQuantity();
-		if ( GetCompEM() )
-			GetCompEM().SetEnergy( GetCompEM().GetEnergyMax() * ( GetQuantity() / GetQuantityMax() ) );
+
+		if (GetCompEM())
+			GetCompEM().SetEnergy( GetCompEM().GetEnergyMax() * (GetQuantity() / GetQuantityMax()));
 	}
 	
 	override void OnEnergyConsumed()
 	{
 		super.OnEnergyConsumed();
 		
-		if ( GetGame().IsServer() )
+		#ifdef SERVER
+		float energyCoef = GetCompEM().GetEnergy0To1();
+		
+		if (energyCoef < m_EfficiencyDecayStart && m_EfficiencyDecayStart > 0)
 		{
-			float energy_coef = GetCompEM().GetEnergy0To1();
-			
-			if ( energy_coef < m_EfficiencyDecayStart  &&  m_EfficiencyDecayStart > 0 )			
-			{
-				m_Efficiency0To10 = Math.Round(  (energy_coef / m_EfficiencyDecayStart) * 10  );
-			}
-			SetSynchDirty();
+			m_Efficiency0To10 = Math.Round((energyCoef / m_EfficiencyDecayStart) * 10);
 		}
+
+		SetSynchDirty();
+		#endif
 	}
 		
 	// BatteryCharging
@@ -211,20 +198,19 @@ class VehicleBattery : ItemBase
 	{
 		super.OnEnergyAdded();
 		
-		if ( GetGame().IsServer() )
+		#ifdef SERVER
+		float energyCoef = GetCompEM().GetEnergy0To1();
+		
+		if (energyCoef < m_EfficiencyDecayStart && m_EfficiencyDecayStart > 0)
 		{
-			float energy_coef = GetCompEM().GetEnergy0To1();
-			
-			if ( energy_coef < m_EfficiencyDecayStart  &&  m_EfficiencyDecayStart > 0)
-			{
-				m_Efficiency0To10 = Math.Round(  (energy_coef / m_EfficiencyDecayStart) * 10  );
-				SetSynchDirty();
-			}
-			else
-			{
-				m_Efficiency0To10 = 10;
-				SetSynchDirty();
-			}
+			m_Efficiency0To10 = Math.Round((energyCoef / m_EfficiencyDecayStart) * 10);
 		}
+		else
+		{
+			m_Efficiency0To10 = 10;
+		}
+		
+		SetSynchDirty();
+		#endif
 	}
 }

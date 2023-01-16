@@ -2,11 +2,12 @@ class TetracyclineAntibiotics : Edible_Base
 {
 	override void OnConsume(float amount, PlayerBase consumer)
 	{
-		if( consumer.GetModifiersManager().IsModifierActive(eModifiers.MDF_ANTIBIOTICS))//effectively resets the timer
+		if (consumer.GetModifiersManager().IsModifierActive(eModifiers.MDF_ANTIBIOTICS)) //effectively resets the timer
 		{
-			consumer.GetModifiersManager().DeactivateModifier( eModifiers.MDF_ANTIBIOTICS );
+			consumer.GetModifiersManager().DeactivateModifier(eModifiers.MDF_ANTIBIOTICS);
 		}
-		consumer.GetModifiersManager().ActivateModifier( eModifiers.MDF_ANTIBIOTICS );
+
+		consumer.GetModifiersManager().ActivateModifier(eModifiers.MDF_ANTIBIOTICS);
 	}
 	
 	override void SetActions()
@@ -15,7 +16,5 @@ class TetracyclineAntibiotics : Edible_Base
 		
 		AddAction(ActionForceConsumeSingle);
 		AddAction(ActionConsumeSingle);
-		//AddAction(ActionForceFeed);
-		//AddAction(ActionEatBig);
 	}
 }

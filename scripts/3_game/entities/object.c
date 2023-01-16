@@ -320,7 +320,7 @@ class Object extends IEntity
 	proto native vector GetMemoryPointPosByIndex(int pointIndex);
 	proto native bool MemoryPointExists(string memoryPoint);
 	
-	proto native void CreateDynamicPhysics(PhxInteractionLayers layer);
+	proto native void CreateDynamicPhysics(int interactionLayers);
 	proto native void EnableDynamicCCD(bool state);
 	proto native void SetDynamicPhysicsLifeTime(float lifeTime);
 
@@ -856,6 +856,11 @@ class Object extends IEntity
 	proto native void   SetHealth(string zoneName, string healthType, float value);
 	
 	/**
+  \brief Sets full health to all zones and removes fatal damage when applicable
+	*/
+	proto native void   SetFullHealth();
+	
+	/**
   \brief Adds health.
 	@param zoneName if empty string, sets state of global health
 	@param healthType if empty string, sets state of main health
@@ -903,6 +908,11 @@ class Object extends IEntity
 	}
 	//! Equivalent of SetHealth("", "", float value);
 	void SetHealth(float health)
+	{
+		SetHealth("", "", health);
+	}
+	//! Equivalent of SetHealth("", "", float value);
+	void SetGlobalHealth(float health)
 	{
 		SetHealth("", "", health);
 	}
@@ -1131,6 +1141,23 @@ class Object extends IEntity
 		
 		sound = SEffectManager.PlaySoundEnviroment(soundSet, pos, play_fade_in, stop_fade_out, looped);
 		return true;
+	}
+	
+	bool PlaySoundSetAtMemoryPointOrOrigin(out EffectSound sound, string soundSet, string memoryPoint, bool looped = false, float play_fade_in = 0, float stop_fade_out = 0)
+	{
+		if (MemoryPointExists(memoryPoint))
+		{
+			vector pos = GetMemoryPointPos(memoryPoint);
+			pos = ModelToWorld(pos);
+			
+			sound = SEffectManager.PlaySoundEnviroment(soundSet, pos, play_fade_in, stop_fade_out, looped);
+			if (sound)
+				return true;
+		}
+		else
+			return PlaySoundSet(sound, soundSet, play_fade_in, stop_fade_out);
+		
+		return false;
 	}
 	
 	//! EffectSound - stops soundset and returns state of the sound (true - stopped, false - not playing)

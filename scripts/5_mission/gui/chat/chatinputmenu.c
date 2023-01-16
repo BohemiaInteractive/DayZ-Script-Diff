@@ -2,6 +2,7 @@ class ChatInputMenu extends UIScriptedMenu
 {
 	private EditBoxWidget m_edit_box;
 	private TextWidget m_channel_text;
+	private UAIDWrapper m_BackInputWrapper;
 	private ref Timer m_close_timer;
 
 	void ChatInputMenu()
@@ -11,9 +12,10 @@ class ChatInputMenu extends UIScriptedMenu
 
 	override Widget Init()
 	{
+		m_BackInputWrapper = GetUApi().GetInputByID(UAUIBack).GetPersistentWrapper();
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_chat_input.layout");
-		m_edit_box = EditBoxWidget.Cast( layoutRoot.FindAnyWidget("InputEditBoxWidget") );
-		m_channel_text = TextWidget.Cast( layoutRoot.FindAnyWidget("ChannelText") );
+		m_edit_box = EditBoxWidget.Cast(layoutRoot.FindAnyWidget("InputEditBoxWidget"));
+		m_channel_text = TextWidget.Cast(layoutRoot.FindAnyWidget("ChannelText"));
 		
 		UpdateChannel();
 		return layoutRoot;
@@ -35,25 +37,25 @@ class ChatInputMenu extends UIScriptedMenu
 		if (text != "")
 		{
 			GetGame().ChatPlayer(text);
-			if( !GetGame().IsMultiplayer() )
+			if (!GetGame().IsMultiplayer())
 			{
 				string name;
-				GetGame().GetPlayerName( name );
-				ChatMessageEventParams chat_params = new ChatMessageEventParams( CCDirect, name, text, "" );
-				MissionGameplay.Cast( GetGame().GetMission() ).m_Chat.Add( chat_params );
+				GetGame().GetPlayerName(name);
+				ChatMessageEventParams chat_params = new ChatMessageEventParams(CCDirect, name, text, "");
+				MissionGameplay.Cast(GetGame().GetMission()).m_Chat.Add(chat_params);
 			}
 		}
 
 		m_close_timer.Run(0.1, this, "Close");
 		
-		GetUApi().GetInputByName("UAPersonView").Supress();	
+		GetUApi().GetInputByID(UAPersonView).Supress();	
 		
 		return true;
 	}
 	
 	override void OnShow()
 	{
-		SetFocus( m_edit_box );
+		SetFocus(m_edit_box);
 	}
 	
 	override void OnHide()
@@ -71,7 +73,7 @@ class ChatInputMenu extends UIScriptedMenu
 	
 	override void Update(float timeslice)
 	{
-		if( GetGame().GetInput().LocalPress("UAUIBack", false ) )
+		if (m_BackInputWrapper.InputP().LocalPress())
 		{
 			Close();
 		}
@@ -84,7 +86,7 @@ class ChatInputMenu extends UIScriptedMenu
 	
 	static string GetChannelName(ChatChannel channel)
 	{
-		switch(channel)
+		switch (channel)
 		{
 			case CCSystem:
 				return "System";

@@ -69,11 +69,8 @@ class BearTrap extends TrapBase
 		if (GetGame().IsServer() && victim)
 		{
 			if (!victim.GetAllowDamage())
-			{
 				return;
-			}
 			
-			ZombieBase zombie;
 			if (victim.IsInherited(CarScript))
 			{
 				//! CarScript specific reaction on BearTrap
@@ -84,31 +81,30 @@ class BearTrap extends TrapBase
 			}
 			else
 			{
-				for (int i = 0; i < RAYCAST_SOURCES_COUNT; ++i)
+				foreach (vector raycastSourcePosition: m_RaycastSources)
 				{
-					vector raycast_start_pos 			= ModelToWorld(m_RaycastSources[i]);
-					vector raycast_end_pos 				= "0 0.5 0" + raycast_start_pos;
+					vector raycastStart 				= ModelToWorld(raycastSourcePosition);
+					vector raycastEnd 					= "0 0.5 0" + raycastStart;
 					
-					RaycastRVParams rayInput 			= new RaycastRVParams(raycast_start_pos, raycast_end_pos, this);
+					RaycastRVParams rayInput 			= new RaycastRVParams(raycastStart, raycastEnd, this);
 					rayInput.flags 						= CollisionFlags.ALLOBJECTS;
 					rayInput.type 						= ObjIntersectFire;
 					rayInput.radius 					= 0.05;
-					array<ref RaycastRVResult> results 	= new array<ref RaycastRVResult>;
+					array<ref RaycastRVResult> results 	= new array<ref RaycastRVResult>();
 			
 					if (DayZPhysics.RaycastRVProxy(rayInput, results))
 					{
-						RaycastRVResult res;
-						for (int j = 0; j < results.Count(); j++)
+						foreach (RaycastRVResult result: results)
 						{
-							Object contact_obj = results[j].obj;
-							if (contact_obj && !contact_obj.IsInherited(ItemBase) && contact_obj.IsAlive())
+							if (result.obj && !result.obj.IsDamageDestroyed() && !result.obj.IsAnyInherited({ItemBase, Plant}))
 							{
-								OnServerSteppedOn(contact_obj, contact_obj.GetDamageZoneNameByComponentIndex(results[j].component));
-								break;
+								OnServerSteppedOn(result.obj, result.obj.GetDamageZoneNameByComponentIndex(result.component));
+								return;
 							}
 						}
 					}
 				}
+
 				OnServerSteppedOn(victim, "zone_leg_random");
 			}
 		}
@@ -153,9 +149,7 @@ class BearTrap extends TrapBase
 			return;
 		}
 		
-		ZombieBase zombie;
 		string zoneUsed = damageZone;
-		
 		if (damageZone == "zone_leg_random")
 		{
 			zoneUsed = "LeftLeg";
@@ -166,6 +160,7 @@ class BearTrap extends TrapBase
 		}
 		
 		//! Generic limp handling
+		ZombieBase zombie;
 		if (obj.IsInherited(PlayerBase) || (Class.CastTo(zombie,obj) && !zombie.IsCrawling() && Math.RandomIntInclusive(0, 1) == 1))
 		{
 			CauseVictimToStartLimping(obj, "");
@@ -285,12 +280,11 @@ class BearTrap extends TrapBase
 		{
 			case 1:
 				StartActivate(null);
-			break;
+				break;
 			case 2:
 				SetInactive();
-			break;
+				break;
 		}
-		
 	}
 #endif
 }

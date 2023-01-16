@@ -27,6 +27,17 @@ class ActionBandageTarget: ActionBandageBase
 		m_ConditionItem = new CCINonRuined;
 		m_ConditionTarget = new CCTMan(UAMaxDistances.DEFAULT);
 	}
+	
+	
+	override int GetStanceMask(PlayerBase player)
+	{
+		if ( player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_PRONE))
+			return DayZPlayerConstants.STANCEMASK_CROUCH;
+		else
+			return DayZPlayerConstants.STANCEMASK_ERECT;
+	}
+	
+	
 /*
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
@@ -38,10 +49,13 @@ class ActionBandageTarget: ActionBandageBase
 	{	
 		PlayerBase target = PlayerBase.Cast(action_data.m_Target.GetObject());
 		
-		if(action_data.m_MainItem && target)
+		if (action_data.m_MainItem && target)
 		{
-			ApplyBandage( action_data.m_MainItem, target );
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			if (CanReceiveAction(action_data.m_Target))
+			{
+				ApplyBandage( action_data.m_MainItem, target );
+				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			}
 		}
 	}
 	

@@ -92,69 +92,49 @@ class Car extends Transport
 
 	override bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
 	{
+		vector transform[4];
+		
+		vector extents;
+		
+		extents[0] = horizontalExtents;
+		extents[1] = playerHeight;
+		extents[2] = horizontalExtents;
+
 		float speed = GetSpeedometerAbsolute();
-		vector direction = GetDirection();
-		vector crewPos;
-		vector crewDir;
-		CrewEntryWS( currentSeat, crewPos, crewDir );
-		crewPos[1] = crewPos[1] + maxAllowedObjHeight + playerHeight * 0.5;
-		float vExtents = horizontalExtents;
-
 		if (speed > 8)
-			vExtents *= 6;
+			extents[2] = extents[2] * 6;
 		if (speed > 8)
-			horizontalExtents = 2;
-
-		array<Object> excluded = new array<Object>;
-		array<Object> collided = new array<Object>;
-		excluded.Insert(this);
-		excluded.Insert(GetGame().GetPlayer());
-		GetGame().IsBoxColliding(crewPos, crewDir, Vector(horizontalExtents, playerHeight, vExtents), excluded, collided); 
-		foreach (Object o : collided)
-		{
-			EntityAI e = EntityAI.Cast(o);			
-			if (IsIgnoredObject(o))
-				continue;
-			
-			vector minmax[2];
-			if (o.GetCollisionBox(minmax))
-				return false;
-		}
-
-		return true;
+			extents[0] = 2;
+		
+		return IsAreaAtDoorFree( currentSeat, maxAllowedObjHeight, extents, transform );
 	}
 	
 	override Shape DebugFreeAreaAtDoor( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
 	{
-		float speed = GetSpeedometerAbsolute();
-		vector direction = GetDirection();
-		vector crewPos;
-		vector crewDir;
-		CrewEntryWS( currentSeat, crewPos, crewDir );
-		crewPos[1] = crewPos[1] + maxAllowedObjHeight + playerHeight * 0.5;
-		float vExtents = horizontalExtents;
-
-		if (speed > 8)
-			vExtents *= 6;
-		if (speed > 8)
-			horizontalExtents = 2;
-
-		array<Object> excluded = new array<Object>;
-		array<Object> collided = new array<Object>;
-		excluded.Insert(this);
-		excluded.Insert(GetGame().GetPlayer());
-		GetGame().IsBoxColliding(crewPos, crewDir, Vector(horizontalExtents, playerHeight, vExtents), excluded, collided); 
 		int color = ARGB(20, 0, 255, 0);
-		foreach (Object o : collided)
-		{
-			vector minmax[2];
-			if (o.GetCollisionBox(minmax))
-			{
-				color = ARGB(20, 255, 0, 0);
-			}
-		}
+		
+		vector transform[4];
+		
+		vector extents;
+		
+		extents[0] = horizontalExtents;
+		extents[1] = playerHeight;
+		extents[2] = horizontalExtents;
 
-		return Debug.DrawCylinder(crewPos, horizontalExtents, playerHeight, color);
+		float speed = GetSpeedometerAbsolute();
+		if (speed > 8)
+			extents[2] = extents[2] * 6;
+		if (speed > 8)
+			extents[0] = 2;
+		
+		if (!IsAreaAtDoorFree( currentSeat, maxAllowedObjHeight, extents, transform ))
+		{
+			color = ARGB(20, 255, 0, 0);
+		}
+		
+		Shape shape = Debug.DrawBox(-extents * 0.5, extents * 0.5, color);
+		shape.SetMatrix(transform);
+		return shape;
 	}
 	
 	override int GetHideIconMask()

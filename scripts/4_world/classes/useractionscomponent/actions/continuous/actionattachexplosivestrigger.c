@@ -131,6 +131,7 @@ class ActionAttachExplosivesTrigger : ActionContinuousBase
 		
 		if (explosive && action_data.m_MainItem)
 		{		
+			explosive.UnlockTriggerSlots();
 			ItemBase receiver = ItemBase.Cast(explosive.GetInventory().CreateAttachment("RemoteDetonatorReceiver"));
 			if (receiver)
 			{
@@ -155,7 +156,7 @@ class ActionAttachExplosivesTrigger : ActionContinuousBase
 		if (target_EAI && action_data.m_MainItem)
 		{
 			int slot_id = InventorySlots.GetSlotIdFromString(action_data.m_MainItem.GetExplosiveTriggerSlotName());
-			bool test = action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(target_EAI, action_data.m_MainItem, slot_id);
+			action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(target_EAI, action_data.m_MainItem, slot_id);
 		}
 	}
 }

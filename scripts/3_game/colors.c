@@ -43,5 +43,6 @@ class FadeColors
 	const int WHITE			= 0xFFFFFFFF;
 	const int LIGHT_GREY	= 0xFFD7D7D7;
 	const int BLACK 		= 0xFF000000;
+	const int RED 			= 0xFFFF0000;
 	const int DARK_RED 		= 0xFF3f0000;
 }

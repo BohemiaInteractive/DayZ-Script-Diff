@@ -33,6 +33,14 @@ class ActionRestrainSelf: ActionContinuousBase
 		m_Text = "#restrain_self";
 	}
 	
+	override int GetStanceMask(PlayerBase player)
+	{
+		if ( player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_PRONE))
+			return DayZPlayerConstants.STANCEMASK_CROUCH;
+		else
+			return DayZPlayerConstants.STANCEMASK_ERECT;
+	}
+	
 	override void CreateConditionComponents()  
 	{	
 		m_ConditionItem = new CCINonRuined;

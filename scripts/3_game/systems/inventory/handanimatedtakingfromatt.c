@@ -6,13 +6,13 @@ class HandTakingAnimated_Show extends HandStartAction
 	ref InventoryLocation m_Src;
 	ref InventoryLocation m_Dst;
 
-	void HandTakingAnimated_Show (Man player = NULL, HandStateBase parent = NULL, WeaponActions action = WeaponActions.NONE, int actionType = -1)
+	void HandTakingAnimated_Show(Man player = null, HandStateBase parent = null, WeaponActions action = WeaponActions.NONE, int actionType = -1)
 	{
 		m_Src = null;
 		m_Dst = null;
 	}
 
-	override void OnEntry (HandEventBase e)
+	override void OnEntry(HandEventBase e)
 	{
 		super.OnEntry(e);
 
@@ -26,9 +26,16 @@ class HandTakingAnimated_Show extends HandStartAction
 					Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "OnEntry", e.m_Player.ToString() );
 				}
 				#endif
-
-				GameInventory.LocationSyncMoveEntity(m_Src, m_Dst);
-				e.m_Player.OnItemInHandsChanged();
+				
+				//if (GameInventory.LocationCanMoveEntity(m_Src, m_Dst))
+				//{
+					GameInventory.LocationSyncMoveEntity(m_Src, m_Dst);
+					e.m_Player.OnItemInHandsChanged();
+				//}
+				//else
+				//{
+				//	hndDebugPrint("[hndfsm] HandTakingAnimated_Show - not allowed");
+				//}
 			}
 			else
 			{
@@ -39,21 +46,21 @@ class HandTakingAnimated_Show extends HandStartAction
 			Error("[hndfsm] HandTakingAnimated_Show, error - m_Src not configured");
 	}
 
-	override void OnAbort (HandEventBase e)
+	override void OnAbort(HandEventBase e)
 	{
 		m_Src = null;
 		m_Dst = null;
 		super.OnAbort(e);
 	}
 
-	override void OnExit (HandEventBase e)
+	override void OnExit(HandEventBase e)
 	{
 		m_Src = null;
 		m_Dst = null;
 		super.OnExit(e);
 	}
 
-	override bool IsWaitingForActionFinish () { return true; }
+	override bool IsWaitingForActionFinish() { return true; }
 };
 
 
@@ -64,7 +71,7 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 	
 	ref InventoryLocation m_Dst;
 
-	void HandAnimatedTakingFromAtt (Man player = NULL, HandStateBase parent = NULL)
+	void HandAnimatedTakingFromAtt(Man player = null, HandStateBase parent = null)
 	{
 		// setup nested state machine
 		m_Hide = new HandTakingAnimated_Hide(player, this, WeaponActions.HIDE, -1);
@@ -78,14 +85,14 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 		m_FSM = new HandFSM(this); // @NOTE: set owner of the submachine fsm
 
 		m_FSM.AddTransition(new HandTransition(   m_Hide, _AEh_,   m_Show ));
-		m_FSM.AddTransition(new HandTransition(   m_Hide, __Xd_,     NULL ));
-		m_FSM.AddTransition(new HandTransition(   m_Show, _fin_,     NULL ));
-		m_FSM.AddTransition(new HandTransition(   m_Show, __Xd_,     NULL ));
+		m_FSM.AddTransition(new HandTransition(   m_Hide, __Xd_,     null ));
+		m_FSM.AddTransition(new HandTransition(   m_Show, _fin_,     null ));
+		m_FSM.AddTransition(new HandTransition(   m_Show, __Xd_,     null ));
 		
 		m_FSM.SetInitialState(m_Hide);
 	}
 
-	override void OnEntry (HandEventBase e)
+	override void OnEntry(HandEventBase e)
 	{
 		m_Dst = e.GetDst();
 		m_Show.m_Src = e.GetSrc();
@@ -99,7 +106,7 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 		super.OnEntry(e); // @NOTE: super at the end (prevent override from submachine start)
 	}
 
-	override void OnAbort (HandEventBase e)
+	override void OnAbort(HandEventBase e)
 	{
 		#ifdef DEVELOPER
 		if ( LogManager.IsInventoryHFSMLogEnable() )
@@ -115,7 +122,7 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 		super.OnAbort(e);
 	}
 
-	override void OnExit (HandEventBase e)
+	override void OnExit(HandEventBase e)
 	{
 		e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
 		m_Dst = null;

@@ -2,16 +2,12 @@
 class CfgGameplayJson
 {
 	int version = -1;
-	//! used to set-up default values
+	
+	//! Obsolete, 'InitServer' on individual json items is now called centrally
 	void InitServer()
 	{
-		GeneralData.InitServer();
-		PlayerData.InitServer();
-		WorldsData.InitServer();
-		BaseBuildingData.InitServer();
-		UIData.InitServer();
-		MapData.InitServer();
 	}
+	
 	//-------------------------------------------------------------------------------------------------
 	
 	
@@ -25,13 +21,35 @@ class CfgGameplayJson
 	
 };
 
-class ITEM_GeneralData
+class ITEM_DataBase
 {
-	void InitServer()
+	void ITEM_DataBase()
+	{
+		#ifdef SERVER
+		CfgGameplayHandler.RegisterItem(this);
+		#endif
+	}
+	
+	bool ValidateServer()
+	{
+		return true;
+	}
+	
+	void InitServer();
+}
+
+class ITEM_GeneralData : ITEM_DataBase
+{
+	override void InitServer()
 	{
 		disableBaseDamage = GetGame().ServerConfigGetInt( "disableBaseDamage" );
 		disableContainerDamage = GetGame().ServerConfigGetInt( "disableContainerDamage" );
 		disableRespawnDialog = GetGame().ServerConfigGetInt("disableRespawnDialog");
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	//-------------------------------------------------------------------------------------------------
 	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
@@ -41,16 +59,23 @@ class ITEM_GeneralData
 
 };
 
-class ITEM_PlayerData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_PlayerData : ITEM_DataBase
 {
 	ref ITEM_StaminaData StaminaData			 	= new ITEM_StaminaData;
 	ref ITEM_ShockHandlingData ShockHandlingData 	= new ITEM_ShockHandlingData;
 	ref ITEM_MovementData MovementData 				= new ITEM_MovementData;
 	ref ITEM_DrowningData DrowningData 				= new ITEM_DrowningData;
 	
-	void InitServer()
+	override void InitServer()
 	{
 		disablePersonalLight = GetGame().ServerConfigGetInt( "disablePersonalLight" );
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -60,10 +85,17 @@ class ITEM_PlayerData
 
 };
 
-class ITEM_ShockHandlingData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_ShockHandlingData : ITEM_DataBase
 {
-	void InitServer()
+	override void InitServer()
 	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -73,10 +105,17 @@ class ITEM_ShockHandlingData
 	bool allowRefillSpeedModifier = true;
 };
 
-class ITEM_StaminaData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_StaminaData : ITEM_DataBase
 {
-	void InitServer()
+	override void InitServer()
 	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -85,14 +124,26 @@ class ITEM_StaminaData
 	float staminaMax = GameConstants.STAMINA_MAX;
 	float staminaKgToStaminaPercentPenalty = GameConstants.STAMINA_KG_TO_STAMINAPERCENT_PENALTY;
 	float staminaMinCap = GameConstants.STAMINA_MIN_CAP;
-	float sprintStaminaModifierErc = 1;//consumption of stamina during standing sprint
-	float sprintStaminaModifierCro = 1;//consumption of stamina during crouched sprint
+	float sprintStaminaModifierErc = 1;//consumption of stamina during standing sprint modification
+	float sprintStaminaModifierCro = 1;//consumption of stamina during crouched sprint modification
+	float sprintSwimmingStaminaModifier = 1;//consumption of stamina during swimming sprint modification
+	float sprintLadderStaminaModifier = 1;//consumption of stamina during climbing sprint modification
+	float meleeStaminaModifier = 1;//consumption of stamina during melee attacks and evasion modification
+	float obstacleTraversalStaminaModifier = 1;// vaulting and climbing stamina consumption modification
+	float holdBreathStaminaModifier = 1;// hold breath  stamina consumption modification
 };
 
-class ITEM_MovementData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_MovementData : ITEM_DataBase
 {
-	void InitServer()
+	override void InitServer()
 	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -102,14 +153,27 @@ class ITEM_MovementData
 	float timeToSprint			= 0.45;
 	float timeToStrafeSprint 	= 0.3;
 	float rotationSpeedSprint	= 0.15;
+	bool allowStaminaAffectInertia = 1;
 }
 
-class ITEM_WorldData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_WorldData : ITEM_DataBase
 {
-	
-	void InitServer()
+	override void InitServer()
 	{
 		lightingConfig = GetGame().ServerConfigGetInt( "lightingConfig" );
+		wetnessWeightModifiers = {GameConstants.WEIGHT_DRY,GameConstants.WEIGHT_DAMP,GameConstants.WEIGHT_WET,GameConstants.WEIGHT_SOAKING_WET,GameConstants.WEIGHT_DRENCHED};
+	}
+	
+	override bool ValidateServer()
+	{
+		if (!wetnessWeightModifiers || wetnessWeightModifiers.Count() != 5)
+		{
+			return false;
+		}
+		
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -119,13 +183,21 @@ class ITEM_WorldData
 	ref array<string> objectSpawnersArr;
 	ref array<float> environmentMinTemps;
 	ref array<float> environmentMaxTemps;
+	ref array<float> wetnessWeightModifiers = {GameConstants.WEIGHT_DRY,GameConstants.WEIGHT_DAMP,GameConstants.WEIGHT_WET,GameConstants.WEIGHT_SOAKING_WET,GameConstants.WEIGHT_DRENCHED};
 };
 
-class ITEM_BaseBuildingData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_BaseBuildingData : ITEM_DataBase
 {
 	
-	void InitServer()
+	override void InitServer()
 	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -134,11 +206,18 @@ class ITEM_BaseBuildingData
 	ref ITEM_ConstructionData ConstructionData = new ITEM_ConstructionData;
 };
 
-class ITEM_HologramData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_HologramData : ITEM_DataBase
 {
 	
-	void InitServer()
+	override void InitServer()
 	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -155,11 +234,18 @@ class ITEM_HologramData
 	bool disableIsInTerrainCheck;
 };
 
-class ITEM_ConstructionData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_ConstructionData : ITEM_DataBase
 {
 	
-	void InitServer()
+	override void InitServer()
 	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -169,12 +255,19 @@ class ITEM_ConstructionData
 	bool disableDistanceCheck;
 };
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
 //! data for UI, in-game HUD, and similar
-class ITEM_UIData
+class ITEM_UIData : ITEM_DataBase
 {
-	void InitServer()
+	override void InitServer()
 	{
 		HitIndicationData.InitServer();
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -183,12 +276,19 @@ class ITEM_UIData
 	bool use3DMap = false;
 };
 
-class ITEM_HitIndicationData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_HitIndicationData : ITEM_DataBase
 {
-	void InitServer()
+	override void InitServer()
 	{
 		hitDirectionOverrideEnabled = false;
 		hitIndicationPostProcessEnabled = false;
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -204,10 +304,17 @@ class ITEM_HitIndicationData
 	bool hitIndicationPostProcessEnabled = false;
 };
 
-class ITEM_MapData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_MapData : ITEM_DataBase
 {
-	void InitServer()
+	override void InitServer()
 	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -218,8 +325,19 @@ class ITEM_MapData
 	bool displayNavInfo				= true;
 }
 
-class ITEM_DrowningData
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_DrowningData : ITEM_DataBase
 {
+	override void InitServer()
+	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
+	}
+	
 	//-------------------------------------------------------------------------------------------------
 	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
 	float staminaDepletionSpeed = 10;

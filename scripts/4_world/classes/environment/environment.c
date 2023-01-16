@@ -52,6 +52,10 @@ class Environment
 	protected float m_UTSAverageTemperature;
 	protected ref array<UTemperatureSource> m_UTemperatureSources;
 	protected ref SimpleMovingAverage<float> m_UTSAverageTemperatureBuffer;
+	
+	#ifdef DIAG_DEVELOPER
+	bool m_Debug = false;
+	#endif
 		
 	void Environment(PlayerBase pPlayer)
 	{
@@ -88,10 +92,11 @@ class Environment
 			InventorySlots.GLOVES,
 			InventorySlots.ARMBAND,
 			InventorySlots.BODY,
+			InventorySlots.HIPS,
 			InventorySlots.VEST,
 			InventorySlots.BACK,
 			InventorySlots.LEGS,
-			InventorySlots.FEET,
+			InventorySlots.FEET
 		};
 		//! upper body part slots
 		m_SlotIdsUpper 			= new array<int>;
@@ -99,16 +104,18 @@ class Environment
 			InventorySlots.GLOVES,
 			InventorySlots.ARMBAND,
 			InventorySlots.BODY,
+			InventorySlots.HIPS,
 			InventorySlots.VEST,
 			InventorySlots.BACK,
 			InventorySlots.LEGS,
-			InventorySlots.FEET,
+			InventorySlots.FEET
 		};
 		//! bottom body part slots
 		m_SlotIdsBottom 		= new array<int>;
 		m_SlotIdsBottom			= {
+			InventorySlots.HIPS,
 			InventorySlots.LEGS,
-			InventorySlots.FEET,
+			InventorySlots.FEET
 		};
 		//! lower body part slots
 		m_SlotIdsLower 			= new array<int>;
@@ -178,11 +185,11 @@ class Environment
 				//! Process item wetness/dryness
 				if ( m_WetDryTick >= GameConstants.ENVIRO_TICKS_TO_WETNESS_CALCULATION )
 				{
-					if( IsWaterContact() )
+					if ( IsWaterContact() )
 					{
 						ProcessWetnessByWaterLevel(m_WaterLevel);
 					}
-					else if( IsRaining() && !IsInsideBuilding() && !IsUnderRoof() && !IsInsideVehicle() )
+					else if ( IsRaining() && !IsInsideBuilding() && !IsUnderRoof() && !IsInsideVehicle() )
 					{
 						ProcessWetnessByRain();
 					}
@@ -214,7 +221,7 @@ class Environment
 	}
 
 	// DEPRECATED
-	void AddToEnvironmentTemperature(float pTemperature) {};
+	void AddToEnvironmentTemperature(float pTemperature);
 	
 	//! Returns heat player generated based on player's movement speed (for now)
 	protected float GetPlayerHeat()
@@ -223,7 +230,7 @@ class Environment
 		return heat;
 	}
 	
-	protected bool IsUnderRoof()
+	bool IsUnderRoof()
 	{
 		return m_IsUnderRoof;
 	}
@@ -233,7 +240,7 @@ class Environment
 		return m_IsInWater;
 	}
 	
-	protected bool IsInsideBuilding()
+	 bool IsInsideBuilding()
 	{
 		return m_Player && m_Player.IsSoundInsideBuilding();
 	}
@@ -299,13 +306,13 @@ class Environment
 	
 	// ENVIRONMENT
 	// Returns amount of deg C air temperature should be lowered by, based on player's height above water level
-	protected float GetTemperatureHeightCorrection()
+	float GetTemperatureHeightCorrection()
 	{
 		float temperature_reduction = Math.Max(0, (m_PlayerHeightPos * GameConstants.ENVIRO_TEMPERATURE_HEIGHT_REDUCTION));
 		return temperature_reduction;
 	}
 	
-	protected float GetWindModifierPerSurface()
+	float GetWindModifierPerSurface()
 	{
 		return g_Game.ConfigGetFloat( "CfgSurfaces " + m_SurfaceType + " windModifier" );
 	}
@@ -357,7 +364,7 @@ class Environment
 	}	
 		
 	// Calculats wet/drying delta based on player's location and weather
-	protected float GetWetDelta()
+	float GetWetDelta()
 	{
 		float wetDelta = 0;
 		if ( IsWaterContact() )
@@ -452,8 +459,6 @@ class Environment
 
 	protected void ProcessWetnessByWaterLevel(float pWaterLevel)
 	{
-		ref array<int> slotIds = new array<int>;
-	
 		// process attachments by water depth
 		if (pWaterLevel >= WATER_LEVEL_HIGH)
 		{
@@ -507,10 +512,7 @@ class Environment
 		{
 			ApplyWetnessToItem(m_Player.GetItemInHands());
 		}
- 
-		//! force recalc of player's load (for stamina)
-		m_Player.UpdateWeight();
-		m_Player.SetPlayerLoad(m_Player.GetWeight());
+
 	}
 
 	protected void ProcessItemsDryness()
@@ -534,10 +536,6 @@ class Environment
 		{
 			ApplyDrynessToItem(m_Player.GetItemInHands());
 		}
-
-		//! force recalc of player's load (for stamina)		
-		m_Player.UpdateWeight();
-		m_Player.SetPlayerLoad(m_Player.GetWeight());
 	}
 	
 	
@@ -770,7 +768,7 @@ class Environment
 	}
 	
 	//! DEPRECATED
-	protected bool OverridenHeatComfort(out float value) {};
+	protected bool OverridenHeatComfort(out float value);
 	
 	protected float EnvTempToCoef(float pTemp)
 	{
@@ -955,8 +953,21 @@ class Environment
 	}
 
 	//! debug
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
+	EnvDebugData GetEnvDebugData()
+	{
+		EnvDebugData data = new EnvDebugData();
+		data.Synch(this, m_Player);
+		return data;
+	}
+	
 	void ShowEnvDebugPlayerInfo(bool enabled)
+	{
+		EnvDebugData data = GetEnvDebugData();
+		DisplayEnvDebugPlayerInfo(enabled, data);
+	}
+	
+	static void DisplayEnvDebugPlayerInfo(bool enabled, EnvDebugData data)
 	{
 		int windowPosX = 10;
 		int windowPosY = 200;
@@ -964,35 +975,42 @@ class Environment
 		Object obj;
 
 		DbgUI.Begin("Player stats", windowPosX, windowPosY);
-		if( enabled )
+		if ( enabled )
 		{
-			//DbgUI.Text("Temperature: " + m_PlayerTemperature.ToString());
-			DbgUI.Text("Heat comfort: " + m_HeatComfort.ToString());
-			DbgUI.Text("Inside: " + IsInsideBuilding().ToString() + " ("+m_Player.GetSurfaceType()+")");
-			int nextCheckCountdown = (GameConstants.ENVIRO_TICK_ROOF_RC_CHECK - m_RoofCheckTimer) + 1;
-			DbgUI.Text("Under roof: " + m_IsUnderRoof.ToString() + " (" + nextCheckCountdown + ")");
-			if( IsWaterContact() && m_WaterLevel > WATER_LEVEL_NONE )
+			DbgUI.Text(string.Format("Heat comfort: %1", data.m_PlayerData.m_HeatComfort));
+			DbgUI.Text(string.Format("Inside: %1 (%2)", data.m_PlayerData.m_Inside, data.m_PlayerData.m_Surface));
+			DbgUI.Text(string.Format("Under roof: %1 (%2)", data.m_PlayerData.m_UnderRoof, data.m_PlayerData.m_UnderRoofTimer));
+			if ( data.m_PlayerData.m_WaterLevel > 0 )
 			{
-				DbgUI.Text("Water Level: " + m_WaterLevel);
+				DbgUI.Text(string.Format("Water Level: %1", data.m_PlayerData.m_WaterLevel));
 			}
 			
 		}
 		DbgUI.End();
 		
 		DbgUI.Begin("Weather stats:", windowPosX, windowPosY + 200);
-		if( enabled )
+		if ( enabled )
 		{
-			DbgUI.Text("Env temperature (base): " +  g_Game.GetMission().GetWorldData().GetBaseEnvTemperature().ToString());
-			DbgUI.Text("Env temperature (modfied): " + m_EnvironmentTemperature.ToString());
-			DbgUI.Text("Wind: " + m_Wind.ToString() + " (x" + GetWindModifierPerSurface() + ")");
-			DbgUI.Text("Rain: " + m_Rain.ToString());
-			DbgUI.Text("Day/Night (1/0): " + m_DayOrNight.ToString());
-			DbgUI.Text("Fog: " + m_Fog.ToString());
-			DbgUI.Text("Clouds: " + m_Clouds.ToString());
-			DbgUI.Text("Height: " + GetTemperatureHeightCorrection().ToString());
-			DbgUI.Text("Wet delta: " + GetWetDelta().ToString());
+			DbgUI.Text(string.Format("Env temperature (base): %1", data.m_MiscData.m_TemperatureBase));
+			DbgUI.Text(string.Format("Env temperature (modfied): %1", data.m_MiscData.m_TemperatureModified));
+			DbgUI.Text(string.Format("Wind: %1 (x%2)", data.m_WeatherData.m_Wind, data.m_WeatherData.m_WindModifier));
+			DbgUI.Text(string.Format("Rain: %1", data.m_WeatherData.m_Rain));
+			DbgUI.Text(string.Format("Day/Night (1/0): %1", data.m_MiscData.m_DayOrNight));
+			DbgUI.Text(string.Format("Fog: %1", data.m_WeatherData.m_Fog));
+			DbgUI.Text(string.Format("Clouds: %1", data.m_WeatherData.m_Clouds));
+			DbgUI.Text(string.Format("Height: %1", data.m_MiscData.m_Height));
+			DbgUI.Text(string.Format("Wet delta: %1", data.m_MiscData.m_WetDelta));
 		}
 		DbgUI.End();
+	}
+	
+	void FillDebugWeatherData(EnvDebugWeatherData data)
+	{
+		data.m_Wind = m_Wind;
+		data.m_WindModifier = GetWindModifierPerSurface();
+		data.m_Rain = m_Rain;
+		data.m_Fog = m_Fog;
+		data.m_Clouds = m_Clouds;
 	}
 #endif
 
@@ -1001,8 +1019,8 @@ class Environment
 		string message;		
 		message += "Player stats";
 		message += "\nHeat comfort: " + m_HeatComfort.ToString();
-		message += "\nInside: " + IsInsideBuilding().ToString() + " ("+m_Player.GetSurfaceType()+")";
-		message += "\nUnder roof: " + m_IsUnderRoof.ToString() + " (" + (GameConstants.ENVIRO_TICK_ROOF_RC_CHECK - m_RoofCheckTimer) + ")";
+		message += "\nInside: " + IsInsideBuilding().ToString() + " (" + m_Player.GetSurfaceType() + ")";
+		message += "\nUnder roof: " + m_IsUnderRoof.ToString() + " (" + GetNextRoofCheck() + ")";
 		if (IsWaterContact() && m_WaterLevel > WATER_LEVEL_NONE)
 		{
 			message += "\nWater Level: " + m_WaterLevel;
@@ -1021,4 +1039,135 @@ class Environment
 		
 		return message;
 	}
+	
+	int GetNextRoofCheck()
+	{
+		return (GameConstants.ENVIRO_TICK_ROOF_RC_CHECK - m_RoofCheckTimer) + 1;
+	}
+	
+	float GetWaterLevel()
+	{
+		if (IsWaterContact() && m_WaterLevel > WATER_LEVEL_NONE)
+		{
+			return m_WaterLevel;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
+	float GetDayOrNight()
+	{
+		return m_DayOrNight;
+	}
 };
+
+#ifdef DIAG_DEVELOPER
+class EnvDebugPlayerData : Param
+{
+	float 	m_HeatComfort;
+	bool 	m_Inside;
+	string 	m_Surface;
+	bool 	m_UnderRoof;
+	int 	m_UnderRoofTimer;
+	float 	m_WaterLevel;
+	
+	void Synch(Environment env, PlayerBase player)
+	{
+		m_HeatComfort = player.GetStatHeatComfort().Get();
+		m_Inside = env.IsInsideBuilding();
+		m_Surface = player.GetSurfaceType();
+		m_UnderRoof = env.IsUnderRoof();
+		m_UnderRoofTimer = env.GetNextRoofCheck();
+		m_WaterLevel = env.GetWaterLevel();
+	}
+	
+	override bool Serialize(Serializer ctx)
+	{
+		return (
+		ctx.Write(m_HeatComfort) && ctx.Write(m_Inside) && ctx.Write(m_Surface) && ctx.Write(m_UnderRoof) && ctx.Write(m_UnderRoofTimer) && ctx.Write(m_WaterLevel));
+	}
+	
+	override bool Deserializer(Serializer ctx)
+	{
+		return ctx.Read(m_HeatComfort) && ctx.Read(m_Inside) && ctx.Read(m_Surface) && ctx.Read(m_UnderRoof) && ctx.Read(m_UnderRoofTimer) && ctx.Read(m_WaterLevel);
+	}
+}
+
+class EnvDebugMiscData : Param
+{
+	float 	m_TemperatureBase;
+	float 	m_TemperatureModified;
+	float 	m_DayOrNight;
+	float 	m_Height;
+	float 	m_WetDelta;
+	
+	void Synch(Environment env)
+	{
+		m_TemperatureBase = g_Game.GetMission().GetWorldData().GetBaseEnvTemperature();
+		m_TemperatureModified = env.GetTemperature();
+		m_DayOrNight = env.GetDayOrNight();
+		m_Height = env.GetTemperatureHeightCorrection();
+		m_WetDelta = env.GetWetDelta();
+	}
+	
+	override bool Serialize(Serializer ctx)
+	{
+		return ctx.Write(m_TemperatureBase) && ctx.Write(m_TemperatureModified) && ctx.Write(m_DayOrNight) && ctx.Write(m_Height) && ctx.Write(m_WetDelta);
+	}
+	
+	override bool Deserializer(Serializer ctx)
+	{
+		return ctx.Read(m_TemperatureBase) && ctx.Read(m_TemperatureModified) && ctx.Read(m_DayOrNight) && ctx.Read(m_Height) && ctx.Read(m_WetDelta);
+	}
+}
+
+class EnvDebugWeatherData : Param
+{
+	float 	m_Wind;
+	float 	m_WindModifier;
+	float 	m_Rain;
+	float 	m_Fog;
+	float 	m_Clouds;
+	
+	void Synch(Environment env)
+	{
+		env.FillDebugWeatherData(this);
+	}
+	
+	override bool Serialize(Serializer ctx)
+	{
+		return ctx.Write(m_Wind) && ctx.Write(m_WindModifier) && ctx.Write(m_Rain) && ctx.Write(m_Fog) && ctx.Write(m_Clouds);
+	}
+		
+	override bool Deserializer(Serializer ctx)
+	{
+		return ctx.Read(m_Wind) && ctx.Read(m_WindModifier) && ctx.Read(m_Rain) && ctx.Read(m_Fog) && ctx.Read(m_Clouds);
+	}
+}
+
+class EnvDebugData : Param
+{
+	ref EnvDebugPlayerData 		m_PlayerData = new EnvDebugPlayerData();
+	ref EnvDebugMiscData 		m_MiscData = new EnvDebugMiscData();
+	ref EnvDebugWeatherData 	m_WeatherData = new EnvDebugWeatherData();
+	
+	void Synch(Environment env, PlayerBase player)
+	{
+		m_PlayerData.Synch(env, player);
+		m_MiscData.Synch(env);
+		m_WeatherData.Synch(env);
+	}
+	
+	override bool Serialize(Serializer ctx)
+	{
+		return m_PlayerData.Serialize(ctx) && m_MiscData.Serialize(ctx) && m_WeatherData.Serialize(ctx);
+	}
+		
+	override bool Deserializer(Serializer ctx)
+	{
+		return m_PlayerData.Deserializer(ctx) && m_MiscData.Deserializer(ctx) && m_WeatherData.Deserializer(ctx);
+	}
+}
+#endif

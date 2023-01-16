@@ -58,18 +58,32 @@ class string
 	*/
 	proto vector ToVector();
 		
+	
+	/**
+	\brief Convert beautified string into a vector
+	    \param vec \p beautified string
+		\return \p vector resulting vector
+	*/
+	vector BeautifiedToVector()
+	{
+		string copy = value;
+		copy.Replace("<", "");
+		copy.Replace(">", "");
+		copy.Replace(",", " ");
+		return copy.ToVector();
+	}
 	/**
 	\brief Converts string's first character to ASCII code
 		\param str String for convert to ASCII code
 		\return \p ascii code \p int.
 		@code
-			int ascii = "M".ToAcsii();
+			int ascii = "M".ToAscii();
 			Print(ascii);
 
 			>> ascii = 77
 		@endcode
 	*/
-	proto int ToAscii(string str);		
+	proto native int ToAscii();
 	
 	/**
 	\brief Returns internal type representation. Can be used in runtime, or cached in variables and used for faster inheritance checking
@@ -257,7 +271,7 @@ class string
 	proto native int IndexOfFrom(int start, string sample);
 
 	/**
-	\brief Retunrs true if sample is substring of string
+	\brief Returns true if sample is substring of string
 		\param sample \p string Finding string expression
 		\return \p bool true if sample is substring of string
 		@code
@@ -343,7 +357,7 @@ class string
 			string str = "Hello World";
 			int result = str.ParseString(token);
 
-			for( int i = 0; i < 2; i++ )
+			for (int i = 0; i < 2; i++)
 			{
 				Print(token[i]);
 			}
@@ -359,12 +373,13 @@ class string
 		\param sample \p string Strings separator
 		\return \p TStringArray Array with strings
 		@code
+			string example = "The quick brown fox jumps over the lazy dog";
 			TStringArray strs = new TStringArray;
-			EnString.Split( "The quick brown fox jumps over the lazy dog", " ", strs );
+			example.Split(" ", strs);
 			
-			for ( int i = 0; i < strs.Count(); i++ )
+			for (int i = 0; i < strs.Count(); i++)
 			{
-				Print( strs.Get(i) );
+				Print(strs.Get(i));
 			}
 
 			>> 'The'

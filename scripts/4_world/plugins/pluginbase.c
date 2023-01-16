@@ -1,24 +1,11 @@
 class PluginBase
 {
-	void PluginBase()
-	{
-	}
+	void PluginBase();	
+	void ~PluginBase();
 	
-	void ~PluginBase()
-	{
-	}
-	
-	void OnInit()
-	{
-	}
-	
-	void OnUpdate(float delta_time)
-	{
-	}
-	
-	void OnDestroy()
-	{
-	}
+	void OnInit();	
+	void OnUpdate(float delta_time);	
+	void OnDestroy();
 	
 	void Log(string msg, string label)
 	{

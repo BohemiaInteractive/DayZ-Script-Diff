@@ -1,20 +1,32 @@
+// When editing this, take a look at HandAnimatedMoveToDst_W4T_Basic as well
+// They can not be inherited from each other because of different inheritance
 class HandAnimatedMoveToDst_W4T_Basic extends HandStateBase
 {
 	ref InventoryLocation m_Dst;
 
-	override void OnEntry (HandEventBase e)
+	override void OnEntry(HandEventBase e)
 	{
 		Man player = e.m_Player;
-
 		if (m_Dst && m_Dst.IsValid())
 		{
 			EntityAI item = m_Dst.GetItem();
 			InventoryLocation src = new InventoryLocation;
 			if (item.GetInventory().GetCurrentInventoryLocation(src))
 			{
-				GameInventory.LocationSyncMoveEntity(src, m_Dst);
-
-				player.OnItemInHandsChanged();
+				if (GameInventory.LocationCanMoveEntity(src, m_Dst))
+				{
+					GameInventory.LocationSyncMoveEntity(src, m_Dst);
+					player.OnItemInHandsChanged();
+				}
+				else
+				{
+					#ifdef DEVELOPER
+					if ( LogManager.IsInventoryHFSMLogEnable() )
+					{	
+						Debug.InventoryHFSMLog("[hndfsm] HandAnimatedMoveToDst_W4T_Basic - not allowed");
+					}
+					#endif
+				}
 			}
 			else
 				Error("[hndfsm] " + Object.GetDebugName(e.m_Player) + " STS = " + e.m_Player.GetSimulationTimeStamp() + " HandAnimatedMoveToDst_W4T_Basic - item " + item + " has no Inventory or Location, inv=" + item.GetInventory());
@@ -25,19 +37,19 @@ class HandAnimatedMoveToDst_W4T_Basic extends HandStateBase
 		super.OnEntry(e);
 	}
 
-	override void OnAbort (HandEventBase e)
+	override void OnAbort(HandEventBase e)
 	{
-		m_Dst = NULL;
+		m_Dst = null;
 		super.OnAbort(e);
 	}
 
-	override void OnExit (HandEventBase e)
+	override void OnExit(HandEventBase e)
 	{
-		m_Dst = NULL;
+		m_Dst = null;
 		super.OnExit(e);
 	}
 
-	override bool IsWaitingForActionFinish () { return true; }
+	override bool IsWaitingForActionFinish() { return true; }
 };
 
 class HandForceSwappingAnimated_Show extends HandStartAction
@@ -47,14 +59,23 @@ class HandForceSwappingAnimated_Show extends HandStartAction
 	ref InventoryLocation m_Dst1 = null;
 	ref InventoryLocation m_Dst2 = null;
 
-	void HandForceSwapingAnimated_Show (Man player = NULL, HandStateBase parent = NULL, WeaponActions action = WeaponActions.NONE, int actionType = -1) { }
+	void HandForceSwapingAnimated_Show(Man player = null, HandStateBase parent = null, WeaponActions action = WeaponActions.NONE, int actionType = -1) { }
 
-	override void OnEntry (HandEventBase e)
+	override void OnEntry(HandEventBase e)
 	{
-		if (m_Src1 && m_Src2 && m_Dst1 && m_Dst2 )
+		if (m_Src1 && m_Src2 && m_Dst1 && m_Dst2)
 		{
-			GameInventory.LocationSwap(m_Src1, m_Src2, m_Dst1, m_Dst2);
-			e.m_Player.OnItemInHandsChanged();
+			//InventoryLocation dummy;
+			//dummy.Copy(m_Dst2);			
+			//if (GameInventory.CanForceSwapEntitiesEx(m_Src1.GetItem(), m_Dst1, m_Src2.GetItem(), dummy) && dummy == m_Dst2)
+			//{
+				GameInventory.LocationSwap(m_Src1, m_Src2, m_Dst1, m_Dst2);
+				e.m_Player.OnItemInHandsChanged();
+			//}
+			//else
+			//{
+			//	hndDebugPrint("[hndfsm] HandForceSwapingAnimated_Show - not allowed");
+			//}
 		}
 		else
 			Error("[hndfsm] HandForceSwappingAnimated_Show is not properly configured!");
@@ -62,7 +83,7 @@ class HandForceSwappingAnimated_Show extends HandStartAction
 		super.OnEntry(e);
 	}
 
-	override void OnAbort (HandEventBase e)
+	override void OnAbort(HandEventBase e)
 	{
 		m_Src1 = null;
 		m_Src2 = null;
@@ -71,7 +92,7 @@ class HandForceSwappingAnimated_Show extends HandStartAction
 		super.OnAbort(e);
 	}
 
-	override void OnExit (HandEventBase e)
+	override void OnExit(HandEventBase e)
 	{
 		m_Src1 = null;
 		m_Src2 = null;
@@ -80,7 +101,7 @@ class HandForceSwappingAnimated_Show extends HandStartAction
 		super.OnExit(e);
 	}
 
-	override bool IsWaitingForActionFinish () { return true; }
+	override bool IsWaitingForActionFinish() { return true; }
 };
 
 
@@ -95,7 +116,7 @@ class HandAnimatedForceSwapping extends HandStateBase
 	ref HandAnimatedMoveToDst_W4T m_Show;
 	ref HandAnimatedMoveToDst_W4T_Basic m_Hide;
 
-	void HandAnimatedForceSwapping (Man player = NULL, HandStateBase parent = NULL)
+	void HandAnimatedForceSwapping(Man player = null, HandStateBase parent = null)
 	{
 		// setup nested state machine
 		m_Start = new HandStartHidingAnimated(player, this, WeaponActions.HIDE, -1);
@@ -111,15 +132,15 @@ class HandAnimatedForceSwapping extends HandStateBase
 
 		m_FSM.AddTransition(new HandTransition(   m_Start,		_AEh_,	m_Hide ));
 		m_FSM.AddTransition(new HandTransition(   m_Hide,		_AEh_,	m_Show )); // no animation in Hide step
-		m_FSM.AddTransition(new HandTransition(   m_Show,		_fin_,	NULL ));
-		m_FSM.AddTransition(new HandTransition(   m_Hide,		_fin_,	NULL ));
+		m_FSM.AddTransition(new HandTransition(   m_Show,		_fin_,	null ));
+		m_FSM.AddTransition(new HandTransition(   m_Hide,		_fin_,	null ));
 		m_FSM.AddTransition(new HandTransition(   m_Show,		__Xd_,	null ));
 		m_FSM.AddTransition(new HandTransition(   m_Hide,		__Xd_,	null ));
 
 		m_FSM.SetInitialState(m_Start);
 	}
 
-	override void OnEntry (HandEventBase e)
+	override void OnEntry(HandEventBase e)
 	{		
 		HandEventForceSwap efs = HandEventForceSwap.Cast(e);
 		if (efs)
@@ -160,9 +181,9 @@ class HandAnimatedForceSwapping extends HandStateBase
 		super.OnEntry(e); // @NOTE: super at the end (prevent override from submachine start)
 	}
 
-	override void OnAbort (HandEventBase e)
+	override void OnAbort(HandEventBase e)
 	{
-		if( !GetGame().IsDedicatedServer())
+		if ( !GetGame().IsDedicatedServer())
 		{
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
@@ -181,9 +202,9 @@ class HandAnimatedForceSwapping extends HandStateBase
 		super.OnAbort(e);
 	}
 
-	override void OnExit (HandEventBase e)
+	override void OnExit(HandEventBase e)
 	{
-		if( !GetGame().IsDedicatedServer())
+		if ( !GetGame().IsDedicatedServer())
 		{
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
@@ -213,7 +234,7 @@ class HandAnimatedForceSwapping_Inst extends HandStateBase
 	ref HandStartHidingAnimated m_Start;
 	ref HandForceSwappingAnimated_Show m_Swap;
 
-	void HandAnimatedForceSwapping_Inst (Man player = NULL, HandStateBase parent = NULL)
+	void HandAnimatedForceSwapping_Inst(Man player = null, HandStateBase parent = null)
 	{
 		// setup nested state machine
 		m_Start = new HandStartHidingAnimated(player, this, WeaponActions.HIDE, -1);
@@ -233,7 +254,7 @@ class HandAnimatedForceSwapping_Inst extends HandStateBase
 		m_FSM.SetInitialState(m_Start);
 	}
 
-	override void OnEntry (HandEventBase e)
+	override void OnEntry(HandEventBase e)
 	{		
 		HandEventForceSwap efs = HandEventForceSwap.Cast(e);
 		if (efs)
@@ -276,9 +297,9 @@ class HandAnimatedForceSwapping_Inst extends HandStateBase
 		super.OnEntry(e); // @NOTE: super at the end (prevent override from submachine start)
 	}
 
-	override void OnAbort (HandEventBase e)
+	override void OnAbort(HandEventBase e)
 	{
-		if( !GetGame().IsDedicatedServer())
+		if ( !GetGame().IsDedicatedServer())
 		{
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
@@ -297,9 +318,9 @@ class HandAnimatedForceSwapping_Inst extends HandStateBase
 		super.OnAbort(e);
 	}
 
-	override void OnExit (HandEventBase e)
+	override void OnExit(HandEventBase e)
 	{
-		if( !GetGame().IsDedicatedServer())
+		if ( !GetGame().IsDedicatedServer())
 		{
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);

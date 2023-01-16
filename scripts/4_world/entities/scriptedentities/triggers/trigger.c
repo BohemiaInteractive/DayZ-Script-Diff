@@ -31,7 +31,7 @@ class TriggerInsider
 	}
 };
 
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 typedef Param7<vector, vector, vector, vector, float, string, array<ref TriggerInsider>> DebugTriggerInfo;
 #endif
 
@@ -43,7 +43,7 @@ class Trigger : TriggerEvents
 	//! The objects and their metadata which are currently inside the Trigger
 	ref array<ref TriggerInsider> m_insiders;
 	
-	#ifdef DEVELOPER
+	#ifdef DIAG_DEVELOPER
 	bool m_Local;//is this trigger spawning on client only ?
 	string 						m_DebugAreaType;
 	ref array<ref TriggerInsider> m_dbgInsiders;
@@ -61,7 +61,7 @@ class Trigger : TriggerEvents
 	//! dtor
 	private void ~Trigger()
 	{
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		CleanupDebugShapes(dbgTargets);
 		#endif
 	}
@@ -259,7 +259,7 @@ class Trigger : TriggerEvents
 		#endif
 						
 		//!DEBUG
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		DebugSendDmgTrigger();
 		#endif
 	}
@@ -280,7 +280,7 @@ class Trigger : TriggerEvents
 			m_insiders.RemoveItemUnOrdered(insider);
 		
 		//!DEBUG
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		DebugSendDmgTrigger();
 		#endif
 	}
@@ -307,7 +307,7 @@ class Trigger : TriggerEvents
 	protected void UpdateInsiders(int timeout)
 	{
 		//!DEBUG
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		DebugSendDmgTrigger();
 		#endif
 		
@@ -361,10 +361,10 @@ class Trigger : TriggerEvents
 	override void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx)
 	{	
 		super.OnRPC(sender, rpc_type, ctx);
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		switch ( rpc_type )
 		{
-			case ERPCs.RPC_AREADAMAGE_DEBUGAREA:
+			case ERPCs.DIAG_TRIGGER_DEBUG:
 				DebugTriggerInfo data = new DebugTriggerInfo(vector.Zero, vector.Zero, vector.Zero, vector.Zero, 0, "", null);
 			
 				if ( ctx.Read( data ) )
@@ -374,7 +374,7 @@ class Trigger : TriggerEvents
 		#endif
 	}
 	
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 	void DebugSendDmgTrigger()
 	{		
 		vector minmax[2];
@@ -390,8 +390,7 @@ class Trigger : TriggerEvents
 		data.param7 = m_insiders;
 		
 		if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
-			PluginDiagMenu.SendDataToSubscribersServer(this, ESubscriberSystems.TRIGGERS, ERPCs.RPC_AREADAMAGE_DEBUGAREA,data,false);
-			//GetGame().RPCSingleParam(this, ERPCs.RPC_AREADAMAGE_DEBUGAREA, data, true);
+			PluginDiagMenuServer.SendDataToSubscribersServer(this, ESubscriberSystems.TRIGGERS, ERPCs.DIAG_TRIGGER_DEBUG, data, false);
 		else if (!GetGame().IsMultiplayer() || m_Local)
 			DebugDmgTrigger( data.param1, data.param2, data.param3, data.param4, data.param5, data.param6, data.param7 );
 	}
@@ -402,7 +401,7 @@ class Trigger : TriggerEvents
 	{
 		CleanupDebugShapes( dbgTargets );
 		
-		bool enableDebug = DiagMenu.GetBool(DiagMenuIDs.DM_SHOW_AREADMG_TRIGGER);
+		bool enableDebug = DiagMenu.GetBool(DiagMenuIDs.TRIGGER_DEBUG);
 		if ( enableDebug )
 		{
 			if ( GetGame().IsMultiplayer() && GetGame().IsServer() )

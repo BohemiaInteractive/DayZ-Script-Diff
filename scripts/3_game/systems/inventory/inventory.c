@@ -30,6 +30,18 @@ enum InventoryCheckContext
 	SYNC_CHECK,
 }
 
+enum FindInventoryReservationMode
+{
+	//! The original logic, finds anything depending on the parameters, item or dst required
+	LEGACY,
+	//! Find a reservation for the item EXCLUDING the dst, item and dst required
+	ITEM,
+	//! Find a reservation for the dst EXCLUDING the item, item and dst required
+	DST,
+	//! Find an exact reservation for item and dst, item and dst required
+	EQUAL,
+};
+
 /**@class		GameInventory
  * @brief		script counterpart to engine's class Inventory
  **/
@@ -583,16 +595,16 @@ class GameInventory
 	 * @param [out]  item2_dst     second item's potential destination (if null, search for item_dst2 is ommited). if (NOT null AND IsValid()), then it is tried first, without search to inventory
 	 * @return    true if can be force swapped
 	 */
-	static proto native bool CanForceSwapEntities (notnull EntityAI item1, InventoryLocation item1_dst, notnull EntityAI item2, out InventoryLocation item2_dst);
+	static proto native bool CanForceSwapEntities(notnull EntityAI item1, InventoryLocation item1_dst, notnull EntityAI item2, out InventoryLocation item2_dst);
 	static bool CanForceSwapEntitiesEx(notnull EntityAI item1, InventoryLocation item1_dst, notnull EntityAI item2, out InventoryLocation item2_dst)
 	{
-		if(!CanForceSwapEntities(item1, item1_dst, item2, item2_dst) )
+		if (!CanForceSwapEntities(item1, item1_dst, item2, item2_dst) )
 			return false;
 		
 		int slot;
 		InventoryLocation il = new InventoryLocation;
 		
-		if( item1_dst == null)
+		if ( item1_dst == null)
 		{
 			item2.GetInventory().GetCurrentInventoryLocation(il);
 			slot = il.GetSlot();
@@ -602,10 +614,10 @@ class GameInventory
 			slot = item1_dst.GetSlot();
 		}
 		
-		if( item1.GetQuantity() > item1.GetTargetQuantityMax(slot) )
+		if ( item1.GetQuantity() > item1.GetTargetQuantityMax(slot) )
 			return false;
 		
-		if( item2_dst == null)
+		if ( item2_dst == null)
 		{
 			item1.GetInventory().GetCurrentInventoryLocation(il);
 			slot = il.GetSlot();
@@ -615,24 +627,25 @@ class GameInventory
 			slot = item2_dst.GetSlot();
 		}
 		
-		if(!item1.CanSwapEntities(item2, item2_dst, item1_dst) || !item2.CanSwapEntities(item1, item1_dst, item2_dst))
+		if (!item1.CanSwapEntities(item2, item2_dst, item1_dst) || !item2.CanSwapEntities(item1, item1_dst, item2_dst))
 		{
 			return false;
 		}
 		
-		if( item2.GetQuantity() > item2.GetTargetQuantityMax(slot) )
+		if ( item2.GetQuantity() > item2.GetTargetQuantityMax(slot) )
 			return false;
 		
 		return true;
 	}
 	
-	proto native bool CanAddSwappedEntity (notnull InventoryLocation src1, notnull InventoryLocation src2, notnull InventoryLocation dst1, notnull InventoryLocation dst2);
+	proto native bool CanAddSwappedEntity(notnull InventoryLocation src1, notnull InventoryLocation src2, notnull InventoryLocation dst1, notnull InventoryLocation dst2);
 
 	///@{ reservations
 	const int c_InventoryReservationTimeoutMS = 5000;
 	const int c_InventoryReservationTimeoutShortMS = 3000;
-	static proto native bool AddInventoryReservation (EntityAI item, InventoryLocation dst, int timeout_ms);
-	bool AddInventoryReservationEx (EntityAI item, InventoryLocation dst, int timeout_ms)
+	
+	static proto native bool AddInventoryReservation(EntityAI item, InventoryLocation dst, int timeout_ms);
+	bool AddInventoryReservationEx(EntityAI item, InventoryLocation dst, int timeout_ms)
 	{
 		if (GetGame().IsMultiplayer() && GetGame().IsServer() )
 			return true;
@@ -642,9 +655,9 @@ class GameInventory
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			DayZPlayer player = GetGame().GetPlayer();
-			if( player )
+			if ( player )
 			{
-				if(item)
+				if (item)
 					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "AddInventoryReservation", player.ToString() );
 				else
 					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "AddInventoryReservation", player.ToString() );
@@ -653,8 +666,9 @@ class GameInventory
 		#endif
 		return ret_val;
 	}
-	static proto native bool ExtendInventoryReservation (EntityAI item, InventoryLocation dst, int timeout_ms);
-	bool ExtendInventoryReservationEx (EntityAI item, InventoryLocation dst, int timeout_ms)
+	
+	static proto native bool ExtendInventoryReservation(EntityAI item, InventoryLocation dst, int timeout_ms);
+	bool ExtendInventoryReservationEx(EntityAI item, InventoryLocation dst, int timeout_ms)
 	{ 
 		if (GetGame().IsMultiplayer() && GetGame().IsServer() )
 			return true;
@@ -664,9 +678,9 @@ class GameInventory
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			DayZPlayer player = GetGame().GetPlayer();
-			if( player )
+			if ( player )
 			{
-				if(item)
+				if (item)
 					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ExtendInventoryReservation", player.ToString() );
 				else
 					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ExtendInventoryReservation", player.ToString() );
@@ -675,8 +689,9 @@ class GameInventory
 		#endif
 		return ret_val;
 	}
-	static proto native bool ClearInventoryReservation (EntityAI item, InventoryLocation dst);
-	bool ClearInventoryReservationEx (EntityAI item, InventoryLocation dst)
+	
+	static proto native bool ClearInventoryReservation(EntityAI item, InventoryLocation dst);
+	bool ClearInventoryReservationEx(EntityAI item, InventoryLocation dst)
 	{
 		if (GetGame().IsMultiplayer() && GetGame().IsServer() )
 			return true;
@@ -686,9 +701,9 @@ class GameInventory
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			DayZPlayer player = GetGame().GetPlayer();
-			if( player )
+			if ( player )
 			{
-				if(item)
+				if (item)
 					Debug.InventoryMoveLog("Reservation cleared result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ClearInventoryReservation", player.ToString() );
 				else
 					Debug.InventoryMoveLog("Reservation cleared result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ClearInventoryReservation", player.ToString() );
@@ -697,8 +712,15 @@ class GameInventory
 		#endif
 		return ret_val;
 	}
-	static proto native bool HasInventoryReservation (EntityAI item, InventoryLocation dst);
-	static proto native bool GetInventoryReservationCount (EntityAI item, InventoryLocation dst);
+	
+	//! Internally: HasInventoryReservationEx(item, dst, FindInventoryReservationMode.LEGACY, FindInventoryReservationMode.LEGACY)
+	static proto native bool HasInventoryReservation(EntityAI item, InventoryLocation dst);
+	//! Internally: !HasInventoryReservationEx(item, dst, FindInventoryReservationMode.ITEM, FindInventoryReservationMode.DST)
+	static proto native bool HasInventoryReservationCanAdd(EntityAI item, InventoryLocation dst);
+	
+	//! itemMode will iterate over item reservations, parentMode will iterate over parent reservations
+	static proto native bool HasInventoryReservationEx(EntityAI item, InventoryLocation dst, FindInventoryReservationMode itemMode, FindInventoryReservationMode parentMode);
+	static proto native bool GetInventoryReservationCount(EntityAI item, InventoryLocation dst);
 	///@} reservations
 
 	///@{ locks
@@ -1231,13 +1253,10 @@ class GameInventory
 
 	bool ReplaceItemWithNew(InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
 	{
-		InventoryLocation src = new InventoryLocation;
+		InventoryLocation src = new InventoryLocation();
 		if (lambda.m_OldItem.GetInventory().GetCurrentInventoryLocation(src))
 		{
 			inventoryDebugPrint("[inv] I::ReplaceItemWithNew executing lambda=" + lambda + "on old_item=" + lambda.m_OldItem);
-			if (src.GetType() == InventoryLocationType.HANDS && src.GetParent().IsAlive())
-				Error("[inv] I::ReplaceItemWithNew Source location == HANDS, alive player has to handle this");
-
 			lambda.Execute();
 			return true;
 		}

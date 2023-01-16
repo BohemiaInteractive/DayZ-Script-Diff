@@ -1,6 +1,29 @@
 //!ammo pile base
 class Ammunition_Base: Magazine_Base
 {
+	static ref map<string, float> m_AmmoWeightByBulletType = new map<string, float>();
+	
+	static float GetAmmoWeightByBulletType(string bulletType)
+	{
+		if (m_AmmoWeightByBulletType.Contains(bulletType))
+		{
+			return m_AmmoWeightByBulletType.Get(bulletType);
+		}
+		else
+		{
+			float ammoWeight;
+			string ammoTypeName;
+			GetGame().ConfigGetText( string.Format("CfgAmmo %1 spawnPileType", bulletType) , ammoTypeName);
+			if (ammoTypeName)
+				ammoWeight = GetGame().ConfigGetFloat(string.Format("CfgMagazines %1 weight", ammoTypeName));
+			else
+				ErrorEx("empty 'spawnPileType' for bullet type:" + bulletType);
+			if (ammoWeight)
+				m_AmmoWeightByBulletType.Insert(bulletType, ammoWeight);
+			return ammoWeight;
+		}
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -11,6 +34,19 @@ class Ammunition_Base: Magazine_Base
 	override bool IsAmmoPile()
 	{
 		return true;
+	}
+	
+	override protected float GetWeightSpecialized(bool forceRecalc = false)
+	{
+		#ifdef DEVELOPER
+		if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_FORCED)
+		{
+			WeightDebugData data = WeightDebug.GetWeightDebug(this);
+			data.SetCalcDetails("TAmmo: ("+GetAmmoCount()+"(Ammo count) * "+ GetConfigWeightModifiedDebugText());
+		}
+		#endif
+		
+		return GetAmmoCount() * GetConfigWeightModified();
 	}
 };
 

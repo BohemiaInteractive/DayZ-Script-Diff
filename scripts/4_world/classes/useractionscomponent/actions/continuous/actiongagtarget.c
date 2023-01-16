@@ -46,19 +46,20 @@ class ActionGagTarget: ActionContinuousBase
 	{	
 		PlayerBase ntarget;
 		Class.CastTo(ntarget, action_data.m_Target.GetObject());
-		ntarget.GetInventory().CreateInInventory("MouthRag");
 		
-		MouthRag m_Gag = MouthRag.Cast(ntarget.GetItemOnSlot("Mask"));
-		if (m_Gag)
+		if (CanReceiveAction(action_data.m_Target))
 		{
-			m_Gag.SetHealth01("", "", action_data.m_MainItem.GetHealth01("", ""));
-			ntarget.CheckForGag();
-		}
-		
-		action_data.m_MainItem.TransferModifiers(ntarget);
-		action_data.m_MainItem.Delete();
+			MouthRag m_Gag = MouthRag.Cast(ntarget.GetInventory().CreateAttachmentEx("MouthRag",InventorySlots.MASK));
 
-		//action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			if (m_Gag)
+			{
+				m_Gag.SetHealth01("", "", action_data.m_MainItem.GetHealth01("", ""));
+				ntarget.CheckForGag();
+				
+				action_data.m_MainItem.TransferModifiers(ntarget);
+				action_data.m_MainItem.Delete();
+			}
+		}
 	}
 	
 	bool IsWearingMask( PlayerBase player)

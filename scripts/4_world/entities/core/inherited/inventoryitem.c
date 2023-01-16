@@ -193,6 +193,9 @@ class ItemCompass extends InventoryItemSuper
 //-----------------------------------------------------------------------------
 class CarWheel extends InventoryItemSuper
 {
+	protected string m_AttachSound = "Offroad_Wheel_Attach_SoundSet";
+	protected string m_DetachSound = "Offroad_Wheel_Remove_SoundSet";
+	
 	//! Returns current wheel radius.
 	proto native float GetRadius();
 
@@ -292,13 +295,26 @@ class CarWheel extends InventoryItemSuper
 	override void SetActions()
 	{
 		super.SetActions();
-		//AddAction(ActionDetach);
-		//AddAction(ActionAttachOnSelection);
+		AddAction(ActionDetach);
+		AddAction(ActionAttachOnSelection);
 	}
 	
-	override bool EEOnDamageCalculated(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
+	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
-		return false;
+		super.OnWasAttached(parent, slot_id);
+		
+		#ifndef SERVER
+		SEffectManager.PlaySound(m_AttachSound, GetPosition());
+		#endif
+	}
+	
+	override void OnWasDetached(EntityAI parent, int slot_id)
+	{
+		super.OnWasDetached(parent, slot_id);
+		
+		#ifndef SERVER
+		SEffectManager.PlaySound(m_DetachSound, GetPosition());
+		#endif
 	}
 };
 
@@ -325,6 +341,61 @@ class CarWheel_Ruined : CarWheel
 
 		return true;
 	}
+	
+	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
+	{
+		super.EEHealthLevelChanged( oldLevel, newLevel, zone );
+		#ifdef DEVELOPER
+		// used when fixing the whole car through debug
+		if ( newLevel ==  GameConstants.STATE_PRISTINE )
+		{
+			string newWheel = "";
+			switch ( GetType() )
+			{
+				case "HatchbackWheel_Ruined":
+					newWheel = "HatchbackWheel";
+				break;
+	
+				case "CivSedanWheel_Ruined":
+					newWheel = "CivSedanWheel";
+				break;
+	
+				case "Hatchback_02_Wheel_Ruined":
+					newWheel = "Hatchback_02_Wheel";
+				break;
+				
+				case "Sedan_02_Wheel_Ruined":
+					newWheel = "Sedan_02_Wheel";
+				break;
+	
+				case "Truck_01_Wheel_Ruined":
+					newWheel = "Truck_01_Wheel";
+				break;
+	
+				case "Truck_01_WheelDouble_Ruined":
+					newWheel = "Truck_01_WheelDouble";
+				break;
+				case "Offroad_02_Wheel_Ruined":
+					newWheel = "Offroad_02_Wheel";
+				break;
+			}
+
+			if ( newWheel != "" )
+			{
+				//Unlock to allow creating a new item
+				if (IsLockedInSlot())
+				{
+					UnlockFromParent();
+				}
+
+				ReplaceWheelLambda lambda = new ReplaceWheelLambda(this, newWheel, null);
+				lambda.SetTransferParams(true, true, true);
+				GetInventory().ReplaceItemWithNew(InventoryMode.SERVER, lambda);
+			}
+		}
+		#endif
+	}
+	
 }
 
 class ReplaceWheelLambda : TurnItemIntoItemLambda

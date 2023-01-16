@@ -1,5 +1,3 @@
-
-
 //-----------------------------------------------------------------------------------------------
 // DayZPlayerTypeCreate - main dayz type config
 //-----------------------------------------------------------------------------------------------
@@ -18,8 +16,6 @@ class DayZPlayerTypeUtils
 {
 	static void DayZPlayerTypeCreate(DayZPlayerType pType)
 	{
-		//	Print("DayZPlayerTypeCreate called");
-	
 		//! register all item types
 		DayZPlayerTypeRegisterItems(pType);
 	
@@ -30,26 +26,14 @@ class DayZPlayerTypeUtils
 		DayZPlayerCameras.RegisterCameras(pType);
 	 
 		//! other configs 
-	
-		//! look limits 
-		//! look limits 
 		pType.SetLookLimits(-85, 85, -160, 160);	
-		
-		//! aiming limits 	
 		pType.SetAimLimits(-85, 85, -180, 180);		
-	
-		//! camera shoot params
 		pType.SetCameraShootParams(250, 0.01, 0.866);
-		
-		//! register hit components for AI melee
 		pType.RegisterHitComponentsForAI();
 	}
 	
 	static void DayZPlayerTypeInitMovement(DayZPlayerType pType)
 	{
-		//--------------------------------------------------------------
-	    // VIKTOR, JOHNNY - nastaveni Movu !!!
-	
 		//! set move settings: 
 		SHumanCommandMoveSettings hmcs = pType.CommandMoveSettingsW();
 	
@@ -77,26 +61,13 @@ class DayZPlayerTypeUtils
 		hmcs.m_fWaterLevelSpeedRectrictionLow	= 0.5;			//!< Water level (in meters) - m_iMaxSpeedNormal_WaterLevelLow and m_iMaxSpeedFast_WaterLevelLow are applied when character is deeper
 		hmcs.m_fWaterLevelSpeedRectrictionHigh	= 1.0;			//!< Water level (in meters) - m_iMaxSpeedNormal_WaterLevelHigh and m_iMaxSpeedFast_WaterLevelHigh are applied when character is deeper
 		
-		//hmcs.m_iMaxSpeedNormal_WaterLevelLow	= 2;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionLow when character doesn't want to sprint (-1 means no change)
-		//hmcs.m_iMaxSpeedFast_WaterLevelLow		= 2;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionLow when character wants to sprint (-1 means no change)
-		//hmcs.m_iMaxSpeedNormal_WaterLevelHigh	= 1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character doesn't want to sprint (-1 means no change)
-		//hmcs.m_iMaxSpeedFast_WaterLevelHigh		= 1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character wants to sprint (-1 means no change)
-
-		// proposal 1
-		//hmcs.m_iMaxSpeedNormal_WaterLevelLow	= 1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionLow when character doesn't want to sprint (-1 means no change)
-		//hmcs.m_iMaxSpeedFast_WaterLevelLow		= 2;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionLow when character wants to sprint (-1 means no change)
-		//hmcs.m_iMaxSpeedNormal_WaterLevelHigh	= 1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character doesn't want to sprint (-1 means no change)
-		//hmcs.m_iMaxSpeedFast_WaterLevelHigh		= 1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character wants to sprint (-1 means no change)
-	
-		// proposal 2
 		hmcs.m_iMaxSpeedNormal_WaterLevelLow	= -1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionLow when character doesn't want to sprint (-1 means no change)
 		hmcs.m_iMaxSpeedFast_WaterLevelLow		= -1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionLow when character wants to sprint (-1 means no change)
 		hmcs.m_iMaxSpeedNormal_WaterLevelHigh	= 1;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character doesn't want to sprint (-1 means no change)
 		hmcs.m_iMaxSpeedFast_WaterLevelHigh		= 2;			//!< Max movement speed for m_fWaterLevelSpeedRectrictionHigh when character wants to sprint (-1 means no change)
 	
 		//--------------------------------------------------------------
-	    // VIKTOR, JOHNNY, PETERN - nastaveni speedu animaci
-	
+	    //! animation speed settings example
 		// DayZPlayerUtils.DebugOverrideAnimationSpeed("dz/anims/anm/player/moves/rifles/p_rfl_erc_runF_low.anm", 2.0);
 		//DayZPlayerUtils.DebugOverrideAnimationTranslation("dz/anims/anm/player/moves/rifles/p_rfl_erc_runF_low.anm", "0 0 10" );
 		
@@ -1320,8 +1291,8 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("WitchHat", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,							"dz/anims/anm/player/ik/gear/balaclava_3holes.anm");
 		pType.AddItemInHandsProfileIK("WitchHood_ColorBase", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,				"dz/anims/anm/player/ik/gear/balaclava_3holes.anm");
 		pType.AddItemInHandsProfileIK("CrookedNose", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,						"dz/anims/anm/player/ik/gear/aviators_glasses.anm");
-		pType.AddItemInHandsProfileIK("HockeyMask", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,						"dz/anims/anm/player/ik/gear/dallas_mask.anm"); //Temporary
-		pType.AddItemInHandsProfileIK("Mich2001Helmet", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm"); //Temporary
+		pType.AddItemInHandsProfileIK("HockeyMask", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,						"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
+		pType.AddItemInHandsProfileIK("Mich2001Helmet", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
 		pType.AddItemInHandsProfileIK("GP5GasMask","dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi", toolsOneHanded,			"dz/anims/anm/player/ik/gear/carp_live.anm"); //Temporary
 		pType.AddItemInHandsProfileIK("WeldingMask", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded, 						"dz/anims/anm/player/ik/gear/book.anm"); //Temporary
 		pType.AddItemInHandsProfileIK("SurgicalMask", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded, 						"dz/anims/anm/player/ik/gear/book.anm"); //Temporary
@@ -1332,6 +1303,9 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("FaceCover_Improvised", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded, 				"dz/anims/anm/player/ik/gear/dirtbike_visor.anm");
 		pType.AddItemInHandsProfileIK("HeadCover_Improvised", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,				"dz/anims/anm/player/ik/gear/beanie_hat.anm");
 		pType.AddItemInHandsProfileIK("EyePatch_Improvised", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,				"dz/anims/anm/player/ik/clothing/Eyepatch.anm");
+		pType.AddItemInHandsProfileIK("MimeMask_Male", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded, 					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
+		pType.AddItemInHandsProfileIK("MimeMask_Female", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded, 					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
+		pType.AddItemInHandsProfileIK("EyeMask_ColorBase", "dz/anims/workspaces/player/player_main/player_main_1h.asi", toolsOneHanded,					"dz/anims/anm/player/ik/clothing/Eyepatch.anm");
 	}
 
 	//! Belts

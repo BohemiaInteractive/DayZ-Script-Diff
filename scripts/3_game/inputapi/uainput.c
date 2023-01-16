@@ -202,10 +202,15 @@ class UAInputAPI
 
 	proto native void DeactivateContext();
 
-	proto native bool PresetCreateNew(); // create new preset from the selected one - (false == cannot create new == too many presets!)
+	proto native bool PresetCreateNew(); // create new dynamic preset from the selected one. False == cannot create new == too many presets (current max == 6)
 	proto native bool PresetDelete( int index ); // delete specific preset - (false == not deletable!)
 	proto native int PresetCurrent(); // determine index of current preset - (-1 == not selected)
 	proto native void PresetSelect( int index ); // select specific preset
+	/**  
+	\brief Resets current 'main' preset without reverting anything else ('softer' Revert)
+	\note Does not reset dynamic presets, since they don't have any real defaults in the core PBOs.
+	*/
+	proto native void PresetReset();
 	proto native int PresetCount(); // count of presets
 	proto native owned string PresetName( int index ); // name of selected preset
 
@@ -214,7 +219,7 @@ class UAInputAPI
 	proto native owned string SortingLocalization( int index );	// sorting group localized name
 
 	proto native void Export(); // export XML (user) configuration
-	proto native void Revert(); // revert XML (user) configuration - all of it and use default PBO content!
+	proto native void Revert(); // revert XML (user) configuration - all of it and use default PBO content! Auto-exports afterward.
 	proto native void SaveInputPresetMiscData(); // saves preset index on consoles, where the regular XMLs are unavailable
 	proto native void SupressNextFrame( bool bForce); // supress inputs for nextframe (until key release - call this when leaving main menu and alike - to avoid button collision after character control returned)
 	

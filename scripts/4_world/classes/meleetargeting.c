@@ -119,8 +119,8 @@ class MeleeTargeting
 			float 	retVal 	= float.MAX;
 			float 	tgAngle = Math.Tan(radAngle);	
 		
-			#ifdef DEVELOPER
-			if (DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DRAW_RANGE) && DiagMenu.GetBool(DiagMenuIDs.DM_MELEE_DEBUG_ENABLE))
+			#ifdef DIAG_DEVELOPER
+			if (DiagMenu.GetBool(DiagMenuIDs.MELEE_DRAW_RANGE) && DiagMenu.GetBool(DiagMenuIDs.MELEE_DEBUG))
 				Debug.DrawLine(rayStart, rayEnd, COLOR_GREEN, ShapeFlags.ONCE);
 			#endif
 			

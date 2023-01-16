@@ -351,7 +351,8 @@ class PluginDeveloper extends PluginBase
 					offsetSide = camDirRight * columnDist;
 					vector placement = posRow + offsetSide;
 					float hlth = health * MiscGameplayFunctions.GetTypeMaxGlobalHealth( item_name );
-					SpawnEntityOnGroundPos(player, item_name, hlth, quantity, placement );
+					EntityAI ent = SpawnEntityOnGroundPos(player, item_name, hlth, quantity, placement );
+					ent.PlaceOnSurface();
 					countLoop++;
 					if (countLoop == count)
 					{
@@ -449,6 +450,23 @@ class PluginDeveloper extends PluginBase
 		{
 			if ( GetGame().IsServer() )
 			{		
+				#ifdef DEVELOPER
+				
+				if (GetGame().IsKindOf(item_name, "Car"))
+				{
+					EntityAI car = SpawnEntityOnGroundPos(player, item_name, 1, quantity, player.GetPosition());
+					car.OnDebugSpawn();
+					
+					if (GetGame().IsMultiplayer())
+					{
+						DayZPlayerSyncJunctures.SendGetInCar(player, car);
+					}
+					else
+					{
+						player.SetGetInVehicleDebug(car);
+					}
+				}
+				#endif
 				InventoryLocation il = new InventoryLocation;
 				if (player.GetInventory() && player.GetInventory().FindFirstFreeLocationForNewEntity(item_name, FindInventoryLocationType.ANY, il))
 				{

@@ -315,7 +315,7 @@ class ImprovisedExplosive : ExplosivesBase
 				if (attachment.IsAnyInherited({RemoteDetonator,ClockBase}))
 				{
 					//! defer damage to trigger attachments to allow ringing
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment.SetHealth, delayFor * 1000, false, "", "", 0.0);
+					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment.SetGlobalHealth, delayFor * 1000, false, "", "", 0.0);
 				}
 
 				if (attachment && !attachment.IsAnyInherited({RemoteDetonator, ClockBase}))

@@ -492,12 +492,11 @@ class InspectMenuNew extends UIScriptedMenu
 		ItemBase item_IB = ItemBase.Cast( item );
 		if( item_IB )
 		{
-			item_IB.UpdateWeight();
-			int weight = item_IB.GetWeight();
+			int weight = item_IB.GetWeightEx();
 			
 			if (root_widget.GetName() != "BackPanelWidget")
 			{
-				weight = item_IB.GetSingleInventoryItemWeight();
+				weight = item_IB.GetSingleInventoryItemWeightEx();
 			}
 			
 			if (weight >= 1000)

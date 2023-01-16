@@ -29,6 +29,12 @@ class BiosSessionService
 	*/
 	proto native EBiosError	LeaveGameplaySessionAsync(string session_address, int session_port);
 	
+	//! Alerts engine that players in current session have changed
+	/*!
+		@param newPlayers players that have just joined the server. When player joins a server, ALL players already on server count as new players.
+	*/
+	proto native void OnSessionPlayerListUpdate(array<string> newPlayers);
+	
 	//! Gets a session from a join handle
 	/*!
 		The async result is returned in the OnGetGameplaySession, OnGetLobbySession or OnGetSessionError callback,
@@ -161,25 +167,47 @@ class BiosSessionService
 	void OnGetGameplaySession(string session_address, int session_port)
 	{	
 		m_GetSessionAttempts = 0;
-		if ( g_Game.GetGameState() == DayZGameState.IN_GAME )
+		switch (g_Game.GetGameState())
 		{
-			string addr;
-			int port;
-			bool found = GetGame().GetHostAddress( addr, port );
-			if ( found && !( addr == session_address && port == session_port ) )
+			case DayZGameState.IN_GAME:
 			{
-				OnlineServices.SetInviteServerInfo( session_address, session_port );
-				g_Game.GetUIManager().EnterScriptedMenu( MENU_INVITE_TIMER, null );
+				string addr;
+				int port;
+				bool found = GetGame().GetHostAddress( addr, port );
+				if (addr != session_address || port != session_port )
+				{
+					if (found)
+					{
+						OnlineServices.SetInviteServerInfo( session_address, session_port );
+						g_Game.GetUIManager().CloseAll();
+						if (!g_Game.GetUIManager().EnterScriptedMenu( MENU_INVITE_TIMER, null ))
+						{
+							NotificationSystem.AddNotification( NotificationType.CONNECT_FAIL_GENERIC, 6 );
+						}
+					}
+					else
+					{
+						NotificationSystem.AddNotification( NotificationType.JOIN_FAIL_GET_SESSION, 6 );
+					}
+				}
+				else
+				{
+					NotificationSystem.AddNotification( NotificationType.INVITE_FAIL_SAME_SERVER, 6, "#ps4_already_in_session" );
+				}
+				break;
 			}
-			else
+			case DayZGameState.CONNECTING:
 			{
-				NotificationSystem.AddNotification( NotificationType.INVITE_FAIL_SAME_SERVER, 6, "#ps4_already_in_session" );
+				g_Game.GetUIManager().CloseAll();
+				g_Game.DisconnectSessionForce();
+				g_Game.DisconnectSessionScript();
+				// Intentionally no break, fall through to connecting
 			}
-			
-		}
-		else
-		{
-			g_Game.ConnectFromJoin( session_address, session_port );
+			default:
+			{
+				g_Game.ConnectFromJoin( session_address, session_port );
+				break;
+			}
 		}
 	}
 	
@@ -270,6 +298,11 @@ class BiosSessionService
 	void OnInviteToGameplaySession(EBiosError error)
 	{
 
+	}
+	
+	array<string> GetSessionPlayerList()
+	{
+		return ClientData.GetSimplePlayerList();
 	}
 	
 };

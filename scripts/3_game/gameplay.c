@@ -215,19 +215,19 @@ class LOD
 	
 	proto native owned string GetName(Object myObject);
 	
-	Selection GetSelectionByName( string name )
+	Selection GetSelectionByName(string name)
 	{
 		array<Selection> selections = new array<Selection>;
-		GetSelections( selections );
+		GetSelections(selections);
 		
-		for ( int i = 0; i < selections.Count(); ++i )
+		for (int i = 0; i < selections.Count(); ++i)
 		{
-			string selection_name = selections.Get( i ).GetName();
+			string selection_name = selections.Get(i).GetName();
 			selection_name.ToLower();
 			name.ToLower();
 			if (selection_name == name)
 			{
-				return selections.Get( i );
+				return selections.Get(i);
 			}
 		}
 		
@@ -334,6 +334,8 @@ class MapWidget: Widget
 class PlayerIdentityBase : Managed
 {
 	//! ping range estimation
+	proto int GetPingAct();
+	//! ping range estimation
 	proto int GetPingMin();
 	//! ping range estimation
 	proto int GetPingMax();
@@ -415,6 +417,10 @@ typedef Param1<int> RespawnEventParams;
 typedef Param1<vector> PreloadEventParams; 
 //! Player
 typedef Param1<Man> LogoutCancelEventParams; 
+//! PlayerIdentity
+typedef Param1<PlayerIdentity> ConnectivityStatsUpdatedEventParams; 
+//! float
+typedef Param1<float> ServerFpsStatsUpdatedEventParams; 
 //! text message for line 1, text message for line 2 
 typedef Param2<string, string> LoginStatusEventParams; 
 //! logoutTime
@@ -440,129 +446,124 @@ typedef Param2<DayZPlayer, Object> PlayerDeathEventParams;
 
 
 //-----------------------------------------------------------------------------
-#ifdef DOXYGEN
-// just because of doc
 
+//! no params
+const EventType	StartupEventTypeID;
+//! no params
+const EventType	WorldCleaupEventTypeID;
 
-
-enum EventType
-{
+//-----------------------------------------------------------------------------
+//! no params
+const EventType	MPSessionStartEventTypeID;
 	//! no params
-	StartupEventTypeID,
+const EventType	MPSessionEndEventTypeID;
 	//! no params
-	WorldCleaupEventTypeID,
-
-	//-----------------------------------------------------------------------------
+const EventType	MPSessionFailEventTypeID;
 	//! no params
-	MPSessionStartEventTypeID,
-	//! no params
-	MPSessionEndEventTypeID,
-	//! no params
-	MPSessionFailEventTypeID,
-	//! no params
-	MPSessionPlayerReadyEventTypeID,
+const EventType	MPSessionPlayerReadyEventTypeID;
 	//! params: \ref MPConnectionLostEventParams
-	MPConnectionLostEventTypeID,
+const EventType	MPConnectionLostEventTypeID;
 	//! params: \ref MPConnectionCloseEventParams
-	MPConnectionCloseEventTypeID,
+const EventType	MPConnectionCloseEventTypeID;
 
-	//-----------------------------------------------------------------------------
-	//! params: \ref ProgressEventParams
-	ProgressEventTypeID,
-	//! no params
-	NetworkManagerClientEventTypeID,
-	//! no params
-	NetworkManagerServerEventTypeID,
-	//! no params
-	DialogQueuedEventTypeID,
+//-----------------------------------------------------------------------------
+//! params: \ref ProgressEventParams
+const EventType	ProgressEventTypeID;
+//! no params
+const EventType	NetworkManagerClientEventTypeID;
+//! no params
+const EventType	NetworkManagerServerEventTypeID;
+//! no params
+const EventType	DialogQueuedEventTypeID;
 	
-	//-----------------------------------------------------------------------------
-	//! params: \ref ChatMessageEventParams
-	ChatMessageEventTypeID,
-	//! params: \ref ChatChannelEventParams
-	ChatChannelEventTypeID,
+//-----------------------------------------------------------------------------
+//! params: \ref ChatMessageEventParams
+const EventType	ChatMessageEventTypeID;
+//! params: \ref ChatChannelEventParams
+const EventType	ChatChannelEventTypeID;
 	
-	//-----------------------------------------------------------------------------	
-	//! params: \ref ClientConnectedEventParams
-	ClientConnectedEventTypeID,
-	//! params: \ref ClientPrepareEventParams
-	ClientPrepareEventTypeID,
-	//! params: \ref ClientNewEventParams
-	ClientNewEventTypeID,	
-	//! params: \ref ClientNewReadyEventParams
-	ClientNewReadyEventTypeID,	
-	//! params: \ref ClientRespawnEventParams
-	ClientRespawnEventTypeID,
-	//! params: \ref ClientReconnectEventParams
-	ClientReconnectEventTypeID,
-	//! params: \ref ClientReadyEventParams
-	ClientReadyEventTypeID,
-	//! params: \ref ClientDisconnectedEventParams
-	ClientDisconnectedEventTypeID,
-	//! no params
-	ClientRemovedEventTypeID,
+//-----------------------------------------------------------------------------	
+//! params: \ref ClientConnectedEventParams
+const EventType	ClientConnectedEventTypeID;
+//! params: \ref ClientPrepareEventParams
+const EventType	ClientPrepareEventTypeID;
+//! params: \ref ClientNewEventParams
+const EventType	ClientNewEventTypeID;
+//! params: \ref ClientNewReadyEventParams
+const EventType	ClientNewReadyEventTypeID;
+//! params: \ref ClientRespawnEventParams
+const EventType	ClientRespawnEventTypeID;
+//! params: \ref ClientReconnectEventParams
+const EventType	ClientReconnectEventTypeID;
+//! params: \ref ClientReadyEventParams
+const EventType	ClientReadyEventTypeID;
+//! params: \ref ClientDisconnectedEventParams
+const EventType	ClientDisconnectedEventTypeID;
+//! no params
+const EventType	ClientRemovedEventTypeID;
 	
-	//-----------------------------------------------------------------------------
-	//! params: \ref LogoutCancelEventParams
-	LogoutCancelEventTypeID,
-	//! params: \ref LoginTimeEventParams
-	LoginTimeEventTypeID,
-	//! params: \ref RespawnEventParams
-	RespawnEventTypeID,
-	//! params: \ref PreloadEventParams
-	PreloadEventTypeID,
-	//! params: \ref LogoutEventParams
-	LogoutEventTypeID,	
-	//! params: \ref LoginStatusEventParams
-	LoginStatusEventTypeID,	
+//-----------------------------------------------------------------------------
+//! params: \ref ConnectivityStatsUpdatedEventParams
+const EventType	ConnectivityStatsUpdatedEventTypeID;
+//! params: \ref ServerFpsStatsUpdatedEventParams
+const EventType	ServerFpsStatsUpdatedEventTypeID;
+//! params: \ref LogoutCancelEventParams
+const EventType	LogoutCancelEventTypeID;
+//! params: \ref LoginTimeEventParams
+const EventType	LoginTimeEventTypeID;
+//! params: \ref RespawnEventParams
+const EventType	RespawnEventTypeID;
+//! params: \ref PreloadEventParams
+const EventType	PreloadEventTypeID;
+//! params: \ref LogoutEventParams
+const EventType	LogoutEventTypeID;
+//! params: \ref LoginStatusEventParams
+const EventType	LoginStatusEventTypeID;
 	
-	//-----------------------------------------------------------------------------
-	//! no params
-	SelectedUserChangedEventTypeID,
-	//! params: \ref ScriptLogEventParams
-	ScriptLogEventTypeID,
+//-----------------------------------------------------------------------------
+//! no params
+const EventType	SelectedUserChangedEventTypeID;
+//! params: \ref ScriptLogEventParams
+const EventType	ScriptLogEventTypeID;
 	
-	//-----------------------------------------------------------------------------
-	//! params: \ref VONStateEventParams
-	VONStateEventTypeID,
-	//! params: \ref VONStartSpeakingEventParams
-	VONStartSpeakingEventTypeID,
-	//! params: \ref VONStopSpeakingEventParams
-	VONStopSpeakingEventTypeID,
-	//! no params
-	VONUserStartedTransmittingAudioEventTypeID,
-	//! no params
-	VONUserStoppedTransmittingAudioEventTypeID,
-	//! no params
+//-----------------------------------------------------------------------------
+//! params: \ref VONStateEventParams
+const EventType	VONStateEventTypeID;
+//! params: \ref VONStartSpeakingEventParams
+const EventType	VONStartSpeakingEventTypeID;
+//! params: \ref VONStopSpeakingEventParams
+const EventType	VONStopSpeakingEventTypeID;
+//! no params
+const EventType	VONUserStartedTransmittingAudioEventTypeID;
+//! no params
+const EventType	VONUserStoppedTransmittingAudioEventTypeID;
+//! no params
 	
-	//-----------------------------------------------------------------------------
-	PartyChatStatusChangedEventTypeID,
-	//! params: \ref DLCOwnerShipFailedParams
-	DLCOwnerShipFailedEventTypeID,
-	//! params: \ref SetFreeCameraEventParams
-	SetFreeCameraEventTypeID,
-	//! no params
-	ConnectingAbortEventTypeID
-	//! params: \ref PlayerDeathEventParams
-	PlayerDeathEventTypeID
+//-----------------------------------------------------------------------------
+const EventType	PartyChatStatusChangedEventTypeID;
+//! params: \ref DLCOwnerShipFailedParams
+const EventType	DLCOwnerShipFailedEventTypeID;
+//! params: \ref SetFreeCameraEventParams
+const EventType	SetFreeCameraEventTypeID;
+//! no params
+const EventType	ConnectingAbortEventTypeID;
+//! params: \ref PlayerDeathEventParams
+const EventType	PlayerDeathEventTypeID;
 	
-	//possible in engine events not accessable from script
-	//ReloadShadersEvent
-	//LoadWorldProgressEvent
+//possible in engine events not accessable from script
+//ReloadShadersEvent
+//LoadWorldProgressEvent
 	
-	//SignStatusEvent
-	//SetPausedEvent
-	//TerminationEvent
-	//UserSettingsChangedEvent
-	//StorageChangedEvent
-	//BeforeResetEvent
-	//AfterRenderEvent
-	//AfterResetEvent
-	//CrashLogEvent
-	//ConsoleEvent
-};
-
-#endif
+//SignStatusEvent
+//SetPausedEvent
+//TerminationEvent
+//UserSettingsChangedEvent
+//StorageChangedEvent
+//BeforeResetEvent
+//AfterRenderEvent
+//AfterResetEvent
+//CrashLogEvent
+//ConsoleEvent
 
 class CursorIcons
 {
@@ -615,44 +616,45 @@ proto native CGame GetGame();
 class Hud : Managed
 {
 	ref Timer m_Timer;
-	void Init( Widget hud_panel_widget ) {}
-	void DisplayNotifier( int key, int tendency, int status ) {}
-	void DisplayBadge( int key, int value ) {}
-	void SetStamina( int value, int range ) {}
-	void DisplayStance( int stance ) {}
+	void Init(Widget hud_panel_widget) {}
+	void DisplayNotifier(int key, int tendency, int status) {}
+	void DisplayBadge(int key, int value) {}
+	void SetStamina(int value, int range) {}
+	void DisplayStance(int stance) {}
 	void DisplayPresence() {}
 	void ShowCursor() { }
 	void HideCursor() { }
-	void SetCursorIcon( string icon ) { }
-	void SetCursorIconScale( string type, float percentage ) { }
-	void SetCursorIconOffset( string type, float x, float y ) { }
-	void SetCursorIconSize( string type, float x, float y ) {	}
-	void ShowWalkieTalkie( bool show ) { }
-	void ShowWalkieTalkie( int fadeOutSeconds ) { }
-	void SetWalkieTalkieText( string text ) { }
-	void RefreshQuickbar( bool itemChanged = false ) {}
+	void SetCursorIcon(string icon) { }
+	void SetCursorIconScale(string type, float percentage) { }
+	void SetCursorIconOffset(string type, float x, float y) { }
+	void SetCursorIconSize(string type, float x, float y) {	}
+	void ShowWalkieTalkie(bool show) { }
+	void ShowWalkieTalkie(int fadeOutSeconds) { }
+	void SetWalkieTalkieText(string text) { }
+	void RefreshQuickbar(bool itemChanged = false) {}
 	void Show(bool show) {}
 	void UpdateBloodName() {}
-	void SetTemperature( string temp );
-	void SetStaminaBarVisibility( bool show );
-	void Update( float timeslice ){}
+	void SetTemperature(string temp);
+	void SetStaminaBarVisibility(bool show);
+	void Update(float timeslice){}
 	void ShowVehicleInfo();
 	void HideVehicleInfo();
-	void ToggleHeatBufferPlusSign( bool show );
+	void ToggleHeatBufferPlusSign(bool show);
 	
-	void ShowQuickbarUI( bool show );
-	void ShowQuickbarPlayer( bool show );
-	void ShowHudPlayer( bool show );
-	void ShowHudUI( bool show );
-	void ShowHudInventory( bool show );
-	void ShowQuickBar( bool show );
-	void ShowHud( bool show );
+	void ShowQuickbarUI(bool show);
+	void ShowQuickbarPlayer(bool show);
+	void ShowHudPlayer(bool show);
+	void ShowHudUI(bool show);
+	void ShowHudInventory(bool show);
+	void ShowQuickBar(bool show);
+	void ShowHud(bool show);
 	
 	void OnResizeScreen();
 
-	void SetPermanentCrossHair( bool show ) {}
+	void SetPermanentCrossHair(bool show) {}
 	
 	void SpawnHitDirEffect(DayZPlayer player, float hit_direction,float intensity_max);
+	void SetConnectivityStatIcon(EConnectivityStatType type, EConnectivityStatLevel level);
 };
 
 //-----------------------------------------------------------------------------
@@ -665,6 +667,8 @@ class Mission
 	
 	protected ref ScriptInvoker m_OnInputDeviceChanged = new ScriptInvoker();
 	protected ref ScriptInvoker m_OnInputPresetChanged = new ScriptInvoker();
+	protected ref ScriptInvoker m_OnInputDeviceConnected = new ScriptInvoker();
+	protected ref ScriptInvoker m_OnInputDeviceDisconnected = new ScriptInvoker();
 
 	private void ~Mission();
 	
@@ -690,12 +694,12 @@ class Mission
 	
 	bool IsPlayerDisconnecting(Man player);
 	
-	UIScriptedMenu	CreateScriptedMenu( int id ) 
+	UIScriptedMenu	CreateScriptedMenu(int id) 
 	{ 
 		return NULL;
 	}
 	
-	UIScriptedWindow	CreateScriptedWindow( int id ) 
+	UIScriptedWindow	CreateScriptedWindow(int id) 
 	{ 
 		return NULL;
 	}
@@ -747,7 +751,7 @@ class Mission
 	bool IsControlDisabled() {}
 	int GetControlDisabledMode() {}
 	
-	void PlayerControlEnable( bool bForceSupress ); //!deprecated
+	void PlayerControlEnable(bool bForceSupress); //!deprecated
 	void PlayerControlDisable(int mode); //!deprecated
 	
 	void RemoveActiveInputExcludes(array<string> excludes, bool bForceSupress = false);
@@ -822,6 +826,26 @@ class Mission
 		}
 
 		return m_OnInputPresetChanged;
+	}
+	
+	ScriptInvoker GetOnInputDeviceConnected()
+	{
+		if (!m_OnInputDeviceConnected)
+		{
+			m_OnInputDeviceConnected = new ScriptInvoker;
+		}
+
+		return m_OnInputDeviceConnected;
+	}
+	
+	ScriptInvoker GetOnInputDeviceDisconnected()
+	{
+		if (!m_OnInputDeviceDisconnected)
+		{
+			m_OnInputDeviceDisconnected = new ScriptInvoker;
+		}
+
+		return m_OnInputDeviceDisconnected;
 	}
 	
 #ifdef DEVELOPER
@@ -1211,7 +1235,8 @@ enum OptionIDsScript
 	OPTION_PLAYER_MESSAGES,
 	OPTION_QUICKBAR,
 	OPTION_SERVER_INFO,
-	OPTION_BLEEDINGINDICATION
+	OPTION_BLEEDINGINDICATION,
+	OPTION_CONNECTIVITY_INFO
 };
 
 // -------------------------------------------------------------------------

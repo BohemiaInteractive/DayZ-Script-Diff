@@ -1,4 +1,4 @@
-class FishingRod: FishingRod_Base_New
+class FishingRod : FishingRod_Base_New
 {
 	void FishingRod()
 	{
@@ -17,5 +17,5 @@ class FishingRod: FishingRod_Base_New
 	override void SetActions()
 	{
 		super.SetActions();
-	}
+	}	
 };

@@ -147,15 +147,20 @@ class ModifiersManager
 
 	void SetModifiers(bool enable)
 	{
+		if (m_AllowModifierTick == enable)
+			return;
+		
 		m_AllowModifierTick = enable;
 		
-		#ifdef DEVELOPER
-		DiagMenu.SetValue(DiagMenuIDs.DM_CHEATS_MODIFIERS_ENABLE, enable);
+		#ifdef DIAG_DEVELOPER
+		#ifndef SERVER
+		DiagMenu.SetValue(DiagMenuIDs.CHEATS_MODIFIERS, enable);
+		#endif
 		#endif
 		
 		if ( !enable )
 		{
-			for(int i = 0; i < m_ModifierList.Count(); i++)
+			for (int i = 0; i < m_ModifierList.Count(); i++)
 			{
 				m_ModifierList.GetElement(i).ResetLastTickTime();
 			}
@@ -177,7 +182,7 @@ class ModifiersManager
 		modifier.InitBase(m_Player,this);
 		int id = modifier.GetModifierID();
 		
-		if(id < 1)
+		if (id < 1)
 		{
 			Error("modifiers ID must be 1 or higher(for debugging reasons)");			
 		}

@@ -859,8 +859,8 @@ class Fence extends BaseBuildingBase
 	{
 		array<string> excludes = {};
 		
-		#ifdef DEVELOPER
-		bool bWood = DiagMenu.GetBool(DiagMenuIDs.DM_BUILD_WOOD);
+		#ifdef DIAG_DEVELOPER
+		bool bWood = DiagMenu.GetBool(DiagMenuIDs.BASEBUILDING_WOOD);
 		#else
 		bool bWood = false;
 		#endif
@@ -874,8 +874,8 @@ class Fence extends BaseBuildingBase
 			excludes.Insert("_wood_");
 		}
 		
-		#ifdef DEVELOPER
-		bool bGate = DiagMenu.GetBool(DiagMenuIDs.DM_BUILD_GATE);
+		#ifdef DIAG_DEVELOPER
+		bool bGate = DiagMenu.GetBool(DiagMenuIDs.BASEBUILDING_GATE);
 		#else
 		bool bGate = false;
 		#endif

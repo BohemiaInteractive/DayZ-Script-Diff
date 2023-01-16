@@ -182,7 +182,7 @@ class MapMenu extends UIScriptedMenu
 		super.OnDoubleClick(w, x, y, button);
 		
 		MapWidget m = MapWidget.Cast(layoutRoot.FindAnyWidget("Map"));
-		if ( w == m )
+		if (w == m)
 		{
 			vector screen_to_map = m.ScreenToMap(Vector(x,y,0));
 			
@@ -272,8 +272,8 @@ class MapMenu extends UIScriptedMenu
 				}
 			}
 		
-			bool isClosedWithShortcut = CfgGameplayHandler.GetMapIgnoreMapOwnership() && GetGame().GetInput().LocalPress("UAMapToggle", false);
-			if (!m_IsOpenning && GetGame().GetInput() && (GetGame().GetInput().LocalPress("UAUIBack", false) || isClosedWithShortcut))
+			bool isClosedWithShortcut = CfgGameplayHandler.GetMapIgnoreMapOwnership() && GetUApi().GetInputByID(UAMapToggle).LocalPress();
+			if (!m_IsOpenning && (GetUApi().GetInputByID(UAUIBack).LocalPress() || isClosedWithShortcut))
 			{
 				if (player)
 				{
@@ -302,7 +302,7 @@ class MapMenu extends UIScriptedMenu
 	override void LoadMapMarkers()
 	{
 		MapMarker marker;
-		for ( int i = 0; i < m_Map.GetMarkerArray().Count(); i++ )
+		for (int i = 0; i < m_Map.GetMarkerArray().Count(); i++)
 		{
 			marker = m_Map.GetMarkerArray().Get(i);
 			m_MapWidgetInstance.AddUserMark(marker.GetMarkerPos(),marker.GetMarkerText(),marker.GetMarkerColor(),MapMarkerTypes.GetMarkerTypeFromID(marker.GetMarkerIcon())/*"\\dz\\gear\\navigation\\data\\map_tree_ca.paa"*/);

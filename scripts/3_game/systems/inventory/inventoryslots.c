@@ -5,10 +5,18 @@
 class InventorySlots
 {	
 	/**@NOTE: engine pre-populates this class with first 32 slots from CfgSlots (uppercased)
-	 * i.e. currently defined values are
-	 *   InventorySlots.INVALID  (has value -1)
-	 *   InventorySlots.COUNT
 	 **/
+	
+	/** \name C++ constants
+		Constants filled in from C++
+	*/
+	//@{
+	//! Amount of pre-populated slots (32)
+	const int COUNT;
+	//! Invalid slot (-1)
+	const int INVALID;
+	//@}
+	
 	#ifdef DIAG_DEVELOPER
 	private void InventorySlots() {}
 	private void ~InventorySlots() {}

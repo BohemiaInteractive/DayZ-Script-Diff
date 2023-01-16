@@ -837,7 +837,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					}
 					else
 					{
-						Error("[syncinv] HandleInputData: unexpected return code from AcquireInventoryJunctureFromServer"); return true;
+						Error("[syncinv] HandleInputData: unexpected return code from AcquireInventoryJunctureFromServer");
 						return true; // abort, do not send anything to remotes
 					}
 				}
@@ -851,7 +851,11 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					Debug.InventoryMoveLog("Success - ProcessHandEvent", "HAND_EVENT" , "n/a", "ProccessInputData", e.m_Player.ToString() );
 				}
 				#endif
-				e.m_Player.GetHumanInventory().ProcessHandEvent(e);
+				
+				if (!e.m_Player.GetHumanInventory().ProcessHandEvent(e))
+				{
+					
+				}
 				break;
 			}
 
@@ -1730,7 +1734,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 	
 	override bool HandEvent(InventoryMode mode, HandEventBase e)
 	{
-		if (!m_DeferredEvent)
+		if (!IsProcessing())
 		{
 			EntityAI itemInHands = GetEntityInHands();
 			InventoryLocation handInventoryLocation = new InventoryLocation;
@@ -1742,7 +1746,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			if (e.CanPerformEvent())
 			{
 				m_DeferredEvent = new DeferredHandEvent(mode,e);
-				if(m_DeferredEvent.ReserveInventory(this))
+				if (m_DeferredEvent.ReserveInventory(this))
 					return true;
 			}
 			

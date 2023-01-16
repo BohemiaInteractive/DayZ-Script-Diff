@@ -13,7 +13,7 @@ class HandAnimatedSwapping extends HandStateBase
 	ref HandStartHidingAnimated m_Hide;
 	ref HandSwappingAnimated_Show m_Show;
 
-	void HandAnimatedSwapping (Man player = NULL, HandStateBase parent = NULL)
+	void HandAnimatedSwapping(Man player = null, HandStateBase parent = null)
 	{
 		// setup nested state machine
 		m_Hide = new HandStartHidingAnimated(player, this, WeaponActions.HIDE, -1);
@@ -26,12 +26,12 @@ class HandAnimatedSwapping extends HandStateBase
 		m_FSM = new HandFSM(this); // @NOTE: set owner of the submachine fsm
 
 		m_FSM.AddTransition(new HandTransition(   m_Hide, _AEh_,   m_Show ));
-		m_FSM.AddTransition(new HandTransition(   m_Show, _fin_,     NULL ));
+		m_FSM.AddTransition(new HandTransition(   m_Show, _fin_,     null ));
 
 		m_FSM.SetInitialState(m_Hide);
 	}
 
-	override void OnEntry (HandEventBase e)
+	override void OnEntry(HandEventBase e)
 	{
 		HandEventSwap es = HandEventSwap.Cast(e);
 		if (es)
@@ -59,9 +59,9 @@ class HandAnimatedSwapping extends HandStateBase
 		super.OnEntry(e); // @NOTE: super at the end (prevent override from submachine start)
 	}
 
-	override void OnAbort (HandEventBase e)
+	override void OnAbort(HandEventBase e)
 	{
-		if( !GetGame().IsDedicatedServer())
+		if ( !GetGame().IsDedicatedServer())
 		{
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);
@@ -80,9 +80,9 @@ class HandAnimatedSwapping extends HandStateBase
 		super.OnAbort(e);
 	}
 
-	override void OnExit (HandEventBase e)
+	override void OnExit(HandEventBase e)
 	{
-		if( !GetGame().IsDedicatedServer())
+		if ( !GetGame().IsDedicatedServer())
 		{
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
 			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);		

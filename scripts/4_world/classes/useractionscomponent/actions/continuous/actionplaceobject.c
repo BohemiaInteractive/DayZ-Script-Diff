@@ -4,11 +4,6 @@ class ActionPlaceObjectCB : ActiondeployObjectCB
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_PLACE);
 	}
-	
-	override void DropDuringPlacing()
-	{
-		// Does not need this, so empty the function
-	}
 };
 
 class ActionPlaceObject: ActionDeployObject

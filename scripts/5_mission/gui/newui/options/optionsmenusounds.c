@@ -4,6 +4,8 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	
 	protected Widget						m_SettingsRoot;
 	protected Widget						m_DetailsRoot;
+	protected Widget						m_DetailsBodyDefault;
+	protected Widget						m_DetailsBodyConnectivity;
 	protected TextWidget					m_DetailsLabel;
 	protected RichTextWidget				m_DetailsText;
 	
@@ -35,6 +37,8 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	{
 		m_Root					= GetGame().GetWorkspace().CreateWidgets(GetLayoutName(), parent);
 		m_DetailsRoot			= details_root;
+		m_DetailsBodyDefault 		= m_DetailsRoot.FindAnyWidget("settings_details_body");
+		m_DetailsBodyConnectivity 	= m_DetailsRoot.FindAnyWidget("settings_details_body_connectivity");
 		m_DetailsLabel			= TextWidget.Cast( m_DetailsRoot.FindAnyWidget("details_label"));
 		m_DetailsText			= RichTextWidget.Cast( m_DetailsRoot.FindAnyWidget("details_content"));	
 		m_Options				= options;
@@ -168,19 +172,8 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		}
 		if (w)
 		{
-			Param2<string, string> p = m_TextMap.Get(w.GetUserID());
-			if (p)
+			if (TextMapUpdateWidget(w.GetUserID())) 
 			{
-				m_DetailsRoot.Show(true);
-				m_DetailsLabel.SetText(p.param1);
-				m_DetailsText.SetText(p.param2);
-				
-				//float lines = m_DetailsText.GetContentHeight();
-				//m_DetailsText.SetSize( 1, lines );
-				
-				m_DetailsText.Update();
-				m_DetailsLabel.Update();
-				m_DetailsRoot.Update();
 				return true;
 			}
 			
@@ -191,6 +184,31 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		}
 		m_DetailsRoot.Show(false);
 		return (w != null);
+	}
+	
+	bool TextMapUpdateWidget(int key)
+	{
+		bool connectivityInfoShown = key == OptionIDsScript.OPTION_CONNECTIVITY_INFO;
+		Param2<string, string> p;
+		Param tmp = m_TextMap.Get(key);
+		
+		m_DetailsBodyDefault.Show(!connectivityInfoShown);
+		m_DetailsBodyConnectivity.Show(connectivityInfoShown);
+		
+		if (Class.CastTo(p,tmp))
+		{
+			m_DetailsRoot.Show(true);
+			m_DetailsText.Show(true);
+			m_DetailsLabel.SetText(p.param1);
+			m_DetailsText.SetText(p.param2);
+			
+			m_DetailsText.Update();
+			m_DetailsLabel.Update();
+			m_DetailsRoot.Update();
+			m_DetailsBodyConnectivity.Update(); //...
+			return true;
+		}
+		return false;
 	}
 
 	void OnVonStateEvent()

@@ -4,7 +4,7 @@ class OnlineServices
 	static ref ScriptInvoker												m_PermissionsAsyncInvoker	= new ScriptInvoker();
 	static ref ScriptInvoker												m_ServersAsyncInvoker		= new ScriptInvoker();
 	static ref ScriptInvoker												m_ServerAsyncInvoker		= new ScriptInvoker();
-	static ref ScriptInvoker												m_MuteUpdateAsyncInvoker	= new ScriptInvoker();
+	static ref ScriptInvoker												m_MuteUpdateAsyncInvoker	= new ScriptInvoker(); // DEPRECATED
 	static ref ScriptInvoker												m_ServerModLoadAsyncInvoker	= new ScriptInvoker();
 	
 	static ref BiosClientServices											m_ClientServices;
@@ -329,7 +329,6 @@ class OnlineServices
 		if ( !ErrorCaught( error ) )
 		{
 			BiosPrivacyUidResultArray new_list = new BiosPrivacyUidResultArray;
-			map<string, bool> mute_list = new map<string, bool>;
 			
 			for ( int i = 0; i < result_list.Count(); i++ )
 			{
@@ -343,54 +342,30 @@ class OnlineServices
 					{
 						new_list.Insert( result );
 						m_PermissionsList.Set( uid, result_array2 );
-						mute_list.Insert( uid, IsPlayerMuted( uid ) );
 					}
 				}
 				else
 				{
 					m_PermissionsList.Insert( uid, result_array2 );
 					new_list.Insert( result );
-					mute_list.Insert( uid, IsPlayerMuted( uid ) );
-				}
-				
-				if ( !m_MuteList.Contains( uid ) )
-				{
-					m_MuteList.Insert( uid, !result_array2.Get( 0 ).m_IsAllowed );
 				}
 			}
 			m_PermissionsAsyncInvoker.Invoke( new_list );
-			m_MuteUpdateAsyncInvoker.Invoke( mute_list );
 		}
 	}
 	
 	static bool IsPlayerMuted( string id )
 	{
-		if( m_MuteList.Contains( id ) )
+		if ( m_MuteList.Contains( id ) )
 		{
 			return m_MuteList.Get( id );
-		}
-		else
-		{
-			BiosPrivacyPermissionResultArray perms = m_PermissionsList.Get( id );
-			if( perms )
-			{
-				for( int i = 0; i < perms.Count(); i++ )
-				{
-					BiosPrivacyPermissionResult result = perms.Get( i );
-					if( result.m_Permission == EBiosPrivacyPermission.COMMUNICATE_VOICE )
-					{
-						m_MuteList.Insert( id, !result.m_IsAllowed );
-						return !result.m_IsAllowed;
-					}
-				}
-			}
 		}
 		return false;
 	}
 	
 	static bool MutePlayer( string id, bool mute )
 	{
-		if( m_MuteList.Contains( id ) )
+		if ( m_MuteList.Contains( id ) )
 		{
 			m_MuteList.Set( id, mute );
 		}
@@ -398,6 +373,13 @@ class OnlineServices
 		{
 			m_MuteList.Insert( id, mute );
 		}
+		
+		// notify server
+		ScriptInputUserData ctx = new ScriptInputUserData();
+		ctx.Write( INPUT_UDT_USER_MUTE_XBOX );
+		ctx.Write( id );
+		ctx.Write( mute );
+		ctx.Send();
 		
 		return true;
 	}

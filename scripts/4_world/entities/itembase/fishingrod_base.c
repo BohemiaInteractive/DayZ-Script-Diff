@@ -21,7 +21,16 @@ class FishingRod_Base_New : ItemBase
 		return false;
 	}
 	
-	void AnimateFishingRod(bool state) {}
+	void AnimateFishingRod(bool state) {}	
+	
+	override void OnDebugSpawn()
+	{
+		GetInventory().CreateAttachment("Bait");
+		for (int i = 0; i < 6; ++i)
+		{
+			GetGame().CreateObjectEx("Bait", GetPosition(), ECE_PLACE_ON_SURFACE);
+		}
+	}
 }
 
 class FishingRod_Base : ItemBase

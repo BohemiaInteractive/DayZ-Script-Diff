@@ -1,6 +1,5 @@
 class PluginRemotePlayerDebugServer extends PluginBase
-{
-	
+{	
 	ref set<PlayerBase> m_ClientList = new set<PlayerBase>;
 	
 	ref array<ref RemotePlayerStatDebug> m_PlayerDebugStats = new array<ref RemotePlayerStatDebug>;
@@ -14,11 +13,11 @@ class PluginRemotePlayerDebugServer extends PluginBase
 	override void OnUpdate(float delta_time)
 	{
 		#ifdef SERVER
-		if( m_ClientList.Count()!=0 )
+		if ( m_ClientList.Count() != 0 )
 		{
-			m_AccuTime+=delta_time;
+			m_AccuTime += delta_time;
 			
-			if( m_AccuTime > INTERVAL )
+			if ( m_AccuTime > INTERVAL )
 			{
 				m_AccuTime = 0;
 				SendDebug();
@@ -43,35 +42,31 @@ class PluginRemotePlayerDebugServer extends PluginBase
 		GetGame().GetPlayers(players);
 		m_PlayerDebugStats.Clear();
 		
-		for(int i = 0; i < players.Count(); i++)
+		foreach (Man playerMan : players)
 		{
-			PlayerBase player = PlayerBase.Cast(players.Get(i));
+			PlayerBase player = PlayerBase.Cast(playerMan);
 			RemotePlayerStatDebug rpd = new RemotePlayerStatDebug(player);
 			m_PlayerDebugStats.Insert(rpd);
-		}
-		
+		}		
 	}
-	
 	
 	void SendDebug()
 	{
+#ifdef DIAG_DEVELOPER
 		GatherPlayerInfo();
 		array<ref RemotePlayerDamageDebug> player_damage = new array<ref RemotePlayerDamageDebug>;
 		
-		for(int i = 0; i < m_ClientList.Count(); i++)
+		for(int i = 0; i < m_ClientList.Count(); ++i)
 		{
-			PlayerBase player = m_ClientList.Get(i);
-			if(player)
+			PlayerBase player = m_ClientList[i];
+			if (player)
 			{
 				ScriptRPC rpc = new ScriptRPC();
 				rpc.Write(m_PlayerDebugStats);
 				
-				
-				for(int x = 0; x < m_PlayerDebugDamage.Count(); x++)
+				foreach (PlayerBase player2, RemotePlayerDamageDebug value : m_PlayerDebugDamage)
 				{
-					PlayerBase player2 = m_PlayerDebugDamage.GetKey(x);
-					RemotePlayerDamageDebug value = m_PlayerDebugDamage.GetElement(x);
-					if(player2)
+					if (player2)
 					{
 						player_damage.Insert(value);
 						
@@ -81,26 +76,29 @@ class PluginRemotePlayerDebugServer extends PluginBase
 				
 				rpc.Write(player_damage);
 				
-				rpc.Send( player, ERPCs.DEV_PLAYER_DEBUG_DATA, true, player.GetIdentity() );
+				rpc.Send(player, ERPCs.DEV_PLAYER_DEBUG_DATA, true, player.GetIdentity());
 				m_PlayerDebugDamage.Clear();
 			}
 			else
 			{
 				m_ClientList.Remove(i);
-			}
-			
+				--i;
+			}		
 		}
+#endif
 	}
 	
 
 	void OnDamageEvent(PlayerBase player, TotalDamageResult damageResult)
 	{
-		if( !GetWatching() || !damageResult ) return;
+		if ( !GetWatching() || !damageResult )
+			return;
+		
 		float damage_global = damageResult.GetDamage("","");
 		float damage_blood = damageResult.GetDamage("","Blood");
 		float damage_shock = damageResult.GetDamage("","Shock");
 		
-		if( m_PlayerDebugDamage.Contains(player) )
+		if ( m_PlayerDebugDamage.Contains(player) )
 		{
 			m_PlayerDebugDamage.Get(player).AddDamage( damage_global, damage_blood, damage_shock );
 		}
@@ -117,7 +115,7 @@ class PluginRemotePlayerDebugServer extends PluginBase
 	{
 		int index = m_ClientList.Find(player);
 		
-		if(enable)
+		if (enable)
 		{
 			m_ClientList.Insert(player);
 			SetWatching(true);
@@ -127,7 +125,7 @@ class PluginRemotePlayerDebugServer extends PluginBase
 			m_ClientList.Remove(index);
 		}
 		
-		if( m_ClientList.Count() == 0 )
+		if ( m_ClientList.Count() == 0 )
 		{
 			SetWatching(false);
 		}

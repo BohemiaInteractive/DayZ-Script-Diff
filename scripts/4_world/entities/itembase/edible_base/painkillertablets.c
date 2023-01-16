@@ -6,16 +6,15 @@ class PainkillerTablets extends Edible_Base
 		
 		AddAction(ActionForceConsumeSingle);
 		AddAction(ActionConsumeSingle);
-		//AddAction(ActionForceFeed);
-		//AddAction(ActionEatBig);
 	}
 	
 	override void OnConsume(float amount, PlayerBase consumer)
 	{
-		if( consumer.GetModifiersManager().IsModifierActive(eModifiers.MDF_PAINKILLERS ) )//effectively resets the timer
+		if (consumer.GetModifiersManager().IsModifierActive(eModifiers.MDF_PAINKILLERS)) // effectively resets the timer
 		{
-			consumer.GetModifiersManager().DeactivateModifier( eModifiers.MDF_PAINKILLERS, false );
+			consumer.GetModifiersManager().DeactivateModifier(eModifiers.MDF_PAINKILLERS, false);
 		}
-		consumer.GetModifiersManager().ActivateModifier( eModifiers.MDF_PAINKILLERS );
+
+		consumer.GetModifiersManager().ActivateModifier(eModifiers.MDF_PAINKILLERS);
 	}
 }

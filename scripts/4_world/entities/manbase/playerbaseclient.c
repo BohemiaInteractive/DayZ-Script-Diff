@@ -8,7 +8,7 @@ class PlayerBaseClient extends PlayerBase
 	//! Creates PL if it doesn't exist already.
 	static void CreatePersonalLight()
 	{
-		if (!m_PersonalLight  &&  ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ))
+		if (!m_PersonalLight && ( !GetGame().IsServer() || !GetGame().IsMultiplayer() ))
 		{
 			m_PersonalLight = ScriptedLightBase.CreateLight(PersonalLight, "0 0 0");
 		}
@@ -48,7 +48,7 @@ class PlayerBaseClient extends PlayerBase
 	//! Controls the ON/OFF switch of the Personal Light. PL will still shine only if the server allows it.
 	static void SwitchPersonalLight(bool state)
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() )
+		if ( !GetGame().IsServer() || !GetGame().IsMultiplayer() )
 		{
 			m_PersonalLightIsSwitchedOn = state;
 			UpdatePersonalLight();
@@ -62,7 +62,8 @@ class PlayerBaseClient extends PlayerBase
 		
 		CreatePersonalLight();
 		
-		if ( ! GetCLIParam("disablePersonalLight", param)  &&  !m_PersonalLightDisabledByDebug  &&  m_PersonalLightIsSwitchedOn ) // Allow PL unless it's disabled by debug or client-side starting parameter
+		 // Allow PL unless it's disabled by debug or client-side starting parameter
+		if ( !GetCLIParam("disablePersonalLight", param) && !m_PersonalLightDisabledByDebug && m_PersonalLightIsSwitchedOn )
 		{
 			m_PersonalLight.SetEnabled(m_PersonalLightEnabledOnCurrentServer);
 		}

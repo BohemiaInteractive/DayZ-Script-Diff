@@ -6,7 +6,7 @@ class Truck_01_Base extends CarScript
 
 	void Truck_01_Base()
 	{
-		m_dmgContactCoef 		= 0.018;
+		//m_dmgContactCoef 		= 0.018;
 		m_enginePtcPos 			= "0 1.346 2.205";
 		
 		m_EngineStartOK 		= "Truck_01_engine_start_SoundSet";
@@ -65,8 +65,6 @@ class Truck_01_Base extends CarScript
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
-		super.EOnPostSimulate(other, timeSlice);
-		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
 			if (m_UTSource.IsActive())
@@ -78,7 +76,7 @@ class Truck_01_Base extends CarScript
 
 	override float GetTransportCameraDistance()
 	{
-		return 6.0;
+		return 6.5;
 	}
 	
 	override vector GetTransportCameraOffset()
@@ -152,13 +150,13 @@ class Truck_01_Base extends CarScript
 		switch( posIdx )
 		{
 			case 0:
-				if ( GetCarDoorsState( "Truck_01_Door_1_1" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Truck_01_Door_1_1") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
 			
 			case 1:
-				if ( GetCarDoorsState( "Truck_01_Door_2_1" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Truck_01_Door_2_1") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
@@ -210,7 +208,7 @@ class Truck_01_Base extends CarScript
 				newValue += 0.4;
 			}
 
-			if (GetCarDoorsState( "Truck_01_Door_2_1" ) == CarDoorState.DOORS_CLOSED)
+			if (GetCarDoorsState("Truck_01_Door_2_1") == CarDoorState.DOORS_CLOSED)
 			{
 				newValue += 0.4;
 			}
@@ -293,39 +291,28 @@ class Truck_01_Base extends CarScript
 		return "";
 	}
 	
-	override bool CanReachSeatFromSeat( int currentSeat, int nextSeat )
+	override bool CanReachSeatFromSeat(int currentSeat, int nextSeat)
 	{
-		switch( currentSeat )
+		switch (currentSeat)
 		{
 		case 0:
-			if ( nextSeat == 1 )
-				return true;
-			break;
+			return nextSeat == 1;
 		case 1:
-			if ( nextSeat == 0 )
-				return true;
-			break;
+			return nextSeat == 0;
 		}
 
 		return false;
 	}
 
-	override bool CanReachDoorsFromSeat( string pDoorsSelection, int pCurrentSeat )
+	override bool CanReachDoorsFromSeat(string pDoorsSelection, int pCurrentSeat)
 	{
-		switch( pCurrentSeat )
+		switch (pCurrentSeat)
 		{
-		case 0:
-			if (pDoorsSelection == "DoorsDriver")
-			{
-				return true;
-			}
-		break;
-		case 1:
-			if (pDoorsSelection == "DoorsCoDriver")
-			{
-				return true;
-			}
-		break;
+			case 0:
+				return pDoorsSelection == "DoorsDriver";
+	
+			case 1:
+				return pDoorsSelection == "DoorsCoDriver";
 		}
 		
 		return false;		
@@ -337,11 +324,11 @@ class Truck_01_Base extends CarScript
 		{
 			case "DoorsDriver":
 				return 0;
-				break;
+
 			case "DoorsCoDriver":
 				return 1;
-				break;
 		}
+
 		return -1;
 	}
 	
@@ -375,63 +362,36 @@ class Truck_01_Base extends CarScript
 	{
 		super.SetActions();
 
-		//AddAction( ActionAnimateCarSelection );
-		AddAction( ActionSidePlateInteract );
+		AddAction(ActionSidePlateInteract);
 		AddAction(ActionDetachFromTarget_SpecificSlot_WoodenLogs);
 		AddAction(ActionDetachFromTarget_SpecificSlot_WoodenPlanks);
 		AddAction(ActionDetachFromTarget_SpecificSlot_MetalSheets);
 		AddAction(ActionDetachFromTarget_SpecificSlotsCategory_Barrel);
 		AddAction(ActionDetachFromTarget_SpecificSlotsCategory_WoodenCrate);
 	}
-	
+
 	override void OnDebugSpawn()
 	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
-		
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "Truck_01_Wheel" );
-			entity.GetInventory().CreateInInventory( "Truck_01_Wheel" );
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
+
+		GetInventory().CreateInInventory("Truck_01_Wheel");
+		GetInventory().CreateInInventory("Truck_01_Wheel");
+
+		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+
+		GetInventory().CreateInInventory("Truck_01_Door_1_1");
+		GetInventory().CreateInInventory("Truck_01_Door_2_1");
+		GetInventory().CreateInInventory("Truck_01_Hood");
 			
-			entity.GetInventory().CreateInInventory( "Truck_01_WheelDouble" );
-			entity.GetInventory().CreateInInventory( "Truck_01_WheelDouble" );
-			entity.GetInventory().CreateInInventory( "Truck_01_WheelDouble" );
-			entity.GetInventory().CreateInInventory( "Truck_01_WheelDouble" );
-
-			entity.GetInventory().CreateInInventory( "TruckBattery" );
-
-			entity.GetInventory().CreateInInventory( "Truck_01_Door_1_1" );
-			entity.GetInventory().CreateInInventory( "Truck_01_Door_2_1" );
-			entity.GetInventory().CreateInInventory( "Truck_01_Hood" );
-
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "Truck_01_Wheel" );
-			entity.GetInventory().CreateInInventory( "Truck_01_Wheel" );
-			entity.GetInventory().CreateInInventory( "TruckBattery" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 120 );
-		Fill( CarFluid.OIL, 4.0 );
-	};
-}
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("Truck_01_Wheel");
+		GetInventory().CreateInInventory("Truck_01_Wheel");
+		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+	}
+};

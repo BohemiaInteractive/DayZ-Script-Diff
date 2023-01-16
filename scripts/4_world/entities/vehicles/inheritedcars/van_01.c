@@ -6,7 +6,7 @@ class Van_01 extends CarScript
 
 	void Van_01()
 	{
-		m_dmgContactCoef = 0.070; //TODO::Set proper value
+		//m_dmgContactCoef = 0.070; //TODO::Set proper value
 	}
 	
 	override void EEInit()
@@ -50,8 +50,6 @@ class Van_01 extends CarScript
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
-		super.EOnPostSimulate(other, timeSlice);
-		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
 			if (m_UTSource.IsActive())

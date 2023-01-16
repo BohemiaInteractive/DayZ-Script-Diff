@@ -127,10 +127,20 @@ class DayZPlayerImplementAiming
 	{
 		m_AimNoiseAllowed = state;	
 	}
+	
+	bool IsAimNoiseAllowed()
+	{
+		return m_AimNoiseAllowed;	
+	}
 
 	void SetProceduralRecoilEnabled(bool state)
 	{
 		m_ProceduralRecoilEnabled = state;
+	}
+
+	bool IsProceduralRecoilEnabled()
+	{
+		return m_ProceduralRecoilEnabled;
 	}
 	
 	void SetCamShakeValues(float x_axis, float y_axis)

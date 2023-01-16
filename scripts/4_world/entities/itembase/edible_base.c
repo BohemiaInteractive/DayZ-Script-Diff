@@ -1,14 +1,14 @@
 class Edible_Base extends ItemBase
 {
 	const string DIRECT_COOKING_SLOT_NAME 	= "DirectCooking";
-	//Baking
-	const string SOUND_BAKING_START 		= "bake";		// raw stage
-	const string SOUND_BAKING_DONE 			= "bakeDone";	// baked stage
-	//Burning
-	const string SOUND_BURNING_DONE 		= "burned";		// burned stage
+
+	const string SOUND_BAKING_START 		= "Baking_SoundSet";
+	const string SOUND_BAKING_DONE 			= "Baking_Done_SoundSet";
+	const string SOUND_BURNING_DONE 		= "Food_Burning_SoundSet";
 
 	protected bool m_MakeCookingSounds;
-	protected SoundOnVehicle m_SoundCooking;
+	protected SoundOnVehicle m_SoundCooking; //! DEPRECATED
+	protected EffectSound m_SoundEffectCooking;
 	protected string m_SoundPlaying;
 	ref FoodStage m_FoodStage;
 	protected float m_DecayTimer;
@@ -507,29 +507,29 @@ class Edible_Base extends ItemBase
 		AddAction(ActionDetach);
 	}
 
-	protected void SoundCookingStart( string sound_name )
+	protected void SoundCookingStart(string sound_name)
 	{
-		if ( GetGame() && ( !GetGame().IsDedicatedServer() ) )
-		{	
-			if ( m_SoundPlaying != sound_name )
-			{
-				//stop previous sound
-				SoundCookingStop();
-				
-				//create new
-				m_SoundCooking = PlaySoundLoop( sound_name, 50 );
-				m_SoundPlaying = sound_name;
-			}
+		#ifndef SERVER
+		if (m_SoundPlaying != sound_name)
+		{
+			SoundCookingStop();
+
+			m_SoundEffectCooking = SEffectManager.PlaySound(sound_name, GetPosition(), 0, 0, true);
+			m_SoundPlaying = sound_name;
 		}
+		#endif
 	}
+
 	protected void SoundCookingStop()
 	{
-		if ( m_SoundCooking )
+		#ifndef SERVER
+		if (m_SoundEffectCooking)
 		{
-			GetGame().ObjectDelete( m_SoundCooking );
-			m_SoundCooking = NULL;
+			m_SoundEffectCooking.Stop();
+			m_SoundEffectCooking = null;
 			m_SoundPlaying = "";
 		}
+		#endif
 	}
 	
 	override bool CanHaveTemperature()
@@ -737,14 +737,14 @@ class Edible_Base extends ItemBase
 		m_DecayDelta = 0.0;
 	}
 	
-	override void GetDebugActions(out TSelectableActionInfoArray outputList)
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
 		super.GetDebugActions(outputList);
 		
-		if(HasFoodStage())
+		if (HasFoodStage())
 		{
-			outputList.Insert(new TSelectableActionInfo(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_PREV, "Food Stage Prev"));
-			outputList.Insert(new TSelectableActionInfo(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_NEXT, "Food Stage Next"));
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_PREV, "Food Stage Prev", FadeColors.WHITE));
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_NEXT, "Food Stage Next", FadeColors.WHITE));
 		}
 	}
 	

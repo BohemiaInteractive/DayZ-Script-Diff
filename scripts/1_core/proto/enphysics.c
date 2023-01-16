@@ -10,6 +10,7 @@ typedef int[] dBlock;
 proto native int dGetNumDynamicBodies(notnull IEntity worldEnt);
 proto native IEntity dGetDynamicBody(notnull IEntity worldEnt, int index);
 proto native void dSetInteractionLayer(notnull IEntity worldEntity, int mask1, int mask2, bool enable);
+proto native bool dGetInteractionLayer(notnull IEntity worldEntity, int mask1, int mask2);
 
 //!Gets global gravity
 proto native vector dGetGravity(notnull IEntity worldEntity);
@@ -305,9 +306,12 @@ class Contact
 	int			Index1;
 	int			Index2;
 
+	float		PenetrationDepth;
+
 	float		Impulse;
 	float		RelativeNormalVelocityBefore;
 	float		RelativeNormalVelocityAfter;
+
 	vector		Normal;
 	vector		Position;
 	vector		RelativeVelocityBefore;

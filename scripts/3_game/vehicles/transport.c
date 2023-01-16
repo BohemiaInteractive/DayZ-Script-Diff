@@ -150,54 +150,107 @@ class Transport extends EntityAI
 	bool IsIgnoredObject( Object o )
 	{
 		if (!o)
-			return false;		
-		
+			return false;
+
+		//! If the player can't interact (hint: collide) with the object, then it is ignored
+		int layer = dBodyGetInteractionLayer(o);
+		bool interacts = dGetInteractionLayer(this, PhxInteractionLayers.CHARACTER, layer);
+		if (!interacts)
+		{
+			return true;
+		}
+
+		DayZPlayer player;
+		if (Class.CastTo(player, o))
+		{
+			//! Ignore any player that is currently in this vehicle
+			HumanCommandVehicle hcv = player.GetCommand_Vehicle();
+			if (hcv && hcv.GetTransport() == this)
+			{
+				return true;
+			}
+		}
+
 		EntityAI e = EntityAI.Cast(o);			
 		// CanBeSkinned means it is a dead entity which should not block the door
 		return ( ( e && (e.IsZombie() || e.IsHologram()) ) || o.CanBeSkinned() || o.IsBush() || o.IsTree() );
 	}
-	
-	bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
+
+	bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight, inout vector extents, out vector transform[4] )
 	{
+		GetTransform(transform);
+		
 		vector crewPos;
 		vector crewDir;
-		CrewEntryWS( currentSeat, crewPos, crewDir );
-		crewPos[1] = crewPos[1] + maxAllowedObjHeight + playerHeight * 0.5;
+		CrewEntry( currentSeat, crewPos, crewDir );
+		
+		vector entry[4];
+		entry[2] = crewDir;
+		entry[0] = vector.Up * crewDir;
+		entry[1] = entry[2] * entry[0];
+		entry[3] = crewPos;
+		
+		Math3D.MatrixMultiply4( transform, entry, transform );
+		
+		vector position = transform[3];
+		vector orientation = Math3D.MatrixToAngles(transform);
+		
+		position[1] = position[1] + maxAllowedObjHeight + (extents[1] * 0.5);
+		
 		array<Object> excluded = new array<Object>;
 		array<Object> collided = new array<Object>;
+		
 		excluded.Insert(this);
-		excluded.Insert(GetGame().GetPlayer());
-		GetGame().IsBoxColliding(crewPos, crewDir, Vector(horizontalExtents, playerHeight, horizontalExtents), excluded, collided); 
+		
+		GetGame().IsBoxColliding(position, orientation, extents, excluded, collided);
+		
+		orientation.RotationMatrixFromAngles(transform);
+		transform[3] = position;
+		
 		foreach (Object o : collided)
 		{
+			EntityAI e = EntityAI.Cast(o);			
+			if (IsIgnoredObject(o))
+				continue;
+			
 			vector minmax[2];
 			if (o.GetCollisionBox(minmax))
 				return false;
 		}
+
 		return true;
+	}
+
+	bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
+	{
+		vector transform[4];
+		vector extents;
+		
+		extents[0] = horizontalExtents;
+		extents[1] = playerHeight;
+		extents[2] = horizontalExtents;
+		
+		return IsAreaAtDoorFree( currentSeat, maxAllowedObjHeight, extents, transform );
 	}
 	
 	Shape DebugFreeAreaAtDoor( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
 	{
-		vector crewPos;
-		vector crewDir;
-		CrewEntryWS( currentSeat, crewPos, crewDir );
-		crewPos[1] = crewPos[1] + maxAllowedObjHeight + playerHeight * 0.5;
-		array<Object> excluded = new array<Object>;
-		array<Object> collided = new array<Object>;
-		excluded.Insert(this);
-		excluded.Insert(GetGame().GetPlayer());
-		GetGame().IsBoxColliding(crewPos, crewDir, Vector(horizontalExtents, playerHeight, horizontalExtents), excluded, collided); 
-		int color = ARGB(100, 0, 255, 0);
-		foreach (Object o : collided)
+		int color = ARGB(20, 0, 255, 0);
+		
+		vector transform[4];
+		vector extents;
+		
+		extents[0] = horizontalExtents;
+		extents[1] = playerHeight;
+		extents[2] = horizontalExtents;
+		
+		if (!IsAreaAtDoorFree( currentSeat, maxAllowedObjHeight, extents, transform ))
 		{
-			vector minmax[2];
-			if (o.GetCollisionBox(minmax))
-			{
-				color = ARGB(100, 255, 0, 0);
-			}
+			color = ARGB(20, 255, 0, 0);
 		}
-
-		return Debug.DrawCylinder(crewPos, horizontalExtents, playerHeight, color);
+		
+		Shape shape = Debug.DrawBox(-extents * 0.5, extents * 0.5, color);
+		shape.SetMatrix(transform);
+		return shape;
 	}
 };

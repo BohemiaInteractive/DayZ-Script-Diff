@@ -19,9 +19,9 @@ class MissionServer extends MissionBase
 	
 	// Variables to be modified in Init.c
 	protected bool 				m_PlayArty = false; 			// Toggle if Off map artillery sounds are played
-	protected float 			m_ArtyDelay = 0; 				// Set how much time there is between two barrages ( in seconds )
-	protected int 				m_MinSimultaneousStrikes = 0;	// The MIN of simultaneous shots on the map ( Will be clamped between 1 and max shots )
-	protected int 				m_MaxSimultaneousStrikes = 0;	// The MAX of simultaneous shots on the map ( Will be clamped between 1 and max amount of coords )
+	protected float 			m_ArtyDelay = 0; 				// Set how much time there is between two barrages (in seconds)
+	protected int 				m_MinSimultaneousStrikes = 0;	// The MIN of simultaneous shots on the map (Will be clamped between 1 and max shots)
+	protected int 				m_MaxSimultaneousStrikes = 0;	// The MAX of simultaneous shots on the map (Will be clamped between 1 and max amount of coords)
 	protected ref array<vector> m_FiringPos; 					// Where we should fire from. On Init set the relevant data
 	
 	//All Chernarus firing coordinates 
@@ -77,7 +77,7 @@ class MissionServer extends MissionBase
 		super.OnInit();
 		CfgGameplayHandler.LoadData();
 		UndergroundAreaLoader.SpawnAllTriggerCarriers();
-		//Either pass consts in Init.c or insert all desired coords ( or do both ;) )
+		//Either pass consts in Init.c or insert all desired coords (or do both ;))
 		m_FiringPos = new array<vector>;
 	}
 	
@@ -94,11 +94,11 @@ class MissionServer extends MissionBase
 		UpdateDummyScheduler();
 		TickScheduler(timeslice);
 		UpdateLogoutPlayers();		
-		m_WorldData.UpdateBaseEnvTemperature( timeslice );	// re-calculate base enviro temperature
+		m_WorldData.UpdateBaseEnvTemperature(timeslice);	// re-calculate base enviro temperature
 		
-		RandomArtillery( timeslice );
+		RandomArtillery(timeslice);
 		
-		super.OnUpdate( timeslice );
+		super.OnUpdate(timeslice);
 	}
 	
 	override void OnGameplayDataHandlerLoad()
@@ -111,56 +111,56 @@ class MissionServer extends MissionBase
 	}
 		
 	
-	void RandomArtillery( float deltaTime )
+	void RandomArtillery(float deltaTime)
 	{
 		// ARTY barrage 
-		if ( m_PlayArty )
+		if (m_PlayArty)
 		{
 			// We only perform timer checks and increments if we enabled the artillery barrage
-			if ( m_ArtyBarrageTimer > m_ArtyDelay )
+			if (m_ArtyBarrageTimer > m_ArtyDelay)
 			{
 				//We clamp to guarantee 1 and never have multiple shots on same pos, even in case of entry error
-				m_MaxSimultaneousStrikes = Math.Clamp( m_MaxSimultaneousStrikes, 1, m_FiringPos.Count() );
-				m_MinSimultaneousStrikes = Math.Clamp( m_MinSimultaneousStrikes, 1, m_MaxSimultaneousStrikes );
+				m_MaxSimultaneousStrikes = Math.Clamp(m_MaxSimultaneousStrikes, 1, m_FiringPos.Count());
+				m_MinSimultaneousStrikes = Math.Clamp(m_MinSimultaneousStrikes, 1, m_MaxSimultaneousStrikes);
 				
 				// Variables to be used in this scope
 				int randPos; // Select random position
 				Param1<vector> pos; // The value to be sent through RPC
 				array<ref Param> params; // The RPC params
 				
-				if ( m_MaxSimultaneousStrikes == 1 )
+				if (m_MaxSimultaneousStrikes == 1)
 				{
 					// We only have one set of coordinates to send
-					randPos = Math.RandomIntInclusive( 0, m_FiringPos.Count() - 1 );
-					pos = new Param1<vector>( m_FiringPos[randPos] );
+					randPos = Math.RandomIntInclusive(0, m_FiringPos.Count() - 1);
+					pos = new Param1<vector>(m_FiringPos[randPos]);
 					params = new array<ref Param>;
-					params.Insert( pos );
-					GetGame().RPC( null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
+					params.Insert(pos);
+					GetGame().RPC(null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
 				}
 				else
 				{
 					//We will do some extra steps to
 					/*
-					1. Send multiple coords ( Send one RPC per coord set )
+					1. Send multiple coords (Send one RPC per coord set)
 					2. Ensure we don't have duplicates
 					*/
 					array<int> usedIndices = new array<int>; // Will store all previusly fired upon indices
 					
 					// We determine how many positions fire between MIN and MAX
-					int randFireNb = Math.RandomIntInclusive( m_MinSimultaneousStrikes, m_MaxSimultaneousStrikes );
-					for ( int i = 0; i < randFireNb; i++ )
+					int randFireNb = Math.RandomIntInclusive(m_MinSimultaneousStrikes, m_MaxSimultaneousStrikes);
+					for (int i = 0; i < randFireNb; i++)
 					{
-						randPos = Math.RandomIntInclusive( 0, m_FiringPos.Count() - 1 );
+						randPos = Math.RandomIntInclusive(0, m_FiringPos.Count() - 1);
 						
-						if ( usedIndices.Count() <= 0 || usedIndices.Find( randPos ) < 0 ) //We do not find the index or array is empty
+						if (usedIndices.Count() <= 0 || usedIndices.Find(randPos) < 0) //We do not find the index or array is empty
 						{
 							// We prepare to send the message
-							pos = new Param1<vector>( m_FiringPos[randPos] );
+							pos = new Param1<vector>(m_FiringPos[randPos]);
 							params = new array<ref Param>;
 							
 							// We send the message with this set of coords
-							params.Insert( pos );
-							GetGame().RPC( null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
+							params.Insert(pos);
+							GetGame().RPC(null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
 							
 							// We store the last used value
 							usedIndices.Insert(randPos);
@@ -183,27 +183,27 @@ class MissionServer extends MissionBase
 	
 	override bool IsPlayerDisconnecting(Man player)
 	{
-		return ( m_LogoutPlayers && m_LogoutPlayers.Contains(PlayerBase.Cast(player)) ) || ( m_NewLogoutPlayers && m_NewLogoutPlayers.Contains(PlayerBase.Cast(player)) );
+		return (m_LogoutPlayers && m_LogoutPlayers.Contains(PlayerBase.Cast(player))) || (m_NewLogoutPlayers && m_NewLogoutPlayers.Contains(PlayerBase.Cast(player)));
 	}
 	
 	void UpdatePlayersStats()
 	{
 		PluginLifespan module_lifespan;
-		Class.CastTo(module_lifespan, GetPlugin( PluginLifespan ));
+		Class.CastTo(module_lifespan, GetPlugin(PluginLifespan));
 		array<Man> players = new array<Man>;
-		GetGame().GetPlayers( players );
+		GetGame().GetPlayers(players);
 			
-		for ( int i = 0; i < players.Count(); i++ )
+		for (int i = 0; i < players.Count(); i++)
 		{
 			PlayerBase player;
 			Class.CastTo(player, players.Get(i));
-			if( player )
+			if (player)
 			{
 				// NEW STATS API
 				player.StatUpdateByTime("playtime");
 				player.StatUpdateByPosition("dist");
 
-				module_lifespan.UpdateLifespan( player );
+				module_lifespan.UpdateLifespan(player);
 			}
 		}
 		
@@ -219,7 +219,7 @@ class MissionServer extends MissionBase
 	// check if logout finished for some players
 	void UpdateLogoutPlayers()
 	{
-		for ( int i = 0; i < m_LogoutPlayers.Count(); )
+		for (int i = 0; i < m_LogoutPlayers.Count();)
 		{
 			LogoutInfo info = m_LogoutPlayers.GetElement(i);
 			
@@ -255,7 +255,7 @@ class MissionServer extends MissionBase
 		PlayerBase player;
 		int counter = 0;
 		
-		switch(eventTypeId)
+		switch (eventTypeId)
 		{
 		case ClientPrepareEventTypeID:
 			ClientPrepareEventParams clientPrepareParams;
@@ -275,7 +275,7 @@ class MissionServer extends MissionBase
 				return;
 			}
 			identity = newParams.param1;
-			InvokeOnConnect(player,identity );
+			InvokeOnConnect(player,identity);
 			SyncEvents.SendPlayerList();
 			
 			ControlPersonalLight(player);
@@ -374,13 +374,15 @@ class MissionServer extends MissionBase
 	void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)
 	{
 		Debug.Log("InvokeOnConnect:"+this.ToString(),"Connect");
-		if( player ) player.OnConnect();
+		if (player)
+			player.OnConnect();
 	}
 
-	void InvokeOnDisconnect( PlayerBase player )
+	void InvokeOnDisconnect(PlayerBase player)
 	{
 		Debug.Log("InvokeOnDisconnect:"+this.ToString(),"Connect");
-		if( player ) player.OnDisconnect();
+		if (player)
+			player.OnDisconnect();
 	}
 
 	void OnClientPrepareEvent(PlayerIdentity identity, out bool useDB, out vector pos, out float yaw, out int preloadTimeout)
@@ -402,9 +404,9 @@ class MissionServer extends MissionBase
 	// Enables/Disables personal light on the given player.
 	void ControlPersonalLight(PlayerBase player)
 	{
-		if ( player )
+		if (player)
 		{
-			bool is_personal_light = ! GetGame().ServerConfigGetInt( "disablePersonalLight" );
+			bool is_personal_light = ! GetGame().ServerConfigGetInt("disablePersonalLight");
 			Param1<bool> personal_light_toggle = new Param1<bool>(is_personal_light);
 			GetGame().RPCSingleParam(player, ERPCs.RPC_TOGGLE_PERSONAL_LIGHT, personal_light_toggle, true, player.GetIdentity());
 		}
@@ -415,13 +417,13 @@ class MissionServer extends MissionBase
 	}
 	
 	// syncs global lighting setup from the server (lightingConfig server config parameter) 
-	void SyncGlobalLighting( PlayerBase player )
+	void SyncGlobalLighting(PlayerBase player)
 	{
-		if ( player )
+		if (player)
 		{
-			int lightingID = GetGame().ServerConfigGetInt( "lightingConfig" );
-			Param1<int> lightID = new Param1<int>( lightingID );
-			GetGame().RPCSingleParam( player, ERPCs.RPC_SEND_LIGHTING_SETUP, lightID, true, player.GetIdentity() );
+			int lightingID = GetGame().ServerConfigGetInt("lightingConfig");
+			Param1<int> lightID = new Param1<int>(lightingID);
+			GetGame().RPCSingleParam(player, ERPCs.RPC_SEND_LIGHTING_SETUP, lightID, true, player.GetIdentity());
 		}
 	}
 	
@@ -453,10 +455,10 @@ class MissionServer extends MissionBase
 		{
 			slot_ID = DefaultCharacterCreationMethods.GetAttachmentSlotsArray().Get(i);
 			attachment_type = "";
-			if ( m_RespawnMode != GameConstants.RESPAWN_MODE_CUSTOM || !char_data.GetAttachmentMap().Find(slot_ID,attachment_type) || !VerifyAttachmentType(slot_ID,attachment_type) ) //todo insert verification fn here
+			if (m_RespawnMode != GameConstants.RESPAWN_MODE_CUSTOM || !char_data.GetAttachmentMap().Find(slot_ID,attachment_type) || !VerifyAttachmentType(slot_ID,attachment_type)) //todo insert verification fn here
 			{
 				//randomize
-				if ( DefaultCharacterCreationMethods.GetConfigArrayCountFromSlotID(slot_ID) > 0 )
+				if (DefaultCharacterCreationMethods.GetConfigArrayCountFromSlotID(slot_ID) > 0)
 				{
 					attachment_type = DefaultCharacterCreationMethods.GetConfigAttachmentTypes(slot_ID).GetRandomElement();
 				}
@@ -489,7 +491,7 @@ class MissionServer extends MissionBase
 		//m_RespawnMode = GetGame().ServerConfigGetInt("setRespawnMode"); //todo - init somewhere safe
 		//SyncRespawnModeInfo(identity);
 		// get login data for new character
-		if ( ProcessLoginData(ctx) && (m_RespawnMode == GameConstants.RESPAWN_MODE_CUSTOM) && !GetGame().GetMenuDefaultCharacterData(false).IsRandomCharacterForced() )
+		if (ProcessLoginData(ctx) && (m_RespawnMode == GameConstants.RESPAWN_MODE_CUSTOM) && !GetGame().GetMenuDefaultCharacterData(false).IsRandomCharacterForced())
 		{
 			if (GetGame().ListAvailableCharacters().Find(GetGame().GetMenuDefaultCharacterData().GetCharacterType()) > -1)
 				characterType = GetGame().GetMenuDefaultCharacterData().GetCharacterType();
@@ -513,11 +515,18 @@ class MissionServer extends MissionBase
 	void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)
 	{
 		GetGame().SelectPlayer(identity, player);
+		
+		#ifdef DIAG_DEVELOPER
+		if (FeatureTimeAccel.m_CurrentTimeAccel)
+		{
+			GetGame().RPCSingleParam(player, ERPCs.DIAG_TIMEACCEL_CLIENT_SYNC, FeatureTimeAccel.m_CurrentTimeAccel, true, identity);
+		}
+		#endif
 	}	
 	
 	void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)
 	{
-		if(player)
+		if (player)
 		{
 			if (player.IsUnconscious() || player.IsRestrained())
 			{
@@ -525,11 +534,18 @@ class MissionServer extends MissionBase
 				player.SetHealth("", "", 0.0);
 			}
 		}
+		
+		#ifdef DIAG_DEVELOPER
+		if (FeatureTimeAccel.m_CurrentTimeAccel)
+		{
+			GetGame().RPCSingleParam(player, ERPCs.DIAG_TIMEACCEL_CLIENT_SYNC, FeatureTimeAccel.m_CurrentTimeAccel, true, identity);
+		}
+		#endif
 	}
 	
 	void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)
 	{
-		if ( player )
+		if (player)
 		{
 			player.OnReconnect();
 		}
@@ -611,7 +627,7 @@ class MissionServer extends MissionBase
 		}
 		
 		// handle player's existing char in the world
-		player.ReleaseNetworkControls();
+		player.ReleaseNetworkControls();		
 		HandleBody(player);
 		
 		// remove player from server
@@ -620,17 +636,40 @@ class MissionServer extends MissionBase
 		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SyncEvents.SendPlayerList, 1000);
 	}
 	
+	bool ShouldPlayerBeKilled(PlayerBase player)
+	{
+		if (player.IsUnconscious() || player.IsRestrained())
+		{
+			switch (player.GetKickOffReason())
+			{
+				case EClientKicked.SERVER_EXIT:
+					return false;
+				case EClientKicked.KICK_ALL_ADMIN:
+					return false;
+				case EClientKicked.KICK_ALL_SERVER:
+					return false;
+				case EClientKicked.SERVER_SHUTDOWN:
+					return false;
+				default:
+					return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	void HandleBody(PlayerBase player)
 	{
-		if (player.IsAlive() && !player.IsRestrained() && !player.IsUnconscious())
+		if (player.IsAlive())
 		{
-			// remove the body
-			player.Delete();	
-		}
-		else if (player.IsUnconscious() || player.IsRestrained())
-		{
-			// kill character
-			player.SetHealth("", "", 0.0);
+			if (ShouldPlayerBeKilled(player))
+			{
+				player.SetHealth("", "", 0.0);//kill
+			}
+			else
+			{
+				player.Delete();// remove the body
+			}
 		}
 	}
 	
@@ -640,16 +679,16 @@ class MissionServer extends MissionBase
 		int players_count = m_Players.Count();
 		int tick_count_max = Math.Min(players_count, SCHEDULER_PLAYERS_PER_TICK);
 		
-		for(int i = 0; i < tick_count_max; i++)
+		for (int i = 0; i < tick_count_max; i++)
 		{
-			if(m_currentPlayer >= players_count )
+			if (m_currentPlayer >= players_count)
 			{
 				m_currentPlayer = 0;
 			}
 			
 			PlayerBase currentPlayer = PlayerBase.Cast(m_Players.Get(m_currentPlayer));
 			
-			if(currentPlayer)
+			if (currentPlayer)
 				currentPlayer.OnTick();
 			m_currentPlayer++;
 		}
@@ -673,11 +712,11 @@ class MissionServer extends MissionBase
 		for (int i = 0; i < m_DeadPlayersArray.Count(); i++)
 		{
 			corpse_data = m_DeadPlayersArray.Get(i);
-			if( !corpse_data || (corpse_data && (!corpse_data.m_Player || !corpse_data.m_bUpdate)) )
+			if (!corpse_data || (corpse_data && (!corpse_data.m_Player || !corpse_data.m_bUpdate)))
 			{
 				invalid_corpses.Insert(i);
 			}
-			else if( corpse_data.m_bUpdate && current_time - corpse_data.m_iLastUpdateTime >= 30000 )
+			else if (corpse_data.m_bUpdate && current_time - corpse_data.m_iLastUpdateTime >= 30000)
 			{
 				corpse_data.UpdateCorpseState();
 				corpse_data.m_iLastUpdateTime = current_time;

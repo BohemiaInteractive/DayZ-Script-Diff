@@ -22,14 +22,14 @@ class UIPopupScriptPositionManager extends UIPopupScript
 		m_TxtCurrentY = EditBoxWidget.Cast( wgt.FindAnyWidget("pnl_ppp_pm_current_y_value") );
 		m_TeleportButton = ButtonWidget.Cast( wgt.FindAnyWidget("btn_ppp_pm_teleport") );
 		m_CancelButton = ButtonWidget.Cast( wgt.FindAnyWidget("btn_ppp_pm_cancel") );
-		
+		/*
 		TStringArray positions_array = new TStringArray;
 		m_ConfigDebugProfileFixed.GetAllPositionsNames( positions_array );
 		
 		for ( int i = 0; i < positions_array.Count(); i++ )
 		{
-			m_LstPositionList.AddItem( positions_array.Get(i), new PresetParams ( positions_array.Get(i), true, false), 0);
-		}
+			m_LstPositionList.AddItem( positions_array.Get(i), new LocationParams ( positions_array.Get(i), false, vector.Zero), 0);
+		}*/
 	}
 	
 	//================================================
@@ -74,12 +74,14 @@ class UIPopupScriptPositionManager extends UIPopupScript
 	
 	void OnItemSelected( Widget w, int x, int y, int row, int column, int oldRow, int oldColumn )
 	{	
-		vector position = m_ConfigDebugProfileFixed.GetPositionByName( GetCurrentPositionName() );
+		/*
+		vector position = m_ConfigDebugProfileFixed.GetPositionByNameEx( GetCurrentLocationName() );
 		m_TxtSelectedX.SetText( position[0].ToString() );
 		m_TxtSelectedY.SetText( position[2].ToString() );
+		*/
 	}
 	
-	string GetCurrentPositionName()
+	string GetCurrentLocationName()
 	{
 		if ( m_LstPositionList.GetSelectedRow() != -1 )
 		{

@@ -65,9 +65,16 @@ class MissionMainMenu extends MissionBase
 #ifdef PLATFORM_CONSOLE
 		m_IntroSceneXbox = new DayZIntroSceneXbox;
 #else
-		Print("misssionMainMenu CreateIntroScene");
 		m_IntroScenePC = new DayZIntroScenePC;
 #endif
+	}
+	
+	override void UpdateInputDevicesAvailability()
+	{
+		super.UpdateInputDevicesAvailability();
+		
+		g_Game.GetInput().UpdateConnectedInputDeviceList();
+		g_Game.UpdateInputDeviceDisconnectWarning();
 	}
 
 	override void OnMissionStart()
@@ -100,13 +107,11 @@ class MissionMainMenu extends MissionBase
 
 	override void OnUpdate(float timeslice)
 	{
-		//Print("("+ GetGame().GetTime() +") ____OnUpdate: " + timeslice);
-		
 		if ( g_Game.IsLoading() )
 		{
 			return;
 		}
-				
+		
 		if (m_IntroScenePC)
 		{
 			m_IntroScenePC.Update();
@@ -120,7 +125,6 @@ class MissionMainMenu extends MissionBase
 			case MENU_CREDITS:
 			{
 				m_CreditsMenu = CreditsMenu.Cast(GetGame().GetUIManager().GetMenu());
-				//Print(m_CreditsMenu);
 			}
 		}
 	}

@@ -10,7 +10,7 @@ class HandGuardBase
 	 * the guard is a boolean operation executed first and which can prevent the transition from firing by returning false
 	 * @return		true if transition is allowed
 	 **/
-	bool GuardCondition (HandEventBase e) { return true; }
+	bool GuardCondition(HandEventBase e) { return true; }
 };
 
 
@@ -19,9 +19,9 @@ class HandGuardAnd extends HandGuardBase
 	ref HandGuardBase m_arg0;
 	ref HandGuardBase m_arg1;
 
-	void HandGuardAnd (HandGuardBase arg0 = NULL, HandGuardBase arg1 = NULL) { m_arg0 = arg0; m_arg1 = arg1; }
+	void HandGuardAnd(HandGuardBase arg0 = null, HandGuardBase arg1 = null) { m_arg0 = arg0; m_arg1 = arg1; }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		bool result = m_arg0.GuardCondition(e) && m_arg1.GuardCondition(e);
 		
@@ -40,9 +40,9 @@ class HandGuardNot extends HandGuardBase
 {
 	ref HandGuardBase m_arg0;
 
-	void HandGuardNot (HandGuardBase arg0 = NULL) { m_arg0 = arg0; }
+	void HandGuardNot(HandGuardBase arg0 = null) { m_arg0 = arg0; }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		bool result = !m_arg0.GuardCondition(e);
 		
@@ -61,9 +61,9 @@ class HandGuardOr extends HandGuardBase
 	ref HandGuardBase m_arg0;
 	ref HandGuardBase m_arg1;
 
-	void HandGuardOr (HandGuardBase arg0 = NULL, HandGuardBase arg1 = NULL) { m_arg0 = arg0; m_arg1 = arg1; }
+	void HandGuardOr(HandGuardBase arg0 = null, HandGuardBase arg1 = null) { m_arg0 = arg0; m_arg1 = arg1; }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		bool result = m_arg0.GuardCondition(e) || m_arg1.GuardCondition(e);
 		
@@ -80,9 +80,9 @@ class HandGuardOr extends HandGuardBase
 class HandGuardHasItemInEvent extends HandGuardBase
 {
 	protected Man m_Player;
-	void HandGuardHasItemInEvent (Man p = NULL) { m_Player = p; }
+	void HandGuardHasItemInEvent(Man p = null) { m_Player = p; }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		EntityAI eai = e.GetSrcEntity();
 		if (eai != NULL /* && CanTakeInHands*/)
@@ -109,13 +109,13 @@ class HandGuardHasItemInEvent extends HandGuardBase
 
 class HandGuardHasWeaponInEvent extends HandGuardHasItemInEvent
 {
-	void HandGuardHasWeapoonInEvent (Man p = NULL) { }
+	void HandGuardHasWeapoonInEvent (Man p = null) { }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		EntityAI eai = e.GetSrcEntity();
 		bool result = false;
-		if (eai != NULL)
+		if (eai)
 		{
 			if (eai.IsWeapon())
 			{
@@ -135,9 +135,9 @@ class HandGuardHasWeaponInEvent extends HandGuardHasItemInEvent
 class HandGuardIsSameItemInHands extends HandGuardBase
 {
 	protected Man m_Player;
-	void HandGuardIsSameItemInHands (Man p = NULL) { m_Player = p; }
+	void HandGuardIsSameItemInHands(Man p = null) { m_Player = p; }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		bool result = false;
 		if (e.GetSrcEntity() == m_Player.GetHumanInventory().GetEntityInHands())
@@ -158,9 +158,9 @@ class HandGuardIsSameItemInHands extends HandGuardBase
 class HandGuardHasDestroyedItemInHands extends HandGuardBase
 {
 	protected Man m_Player;
-	void HandGuardHasDestroyedItemInHands (Man p = NULL) { m_Player = p; }
+	void HandGuardHasDestroyedItemInHands(Man p = null) { m_Player = p; }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		EntityAI hnd = m_Player.GetHumanInventory().GetEntityInHands();
 		if (e.GetSrcEntity())
@@ -210,9 +210,9 @@ class HandGuardHasDestroyedItemInHands extends HandGuardBase
 class HandGuardHasItemInHands extends HandGuardBase
 {
 	protected Man m_Player;
-	void HandGuardHasItemInHands (Man p = NULL) { m_Player = p; }
+	void HandGuardHasItemInHands(Man p = null) { m_Player = p; }
 
-	override bool GuardCondition (HandEventBase e)
+	override bool GuardCondition(HandEventBase e)
 	{
 		bool result = false;
 		if (m_Player.GetHumanInventory().GetEntityInHands())
@@ -233,15 +233,15 @@ class HandGuardHasItemInHands extends HandGuardBase
 class HandGuardHasRoomForItem extends HandGuardBase
 {
 	protected Man m_Player;
-	void HandGuardHasRoomForItem (Man p = NULL) { m_Player = p; }
+	void HandGuardHasRoomForItem(Man p = null) { m_Player = p; }
 
 	override bool GuardCondition(HandEventBase e)
 	{
 		if (e.GetDst() && e.GetDst().IsValid())
 		{
-			if( !GetGame().IsDedicatedServer())
+			if ( !GetGame().IsDedicatedServer())
 			{
-				if(m_Player)
+				if (m_Player)
 					m_Player.GetHumanInventory().ClearInventoryReservationEx(e.GetDst().GetItem(),e.GetDst());
 			}
 
@@ -259,9 +259,9 @@ class HandGuardHasRoomForItem extends HandGuardBase
 			}
 				
 			
-			if( !GetGame().IsDedicatedServer())
+			if ( !GetGame().IsDedicatedServer())
 			{
-				if(m_Player)
+				if (m_Player)
 					m_Player.GetHumanInventory().AddInventoryReservationEx(e.GetDst().GetItem(), e.GetDst(), GameInventory.c_InventoryReservationTimeoutShortMS);
 			}
 			
@@ -282,6 +282,28 @@ class HandGuardHasRoomForItem extends HandGuardBase
 		#endif
 
 		return false;
+	}
+};
+
+class HandGuardCanMove extends HandGuardBase
+{
+	protected Man m_Player;
+	void HandGuardCanMove(Man p = null) { m_Player = p; }
+
+	override bool GuardCondition(HandEventBase e)
+	{
+		HandEventMoveTo es = HandEventMoveTo.Cast(e);
+		
+		bool result = GameInventory.LocationCanMoveEntity(es.GetSrc(), es.GetDst());
+
+		#ifdef DEVELOPER
+		if ( LogManager.IsInventoryHFSMLogEnable() )
+		{	
+			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardCanMove" , "n/a", "GuardCondition", m_Player.ToString() );
+		}
+		#endif
+		
+		return result;
 	}
 };
 
@@ -317,7 +339,7 @@ class HandGuardCanForceSwap extends HandGuardBase
 		
 		bool result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
 		if (!result && es.m_Dst2)
-		 	result = GameInventory.CanForceSwapEntitiesEx(es.GetSrc().GetItem(), null, es.m_Src2.GetItem(), es.m_Dst2);
+		 	result = GameInventory.CanForceSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Dst, es.m_Src2.GetItem(), es.m_Dst2);
 		
 		#ifdef DEVELOPER
 		if ( LogManager.IsInventoryHFSMLogEnable() )

@@ -13,8 +13,8 @@ class InviteMenu extends UIScriptedMenu
 	{
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_invite_dialog.layout");
 		
-		m_LogoutTimetext = TextWidget.Cast( layoutRoot.FindAnyWidget("logoutTimeText") );
-		m_Info = TextWidget.Cast( layoutRoot.FindAnyWidget("txtInfo") );
+		m_LogoutTimetext = TextWidget.Cast(layoutRoot.FindAnyWidget("logoutTimeText"));
+		m_Info = TextWidget.Cast(layoutRoot.FindAnyWidget("txtInfo"));
 		m_LogoutTimetext.SetText(m_iTime.ToString());
 		
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
@@ -29,7 +29,7 @@ class InviteMenu extends UIScriptedMenu
 			player.GetEmoteManager().GetEmoteLauncher().SetForced(EmoteLauncher.FORCE_DIFFERENT);
 		}
 		
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( UpdateTime, 1000, true );
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateTime, 1000, true);
 		return layoutRoot;
 	}
 	
@@ -38,9 +38,9 @@ class InviteMenu extends UIScriptedMenu
 		super.OnShow();
 	}
 
-	override void Update( float timeslice )
+	override void Update(float timeslice)
 	{
-		if( GetGame().GetInput().LocalPress( "UAUIBack", false ) )
+		if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Cancel();
 			Close();
@@ -51,8 +51,8 @@ class InviteMenu extends UIScriptedMenu
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(this.UpdateTime);
 			string ip;
 			int port;
-			OnlineServices.GetInviteServerInfo( ip, port );
-			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).Call(g_Game.ConnectFromJoin, ip, port);
+			OnlineServices.GetInviteServerInfo(ip, port);
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(g_Game.ConnectFromJoin, ip, port);
 			//Close();
 		}
 	}
@@ -70,8 +70,8 @@ class InviteMenu extends UIScriptedMenu
 	{
 		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(this.UpdateTime);
 		
-		g_Game.SetGameState( DayZGameState.IN_GAME );
-		g_Game.SetLoadState( DayZLoadState.CONNECT_CONTROLLER_SELECT );
+		g_Game.SetGameState(DayZGameState.IN_GAME);
+		g_Game.SetLoadState(DayZLoadState.CONNECT_CONTROLLER_SELECT);
 		Close();
 	}
 }

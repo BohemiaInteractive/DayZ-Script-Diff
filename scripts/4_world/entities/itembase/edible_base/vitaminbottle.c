@@ -9,11 +9,12 @@ class VitaminBottle : Edible_Base
 	
 	override void OnConsume(float amount, PlayerBase consumer)
 	{
-		if( consumer.GetModifiersManager().IsModifierActive(eModifiers.MDF_IMMUNITYBOOST ) )//effectively resets the timer
+		if (consumer.GetModifiersManager().IsModifierActive(eModifiers.MDF_IMMUNITYBOOST)) //effectively resets the timer
 		{
-			consumer.GetModifiersManager().DeactivateModifier( eModifiers.MDF_IMMUNITYBOOST );
+			consumer.GetModifiersManager().DeactivateModifier(eModifiers.MDF_IMMUNITYBOOST);
 		}
-		consumer.GetModifiersManager().ActivateModifier( eModifiers.MDF_IMMUNITYBOOST );
+
+		consumer.GetModifiersManager().ActivateModifier(eModifiers.MDF_IMMUNITYBOOST);
 	}
 	
 	override void SetActions()
@@ -22,7 +23,5 @@ class VitaminBottle : Edible_Base
 		
 		AddAction(ActionForceConsumeSingle);
 		AddAction(ActionConsumeSingle);
-		//AddAction(ActionForceFeed);
-		//AddAction(ActionEatBig);
 	}
 }

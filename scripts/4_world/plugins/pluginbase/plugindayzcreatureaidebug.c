@@ -116,7 +116,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void CheckShowMode()
 	{
-		int	actMenuValue = DiagMenu.GetValue(DayZCreatureAIConstants.DEBUG_SHOWDEBUGPLUGIN);
+		int	actMenuValue = DiagMenu.GetEngineValue(DayZCreatureAIConstants.DEBUG_SHOWDEBUGPLUGIN);
 		if (actMenuValue != m_iDebugMenu)
 		{
 			SetDebugShowMode(actMenuValue);
@@ -253,13 +253,13 @@ class PluginDayZCreatureAIDebug extends PluginBase
 			DayZCreatureAI creatureAI = m_DebugEntity;
 			if (enable)
 			{
-				#ifdef DEVELOPER
+				#ifdef DIAG_DEVELOPER
 				creatureAI.DebugRestoreAIControl();
 				#endif
 			}
 			else
 			{
-				#ifdef DEVELOPER
+				#ifdef DIAG_DEVELOPER
 				creatureAI.DebugDisableAIControl();		
 				#endif
 			}			
@@ -750,7 +750,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 		int count = m_SyncMessages.Count();
 		if (count > 0)
 		{
-			ref Param1<int> paramCount = new Param1<int>(count);
+			Param1<int> paramCount = new Param1<int>(count);
 			m_SyncMessages.InsertAt(paramCount, 0);
 			
 			GetGame().GetPlayer().RPC(ERPCs.DEV_RPC_PLUGIN_DZCREATURE_DEBUG, m_SyncMessages, true);
@@ -769,11 +769,11 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncReceiveMessage(ParamsReadContext ctx)
 	{
-		ref Param1<int> count = new Param1<int>(0);
+		Param1<int> count = new Param1<int>(0);
 		
 		if (ctx.Read(count))
 		{
-			ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.COUNT);
+			Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.COUNT);
 			for (int i=0; i < count.param1; ++i)
 			{
 				if (ctx.Read(type))
@@ -813,8 +813,8 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncInitDebugObject(Object obj)
 	{
-		ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.INIT_DEBUG_OBJECT);		
-		ref Param1<Object> object = new Param1<Object>(obj);
+		Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.INIT_DEBUG_OBJECT);		
+		Param1<Object> object = new Param1<Object>(obj);
 		
 		m_SyncMessages.Insert(type);
 		m_SyncMessages.Insert(object);
@@ -822,7 +822,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncReceiveInitDebugObject(ParamsReadContext ctx)
 	{
-		ref Param1<Object> object = new Param1<Object>(NULL);
+		Param1<Object> object = new Param1<Object>(NULL);
 		if (ctx.Read(object))
 		{
 			InitDebugObject(object.param1);
@@ -831,7 +831,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncReleaseDebugObject()
 	{
-		ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.RELEASE_DEBUG_OBJECT);
+		Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.RELEASE_DEBUG_OBJECT);
 		
 		m_SyncMessages.Insert(type);
 	}
@@ -843,8 +843,8 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncSetValueInt(int index, int value)
 	{
-		ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.SET_VALUE_INT);		
-		ref Param2<int, int> paramValue = new Param2<int, int>(index, value);
+		Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.SET_VALUE_INT);		
+		Param2<int, int> paramValue = new Param2<int, int>(index, value);
 		
 		m_SyncMessages.Insert(type);
 		m_SyncMessages.Insert(paramValue);
@@ -852,7 +852,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncReceiveValueInt(ParamsReadContext ctx)
 	{
-		ref Param2<int, int> paramValue = new Param2<int, int>(-1, 0);
+		Param2<int, int> paramValue = new Param2<int, int>(-1, 0);
 		
 		if (ctx.Read(paramValue))
 		{
@@ -862,8 +862,8 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncSetValueFloat(int index, float value)
 	{
-		ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.SET_VALUE_FLOAT);		
-		ref Param2<int, float> paramValue = new Param2<int, float>(index, value);
+		Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.SET_VALUE_FLOAT);		
+		Param2<int, float> paramValue = new Param2<int, float>(index, value);
 		
 		m_SyncMessages.Insert(type);
 		m_SyncMessages.Insert(paramValue);
@@ -871,7 +871,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncReceiveValueFloat(ParamsReadContext ctx)
 	{
-		ref Param2<int, float> paramValue = new Param2<int, float>(-1, 0.0);
+		Param2<int, float> paramValue = new Param2<int, float>(-1, 0.0);
 		
 		if (ctx.Read(paramValue))
 		{
@@ -881,8 +881,8 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncSetValueBool(int index, bool value)
 	{
-		ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.SET_VALUE_BOOL);		
-		ref Param2<int, bool> paramValue = new Param2<int, bool>(index, value);
+		Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.SET_VALUE_BOOL);		
+		Param2<int, bool> paramValue = new Param2<int, bool>(index, value);
 		
 		m_SyncMessages.Insert(type);
 		m_SyncMessages.Insert(paramValue);
@@ -890,7 +890,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncReceiveValueBool(ParamsReadContext ctx)
 	{
-		ref Param2<int, bool> paramValue = new Param2<int, bool>(-1, false);
+		Param2<int, bool> paramValue = new Param2<int, bool>(-1, false);
 		
 		if (ctx.Read(paramValue))
 		{
@@ -900,8 +900,8 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncActivateCommand(int commandIdx, int userInt, float userFloat)
 	{
-		ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.ACTIVATE_COMMAND);
-		ref Param3<int, int, float> command = new Param3<int, int, float>(commandIdx, userInt, userFloat);
+		Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.ACTIVATE_COMMAND);
+		Param3<int, int, float> command = new Param3<int, int, float>(commandIdx, userInt, userFloat);
 		
 		m_SyncMessages.Insert(type);
 		m_SyncMessages.Insert(command);
@@ -909,7 +909,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncReceiveActivateCommand(ParamsReadContext ctx)
 	{
-		ref Param3<int, int, float> command = new Param3<int, int, float>(-1, 0, 0.0);
+		Param3<int, int, float> command = new Param3<int, int, float>(-1, 0, 0.0);
 		
 		if (ctx.Read(command))
 		{
@@ -919,7 +919,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void SyncEnableAI(bool enable)
 	{
-		ref Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.COUNT);
+		Param1<int> type = new Param1<int>(PluginDayZCreatureAIDebugSyncMessageType.COUNT);
 		if (enable)
 		{
 			type.param1 = PluginDayZCreatureAIDebugSyncMessageType.ENABLE_AI;

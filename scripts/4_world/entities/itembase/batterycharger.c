@@ -67,6 +67,14 @@ class BatteryCharger extends ItemBase
 					float charger_health = GetHealth("", "");
 					float energy_add = m_ChargeEnergyPerSecond * ( consumed_energy / GetCompEM().GetEnergyUsage() );
 					
+					#ifdef DIAG_DEVELOPER
+					if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.ENERGY_RECHARGE))
+					{
+						float timeAccel = FeatureTimeAccel.GetFeatureTimeAccelValue();
+						energy_add *= timeAccel;
+					}
+					#endif
+					
 					if ( GetCompEM().ConsumeEnergy(energy_add) ) // consumes energy from the power source
 					{
 						// There is enough of energy to use

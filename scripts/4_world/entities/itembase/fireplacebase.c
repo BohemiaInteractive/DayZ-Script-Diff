@@ -190,14 +190,15 @@ class FireplaceBase extends ItemBase
 	typename ATTACHMENT_STICKS			= WoodenStick;
 	typename ATTACHMENT_FIREWOOD		= Firewood;
 	//Kindling
-	typename ATTACHMENT_RAGS 			= Rag;
-	typename ATTACHMENT_BANDAGE 		= BandageDressing;
-	typename ATTACHMENT_BOOK 			= ItemBook;
-	typename ATTACHMENT_BARK_OAK 		= Bark_Oak;
-	typename ATTACHMENT_BARK_BIRCH 		= Bark_Birch;
-	typename ATTACHMENT_PAPER 			= Paper;
-	typename ATTACHMENT_GIFTWRAP		= GiftWrapPaper;
-	typename ATTACHMENT_PUNCHEDCARD		= PunchedCard;
+	typename ATTACHMENT_RAGS 					= Rag;
+	typename ATTACHMENT_BANDAGE 				= BandageDressing;
+	typename ATTACHMENT_BOOK 					= ItemBook;
+	typename ATTACHMENT_BARK_OAK 				= Bark_Oak;
+	typename ATTACHMENT_BARK_BIRCH 				= Bark_Birch;
+	typename ATTACHMENT_PAPER 					= Paper;
+	typename ATTACHMENT_GIFTWRAP				= GiftWrapPaper;
+	typename ATTACHMENT_PUNCHEDCARD				= PunchedCard;
+	typename ATTACHMENT_EYEMASK_COLORBASE		= EyeMask_ColorBase;
 	//Other
 	typename ATTACHMENT_TRIPOD 			= Tripod;
 	typename ATTACHMENT_COOKINGSTAND	= CookingStand;
@@ -234,18 +235,19 @@ class FireplaceBase extends ItemBase
 		if (!m_FireConsumableTypes)
 		{
 			m_FireConsumableTypes = new ref map<typename, ref FireConsumableType>();
-			m_FireConsumableTypes.Insert(ATTACHMENT_RAGS, 			new FireConsumableType(ATTACHMENT_RAGS, 		14, 	true,	"Rags"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_BANDAGE, 		new FireConsumableType(ATTACHMENT_BANDAGE, 		14, 	true,	"MedicalBandage"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_BOOK, 			new FireConsumableType(ATTACHMENT_BOOK, 		36, 	true,	"Book"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_BARK_OAK, 		new FireConsumableType(ATTACHMENT_BARK_OAK, 	20, 	true,	"OakBark"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_BARK_BIRCH, 	new FireConsumableType(ATTACHMENT_BARK_BIRCH, 	14, 	true,	"BirchBark"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_PAPER, 			new FireConsumableType(ATTACHMENT_PAPER, 		10, 	true,	"Paper"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_GIFTWRAP, 		new FireConsumableType(ATTACHMENT_GIFTWRAP, 	10, 	true,	"GiftWrapPaper"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_PUNCHEDCARD,	new FireConsumableType(ATTACHMENT_PUNCHEDCARD, 	10, 	true,	"PunchedCard"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_RAGS, 				new FireConsumableType(ATTACHMENT_RAGS, 				14, 	true,	"Rags"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_BANDAGE, 			new FireConsumableType(ATTACHMENT_BANDAGE, 				14, 	true,	"MedicalBandage"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_BOOK, 				new FireConsumableType(ATTACHMENT_BOOK, 				36, 	true,	"Book"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_BARK_OAK, 			new FireConsumableType(ATTACHMENT_BARK_OAK, 			20, 	true,	"OakBark"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_BARK_BIRCH, 		new FireConsumableType(ATTACHMENT_BARK_BIRCH, 			14, 	true,	"BirchBark"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_PAPER, 				new FireConsumableType(ATTACHMENT_PAPER, 				10, 	true,	"Paper"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_GIFTWRAP, 			new FireConsumableType(ATTACHMENT_GIFTWRAP, 			10, 	true,	"GiftWrapPaper"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_PUNCHEDCARD,		new FireConsumableType(ATTACHMENT_PUNCHEDCARD, 			10, 	true,	"PunchedCard"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_EYEMASK_COLORBASE,	new FireConsumableType(ATTACHMENT_EYEMASK_COLORBASE, 	10, 	true,	"EyeMask_ColorBase"));
 			
 			//define fuel types
-			m_FireConsumableTypes.Insert( ATTACHMENT_STICKS, 		new FireConsumableType( ATTACHMENT_STICKS, 		40, 	false,	"WoodenStick"));
-			m_FireConsumableTypes.Insert( ATTACHMENT_FIREWOOD, 		new FireConsumableType( ATTACHMENT_FIREWOOD, 	100, 	false,	"Firewood"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_STICKS, 		new FireConsumableType( ATTACHMENT_STICKS, 		40, 	false,	"WoodenStick"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_FIREWOOD, 		new FireConsumableType( ATTACHMENT_FIREWOOD, 	100, 	false,	"Firewood"));
 		}
 
 		//calculate total energy
@@ -1321,32 +1323,38 @@ class FireplaceBase extends ItemBase
 	// FUEL / KINDLING
 	//================================================================
 	//Add to fire consumables
-	protected void AddToFireConsumables( ItemBase item )
+	protected void AddToFireConsumables(ItemBase item)
 	{
-		float energy = GetFireConsumableTypeEnergy ( item );
-		m_FireConsumables.Insert( item, new FireConsumable ( item, energy ) );
-		
+		m_FireConsumables.Insert(item, new FireConsumable(item, GetFireConsumableTypeEnergy(item)));		
 		CalcAndSetQuantity();
 	}
 
-	protected float GetFireConsumableTypeEnergy( ItemBase item )
+	protected float GetFireConsumableTypeEnergy(ItemBase item)
 	{
-		//Kindling
-		ref FireConsumableType fire_consumable_type = m_FireConsumableTypes.Get( item.Type() );
-		if ( fire_consumable_type )
+		FireConsumableType fireConsumableType = m_FireConsumableTypes.Get(item.Type());
+		if (!fireConsumableType)
 		{
-			return fire_consumable_type.GetEnergy();
+			//! support for inherited classes; second pass of lookup inside FireConsumableType
+			int count = m_FireConsumableTypes.Count();
+			for (int i = 0; i < count; ++i)
+			{
+				if (item.IsInherited(m_FireConsumableTypes.GetKey(i)))
+					fireConsumableType = m_FireConsumableTypes.GetElement(i);
+			}
 		}
 		
+		if (fireConsumableType)
+			return fireConsumableType.GetEnergy();
+
 		return 0;
 	}
 
 	//Remove from fire consumables
-	protected void RemoveFromFireConsumables( FireConsumable fire_consumable )
+	protected void RemoveFromFireConsumables(FireConsumable fire_consumable)
 	{
-		if ( fire_consumable )
+		if (fire_consumable)
 		{
-			m_FireConsumables.Remove( fire_consumable.GetItem() );
+			m_FireConsumables.Remove(fire_consumable.GetItem());
 			delete fire_consumable;
 		}
 		
@@ -1355,7 +1363,7 @@ class FireplaceBase extends ItemBase
 	
 	protected FireConsumable GetFireConsumableByItem( ItemBase item )
 	{
-		return m_FireConsumables.Get( item );
+		return m_FireConsumables.Get(item);
 	}
 
 	//Set fuel / kindling to consume
@@ -1363,29 +1371,26 @@ class FireplaceBase extends ItemBase
 	//Returns reference to set fire consumable
 	protected FireConsumable SetItemToConsume()
 	{
-		if ( m_FireConsumables.Count() == 0 )
+		if (m_FireConsumables.Count() == 0)
 		{
-			m_ItemToConsume = NULL;
+			m_ItemToConsume = null;
 		}
 		else
 		{
-			float energy = 0;
-			
-			for ( int i = 0; i < m_FireConsumables.Count(); ++i )
+			for (int i = 0; i < m_FireConsumables.Count(); ++i)
 			{
-				ItemBase key = m_FireConsumables.GetKey( i );
-				ref FireConsumable fire_consumable = m_FireConsumables.Get( key );
-				energy = fire_consumable.GetEnergy();
+				ItemBase key = m_FireConsumables.GetKey(i);
+				FireConsumable fireConsumable = m_FireConsumables.Get(key);
 				
-				if ( i == 0 )
+				if (i == 0)
 				{
-					m_ItemToConsume = fire_consumable;
+					m_ItemToConsume = fireConsumable;
 				}
 				else
 				{
-					if ( fire_consumable.GetEnergy() < m_ItemToConsume.GetEnergy() )
+					if (fireConsumable.GetEnergy() < m_ItemToConsume.GetEnergy())
 					{
-						m_ItemToConsume = fire_consumable;
+						m_ItemToConsume = fireConsumable;
 					}	
 				}
 			}
@@ -1406,60 +1411,51 @@ class FireplaceBase extends ItemBase
 	//if 'amount == 0', the whole quantity will be consumed (quantity -= 1 )
 	//debug
 	//int m_debug_fire_consume_time = 0;
-	protected void SpendFireConsumable( float amount )
+	protected void SpendFireConsumable(float amount)
 	{
 		//spend item
-		ref FireConsumable fire_consumable = GetItemToConsume();
+		FireConsumable fireConsumable = GetItemToConsume();
 		
-		if ( !fire_consumable )
+		if (!fireConsumable)
 		{
 			//Set new item to consume
-			fire_consumable = SetItemToConsume();
+			fireConsumable = SetItemToConsume();
 		}
 		
-		if ( fire_consumable )
+		if (fireConsumable)
 		{
-			ItemBase item = fire_consumable.GetItem();
+			ItemBase item = fireConsumable.GetItem();
+			fireConsumable.SetRemainingEnergy(fireConsumable.GetRemainingEnergy() - amount);
 			
-			//set remaining energy
-			fire_consumable.SetRemainingEnergy( fire_consumable.GetRemainingEnergy() - amount );
-			
-			//Debug
-			/*
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-			string message = "item type = " + item.GetType() + " m_RemainingEnergy = " + fire_consumable.GetRemainingEnergy().ToString() + " quantity = " + item.GetQuantity().ToString() + " amount = " + amount.ToString();
-			player.MessageAction ( message );
-			*/
-			
-			if ( fire_consumable.GetRemainingEnergy() <= 0 || amount == 0 )
+			if (fireConsumable.GetRemainingEnergy() <= 0 || amount == 0)
 			{
 				//set ashes
-				if ( !HasAshes() )
+				if (!HasAshes())
 				{
-					SetAshesState( true );
+					SetAshesState(true);
 				}	
 				
-				if ( item.IsInherited( ItemBook ) || item.IsInherited( Paper )|| item.IsInherited( GiftWrapPaper ) )
+				if (item.IsAnyInherited({ItemBook, Paper, GiftWrapPaper, EyeMask_ColorBase}))
 				{
 					//Debug
 					//Print( "Item consumed = " + item.GetType() + " time = " + m_debug_fire_consume_time.ToString() );
 					//m_debug_fire_consume_time = 0;
 					//
 					
-					RemoveFromFireConsumables( fire_consumable );
+					RemoveFromFireConsumables(fireConsumable);
 					item.Delete();
 				}
 				else
 				{
 					//if there is nothing left, delete and remove old consumable, set new fire consumable
-					if ( item.GetQuantity() <= 1 )
+					if (item.GetQuantity() <= 1)
 					{
 						//remove item from fuel items
-						RemoveFromFireConsumables( fire_consumable );
+						RemoveFromFireConsumables(fireConsumable);
 					}
 					else
 					{
-						fire_consumable.SetRemainingEnergy( fire_consumable.GetEnergy() );
+						fireConsumable.SetRemainingEnergy(fireConsumable.GetEnergy());
 					}
 
 					//Debug
@@ -1467,15 +1463,11 @@ class FireplaceBase extends ItemBase
 					//m_debug_fire_consume_time = 0;
 					//
 					
-					item.AddQuantity( -1 );
-					SetItemToConsume();			//set item after each quantity decrease
+					item.AddQuantity(-1);
+					SetItemToConsume();
 				}
 			}
 		}
-		
-		//debug
-		//m_debug_fire_consume_time += TIMER_HEATING_UPDATE_INTERVAL;
-		//
 		
 		CalcAndSetQuantity();
 	}
@@ -1484,92 +1476,85 @@ class FireplaceBase extends ItemBase
 	//Returns count of all kindling type items (define in 'm_KindlingTypes') attached to fireplace
 	protected int GetKindlingCount()
 	{
-		int attachments_count = GetInventory().AttachmentCount();
-		int fire_consumables_count = m_FireConsumables.Count();
-		int kindling_count = 0;
+		int attachmentsCount = GetInventory().AttachmentCount();
+		int kindlingCount = 0;
 		
-		for ( int i = 0; i < attachments_count; i++ )
+		for (int i = 0; i < attachmentsCount; ++i)
 		{
-			ItemBase item = ItemBase.Cast( GetInventory().GetAttachmentFromIndex( i ) );
+			ItemBase item = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(i));
 			
-			for ( int j = 0; j < fire_consumables_count; j++ )
-			{
-				ref FireConsumableType fire_consumable_type = m_FireConsumableTypes.Get( item.Type() );
-
-				if ( fire_consumable_type && fire_consumable_type.IsKindling() )
-				{
-					kindling_count++;
-					break;
-				}
-			}
+			if (IsKindling(item))
+				kindlingCount++;
 		}
 		
-		return kindling_count;
+		return kindlingCount;
 	}
 
 	//GetFuelCount
 	//Returns count of all fuel type items (define in 'm_FuelTypes') attached to fireplace
 	protected int GetFuelCount()
 	{
-		int attachments_count = GetInventory().AttachmentCount();
-		int fire_consumables_count = m_FireConsumables.Count();
-		int fuel_count = 0;
+		int attachmentsCount = GetInventory().AttachmentCount();
+		int fuelCount = 0;
 		
-		for ( int i = 0; i < attachments_count; i++ )
+		for (int i = 0; i < attachmentsCount; ++i)
 		{
-			ItemBase item = ItemBase.Cast( GetInventory().GetAttachmentFromIndex( i ) );
-			
-			for ( int j = 0; j < fire_consumables_count; j++ )
-			{
-				ref FireConsumableType fire_consumable_type = m_FireConsumableTypes.Get( item.Type() );
-
-				if ( fire_consumable_type && !fire_consumable_type.IsKindling() )
-				{
-					fuel_count++;
-					break;
-				}
-			}
+			ItemBase item = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(i));
+			if (!IsKindling(item))
+				fuelCount++;
 		}
 		
-		return fuel_count;
+		return fuelCount;
 	}
 
 	//returns if item attached to fireplace is kindling
-	protected bool IsKindling( ItemBase item )
+	protected bool IsKindling(ItemBase item)
 	{
-		ref FireConsumableType fire_consumable_type = m_FireConsumableTypes.Get( item.Type() );
-		if ( fire_consumable_type )
+		FireConsumableType fireConsumableType = m_FireConsumableTypes.Get(item.Type());
+		if (!fireConsumableType)
 		{
-			return fire_consumable_type.IsKindling();
+			//! support for inherited classes; second pass of lookup inside FireConsumableType
+			int count = m_FireConsumableTypes.Count();
+			for (int i = 0; i < count; ++i)
+			{
+				if (item.IsInherited(m_FireConsumableTypes.GetKey(i)))
+					fireConsumableType = m_FireConsumableTypes.GetElement(i);
+			}
 		}
-		
-		return false;
+
+		return fireConsumableType && fireConsumableType.IsKindling();
 	}
 
 	//returns if item attached to fireplace is fuel
-	protected bool IsFuel( ItemBase item )
+	protected bool IsFuel(ItemBase item)
 	{
-		ref FireConsumableType fire_consumable_type = m_FireConsumableTypes.Get( item.Type() );
-		if ( fire_consumable_type )
+		FireConsumableType fireConsumableType = m_FireConsumableTypes.Get(item.Type());
+		if (!fireConsumableType)
 		{
-			return !fire_consumable_type.IsKindling();
+			//! support for inherited classes; second pass of lookup inside FireConsumableType
+			int count = m_FireConsumableTypes.Count();
+			for (int i = 0; i < count; ++i)
+			{
+				if (item.IsInherited(m_FireConsumableTypes.GetKey(i)))
+					fireConsumableType = m_FireConsumableTypes.GetElement(i);
+			}
 		}
-		
-		return false;
+
+		return fireConsumableType && !fireConsumableType.IsKindling();
 	}
 
 	//Has attachments of given type
-	bool IsItemTypeAttached( typename item_type )
+	bool IsItemTypeAttached(typename item_type)
 	{
-		return GetAttachmentByType( item_type ) != null;
+		return GetAttachmentByType(item_type) != null;
 	}
 
 	//Has attachments of required quantity
-	bool IsItemAttachedQuantity( typename item_type, float quantity )
+	bool IsItemAttachedQuantity(typename item_type, float quantity)
 	{
-		ItemBase item = ItemBase.Cast( GetAttachmentByType( item_type ) );
+		ItemBase item = ItemBase.Cast(GetAttachmentByType(item_type));
 		
-		return ( item.GetQuantity() >= quantity );
+		return item.GetQuantity() >= quantity;
 	}
 
 	//Has last attached item
@@ -2552,13 +2537,6 @@ class FireplaceBase extends ItemBase
 		return ( GetInventory().GetCargo().GetItemCount() == 0 );
 	}
 	
-	/*
-	bool HasTripodAttached()
-	{
-	 	"CookingTripod"
-	}
-	*/
-	
 	bool HasCookingStand()
 	{
 		return GetInventory().FindAttachment(InventorySlots.GetSlotIdFromString("CookingTripod")) != null;
@@ -2593,9 +2571,7 @@ class FireplaceBase extends ItemBase
 		}
 		return true;
 	}
-	
-	
-	
+
 	//Action condition for building oven
 	bool CanBuildOven()
 	{	
@@ -2685,34 +2661,30 @@ class FireplaceBase extends ItemBase
 		{
 			m_TotalEnergy = 0;
 			
-			for ( int i = 0; i < m_FireConsumableTypes.Count(); ++i )
+			foreach (FireConsumableType fireConsumableType : m_FireConsumableTypes)
 			{
-				typename key = m_FireConsumableTypes.GetKey( i );
-				FireConsumableType fire_consumable_type = m_FireConsumableTypes.Get( key );
-				//string qt_config_path = "CfgVehicles" + " " + fire_consumable_type.GetItemType().ToString() + " " + "varQuantityMax";
-				string qt_config_path = string.Format("CfgVehicles %1 varQuantityMax", fire_consumable_type.GetItemType().ToString());
-				//string sm_config_path = "CfgSlots" + " " + "Slot_" + fire_consumable_type.GetAttSlot() + " " + "stackMax";
-				string sm_config_path = string.Format("CfgSlots Slot_%1 stackMax", fire_consumable_type.GetAttSlot());
-				if ( GetGame().ConfigIsExisting( qt_config_path ) )
+				string quantityConfigPath = string.Format("CfgVehicles %1 varQuantityMax", fireConsumableType.GetItemType().ToString());
+				string stackMaxConfigPath = string.Format("CfgSlots Slot_%1 stackMax", fireConsumableType.GetAttSlot());
+				if (GetGame().ConfigIsExisting(quantityConfigPath))
 				{
-					float quantity_max = GetGame().ConfigGetFloat( qt_config_path );
+					float quantityMax = GetGame().ConfigGetFloat(quantityConfigPath);
 				}
 				
-				if ( GetGame().ConfigIsExisting( sm_config_path ) )
+				if (GetGame().ConfigIsExisting(stackMaxConfigPath))
 				{
-					float stack_max = GetGame().ConfigGetFloat( sm_config_path );
+					float stackMax = GetGame().ConfigGetFloat(stackMaxConfigPath);
 				}			
 				
 				//debug
-				//Print( fire_consumable_type.GetItemType().ToString() + " quantity_max = " + quantity_max.ToString() + " [" + (quantity_max*fire_consumable_type.GetEnergy()).ToString()  + "] | stack_max = " + stack_max.ToString() + " [" + (stack_max*fire_consumable_type.GetEnergy()).ToString() + "]" );
+				//Print( fireConsumableType.GetItemType().ToString() + " quantityMax = " + quantityMax.ToString() + " [" + (quantity_max*fire_consumable_type.GetEnergy()).ToString()  + "] | stack_max = " + stack_max.ToString() + " [" + (stack_max*fire_consumable_type.GetEnergy()).ToString() + "]" );
 				
-				if ( stack_max > 0 )
+				if (stackMax > 0)
 				{
-					m_TotalEnergy += stack_max * fire_consumable_type.GetEnergy();
+					m_TotalEnergy += stackMax * fireConsumableType.GetEnergy();
 				}
 				else
 				{
-					m_TotalEnergy += quantity_max * fire_consumable_type.GetEnergy();
+					m_TotalEnergy += quantityMax * fireConsumableType.GetEnergy();
 				}
 			}
 			
@@ -2724,49 +2696,43 @@ class FireplaceBase extends ItemBase
 	// calculates and sets current quantity based on actual (fuel/kinidling) item attachments
 	protected void CalcAndSetQuantity()
 	{
-		if ( GetGame() && GetGame().IsServer() )
+		if (GetGame() && GetGame().IsServer())
 		{
-			float remaining_energy;
+			float remainingEnergy;
 			
-			for ( int i = 0; i < m_FireConsumables.Count(); ++i )
+			foreach (FireConsumable fireConsumable : m_FireConsumables)
 			{
-				ItemBase key = m_FireConsumables.GetKey( i );
-				FireConsumable fire_consumable = m_FireConsumables.Get( key );
-				
-				float quantity = fire_consumable.GetItem().GetQuantity();
-				
-				if ( quantity > 0 )
+				float quantity = fireConsumable.GetItem().GetQuantity();
+				if (quantity > 0)
 				{
-					remaining_energy += ( ( quantity - 1 ) * fire_consumable.GetEnergy() ) + fire_consumable.GetRemainingEnergy();
-					//Print( fire_consumable.GetItem().GetType() + " remaining energy = " + ( ( ( quantity - 1 ) * fire_consumable.GetEnergy() ) + fire_consumable.GetRemainingEnergy() ).ToString() );
+					remainingEnergy += ((quantity - 1) * fireConsumable.GetEnergy()) + fireConsumable.GetRemainingEnergy();
+					//Print( fireConsumable.GetItem().GetType() + " remaining energy = " + ( ( ( quantity - 1 ) * fire_consumable.GetEnergy() ) + fire_consumable.GetRemainingEnergy() ).ToString() );
 				}
 				else
 				{
-					remaining_energy += fire_consumable.GetRemainingEnergy();
-					//Print( fire_consumable.GetItem().GetType() + " remaining energy = " + ( fire_consumable.GetRemainingEnergy().ToString() ) );
+					remainingEnergy += fireConsumable.GetRemainingEnergy();
+					//Print( fireConsumable.GetItem().GetType() + " remaining energy = " + ( fireConsumable.GetRemainingEnergy().ToString() ) );
 				}
 			}
 			
-			SetQuantity( remaining_energy / m_TotalEnergy * GetQuantityMax() );
+			SetQuantity(remainingEnergy / m_TotalEnergy * GetQuantityMax());
 		}
 	}
 	
-	override void OnAttachmentQuantityChanged( ItemBase item )
+	override void OnAttachmentQuantityChanged(ItemBase item)
 	{
-		super.OnAttachmentQuantityChanged( item );
+		super.OnAttachmentQuantityChanged(item);
 		
 		CalcAndSetQuantity();
 	}
 	
-	override bool CanReleaseAttachment( EntityAI attachment )
+	override bool CanReleaseAttachment(EntityAI attachment)
 	{
-		if ( !super.CanReleaseAttachment( attachment ) )
+		if (!super.CanReleaseAttachment(attachment))
 			return false;
 		
-		ItemBase item = ItemBase.Cast( attachment );
-
-		//kindling items
-		if ( IsKindling ( item ) || IsFuel( item ) )
+		ItemBase item = ItemBase.Cast(attachment);
+		if (IsKindling(item) || IsFuel(item))
 		{
 			return !IsBurning();
 		}

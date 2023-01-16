@@ -231,19 +231,106 @@ class Shape
  */
 class DiagMenu
 {
-	proto static native void RegisterMenu(int id, string name, string parent);
-	proto static native void Unregister(int id);
-	proto static native void RegisterItem(int id, string shortcut, string name, string parent, string values);
-	/*!
-	range value, are defined in format "min,max,startValue,step" -> e.g. "-2, 2, 0, 0.1"
-	*/ 
-	proto static native void RegisterRange(int id, string shortcut, string name, string parent, string valuenames);
-	proto static native void RegisterBool(int id, string shortcut, string name, string parent, bool reverse = false);
-	proto static native bool GetBool(int id, bool reverse = false);
-	proto static native int GetValue(int id);
-	proto static native void SetValue(int id, int value);
-	proto static native float GetRangeValue(int id);
-	proto static native void SetRangeValue(int id, float value);
+	//! To be used before registering scripted diags
+	static proto void InitScriptDiags();
+	//! To be used when scripted diags should not be present
+	static proto void ClearScriptDiags();
+	
+	/**
+	\brief Register a new menu
+		\param id \p int The unique ID of the menu in the range [0,512]
+		\param name \p string The name of the menu
+		\param parent \p int The index of the parent of the menu
+	*/
+	static proto void RegisterMenu(int id, string name, int parent);
+	
+	/**
+	\brief Register a new item
+		\param id \p int The unique ID of the item in the range [0,512]
+		\param shortcut \p string The keyboard shortcut of the item
+		\param name \p string The name of the item
+		\param parent \p int The index of the parent of the item
+		\param values \p string The values of the item separated by commas, internally this will be an int starting at 0 for the first item
+		\param callback \p func Callback to call when the value is changed (OPTIONAL) (Also read BindCallback)
+	*/
+	static proto void RegisterItem(int id, string shortcut, string name, int parent, string values, func callback = null);
+	
+	/**
+	\brief Register a new bool item
+	\note This is just a RegisterItem with value="true,false" or when reversed value="false,true"
+		\param id \p int The unique ID of the item in the range [0,512]
+		\param shortcut \p string The keyboard shortcut of the item
+		\param name \p string The name of the item
+		\param parent \p string The index of the parent of the item
+		\param values \p string The values of the item, separated by commas
+		\param reverse \p bool Whether to reverse the bool (OPTIONAL)
+		\param callback \p func Callback to call when the value is changed (OPTIONAL) (Also read BindCallback)
+	*/
+	static proto void RegisterBool(int id, string shortcut, string name, int parent, bool reverse = false, func callback = null);
+
+	/**
+	\brief Register a new range item
+		\param id \p int The unique ID of the item in the range [0,512]
+		\param shortcut \p string The keyboard shortcut of the item
+		\param name \p string The name of the item
+		\param parent \p int The index of the parent of the item
+		\param values \p string Range specification in format "min,max,startValue,step"
+		\param callback \p func Callback to call when the value is changed (OPTIONAL) (Also read BindCallback)
+	*/
+	static proto void RegisterRange(int id, string shortcut, string name, int parent, string valuenames, func callback = null);
+	
+	//! Unregister the item at given id
+	static proto void Unregister(int id);
+	
+	//! Check if the item at given id has been registered
+	static proto bool IsRegistered(int id);
+	
+	/**
+	*\brief Bind a callback to the given id
+	*	\note Only one callback can be registered, so when attempting to registering multiple, only the last one will be present
+	*	\note The callbacks are required to have one of following signatures
+	*		- All Register... support:
+	*			o static void Callback();
+	*		- RegisterItem & RegisterBool:
+	*			o static void Callback(int value);
+	*			o static void Callback(int value, int id);
+	*			o static void Callback(bool value);
+	*			o static void Callback(bool value, int id);
+	*		- RegisterRange:
+	*			o static void Callback(float value);
+	*			o static void Callback(float value, int id);
+	*			o static void Callback(int value);
+	*			o static void Callback(int value, int id);
+	*	\note Keep in mind that bool and int are interchangeable, so 'bool value' is possible for RegisterRange too
+	*/
+	static proto bool BindCallback(int id, func callback);
+	//! Unbind the callback from the given id
+	static proto void UnbindCallback(int id);
+	
+	//! Get value as bool from the given script id
+	static proto bool GetBool(int id, bool reverse = false);
+	//! Get value as int from the given script id
+	static proto int GetValue(int id);
+	//! Set value at the given script id
+	static proto void SetValue(int id, int value);
+	
+	//! Get range value at the given script id 
+	static proto float GetRangeValue(int id);
+	//! Set range value at the given script id
+	static proto void SetRangeValue(int id, float value);
+	
+	//! Get value at the given engine id
+	static proto int GetEngineValue(int id);
+	//! Set value at the given engine id
+	static proto void SetEngineValue(int id, int value);
+	
+	//! Get range value at the given engine id
+	static proto float GetEngineRangeValue(int id);
+	//! Set range value at the given engine id
+	static proto void SetEngineRangeValue(int id, float value);
+	
+	//! Check if a menu with supplied name already exists
+	static proto bool MenuExists(string name);	
 };
 
 //@}

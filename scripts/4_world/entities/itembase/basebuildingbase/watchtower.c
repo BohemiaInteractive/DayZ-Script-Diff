@@ -577,8 +577,8 @@ class Watchtower extends BaseBuildingBase
 	{
 		array<string> excludes;
 		
-		#ifdef DEVELOPER
-		bool bWood = DiagMenu.GetBool(DiagMenuIDs.DM_BUILD_WOOD);
+		#ifdef DIAG_DEVELOPER
+		bool bWood = DiagMenu.GetBool(DiagMenuIDs.BASEBUILDING_WOOD);
 		#else
 		bool bWood = false;
 		#endif

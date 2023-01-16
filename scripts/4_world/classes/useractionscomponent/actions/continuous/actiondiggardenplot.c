@@ -4,14 +4,6 @@ class ActionDigGardenPlotCB : ActiondeployObjectCB
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DIG_GARDEN);
 	}
-	
-	override void DropDuringPlacing()
-	{
-		if ( m_ActionData.m_MainItem.CanMakeGardenplot() )
-		{
-			return;
-		} 
-	}
 };
 
 class ActionDigGardenPlot: ActionDeployObject
@@ -29,23 +21,23 @@ class ActionDigGardenPlot: ActionDeployObject
 		m_Text = "#make_garden_plot";
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		//Client
-		if ( !GetGame().IsDedicatedServer() )
+		if (!GetGame().IsDedicatedServer())
 		{
 			//Action not allowed if player has broken legs
 			if (player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
 				return false;
 			
-			if ( player.IsPlacingLocal() )
+			if (player.IsPlacingLocal())
 			{
 				Hologram hologram = player.GetHologramLocal();
 				GardenPlot item_GP;
-				Class.CastTo(item_GP,  hologram.GetProjectionEntity() );	
+				Class.CastTo(item_GP,  hologram.GetProjectionEntity());	
 				CheckSurfaceBelowGardenPlot(player, item_GP, hologram);
 	
-				if ( !hologram.IsColliding() )
+				if (!hologram.IsColliding())
 				{
 					return true;
 				}
@@ -56,9 +48,9 @@ class ActionDigGardenPlot: ActionDeployObject
 		return true;
 	}
 
-	override void SetupAnimation( ItemBase item )
+	override void SetupAnimation(ItemBase item)
 	{
-		if ( item )
+		if (item)
 		{
 			m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_DIG;
 		}
@@ -73,17 +65,17 @@ class ActionDigGardenPlot: ActionDeployObject
 		vector pos_adjusted = item_GP.GetPosition();
 		pos_adjusted[1] = pos_adjusted[1] + offset;
 		
-		if ( item_GP.CanBePlaced(player, /*item_GP.GetPosition()*/pos_adjusted )  )
+		if (item_GP.CanBePlaced(player, /*item_GP.GetPosition()*/pos_adjusted) )
 		{
-			if ( item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetLeftCloseProjectionVector())) )
+			if (item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetLeftCloseProjectionVector())))
 			{
-				if ( item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetRightCloseProjectionVector())) )
+				if (item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetRightCloseProjectionVector())))
 				{
-					if ( item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetLeftFarProjectionVector())) )
+					if (item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetLeftFarProjectionVector())))
 					{
-						if ( item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetRightFarProjectionVector())) )
+						if (item_GP.CanBePlaced(NULL, item_GP.CoordToParent(hologram.GetRightFarProjectionVector())))
 						{
-							hologram.SetIsCollidingGPlot( false );
+							hologram.SetIsCollidingGPlot(false);
 							
 							return;
 						}
@@ -92,15 +84,21 @@ class ActionDigGardenPlot: ActionDeployObject
 			}
 		}
 		
-		hologram.SetIsCollidingGPlot( true );
+		hologram.SetIsCollidingGPlot(true);
 	}
 	
-	override void OnFinishProgressClient( ActionData action_data )
+	override void DropDuringPlacing(PlayerBase player)
 	{
-		
 	}
 	
-	override void OnFinishProgressServer( ActionData action_data )
+	override void OnFinishProgressClient(ActionData action_data)
+	{
+		PlaceObjectActionData poActionData;
+		poActionData = PlaceObjectActionData.Cast(action_data);
+		poActionData.m_AlreadyPlaced = true;
+	}
+	
+	override void OnFinishProgressServer(ActionData action_data)
 	{	
 		PlaceObjectActionData poActionData;
 		poActionData = PlaceObjectActionData.Cast(action_data);
@@ -108,30 +106,30 @@ class ActionDigGardenPlot: ActionDeployObject
 		vector position = action_data.m_Player.GetLocalProjectionPosition();
 		vector orientation = action_data.m_Player.GetLocalProjectionOrientation();
 				
-		if ( GetGame().IsMultiplayer() )
+		if (GetGame().IsMultiplayer())
 		{
-			m_GardenPlot = GardenPlot.Cast( action_data.m_Player.GetHologramServer().PlaceEntity( entity_for_placing ));
-			m_GardenPlot.SetOrientation( orientation );
+			m_GardenPlot = GardenPlot.Cast(action_data.m_Player.GetHologramServer().PlaceEntity(entity_for_placing));
+			m_GardenPlot.SetOrientation(orientation);
 			action_data.m_Player.GetHologramServer().CheckPowerSource();
 			action_data.m_Player.PlacingCompleteServer();
 			
-			m_GardenPlot.OnPlacementComplete( action_data.m_Player );
+			m_GardenPlot.OnPlacementComplete(action_data.m_Player);
 		}
 			
 		//local singleplayer
-		if ( !GetGame().IsMultiplayer())
+		if (!GetGame().IsMultiplayer())
 		{						
-			m_GardenPlot = GardenPlot.Cast( action_data.m_Player.GetHologramLocal().PlaceEntity( entity_for_placing ));
-			m_GardenPlot.SetOrientation( orientation );
+			m_GardenPlot = GardenPlot.Cast(action_data.m_Player.GetHologramLocal().PlaceEntity(entity_for_placing));
+			m_GardenPlot.SetOrientation(orientation);
 			action_data.m_Player.PlacingCompleteLocal();
 			
-			m_GardenPlot.OnPlacementComplete( action_data.m_Player );
+			m_GardenPlot.OnPlacementComplete(action_data.m_Player);
 		}
 		
-		GetGame().ClearJuncture( action_data.m_Player, entity_for_placing );
-		action_data.m_MainItem.SetIsBeingPlaced( false );
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
-		poActionData.m_AlreadyPlaced = true;	
+		GetGame().ClearJuncture(action_data.m_Player, entity_for_placing);
+		action_data.m_MainItem.SetIsBeingPlaced(false);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
+		poActionData.m_AlreadyPlaced = true;
 		action_data.m_MainItem.SoundSynchRemoteReset();
 		
 		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 10);

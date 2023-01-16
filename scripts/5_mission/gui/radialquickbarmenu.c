@@ -142,14 +142,6 @@ class RadialQuickbarMenu extends UIScriptedMenu
 		return instance;
 	}
 	
-	override void OnHide()
-	{
-		super.OnHide();
-		
-		//reset item to assign
-		RadialQuickbarMenu.SetItemToAssign( NULL );
-	}
-	
 	protected void OnInputPresetChanged()
 	{
 		#ifdef PLATFORM_CONSOLE
@@ -192,9 +184,7 @@ class RadialQuickbarMenu extends UIScriptedMenu
 		RefreshQuickbar();
 		
 		//set controller toolbar icons
-		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
-		#endif
 		
 		m_ToolbarPanel = layoutRoot.FindAnyWidget( "toolbar_bg" );
 		m_ToolbarPanel.Show( true );
@@ -206,9 +196,38 @@ class RadialQuickbarMenu extends UIScriptedMenu
 	{
 		super.OnShow();
 		
-		SetFocus( layoutRoot );
+		Mission mission = GetGame().GetMission();
+		if (mission)
+		{
+			IngameHud hud = IngameHud.Cast(mission.GetHud());
+			if (hud)
+			{
+				hud.ShowQuickbarUI(false);
+			}
+		}
+		
+		SetFocus(layoutRoot);
 		m_IsMenuClosing = false;
-	}	
+	}
+	
+	override void OnHide()
+	{
+		super.OnHide();
+		
+		Mission mission = GetGame().GetMission();
+		if (mission)
+		{
+			IngameHud hud = IngameHud.Cast(mission.GetHud());
+			if (hud)
+			{
+				hud.ShowQuickbarUI(true);
+			}
+		}
+		
+		//reset item to assign
+		RadialQuickbarMenu.SetItemToAssign(NULL);
+		m_IsMenuClosing = true;
+	}
 	
 	override bool OnController( Widget w, int control, int value )
 	{

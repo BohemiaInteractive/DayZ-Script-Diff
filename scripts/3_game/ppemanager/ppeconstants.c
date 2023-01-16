@@ -47,7 +47,7 @@ enum PPEExceptions
 	NVLIGHTPARAMS,
 };
 
-//! PP operator masks specify operation between subsequent layers
+//! PP operators, specify operation between subsequent layers
 enum PPOperators
 {
 	LOWEST, //only lowest value gets used. Note - if first request, it is compared against default values!

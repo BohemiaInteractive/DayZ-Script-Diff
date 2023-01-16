@@ -50,7 +50,7 @@ class ActionManagerClient: ActionManagerBase
 			
 			m_CurrentActionData.m_Action.Start(m_CurrentActionData);
 			
-			if ( m_CurrentActionData.m_Action.IsInstant() )
+			if (m_CurrentActionData.m_Action.IsInstant())
 				OnActionEnd();
 			
 			m_PendingActionData = null;
@@ -64,22 +64,23 @@ class ActionManagerClient: ActionManagerBase
 			switch (m_CurrentActionData.m_State)
 			{
 				case UA_AM_PENDING:
+					//ProcessActionInputEnd();
 					break;
 			
 				case UA_AM_ACCEPTED:
-					int condition_mask = ActionBase.ComputeConditionMask( m_Player, m_CurrentActionData.m_Target, m_CurrentActionData.m_MainItem );
+					int condition_mask = ActionBase.ComputeConditionMask(m_Player, m_CurrentActionData.m_Target, m_CurrentActionData.m_MainItem);
 				
 					m_CurrentActionData.m_Action.ClearInventoryReservationEx(m_CurrentActionData);
-					//bool can_be_action_done = ((condition_mask & m_CurrentActionData.m_Action.m_ConditionMask) == condition_mask );
+					//bool can_be_action_done = ((condition_mask & m_CurrentActionData.m_Action.m_ConditionMask) == condition_mask);
 					bool can_be_action_done = m_CurrentActionData.m_Action.Can(m_Player,m_CurrentActionData.m_Target,m_CurrentActionData.m_MainItem);
 					// check pCurrentCommandID before start or reject 
-					if ( m_ActionPossible && can_be_action_done && pCurrentCommandID != DayZPlayerConstants.COMMANDID_SWIM )
+					if (m_ActionPossible && can_be_action_done && pCurrentCommandID != DayZPlayerConstants.COMMANDID_SWIM)
 					{
 						m_CurrentActionData.m_Action.InventoryReservation(m_CurrentActionData);
 						m_CurrentActionData.m_State = UA_START;
 						m_CurrentActionData.m_Action.Start(m_CurrentActionData);
 						
-						if ( m_CurrentActionData.m_Action.IsInstant() )
+						if (m_CurrentActionData.m_Action.IsInstant())
 							OnActionEnd();
 					}
 					else
@@ -97,69 +98,14 @@ class ActionManagerClient: ActionManagerBase
 					break;
 			
 				default:
-					if ( m_ActionWantEndRequest )
-					{
-						if ( GetGame().IsMultiplayer() && !m_CurrentActionData.m_Action.IsLocal() )
-						{
-							if ( !m_ActionWantEndRequest_Send && ScriptInputUserData.CanStoreInputUserData() )
-							{
-								if ( LogManager.IsActionLogEnable() )
-								{	
-									Debug.ActionLog("Time stamp: " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndRequest", m_CurrentActionData.m_Player.ToString() );
-								}
-								ScriptInputUserData ctx = new ScriptInputUserData;
-								ctx.Write(INPUT_UDT_STANDARD_ACTION_END_REQUEST);
-								ctx.Send();
-								
-								m_ActionWantEndRequest_Send = true;
-									
-								m_ActionWantEndRequest = false;
-								m_CurrentActionData.m_Action.EndRequest(m_CurrentActionData);
-							}
-						}
-						else
-						{
-							m_ActionWantEndRequest = false;
-							m_CurrentActionData.m_Action.EndRequest(m_CurrentActionData);
-						}
-					}
-					
-					if ( m_ActionInputWantEnd )
-					{
-						if ( GetGame().IsMultiplayer() && !m_CurrentActionData.m_Action.IsLocal() )
-						{
-							if ( !m_ActionInputWantEnd_Send && ScriptInputUserData.CanStoreInputUserData() )
-							{
-								if ( LogManager.IsActionLogEnable() )
-								{
-									Debug.ActionLog("Time stamp: " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndInput", m_CurrentActionData.m_Player.ToString() );
-								}
-								ScriptInputUserData ctxi = new ScriptInputUserData;
-								ctxi.Write(INPUT_UDT_STANDARD_ACTION_INPUT_END);
-								ctxi.Send();
-								
-								m_ActionInputWantEnd_Send = true;
-									
-								m_ActionInputWantEnd = false;
-								m_CurrentActionData.m_Action.EndInput(m_CurrentActionData);
-							}
-						}
-						else
-						{
-							if (!m_ActionInputWantEnd_Send)
-							{
-								m_ActionInputWantEnd_Send = true;
-								m_ActionInputWantEnd = false;
-								m_CurrentActionData.m_Action.EndInput(m_CurrentActionData);
-							}
-						}
-					}
+					ProcessActionRequestEnd();
+					ProcessActionInputEnd();
 				break;
 			}
 		}
 		
 #ifdef DEVELOPER
-		if ( DeveloperFreeCamera.IsFreeCameraEnabled() )
+		if (DeveloperFreeCamera.IsFreeCameraEnabled())
 		{
 			m_ActionPossible = false;
 			ResetInputsActions();
@@ -173,7 +119,7 @@ class ActionManagerClient: ActionManagerBase
 #ifndef NO_GUI
 				isMenuOpen = GetGame().GetUIManager().IsMenuOpen(MENU_INVENTORY);
 #endif
-				if ( m_Player.IsRaised() || isMenuOpen )
+				if (m_Player.IsRaised() || isMenuOpen)
 				{
 					m_Targets.Clear();
 				}
@@ -181,7 +127,7 @@ class ActionManagerClient: ActionManagerBase
 				{
 					m_Targets.Update();
 				}
-				FindContextualUserActions( pCurrentCommandID );	
+				FindContextualUserActions(pCurrentCommandID);	
 			}
 		
 			InputsUpdate();
@@ -204,7 +150,7 @@ class ActionManagerClient: ActionManagerBase
 				ref ActionInput ai;
 			
 				ai = ActionInput.Cast(m_RegistredInputsMap.Get(input_type_name));
-				if(!ai)
+				if (!ai)
 				{
 					ai = ActionInput.Cast(input_type_name.Spawn());
 					m_RegistredInputsMap.Insert(input_type_name, ai);
@@ -212,7 +158,7 @@ class ActionManagerClient: ActionManagerBase
 				action.SetInput(ai);
 			}
 		
-			for (int j = 0; j < m_RegistredInputsMap.Count(); j++ )
+			for (int j = 0; j < m_RegistredInputsMap.Count(); j++)
 			{
 				m_RegistredInputsMap.GetElement(j).Init(player, this);
 			}
@@ -221,7 +167,7 @@ class ActionManagerClient: ActionManagerBase
 		
 	}
 	
-	//Set order of inputs base of priority (output -> m_OrederedAllActionInput )
+	//Set order of inputs base of priority (output -> m_OrederedAllActionInput)
 	void SetActioninputOrder()
 	{
 		int i, j;
@@ -238,7 +184,7 @@ class ActionManagerClient: ActionManagerBase
 			input = m_RegistredInputsMap.GetElement(i);
 			priority = input.GetPriority();
 			same_priority_input_array = temp_map_for_sort.Get(priority);
-			if ( same_priority_input_array )
+			if (same_priority_input_array)
 			{
 				same_priority_input_array.Insert(input);
 				continue;
@@ -308,10 +254,10 @@ class ActionManagerClient: ActionManagerBase
 		}
 	}
 	
-	static ActionVariantManager GetVariantManager( typename actionName )
+	static ActionVariantManager GetVariantManager(typename actionName)
 	{
-		ActionBase action = GetAction( actionName );
-		if ( action )
+		ActionBase action = GetAction(actionName);
+		if (action)
 		{
 			return action.GetVariantManager();
 		}
@@ -319,15 +265,15 @@ class ActionManagerClient: ActionManagerBase
 		return null;
 	}
 	
-	void RequestEndAction()
+	override void RequestEndAction()
 	{
-		if ( !m_ActionWantEndRequest_Send )
+		if (!m_ActionWantEndRequest_Send)
 		{
 			m_ActionWantEndRequest = true;
 		}
 	}
 	
-	void EndActionInput()
+	override void EndActionInput()
 	{
 		if (!m_ActionInputWantEnd_Send)
 		{
@@ -346,12 +292,12 @@ class ActionManagerClient: ActionManagerBase
 				ai.Update();
 				if (m_Player.IsQBControl())
 				{
-					if ( ai.JustActivate() )
+					if (ai.JustActivate())
 						m_Player.SetActionEndInput(m_CurrentActionData.m_Action);
 				}
 				else
 				{
-					if ( ai.WasEnded() && ( ai.GetInputType() == ActionInputType.AIT_CONTINUOUS || ai.GetInputType() == ActionInputType.AIT_CLICKCONTINUOUS ) )
+					if (ai.WasEnded() && (ai.GetInputType() == ActionInputType.AIT_CONTINUOUS || ai.GetInputType() == ActionInputType.AIT_CLICKCONTINUOUS))
 					{
 						EndActionInput();
 					}
@@ -360,7 +306,7 @@ class ActionManagerClient: ActionManagerBase
 		}
 		else
 		{
-			if ( m_ActionsAvaibale )
+			if (m_ActionsAvaibale)
 			{
 				for (int i = 0; i < m_OrederedAllActionInput.Count();i++)
 				{
@@ -368,10 +314,10 @@ class ActionManagerClient: ActionManagerBase
 					ain = m_OrederedAllActionInput[i];
 					ain.Update();
 				
-					if ( ain.JustActivate() )
+					if (ain.JustActivate())
 					{
 						ActionBase action = ain.GetAction();
-						if ( action )
+						if (action)
 						{
 							ActionStart(action, ain.GetUsedActionTarget(), ain.GetUsedMainItem());
 							break;
@@ -382,10 +328,74 @@ class ActionManagerClient: ActionManagerBase
 		}
 	}
 	
+	void ProcessActionRequestEnd()
+	{
+		if (m_ActionWantEndRequest)
+		{
+			if (GetGame().IsMultiplayer() && !m_CurrentActionData.m_Action.IsLocal())
+			{
+				if (!m_ActionWantEndRequest_Send && ScriptInputUserData.CanStoreInputUserData())
+				{
+					if (LogManager.IsActionLogEnable())
+					{	
+						Debug.ActionLog("Time stamp: " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndRequest", m_CurrentActionData.m_Player.ToString());
+					}
+					ScriptInputUserData ctx = new ScriptInputUserData;
+					ctx.Write(INPUT_UDT_STANDARD_ACTION_END_REQUEST);
+					ctx.Send();
+					
+					m_ActionWantEndRequest_Send = true;
+						
+					m_ActionWantEndRequest = false;
+					m_CurrentActionData.m_Action.EndRequest(m_CurrentActionData);
+				}
+			}
+			else
+			{
+				m_ActionWantEndRequest = false;
+				m_CurrentActionData.m_Action.EndRequest(m_CurrentActionData);
+			}
+		}
+	}
+	
+	void ProcessActionInputEnd()
+	{
+		if (m_ActionInputWantEnd)
+		{
+			if (GetGame().IsMultiplayer() && !m_CurrentActionData.m_Action.IsLocal())
+			{
+				if (!m_ActionInputWantEnd_Send && ScriptInputUserData.CanStoreInputUserData())
+				{
+					if (LogManager.IsActionLogEnable())
+					{
+						Debug.ActionLog("Time stamp: " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndInput", m_CurrentActionData.m_Player.ToString());
+					}
+					ScriptInputUserData ctxi = new ScriptInputUserData;
+					ctxi.Write(INPUT_UDT_STANDARD_ACTION_INPUT_END);
+					ctxi.Send();
+					
+					m_ActionInputWantEnd_Send = true;
+						
+					m_ActionInputWantEnd = false;
+					m_CurrentActionData.m_Action.EndInput(m_CurrentActionData);
+				}
+			}
+			else
+			{
+				if (!m_ActionInputWantEnd_Send)
+				{
+					m_ActionInputWantEnd_Send = true;
+					m_ActionInputWantEnd = false;
+					m_CurrentActionData.m_Action.EndInput(m_CurrentActionData);
+				}
+			}
+		}
+	}
+	
 	ActionBase GetPossibleAction(typename inputType)
 	{
 		ActionInput action_input = m_RegistredInputsMap.Get(inputType);
-		if(action_input)
+		if (action_input)
 		{
 			return action_input.GetAction();
 		}
@@ -395,7 +405,7 @@ class ActionManagerClient: ActionManagerBase
 	array<ActionBase> GetPossibleActions(typename inputType)
 	{
 		ActionInput action_input = m_RegistredInputsMap.Get(inputType);
-		if(action_input)
+		if (action_input)
 		{
 			return action_input.GetPossibleActions();
 		}
@@ -405,7 +415,7 @@ class ActionManagerClient: ActionManagerBase
 	int GetPossibleActionIndex(typename inputType)
 	{
 		ActionInput action_input = m_RegistredInputsMap.Get(inputType);
-		if(action_input)
+		if (action_input)
 		{
 			return action_input.GetPossibleActionIndex();
 		}
@@ -415,7 +425,7 @@ class ActionManagerClient: ActionManagerBase
 	int GetPossibleActionCount(typename inputType)
 	{
 		ActionInput action_input = m_RegistredInputsMap.Get(inputType);
-		if(action_input)
+		if (action_input)
 		{
 			return action_input.GetPossibleActionsCount();
 		}
@@ -425,25 +435,25 @@ class ActionManagerClient: ActionManagerBase
 	//--------------------------------------------------------
 	// Alows to set different action to current contextual one
 	//--------------------------------------------------------	
-	void InjectAction( ActionBase action, ActionTarget target, ItemBase item)
+	void InjectAction(ActionBase action, ActionTarget target, ItemBase item)
 	{
 		ActionInput ai = action.GetInput();
-		ai.ForceAction(action, target, item );
+		ai.ForceAction(action, target, item);
 	}
 	
-	void InjectAction( typename actionType, ActionTarget target, ItemBase item)
+	void InjectAction(typename actionType, ActionTarget target, ItemBase item)
 	{
 		ActionBase action = GetAction(actionType);
 		InjectAction(action, target, item);
 	}
 	
-	void EjectAction( ActionBase action )
+	void EjectAction(ActionBase action)
 	{
 		ActionInput ai = action.GetInput();
 		ai.ClearForcedAction();
 	}
 	
-	void EjectAction( typename actionType )
+	void EjectAction(typename actionType)
 	{
 		ActionBase action = GetAction(actionType);
 		EjectAction(action);
@@ -467,26 +477,26 @@ class ActionManagerClient: ActionManagerBase
 	//-------------------------------------------------------------------------
 	override ActionTarget FindActionTarget()
 	{
-		if(m_ForceTarget)
+		if (m_ForceTarget)
 			return m_ForceTarget;
 		
 		ActionTarget action_target;
 		action_target = NULL;
 		int targetsCount = m_Targets.GetTargetsCount();
-		if( targetsCount )
+		if (targetsCount)
 		{
-			for( int i = 0; i < targetsCount; ++i )
+			for (int i = 0; i < targetsCount; ++i)
 			{
 				action_target = m_Targets.GetTarget(i);
 				Object targetObject = action_target.GetObject();
 				Object targetParent = action_target.GetParent();
 
-				if( targetParent && targetParent.IsEntityAI() )
+				if (targetParent && targetParent.IsEntityAI())
 				{
 					break;
 				}
 
-				if( targetObject && (targetObject.IsEntityAI() || targetObject.IsWoodBase() || targetObject.IsRock()) )
+				if (targetObject && (targetObject.IsEntityAI() || targetObject.IsWoodBase() || targetObject.IsRock()))
 				{
 					break;
 				}
@@ -494,7 +504,7 @@ class ActionManagerClient: ActionManagerBase
 		}
 		else
 		{
-			action_target = new ActionTarget(null, null, -1, vector.Zero, -1 );
+			action_target = new ActionTarget(null, null, -1, vector.Zero, -1);
 		}
 		return action_target;
 	}
@@ -502,7 +512,7 @@ class ActionManagerClient: ActionManagerBase
 	ItemBase FindActionItem()
 	{
 		ItemBase item;
-		if ( m_Player && m_Player.GetItemInHands() && m_Player.GetItemInHands().IsItemBase() ) 
+		if (m_Player && m_Player.GetItemInHands() && m_Player.GetItemInHands().IsItemBase()) 
 		{
 			item = m_Player.GetItemInHands();
 		}
@@ -517,18 +527,18 @@ class ActionManagerClient: ActionManagerBase
 		return false;
 	}
 	
-	protected void FindContextualUserActions( int pCurrentCommandID )
+	protected void FindContextualUserActions(int pCurrentCommandID)
 	{
 		// TODO: NEEDS OPTIMIZATION (focus on UpdatePossibleActions > CraftingManager::OnUpdate)
 		
 		m_ActionsAvaibale = false;
-		if ( !m_ActionPossible || HasHandInventoryReservation() || GetGame().IsInventoryOpen())
+		if (!m_ActionPossible || HasHandInventoryReservation() || GetGame().IsInventoryOpen())
 		{
 			ResetInputsActions();
 			return;
 		}
 		
-		if ( !GetRunningAction() )
+		if (!GetRunningAction())
 		{	
 			ActionBase action;
 			ActionTarget 	target;
@@ -546,7 +556,7 @@ class ActionManagerClient: ActionManagerBase
 				ActionInput ain = m_OrederedAllActionInput[i];
 				ain.UpdatePossibleActions(m_Player,target,item, actionConditionMask);
 			}
-			SetActionContext( target,item );
+			SetActionContext(target,item);
 		}
 	}
 	
@@ -554,19 +564,19 @@ class ActionManagerClient: ActionManagerBase
 	protected bool LockInventory(ActionData action_data)
 	{
 		bool success = false;
-		if ( action_data.m_Action.IsInstant() )
+		if (action_data.m_Action.IsInstant())
 		{
-			if ( LogManager.IsActionLogEnable() )
+			if (LogManager.IsActionLogEnable())
 			{
-				Debug.ActionLog("(-) Inventory lock - Not Used", action_data.m_Action.ToString() , "n/a", "LockInventory", action_data.m_Player.ToString() );
+				Debug.ActionLog("(-) Inventory lock - Not Used", action_data.m_Action.ToString() , "n/a", "LockInventory", action_data.m_Player.ToString());
 			}
 			success = true;
 		}
 		else
 		{
-			if ( LogManager.IsActionLogEnable() )
+			if (LogManager.IsActionLogEnable())
 			{
-				Debug.ActionLog("(X) Inventory lock", action_data.m_Action.ToString() , "n/a", "LockInventory", action_data.m_Player.ToString() );
+				Debug.ActionLog("(X) Inventory lock", action_data.m_Action.ToString() , "n/a", "LockInventory", action_data.m_Player.ToString());
 			}
 			if (action_data.m_Action)
 			{
@@ -577,60 +587,60 @@ class ActionManagerClient: ActionManagerBase
 	}
 	void UnlockInventory(ActionData action_data)
 	{
-		if ( LogManager.IsActionLogEnable() )
+		if (LogManager.IsActionLogEnable())
 		{
-			Debug.ActionLog("(O) Inventory unlock", action_data.m_Action.ToString() , "n/a", "UnlockInventory", action_data.m_Player.ToString() );
+			Debug.ActionLog("(O) Inventory unlock", action_data.m_Action.ToString() , "n/a", "UnlockInventory", action_data.m_Player.ToString());
 		}
 		if (action_data.m_Action)
 			action_data.m_Action.ClearInventoryReservationEx(action_data);
 	}
 	
-	protected void ActionStart(ActionBase action, ActionTarget target, ItemBase item, Param extra_data = NULL )
+	protected void ActionStart(ActionBase action, ActionTarget target, ItemBase item, Param extra_data = NULL)
 	{
-		if ( !m_CurrentActionData && action ) 
+		if (!m_CurrentActionData && action) 
 		{
 			m_ActionWantEndRequest_Send = false;
 			m_ActionInputWantEnd_Send = false;
 			m_ActionWantEndRequest = false;
 			m_ActionInputWantEnd = false;
 			
-			if ( action.CanBePerformedFromQuickbar() )
+			if (action.CanBePerformedFromQuickbar())
 				m_Player.SetActionEndInput(action);
 			
 			HandleInputsOnActionStart(action);
 
-			if ( LogManager.IsActionLogEnable() )
+			if (LogManager.IsActionLogEnable())
 			{
-				Debug.ActionLog("Item = " + item + ", " + target.DumpToString(), action.ToString() , "n/a", "ActionStart", m_Player.ToString() );
+				Debug.ActionLog("Item = " + item + ", " + target.DumpToString(), action.ToString() , "n/a", "ActionStart", m_Player.ToString());
 			}
 			m_Interrupted = false;
-			if ( GetGame().IsMultiplayer() && !action.IsLocal() )
+			if (GetGame().IsMultiplayer() && !action.IsLocal())
 			{
 				if (!ScriptInputUserData.CanStoreInputUserData())
 				{
 					DPrint("ScriptInputUserData already posted - ActionManagerClient");
 					
-					if ( LogManager.IsActionLogEnable() )
+					if (LogManager.IsActionLogEnable())
 					{
-						Debug.ActionLog("Cannot start because ScriptInputUserData is already used", action.ToString() , "n/a", "ActionStart", m_Player.ToString() );
+						Debug.ActionLog("Cannot start because ScriptInputUserData is already used", action.ToString() , "n/a", "ActionStart", m_Player.ToString());
 					}
 					return;
 				}
 			}
 			
-			if ( !action.SetupAction(m_Player, target, item, m_CurrentActionData, extra_data ))
+			if (!action.SetupAction(m_Player, target, item, m_CurrentActionData, extra_data))
 			{
 				DPrint("Can not inicialize action" + action + " - ActionManagerClient");
 				m_CurrentActionData = NULL;
 				return;
 			}
 			
-			if ( LogManager.IsActionLogEnable() )
+			if (LogManager.IsActionLogEnable())
 			{
-				Debug.ActionLog("Action data created wait to start", action.ToString() , "n/a", "ActionStart", m_Player.ToString() );
+				Debug.ActionLog("Action data created wait to start", action.ToString() , "n/a", "ActionStart", m_Player.ToString());
 			}
 
-			if ( GetGame().IsMultiplayer() && !action.IsLocal() )
+			if (GetGame().IsMultiplayer() && !action.IsLocal())
 			{
 				ScriptInputUserData ctx = new ScriptInputUserData;
 				ctx.Write(INPUT_UDT_STANDARD_ACTION_START);
@@ -651,14 +661,14 @@ class ActionManagerClient: ActionManagerBase
 				if (!action.UseAcknowledgment())
 				{
 					action.Start(m_CurrentActionData);
-					if( action.IsInstant() )
+					if (action.IsInstant())
 						OnActionEnd();
 				}
 			}
 			else
 			{
 				action.Start(m_CurrentActionData);
-				if( action.IsInstant() )
+				if (action.IsInstant())
 					OnActionEnd();
 			}
 		}
@@ -669,7 +679,7 @@ class ActionManagerClient: ActionManagerBase
 		for (int i = 0; i < m_OrederedAllActionInput.Count();i++)
 		{
 			ActionInput ain = m_OrederedAllActionInput[i];
-			if(action.GetInput() == ain)
+			if (action.GetInput() == ain)
 			{
 				ain.OnActionStart();
 			}
@@ -705,9 +715,9 @@ class ActionManagerClient: ActionManagerBase
 
 	override void OnJumpStart()
 	{
-		if(m_CurrentActionData)
+		if (m_CurrentActionData)
 		{
-			if( m_CurrentActionData.m_State == UA_AM_PENDING || m_CurrentActionData.m_State == UA_AM_REJECTED || m_CurrentActionData.m_State == UA_AM_ACCEPTED)
+			if (m_CurrentActionData.m_State == UA_AM_PENDING || m_CurrentActionData.m_State == UA_AM_REJECTED || m_CurrentActionData.m_State == UA_AM_ACCEPTED)
 			{
 				OnActionEnd();
 				m_PendingActionAcknowledgmentID = -1;
@@ -723,7 +733,7 @@ class ActionManagerClient: ActionManagerBase
 	override void OnInstantAction(typename user_action_type, Param data = NULL)
 	{
 		ActionBase action = GetAction(user_action_type);
-		if(action)
+		if (action)
 		{
 			ActionStart(action,NULL,NULL, data);
 		}
@@ -737,7 +747,7 @@ class ActionManagerClient: ActionManagerBase
 	}
 #endif
 	
-	void PerformActionStart(ActionBase action, ActionTarget target, ItemBase item, Param extra_data = NULL )
+	void PerformActionStart(ActionBase action, ActionTarget target, ItemBase item, Param extra_data = NULL)
 	{
 		if (!GetGame().IsMultiplayer())
 		{
@@ -752,10 +762,10 @@ class ActionManagerClient: ActionManagerBase
 	
 	override void OnActionEnd()
 	{
-		if(m_CurrentActionData)
+		if (m_CurrentActionData)
 		{
 			UnlockInventory(m_CurrentActionData);
-			if( m_CurrentActionData.m_Action.RemoveForceTargetAfterUse() )
+			if (m_CurrentActionData.m_Action.RemoveForceTargetAfterUse())
 				m_InventoryActionHandler.DeactiveAction();
 			
 			super.OnActionEnd();
@@ -787,18 +797,18 @@ class ActionManagerClient: ActionManagerBase
 	{
 		int i;
 		int last_target_index = 0;
-		for ( i = 0; i < m_DefaultOrderOfActionInputs.Count(); i++)
+		for (i = 0; i < m_DefaultOrderOfActionInputs.Count(); i++)
 		{
-			if ( m_DefaultOrderOfActionInputs[i].HasTarget() )
+			if (m_DefaultOrderOfActionInputs[i].HasTarget())
 			{
 				m_OrderedStandartActionInputs[last_target_index] = m_DefaultOrderOfActionInputs[i];
 				last_target_index++;
 			}
 		}
 		
-		for ( i = 0; i < m_DefaultOrderOfActionInputs.Count(); i++)
+		for (i = 0; i < m_DefaultOrderOfActionInputs.Count(); i++)
 		{
-			if ( !m_DefaultOrderOfActionInputs[i].HasTarget() )
+			if (!m_DefaultOrderOfActionInputs[i].HasTarget())
 			{
 				m_OrderedStandartActionInputs[last_target_index] = m_DefaultOrderOfActionInputs[i];
 				last_target_index++;
@@ -811,9 +821,9 @@ class ActionManagerClient: ActionManagerBase
 		UpdateActionCategoryPriority();
 		m_SelectedActionInputToSrollIndex = 0;
 		
-		for ( int index = 0; index < m_OrderedStandartActionInputs.Count(); index++)
+		for (int index = 0; index < m_OrderedStandartActionInputs.Count(); index++)
 		{
-			if ( m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
+			if (m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
 			{
 				m_SelectedActionInputToSrollIndex = index;
 				break;
@@ -825,13 +835,13 @@ class ActionManagerClient: ActionManagerBase
 	{
 		int index;
 		
-		for( index = m_SelectedActionInputToSrollIndex + 1; index != m_SelectedActionInputToSrollIndex;; )
+		for (index = m_SelectedActionInputToSrollIndex + 1; index != m_SelectedActionInputToSrollIndex;;)
 		{
-			if(++index >= m_OrderedStandartActionInputs.Count() )
+			if (++index >= m_OrderedStandartActionInputs.Count())
 			{
 				index = 0;
 			}
-			if( m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
+			if (m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
 			{
 				m_SelectedActionInputToSrollIndex = index;
 				//PossibleGUIUpdate();
@@ -844,14 +854,14 @@ class ActionManagerClient: ActionManagerBase
 	{
 		int index;
 		
-		for( index = m_SelectedActionInputToSrollIndex; index != m_SelectedActionInputToSrollIndex;;)
+		for (index = m_SelectedActionInputToSrollIndex; index != m_SelectedActionInputToSrollIndex;;)
 		{
-			if(--index < 0 )
+			if (--index < 0)
 			{
 				index = m_OrderedStandartActionInputs.Count() - 1;
 			}
 			
-			if( m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
+			if (m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
 			{
 				m_SelectedActionInputToSrollIndex = index;
 				//PossibleGUIUpdate();
@@ -864,10 +874,10 @@ class ActionManagerClient: ActionManagerBase
 	override void SelectNextAction()
 	{
 		ActionInput ai;
-		if( m_SelectedActionInputToSrollIndex < m_OrderedStandartActionInputs.Count() )
+		if (m_SelectedActionInputToSrollIndex < m_OrderedStandartActionInputs.Count())
 		{
 			ai = m_OrderedStandartActionInputs[m_SelectedActionInputToSrollIndex];
-			if(ai && ai.GetPossibleActionsCount() > 1)
+			if (ai && ai.GetPossibleActionsCount() > 1)
 			{
 				ai.SelectNextAction();
 			}
@@ -877,10 +887,10 @@ class ActionManagerClient: ActionManagerBase
 	override void SelectPrevAction()
 	{
 		ActionInput ai;
-		if( m_SelectedActionInputToSrollIndex < m_OrderedStandartActionInputs.Count() )
+		if (m_SelectedActionInputToSrollIndex < m_OrderedStandartActionInputs.Count())
 		{
 			ai = m_OrderedStandartActionInputs[m_SelectedActionInputToSrollIndex];
-			if(ai && ai.GetPossibleActionsCount() > 1)
+			if (ai && ai.GetPossibleActionsCount() > 1)
 			{
 				ai.SelectPrevAction();
 			}
@@ -894,7 +904,7 @@ class ActionManagerClient: ActionManagerBase
 		target = new ActionTarget(targetItem, null, -1, vector.Zero, -1);
 		bool hasTarget = targetItem != NULL;
 		
-		if( mainItem )
+		if (mainItem)
 		{
 			array<ActionBase_Basic> actions;
 			ActionBase picked_action;
@@ -903,12 +913,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(QuickaBarActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{			
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand))
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 							return true;
 					}
 				}
@@ -917,12 +927,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(ContinuousDefaultActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{			
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar() )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 							return true;
 					}
 				}
@@ -931,12 +941,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(DefaultActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar() )
+					if (picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 							return true;
 					}
 				}
@@ -955,7 +965,7 @@ class ActionManagerClient: ActionManagerBase
 		target = new ActionTarget(targetItem, parent, -1, vector.Zero, -1);
 		bool hasTarget = targetItem != NULL;
 		
-		if( mainItem )
+		if (mainItem)
 		{
 			ActionBase picked_action;
 			array<ActionBase_Basic> actions;
@@ -964,12 +974,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(QuickaBarActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand) )
+					if (picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand))
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 						{
 							ActionStart(picked_action, target, mainItem);
 							return;
@@ -982,12 +992,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(ContinuousDefaultActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar() )
+					if (picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 						{
 							ActionStart(picked_action, target, mainItem);
 							return;
@@ -999,12 +1009,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(DefaultActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar() )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromQuickbar())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 						{
 							ActionStart(picked_action, target, mainItem);
 							return;
@@ -1024,7 +1034,7 @@ class ActionManagerClient: ActionManagerBase
 		target = new ActionTarget(targetItem, null, -1, vector.Zero, -1);
 		bool hasTarget = targetItem != NULL;
 		
-		if( mainItem )
+		if (mainItem)
 		{
 			array<ActionBase_Basic> actions;
 			ActionBase picked_action;
@@ -1034,12 +1044,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(DefaultActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{			
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromInventory() )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromInventory())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 							return true;
 					}
 				}
@@ -1049,12 +1059,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(InventoryOnlyActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{			
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand))
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 							return true;
 					}
 				}
@@ -1071,7 +1081,7 @@ class ActionManagerClient: ActionManagerBase
 		target = new ActionTarget(targetItem, null, -1, vector.Zero, -1);
 		bool hasTarget = targetItem != NULL;
 		
-		if( mainItem )
+		if (mainItem)
 		{
 			ActionBase picked_action;
 			array<ActionBase_Basic> actions;
@@ -1081,12 +1091,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(DefaultActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromInventory() )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBePerformedFromInventory())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 						{
 							ActionStart(picked_action, target, mainItem);
 							return;
@@ -1099,12 +1109,12 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(InventoryOnlyActionInput, actions);
 			if (actions)
 			{
-				for ( i = 0; i < actions.Count(); i++ )
+				for (i = 0; i < actions.Count(); i++)
 				{
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand))
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 						{
 							ActionStart(picked_action, target, mainItem);
 							return;
@@ -1127,7 +1137,7 @@ class ActionManagerClient: ActionManagerBase
 		target = new ActionTarget(targetItem, parent, -1, vector.Zero, -1);
 		bool hasTarget = targetItem != NULL;
 		
-		if( mainItem )
+		if (mainItem)
 		{
 			array<ActionBase_Basic> actions;
 			array<ref ActionBase> variant_actions;
@@ -1138,28 +1148,28 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(DefaultActionInput, actions);
 			if (actions)
 			{
-				for ( int i = 0; i < actions.Count(); i++ )
+				for (int i = 0; i < actions.Count(); i++)
 				{			
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action.HasVariants() )
+					if (picked_action.HasVariants())
 					{
-						picked_action.UpdateVariants( itemInHand, targetItem, -1);
-						picked_action.GetVariants( variant_actions );
-						for ( v = 0; v < variant_actions.Count(); v ++)
+						picked_action.UpdateVariants(itemInHand, targetItem, -1);
+						picked_action.GetVariants(variant_actions);
+						for (v = 0; v < variant_actions.Count(); v ++)
 						{
 							picked_action = variant_actions[v];
-							if ( picked_action && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand) )
+							if (picked_action && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand))
 							{
-								if( hasTarget == picked_action.HasTarget())
+								if (hasTarget == picked_action.HasTarget())
 									return true;
 							}
 						}
 					}
 					else
 					{
-						if ( picked_action && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand) )
+						if (picked_action && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand))
 						{
-							if( hasTarget == picked_action.HasTarget())
+							if (hasTarget == picked_action.HasTarget())
 								return true;
 						}
 					}
@@ -1169,28 +1179,28 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(ContinuousDefaultActionInput, actions);
 			if (actions)
 			{
-				for ( int j = 0; j < actions.Count(); j++ )
+				for (int j = 0; j < actions.Count(); j++)
 				{
 					picked_action = ActionBase.Cast(actions[j]);
-					if ( picked_action.HasVariants() )
+					if (picked_action.HasVariants())
 					{
-						picked_action.UpdateVariants( itemInHand, targetItem, -1 );
-						picked_action.GetVariants( variant_actions );
-						for ( v = 0; v < variant_actions.Count(); v ++)
+						picked_action.UpdateVariants(itemInHand, targetItem, -1);
+						picked_action.GetVariants(variant_actions);
+						for (v = 0; v < variant_actions.Count(); v ++)
 						{
 							picked_action = variant_actions[v];
-							if ( picked_action && picked_action.HasTarget() && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand) )
+							if (picked_action && picked_action.HasTarget() && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand))
 							{
-								if( hasTarget == picked_action.HasTarget())
+								if (hasTarget == picked_action.HasTarget())
 									return true;
 							}
 						}
 					}
 					else
 					{
-						if ( picked_action && picked_action.HasTarget() && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand) )
+						if (picked_action && picked_action.HasTarget() && picked_action.CanBeSetFromInventory() && picked_action.Can(m_Player,target, itemInHand))
 						{
-							if( hasTarget == picked_action.HasTarget())
+							if (hasTarget == picked_action.HasTarget())
 								return true;
 						}
 					}
@@ -1208,7 +1218,7 @@ class ActionManagerClient: ActionManagerBase
 		target = new ActionTarget(targetItem, null, -1, vector.Zero, -1);
 		bool hasTarget = targetItem != NULL;
 		
-		if( mainItem )
+		if (mainItem)
 		{
 			array<ActionBase_Basic> actions;
 			ActionBase picked_action;
@@ -1217,14 +1227,14 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(DefaultActionInput, actions);
 			if (actions)
 			{
-				for ( int i = 0; i < actions.Count(); i++ )
+				for (int i = 0; i < actions.Count(); i++)
 				{			
 					picked_action = ActionBase.Cast(actions[i]);
-					if ( picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBeSetFromInventory() )
+					if (picked_action && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBeSetFromInventory())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 						{
-							SetInventoryAction( picked_action, target, itemInHand);
+							SetInventoryAction(picked_action, target, itemInHand);
 							return;
 						}
 					}
@@ -1234,14 +1244,14 @@ class ActionManagerClient: ActionManagerBase
 			mainItem.GetActions(ContinuousDefaultActionInput, actions);
 			if (actions)
 			{
-				for ( int j = 0; j < actions.Count(); j++ )
+				for (int j = 0; j < actions.Count(); j++)
 				{
 					picked_action = ActionBase.Cast(actions[j]);
-					if ( picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBeSetFromInventory() )
+					if (picked_action && picked_action.HasTarget() && picked_action.Can(m_Player,target, itemInHand) && picked_action.CanBeSetFromInventory())
 					{
-						if( hasTarget == picked_action.HasTarget())
+						if (hasTarget == picked_action.HasTarget())
 						{
-							SetInventoryAction( picked_action, target, itemInHand);
+							SetInventoryAction(picked_action, target, itemInHand);
 							return;
 						}
 					}
@@ -1252,7 +1262,7 @@ class ActionManagerClient: ActionManagerBase
 	
 	override void Interrupt()
 	{
-		if(m_CurrentActionData)
+		if (m_CurrentActionData)
 			m_Interrupted = true;
 	}
 	
@@ -1260,7 +1270,7 @@ class ActionManagerClient: ActionManagerBase
 	void RequestInterruptAction()
 	{
 		ScriptInputUserData ctx = new ScriptInputUserData;
-		if ( ctx.CanStoreInputUserData() )
+		if (ctx.CanStoreInputUserData())
 		{
 			ctx.Write(INPUT_UDT_STANDARD_ACTION_END_REQUEST);
 			ctx.Write(DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT);

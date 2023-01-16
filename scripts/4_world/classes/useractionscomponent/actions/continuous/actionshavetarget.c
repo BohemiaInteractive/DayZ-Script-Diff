@@ -42,8 +42,11 @@ class ActionShaveTarget: ActionContinuousBase
 		PlayerBase man;
 		if ( action_data.m_Target && Class.CastTo(man, action_data.m_Target.GetObject()) )
 		{
-			man.ShavePlayer();
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			if (CanReceiveAction(action_data.m_Target))
+			{
+				man.ShavePlayer();
+				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			}		
 		}
 	}
 };

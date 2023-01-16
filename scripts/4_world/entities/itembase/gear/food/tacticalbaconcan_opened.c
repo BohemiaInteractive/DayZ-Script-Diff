@@ -7,4 +7,4 @@ class TacticalBaconCan_Opened: Edible_Base
 		AddAction(ActionForceFeedCan);
 		AddAction(ActionEatCan);
 	}
-};
+}

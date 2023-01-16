@@ -93,6 +93,11 @@ class DayZPlayerCamera
 		return false;
 	}
 
+	void SpawnDiagCameraShake()
+	{
+		SpawnCameraShakeProper(1, 1, 15, 4);
+	}
+
 	void SpawnCameraShake(float strength = 1, float radius = 2, float smoothness = 5, float radius_decay_speed = 6)
 	{
 		SpawnCameraShakeProper(strength, radius, smoothness, radius_decay_speed);//done this way in order to avoid duplicating default params which could cause issues under certain circumstances
@@ -1066,7 +1071,7 @@ class DayZPlayer extends Human
 
 	//! updated each tick - this takes care about aiming 
 	
-	bool			AimingModel(float pDt, SDayZPlayerAimingModel pModel);	
+	bool			AimingModel(float pDt, SDayZPlayerAimingModel pModel);
 
 	
 	
@@ -1131,8 +1136,10 @@ class DayZPlayer extends Human
 	*/
 	proto native	float					Random01();
 	
-	//! returns true if player is using EyeZoom, otherwise false
+	//! DEPRICATED(use GetEyeZoomLevel())  returns true if player is using EyeZoom, otherwise false
 	bool									IsEyeZoom();
+	//! returns eye zoom level, uses ECameraZoomType values
+	int 									GetEyeZoomLevel();
 	//! return true if shots are fired from camere, otherwise false
 	bool									IsShootingFromCamera();
 	//! return true if player is trying to hold breah, otherwise false
@@ -1150,6 +1157,9 @@ class DayZPlayer extends Human
 	//! processes melee hit (uses component name)
 	proto native	void					ProcessMeleeHitName(InventoryItem pMeleeWeapon, int pMeleeModeIndex, Object pTarget, string pComponentName, vector pHitWorldPos);
 	
+	//! get reason for kickoff if available (server only, only works while player still has network tied to it; e.g. no longer works after ReleaseNetworkControls)
+	proto native	EClientKicked			GetKickOffReason();
+	
 	//! ---------------- release controls -------------------------
 	proto native	void					ReleaseNetworkControls();
 	
@@ -1166,7 +1176,9 @@ class DayZPlayer extends Human
 
 	//! 
 	proto native 	bool					DebugSyncShadowSetup(DayZPlayer pPlayer);
-
+	
+	void SetCurrentWaterLevel(float pWaterLevel);
+	float GetCurrentWaterLevel();
 
 
 	//! ---------------- camera additiona functions -------------------------

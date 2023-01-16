@@ -6,7 +6,7 @@ class Offroad_02 extends CarScript
 
 	void Offroad_02()
 	{
-		m_dmgContactCoef		= 0.0365;
+		//m_dmgContactCoef		= 0.0365;
 
 		m_EngineStartOK			= "Offroad_02_engine_start_SoundSet";
 		m_EngineStartBattery	= "Offroad_02_engine_failed_start_battery_SoundSet";
@@ -64,8 +64,6 @@ class Offroad_02 extends CarScript
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
-		super.EOnPostSimulate(other, timeSlice);
-		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
 			if (m_UTSource.IsActive())
@@ -217,28 +215,28 @@ class Offroad_02 extends CarScript
 		switch( posIdx )
 		{
 			case 0:
-				if ( GetCarDoorsState( "Offroad_02_Door_1_1" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Offroad_02_Door_1_1") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
 			break;
 			
 			case 1:
-				if ( GetCarDoorsState( "Offroad_02_Door_2_1" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Offroad_02_Door_2_1") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
 			break;
 
 			case 2:
-				if ( GetCarDoorsState( "Offroad_02_Door_1_2" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Offroad_02_Door_1_2") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
 			break;
 
 			case 3:
-				if ( GetCarDoorsState( "Offroad_02_Door_2_2" ) == CarDoorState.DOORS_CLOSED )
+				if ( GetCarDoorsState("Offroad_02_Door_2_2") == CarDoorState.DOORS_CLOSED )
 					return false;
 
 				return true;
@@ -271,20 +269,16 @@ class Offroad_02 extends CarScript
 
 	override string GetDoorInvSlotNameFromSeatPos(int posIdx)
 	{
-		switch( posIdx )
+		switch (posIdx)
 		{
-		case 0:
-			return "Offroad_02_Door_1_1";
-		break;
-		case 1:
-			return "Offroad_02_Door_2_1";
-		break;
-		case 2:
-			return "Offroad_02_Door_1_2";
-		break;
-		case 3:
-			return "Offroad_02_Door_2_2";
-		break;
+			case 0:
+				return "Offroad_02_Door_1_1";
+			case 1:
+				return "Offroad_02_Door_2_1";
+			case 2:
+				return "Offroad_02_Door_1_2";
+			case 3:
+				return "Offroad_02_Door_2_2";
 		}
 		
 		return super.GetDoorInvSlotNameFromSeatPos(posIdx);
@@ -323,81 +317,56 @@ class Offroad_02 extends CarScript
 		return super.OnSound(ctrl, oldValue);
 	}
 	
-	override string GetAnimSourceFromSelection( string selection )
+	override string GetAnimSourceFromSelection(string selection)
 	{
-		switch( selection )
+		switch (selection)
 		{
-		case "doors_driver":
-			return "DoorsDriver";
-		case "doors_codriver":
-			return "DoorsCoDriver";
-		case "doors_cargo1":
-			return "DoorsCargo1";
-		case "doors_cargo2":
-			return "DoorsCargo2";
-		case "doors_hood":
-			return "DoorsHood";
-		case "doors_trunk":
-			return "DoorsTrunk";
+			case "doors_driver":
+				return "DoorsDriver";
+			case "doors_codriver":
+				return "DoorsCoDriver";
+			case "doors_cargo1":
+				return "DoorsCargo1";
+			case "doors_cargo2":
+				return "DoorsCargo2";
+			case "doors_hood":
+				return "DoorsHood";
+			case "doors_trunk":
+				return "DoorsTrunk";
 		}
 
 		return "";
 	}
 
-	override bool CanReachSeatFromSeat( int currentSeat, int nextSeat )
+	override bool CanReachSeatFromSeat(int currentSeat, int nextSeat)
 	{
-		//return false;
-		switch( currentSeat )
+		switch (currentSeat)
 		{
-		case 0:
-			if ( nextSeat == 1 )
-				return true;
-			break;
-		case 1:
-			if ( nextSeat == 0 )
-				return true;
-			break;
-		case 2:
-			if ( nextSeat == 3 )
-				return true;
-			break;
-		case 3:
-			if ( nextSeat == 2 )
-				return true;
-			break;
+			case 0:
+				return nextSeat == 1;
+			case 1:
+				return nextSeat == 0;
+			case 2:
+				return nextSeat == 3;
+			case 3:
+				return nextSeat == 2;
 		}
 		
 		return false;
 	}
 
-	override bool CanReachDoorsFromSeat( string pDoorsSelection, int pCurrentSeat )
+	override bool CanReachDoorsFromSeat(string pDoorsSelection, int pCurrentSeat)
 	{
-		switch( pCurrentSeat )
+		switch (pCurrentSeat)
 		{
-		case 0:
-			if (pDoorsSelection == "DoorsDriver")
-			{
-				return true;
-			}
-		break;
-		case 1:
-			if (pDoorsSelection == "DoorsCoDriver")
-			{
-				return true;
-			}
-		break;
-		case 2:
-			if (pDoorsSelection == "DoorsCargo1")
-			{
-				return true;
-			}
-		break;
-		case 3:
-			if (pDoorsSelection == "DoorsCargo2")
-			{
-				return true;
-			}
-		break;
+			case 0:
+				return pDoorsSelection == "DoorsDriver";
+			case 1:
+				return pDoorsSelection == "DoorsCoDriver";
+			case 2:
+				return pDoorsSelection == "DoorsCargo1";
+			case 3:
+				return pDoorsSelection == "DoorsCargo2";
 		}
 		
 		return false;		
@@ -420,55 +389,24 @@ class Offroad_02 extends CarScript
 
 	override void OnDebugSpawn()
 	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
-		
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "Offroad_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Wheel" );
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
 
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "GlowPlug" );
+		GetInventory().CreateInInventory("Offroad_02_Wheel");
+		GetInventory().CreateInInventory("Offroad_02_Wheel");
+		GetInventory().CreateInInventory("Offroad_02_Wheel");
+		GetInventory().CreateInInventory("Offroad_02_Wheel");
 
-			//entity.GetInventory().CreateInInventory( "Offroad_02_Door_1_1" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Door_1_2" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Door_2_1" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Door_2_2" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Hood" );
-			entity.GetInventory().CreateInInventory( "Offroad_02_Trunk" );
+		GetInventory().CreateInInventory("Offroad_02_Door_1_1");
+		GetInventory().CreateInInventory("Offroad_02_Door_1_2");
+		GetInventory().CreateInInventory("Offroad_02_Door_2_1");
+		GetInventory().CreateInInventory("Offroad_02_Door_2_2");
+		GetInventory().CreateInInventory("Offroad_02_Hood");
+		GetInventory().CreateInInventory("Offroad_02_Trunk");
 
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "GlowPlug" );
-			
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "Offroad_02_Wheel" );
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "GlowkPlug" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 120 );
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("Offroad_02_Wheel");
+		GetInventory().CreateInInventory("Offroad_02_Wheel");
 	}
 }

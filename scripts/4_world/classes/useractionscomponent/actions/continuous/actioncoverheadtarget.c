@@ -43,10 +43,13 @@ class ActionCoverHeadTarget: ActionContinuousBase
 		PlayerBase ntarget;
 		Class.CastTo(ntarget, action_data.m_Target.GetObject());
 		
-		CoverHeadOfTargetPlayerLambda lambda = new CoverHeadOfTargetPlayerLambda(action_data.m_MainItem, "BurlapSackCover", ntarget);
-		action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere(lambda);
+		if (CanReceiveAction(action_data.m_Target))
+		{
+			CoverHeadOfTargetPlayerLambda lambda = new CoverHeadOfTargetPlayerLambda(action_data.m_MainItem, "BurlapSackCover", ntarget);
+			action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere(lambda);
 
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		}
 	}
 	
 	/*

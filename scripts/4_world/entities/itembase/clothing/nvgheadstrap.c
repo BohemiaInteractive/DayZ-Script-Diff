@@ -1,12 +1,18 @@
 class NVGHeadstrap extends Clothing
 {
-	override bool CanPutAsAttachment( EntityAI parent )
+	override bool CanPutAsAttachment(EntityAI parent)
 	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
+		if (!super.CanPutAsAttachment(parent))
+			return false;
 		
 		Clothing helmet = Clothing.Cast(parent.FindAttachmentBySlotName( "Headgear" ));
+		if (helmet && helmet.ConfigGetBool("noNVStrap"))
+		{
+			return false;
+		}
 		
-		if ( helmet && helmet.ConfigGetBool("noNVStrap") )
+		Clothing mask = Clothing.Cast(parent.FindAttachmentBySlotName("Mask"));
+		if (mask && mask.ConfigGetBool("noEyewear"))
 		{
 			return false;
 		}

@@ -18,7 +18,7 @@ class SoftSkillsManager
 
 	protected ref Timer 			m_CoolDownTimer = new Timer();
 
-	protected float 				m_IsDebugMode;
+	protected bool 				m_IsDebugMode;
 	protected float 				m_CoolDownValue;
 	protected float 				m_LastUAValue;
 	protected float 				m_ComponentBonusBefore;
@@ -301,13 +301,10 @@ class SoftSkillsManager
 	// ----------------------------------------------------------------------------------------
 	void SynchSpecialtyLevel()
 	{	
-		ref Param1<float> specialty_level;
-		
-		if( GetGame().IsServer() )
-		{
-			specialty_level = new Param1<float>( m_SpecialtyLevel );
-			GetGame().RPCSingleParam( m_Player, ERPCs.RPC_SOFT_SKILLS_SPECIALTY_SYNC, specialty_level, true, m_Player.GetIdentity() );
-		}		
+		#ifdef SERVER
+		Param1<float> specialty_level = new Param1<float>( m_SpecialtyLevel );
+		GetGame().RPCSingleParam( m_Player, ERPCs.RPC_SOFT_SKILLS_SPECIALTY_SYNC, specialty_level, true, m_Player.GetIdentity() );
+		#endif		
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -337,7 +334,7 @@ class SoftSkillsManager
 	// ----------------------------------------------------------------------------------------
 	void GetPreciseRoughLevels()
 	{
-		if( m_SpecialtyLevel > 0)
+		if ( m_SpecialtyLevel > 0)
 		{
 			m_RoughLevel = m_SpecialtyLevel;
 			m_PreciseLevel = DEFAULT_EFFICIENCY;
@@ -397,9 +394,7 @@ class SoftSkillsManager
 	{	
 		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
 		{
-			Param5<float, float, float, float, bool> debug_stats;
-			
-			debug_stats = new Param5<float, float, float, float, bool>( m_GeneralBonusBefore, m_GeneralBonusAfter, m_LastUAValue, m_CoolDownValue, m_IsCoolDown );
+			Param5<float, float, float, float, bool> debug_stats = new Param5<float, float, float, float, bool>( m_GeneralBonusBefore, m_GeneralBonusAfter, m_LastUAValue, m_CoolDownValue, m_IsCoolDown );
 			GetGame().RPCSingleParam( m_Player, ERPCs.RPC_SOFT_SKILLS_STATS_SYNC, debug_stats, true, m_Player.GetIdentity() );
 		}		
 	}
@@ -411,7 +406,7 @@ class SoftSkillsManager
 	}
 
 	// ----------------------------------------------------------------------------------------
-	float IsDebug()
+	bool IsDebug()
 	{
 		return m_IsDebugMode;
 	}
@@ -443,9 +438,9 @@ class SoftSkillsManager
 	// ----------------------------------------------------------------------------------------
 	void SetBonusBefore( bool is_cacomponent, float base_value)
 	{
-		if( IsDebug() )
+		if ( IsDebug() )
 		{
-			if( is_cacomponent )
+			if ( is_cacomponent )
 			{
 				SetComponentBonusBefore(base_value);
 			}
@@ -459,17 +454,17 @@ class SoftSkillsManager
 	// ----------------------------------------------------------------------------------------
 	void SetBonusAfter( bool is_cacomponent, float adjusted_value )
 	{
-		if( IsDebug() )
+		if ( IsDebug() )
+		{
+			if ( is_cacomponent )
 			{
-				if( is_cacomponent )
-				{
-					SetComponentBonusAfter(adjusted_value);
-				}
-				else
-				{
-					SetGeneralBonusAfter(adjusted_value);
-				}
+				SetComponentBonusAfter(adjusted_value);
 			}
+			else
+			{
+				SetGeneralBonusAfter(adjusted_value);
+			}
+		}
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -533,7 +528,7 @@ class SoftSkillsManager
 	{
 		SetIsDebug( false );
 		
-		if( m_SynchTimer )
+		if ( m_SynchTimer )
 		{
 			m_SynchTimer.Stop();
 			delete m_SynchTimer;

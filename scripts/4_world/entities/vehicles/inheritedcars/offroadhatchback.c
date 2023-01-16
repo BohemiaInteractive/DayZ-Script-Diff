@@ -6,7 +6,7 @@ class OffroadHatchback extends CarScript
 
 	void OffroadHatchback()
 	{
-		m_dmgContactCoef 		= 0.075;
+		//m_dmgContactCoef 		= 0.075;
 	
 		m_EngineStartOK 		= "offroad_engine_start_SoundSet";
 		m_EngineStartBattery 	= "offroad_engine_failed_start_battery_SoundSet";
@@ -16,6 +16,8 @@ class OffroadHatchback extends CarScript
 		
 		m_CarDoorOpenSound 		= "offroad_door_open_SoundSet";
 		m_CarDoorCloseSound 	= "offroad_door_close_SoundSet";
+		m_CarSeatShiftInSound 	= "Offroad_SeatShiftIn_SoundSet";
+		m_CarSeatShiftOutSound 	= "Offroad_SeatShiftOut_SoundSet";
 		
 		m_CarHornShortSoundName = "Offroad_Horn_Short_SoundSet";
 		m_CarHornLongSoundName	= "Offroad_Horn_SoundSet";
@@ -64,8 +66,6 @@ class OffroadHatchback extends CarScript
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
-		super.EOnPostSimulate(other, timeSlice);
-		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
 			if (m_UTSource.IsActive())
@@ -87,7 +87,7 @@ class OffroadHatchback extends CarScript
 
 	override int GetSeatAnimationType( int posIdx )
 	{
-		switch( posIdx )
+		switch (posIdx)
 		{
 		case 0:
 			return DayZPlayerConstants.VEHICLESEAT_DRIVER;
@@ -184,66 +184,58 @@ class OffroadHatchback extends CarScript
 
 		switch (slotType)
 		{
-		case "NivaDriverDoors":
-			return TranslateAnimationPhaseToCarDoorState("DoorsDriver");
-			break;
-			
-		case "NivaCoDriverDoors":
-			return TranslateAnimationPhaseToCarDoorState("DoorsCoDriver");
-			break;
-			
-		case "NivaHood":
-			return TranslateAnimationPhaseToCarDoorState("DoorsHood");
-			break;
-			
-		case "NivaTrunk":
-			return TranslateAnimationPhaseToCarDoorState("DoorsTrunk");
-			break;
+			case "NivaDriverDoors":
+				return TranslateAnimationPhaseToCarDoorState("DoorsDriver");
+				
+			case "NivaCoDriverDoors":
+				return TranslateAnimationPhaseToCarDoorState("DoorsCoDriver");
+				
+			case "NivaHood":
+				return TranslateAnimationPhaseToCarDoorState("DoorsHood");
+				
+			case "NivaTrunk":
+				return TranslateAnimationPhaseToCarDoorState("DoorsTrunk");
 		}
 
 		return CarDoorState.DOORS_MISSING;
 	}
 	
-	override bool CrewCanGetThrough( int posIdx )
+	override bool CrewCanGetThrough(int posIdx)
 	{
 		CarDoor carDoor;
 		switch (posIdx)
 		{
-		case 0:
-			if (GetCarDoorsState("NivaDriverDoors") == CarDoorState.DOORS_CLOSED)
-				return false;
-			else if (GetAnimationPhase("SeatDriver") > 0.5)
-				return false;
-
-			return true;
-		break;
-
-		case 1:
-			if (GetCarDoorsState("NivaCoDriverDoors") == CarDoorState.DOORS_CLOSED)
-				return false;
-			else if (GetAnimationPhase("SeatCoDriver") > 0.5)
-				return false;
-
-			return true;
-		break;
-
-		case 2:
-			if (GetCarDoorsState("NivaDriverDoors") == CarDoorState.DOORS_CLOSED)
-				return false;
-			else if (GetAnimationPhase("SeatDriver") <= 0.5)
-				return false;
-
-			return true;
-		break;
-
-		case 3:
-			if (GetCarDoorsState("NivaCoDriverDoors") == CarDoorState.DOORS_CLOSED)
-				return false;
-			else if (GetAnimationPhase("SeatCoDriver") <= 0.5)
-				return false;
-
-			return true;
-		break;
+			case 0:
+				if (GetCarDoorsState("NivaDriverDoors") == CarDoorState.DOORS_CLOSED)
+					return false;
+				else if (GetAnimationPhase("SeatDriver") > 0.5)
+					return false;
+	
+				return true;
+	
+			case 1:
+				if (GetCarDoorsState("NivaCoDriverDoors") == CarDoorState.DOORS_CLOSED)
+					return false;
+				else if (GetAnimationPhase("SeatCoDriver") > 0.5)
+					return false;
+	
+				return true;
+	
+			case 2:
+				if (GetCarDoorsState("NivaDriverDoors") == CarDoorState.DOORS_CLOSED)
+					return false;
+				else if (GetAnimationPhase("SeatDriver") <= 0.5)
+					return false;
+	
+				return true;
+	
+			case 3:
+				if (GetCarDoorsState("NivaCoDriverDoors") == CarDoorState.DOORS_CLOSED)
+					return false;
+				else if (GetAnimationPhase("SeatCoDriver") <= 0.5)
+					return false;
+	
+				return true;
 		}
 
 		return false;
@@ -253,14 +245,12 @@ class OffroadHatchback extends CarScript
 	{
 		switch (posIdx)
 		{
-		case 0:
-		case 2:
-			return "doors_driver";
-		break;
-		case 1:
-		case 3:
-			return "doors_codriver";
-		break;
+			case 0:
+			case 2:
+				return "doors_driver";
+			case 1:
+			case 3:
+				return "doors_codriver";
 		}
 		
 		return super.GetDoorSelectionNameFromSeatPos(posIdx);
@@ -270,14 +260,12 @@ class OffroadHatchback extends CarScript
 	{
 		switch (posIdx)
 		{
-		case 0:
-		case 2:
-			return "NivaDriverDoors";
-		break;
-		case 1:
-		case 3:
-			return "NivaCoDriverDoors";
-		break;
+			case 0:
+			case 2:
+				return "NivaDriverDoors";
+			case 1:
+			case 3:
+				return "NivaCoDriverDoors";
 		}
 		
 		return super.GetDoorInvSlotNameFromSeatPos(posIdx);
@@ -351,33 +339,31 @@ class OffroadHatchback extends CarScript
 		return "";
 	}
 	
-	override string GetDoorConditionPointFromSelection( string selection )
+	override string GetDoorConditionPointFromSelection(string selection)
 	{
-		switch( selection )
+		switch (selection)
 		{
-		case "seat_driver":
-		case "seatback_driver":
-		case "seat_cargo1":
-			return "seat_con_1_1";
-		break;
-		case "seat_codriver":
-		case "seatback_codriver":
-		case "seat_cargo2":
-			return "seat_con_2_1";
-		break;
+			case "seat_driver":
+			case "seatback_driver":
+			case "seat_cargo1":
+				return "seat_con_1_1";
+			case "seat_codriver":
+			case "seatback_codriver":
+			case "seat_cargo2":
+				return "seat_con_2_1";
 		}
 		
 		return "";
 	}
 
-	override int GetCrewIndex( string selection )
+	override int GetCrewIndex(string selection)
 	{
-		switch( selection )
+		switch (selection)
 		{
-		case "seatback_driver":
-			return 0;
-		case "seatback_codriver":
-			return 1;
+			case "seatback_driver":
+				return 0;
+			case "seatback_codriver":
+				return 1;
 		}
 
 		return -1;
@@ -393,40 +379,27 @@ class OffroadHatchback extends CarScript
 		return false;
 	}
 	
-	override bool CanReachSeatFromSeat( int currentSeat, int nextSeat )
+	override bool CanReachSeatFromSeat(int currentSeat, int nextSeat)
 	{
-		if ( nextSeat == 0 && GetAnimationPhase("SeatDriver") > 0.5  )
+		if (nextSeat == 0 && GetAnimationPhase("SeatDriver") > 0.5)
 			return false;
 		
-		if ( nextSeat == 1 && GetAnimationPhase("SeatCoDriver") > 0.5  )
+		if (nextSeat == 1 && GetAnimationPhase("SeatCoDriver") > 0.5)
 			return false;
 		
-		switch( currentSeat )
+		switch (currentSeat)
 		{
-		case 0:
-			if ( nextSeat == 1 )
-			{
-				return true;
-			}
-			break;
-		case 1:
-			if ( nextSeat == 0 )
-			{
-				return true;
-			}
-			break;
-		case 2:
-			if ( nextSeat == 3 )
-			{
-				return true;
-			}
-			break;
-		case 3:
-			if ( nextSeat == 2 )
-			{
-				return true;
-			}
-			break;
+			case 0:
+				return nextSeat == 1;
+	
+			case 1:
+				return nextSeat == 0;
+	
+			case 2:
+				return nextSeat == 3;
+	
+			case 3:
+				return nextSeat == 2;
 		}
 		
 		return false;
@@ -434,32 +407,19 @@ class OffroadHatchback extends CarScript
 
 	override bool CanReachDoorsFromSeat( string pDoorsSelection, int pCurrentSeat )
 	{
-		switch( pCurrentSeat )
+		switch (pCurrentSeat)
 		{
-		case 0:
-			if (pDoorsSelection == "DoorsDriver")
-			{
-				return true;
-			}
-		break;
-		case 1:
-			if (pDoorsSelection == "DoorsCoDriver")
-			{
-				return true;
-			}
-		break;
-		case 2:
-			if (pDoorsSelection == "DoorsDriver")
-			{
-				return true;
-			}
-		break;
-		case 3:
-			if (pDoorsSelection == "DoorsCoDriver")
-			{
-				return true;
-			}
-		break;
+			case 0:
+				return pDoorsSelection == "DoorsDriver";
+	
+			case 1:
+				return pDoorsSelection == "DoorsCoDriver";
+	
+			case 2:
+				return pDoorsSelection == "DoorsDriver";
+	
+			case 3:
+				return pDoorsSelection == "DoorsCoDriver";
 		}
 		
 		return false;		
@@ -471,65 +431,11 @@ class OffroadHatchback extends CarScript
 		{
 			case "DoorsDriver":
 				return 0;
-				break;
 			case "DoorsCoDriver":
 				return 1;
-				break;
 		}
+
 		return -1;
-	}
-	
-	override void OnDebugSpawn()
-	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
-
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-
-			//entity.GetInventory().CreateInInventory( "HatchbackDoors_Driver" );
-			entity.GetInventory().CreateInInventory( "HatchbackDoors_CoDriver" );
-			entity.GetInventory().CreateInInventory( "HatchbackHood" );
-			entity.GetInventory().CreateInInventory( "HatchbackTrunk" );
-
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 50 );
-		Fill( CarFluid.COOLANT, 6.0 );
-		Fill( CarFluid.OIL, 4.0 );
 	}
 	
 	override void SetActions()
@@ -538,117 +444,73 @@ class OffroadHatchback extends CarScript
 
 		AddAction(ActionAnimateSeats);
 	}
+	
+	override void OnDebugSpawn()
+	{
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
+
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel" );
+		GetInventory().CreateInInventory("HatchbackWheel");
+
+		GetInventory().CreateInInventory("HatchbackDoors_Driver");
+		GetInventory().CreateInInventory("HatchbackDoors_CoDriver");
+		GetInventory().CreateInInventory("HatchbackHood");
+		GetInventory().CreateInInventory("HatchbackTrunk");
+
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
+	}
 }
 
 class OffroadHatchback_White extends OffroadHatchback
 {
-
 	override void OnDebugSpawn()
 	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
 
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
 
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
+		GetInventory().CreateInInventory("HatchbackDoors_Driver_White");
+		GetInventory().CreateInInventory("HatchbackDoors_CoDriver_White");
+		GetInventory().CreateInInventory("HatchbackHood_White");
+		GetInventory().CreateInInventory("HatchbackTrunk_White");
 
-			//entity.GetInventory().CreateInInventory( "HatchbackDoors_Driver_White" );
-			entity.GetInventory().CreateInInventory( "HatchbackDoors_CoDriver_White" );
-			entity.GetInventory().CreateInInventory( "HatchbackHood_White" );
-			entity.GetInventory().CreateInInventory( "HatchbackTrunk_White" );
-
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 50 );
-		Fill( CarFluid.COOLANT, 6.0 );
-		Fill( CarFluid.OIL, 4.0 );
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
 	}
-};
+}
+
 class OffroadHatchback_Blue extends OffroadHatchback
 {
-
 	override void OnDebugSpawn()
 	{
-		EntityAI entity;
-		EntityAI ent;
-		ItemBase container;
+		SpawnUniversalParts();
+		SpawnAdditionalItems();
+		FillUpCarFluids();
 
-		if ( Class.CastTo(entity, this) )
-		{
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-
-			//entity.GetInventory().CreateInInventory( "HatchbackDoors_Driver_Blue" );
-			entity.GetInventory().CreateInInventory( "HatchbackDoors_CoDriver_Blue" );
-			entity.GetInventory().CreateInInventory( "HatchbackHood_Blue" );
-			entity.GetInventory().CreateInInventory( "HatchbackTrunk_Blue" );
-
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-
-			//-----IN CAR CARGO
-			entity.GetInventory().CreateInInventory( "HatchbackWheel" );
-			entity.GetInventory().CreateInInventory( "CarBattery" );
-			entity.GetInventory().CreateInInventory( "SparkPlug" );
-			entity.GetInventory().CreateInInventory( "HeadlightH7" );
-			entity.GetInventory().CreateInInventory( "CarRadiator" );
-			//--
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			//--
-			entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			ent = entity.GetInventory().CreateInInventory( "CanisterGasoline" );
-			if ( Class.CastTo(container, ent) )
-			{
-				container.SetLiquidType(LIQUID_WATER, true);
-			}
-			ent = entity.GetInventory().CreateInInventory( "Blowtorch" );
-			if ( ent )
-			{
-				entity = ent.GetInventory().CreateInInventory( "LargeGasCanister" );
-			}
-		}
-
-		Fill( CarFluid.FUEL, 50 );
-		Fill( CarFluid.COOLANT, 6.0 );
-		Fill( CarFluid.OIL, 4.0 );
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
+	
+		GetInventory().CreateInInventory("HatchbackDoors_Driver_Blue");
+		GetInventory().CreateInInventory("HatchbackDoors_CoDriver_Blue");
+		GetInventory().CreateInInventory("HatchbackHood_Blue");
+		GetInventory().CreateInInventory("HatchbackTrunk_Blue");
+	
+		//-----IN CAR CARGO
+		GetInventory().CreateInInventory("HatchbackWheel");
+		GetInventory().CreateInInventory("HatchbackWheel");
 	}
-};
+}

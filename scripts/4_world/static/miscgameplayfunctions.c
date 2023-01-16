@@ -1287,8 +1287,9 @@ class MiscGameplayFunctions
 	static bool IsObjectObstructed(Object object, bool doDistanceCheck = false, vector distanceCheckPos = "0 0 0", float maxDist = 0)
 	{
 		vector rayStart;
-		MiscGameplayFunctions.GetHeadBonePos( PlayerBase.Cast( GetGame().GetPlayer() ), rayStart);
+		MiscGameplayFunctions.GetHeadBonePos(PlayerBase.Cast(GetGame().GetPlayer()), rayStart);
 		IsObjectObstructedCache cache = new IsObjectObstructedCache(rayStart, 1);
+
 		return IsObjectObstructedEx(object, cache, doDistanceCheck, distanceCheckPos, maxDist);
 	}
 
@@ -1306,36 +1307,30 @@ class MiscGameplayFunctions
 		if (IsObjectObstructedProxy(object, cache, player))
 			return true;
 			
-		//Print(" ===>>> pouzij standardny raycast s fire geometriou koli domom a basebuildingu <<<=== ");
-		DayZPhysics.RaycastRV( cache.RaycastStart, cache.ObjectCenterPos, cache.ObjectContactPos, cache.ObjectContactDir, cache.ContactComponent, cache.HitObjects, object, GetGame().GetPlayer(), false, false, ObjIntersectFire, 0.0, CollisionFlags.ALLOBJECTS );
+		DayZPhysics.RaycastRV(cache.RaycastStart, cache.ObjectCenterPos, cache.ObjectContactPos, cache.ObjectContactDir, cache.ContactComponent, cache.HitObjects, object, GetGame().GetPlayer(), false, false, ObjIntersectFire, 0.0, CollisionFlags.ALLOBJECTS);
 			
 		return IsObjectObstructedFilter(object, cache, player);
 	}
  	
 	static bool IsObjectObstructedProxy(Object object, IsObjectObstructedCache cache, PlayerBase player)
 	{
-		if ( object.CanProxyObstruct() )
+		if (object.CanProxyObstruct())
 		{
-			//Print(" :) (: pouzij proxy raycast koli proxy itemom :) (: ");
-			RaycastRVParams ray_input = new RaycastRVParams( cache.RaycastStart, cache.ObjectCenterPos, player );
-			DayZPhysics.RaycastRVProxy( ray_input, cache.HitProxyObjects );				
-			if ( cache.HitProxyObjects )
+			RaycastRVParams rayInput = new RaycastRVParams(cache.RaycastStart, cache.ObjectCenterPos, player);
+			DayZPhysics.RaycastRVProxy(rayInput, cache.HitProxyObjects);				
+			if (cache.HitProxyObjects)
 			{
-				//Print(" - cache.HitProxyObjects - ");
-				if ( cache.HitProxyObjects.Count() > 0 )
+				if (cache.HitProxyObjects.Count() > 0)
 				{
-					if ( cache.HitProxyObjects[0].hierLevel > 0 )
+					if (cache.HitProxyObjects[0].hierLevel > 0)
 					{
 						// ignores attachments on player
-						if ( !cache.HitProxyObjects[0].parent.IsMan() )
+						if (!cache.HitProxyObjects[0].parent.IsMan())
 						{
-							//Print( "cache.HitProxyObjects[0].obj " + cache.HitProxyObjects[0].obj );
-							//Print( "cache.HitProxyObjects[0].parent" + cache.HitProxyObjects[0].parent );
-								
-							if ( cache.HitProxyObjects[0].parent )
+							if (cache.HitProxyObjects[0].parent)
 							{
-								EntityAI proxy_parent = EntityAI.Cast( cache.HitProxyObjects[0].parent );
-								if ( proxy_parent.GetInventory() && proxy_parent.GetInventory().GetCargo() )
+								EntityAI proxyParent = EntityAI.Cast(cache.HitProxyObjects[0].parent);
+								if (proxyParent.GetInventory() && proxyParent.GetInventory().GetCargo())
 									return true;
 							}
 						}	
@@ -1376,24 +1371,19 @@ class MiscGameplayFunctions
 	//Inflict absolute damage to item (used on tools when completing actions)
 	static void DealAbsoluteDmg(ItemBase item, float dmg)
 	{
-		float totalDmg = dmg;
-		//Print("The damage dealt is : " + totalDmg);
-		item.DecreaseHealth(totalDmg, false);
-		//Print("Current health of item is : " + item.GetHealth());
+		item.DecreaseHealth(dmg, false);
 	}
 	
 	//Function used to normailze values, enter the used value and the max value (max will become 1)
 	static float Normalize(int val, int maxVal)
 	{
-		float normVal;
 		if (maxVal == 0)
 		{
 			Debug.LogError("Division by 0 is not allowed");
 			return 0;
 		}
 		
-		normVal = val / maxVal;
-		return normVal;
+		return val / maxVal;
 	}
 	
 	static float Bobbing(float period, float amplitude, float elapsedTime)
@@ -1415,16 +1405,7 @@ class MiscGameplayFunctions
 	// DEPRECATED, use Math.ModFloat directly instead
 	static float FModulus(float x, float y)
 	{
-		// Keeping this for reference in case someone wants it later
-		/*float res;
-		//Prevent division by 0
-		if (y == 0)
-			y = 1;
-		
-		int n = Math.Floor(x/y);
-		res = x - n * y;
-		return res;*/
-		return Math.ModFloat( x, y );
+		return Math.ModFloat(x, y);
 	}
 	
 	static void RemoveSplint( PlayerBase player )

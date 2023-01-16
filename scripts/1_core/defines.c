@@ -3,7 +3,7 @@
 #ifdef DOXYGEN
 
 /**
- * \defgroup Defines
+ * \defgroup Defines Defines
  * \desc static defines
  * @{
  */

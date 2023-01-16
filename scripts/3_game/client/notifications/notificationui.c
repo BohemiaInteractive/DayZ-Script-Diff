@@ -23,14 +23,22 @@ class NotificationUI
 		m_VoiceNotifications	= new map<string, Widget>;
 		m_WidgetTimers			= new map<string, Widget>;
 		
-		NotificationSystem.BindOnAdd( AddNotification );
-		NotificationSystem.BindOnRemove( RemoveNotification );
+		NotificationSystem ntfSys = NotificationSystem.GetInstance();
+		if (ntfSys)
+		{
+			ntfSys.m_OnNotificationAdded.Insert( AddNotification );
+			ntfSys.m_OnNotificationRemoved.Insert( RemoveNotification );
+		}
 	}
 	
 	void ~NotificationUI()
 	{
-		NotificationSystem.UnbindOnAdd( AddNotification );
-		NotificationSystem.UnbindOnRemove( RemoveNotification );
+		NotificationSystem ntfSys = NotificationSystem.GetInstance();
+		if (ntfSys)
+		{
+			ntfSys.m_OnNotificationAdded.Remove( AddNotification );
+			ntfSys.m_OnNotificationRemoved.Remove( RemoveNotification );
+		}
 	}
 	
 	void AddNotification( NotificationRuntimeData data )
@@ -40,11 +48,11 @@ class NotificationUI
 		ImageWidget icon			= ImageWidget.Cast( notification.FindAnyWidget( "Image" ) );
 		RichTextWidget title		= RichTextWidget.Cast( notification.FindAnyWidget( "Title" ) );
 		
-		if( data.GetIcon() != "" )
+		if ( data.GetIcon() != "" )
 			icon.LoadImageFile( 0, data.GetIcon() );
 		title.SetText( data.GetTitleText() );
 		
-		if( data.GetDetailText() != "" )
+		if ( data.GetDetailText() != "" )
 		{
 			Widget bottom_spacer	= notification.FindAnyWidget( "BottomSpacer" );
 			RichTextWidget detail	= RichTextWidget.Cast( notification.FindAnyWidget( "Detail" ) );

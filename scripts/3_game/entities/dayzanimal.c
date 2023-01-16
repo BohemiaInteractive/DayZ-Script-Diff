@@ -36,6 +36,12 @@ class DayZCreature extends EntityAI
 
 	
 	proto native void UpdateSimulationPrecision(int simLOD);
+
+	//---------------------------------------------------------
+	// helper functions for disabling simulation upon death
+	proto native void ResetDeathCooldown();
+	proto native bool IsDeathProcessed();
+	proto native bool IsDeathConditionMet();
 	
 	override bool IsDayZCreature()
 	{
@@ -58,7 +64,7 @@ class DayZCreatureAI extends DayZCreature
 	proto native AIAgent GetAIAgent();
 
 	proto native bool IsSoundInsideBuilding();
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 	proto native void DebugDisableAIControl();
 	proto native void DebugRestoreAIControl();
 #endif
@@ -288,25 +294,6 @@ enum DayZAnimalConstants
 	COMMANDID_HIT,
 	COMMANDID_ATTACK,
 	COMMANDID_SCRIPT,
-};
-
-class DayZAnimalInputController
-{
-	proto native bool IsDead();
-	proto native bool IsJump();
-	proto native bool IsAttack();
-	
-	//--------------------------------------------------------------
-
-	//! never created by script
-	private void DayZAnimalInputController()
-	{
-	}
-
-	//! never destroyed by script
-	private void ~DayZAnimalInputController()
-	{
-	}	
 };
 
 class DayZAnimalCommandMove extends AnimCommandBase

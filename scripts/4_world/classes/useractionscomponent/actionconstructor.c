@@ -113,6 +113,7 @@ class ActionConstructor
 		actions.Insert(ActionCraftRopeBelt);
 		actions.Insert(ActionDeCraftRopeBelt);
 		actions.Insert(ActionCraftBoneKnife);
+		actions.Insert(ActionCraftArmband);
 		actions.Insert(ActionCraftBoneKnifeEnv);
 		actions.Insert(ActionCraftStoneKnifeEnv);
 //		actions.Insert(ActionDigStash);
@@ -304,6 +305,7 @@ class ActionConstructor
 		actions.Insert(ActionTakeOvenIndoor);
 		actions.Insert(ActionOpenDoors);
 		actions.Insert(ActionCloseDoors);
+		actions.Insert(ActionLockedDoors);
 		actions.Insert(ActionEnterLadder);
 		actions.Insert(ActionExitLadder);
 		actions.Insert(ActionGetInTransport);
@@ -312,7 +314,6 @@ class ActionConstructor
 		actions.Insert(ActionSortAmmoPile);
 		actions.Insert(ActionSwapItemToHands);
 		actions.Insert(ActionTakeItemToHands);
-		actions.Insert(ActionLockedDoors);
 		actions.Insert(ActionTakeFireplaceFromBarrel);
 		actions.Insert(ActionOpenCarDoors);
 		actions.Insert(ActionCloseCarDoors);
@@ -329,7 +330,8 @@ class ActionConstructor
 		actions.Insert(ActionCloseFence);
 		actions.Insert(ActionNextCombinationLockDialOnTarget);
 		actions.Insert(ActionTakeMaterialToHands);
-		actions.Insert(ActionCheckPulse);
+		//actions.Insert(ActionCheckPulse);
+		actions.Insert(ActionCheckPulseTarget);
 		actions.Insert(ActionUnpin);
 		actions.Insert(ActionPin);
 		actions.Insert(ActionTakeHybridAttachment);

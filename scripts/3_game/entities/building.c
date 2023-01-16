@@ -13,6 +13,7 @@ class Building extends EntityAI
 	proto native void LockDoor(int index);
 	proto native void UnlockDoor(int index);
 	proto native vector GetDoorSoundPos(int index);
+	proto native float GetDoorSoundDistance(int index);
 	
 	override bool IsBuilding()
 	{

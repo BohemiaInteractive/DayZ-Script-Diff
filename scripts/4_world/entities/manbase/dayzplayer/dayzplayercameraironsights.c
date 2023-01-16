@@ -411,7 +411,7 @@ class DayZPlayerCameraOptics : DayZPlayerCameraIronsights
 		ItemOptics optics = ItemOptics.Cast( GetCurrentSightEntity() );
 		if (optics)
 		{
-			if (optics.GetCurrentStepFOV() >= GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM && (m_pPlayer.IsHoldingBreath() || m_pPlayer.IsEyeZoom()))
+			if (optics.GetCurrentStepFOV() >= GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM && (m_pPlayer.IsHoldingBreath() || m_pPlayer.GetEyeZoomLevel()))
 			{
 				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM, m_fFovAbsVel, 0.1, 1000, pDt);
 			}

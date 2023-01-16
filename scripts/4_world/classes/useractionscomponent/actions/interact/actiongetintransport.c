@@ -93,7 +93,6 @@ class ActionGetInTransport: ActionBase
 		if (vehCommand)
 		{
 			vehCommand.SetVehicleType(trans.GetAnimInstance());
-			action_data.m_Player.TryHideItemInHands(true);
 			
 			GetDayZGame().GetBacklit().OnEnterCar();
 			if (action_data.m_Player.GetInventory())

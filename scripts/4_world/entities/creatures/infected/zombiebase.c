@@ -107,11 +107,6 @@ class ZombieBase extends DayZInfected
 	
 	override bool IsZombieMilitary()
 	{
-		/*if ( IsKindOf( "ZmbM_SoldierNormal_Base" ) )
-		{
-			return true;
-		}*/
-		
 		return false;
 	}
 	
@@ -540,9 +535,9 @@ class ZombieBase extends DayZInfected
 
 	AbstractWave ProcessVoiceFX(string pSoundSetName)
 	{
-		ref SoundParams			soundParams;
-		ref SoundObjectBuilder	soundObjectBuilder;
-		ref SoundObject			soundObject;
+		SoundParams			soundParams;
+		SoundObjectBuilder	soundObjectBuilder;
+		SoundObject			soundObject;
 		if (!GetGame().IsDedicatedServer())
 		{
 			soundParams = new SoundParams( pSoundSetName );
@@ -1068,18 +1063,18 @@ class ZombieBase extends DayZInfected
 		GetAIAgent().SetKeepInIdle(true);
 		
 		// select death animation
-		switch( backstabType )
+		switch (backstabType)
 		{
-		case EMeleeHitType.FINISHER_LIVERSTAB:
-			m_DeathType = DayZInfectedDeathAnims.ANIM_DEATH_BACKSTAB;
-			break;
-			
-		case EMeleeHitType.FINISHER_NECKSTAB:
-			m_DeathType = DayZInfectedDeathAnims.ANIM_DEATH_NECKSTAB;	
-			break;
-			
-		default:
-			m_DeathType = DayZInfectedDeathAnims.ANIM_DEATH_DEFAULT;
+			case EMeleeHitType.FINISHER_LIVERSTAB:
+				m_DeathType = DayZInfectedDeathAnims.ANIM_DEATH_BACKSTAB;
+				break;
+				
+			case EMeleeHitType.FINISHER_NECKSTAB:
+				m_DeathType = DayZInfectedDeathAnims.ANIM_DEATH_NECKSTAB;	
+				break;
+				
+			default:
+				m_DeathType = DayZInfectedDeathAnims.ANIM_DEATH_DEFAULT;
 		}
 
 		// set flag - death command will be executed

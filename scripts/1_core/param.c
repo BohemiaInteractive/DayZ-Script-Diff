@@ -1,5 +1,5 @@
 /**
- * \defgroup Tools
+ * \defgroup Tools Tools
  * \desc Helpful functions & classes
  * @{
  */

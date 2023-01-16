@@ -19,21 +19,23 @@ class StaminaSoundEventBase extends PlayerSoundEventBase
 		MaskBase mask = MaskBase.Cast(player.GetInventory().FindAttachment(InventorySlots.GetSlotIdFromString("Mask")));
 		
 		float rel_volume = 1;
-		if(mask)
+		if (mask)
 		{
-			if(mask.IsExternalFilterAttached() || mask.HasIntegratedFilter())
+			if (mask.IsExternalFilterAttached() || mask.HasIntegratedFilter())
 			{
 				rel_volume = Math.Lerp(MAX_VOLUME,1,mask.GetFilterQuantity01());
 			}
 		}
 		
-		if(m_SoundSetCallback)
+		if (m_SoundSetCallback)
 			m_SoundSetCallback.SetVolumeRelative(rel_volume);
-		#ifdef DEVELOPER
-		if(!PluginDiagMenu.ENABLE_BREATH_VAPOR)//disabled in debug, do not spawn particles
+		
+		#ifdef DIAG_DEVELOPER
+		if (!DiagMenu.GetBool(DiagMenuIDs.MISC_BREATH_VAPOR_LVL))//disabled in debug, do not spawn particles
 			return;
 		#endif
-		if( player.CanSpawnBreathVaporEffect() ) 
+		
+		if ( player.CanSpawnBreathVaporEffect() ) 
 			player.SpawnBreathVaporEffect();
 		
 		

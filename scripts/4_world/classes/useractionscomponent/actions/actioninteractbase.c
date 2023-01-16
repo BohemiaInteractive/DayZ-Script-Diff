@@ -7,10 +7,10 @@ class ActionInteractBaseCB : ActionBaseCB
 
 	override void OnAnimationEvent(int pEventID)	
 	{	
-#ifdef DEVELOPER
-		if( LogManager.IsActionLogEnable() )
+#ifdef DIAG_DEVELOPER
+		if ( LogManager.IsActionLogEnable() )
 		{
-			if(m_ActionData)
+			if (m_ActionData)
 				Debug.ActionLog("n/a", m_ActionData.m_Action.ToString() , "n/a", "OnAnimationEvent", m_ActionData.m_Player.ToString() );
 		}
 #endif
@@ -23,8 +23,8 @@ class ActionInteractBaseCB : ActionBaseCB
 	
 	override void InitActionComponent()
 	{
-#ifdef DEVELOPER
-		if( LogManager.IsActionLogEnable() )
+#ifdef DIAG_DEVELOPER
+		if ( LogManager.IsActionLogEnable() )
 		{
 			Debug.ActionLog("n/a", m_ActionData.m_Action.ToString() , "n/a", "InitActionComponent", m_ActionData.m_Player.ToString() );
 		}

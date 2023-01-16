@@ -13,7 +13,7 @@ class DispatcherCaller extends Dispatcher
 	private void ScriptConsoleAddPrint(Param1<string> p)
 	{
 		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
-		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
+		if ( ui_menu && ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
 			scripted_console.Add(p.param1);

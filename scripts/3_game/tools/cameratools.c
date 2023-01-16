@@ -1,54 +1,59 @@
-#ifdef DEVELOPER
+#ifdef DIAG_DEVELOPER
 class CameraToolsMenuServer
 {
 	ref array<Man> m_Subscribers = new array<Man>;
 	void OnRPC(int rpc_type, ParamsReadContext ctx)
 	{
-		if (rpc_type == ERPCs.DEV_CAMERA_TOOLS_CAM_DATA)
+		switch (rpc_type)
 		{
-			Param4<vector, vector,float,float> p4 = new Param4<vector, vector,float,float>(vector.Zero, vector.Zero,0,0);
-			if (ctx.Read(p4))
+			case ERPCs.DIAG_CAMERATOOLS_CAM_DATA:
 			{
-				foreach (int index, Man p:m_Subscribers)
+				Param4<vector, vector,float,float> p4 = new Param4<vector, vector,float,float>(vector.Zero, vector.Zero,0,0);
+				if (ctx.Read(p4))
 				{
-					if (p)
+					foreach (int index, Man p : m_Subscribers)
 					{
-						GetGame().RPCSingleParam(p, ERPCs.DEV_CAMERA_TOOLS_CAM_DATA, p4, true, p.GetIdentity());
-					}
-					else
-					{
-						m_Subscribers.Remove(index);
-					}
-				}
-			}
-		}
-		else if (rpc_type == ERPCs.DEV_CAMERA_TOOLS_CAM_SUBSCRIBE)
-		{
-			Param2<bool, Man> par2 = new Param2<bool, Man>(false,null);
-
-			if (ctx.Read(par2))
-			{
-				bool enable = par2.param1;
-				Man player = par2.param2;
-				
-				bool found = false;
-				foreach (int i, Man m:m_Subscribers)
-				{
-					if (m == player)
-					{
-						if (!enable)
+						if (p)
 						{
-							m_Subscribers.Remove(i);
-							return;
+							GetGame().RPCSingleParam(p, ERPCs.DIAG_CAMERATOOLS_CAM_DATA, p4, true, p.GetIdentity());
 						}
-						found = true;
-						m_Subscribers[i] = player;
+						else
+						{
+							m_Subscribers.Remove(index);
+						}
 					}
 				}
-				if (!found && enable)//not found in the array, insert it
+				break;
+			}
+			case ERPCs.DIAG_CAMERATOOLS_CAM_SUBSCRIBE:
+			{
+				Param2<bool, Man> par2 = new Param2<bool, Man>(false,null);
+	
+				if (ctx.Read(par2))
 				{
-					m_Subscribers.Insert(player);
+					bool enable = par2.param1;
+					Man player = par2.param2;
+					
+					bool found = false;
+					foreach (int i, Man m : m_Subscribers)
+					{
+						if (m == player)
+						{
+							if (!enable)
+							{
+								m_Subscribers.Remove(i);
+								return;
+							}
+							found = true;
+							m_Subscribers[i] = player;
+						}
+					}
+					if (!found && enable)//not found in the array, insert it
+					{
+						m_Subscribers.Insert(player);
+					}
 				}
+				break;
 			}
 		}
 	}

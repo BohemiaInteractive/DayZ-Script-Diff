@@ -124,7 +124,7 @@ class PluginLifespan extends PluginBase
 																
 								if ( survivor_lifespan_beard_name == "Beard" )
 								{									
-									ref TStringArray materials = new TStringArray;
+									TStringArray materials = new TStringArray;
 									int cfg_class_member_member_variable_count = GetGame().ConfigGetChildrenCount( survivor_lifespan_beard_path );
 									
 									for ( l = 0; l < cfg_class_member_member_variable_count; l++ )
@@ -137,7 +137,7 @@ class PluginLifespan extends PluginBase
 										{
 											GetGame().ConfigGetTextArray( survivor_lifespan_beard_material_path, materials );
 											
-											ref array<ref LifespanLevel> lifespan_levels = new array< ref LifespanLevel>;
+											array<ref LifespanLevel> lifespan_levels = new array< ref LifespanLevel>;
 
 											int level_count = materials.Count() / 2;
 											for ( m = 0; m < level_count; m++ )
@@ -275,7 +275,7 @@ class PluginLifespan extends PluginBase
 
 	protected LifespanLevel GetLifespanLevel( string player_class, float age = 0 )
 	{
-		array< ref LifespanLevel> lifespan_levels = m_LifespanLevels.Get( player_class );
+		array<ref LifespanLevel> lifespan_levels = m_LifespanLevels.Get( player_class );
 		
 		if ( lifespan_levels != NULL )
 		{
@@ -300,9 +300,9 @@ class PluginLifespan extends PluginBase
 		int slot_id = InventorySlots.GetSlotIdFromString("Head");	
 		EntityAI players_head = player.GetInventory().FindPlaceholderForSlot( slot_id );
 		
-		if( players_head )
+		if ( players_head )
 		{
-			switch(level.GetLevel())
+			switch (level.GetLevel())
 			{
 				case LifeSpanState.BEARD_NONE:
 				{
@@ -371,7 +371,7 @@ class PluginLifespan extends PluginBase
 	{
 		float player_beard; 
 		
-		switch(state)
+		switch (state)
 		{
 			case LifeSpanState.BEARD_NONE:
 			{
@@ -489,14 +489,7 @@ class PluginLifespan extends PluginBase
 
 	bool CanMakeHandsBloody( PlayerBase player )
 	{
-		if ( !player.FindAttachmentBySlotName( "Gloves" ) )
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return !player.FindAttachmentBySlotName( "Gloves" ) );
 	}
 	
 //-----------------------------

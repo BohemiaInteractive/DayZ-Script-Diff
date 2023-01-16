@@ -22,18 +22,24 @@ class Headtorch_ColorBase extends Clothing
 	void Headtorch_ColorBase()
 	{
 		if (!m_Timer)
-			m_Timer = new Timer( CALL_CATEGORY_SYSTEM );
+			m_Timer = new Timer(CALL_CATEGORY_SYSTEM);
 			
-		m_Timer.Run( 1 , this, "CheckParent", NULL, false);
+		m_Timer.Run(1 , this, "CheckParent", NULL, false);
 	}
 	
-	override bool CanPutAsAttachment( EntityAI parent )
+	override bool CanPutAsAttachment(EntityAI parent)
 	{
-		if (!super.CanPutAsAttachment(parent)) {return false;}
+		if (!super.CanPutAsAttachment(parent))
+			return false;
 		
 		Clothing helmet = Clothing.Cast(parent.FindAttachmentBySlotName("Headgear"));
+		if (helmet && helmet.ConfigGetBool("noNVStrap"))
+		{
+			return false;
+		}
 		
-		if ( helmet && helmet.ConfigGetBool("noNVStrap") )
+		Clothing mask = Clothing.Cast(parent.FindAttachmentBySlotName("Mask"));
+		if (mask && mask.ConfigGetBool("noEyewear"))
 		{
 			return false;
 		}
@@ -60,12 +66,12 @@ class Headtorch_ColorBase extends Clothing
 	
 	override void OnWorkStart()
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
 		{
 			CreateHeadtorchLight();
 		}
 		
-		if ( IsInherited( Headtorch_Black ) )
+		if (IsInherited(Headtorch_Black))
 		{
 			SetObjectMaterial(GLASS_ID, LIGHT_ON_GLASS_RED);
 			SetObjectMaterial(REFLECTOR_ID, LIGHT_ON_REFLECTOR_RED);
@@ -77,23 +83,23 @@ class Headtorch_ColorBase extends Clothing
 		}
 	}
 
-	override void OnWork( float consumed_energy )
+	override void OnWork(float consumed_energy)
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
 		{
-			Battery9V battery = Battery9V.Cast( GetCompEM().GetEnergySource() );
+			Battery9V battery = Battery9V.Cast(GetCompEM().GetEnergySource());
 			
 			if (battery  &&  m_Light)
 			{
 				float efficiency = battery.GetEfficiency0To1();
 				
-				if ( efficiency < 1 )
+				if (efficiency < 1)
 				{
-					m_Light.SetIntensity( efficiency, GetCompEM().GetUpdateInterval() );
+					m_Light.SetIntensity(efficiency, GetCompEM().GetUpdateInterval());
 				}
 				else
 				{
-					m_Light.SetIntensity( 1, 0 );
+					m_Light.SetIntensity(1, 0);
 				}
 			}
 		}
@@ -107,7 +113,7 @@ class Headtorch_ColorBase extends Clothing
 	void CreateHeadtorchLight()
 	{
 		if (!m_Light)
-			m_Light = HeadtorchLight.Cast(  ScriptedLightBase.CreateLight( HeadtorchLight, "0 0 0")  );
+			m_Light = HeadtorchLight.Cast(ScriptedLightBase.CreateLight( HeadtorchLight, "0 0 0"));
 		
 		OnLightCreated();
 		
@@ -131,8 +137,8 @@ class Headtorch_ColorBase extends Clothing
 			}
 			else if (owner.IsZombie())
 			{
-				int slot_id = InventorySlots.GetSlotIdFromString( "Headgear" );
-				EntityAI item_EAI = owner.GetInventory().FindAttachment( slot_id );
+				int slot_id = InventorySlots.GetSlotIdFromString("Headgear");
+				EntityAI item_EAI = owner.GetInventory().FindAttachment(slot_id);
 				ItemBase item_IB = ItemBase.Cast(item_EAI);
 				
 				if (item_IB == this)
@@ -154,64 +160,62 @@ class Headtorch_ColorBase extends Clothing
 			PlayerBase player = PlayerBase.Cast(person);
 			int boneIdx = player.GetBoneIndexByName("Head");
 			
-			if( boneIdx != -1 )
+			if (boneIdx != -1)
 			{
-				if ( m_Light.GetParent() )
+				if (m_Light.GetParent())
 					m_Light.DetachFromParent();
 				
-				m_Light.SetPosition( m_OnHeadLocalPos );
-				m_Light.SetOrientation( m_OnHeadLocalOri );
+				m_Light.SetPosition(m_OnHeadLocalPos);
+				m_Light.SetOrientation(m_OnHeadLocalOri);
 				
 				player.AddChild(m_Light, boneIdx);
 			}
 		}
 		else if (person.IsZombie())
 		{
-			if ( m_Light.GetParent() )
+			if (m_Light.GetParent())
 				m_Light.DetachFromParent();
 			
-			m_Light.SetPosition( m_OnHeadLocalPos );
-			m_Light.SetOrientation( m_OnHeadLocalOri );
+			m_Light.SetPosition(m_OnHeadLocalPos);
+			m_Light.SetOrientation(m_OnHeadLocalOri);
 			
 			person.AddChild(m_Light, 17);
 		}
 	}
 	
-	override void OnWasAttached( EntityAI parent, int slot_id )
+	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
 		super.OnWasAttached(parent, slot_id);
 		
 		PlayerBase player = PlayerBase.Cast(parent);
 
-		if ( player )
+		if (player)
 		{
-			if ( m_Light )
+			if (m_Light)
 			{
-				AttachLightOnHead( player );
+				AttachLightOnHead(player);
 			}
-			//player.m_PlayerLightManager.AddLightSource(this);
 		}
 	}
 	
-	override void OnWasDetached( EntityAI parent, int slot_id )
+	override void OnWasDetached(EntityAI parent, int slot_id)
 	{
 		super.OnWasDetached(parent, slot_id);
 		
 		PlayerBase player = PlayerBase.Cast(parent);
-		if ( player )
+		if (player)
 		{
-			if ( m_Light )
+			if (m_Light)
 			{
 				m_Light.DetachFromParent();
 				m_Light.AttachOnMemoryPoint(this, m_OffHeadLightPoint, m_OffHeadLightTarget);
 			}
-			//player.m_PlayerLightManager.RemoveLightSource(this);
 		}
 	}
 	
 	override void OnWorkStop()
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
 		{
 			if (m_Light)
 				m_Light.FadeOut();

@@ -123,8 +123,8 @@ class UndergroundHandlerClient
 				
 				distances.Insert(dist);
 				
-					#ifdef DEVELOPER
-				if ( DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_SHOW_BREADCRUMB) )
+				#ifdef DIAG_DEVELOPER
+				if ( DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_SHOW_BREADCRUMB) )
 				{
 					Debug.DrawSphere(crumb.GetPosition(),0.1, COLOR_RED, ShapeFlags.ONCE);
 				}
@@ -156,8 +156,8 @@ class UndergroundHandlerClient
 					ratio = MAX_RATIO;
 				if (ratio > RATIO_CUTOFF)
 				{
-						#ifdef DEVELOPER
-					if (DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_SHOW_BREADCRUMB) )
+					#ifdef DIAG_DEVELOPER
+					if (DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_SHOW_BREADCRUMB) )
 					{
 						float intensity = (1-ratio) * 255;
 						Debug.DrawLine(GetGame().GetPlayer().GetPosition() + "0 1 0", m_TransitionalTrigger.m_Data.Breadcrumbs[i].GetPosition(),ARGB(0,255,intensity,intensity),ShapeFlags.ONCE);
@@ -189,7 +189,7 @@ class UndergroundHandlerClient
 	private void ProcessLighting(float timeSlice)
 	{
 		#ifdef DEVELOPER
-		if (!DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_DISABLE_DARKENING) )
+		if (!DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_DISABLE_DARKENING) )
 		{
 			GetGame().GetWorld().SetUserLightingLerp(m_LightingLerp);
 		}
@@ -221,8 +221,8 @@ class UndergroundHandlerClient
 		ProcessLighting(timeSlice);
 		ProcessSound(timeSlice);
 		
-		#ifdef DEVELOPER
-		if ( DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_SHOW_BREADCRUMB) )
+		#ifdef DIAG_DEVELOPER
+		if ( DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_SHOW_BREADCRUMB) )
 		{
 			DisplayDebugInfo(GetGame().GetWorld().GetEyeAccom(), m_LightingLerp);
 		}
@@ -232,8 +232,8 @@ class UndergroundHandlerClient
 	
 	private void ApplyEyeAcco()
 	{
-		#ifdef DEVELOPER
-		if (!DiagMenu.GetBool(DiagMenuIDs.DM_UNDERGROUND_DISABLE_DARKENING) )
+		#ifdef DIAG_DEVELOPER
+		if (!DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_DISABLE_DARKENING) )
 		{
 			GetRequester().SetEyeAccommodation(m_EyeAcco);
 		}
@@ -271,7 +271,6 @@ class UndergroundHandlerClient
 			m_EyeAcco = m_EyeAccoTarget;
 		}
 		return false;
-
 	}
 	
 	
@@ -407,7 +406,7 @@ class UndergroundHandlerClient
 		}
 	}
 	
-	#ifdef DEVELOPER
+	#ifdef DIAG_DEVELOPER
 	protected void DisplayDebugInfo(float acco, float lighting)
 	{
 		if (acco < 0.0001)

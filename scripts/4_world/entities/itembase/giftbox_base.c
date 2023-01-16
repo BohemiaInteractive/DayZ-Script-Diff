@@ -1,7 +1,10 @@
 class GiftBox_Base extends Container_Base
 {
+	protected vector m_HalfExtents; // The Y value contains a heightoffset and not the halfextent !!!
+	
 	void GiftBox_Base()
 	{
+		m_HalfExtents = vector.Zero;
 		m_Openable = new OpenableBehaviour(false);
 		RegisterNetSyncVariableBool("m_Openable.m_IsOpened");
 	}
@@ -54,17 +57,17 @@ class GiftBox_Base extends Container_Base
 		}
 	}
 	
+	
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
-		//Print("EEHealthLevelChanged");
 		super.EEHealthLevelChanged(oldLevel,newLevel,zone);
 		
 		if ( newLevel == GameConstants.STATE_RUINED && GetGame().IsServer() )
 		{
-			MiscGameplayFunctions.ThrowAllItemsInInventory(this, 0);
+			//MiscGameplayFunctions.ThrowAllItemsInInventory(this, 0);
+			MiscGameplayFunctions.DropAllItemsInInventoryInBounds(this, m_HalfExtents);
 			DeleteSafe();
 		}
-		//m_DamageSystemStarted = true;
 	}
 }
 

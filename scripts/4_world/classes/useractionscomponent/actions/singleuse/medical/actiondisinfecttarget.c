@@ -41,10 +41,13 @@ class ActionDisinfectTarget: ActionDisinfectBase
 	{	
 		PlayerBase target = PlayerBase.Cast(action_data.m_Target.GetObject());
 		
-		if( target )
+		if ( target )
 		{
-			target.GetModifiersManager().ActivateModifier(eModifiers.MDF_DISINFECTION);
-			Apply(action_data);
+			if (CanReceiveAction(action_data.m_Target))
+			{
+				target.GetModifiersManager().ActivateModifier(eModifiers.MDF_DISINFECTION);
+				Apply(action_data);
+			}
 		}
 	}
 };

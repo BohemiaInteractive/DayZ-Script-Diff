@@ -20,14 +20,14 @@ class OptionSelectorLevelMarker extends OptionSelectorSliderSetup
 		
 		m_SelectorType			= 1;
 		m_ParentClass			= parentMenu;
-		m_Slider				= SliderWidget.Cast(m_Root.FindAnyWidget( "marker_value" ));
-		m_Slider2				= SliderWidget.Cast(m_Root.FindAnyWidget( "other_slider_value" ));
+		m_Slider				= SliderWidget.Cast(m_Root.FindAnyWidget("marker_value"));
+		m_Slider2				= SliderWidget.Cast(m_Root.FindAnyWidget("other_slider_value"));
 		
 		m_MinValue					= min;
 		m_MaxValue					= max;
 		
 		SetValue(value, false);
-		SetSlider2Value( 0 );
+		SetSlider2Value(0);
 		Enable();
 
 		m_Parent.SetHandler(this);

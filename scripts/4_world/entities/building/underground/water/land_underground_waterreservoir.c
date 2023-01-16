@@ -900,7 +900,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	protected float AdjustTime(float originalTime)
 	{
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		float timeAccel = 1;
 		if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.UNDERGROUND_RESERVOIR))
 		{
@@ -1055,7 +1055,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 			}
 		}
 	}
-		
+	
 	protected void HandleSoundEffectsWaterLevelMovementSounds()
 	{
 		if (m_WaterLevelActual < m_WaterLevelPrev)

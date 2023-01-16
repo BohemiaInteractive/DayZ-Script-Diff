@@ -36,13 +36,17 @@ class ActionBurnSewTarget: ActionContinuousBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{
 		PlayerBase ntarget = PlayerBase.Cast(action_data.m_Target.GetObject());
-		if (ntarget.GetBleedingManagerServer() )
+		if (CanReceiveAction(action_data.m_Target))
 		{
-			ntarget.GetBleedingManagerServer().RemoveMostSignificantBleedingSourceEx(action_data.m_MainItem);
+			if (ntarget.GetBleedingManagerServer() )
+			{
+				ntarget.GetBleedingManagerServer().RemoveMostSignificantBleedingSourceEx(action_data.m_MainItem);
+			}
+			//OlD_SHOCK//ntarget.GetStatShock().Add(1000);
+			action_data.m_MainItem.DecreaseHealth ( "", "", 5 );
+	
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+	
 		}
-		//OlD_SHOCK//ntarget.GetStatShock().Add(1000);
-		action_data.m_MainItem.DecreaseHealth ( "", "", 5 );
-
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

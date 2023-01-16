@@ -148,7 +148,7 @@ class ServerBrowserTabPc extends ServerBrowserTab
 			m_EntriesSorted.GetElement(i).Clear();
 		}
 		
-		OnlineServices.m_ServersAsyncInvoker.Insert( m_Menu.OnLoadServersAsync );
+		OnlineServices.m_ServersAsyncInvoker.Insert( m_Menu.OnLoadServersAsync, EScriptInvokerInsertFlags.NONE );
 		
 		m_LoadingFinished = false;
 		m_Loading = true;

@@ -26,7 +26,7 @@ class WeaponManager
 	protected int 							m_ForceEjectBulletTimestamp;
 	
 	protected const int 					FORCE_EJECT_BULLET_TIMEOUT = 2000;
-#ifdef DEVELOPER	
+#ifdef DIAG_DEVELOPER	
 	protected int 							m_BurstOption;
 #endif
 	//Reload
@@ -431,13 +431,13 @@ class WeaponManager
 	void Fire(Weapon_Base wpn)
 	{
 		int mi = wpn.GetCurrentMuzzle();
-		if( wpn.IsChamberFiredOut(mi) || wpn.IsJammed() || wpn.IsChamberEmpty(mi) )
+		if ( wpn.IsChamberFiredOut(mi) || wpn.IsJammed() || wpn.IsChamberEmpty(mi) )
 		{
 			wpn.ProcessWeaponEvent(new WeaponEventTrigger(m_player));
 			return;
 		}
 		
-		if(wpn.JamCheck(0))
+		if (wpn.JamCheck(0))
 		{
 			wpn.ProcessWeaponEvent(new WeaponEventTriggerToJam(m_player));
 		}
@@ -446,7 +446,8 @@ class WeaponManager
 			wpn.ProcessWeaponEvent(new WeaponEventTrigger(m_player));
 		}
 	}
-#ifdef DEVELOPER
+	
+#ifdef DIAG_DEVELOPER
 	int GetBurstOption()
 	{
 		return m_BurstOption;
@@ -464,7 +465,7 @@ class WeaponManager
 	//Client
 	private void Synchronize( )
 	{
-		if( GetGame().IsClient() )
+		if ( GetGame().IsClient() )
 		{
 			m_PendingWeaponActionAcknowledgmentID = ++m_LastAcknowledgmentID;
 			ScriptInputUserData ctx = new ScriptInputUserData;

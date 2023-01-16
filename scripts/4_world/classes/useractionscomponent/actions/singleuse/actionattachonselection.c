@@ -7,69 +7,63 @@ class ActionAttachOnSelection: ActionSingleUseBase
 	
 	override void CreateConditionComponents() 
 	{
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTCursor;
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTCursor();
 	}
 	
 	override ActionData CreateActionData()
 	{
-		AttachActionData action_data = new AttachActionData;
+		AttachActionData action_data = new AttachActionData();
 		return action_data;
 	}
 	
 	int FindSlotIdToAttachOrCombine(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		EntityAI target_entity = EntityAI.Cast( target.GetObject() );
-		
-		if ( target_entity && item )
+		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
+		if (targetEntity && item)
 		{
-			if ( !target_entity.GetInventory() ) return InventorySlots.INVALID;
-			
-			array<string> selections = new array<string>;
-			target_entity.GetActionComponentNameList(target.GetComponentIndex(), selections);
+			if (!targetEntity.GetInventory())
+				return InventorySlots.INVALID;
 
-			for (int s = 0; s < selections.Count(); s++)
+			int slotsCount = item.GetInventory().GetSlotIdCount();			
+			array<string> selections = new array<string>();
+			targetEntity.GetActionComponentNameList(target.GetComponentIndex(), selections);
+
+			foreach (string selection : selections)
 			{
-				//Print(selections[s]);
-				int carId = -1;
-				if ( !target_entity.TranslateSlotFromSelection(selections[s],carId) )
-					carId = InventorySlots.GetSlotIdFromString( selections[s] );
-				
-				if ( carId == -1 )
-					continue;
-				
-				int slotsCnt = item.GetInventory().GetSlotIdCount();
+				int slotId = -1;
+				if (!targetEntity.TranslateSlotFromSelection(selection, slotId))
+					slotId = InventorySlots.GetSlotIdFromString(selection);
 
-				for (int i=0; i < slotsCnt; i++ )
+				if (slotId == -1)
+					continue;
+
+				for (int i=0; i < slotsCount; ++i)
 				{
-					int itmSlotId = item.GetInventory().GetSlotId(i);
-					
-					if ( carId == itmSlotId )
+					int itemSlotId = item.GetInventory().GetSlotId(i);
+					if (slotId == itemSlotId)
 					{
-						ItemBase currentAttachment = ItemBase.Cast(target_entity.GetInventory().FindAttachment( carId ));
+						ItemBase currentAttachment = ItemBase.Cast(targetEntity.GetInventory().FindAttachment(slotId));
 						if (currentAttachment)
 						{
-							if(currentAttachment.CanBeCombined( item ) )
-							{
-								return itmSlotId;
-							}
+							if (currentAttachment.CanBeCombined(item))
+								return itemSlotId;
 						}
 						else
 						{
-							if ( target_entity.GetInventory() && target_entity.GetInventory().CanAddAttachment( item ) )
-							{
-								return itmSlotId;
-							}
+							if (targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item))
+								return itemSlotId;
 						}	
 					}
 				}
 			}
-		}	
+		}
+
 		return InventorySlots.INVALID;
 	}
 	
 	
-	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
+	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = null)
 	{
 		int attSlotId = InventorySlots.INVALID;
 		if (!GetGame().IsDedicatedServer() )
@@ -77,29 +71,34 @@ class ActionAttachOnSelection: ActionSingleUseBase
 			attSlotId = FindSlotIdToAttachOrCombine(player, target, item);
 		}
 		
-		if ( super.SetupAction( player, target, item, action_data, extra_data))
+		if (super.SetupAction( player, target, item, action_data, extra_data))
 		{
 			if (!GetGame().IsDedicatedServer())
 			{
-				if(attSlotId != InventorySlots.INVALID)
+				if (attSlotId != InventorySlots.INVALID)
 				{
 					AttachActionData action_data_a = AttachActionData.Cast(action_data);
 					action_data_a.m_AttSlot = attSlotId;
+					
 					return true;
 				}
+
 				return false;
 			}
+
 			return true;
 		}
+
 		return false;
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if (GetGame().IsMultiplayer() && GetGame().IsServer() ) return true;
+		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			return true;
 		
-		//if (BaseBuildingBase.Cast(target.GetObject())) return false;
-		if (target.GetObject() && target.GetObject().CanUseConstruction()) return false;
+		if (target.GetObject() && target.GetObject().CanUseConstruction())
+			return false;
 		
 		return FindSlotIdToAttachOrCombine(player, target, item) != InventorySlots.INVALID;
 	}
@@ -109,41 +108,51 @@ class ActionAttachOnSelection: ActionSingleUseBase
 		if (GetGame().IsMultiplayer())
 			return;
 		
-		EntityAI target_entity = EntityAI.Cast( action_data.m_Target.GetObject() );
-		EntityAI item_entity = action_data.m_MainItem;
-		
-		AttachActionData action_data_a = AttachActionData.Cast(action_data);
-		
-		action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(target_entity, item_entity, action_data_a.m_AttSlot );
-	}
-	
-	override void OnExecuteClient( ActionData action_data )
-	{
 		ClearInventoryReservationEx(action_data);
-		EntityAI target_entity = EntityAI.Cast( action_data.m_Target.GetObject() );
-		EntityAI item_entity = action_data.m_MainItem;
 		
 		AttachActionData action_data_a = AttachActionData.Cast(action_data);
-		
-		ItemBase attachment = ItemBase.Cast( target_entity.GetInventory().FindAttachment( action_data_a.m_AttSlot ) );
-			
-		
-		if ( attachment )
+		EntityAI entity;
+
+		if (action_data.m_Target.IsProxy())
 		{
-			attachment.CombineItemsClient( item_entity );
+			entity = EntityAI.Cast(action_data.m_Target.GetParent());
 		}
 		else
 		{
-			ItemBase item_base	= ItemBase.Cast( item_entity );
+			entity = EntityAI.Cast(action_data.m_Target.GetObject());
+		}
+		
+		if (entity && action_data.m_MainItem)
+		{
+			action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(entity, action_data_a.m_MainItem, action_data_a.m_AttSlot);
+		}
+	}
+	
+	override void OnExecuteClient(ActionData action_data)
+	{
+		ClearInventoryReservationEx(action_data);
+		EntityAI targetEntity 	= EntityAI.Cast(action_data.m_Target.GetObject());
+		EntityAI itemEntity 	= action_data.m_MainItem;
+		
+		AttachActionData action_data_a = AttachActionData.Cast(action_data);
+		
+		ItemBase attachment = ItemBase.Cast(targetEntity.GetInventory().FindAttachment(action_data_a.m_AttSlot));
+		if (attachment)
+		{
+			attachment.CombineItemsClient(itemEntity);
+		}
+		else
+		{
+			ItemBase item_base	= ItemBase.Cast( itemEntity );
 			float stackable	= item_base.GetTargetQuantityMax( action_data_a.m_AttSlot );
 				
-			if( stackable == 0 || stackable >= item_base.GetQuantity() )
+			if (stackable == 0 || stackable >= item_base.GetQuantity())
 			{
-				action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(target_entity, item_entity, action_data_a.m_AttSlot);
+				action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(targetEntity, itemEntity, action_data_a.m_AttSlot);
 			}
-			else if( stackable != 0 && stackable < item_base.GetQuantity() )
+			else if (stackable != 0 && stackable < item_base.GetQuantity())
 			{
-				item_base.SplitIntoStackMaxClient( target_entity, action_data_a.m_AttSlot );
+				item_base.SplitIntoStackMaxClient(targetEntity, action_data_a.m_AttSlot);
 			}
 		}
 	}

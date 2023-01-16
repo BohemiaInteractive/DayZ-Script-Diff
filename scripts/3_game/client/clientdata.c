@@ -54,11 +54,18 @@ class ClientData
 		
 		#ifdef PLATFORM_CONSOLE
 			#ifndef PLATFORM_WINDOWS // if app is not on Windows with -XBOX parameter
-				OnlineServices.LoadPermissions( GetSimplePlayerList( new_players ) );
-				if( new_players.m_PlayerList.Count() > 0 )
+				array<string> newPlayersSimple = GetSimplePlayerList( new_players );
+				OnlineServices.LoadPermissions( newPlayersSimple );
+				OnlineServices.m_ClientServices.GetSessionService().OnSessionPlayerListUpdate(newPlayersSimple);
+				
+				if ( new_players.m_PlayerList.Count() > 0 )
+				{
 					OnlineServices.LoadFriends();
-				if( g_Game.GetGameState() == DayZGameState.IN_GAME )
+				}
+				if ( g_Game.GetGameState() == DayZGameState.IN_GAME )
+				{
 					OnlineServices.SetMultiplayState(OnlineServices.GetMultiplayState());
+				}
 			#endif
 		#endif
 		

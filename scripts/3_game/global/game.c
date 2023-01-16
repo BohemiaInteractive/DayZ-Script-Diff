@@ -18,8 +18,16 @@ class CGame
 	ref AnalyticsManagerClient 	m_AnalyticsManagerClient;	
 	ref MenuDefaultCharacterData 		m_CharacterData;
 	
-	#ifdef DEVELOPER
+	#ifdef DIAG_DEVELOPER
 	ref array<ComponentEnergyManager> m_EnergyManagerArray;
+	void EnableEMPlugs(bool enable)
+	{
+		for (int i = 0; i < GetGame().m_EnergyManagerArray.Count(); ++i)
+		{
+			if (GetGame().m_EnergyManagerArray[i])
+				GetGame().m_EnergyManagerArray[i].SetDebugPlugs(enable);
+		}
+	}
 	#endif
 	
 	void CGame()
@@ -39,7 +47,7 @@ class CGame
 		// actual script version - increase by one when you make changes
 		StorageVersion(GAME_STORAGE_VERSION);
 		
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		m_EnergyManagerArray = new array<ComponentEnergyManager>;
 		#endif
 		
@@ -854,12 +862,19 @@ class CGame
 	}
 	@endcode
 	*/
-	proto native void		RPC(Object target, int rpc_type, notnull array<ref Param> params, bool guaranteed,PlayerIdentity recipient = NULL);
+	proto native void		RPC(Object target, int rpcType, notnull array<ref Param> params, bool guaranteed,PlayerIdentity recipient = null);
 	//! see CGame.RPC
-	void					RPCSingleParam(Object target, int rpc_type, Param param, bool guaranteed, PlayerIdentity recipient = NULL)
+	void					RPCSingleParam(Object target, int rpc_type, Param param, bool guaranteed, PlayerIdentity recipient = null)
 	{
 		m_ParamCache.Set(0, param);
 		RPC(target, rpc_type, m_ParamCache, guaranteed, recipient);
+	}
+	//! Not actually an RPC, as it will send it only to yourself
+	proto native void		RPCSelf(Object target, int rpcType, notnull array<ref Param> params);
+	void					RPCSelfSingleParam(Object target, int rpcType, Param param)
+	{
+		m_ParamCache.Set(0, param);
+		RPCSelf(target, rpcType, m_ParamCache);
 	}
 
 	//! Use for profiling code from start to stop, they must match have same name, look wiki pages for more info: https://confluence.bistudio.com/display/EN/Profiler
@@ -1005,6 +1020,7 @@ class CGame
 	proto void				SurfaceGetType(float x, float z, out string type);
 	proto void				SurfaceGetType3D(float x, float y, float z, out string type);
 	proto void				SurfaceUnderObject(notnull Object object, out string type, out int liquidType);
+	proto void				SurfaceUnderObjectEx(notnull Object object, out string type, out string impact, out int liquidType);
 	proto void				SurfaceUnderObjectByBone(notnull Object object, int boneType, out string type, out int liquidType);
 	proto native float		SurfaceGetNoiseMultiplier(Object directHit, vector pos, int componentIndex);
 	proto native vector		SurfaceGetNormal(float x, float z);

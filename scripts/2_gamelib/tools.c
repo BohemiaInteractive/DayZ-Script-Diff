@@ -116,11 +116,55 @@ class ScriptInvoker
 {
 	//! invoke call on all inserted methods with given arguments
 	proto void Invoke(void param1 = NULL, void param2 = NULL, void param3 = NULL, void param4 = NULL, void param5 = NULL, void param6 = NULL, void param7 = NULL, void param8 = NULL, void param9 = NULL);
-	//! insert method to list	
-	proto void Insert(func fn);	
+	//! insert method to list
+	proto bool Insert(func fn, int flags = EScriptInvokerInsertFlags.IMMEDIATE);	
 	//! remove specific call from list
-	proto void Remove(func fn);
+	proto bool Remove(func fn, int flags = EScriptInvokerRemoveFlags.ALL);
+	//! count how many times this fn is actively present in the Invoker
+	proto int Count(func fn);
 	//! remove all calls from list
 	proto native void Clear();
 };
 
+enum EScriptInvokerInsertFlags
+{
+	NONE,
+	/**
+	\brief It gets added in immediately, which means that when called while an invoker is running, it will call this newly added call in the same run
+		\note Default flag, as that is the original behaviour, although it might cause endless Insert chain now... (still better than undefined behaviour)
+		\note In case of "Possible endless Insert detected" VME, either create an exit, remove the IMMEDIATE flag or make the insert UNIQUE
+		\note The Endless Insert is detected by seeing if "amount of calls > initial size + 128"
+	*/
+	IMMEDIATE,
+	/**
+	\brief Only one call to this instance+method is ever expected
+		\note Will throw a VME when a second one is attempted to be added
+		\note If it was already added without the flag, it will also throw a VME and keep the first of all previously inserted
+	*/
+	UNIQUE,
+}
+
+enum EScriptInvokerRemoveFlags
+{
+	NONE,
+	/**
+	\brief Default flag
+		\note Don't use this if you want it to remove only the last insert instead of all of them
+	*/
+	ALL,
+}
+
+/**
+ \brief Designed to hold 1 valid call
+*/
+class ScriptCaller
+{
+	//! ScriptCaller is meant to be created through Create
+	private void ScriptCaller();
+	//! Creates a ScriptCaller
+	static proto ScriptCaller Create(func fn);
+	//! Replaces the current registered func with the new one, throws errors if unsuccessful
+	proto void Init(func fn);	
+	//! Invoke call on the registered func, throws errors if unsuccessful
+	proto void Invoke(void param1 = null, void param2 = null, void param3 = null, void param4 = null, void param5 = null, void param6 = null, void param7 = null, void param8 = null, void param9 = null);
+};

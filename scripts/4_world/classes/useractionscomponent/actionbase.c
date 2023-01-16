@@ -87,6 +87,11 @@ class ActionBase : ActionBase_Basic
 		InitConditionMask();
 	}
 	
+	bool IsLockTargetOnUse()
+	{
+		return m_LockTargetOnUse;
+	}
+	
 	void InitConditionMask()
 	{
 		m_ConditionMask = ActionConditionMask.ACM_NO_EXEPTION;
@@ -278,15 +283,10 @@ class ActionBase : ActionBase_Basic
 		return false;
 	}
 
-
 	string GetText() //text game displays in HUD hint 
 	{
 		return m_Text;
 	}
-	/*string GetTargetDescription()
-	{
-		return "default target description";
-	}*/
 	
 	bool CanBePerformedFromQuickbar()
 	{
@@ -374,9 +374,7 @@ class ActionBase : ActionBase_Basic
 		return true;
 	}
 	
-	void ApplyModifiers( ActionData action_data ) // method that is planned to be called after every succesful completion of action to transfer diseases and other modifiers, now is called before oncompletes
-	{
-	}
+	void ApplyModifiers(ActionData action_data);
 	
 	int GetRefreshReservationTimerValue()
 	{
@@ -394,12 +392,12 @@ class ActionBase : ActionBase_Basic
 		Object targetObject = null;
 		Object targetParent = null;
 		
-		if( UseMainItem() )
+		if (UseMainItem())
 		{
 			ctx.Write(action_data.m_MainItem);
 		}
 			
-		if( HasTarget() && !IsUsingProxies() )
+		if (HasTarget() && !IsUsingProxies())
 		{
 			// callback data
 			targetObject = action_data.m_Target.GetObject();
@@ -441,7 +439,7 @@ class ActionBase : ActionBase_Basic
 	
 	bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
 	{
-		if( !action_recive_data )
+		if ( !action_recive_data )
 		{
 			action_recive_data = new ActionReciveData;
 		}
@@ -454,13 +452,13 @@ class ActionBase : ActionBase_Basic
 		
 		ref ActionTarget target;
 		
-		if( UseMainItem() )
+		if ( UseMainItem() )
 		{
 			if ( !ctx.Read(mainItem) )
 				return false;
 		}
 
-		if( HasTarget() && !IsUsingProxies() )
+		if ( HasTarget() && !IsUsingProxies() )
 		{			
 			if ( !ctx.Read(actionTargetObject) )
 				return false;
@@ -631,6 +629,20 @@ class ActionBase : ActionBase_Basic
 		OnEndRequest(action_data);
 	}
 	
+	bool CanReceiveAction(ActionTarget target)
+	{
+		bool result = true;
+		PlayerBase target_player = PlayerBase.Cast(target.GetObject());
+		
+		if (target_player)
+		{
+			result = !target_player.IsJumpInProgress();
+			result = result && !(target_player.GetCommand_Ladder() || target_player.GetCommand_Vehicle() || target_player.GetCommand_Swim());
+		}
+		
+		return result;
+	}
+	
 	static int ComputeConditionMask( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		int mask = 0;
@@ -720,16 +732,16 @@ class ActionBase : ActionBase_Basic
 		return true;
 	}
 	
-	bool Can( PlayerBase player, ActionTarget target, ItemBase item )
+	bool Can(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		int condition_mask = ComputeConditionMask( player, target, item );
+		int condition_mask = ComputeConditionMask(player, target, item);
 		
 		return Can( player, target, item, condition_mask);
 	}
 	
 	protected bool CanContinue( ActionData action_data )
 	{
-		if ( !action_data.m_Player.IsPlayerInStance(action_data.m_PossibleStanceMask) || !m_ConditionItem || !m_ConditionItem.CanContinue(action_data.m_Player,action_data.m_MainItem) || !m_ConditionTarget || !m_ConditionTarget.CanContinue(action_data.m_Player,action_data.m_Target) )
+		if (!action_data.m_Player.IsPlayerInStance(action_data.m_PossibleStanceMask) || !m_ConditionItem || !m_ConditionItem.CanContinue(action_data.m_Player,action_data.m_MainItem) || !m_ConditionTarget || !m_ConditionTarget.CanContinue(action_data.m_Player,action_data.m_Target))
 			return false;
 
 		return ActionConditionContinue(action_data);
@@ -740,21 +752,23 @@ class ActionBase : ActionBase_Basic
 		return m_VariantManager != null;
 	}
 	
-	int GetVariantsCount( )
+	int GetVariantsCount()
 	{
-		if ( m_VariantManager )
+		if (m_VariantManager)
 			return m_VariantManager.GetActionsCount();
+
 		return 0;
 	}
 	
-	int GetVariants( out array<ref ActionBase> variants )
+	int GetVariants(out array<ref ActionBase> variants)
 	{
-		if ( m_VariantManager )
-			return m_VariantManager.GetActions( variants );
+		if (m_VariantManager)
+			return m_VariantManager.GetActions(variants);
+
 		return 0;
 	}
 	
-	void SetVariantID( int ID )
+	void SetVariantID(int ID)
 	{
 		m_VariantID = ID;
 	}
@@ -764,11 +778,11 @@ class ActionBase : ActionBase_Basic
 		return m_VariantID;
 	}
 	
-	void UpdateVariants( Object item, Object target, int componet_index )
+	void UpdateVariants(Object item, Object target, int componet_index)
 	{
 		if ( m_VariantManager )
 		{
-			m_VariantManager.UpdateVariants( item, target, componet_index );
+			m_VariantManager.UpdateVariants(item, target, componet_index);
 		}
 	}
 	
@@ -783,7 +797,7 @@ class ActionBase : ActionBase_Basic
 	// return if has successfuly reserved inventory
 	bool InventoryReservation(ActionData action_data)
 	{
-		if( (IsLocal() || !UseAcknowledgment()) && IsInstant() )
+		if ((IsLocal() || !UseAcknowledgment()) && IsInstant())
 			return true;
 		
 		//action_data.m_ReservedInventoryLocations = new array<ref InventoryLocation>;
@@ -792,7 +806,7 @@ class ActionBase : ActionBase_Basic
 		InventoryLocation handInventoryLocation = NULL;
 		
 		// lock target if it has target
-		if( HasTarget() )
+		if (HasTarget())
 		{
 			ItemBase targetItem;
 			if ( ItemBase.CastTo(targetItem,action_data.m_Target.GetObject()) )
@@ -813,38 +827,35 @@ class ActionBase : ActionBase_Basic
 		handInventoryLocation = new InventoryLocation;
 		handInventoryLocation.SetHands(action_data.m_Player,action_data.m_Player.GetItemInHands());
 
-		if ( action_data.m_Player.GetInventory().HasInventoryReservation( action_data.m_Player.GetItemInHands(), handInventoryLocation) )
-		{
-			success = false;
-		}
-		else
+		if (action_data.m_Player.GetInventory().HasInventoryReservation( action_data.m_Player.GetItemInHands(), handInventoryLocation))
 		{
 			if (HasTarget())
 			{
 				action_data.m_Player.GetInventory().ClearInventoryReservation(targetItem, targetInventoryLocation);
 			}
+
+			success = false;
+		}
+		else
+		{
 			action_data.m_Player.GetInventory().AddInventoryReservationEx( action_data.m_Player.GetItemInHands(), handInventoryLocation, GameInventory.c_InventoryReservationTimeoutMS);
 		}
 		
-		if ( success )
+		if (success)
 		{
-			if( targetInventoryLocation )
+			if (targetInventoryLocation)
 				action_data.m_ReservedInventoryLocations.Insert(targetInventoryLocation);
 			
-			if( handInventoryLocation )
+			if (handInventoryLocation)
 				action_data.m_ReservedInventoryLocations.Insert(handInventoryLocation);
 		}
-		// lock Hands
-		// On Fail unlock targetEntity
-		//if ( targetEntity ) player.GetInventory().ClearReservation(player,targetEntity);
-		// find way how to lock only hand slot
 		
 		return success;
 	}
 
 	void ClearInventoryReservationEx(ActionData action_data)
 	{
-		if(action_data.m_ReservedInventoryLocations)
+		if (action_data.m_ReservedInventoryLocations)
 		{
 			InventoryLocation il;
 			for ( int i = 0; i < action_data.m_ReservedInventoryLocations.Count(); i++)
@@ -853,86 +864,24 @@ class ActionBase : ActionBase_Basic
 				EntityAI entity = il.GetItem();
 				action_data.m_Player.GetInventory().ClearInventoryReservationEx( il.GetItem() , il );
 			}
+
 			action_data.m_ReservedInventoryLocations.Clear();
 		}
 	}
 	
 	void RefreshReservations(ActionData action_data)
 	{
-		if(action_data.m_ReservedInventoryLocations)
+		if (action_data.m_ReservedInventoryLocations)
 		{
 			InventoryLocation il;
-			for ( int i = 0; i < action_data.m_ReservedInventoryLocations.Count(); i++)
+			for (int i = 0; i < action_data.m_ReservedInventoryLocations.Count(); i++)
 			{
 				il = action_data.m_ReservedInventoryLocations.Get(i);
 				EntityAI entity = il.GetItem();
-				action_data.m_Player.GetInventory().ExtendInventoryReservationEx( il.GetItem() , il, 10000 );
+				action_data.m_Player.GetInventory().ExtendInventoryReservationEx(il.GetItem() , il, 10000);
 			}
 		}
 	}
-
-	// MESSAGES --------------------------------------------------------------------
-/*	string GetMessageText( int state ) //returns text of action based on given id
-	{
-		string message = "";
-		switch ( state )
-		{
-			case UA_ERROR:
-				message = GetMessageStartFail();
-				break;
-				
-			case UA_FAILED:
-				message = GetMessageFail();
-				break;
-			
-			case UA_INITIALIZE:
-				message = "Initialize";
-				break;
-				
-			case UA_PROCESSING:
-				message = "Processing";
-				break;
-				
-			case UA_REPEAT:
-				message = "loop end";
-				break;
-				
-			case UA_START:
-				message = GetMessageStart();
-				break;
-				
-			case UA_FINISHED:
-				message = GetMessageSuccess();
-				break;
-				
-			case UA_CANCEL:
-
-				message = GetMessageCancel();
-				break;
-			
-			case UA_INTERRUPT:
-				message = GetMessageInterrupt();
-				break;
-				
-			case UA_STARTT:
-				message = GetMessageStartTarget();
-				break;
-				
-			case UA_FINISHEDT:
-				message = GetMessageSuccessTarget();
-				break;
-				
-			case UA_CANCELT:
-				message = GetMessageCancelTarget();
-				break;
-				
-			default:
-				Print("ActionBase.c | Informplayers | CALLED WITH WRONG STATE PARAMETER");
-				break;
-		}
-
-		return message;
-	}*/
 	
 	// action need first have permission from server before can start
 	bool UseAcknowledgment()
@@ -940,46 +889,13 @@ class ActionBase : ActionBase_Basic
 		return true;
 	}
 	
-	protected void InformPlayers( PlayerBase player, ActionTarget target, int state ) //delivers message ids to clients based on given context
-	{	
-		/*player.MessageAction(GetMessageText(state)); //jtomasik - tohle se smaze az to pujde ven, ted je to jako debug pro lokalni testovani
-		
-		if( GetGame().IsServer() && player && m_MessagesParam && state > 0 && state < 12 )
-		{
-			int message_target = 0;
-			switch ( state )
-			{
-				case UA_START:
-					message_target = UA_STARTT;
-					break;
-					
-				case UA_FINISHED:
-					message_target = UA_FINISHEDT;
-					break;
-					
-				case UA_CANCEL:
-					message_target = UA_CANCELT;
-					break;
-			}
-			if ( player.IsDamageDestroyed() )
-			{
-				m_MessagesParam.param1 = GetType();
-				m_MessagesParam.param2 = state;
-				GetGame().RPCSingleParam(player, RPC_USER_ACTION_MESSAGES, m_MessagesParam, player.GetIdentity());
-			}
-			if ( message_target > 0 && m_ConditionTarget && m_ConditionTarget.IsActionOnTarget() && target && target.IsMan() && target.IsAlive() )
-			{
-				m_MessagesParam.param1 = GetType();
-				m_MessagesParam.param2 = message_target;
-				GetGame().RPCSingleParam(target, RPC_USER_ACTION_MESSAGES, m_MessagesParam, target.GetIdentity());
-			}
-		}*/
-	}
+	//! DEPRECATED delivers message ids to clients based on given context
+	protected void InformPlayers( PlayerBase player, ActionTarget target, int state );
 		
 	void SendMessageToClient( Object reciever, string message ) //sends given string to client, don't use if not nescessary
 	{
 		PlayerBase man;
-		if( GetGame().IsServer() && Class.CastTo(man, reciever) && m_MessageParam && reciever.IsAlive() && message != "" )
+		if (GetGame().IsServer() && Class.CastTo(man, reciever) && m_MessageParam && reciever.IsAlive() && message != "")
 		{
 			m_MessageParam.param1 = message;
 			GetGame().RPCSingleParam(man, ERPCs.RPC_USER_ACTION_MESSAGE, m_MessageParam, true, man.GetIdentity());
@@ -1003,28 +919,35 @@ class ActionBase : ActionBase_Basic
 		return target.GetObject() && target.GetObject().IsTransport();
 	}
 
-	protected bool IsInReach(PlayerBase player, ActionTarget target, float maxDistance = 1.0 )
+	protected bool IsInReach(PlayerBase player, ActionTarget target, float maxDistance = 1.0)
 	{
 		Object obj = target.GetObject();
 		if (!obj)
 			return false;
 			
-		string compName;
 		float distanceRoot, distanceHead;
-		vector modelPos, worldPos, playerRootPos, playerHeadPos;
+		vector modelPos, worldPos, playerHeadPos;
 		
 		// we're using sq distance in comparison
 		maxDistance = maxDistance * maxDistance;
-		playerRootPos = player.GetPosition();
 		
 		// get position of Head bone
 		MiscGameplayFunctions.GetHeadBonePos(player, playerHeadPos);
 
-		compName = obj.GetActionComponentName(target.GetComponentIndex());
-		modelPos = obj.GetSelectionPositionMS(compName);
-		worldPos = obj.ModelToWorld(modelPos);
+		array<string> componentNames = new array<string>();
+		obj.GetActionComponentNameList(target.GetComponentIndex(), componentNames);
+		foreach (string componentName : componentNames)
+		{
+			if (componentName.Contains("doorstwin"))
+				continue;
 
-		distanceRoot = vector.DistanceSq(worldPos, playerRootPos);
+			modelPos = obj.GetSelectionPositionMS(componentName);
+			worldPos = obj.ModelToWorld(modelPos);
+			
+			break;
+		}
+
+		distanceRoot = vector.DistanceSq(worldPos, player.GetPosition());
 		distanceHead = vector.DistanceSq(worldPos, playerHeadPos);
 	
 		return distanceRoot <= maxDistance || distanceHead <= maxDistance;

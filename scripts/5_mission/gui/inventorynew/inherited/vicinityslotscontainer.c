@@ -511,10 +511,10 @@ class VicinitySlotsContainer: Container
 		ItemPreviewWidget item_preview = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
 		ItemBase item = ItemBase.Cast( item_preview.GetItem() );
 		bool draggable = ItemManager.GetInstance().EvaluateContainerDragabilityDefault(item);
-		#ifdef DEVELOPER
-		if( item )
+		#ifdef DIAG_DEVELOPER
+		if ( item )
 		{
-			if( GetDayZGame().IsLeftCtrlDown() )
+			if ( GetDayZGame().IsLeftCtrlDown() )
 				ShowActionMenu( item );
 		}
 		#endif

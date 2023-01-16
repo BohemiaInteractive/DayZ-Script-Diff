@@ -29,6 +29,31 @@ class DayZPlayerSyncJunctures
 	static const int SJ_STAMINA							= 23;
 	static const int SJ_STAMINA_MISC					= 24;
 	static const int SJ_ADS_RESET						= 25;
+	#ifdef DEVELOPER
+	static const int SJ_DEBUG_GET_IN_CAR				= 200;
+	#endif
+	
+	
+	#ifdef DEVELOPER
+	//-------------------------------------------------------------
+	//!
+	//!Get in Car
+	//! 
+
+	static void SendGetInCar(DayZPlayer pPlayer, EntityAI car)
+	{
+		ScriptJunctureData ctx = new ScriptJunctureData;
+		ctx.Write(car);
+		pPlayer.SendSyncJuncture(SJ_DEBUG_GET_IN_CAR, ctx);
+	}
+	
+	static bool ReadGetInCarParams(ParamsReadContext pCtx, out EntityAI car)
+	{
+		if (!pCtx.Read(car))
+			return false;
+		return true;
+	}
+	#endif
 	
 	//-------------------------------------------------------------
 	//!

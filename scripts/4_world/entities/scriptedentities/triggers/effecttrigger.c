@@ -62,7 +62,6 @@ class EffectTrigger : CylinderTrigger
 	override void EOnFrame(IEntity other, float timeSlice)
 	{
 		m_DeltaTime = timeSlice;
-		super.EOnFrame(other, timeSlice);
 	}
 	
 	override bool CanAddObjectAsInsider(Object object)

@@ -88,9 +88,9 @@ class LogoutMenu extends UIScriptedMenu
 	
 	override bool OnKeyDown(Widget w, int x, int y, int key)
 	{
-		super.OnKeyDown( w, x, y, key);
+		super.OnKeyDown(w, x, y, key);
 		
-		switch(key)
+		switch (key)
 		{
 			// TODO: just temporary until new inputs are done
 			case KeyCode.KC_W:
@@ -108,9 +108,9 @@ class LogoutMenu extends UIScriptedMenu
 		return true;
 	}
 
-	override void Update( float timeslice )
+	override void Update(float timeslice)
 	{
-		if( GetGame().GetInput().LocalPress( "UAUIBack", false ) )
+		if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Hide();
 			Cancel();
@@ -143,7 +143,7 @@ class LogoutMenu extends UIScriptedMenu
 	
 	void UpdateInfo()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		if (player.IsRestrained() || player.IsUnconscious())
 		{
 			// display killInfo

@@ -3,6 +3,7 @@ class InGameMenu extends UIScriptedMenu
 	string 						m_ServerInfoText;
 	
 	protected Widget			m_ContinueButton;
+	protected Widget			m_SeparatorPanel;
 	protected Widget			m_ExitButton;
 	protected Widget			m_RestartButton;
 	protected Widget 			m_RespawnButton;
@@ -25,6 +26,12 @@ class InGameMenu extends UIScriptedMenu
 	void ~InGameMenu()
 	{
 		HudShow(true);
+		
+		Mission mission = g_Game.GetMission();
+		if (mission)
+		{
+			mission.Continue();
+		}
 	}
 
 	override Widget Init()
@@ -32,6 +39,7 @@ class InGameMenu extends UIScriptedMenu
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_ingamemenu.layout");
 				
 		m_ContinueButton			= layoutRoot.FindAnyWidget("continuebtn");
+		m_SeparatorPanel			= layoutRoot.FindAnyWidget("separator_red");
 		m_ExitButton				= layoutRoot.FindAnyWidget("exitbtn");
 		m_RestartButton				= layoutRoot.FindAnyWidget("restartbtn");
 		m_RespawnButton 			= layoutRoot.FindAnyWidget("respawn_button");
@@ -44,7 +52,6 @@ class InGameMenu extends UIScriptedMenu
 		m_ServerIP 					= TextWidget.Cast(layoutRoot.FindAnyWidget("server_ip"));
 		m_ServerPort 				= TextWidget.Cast(layoutRoot.FindAnyWidget("server_port"));
 		m_ServerName 				= TextWidget.Cast(layoutRoot.FindAnyWidget("server_name"));
-		//m_FavoriteButton 			= layoutRoot.FindAnyWidget("favorite_button");
 		m_FavoriteImage 			= layoutRoot.FindAnyWidget("favorite_image");
 		m_UnfavoriteImage 			= layoutRoot.FindAnyWidget("unfavorite_image");
 		m_CopyInfoButton 			= layoutRoot.FindAnyWidget("copy_button");
@@ -56,12 +63,18 @@ class InGameMenu extends UIScriptedMenu
 		else
 		{
 			ButtonSetText(m_RestartButton, "#main_menu_restart");
-		}		
+		}
 		
 		HudShow(false);
 		SetGameVersion();
 		SetServerInfoVisibility(SetServerInfo() && g_Game.GetProfileOption(EDayZProfilesOptions.SERVERINFO_DISPLAY));
 		m_ModdedWarning.Show(g_Game.ReportModded());
+		
+		Mission mission = g_Game.GetMission();
+		if (mission)
+		{
+			mission.Pause();
+		}
 		
 		return layoutRoot;
 	}
@@ -82,17 +95,14 @@ class InGameMenu extends UIScriptedMenu
 	{
 		if (GetGame().IsMultiplayer())
 		{
-			//PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 			MenuData menu_data = g_Game.GetMenuData();
 			GetServersResultRow info = OnlineServices.GetCurrentServerInfo();
 			
 			if (info)
 			{
-				//text
 				m_ServerPort.SetText(info.m_HostPort.ToString());
 				m_ServerIP.SetText(info.m_HostIp);
 				m_ServerName.SetText(info.m_Name);
-				//favorite
 				m_UnfavoriteImage.Show(info.m_Favorite);
 				m_FavoriteImage.Show(!info.m_Favorite);
 				m_ServerInfoText = "" +  info.GetIpPort();
@@ -109,12 +119,9 @@ class InGameMenu extends UIScriptedMenu
 				menu_data.GetLastServerAddress(char_id,address);
 				port = menu_data.GetLastServerPort(char_id);
 				menu_data.GetLastServerName(char_id,name);
-				//text
 				m_ServerPort.SetText(port.ToString());
 				m_ServerIP.SetText(address);
 				m_ServerName.SetText(name);
-				//favorite
-				//m_FavoriteButton.Show(false); // buton should be non-functional in this case!
 				m_ServerInfoText = "" + address + ":" + port;
 				
 				return true;
@@ -182,10 +189,6 @@ class InGameMenu extends UIScriptedMenu
 			OnClick_Exit();
 			return true;
 		}
-		/*else if (w == m_FavoriteButton)
-		{
-			ToggleFavoriteServer();
-		}*/
 		else if (w == m_CopyInfoButton)
 		{
 			GetGame().CopyToClipboard(m_ServerInfoText);
@@ -223,7 +226,6 @@ class InGameMenu extends UIScriptedMenu
 		{
 			if (GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
 			{
-				//GetGame().GetUIManager().ShowDialog("Respawning", "Respawn as custom?", IDC_INT_RESPAWN, DBT_YESNOCANCEL, DBB_YES, DMT_QUESTION, this);
 				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
 			}
 			else
@@ -242,8 +244,6 @@ class InGameMenu extends UIScriptedMenu
 	{
 		GetGame().LogoutRequestTime();
 		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().CreateLogoutMenu, this);
-		
-		//GetGame().GetUIManager().ShowDialog("EXIT", "Are you sure you want to exit?", IDC_INT_EXIT, DBT_YESNO, DBB_YES, DMT_QUESTION, NULL);
 	}
 	
 	override bool OnModalResult(Widget w, int x, int y, int code, int result)
@@ -272,7 +272,6 @@ class InGameMenu extends UIScriptedMenu
 		{
 			if (GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
 			{
-				//GetGame().GetUIManager().ShowDialog("#main_menu_respawn", "#main_menu_respawn_question", IDC_INT_RESPAWN, DBT_YESNOCANCEL, DBB_YES, DMT_QUESTION, this);	
 				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
 			} 
 			else
@@ -281,19 +280,6 @@ class InGameMenu extends UIScriptedMenu
 			}
 			return true;
 		}
-		/*else if (code == IDC_INT_RESPAWN && GetGame().IsMultiplayer())
-		{
-			if (result == DBB_YES)
-			{
-				GameRespawn(false);
-				return true;
-			}
-			else if (result == DBB_NO)
-			{
-				GameRespawn(true);
-				return true;
-			}
-		}*/
 		
 		return false;
 	}
@@ -328,15 +314,12 @@ class InGameMenu extends UIScriptedMenu
 		{
 			m_RestartButton.Show(player_is_alive && player.IsUnconscious());
 			m_RespawnButton.Show(!player_is_alive);
-			//m_RestartDeadCustomButton.Show(!player_is_alive && GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM);
-			//m_RestartDeadRandomButton.Show(!player_is_alive);
 		}
 		else
 		{
 			m_RestartButton.Show(true);
 			m_RespawnButton.Show(false);
-			//m_RestartDeadCustomButton.Show(false);
-			//m_RestartDeadRandomButton.Show(false);
+			m_SeparatorPanel.Show(player_is_alive);
 		}
 		m_ContinueButton.Show(player_is_alive);
 		#endif
@@ -356,14 +339,15 @@ class InGameMenu extends UIScriptedMenu
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		if (player)
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(player.ShowDeadScreen, DayZPlayerImplement.DEAD_SCREEN_DELAY, false, true, 0);
+			player.SimulateDeath(true);
+			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(player.ShowDeadScreen, true, 0);
 		}
 		
 		MissionGameplay missionGP = MissionGameplay.Cast(GetGame().GetMission());
 		missionGP.DestroyAllMenus();
 		missionGP.SetPlayerRespawning(true);
+		missionGP.Continue();
 
-		GetGame().GetMission().Continue();
 		Close();
 	}
 	

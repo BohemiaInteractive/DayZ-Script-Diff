@@ -49,9 +49,9 @@ class ActionRepairItemWithBlowtorch : ActionContinuousBase
 		ItemBase targetItem = ItemBase.Cast(action_data.m_Target.GetObject());
 		if (targetItem) 
 		{
-			PluginRepairing module_repairing;
-			Class.CastTo(module_repairing, GetPlugin(PluginRepairing));
-			module_repairing.Repair(action_data.m_Player, action_data.m_MainItem, targetItem, m_SpecialtyWeight);
+			PluginRepairing moduleRepairing;
+			Class.CastTo(moduleRepairing, GetPlugin(PluginRepairing));
+			moduleRepairing.Repair(action_data.m_Player, action_data.m_MainItem, targetItem, m_SpecialtyWeight);
 		}
 		
 		action_data.m_MainItem.GetCompEM().SwitchOff();

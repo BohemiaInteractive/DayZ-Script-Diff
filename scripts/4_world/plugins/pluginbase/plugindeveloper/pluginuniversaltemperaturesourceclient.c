@@ -7,7 +7,8 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 	protected ref array<ref UTemperatureSourceDebug> m_UTemperatureSourceDebugs;
 	
 	protected ref Widget m_RootWidget[MAX_SIMULTANEOUS_UTS];
-	protected ref TextListboxWidget m_StatListWidgets[MAX_SIMULTANEOUS_UTS];
+	protected TextListboxWidget m_StatListWidgets[MAX_SIMULTANEOUS_UTS];
+	protected TextWidget m_HeaderWidget[MAX_SIMULTANEOUS_UTS];
 	
 	protected PlayerBase m_Player;
 	
@@ -42,15 +43,14 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 		{
 			m_RootWidget[i] = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_debug_remoteinfo.layout");
 			m_StatListWidgets[i] = TextListboxWidget.Cast(m_RootWidget[i].FindAnyWidget("TextListboxWidget0"));
+			m_HeaderWidget[i] = TextWidget.Cast(m_RootWidget[i].FindAnyWidget("TextWidget0"));
 		}
 	}
 	
 	void DrawDebugs()
 	{
-		for (int i = 0; i < m_UTemperatureSourceDebugs.Count(); i++)
+		foreach (UTemperatureSourceDebug utsd : m_UTemperatureSourceDebugs)
 		{
-			UTemperatureSourceDebug utsd = m_UTemperatureSourceDebugs.Get(i);
-
 			float fullRange = utsd.GetValue(1).ToFloat();
 			float maxRange 	= utsd.GetValue(2).ToFloat();
 			float temp		= utsd.GetValue(3).ToFloat();
@@ -93,16 +93,15 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 		array<float> utsTemperatures = new array<float>();
 		
 		// get temperature from the source (based on distance), save it for min/max filtering
-		for (int i = 0; i < m_UTemperatureSourceDebugs.Count(); i++)
+		foreach (UniversalTemperatureSourceDebug utsd : m_UTemperatureSourceDebugs)
 		{
-			UniversalTemperatureSourceDebug utsd = m_UTemperatureSourceDebugs[i];
 			//! next temp source is too far (not cleaned on server, like in Environment, client need to know about all sources in MAXRANGE)
 			if (vector.DistanceSq(m_Player.GetPosition(), utsd.GetValue(0).ToVector()) > Math.SqrFloat(utsd.GetValue(2).ToFloat()))
 			{
 				continue;
 			}
 
-			utsTemperatures.Insert(CalcTemperatureFromTemperatureSource(m_UTemperatureSourceDebugs[i]));
+			utsTemperatures.Insert(CalcTemperatureFromTemperatureSource(utsd));
 		}
 
 		float min = MiscGameplayFunctions.GetMinValue(utsTemperatures);
@@ -153,13 +152,14 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 	void UpdateStatWidgets()
 	{
 		int i = 0;
-		for (; i < m_UTemperatureSourceDebugs.Count(); i++)
+		int utsDebugCount = m_UTemperatureSourceDebugs.Count();
+		for (; i < utsDebugCount && i < MAX_SIMULTANEOUS_UTS; ++i)
 		{
-			UTemperatureSourceDebug utsd = m_UTemperatureSourceDebugs.Get(i);
+			UTemperatureSourceDebug utsd = m_UTemperatureSourceDebugs[i];
 			vector pos = utsd.GetValue(0).ToVector();
 			vector screen_pos_stats = GetGame().GetScreenPos(pos + "0 0 0");
 			vector screen_pos_damage = GetGame().GetScreenPos(pos + "0 2 0");
-			m_RootWidget[i].SetPos(screen_pos_stats[0],screen_pos_stats[1]);
+			m_RootWidget[i].SetPos(screen_pos_stats[0], screen_pos_stats[1]);
 			
 			if (screen_pos_stats[2] > 0 && screen_pos_stats[0] > 0 && screen_pos_stats[1] > 0)
 			{
@@ -172,7 +172,7 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 			}
 		}
 
-		for (; i < MAX_SIMULTANEOUS_UTS; i++)
+		for (; i < MAX_SIMULTANEOUS_UTS; ++i)
 		{
 			if (m_RootWidget[i])
 			{
@@ -185,13 +185,15 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 	{
 		m_StatListWidgets[rowIndex].ClearItems();
 		
-		for (int i = 0; i < utsd.PairsCount(); i++)
+		m_HeaderWidget[rowIndex].SetText(utsd.GetHeader());
+		
+		int numPairs = utsd.PairsCount();
+		for (int i = 0; i < numPairs; ++i)
 		{
 			m_StatListWidgets[rowIndex].AddItem(utsd.GetName(i), null, 0, i);
 			m_StatListWidgets[rowIndex].SetItem(i, utsd.GetValue(i), null, 1);
 		}
 		
-		int numPairs = utsd.PairsCount();
 		// manually add value for distance (client only)
 		m_StatListWidgets[rowIndex].AddItem("distance", null, 0, numPairs);
 		m_StatListWidgets[rowIndex].SetItem(numPairs, vector.Distance(m_Player.GetPosition(), utsd.GetValue(0).ToVector()).ToString(), null, 1);
@@ -211,16 +213,15 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 
 		ScriptRPC rpc = new ScriptRPC();
 		rpc.Write(enable);
-		rpc.Send(player, ERPCs.DEV_REQUEST_UTS_DEBUG, true, player.GetIdentity());
-
-		m_Player = player;
-	}
+		rpc.Send(player, ERPCs.DEV_REQUEST_UTS_DEBUG, true, player.GetIdentity());	
+		
+			m_Player = player;
+		}
 	
 	void PrintedDebug()
 	{
-		for (int i = 0; i < m_UTemperatureSourceDebugs.Count(); i++)
+		foreach (UTemperatureSourceDebug utsd : m_UTemperatureSourceDebugs)
 		{
-			UTemperatureSourceDebug utsd = m_UTemperatureSourceDebugs.Get(i);
 			PrintString("-------------------------------------");
 			utsd.Debug();
 			PrintString("-------------------------------------");

@@ -118,7 +118,67 @@ class Weapon_Base extends Weapon
 		
 		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleGun );
 	}
-	
+
+	override protected float GetWeightSpecialized(bool forceRecalc = false)
+	{
+		float baseWeight = GetInventoryAndCargoWeight(forceRecalc);
+		float ammoWeight;
+		float ammoDamage;
+		string bulletTypeName, ammoTypeName;
+		
+		int muzzleCount = GetMuzzleCount();
+		#ifdef DEVELOPER
+		if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_FORCED)
+		{
+			WeightDebugData data1 = WeightDebug.GetWeightDebug(this);
+			data1.SetCalcDetails("TWPN: " + m_ConfigWeight+"(item weight) + " + baseWeight +"(contents weight)" );
+		}
+		#endif
+		for (int muzzleIndex = 0; muzzleIndex < muzzleCount; muzzleIndex++)
+		{
+			//chamber weight
+			if (!IsChamberEmpty(muzzleIndex))
+			{
+				ammoTypeName = GetChamberAmmoTypeName(muzzleIndex);
+				ammoWeight += g_Game.ConfigGetFloat(string.Format("CfgMagazines %1 weight", ammoTypeName));
+				
+				#ifdef DEVELOPER
+				if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_FORCED)
+				{
+					WeightDebugData data2 = WeightDebug.GetWeightDebug(this);
+					data2.AddCalcDetails( g_Game.ConfigGetFloat("CfgMagazines " + ammoTypeName + " weight").ToString() +"(chamber weight)");
+				}
+				#endif
+			}
+			
+			//correctly calculates internal magazine weight based on the ammo type of each bullet
+			if (HasInternalMagazine(muzzleIndex))
+			{
+				#ifdef DEVELOPER
+				float debugInternalMagWeight;
+				#endif
+				int cartridgeCount = GetInternalMagazineCartridgeCount(muzzleIndex);
+				for (int cartridgeIndex = 0; cartridgeIndex < cartridgeCount; cartridgeIndex++)
+				{
+					GetInternalMagazineCartridgeInfo(muzzleIndex, cartridgeIndex, ammoDamage, bulletTypeName);
+					ammoWeight += Ammunition_Base.GetAmmoWeightByBulletType(bulletTypeName);
+					#ifdef DEVELOPER
+					debugInternalMagWeight += g_Game.ConfigGetFloat("CfgMagazines " + ammoTypeName + " weight");
+					#endif
+				}
+				#ifdef DEVELOPER
+
+				if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_FORCED)
+				{
+					WeightDebugData data3 = WeightDebug.GetWeightDebug(this);
+					data3.AddCalcDetails(debugInternalMagWeight.ToString()+ "(internal mag weight)");
+				}
+				#endif
+			}
+			
+		}
+		return ammoWeight + baseWeight + GetConfigWeightModified();
+	}
 	//! override on weapons with some assembly required
 	void AssembleGun();
 
@@ -254,7 +314,7 @@ class Weapon_Base extends Weapon
 */		
 		//JamCheck(muzzleType);
 		
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		MiscGameplayFunctions.UnlimitedAmmoDebugCheck(this);
 		#endif
 	}
@@ -857,6 +917,29 @@ class Weapon_Base extends Weapon
 	
 	void OnFire(int muzzle_index)
 	{
+/*
+		array<Man> players();
+		GetGame().GetPlayers(players);
+		
+		Man root = GetHierarchyRootPlayer();
+		
+		if (!root)
+		{
+			return;
+		}
+		
+		vector safePosition = root.GetPosition() + (root.GetDirection() * "0 1 0" * 3.0);
+		
+		Man other = null;
+		foreach (auto player : players)
+		{
+			if (player != GetHierarchyRootPlayer())
+			{
+				player.SetPosition(safePosition);
+			}
+		}
+*/
+
 		m_BurstCount++;
 	}
 	
@@ -1057,7 +1140,7 @@ class Weapon_Base extends Weapon
 
 	bool CanFire()
 	{
-		if (!IsChamberEmpty(GetCurrentMuzzle()) && !IsChamberFiredOut(GetCurrentMuzzle()) && !IsJammed() && !m_LiftWeapon)
+		if (!IsChamberEmpty(GetCurrentMuzzle()) && !IsChamberFiredOut(GetCurrentMuzzle()) && !IsJammed() && !m_LiftWeapon && !IsDamageDestroyed())
 			return true;
 		return false;
 	}

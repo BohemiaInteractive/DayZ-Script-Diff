@@ -203,6 +203,7 @@ class UniversalTemperatureSourceDebug
 	const string DELIMITER_DATA		= "|";
 	const string DELIMITER_KEYPAIR	= ":";
 
+	string m_Header;
 	string m_Data;
 	ref array<string> m_Names;		//! names parsed from m_Pairs
 	ref array<string> m_Values;		//! values parsed from m_Pairs
@@ -210,10 +211,16 @@ class UniversalTemperatureSourceDebug
 	
 	void UniversalTemperatureSourceDebug()
 	{
+		m_Header 		= "";
 		m_Data 			= "";
 		m_Pairs			= new array<string>();
 		m_Names			= new array<string>();
 		m_Values		= new array<string>();
+	}
+	
+	void AddHeader(string header)
+	{
+		m_Header = header;
 	}
 	
 	void Add(string name, string value)
@@ -230,6 +237,11 @@ class UniversalTemperatureSourceDebug
 	int PairsCount()
 	{
 		return m_Pairs.Count();
+	}
+	
+	string GetHeader()
+	{
+		return m_Header;
 	}
 	
 	string GetName(int pIndex)

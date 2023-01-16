@@ -13,19 +13,15 @@ class ActiondeployObjectCB : ActionContinuousBaseCB
 		
 	}
 	
+	//!DEPRECATED
 	void DropDuringPlacing()
 	{
-		EntityAI entity_for_placing = m_ActionData.m_MainItem;
-		if ( entity_for_placing.IsBasebuildingKit() )
-			return;
-		
-		m_ActionData.m_Player.PredictiveDropEntity(m_ActionData.m_MainItem);
 	}
 };
 
 class ActionDeployBase: ActionContinuousBase
 {
-	protected const float POSITION_OFFSET = 0.5; // The forward offset at which the item will be placed ( if not using hologram )
+	protected const float POSITION_OFFSET = 0.5; // The forward offset at which the item will be placed (if not using hologram)
 	
 	void ActionDeployBase()
 	{
@@ -57,33 +53,35 @@ class ActionDeployBase: ActionContinuousBase
 		return action_data;
 	}
 	
-	override void OnFinishProgressServer( ActionData action_data )
+	override void OnFinishProgressServer(ActionData action_data)
 	{	
 		PlaceObjectActionData poActionData;
 		poActionData = PlaceObjectActionData.Cast(action_data);
 		
-		if ( !poActionData ) { return; }
-		if ( !action_data.m_MainItem ) { return; }
+		if (!poActionData)
+			return;
+		if (!action_data.m_MainItem)
+			return;
 		
 		EntityAI entity_for_placing = action_data.m_MainItem;
 		vector position;
 		vector orientation;
 		
 		// In case of placement with hologram
-		if ( action_data.m_Player.GetHologramServer() )
+		if (action_data.m_Player.GetHologramServer())
 		{
 			position = action_data.m_Player.GetLocalProjectionPosition();
 			orientation = action_data.m_Player.GetLocalProjectionOrientation();
 			
 			action_data.m_Player.GetHologramServer().EvaluateCollision(action_data.m_MainItem);
-			if ( GetGame().IsMultiplayer() && action_data.m_Player.GetHologramServer().IsColliding() )
+			if (GetGame().IsMultiplayer() && action_data.m_Player.GetHologramServer().IsColliding())
 			{
 				return;
 			}
 			
-			action_data.m_Player.GetHologramServer().PlaceEntity( entity_for_placing );
+			action_data.m_Player.GetHologramServer().PlaceEntity(entity_for_placing);
 			
-			if ( GetGame().IsMultiplayer() )
+			if (GetGame().IsMultiplayer())
 				action_data.m_Player.GetHologramServer().CheckPowerSource();
 		}
 		else
@@ -91,23 +89,36 @@ class ActionDeployBase: ActionContinuousBase
 			position = action_data.m_Player.GetPosition();
 			orientation = action_data.m_Player.GetOrientation();
 		
-			position = position + ( action_data.m_Player.GetDirection() * POSITION_OFFSET );
+			position = position + (action_data.m_Player.GetDirection() * POSITION_OFFSET);
 		}
 		
 		action_data.m_Player.PlacingCompleteServer();
-		entity_for_placing.OnPlacementComplete( action_data.m_Player, position, orientation );
+		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation);
 		
-		MoveEntityToFinalPosition( action_data, position, orientation );		
-		GetGame().ClearJuncture( action_data.m_Player, entity_for_placing );
-		action_data.m_MainItem.SetIsBeingPlaced( false );
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
-		poActionData.m_AlreadyPlaced = true;	
+		MoveEntityToFinalPosition(action_data, position, orientation);		
+		GetGame().ClearJunctureEx(action_data.m_Player, entity_for_placing);
+		action_data.m_MainItem.SetIsBeingPlaced(false);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
+		poActionData.m_AlreadyPlaced = true;
 		action_data.m_MainItem.SoundSynchRemoteReset();
 	}
 	
-	void MoveEntityToFinalPosition( ActionData action_data, vector position, vector orientation )
+	void DropDuringPlacing(PlayerBase player)
 	{
-		if ( action_data.m_MainItem.IsBasebuildingKit() ) return;
+		ItemBase item;
+		if (!Class.CastTo(item,player.GetItemInHands()))
+			return;
+		
+		if (item.IsBasebuildingKit())
+			return;
+		
+		player.PredictiveDropEntity(item);
+	}
+	
+	void MoveEntityToFinalPosition(ActionData action_data, vector position, vector orientation)
+	{
+		if (action_data.m_MainItem.IsBasebuildingKit())
+			return;
 		
 		EntityAI entity_for_placing = action_data.m_MainItem;
 		vector rotation_matrix[3];
@@ -115,14 +126,14 @@ class ActionDeployBase: ActionContinuousBase
 		InventoryLocation source = new InventoryLocation;
 		InventoryLocation destination = new InventoryLocation;
 		
-		Math3D.YawPitchRollMatrix( orientation, rotation_matrix );
-		Math3D.MatrixToQuat( rotation_matrix, direction );
+		Math3D.YawPitchRollMatrix(orientation, rotation_matrix);
+		Math3D.MatrixToQuat(rotation_matrix, direction);
 		
-		if ( entity_for_placing.GetInventory().GetCurrentInventoryLocation( source ) )
+		if (entity_for_placing.GetInventory().GetCurrentInventoryLocation(source))
 		{
-			destination.SetGroundEx( entity_for_placing, position, direction );
+			destination.SetGroundEx(entity_for_placing, position, direction);
 			
-			if ( GetGame().IsMultiplayer() )
+			if (GetGame().IsMultiplayer())
 			{
 				action_data.m_Player.ServerTakeToDst(source, destination);
 			}		

@@ -1,15 +1,13 @@
-class DayZInfectedInputController
+class DayZInfectedInputController : DayZCreatureAIInputController
 {
-	proto native void OverrideMovementSpeed(bool pState, float pValue);
-	proto native float GetMovementSpeed();
-	proto native int GetAlertLevel();
+	//! Same as 'DayZCreatureAIInputController::IsJump'
 	proto native bool IsVault();
+
+	//! Same as 'DayZCreatureAIInputController::GetJumpHeight'
 	proto native float GetVaultHeight();
 	
 	proto native int GetMindState();
 	proto native EntityAI GetTargetEntity();
-	proto native bool IsLookAtEnabled();
-	proto native vector GetLookAtDirectionWS();
 	
 	//--------------------------------------------------------------
 	//! never created by script

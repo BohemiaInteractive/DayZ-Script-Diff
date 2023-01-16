@@ -76,10 +76,10 @@ class OptionsMenu extends UIScriptedMenu
 		#else
 		version = "#main_menu_version" + " " + version;
 		#endif
-		m_Version.SetText( version );
+		m_Version.SetText(version);
 		
 		#ifdef PLATFORM_WINDOWS
-			SetFocus( layoutRoot );
+			SetFocus(layoutRoot);
 		#else
 			ToggleFocus();
 		#endif
@@ -88,6 +88,7 @@ class OptionsMenu extends UIScriptedMenu
 		m_Tabber.m_OnAttemptTabSwitch.Insert(OnAttemptTabSwitch);
 		
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		OnChanged();
 		
 		return layoutRoot;
@@ -100,17 +101,20 @@ class OptionsMenu extends UIScriptedMenu
 	protected void OnInputPresetChanged()
 	{
 		#ifdef PLATFORM_CONSOLE
-		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 	}
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
+		#ifdef PLATFORM_CONSOLE
+		UpdateControlsElementVisibility();
+		#endif
 	}
 	
-	override bool OnClick( Widget w, int x, int y, int button )
+	override bool OnClick(Widget w, int x, int y, int button)
 	{
-		if ( button == MouseState.LEFT )
+		if (button == MouseState.LEFT)
 		{
 			switch (w)
 			{
@@ -140,9 +144,9 @@ class OptionsMenu extends UIScriptedMenu
 		return false;
 	}
 	
-	void OnTabSwitch( int tab )
+	void OnTabSwitch(int tab)
 	{
-		switch ( tab )
+		switch (tab)
 		{
 			case 0:
 			{
@@ -179,12 +183,12 @@ class OptionsMenu extends UIScriptedMenu
 	{
 		m_ControlsTab.Apply();
 		
-		//if ( m_GameTab.IsChanged() )
+		//if (m_GameTab.IsChanged())
 		{
 			m_GameTab.Apply();
 		}
 		
-		if ( m_Options.IsChanged() || m_GameTab.IsChanged() )
+		if (m_Options.IsChanged() || m_GameTab.IsChanged())
 		{
 			m_Options.Test();
 			m_Options.Apply();
@@ -195,18 +199,19 @@ class OptionsMenu extends UIScriptedMenu
 		
 		if (GetGame().GetInput().IsEnabledMouseAndKeyboard()) //useless on consoles
 		{
-			m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
+			m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
 			ColorDisable(m_Apply);
-			m_Reset.SetFlags( WidgetFlags.IGNOREPOINTER );
+			m_Reset.SetFlags(WidgetFlags.IGNOREPOINTER);
 			ColorDisable(m_Reset);
 		}
 		
 		m_CanApplyOrReset = false;
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 		
-		if ( m_Options.NeedRestart() )
+		if (m_Options.NeedRestart())
 			g_Game.GetUIManager().ShowDialog("#main_menu_configure", "#menu_restart_needed", 117, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
 	}
 	
@@ -230,7 +235,7 @@ class OptionsMenu extends UIScriptedMenu
 	void OnAttemptTabSwitch(int source, int target)
 	{
 		bool changed = IsAnyTabChanged();
-		if ( changed )
+		if (changed)
 		{
 			if (!g_Game.GetUIManager().IsDialogVisible() && !g_Game.GetUIManager().IsModalVisible())
 			{
@@ -248,7 +253,7 @@ class OptionsMenu extends UIScriptedMenu
 	
 	bool IsAnyTabChanged()
 	{
-		bool changed = ( m_Options.IsChanged() || m_GameTab.IsChanged() || m_SoundsTab.IsChanged() || m_ControlsTab.IsChanged() );
+		bool changed = (m_Options.IsChanged() || m_GameTab.IsChanged() || m_SoundsTab.IsChanged() || m_ControlsTab.IsChanged());
 		#ifndef PLATFORM_XBOX
 		changed |= m_VideoTab.IsChanged();
 		#endif
@@ -262,25 +267,26 @@ class OptionsMenu extends UIScriptedMenu
 		
 		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
 		{
-			if ( changed )
+			if (changed)
 			{
-				m_Reset.ClearFlags( WidgetFlags.IGNOREPOINTER );
-				ColorNormal( m_Reset );
-				m_Apply.ClearFlags( WidgetFlags.IGNOREPOINTER );
-				ColorNormal( m_Apply );
+				m_Reset.ClearFlags(WidgetFlags.IGNOREPOINTER);
+				ColorNormal(m_Reset);
+				m_Apply.ClearFlags(WidgetFlags.IGNOREPOINTER);
+				ColorNormal(m_Apply);
 			}
 			else
 			{
-				m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
-				ColorDisable( m_Apply );
-				m_Reset.SetFlags( WidgetFlags.IGNOREPOINTER );
-				ColorDisable( m_Reset );
+				m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
+				ColorDisable(m_Apply);
+				m_Reset.SetFlags(WidgetFlags.IGNOREPOINTER);
+				ColorDisable(m_Reset);
 			}
 		}
 		
 		m_CanApplyOrReset = changed;
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 		
 		m_Tabber.AlignTabbers();
@@ -297,31 +303,32 @@ class OptionsMenu extends UIScriptedMenu
 		m_VideoTab.Revert();
 		#endif
 		
-		if ( m_Options.IsChanged() )
+		if (m_Options.IsChanged())
 			m_Options.Revert();
 		
 		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
 		{
-			m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
-			ColorDisable( m_Apply );
-			m_Reset.SetFlags( WidgetFlags.IGNOREPOINTER );
-			ColorDisable( m_Reset );
+			m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
+			ColorDisable(m_Apply);
+			m_Reset.SetFlags(WidgetFlags.IGNOREPOINTER);
+			ColorDisable(m_Reset);
 		}
 		
 		m_CanApplyOrReset = false;
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 	}
 	
 	void ResetCurrentTab()
 	{
-		if ( m_Options.IsChanged() )
+		if (m_Options.IsChanged())
 		{
 			m_Options.Revert();
 		}
 		
-		switch ( m_ActiveTabIdx )
+		switch (m_ActiveTabIdx)
 		{
 			case 0:
 			{
@@ -351,22 +358,23 @@ class OptionsMenu extends UIScriptedMenu
 			}
 		}
 		
-		if ( m_Options.IsChanged() )
+		if (m_Options.IsChanged())
 		{
 			m_Options.Revert();
 		}
 		
 		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
 		{
-			m_Apply.SetFlags( WidgetFlags.IGNOREPOINTER );
-			ColorDisable( m_Apply );
-			m_Reset.SetFlags( WidgetFlags.IGNOREPOINTER );
-			ColorDisable( m_Reset );
+			m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
+			ColorDisable(m_Apply);
+			m_Reset.SetFlags(WidgetFlags.IGNOREPOINTER);
+			ColorDisable(m_Reset);
 		}
 		
 		m_CanApplyOrReset = false;
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 		
 		m_Tabber.AlignTabbers();
@@ -382,7 +390,7 @@ class OptionsMenu extends UIScriptedMenu
 	
 	void PerformSetToDefaults()
 	{
-		switch ( m_ActiveTabIdx )
+		switch (m_ActiveTabIdx)
 		{
 			case 0:
 			{
@@ -414,15 +422,16 @@ class OptionsMenu extends UIScriptedMenu
 		
 		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
 		{
-			m_Reset.ClearFlags( WidgetFlags.IGNOREPOINTER );
-			ColorNormal( m_Reset );
-			m_Apply.ClearFlags( WidgetFlags.IGNOREPOINTER );
-			ColorNormal( m_Apply );
+			m_Reset.ClearFlags(WidgetFlags.IGNOREPOINTER);
+			ColorNormal(m_Reset);
+			m_Apply.ClearFlags(WidgetFlags.IGNOREPOINTER);
+			ColorNormal(m_Apply);
 		}
 		
 		m_CanApplyOrReset = true;
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 	}
 	
@@ -457,34 +466,34 @@ class OptionsMenu extends UIScriptedMenu
 	{
 		m_Options = new GameOptions();
 		
-		if ( m_GameTab )
-			m_GameTab.SetOptions( m_Options );
-		if ( m_SoundsTab )
-			m_SoundsTab.SetOptions( m_Options );
-		if ( m_ControlsTab )
-			m_ControlsTab.SetOptions( m_Options );
+		if (m_GameTab)
+			m_GameTab.SetOptions(m_Options);
+		if (m_SoundsTab)
+			m_SoundsTab.SetOptions(m_Options);
+		if (m_ControlsTab)
+			m_ControlsTab.SetOptions(m_Options);
 
 		#ifndef PLATFORM_XBOX
-			if ( m_VideoTab )
-				m_VideoTab.SetOptions( m_Options );
+			if (m_VideoTab)
+				m_VideoTab.SetOptions(m_Options);
 		#endif
 	}
 	
 	void ReloadVideoOptions()
 	{
 		#ifndef PLATFORM_XBOX
-			if ( m_VideoTab )
-				m_VideoTab.SetOptions( m_Options );
+			if (m_VideoTab)
+				m_VideoTab.SetOptions(m_Options);
 		#endif
 	}
 	
-	override bool OnModalResult( Widget w, int x, int y, int code, int result )
+	override bool OnModalResult(Widget w, int x, int y, int code, int result)
 	{
 		bool ret = false;
 		
-		if ( code == 1337 )
+		if (code == 1337)
 		{
-			if ( result == 2 )
+			if (result == 2)
 			{
 				m_Options.Revert();
 				GetGame().EndOptionsVideo();
@@ -492,20 +501,20 @@ class OptionsMenu extends UIScriptedMenu
 			}
 			ret = true;
 		}
-		else if ( code == 117 )
+		else if (code == 117)
 		{
 			g_Game.RequestRestart(IDC_MAIN_QUIT);
 		}
-		else if ( code == MODAL_ID_DEFAULT )
+		else if (code == MODAL_ID_DEFAULT)
 		{
-			if ( result == 2 )
+			if (result == 2)
 			{
 				PerformSetToDefaults();
 			}
 		}
-		else if ( code >= DIALOG_TAB_OFFSET )
+		else if (code >= DIALOG_TAB_OFFSET)
 		{
-			if ( result == 2 )
+			if (result == 2)
 			{
 				int id = code - DIALOG_TAB_OFFSET;
 				//m_Options.Revert();
@@ -519,34 +528,34 @@ class OptionsMenu extends UIScriptedMenu
 		return ret;
 	}
 	
-	override bool OnMouseEnter( Widget w, int x, int y )
+	override bool OnMouseEnter(Widget w, int x, int y)
 	{
-		if ( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			ColorHighlight( w );
+			ColorHighlight(w);
 			return true;
 		}
 		return false;
 	}
 	
-	override bool OnMouseLeave( Widget w, Widget enterW, int x, int y )
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{
-		if ( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			ColorNormal( w );
+			ColorNormal(w);
 			return true;
 		}
 		return false;
 	}
 	
-	override bool OnFocus( Widget w, int x, int y )
+	override bool OnFocus(Widget w, int x, int y)
 	{
-		if ( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			ColorHighlight( w );
+			ColorHighlight(w);
 			return true;
 		}
-		else if ( y == 1 )
+		else if (y == 1)
 		{
 			SliderFocus();
 		}
@@ -558,21 +567,21 @@ class OptionsMenu extends UIScriptedMenu
 		return false;
 	}
 	
-	override bool OnFocusLost( Widget w, int x, int y )
+	override bool OnFocusLost(Widget w, int x, int y)
 	{
-		if ( w && IsFocusable( w ) )
+		if (w && IsFocusable(w))
 		{
-			ColorNormal( w );
+			ColorNormal(w);
 			return true;
 		}
 		return false;
 	}
 	
-	bool IsFocusable( Widget w )
+	bool IsFocusable(Widget w)
 	{
-		if ( w )
+		if (w)
 		{
-			return ( w == m_Apply || w == m_Back || w == m_Reset || w == m_Defaults );
+			return (w == m_Apply || w == m_Back || w == m_Reset || w == m_Defaults);
 		}
 		return false;
 	}
@@ -580,17 +589,18 @@ class OptionsMenu extends UIScriptedMenu
 	override void Refresh()
 	{
 		string version;
-		GetGame().GetVersion( version );
+		GetGame().GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
 			version = "#main_menu_version" + " " + version;
 		#endif
 		
-		m_Version.SetText( version );
+		m_Version.SetText(version);
 		
 		#ifdef PLATFORM_CONSOLE
-			layoutRoot.FindAnyWidget( "play_panel_root" ).Show( GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() );
+		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 		#endif
 	}
 	
@@ -601,9 +611,9 @@ class OptionsMenu extends UIScriptedMenu
 		Refresh();
 	}
 	
-	override void Update( float timeslice )
+	override void Update(float timeslice)
 	{
-		super.Update( timeslice );
+		super.Update(timeslice);
 		
 		if (m_ModalLock)
 		{
@@ -611,22 +621,22 @@ class OptionsMenu extends UIScriptedMenu
 			return;
 		}
 		
-		if ( GetGame().GetInput().LocalPress("UAUITabLeft",false) )
+		if (GetUApi().GetInputByID(UAUITabLeft).LocalPress())
 		{
 			m_Tabber.PreviousTab();
 		}
-		else if ( GetGame().GetInput().LocalPress("UAUITabRight",false) )
+		else if (GetUApi().GetInputByID(UAUITabRight).LocalPress())
 		{
 			m_Tabber.NextTab();
 		}
-		else if ( GetGame().GetInput().LocalPress("UAUICtrlX",false) )
+		else if (GetUApi().GetInputByID(UAUICtrlX).LocalPress())
 		{
 			if (m_CanApplyOrReset)
 			{
 				Apply();
 			}
 		}
-		else if ( GetGame().GetInput().LocalPress("UAUICredits",false) )
+		else if (GetUApi().GetInputByID(UAUICredits).LocalPress())
 		{
 			if (m_CanApplyOrReset)
 			{
@@ -634,171 +644,172 @@ class OptionsMenu extends UIScriptedMenu
 			}
 			
 		}
-		else if ( GetGame().GetInput().LocalPress("UAUICtrlY",false) )
+		else if (GetUApi().GetInputByID(UAUICtrlY).LocalPress())
 		{
-			//SetToDefaults();
 			PerformSetToDefaults();
 		}
-		else if ( GetGame().GetInput().LocalPress("UAUIBack",false) )
+		else if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Back();
 		}
 	}
 	
 	//Coloring functions (Until WidgetStyles are useful)
-	void ColorHighlight( Widget w )
+	void ColorHighlight(Widget w)
 	{
-		if ( w.IsInherited( ButtonWidget ) )
+		if (w.IsInherited(ButtonWidget))
 		{
-			ButtonWidget button = ButtonWidget.Cast( w );
-			button.SetTextColor( ARGB( 255, 200, 0, 0 ) );
+			ButtonWidget button = ButtonWidget.Cast(w);
+			button.SetTextColor(ARGB(255, 200, 0, 0));
 		}
 		
-		w.SetColor( ARGB( 255, 0, 0, 0) );
+		w.SetColor(ARGB(255, 0, 0, 0));
 		
-		TextWidget text1	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_text" ) );
-		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_label" ) );
-		TextWidget text3	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_text_1" ) );
-		ImageWidget image	= ImageWidget.Cast( w.FindAnyWidget( w.GetName() + "_image" ) );
-		Widget option		= Widget.Cast( w.FindAnyWidget( w.GetName() + "_option_wrapper" ) );
-		Widget option_label = w.FindAnyWidget( "option_label" );
+		TextWidget text1	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text"));
+		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
+		TextWidget text3	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text_1"));
+		ImageWidget image	= ImageWidget.Cast(w.FindAnyWidget(w.GetName() + "_image"));
+		Widget option		= Widget.Cast(w.FindAnyWidget(w.GetName() + "_option_wrapper"));
+		Widget option_label = w.FindAnyWidget("option_label");
 		
-		if ( text1 )
+		if (text1)
 		{
-			text1.SetColor( ARGB( 255, 255, 0, 0 ) );
+			text1.SetColor(ARGB(255, 255, 0, 0));
 		}
 		
-		if ( text2 )
+		if (text2)
 		{
-			text2.SetColor( ARGB( 255, 255, 0, 0 ) );
+			text2.SetColor(ARGB(255, 255, 0, 0));
 		}
 		
-		if ( text3 )
+		if (text3)
 		{
-			text3.SetColor( ARGB( 255, 255, 0, 0 ) );
+			text3.SetColor(ARGB(255, 255, 0, 0));
 			w.SetAlpha(1);
 		}
 		
-		if ( image )
+		if (image)
 		{
-			image.SetColor( ARGB( 255, 200, 0, 0 ) );
+			image.SetColor(ARGB(255, 200, 0, 0));
 		}
 		
-		if ( option )
+		if (option)
 		{
-			option.SetColor( ARGB( 255, 255, 0, 0 ) );
+			option.SetColor(ARGB(255, 255, 0, 0));
 		}
 		
-		if ( option_label )
+		if (option_label)
 		{
-			option_label.SetColor( ARGB( 255, 255, 0, 0 ) );
+			option_label.SetColor(ARGB(255, 255, 0, 0));
 		}
 	}
 	
-	void ColorNormal( Widget w )
+	void ColorNormal(Widget w)
 	{
-		if ( (w.GetFlags() & WidgetFlags.IGNOREPOINTER) == WidgetFlags.IGNOREPOINTER )
+		if ((w.GetFlags() & WidgetFlags.IGNOREPOINTER) == WidgetFlags.IGNOREPOINTER)
 		{
 			return;
 		}
 		
-		if ( w.IsInherited( ButtonWidget ) )
+		if (w.IsInherited(ButtonWidget))
 		{
-			ButtonWidget button = ButtonWidget.Cast( w );
-			button.SetTextColor( ARGB( 255, 255, 255, 255 ) );
+			ButtonWidget button = ButtonWidget.Cast(w);
+			button.SetTextColor(ARGB(255, 255, 255, 255));
 		}
 		
-		TextWidget text1	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_text" ) );
-		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_text_1" ) );
-		TextWidget text3	= TextWidget.Cast(w.FindAnyWidget( w.GetName() + "_label" ) );
-		ImageWidget image	= ImageWidget.Cast( w.FindAnyWidget( w.GetName() + "_image" ) );
-		Widget option		= w.FindAnyWidget( w.GetName() + "_option_wrapper" );
-		Widget option_label = w.FindAnyWidget( "option_label" );
+		TextWidget text1	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text"));
+		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text_1"));
+		TextWidget text3	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
+		ImageWidget image	= ImageWidget.Cast(w.FindAnyWidget(w.GetName() + "_image"));
+		Widget option		= w.FindAnyWidget(w.GetName() + "_option_wrapper");
+		Widget option_label = w.FindAnyWidget("option_label");
 		
-		if ( text1 )
+		if (text1)
 		{
-			text1.SetColor( ARGB( 255, 255, 255, 255 ) );
+			text1.SetColor(ARGB(255, 255, 255, 255));
 		}
 		
-		if ( text2 )
+		if (text2)
 		{
-			text2.SetColor( ARGB( 255, 255, 255, 255 ) );
+			text2.SetColor(ARGB(255, 255, 255, 255));
 		}
 		
-		if ( text3 )
+		if (text3)
 		{
-			text3.SetColor( ARGB( 255, 255, 255, 255 ) );
+			text3.SetColor(ARGB(255, 255, 255, 255));
 			w.SetAlpha(0);
 		}
 		
-		if ( image )
+		if (image)
 		{
-			image.SetColor( ARGB( 255, 255, 255, 255 ) );
+			image.SetColor(ARGB(255, 255, 255, 255));
 		}
 		
-		if ( option )
+		if (option)
 		{
-			option.SetColor( ARGB( 150, 255, 255, 255 ) );
+			option.SetColor(ARGB(150, 255, 255, 255));
 		}
 		
-		if ( option_label )
+		if (option_label)
 		{
-			option_label.SetColor( ARGB( 255, 255, 255, 255 ) );
+			option_label.SetColor(ARGB(255, 255, 255, 255));
 		}
 	}
 	
-	void ColorDisable( Widget w )
+	void ColorDisable(Widget w)
 	{
 		#ifdef PLATFORM_WINDOWS
-		SetFocus( null );
+		SetFocus(null);
 		#endif
 		
-		if ( w )
+		if (w)
 		{
-			ButtonWidget button = ButtonWidget.Cast( w );
-			if ( button )
+			ButtonWidget button = ButtonWidget.Cast(w);
+			if (button)
 			{
-				button.SetTextColor( ColorManager.COLOR_DISABLED_TEXT );
+				button.SetTextColor(ColorManager.COLOR_DISABLED_TEXT);
 			}
 		}
 	}
 	
 	protected void UpdateControlsElements()
 	{
-		bool toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
+		string text = "";
+		if (m_CanToggle)
+		{
+			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#dialog_change", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		}
+		if (m_CanApplyOrReset)
+		{
+			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Apply_ApplyText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		}
+		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#menu_default", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		if (m_CanApplyOrReset)
+		{
+			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_undo", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		}
+		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbar_text.SetText(text);
 		
-		if (toolbarShow)
-		{
-			RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
-			string text = "";
-			if (m_CanToggle)
-			{
-				text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#dialog_change", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-			}
-			if (m_CanApplyOrReset)
-			{
-				text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Apply_ApplyText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-			}
-			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#menu_default", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-			if (m_CanApplyOrReset)
-			{
-				text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_undo", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-			}
-			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-			toolbar_text.SetText(text);
-		}
-		else
-		{
-			RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
-			RichTextWidget toolbar_x2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ApplyIcon0"));
-			RichTextWidget toolbar_y2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ResetIcon0"));
-			RichTextWidget toolbar_def2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("DefaultIcon0"));
-			toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER));
-			toolbar_x2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER));
-			toolbar_y2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "", EUAINPUT_DEVICE_CONTROLLER));
-			toolbar_def2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER));
-		}
+		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
+		RichTextWidget toolbar_x2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ApplyIcon0"));
+		RichTextWidget toolbar_y2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ResetIcon0"));
+		RichTextWidget toolbar_def2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("DefaultIcon0"));
+		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER));
+		toolbar_x2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER));
+		toolbar_y2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "", EUAINPUT_DEVICE_CONTROLLER));
+		toolbar_def2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER));
+	}
+	
+	protected void UpdateControlsElementVisibility()
+	{
+		bool toolbarShow = false;
+		#ifdef PLATFORM_CONSOLE
+		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		#endif
 		
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
+		layoutRoot.FindAnyWidget("play_panel_root").Show(!toolbarShow);
 	}
 }

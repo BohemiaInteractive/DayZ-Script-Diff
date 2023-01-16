@@ -123,6 +123,7 @@ class ActionFishingNewCB : ActionContinuousBaseCB
 					float item_quantity = fish.GetQuantityMax() * coef;
 					item_quantity = Math.Round(item_quantity);
 					fish.SetQuantity( item_quantity );
+					fish.InsertAgent(eAgents.CHOLERA);
 				}
 			}
 			
@@ -172,20 +173,22 @@ class ActionFishingNewCB : ActionContinuousBaseCB
 
 class ActionFishingNew: ActionContinuousBase
 {
+	private const string ALLOWED_WATER_SURFACES = string.Format("%1|%2", UAWaterType.SEA, UAWaterType.FRESH);
+
 	void ActionFishingNew()
 	{
-		m_CallbackClass = ActionFishingNewCB;
-		m_SpecialtyWeight = UASoftSkillsWeight.PRECISE_MEDIUM;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_FISHING;
-		m_FullBody = true;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
-		m_Text = "#start_fishing";
+		m_CallbackClass 	= ActionFishingNewCB;
+		m_SpecialtyWeight 	= UASoftSkillsWeight.PRECISE_MEDIUM;
+		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_FISHING;
+		m_FullBody 			= true;
+		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
+		m_Text 				= "#start_fishing";
 	}
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTWaterSurface(UAMaxDistances.LARGE, UAWaterType.ALL);
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTWaterSurface(UAMaxDistances.LARGE, ALLOWED_WATER_SURFACES);
 	}
 	
 	override bool HasTarget()

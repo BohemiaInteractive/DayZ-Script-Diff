@@ -38,7 +38,7 @@ class ControlsXbox extends UIScriptedMenu
 		GetGame().GetUIManager().Back();
 	}
 	
-	void DrawConnectingLines( int index )
+	void DrawConnectingLines(int index)
 	{
 		ref array<ref JsonControlMappingInfo> control_mapping_info = new array<ref JsonControlMappingInfo>;
 		ref array<ref array <ref JsonControlMappingInfo>> tab_array = new array<ref array <ref JsonControlMappingInfo>>;
@@ -52,7 +52,7 @@ class ControlsXbox extends UIScriptedMenu
 		float dot_width, dot_height;
 		float draw_pos_x, draw_pos_y;
 		
-		CanvasWidget canvas_widget = CanvasWidget.Cast( layoutRoot.FindAnyWidget("CanvasWidget_" + index) );
+		CanvasWidget canvas_widget = CanvasWidget.Cast(layoutRoot.FindAnyWidget("CanvasWidget_" + index));
 		canvas_widget.Clear();
 		control_mapping_info = GetControlMappingInfo();
 		
@@ -237,7 +237,7 @@ class ControlsXbox extends UIScriptedMenu
 
 			if (element.Count() % 2 == 0)
 			{
-				group_point_y = ( ( text_widget_pos_y + text_widget_height/2 ) - first_y ) / 2 + first_y;
+				group_point_y = ((text_widget_pos_y + text_widget_height/2) - first_y) / 2 + first_y;
 			}
 			else
 			{
@@ -350,7 +350,7 @@ class ControlsXbox extends UIScriptedMenu
 	{
 		super.OnShow();
 		#ifdef PLATFORM_CONSOLE
-		//layoutRoot.FindAnyWidget( "toolbar_bg" ).Show( !GetGame().GetInput().IsEnabledMouseAndKeyboard() );
+		//layoutRoot.FindAnyWidget("toolbar_bg").Show(!GetGame().GetInput().IsEnabledMouseAndKeyboard());
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(true);//TODO: temporarily always on for preset switching
 		
 		string preset_text;
@@ -379,23 +379,22 @@ class ControlsXbox extends UIScriptedMenu
 	
 	override void Update(float timeslice)
 	{
-		if (GetGame().GetInput().LocalPress("UAUITabLeft", false))
+		if (GetUApi().GetInputByID(UAUITabLeft).LocalPress())
 		{
 			m_TabScript.PreviousTab();
 		}
 		
-		//RIGHT BUMPER - TAB RIGHT
-		if (GetGame().GetInput().LocalPress("UAUITabRight", false))
+		if (GetUApi().GetInputByID(UAUITabRight).LocalPress())
 		{
 			m_TabScript.NextTab();
 		}
 		
-		if (GetGame().GetInput().LocalPress("UAUIBack", false))
+		if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Back();
 		}
 		
-		if (GetGame().GetInput().LocalPress("UASwitchPreset",false))
+		if (GetUApi().GetInputByID(UASwitchPreset).LocalPress())
 		{
 			SwitchPreset();
 		}

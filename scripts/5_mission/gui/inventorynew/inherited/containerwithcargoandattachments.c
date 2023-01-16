@@ -407,12 +407,12 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 		w.GetUserData(slots_icon);
 		
 		EntityAI item = null;
-		if(slots_icon)
+		if (slots_icon)
 			item = slots_icon.GetEntity();
 		
 		ItemBase itemAtPos = ItemBase.Cast( item );
 		
-		if( item )
+		if ( item )
 		{
 			bool reserved = false;
 		
@@ -420,34 +420,35 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 		
 			if ( button == MouseState.RIGHT )
 			{
-				#ifdef DEVELOPER
-				if( GetDayZGame().IsLeftCtrlDown() )
+				#ifdef DIAG_DEVELOPER
+				if ( GetDayZGame().IsLeftCtrlDown() )
 					ShowActionMenu( InventoryItem.Cast(item) );
 				#endif
-				if( reserved )
+				
+				if ( reserved )
 				{
 					EntityAI att_parent = slots_icon.GetSlotParent();
-					GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocation( item );
+					GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced( item );
 					att_parent.GetOnAttachmentReleaseLock().Invoke(item, slots_icon.GetSlotID());
 				}
 			}
 			else if ( button == MouseState.MIDDLE )
 			{
-				if( !reserved )
+				if ( !reserved )
 				{
 					InspectItem( itemAtPos );
 				}
 			} 
 			else if ( button == MouseState.LEFT )
 			{
-				if( !reserved )
+				if ( !reserved )
 				{
 					PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 					if ( g_Game.IsLeftCtrlDown() )
 					{
-						if( itemAtPos && itemAtPos.GetInventory().CanRemoveEntity() )
+						if ( itemAtPos && itemAtPos.GetInventory().CanRemoveEntity() )
 						{
-							if( itemAtPos.GetTargetQuantityMax() < itemAtPos.GetQuantity() )
+							if ( itemAtPos.GetTargetQuantityMax() < itemAtPos.GetQuantity() )
 								itemAtPos.SplitIntoStackMaxClient( player, -1 );
 							else
 								player.PredictiveTakeEntityToInventory( FindInventoryLocationType.ANY, itemAtPos );
@@ -471,7 +472,7 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 	void DropReceived( Widget w, int x, int y, CargoContainer cargo )
 	{
 		EntityAI item = GetItemPreviewItem( w );
-		if( !item )
+		if ( !item )
 		{
 			return;
 		}

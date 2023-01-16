@@ -1,0 +1,1 @@
+class Land_Misc_Through_Static : Well {}

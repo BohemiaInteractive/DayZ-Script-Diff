@@ -1,8 +1,45 @@
 class CfgGameplayHandler
 {
 	private static string m_Path = "$mission:cfgGameplay.json";
+	private static ref array<ref ITEM_DataBase> m_Items = new array<ref ITEM_DataBase>();
 	
 	static ref CfgGameplayJson m_Data = new CfgGameplayJson;
+	
+	//---------------------------------------------------------------------------------------
+	static void RegisterItem(ITEM_DataBase item)
+	{
+		m_Items.Insert(item);
+	}
+	//---------------------------------------------------------------------------------------
+	private static void ValidateItems()
+	{
+		foreach (ITEM_DataBase item:m_Items)
+		{
+			if (!item.ValidateServer())
+			{
+				string itemName = item.Type().ToString();
+				itemName.Replace("ITEM_", "");
+				PrintToRPT("Validation failed during loading of 'cfgGameplay.json' for " + itemName);
+				item.InitServer();
+			}
+		}
+	}
+	
+	//---------------------------------------------------------------------------------------
+	private static void InitData()
+	{
+		foreach (ITEM_DataBase item:m_Items)
+		{
+			item.InitServer();
+		}
+	}
+	#ifdef DEVELOPER
+	//---------------------------------------------------------------------------------------
+	static void Output()
+	{
+		Print(m_Items.Count());
+	}
+	#endif
 	//---------------------------------------------------------------------------------------
 	static bool LoadData()
 	{
@@ -15,13 +52,16 @@ class CfgGameplayHandler
 		
 		if (!GetGame().ServerConfigGetInt( "enableCfgGameplayFile" ) || !FileExist( m_Path ))
 		{
-			m_Data.InitServer();
+			m_Data.InitServer();//legacy call
+			InitData();
 			OnLoaded();
 			return false;
 		}
 		
 		JsonFileLoader<CfgGameplayJson>.JsonLoadFile( m_Path, m_Data );//we are allowed to read the file, so we replace the default data with data from json
+		ValidateItems();
 		OnLoaded();
+		
 		return true;
 	}
 	
@@ -30,7 +70,6 @@ class CfgGameplayHandler
 	{
 		GetGame().GetMission().OnGameplayDataHandlerLoad();
 		DayZGame.Cast(GetGame()).OnGameplayDataHandlerLoad();
-		ObjectSpawnerHandler.OnGameplayDataHandlerLoad();
 	}
 	
 	//---------------------------------------------------------------------------------------
@@ -81,7 +120,7 @@ class CfgGameplayHandler
 	}
 	//----------------------------------------------------------------------------------
 
-	//--- WorldsData	--------------------------------------------------------------------
+	//-------------------------------   WorldsData   -----------------------------------
 	static int GetLightingConfig()
 	{
 		return m_Data.WorldsData.lightingConfig;
@@ -100,6 +139,10 @@ class CfgGameplayHandler
 	static array<float> GetEnvironmentMaxTemps()
 	{
 		return m_Data.WorldsData.environmentMaxTemps;
+	}
+	static array<float> GetWetnessWeightModifiers()
+	{
+		return m_Data.WorldsData.wetnessWeightModifiers;
 	}
 	//----------------------------------------------------------------------------------
 
@@ -130,6 +173,15 @@ class CfgGameplayHandler
 		return m_Data.PlayerData.StaminaData.sprintStaminaModifierCro;
 	}
 	//----------------------------------------------------------------------------------
+	static float GetSprintSwimmingStaminaModifier()
+	{
+		return m_Data.PlayerData.StaminaData.sprintSwimmingStaminaModifier;
+	}//----------------------------------------------------------------------------------
+	static float GetSprintLadderStaminaModifier()
+	{
+		return m_Data.PlayerData.StaminaData.sprintLadderStaminaModifier;
+	}
+	//----------------------------------------------------------------------------------
 	static float GetStaminaWeightLimitThreshold()
 	{
 		return m_Data.PlayerData.StaminaData.staminaWeightLimitThreshold;
@@ -148,6 +200,21 @@ class CfgGameplayHandler
 	static float GetStaminaMinCap()
 	{
 		return m_Data.PlayerData.StaminaData.staminaMinCap;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetMeleeStaminaModifier()
+	{
+		return m_Data.PlayerData.StaminaData.meleeStaminaModifier;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetObstacleTraversalStaminaModifier()
+	{
+		return m_Data.PlayerData.StaminaData.obstacleTraversalStaminaModifier;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetHoldBreathStaminaModifier()
+	{
+		return m_Data.PlayerData.StaminaData.holdBreathStaminaModifier;
 	}
 	//----------------------------------------------------------------------------------	
 	static float GetMovementTimeToStrafeJog()
@@ -339,6 +406,11 @@ class CfgGameplayHandler
 	static float GetShockDepletionSpeed()
 	{
 		return m_Data.PlayerData.DrowningData.shockDepletionSpeed;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetAllowStaminaAffectInertia()
+	{
+		return m_Data.PlayerData.MovementData.allowStaminaAffectInertia;
 	}
 	//----------------------------------------------------------------------------------
 }

@@ -34,7 +34,7 @@ class PluginRemotePlayerDebugClient extends PluginBase
 	
 	void InitWidgets()
 	{
-		for (int i = 0; i < MAX_SIMULTANIOUS_PLAYERS; i++)
+		for (int i = 0; i < MAX_SIMULTANIOUS_PLAYERS; ++i)
 		{
 			m_RootWidget[i] = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_debug_remoteinfo.layout");
 			m_RootWidgetDamage[i] = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_debug_remoteinfo_damage.layout");
@@ -42,12 +42,11 @@ class PluginRemotePlayerDebugClient extends PluginBase
 			m_StatListWidgets[i] = TextListboxWidget.Cast(m_RootWidget[i].FindAnyWidget("TextListboxWidget0"));
 			m_DistanceWidget[i] = TextWidget.Cast(m_RootWidget[i].FindAnyWidget("TextWidget0"));
 		}
-	}
-		
+	}		
 	
 	void EnableWidgets(bool enable)
 	{
-		for (int i = 0; i < MAX_SIMULTANIOUS_PLAYERS; i++)
+		for (int i = 0; i < MAX_SIMULTANIOUS_PLAYERS; ++i)
 		{
 			m_RootWidget[i].Show(enable);
 			m_RootWidgetDamage[i].Show(enable);
@@ -57,7 +56,7 @@ class PluginRemotePlayerDebugClient extends PluginBase
 	void UpdateWidgetsStats()
 	{
 		int i = 0;
-		for (; i < m_PlayerDebugStats.Count(); i++)
+		for (; i < m_PlayerDebugStats.Count(); ++i)
 		{
 			RemotePlayerStatDebug rpd = m_PlayerDebugStats.Get(i);
 			PlayerBase player = rpd.GetPlayer();
@@ -67,16 +66,16 @@ class PluginRemotePlayerDebugClient extends PluginBase
 				vector pos = player.GetPosition();
 				vector screen_pos_stats = GetGame().GetScreenPos(pos + "0 0 0");
 				vector screen_pos_damage = GetGame().GetScreenPos(pos + "0 2 0");
-				m_RootWidget[i].SetPos(screen_pos_stats[0],screen_pos_stats[1]);
-				m_RootWidgetDamage[i].SetPos(screen_pos_damage[0],screen_pos_damage[1]);
+				m_RootWidget[i].SetPos(screen_pos_stats[0], screen_pos_stats[1]);
+				m_RootWidgetDamage[i].SetPos(screen_pos_damage[0], screen_pos_damage[1]);
 				
 				if (screen_pos_stats[2] > 0 && screen_pos_stats[0] > 0 && screen_pos_stats[1] > 0)
 				{
 					m_RootWidget[i].Show(true);
 					m_RootWidgetDamage[i].Show(true);
-					UpdateStatsWidget(i,rpd);
-					UpdateDistanceWidget( i, player );
-					UpdateDamageWidget(i, player );
+					UpdateStatsWidget(i, rpd);
+					UpdateDistanceWidget(i, player);
+					UpdateDamageWidget(i, player);
 				}
 				else
 				{
@@ -86,7 +85,7 @@ class PluginRemotePlayerDebugClient extends PluginBase
 				
 			}
 		}
-		for (; i < MAX_SIMULTANIOUS_PLAYERS; i++)
+		for (; i < MAX_SIMULTANIOUS_PLAYERS; ++i)
 		{
 			m_RootWidget[i].Show(false);
 			m_RootWidgetDamage[i].Show(false);
@@ -106,15 +105,16 @@ class PluginRemotePlayerDebugClient extends PluginBase
 			if (damage_list.Count() > 0)
 			{
 				m_DamageListWidgets[index].Show(true);
-				for (int i = 0; i < damage_list.Count(); i++)
+				for (int i = 0; i < damage_list.Count(); ++i)
 				{
-					float value_global = damage_list.Get(i).GetValueGlobal();
-					float value_blood = damage_list.Get(i).GetValueBlood();
-					float value_shock = damage_list.Get(i).GetValueShock();
+					DamageData data = damage_list[i];
+					float value_global = data.GetValueGlobal();
+					float value_blood = data.GetValueBlood();
+					float value_shock = data.GetValueShock();
 					
-					m_DamageListWidgets[index].AddItem( value_global.ToString(),NULL,0,i );
-					m_DamageListWidgets[index].SetItem( i, value_blood.ToString(),NULL,1 );
-					m_DamageListWidgets[index].SetItem( i, value_shock.ToString(),NULL,2 );
+					m_DamageListWidgets[index].AddItem( value_global.ToString(), null, 0, i );
+					m_DamageListWidgets[index].SetItem( i, value_blood.ToString(), null, 1 );
+					m_DamageListWidgets[index].SetItem( i, value_shock.ToString(), null, 2 );
 				}
 			}
 			else
@@ -127,7 +127,7 @@ class PluginRemotePlayerDebugClient extends PluginBase
 	void UpdateDistanceWidget(int index, PlayerBase other_player)
 	{
 		float distance = vector.Distance(GetGame().GetCurrentCameraPosition(), other_player.GetPosition());
-		m_DistanceWidget[index].SetText(distance.ToString() +"m.");
+		m_DistanceWidget[index].SetText(distance.ToString() + "m");
 	}
 	
 	void UpdateStatsWidget(int index, RemotePlayerStatDebug rpd)
@@ -138,15 +138,16 @@ class PluginRemotePlayerDebugClient extends PluginBase
 		rpd.SerializeValues(values,m_DebugType);
 		m_StatListWidgets[index].ClearItems();
 		
-		for (int i = 0; i < names.Count(); i++)
+		for (int i = 0; i < names.Count(); ++i)
 		{
-			m_StatListWidgets[index].AddItem( names.Get(i),NULL,0,i );
-			m_StatListWidgets[index].SetItem( i, values.Get(i),NULL,1 );
+			m_StatListWidgets[index].AddItem( names.Get(i), null, 0, i );
+			m_StatListWidgets[index].SetItem( i, values.Get(i), null, 1 );
 		}
 	}
 
 	void RequestPlayerInfo(PlayerBase player, int type)
 	{
+#ifdef DIAG_DEVELOPER
 		if (type == 0)
 		{
 			EnableWidgets(false);
@@ -160,16 +161,15 @@ class PluginRemotePlayerDebugClient extends PluginBase
 		ScriptRPC rpc = new ScriptRPC();
 		m_DebugType = type;
 		rpc.Write(type);
-		rpc.Send( player, ERPCs.DEV_REQUEST_PLAYER_DEBUG, true, player.GetIdentity() );
+		rpc.Send( player, ERPCs.DEV_PLAYER_DEBUG_REQUEST, true, player.GetIdentity() );
+#endif
 	}
 	
 	void MergeDamage( array<ref RemotePlayerDamageDebug> delta )
 	{
-		for (int i = 0; i < delta.Count();i++)
-		{
-		
-			RemotePlayerDamageDebug value_delta = delta.Get(i);
-			PlayerBase player_delta = value_delta.GetPlayer();
+		foreach (RemotePlayerDamageDebug valueDelta : delta)
+		{	
+			PlayerBase playerDelta = valueDelta.GetPlayer();
 			
 			if ( m_PlayerDebugDamage.Contains(null) )
 			{
@@ -177,20 +177,20 @@ class PluginRemotePlayerDebugClient extends PluginBase
 				m_PlayerDebugDamage.Remove(null);
 			}
 			
-			if ( m_PlayerDebugDamage.Contains(player_delta) )
+			if ( m_PlayerDebugDamage.Contains(playerDelta) )
 			{
-				RemotePlayerDamageDebug value_local = m_PlayerDebugDamage.Get(player_delta);
-				array<ref DamageData> damage_list = new array<ref DamageData>;
-				value_delta.GetReversed(damage_list);
+				RemotePlayerDamageDebug valueLocal = m_PlayerDebugDamage.Get(playerDelta);
+				array<ref DamageData> damageList = new array<ref DamageData>;
+				valueDelta.GetReversed(damageList);
 				
-				for (int x = 0; x < damage_list.Count(); x++)
+				foreach (DamageData data : damageList)
 				{
-					value_local.InsertDamageObject( damage_list.Get(x) );
+					valueLocal.InsertDamageObject( data );
 				}
 			}
 			else
 			{
-				m_PlayerDebugDamage.Insert(player_delta, value_delta);
+				m_PlayerDebugDamage.Insert(playerDelta, valueDelta);
 			}
 		}
 	}

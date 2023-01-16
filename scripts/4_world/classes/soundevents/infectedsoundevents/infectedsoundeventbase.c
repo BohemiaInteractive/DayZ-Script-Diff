@@ -14,7 +14,7 @@ class InfectedSoundEventBase extends SoundEventBase
 	
 	void ~InfectedSoundEventBase()
 	{
-		if(m_SoundSetCallback) m_SoundSetCallback.Stop();
+		if (m_SoundSetCallback) m_SoundSetCallback.Stop();
 	}
 
 	void Init(ZombieBase pInfected)
@@ -61,10 +61,12 @@ class InfectedSoundEventBase extends SoundEventBase
 			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLaterByName(this, "PosUpdate", 0, true);
 			return true;
 		}
+		string error = "[%1] No sound callback for : \'%2\' in state: \'%3\' Please define relevant SoundSet in %4";
 		#ifdef DEVELOPER
-		Error("[ERROR] No sound callback for : " + m_Infected.ClassName() + " Please define relevant SoundSet in Zombie_SoundSets.hpp");
+		Error(string.Format(error, "ERROR", m_Infected.ClassName(), m_SoundSetNameRoot, "Zombie_SoundSets.hpp"));
+		#else
+		PrintToRPT(string.Format(error, "WARNING", m_Infected.ClassName(), m_SoundSetNameRoot, "sounds/hpp/config.cpp"));
 		#endif
-		PrintToRPT("[WARNING] No sound callback for : " + m_Infected.ClassName() + " Please define relevant SoundSet in sounds/hpp/config.cpp");
 		return false;
 	}
 }

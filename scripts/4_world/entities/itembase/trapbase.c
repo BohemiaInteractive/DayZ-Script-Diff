@@ -619,11 +619,6 @@ class TrapBase extends ItemBase
 	{
 		return IsPlaceableAtPosition( position );
 	}
-
-	override string CanBePlacedFailMessage( Man player, vector position )
-	{
-		return "Trap can't be placed on this surface type.";
-	}
 	
 	//! DEPRECATED Set if trap can be disarmed using ActionClapBearTrapWithThisItem
 	bool CanBeClapped()

@@ -8,7 +8,6 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 
 	static const float 	CONST_LR_MIN	= -160.0;		//!< down limit
 	static const float 	CONST_LR_MAX	= 160.0;		//!< up limit
-
 	
 	void 	DayZPlayerCamera3rdPerson(DayZPlayer pPlayer, HumanInputController pInput)
 	{
@@ -29,7 +28,7 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 		
 
 	//
-	override void 		OnActivate (DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
+	override void 		OnActivate(DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
 	{
 		super.OnActivate(pPrevCamera, pPrevCameraResult);
 		if (pPrevCamera)
@@ -38,7 +37,6 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 			m_fUpDownAngle		= f[0]; 
 			m_fLeftRightAngle	= f[1]; 
 			m_fUpDownAngleAdd	= f[2];
-
 		}
 	}
 

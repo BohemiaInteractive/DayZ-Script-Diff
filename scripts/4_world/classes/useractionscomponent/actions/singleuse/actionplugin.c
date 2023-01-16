@@ -2,61 +2,57 @@ class ActionPlugIn: ActionSingleUseBase
 {
 	void ActionPlugIn()
 	{
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_INTERACTONCE;
-		m_Text = "#plug_in";
+		m_CommandUID 	= DayZPlayerConstants.CMD_ACTIONMOD_INTERACTONCE;
+		m_Text 			= "#plug_in";
 	}
 	
 	override void CreateConditionComponents()  
 	{	
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNonRuined(UAMaxDistances.DEFAULT);
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTNonRuined(UAMaxDistances.DEFAULT);
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if ( player.IsPlacingLocal() )
+		if (player.IsPlacingLocal())
 			return false;
 		
-		ItemBase target_IB = ItemBase.Cast( target.GetObject() );
+		ItemBase targetIB = ItemBase.Cast(target.GetObject());
 		
 		//Prevent plugging to items in inventory
-		if ( target_IB && target_IB.GetHierarchyRoot() == target_IB &&  item )
+		if (targetIB && targetIB.GetHierarchyRoot() == targetIB && item)
 		{
-			if ( item.HasEnergyManager()  &&  !item.GetCompEM().IsPlugged()  &&  target_IB.HasEnergyManager()  &&  target_IB.GetCompEM().CanReceivePlugFrom(item) )
+			if (item.HasEnergyManager() && !item.GetCompEM().IsPlugged() && targetIB.HasEnergyManager() && targetIB.GetCompEM().CanReceivePlugFrom(item))
 			{
 				return true;
 			}
 			
-			ItemBase attached_device = GetAttachedDevice(target_IB);
-			
+			ItemBase attachedDevice = GetAttachedDevice(targetIB);
 			//Will only ever affect batteries
-			if ( attached_device )
+			if (attachedDevice)
 			{
-				if ( attached_device.GetCompEM().HasFreeSocket() )
-					return true;
+				return attachedDevice.GetCompEM().HasFreeSocket();
 			}
 		}
 		
 		return false;
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{
-		Object targetObject = action_data.m_Target.GetObject();
-		ItemBase target_IB = ItemBase.Cast( targetObject );
+		ItemBase targetIB = ItemBase.Cast(action_data.m_Target.GetObject());
 		
-		if ( target_IB.HasEnergyManager() )
+		if (targetIB.HasEnergyManager())
 		{
-			ItemBase attached_device = GetAttachedDevice(target_IB);
-			
-			if (attached_device)
+			ItemBase attachedDevice = GetAttachedDevice(targetIB);
+			if (attachedDevice)
 			{
-				target_IB = attached_device;
+				targetIB = attachedDevice;
 			}
 			
-			action_data.m_MainItem.GetCompEM().PlugThisInto(target_IB);
+			action_data.m_MainItem.GetCompEM().PlugThisInto(targetIB);
 		
-			if ( !action_data.m_Player.IsPlacingServer() )
+			if (!action_data.m_Player.IsPlacingServer())
 			{
 				Process(action_data);
 			}
@@ -65,15 +61,14 @@ class ActionPlugIn: ActionSingleUseBase
 	
 	void Process( ActionData action_data )
 	{
-		Object targetObject = action_data.m_Target.GetObject();
-		ItemBase target_IB = ItemBase.Cast( targetObject );
+		ItemBase targetIB = ItemBase.Cast(action_data.m_Target.GetObject());
 
-		target_IB.GetInventory().TakeEntityAsAttachment( InventoryMode.LOCAL, action_data.m_MainItem );
+		targetIB.GetInventory().TakeEntityAsAttachment(InventoryMode.LOCAL, action_data.m_MainItem);
 	}
 	
-	override void OnExecuteClient( ActionData action_data )
+	override void OnExecuteClient(ActionData action_data)
 	{	
-		if ( !action_data.m_Player.IsPlacingLocal() )
+		if (!action_data.m_Player.IsPlacingLocal())
 		{
 			action_data.m_Player.TogglePlacingLocal();
 		}
@@ -85,19 +80,17 @@ class ActionPlugIn: ActionSingleUseBase
 	
 	ItemBase GetAttachedDevice(ItemBase parent)
 	{
-		string parent_type = parent.GetType();
-		
-		if ( parent.IsInherited(CarBattery)  ||  parent.IsInherited(TruckBattery) )
+		if (parent.IsInherited(CarBattery) || parent.IsInherited(TruckBattery))
 		{
-			ItemBase parent_attachment = ItemBase.Cast( parent.GetAttachmentByType(MetalWire) );
-			
-			if (!parent_attachment)
+			ItemBase parentAttachment = ItemBase.Cast(parent.GetAttachmentByType(MetalWire));
+			if (!parentAttachment)
 			{
-				parent_attachment = ItemBase.Cast( parent.GetAttachmentByType(BarbedWire) );
+				parentAttachment = ItemBase.Cast(parent.GetAttachmentByType(BarbedWire));
 			}
-			return parent_attachment;
+
+			return parentAttachment;
 		}
 		
-		return NULL;
+		return null;
 	}
 };
