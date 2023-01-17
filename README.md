@@ -1,8 +1,10 @@
-# DayZ-Script-Diff
+DayZ-Script-Diff
+--------------------------------------------------------------------------------
+
+If you experience any issues or would like to share your thoughts, head on over to our official public bug tracker and platform to offer suggestions at https://feedback.bistudio.com Make sure to provide as much detailed information as possible.
+
 ## License
 DayZ Public License (DPL)
-
-PLEASE, NOTE THAT THIS SUMMARY HAS NO LEGAL EFFECT AND IS ONLY OF AN INFORMATORY NATURE DESIGNED FOR YOU TO GET THE BASIC INFORMATION ABOUT THE CONTENT OF THIS LICENCE. THE ONLY LEGALLY BINDING PROVISIONS ARE THOSE IN THE ORIGINAL AND FULL TEXT OF THIS LICENSE.
 
 With this license you are free to adapt (i.e. modify, rework or update) and share (i.e. copy, distribute or transmit) the material under the following conditions:
 
@@ -11,3 +13,5 @@ With this license you are free to adapt (i.e. modify, rework or update) and shar
 - Dayz Only - You may not convert or adapt this material to be used in other games than Dayz
 
 Full text: https://www.bohemia.net/community/licenses/dayz-public-license-dpl
+
+© 2022 BOHEMIA INTERACTIVE a.s. DAYZ®, ENFUSION®, and BOHEMIA INTERACTIVE® are registered trademarks of BOHEMIA INTERACTIVE a.s. All rights reserved.
