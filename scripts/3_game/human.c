@@ -583,6 +583,9 @@ class HumanCommandDeathCallback
 	// callbacks
 
 	void 	OnSimulationEnd()	{};		
+
+	//! 'OnSimulationEnd' is called before this
+	bool	ShouldSimulationBeDisabled() { return true; };
 }
 
 // *************************************************************************************
@@ -1283,6 +1286,11 @@ class Human extends Man
 	//! outs pVelocity - linear velocity of PHYSICS CONTROLLER 
 	proto native 	void 		PhysicsGetVelocity(out vector pVelocity);
 
+	proto native	void		PhysicsEnableGravity(bool pEnable);
+
+	proto native	bool		PhysicsIsSolid();
+	proto native	void		PhysicsSetSolid(bool pSolid);
+
 	//---------------------------------------------------------
 	// controller 
 			
@@ -1476,6 +1484,9 @@ class Human extends Man
 	
 	//---------------------------------------------------------
 	// helper functions for disabling simulation upon death
+	proto native	void StartDeath();
+	proto native	void ResetDeath();
+
 	proto native	void ResetDeathCooldown();
 	proto native	bool IsDeathProcessed();
 	proto native	bool IsDeathConditionMet();

@@ -298,7 +298,6 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 
 					//! evaluate hit - selection of cfg 'ammo' type
 					EvaluateHit(itemInHands);					
-					m_MeleeCombat.ResetTarget();
 					
 					PlayerBase player = PlayerBase.Cast(m_DZPlayer);
 					
@@ -316,6 +315,8 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 					
 					//If we hit something, inflict damage
 					DamageHands(m_DZPlayer, gloves, itemInHands);
+					
+					m_MeleeCombat.ResetTarget();
 					
 					EnableControls();
 					
@@ -356,15 +357,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 			GetTargetData(target, targetType);
 			float attackByDistance = GetAttackTypeByDistanceToTarget(target, targetType);
 
-			m_DZPlayer.StartCommand_Melee2(target, m_HitType == EMeleeHitType.WPN_STAB, attackByDistance, m_MeleeCombat.GetHitPos());
-			
-			// finisher attack hittype override
-			int finisherType = m_MeleeCombat.GetFinisherType();
-			if (finisherType != -1)
-			{
-				m_HitType = finisherType;
-				target.SetBeingBackstabbed(finisherType);
-			}
+			m_DZPlayer.StartCommand_Melee2(target, m_HitType == EMeleeHitType.WPN_STAB, attackByDistance, m_MeleeCombat.GetHitPos());			
 			m_DZPlayer.DepleteStamina(EStaminaModifiers.MELEE_HEAVY);
 			DisableControls();
 

@@ -1253,10 +1253,10 @@ class CarScript extends Car
 		switch (pState)
 		{
 		case ECarHornState.SHORT:
-			PlaySoundSetAtMemoryPointOrOrigin(m_CarHornSoundEffect, m_CarHornShortSoundName, MEMORY_POINT_NAME_CAR_HORN, 0, 0);
+			PlaySoundSet(m_CarHornSoundEffect, m_CarHornShortSoundName, 0, 0, false);
 		break;
 		case ECarHornState.LONG:
-			PlaySoundSetAtMemoryPointOrOrigin(m_CarHornSoundEffect, m_CarHornLongSoundName, MEMORY_POINT_NAME_CAR_HORN, true, 0, 0);
+			PlaySoundSet(m_CarHornSoundEffect, m_CarHornLongSoundName, 0, 0, true);
 		break;
 		default:
 			CleanupSound(m_CarHornSoundEffect);

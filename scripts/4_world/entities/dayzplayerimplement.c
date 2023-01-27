@@ -53,6 +53,21 @@ class DayZPlayerCommandDeathCallback : HumanCommandDeathCallback
 			}
 		}*/
 	}
+
+	override bool ShouldSimulationBeDisabled()
+	{
+		return m_pPlayer.m_WasInVehicle == false;
+	}
+	
+	PlayerBase m_pPlayer;
+}
+
+class DayZPlayerVehicleCommandDeathCallback : HumanCommandDeathCallback
+{
+	override void OnSimulationEnd()
+	{
+		m_pPlayer.PhysicsEnableGravity(true);
+	}
 	
 	PlayerBase m_pPlayer;
 }
@@ -136,7 +151,9 @@ class DayZPlayerImplement extends DayZPlayer
 	
 	private float										m_CurrentWaterLevel;
 
+	bool												m_WasInVehicle;
 	protected bool										m_TriggerPullPlayerOutOfVehicleSynch;
+	protected bool										m_PullPlayerOutOfVehicleKeepsInLocalSpace = false;
 	protected int										m_PullPlayerOutOfVehicleState = -1;
 
 	//! constructor 
@@ -413,7 +430,35 @@ class DayZPlayerImplement extends DayZPlayer
 
 	void TriggerPullPlayerOutOfVehicle()
 	{
+		if (!GetGame().IsServer())
+		{
+			return;
+		}
+		
+		Transport transport;
+		if (!Class.CastTo(transport, GetParent()))
+		{
+			return;
+		}
+		
+		int crewIdx = -1;
+		for (int i = 0; i < transport.CrewSize(); ++i)
+		{
+			if (transport.CrewMember(i) == this)
+			{
+				crewIdx = i;
+				break;
+			}
+		}
+		
+		if (crewIdx == -1)
+		{
+			return;
+		}
+
+		transport.CrewGetOut(crewIdx);
 		TriggerPullPlayerOutOfVehicleImpl();
+		
 		SetSynchDirty();
 	}
 
@@ -430,6 +475,7 @@ class DayZPlayerImplement extends DayZPlayer
 			case DayZPlayerInstanceType.INSTANCETYPE_SERVER:
 			case DayZPlayerInstanceType.INSTANCETYPE_CLIENT:		//! Handle own client animation freeze
 			case DayZPlayerInstanceType.INSTANCETYPE_AI_SERVER:
+			case DayZPlayerInstanceType.INSTANCETYPE_AI_SINGLEPLAYER:
 				m_PullPlayerOutOfVehicleState = 0;
 				m_TriggerPullPlayerOutOfVehicleSynch = true;
 				break;
@@ -447,7 +493,7 @@ class DayZPlayerImplement extends DayZPlayer
 	}
 
 	bool	HandleDeath(int pCurrentCommandID)
-	{
+	{		
 		if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_DEATH)
 		{
 			switch (m_PullPlayerOutOfVehicleState)
@@ -456,8 +502,16 @@ class DayZPlayerImplement extends DayZPlayer
 				break;
 			case 0:
 				m_PullPlayerOutOfVehicleState = -1;
-				UnlinkFromLocalSpace();
-				StartCommand_Death(-1, 0, HumanCommandDeathCallback);
+				if (!m_PullPlayerOutOfVehicleKeepsInLocalSpace)
+				{
+					UnlinkFromLocalSpace();
+				}
+
+				PhysicsSetSolid(true);
+				
+				DayZPlayerVehicleCommandDeathCallback callbackVeh;
+				Class.CastTo(callbackVeh, StartCommand_Death(-1, 0, DayZPlayerVehicleCommandDeathCallback));
+				Class.CastTo(callbackVeh.m_pPlayer, this);
 				break;
 			}
 
@@ -471,8 +525,6 @@ class DayZPlayerImplement extends DayZPlayer
 				int type = m_DeathAnimType;
 				if( type == -1 ) 
 					type = GetTypeOfDeath(pCurrentCommandID);
-
-				bool inVehicleSeat = false;
 				
 				// Maybe move elsewhere? Couldn't find a more fitting place to do this but I'm sure there is one
 				// If player dies in driver seat, car shouldn't be simulated by the dead player anymore
@@ -481,28 +533,32 @@ class DayZPlayerImplement extends DayZPlayer
 					HumanCommandVehicle hcv = GetCommand_Vehicle();
 					Transport transport = hcv.GetTransport();
 					int crewPos = transport.CrewMemberIndex( this );
-					transport.CrewDeath( crewPos );
 
-					inVehicleSeat = !hcv.IsGettingIn() && !hcv.IsGettingOut();
+					m_WasInVehicle = !hcv.IsGettingIn() && !hcv.IsGettingOut();
 					
-					if (!inVehicleSeat)
+					if (m_WasInVehicle)
+					{
+						transport.CrewDeath(crewPos);
+					}
+					else
 					{
 						transport.CrewGetOut(crewPos);
-						UnlinkFromLocalSpace();
+						
+						if (!m_PullPlayerOutOfVehicleKeepsInLocalSpace)
+						{
+							UnlinkFromLocalSpace();
+						}
+
 						DisableSimulation(false);
 
 						GetItemAccessor().HideItemInHands(false);
 						m_TransportCache = null;
 					}
 				}
-				
-				PlayerBase targetPlayer;
-				Class.CastTo(targetPlayer, this);
 
 				DayZPlayerCommandDeathCallback callback;
-				Class.CastTo(callback, targetPlayer.StartCommand_Death(type, m_DeathHitDir, DayZPlayerCommandDeathCallback));
-				
-				callback.m_pPlayer = targetPlayer;
+				Class.CastTo(callback, StartCommand_Death(type, m_DeathHitDir, DayZPlayerCommandDeathCallback));
+				Class.CastTo(callback.m_pPlayer, this);
 			}
 			
 			// disable voice communication

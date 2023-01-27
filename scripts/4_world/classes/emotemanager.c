@@ -60,6 +60,8 @@ class EmoteCB : HumanCommandActionCallback
 						m_player.GetInventory().DropEntityWithTransform(InventoryMode.SERVER, m_player, itemInHands, m4);
 					}
 				}
+
+				m_player.StartDeath();
 			break;
 		}
 	}

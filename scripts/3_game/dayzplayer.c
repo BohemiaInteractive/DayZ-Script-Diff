@@ -1157,7 +1157,7 @@ class DayZPlayer extends Human
 	//! processes melee hit (uses component name)
 	proto native	void					ProcessMeleeHitName(InventoryItem pMeleeWeapon, int pMeleeModeIndex, Object pTarget, string pComponentName, vector pHitWorldPos);
 	
-	//! get reason for kickoff if available (server only, only works while player still has network tied to it; e.g. no longer works after ReleaseNetworkControls)
+	//! get reason for kickoff if available (server only)
 	proto native	EClientKicked			GetKickOffReason();
 	
 	//! ---------------- release controls -------------------------

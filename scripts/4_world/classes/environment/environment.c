@@ -168,8 +168,6 @@ class Environment
 			{
 				m_Time = 0;
 				m_WetDryTick++; // Sets whether it is time to add wetness to items and clothing
-				
-				//Print(IsInsideBuilding().ToString());
 
 				//! Updates data
 				CheckWaterContact(m_WaterLevel);
@@ -277,23 +275,31 @@ class Environment
 	
 	protected void CheckWaterContact(out float pWaterLevel)
 	{
+		m_IsInWater = false;
+		if (m_Player.IsSwimming())
+		{
+			m_IsInWater = true;
+			HumanMovementState hms = new HumanMovementState();
+			m_Player.GetMovementState(hms);
+			pWaterLevel = WATER_LEVEL_MID;
+			if (hms.m_iMovement >= DayZPlayerConstants.MOVEMENTIDX_WALK)
+				pWaterLevel = WATER_LEVEL_HIGH;
+
+			return;
+		}
+
 		string surfType;
 		int liquidType;
 
 		g_Game.SurfaceUnderObject(m_Player, surfType, liquidType);
-
+		
 		switch ( liquidType )
 		{
 			case 0: // sea
 			case LIQUID_WATER:
-				vector wl = HumanCommandSwim.WaterLevelCheck(m_Player, m_Player.GetPosition());
-				pWaterLevel = wl[0];
+			case LIQUID_RIVERWATER:
+				pWaterLevel = m_Player.GetCurrentWaterLevel();
 				m_IsInWater = true;
-			break;
-			
-			default:
-				pWaterLevel = 0;
-				m_IsInWater = false;
 			break;
 		}
 
@@ -486,23 +492,24 @@ class Environment
 	protected void ProcessItemsWetness(array<int> pSlotIds)
 	{
 		EntityAI attachment;
-		ItemBase item;
 		
-		int attCount = m_Player.GetInventory().AttachmentCount();
-		
-		for (int attIdx = 0; attIdx < attCount; attIdx++)
+		int playerAttachmentCount = m_Player.GetInventory().AttachmentCount();
+		for (int attIdx = 0; attIdx < playerAttachmentCount; ++attIdx)
 		{
 			attachment = m_Player.GetInventory().GetAttachmentFromIndex(attIdx);
 			if (attachment.IsItemBase())
 			{
-				item = ItemBase.Cast(attachment);
-				int attachmentSlot = attachment.GetInventory().GetSlotId(0);
-
-				for (int i = 0; i < pSlotIds.Count(); i++)
+				int attachmentSlotsCount = attachment.GetInventory().GetSlotIdCount();
+				for (int attachmentSlotId = 0; attachmentSlotId < attachmentSlotsCount; ++attachmentSlotId)
 				{
-					if (attachmentSlot == pSlotIds.Get(i))
+					int attachmentSlot = attachment.GetInventory().GetSlotId(attachmentSlotId);
+					for (int i = 0; i < pSlotIds.Count(); ++i)
 					{
-						ApplyWetnessToItem(item);
+						if (attachmentSlot == pSlotIds.Get(i))
+						{
+							ApplyWetnessToItem(ItemBase.Cast(attachment));
+							break;
+						}
 					}
 				}
 			}

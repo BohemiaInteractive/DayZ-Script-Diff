@@ -98,6 +98,9 @@ proto native bool dBodyEnableGravity(notnull IEntity ent, bool enable);
 proto native void dBodySetDamping(notnull IEntity ent, float linearDamping, float angularDamping);
 proto native void dBodySetSleepingTreshold(notnull IEntity body, float linearTreshold, float angularTreshold);
 
+proto native bool dBodyIsSolid(notnull IEntity ent);
+proto native void dBodySetSolid(notnull IEntity ent, bool solid);
+
 /*!
 If both maxMotion and shapeCastRadius is >=0 then the continuous collision detection is enabled.
 If you want to disable it, use -1

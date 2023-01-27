@@ -6484,8 +6484,13 @@ class PlayerBase extends ManBase
 		SetSynchDirty();
 		
 		#ifdef DIAG_DEVELOPER
-		bool enable = type;
-		DiagMenu.SetValue(DiagMenuIDs.LIFESPAN_BLOODY_HANDS, enable);
+		#ifndef SERVER
+		if (IsControlledPlayer())
+		{
+			bool enable = type;
+			DiagMenu.SetValue(DiagMenuIDs.LIFESPAN_BLOODY_HANDS, enable);
+		}
+		#endif
 		#endif
 	}
 	

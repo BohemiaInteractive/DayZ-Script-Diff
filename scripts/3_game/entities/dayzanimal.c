@@ -39,6 +39,9 @@ class DayZCreature extends EntityAI
 
 	//---------------------------------------------------------
 	// helper functions for disabling simulation upon death
+	proto native void StartDeath();
+	proto native void ResetDeath();
+
 	proto native void ResetDeathCooldown();
 	proto native bool IsDeathProcessed();
 	proto native bool IsDeathConditionMet();

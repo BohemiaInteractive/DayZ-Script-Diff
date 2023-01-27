@@ -1143,23 +1143,6 @@ class Object extends IEntity
 		return true;
 	}
 	
-	bool PlaySoundSetAtMemoryPointOrOrigin(out EffectSound sound, string soundSet, string memoryPoint, bool looped = false, float play_fade_in = 0, float stop_fade_out = 0)
-	{
-		if (MemoryPointExists(memoryPoint))
-		{
-			vector pos = GetMemoryPointPos(memoryPoint);
-			pos = ModelToWorld(pos);
-			
-			sound = SEffectManager.PlaySoundEnviroment(soundSet, pos, play_fade_in, stop_fade_out, looped);
-			if (sound)
-				return true;
-		}
-		else
-			return PlaySoundSet(sound, soundSet, play_fade_in, stop_fade_out);
-		
-		return false;
-	}
-	
 	//! EffectSound - stops soundset and returns state of the sound (true - stopped, false - not playing)
 	bool StopSoundSet( out EffectSound sound )
 	{
