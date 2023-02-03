@@ -40,7 +40,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 		if (m_ParentClass)
 		{
 			m_ParentClass.OnFocus(m_Root.GetParent(), -1, m_SelectorType);
-			#ifdef PLATFORM_WINDOWS
+			#ifndef PLATFORM_CONSOLE
 			m_ParentClass.OnMouseEnter(m_Root.GetParent().GetParent(), x, y);
 			#endif
 		}
@@ -53,7 +53,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 			menu.OnMouseEnter(m_Root.GetParent().GetParent(), x, y);
 		}
 		
-		#ifdef PLATFORM_WINDOWS
+		#ifndef PLATFORM_CONSOLE
 		ColorHighlight(w);
 		#else
 		ColorHighlightConsole(w);
@@ -76,7 +76,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 		if (m_ParentClass)
 		{
 			m_ParentClass.OnFocus(null, x, y);
-			#ifdef PLATFORM_WINDOWS
+			#ifndef PLATFORM_CONSOLE
 			m_ParentClass.OnMouseLeave(m_Root.GetParent().GetParent(), enterW, x, y);
 			#endif
 		}
@@ -89,7 +89,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 			menu.OnMouseLeave(m_Root.GetParent().GetParent(), enterW, x, y);
 		}
 		
-		#ifdef PLATFORM_WINDOWS
+		#ifndef PLATFORM_CONSOLE
 		ColorNormal(w);
 		#else
 		ColorNormalConsole(w);
@@ -128,12 +128,10 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 	
 	void Focus()
 	{
-		#ifdef PLATFORM_CONSOLE
-			SetFocus(m_Parent);
-		#else
-		#ifdef PLATFORM_WINDOWS
+		#ifndef PLATFORM_CONSOLE
 			SetFocus(m_Root);
-		#endif
+		#else
+			SetFocus(m_Parent);
 		#endif
 	}
 	

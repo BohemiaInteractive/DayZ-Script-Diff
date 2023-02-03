@@ -379,8 +379,9 @@ class DayZPlayerImplementAiming
 		{
 			//acquire new target
 			m_MaxVelocity = m_PlayerPb.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSAimingModel, max_velocity_low, max_velocity_high);
-			
-			m_HorizontalTargetValue = (Math.RandomFloat01() - 0.5) * 2 * max_distance;
+
+			float r = m_PlayerPb.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSAimingModel, 0, 1);
+			m_HorizontalTargetValue = (r - 0.5) * 2 * max_distance;
 			m_HorizontalNoiseVelocity[0] = 0;
 		}
 

@@ -214,6 +214,7 @@ class OptionSelector extends OptionSelectorBase
 			m_PreviousOption.Show(true);
 		#else
 			m_Parent.ClearFlags(WidgetFlags.NOFOCUS);
+			m_Parent.ClearFlags(WidgetFlags.IGNOREPOINTER);
 		#endif
 	}
 	
@@ -227,6 +228,7 @@ class OptionSelector extends OptionSelectorBase
 			m_PreviousOption.Show(false);
 		#else
 			m_Parent.SetFlags(WidgetFlags.NOFOCUS);
+			m_Parent.SetFlags(WidgetFlags.IGNOREPOINTER);
 		#endif
 	}
 	

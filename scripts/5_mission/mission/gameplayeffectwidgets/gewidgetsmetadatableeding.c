@@ -125,7 +125,7 @@ class GameplayEffectsDataBleeding extends GameplayEffectsData
 	
 	void StopBleedingIndicator(int source_ID, bool instant = false)
 	{
-		m_RegisteredInstances.Get(source_ID).StopIndicator(instant);
+		m_RegisteredInstances.Get(source_ID).StopIndicator(instant); //stop queued, evaluated on update!
 	}
 	
 	void UpdateBleedingIndicators(float timeSlice)
@@ -167,11 +167,11 @@ class GameplayEffectsDataBleeding extends GameplayEffectsData
 			if (Class.CastTo(par,p))
 			{
 				bool state = par.param1;
-				if (state) //add indicator
+				if (state) //queue add indicator
 				{
 					SpawnBleedingIndicator(par.param2,par.param3);
 				}
-				else //stop indicator
+				else //queue stop indicator
 				{
 					StopBleedingIndicator(par.param2,par.param4);
 				}
@@ -204,6 +204,18 @@ class GameplayEffectsDataBleeding extends GameplayEffectsData
 			w.Show(state);
 			w = w.GetParent();
 		}
+	}
+	
+	//! stops and re-sets indicators and images even out of sequence. Should still be tied to the 'player' update, though!
+	override void ForceStop()
+	{
+		super.ForceStop();
+		
+		foreach (int i: m_RunningIndicators)
+		{
+			m_RegisteredInstances.Get(i).StopIndicator(true);
+		}
+		Update();
 	}
 	
 	void BuildProbabilityData(int severity, float frequency)

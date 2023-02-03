@@ -2,7 +2,6 @@ class CharacterCreationMenu extends UIScriptedMenu
 {
 	#ifdef PLATFORM_CONSOLE
 	DayZIntroSceneXbox										m_Scene;
-	protected Widget										m_ConsoleSave;//save_consoleIcon
 	protected bool 											m_CharacterSaved;
 	#else
 	DayZIntroScenePC										m_Scene;
@@ -50,33 +49,15 @@ class CharacterCreationMenu extends UIScriptedMenu
 		return m_Scene.GetIntroCharacter().GetCharacterObj();
 	}
 	
-	protected void OnInputPresetChanged()
-	{
-		#ifdef PLATFORM_CONSOLE
-		UpdateControlsElements();
-		#endif
-	}
-	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		switch (pInputDeviceType)
+		#ifdef PLATFORM_CONSOLE
+		UpdateControlsElementVisibility();
+		if (pInputDeviceType == EInputDeviceType.CONTROLLER)
 		{
-		case EInputDeviceType.CONTROLLER:
-			#ifdef PLATFORM_CONSOLE
-			UpdateControlsElements();
-			layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
-			#endif
-		break;
-
-		default:
-			#ifdef PLATFORM_CONSOLE
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
-			{
-				layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
-			}
-			#endif
-		break;
+			CheckNewOptions(); //TODO - pick only the 'focus' bit
 		}
+		#endif
 	}
 	
 	override Widget Init()
@@ -84,7 +65,6 @@ class CharacterCreationMenu extends UIScriptedMenu
 		#ifdef PLATFORM_CONSOLE
 			layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/character_creation/xbox/character_creation.layout");
 			m_CharacterSaved 				= false;
-			m_ConsoleSave 					= layoutRoot.FindAnyWidget("save_console");
 		#else
 			layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/character_creation/pc/character_creation.layout");
 		#endif
@@ -156,18 +136,11 @@ class CharacterCreationMenu extends UIScriptedMenu
 		m_BottomSelector.m_OptionChanged.Insert(BottomChanged);
 		m_ShoesSelector.m_OptionChanged.Insert(ShoesChanged);
 		
-		#ifdef PLATFORM_CONSOLE
-		UpdateControlsElements();
-		#endif
-		
 		Refresh();
 		SetCharacter();
 		CheckNewOptions();
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
-		
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 
 		return layoutRoot;
 	}
@@ -495,8 +468,7 @@ class CharacterCreationMenu extends UIScriptedMenu
 	{
 #ifdef PLATFORM_CONSOLE
 		m_GenderSelector.Focus();
-		layoutRoot.FindAnyWidget("play_panel_root").Show(GetGame().GetInput().IsEnabledMouseAndKeyboard());
-		layoutRoot.FindAnyWidget("toolbar_bg").Show(!GetGame().GetInput().IsEnabledMouseAndKeyboard());
+		UpdateControlsElementVisibility();
 #endif
 		CheckNewOptions();
 	}
@@ -526,7 +498,7 @@ class CharacterCreationMenu extends UIScriptedMenu
 		GetGame().GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
-			m_ConsoleSave.Show(!m_CharacterSaved && m_Scene.GetIntroCharacter().IsDefaultCharacter());
+			
 			m_Apply.Show(m_CharacterSaved || !m_Scene.GetIntroCharacter().IsDefaultCharacter());
 			m_Save.Show(!m_CharacterSaved && m_Scene.GetIntroCharacter().IsDefaultCharacter());
 		#else
@@ -546,6 +518,11 @@ class CharacterCreationMenu extends UIScriptedMenu
 		}
 		
 		m_Version.SetText(version);
+		
+		#ifdef PLATFORM_CONSOLE
+		UpdateControlsElements();
+		UpdateControlsElementVisibility();
+		#endif
 	}
 	
 	override void Update(float timeslice)
@@ -742,19 +719,41 @@ class CharacterCreationMenu extends UIScriptedMenu
 
 	protected void UpdateControlsElements()
 	{
-		RichTextWidget toolbar_a	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("SelectIcon"));
-		RichTextWidget toolbar_b	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
+		#ifdef PLATFORM_CONSOLE
+		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
+		//order: save - randomize - select - back
+		string text = "";
+		if (!m_CharacterSaved && m_Scene.GetIntroCharacter().IsDefaultCharacter()) //can be saved..
+		{
+			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#layout_character_creation_save_character", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		}
+		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "#layout_character_creation_toolbar_randomize", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		if (m_Scene.GetIntroCharacter().IsDefaultCharacter()) //edit options available
+		{
+			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#layout_character_creation_toolbar_select", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		}
+		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#layout_character_creation_toolbar_back", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbar_text.SetText(text);
+		
 		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
-		RichTextWidget toolbar_x	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("RandomizeIcon"));
 		RichTextWidget toolbar_x2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("RandomizeIcon0"));
-		RichTextWidget toolbar_y	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("save_consoleIcon"));
-		RichTextWidget toolbar_y2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("save_consoleIcon0"));
-		toolbar_a.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		toolbar_b.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		RichTextWidget toolbar_y2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("SaveIcon0"));
+		RichTextWidget toolbar_y2_2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ApplyIcon0"));
+		
+		string saveTextIcon = InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER);
 		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_x.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		toolbar_x2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_y.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		toolbar_y2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER));
+		toolbar_y2.SetText(saveTextIcon);
+		toolbar_y2_2.SetText(saveTextIcon);
+		#endif
+	}
+	
+	protected void UpdateControlsElementVisibility()
+	{
+		#ifdef PLATFORM_CONSOLE
+		bool toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
+		layoutRoot.FindAnyWidget("play_panel_root").Show(!toolbarShow);
+		#endif
 	}
 }

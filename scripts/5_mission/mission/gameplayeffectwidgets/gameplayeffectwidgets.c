@@ -213,12 +213,14 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		Widget w;
 		//Hide diff
 		int value;
+		int runningEffectCount = m_RunningEffects.Count();
+		bool runningEffectsPresent = runningEffectCount > 0;
 		GameplayEffectsData dta;
 		for (int i = 0; i < m_RunningEffectsPrevious.Count(); i++)
 		{
 			value = m_RunningEffectsPrevious.Get(i);
 			dta = m_WidgetDataMap.Get(value);
-			if (m_RunningEffects.Count() < 1 || m_RunningEffects.Find(value) == -1)
+			if (runningEffectCount < 1 || m_RunningEffects.Find(value) == -1)
 			{
 				if (dta.HasDefinedHandle())
 				{
@@ -237,10 +239,10 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		}
 		
 		//Show running effects
-		if (m_RunningEffects.Count() > 0)
+		if (runningEffectsPresent)
 		{
 			value = 0;
-			for (i = 0; i < m_RunningEffects.Count(); i++)
+			for (i = 0; i < runningEffectCount; i++)
 			{
 				value = m_RunningEffects.Get(i);
 				dta = m_WidgetDataMap.Get(value);
@@ -270,7 +272,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 			}
 		}
 		
-		m_Root.Show(m_RunningEffects.Count() > 0 && m_SuspendRequests.Count() < 1);
+		m_Root.Show(runningEffectsPresent && m_SuspendRequests.Count() < 1);
 		m_RunningEffectsPrevious.Clear();
 	}
 	
@@ -323,6 +325,17 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 	{
 		m_Root.Show(false); //to avoid visual 'peeling'
 		
+		if (IsAnyEffectRunning())
+		{
+			int count = m_RunningEffects.Count();
+			GameplayEffectsData data;
+			for (int i = 0; i < count; i++) //iterates over running metadata, in case anything requires its own stop handling
+			{
+				data = m_WidgetDataMap.Get(m_RunningEffects[i]);
+				data.ForceStop();
+			}
+		}
+		
 		m_RunningEffectsPrevious.Copy(m_RunningEffects);
 		m_RunningEffects.Clear();
 		UpdateVisibility();
@@ -363,11 +376,6 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 	//! Usually called in course of an OnFrame update, can be manually called from elsewhere with parameters
 	override void UpdateWidgets(int type = -1, float timeSlice = 0, Param p = null, int handle = -1)
 	{
-		/*if (m_SuspendRequests.Count() > 0)
-		{
-			return;
-		}*/
-		
 		GameplayEffectsData dta;
 		array<ref Widget> widget_set;
 		

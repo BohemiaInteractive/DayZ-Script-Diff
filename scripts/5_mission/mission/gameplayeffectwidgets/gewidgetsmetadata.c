@@ -64,6 +64,7 @@ class GameplayEffectsData extends Managed
 	void UpdateVisibility(bool state){}
 	void RegisterData(Param p){}
 	void Update(float timeSlice = 0, Param p = null, int handle = -1){}
+	void ForceStop();
 }
 
 class GameplayEffectsDataImage extends GameplayEffectsData
