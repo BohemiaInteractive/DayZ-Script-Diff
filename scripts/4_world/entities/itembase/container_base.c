@@ -1,23 +1,23 @@
-class Container_Base extends ItemBase
+class Container_Base : ItemBase
 {
 	override bool IsContainer()
 	{
 		return true;
 	}
 	
-	override bool CanPutInCargo( EntityAI parent )
+	override bool CanPutInCargo(EntityAI parent)
 	{
-		if( !super.CanPutInCargo(parent) ) {return false;}	
-		if ( parent && ( parent == this || ( this.GetType() == parent.GetType() ) ) )
-		{
+		if (!super.CanPutInCargo(parent))
 			return false;
-		}
+
+		if (parent && (parent == this || (this.GetType() == parent.GetType())))
+			return false;
 		
 		return true;
 	}
 }
 
-class DeployableContainer_Base extends Container_Base
+class DeployableContainer_Base : Container_Base
 {
 	protected vector m_HalfExtents; // The Y value contains a heightoffset and not the halfextent !!!
 	
@@ -41,57 +41,46 @@ class DeployableContainer_Base extends Container_Base
 		AddAction(ActionPlaceObject);
 	}
 	
-	override bool CanReceiveAttachment( EntityAI attachment, int slotId )
+	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
 	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 		
 		return super.CanReceiveAttachment(attachment, slotId);
 	}
 	
-	override bool CanLoadAttachment( EntityAI attachment )
+	override bool CanLoadAttachment(EntityAI attachment)
 	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 		
 		return super.CanLoadAttachment(attachment);
 	}
 
-	override bool CanReceiveItemIntoCargo( EntityAI item )
+	override bool CanReceiveItemIntoCargo(EntityAI item)
 	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 
-		return super.CanReceiveItemIntoCargo( item );
+		return super.CanReceiveItemIntoCargo(item);
 	}
 	
-	override bool CanLoadItemIntoCargo( EntityAI item )
+	override bool CanLoadItemIntoCargo(EntityAI item)
 	{
-		if (!super.CanLoadItemIntoCargo( item ))
+		if (!super.CanLoadItemIntoCargo(item))
 			return false;
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 
 		return true;
 	}
-	
-	/*
-	override bool CanReceiveItemIntoCargo (EntityAI item)
-	{
-		super.CanReceiveItemIntoCargo( item );
-		
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
-			return false;
-		
-		return true;
-	}
-	*/
 	
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
 		super.EEHealthLevelChanged(oldLevel,newLevel,zone);
 		
-		if ( newLevel == GameConstants.STATE_RUINED )
+		if (newLevel == GameConstants.STATE_RUINED && !GetHierarchyParent())
 			MiscGameplayFunctions.DropAllItemsInInventoryInBounds(this, m_HalfExtents);
 	}
 }

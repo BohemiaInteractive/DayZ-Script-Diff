@@ -268,7 +268,7 @@ class ActionBase : ActionBase_Basic
 		return AC_UNCATEGORIZED;
 	}
 	
-	int IsEat()
+	bool IsEat()
 	{
 		return false;
 	}

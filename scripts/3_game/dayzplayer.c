@@ -18,6 +18,7 @@ class DayZPlayerCameraResult
 	float 		m_fPositionModelSpace;  //!< 0.0 position is in heading space, 1.0 position is in model space
 	float 		m_fDistance;			//!< camera distance (external cameras only)
 	float 		m_fUseHeading;			//!< 0..1 (0 uses direct dir returned, 1 uses heading from player)
+	float		m_fPredictCollisionRadius; //!< sphere radius used for collision prediction
 	
 	int 		m_iDirectBone;			//!< -1 no bone, >= 0 - bone index camera is bound to, m_CameraTM is offset to the bone 
 	int 		m_iDirectBoneMode;		//! 0 not used, 1 - pos, 2 - rot, 3 - pos+rot applied as a parent to m_CameraTM, 4 as 3 but cam aligned with Y

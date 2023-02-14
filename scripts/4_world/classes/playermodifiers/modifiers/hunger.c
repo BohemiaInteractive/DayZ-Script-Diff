@@ -41,7 +41,7 @@ class HungerMdfr: ModifierBase
 		if ( energy <= PlayerConstants.LOW_ENERGY_THRESHOLD )
 		{
 			player.SetMixedSoundState( eMixedSoundStates.HUNGRY );
-			if( (player.GetStomach().GetDigestingType() & PlayerStomach.DIGESTING_ENERGY) == 0)
+			if ((player.GetStomach().GetDigestingType() & PlayerStomach.DIGESTING_ENERGY) == 0)
 				player.AddHealth("GlobalHealth", "Health", -PlayerConstants.LOW_ENERGY_DAMAGE_PER_SEC * deltaT );
 		}
 		else

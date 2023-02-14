@@ -24,6 +24,7 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 		m_fRoll						= 0.0;
 		m_WeaponSwayModifier		= 1;
 		m_fLeanDistance				= 0.3;
+		m_fPredictCollisionRadius   = 0.5;
 	}
 		
 
@@ -103,6 +104,7 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 		pOutResult.m_fDistance 		= m_fDistance;
 		pOutResult.m_fUseHeading 	= 1.0;
 		pOutResult.m_fInsideCamera 	= 0.0;
+		pOutResult.m_fPredictCollisionRadius = m_fPredictCollisionRadius;
 		
 		InitCameraOnPlayer();
 		StdFovUpdate(pDt, pOutResult);
@@ -144,6 +146,9 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 	protected float 	m_fCameraLRShoulder;			// -1..1 shoulderness :)
 	protected float 	m_fCameraLRShoulderVel[1];		// 0
 	
+	//! collision prediction
+	protected float		m_fPredictCollisionRadius;
+	
 	//! movement state
 	ref HumanMovementState m_MovementState = new HumanMovementState();
 }
@@ -164,6 +169,7 @@ class DayZPlayerCamera3rdPersonErc extends DayZPlayerCamera3rdPerson
 		m_CameraOffsetMS	= "0.0 1.4 0.0";
 		m_CameraOffsetLS	= "0.0 0.3 0.0";
 		m_fShoulderWidth	= 0.3;
+		m_fPredictCollisionRadius = 1.2;
 	}
 }
 
@@ -295,6 +301,7 @@ class DayZPlayerCamera3rdPersonErcRaised extends DayZPlayerCamera3rdPersonErc
 	void DayZPlayerCamera3rdPersonErcRaised(DayZPlayer pPlayer, HumanInputController pInput)
 	{
 		//Print("new camera: DayZPlayerCamera3rdPersonErcRaised");
+		m_fPredictCollisionRadius = 0.2;
 
 		if ( pPlayer.GetCurrentPerItemCameraUD () == DayZPlayerCameras.PERITEMUD_EMPTYHANDED )
 		{
@@ -305,25 +312,22 @@ class DayZPlayerCamera3rdPersonErcRaised extends DayZPlayerCamera3rdPersonErc
 			m_CameraOffsetLS	= "0.0 0.3 0.0";
 			
 		}		
-				else if ( pPlayer.GetCurrentPerItemCameraUD () == DayZPlayerCameras.PERITEMUD_TWOHANDED )
-				{
-					// two handed
-					m_fDistance 		= 1.2;
-					m_fShoulderWidth	= 0.4;
-					m_CameraOffsetMS    = "0.0 1.3 0.2";
-					m_CameraOffsetLS	= "0.0 0.3 0.0";
-				}
-		
-				else if ( pPlayer.GetCurrentPerItemCameraUD () == DayZPlayerCameras.PERITEMUD_ONEHANDED )
-				{
-					// one handed
-					m_fDistance 		= 1.2;
-					m_fShoulderWidth	= 0.4;
-					m_CameraOffsetMS    = "0.0 1.3 0.2";
-					m_CameraOffsetLS	= "0.0 0.3 0.0";
-				}
-		
-				
+		else if ( pPlayer.GetCurrentPerItemCameraUD () == DayZPlayerCameras.PERITEMUD_TWOHANDED )
+		{
+			// two handed
+			m_fDistance 		= 1.2;
+			m_fShoulderWidth	= 0.4;
+			m_CameraOffsetMS    = "0.0 1.3 0.2";
+			m_CameraOffsetLS	= "0.0 0.3 0.0";
+		}
+		else if ( pPlayer.GetCurrentPerItemCameraUD () == DayZPlayerCameras.PERITEMUD_ONEHANDED )
+		{
+			// one handed
+			m_fDistance 		= 1.2;
+			m_fShoulderWidth	= 0.4;
+			m_CameraOffsetMS    = "0.0 1.3 0.2";
+			m_CameraOffsetLS	= "0.0 0.3 0.0";
+		}
 		else
 		{
 			// weapons in hands			
@@ -331,8 +335,7 @@ class DayZPlayerCamera3rdPersonErcRaised extends DayZPlayerCamera3rdPersonErc
 			m_CameraOffsetMS    = "0.0 1.3 0.2";
 			m_CameraOffsetLS	= "0.0 0.3 0.0";
 			m_fShoulderWidth	= 0.5;
-		}
-		
+		}		
 	}
 	
 	override bool IsCamera3rdRaised()

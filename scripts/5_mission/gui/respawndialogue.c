@@ -13,23 +13,19 @@ class RespawnDialogue extends UIScriptedMenu
 	//helper
 	protected Widget 			m_CurrentlyHighlighted;
 	
-	void RespawnDialogue()
-	{
-	}
-
-	void ~RespawnDialogue()
-	{
-	}
+	void RespawnDialogue();
+	void ~RespawnDialogue();
 	
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_respawn_dialogue.layout");
+		layoutRoot 					= GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_respawn_dialogue.layout");
 		m_DetailsRoot 				= layoutRoot.FindAnyWidget("menu_details_tooltip");
 		m_DetailsLabel				= TextWidget.Cast(m_DetailsRoot.FindAnyWidget("menu_details_label"));
 		m_DetailsText				= RichTextWidget.Cast(m_DetailsRoot.FindAnyWidget("menu_details_tooltip_content"));
 		
 		m_CustomRespawn 			= layoutRoot.FindAnyWidget("respawn_button_custom");
 		SetFocus(m_CustomRespawn);
+
 		return layoutRoot;
 	}
 	
@@ -38,9 +34,7 @@ class RespawnDialogue extends UIScriptedMenu
 		super.Update(timeslice);
 		
 		if (GetUApi().GetInputByID(UAUIBack).LocalPress() || GetUApi().GetInputByID(UAUIMenu).LocalPress())
-		{
 			Close();
-		}
 	}
 
 	override bool OnClick(Widget w, int x, int y, int button)
@@ -50,19 +44,16 @@ class RespawnDialogue extends UIScriptedMenu
 		switch (w.GetUserID())
 		{
 			case IDC_CANCEL:
-			{
 				Close();
 				return true;
-			}
+
 			case ID_RESPAWN_CUSTOM:
-			{
 				return RequestRespawn(false);
-			}
+
 			case ID_RESPAWN_RANDOM:
-			{
 				return RequestRespawn(true);
-			}
 		}
+
 		return false;
 	}
 	
@@ -76,13 +67,14 @@ class RespawnDialogue extends UIScriptedMenu
 			case ID_RESPAWN_RANDOM:
 				tooltip_header = "#main_menu_respawn_random";
 				tooltip_text = "#main_menu_respawn_random_tooltip";
-			break;
+				break;
 			
 			case ID_RESPAWN_CUSTOM:
 				tooltip_header = "#main_menu_respawn_custom";
 				tooltip_text = "#main_menu_respawn_custom_tooltip";
-			break;
+				break;
 		}
+
 		SetTooltipTexts(w, tooltip_header, tooltip_text);
 		return true;
 	}
@@ -112,16 +104,18 @@ class RespawnDialogue extends UIScriptedMenu
 				case ID_RESPAWN_RANDOM:
 					tooltip_header = "#main_menu_respawn_random";
 					tooltip_text = "#main_menu_respawn_random_tooltip";
-				break;
+					break;
 				
 				case ID_RESPAWN_CUSTOM:
 					tooltip_header = "#main_menu_respawn_custom";
 					tooltip_text = "#main_menu_respawn_custom_tooltip";
-				break;
+					break;
 			}
+
 			SetTooltipTexts(w, tooltip_header, tooltip_text);
 			return true;
 		}
+
 		SetTooltipTexts(w, tooltip_header, tooltip_text);
 		return false;
 	}
@@ -133,6 +127,7 @@ class RespawnDialogue extends UIScriptedMenu
 			ColorNormal(w);
 			return true;
 		}
+
 		return false;
 	}
 	
@@ -143,6 +138,7 @@ class RespawnDialogue extends UIScriptedMenu
 			if (w.GetUserID() == IDC_CANCEL || w.GetUserID() == ID_RESPAWN_CUSTOM || w.GetUserID() == ID_RESPAWN_RANDOM);
 				return true;
 		}
+
 		return false;
 	}
 	
@@ -150,12 +146,15 @@ class RespawnDialogue extends UIScriptedMenu
 	{
 		if (!w)
 			return;
+
 		if (m_CurrentlyHighlighted != w)
 		{
 			if (m_CurrentlyHighlighted)
 				ColorNormal(m_CurrentlyHighlighted);
+
 			m_CurrentlyHighlighted = w;
 		}
+
 		ButtonSetColor(w, ARGB(255, 0, 0, 0));
 		ButtonSetTextColor(w, ARGB(255, 255, 0, 0));
 	}
@@ -171,28 +170,16 @@ class RespawnDialogue extends UIScriptedMenu
 	
 	protected void ButtonSetColor(Widget w, int color)
 	{
-		if (!w)
-			return;
-		
 		Widget panel = w.FindWidget(w.GetName() + "_panel");
-		
 		if (panel)
-		{
 			panel.SetColor(color);
-		}
 	}
 	
 	protected void ButtonSetTextColor(Widget w, int color)
 	{
-		if (!w)
-			return;
-
-		TextWidget label	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
-				
+		TextWidget label = TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
 		if (label)
-		{
 			label.SetColor(color);
-		}
 	}
 	
 	void SetTooltipTexts(Widget w, string header = "", string desc = "")
@@ -209,21 +196,21 @@ class RespawnDialogue extends UIScriptedMenu
 	
 	bool RequestRespawn(bool random)
 	{
-		Man player = GetGame().GetPlayer();
 		IngameHud.Cast(GetGame().GetMission().GetHud()).InitBadgesAndNotifiers();
-		if (!player || (player.GetPlayerState() == EPlayerStates.ALIVE && !player.IsUnconscious()))
+		Man player = GetGame().GetPlayer();
+		if (player && (player.GetPlayerState() == EPlayerStates.ALIVE && !player.IsUnconscious()))
 			return false;
 		
 		#ifdef PLATFORM_CONSOLE
-			InGameMenuXbox menu_ingame = InGameMenuXbox.Cast(GetGame().GetUIManager().FindMenu(MENU_INGAME));
+		InGameMenuXbox menu_ingame = InGameMenuXbox.Cast(GetGame().GetUIManager().FindMenu(MENU_INGAME));
 		#else
-			InGameMenu menu_ingame = InGameMenu.Cast(GetGame().GetUIManager().FindMenu(MENU_INGAME));
+		InGameMenu menu_ingame = InGameMenu.Cast(GetGame().GetUIManager().FindMenu(MENU_INGAME));
 		#endif
 		
 		if (!menu_ingame)
 			return false;
 		
-		menu_ingame.MenuRequestRespawn(this,random);
+		menu_ingame.MenuRequestRespawn(this, random);
 		return true;
 	}
 }

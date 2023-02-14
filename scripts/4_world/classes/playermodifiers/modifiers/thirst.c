@@ -39,8 +39,8 @@ class ThirstMdfr: ModifierBase
 		player.GetStatWater().Add( (-metabolic_speed * deltaT) );
 		
 		if ( water <= PlayerConstants.LOW_WATER_THRESHOLD )
-		{	
-			if( !player.GetStomach().IsDigesting() )	
+		{
+			if ((player.GetStomach().GetDigestingType() & PlayerStomach.DIGESTING_WATER) == 0)
 				player.AddHealth("GlobalHealth", "Health", -PlayerConstants.LOW_WATER_DAMAGE_PER_SEC * deltaT );
 		}
 	}

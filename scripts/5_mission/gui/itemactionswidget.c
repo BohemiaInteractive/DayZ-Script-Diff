@@ -129,11 +129,11 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 
 	protected void BuildCursor()
 	{
-		int health = -1;
-		int q_type = 0;
-		int q_min, q_max = -1;
-		int q_chamber, q_mag = 0;
-		float q_cur = -1.0;
+		int health 				= -1;
+		int quantityType 		= 0;
+		int quantityMin			= -1;
+		int quantityMax 		= -1;
+		float quantityCurrent 	= -1.0;
 
 		// item health
 		health = GetItemHealth();
@@ -143,20 +143,20 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		//! weapon specific
 		if (m_EntityInHands && m_EntityInHands.IsWeapon())
 		{
-			SetWeaponQuantity(q_chamber, q_mag, "ia_item", "ia_item_quantity_pb", "ia_item_quantity_text", m_QuantityEnabled);
+			SetWeaponQuantity(0, 0, "ia_item", "ia_item_quantity_pb", "ia_item_quantity_text", m_QuantityEnabled);
 			SetWeaponModeAndZeroing("ia_item_subdesc", "ia_item_subdesc_up", "ia_item_subdesc_down", true);
 		}
 		//! transmitter/PAS specific
 		else if (m_EntityInHands && m_EntityInHands.IsTransmitter())
 		{
 			SetRadioFrequency(GetRadioFrequency(), "ia_item_subdesc", "ia_item_subdesc_up", "ia_item_subdesc_down", m_QuantityEnabled);
-			GetItemQuantity(q_type, q_cur, q_min, q_max);
-			SetItemQuantity(q_type, q_cur, q_min, q_max, "ia_item", "ia_item_quantity_pb", "ia_item_quantity_text", true);
+			GetItemQuantity(quantityType, quantityCurrent, quantityMin, quantityMax);
+			SetItemQuantity(quantityType, quantityCurrent, quantityMin, quantityMax, "ia_item", "ia_item_quantity_pb", "ia_item_quantity_text", true);
 		}
 		else
 		{
-			GetItemQuantity(q_type, q_cur, q_min, q_max);
-			SetItemQuantity(q_type, q_cur, q_min, q_max, "ia_item", "ia_item_quantity_pb", "ia_item_quantity_text", m_QuantityEnabled);
+			GetItemQuantity(quantityType, quantityCurrent, quantityMin, quantityMax);
+			SetItemQuantity(quantityType, quantityCurrent, quantityMin, quantityMax, "ia_item", "ia_item_quantity_pb", "ia_item_quantity_text", m_QuantityEnabled);
 			SetWeaponModeAndZeroing("ia_item_subdesc", "", "", false);
 		}
 	
@@ -182,15 +182,19 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		{
 			m_Root.Show(false);
 			return;
-		};
+		}
 
 		if (m_Player && !m_Player.IsAlive()) // handle respawn
 		{
 			m_Player = null;
 			m_AM = null;
 		}
-		if (!m_Player) GetPlayer();
-		if (!m_AM) GetActionManager();
+
+		if (!m_Player)
+			GetPlayer();
+
+		if (!m_AM)
+			GetActionManager();
 
 		GetActions();
 		GetEntityInHands();
@@ -685,7 +689,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 	protected void CheckRefresherFlagVisibility()
 	{
 		Widget w = m_Root.FindAnyWidget("ia_item_flag_icon");
-		if (m_Player.GetHologramLocal())
+		if (m_Player && m_Player.GetHologramLocal())
 		{
 			EntityAI entity = m_Player.GetHologramLocal().GetProjectionEntity();
 			w.Show(entity.IsRefresherSignalingViable() && m_Player.IsTargetInActiveRefresherRange(entity));
