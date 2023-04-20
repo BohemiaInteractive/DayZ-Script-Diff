@@ -485,7 +485,7 @@ class TerritoryFlag extends BaseBuildingBase
 	//================================================================
 	// FLAG MANIPULATION + REFRESHER
 	//================================================================
-	void AnimateFlag(float delta)
+	void AnimateFlagEx(float delta, PlayerBase player = null)
 	{
 		float temp = Math.Clamp( delta,0,1 );
 		float phase_new;
@@ -495,9 +495,35 @@ class TerritoryFlag extends BaseBuildingBase
 		}
 		else
 			phase_new = temp;
+		
 		SetAnimationPhase("flag_mast",phase_new);
 		
+		if (player)
+			LogAnimateFlag(phase_new, player);
+		
 		GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString("Material_FPole_Flag"),phase_new != 1);
+		
+	}
+	
+	void AnimateFlag(float delta)
+	{
+		AnimateFlagEx(delta);
+	}
+	
+	protected void LogAnimateFlag(float newPhase, notnull PlayerBase player)
+	{
+		PluginAdminLog logs = PluginAdminLog.Cast(GetPlugin(PluginAdminLog));
+		if (newPhase == 0)
+		{
+			// at the top(it's inverted)
+			logs.TotemFlagChange(true, player, this);
+		}
+		else if (newPhase == 1)
+		{
+			// at the bottom(it's inverted)
+			logs.TotemFlagChange(false, player, this);
+		}
+
 	}
 	
 	void SetRefreshTimer01(float fraction)

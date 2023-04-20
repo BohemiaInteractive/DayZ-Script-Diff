@@ -9,6 +9,9 @@ enum EDLCId
 //! ContentDLC is for query installed DLC (only as entitlement keys, not content)
 class ContentDLC
 {
+	//! void(EDLCId dlcId)
+	ref ScriptInvoker m_OnChange = new ScriptInvoker();
+	
 	/*!
 		For getting current entitlements on device (console). Could be called 
 		after any entitlement change or before accessing locked content.
@@ -45,6 +48,6 @@ class ContentDLC
 	*/
 	void OnChange(EDLCId dlcId)
 	{
-
+		m_OnChange.Invoke(dlcId);
 	}
 };

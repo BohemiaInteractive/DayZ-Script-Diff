@@ -4,25 +4,6 @@ class MotoHelmet_ColorBase extends HelmetBase
 	{
 		return {EffectWidgetsTypes.MOTO_OCCLUDER/*,EffectWidgetsTypes.MOTO_BREATH*/};
 	}
-	
-	override bool CanPutAsAttachment( EntityAI parent )
-	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
-		
-		Clothing eyewear = Clothing.Cast(parent.FindAttachmentBySlotName("Eyewear"));
-		if ( eyewear && eyewear.ConfigGetBool("isStrap") )
-		{
-			return false;
-		}
-		
-		Clothing mask = Clothing.Cast(parent.FindAttachmentBySlotName("Mask"));
-		if ( mask && mask.ConfigGetBool("noHelmet") ) //TODO
-		{
-			return false;
-		}
-		
-		return true;
-	}
 
 	override bool IsObstructingVoice()
 	{
@@ -32,6 +13,18 @@ class MotoHelmet_ColorBase extends HelmetBase
 	override int GetVoiceEffect()
 	{
 		return VoiceEffectObstruction;
+	}
+	
+	override protected void InitGlobalExclusionValues()
+	{
+		super.InitGlobalExclusionValues();
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADGEAR_HELMET_0);
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_0);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_1);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_2);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADSTRAP_0);
 	}
 }
 

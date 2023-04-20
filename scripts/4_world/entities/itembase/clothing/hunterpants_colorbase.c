@@ -1,4 +1,4 @@
-class HunterPants_ColorBase extends Clothing
+class HunterPants_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{

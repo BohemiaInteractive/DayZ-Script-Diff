@@ -88,11 +88,11 @@ class ActionAttachWithSwitch: ActionAttach
 			
 		if ( action_data.m_Target.IsProxy() )
 		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetParent() ); // cast to ItemBase
+			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetParent() );
 		}
 		else
 		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetObject() ); // cast to ItemBase
+			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetObject() );
 		}
 		
 		if (target_EAI && action_data_a.m_MainItem)
@@ -112,11 +112,11 @@ class ActionAttachWithSwitch: ActionAttach
 			
 		if ( action_data.m_Target.IsProxy() )
 		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetParent() ); // cast to ItemBase
+			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetParent() );
 		}
 		else
 		{
-			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetObject() ); // cast to ItemBase
+			target_EAI = EntityAI.Cast( action_data_a.m_Target.GetObject() );
 		}
 		
 		if (target_EAI && action_data_a.m_MainItem)

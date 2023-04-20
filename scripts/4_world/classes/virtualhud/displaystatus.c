@@ -38,25 +38,25 @@ class VirtualHud
 		m_Player 		= player;
 		m_LastTick		= 0;
 
-		// !!!!!! don't add new stuff unless you really really REALLY know what you're doing !!!!!!
-		RegisterElement(new BadgeStuffed(m_Player));// size 2
-		RegisterElement(new BadgeWet(m_Player));// size 1
-		RegisterElement(new BadgeSick(m_Player));// size 1
-		RegisterElement(new BadgePills(m_Player));// size 1
-		RegisterElement(new BadgePoisoned(m_Player));// size 1
-		RegisterElement(new BadgeFracture(m_Player));// size 1
-		RegisterElement(new TendencyHealth(m_Player));// size 6
-		RegisterElement(new TendencyBlood(m_Player));// size 6
-		RegisterElement(new TendencyTemperature(m_Player));// size 6
-		// sum 25/32
-		RegisterElement(new TendencyHunger(m_Player));// size 6
-		RegisterElement(new TendencyThirst(m_Player));// size 6
-		RegisterElement(new TendencyBacteria(m_Player));// size 6
-		RegisterElement(new BadgeHeartbeat(m_Player));// size 2(client only)
-		// sum 20/32
+		RegisterElement(new BadgeStuffed(m_Player));
+		RegisterElement(new BadgeWet(m_Player));
+		RegisterElement(new BadgeSick(m_Player));
+		RegisterElement(new BadgePills(m_Player));
+		RegisterElement(new BadgePoisoned(m_Player));
+		RegisterElement(new BadgeFracture(m_Player));
+		RegisterElement(new TendencyHealth(m_Player));
+		RegisterElement(new TendencyBlood(m_Player));
+		RegisterElement(new TendencyTemperature(m_Player));
 
-		RegisterElement(new ElementStance(m_Player));// size 0(client only)
-		RegisterElement(new BadgeBleeding(m_Player));// size 0(client only)
+		RegisterElement(new TendencyHunger(m_Player));
+		RegisterElement(new TendencyThirst(m_Player));
+		RegisterElement(new TendencyBacteria(m_Player));
+		RegisterElement(new BadgeHeartbeat(m_Player));
+		RegisterElement(new BadgeLegs(m_Player));
+
+
+		RegisterElement(new ElementStance(m_Player));// client only
+		RegisterElement(new BadgeBleeding(m_Player));// client only
 		
 
 		mission = GetGame().GetMission();
@@ -101,8 +101,8 @@ class VirtualHud
 		return m_Elements[element_id];
 	}
 
-	void SerializeElements(ref array<int> mask_array)
 	//this will serialize all elements and 'compresses' them into integer(s) through bit shifting, these integers are placed into an array
+	void SerializeElements(ref array<int> mask_array)
 	{
 		int offset = 0;
 		int mask = 0;
@@ -199,15 +199,7 @@ class VirtualHud
 				element.UpdateHUD();
 		}
 	}
-	/*
-	void DisplayPresence()
-	{
-		if ( m_Hud )
-		{
-			m_Hud.DisplayPresence();
-		}
-	}
-*/
+	
 	void UpdateStatus()
 	{
 		//Log("UpdateStatus called for entity: "+ToString(m_Player));

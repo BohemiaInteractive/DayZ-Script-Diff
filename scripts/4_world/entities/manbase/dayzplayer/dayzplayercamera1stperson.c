@@ -23,34 +23,31 @@ class DayZPlayerCamera1stPerson extends DayZPlayerCameraBase
 	
 
 	//
-	override void 		OnActivate (DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
+	override void 		OnActivate(DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
 	{
 		super.OnActivate(pPrevCamera, pPrevCameraResult);
+
 		if (pPrevCamera)
 		{
-			vector 	f = pPrevCamera.GetBaseAngles();
-			m_fUpDownAngle		= f[0]; 
-			m_fLeftRightAngle	= f[1]; 
-			m_fUpDownAngleAdd	= f[2];
+			vector baseAngles		= pPrevCamera.GetBaseAngles();
+			m_fUpDownAngle			= baseAngles[0]; 
+			m_fLeftRightAngle		= baseAngles[1]; 
+
+			vector addAngles		= pPrevCamera.GetAdditiveAngles();
+			m_fUpDownAngleAdd		= addAngles[0];
+			m_fLeftRightAngleAdd	= addAngles[1];
 		}
 	}
 
 	//	
 	override void 		OnUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
 	{
-		//! update angles from input 
-		float 	udAngle 	= UpdateUDAngle(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
-		m_CurrentCameraPitch = udAngle;
-		m_fLeftRightAngle 	= UpdateLRAngle(m_fLeftRightAngle, CONST_LR_MIN, CONST_LR_MAX, pDt);
-
+		//! update angles from input
+		m_CurrentCameraYaw		= UpdateLRAngleUnlocked(m_fLeftRightAngle, m_fLeftRightAngleAdd, CONST_LR_MIN, CONST_LR_MAX, pDt);
+		m_CurrentCameraPitch	= UpdateUDAngleUnlocked(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
 		
 		//! 
-		vector rot;
-		rot[0] = m_fLeftRightAngle;
-		rot[1] = udAngle;
-		rot[2] = 0;
-		
-		Math3D.YawPitchRollMatrix(rot, pOutResult.m_CameraTM);
+		Math3D.YawPitchRollMatrix(GetCurrentOrientation(), pOutResult.m_CameraTM);
 		pOutResult.m_CameraTM[3]		= m_OffsetLS;
 
 		pOutResult.m_iDirectBone 		= m_iBoneIndex;
@@ -67,14 +64,21 @@ class DayZPlayerCamera1stPerson extends DayZPlayerCameraBase
 		UpdateCameraNV(PlayerBase.Cast(m_pPlayer));
 	}
 
-	//
-	
 	override vector GetBaseAngles()
 	{
 		vector a;
 		a[0] = m_fUpDownAngle;
 		a[1] = m_fLeftRightAngle;
-		a[2] = m_fUpDownAngleAdd;
+		a[2] = 0;
+		return a;
+	}
+
+	override vector GetAdditiveAngles()
+	{
+		vector a;
+		a[0] = m_fUpDownAngleAdd;
+		a[1] = m_fLeftRightAngleAdd;
+		a[2] = 0;
 		return a;
 	}
 	
@@ -83,12 +87,13 @@ class DayZPlayerCamera1stPerson extends DayZPlayerCameraBase
 		return "DayZPlayerCamera1stPerson";
 	}
 	
-	protected	int 	m_iBoneIndex;		//!< main bone
-	protected	vector	m_OffsetLS;			//!< position offset 
+	protected int		m_iBoneIndex;			//!< main bone
+	protected vector	m_OffsetLS;				//!< position offset 
 
-	protected 	float 	m_fUpDownAngle;		//!< up down angle in rad
-	protected 	float 	m_fUpDownAngleAdd;	//!< up down angle in rad
-	protected 	float 	m_fLeftRightAngle;	//!< left right angle in rad (in freelook only)
+	protected float		m_fUpDownAngle;			//!< up down angle in rad
+	protected float		m_fUpDownAngleAdd;		//!< up down angle in rad
+	protected float		m_fLeftRightAngle;		//!< left right angle in rad (in freelook only)
+	protected float		m_fLeftRightAngleAdd;	//!< left right angle in rad (in freelook only)
 }
 
 // *************************************************************************************

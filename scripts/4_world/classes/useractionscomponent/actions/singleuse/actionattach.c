@@ -4,7 +4,7 @@ class AttachActionData : ActionData
 }
 
 
-class ActionAttach: ActionSingleUseBase
+class ActionAttach : ActionSingleUseBase
 {
 	void ActionAttach()
 	{
@@ -63,7 +63,7 @@ class ActionAttach: ActionSingleUseBase
 		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
 		if (targetEntity && item)
 		{
-			return targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item);
+			return targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item) && !targetEntity.CanUseConstruction());
 		}
 
 		return false;

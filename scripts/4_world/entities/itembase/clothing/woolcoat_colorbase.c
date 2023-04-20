@@ -1,4 +1,4 @@
-class WoolCoat_ColorBase extends Clothing
+class WoolCoat_ColorBase extends Top_Base
 {
 	override void SetActions()
 	{

@@ -136,4 +136,9 @@ class ActionPackTent : ActionContinuousBase
 			tent.PlaceOnSurface();
 		}
 	}
+	
+	override string GetAdminLogMessage(ActionData action_data)
+	{
+		return " packed " + action_data.m_Target.GetParent().GetDisplayName() + " with Hands ";
+	}
 };

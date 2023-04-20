@@ -144,7 +144,8 @@ class DropEquipAndDestroyRootLambda : ReplaceItemWithNewLambdaBase
 				vector m4[4];
 				Math3D.MatrixIdentity4(m4);
 				
-				GameInventory.PrepareDropEntityPos(old_item, child, m4, false);
+				//! We don't care if a valid transform couldn't be found, we just want to preferably use it instead of placing on the old item
+				GameInventory.PrepareDropEntityPos(old_item, child, m4, false, -1);
 				
 				child_dst.SetGround(child,m4);
 				
@@ -943,6 +944,8 @@ class MiscGameplayFunctions
 	
 	static void DropAllItemsInInventoryInBounds(ItemBase ib, vector halfExtents)
 	{
+		if (!GetGame().IsServer())
+			return;
 		array<EntityAI> items = new array<EntityAI>;
 		ib.GetInventory().EnumerateInventory(InventoryTraversalType.LEVELORDER, items);
 		
@@ -1022,7 +1025,7 @@ class MiscGameplayFunctions
 						MiscGameplayFunctions.TransferItemProperties(entityIB, new_item);
 						entityIB.AddQuantity( -1 );
 						new_item.SetQuantity( 1 );
-						new_item.ThrowPhysically(null, force);
+						new_item.ThrowPhysically(null, force, false);
 					}
 				}
 			}
@@ -1038,7 +1041,7 @@ class MiscGameplayFunctions
 						spltDst.SetGroundEx(entity, position, direction);
 						
 						ItemBase splitItem = entityIB.SplitIntoStackMaxToInventoryLocationEx( spltDst );
-						splitItem.ThrowPhysically(null, force);
+						splitItem.ThrowPhysically(null, force, false);
 					}
 				}
 				
@@ -1046,7 +1049,7 @@ class MiscGameplayFunctions
 				entity.GetInventory().GetCurrentInventoryLocation(src);
 				
 				entity.GetInventory().TakeToDst(invMode, src, dst);
-				entityIB.ThrowPhysically(null, force);
+				entityIB.ThrowPhysically(null, force, false);
 			}
 		}
 		else

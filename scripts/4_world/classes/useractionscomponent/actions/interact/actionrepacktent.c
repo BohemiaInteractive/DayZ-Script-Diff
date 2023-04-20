@@ -199,6 +199,11 @@ class ActionRepackTent: ActionContinuousBase
 			GetGame().RPCSingleParam( action_data.m_MainItem, SoundTypeTent.REPACK, play, true );
 		}
 	}
+	
+	override string GetAdminLogMessage(ActionData action_data)
+	{
+		return " re-packed " + action_data.m_Target.GetObject().GetDisplayName() + " with Hands ";
+	}
 };
 
 class RepackLambda : TurnItemIntoItemLambda

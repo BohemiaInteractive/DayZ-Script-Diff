@@ -88,9 +88,9 @@ class ActionDisarmExplosiveWithRemoteDetonator : ActionDisarmExplosive
 			return;
 		}
 		
-		ReplaceItemWithNewLambdaBase lambda = new ReplaceItemWithNewLambdaBase(detonator, "RemoteDetonator");
+		ReplaceItemWithNewLambdaBase lambda = new ReplaceDetonatorItemLambda(detonator, "RemoteDetonator");
 		MiscGameplayFunctions.TurnItemIntoItemEx(action_data.m_Player, lambda);
 		//! refresh IK, item changed
-		action_data.m_Player.GetItemAccessor().OnItemInHandsChanged();;
+		action_data.m_Player.GetItemAccessor().OnItemInHandsChanged();
 	}
 }

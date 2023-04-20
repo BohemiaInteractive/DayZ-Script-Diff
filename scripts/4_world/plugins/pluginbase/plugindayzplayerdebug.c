@@ -9,7 +9,6 @@ class PluginDayzPlayerDebugUserData
 		m_bIsFullBody	= pFullBody;
 		m_iStanceMask	= pStanceMask;
 	}
-		
 
 	int		GetInt()
 	{
@@ -48,6 +47,20 @@ class PluginDayzPlayerDebugUIHandler extends ScriptedWidgetEventHandler
 		return m_pPluginPlayerDebug.OnChange(w, x, y, finished);
 	}
 
+	override bool OnMouseEnter(Widget w, int x, int y)
+	{
+		super.OnMouseEnter(w,x,y);
+		GetGame().GetMission().AddActiveInputExcludes({"menu"});
+		return true;
+
+	}
+	
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
+	{
+		super.OnMouseLeave(w,enterW, x,y);
+		GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+		return true;
+	}
 
 	PluginDayzPlayerDebug		m_pPluginPlayerDebug;
 }
@@ -58,11 +71,27 @@ class PluginDayzPlayerDebugUIHandler extends ScriptedWidgetEventHandler
 // *************************************************************************************
 class PluginDayzPlayerActionCallback extends HumanCommandActionCallback
 {
+	protected static ref set<string> m_AnimEventMapping;
 	void 	PluginDayzPlayerActionCallback()
 	{
-		Print("Action callback created");
+		
+		//Print("Action callback created");
 		EnableCancelCondition(true);
-		RegisterAnimationEvent("ActionExec", 1);	// really weird id 		
+		//RegisterAnimationEvent("ActionExec", 1);	// really weird id 		
+		
+		if (!m_AnimEventMapping)//making sure to only do once
+		{
+			m_AnimEventMapping = new set<string>();
+			m_AnimEventMapping.Insert("ActionExec");
+			m_AnimEventMapping.Insert("SoundWeapon");
+			m_AnimEventMapping.Insert("SoundVoice");
+			m_AnimEventMapping.Insert("SoundAttachment");
+		}
+		
+		
+		foreach (int index, string eventName: m_AnimEventMapping)
+			RegisterAnimationEvent(eventName, index);
+
 		EnableStateChangeCallback();               	// enable this to get OnStateChange callbacks 
 
 		m_fTimeStart = GetWorldTime();
@@ -70,7 +99,7 @@ class PluginDayzPlayerActionCallback extends HumanCommandActionCallback
 	
 	void 	~PluginDayzPlayerActionCallback()
 	{
-		Print("Action callback deleted");
+		//Print("Action callback deleted");
 	}
 
 	override void 	OnFinish(bool pCanceled)
@@ -94,12 +123,17 @@ class PluginDayzPlayerActionCallback extends HumanCommandActionCallback
 
 	override void 				OnAnimationEvent(int pEventID)
 	{
+		
+		//Print(pEventID);
+		//Print("--------------------------------");
 		// only one event id is registered - 1 so nothing else can be delivered
-		string a = "ActionExec event at: ";
+		string eventName= m_AnimEventMapping.Get(pEventID);
+		string eventText = eventName + " event at: ";
 		float  tFromSt = GetWorldTime() - m_fTimeStart;
-		a += tFromSt.ToString();
-
-		m_pAnimEventWidget.SetText(a);
+		
+		eventText += tFromSt.ToString();
+		m_EventsHistory.AddItem(eventText,null,0);
+		m_pAnimEventWidget.SetText(eventText);
 	}
 
 	override void 				OnStateChange(int pOldState, int pCurrentState)
@@ -116,6 +150,7 @@ class PluginDayzPlayerActionCallback extends HumanCommandActionCallback
 	float 								m_fTimeStart;
 	TextWidget							m_pStateWidget;
 	TextWidget 							m_pAnimEventWidget;
+	TextListboxWidget					m_EventsHistory;
 }
 
 
@@ -124,6 +159,18 @@ class PluginDayzPlayerActionCallback extends HumanCommandActionCallback
 // *************************************************************************************
 class PluginDayzPlayerDebug extends PluginBase
 {
+	private const int TYPE_MOD_LOOPING	= 0;
+	private const int TYPE_MOD_ONETIME	= 1;
+	private const int TYPE_FB_LOOPING	= 2;
+	private const int TYPE_FB_ONETIME	= 3;
+
+	private const int TYPE_MOD_GESTURE_LOOPING	= 4;
+	private const int TYPE_MOD_GESTURE_ONETIME	= 5;
+	private const int TYPE_FB_GESTURE_LOOPING	= 6;
+	private const int TYPE_FB_GESTURE_ONETIME	= 7;
+
+	private const int TYPE_FB_SUICIDE_LOOPING	= TYPE_FB_GESTURE_LOOPING;
+
 	ref Timer							m_TickTimer;
 	bool 								m_IsActive			= false;
 	bool								m_HasFocus			= false;
@@ -134,10 +181,12 @@ class PluginDayzPlayerDebug extends PluginBase
 	Widget								m_Card1;
 	Widget								m_Card2;
 	Widget								m_Card3;
+	Widget								m_Card4;
 	ButtonWidget						m_Card0Button;		
 	ButtonWidget						m_Card1Button;		
 	ButtonWidget						m_Card2Button;		
 	ButtonWidget						m_Card3Button;		
+	ButtonWidget						m_Card4Button;		
 
 
 	EditBoxWidget 						m_PlayerStatusV;
@@ -168,6 +217,11 @@ class PluginDayzPlayerDebug extends PluginBase
 	ButtonWidget						m_ActionTypeOG;
 	ButtonWidget						m_ActionTypeFLG;
 	ButtonWidget						m_ActionTypeFOG;
+	
+	
+	ButtonWidget						m_ClearEventsButton;
+	
+	TextListboxWidget					m_EventsHistory;
 
 	ref PluginDayzPlayerDebugUIHandler m_pUIHandler;
 
@@ -252,7 +306,7 @@ class PluginDayzPlayerDebug extends PluginBase
 	}
 
 	//!
-	void 	CaptureFocus()
+	void CaptureFocus()
 	{
 		if (!m_HasFocus)
 		{
@@ -263,7 +317,7 @@ class PluginDayzPlayerDebug extends PluginBase
 	}
 
 	//!
-	void	ReleaseFocus()
+	void ReleaseFocus()
 	{
 		if (m_HasFocus)
 		{
@@ -356,10 +410,12 @@ class PluginDayzPlayerDebug extends PluginBase
 		m_Card1	= m_MainWnd.FindAnyWidget("Card1");
 		m_Card2	= m_MainWnd.FindAnyWidget("Card2");
 		m_Card3	= m_MainWnd.FindAnyWidget("Card3");
+		m_Card4	= m_MainWnd.FindAnyWidget("Card4");
 		m_Card0Button	= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("Card0Button") );
 		m_Card1Button	= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("Card1Button") );
 		m_Card2Button	= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("Card2Button") );
 		m_Card3Button	= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("Card3Button") );
+		m_Card4Button	= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("Card4Button") );
 
 
 		m_PlayerStatusV 	= EditBoxWidget.Cast( m_MainWnd.FindAnyWidget("PlayerStatusV") );
@@ -390,6 +446,10 @@ class PluginDayzPlayerDebug extends PluginBase
 		m_ActionTypeOG			= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("ActionsGroupOG") );
 		m_ActionTypeFLG			= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("ActionsGroupFLG") );
 		m_ActionTypeFOG			= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("ActionsGroupFOG") );
+		
+		
+		m_EventsHistory			= TextListboxWidget.Cast( m_MainWnd.FindAnyWidget("EventHistory") );
+		m_ClearEventsButton		= ButtonWidget.Cast( m_MainWnd.FindAnyWidget("ClearButton") );
 
 		ActionsInit(0);
 
@@ -415,6 +475,7 @@ class PluginDayzPlayerDebug extends PluginBase
 		m_Card1.Show(pCard == 1);
 		m_Card2.Show(pCard == 2);
 		m_Card3.Show(pCard == 3);
+		m_Card4.Show(pCard == 4);
 	}
 
 	
@@ -568,7 +629,7 @@ class PluginDayzPlayerDebug extends PluginBase
 
 	//---------------------------------------------------
     // Actions
-
+	
 	void ActionsInit(int pType)
 	{
 			
@@ -578,8 +639,9 @@ class PluginDayzPlayerDebug extends PluginBase
         //! ---------------------- ACTIONS --------------------------
         //! ---------------------------------------------------------
 		//! looping 
-		if (pType == 0)
+		if (pType == TYPE_MOD_LOOPING)
 		{
+			m_ActionsSelector.AddItem("L CLEAN HANDS BOTTLE", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_CLEANHANDSBOTTLE, false), 0);
 			m_ActionsSelector.AddItem("L DRINK", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_DRINK, false), 0);
 			m_ActionsSelector.AddItem("L EAT", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_EAT, false), 0);
 			m_ActionsSelector.AddItem("L EMPTY VESSEL", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_EMPTY_VESSEL, false), 0);
@@ -615,7 +677,7 @@ class PluginDayzPlayerDebug extends PluginBase
 		}
 
         //! one time
-		if (pType == 1)
+		if (pType == TYPE_MOD_ONETIME)
 		{
 			m_ActionsSelector.AddItem("O PICK UP HANDS", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_PICKUP_HANDS, false), 0);
 			m_ActionsSelector.AddItem("O PICK UP INVENTORY", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_PICKUP_INVENTORY, false), 0);
@@ -633,7 +695,6 @@ class PluginDayzPlayerDebug extends PluginBase
 			m_ActionsSelector.AddItem("O UNLOCK HANDCUFF TARGET", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_UNLOCKHANDCUFFTARGET, false), 0);
 			m_ActionsSelector.AddItem("O FISHINGROD EXTEND", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_FISHINGRODEXTEND, false), 0);
 			m_ActionsSelector.AddItem("O FISHINGROD RETRACT", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_FISHINGRODRETRACT, false), 0);
-			m_ActionsSelector.AddItem("O CLEAN HANDS BOTTLE", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_CLEANHANDSBOTTLE, false), 0);
 			m_ActionsSelector.AddItem("O OPEN ITEM ONCE", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_OPENITEM_ONCE, false), 0);
 			m_ActionsSelector.AddItem("O CLOSE ITEM ONCE", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_CLOSEITEM_ONCE, false), 0);
 			m_ActionsSelector.AddItem("O ATTACH SCOPE", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_ATTACHSCOPE, false), 0);
@@ -646,12 +707,14 @@ class PluginDayzPlayerDebug extends PluginBase
 			
 			m_ActionsSelector.AddItem("O DROP ITEM HANDS", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_DROPITEM_HANDS, false), 0);
 			m_ActionsSelector.AddItem("O DROP ITEM INVENTORY", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_DROPITEM_INVENTORY, false), 0);
+			m_ActionsSelector.AddItem("O EAT PILL", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_EAT_PILL, false), 0);
+			m_ActionsSelector.AddItem("O EAT TABLET", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONMOD_EAT_TABLET, false), 0);
 			
 			
 		}
 
 		//! fullbody looping
-		if (pType == 2)
+		if (pType == TYPE_FB_LOOPING)
 		{
 			m_ActionsSelector.AddItem("FB L DRINK", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_DRINK, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
 			m_ActionsSelector.AddItem("FB L EAT", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_EAT, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
@@ -723,7 +786,7 @@ class PluginDayzPlayerDebug extends PluginBase
 		
 		
         //! one time
-		if (pType == 3)
+		if (pType == TYPE_FB_ONETIME)
 		{
 			m_ActionsSelector.AddItem("FB O PICK UP HANDS", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_PICKUP_HANDS, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
 			m_ActionsSelector.AddItem("FB O PICK UP INVENTORY", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_PICKUP_INVENTORY, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
@@ -747,6 +810,8 @@ class PluginDayzPlayerDebug extends PluginBase
 			m_ActionsSelector.AddItem("FB O PICK UP HEAVY", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_PICKUP_HEAVY, true, DayZPlayerConstants.STANCEMASK_ERECT), 0);
 			m_ActionsSelector.AddItem("FB O STOP ALARM CLOCK", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_STOP_ALARM, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
 			m_ActionsSelector.AddItem("FB O PRESS TRIGGER", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_PRESS_TRIGGER, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
+			m_ActionsSelector.AddItem("FB O EAT PILL", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_EAT_PILL, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
+			m_ActionsSelector.AddItem("FB O EAT TABLET", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_ACTIONFB_EAT_TABLET, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
 		}
         
         
@@ -754,7 +819,7 @@ class PluginDayzPlayerDebug extends PluginBase
     //! ---------------------- GESTURES -------------------------
     //! ---------------------------------------------------------
 		//! looping 
-		if (pType == 4)
+		if (pType == TYPE_MOD_GESTURE_LOOPING)
 		{
 			m_ActionsSelector.AddItem("L GREETING", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREMOD_GREETING, false), 0);
 			m_ActionsSelector.AddItem("L POINT", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREMOD_POINT, false), 0);
@@ -776,7 +841,7 @@ class PluginDayzPlayerDebug extends PluginBase
 		}
         
         //! one time
-		if (pType == 5)
+		if (pType == TYPE_MOD_GESTURE_ONETIME)
 		{
 			m_ActionsSelector.AddItem("O THROAT", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREMOD_THROAT, false), 0);
 			m_ActionsSelector.AddItem("O CLAP", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREMOD_CLAP, false), 0);
@@ -795,7 +860,7 @@ class PluginDayzPlayerDebug extends PluginBase
 
 
 		//! fullbody looping
-		if (pType == 6)
+		if (pType == TYPE_FB_GESTURE_LOOPING)
 		{
 			m_ActionsSelector.AddItem("FB L GREETING", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREFB_GREETING, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
 			m_ActionsSelector.AddItem("FB L POINT", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREFB_POINT, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
@@ -830,7 +895,7 @@ class PluginDayzPlayerDebug extends PluginBase
 		}
         
 		//! fullbody one time
-		if (pType == 7)
+		if (pType == TYPE_FB_GESTURE_ONETIME)
 		{
 			m_ActionsSelector.AddItem("FB O THROAT", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREFB_THROAT, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
 			m_ActionsSelector.AddItem("FB O MOVE", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_GESTUREFB_MOVE, true, DayZPlayerConstants.STANCEMASK_PRONE), 0);
@@ -850,7 +915,7 @@ class PluginDayzPlayerDebug extends PluginBase
         //! ---------------------- SUICIDE --------------------------
         //! ---------------------------------------------------------
 		//! fullbody looping
-		if (pType == 6)
+		if (pType == TYPE_FB_SUICIDE_LOOPING)
 		{
 			m_ActionsSelector.AddItem("FB L 1HD", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_SUICIDEFB_1HD, true, DayZPlayerConstants.STANCEMASK_CROUCH), 0);
 			m_ActionsSelector.AddItem("FB L FIREAXE", new PluginDayzPlayerDebugUserData(DayZPlayerConstants.CMD_SUICIDEFB_FIREAXE, true, DayZPlayerConstants.STANCEMASK_ERECT), 0);
@@ -889,7 +954,7 @@ class PluginDayzPlayerDebug extends PluginBase
 
 		//! start action 
 		PluginDayzPlayerActionCallback a;
-		
+	
 		if (userData.IsFullBody())
 		{
 			a = PluginDayzPlayerActionCallback.Cast( player.StartCommand_Action(userData.GetInt(), PluginDayzPlayerActionCallback, userData.GetStanceMask()) );
@@ -898,9 +963,10 @@ class PluginDayzPlayerDebug extends PluginBase
 		{
 			a = PluginDayzPlayerActionCallback.Cast( player.AddCommandModifier_Action(userData.GetInt(), PluginDayzPlayerActionCallback) );
 		}
+		m_ActionEventV.SetText("");
 		a.m_pStateWidget 		= m_ActionStateV;
 		a.m_pAnimEventWidget	= m_ActionEventV;
-		
+		a.m_EventsHistory		= m_EventsHistory;
 
 		Print(m_ActionStateV);
 		m_ActionStateV.SetText("Crash Test");
@@ -1029,6 +1095,15 @@ class PluginDayzPlayerDebug extends PluginBase
 		else if (w == m_Card3Button)
 		{
 			ShowCard(3);
+		}	
+		else if (w == m_Card4Button)
+		{
+			ShowCard(4);
+		}
+		
+		else if (w == m_ClearEventsButton)
+		{
+			m_EventsHistory.ClearItems();
 		}
 		else if (w == m_ActionsStart)
 		{
@@ -1087,35 +1162,35 @@ class PluginDayzPlayerDebug extends PluginBase
 		}
 		else if (w == m_ActionTypeLA)
 		{
-			ActionsInit(0);
+			ActionsInit(TYPE_MOD_LOOPING);
 		}
 		else if (w == m_ActionTypeOA)
 		{
-			ActionsInit(1);
+			ActionsInit(TYPE_MOD_ONETIME);
 		}
 		else if (w == m_ActionTypeFLA)
 		{
-			ActionsInit(2);
+			ActionsInit(TYPE_FB_LOOPING);
 		}
 		else if (w == m_ActionTypeFOA)
 		{
-			ActionsInit(3);
+			ActionsInit(TYPE_FB_ONETIME);
 		}
 		else if (w == m_ActionTypeLG)
 		{
-			ActionsInit(4);
+			ActionsInit(TYPE_MOD_GESTURE_LOOPING);
 		}
 		else if (w == m_ActionTypeOG)
 		{
-			ActionsInit(5);
+			ActionsInit(TYPE_MOD_GESTURE_ONETIME);
 		}
 		else if (w == m_ActionTypeFLG)
 		{
-			ActionsInit(6);
+			ActionsInit(TYPE_FB_GESTURE_LOOPING);
 		}
 		else if (w == m_ActionTypeFOG)
 		{
-			ActionsInit(7);
+			ActionsInit(TYPE_FB_GESTURE_ONETIME);
 		}
 
 		if (m_Weapons.OnClick(w,x,y,button))

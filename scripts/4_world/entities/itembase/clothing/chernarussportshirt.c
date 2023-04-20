@@ -1,4 +1,4 @@
-class ChernarusSportShirt extends Clothing
+class ChernarusSportShirt extends Top_Base
 {
 	override void SetActions()
 	{

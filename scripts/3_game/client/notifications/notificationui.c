@@ -11,7 +11,11 @@ class NotificationUI
 	protected float										m_Width;
 	protected float										m_CurrentHeight;
 	protected float										m_TargetHeight;
+	protected float										m_BackupPosX;
+	protected float										m_BackupPosY;
 	protected ref map<string, Widget>					m_WidgetTimers;
+	
+	protected bool										m_OffsetEnabled;;
 	
 	void NotificationUI()
 	{
@@ -69,7 +73,7 @@ class NotificationUI
 	
 	void RemoveNotification( NotificationRuntimeData data )
 	{
-		if( m_Notifications.Contains( data ) )
+		if ( m_Notifications.Contains( data ) )
 		{
 			Widget notification = m_Notifications.Get( data );
 			m_WidgetTimers.Insert( m_WidgetTimers.Count().ToString() + data.GetTime().ToString(), notification );
@@ -93,7 +97,7 @@ class NotificationUI
 				m_WidgetTimers.Remove(player);
 				notification.SetAlpha( 120 / 255 );
 				Widget w_c = notification.FindAnyWidget( "Name" );
-				if( w_c )
+				if ( w_c )
 				{
 					w_c.SetAlpha( 1 );
 				}
@@ -108,7 +112,7 @@ class NotificationUI
 	
 	void RemoveVoiceNotification( string player )
 	{
-		if( m_VoiceNotifications.Contains( player ) )
+		if ( m_VoiceNotifications.Contains( player ) )
 		{
 			Widget notification = m_VoiceNotifications.Get( player );
 			m_WidgetTimers.Insert( player, notification );
@@ -119,7 +123,7 @@ class NotificationUI
 	
 	void ClearVoiceNotifications()
 	{
-		for( int i = 0; i < m_VoiceNotifications.Count(); i++ )
+		for ( int i = 0; i < m_VoiceNotifications.Count(); i++ )
 		{
 			Widget w = m_VoiceNotifications.GetElement( i );
 			delete w;
@@ -137,31 +141,63 @@ class NotificationUI
 		float x;
 		m_Spacer.GetScreenSize( x, m_TargetHeight );
 		m_Root.GetScreenSize( m_Width, m_CurrentHeight );
+		
+		UpdateOffset();
+	}
+	
+	void UpdateOffset()
+	{
+		UIScriptedMenu menu = UIScriptedMenu.Cast(GetGame().GetUIManager().GetMenu());
+		if (menu)
+		{
+			Widget expNotification = menu.GetLayoutRoot().FindAnyWidget("notification_root");
+			if (expNotification && expNotification.IsVisible())
+			{
+				if (!m_OffsetEnabled)
+				{
+					m_Root.GetPos(m_BackupPosX, m_BackupPosY);
+					
+					float x, y, w, h;
+					m_Root.GetScreenPos(x, y);
+					expNotification.GetScreenSize(w, h);
+					
+					m_Root.SetScreenPos(x, h);
+					m_OffsetEnabled = true;
+				}
+			}
+			else if (m_OffsetEnabled)
+			{
+				m_Root.SetPos(m_BackupPosX, m_BackupPosY);
+				m_OffsetEnabled = false;
+			}
+		}
 	}
 	
 	static float m_VelArr[1];
 	void Update( float timeslice )
 	{
+		UpdateOffset();
+		
 		float x;
 		m_Spacer.GetScreenSize( x, m_TargetHeight );
 		bool is_near = ( m_CurrentHeight + 0.01 < m_TargetHeight || m_CurrentHeight - 0.01 > m_TargetHeight );
-		if( is_near )
+		if ( is_near )
 		{
 			m_CurrentHeight = Math.SmoothCD(m_CurrentHeight, m_TargetHeight, m_VelArr, 0.2, 10000, timeslice);
 			m_Root.SetSize( m_Width, m_CurrentHeight );
 		}
-		else if( m_TargetHeight != m_CurrentHeight )
+		else if ( m_TargetHeight != m_CurrentHeight )
 		{
 			m_CurrentHeight = m_TargetHeight;
 			m_Root.SetSize( m_Width, m_CurrentHeight );
 			m_VelArr[0] = 0;
 		}
 		
-		for( int i = 0; i < m_WidgetTimers.Count(); )
+		for ( int i = 0; i < m_WidgetTimers.Count(); )
 		{
 			Widget w		= m_WidgetTimers.GetElement( i );
 			float new_alpha	= Math.Clamp( w.GetAlpha() - timeslice / NOTIFICATION_FADE_TIME, 0, 1 );
-			if( new_alpha > 0 )
+			if ( new_alpha > 0 )
 			{
 				w.SetAlpha( new_alpha );
 				Widget w_c = w.FindAnyWidget( "TopSpacer" );
@@ -169,7 +205,7 @@ class NotificationUI
 				Widget w_c3 = w.FindAnyWidget( "Title" );
 				Widget w_c4 = w.FindAnyWidget( "Detail" );
 				Widget w_c5 = w.FindAnyWidget( "Name" );
-				if( w_c && w_c2 )
+				if ( w_c && w_c2 )
 				{
 					float new_alpha_cont	= Math.Clamp( w_c.GetAlpha() - timeslice / NOTIFICATION_FADE_TIME, 0, 1 );
 					w_c.SetAlpha( new_alpha_cont );
@@ -177,7 +213,7 @@ class NotificationUI
 					w_c3.SetAlpha( new_alpha_cont );
 					w_c4.SetAlpha( new_alpha_cont );
 				}
-				if( w_c5 )
+				if ( w_c5 )
 				{
 					float new_alpha_voice	= Math.Clamp( w_c5.GetAlpha() - timeslice / NOTIFICATION_FADE_TIME, 0, 1 );
 					w_c5.SetAlpha(new_alpha_voice);

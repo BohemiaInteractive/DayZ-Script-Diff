@@ -418,6 +418,18 @@ class DayZPlayerImplementMeleeCombat
 	{
 		if (m_WasHit)
 			return -1;
+		
+		if (target)
+		{
+			vector dir = target.GetPosition() - m_DZPlayer.GetPosition();
+
+			IEntity hitEntity;
+			vector hitPos, hitNormal;
+			
+			float moveFraction = m_DZPlayer.CollisionMoveTest(dir, vector.Zero, 1.0, target, hitEntity, hitPos, hitNormal);
+			if (moveFraction < 1.0)
+				return -1;
+		}
 
 		//! perform only for finisher suitable weapons
 		if (target && target.CanBeBackstabbed() && weapon && (weapon.IsMeleeFinisher() || m_HitType == EMeleeHitType.WPN_STAB) && !weapon.IsRuined() )

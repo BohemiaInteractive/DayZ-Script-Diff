@@ -285,6 +285,10 @@ class ReplaceItemWithNewLambdaBase
 		else
 		{
 			Print("[syncinv] warning, lambda cannot be executed, skipping!");
+			if (fsm_to_notify)
+				fsm_to_notify.ProcessHandAbortEvent(new HandEventHumanCommandActionAborted(fsm_to_notify.GetManOwner()));
+			OnAbort();
+			return;
 		}
 		int te = GetGame().GetTime();
 		int dt = te - t;

@@ -28,6 +28,7 @@ enum EConnectErrorServer
 	EQUAL_MOD,				// Server and Client do not have equal mods while "equalModRequired" is true
 	CLIENT_DIAG,			// Client is using Diag exe while Server is not
 	SERVER_DIAG,			// Server is using Diag exe while Client is not
+	NO_DEVICE_ID,			// Client has not acquired device id
 };
 
 class ConnectErrorServerModule : ErrorHandlerModuleScript
@@ -73,6 +74,7 @@ class ConnectErrorServerModule : ErrorHandlerModuleScript
 		InsertDialogueErrorProperties(EConnectErrorServer.EQUAL_MOD,			"#STR_equal_mod");
 		InsertDialogueErrorProperties(EConnectErrorServer.CLIENT_DIAG,			"#STR_client_diag");
 		InsertDialogueErrorProperties(EConnectErrorServer.SERVER_DIAG,			"#STR_server_diag");
+		InsertDialogueErrorProperties(EConnectErrorServer.NO_DEVICE_ID,			"#STR_no_device_id");
 	}
 	
 	override void OnEvent(EventType eventTypeId, Param params)

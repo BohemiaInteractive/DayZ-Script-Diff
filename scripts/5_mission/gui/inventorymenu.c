@@ -23,7 +23,7 @@ class InventoryMenu extends UIScriptedMenu
 		m_Inventory = new Inventory(null);
 		m_Inventory.Reset();
 		m_Inventory.UpdateInterval();
-		m_context_menu = new ContextMenu;
+		m_context_menu = new ContextMenu();
 		m_LastDisplayLanguage = g_Game.GetCurrentDisplayLanguageIdx();
 	}
 	

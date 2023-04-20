@@ -4,7 +4,7 @@ class SodaCan_ColorBase : Edible_Base
 	{
 		super.SetActions();
 		
-		//AddAction(ActionWashHandsItem);
+		//AddAction(ActionWashHandsItemContinuous);
 		AddAction(ActionForceDrink);
 		AddAction(ActionDrinkCan);
 	}

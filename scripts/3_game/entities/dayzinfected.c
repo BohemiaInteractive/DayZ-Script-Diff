@@ -135,27 +135,6 @@ class DayZInfected extends DayZCreatureAI
 	//! gets transform in World Space
 	proto native	void 		GetTransformWS(out vector pTm[4]);
 	
-	//---------------------------------------------------------
-	// bone transforms 
-
-	//! returns bone index for a name (-1 if pBoneName doesn't exist)
-	proto native 	int 		GetBoneIndexByName(string pBoneName);
-
-	//! returns local space, model space, world space position of the bone 
-	proto native	vector		GetBonePositionLS(int pBoneIndex);
-	proto native 	vector		GetBonePositionMS(int pBoneIndex);
-	proto native 	vector		GetBonePositionWS(int pBoneIndex);
-
-	//! returns local space, model space, world space orientation (quaternion) of a bone 
-	proto native	void 		GetBoneRotationLS(int pBoneIndex, out float pQuat[4]);
-	proto native 	void 		GetBoneRotationMS(int pBoneIndex, out float pQuat[4]);
-	proto native 	void 		GetBoneRotationWS(int pBoneIndex, out float pQuat[4]);
-
-	//! returns local space, model space, world space orientation (quaternion) of a bone 
-	proto native	void 		GetBoneTransformLS(int pBoneIndex, out vector pTm[4]);
-	proto native 	void 		GetBoneTransformMS(int pBoneIndex, out vector pTm[4]);
-	proto native 	void 		GetBoneTransformWS(int pBoneIndex, out vector pTm[4]);
-	
 	const float LEG_CRIPPLE_THRESHOLD = 74.0;
 	bool 		m_HeavyHitOverride;
 	//-------------------------------------------------------------

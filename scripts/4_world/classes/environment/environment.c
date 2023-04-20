@@ -32,6 +32,7 @@ class Environment
 	//
 	protected float					m_WaterLevel;
 	protected bool 					m_IsUnderRoof;
+	private bool					m_IsUnderRoofBuilding;
 	protected bool 					m_IsInWater;
 	protected bool					m_IsTempSet;
 	//
@@ -49,12 +50,15 @@ class Environment
 	
 	protected ref SimpleMovingAverage<float> m_WindAverageBuffer;
 
+	protected bool m_HasTemperatureSources;
 	protected float m_UTSAverageTemperature;
 	protected ref array<UTemperatureSource> m_UTemperatureSources;
 	protected ref SimpleMovingAverage<float> m_UTSAverageTemperatureBuffer;
 	
 	#ifdef DIAG_DEVELOPER
 	bool m_Debug = false;
+
+	bool m_DebugLogDryWet = false;
 	#endif
 		
 	void Environment(PlayerBase pPlayer)
@@ -238,7 +242,7 @@ class Environment
 		return m_IsInWater;
 	}
 	
-	 bool IsInsideBuilding()
+	bool IsInsideBuilding()
 	{
 		return m_Player && m_Player.IsSoundInsideBuilding();
 	}
@@ -246,6 +250,11 @@ class Environment
 	protected bool IsInsideVehicle()
 	{
 		return m_Player && m_Player.IsInVehicle();
+	}
+	
+	private bool IsUnderRoofBuilding()
+	{
+		return m_IsUnderRoofBuilding;
 	}
 	
 	protected bool IsRaining()
@@ -260,6 +269,7 @@ class Environment
 		if (IsInsideVehicle())
 		{
 			m_IsUnderRoof = false;
+			m_IsUnderRoofBuilding = false;
 			return;
 		}
 		
@@ -271,6 +281,8 @@ class Environment
 		PhxInteractionLayers collisionLayerMask = PhxInteractionLayers.ITEM_LARGE|PhxInteractionLayers.BUILDING|PhxInteractionLayers.VEHICLE;
 		
 		m_IsUnderRoof = DayZPhysics.RayCastBullet(from, to, collisionLayerMask, null, hitObject, hitPosition, hitNormal, hitFraction);
+
+		m_IsUnderRoofBuilding = hitObject && hitObject.IsInherited(House);
 	}
 	
 	protected void CheckWaterContact(out float pWaterLevel)
@@ -285,6 +297,13 @@ class Environment
 			if (hms.m_iMovement >= DayZPlayerConstants.MOVEMENTIDX_WALK)
 				pWaterLevel = WATER_LEVEL_HIGH;
 
+			return;
+		}
+		
+		//! no valid surface under character
+		if (IsUnderRoofBuilding())
+		{
+			m_IsInWater = false;
 			return;
 		}
 
@@ -305,7 +324,7 @@ class Environment
 
 		//! sync info about water contact to player
 		m_Player.SetInWater(m_IsInWater);
-		
+
 		//! update active surface
 		m_SurfaceType = surfType;
 	}
@@ -320,7 +339,10 @@ class Environment
 	
 	float GetWindModifierPerSurface()
 	{
-		return g_Game.ConfigGetFloat( "CfgSurfaces " + m_SurfaceType + " windModifier" );
+		if (IsUnderRoofBuilding())
+			return 0.0;
+
+		return g_Game.ConfigGetFloat("CfgSurfaces " + m_SurfaceType + " windModifier");
 	}
 	
 	float GetTemperature()
@@ -340,7 +362,7 @@ class Environment
 			temperature -= Math.AbsFloat(temperature * GameConstants.ENVIRO_WATER_TEMPERATURE_COEF);
 		}
 		
-		if (IsInsideBuilding())
+		if (IsInsideBuilding() || m_IsUnderRoofBuilding)
 		{
 			temperature += Math.AbsFloat(temperature * GameConstants.ENVIRO_TEMPERATURE_INSIDE_COEF);
 		}
@@ -348,7 +370,7 @@ class Environment
 		{
 			temperature += Math.AbsFloat(temperature * GameConstants.ENVIRO_TEMPERATURE_INSIDE_VEHICLE_COEF);
 		}
-		else if (IsUnderRoof())
+		else if (IsUnderRoof() && !m_IsUnderRoofBuilding)
 		{
 			temperature += Math.AbsFloat(temperature * GameConstants.ENVIRO_TEMPERATURE_UNDERROOF_COEF);
 			temperature -= GameConstants.ENVIRO_TEMPERATURE_WIND_COEF * GetWindModifierPerSurface() * m_Wind;
@@ -402,10 +424,6 @@ class Environment
 		{
 			//! player is drying
 			float tempEffect = Math.Max(m_PlayerHeat + GetEnvironmentTemperature(), 1.0);
-			if (m_HeatSourceTemp != 0)
-			{
-				tempEffect *= GameConstants.ENVIRO_FIRE_INCREMENT;
-			}
 
 			float weatherEffect = ((1 - (m_Fog * GameConstants.ENVIRO_FOG_DRY_EFFECT))) * (1 - (m_Clouds * GameConstants.ENVIRO_CLOUD_DRY_EFFECT));
 			if (weatherEffect <= 0)
@@ -494,6 +512,8 @@ class Environment
 		EntityAI attachment;
 		
 		int playerAttachmentCount = m_Player.GetInventory().AttachmentCount();
+		
+		LogDryWetProcess(string.Format("Environment :: ProcessItemsWetness (update interval=%1s)", GameConstants.ENVIRO_TICK_RATE));
 		for (int attIdx = 0; attIdx < playerAttachmentCount; ++attIdx)
 		{
 			attachment = m_Player.GetInventory().GetAttachmentFromIndex(attIdx);
@@ -516,9 +536,9 @@ class Environment
 		}
 		
 		if (m_Player.GetItemInHands())
-		{
 			ApplyWetnessToItem(m_Player.GetItemInHands());
-		}
+
+		LogDryWetProcess("==========");
 
 	}
 
@@ -529,66 +549,79 @@ class Environment
 		
 		int attCount = m_Player.GetInventory().AttachmentCount();
 		
+		LogDryWetProcess(string.Format("Environment :: ProcessItemsDryness (update interval=%1s)", GameConstants.ENVIRO_TICK_RATE));
+		EnvironmentDrynessData drynessData = new EnvironmentDrynessData();
+		drynessData.m_UseTemperatureSources = m_HasTemperatureSources;
+
+		if (m_HasTemperatureSources)
+		{
+			float distance = vector.Distance(m_UTemperatureSources[0].GetPosition(), m_Player.GetPosition());
+			distance = Math.Max(distance, 0.1);
+			drynessData.m_TemperatureSourceDistance = distance;
+			LogDryWetProcess(string.Format("distance to heatsource: %1 m", distance));
+		}
+		
 		for (int attIdx = 0; attIdx < attCount; attIdx++)
 		{
 			attachment = m_Player.GetInventory().GetAttachmentFromIndex(attIdx);
 			if (attachment && attachment.IsItemBase())
 			{
 				item = ItemBase.Cast(attachment);
-				ApplyDrynessToItem(item);
+				if (item)
+					ApplyDrynessToItemEx(item, drynessData);
 			}
 		}
 
 		if (m_Player.GetItemInHands())
 		{
-			ApplyDrynessToItem(m_Player.GetItemInHands());
+			ApplyDrynessToItemEx(m_Player.GetItemInHands(), drynessData);
 		}
+		
+		LogDryWetProcess("==========");
 	}
-	
-	
+
 	protected void ApplyWetnessToItem(ItemBase pItem)
 	{
 		if (pItem)
 		{
-			bool isParentWet = false;
-			bool hasLiquid = false;
-			float liquidMdfr = 1.0;
-			InventoryLocation iLoc = new InventoryLocation;
+			ItemBase parentItem;
+			bool isParentWet 			= false;
+			bool parentContainsLiquid 	= false;
+			float liquidModifier 		= 1.0;
+			InventoryLocation iLoc 		= new InventoryLocation();
+
 			if (pItem.GetInventory().GetCurrentInventoryLocation(iLoc))
 			{
 				EntityAI parent = iLoc.GetParent();
 				if (parent)
 				{
-					ItemBase parentIB = ItemBase.Cast(parent);
-					if (parentIB)
+					parentItem = ItemBase.Cast(parent);
+					if (parentItem)
 					{
-						if (parentIB.GetWet() >= GameConstants.STATE_SOAKING_WET)
-						{
+						if (parentItem.GetWet() >= GameConstants.STATE_SOAKING_WET)
 							isParentWet = true;
-						}
-						if ((parentIB.GetLiquidType() != 0) && (parentIB.GetQuantity() > 0 ))
+
+						if ((parentItem.GetLiquidType() != 0) && (parentItem.GetQuantity() > 0))
 						{
-							hasLiquid = true;
-							liquidMdfr = 5.5;
+							parentContainsLiquid = true;
+							liquidModifier = pItem.GetLiquidModifierCoef();
 						}
-					}
-					else
-					{
-						isParentWet = true;
 					}
 					
 					if ((pItem.GetWet() > m_ItemsWetnessMax) && (parent == m_Player))
-					{
 						m_ItemsWetnessMax = pItem.GetWet();
-					}
 				}
 			}
-			
-			if (isParentWet || hasLiquid)
+
+			float wettingCoef = 0;
+
+			if (!isParentWet && !parentContainsLiquid)
 			{
-				pItem.AddWet(GetWetDelta() * liquidMdfr);
-				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * liquidMdfr);
-				
+				wettingCoef = GetWetDelta();
+				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [normal]", pItem.GetDisplayName(), wettingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+				pItem.AddWet(wettingCoef);
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * liquidModifier);
+
 				if (pItem.GetInventory().GetCargo())
 				{
 					int inItemCount = pItem.GetInventory().GetCargo().GetItemCount();
@@ -596,9 +629,7 @@ class Environment
 					{
 						ItemBase inItem;
 						if (Class.CastTo(inItem, pItem.GetInventory().GetCargo().GetItem(i)))
-						{
 							ApplyWetnessToItem(inItem);
-						}
 					}
 				}
 				
@@ -610,40 +641,65 @@ class Environment
 						EntityAI attachment = pItem.GetInventory().GetAttachmentFromIndex(attIdx);
 						ItemBase itemAtt = ItemBase.Cast(attachment);
 						if (itemAtt)
-						{
 							ApplyWetnessToItem(itemAtt);
-						}
 					}
 				}
+			}
+
+			if (parentContainsLiquid)
+			{
+				wettingCoef = GetWetDelta() * liquidModifier;
+				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent contains liquid]", pItem.GetDisplayName(), wettingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+				pItem.AddWet(wettingCoef);
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * pItem.GetLiquidModifierCoef());
+			}
+	
+			if (isParentWet)
+			{
+				if (pItem.GetWet() < parentItem.GetWet())
+				{
+					wettingCoef = GetWetDelta() * pItem.GetTransferableWetnessCoef();
+					LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent wet]", pItem.GetDisplayName(), wettingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+					pItem.AddWet(wettingCoef);
+				}
+	
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * 3.5);
 			}
 		}
 	}
 	
 	protected void ApplyDrynessToItem(ItemBase pItem)
 	{
+		EnvironmentDrynessData drynessData = new EnvironmentDrynessData();
+		ApplyDrynessToItemEx(pItem, drynessData);
+	}
+	
+	protected void ApplyDrynessToItemEx(ItemBase pItem, EnvironmentDrynessData pDrynessData)
+	{
 		if (pItem)
-		{	
-			ItemBase parentIB;
-			bool isParentWet = false;
-			bool hasLiquid = false;
-			InventoryLocation iLoc = new InventoryLocation;
+		{
+			float dryingIncrement = pItem.GetDryingIncrements(EDryingIncrementCategory.PLAYER);
+			if (pDrynessData.m_UseTemperatureSources)
+				dryingIncrement = pItem.GetDryingIncrements(EDryingIncrementCategory.PLAYER_FIREPLACE);
+			
+			ItemBase parentItem;
+			bool isParentWet 			= false;
+			bool parentContainsLiquid 	= false;
+	
+			InventoryLocation iLoc = new InventoryLocation();
 			if (pItem.GetInventory().GetCurrentInventoryLocation(iLoc))
 			{
 				EntityAI parent = iLoc.GetParent();
 				if (parent)
 				{
-					parentIB = ItemBase.Cast(parent);
-					if (parentIB)
+					parentItem = ItemBase.Cast(parent);
+					if (parentItem)
 					{
-						if (parentIB.GetWet() >= GameConstants.STATE_SOAKING_WET)
-						{
+						if (parentItem.GetWet() >= GameConstants.STATE_DAMP)
 							isParentWet = true;
-						}
-
-						if ((parentIB.GetLiquidType() != 0) && (parentIB.GetQuantity() > 0))
-						{
-							hasLiquid = true;
-						}
+	
+						if ((parentItem.GetLiquidType() != 0) && (parentItem.GetQuantity() > 0))
+							parentContainsLiquid = true;
 					}
 					
 					if ((pItem.GetWet() > m_ItemsWetnessMax) && (parent == m_Player))
@@ -652,11 +708,18 @@ class Environment
 					}
 				}
 			}
+	
+			float dryingCoef = 0;
 			
-			if (!isParentWet && !hasLiquid)
+			if (!isParentWet && !parentContainsLiquid)
 			{
-				pItem.AddWet(GetWetDelta());
-				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER);
+				dryingCoef = (-1 * GameConstants.ENVIRO_TICK_RATE * dryingIncrement) / pDrynessData.m_TemperatureSourceDistance;
+				if (pItem.GetWet() >= GameConstants.STATE_DAMP)
+				{
+					LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [normal]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+					pItem.AddWet(dryingCoef);
+					pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER);
+				}
 				
 				if (pItem.GetInventory().GetCargo())
 				{
@@ -665,9 +728,7 @@ class Environment
 					{
 						ItemBase inItem;
 						if (Class.CastTo(inItem, pItem.GetInventory().GetCargo().GetItem(i)))
-						{
-							ApplyDrynessToItem(inItem);
-						}
+							ApplyDrynessToItemEx(inItem, pDrynessData);
 					}
 				}
 				
@@ -677,27 +738,32 @@ class Environment
 					for (int attIdx = 0; attIdx < attCount; attIdx++)
 					{
 						EntityAI attachment = pItem.GetInventory().GetAttachmentFromIndex(attIdx);
-						ItemBase itemAtt = ItemBase.Cast(attachment);
-						if (itemAtt)
-						{
-							ApplyDrynessToItem(itemAtt);
-						}
+						ItemBase itemAtt;
+						if (ItemBase.CastTo(itemAtt, attachment))
+							ApplyDrynessToItemEx(itemAtt, pDrynessData);
 					}
 				}
 			}
 			
-			if (hasLiquid)
+			if (parentContainsLiquid)
 			{
-				pItem.AddWet(-1 * GetWetDelta() * 5.5);
-				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * 5.5);
+				//! adds wetness to item inside parent item containing liquid
+				dryingCoef = (GameConstants.ENVIRO_TICK_RATE * dryingIncrement * pItem.GetLiquidModifierCoef()) / pDrynessData.m_TemperatureSourceDistance;
+				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent contains liquid]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+				pItem.AddWet(dryingCoef);
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * pItem.GetLiquidModifierCoef());
 			}
+	
 			if (isParentWet)
 			{
-				if (pItem.GetWet() < parentIB.GetWet())
+				if (pItem.GetWet() < parentItem.GetWet())
 				{
-					pItem.AddWet(-1 * GetWetDelta() * 3.5);
+					//! adds wetness to item inside wet parent item
+					dryingCoef = (GameConstants.ENVIRO_TICK_RATE * dryingIncrement * pItem.GetTransferableWetnessCoef()) / pDrynessData.m_TemperatureSourceDistance;
+					LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent wet]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+					pItem.AddWet(dryingCoef);
 				}
-
+	
 				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * 3.5);
 			}
 		}
@@ -870,47 +936,39 @@ class Environment
 		m_UTemperatureSources.Clear();
 
 		array<Object> nearestObjects = new array<Object>;
-
 		GetGame().GetObjectsAtPosition(m_Player.GetPosition(), GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS, nearestObjects, null);
 
-		for (int i = 0; i < nearestObjects.Count(); i++)
+		foreach (Object nearestObject : nearestObjects)
 		{
-			EntityAI ent = EntityAI.Cast(nearestObjects.Get(i));
+			EntityAI ent = EntityAI.Cast(nearestObject);
 			if (ent && ent.IsUniversalTemperatureSource() && ent != m_Player)
 			{
 				//! next temp source is too far
 				if (vector.DistanceSq(m_Player.GetPosition(), ent.GetPosition()) > Math.SqrFloat(ent.GetUniversalTemperatureSource().GetMaxRange()))
-				{
 					continue;
-				}
 
 				m_UTemperatureSources.Insert(ent.GetUniversalTemperatureSource());
 			}
 		}
-		
 
 		if (m_Player.GetItemInHands() && m_Player.GetItemInHands().IsUniversalTemperatureSource())
-		{
 			m_UTemperatureSources.Insert(m_Player.GetItemInHands().GetUniversalTemperatureSource());
-		}
 	}
 	
 	protected void ProcessTemperatureSources()
 	{
 		if (m_UTemperatureSources.Count() == 0)
 		{
+			m_HasTemperatureSources = false;
 			m_UTSAverageTemperature = m_UTSAverageTemperatureBuffer.Add(0);
-
 			return;
 		}
 
 		array<float> utsTemperatures = new array<float>();
 		
 		// get temperature from the source (based on distance), save it for min/max filtering
-		for (int i = 0; i < m_UTemperatureSources.Count(); i++)
-		{
-			utsTemperatures.Insert(CalcTemperatureFromTemperatureSource(m_UTemperatureSources[i]));
-		}
+		foreach (UTemperatureSource tempSource : m_UTemperatureSources)
+			utsTemperatures.Insert(CalcTemperatureFromTemperatureSource(tempSource));
 
 		float min = MiscGameplayFunctions.GetMinValue(utsTemperatures);
 		float max = MiscGameplayFunctions.GetMaxValue(utsTemperatures);
@@ -924,6 +982,8 @@ class Environment
 		{
 			m_UTSAverageTemperature = m_UTSAverageTemperatureBuffer.Add(max);
 		}
+		
+		m_HasTemperatureSources = true;
 	}
 	
 	float GetUniversalSourcesTemperageAverage()
@@ -1068,7 +1128,27 @@ class Environment
 	{
 		return m_DayOrNight;
 	}
-};
+	
+	private void LogDryWetProcess(string message, bool indented = false)
+	{
+		#ifdef DIAG_DEVELOPER
+		if (m_DebugLogDryWet)
+		{
+			string indentation = "";
+			if (indented)
+				indentation = "|--";
+
+			Debug.Log(string.Format("%1 %2", indentation, message));
+		}
+		#endif
+	}
+}
+
+class EnvironmentDrynessData
+{
+	bool m_UseTemperatureSources 		= false;
+	float m_TemperatureSourceDistance	= 1.0;
+}
 
 #ifdef DIAG_DEVELOPER
 class EnvDebugPlayerData : Param

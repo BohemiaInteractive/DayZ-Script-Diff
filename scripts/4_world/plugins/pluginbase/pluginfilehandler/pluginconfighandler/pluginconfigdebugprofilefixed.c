@@ -6,9 +6,9 @@ class PluginConfigDebugProfileFixed extends PluginConfigDebugProfile
 	const string SUB_PARAM_POS_VEC		= "pos";
 	
 	//========================================
-	// ModuleLocalProfileUIFixed
+	// PluginConfigDebugProfileFixed
 	//========================================
-	void ModuleLocalProfileUIFixed()
+	void PluginConfigDebugProfileFixed()
 	{
 		m_ReadOnly = true;
 	}

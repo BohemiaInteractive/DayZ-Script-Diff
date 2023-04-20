@@ -1,4 +1,4 @@
-class BaseballCap_ColorBase extends Clothing
+class BaseballCap_ColorBase extends HeadGear_Base
 {
 	override void SetActions()
 	{
@@ -6,7 +6,6 @@ class BaseballCap_ColorBase extends Clothing
 		AddAction(ActionWringClothes);
 	}
 };
-
 
 class BaseballCap_Blue extends BaseballCap_ColorBase {};
 class BaseballCap_Beige extends BaseballCap_ColorBase {};

@@ -426,9 +426,19 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 	
 	void SetMapName( string mapName )
 	{
+		RefreshDLCIcon();
+/*
+		#ifdef PLATFORM_WINDOWS
+		m_ServerMods.SetText( "#STR_USRACT_MAP" + ": " + GetMapName() );
+		#endif
+*/		
+	}
+	
+	void RefreshDLCIcon()
+	{
 		if ( m_ServerData.m_IsDLC )
 		{
-			bool own = GetGame().VerifyWorldOwnership( mapName );
+			bool own = GetGame().VerifyWorldOwnership( GetMapToRun() );
 			m_ServerModIcon.Show( true );
 			m_ServerModIcon.FindWidget( "Owned" ).Show( own );
 			m_ServerModIcon.FindWidget( "Unowned" ).Show( !own );
@@ -438,11 +448,6 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 			m_ServerModIcon.FindWidget( "Owned" ).Show( false );
 			m_ServerModIcon.FindWidget( "Unowned" ).Show( false );
 		}
-/*
-		#ifdef PLATFORM_WINDOWS
-		m_ServerMods.SetText( "#STR_USRACT_MAP" + ": " + GetMapName() );
-		#endif
-*/		
 	}
 	
 	void SetCharacterAlive( string char_alive )

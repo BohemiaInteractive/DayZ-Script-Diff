@@ -178,7 +178,7 @@ class Car extends Transport
 		\param in should be in range <0, 1>
 		\param panic should be in range <0, 1>
 	*/
-	proto native void SetBrake( float in, float panic = 0 );
+	proto native void SetBrake( float in, float panic = 0, bool gentle = false );
 	
 	//! Returns the current handbrake value in range <0, 1>.
 	proto native float GetHandbrake();

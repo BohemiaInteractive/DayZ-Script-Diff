@@ -27,6 +27,9 @@ class HumanInputController
 	//! returns per tick aim change (in radians) 
 	proto native vector 		GetAimChange();
 
+	//! returns aim change (in radians) 
+	proto native vector 		GetAimDelta(float dt);
+
 	//! returns absolute tracking change (in radians) 
 	proto native vector 		GetTracking();
 
@@ -435,6 +438,9 @@ class HumanCommandMove
 	//! 0,1,2..3 idle, walk, run, sprint 
 	proto native float 		GetCurrentMovementSpeed();
 	
+	//! returns true if character is changing stance
+	proto native bool		IsChangingStance();
+	
 	//! return true if prone is on back
 	proto native bool		IsOnBack();
 	
@@ -640,6 +646,10 @@ class HumanCommandLadder
 	
 	//!
 	proto native static int 		DebugGetLadderIndex(string pComponentName); 
+
+	//! returns the safe logout position in worldspace 
+	//! the position is closest to the last possible exit point the player passed
+	proto native vector				GetLogoutPosition();
 }
 
 
@@ -1104,7 +1114,7 @@ class HumanCommandAdditives
 class HumanMovementState
 {
 	int 		m_CommandTypeId;	//! current command's id 
-	int 		m_iStanceIdx;		//! current stance (DayZPlayer.STANCEIDX_ERECT, ...), only if the command has a stance
+	int 		m_iStanceIdx;		//! current stance (DayZPlayerConstants.STANCEIDX_ERECT, ...), only if the command has a stance
 	int 		m_iMovement;		//! current movement (0 idle, 1 walk, 2-run, 3-sprint), only if the command has a movement 
 	float		m_fLeaning;			//! leaning state (not all commands need to have all movements)
 	
@@ -1246,6 +1256,8 @@ class Human extends Man
 	//! gets human transform in World Space
 	proto native	void 		GetTransformWS(out vector pTm[4]);
 
+	//! makes test if character can physically move in given direction - length of dir means distance, returns distance fraction
+	proto			float		CollisionMoveTest(vector dir, vector offset, float xzScale, IEntity ignoreEntity, out IEntity hitEntity, out vector hitPosition, out vector hitNormal);
 
 	//---------------------------------------------------------
 	// link/unlink to/from local space
@@ -1257,21 +1269,6 @@ class Human extends Man
 
 	//! returns bone index for a name (-1 if pBoneName doesn't exist)
 	proto native 	int 		GetBoneIndexByName(string pBoneName);
-
-	//! returns local space, model space, world space position of the bone 
-	proto native	vector		GetBonePositionLS(int pBoneIndex);
-	proto native 	vector		GetBonePositionMS(int pBoneIndex);
-	proto native 	vector		GetBonePositionWS(int pBoneIndex);
-
-	//! returns local space, model space, world space orientation (quaternion) of a bone 
-	proto native	void 		GetBoneRotationLS(int pBoneIndex, out float pQuat[4]);
-	proto native 	void 		GetBoneRotationMS(int pBoneIndex, out float pQuat[4]);
-	proto native 	void 		GetBoneRotationWS(int pBoneIndex, out float pQuat[4]);
-
-	//! returns local space, model space, world space orientation (quaternion) of a bone 
-	proto native	void 		GetBoneTransformLS(int pBoneIndex, out vector pTm[4]);
-	proto native 	void 		GetBoneTransformMS(int pBoneIndex, out vector pTm[4]);
-	proto native 	void 		GetBoneTransformWS(int pBoneIndex, out vector pTm[4]);
 
 	
 	//! returns animation interface - usable in HumanCommandScript implementations 

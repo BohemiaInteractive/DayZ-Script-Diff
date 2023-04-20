@@ -1,3 +1,4 @@
+//individual sound table consisting of map of parameter hashes as keys and soundbuilder array as values
 class SoundLookupTable
 {
 	void SoundLookupTable()
@@ -120,6 +121,14 @@ class ImpactSoundLookupTable extends SoundLookupTable
 	}
 }
 
+class ActionSoundLookupTable extends SoundLookupTable
+{
+	void ActionSoundLookupTable()
+	{
+		InitTable("CfgActionsSoundTables", "category");
+	}
+}
+
 
 class AnimSoundObjectBuilderBank
 {
@@ -204,6 +213,20 @@ class AnimSoundLookupTableBank
 		if(table == NULL)
 		{
 			table = new ImpactSoundLookupTable();
+			table.LoadTable(tableName);
+			m_pTables.Insert(tableNameHash, table);
+		}
+		return table;
+	}
+	
+	SoundLookupTable GetActionTable(string tableName)
+	{
+		int tableNameHash = tableName.Hash();
+
+		SoundLookupTable table = m_pTables.Get(tableNameHash);
+		if(table == NULL)
+		{
+			table = new ActionSoundLookupTable();
 			table.LoadTable(tableName);
 			m_pTables.Insert(tableNameHash, table);
 		}

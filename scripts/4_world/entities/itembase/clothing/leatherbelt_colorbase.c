@@ -1,4 +1,4 @@
-class LeatherBelt_ColorBase extends Clothing
+class LeatherBelt_ColorBase extends Belt_Base
 {
 	override bool CanPutInCargo( EntityAI parent )
 	{

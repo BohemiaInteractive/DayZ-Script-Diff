@@ -26,7 +26,7 @@ class ActionWashHandsWater : ActionContinuousBase
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		// Other conditions are in CCTWaterSurface
-		return (GetGame().IsMultiplayer() && GetGame().IsServer()) || (player.HasBloodyHands() && !player.GetItemInHands());
+		return (player.HasBloodyHands() && !player.GetItemInHands() && !player.GetItemOnSlot("Gloves"));
 	}
 	
 	override void OnFinishProgressServer( ActionData action_data )

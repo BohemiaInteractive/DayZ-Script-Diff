@@ -1,3 +1,3 @@
-class PoliceCap extends Clothing
+class PoliceCap extends HeadGear_Base
 {
 }

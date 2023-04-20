@@ -1,4 +1,4 @@
-class NBCPantsBase extends Clothing
+class NBCPantsBase extends Pants_Base
 {
 	override void SetActions()
 	{

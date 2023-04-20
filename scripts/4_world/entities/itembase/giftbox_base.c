@@ -1,23 +1,24 @@
 class GiftBox_Base extends Container_Base
 {
 	protected vector m_HalfExtents; // The Y value contains a heightoffset and not the halfextent !!!
+	protected ref OpenableBehaviour m_Openable;
 	
 	void GiftBox_Base()
 	{
-		m_HalfExtents = vector.Zero;
-		m_Openable = new OpenableBehaviour(false);
+		m_HalfExtents 	= vector.Zero;
+		m_Openable 		= new OpenableBehaviour(false);
+
 		RegisterNetSyncVariableBool("m_Openable.m_IsOpened");
 	}
 	
-	protected ref OpenableBehaviour m_Openable;
-	
-	override bool CanReceiveItemIntoCargo( EntityAI item )
+	override bool CanReceiveItemIntoCargo(EntityAI item)
 	{
-		if( !super.CanReceiveItemIntoCargo(item) ) {return false;}
+		if (!super.CanReceiveItemIntoCargo(item))
+			return false;
 		
-		if (GameInventory.GetInventoryCheckContext() == InventoryCheckContext.DEFAULT )
+		if (GameInventory.GetInventoryCheckContext() == InventoryCheckContext.DEFAULT)
 		{
-			if(!GetGame().IsDedicatedServer())
+			if (!GetGame().IsDedicatedServer())
 				return IsOpen();
 		}
 		
@@ -45,26 +46,25 @@ class GiftBox_Base extends Container_Base
 	override void SetActions()
 	{
 		super.SetActions();
+
 		AddAction(ActionUnpackGift);
 	}
 	
 	override void OnDebugSpawn()
 	{
 		EntityAI entity;
-		if ( Class.CastTo(entity, this) )
+		if (Class.CastTo(entity, this))
 		{
-			entity.GetInventory().CreateInInventory( "Chemlight_Green" );	
+			entity.GetInventory().CreateInInventory("Chemlight_Green");
 		}
 	}
-	
-	
+
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
 		super.EEHealthLevelChanged(oldLevel,newLevel,zone);
 		
-		if ( newLevel == GameConstants.STATE_RUINED && GetGame().IsServer() )
+		if (newLevel == GameConstants.STATE_RUINED && GetGame().IsServer())
 		{
-			//MiscGameplayFunctions.ThrowAllItemsInInventory(this, 0);
 			MiscGameplayFunctions.DropAllItemsInInventoryInBounds(this, m_HalfExtents);
 			DeleteSafe();
 		}

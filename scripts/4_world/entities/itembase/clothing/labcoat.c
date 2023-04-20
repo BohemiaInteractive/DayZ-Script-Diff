@@ -1,4 +1,4 @@
-class LabCoat extends Clothing
+class LabCoat extends Top_Base
 {
 	override void SetActions()
 	{

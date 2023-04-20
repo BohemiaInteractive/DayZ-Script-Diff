@@ -16,7 +16,7 @@ enum eDisplayElements
 	DELM_BADGE_BLEEDING,
 	DELM_BADGE_PILLS,
 	DELM_BADGE_HEARTBEAT,
-	//------------------
+	DELM_BADGE_LEGS,
 	DELM_TDCY_HEALTH,
 	DELM_TDCY_BLOOD,
 	DELM_TDCY_TEMPERATURE,
@@ -30,22 +30,23 @@ enum eDisplayElements
 
 //constants related to ui
 //key constants
-const int	NTFKEY_THIRSTY	= 1;
-const int	NTFKEY_HUNGRY	= 2;
-const int	NTFKEY_WARMTH	= 3;
-const int	NTFKEY_WETNESS	= 4;
-const int	NTFKEY_FRACTURE	= 5;
-const int	NTFKEY_HEALTHY	= 6;
-const int	NTFKEY_FEVERISH	= 7;
-const int	NTFKEY_SICK		= 8;
-const int	NTFKEY_STUFFED	= 9;
-const int	NTFKEY_BLEEDISH	= 10;
-const int	NTFKEY_BLOOD	= 11;
-const int	NTFKEY_LIVES	= 12;
-const int	NTFKEY_BACTERIA	= 13;
-const int	NTFKEY_POISONED	= 14;
-const int	NTFKEY_PILLS	= 15;
-const int	NTFKEY_HEARTBEAT = 16;
+const int	NTFKEY_THIRSTY		= 1;
+const int	NTFKEY_HUNGRY		= 2;
+const int	NTFKEY_WARMTH		= 3;
+const int	NTFKEY_WETNESS		= 4;
+const int	NTFKEY_FRACTURE		= 5;
+const int	NTFKEY_HEALTHY		= 6;
+const int	NTFKEY_FEVERISH		= 7;
+const int	NTFKEY_SICK			= 8;
+const int	NTFKEY_STUFFED		= 9;
+const int	NTFKEY_BLEEDISH		= 10;
+const int	NTFKEY_BLOOD		= 11;
+const int	NTFKEY_LIVES		= 12;
+const int	NTFKEY_BACTERIA		= 13;
+const int	NTFKEY_POISONED		= 14;
+const int	NTFKEY_PILLS		= 15;
+const int	NTFKEY_HEARTBEAT 	= 16;
+const int	NTFKEY_LEGS 		= 17;
 
 //tendency 
 const int	TENDENCY_STABLE 	= 0;

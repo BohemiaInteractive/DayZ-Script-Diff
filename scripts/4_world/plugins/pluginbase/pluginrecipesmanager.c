@@ -111,7 +111,7 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 		//and does not clear up with each query, so the number of recipes returned is critical to make sure we don't accidentally
 		//mix in some other indexes from previous queries(and obviously loop only as far as we have to)
 		//this also saves the ingredients in the correct assignment as ingredient 1/2 into m_ingredient1/m_ingredient2 arrays, these 3 arrays
-		//therefore provide you with information per each index with: recipeid,ingredience1,ingredience2
+		//therefore provide you with information per each index with: recipeid,ingredient1,ingredient2
 		if ( numOfRecipes == 0 ) return 0;
 		int found = 0;
 		RecipeBase p_recipe = NULL;
@@ -600,4 +600,29 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 	{
 		RegisterRecipies();
 	}
+	
+	
+	string GetSoundCategory(int recipeID, ItemBase item1, ItemBase item2)
+	{
+		ItemBase unsorted[2];
+		ItemBase sorted[2];
+		
+		unsorted[0] = item1;
+		unsorted[1] = item2;
+		
+		SortIngredientsInRecipe(recipeID, 2,unsorted, sorted);
+
+		RecipeBase recipe = m_RecipeList[recipeID];
+		string soundCat = recipe.GetSoundCategory(0,sorted[0]);
+		
+		if (!soundCat)
+		{
+			soundCat = recipe.GetSoundCategory(1,sorted[1]);
+		}
+		
+		return soundCat;
+	}
+	
+	
+	
 }

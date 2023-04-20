@@ -1,1 +1,1 @@
-class ChestHolster extends Clothing {};
+class ChestHolster extends Vest_Base {};

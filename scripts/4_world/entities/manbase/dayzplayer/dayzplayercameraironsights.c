@@ -86,16 +86,23 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 	//
 	override void OnActivate (DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
 	{
-		super.OnActivate(pPrevCamera,pPrevCameraResult);
-		vector 	f = pPrevCamera.GetBaseAngles();
-		m_fUpDownAngle		= f[0]; 
-		m_fLeftRightAngle	= f[1]; 
-		m_fUpDownAngleAdd	= f[2];
+		super.OnActivate(pPrevCamera, pPrevCameraResult);
+
+		if (pPrevCamera)
+		{
+			vector baseAngles		= pPrevCamera.GetBaseAngles();
+			m_fUpDownAngle			= baseAngles[0]; 
+			m_fLeftRightAngle		= baseAngles[1]; 
+
+			vector addAngles		= pPrevCamera.GetAdditiveAngles();
+			m_fUpDownAngleAdd		= addAngles[0];
+			m_fLeftRightAngleAdd	= addAngles[1];
+		}
 	}
 
 	EntityAI GetCurrentSightEntity ()
 	{
-		if( m_opticsHasWeaponOverride )
+		if (m_opticsHasWeaponOverride)
 			return m_opticsUsed;
 		
 		return m_weaponUsed;
@@ -104,16 +111,23 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 	bool GetCurrentSightInfo (out vector camPos, out vector camDir)
 	{
 		EntityAI e = GetCurrentSightEntity();
-		if( e == m_weaponUsed )
+		if (e)
 		{
-			m_weaponUsed.GetCameraPoint(m_weaponUsed.GetCurrentMuzzle(), camPos, camDir);
-			return true;
+			if (e == m_weaponUsed)
+			{
+				m_weaponUsed.GetCameraPoint(m_weaponUsed.GetCurrentMuzzle(), camPos, camDir);
+				return true;
+			}
+			else if (e == m_opticsUsed)
+			{
+				m_opticsUsed.UseWeaponIronsightsOverride(m_opticsHasWeaponOverride);
+				m_opticsUsed.GetCameraPoint(camPos, camDir);
+				return true;
+			}
 		}
-		else if( e == m_opticsUsed )
+		else
 		{
-			m_opticsUsed.UseWeaponIronsightsOverride(m_opticsHasWeaponOverride);
-			m_opticsUsed.GetCameraPoint(camPos, camDir);
-			return true;
+			ErrorEx("No sight entity found in " + this,ErrorExSeverity.INFO);
 		}
 		return false;
 	}
@@ -128,10 +142,9 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 			min = CONST_UD_MIN_BACK;
 		else
 			min = CONST_UD_MIN;
-		
-		float 	udAngle 	= UpdateUDAngle(m_fUpDownAngle, m_fUpDownAngleAdd, min, CONST_UD_MAX, pDt);
-		m_CurrentCameraPitch = udAngle;
-		m_fLeftRightAngle	= UpdateLRAngle(m_fLeftRightAngle, CONST_LR_MIN, CONST_LR_MAX, pDt);
+
+		m_CurrentCameraYaw		= UpdateLRAngleUnlocked(m_fLeftRightAngle, m_fLeftRightAngleAdd, CONST_LR_MIN, CONST_LR_MAX, pDt);
+		m_CurrentCameraPitch	= UpdateUDAngleUnlocked(m_fUpDownAngle, m_fUpDownAngleAdd, min, CONST_UD_MAX, pDt);
 
 		// get model space transform matrix of the gun's eye vector 
 		vector matTM[4];
@@ -141,11 +154,11 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 		
 		// aim change based on character movement
 		vector aimChangeYPR;
-		float aimChangeX = m_pInput.GetAimChange()[0] * Math.RAD2DEG;
-		float aimChangeY = m_pInput.GetAimChange()[1] * Math.RAD2DEG;
+		float aimChangeX = m_pInput.GetAimDelta(pDt)[0] * Math.RAD2DEG;
+		float aimChangeY = m_pInput.GetAimDelta(pDt)[1] * Math.RAD2DEG;
 
 		HumanCommandMove hcm = m_pPlayer.GetCommand_Move();
-		if( hcm )
+		if (hcm)
 		{
 			float speed = hcm.GetCurrentMovementSpeed();
 			
@@ -173,10 +186,11 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 		// final offset matrix
 		Math3D.MatrixMultiply4(dynamics, aimingMatTM, dynamics);
 		Math3D.MatrixMultiply4(dynamics, matTM, pOutResult.m_CameraTM);
+			
 		AdjustCameraParameters(pDt, pOutResult);
 		UpdateBatteryOptics(GetCurrentSightEntity());
 		UpdateCameraNV(PlayerBase.Cast(m_pPlayer));
-		
+
 		if(m_CameraShake)
 		{
 			float x,y;
@@ -185,13 +199,21 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 		}
 	}
 
-	//
 	override vector GetBaseAngles()
 	{
 		vector a;
 		a[0] = m_fUpDownAngle;
 		a[1] = m_fLeftRightAngle;
-		a[2] = m_fUpDownAngleAdd;
+		a[2] = 0;
+		return a;
+	}
+
+	override vector GetAdditiveAngles()
+	{
+		vector a;
+		a[0] = m_fUpDownAngleAdd;
+		a[1] = m_fLeftRightAngleAdd;
+		a[2] = 0;
 		return a;
 	}
 	
@@ -327,9 +349,11 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 	protected	int 	m_iBoneIndex;				//!< right hand dummy bone index
 	protected	vector	m_OpticsCamPos;
 	protected	vector	m_OpticsCamDir;
+
 	protected 	float 	m_fUpDownAngle;				//!< up down angle in rad
 	protected 	float 	m_fUpDownAngleAdd;			//!< up down angle in rad
 	protected 	float 	m_fLeftRightAngle;			//!< left right angle in rad (in freelook only)
+	protected 	float 	m_fLeftRightAngleAdd;		//!< left right angle in rad (in freelook only)
 
 }
 
@@ -378,7 +402,7 @@ class DayZPlayerCameraOptics : DayZPlayerCameraIronsights
 		super.OnActivate(pPrevCamera,pPrevCameraResult);
 		
 		PlayerBase player = PlayerBase.Cast(m_pPlayer);
-		if (player)
+		if (player && m_opticsUsed)
 		{
 			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(player.HideClothing,m_CameraPPDelay*1000,false,m_opticsUsed,true);
 		}
@@ -397,8 +421,10 @@ class DayZPlayerCameraOptics : DayZPlayerCameraIronsights
 		pOutResult.m_fInsideCamera 			= 1.0;
 		pOutResult.m_fShootFromCamera		= m_fShootFromCamera;
 		
-		//pOutResult.m_fNearPlane = CONST_NEARPLANE_OPTICS; //0.07 global default
-		pOutResult.m_fNearPlane = Math.Clamp(m_opticsUsed.GetNearPlaneValue() - m_RecoilOffsetZ, CONST_NEARPLANE_OPTICS, 10.0); //some sufficiently nonsensical max
+		if (!m_opticsUsed)
+			pOutResult.m_fNearPlane = Math.Clamp(CONST_NEARPLANE_OPTICS - m_RecoilOffsetZ, CONST_NEARPLANE_OPTICS, 10.0);
+		else
+			pOutResult.m_fNearPlane = Math.Clamp(m_opticsUsed.GetNearPlaneValue() - m_RecoilOffsetZ, CONST_NEARPLANE_OPTICS, 10.0); //some sufficiently nonsensical max
 	}
 	
 	override float HoldBreathFOVEffect(float pDt)

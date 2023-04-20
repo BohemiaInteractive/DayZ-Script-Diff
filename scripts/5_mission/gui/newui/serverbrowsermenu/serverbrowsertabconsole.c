@@ -121,22 +121,22 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 	
 	void LoadEntries( int cur_page_index , GetServersResultRowArray page )
 	{
-		if( !m_Menu || m_Menu.GetServersLoadingTab() != m_TabType )
+		if ( !m_Menu || m_Menu.GetServersLoadingTab() != m_TabType )
 		{
 			return;
 		}
 		
 		int index = cur_page_index * SERVER_BROWSER_PAGE_SIZE;
-		ref GetServersResultRowArray page_entries = page;
-		if( page_entries )
+		GetServersResultRowArray page_entries = page;
+		if ( page_entries )
 		{
-			foreach( GetServersResultRow result : page_entries )
+			foreach ( GetServersResultRow result : page_entries )
 			{
 				m_TotalLoadedServers++;
 				
-				if( PassFilter( result ) )
+				if ( PassFilter( result ) )
 				{
-					ref ServerBrowserEntry entry = new ServerBrowserEntry( m_ServerList, index, this );
+					ServerBrowserEntry entry = new ServerBrowserEntry( m_ServerList, index, this );
 					string ipPort = result.GetIpPort();
 					entry.FillInfo( result );
 					entry.SetFavorite( m_Menu.IsFavorited(ipPort));
@@ -152,7 +152,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 					}
 				}
 				
-				if( !m_Menu || m_Menu.GetServersLoadingTab() != m_TabType )
+				if ( !m_Menu || m_Menu.GetServersLoadingTab() != m_TabType )
 					return;
 			}
 			
@@ -170,7 +170,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		}
 		*/
 		
-		if( m_EntriesSorted[m_SortType].Count() > 0 )
+		if ( m_EntriesSorted[m_SortType].Count() > 0 )
 		{
 			/*
 			
@@ -185,7 +185,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		if ( !m_Menu )
 			return;
 		
-		if( m_LastLoadedPage == m_TotalPages )
+		if ( m_LastLoadedPage == m_TotalPages )
 		{
 			//m_LoadingText.SetText( "#server_browser_tab_loaded" + " " + m_EntryWidgets.Count() + "/" + m_EntryWidgets.Count() + " " + "#server_browser_servers_desc" );
 			m_Menu.SetServersLoadingTab( TabType.NONE );
@@ -261,11 +261,11 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		}
 		*/
 
-		switch( m_SelectedPanel )
+		switch ( m_SelectedPanel )
 		{
 			case SelectedPanel.BROWSER:
 			{
-				if( m_SelectedServer )
+				if ( m_SelectedServer )
 				{
 					m_Menu.ServerListFocus( true, m_SelectedServer.ToggleFavorite() );
 				}
@@ -273,7 +273,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 			}
 			case SelectedPanel.FILTERS:
 			{
-				if( m_Filters )
+				if ( m_Filters )
 					m_Filters.ResetFilters();
 				break;
 			}
@@ -319,7 +319,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 	
 	override void Focus()
 	{
-		if( m_EntryWidgets.Contains( m_CurrentSelectedServer ) )
+		if ( m_EntryWidgets.Contains( m_CurrentSelectedServer ) )
 		{
 			m_EntryWidgets.Get( m_CurrentSelectedServer ).Focus();
 			ScrollToEntry( m_EntryWidgets.Get( m_CurrentSelectedServer ) );
@@ -336,7 +336,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		m_WidgetNavServers.Show( true );
 		
 		array<ref GetServersResultRow> entries = m_EntriesSorted[m_SortType];
-		if( entries.Count() > 0 )
+		if ( entries.Count() > 0 )
 		{
 			m_EntryWidgets.Get(entries.Get(0).GetIpPort()).Focus();
 			m_IsFilterFocused = false;
@@ -386,7 +386,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 			return;
 		}
 		
-		if( w.IsInherited( ButtonWidget ) )
+		if ( w.IsInherited( ButtonWidget ) )
 		{
 			ButtonWidget button = ButtonWidget.Cast( w );
 			button.SetTextColor( ARGB( 255, 255, 255, 255 ) );
@@ -399,23 +399,23 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		
 		Widget option	= Widget.Cast( w.FindAnyWidget( w.GetName() + "_option_wrapper" ) );
 		
-		if( text1 )
+		if ( text1 )
 		{
 			text1.SetColor( ARGB( 255, 255, 255, 255 ) );
 		}
 		
-		if( text2 )
+		if ( text2 )
 		{
 			text2.SetColor( ARGB( 255, 255, 255, 255 ) );
 		}
 		
-		if( text3 )
+		if ( text3 )
 		{
 			text3.SetColor( ARGB( 255, 255, 255, 255 ) );
 			w.SetAlpha(0);
 		}
 		
-		if( image )
+		if ( image )
 		{
 			image.SetColor( ARGB( 255, 255, 255, 255 ) );
 		}
@@ -433,7 +433,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		#endif
 		
 		ButtonWidget button = ButtonWidget.Cast( w );
-		if( button )
+		if ( button )
 		{
 			button.SetTextColor( ColorManager.COLOR_DISABLED_TEXT );
 		}

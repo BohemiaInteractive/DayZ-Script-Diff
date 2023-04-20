@@ -19,6 +19,11 @@
 #define BULDOZER
 
 /*!
+	\brief Enabled when script is compiled for Workbench
+*/
+#define WORKBENCH
+
+/*!
 	\note Present for server builds
 */
 #define NO_GUI

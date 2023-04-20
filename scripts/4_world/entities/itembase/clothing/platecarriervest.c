@@ -1,4 +1,4 @@
-class PlateCarrierVest: Clothing
+class PlateCarrierVest: Vest_Base
 {
 	override void OnWasAttached( EntityAI parent, int slot_id )
 	{

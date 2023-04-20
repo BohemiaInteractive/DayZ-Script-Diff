@@ -29,7 +29,6 @@ class ClaymoreMine : ExplosivesBase
 	override void EEKilled(Object killer)
 	{
 		super.EEKilled(killer);
-
 #ifdef DIAG_DEVELOPER
 #ifndef SERVER
 		RemoveDebugVisuals();
@@ -126,16 +125,6 @@ class ClaymoreMine : ExplosivesBase
 		m_RAIB.Pair(trigger);
 	}
 	
-	override void UnpairRemote()
-	{
-		if (GetPairDevice())
-		{
-			GetPairDevice().UnpairRemote();
-		}
-
-		m_RAIB.Unpair();
-	}
-	
 	override EntityAI GetPairDevice()
 	{
 		return m_RAIB.GetPairDevice();
@@ -204,8 +193,7 @@ class ClaymoreMine : ExplosivesBase
 			RemoteDetonatorTrigger rdt = RemoteDetonatorTrigger.SpawnInPlayerHands(player);
 			if (rdt)
 			{
-				rdt.SetControlledDevice(this);
-				PairRemote(rdt);
+				PairWithDevice(rdt);
 				Arm();
 			}
 		}
@@ -288,8 +276,7 @@ class ClaymoreMine : ExplosivesBase
 	override void OnDebugSpawn()
 	{
 		RemoteDetonatorTrigger rdt = RemoteDetonatorTrigger.Cast(SpawnEntityOnGroundPos("RemoteDetonatorTrigger", GetPosition() + GetDirection() * 0.5));
-		rdt.SetControlledDevice(this);
-		PairRemote(rdt);
+		PairWithDevice(rdt);
 		Arm();
 	}
 	

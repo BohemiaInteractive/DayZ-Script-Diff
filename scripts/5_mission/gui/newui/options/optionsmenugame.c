@@ -1,5 +1,8 @@
 class OptionsMenuGame extends ScriptedWidgetEventHandler
 {
+	private const float HUD_BRIGHTNESS_MIN = -1.0;
+	private const float HUD_BRIGHTNESS_MAX = 0.0;
+
 	protected Widget						m_Root;
 	
 	protected Widget						m_SettingsRoot;
@@ -29,6 +32,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	protected ref OptionSelectorMultistate 	m_ShowServerInfoSelector;
 	protected ref OptionSelectorMultistate 	m_BleedingIndication;
 	protected ref OptionSelectorMultistate 	m_ConnectivityInfo;
+	protected ref OptionSelectorSlider		m_HUDBrightnessSelector;
 	protected ref OptionSelectorMultistate	m_PauseSelector;
 	
 	protected GameOptions					m_Options;
@@ -55,6 +59,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		
 		m_Root.FindAnyWidget("fov_setting_option").SetUserID(OptionAccessType.AT_OPTIONS_FIELD_OF_VIEW);
 		m_Root.FindAnyWidget("hud_setting_option").SetUserID(OptionIDsScript.OPTION_HUD);
+		m_Root.FindAnyWidget("hud_brightness_setting_option").SetUserID(OptionIDsScript.OPTION_HUD_BRIGHTNESS);
 		m_Root.FindAnyWidget("crosshair_setting_option").SetUserID(OptionIDsScript.OPTION_CROSSHAIR);
 		m_Root.FindAnyWidget("game_setting_option").SetUserID(OptionIDsScript.OPTION_GAME_MESSAGES);
 		m_Root.FindAnyWidget("admin_setting_option").SetUserID(OptionIDsScript.OPTION_ADMIN_MESSAGES);
@@ -88,18 +93,20 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		
 		m_LanguageSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("language_setting_option"), m_LanguageOption.GetIndex(), this, false, opt3);
 		m_FOVSelector				= new OptionSelectorSlider(m_Root.FindAnyWidget("fov_setting_option"), m_FOVOption.ReadValue(), this, false, m_FOVOption.GetMin(), m_FOVOption.GetMax());
-		m_ShowHUDSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("hud_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.HUD), this, false, opt);
-		m_ShowCrosshairSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("crosshair_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.CROSSHAIR), this, false, opt);
-		m_ShowGameSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("game_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.GAME_MESSAGES), this, false, opt2);
-		m_ShowAdminSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("admin_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.ADMIN_MESSAGES), this, false, opt2);
-		m_ShowPlayerSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("player_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.PLAYER_MESSAGES), this, false, opt2);
-		m_BleedingIndication		= new OptionSelectorMultistate(m_Root.FindAnyWidget("bleeding_indication_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.BLEEDINGINDICATION), this, false, opt);
-		m_ConnectivityInfo			= new OptionSelectorMultistate(m_Root.FindAnyWidget("connectivity_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO), this, false, opt);
-		m_ShowQuickbarSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("quickbar_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR), this, false, opt);
+		m_ShowHUDSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("hud_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.HUD), this, false, opt);
+		m_HUDBrightnessSelector		= new OptionSelectorSlider(m_Root.FindAnyWidget("hud_brightness_setting_option"), g_Game.GetProfileOptionFloat(EDayZProfilesOptions.HUD_BRIGHTNESS), this, false, HUD_BRIGHTNESS_MIN, HUD_BRIGHTNESS_MAX);
+		m_ShowCrosshairSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("crosshair_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.CROSSHAIR), this, false, opt);
+		m_ShowGameSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("game_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.GAME_MESSAGES), this, false, opt2);
+		m_ShowAdminSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("admin_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.ADMIN_MESSAGES), this, false, opt2);
+		m_ShowPlayerSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("player_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.PLAYER_MESSAGES), this, false, opt2);
+		m_BleedingIndication		= new OptionSelectorMultistate(m_Root.FindAnyWidget("bleeding_indication_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION), this, false, opt);
+		m_ConnectivityInfo			= new OptionSelectorMultistate(m_Root.FindAnyWidget("connectivity_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.CONNECTIVITY_INFO), this, false, opt);
+		m_ShowQuickbarSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("quickbar_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.QUICKBAR), this, false, opt);
 		
 		m_LanguageSelector.m_OptionChanged.Insert(UpdateLanguageOption);
 		m_FOVSelector.m_OptionChanged.Insert(UpdateFOVOption);
 		m_ShowHUDSelector.m_OptionChanged.Insert(UpdateHUDOption);
+		m_HUDBrightnessSelector.m_OptionChanged.Insert(UpdateHUDBrightnessOption);
 		m_ShowCrosshairSelector.m_OptionChanged.Insert(UpdateCrosshairOption);
 		m_ShowGameSelector.m_OptionChanged.Insert(UpdateGameOption);
 		m_ShowAdminSelector.m_OptionChanged.Insert(UpdateAdminOption);
@@ -109,15 +116,15 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		m_ShowQuickbarSelector.m_OptionChanged.Insert(UpdateQuickbarOption);
 		
 		#ifdef PLATFORM_CONSOLE
-			m_BrightnessOption		= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_BRIGHT_SLIDER));
-			m_BrightnessSelector	= new OptionSelectorSlider(m_Root.FindAnyWidget("brightness_setting_option"), m_BrightnessOption.ReadValue(), this, false, m_BrightnessOption.GetMin(), m_BrightnessOption.GetMax());
-			m_BrightnessSelector.m_OptionChanged.Insert(UpdateBrightnessOption);
+		m_BrightnessOption		= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_BRIGHT_SLIDER));
+		m_BrightnessSelector	= new OptionSelectorSlider(m_Root.FindAnyWidget("brightness_setting_option"), m_BrightnessOption.ReadValue(), this, false, m_BrightnessOption.GetMin(), m_BrightnessOption.GetMax());
+		m_BrightnessSelector.m_OptionChanged.Insert(UpdateBrightnessOption);
 		#else
-			m_ShowServerInfoSelector	= new OptionSelectorMultistate(m_Root.FindAnyWidget("serverinfo_setting_option"), g_Game.GetProfileOption(EDayZProfilesOptions.SERVERINFO_DISPLAY), this, false, opt);
-			m_PauseSelector				= new OptionSelectorMultistate(m_Root.FindAnyWidget("pause_setting_option"), m_PauseOption.GetIndex(), this, false, opt4);
+		m_ShowServerInfoSelector	= new OptionSelectorMultistate(m_Root.FindAnyWidget("serverinfo_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.SERVERINFO_DISPLAY), this, false, opt);
+		m_PauseSelector				= new OptionSelectorMultistate(m_Root.FindAnyWidget("pause_setting_option"), m_PauseOption.GetIndex(), this, false, opt4);
 			
-			m_ShowServerInfoSelector.m_OptionChanged.Insert(UpdateServerInfoOption);
-			m_PauseSelector.m_OptionChanged.Insert(UpdatePauseOption);
+		m_ShowServerInfoSelector.m_OptionChanged.Insert(UpdateServerInfoOption);
+		m_PauseSelector.m_OptionChanged.Insert(UpdatePauseOption);
 		#endif
 		
 		float x, y, y2;
@@ -139,37 +146,40 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			m_FOVOption.Revert();
 			g_Game.SetUserFOV(m_FOVOption.ReadValue());
 		}
+		
+		RevertHUDBrightness();
 	}
 	
 	string GetLayoutName()
 	{
 		#ifdef PLATFORM_CONSOLE
-			return "gui/layouts/new_ui/options/xbox/game_tab.layout";
+		return "gui/layouts/new_ui/options/xbox/game_tab.layout";
 		#else
-			return "gui/layouts/new_ui/options/pc/game_tab.layout";
+		return "gui/layouts/new_ui/options/pc/game_tab.layout";
 		#endif
 	}
 	
 	void Focus()
 	{
 		#ifdef PLATFORM_CONSOLE
-			SetFocus(m_LanguageSelector.GetParent());
+		SetFocus(m_LanguageSelector.GetParent());
 		#endif
 	}
 	
 	bool IsChanged()
 	{
-		bool universal = (m_ShowHUDSelector.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.HUD) || m_ShowCrosshairSelector.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.CROSSHAIR));
-		universal = universal || (m_ShowGameSelector.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.GAME_MESSAGES) || m_ShowAdminSelector.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.ADMIN_MESSAGES));
-		universal = universal || m_ShowPlayerSelector.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.PLAYER_MESSAGES);
-		universal = universal || m_BleedingIndication.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.BLEEDINGINDICATION);
-		universal = universal || m_ConnectivityInfo.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO);
+		bool universal = (m_ShowHUDSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.HUD) || m_ShowCrosshairSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.CROSSHAIR));
+		universal = universal || m_HUDBrightnessSelector.GetValue() != g_Game.GetProfileOptionFloat(EDayZProfilesOptions.HUD_BRIGHTNESS);
+		universal = universal || (m_ShowGameSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.GAME_MESSAGES) || m_ShowAdminSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.ADMIN_MESSAGES));
+		universal = universal || m_ShowPlayerSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.PLAYER_MESSAGES);
+		universal = universal || m_BleedingIndication.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION);
+		universal = universal || m_ConnectivityInfo.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.CONNECTIVITY_INFO);
 		universal = universal || m_LanguageOption.IsChanged();
 		
 		#ifdef PLATFORM_CONSOLE
 		return universal;
 		#else
-		return (universal || m_ShowQuickbarSelector.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR) || m_ShowServerInfoSelector.GetValue() != g_Game.GetProfileOption(EDayZProfilesOptions.SERVERINFO_DISPLAY));
+		return (universal || m_ShowQuickbarSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.QUICKBAR) || m_ShowServerInfoSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.SERVERINFO_DISPLAY));
 		#endif
 	}
 	
@@ -179,34 +189,35 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		InGameMenu menu = InGameMenu.Cast(GetGame().GetUIManager().FindMenu(MENU_INGAME));
 		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
 		
-		g_Game.SetProfileOption(EDayZProfilesOptions.HUD, m_ShowHUDSelector.GetValue());
-		g_Game.SetProfileOption(EDayZProfilesOptions.CROSSHAIR, m_ShowCrosshairSelector.GetValue());
-		g_Game.SetProfileOption(EDayZProfilesOptions.GAME_MESSAGES, m_ShowGameSelector.GetValue());
-		g_Game.SetProfileOption(EDayZProfilesOptions.ADMIN_MESSAGES, m_ShowAdminSelector.GetValue());
-		g_Game.SetProfileOption(EDayZProfilesOptions.PLAYER_MESSAGES, m_ShowPlayerSelector.GetValue());
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.HUD, m_ShowHUDSelector.GetValue());
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.CROSSHAIR, m_ShowCrosshairSelector.GetValue());
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.GAME_MESSAGES, m_ShowGameSelector.GetValue());
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.ADMIN_MESSAGES, m_ShowAdminSelector.GetValue());
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.PLAYER_MESSAGES, m_ShowPlayerSelector.GetValue());
+		g_Game.SetProfileOptionFloat(EDayZProfilesOptions.HUD_BRIGHTNESS, m_HUDBrightnessSelector.GetValue());
 		
 		#ifndef PLATFORM_CONSOLE
-			g_Game.SetProfileOption(EDayZProfilesOptions.QUICKBAR, m_ShowQuickbarSelector.GetValue());
-			g_Game.SetProfileOption(EDayZProfilesOptions.SERVERINFO_DISPLAY, m_ShowServerInfoSelector.GetValue());
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.QUICKBAR, m_ShowQuickbarSelector.GetValue());
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.SERVERINFO_DISPLAY, m_ShowServerInfoSelector.GetValue());
 		#endif
 		
 		if (hud)
 		{
 			#ifndef PLATFORM_CONSOLE
-				hud.ShowQuickBar(m_ShowQuickbarSelector.GetValue());
+			hud.ShowQuickBar(m_ShowQuickbarSelector.GetValue());
 			#else
-				hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+			hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 			#endif
 			hud.ShowHud(m_ShowHUDSelector.GetValue());
 		}
 		
-		bool bleedingIndicationOld = g_Game.GetProfileOption(EDayZProfilesOptions.BLEEDINGINDICATION);
+		bool bleedingIndicationOld = g_Game.GetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION);
 		bool bleedingIndicationNew = m_BleedingIndication.GetValue();
-		bool connectivityOld = g_Game.GetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO);
+		bool connectivityOld = g_Game.GetProfileOptionBool(EDayZProfilesOptions.CONNECTIVITY_INFO);
 		bool connectivityNew = m_ConnectivityInfo.GetValue();
 		
-		g_Game.SetProfileOption(EDayZProfilesOptions.BLEEDINGINDICATION, bleedingIndicationNew);
-		g_Game.SetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO, connectivityNew);
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION, bleedingIndicationNew);
+		g_Game.SetProfileOptionBool(EDayZProfilesOptions.CONNECTIVITY_INFO, connectivityNew);
 		
 		if (mission)
 		{
@@ -238,7 +249,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			}
 			else
 			{
-				ErrorEx("mission not found!",ErrorExSeverity.INFO);
+				ErrorEx("mission not found!", ErrorExSeverity.INFO);
 			}
 		}
 	}
@@ -246,9 +257,12 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	void Revert()
 	{
 		if (m_ShowHUDSelector)
-			m_ShowHUDSelector.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.HUD), false);
+			m_ShowHUDSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.HUD), false);
+		
+		RevertHUDBrightness();
+
 		if (m_ShowCrosshairSelector)
-			m_ShowCrosshairSelector.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.CROSSHAIR), false);
+			m_ShowCrosshairSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.CROSSHAIR), false);
 		if (m_FOVOption)
 		{
 			m_FOVSelector.SetValue(m_FOVOption.ReadValue(), false);
@@ -257,24 +271,24 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		if (m_LanguageOption)
 			m_LanguageSelector.SetValue(m_LanguageOption.GetIndex(), false);
 		if (m_ShowGameSelector)
-			m_ShowGameSelector.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.GAME_MESSAGES), false);
+			m_ShowGameSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.GAME_MESSAGES), false);
 		if (m_ShowAdminSelector)
-			m_ShowAdminSelector.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.ADMIN_MESSAGES), false);
+			m_ShowAdminSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.ADMIN_MESSAGES), false);
 		if (m_ShowPlayerSelector)
-			m_ShowPlayerSelector.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.PLAYER_MESSAGES), false);
+			m_ShowPlayerSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.PLAYER_MESSAGES), false);
 		if (m_BleedingIndication)
-			m_BleedingIndication.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.BLEEDINGINDICATION), false);
+			m_BleedingIndication.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION), false);
 		if (m_ConnectivityInfo)
-			m_ConnectivityInfo.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO), false);
+			m_ConnectivityInfo.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.CONNECTIVITY_INFO), false);
 		
 		#ifdef PLATFORM_CONSOLE
 			if (m_BrightnessSelector)
 				m_BrightnessSelector.SetValue(m_BrightnessOption.ReadValue(), false);
 		#else
 			if (m_ShowQuickbarSelector)
-				m_ShowQuickbarSelector.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR), false);
+				m_ShowQuickbarSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.QUICKBAR), false);
 			if (m_ShowServerInfoSelector)
-				m_ShowServerInfoSelector.SetValue(g_Game.GetProfileOption(EDayZProfilesOptions.SERVERINFO_DISPLAY), false);
+				m_ShowServerInfoSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.SERVERINFO_DISPLAY), false);
 			if (m_PauseOption)
 			{
 				m_PauseSelector.SetValue(m_PauseOption.GetIndex(), false);
@@ -287,9 +301,17 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		g_Game.ResetProfileOptions();
 		
 		if (m_ShowHUDSelector)
-			m_ShowHUDSelector.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.HUD), false);
+			m_ShowHUDSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.HUD), false);
+
+		if (m_HUDBrightnessSelector)
+		{
+			m_HUDBrightnessSelector.SetValue(g_Game.GetProfileOptionDefaultFloat(EDayZProfilesOptions.HUD_BRIGHTNESS), false);
+			g_Game.SetHudBrightness(m_HUDBrightnessSelector.GetValue());
+		}
+
 		if (m_ShowCrosshairSelector)
-			m_ShowCrosshairSelector.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.CROSSHAIR), false);
+			m_ShowCrosshairSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.CROSSHAIR), false);
+
 		if (m_FOVOption)
 		{
 			m_FOVOption.WriteValue(m_FOVOption.GetDefault());
@@ -297,15 +319,15 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			g_Game.SetUserFOV(m_FOVOption.GetDefault());
 		}
 		if (m_ShowGameSelector)
-			m_ShowGameSelector.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.GAME_MESSAGES), false);
+			m_ShowGameSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.GAME_MESSAGES), false);
 		if (m_ShowAdminSelector)
-			m_ShowAdminSelector.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.ADMIN_MESSAGES), false);
+			m_ShowAdminSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.ADMIN_MESSAGES), false);
 		if (m_ShowPlayerSelector)
-			m_ShowPlayerSelector.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.PLAYER_MESSAGES), false);
+			m_ShowPlayerSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.PLAYER_MESSAGES), false);
 		if (m_BleedingIndication)
-			m_BleedingIndication.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.BLEEDINGINDICATION), false);
+			m_BleedingIndication.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.BLEEDINGINDICATION), false);
 		if (m_ConnectivityInfo)
-			m_ConnectivityInfo.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.CONNECTIVITY_INFO), false);
+			m_ConnectivityInfo.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.CONNECTIVITY_INFO), false);
 		
 		#ifdef PLATFORM_CONSOLE
 			if (m_BrightnessSelector)
@@ -315,9 +337,9 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			}
 		#else
 			if (m_ShowQuickbarSelector)
-				m_ShowQuickbarSelector.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.QUICKBAR), false);
+				m_ShowQuickbarSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.QUICKBAR), false);
 			if (m_ShowServerInfoSelector)
-				m_ShowServerInfoSelector.SetValue(g_Game.GetProfileOptionDefault(EDayZProfilesOptions.SERVERINFO_DISPLAY), false);
+				m_ShowServerInfoSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.SERVERINFO_DISPLAY), false);
 			if (m_PauseOption)
 			{
 				m_PauseOption.SetIndex(m_PauseOption.GetDefaultIndex());
@@ -335,8 +357,8 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	{
 		m_Options = options;
 		
-		m_FOVOption				= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_FIELD_OF_VIEW));
-		m_LanguageOption		= ListOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_LANGUAGE));
+		m_FOVOption			= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_FIELD_OF_VIEW));
+		m_LanguageOption	= ListOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_LANGUAGE));
 		
 		if (m_FOVSelector)
 			m_FOVSelector.SetValue(m_FOVOption.ReadValue(), false);
@@ -345,7 +367,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			m_LanguageSelector.SetValue(m_LanguageOption.GetIndex(), false);
 		
 		#ifdef PLATFORM_CONSOLE
-			m_BrightnessOption		= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_BRIGHT_SLIDER));
+			m_BrightnessOption	= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_BRIGHT_SLIDER));
 			if (m_BrightnessOption)
 				m_BrightnessSelector.SetValue(m_BrightnessOption.ReadValue(), false);
 		#endif
@@ -380,6 +402,12 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	{
 		m_FOVOption.WriteValue(new_value);
 		g_Game.SetUserFOV(new_value);
+		m_Menu.OnChanged();
+	}
+	
+	protected void UpdateHUDBrightnessOption(float newValue)
+	{
+		g_Game.SetHudBrightness(newValue);
 		m_Menu.OnChanged();
 	}
 	
@@ -539,6 +567,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_LANGUAGE, new Param2<string, string>("#options_game_select_language", "#options_game_select_language_desc"));
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_FIELD_OF_VIEW, new Param2<string, string>("#options_game_field_of_view", "#options_game_field_of_view_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_HUD, new Param2<string, string>("#options_game_show_HUD", "#options_game_show_HUD_desc"));
+		m_TextMap.Insert(OptionIDsScript.OPTION_HUD_BRIGHTNESS, new Param2<string, string>("#options_game_hud_brightness", "#options_game_hud_brightness_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_CROSSHAIR, new Param2<string, string>("#options_game_show_crosshair", "#options_game_show_crosshair_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_QUICKBAR, new Param2<string, string>("#options_game_show_quickbar",	"#options_game_show_quickbar_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_SERVER_INFO, new Param2<string, string>("#options_game_show_serverinfo", "#options_game_show_serverinfo_desc"));
@@ -565,5 +594,14 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		#endif
 		#endif
 		#endif
+	}
+	
+	private void RevertHUDBrightness()
+	{
+		if (m_HUDBrightnessSelector)
+		{
+			m_HUDBrightnessSelector.SetValue(g_Game.GetProfileOptionFloat(EDayZProfilesOptions.HUD_BRIGHTNESS), false);
+			g_Game.SetHudBrightness(m_HUDBrightnessSelector.GetValue());
+		}	
 	}
 }

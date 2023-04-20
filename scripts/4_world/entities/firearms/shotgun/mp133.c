@@ -63,10 +63,10 @@ class PumpShotgunJammed extends WeaponStateJammed
  **/
 class Mp133Shotgun_Base : Rifle_Base
 {
-	ref WeaponStateBase E;
-	ref WeaponStateBase F;
-	ref WeaponStateBase L;
-	ref WeaponStateBase J;
+	ref WeaponStableState E;
+	ref WeaponStableState F;
+	ref WeaponStableState L;
+	ref WeaponStableState J;
 	
 	void Mp133Shotgun ()
 	{
@@ -201,7 +201,7 @@ class Mp133Shotgun_Base : Rifle_Base
 		
 //-----------------------------------------	
 		
-		m_fsm.SetInitialState(E);
+		SetInitialState(E);
 
 		SelectionBulletHide();
 		HideMagazine();

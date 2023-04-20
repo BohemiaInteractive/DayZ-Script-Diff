@@ -317,6 +317,30 @@ class ZombieContainer: CollapsibleContainer
 				in.UpdateConsoleToolbar();
 		}
 	}
+	
+	override bool CanOpenCloseContainerEx(EntityAI focusedEntity)
+	{
+		ClosableContainer c;
+		if (focusedEntity)
+		{
+			c = ClosableContainer.Cast( m_ShowedItems.Get( focusedEntity ) );
+		}
+		else
+		{
+			SlotsIcon icon = GetFocusedSlotsIcon();
+			if (icon)
+			{
+				c = ClosableContainer.Cast(icon.GetContainer());
+			}
+		}
+		
+		if (c && c.IsDisplayable())	
+		{	
+			return true;
+		}
+
+		return false;
+	}
 
 	// mouse button UP or call from ExpandCollapseContainer
 	void ToggleContainer( Widget w )

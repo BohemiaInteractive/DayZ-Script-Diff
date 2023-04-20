@@ -15,7 +15,10 @@ class AttachmentsOutOfReach
 			{
 				
 				vector pos_att;
-
+				if ( slot_id != -1 )
+				{
+					att_slot_name = InventorySlots.GetSlotName(slot_id);
+				}
 				if( att_slot_name != "" )
 				{
 					if( e.MemoryPointExists(att_slot_name) )
@@ -29,8 +32,6 @@ class AttachmentsOutOfReach
 					}
 					
 				}
-				else if( slot_id != -1 )
-					pos_att = e.GetPosition() + GetAttachmentPosition(e, slot_id);
 				
 				vector pos_player = player.GetPosition();
 				

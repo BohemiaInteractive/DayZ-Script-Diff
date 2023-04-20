@@ -80,10 +80,10 @@ class RifleSingleShot_Base extends Rifle_Base
 
 		// setup state machine
 		// basic weapon states
-		WeaponStateBase E = new RSSEmpty(this, NULL, RSSAnimState.DEFAULT);
-		WeaponStateBase F = new RSSFireout(this, NULL, RSSAnimState.DEFAULT);
-		WeaponStateBase J = new RSSJammed(this, NULL, RSSAnimState.DEFAULT);
-		WeaponStateBase L = new RSSLoaded(this, NULL, RSSAnimState.DEFAULT);
+		WeaponStableState E = new RSSEmpty(this, NULL, RSSAnimState.DEFAULT);
+		WeaponStableState F = new RSSFireout(this, NULL, RSSAnimState.DEFAULT);
+		WeaponStableState J = new RSSJammed(this, NULL, RSSAnimState.DEFAULT);
+		WeaponStableState L = new RSSLoaded(this, NULL, RSSAnimState.DEFAULT);
 		// unstable (intermediate) states
 		WeaponStateBase Mech_F = new WeaponCharging(this, NULL, WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_CLOSED);
 		WeaponStateBase Mech_L = new WeaponEjectBullet(this, NULL, WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_CLOSED);
@@ -171,7 +171,7 @@ class RifleSingleShot_Base extends Rifle_Base
 		// initial state setup
 		bool empty = true;
 		bool discharged = false; // @TODO:
-		WeaponStateBase init_state = E;
+		WeaponStableState init_state = E;
 		if (empty)
 		{
 			if (!discharged)
@@ -181,7 +181,7 @@ class RifleSingleShot_Base extends Rifle_Base
 		{
 			init_state = L; // can init state == load/jammed?
 		}
-		m_fsm.SetInitialState(init_state);
+		SetInitialState(init_state);
 
 		SelectionBulletHide();
 

@@ -79,6 +79,7 @@ class UATimeSpent
 	const float UNLOCK = 2;
 	const float UNPACK = 2;
 	const float WASH_HANDS = 3;
+	const float WRING = 8;
 	const float DISARM_MINE = 15;
 	const float DISARM_EXPLOSIVE_REMOTE_PAIRED = 6;
 	const float DISARM_EXPLOSIVE_REMOTE_UNPAIRED = 12;

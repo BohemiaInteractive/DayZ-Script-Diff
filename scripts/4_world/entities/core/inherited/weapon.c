@@ -168,6 +168,7 @@ class Weapon extends InventoryItemSuper
 	 * @brief	removes cartridge from chamber
 	 **/
 	proto bool PopCartridgeFromChamber(int muzzleIndex, out float ammoDamage, out string ammoTypeName);
+	
 	/**@fn		PushCartridgeToChamber
 	 * @brief	push cartridge to chamber
 	 **/
@@ -180,11 +181,18 @@ class Weapon extends InventoryItemSuper
 	 * @param[in] ammoTypeName \p	 type name of the ammo
 	 **/
 	proto native void EffectBulletShow(int muzzleIndex, float dmg, string type);
+	
 	/**@fn		EffectBulletHide
 	 * @brief	reset effect cartridge in weapon
 	 * @param[in] muzzleIndex
 	 **/
 	proto native void EffectBulletHide(int muzzleIndex);
+	
+	
+	/**@fn		SetGroundAnimFrameIndex
+	 * @brief	sets animation frame for ground state when animation is specified in config
+	 **/
+	proto native void SetGroundAnimFrameIndex(int groundAnimFrameIndex);
 
 	/**@fn		PopCartridgeFromInternalMagazine
 	 * @brief	removes top-most cartridge from internal magazine

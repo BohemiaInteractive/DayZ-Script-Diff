@@ -4,6 +4,7 @@ class VitaminBottle : Edible_Base
 	override void InitItemVariables()
 	{
 		super.InitItemVariables();
+
 		can_this_be_combined = true;
 	}
 	
@@ -22,6 +23,7 @@ class VitaminBottle : Edible_Base
 		super.SetActions();
 		
 		AddAction(ActionForceConsumeSingle);
-		AddAction(ActionConsumeSingle);
+		AddAction(ActionEatPillFromBottle);
 	}
 }
+

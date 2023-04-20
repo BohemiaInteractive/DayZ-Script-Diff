@@ -1,4 +1,4 @@
-class QuiltedJacket_ColorBase extends Clothing
+class QuiltedJacket_ColorBase extends Top_Base
 {
 	override void SetActions()
 	{

@@ -1,4 +1,4 @@
-class EyeMask_ColorBase : Clothing 
+class EyeMask_ColorBase : Glasses_Base 
 {
 	//================================================================
 	// IGNITION ACTION
@@ -30,20 +30,6 @@ class EyeMask_ColorBase : Clothing
 		return Fireplace.CanIgniteEntityAsFireplace(this);
 	}
 	//================================================================
-	
-	override bool CanPutAsAttachment(EntityAI parent)
-	{
-		if (!super.CanPutAsAttachment(parent))
-			return false;
-		
-		Clothing mask = Clothing.Cast(parent.FindAttachmentBySlotName("Mask"));
-		if (mask && mask.ConfigGetBool("noEyewear"))
-		{
-			return false;
-		}
-		
-		return true;
-	}
 	
 	override void SetActions()
 	{

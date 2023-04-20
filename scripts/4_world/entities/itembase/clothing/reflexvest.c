@@ -1,1 +1,1 @@
-class ReflexVest extends Clothing {};
+class ReflexVest extends Vest_Base {};

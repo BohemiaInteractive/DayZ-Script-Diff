@@ -53,7 +53,8 @@ class RemoteDetonatorTrigger : RemoteDetonator
 	void RemoteDetonatorTrigger()
 	{
 		m_RAIB = new RemotelyActivatedItemBehaviour(this);		
-
+		m_RAIB.SetTrigger();
+		
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdLow");
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdHigh");
 		RegisterNetSyncVariableInt("m_LastLEDState", 0, EnumTools.GetEnumSize(ERemoteDetonatorLEDState));
@@ -158,9 +159,10 @@ class RemoteDetonatorTrigger : RemoteDetonator
 		PlayerBase player = PlayerBase.Cast(pEntity);
 		if (player)
 		{
-			if (player.GetItemInHands())
+			ItemBase inHandsItem = player.GetItemInHands();
+			if (inHandsItem)
 			{
-				ReplaceItemWithNewLambdaBase lambda = new ReplaceItemWithNewLambdaBase(player.GetItemInHands(), type);
+				ReplaceItemWithNewLambdaBase lambda = new ReplaceDetonatorItemLambda(inHandsItem, type);
 				MiscGameplayFunctions.TurnItemIntoItemEx(player, lambda);
 				rdt = RemoteDetonatorTrigger.Cast(player.GetItemInHands());
 			}
@@ -243,5 +245,15 @@ class RemoteDetonatorReceiver : RemoteDetonator
 		
 		RemoveAction(ActionAttachExplosivesTrigger);
 		RemoveAction(ActionDisarmExplosiveWithRemoteDetonatorUnpaired);
+	}
+}
+
+class ReplaceDetonatorItemLambda : ReplaceItemWithNewLambdaBase
+{
+	override void CopyOldPropertiesToNew(notnull EntityAI old_item, EntityAI new_item)
+	{
+		super.CopyOldPropertiesToNew(old_item, new_item);
+
+		MiscGameplayFunctions.TransferItemProperties(old_item, new_item);		
 	}
 }

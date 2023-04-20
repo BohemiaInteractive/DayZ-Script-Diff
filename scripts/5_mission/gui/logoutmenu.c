@@ -7,16 +7,24 @@ class LogoutMenu extends UIScriptedMenu
 	private ButtonWidget m_bCancel;
 	private ButtonWidget m_bCancelConsole;
 	private int m_iTime;
+	
+	private ref FullTimeData m_FullTime;
 
 	void LogoutMenu()
 	{
 		m_iTime = 0;
 		g_Game.SetKeyboardHandle(this);
+		
+		m_FullTime = new FullTimeData();
 	}
 
 	void ~LogoutMenu()
 	{
-		g_Game.SetKeyboardHandle(NULL);
+		g_Game.SetKeyboardHandle(null);
+		if (GetGame().GetMission())
+			Cancel(); //cancels request on irregular close (player death, suicide, some mass-menu closure...)
+
+		m_FullTime = null;
 	}
 	
 	override Widget Init()
@@ -125,7 +133,22 @@ class LogoutMenu extends UIScriptedMenu
 	void SetTime(int time)
 	{
 		m_iTime = time;
-		m_LogoutTimeText.SetText(m_iTime.ToString() + " #layout_logout_dialog_until_logout");
+		string text = "#layout_logout_dialog_until_logout_";
+
+		TimeConversions.ConvertSecondsToFullTime(time, m_FullTime);
+		
+		if (m_FullTime.m_Days > 0)
+			text += "dhms";
+		else if (m_FullTime.m_Hours > 0)
+			text += "hms";
+		else if (m_FullTime.m_Minutes > 0)
+			text += "ms";
+		else
+			text += "s";
+		
+		text = Widget.TranslateString(text);
+		text = string.Format(text, m_FullTime.m_Seconds, m_FullTime.m_Minutes, m_FullTime.m_Hours, m_FullTime.m_Days);
+		m_LogoutTimeText.SetText(text);
 	}
 		
 	void UpdateTime()

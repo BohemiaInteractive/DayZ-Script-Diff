@@ -28,6 +28,7 @@ class ActionTurnOnPowerGenerator: ActionInteractBase
 		{
 			ItemBase target_IB = ItemBase.Cast(targetObject);
 			target_IB.GetCompEM().SwitchOn();
+			target_IB.GetCompEM().InteractBranch(target_IB);
 		}
 	}
 };

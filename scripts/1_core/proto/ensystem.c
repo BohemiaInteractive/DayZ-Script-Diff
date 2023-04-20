@@ -418,7 +418,7 @@ proto FileHandle		OpenFile(string name, FileMode mode);
 
 /**
 Reads raw data from file.
-\param param_array Receiving array for the data
+\param param_array Receiving array for the data. Valid types are int[] or string
 \param length Length of data
 \returns number of read bytes
 */
@@ -530,12 +530,5 @@ proto native bool DeleteFile(string name);
 //! copy file. destName must be "$profile:" or "$saves:" location
 proto native bool CopyFile(string sourceName, string destName);
 /** @}*/
-
-//! returns all addons
-proto int GetAddons(string addonNames[]);
-
-//! returns all plugins (addons and mods)
-proto int GetPlugins(string pluginNames[]);
-
 
  //@}

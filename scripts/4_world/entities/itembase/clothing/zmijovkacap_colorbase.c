@@ -1,4 +1,4 @@
-class ZmijovkaCap_ColorBase extends Clothing
+class ZmijovkaCap_ColorBase extends HeadGear_Base
 {
 	override void SetActions()
 	{

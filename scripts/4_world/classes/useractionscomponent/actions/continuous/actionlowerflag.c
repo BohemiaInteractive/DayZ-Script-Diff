@@ -52,7 +52,7 @@ class ActionLowerFlag: ActionContinuousBase
 		TerritoryFlag totem = TerritoryFlag.Cast( action_data.m_Target.GetObject() );
 		if ( totem )
 		{
-			totem.AnimateFlag(totem.GetAnimationPhase("flag_mast") + UAMisc.FLAG_STEP_INCREMENT);
+			totem.AnimateFlagEx(totem.GetAnimationPhase("flag_mast") + UAMisc.FLAG_STEP_INCREMENT, action_data.m_Player);
 			totem.AddRefresherTime01(-UAMisc.FLAG_STEP_INCREMENT);
 		}
 	}

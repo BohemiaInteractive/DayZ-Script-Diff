@@ -1,4 +1,4 @@
-class CargoPants_ColorBase extends Clothing
+class CargoPants_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{

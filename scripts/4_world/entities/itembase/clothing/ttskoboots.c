@@ -1,1 +1,1 @@
-class TTSKOBoots extends Clothing {};
+class TTSKOBoots extends Shoes_Base {};

@@ -62,9 +62,9 @@ class SingleShotPistol_Base: Weapon_Base
 
 		// setup state machine
 		// basic weapon states
-		WeaponStateBase E = new SSPEmpty(this, NULL, SSPAnimState.UNCOCKED);
-		WeaponStateBase F = new SSPFireout(this, NULL, SSPAnimState.UNCOCKED);
-		WeaponStateBase L = new SSPLoaded(this, NULL, SSPAnimState.COCKED);
+		WeaponStableState E = new SSPEmpty(this, NULL, SSPAnimState.UNCOCKED);
+		WeaponStableState F = new SSPFireout(this, NULL, SSPAnimState.UNCOCKED);
+		WeaponStableState L = new SSPLoaded(this, NULL, SSPAnimState.COCKED);
 		// unstable (intermediate) states
 		WeaponStateBase Mech_F = new WeaponCharging(this, NULL, WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_CLOSED);
 		WeaponStateBase Mech_L = new WeaponEjectBullet(this, NULL, WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_OPENED);
@@ -128,7 +128,7 @@ class SingleShotPistol_Base: Weapon_Base
 		// initial state setup
 		bool empty = true;
 		bool discharged = false; // @TODO:
-		WeaponStateBase init_state = E;
+		WeaponStableState init_state = E;
 		if (empty)
 		{
 			if (!discharged)
@@ -138,7 +138,7 @@ class SingleShotPistol_Base: Weapon_Base
 		{
 			init_state = L; // can init state == load/jammed?
 		}
-		m_fsm.SetInitialState(init_state);
+		SetInitialState(init_state);
 
 		SelectionBulletHide();
 

@@ -1,4 +1,4 @@
-class BalaclavaMask_ColorBase extends Clothing
+class BalaclavaMask_ColorBase extends Mask_Base
 {
 	override void SetActions()
 	{

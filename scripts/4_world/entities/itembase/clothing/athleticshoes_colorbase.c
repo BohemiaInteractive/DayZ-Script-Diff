@@ -1,4 +1,4 @@
-class AthleticShoes_ColorBase extends Clothing {};
+class AthleticShoes_ColorBase extends Shoes_Base {};
 class AthleticShoes_Blue extends AthleticShoes_ColorBase {};
 class AthleticShoes_Black extends AthleticShoes_ColorBase {};
 class AthleticShoes_Brown extends AthleticShoes_ColorBase {};

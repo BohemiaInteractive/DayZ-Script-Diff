@@ -1,1 +1,1 @@
-class FurCourierBag : Clothing {};
+class FurCourierBag : Backpack_Base {};

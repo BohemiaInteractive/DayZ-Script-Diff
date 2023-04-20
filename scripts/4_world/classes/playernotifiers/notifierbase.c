@@ -185,9 +185,9 @@ class NotifierBase
 	protected eBadgeLevel DetermineBadgeLevel(float value, float lvl_1, float lvl_2, float lvl_3)
 	{
 		eBadgeLevel level = eBadgeLevel.NONE;
-		if ( value > lvl_1 ) 	level = eBadgeLevel.FIRST;
-		if ( value > lvl_2 )  	level = eBadgeLevel.SECOND;
-		if ( value > lvl_3 ) 	level = eBadgeLevel.THIRD;
+		if ( value >= lvl_1 ) 	level = eBadgeLevel.FIRST;
+		if ( value >= lvl_2 )  	level = eBadgeLevel.SECOND;
+		if ( value >= lvl_3 ) 	level = eBadgeLevel.THIRD;
 		return 	level;
 	}
 	

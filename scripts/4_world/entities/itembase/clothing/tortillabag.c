@@ -1,1 +1,1 @@
-class TortillaBag : Clothing {};
+class TortillaBag : Backpack_Base {};

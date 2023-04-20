@@ -19,7 +19,7 @@ class Well extends BuildingSuper
 	{
 		super.SetActions();
 		
-		AddAction(ActionWashHandsWellOne);
+		AddAction(ActionWashHandsWell);
 		AddAction(ActionDrinkWellContinuous);
 	}
 }

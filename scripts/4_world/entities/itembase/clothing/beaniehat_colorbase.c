@@ -1,4 +1,4 @@
-class BeanieHat_ColorBase extends Clothing
+class BeanieHat_ColorBase extends HeadGear_Base
 {
 	override void SetActions()
 	{

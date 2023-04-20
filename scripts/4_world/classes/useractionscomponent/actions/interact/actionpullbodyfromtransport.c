@@ -2,14 +2,14 @@ class ActionPullBodyFromTransport: ActionInteractBase
 {
 	void ActionPullBodyFromTransport()
 	{
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_ALL;
-		m_Text = "#pull_out_body";
+		m_StanceMask 	= DayZPlayerConstants.STANCEMASK_ALL;
+		m_Text 			= "#pull_out_body";
 	}
 
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTNone;
+		m_ConditionItem 	= new CCINone();
+		m_ConditionTarget 	= new CCTNone();
 	}
 
 	override typename GetInputType()
@@ -22,7 +22,7 @@ class ActionPullBodyFromTransport: ActionInteractBase
 		return false;
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		PlayerBase targetPlayer = PlayerBase.Cast(target.GetObject());
 		if (!targetPlayer)
@@ -46,24 +46,12 @@ class ActionPullBodyFromTransport: ActionInteractBase
 			}
 		}
 		
-		CarScript car = CarScript.Cast(transportTarget);
 		return found && transportTarget.CrewCanGetThrough(i);
 	}
 	
-	/*
-	bool IsCarDoorClosed(CarScript car, int seatIdx)
+	override void OnStartServer(ActionData action_data)
 	{
-		if (car == null)
-			return false;
-		
-		string doorName = car.GetDoorInvSlotNameFromSeatPos(seatIdx);
-		return car.GetCarDoorsState( doorName ) == CarDoorState.DOORS_CLOSED;
-	}
-	*/
-	
-	override void OnStartServer( ActionData action_data )
-	{
-		super.OnStartServer( action_data );
+		super.OnStartServer(action_data);
 		
 		DayZPlayerImplement player;
 		if (!Class.CastTo(player, action_data.m_Target.GetObject()))
@@ -74,13 +62,8 @@ class ActionPullBodyFromTransport: ActionInteractBase
 		player.TriggerPullPlayerOutOfVehicle();
 	}
 	
-	/*override bool CanBeUsedInVehicle()
-	{
-		return true;
-	}*/
-	
 	override bool IsInstant()
 	{
 		return true;
 	}
-};
+}

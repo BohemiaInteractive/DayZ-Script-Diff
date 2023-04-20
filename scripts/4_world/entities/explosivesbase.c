@@ -78,9 +78,11 @@ class ExplosivesBase : ItemBase
 	override void EEKilled(Object killer)
 	{
 		super.EEKilled(killer);
-
+		
 		//! should be called only here to avoid multiple explosion calculations, call SetHealth("","",0.0) instead
 	 	InitiateExplosion();
+		
+		UnpairRemote();	
 	}
 	
 	override void OnCEUpdate()
@@ -99,6 +101,20 @@ class ExplosivesBase : ItemBase
 		
 		UpdateLED(ERemoteDetonatorLEDState.OFF);
 	}
+	
+	override void UnpairRemote()
+	{
+		if (GetRemotelyActivatedItemBehaviour())
+		{
+			if (GetPairDevice())
+			{
+				GetPairDevice().UnpairRemote();
+			}
+			GetRemotelyActivatedItemBehaviour().Unpair();
+		}
+			
+	}
+	
 	
 	protected void CreateLight()
 	{

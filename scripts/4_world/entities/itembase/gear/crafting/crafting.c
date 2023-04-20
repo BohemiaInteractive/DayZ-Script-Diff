@@ -8,7 +8,15 @@ class BurlapSack: Inventory_Base
 		AddAction(ActionCoverHeadSelf);
 	}
 };
-class GorkaHelmetVisor: Inventory_Base {};
+class GorkaHelmetVisor: Inventory_Base
+{
+	override protected void InitGlobalExclusionValues()
+	{
+		super.InitGlobalExclusionValues();
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_2);
+	}
+};
 class ChickenFeather: Inventory_Base {};
 class LongWoodenStick: Inventory_Base
 {

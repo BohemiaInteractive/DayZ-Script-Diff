@@ -1,4 +1,4 @@
-class HandsCover_Improvised extends Clothing
+class HandsCover_Improvised extends Gloves_Base
 {
 	override void SetActions()
 	{

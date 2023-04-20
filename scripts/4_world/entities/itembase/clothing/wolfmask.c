@@ -1,19 +1,11 @@
 class WolfMask extends ClothingBase
 {
-	override bool CanPutAsAttachment( EntityAI parent )
+	override protected void InitGlobalExclusionValues()
 	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
-		bool headgear_present = false;
+		super.InitGlobalExclusionValues();
 		
-		if ( parent.FindAttachmentBySlotName( "Headgear" ) )
-		{
-			headgear_present = parent.FindAttachmentBySlotName( "Headgear" ).ConfigGetBool( "noMask" );
-		}
-		
-		if ( ( GetNumberOfItems() == 0 || !parent || parent.IsMan() ) && !headgear_present )
-		{
-			return true;
-		}
-		return false;
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_0);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_1);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_2);
 	}
 }

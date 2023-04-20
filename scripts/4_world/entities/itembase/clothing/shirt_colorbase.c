@@ -1,4 +1,4 @@
-class Shirt_ColorBase extends Clothing 
+class Shirt_ColorBase extends Top_Base 
 {
 	override void SetActions()
 	{

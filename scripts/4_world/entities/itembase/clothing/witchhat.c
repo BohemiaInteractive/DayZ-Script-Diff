@@ -1,4 +1,4 @@
-class WitchHat extends Clothing
+class WitchHat extends HeadGear_Base
 {
 	override void SetActions()
 	{

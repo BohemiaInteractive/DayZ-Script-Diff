@@ -49,6 +49,21 @@ enum EInventoryIconVisibility
 	HIDE_HANDS_SLOT = 4
 }
 
+//!EXCLUSIVITY flags, restrict attachment combinations
+enum EAttachmentExclusionFlags
+{
+	//OCCUPANCY_INVALID = -1,
+	OCCUPANCY_ZONE_HEADGEAR_HELMET_0, //full helmet
+	//OCCUPANCY_ZONE_HEADGEAR_HELMET_0_A, //example of another 'vector' of potential conflict, like between helmet and eyewear..otherwise the other non-helmet entities would collide through the 'OCCUPANCY_ZONE_HEADSTRAP_0' value.
+	OCCUPANCY_ZONE_HEADSTRAP_0,
+	OCCUPANCY_ZONE_MASK_0,
+	OCCUPANCY_ZONE_MASK_1,
+	OCCUPANCY_ZONE_MASK_2, //Mostly Gasmasks
+	OCCUPANCY_ZONE_MASK_3, //bandana mask special behavior
+	OCCUPANCY_ZONE_GLASSES_REGULAR_0,
+	OCCUPANCY_ZONE_GLASSES_TIGHT_0,
+}
+
 class EntityAI extends Entity
 {
 	bool 								m_DeathSyncSent;
@@ -56,9 +71,11 @@ class EntityAI extends Entity
 	bool 								m_PreparedToDelete = false;
 	bool 								m_RefresherViable = false;
 	bool								m_WeightDirty = 1;
+	private ref map<int,int>			m_AttachmentExclusionMaskMap; //own masks for different slots <slot,mask>. Kept on instance to better respond to various state changes
+	private int 						m_AttachmentExclusionMaskGlobal; //additional mask values and simple item values. Independent of slot-specific behavior!
+	private int 						m_AttachmentExclusionMaskChildren; //additional mask values and simple item values
 	
 	ref DestructionEffectBase			m_DestructionBehaviourObj;
-	
 	
 	ref KillerData 						m_KillerData;
 	private ref HiddenSelectionsData	m_HiddenSelectionsData;
@@ -133,10 +150,8 @@ class EntityAI extends Entity
 		// Refresher signalization
 		RegisterNetSyncVariableBool("m_RefresherViable");
 		
-		m_AttachmentsWithCargo			= new array<EntityAI>;
-		m_AttachmentsWithAttachments	= new array<EntityAI>;
-		//m_NewLocation 					= new InventoryLocation;
-		//m_OldLocation 					= new InventoryLocation;
+		m_AttachmentsWithCargo			= new array<EntityAI>();
+		m_AttachmentsWithAttachments	= new array<EntityAI>();
 		m_LastUpdatedTime = 0.0;
 		m_ElapsedSinceLastUpdate = 0.0;
 		
@@ -701,6 +716,11 @@ class EntityAI extends Entity
 		}
 	}
 	
+	void OnInventoryInit()
+	{
+		InitAttachmentExclusonValues();
+	}
+	
 	//! Called upon object creation
 	void EEInit()
 	{
@@ -728,8 +748,6 @@ class EntityAI extends Entity
 		}
 		
 		MaxLifetimeRefreshCalc();
-		
-		//m_Initialized = true;
 	}
 	
 	//! Called right before object deleting
@@ -745,7 +763,9 @@ class EntityAI extends Entity
 	override void OnExplosionEffects(Object source, Object directHit, int componentIndex, string surface, vector pos, vector surfNormal, float energyFactor, float explosionFactor, bool isWater, string ammoType) 
 	{
 		super.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
-		
+		#ifndef SERVER
+		g_Game.GetWorld().AddEnvShootingSource(pos, 1.0);
+		#endif
 		if (m_DestructionBehaviourObj && m_DestructionBehaviourObj.HasExplosionDamage())
 		{
 			m_DestructionBehaviourObj.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
@@ -783,6 +803,16 @@ class EntityAI extends Entity
 			else
 				Error("EntityAI::EEItemLocationChanged - attached, but new_owner is null");
 		}
+	}
+
+	//! Called from 'IEntity.AddChild'
+	void EEParentedTo(EntityAI parent)
+	{
+	}
+
+	//! Called from 'IEntity.RemoveChild' or 'IEntity.AddChild' when hierarchy changes
+	void EEParentedFrom(EntityAI parent)
+	{
 	}
 	
 	void EEInventoryIn (Man newParentMan, EntityAI diz, EntityAI newParent)
@@ -909,6 +939,8 @@ class EntityAI extends Entity
 	// !Called on PARENT when a child is attached to it.
 	void EEItemAttached(EntityAI item, string slot_name)
 	{
+		int slotId = InventorySlots.GetSlotIdFromString(slot_name);
+		PropagateExclusionValueRecursive(item.GetAttachmentExclusionMaskAll(slotId),slotId); //Performed from parent to avoid event order issues on swap
 		SetWeightDirty();
 
 		if ( m_ComponentsBank != NULL )
@@ -942,6 +974,8 @@ class EntityAI extends Entity
 	// !Called on PARENT when a child is detached from it.
 	void EEItemDetached(EntityAI item, string slot_name)
 	{
+		int slotId = InventorySlots.GetSlotIdFromString(slot_name);
+		ClearExclusionValueRecursive(item.GetAttachmentExclusionMaskAll(slotId),slotId); //Performed from parent to avoid event order issues on swap
 		SetWeightDirty();
 		
 		if ( m_ComponentsBank != NULL )
@@ -1146,12 +1180,6 @@ class EntityAI extends Entity
 			GetHierarchyRootPlayer().SetProcessUIWarning(true);
 		}
 	}
-
-	//! Checks if this instance is of type DayZCreature
-	bool IsDayZCreature()
-	{
-		return false;
-	}
 	
 	//! Sets all animation values to 1, making them INVISIBLE if they are configured in models.cfg in such way. These selections must also be defined in the entity's config class in 'AnimationSources'. 
 	void HideAllSelections()
@@ -1197,7 +1225,23 @@ class EntityAI extends Entity
 	 **/
 	bool CanReceiveAttachment (EntityAI attachment, int slotId)
 	{
-		return true;
+		//generic occupancy check
+		EntityAI currentAtt = GetInventory().FindAttachment(slotId);
+		bool internalConflictCheck = !attachment.CheckInternalExclusionConflicts(slotId);
+		if (currentAtt) //probably a swap or same-type swap
+		{
+			int diff = attachment.GetAttachmentExclusionMaskAll(slotId);
+			diff &= ~currentAtt.GetAttachmentExclusionMaskAll(slotId);
+			if (diff == 0)
+			{
+				return internalConflictCheck;
+			}
+			else
+			{
+				return internalConflictCheck && !IsExclusionFlagPresentRecursive(diff,slotId);
+			}
+		}
+		return internalConflictCheck && !IsExclusionFlagPresentRecursive(attachment.GetAttachmentExclusionMaskAll(slotId),slotId);
 	}
 	
 	/**@fn		CanLoadAsAttachment
@@ -1213,7 +1257,7 @@ class EntityAI extends Entity
 
 	/**@fn		CanPutAsAttachment
 	 * @brief	calls this->CanPutAsAttachment(parent)
-	 * @param[in] child	\p	item to be put as attachment of a parent
+	 * @param[in] parent	\p	target entity this is trying to attach to
 	 * @return	true if action allowed
 	 *
 	 * @note: engine code is scriptConditionExecute(this, parent, "CanPutAsAttachment")
@@ -1238,7 +1282,7 @@ class EntityAI extends Entity
 	{
 		if( attachment && attachment.GetInventory() && GetInventory() )
 		{
-			InventoryLocation il = new InventoryLocation;
+			InventoryLocation il = new InventoryLocation();
 			attachment.GetInventory().GetCurrentInventoryLocation( il );
 			if( il.IsValid() )
 			{
@@ -1508,10 +1552,10 @@ class EntityAI extends Entity
 	}	
 
 	// !Called on CHILD when it's attached to parent.
-	void OnWasAttached( EntityAI parent, int slot_id ) { }
-		
+	void OnWasAttached( EntityAI parent, int slot_id );
+	
 	// !Called on CHILD when it's detached from parent.
-	void OnWasDetached( EntityAI parent, int slot_id ) { }
+	void OnWasDetached( EntityAI parent, int slot_id );
 	
 	void OnCargoChanged() { }
 	
@@ -1551,7 +1595,7 @@ class EntityAI extends Entity
 		EntityAI parent = GetHierarchyParent();
 		if ( parent )
 		{
-			InventoryLocation inventory_location = new InventoryLocation;
+			InventoryLocation inventory_location = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation( inventory_location );
 			
 			return parent.GetInventory().GetSlotLock( inventory_location.GetSlot() );
@@ -1783,7 +1827,7 @@ class EntityAI extends Entity
 	 **/
 	EntityAI SpawnEntityOnGroundPos(string object_name, vector pos)
 	{
-		InventoryLocation il = new InventoryLocation;
+		InventoryLocation il = new InventoryLocation();
 		vector mat[4];
 		Math3D.MatrixIdentity4(mat);
 		mat[3] = pos;
@@ -1794,7 +1838,7 @@ class EntityAI extends Entity
 	 **/
 	EntityAI SpawnEntityOnGround(string object_name, vector mat[4])
 	{
-		InventoryLocation il = new InventoryLocation;
+		InventoryLocation il = new InventoryLocation();
 		il.SetGround(NULL, mat);
 		return SpawnEntity(object_name, il,ECE_PLACE_ON_SURFACE,RF_DEFAULT);
 	}
@@ -1875,6 +1919,8 @@ class EntityAI extends Entity
 	{
 		return 0;
 	}
+	
+	void SetQuantityToMinimum();
 	
 	int GetTargetQuantityMax(int attSlotID = -1)
 	{
@@ -2180,7 +2226,6 @@ class EntityAI extends Entity
 	*/
 	void OnVariablesSynchronized()
 	{
-		
 		if ( m_EM )
 		{
 			if ( GetGame().IsMultiplayer() )
@@ -2202,14 +2247,6 @@ class EntityAI extends Entity
 				
 				if (energy_source)
 				{
-					// Boris: The following prints are here to help fix DAYZ-37406. They will be removed when I find out what is causing the issue.
-					/*Print(energy_source);
-					Print(id_low);
-					Print(id_High);
-					Print(energy_source.GetCompEM());
-					Print(this);*/
-					
-
 					ComponentEnergyManager esem = energy_source.GetCompEM();
 					
 					if ( !esem )
@@ -2254,6 +2291,18 @@ class EntityAI extends Entity
 
 		text += "Weight: " + GetWeightEx() + "\n";
 		text += "Disabled: " + GetIsSimulationDisabled() + "\n";
+		#ifdef SERVER
+		text += "CE Lifetime default: " + (int)GetEconomyProfile().GetLifetime() + "\n";
+		text += "CE Lifetime remaining: " + (int)GetLifetime() + "\n";
+		#endif
+		
+		ComponentEnergyManager compEM = GetCompEM();
+		if (compEM)
+		{
+			text += "Energy Source: " + Object.GetDebugName(compEM.GetEnergySource()) + "\n";
+			text += "Switched On: " + compEM.IsSwitchedOn() + "\n";
+			text += "Is Working: " + compEM.IsWorking() + "\n";
+		}
 
 		return text;
 	}
@@ -2342,6 +2391,15 @@ class EntityAI extends Entity
 	//! Get max economy lifetime per instance - default is from DB (seconds)
 	proto native float GetLifetimeMax();
 
+	//! Reset economy lifetime to default across entity hierarchy all the way to the topmost entity
+	void IncreaseLifetimeUp()
+	{
+		IncreaseLifetime();
+		if (GetHierarchyParent())
+			GetHierarchyParent().IncreaseLifetimeUp();
+	}	
+
+
 	// BODY STAGING
 	//! Use this to access Body Staging component on dead character. Returns NULL if the given object lacks such component.
 	ComponentBodyStaging GetCompBS()
@@ -2407,6 +2465,7 @@ class EntityAI extends Entity
 
 	//! Energy manager event: Called when energy was added on this device. ALWAYS CALL super.OnEnergyAdded() !!!
 	void OnEnergyAdded() {}
+	///@} energy manager
 	
 	override void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx)
 	{
@@ -2608,7 +2667,7 @@ class EntityAI extends Entity
 		if ( MemoryPointExists( "invView2" ) )
 		{
 			#ifdef PLATFORM_WINDOWS
-			InventoryLocation il = new InventoryLocation;
+			InventoryLocation il = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation( il );
 			InventoryLocationType type = il.GetType();
 			switch ( type )
@@ -2995,21 +3054,272 @@ class EntityAI extends Entity
 	}
 
 	//! Remotely controlled devices helpers
+	RemotelyActivatedItemBehaviour GetRemotelyActivatedItemBehaviour();
+
 	void PairRemote(notnull EntityAI trigger);
+
 	void UnpairRemote();
+
 	EntityAI GetPairDevice();
+
+	void SetPersistentPairID(int id)
+	{
+		RemotelyActivatedItemBehaviour raib = GetRemotelyActivatedItemBehaviour();
+		if (raib)
+		{
+			raib.SetPersistentPairID(id);
+		}
+	}
 
 	//! Turnable Valve behaviour
 	bool HasTurnableValveBehavior();
 	bool IsValveTurnable(int pValveIndex);
 	int GetTurnableValveIndex(int pComponentIndex);
 	void ExecuteActionsConnectedToValve(int pValveIndex);
-	
-	//Returns a type of finisher attack based on internal logic (in childern's overrides)
-	/*int DetermineFinisherHitType(EntityAI source,int component)
+
+//////////////////////////////////
+// attachment exclusion section //
+//////////////////////////////////
+	private void InitAttachmentExclusonValues()
 	{
-		return -1;
-	}*/
+		m_AttachmentExclusionMaskChildren = 0;
+		
+		InitInherentSlotExclusionMap();
+		//InitLegacyConfigExclusionValues();
+		InitGlobalExclusionValues();
+	}
+	
+	//! map stored on instance to better respond to various state changes
+	private void InitInherentSlotExclusionMap()
+	{
+		int count = GetInventory().GetSlotIdCount();
+		if (count == 0)
+			return;
+		
+		m_AttachmentExclusionMaskMap = new map<int,int>();
+		//starting with the INVALID slot, so it is always in the map
+		SetAttachmentExclusionMaskSlot(InventorySlots.INVALID,GetAttachmentExclusionInitSlotValue(InventorySlots.INVALID));
+		int slotId;
+		for (int i = 0; i < count; i++) 
+		{
+			slotId = GetInventory().GetSlotId(i);
+			SetAttachmentExclusionMaskSlot(slotId,GetAttachmentExclusionInitSlotValue(slotId));
+		}
+	}
+	
+	//! override this to modify slot behavior for specific items, or just set 'm_AttachmentExclusionMaskGlobal' value for simple items
+	protected int GetAttachmentExclusionInitSlotValue(int slotId)
+	{
+		return 0;
+	}
+	
+	//backwards compatibility?
+	protected void InitLegacyConfigExclusionValues()
+	{
+		return;
+	}
+	
+	//! override to init part of the mask, independent of slot-specific behavior
+	protected void InitGlobalExclusionValues()
+	{
+		m_AttachmentExclusionMaskGlobal = 0;
+	}
+	
+	//! to help with item staging exclusions; human-friendlier 'add' method
+	protected void AddSingleExclusionValueGlobal(EAttachmentExclusionFlags rawValue)
+	{
+		m_AttachmentExclusionMaskGlobal |= 1 << rawValue;
+	}
+	
+	//! to help with item staging exclusions; human-friendlier 'remove' method
+	protected void ClearSingleExclusionValueGlobal(EAttachmentExclusionFlags rawValue)
+	{
+		m_AttachmentExclusionMaskGlobal &= 0 << rawValue;
+	}
+	
+	//! sets the entire bitmask
+	protected void SetAttachmentExclusionMaskGlobal(int value)
+	{
+		m_AttachmentExclusionMaskGlobal = value;
+	}
+	
+	//! sets the mask for specific slot
+	protected void SetAttachmentExclusionMaskSlot(int slotId, int value)
+	{
+		if (m_AttachmentExclusionMaskMap)
+		{
+			m_AttachmentExclusionMaskMap.Set(slotId,value);
+		}
+		else
+			ErrorEx("m_AttachmentExclusionMaskMap not available! Fill the 'inventorySlot[]' in the " + this + " config file.");
+	}
+	
+	private void PropagateExclusionValueRecursive(int value, int slotId)
+	{
+		if (value != 0)
+		{
+			int passThis;
+			InventoryLocation lcn = new InventoryLocation();
+			GetInventory().GetCurrentInventoryLocation(lcn);
+			if (CheckExclusionAccessPropagation(lcn.GetSlot(), slotId, value, passThis))
+			{
+				m_AttachmentExclusionMaskChildren |= passThis;
+				EntityAI parent = GetHierarchyParent();
+				if (parent)
+					parent.PropagateExclusionValueRecursive(passThis,lcn.GetSlot());
+			}
+		}
+	}
+	
+	private void ClearExclusionValueRecursive(int value, int slotId)
+	{
+		if (value != 0)
+		{
+			int passThis;
+			InventoryLocation lcn = new InventoryLocation();
+			GetInventory().GetCurrentInventoryLocation(lcn);
+			if (CheckExclusionAccessPropagation(lcn.GetSlot(), slotId, value, passThis))
+			{
+				m_AttachmentExclusionMaskChildren &= ~passThis;
+				EntityAI parent = GetHierarchyParent();
+				if (parent)
+					parent.ClearExclusionValueRecursive(passThis,lcn.GetSlot());
+			}
+		}
+	}
+	
+	//! Slot-specific, children (attachments), and additional (state etc.) masks combined
+	int GetAttachmentExclusionMaskAll(int slotId)
+	{
+		int maskValue = 0;
+		if (m_AttachmentExclusionMaskMap)
+			maskValue = m_AttachmentExclusionMaskMap.Get(slotId);
+		
+		return maskValue | m_AttachmentExclusionMaskGlobal | m_AttachmentExclusionMaskChildren;
+	}
+	
+	//! Specific slot behavior
+	int GetAttachmentExclusionMaskSlot(int slotId)
+	{
+		int maskValue = 0;
+		if (m_AttachmentExclusionMaskMap)
+			maskValue = m_AttachmentExclusionMaskMap.Get(slotId);
+		
+		return maskValue;
+	}
+	
+	//! Global mask value, independent of slot-specific behavior!
+	int GetAttachmentExclusionMaskGlobal()
+	{
+		return m_AttachmentExclusionMaskGlobal;
+	}
+	
+	//! Mask value coming from the item's attachments
+	int GetAttachmentExclusionMaskChildren()
+	{
+		return m_AttachmentExclusionMaskChildren;
+	}
+	
+	//! checks if any attachment or item state would interfere with attachment
+	private bool CheckInternalExclusionConflicts(int targetSlot)
+	{
+		int slotMask = 0;
+	 	if (m_AttachmentExclusionMaskMap)
+			slotMask = m_AttachmentExclusionMaskMap.Get(targetSlot);
+		
+		return (slotMask & m_AttachmentExclusionMaskGlobal) | (slotMask & m_AttachmentExclusionMaskChildren) | (m_AttachmentExclusionMaskGlobal & m_AttachmentExclusionMaskChildren);
+	}
+	
+	//! checks 'this' if the incoming flag is present for the current state (slot behavior and others)
+	private bool IsExclusionFlagPresent(EAttachmentExclusionFlags value)
+	{
+		int slotId;
+		string slotName;
+		GetInventory().GetCurrentAttachmentSlotInfo(slotId,slotName); //if currently attached, treat it accordingly
+		return GetAttachmentExclusionMaskAll(slotId) & value;
+	}
+	
+	//! Gets flag from what is effectively an owner
+	private bool IsExclusionFlagPresentRecursive(EAttachmentExclusionFlags value, int targetSlot)
+	{
+		if (value != 0)
+		{
+			InventoryLocation lcn = new InventoryLocation();
+			GetInventory().GetCurrentInventoryLocation(lcn);
+			EntityAI parent = GetHierarchyParent();
+			int passThis;
+			if (CheckExclusionAccessCondition(lcn.GetSlot(),targetSlot, value, passThis))
+			{
+				if (parent && parent != this) //we reached root if false
+				{
+					return parent.IsExclusionFlagPresentRecursive(passThis,lcn.GetSlot());
+				}
+			}
+			return IsExclusionFlagPresent(passThis);
+		}
+		
+		return false;
+	}
+	
+	//!
+	protected bool CheckExclusionAccessCondition(int occupiedSlot, int targetSlot, int mask, inout int adjustedMask)
+	{
+		bool occupiedException = occupiedSlot == InventorySlots.HANDS || occupiedSlot == InventorySlots.SHOULDER || occupiedSlot == InventorySlots.MELEE;
+		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE;
+		
+		if (occupiedException)
+		{
+			adjustedMask = mask;
+			return false;
+		}
+		
+		if (targetException)
+		{
+			adjustedMask = 0;
+			return false;
+		}
+		
+		AdjustExclusionAccessCondition(occupiedSlot,targetSlot,mask,adjustedMask);
+		return adjustedMask != 0;
+	}
+	
+	//!if we want to filter 
+	protected void AdjustExclusionAccessCondition(int occupiedSlot, int testedSlot, int mask, inout int adjustedMask)
+	{
+		adjustedMask = mask;
+	}
+
+	//! special propagation contition
+	protected bool CheckExclusionAccessPropagation(int occupiedSlot, int targetSlot, int mask, inout int adjustedMask)
+	{
+		bool occupiedException = occupiedSlot == InventorySlots.HANDS || occupiedSlot == InventorySlots.SHOULDER || occupiedSlot == InventorySlots.MELEE;
+		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE;
+		
+		if (targetException)
+		{
+			adjustedMask = 0;
+			return false;
+		}
+		
+		AdjustExclusionAccessPropagation(occupiedSlot,targetSlot,mask,adjustedMask);
+		return adjustedMask != 0;
+	}
+	
+	//!if we want to filter propagation specifically; DO NOT override unless you know what you are doing.
+	protected void AdjustExclusionAccessPropagation(int occupiedSlot, int testedSlot, int mask, inout int adjustedMask)
+	{
+		AdjustExclusionAccessCondition(occupiedSlot,testedSlot,mask,adjustedMask);
+		//adjustedMask = mask;
+	}
+
+	bool IsManageArrows()
+	{
+		return false;
+	}
+
+	void SetFromProjectile(ProjectileStoppedInfo info)
+	{
+	}	
 };
 
 #ifdef DEVELOPER

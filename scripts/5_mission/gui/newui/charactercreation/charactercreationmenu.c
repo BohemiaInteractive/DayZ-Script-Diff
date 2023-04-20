@@ -721,7 +721,6 @@ class CharacterCreationMenu extends UIScriptedMenu
 	{
 		#ifdef PLATFORM_CONSOLE
 		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
-		//order: save - randomize - select - back
 		string text = "";
 		if (!m_CharacterSaved && m_Scene.GetIntroCharacter().IsDefaultCharacter()) //can be saved..
 		{

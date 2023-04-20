@@ -18,6 +18,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 	bool m_LogPlayerStats;	
 	Shape m_VehicleFreeAreaBox;	
 	ref EnvDebugData m_EnvDebugData;
+	ref FallDamageDebugData m_FallDamageDebugData;
 	
 	override void OnInit()
 	{
@@ -80,11 +81,17 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_LOG_PLAYER_STATS, CBMiscLogPlayerStats);
 		
 		//---------------------------------------------------------------
+		// LEVEL 2 - Script > Misc -> Environment
+		//---------------------------------------------------------------
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG, CBMiscEnvironmentDebug);	
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_DRYWET, CBMiscEnvironmentLoggingDryWet);	
+		
+		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Misc
 		//---------------------------------------------------------------
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_PERMANENT_CROSSHAIR, CBMiscPermanentCrossHair);		
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_TOGGLE_HUD, CBMiscToggleHud);
-		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG, CBMiscEnvironmentDebug);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_FALLDAMAGE_DEBUG, CBMiscFallDamageDebug);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_DISPLAY_PLAYER_INFO, CBMiscDisplayPlayerInfo);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_UNIVERSAL_TEMPERATURE_SOURCES, CBMiscUniversalTemperatureSources);			
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_BULLET_IMPACT, CBMiscBulletImpact);			
@@ -231,6 +238,15 @@ class PluginDiagMenuClient : PluginDiagMenu
 					m_EnvDebugData = new EnvDebugData();
 				
 				ctx.Read(m_EnvDebugData);
+				break;
+			}
+			
+			case ERPCs.DIAG_MISC_FALLDAMAGE_DEBUG_DATA:
+			{
+				if (!m_FallDamageDebugData)
+					m_FallDamageDebugData = new FallDamageDebugData();
+				
+				ctx.Read(m_FallDamageDebugData);
 				break;
 			}
 			
@@ -483,22 +499,33 @@ class PluginDiagMenuClient : PluginDiagMenu
 	//---------------------------------------------	
 	static void CBMiscEnvironmentDebug(bool enabled)
 	{
-		if (GetGame().IsMultiplayer())
-		{
-			SendDiagRPC(enabled, ERPCs.DIAG_MISC_ENVIRONMENT_DEBUG);
-		}
+		SendDiagRPC(enabled, ERPCs.DIAG_MISC_ENVIRONMENT_DEBUG);
 	}
 	
 	void UpdateEnvironmentDebug()
 	{
-		if ( DiagMenu.GetBool(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG) && m_EnvDebugData )
-		{
+		if (DiagMenu.GetBool(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG) && m_EnvDebugData)
 			Environment.DisplayEnvDebugPlayerInfo(true, m_EnvDebugData);
-		}
 		else if (m_EnvDebugData)
-		{
 			m_EnvDebugData = null;
-		}
+	}
+
+	static void CBMiscEnvironmentLoggingDryWet(bool enabled)
+	{
+		SendDiagRPC(enabled, ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_DRYWET);
+	}
+	
+	static void CBMiscFallDamageDebug(bool enabled)
+	{
+		SendDiagRPC(enabled, ERPCs.DIAG_MISC_FALLDAMAGE_DEBUG);
+	}
+	
+	void UpdateFallDamageDebug()
+	{
+		if (DiagMenu.GetBool(DiagMenuIDs.MISC_FALLDAMAGE_DEBUG) && m_FallDamageDebugData)
+			DayZPlayerImplementFallDamage.DisplayFallDamageDebugInfo(true, m_FallDamageDebugData);
+		else if (m_FallDamageDebugData)
+			m_FallDamageDebugData = null;
 	}
 	
 	//---------------------------------------------	
@@ -707,6 +734,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 			SendDiagRPC(true, ERPCs.DIAG_VEHICLES_DUMP_CRASH_DATA_REQUEST, true);
 			DiagMenu.SetValue(DiagMenuIDs.VEHICLE_DUMP_CRASH_DATA, 0);
 		}
+		//DiagButtonRPC(value, DiagMenuIDs.VEHICLE_DUMP_CRASH_DATA, ERPCs.DIAG_VEHICLES_DUMP_CRASH_DATA_REQUEST, true);	
 		
 	}
 	

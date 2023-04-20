@@ -38,6 +38,7 @@ class ScriptConsole extends UIScriptedMenu
 	int m_CategoryMask;
 	bool m_FilterOrderReversed;
 	bool m_AllowScriptOutput;
+	protected static ref array<ref MapMarker> m_MarkedEntities = new array<ref MapMarker>();
 	
 	static ref TStringArray m_ScriptOutputHistory = new TStringArray();
 	
@@ -99,13 +100,6 @@ class ScriptConsole extends UIScriptedMenu
 		m_RefreshFilterTimer.Stop();
 	}
 	
-#ifdef X1_TODO_TEMP_GUI
-	override bool UseMouse()
-	{
-		return true;
-	}
-#endif
-	
 	override Widget Init()
 	{
 		Debug.GetBaseConfigClasses(m_BaseConfigClasses);
@@ -122,21 +116,23 @@ class ScriptConsole extends UIScriptedMenu
 		m_Tabs[TAB_CONFIGS] = layoutRoot.FindAnyWidget("ConfigsPanel");
 		m_Tabs[TAB_ENSCRIPT] = layoutRoot.FindAnyWidget("EnScriptPanel");
 		m_Tabs[TAB_ENSCRIPT_SERVER] = layoutRoot.FindAnyWidget("EnScriptPanel");
-		m_Tabs[TABS_GENERAL] = layoutRoot.FindAnyWidget("GeneralPanel");
-		m_Tabs[TABS_OUTPUT] = layoutRoot.FindAnyWidget("OutputPanel");
-		m_Tabs[TABS_VICINITY] = layoutRoot.FindAnyWidget("VicinityPanel");
-		m_Tabs[TABS_SOUNDS] = layoutRoot.FindAnyWidget("SoundsPanel");
-
+		m_Tabs[TAB_GENERAL] = layoutRoot.FindAnyWidget("GeneralPanel");
+		m_Tabs[TAB_OUTPUT] = layoutRoot.FindAnyWidget("OutputPanel");
+		m_Tabs[TAB_VICINITY] = layoutRoot.FindAnyWidget("VicinityPanel");
+		m_Tabs[TAB_SOUNDS] = layoutRoot.FindAnyWidget("SoundsPanel");
+		m_Tabs[TAB_WEATHER] = layoutRoot.FindAnyWidget("WeatherPanel");
 
 		m_Tab_buttons[TAB_ITEMS] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("ItemsButtonWidget"));
 		m_Tab_buttons[TAB_CONFIGS] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("ConfigsButtonWidget"));
 		m_Tab_buttons[TAB_ENSCRIPT] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("EnScriptButtonWidget"));
 		m_Tab_buttons[TAB_ENSCRIPT_SERVER] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("EnScriptButtonWidgetServer"));
-		m_Tab_buttons[TABS_GENERAL] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("GeneralButtonWidget"));
-		m_Tab_buttons[TABS_OUTPUT] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("OutputButtonWidget"));
-		m_Tab_buttons[TABS_VICINITY] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("VicinityWidget"));
-		m_Tab_buttons[TABS_SOUNDS] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("SoundsWidget"));
+		m_Tab_buttons[TAB_GENERAL] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("GeneralButtonWidget"));
+		m_Tab_buttons[TAB_OUTPUT] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("OutputButtonWidget"));
+		m_Tab_buttons[TAB_VICINITY] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("VicinityWidget"));
+		m_Tab_buttons[TAB_SOUNDS] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("SoundsWidget"));
+		m_Tab_buttons[TAB_WEATHER] = ButtonWidget.Cast(layoutRoot.FindAnyWidget("WeatherButtonWidget"));
 
+		
 		m_ClientLogListbox = TextListboxWidget.Cast(layoutRoot.FindAnyWidget("TextListbox"));
 		m_ScriptOutputListbox = TextListboxWidget.Cast(layoutRoot.FindAnyWidget("ScriptOutputListbox"));
 		m_ClientLogClearButton = ButtonWidget.Cast(layoutRoot.FindAnyWidget("ButtonClear"));
@@ -280,7 +276,7 @@ class ScriptConsole extends UIScriptedMenu
 		m_CategoryMergeType.SetChecked(m_ConfigDebugProfile.GetMergeType());
 
 		m_LogsEnabled.SetChecked(m_ConfigDebugProfile.GetLogsEnabled());
-
+		
 		TStringArray diag_names = new TStringArray;
 		GetGame().GetDiagModeNames(diag_names);
 		for (i = 0; i < diag_names.Count(); i++)
@@ -363,9 +359,6 @@ class ScriptConsole extends UIScriptedMenu
 				cbw.SetChecked(true);
 			}
 		}
-		AutoHeightSpacer autoheigh;
-		m_WgtClassesConfig.GetScript(autoheigh);
-		autoheigh.Update();
 		return layoutRoot;
 	}
 	
@@ -703,6 +696,11 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		PrintS(message.ToString());
 	}
+	
+	static void PrintS(Object message)
+	{
+		PrintS(message.ToString());
+	}
 		
 	void RunEnscript()
 	{
@@ -965,12 +963,13 @@ class ScriptConsole extends UIScriptedMenu
 		
 		GetGame().GetObjectsAtPosition(GetGame().GetPlayer().GetPosition(), distance, objects, proxies);
 		int i = 0;
-
+		m_MarkedEntities.Clear();
 		foreach (Object o: objects)
 		{
 			if (o.IsKindOf(type))
 			{
 				i++;
+				m_MarkedEntities.Insert(new MapMarker(o.GetPosition(),"",COLOR_RED,eMapMarkerTypes.MARKERTYPE_MAP_BORDER_CROSS));
 				Shape shape = Shape.CreateSphere(COLOR_RED, ShapeFlags.TRANSP|ShapeFlags.NOOUTLINE|ShapeFlags.NOZBUFFER, o.GetPosition() + "0 30 0", 1);
 				vector lines[2];
 				lines[0] = o.GetPosition();
@@ -989,6 +988,7 @@ class ScriptConsole extends UIScriptedMenu
 	
 	static void DrawItemsClear()
 	{
+		m_MarkedEntities.Clear();
 		foreach (Shape s: m_DebugShapes)
 		{
 			s.Destroy();
@@ -999,12 +999,24 @@ class ScriptConsole extends UIScriptedMenu
 	override void Update(float timeslice)
 	{
 		super.Update(timeslice);
+		
+		for (int i =0; i < TABS_COUNT; i++)
+		{
+			if (m_TabHandlers[i])
+				m_TabHandlers[i].Update(timeslice);
+		}
+		
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		if (GetGame() && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			GetGame().GetUIManager().Back();
 		}
 		m_DebugMapWidget.ClearUserMarks();
+		
+		foreach (MapMarker marker: m_MarkedEntities)
+		{
+			m_DebugMapWidget.AddUserMark(marker.GetMarkerPos(),marker.GetMarkerText(), marker.GetMarkerColor(), MapMarkerTypes.GetMarkerTypeFromID(marker.GetMarkerIcon()));
+		}
 		
 		if (m_UpdateMap)
 		{
@@ -1169,6 +1181,13 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		super.OnClick(w, x, y, button);
 
+		for (int z =0; z < TABS_COUNT; z++)
+		{
+			if (m_TabHandlers[z])
+				m_TabHandlers[z].OnClick(w,x,y,button);
+		}
+		
+		
 		int i;
 		int objects_row_index;
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
@@ -1541,14 +1560,14 @@ class ScriptConsole extends UIScriptedMenu
 					
 					float health = m_DamageEditBox.GetText().ToFloat() * MiscGameplayFunctions.GetTypeMaxGlobalHealth(m_SelectedObject);
 					float quantity = -1;
-					int cfgQuantity = GetGame().ConfigGetInt("CfgVehicles " + m_SelectedObject + " varQuantityMax");
+					int cfgQuantity = GetGame().ConfigGetInt("CfgVehicles " + m_SelectedObject + " varQuantityInit");
 
 					if (cfgQuantity > 0)
 					{
-						quantity = m_QuantityEditBox.GetText().ToFloat() * GetGame().ConfigGetInt("CfgVehicles " + m_SelectedObject + " varQuantityMax");
+						quantity = m_QuantityEditBox.GetText().ToFloat() * GetGame().ConfigGetInt("CfgVehicles " + m_SelectedObject + " varQuantityInit");
 						if (GetGame().ConfigGetFloat("CfgVehicles " + m_SelectedObject + " canBeSplit"))
 						{
-							quantity = m_QuantityEditBox.GetText().ToFloat() * GetGame().ConfigGetInt("CfgVehicles " + m_SelectedObject + " varStackMax");
+							quantity = m_QuantityEditBox.GetText().ToFloat() * GetGame().ConfigGetInt("CfgVehicles " + m_SelectedObject + " varStackInit");
 						}
 					}
 
@@ -1960,6 +1979,12 @@ class ScriptConsole extends UIScriptedMenu
 	override bool OnChange(Widget w, int x, int y, bool finished)
 	{
 		super.OnChange(w, x, y, finished);
+		
+		for (int i =0; i < TABS_COUNT; i++)
+		{
+			if (m_TabHandlers[i])
+				m_TabHandlers[i].OnChange(w,x,y,finished);
+		}
 		
 		if (w == m_ObjectFilter)
 		{
@@ -3052,21 +3077,22 @@ class ScriptConsole extends UIScriptedMenu
 		
 	
 	
-	
+	//vicinity
 	TextListboxWidget m_VicinityListbox;
 	
-
-	static const int TABS_GENERAL = 0;
+	static const int TAB_GENERAL = 0;
 	static const int TAB_ITEMS = 1;
 	static const int TAB_CONFIGS = 2;
 	static const int TAB_ENSCRIPT = 3;	
 	static const int TAB_ENSCRIPT_SERVER = 4;
-	static const int TABS_OUTPUT = 5;
-	static const int TABS_VICINITY = 6;
-	static const int TABS_SOUNDS = 7;
+	static const int TAB_OUTPUT = 5;
+	static const int TAB_VICINITY = 6;
+	static const int TAB_SOUNDS = 7;
+	static const int TAB_WEATHER = 8;
 	// -----------------------
-	static const int TABS_COUNT = 8;
+	static const int TABS_COUNT = 9;
 
+	protected ref ScriptConsoleTab m_TabHandlers[TABS_COUNT];
 	Widget m_Tabs[TABS_COUNT];
 	MapWidget m_DebugMapWidget;
 	ButtonWidget m_Tab_buttons[TABS_COUNT];
@@ -3116,11 +3142,15 @@ class ScriptConsole extends UIScriptedMenu
 
 	void SelectTab(int tab_id)
 	{
+		if (tab_id < 0 || tab_id >= TABS_COUNT)
+			tab_id = 0;
 		int i = 0;
 		Widget tab = m_Tabs[tab_id];
 		for (i = 0; i < TABS_COUNT; i++)
 		{
 			Widget t = m_Tabs[i];
+
+			m_TabHandlers[i] = null;
 
 			if (i == tab_id)
 			{
@@ -3142,6 +3172,7 @@ class ScriptConsole extends UIScriptedMenu
 		
 		m_selected_tab = tab_id;
 		m_ConfigDebugProfile.SetTabSelected(m_selected_tab);
+		
 		OnTabSeleted(m_selected_tab);
 	}
 	
@@ -3182,7 +3213,13 @@ class ScriptConsole extends UIScriptedMenu
 		Widget tab = m_Tabs[tabID];
 		string text;
 		int index;
-		if (tabID == TABS_VICINITY)
+		
+		
+		if (tabID == TAB_WEATHER)
+		{ 
+			m_TabHandlers[TAB_WEATHER] = new ScriptConsoleWeatherTab(layoutRoot);
+		}
+		else if (tabID == TAB_VICINITY)
 		{ 
 			array<Object> objects = new array<Object>();
 			array<CargoBase> cargo = new array<CargoBase>();
@@ -3207,7 +3244,7 @@ class ScriptConsole extends UIScriptedMenu
 				}
 			}
 		}
-		else if (tabID == TABS_SOUNDS)
+		else if (tabID == TAB_SOUNDS)
 		{
 			m_SoundFilter.SetText(m_ConfigDebugProfile.GetSoundsetFilter());
 			ChangeFilterSound();
@@ -3237,15 +3274,12 @@ class ScriptConsole extends UIScriptedMenu
 			}
 			ReloadScriptOutput();
 		}
-		else if (tabID == TABS_OUTPUT)
+		else if (tabID == TAB_OUTPUT)
 		{
 			ReloadOutput();
 		}
 		else if (tabID == TAB_CONFIGS)
 		{
-			AutoHeightSpacer autoheigh;
-			m_WgtClassesConfig.GetScript(autoheigh);
-			autoheigh.Update();
 			if (m_ConfigTextField)
 				m_ObjectConfigFilter.SetText(m_ConfigTextField);
 			ChangeConfigFilter();

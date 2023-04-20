@@ -1,4 +1,4 @@
-class M65Jacket_ColorBase extends Clothing 
+class M65Jacket_ColorBase extends Top_Base 
 {
 	override void SetActions()
 	{

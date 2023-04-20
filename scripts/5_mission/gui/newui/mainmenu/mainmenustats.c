@@ -17,129 +17,91 @@ class MainMenuStats extends ScriptedWidgetEventHandler
 	protected Widget m_LongRangeShot;
 	protected TextWidget m_LongRangeShotValue;
 	
-	void MainMenuStats( Widget root )
+	private ref FullTimeData m_TimeSurvivedFull;
+	
+	void MainMenuStats(Widget root)
 	{
 		m_Root = root;
 		
-		m_TimeSurvived = m_Root.FindAnyWidget( "TimeSurvived" );
-		m_TimeSurvivedValue = TextWidget.Cast( m_Root.FindAnyWidget( "TimeSurvivedValue" ) );
+		m_TimeSurvivedFull = new FullTimeData();
 		
-		m_PlayersKilled = m_Root.FindAnyWidget( "PlayersKilled" );
-		m_PlayersKilledValue = TextWidget.Cast( m_Root.FindAnyWidget( "PlayersKilledValue" ) );
+		m_TimeSurvived = m_Root.FindAnyWidget("TimeSurvived");
+		m_TimeSurvivedValue = TextWidget.Cast(m_Root.FindAnyWidget("TimeSurvivedValue"));
 		
-		m_InfectedKilled = m_Root.FindAnyWidget( "InfectedKilled" );
-		m_InfectedKilledValue = TextWidget.Cast( m_Root.FindAnyWidget( "InfectedKilledValue" ) );
+		m_PlayersKilled = m_Root.FindAnyWidget("PlayersKilled");
+		m_PlayersKilledValue = TextWidget.Cast(m_Root.FindAnyWidget("PlayersKilledValue"));
 		
-		m_DistanceTraveled = m_Root.FindAnyWidget( "DistanceTraveled" );
-		m_DistanceTraveledValue = TextWidget.Cast( m_Root.FindAnyWidget( "DistanceTraveledValue" ) );
+		m_InfectedKilled = m_Root.FindAnyWidget("InfectedKilled");
+		m_InfectedKilledValue = TextWidget.Cast(m_Root.FindAnyWidget("InfectedKilledValue"));
 		
-		m_LongRangeShot = m_Root.FindAnyWidget( "LongRangeShot" );
-		m_LongRangeShotValue = TextWidget.Cast( m_Root.FindAnyWidget( "LongRangeShotValue" ) );
+		m_DistanceTraveled = m_Root.FindAnyWidget("DistanceTraveled");
+		m_DistanceTraveledValue = TextWidget.Cast(m_Root.FindAnyWidget("DistanceTraveledValue"));
+		
+		m_LongRangeShot = m_Root.FindAnyWidget("LongRangeShot");
+		m_LongRangeShotValue = TextWidget.Cast(m_Root.FindAnyWidget("LongRangeShotValue"));
 	}
 		
 	void ShowStats()
 	{
-		m_Root.Show( true );
+		m_Root.Show(true);
 		UpdateStats();
 	}
 	
 	void HideStats()
 	{
-		m_Root.Show( false );
+		m_Root.Show(false);
 	}
 	
 	void UpdateStats()
 	{
 		PlayerBase player;
-		MissionMainMenu mission_main_menu = MissionMainMenu.Cast( GetGame().GetMission() );
+		MissionMainMenu missionMainMenu = MissionMainMenu.Cast(GetGame().GetMission());
 		
 		#ifdef PLATFORM_WINDOWS
-			player = mission_main_menu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
+		player = missionMainMenu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
 		#endif
 		#ifdef PLATFORM_CONSOLE
-			player = mission_main_menu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
+		player = missionMainMenu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
 		#endif
 		
-		if ( player )
+		if (player)
 		{
-			float stat_value;
-			string stat_text;
-			
-			m_TimeSurvivedValue.SetText( GetTimeString( player.StatGet( AnalyticsManagerServer.STAT_PLAYTIME ) ) );
-			m_PlayersKilledValue.SetText( GetValueString( player.StatGet( AnalyticsManagerServer.STAT_PLAYERS_KILLED ) ) );
-			m_InfectedKilledValue.SetText( GetValueString( player.StatGet( AnalyticsManagerServer.STAT_INFECTED_KILLED ) ) );
-			m_DistanceTraveledValue.SetText( GetDistanceString( player.StatGet( AnalyticsManagerServer.STAT_DISTANCE ) ) );
-			m_LongRangeShotValue.SetText( GetDistanceString( player.StatGet( AnalyticsManagerServer.STAT_LONGEST_SURVIVOR_HIT ), true ) );
-		}
-	}
-	
-	protected string GetTimeString( float total_time )
-	{
-		string day_symbol = "d";							//define symbols
-		string hour_symbol = "h";
-		string minute_symbol = "min";
-		
-		if ( total_time > 0 )
-		{
-			string time_string;		
-			int time_seconds = total_time; 						//convert total time to int
-			
-			int days = time_seconds / 3600 / 24;
-			int hours = time_seconds / 3600 % 24;
-			int minutes = ( time_seconds % 3600 ) / 60;
-			
-			if ( days > 0 )
-			{
-				time_string += GetValueString( days ) + day_symbol;		//days
-				time_string += " ";										//separator
-			}
-			
-			if ( hours > 0 || days > 0 )
-			{
-				time_string += GetValueString( hours ) + hour_symbol;	//hours
-				time_string += " ";										//separator
-			}			
+			TimeConversions.ConvertSecondsToFullTime(player.StatGet(AnalyticsManagerServer.STAT_PLAYTIME), m_TimeSurvivedFull);			
+			m_TimeSurvivedValue.SetText(m_TimeSurvivedFull.FormatedNonZero());
 
-			if ( minutes >= 0 )
-			{
-				time_string += GetValueString( minutes ) + minute_symbol;	//minutes
-			}			
-
-			return time_string;
+			m_PlayersKilledValue.SetText(GetValueString(player.StatGet(AnalyticsManagerServer.STAT_PLAYERS_KILLED)));
+			m_InfectedKilledValue.SetText(GetValueString(player.StatGet(AnalyticsManagerServer.STAT_INFECTED_KILLED)));
+			m_DistanceTraveledValue.SetText(GetDistanceString(player.StatGet(AnalyticsManagerServer.STAT_DISTANCE)));
+			m_LongRangeShotValue.SetText(GetDistanceString(player.StatGet(AnalyticsManagerServer.STAT_LONGEST_SURVIVOR_HIT), true));
 		}
-		
-		return "0" + " " + minute_symbol;
 	}
 	
 	protected string GetDistanceString( float total_distance, bool meters_only = false )
 	{
-		string meter_symbol = "m";							//define symbols
-		string kilometer_symbol = "km";
-		
-		if ( total_distance > 0 )
+		if (total_distance > 0)
 		{
-			string distance_string;
+			string distanceString;
 			
-			float kilometers = total_distance / 1000;
-			kilometers = Math.Round( kilometers );
+			float kilometers = total_distance * 0.001;
+			kilometers = Math.Round(kilometers);
 			if ( kilometers >= 10 && !meters_only )
 			{
-				distance_string = GetValueString( kilometers, true ) + " " + kilometer_symbol;		//kilometers
+				distanceString = GetValueString(kilometers, true) + " #STR_distance_unit_abbrev_kilometer_0";
 			}
 			else
 			{
-				distance_string = GetValueString( total_distance ) + " " + meter_symbol;			//meters
+				distanceString = GetValueString(total_distance) + " #STR_distance_unit_abbrev_meter_0";
 			}
 			
-			return distance_string;
+			return distanceString;
 		}	
 	
-		return "0" + " " + meter_symbol;
+		return "0" + " #STR_distance_unit_abbrev_meter_0";
 	}
 	
-	protected string GetValueString( float total_value, bool show_decimals = false )
+	protected string GetValueString(float total_value, bool show_decimals = false)
 	{
-		if ( total_value > 0 )
+		if (total_value > 0)
 		{
 			string out_string;
 			
@@ -191,4 +153,9 @@ class MainMenuStats extends ScriptedWidgetEventHandler
 		
 		return "0";
 	}
+
+	//!	
+	//! DEPRECATED
+	//!
+	protected string GetTimeString(float total_time);
 }

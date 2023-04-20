@@ -1,23 +1,14 @@
-class MimeMask_Male : Clothing
+class MimeMask_Male : Mask_Base
 {
-	override bool CanPutAsAttachment(EntityAI parent)
+	override protected void InitGlobalExclusionValues()
 	{
-		if (!super.CanPutAsAttachment(parent))
-			return false;
+		super.InitGlobalExclusionValues();
 		
-		Clothing headgear = Clothing.Cast(parent.FindAttachmentBySlotName("Headgear"));
-		if (headgear && (headgear.ConfigGetBool("noMask") && !PumpkinHelmet.Cast(headgear)))
-		{
-			return false;
-		}
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_1);
 		
-		Clothing eyewear = Clothing.Cast(parent.FindAttachmentBySlotName("Eyewear"));
-		if (eyewear && SportGlasses_ColorBase.Cast(eyewear)) //eyewear.ConfigGetBool("noMask")
-		{
-			return false;
-		}
-		
-		return true;
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_TIGHT_0);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_REGULAR_0);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADGEAR_HELMET_0);
 	}
 };
 

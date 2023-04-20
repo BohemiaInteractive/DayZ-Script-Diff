@@ -88,7 +88,7 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 		#ifdef DEVELOPER
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
-			Debug.InventoryMoveLog("Remote - skipped", "SWAP" , "n/a", "ProccessInputData", player.ToString() );
+			Debug.InventoryMoveLog("Remote - skipped", "SWAP" , "n/a", "ProcessInputData", player.ToString() );
 		}
 		#endif
 		syncDebugPrint("[syncinv] junctures not required, player=" + Object.GetDebugName(player) + " STS = " + player.GetSimulationTimeStamp() + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));

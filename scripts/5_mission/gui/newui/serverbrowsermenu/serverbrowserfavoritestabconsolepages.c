@@ -71,6 +71,12 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 			array<string> parts = new array<string>;
 			favServerId.Split(":", parts);
 			
+			// ensure server id has correct format
+			if (parts.Count() != 2)
+			{
+				continue;
+			}
+			
 			GetServersResultRow offlineRow = new GetServersResultRow();
 			offlineRow.m_Name = favServerId;
 			offlineRow.m_Id = favServerId;

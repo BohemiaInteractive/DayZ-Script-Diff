@@ -581,6 +581,9 @@ class ActionBase : ActionBase_Basic
 		if ( GetGame().IsServer() )
 		{
 			OnStartServer(action_data);
+			
+			if (GetSoundCategory(action_data))
+				action_data.m_Player.SetSoundCategoryHash(GetSoundCategory(action_data).Hash());
 		}
 		else
 		{
@@ -979,6 +982,12 @@ class ActionBase : ActionBase_Basic
 	{
 	}
 	
+	//sound category matches with a soundtable category in config, selects correct soundset
+	string GetSoundCategory(ActionData action_data)
+	{
+		return "";
+	}
+	
 	// EVENTS ------------------------------------------------
 	void OnUpdate(ActionData action_data)
 	{}
@@ -1012,16 +1021,21 @@ class ActionBase : ActionBase_Basic
 	{}
 	
 	void OnStartServer(ActionData action_data)
-	{}
+	{
+		
+	}
 	
 	void OnEnd(ActionData action_data)
-	{}
+	{
+
+	}
 	
 	void OnEndClient(ActionData action_data)
 	{}
 	
 	void OnEndServer(ActionData action_data)
-	{}
+	{
+	}
 
 	// SOFT SKILLS ------------------------------------------------
 	float GetSpecialtyWeight()

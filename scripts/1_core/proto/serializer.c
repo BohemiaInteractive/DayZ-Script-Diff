@@ -56,6 +56,9 @@ class Serializer: Managed
 {
 	proto bool Write(void value_out);
 	proto bool Read(void value_in);
+
+	proto native bool CanWrite();
+	proto native bool CanRead();
 	
 	protected void Serializer() {}
 	protected void ~Serializer() {}

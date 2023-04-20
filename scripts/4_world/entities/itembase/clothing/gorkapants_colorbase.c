@@ -1,4 +1,4 @@
-class GorkaPants_ColorBase extends Clothing
+class GorkaPants_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{

@@ -1,4 +1,4 @@
-class RopeBelt: Clothing
+class RopeBelt: Belt_Base
 {		
 	override void SetActions()
 	{

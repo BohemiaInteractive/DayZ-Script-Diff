@@ -555,9 +555,9 @@ class UIScriptedMenu extends UIMenuPanel
 		return false;
 	}
 
-	ContextMenu GetContextMenu()
+	ScriptedWidgetEventHandler GetContextMenu()
 	{
-		return NULL;
+		return null;
 	}
 	
 	bool OnXboxEvent(int xboxEvent)

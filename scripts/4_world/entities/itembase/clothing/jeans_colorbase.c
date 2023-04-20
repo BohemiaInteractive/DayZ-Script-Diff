@@ -1,4 +1,4 @@
-class Jeans_ColorBase extends Clothing
+class Jeans_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{
@@ -13,7 +13,7 @@ class Jeans_Green extends Jeans_ColorBase {};
 class Jeans_Grey extends Jeans_ColorBase {};
 class Jeans_BlueDark extends Jeans_ColorBase {};
 
-class ShortJeans_ColorBase extends Clothing
+class ShortJeans_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{

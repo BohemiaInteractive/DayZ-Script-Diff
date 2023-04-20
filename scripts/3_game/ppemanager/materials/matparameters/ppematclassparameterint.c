@@ -30,14 +30,14 @@ class PPEMatClassParameterInt extends PPEMatClassParameterCommandData
 	{
 		super.Update(timeslice,p_total,setting_defaults,order);
 		
-		protected int active_request_count = 0;
+		int active_request_count = 0;
 		
-		protected PPERequestParamDataInt req_data;
+		PPERequestParamDataInt req_data;
 		
-		protected bool setting_value_zero = false;
+		bool setting_value_zero = false;
 		
-		protected bool int_value_temp = false;
-		protected bool int_value_total = m_ValueDefault;
+		bool int_value_temp = false;
+		bool int_value_total = m_ValueDefault;
 		
 		if (p_total == null)
 		{

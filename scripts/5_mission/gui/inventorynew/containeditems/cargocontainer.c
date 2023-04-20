@@ -764,32 +764,6 @@ class CargoContainer extends Container
 		return recipes_manager.GetValidRecipes( entity1, entity2, null, player );
 	}
 	
-	override bool CanEquip()
-	{
-		if( GetFocusedIcon() )
-		{
-			EntityAI entity = EntityAI.Cast( GetFocusedIcon().GetObject() );
-			InventoryLocation il = new InventoryLocation;
-			if( !entity.IsInherited( Magazine ) )
-			{
-				return GetGame().GetPlayer().GetInventory().FindFreeLocationFor( entity, FindInventoryLocationType.ATTACHMENT, il );
-			}
-		}
-		return false;
-	}
-	
-	override bool CanCombine()
-	{
-		if( GetFocusedIcon() )
-		{
-			ItemBase entity			= ItemBase.Cast( GetFocusedIcon().GetObject() );
-			ItemBase item_in_hands	= ItemBase.Cast( GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
-			
-			return ( ItemManager.GetCombinationFlags( item_in_hands, entity ) != 0 );
-		}
-		return false;
-	}
-	
 	override bool CanCombineAmmo()
 	{
 		if( GetFocusedIcon() )

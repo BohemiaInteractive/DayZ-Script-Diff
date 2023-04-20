@@ -57,12 +57,34 @@ class MainMenuConsole extends UIScriptedMenu
 		LoadMods();		
 		Refresh();
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		if (GetGame().GetMission())
+		{
+			GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+			GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		}
 		
 		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		
+		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
 
 		return layoutRoot;
+	}
+	
+	void ~MainMenuConsole()
+	{
+		if (GetGame().GetMission())
+		{
+			GetGame().GetMission().GetOnInputPresetChanged().Remove(OnInputPresetChanged);
+			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
+		}
+
+		if (GetGame().GetContentDLCService())
+			GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
+	}
+	
+	void OnDLCChange(EDLCId dlcId)
+	{
+		LoadMods();
 	}
 	
 	void LoadMods()

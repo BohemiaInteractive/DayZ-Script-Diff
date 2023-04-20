@@ -316,6 +316,13 @@ class PluginDeveloper extends PluginBase
 			ItemBase item = ItemBase.Cast( entity );
 			SetupSpawnedItem(item, health, quantity);
 		}
+		else if (entity.IsInherited(House))
+		{
+			entity.PlaceOnSurface();
+			vector pos = entity.GetPosition();
+			vector ori = GetGame().GetSurfaceOrientation(pos[0], pos[2]);
+			entity.SetOrientation(ori);
+		}
 		if (presetName)
 		{
 			player.m_PresetItems.Insert(entity);
@@ -416,7 +423,7 @@ class PluginDeveloper extends PluginBase
 			
 			if ( entity )
 			{
-				if ( health < 0 && entity.GetMaxHealth() > 0)//check for default (-1)
+				if ( !entity.IsBuilding() && health < 0 && entity.GetMaxHealth() > 0)//check for default (-1)
 				{
 					health = entity.GetMaxHealth();
 				}
@@ -449,10 +456,9 @@ class PluginDeveloper extends PluginBase
 		if ( player )
 		{
 			if ( GetGame().IsServer() )
-			{		
+			{
 				#ifdef DEVELOPER
-				
-				if (GetGame().IsKindOf(item_name, "Car"))
+				if (GetGame().IsKindOf(item_name, "Transport"))
 				{
 					EntityAI car = SpawnEntityOnGroundPos(player, item_name, 1, quantity, player.GetPosition());
 					car.OnDebugSpawn();
@@ -465,8 +471,11 @@ class PluginDeveloper extends PluginBase
 					{
 						player.SetGetInVehicleDebug(car);
 					}
+
+					return car;
 				}
 				#endif
+
 				InventoryLocation il = new InventoryLocation;
 				if (player.GetInventory() && player.GetInventory().FindFirstFreeLocationForNewEntity(item_name, FindInventoryLocationType.ANY, il))
 				{

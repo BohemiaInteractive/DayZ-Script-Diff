@@ -41,7 +41,7 @@ class PlantBase extends ItemBase
 	
 	private PluginHorticulture m_ModuleHorticulture;
 	
-	private const float SPOIL_AFTER_MATURITY_TIME = 7200; //The time it takes for a fully grown plant to spoil, in seconds
+	private const float SPOIL_AFTER_MATURITY_TIME = 14400; //The time it takes for a fully grown plant to spoil, in seconds
 	
 	void PlantBase()
 	{

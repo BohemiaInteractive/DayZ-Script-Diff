@@ -1,4 +1,4 @@
-class TorsoCover_Improvised extends Clothing
+class TorsoCover_Improvised extends Top_Base
 {
 	override void SetActions()
 	{

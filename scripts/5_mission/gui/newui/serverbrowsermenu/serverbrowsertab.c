@@ -72,6 +72,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	{
 		Construct(parent, menu, type);
 		m_OnlineFavServers = new set<string>();
+		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
 	}
 	
 	protected void Construct( Widget parent, ServerBrowserMenuNew menu, TabType type )
@@ -89,6 +90,8 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		
 		if (m_Root)
 			delete m_Root;
+		
+		GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
 	}
 
 	ServerBrowserMenuNew GetRootMenu()
@@ -104,6 +107,25 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	override bool OnClick( Widget w, int x, int y, int button )
 	{
 		
+	}
+	
+	void OnDLCChange(EDLCId dlcId)
+	{
+		switch (dlcId)
+		{
+			case EDLCId.DLC_BLISS:
+			{
+				array<ServerBrowserEntry> serverEntries = m_EntryWidgets.GetValueArray();
+				foreach (ServerBrowserEntry entry : serverEntries)
+				{
+					entry.RefreshDLCIcon();
+				}
+				break;
+			}
+			
+			default:
+				break;
+		}
 	}
 	
 	void ScrollToEntry( ServerBrowserEntry entry )

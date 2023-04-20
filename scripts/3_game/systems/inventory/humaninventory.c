@@ -605,30 +605,21 @@ class HumanInventory : GameInventory
 			m_UserReservationToClear = -1;
 		}*/
 	}
-	
-	
-	
-	bool ProccessInputData(int type, bool handling_juncture, bool remote, ParamsReadContext ctx)
-	{
-		InventoryLocation correct_il;
-		ScriptJunctureData ctx_repair;
 
-		switch (type)
+	bool ValidateUserReservationCancel(inout Serializer ctx, InventoryValidation validation)
+	{
+		validation.m_Result = InventoryValidationResult.SUCCESS;
+
+		int index = -1;
+		if (!ctx.Read(index))
 		{
-			case InventoryCommandType.USER_RESERVATION_CANCEL:
-			{
-				int index = -1;
-				
-				if(!ctx.Read(index))
-					return true;
-				
-				ClearUserReservedLocationAtIndex(index);
-				//m_UserReservationToClear = index;
-				
-				return true;
-			}
+			//! TODO(kumarjac): It returned true and claimed success before, is this correct?
+			return true; 
 		}
-		return false;
+		
+		ClearUserReservedLocationAtIndex(index);
+		//m_UserReservationToClear = index;
+		
+		return true; 
 	}
 }
-

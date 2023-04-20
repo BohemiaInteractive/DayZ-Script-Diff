@@ -83,7 +83,7 @@ class DisinfectantSpray extends Edible_Base
 		AddAction(ActionDisinfectTarget);
 		AddAction(ActionDisinfectSelf);;
 		AddAction(ActionDisinfectPlant);
-		AddAction(ActionWashHandsItem);
+		AddAction(ActionWashHandsItemContinuous);
 		//AddAction(ActionForceDrinkDisinfectant);
 		//AddAction(ActionDrinkDisinfectant);
 		

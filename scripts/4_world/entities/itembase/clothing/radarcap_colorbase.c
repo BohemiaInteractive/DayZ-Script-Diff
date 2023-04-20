@@ -1,4 +1,4 @@
-class RadarCap_ColorBase extends Clothing
+class RadarCap_ColorBase extends HeadGear_Base
 {
 	override void SetActions()
 	{

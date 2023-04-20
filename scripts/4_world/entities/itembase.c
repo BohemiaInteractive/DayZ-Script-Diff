@@ -1133,54 +1133,12 @@ class ItemBase extends InventoryItem
 				m_CanPlayImpactSound = (liquidType == -1);// prevents further playing of the sound when the surface is a liquid type
 			}
 		}
-				
-/*		if (m_ItemBeingDroppedPhys)
-		{
-			Print("ItemBase | EOnContact");
-			SetDynamicPhysicsLifeTime(0.5);
-			m_ItemBeingDroppedPhys = false;
-		}
-		return;
-		
-		//--------------------------------
-		
-		if (m_ItemBeingDroppedPhys && extra.Normal[1] == 1.0 || (Math.AbsFloat(extra.RelativeNormalVelocityAfter) < 0.03 && extra.Normal[1] > 0.9))
-		{
-			Print("ItemBase | EOnContact");
-			SetDynamicPhysicsLifeTime(0.5);
-			m_ItemBeingDroppedPhys = false;
-		}*/
 	}
 	
-	void RefreshPhysics()
-	{
-		
-	}
+	void RefreshPhysics();
 	
 	override void OnCreatePhysics()
 	{
-		if (m_ItemBeingDroppedPhys)
-		{
-			//GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StopItemDynamicPhysics,3000);
-			
-			//--------------------------------
-			
-			/*
-			if (!m_PhysDropTimer)
-			{
-				m_PhysDropTimer = new Timer;
-			}
-			else
-			{
-				m_PhysDropTimer.Stop()
-			}
-			
-			m_PhysDropTimer.Run(GameConstants.ITEM_DROP_TIMER,this,"StopItemDynamicPhysics");
-			*/
-			
-			//Print("++++dropping item phys");
-		}
-		
 		RefreshPhysics();
 	}
 	
@@ -1193,18 +1151,18 @@ class ItemBase extends InventoryItem
 	{
 		super.OnItemLocationChanged(old_owner, new_owner);
 		
-		Man owner_player_old = NULL;
-		Man owner_player_new = NULL;
+		Man ownerPlayerOld = null;
+		Man ownerPlayerNew = null;
 	
 		if (old_owner)   
 		{
 			if (old_owner.IsMan())
 			{
-				owner_player_old = Man.Cast(old_owner);
+				ownerPlayerOld = Man.Cast(old_owner);
 			}
 			else
 			{
-				owner_player_old = Man.Cast(old_owner.GetHierarchyRootPlayer());
+				ownerPlayerOld = Man.Cast(old_owner.GetHierarchyRootPlayer());
 			}
 		}
 		
@@ -1212,44 +1170,40 @@ class ItemBase extends InventoryItem
 		{
 			if (new_owner.IsMan())
 			{
-				owner_player_new = Man.Cast(new_owner);
+				ownerPlayerNew = Man.Cast(new_owner);
 			}
 			else
 			{
-				owner_player_new = Man.Cast(new_owner.GetHierarchyRootPlayer());
+				ownerPlayerNew = Man.Cast(new_owner.GetHierarchyRootPlayer());
 			}
 		}
 		
-		if (owner_player_old != owner_player_new)
+		if (ownerPlayerOld != ownerPlayerNew)
 		{
-			if (owner_player_old)
+			if (ownerPlayerOld)
 			{
 				array<EntityAI> subItemsExit = new array<EntityAI>;
 				GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER,subItemsExit);
 				for (int i = 0; i < subItemsExit.Count(); i++)
 				{
-					ItemBase item_exit = ItemBase.Cast(subItemsExit.Get(i));
-					item_exit.OnInventoryExit(owner_player_old);
+					ItemBase itemExit = ItemBase.Cast(subItemsExit.Get(i));
+					itemExit.OnInventoryExit(ownerPlayerOld);
 				}
 			}
 
-			if (owner_player_new)
+			if (ownerPlayerNew)
 			{
 				array<EntityAI> subItemsEnter = new array<EntityAI>;
 				GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER,subItemsEnter);
 				for (int j = 0; j < subItemsEnter.Count(); j++)
 				{
-					ItemBase item_enter = ItemBase.Cast(subItemsEnter.Get(j));
-					item_enter.OnInventoryEnter(owner_player_new);
+					ItemBase itemEnter = ItemBase.Cast(subItemsEnter.Get(j));
+					itemEnter.OnInventoryEnter(ownerPlayerNew);
 				}
 			}
 		}
 	}
 
-	// -------------------------------------------------------------------------------
-	override void EOnInit(IEntity other, int extra)
-	{
-	}
 	// -------------------------------------------------------------------------------
 	override void EEDelete(EntityAI parent)
 	{
@@ -2095,7 +2049,13 @@ class ItemBase extends InventoryItem
 		OnCombine(other_item);
 	}
 
-	void OnCombine(ItemBase other_item);
+	void OnCombine(ItemBase other_item)
+	{
+		#ifdef SERVER
+		if (!GetHierarchyRootPlayer() && GetHierarchyParent())
+			GetHierarchyParent().IncreaseLifetimeUp();
+		#endif
+	};
 
 	void GetRecipesActions(Man player, out TSelectableActionInfoArray outputList)
 	{
@@ -3096,6 +3056,18 @@ class ItemBase extends InventoryItem
 			m_IsStoreLoad = false;
 			return false;
 		}
+		if (version >= 132)
+		{
+			RemotelyActivatedItemBehaviour raib = GetRemotelyActivatedItemBehaviour();
+			if (raib)
+			{
+				if (!raib.OnStoreLoad(ctx,version))
+				{
+					m_IsStoreLoad = false;
+					return false;
+				}
+			}
+		}
 
 		m_IsStoreLoad = false;
 		return true;
@@ -3119,8 +3091,15 @@ class ItemBase extends InventoryItem
 		{
 			ctx.Write(false); // Keep track of if we should actually read this in or not
 		}
+
 		SaveVariables(ctx);// variable management system
 		SaveAgents(ctx);//agent trasmission system
+		
+		RemotelyActivatedItemBehaviour raib = GetRemotelyActivatedItemBehaviour();
+		if (raib)
+		{
+			raib.OnStoreSave(ctx);
+		}
 	}
 	//----------------------------------------------------------------
 
@@ -3148,6 +3127,9 @@ class ItemBase extends InventoryItem
 		{
 			m_FixDamageSystemInit = false;
 		}
+		
+		if (GetRemotelyActivatedItemBehaviour())
+			GetRemotelyActivatedItemBehaviour().OnAfterLoad();
 	}
 	
 	bool CanBeDisinfected()
@@ -3193,8 +3175,6 @@ class ItemBase extends InventoryItem
 	
 		super.OnVariablesSynchronized();
 	}
-	
-	//bool Consume(float amount, PlayerBase consumer);
 
 	//-------------------------	Quantity
 	//----------------------------------------------------------------
@@ -3269,6 +3249,12 @@ class ItemBase extends InventoryItem
 	{
 		float max = GetQuantityMax();
 		SetQuantity(max);
+	}
+	
+	override void SetQuantityToMinimum()
+	{
+		float min = GetQuantityMin();
+		SetQuantity(min);
 	}
 	//----------------------------------------------------------------
 	//! Sets quantity in normalized 0..1 form between the item's Min a Max values as defined by item's config(for Min 0 and Max 5000, setting 0.5 will result in value 2500)
@@ -3508,7 +3494,7 @@ class ItemBase extends InventoryItem
 	// Converts energy (from Energy Manager) to quantity, if enabled.
 	void ConvertEnergyToQuantity()
 	{
-		if (GetGame().IsServer()  &&  HasEnergyManager()  &&  GetCompEM().HasConversionOfEnergyToQuantity())
+		if (GetGame().IsServer() && HasEnergyManager() && GetCompEM().HasConversionOfEnergyToQuantity())
 		{
 			if (HasQuantity())
 			{
@@ -3522,6 +3508,7 @@ class ItemBase extends InventoryItem
 	{
 		if (!IsServerCheck(allow_client)) 
 			return;
+
 		float min = GetTemperatureMin();
 		float max = GetTemperatureMax();
 		
@@ -3567,9 +3554,30 @@ class ItemBase extends InventoryItem
 	{
 		return ConfigGetFloat("heatIsolation");
 	}
+
 	float GetHeatIsolation()
 	{
 		return m_HeatIsolation;
+	}
+
+	float GetLiquidModifierCoef()
+	{
+		return ConfigGetFloat("liquidModifierCoef");
+	}
+
+	float GetTransferableWetnessCoef()
+	{
+		return ConfigGetFloat("transferableWetnessCoef");
+	}
+
+	float GetDryingIncrements(EDryingIncrementCategory pos)
+	{
+		array<float> increments = new array<float>();
+		ConfigGetFloatArray("dryingIncrements", increments);
+		if (increments.Count() == EnumTools.GetEnumSize(EDryingIncrementCategory))
+			return increments[pos];
+		
+		return 0;
 	}
 	//----------------------------------------------------------------
 	override void SetWet(float value, bool allow_client = false)
@@ -4423,13 +4431,7 @@ class ItemBase extends InventoryItem
 	{
 		if (!hasRootAsPlayer)
 		{
-			if (!hasParent)
-			{
-				// drying on ground
-				if (m_VarWet > m_VarWetMin)
-					AddWet(delta * GameConstants.WETNESS_RATE_DRYING_GROUND);
-			}
-			else if (refParentIB)
+			if (refParentIB)
 			{
 				// parent is wet
 				if ((refParentIB.GetWet() >= GameConstants.STATE_SOAKING_WET) && (m_VarWet < m_VarWetMax))
@@ -4439,26 +4441,31 @@ class ItemBase extends InventoryItem
 					AddWet(delta * GameConstants.WETNESS_RATE_WETTING_LIQUID);
 				// drying
 				else if (m_VarWet > m_VarWetMin)						
-					AddWet(delta * GameConstants.WETNESS_RATE_DRYING_INSIDE);
+					AddWet(-1 * delta * GetDryingIncrements(EDryingIncrementCategory.GROUND) * 2);
+			}
+			else
+			{
+				// drying on ground or inside non-itembase (car, ...)
+				if (m_VarWet > m_VarWetMin)
+					AddWet(-1 * delta * GetDryingIncrements(EDryingIncrementCategory.GROUND));
 			}
 		}
 	}
 	
 	void ProcessItemTemperature(float delta, bool hasParent, bool hasRootAsPlayer, ItemBase refParentIB)
 	{
-		if (!hasRootAsPlayer)
+		if (!hasRootAsPlayer && GetTemperature() > GetTemperatureMin() && !IsFireplace())
 		{
-			if (!hasParent)
-			{
-				// cooling on ground
-				if ((GetTemperature() > GetTemperatureMin()) && !IsFireplace())
-					AddTemperature(delta * GameConstants.TEMPERATURE_RATE_COOLING_GROUND);
-			}
-			else if (refParentIB)
+			if (refParentIB)
 			{
 				// cooling of an item inside other
-				if ((GetTemperature() > GetTemperatureMin()) && !IsFireplace() && (GetTemperature() > refParentIB.GetTemperature()))
+				if (GetTemperature() > refParentIB.GetTemperature())
 					AddTemperature(delta * GameConstants.TEMPERATURE_RATE_COOLING_INSIDE);
+			}
+			else
+			{
+				// cooling of an item on ground or inside non-itembase (car, ...)
+				AddTemperature(delta * GameConstants.TEMPERATURE_RATE_COOLING_INSIDE);
 			}
 		}
 	}
@@ -4587,9 +4594,30 @@ class ItemBase extends InventoryItem
 		return false;
 	}
 	
-	//! Remotely controlled devices helpers
-	RemotelyActivatedItemBehaviour GetRemotelyActivatedItemBehaviour();
-	
+	bool PairWithDevice(notnull ItemBase otherDevice)
+	{
+		if (GetGame().IsServer())
+		{
+			ItemBase explosive = otherDevice;
+			RemoteDetonatorTrigger trg = RemoteDetonatorTrigger.Cast(this);
+			if (!trg)
+			{
+				trg = RemoteDetonatorTrigger.Cast(otherDevice);
+				explosive = this;
+			}
+			
+			explosive.PairRemote(trg);
+			trg.SetControlledDevice(explosive);
+			
+			int persistentID = RemotelyActivatedItemBehaviour.GeneratePersistentID();
+			trg.SetPersistentPairID(persistentID);
+			explosive.SetPersistentPairID(persistentID);
+			
+			return true;
+		}
+		return false;
+	}
+
 	#ifdef DEVELOPER
 	override void SetDebugItem()
 	{

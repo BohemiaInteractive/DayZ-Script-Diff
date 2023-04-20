@@ -1,3 +1,3 @@
-class OfficerHat extends Clothing
+class OfficerHat extends HeadGear_Base
 {
 }

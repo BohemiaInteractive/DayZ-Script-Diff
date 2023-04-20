@@ -1,21 +1,15 @@
-class SantasBeard extends Clothing
+class SantasBeard extends Mask_Base
 {
-	override bool CanPutAsAttachment( EntityAI parent )
-	{
-		if (!super.CanPutAsAttachment(parent)) {return false;}
-		
-		Clothing headgear = Clothing.Cast(parent.FindAttachmentBySlotName("Headgear"));
-		if ( headgear && (headgear.ConfigGetBool("noMask") && !PumpkinHelmet.Cast(headgear) && !WeldingMask.Cast(headgear)) )
-		{
-			return false;
-		}
-		
-		return true;
-	}
-	
 	override void SetActions()
 	{
 		super.SetActions();
 		AddAction(ActionWringClothes);
+	}
+	
+	override protected void InitGlobalExclusionValues()
+	{
+		super.InitGlobalExclusionValues();
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_0);
 	}
 }

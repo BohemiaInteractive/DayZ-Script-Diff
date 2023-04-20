@@ -19,7 +19,7 @@ class Rifle_Base extends Weapon_Base
 
 		// setup state machine
 		// basic weapon states
-		WeaponStateBase E = new WeaponStableState(this, NULL, DefaultAnimState.DEFAULT);
+		WeaponStableState E = new WeaponStableState(this, NULL, DefaultAnimState.DEFAULT);
 
 		WeaponStateBase Mech = new WeaponCharging(this, NULL, WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_CLOSED);
 
@@ -34,7 +34,7 @@ class Rifle_Base extends Weapon_Base
 		m_fsm.AddTransition(new WeaponTransition(Mech	, _fin_,	E));
 		m_fsm.AddTransition(new WeaponTransition(Mech	, _abt_,	E));
 		
-		m_fsm.SetInitialState(E);
+		SetInitialState(E);
 
 		SelectionBulletHide();
 

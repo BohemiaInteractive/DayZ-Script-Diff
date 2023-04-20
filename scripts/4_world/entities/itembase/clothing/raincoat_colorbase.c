@@ -1,4 +1,4 @@
-class Raincoat_ColorBase extends Clothing {};
+class Raincoat_ColorBase extends Top_Base {};
 class Raincoat_Orange extends Raincoat_ColorBase {};
 class Raincoat_Green extends Raincoat_ColorBase {};
 class Raincoat_Yellow extends Raincoat_ColorBase {};

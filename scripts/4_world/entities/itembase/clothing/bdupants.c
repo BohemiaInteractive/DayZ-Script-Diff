@@ -1,4 +1,4 @@
-class BDUPants extends Clothing
+class BDUPants extends Pants_Base
 {
 	override void SetActions()
 	{

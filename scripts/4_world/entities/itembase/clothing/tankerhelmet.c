@@ -1,4 +1,4 @@
-class TankerHelmet extends Clothing
+class TankerHelmet extends HeadGear_Base
 {
 	override void SetActions()
 	{

@@ -11,24 +11,29 @@
 class DayZPlayerCameraResult
 {
 
-	vector		m_CameraTM[4];			//!< transformation matrix - pos + orient of the camera
-	float 		m_fFovMultiplier;		//!< fov multiplier - 1.0 default - used for modifying fov - 
-	float 		m_fFovAbsolute;			//!< fov absolute value override - -1.0 default, if set - overrides absolute fov setting
-	float		m_fNearPlane;			//!< nearplane distance
-	float 		m_fPositionModelSpace;  //!< 0.0 position is in heading space, 1.0 position is in model space
-	float 		m_fDistance;			//!< camera distance (external cameras only)
-	float 		m_fUseHeading;			//!< 0..1 (0 uses direct dir returned, 1 uses heading from player)
-	float		m_fPredictCollisionRadius; //!< sphere radius used for collision prediction
+	vector		m_CameraTM[4];				//!< transformation matrix - pos + orient of the camera
+	float 		m_fFovMultiplier;			//!< fov multiplier - 1.0 default - used for modifying fov - 
+	float 		m_fFovAbsolute;				//!< fov absolute value override - -1.0 default, if set - overrides absolute fov setting
+	float		m_fNearPlane;				//!< nearplane distance
+	float 		m_fPositionModelSpace;  	//!< 0.0 position is in heading space, 1.0 position is in model space
+	float 		m_fDistance;				//!< camera distance (external cameras only)
+	float 		m_fUseHeading;				//!< 0..1 (0 uses direct dir returned, 1 uses heading from player)
+	float		m_fPredictCollisionRadius;	//!< sphere radius used for collision prediction
+
+	int 		m_iDirectBone;				//!< -1 no bone, >= 0 - bone index camera is bound to, m_CameraTM is offset to the bone 
+	int 		m_iDirectBoneMode;			//! 0 not used, 1 - pos, 2 - rot, 3 - pos+rot applied as a parent to m_CameraTM, 4 as 3 but cam aligned with Y
+	float 		m_fInsideCamera;			//!< 0..1 (0 normal lod, 1 inside lod), >0.7 -> inside
+	bool		m_bUpdateWhenBlendOut;		//!< true - camera is updated when blending to new camera (Ironsights == false)
+	float 		m_fShootFromCamera;			//!< 1(default) - uses shoot from camera (+aiming sway), 0 pure weapon shoot (ironsights == 0)
+	float		m_fIgnoreParentRoll;		//!< 1 - resets base transforms roll
+	float		m_fIgnoreParentPitch;		//!< 1 - resets base transforms pitch
+	float		m_fIgnoreParentYaw;			//!< 1 - resets base transforms yaw
+	bool		m_bUpdateEveryFrame;		//!< Whether the camera updates the next frame or blends with next character update
 	
-	int 		m_iDirectBone;			//!< -1 no bone, >= 0 - bone index camera is bound to, m_CameraTM is offset to the bone 
-	int 		m_iDirectBoneMode;		//! 0 not used, 1 - pos, 2 - rot, 3 - pos+rot applied as a parent to m_CameraTM, 4 as 3 but cam aligned with Y
-	float 		m_fInsideCamera;		//!< 0..1 (0 normal lod, 1 inside lod), >0.7 -> inside
-	bool		m_bUpdateWhenBlendOut;	//!< true - camera is updated when blending to new camera (Ironsights == false)
-	float 		m_fShootFromCamera;		//!< 1(default) - uses shoot from camera (+aiming sway), 0 pure weapon shoot (ironsights == 0)
-	float		m_fIgnoreParentRoll;	//!< 1 - resets base transforms roll
-	float		m_fIgnoreParentPitch;	//!< 1 - resets base transforms pitch
-	float		m_fIgnoreParentYaw;   //!< 1 - resets base transforms yaw
-	IEntity		m_CollisionIgnoreEntity;//!< ignore entity in 3rd person camera collision solver
+	vector		m_OwnerTM[4];				//!< override automatically calculated owner transform during rendering (default - false)
+	bool		m_bOwnerTMOverride;			//!< The world space transform of the owner to the camera
+
+	IEntity		m_CollisionIgnoreEntity;	//!< ignore entity in 3rd person camera collision solver
 
 	//! cannot be instanced from script (always created from C++)
 	private void DayZPlayerCameraResult()
@@ -54,29 +59,34 @@ class DayZPlayerCamera
 		m_pInput 		= pInput;
 	}
 
-	//! this overrides freelok for cameras
-	bool		CanFreeLook()
+	//! this overrides freelook for cameras
+	bool CanFreeLook()
 	{
 		return true;
 	}
 
 	//! virtual callback - called when camera is created
-	void 		OnActivate (DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
+	void OnActivate(DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
 	{
 	}
 
 	//!	virtual callback - called each frame
-	void 		OnUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
+	void OnUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
 	{
 	}
 
 	//!	helper to blend between cameras 
 	//! ret[0] - up down angle
 	//! ret[1] - left right angle
-	//! ret[2] - roll
-	vector 		GetBaseAngles()
+	//! ret[2] - roll angle
+	vector GetBaseAngles()
 	{
-		return	"0 0 0";
+		return "0 0 0";
+	}
+
+	vector GetAdditiveAngles()
+	{
+		return "0 0 0";
 	}
 	
 	string GetCameraName()
@@ -84,9 +94,24 @@ class DayZPlayerCamera
 		return "DayZPlayerCamera";
 	}
 	
+	float GetCurrentYaw()
+	{
+		return -1;
+	}
+	
 	float GetCurrentPitch()
 	{
 		return -1;
+	}
+	
+	float GetCurrentRoll()
+	{
+		return -1;
+	}
+
+	vector GetCurrentOrientation()
+	{
+		return Vector(GetCurrentYaw(), GetCurrentPitch(), GetCurrentRoll());
 	}
 	
 	bool IsCamera3rdRaised()
@@ -425,16 +450,13 @@ class DayZPlayerType
 	
 	AnimSoundEvent GetSoundWeaponEvent(int event_id)
 	{
-		for(int i = 0; i < m_animSoundEventsAttack.Count(); i++)
+		foreach (AnimSoundEvent soundEvent : m_animSoundEventsAttack)
 		{
-			AnimSoundEvent soundEvent = m_animSoundEventsAttack.Get(i);
-			if(soundEvent.m_iID == event_id)
-			{
+			if (soundEvent.m_iID == event_id)
 				return soundEvent;
-			}
 		}
 
-		return NULL;
+		return null;
 	}
 	
 	//! register hit components for AI melee (used by attacking AI)
@@ -648,6 +670,17 @@ enum DayZPlayerConstants
 	VEHICLESEAT_PASSENGER_L,
 	VEHICLESEAT_PASSENGER_R,
 
+	//! death types
+	DEATH_DEFAULT = -1,			//! not defining in C++ as it is only used in script for undefined type
+	DEATH_PULL_OUT_TRANSPORT,	//! transport death -> death - special handling for pulling a dead player out of a vehicle
+	DEATH_BODY,					//! locomotion -> death - normal death animation while a player is conciscious 
+	DEATH_FAST,					//! locomotion -> death - faster animation, for impulse driven deaths, i.e. hit by vehicle
+	DEATH_WATER,				//! swimming -> death 
+	DEATH_FALL,					//! falling -> death 
+	DEATH_UNCON_ON_LAND,		//! unconscious -> death - while not in water
+	DEATH_UNCON_IN_WATER,		//! unconscious -> death - while in water
+	// - Type not used for "swimming to death" or "transport to death"
+
     //! ---------------------------------------------------------
     //! ---------------------- COMMAND IDs ----------------------
     //! ---------------------------------------------------------
@@ -752,6 +785,8 @@ enum DayZPlayerConstants
 	CMD_ACTIONMOD_UNFOLDITEM_ONCE		= 525,		// erc,cro
 	CMD_ACTIONMOD_PRESS_TRIGGER			= 526,		// erc,cro
 	CMD_ACTIONMOD_STOP_ALARM			= 251,
+	CMD_ACTIONMOD_EAT_PILL			    = 527,      // erc,cro
+	CMD_ACTIONMOD_EAT_TABLET			= 528,      // erc,cro
 
 	CMD_ACTIONMOD_DROPITEM_HANDS		= 900,		// erc, cro
 	CMD_ACTIONMOD_DROPITEM_INVENTORY	= 901,		// erc, cro
@@ -851,6 +886,8 @@ enum DayZPlayerConstants
 	CMD_ACTIONFB_RAISE_FLAG				= 600,		// erc?
 	CMD_ACTIONFB_LOWER_FLAG				= 601,		// erc?
 	CMD_ACTIONFB_STOP_ALARM				= 251,
+	CMD_ACTIONFB_EAT_PILL				= 527,      // pne
+	CMD_ACTIONFB_EAT_TABLET				= 528,      // pne
 
 	CMD_ACTIONFB_DROPITEM_HANDS		= 900,			// pne, pne back
 	

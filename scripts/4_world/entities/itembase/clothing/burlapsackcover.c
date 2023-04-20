@@ -1,4 +1,4 @@
-class BurlapSackCover extends ClothingBase
+class BurlapSackCover extends HeadGear_Base
 {
 	PlayerBase m_Player;
 

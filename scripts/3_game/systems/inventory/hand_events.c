@@ -39,11 +39,26 @@ class HandEventBase
 {
 	int m_EventID = 0;
 	int m_AnimationID = -1;
-	Man m_Player;
+	DayZPlayer m_Player;
 	ref InventoryLocation m_Src;
 
-	void HandEventBase (Man p = null, InventoryLocation src = null) { m_Player = p; m_Src = src; }
+	void HandEventBase (Man p = null, InventoryLocation src = null) { Class.CastTo(m_Player, p); m_Src = src; }
 	HandEventID GetEventID () { return m_EventID; }
+
+	bool IsAuthoritative()
+	{
+		return m_Player && (m_Player.GetInstanceType() != DayZPlayerInstanceType.INSTANCETYPE_CLIENT && m_Player.GetInstanceType() != DayZPlayerInstanceType.INSTANCETYPE_REMOTE);
+	}
+
+	bool IsOwner()
+	{
+		return m_Player && (m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT || m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_SERVER || m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_SINGLEPLAYER);
+	}
+
+	bool IsProxy()
+	{
+		return m_Player && (m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_REMOTE || m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_REMOTE);
+	}
 
 	void ReadFromContext (ParamsReadContext ctx) { } // actual read is in CreateHandEventFromContext
 
@@ -67,7 +82,9 @@ class HandEventBase
 	int GetAnimationID () { return m_AnimationID; }
 	bool AcquireInventoryJunctureFromServer (notnull Man player) { return false; }
 	bool CheckRequest () { return true; }
+	bool CheckRequestEx (InventoryValidation validation) { return CheckRequest(); }
 	bool CanPerformEvent () { return true; }
+	bool CanPerformEventEx (InventoryValidation validation) { return CanPerformEvent(); }
 	bool CheckRequestSrc () { return true; }
 	bool IsServerSideOnly () { return false; }
 
@@ -283,18 +300,14 @@ class HandEventMoveTo extends HandEventBase
 	}
 };
 
-class HandEventDrop extends HandEventBase
+//! Abstracted event, not to be used, only inherited
+class HandEventRemove extends HandEventBase
 {
-	void HandEventDrop (Man p = null, InventoryLocation src = null) { m_EventID = HandEventID.DROP; }
-
 	override InventoryLocation GetDst ()
 	{
-		InventoryLocation dst = new InventoryLocation;
-		GameInventory.SetGroundPosByOwner(m_Player, GetSrcEntity(), dst);
-		
-		return dst;
+		return m_Dst;
 	}
-	
+
 	override bool CheckRequestSrc ()
 	{
 		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
@@ -338,12 +351,91 @@ class HandEventDrop extends HandEventBase
 		{
 			return TryAcquireInventoryJunctureFromServer(player, src, dst);
 		}
-		Error("[hndfsm] HandEventDrop. AcquireInventoryJunctureFromServer: no src or dst for ev=" + DumpToString());
+		Error("[hndfsm] HandEventThrow. AcquireInventoryJunctureFromServer: no src or dst for ev=" + DumpToString());
 		return JunctureRequestResult.ERROR;
 	}
+	
+	ref InventoryLocation m_Dst;
 };
 
-class HandEventThrow extends HandEventDrop
+class HandEventDrop extends HandEventRemove
+{
+	void HandEventDrop (Man p = null, InventoryLocation src = null)
+	{
+		m_EventID = HandEventID.DROP;
+		m_CanPerformDrop = true;
+	}
+
+	override void ReadFromContext(ParamsReadContext ctx)
+	{
+		super.ReadFromContext(ctx);
+
+		ctx.Read(m_CanPerformDrop);
+		OptionalLocationReadFromContext(m_Dst, ctx);
+		if (!m_Dst)
+		{
+			m_Dst = new InventoryLocation();
+		}
+	}
+
+	override void WriteToContext(ParamsWriteContext ctx)
+	{
+		super.WriteToContext(ctx);
+
+		ctx.Write(m_CanPerformDrop);
+		OptionalLocationWriteToContext(m_Dst, ctx);
+	}
+
+	override bool CheckRequestEx(InventoryValidation validation)
+	{
+		//! Check to see if this is the initial call from the server (but the event originated from a client)
+		if (!validation.m_IsJuncture && IsAuthoritative())
+		{
+			m_CanPerformDrop = GameInventory.SetGroundPosByOwner(m_Player, GetSrcEntity(), m_Dst);
+		}
+
+		if (!m_CanPerformDrop)
+		{
+			validation.m_Reason = InventoryValidationReason.DROP_PREVENTED;
+			return false;
+		}
+
+		return super.CheckRequestEx(validation);
+	}
+	
+	override bool CanPerformEventEx(InventoryValidation validation)
+	{
+		if (!m_CanPerformDrop)
+		{
+			return false;
+		}
+
+		//! On multiplayer client, if this is the initial call then we are waiting for the server to setup this event still
+		if (!validation.m_IsJuncture && !validation.m_IsRemote && !GetDst() && (GetGame().IsMultiplayer() && GetGame().IsClient()))
+		{
+			return true;
+		}
+		
+		//! Singleplayer or server was initial caller
+		if (!validation.m_IsRemote && !GetDst())
+		{
+			m_Dst = new InventoryLocation();
+			m_CanPerformDrop = GameInventory.SetGroundPosByOwner(m_Player, GetSrcEntity(), m_Dst);
+			
+			if (!m_CanPerformDrop)
+			{
+				validation.m_Reason = InventoryValidationReason.DROP_PREVENTED;
+				return false;
+			}
+		}
+
+		return super.CanPerformEventEx(validation);
+	}
+	
+	bool m_CanPerformDrop;
+};
+
+class HandEventThrow extends HandEventRemove
 {
 	void HandEventThrow (Man p = null, InventoryLocation src = null) 
 	{
@@ -365,11 +457,6 @@ class HandEventThrow extends HandEventDrop
 		}
 	}
 	
-	override InventoryLocation GetDst ()
-	{
-		return m_Dst;
-	}
-	
 	override void ReadFromContext (ParamsReadContext ctx)
 	{
 		super.ReadFromContext(ctx);
@@ -385,6 +472,7 @@ class HandEventThrow extends HandEventDrop
 		m_Force[1] = y;
 		m_Force[2] = z;
 	}
+	
 	override void WriteToContext (ParamsWriteContext ctx)
 	{
 		super.WriteToContext(ctx);
@@ -400,8 +488,6 @@ class HandEventThrow extends HandEventDrop
 	vector GetForce() { return m_Force; }
 	
 	vector m_Force;	
-	
-	ref InventoryLocation m_Dst;
 };
 
 class HandEventSwap extends HandEventBase

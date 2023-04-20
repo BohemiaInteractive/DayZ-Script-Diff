@@ -1,4 +1,4 @@
-class SantasHat extends Clothing
+class SantasHat extends HeadGear_Base
 {
 	override void SetActions()
 	{

@@ -364,13 +364,22 @@ class IngameHud extends Hud
 		m_BadgesWidgetNames.Set( NTFKEY_BLEEDISH, "Bleeding" );
 		m_BadgesWidgetNames.Set( NTFKEY_LIVES, "Shock" );
 		m_BadgesWidgetNames.Set( NTFKEY_PILLS, "Pills" );
+		m_BadgesWidgetNames.Set( NTFKEY_LEGS, "InjuredLegs" );
+		
+		int badgeCountMax = EnumTools.GetLastEnumValue(eBadgeLevel);
 	
 		for ( i = 0; i < m_BadgesWidgetNames.Count(); i++ )
 		{
 			string badge_name = m_BadgesWidgetNames.GetElement(  i);
 			key = m_BadgesWidgetNames.GetKey( i );
 			ImageWidget badge_widget;
+
 			Class.CastTo(badge_widget,  m_Badges.FindAnyWidget( badge_name ) );
+			
+			for ( int q = 0; q < badgeCountMax; q++ )
+			{
+				badge_widget.LoadImageFile( q, "set:dayz_gui image:icon" + badge_name + q );
+			}
 			m_BadgesWidgets.Set( key, badge_widget );
 			badge_widget.Show( false );
 			m_BadgesWidgetDisplay.Set( key, false );
@@ -614,13 +623,17 @@ class IngameHud extends Hud
 		for ( int i = 0; i < m_BadgesWidgetDisplay.Count(); i++ )
 		{
 			int badge_key = m_BadgesWidgetDisplay.GetKey( i );
+			int badge_value = m_BadgesWidgetDisplay.Get( badge_key );
 			string badge_name = m_BadgesWidgetNames.Get( badge_key );
+			
 			ImageWidget badge_widget
 			Class.CastTo(badge_widget,  m_Badges.FindAnyWidget( badge_name ) );
 			if ( badge_widget )
 			{
-				if ( m_BadgesWidgetDisplay.Get( badge_key ) > 0 )
+				if ( badge_value > 0 )
 				{
+					badge_widget.SetImage(badge_value - 1);
+
 					badge_widget.Show( true );
 					m_AnyBadgeVisible = true;
 					if( badge_key == NTFKEY_BLEEDISH )
@@ -1339,27 +1352,26 @@ class IngameHud extends Hud
 	
 	void ShowPlayerTag( float timeslice )
 	{
-		if( m_CurrentTaggedPlayer && m_CurrentTaggedPlayer.GetIdentity() )
+		if ( m_CurrentTaggedPlayer && m_CurrentTaggedPlayer.GetIdentity() )
 		{
-			if( !m_PlayerTag )
+			if ( !m_PlayerTag )
 			{
 				m_PlayerTag = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/hud/hud_player_tag.layout");
 				m_PlayerTagText = TextWidget.Cast( m_PlayerTag.FindAnyWidget( "TagText" ) );
-				//m_PlayerTagText.SetText( m_CurrentTaggedPlayer.GetIdentity().GetName() );
 			}
 			m_PlayerSpineIndex = m_CurrentTaggedPlayer.GetBoneIndex( "Spine2" );
 			vector player_pos = m_CurrentTaggedPlayer.GetBonePositionWS( m_PlayerSpineIndex );
 			vector screen_pos = GetGame().GetScreenPosRelative( player_pos );
 			
-			if( screen_pos[2] > 0 )
+			if ( screen_pos[2] > 0 )
 			{
-				if( screen_pos[0] > 0 && screen_pos[0] < 1 )
+				if ( screen_pos[0] > 0 && screen_pos[0] < 1 )
 				{
-					if( screen_pos[1] > 0 && screen_pos[1] < 1 )
+					if ( screen_pos[1] > 0 && screen_pos[1] < 1 )
 					{
 						m_PlayerTagText.SetAlpha( Math.Clamp( m_PlayerTagText.GetAlpha() + timeslice * 10, 0, 1 ) );
 						m_PlayerTag.SetPos( 0.55, 0.55 );
-						m_PlayerTagText.SetText( m_CurrentTaggedPlayer.GetIdentity().GetName() );
+						m_PlayerTagText.SetText( m_CurrentTaggedPlayer.GetIdentity().GetPlainName() );
 						
 						//m_PlayerTagText.SetSize( 1, 1 - screen_pos[2] / 25  );
 						return;
@@ -1368,11 +1380,11 @@ class IngameHud extends Hud
 			}
 		}
 		
-		if( m_PlayerTag )
+		if ( m_PlayerTag )
 		{
 			float new_alpha = Math.Clamp( m_PlayerTagText.GetAlpha() - timeslice * 10, 0, 1 );
 			m_PlayerTagText.SetAlpha( Math.Clamp( m_PlayerTagText.GetAlpha() - timeslice * 10, 0, 1 ) );
-			if( new_alpha == 0 )
+			if ( new_alpha == 0 )
 			{
 				m_PlayerTagText.SetText( "" );
 				m_CurrentTaggedPlayer = null;
@@ -1488,6 +1500,17 @@ class IngameHud extends Hud
 			{
 				m_HitDirEffectArray.Remove(i);
 			}
+		}
+	}
+	
+	void Debug()
+	{
+		foreach (int val:m_BadgesWidgetDisplay)
+		{
+			int key = m_BadgesWidgetDisplay.GetKeyByValue(val);
+			Print(EnumTools.EnumToString(eDisplayElements, key));
+			Print(val);
+			Print("---------------------");
 		}
 	}
 	

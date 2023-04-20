@@ -89,24 +89,29 @@ class ActionGetOutTransport: ActionBase
 			if (trans)
 			{
 				GetOutTransportActionData got_action_data = GetOutTransportActionData.Cast(action_data);
+
 				Car car;
 				if (Class.CastTo(car, trans))
 				{
 					ProcessGetOutActionData( car, got_action_data );
-
-					if ( !got_action_data.m_WasJumpingOut )
-					{
-						vehCommand.GetOutVehicle();
-					}
-					else
-					{
-						vehCommand.JumpOutVehicle();
-					}
-					
-					GetDayZGame().GetBacklit().OnLeaveCar();		
-					if ( action_data.m_Player.GetInventory() ) 
-						action_data.m_Player.GetInventory().LockInventory(LOCK_FROM_SCRIPT);							
 				}
+
+				if ( !got_action_data.m_WasJumpingOut )
+				{
+					vehCommand.GetOutVehicle();
+				}
+				else
+				{
+					vehCommand.JumpOutVehicle();
+				}
+				
+				if (car)
+				{
+					GetDayZGame().GetBacklit().OnLeaveCar();
+				}
+
+				if ( action_data.m_Player.GetInventory() ) 
+					action_data.m_Player.GetInventory().LockInventory(LOCK_FROM_SCRIPT);
 			}
 		}
 	}

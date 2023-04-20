@@ -459,6 +459,7 @@ class AnimatedActionBase : ActionBase
 			if ( GetGame().IsServer() )
 			{
 				OnEndServer(action_data);
+				action_data.m_Player.SetSoundCategoryHash(0);
 				//ApplyModifiers(action_data);
 			}
 			else

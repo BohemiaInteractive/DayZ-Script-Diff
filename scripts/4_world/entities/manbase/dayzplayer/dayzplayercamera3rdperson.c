@@ -21,7 +21,7 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 		}
 
 		m_fCameraLRShoulderVel[0]	= 0.0;
-		m_fRoll						= 0.0;
+		m_CurrentCameraRoll			= 0.0;
 		m_WeaponSwayModifier		= 1;
 		m_fLeanDistance				= 0.3;
 		m_fPredictCollisionRadius   = 0.5;
@@ -32,12 +32,16 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 	override void 		OnActivate(DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
 	{
 		super.OnActivate(pPrevCamera, pPrevCameraResult);
+
 		if (pPrevCamera)
 		{
-			vector 	f = pPrevCamera.GetBaseAngles();
-			m_fUpDownAngle		= f[0]; 
-			m_fLeftRightAngle	= f[1]; 
-			m_fUpDownAngleAdd	= f[2];
+			vector baseAngles		= pPrevCamera.GetBaseAngles();
+			m_fUpDownAngle			= baseAngles[0]; 
+			m_fLeftRightAngle		= baseAngles[1]; 
+
+			vector addAngles		= pPrevCamera.GetAdditiveAngles();
+			m_fUpDownAngleAdd		= addAngles[0];
+			m_fLeftRightAngleAdd	= addAngles[1];
 		}
 	}
 
@@ -47,9 +51,8 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 		m_pPlayer.GetMovementState(m_MovementState);
 
 		//! update angles from input 
-		float 	udAngle 	= UpdateUDAngle(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
-		m_CurrentCameraPitch = udAngle;
-		m_fLeftRightAngle	= UpdateLRAngle(m_fLeftRightAngle, CONST_LR_MIN, CONST_LR_MAX, pDt);
+		m_CurrentCameraYaw		= UpdateLRAngleUnlocked(m_fLeftRightAngle, m_fLeftRightAngleAdd, CONST_LR_MIN, CONST_LR_MAX, pDt);
+		m_CurrentCameraPitch	= UpdateUDAngleUnlocked(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
 
 		ProcessCameraShake(pDt, m_fLeftRightAngle, m_fUpDownAngleAdd);
 
@@ -65,14 +68,8 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 
 		float 	shoulderDist = m_fCameraLRShoulder * m_fShoulderWidth + m_MovementState.m_fLeaning * m_fLeanDistance;
 		
-		//! 
-		vector rot;
-		rot[0] = m_fLeftRightAngle;
-		rot[1] = udAngle;
-		rot[2] = m_fRoll;
-		
-		Math3D.YawPitchRollMatrix(rot, pOutResult.m_CameraTM);
-		//! Print(m_fLeftRightAngle);
+		//!		
+		Math3D.YawPitchRollMatrix(GetCurrentOrientation(), pOutResult.m_CameraTM);
 
 		//! base bone pos 
 		if (m_iBoneIndex != -1)
@@ -111,13 +108,21 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 		UpdateCameraNV(PlayerBase.Cast(m_pPlayer));
 	}
 
-	//
 	override vector GetBaseAngles()
 	{
 		vector a;
 		a[0] = m_fUpDownAngle;
 		a[1] = m_fLeftRightAngle;
-		a[2] = m_fUpDownAngleAdd;
+		a[2] = 0;
+		return a;
+	}
+
+	override vector GetAdditiveAngles()
+	{
+		vector a;
+		a[0] = m_fUpDownAngleAdd;
+		a[1] = m_fLeftRightAngleAdd;
+		a[2] = 0;
 		return a;
 	}
 	
@@ -133,14 +138,15 @@ class DayZPlayerCamera3rdPerson extends DayZPlayerCameraBase
 	protected 	float 	m_fDistance;		//!< distance from start
 	protected 	float 	m_fShoulderWidth;	//!< shoulder camera widths
 	protected 	bool	m_bShoulderInLS;	//!< true - shoulder is in local space
-	protected 	float 	m_fRoll;			//!< camera roll
+	protected 	float 	m_fRoll;			//!< camera roll (deprecated)
 	protected	float	m_fLeanDistance;	//!< shift on leaning
 
 
 	//! runtime values 
-	protected 	float 	m_fUpDownAngle;		//!< up down angle in rad
-	protected 	float 	m_fUpDownAngleAdd;	//!< up down angle in rad
-	protected 	float 	m_fLeftRightAngle;	//!< left right angle in rad (in freelook only)
+	protected 	float 	m_fUpDownAngle;			//!< up down angle in rad
+	protected 	float 	m_fUpDownAngleAdd;		//!< up down angle in rad
+	protected 	float 	m_fLeftRightAngle;		//!< left right angle in rad (in freelook only)
+	protected 	float 	m_fLeftRightAngleAdd;	//!< left right angle in rad (in freelook only)
 
 	//! shoulder offsets
 	protected float 	m_fCameraLRShoulder;			// -1..1 shoulderness :)
@@ -238,6 +244,7 @@ class DayZPlayerCamera3rdPersonClimb extends DayZPlayerCamera3rdPersonErc
 		m_fDistance 		= 1.0;
 		m_CameraOffsetMS	= "0.0 0.3 -0.6";
 		m_iBoneIndex		= pPlayer.GetBoneIndexByName("Spine");
+		m_fPredictCollisionRadius = 0.5;
 	}		
 }
 
@@ -276,9 +283,9 @@ class DayZPlayerCamera3rdPersonErcSpr extends DayZPlayerCamera3rdPersonErc
 		m_pPlayer.GetBoneTransformLS(m_iPelvisBone, tm);
 		//! basically -> transform up vector (0,1,0) and read x coord -> and set is as roll
 		float 	xShift = tm[1][0];
-		m_fRoll = xShift * 3.0;	// 3 is just made up value i like :)
+		m_CurrentCameraRoll = xShift * 3.0;	// 3 is just made up value i like :)
 
-		// m_fRoll = (sin(1.5 * m_fTime)); //  + 0.3 * sin(3.6 * m_fTime) + 0.2 * sin(0.7 * m_fTime)) / 1.3 * 3;
+		// m_CurrentCameraRoll = (sin(1.5 * m_fTime)); //  + 0.3 * sin(3.6 * m_fTime) + 0.2 * sin(0.7 * m_fTime)) / 1.3 * 3;
 
 		//! prev update 
 		super.OnUpdate(pDt, pOutResult);
@@ -457,13 +464,11 @@ class DayZPlayerCamera3rdPersonProneBase extends DayZPlayerCamera3rdPerson
 	override void 		OnUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
 	{
 		//! update angles from input 
-		// 
-		float 	udAngle 	= UpdateUDAngle(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
-		m_CurrentCameraPitch = udAngle;
+		m_CurrentCameraPitch	= UpdateUDAngleUnlocked(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
 
-		float 	orientYaw	= m_pPlayer.GetOrientation()[0];
-		float 	headYaw 	= m_pInput.GetHeadingAngle() * Math.RAD2DEG;	//! this is actually negative to yaw
-		float 	lrAngle		= -fixAngle_180_180(orientYaw + headYaw);		
+		float orientYaw			= m_pPlayer.GetOrientation()[0];
+		float headYaw			= m_pInput.GetHeadingAngle() * Math.RAD2DEG;	//! this is actually negative to yaw
+		m_CurrentCameraYaw		= -fixAngle_180_180(orientYaw + headYaw);		
 
 		// Print("OY: " + orientYaw.ToString() + " HY: " + headYaw.ToString());
 	
@@ -483,14 +488,7 @@ class DayZPlayerCamera3rdPersonProneBase extends DayZPlayerCamera3rdPerson
 		float 	shoulderDist = m_fCameraLRShoulder * m_fShoulderWidth;
 		
 		//! 
-		vector rot;
-		rot[0] = lrAngle;
-		rot[1] = udAngle;
-		rot[2] = m_fRoll;
-		
-		Math3D.YawPitchRollMatrix(rot, pOutResult.m_CameraTM);
-		// Print(m_fLeftRightAngle);
-
+		Math3D.YawPitchRollMatrix(GetCurrentOrientation(), pOutResult.m_CameraTM);
 
 		//! base bone pos 
 		if (m_iBoneIndex != -1)
@@ -509,15 +507,10 @@ class DayZPlayerCamera3rdPersonProneBase extends DayZPlayerCamera3rdPerson
 		lsOffset[0] = lsOffset[0] + shoulderDist;
 
 		// ls offset + ms offset + shoulder width			
-		pOutResult.m_CameraTM[3]	= pOutResult.m_CameraTM[3] + pOutResult.m_CameraTM[0] * lsOffset[0] + pOutResult.m_CameraTM[1] * lsOffset[1] + pOutResult.m_CameraTM[2] * lsOffset[2] + msOffset;
+		pOutResult.m_CameraTM[3] = pOutResult.m_CameraTM[3] + pOutResult.m_CameraTM[0] * lsOffset[0] + pOutResult.m_CameraTM[1] * lsOffset[1] + pOutResult.m_CameraTM[2] * lsOffset[2] + msOffset;
 
-		float 	lookAtLR 	= UpdateLRAngleLookAt(-180, 180, pDt);
-
-		rot[0] = lookAtLR;
-		rot[1] = udAngle;
-		rot[2] = m_fRoll;
-		
-		Math3D.YawPitchRollMatrix(rot, pOutResult.m_CameraTM);
+		m_CurrentCameraYaw = UpdateLRAngleLookAt(-180, 180, pDt);
+		Math3D.YawPitchRollMatrix(GetCurrentOrientation(), pOutResult.m_CameraTM);
 
 		//! store distance 
 		pOutResult.m_fDistance 		= m_fDistance;

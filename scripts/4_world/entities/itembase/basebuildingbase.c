@@ -542,73 +542,76 @@ class BaseBuildingBase extends ItemBase
 	
 	//CONSTRUCTION EVENTS
 	//Build
-	void OnPartBuiltServer( notnull Man player, string part_name, int action_id )
+	void OnPartBuiltServer(notnull Man player, string part_name, int action_id)
 	{
-		ConstructionPart constrution_part = GetConstruction().GetConstructionPart( part_name );
+		ConstructionPart construtionPart = GetConstruction().GetConstructionPart(part_name);
 		
 		//check base state
-		if ( constrution_part.IsBase() )
+		if (construtionPart.IsBase())
 		{
-			SetBaseState( true );
-			
+			SetBaseState(true);
+
 			//spawn kit
 			CreateConstructionKit();
 		}
 			
 		//register constructed parts for synchronization
-		RegisterPartForSync( constrution_part.GetId() );
+		RegisterPartForSync(construtionPart.GetId());
 		
 		//register action that was performed on part
-		RegisterActionForSync( constrution_part.GetId(), action_id );
+		RegisterActionForSync(construtionPart.GetId(), action_id);
 		
 		//synchronize
 		SynchronizeBaseState();
+
+		SetPartFromSyncData(construtionPart); // server part of sync, client will be synced from SetPartsFromSyncData
 		
-		//if (GetGame().IsMultiplayer() && GetGame().IsServer())
-			SetPartFromSyncData(constrution_part); // server part of sync, client will be synced from SetPartsFromSyncData
+		UpdateNavmesh();
 		
 		//update visuals
 		UpdateVisuals();
 		
 		//reset action sync data
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( ResetActionSyncData, 100, false, this );
+		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(ResetActionSyncData, 100, false, this);
 	}
 	
-	void OnPartBuiltClient( string part_name, int action_id )
+	void OnPartBuiltClient(string part_name, int action_id)
 	{
 		//play sound
 		SoundBuildStart( part_name );
 	}	
 	
 	//Dismantle
-	void OnPartDismantledServer( notnull Man player, string part_name, int action_id )
+	void OnPartDismantledServer(notnull Man player, string part_name, int action_id)
 	{
 		bsbDebugPrint("[bsb] " + GetDebugName(this) + " OnPartDismantledServer " + part_name);
-		ConstructionPart constrution_part = GetConstruction().GetConstructionPart( part_name );
+		ConstructionPart construtionPart = GetConstruction().GetConstructionPart(part_name);
 					
 		//register constructed parts for synchronization
-		UnregisterPartForSync( constrution_part.GetId() );
+		UnregisterPartForSync(construtionPart.GetId());
 		
 		//register action that was performed on part
-		RegisterActionForSync( constrution_part.GetId(), action_id );
+		RegisterActionForSync(construtionPart.GetId(), action_id);
 		
 		//synchronize
 		SynchronizeBaseState();
 
 		// server part of sync, client will be synced from SetPartsFromSyncData
-		SetPartFromSyncData( constrution_part );
+		SetPartFromSyncData(construtionPart);
+		
+		UpdateNavmesh();
 		
 		//update visuals
 		UpdateVisuals();
 		
 		//reset action sync data
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( ResetActionSyncData, 100, false, this );
+		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(ResetActionSyncData, 100, false, this);
 		
 		//check base state
-		if ( constrution_part.IsBase() )
+		if (construtionPart.IsBase())
 		{
 			//Destroy construction
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( DestroyConstruction, 200, false, this );
+			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(DestroyConstruction, 200, false, this);
 		}		
 	}
 	
@@ -619,34 +622,36 @@ class BaseBuildingBase extends ItemBase
 	}	
 	
 	//Destroy
-	void OnPartDestroyedServer( Man player, string part_name, int action_id, bool destroyed_by_connected_part = false )
+	void OnPartDestroyedServer(Man player, string part_name, int action_id, bool destroyed_by_connected_part = false)
 	{
 		bsbDebugPrint("[bsb] " + GetDebugName(this) + " OnPartDestroyedServer " + part_name);
-		ConstructionPart constrution_part = GetConstruction().GetConstructionPart( part_name );
+		ConstructionPart construtionPart = GetConstruction().GetConstructionPart(part_name);
 					
 		//register constructed parts for synchronization
-		UnregisterPartForSync( constrution_part.GetId() );
+		UnregisterPartForSync(construtionPart.GetId());
 		
 		//register action that was performed on part
-		RegisterActionForSync( constrution_part.GetId(), action_id );
+		RegisterActionForSync(construtionPart.GetId(), action_id);
 		
 		//synchronize
 		SynchronizeBaseState();
 		
 		// server part of sync, client will be synced from SetPartsFromSyncData
-		SetPartFromSyncData( constrution_part );
+		SetPartFromSyncData(construtionPart);
+		
+		UpdateNavmesh();
 		
 		//update visuals
 		UpdateVisuals();
 		
 		//reset action sync data
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( ResetActionSyncData, 100, false, this );
+		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(ResetActionSyncData, 100, false, this);
 		
 		//check base state
-		if ( constrution_part.IsBase() )
+		if (construtionPart.IsBase())
 		{
 			//Destroy construction
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( DestroyConstruction, 200, false, this );
+			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(DestroyConstruction, 200, false, this);
 		}			
 	}
 	

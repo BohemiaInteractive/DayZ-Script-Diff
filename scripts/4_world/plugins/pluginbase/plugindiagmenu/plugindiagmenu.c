@@ -92,6 +92,18 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterItem(DiagMenuIDs.VEHICLE_DEBUG_OUTPUT, "lalt+6", "Crash Log", DiagMenuIDs.VEHICLES, "None, Basic, Extended, Contact, Basic+Contact");
 				DiagMenu.RegisterBool(DiagMenuIDs.VEHICLE_DUMP_CRASH_DATA, "lalt+7", "Dump Crash Data", DiagMenuIDs.VEHICLES);
 			}
+
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.INVENTORY_MENU, "Inventory", DiagMenuIDs.SCRIPTS_MENU);
+			{
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Inventory
+				//---------------------------------------------------------------		
+				DiagMenu.RegisterBool(DiagMenuIDs.INVENTORY_ENTITY_PLACEMENT_CALLBACK_DEBUG, "", "Placement Debug", DiagMenuIDs.INVENTORY_MENU);
+			}
+
 			//---------------------------------------------------------------
 			// LEVEL 1 - Script
 			//---------------------------------------------------------------
@@ -196,10 +208,20 @@ class PluginDiagMenu : PluginBase
 				// LEVEL 2 - Script > Misc
 				//---------------------------------------------------------------
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PERMANENT_CROSSHAIR, "", "Enable permanent crosshair", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_TELEPORT_BREAKS_SYNC, "", "Teleport Breaks Sync", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_VEHICLE_GETOUT_BOX, "", "Debug transport freespace", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_VEHICLE_GETOUT_RAYCAST, "", "Debug transport get out raycast", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_TOGGLE_HUD, "", "Toggle HUD on/off", DiagMenuIDs.MISC_MENU);
-				DiagMenu.RegisterBool(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG, "", "Show Environment stats", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterMenu(DiagMenuIDs.MISC_ENVIRONMENT_MENU, "Environment", DiagMenuIDs.MISC_MENU);
+				{
+					//---------------------------------------------------------------
+					// LEVEL 3 - Script > Misc > Environment
+					//---------------------------------------------------------------
+					DiagMenu.RegisterBool(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG, "", "Show Environment stats", DiagMenuIDs.MISC_ENVIRONMENT_MENU);
+					DiagMenu.RegisterBool(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_DRYWET, "", "Log Player Dry/Wetness", DiagMenuIDs.MISC_ENVIRONMENT_MENU, false);
+
+				}
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_FALLDAMAGE_DEBUG, "", "Show FallDamage stats", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterRange(DiagMenuIDs.MISC_DISPLAY_PLAYER_INFO, "", "Display Player Info", DiagMenuIDs.MISC_MENU, "0,2,0,1");
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_UNIVERSAL_TEMPERATURE_SOURCES, "lalt+u", "Universal Temp Sources", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_DRAW_CHECKERBOARD, "", "Draw Checkerboard on screen", DiagMenuIDs.MISC_MENU);
@@ -247,13 +269,14 @@ class PluginDiagMenu : PluginBase
 					DiagMenu.RegisterRange(DiagMenuIDs.MISC_HIT_INDICATION_ROTATION, "", "Rotation Override", DiagMenuIDs.MISC_HIT_INDICATION_MENU, "0, 360, 0, 15");
 					DiagMenu.RegisterRange(DiagMenuIDs.MISC_HIT_INDICATION_SCATTER, "", "Direction Scatter", DiagMenuIDs.MISC_HIT_INDICATION_MENU, "0, 90, 0, 1");
 					DiagMenu.RegisterBool(DiagMenuIDs.MISC_HIT_INDICATION_DISABLE_PPE, "", "Disable Hit PPE", DiagMenuIDs.MISC_HIT_INDICATION_MENU);
-				}			
+				}
 				//---------------------------------------------------------------
 				// LEVEL 2 - Script > Misc
 				//---------------------------------------------------------------	
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_FREEZE_ENTITY, "lalt+x", "Freeze entity", DiagMenuIDs.MISC_MENU);		
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_CONNECTION_STATS, "lalt+4", "Show Connection Stats", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PLAYER_SYMPTOMS_SHOW, "", "Show States", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_INPUT_DEVICE_DISCONNECT_DBG, "", "InputDevice states", DiagMenuIDs.MISC_MENU);
 			}
 			
 			//---------------------------------------------------------------
@@ -499,6 +522,9 @@ class PluginDiagMenu : PluginBase
 	//---------------------------------------------
 	void OnRPC(PlayerBase player, int rpc_type, ParamsReadContext ctx)
 	{
+		EntityAI parent;
+		Class.CastTo(parent, player.GetParent());
+
 		switch (rpc_type)
 		{
 			//---------------------------------------------------------------
@@ -568,18 +594,35 @@ class PluginDiagMenu : PluginBase
 					{
 						case 0:
 						{
+							if (parent)
+							{
+								parent.SetAllowDamage(true);
+								parent.SetCanBeDestroyed(true);
+							}
+
 							player.SetAllowDamage(true);
 							player.SetCanBeDestroyed(true);
 							break;
 						}
 						case 1:
 						{
+							if (parent)
+							{
+								parent.SetAllowDamage(true);
+								parent.SetCanBeDestroyed(false);
+							}
+
 							player.SetAllowDamage(true);
 							player.SetCanBeDestroyed(false);
 							break;
 						}
 						case 2:
 						{
+							if (parent)
+							{
+								parent.SetAllowDamage(false);
+							}
+
 							player.SetAllowDamage(false);
 							break;
 						}
@@ -715,7 +758,11 @@ class PluginDiagMenu : PluginBase
 					player.GetPlayerStats().SetAllowLogs(CachedObjectsParams.PARAM1_BOOL.param1);
 				break;
 			}
-						
+			
+			//---------------------------------------------------------------
+			
+			//---------------------------------------------------------------
+			// LEVEL 2 - Script > Misc -> Environment
 			//---------------------------------------------------------------
 			case ERPCs.DIAG_MISC_ENVIRONMENT_DEBUG:
 			{
@@ -723,6 +770,29 @@ class PluginDiagMenu : PluginBase
 				{
 					if (player.m_Environment)
 						player.m_Environment.m_Debug = CachedObjectsParams.PARAM1_BOOL.param1;
+				}
+				break;
+			}
+			
+			case ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_DRYWET:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+				{
+					if (player.m_Environment)
+						player.m_Environment.m_DebugLogDryWet = CachedObjectsParams.PARAM1_BOOL.param1;
+				}
+				break;
+			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 2 - Script > Misc
+			//---------------------------------------------------------------
+			case ERPCs.DIAG_MISC_FALLDAMAGE_DEBUG:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+				{
+					if (player.GetFallDamage())
+						player.GetFallDamage().m_Debug = CachedObjectsParams.PARAM1_BOOL.param1;
 				}
 				break;
 			}
@@ -963,7 +1033,7 @@ class PluginDiagMenu : PluginBase
 				player.m_CameraToolsMenuClient.OnRPC(ctx);
 				break;
 			}
-					
+
 			
 			//---------------------------------------------------------------
 			// LEVEL 2 - Script > Time Accel
@@ -1013,6 +1083,23 @@ class PluginDiagMenu : PluginBase
 					SetTimeAccelMenuState(tap2.param1, bigFactor, smallFactor, tap2.param3);
 					FeatureTimeAccel.m_CurrentTimeAccel = tap2;
 				}
+				break;
+			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 2 - Script > Vehicles
+			//---------------------------------------------------------------
+			case ERPCs.DIAG_VEHICLE_DEBUG_OUTPUT:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_INT))
+					CarScript.DEBUG_OUTPUT_TYPE = CachedObjectsParams.PARAM1_INT.param1;
+				break;
+			}
+			//---------------------------------------------------------------
+			case ERPCs.DIAG_VEHICLES_DUMP_CRASH_DATA_REQUEST:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+					CrashDebugData.SendData(player);
 				break;
 			}
 		}

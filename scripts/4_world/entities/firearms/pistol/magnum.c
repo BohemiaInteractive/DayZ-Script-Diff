@@ -49,7 +49,7 @@ class Magnum_Static_State extends WeaponStableState
 
 class Magnum_Base extends Weapon_Base
 {
-	ref WeaponStateBase C;
+	ref WeaponStableState C;
 	int m_LastMuzzleloaded;
 	int m_ActiveMuzzle;
 	const string ATT_SLOT_CYLINDER = "RevolverCylinder";
@@ -155,7 +155,7 @@ class Magnum_Base extends Weapon_Base
 		m_fsm.AddTransition(new WeaponTransition(  Trigger_dry, 	_abt_,	C));
 
 
-		m_fsm.SetInitialState(C);
+		SetInitialState(C);
 		SelectionBulletHide();
 		SetCurrentMuzzle(0);
 		//HideMagazine();

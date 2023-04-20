@@ -24,6 +24,34 @@ enum InventoryMode
 	SERVER,			///< 'Server' mode operation is required if and only if the operation runs only on server (creates and/or destroys objects)
 };
 
+enum InventoryValidationResult
+{
+	FAILED,
+	JUNCTURE,
+	SUCCESS
+};
+
+enum InventoryValidationReason
+{
+	UNKNOWN,
+	JUNCTURE_DENIED,
+	DROP_PREVENTED
+};
+
+class InventoryValidation
+{
+	bool m_IsJuncture = false;
+	bool m_IsRemote = false;
+
+	InventoryValidationResult m_Result = InventoryValidationResult.FAILED;
+	InventoryValidationReason m_Reason = InventoryValidationReason.UNKNOWN;
+
+	bool IsAuthoritative()
+	{
+		return !m_IsJuncture && !m_IsRemote;
+	}
+};
+
 enum InventoryCheckContext
 {
 	DEFAULT,
@@ -47,7 +75,8 @@ enum FindInventoryReservationMode
  **/
 class GameInventory
 {
-	protected static int m_inventory_check_context = InventoryCheckContext.DEFAULT;	
+	protected static int m_inventory_check_context = InventoryCheckContext.DEFAULT;
+
 //-------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///@{ Engine native functions
@@ -397,11 +426,11 @@ class GameInventory
 	//! Returns true if the item is currently attached and outputs attachment slot id and name
 	bool GetCurrentAttachmentSlotInfo(out int slot_id, out string slot_name)
 	{
-		slot_id = -1;
+		slot_id = InventorySlots.INVALID;
 		slot_name = "";
-		InventoryLocation lcn = new InventoryLocation;
+		InventoryLocation lcn = new InventoryLocation();
 		GetCurrentInventoryLocation(lcn);
-		if ( lcn.GetType() == InventoryLocationType.ATTACHMENT)
+		if (lcn.GetType() == InventoryLocationType.ATTACHMENT)
 		{
 			slot_id = lcn.GetSlot();
 			slot_name = InventorySlots.GetSlotName(slot_id);
@@ -545,7 +574,17 @@ class GameInventory
 	 **/
 	static proto native bool ServerHandEvent (notnull Man player, notnull EntityAI item, ParamsWriteContext ctx);
 
-	static proto native void PrepareDropEntityPos(EntityAI owner, notnull EntityAI item, out vector mat[4], bool useValuesInMatrix = false);
+	/**
+	 * @fn		PrepareDropEntityPos
+	 * @brief	Finds a transformation for the item to be dropped to
+	 * 				If the initial transforation overlaps with another conflicting entity (i.e. car) then the transform will be snapped to the nearest outer edge.
+	 * 				If no valid snapping transformation could be found, then the output from 'PlaceOnSurface' is used
+	 * @param	useValuesInMatrix Is ignored if transformation overlaps with possible conflicting entity. If no valid transform is found and this is false then the transform at the owner is used for 'PlaceOnSurface'
+	 * @param	conflictCheckDepth If -1 then no conflict depth check is performed, if 0 then it only checks to see if it conflicts but doesn't perform snapping
+	 * @return	true if valid transformation found near owner
+	 **/
+	static proto native bool PrepareDropEntityPos(EntityAI owner, notnull EntityAI item, out vector mat[4], bool useValuesInMatrix = false, int conflictCheckDepth = -1);
+	static proto native bool TestDropEntityPos(EntityAI owner, notnull EntityAI item, out vector mat[4], bool useValuesInMatrix = false, int conflictCheckDepth = -1);
 
 	/**@fn      CanSwapEntities
 	 * @brief   test if ordinary swap can be performed.
@@ -757,7 +796,10 @@ class GameInventory
 	/**@fn		Init
 	 * @brief	called by engine right after creation of entity
 	 **/
-	void Init () { }
+	void Init ()
+	{
+		GetInventoryOwner().OnInventoryInit();
+	}
 
 	/// db load hooks
 	bool OnStoreLoad (ParamsReadContext ctx, int version)
@@ -900,11 +942,14 @@ class GameInventory
 	}
 
 	///@{ synchronization
-	bool OnInputUserDataProcess (ParamsReadContext ctx) { }
-	bool OnInventoryJunctureFromServer (ParamsReadContext ctx) { }
-	bool OnInventoryJunctureRepairFromServer (ParamsReadContext ctx) { }
-	void OnServerInventoryCommand (ParamsReadContext ctx) { }
+	bool OnInputUserDataProcess(ParamsReadContext ctx) { }
+	bool OnInventoryJunctureFromServer(ParamsReadContext ctx) { }
+	bool OnInventoryJunctureRepairFromServer(ParamsReadContext ctx) { }
+	void OnInventoryJunctureFailureFromServer(ParamsReadContext ctx) { }
+	void OnServerInventoryCommand(ParamsReadContext ctx) { }
 	///@} synchronization
+
+	void OnInventoryFailure(InventoryCommandType type, InventoryValidationReason reason, InventoryLocation src, InventoryLocation dst) {}
 
 	/**
 	 * @fn			TakeEntityToInventory
@@ -1151,12 +1196,13 @@ class GameInventory
 		return false;
 	}
 
-	static void SetGroundPosByOwner(EntityAI owner, notnull EntityAI item, out InventoryLocation ground)
+	static bool SetGroundPosByOwner(EntityAI owner, notnull EntityAI item, out InventoryLocation ground)
 	{
 		vector m4[4];
 		Math3D.MatrixIdentity4(m4);
-		GameInventory.PrepareDropEntityPos(owner, item, m4, false);
+		bool success = GameInventory.PrepareDropEntityPos(owner, item, m4, false, GameConstants.INVENTORY_ENTITY_DROP_OVERLAP_DEPTH);
 		ground.SetGround(item, m4);
+		return success;
 	}
 
 	bool DropEntity(InventoryMode mode, EntityAI owner, notnull EntityAI item)
@@ -1166,7 +1212,11 @@ class GameInventory
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
 			InventoryLocation dst = new InventoryLocation;
-			SetGroundPosByOwner(owner, item, dst);
+			if (!SetGroundPosByOwner(owner, item, dst))
+			{
+				OnInventoryFailure(InventoryCommandType.SYNC_MOVE, InventoryValidationReason.DROP_PREVENTED, src, dst);
+				return false;
+			}
 
 			return TakeToDst(mode, src, dst);
 		}
@@ -1175,10 +1225,11 @@ class GameInventory
 		return false;
 	}
 	
-	static void SetGroundPosByTransform(EntityAI owner, notnull EntityAI item, out InventoryLocation ground, vector transform[4])
+	static bool SetGroundPosByTransform(EntityAI owner, notnull EntityAI item, out InventoryLocation ground, vector transform[4])
 	{
-		GameInventory.PrepareDropEntityPos(owner, item, transform, true);
+		bool success = GameInventory.PrepareDropEntityPos(owner, item, transform, true, GameConstants.INVENTORY_ENTITY_DROP_OVERLAP_DEPTH);
 		ground.SetGround(item, transform);
+		return success;
 	}
 	
 	bool DropEntityWithTransform(InventoryMode mode, EntityAI owner, notnull EntityAI item, vector transform[4])
@@ -1188,12 +1239,16 @@ class GameInventory
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
 			InventoryLocation dst = new InventoryLocation;
-			SetGroundPosByTransform(owner, item, dst, transform);
+			if (!SetGroundPosByTransform(owner, item, dst, transform))
+			{
+				OnInventoryFailure(InventoryCommandType.SYNC_MOVE, InventoryValidationReason.DROP_PREVENTED, src, dst);
+				return false;
+			}
 
 			return TakeToDst(mode, src, dst);
 		}
 
-		Error("DropEntity - No inventory location");
+		Error("DropEntityWithTransform - No inventory location");
 		return false;
 	}
 	

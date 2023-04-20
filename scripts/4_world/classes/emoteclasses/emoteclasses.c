@@ -668,7 +668,16 @@ class EmoteSuicide extends EmoteBase
 		if (weapon)
 			return weapon.ConfigGetBool("isSuicideWeapon");
 		
-		return true;
+		return super.EmoteCondition(stancemask);
+	}
+	
+	override bool CanBeCanceledNormally(notnull EmoteCB callback)
+	{
+		int state = callback.GetState();
+		if (state > HumanCommandActionCallback.STATE_LOOP_LOOP) //Cannot be canceled once started
+			return false;
+		
+		return super.CanBeCanceledNormally(callback);;
 	}
 	
 	override void OnBeforeStandardCallbackCreated(int callback_ID, int stancemask, bool is_fullbody)
@@ -682,6 +691,11 @@ class EmoteSuicide extends EmoteBase
 		{
 			m_Player.SetInventorySoftLock(false);
 		}
+	}
+	
+	override void OnCallbackEnd()
+	{
+		m_Player.SetSuicide(false);
 	}
 }
 

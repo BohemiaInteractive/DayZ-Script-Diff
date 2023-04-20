@@ -636,7 +636,7 @@ class Icon: LayoutHolder
 	void ShowActionMenuCombine( EntityAI entity1, EntityAI entity2, int combinationFlags, Widget w , bool color_test )
 	{
 		int current_flag;
-		ContextMenu cmenu = GetGame().GetUIManager().GetMenu().GetContextMenu();
+		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
 		m_am_entity1 = entity1;
 		m_am_entity2 = entity2;
 		cmenu.Hide();
@@ -800,7 +800,7 @@ class Icon: LayoutHolder
 	bool FlagAction( EntityAI entity1, EntityAI entity2, int combinationFlags )
 	{
 		int current_flag;
-		ContextMenu cmenu = GetGame().GetUIManager().GetMenu().GetContextMenu();
+		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
 		m_am_entity1 = entity1;
 		m_am_entity2 = entity2;
 		cmenu.Hide();

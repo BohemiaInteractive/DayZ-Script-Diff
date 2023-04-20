@@ -1,18 +1,5 @@
 class Mich2001Helmet extends HelmetBase
 {
-	override bool CanPutAsAttachment( EntityAI parent )
-	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
-		
-		Clothing eyewear = Clothing.Cast(parent.FindAttachmentBySlotName("Eyewear"));
-		
-		if ( eyewear && eyewear.ConfigGetBool("isStrap") )
-		{
-			return false;
-		}
-		return true;
-	}
-	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -33,5 +20,12 @@ class Mich2001Helmet extends HelmetBase
 			entity.GetInventory().CreateInInventory( "Battery9V" );
 			entity.GetInventory().CreateInInventory( "Battery9V" );
 		}
+	}
+	
+	override protected void InitGlobalExclusionValues()
+	{
+		super.InitGlobalExclusionValues();
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADSTRAP_0);
 	}
 };

@@ -7,6 +7,11 @@ class EmoteCB : HumanCommandActionCallback
 	
 	void ~EmoteCB()
 	{
+		if (m_Manager)
+		{
+			m_Manager.OnCallbackEnd();
+		}
+		
 		if (GetGame() && m_player)
 			m_player.RequestHandAnimationStateRefresh();
 	}
@@ -26,8 +31,11 @@ class EmoteCB : HumanCommandActionCallback
 		switch (pEventID)
 		{
 			case EmoteConstants.EMOTE_SUICIDE_DEATH :
+				
 				if (GetGame().IsServer())
 					m_Manager.KillPlayer();
+				
+				m_Manager.LogSuicide();
 			break;
 			
 			case UA_ANIM_EVENT :
@@ -60,7 +68,7 @@ class EmoteCB : HumanCommandActionCallback
 						m_player.GetInventory().DropEntityWithTransform(InventoryMode.SERVER, m_player, itemInHands, m4);
 					}
 				}
-
+				
 				m_player.StartDeath();
 			break;
 		}
@@ -338,7 +346,7 @@ class EmoteManager
 			
 			if (gestureSlot > 0 || m_GestureInterruptInput || (m_HIC.IsSingleUse() && !uiGesture) || (m_HIC.IsContinuousUseStart() && !uiGesture) || (m_Callback.m_IsFullbody && !uiGesture && m_HIC.IsWeaponRaised())) 
 			{
-				if (m_CurrentGestureID == EmoteConstants.ID_EMOTE_SUICIDE  && m_HIC.IsSingleUse())
+				if (m_CurrentGestureID == EmoteConstants.ID_EMOTE_SUICIDE && m_HIC.IsSingleUse())
 				{
 					if (m_Callback.GetState() == m_Callback.STATE_LOOP_LOOP)
 					{
@@ -524,13 +532,29 @@ class EmoteManager
 			pCtx.Read(gesture_id);
 			pCtx.Read(forced);
 			
+			EmoteBase emoteData;
 			if ((m_Callback || m_IsSurrendered) && (forced == EmoteLauncher.FORCE_ALL || (forced == EmoteLauncher.FORCE_DIFFERENT && m_CurrentGestureID != gesture_id)))
-			{
+			{	
+				if (m_Callback)
+				{
+					if (m_NameEmoteMap.Find(m_CurrentGestureID,emoteData) && emoteData.CanBeCanceledNormally(m_Callback))
+						m_CancelEmote = true;
+					else
+						return;
+				}
 				m_CancelEmote = true;
 			}
 			
 			if (gesture_id == CALLBACK_CMD_INSTACANCEL)
 			{
+				if (m_Callback)
+				{
+					if (m_NameEmoteMap.Find(m_CurrentGestureID,emoteData) && !emoteData.CanBeCanceledNormally(m_Callback))
+					{
+						m_InstantCancelEmote = false;
+						return;
+					}
+				}
 				m_InstantCancelEmote = true;
 			}
 			
@@ -538,6 +562,13 @@ class EmoteManager
 		}
 		else
 			m_CancelEmote = false;
+	}
+	
+	void OnCallbackEnd()
+	{
+		EmoteBase emoteData;
+		if (m_NameEmoteMap.Find(m_CurrentGestureID,emoteData))
+			emoteData.OnCallbackEnd();
 	}
 	
 	void AfterStoreLoad()
@@ -692,10 +723,8 @@ class EmoteManager
 			m_Callback.RegisterAnimationEvent("Death",EmoteConstants.EMOTE_SUICIDE_DEATH);
 			m_Callback.RegisterAnimationEvent("Bleed",EmoteConstants.EMOTE_SUICIDE_BLEED);
 			m_Callback.RegisterAnimationEvent("Simulation_End",EmoteConstants.EMOTE_SUICIDE_SIMULATION_END);
-			m_Player.SetSuicide(true);
 			m_Callback.InternalCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
-			
-			LogSuicide();
+			m_Player.SetSuicide(true);
 		}
 		else
 		{
@@ -791,7 +820,14 @@ class EmoteManager
 		ScriptInputUserData ctx = new ScriptInputUserData;
 		if (GetGame().IsMultiplayer() && GetGame().IsClient())
 		{
-			if (ctx.CanStoreInputUserData() && (CanPlayEmote(id) || forced))
+			bool canProceed = true; //running callbacks in certain state can block additional actions
+			EmoteBase emoteData;
+			if (m_Callback && m_NameEmoteMap.Find(m_CurrentGestureID,emoteData))
+			{
+				canProceed = emoteData.CanBeCanceledNormally(m_Callback);
+			}
+			
+			if (ctx.CanStoreInputUserData() && (CanPlayEmote(id) || forced) && canProceed)
 			{
 				ctx.Write(INPUT_UDT_GESTURE);
 				ctx.Write(id);

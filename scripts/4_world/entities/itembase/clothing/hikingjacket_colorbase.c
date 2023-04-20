@@ -1,4 +1,4 @@
-class HikingJacket_ColorBase extends Clothing 
+class HikingJacket_ColorBase extends Top_Base 
 {
 	override void SetActions()
 	{

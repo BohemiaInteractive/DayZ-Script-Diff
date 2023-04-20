@@ -13,6 +13,7 @@ class FeverMdfr: ModifierBase
 		m_ID 					= eModifiers.MDF_FEVER;
 		m_TickIntervalInactive 	= DEFAULT_TICK_TIME_INACTIVE;
 		m_TickIntervalActive 	= DEFAULT_TICK_TIME_ACTIVE_SHORT;
+		m_SyncID				= eModifierSyncIDs.MODIFIER_SYNC_FEVER;
 	}
 	override bool ActivateCondition(PlayerBase player)
 	{

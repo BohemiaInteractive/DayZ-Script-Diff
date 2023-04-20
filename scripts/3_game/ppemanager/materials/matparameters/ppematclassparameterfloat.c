@@ -35,15 +35,15 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 	{
 		super.Update(timeslice,p_total,setting_defaults,order);
 		
-		protected int active_request_count = 0;
+		int active_request_count = 0;
 		
-		protected PPERequestParamDataFloat req_data;
+		PPERequestParamDataFloat req_data;
 		
-		protected bool setting_value_zero = false;
+		bool setting_value_zero = false;
 		
-		protected float float_value_temp = 0.0;
-		protected float float_value_default = 0.0;
-		protected float float_value_total = 0.0;
+		float float_value_temp = 0.0;
+		float float_value_default = 0.0;
+		float float_value_total = 0.0;
 		
 		if (p_total == null)
 		{

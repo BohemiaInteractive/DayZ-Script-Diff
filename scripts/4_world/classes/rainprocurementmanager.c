@@ -1,3 +1,4 @@
+//!DEPRECATED, done through the RainProcurementHandler / component instead
 class RainProcurementManager
 {
 	protected 			ItemBase 	m_ProcuringItem;	

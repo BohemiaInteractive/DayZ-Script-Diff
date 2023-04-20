@@ -8,6 +8,7 @@ class DayZPlayerCamera1stPersonVehicle extends DayZPlayerCamera1stPerson
 		super.OnUpdate(pDt, pOutResult);
 
 		pOutResult.m_fUseHeading 		= 0.0;
+		pOutResult.m_bUpdateEveryFrame 	= true;
 	}
 }
 
@@ -21,9 +22,13 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 
 	static const float 	CONST_LR_MIN	= -160.0;		//!< down limit
 	static const float 	CONST_LR_MAX	= 160.0;		//!< up limit
+	
+	const float CONST_LINEAR_VELOCITY_STRENGTH		= 0.025;
+	const float CONST_ANGULAR_VELOCITY_STRENGTH		= 0.025;
 
-	const float CONST_ANGULAR_LAG_YAW_STRENGTH   = 4;
-	const float CONST_ANGULAR_LAG_PITCH_STRENGTH = 1.5;
+	const float CONST_ANGULAR_LAG_YAW_STRENGTH		= 4.0;
+	const float CONST_ANGULAR_LAG_PITCH_STRENGTH	= 1.5;
+	const float CONST_ANGULAR_LAG_ROLL_STRENGTH		= 0.0;
 
 	void DayZPlayerCamera3rdPersonVehicle( DayZPlayer pPlayer, HumanInputController pInput )
 	{
@@ -49,10 +54,13 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 	{
 		if (pPrevCamera)
 		{
-			vector 	f = pPrevCamera.GetBaseAngles();
-			m_fUpDownAngle		= f[0]; 
-			m_fLeftRightAngle	= f[1]; 
-			m_fUpDownAngleAdd	= f[2];
+			vector baseAngles		= pPrevCamera.GetBaseAngles();
+			m_fUpDownAngle			= baseAngles[0]; 
+			m_fLeftRightAngle		= baseAngles[1]; 
+
+			vector addAngles		= pPrevCamera.GetAdditiveAngles();
+			m_fUpDownAngleAdd		= addAngles[0];
+			m_fLeftRightAngleAdd	= addAngles[1];
 		}
 		
 		m_LagOffsetPosition = vector.Zero;
@@ -81,20 +89,21 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 		}
 
 		//! orientation LS
-		float udAngle		= UpdateUDAngle(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
-		m_fLeftRightAngle	= UpdateLRAngle(m_fLeftRightAngle, CONST_LR_MIN, CONST_LR_MAX, pDt);
-		m_fRoll				= 0;
+		m_CurrentCameraYaw		= UpdateLRAngleUnlocked(m_fLeftRightAngle, m_fLeftRightAngleAdd, CONST_LR_MIN, CONST_LR_MAX, pDt);
+		m_CurrentCameraPitch	= UpdateUDAngleUnlocked(m_fUpDownAngle, m_fUpDownAngleAdd, CONST_UD_MIN, CONST_UD_MAX, pDt);
+		m_CurrentCameraRoll		= 0;
 				
 		//! create LS lag from vehicle velocities	
 		vector posDiffLS = vector.Zero;
-		vector orientDiff =  vector.Zero;
+		vector rotDiffLS =  vector.Zero;
 
 		if ( vehicle )
 		{
-			vector posDiffWS = GetVelocity(vehicle) * pDt;
+			vector posDiffWS = GetVelocity(vehicle) * CONST_LINEAR_VELOCITY_STRENGTH;
 			posDiffLS = posDiffWS.InvMultiply3(playerTransformWS);
 
-			orientDiff = dBodyGetAngularVelocity(vehicle) * pDt * Math.RAD2DEG;
+			vector rotDiffWS = dBodyGetAngularVelocity(vehicle) * Math.RAD2DEG * CONST_ANGULAR_VELOCITY_STRENGTH;
+			rotDiffLS = rotDiffWS.InvMultiply3(playerTransformWS);
 		}		
 			
 		//! smooth it!
@@ -102,16 +111,17 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 		m_LagOffsetPosition[1] = Math.SmoothCD(m_LagOffsetPosition[1], posDiffLS[1], m_fLagOffsetVelocityY, 0.3, 1000, pDt);
 		m_LagOffsetPosition[2] = Math.SmoothCD(m_LagOffsetPosition[2], posDiffLS[2], m_fLagOffsetVelocityZ, 0.3, 1000, pDt);
 
-		m_LagOffsetOrientation[0] = Math.SmoothCD(m_LagOffsetOrientation[0], orientDiff[0], m_fLagOffsetVelocityYaw, 0.3, 1000, pDt);
-		m_LagOffsetOrientation[1] = Math.SmoothCD(m_LagOffsetOrientation[1], orientDiff[1], m_fLagOffsetVelocityPitch, 0.3, 1000, pDt);
+		m_LagOffsetOrientation[0] = Math.SmoothCD(m_LagOffsetOrientation[0], rotDiffLS[1], m_fLagOffsetVelocityYaw, 0.3, 1000, pDt);
+		m_LagOffsetOrientation[1] = Math.SmoothCD(m_LagOffsetOrientation[1], rotDiffLS[2], m_fLagOffsetVelocityPitch, 0.3, 1000, pDt);
+		m_LagOffsetOrientation[2] = Math.SmoothCD(m_LagOffsetOrientation[2], rotDiffLS[0], m_fLagOffsetVelocityRoll, 0.3, 1000, pDt);
 		
 		//! setup orientation
 		vector rot;
-		rot[0] = m_fLeftRightAngle + CONST_ANGULAR_LAG_YAW_STRENGTH * m_LagOffsetOrientation[0];
-		rot[1] = udAngle + CONST_ANGULAR_LAG_PITCH_STRENGTH * m_LagOffsetOrientation[1];
-		rot[2] = m_fRoll;
+		rot[0] = CONST_ANGULAR_LAG_YAW_STRENGTH		* m_LagOffsetOrientation[0];
+		rot[1] = CONST_ANGULAR_LAG_PITCH_STRENGTH	* m_LagOffsetOrientation[1];
+		rot[2] = CONST_ANGULAR_LAG_ROLL_STRENGTH	* m_LagOffsetOrientation[2];
 	
-		Math3D.YawPitchRollMatrix(rot, pOutResult.m_CameraTM);
+		Math3D.YawPitchRollMatrix(GetCurrentOrientation() + rot, pOutResult.m_CameraTM);
 
 		//! setup position		
 		pOutResult.m_CameraTM[3] = cameraPosition - m_LagOffsetPosition;
@@ -121,30 +131,40 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 		pOutResult.m_fUseHeading 		= 0.0;
 		pOutResult.m_fInsideCamera 		= 0.0;
 		pOutResult.m_fIgnoreParentRoll 	= 1.0;
+		pOutResult.m_bUpdateEveryFrame 	= true;
 		
 		StdFovUpdate(pDt, pOutResult);
 		
 		super.OnUpdate(pDt, pOutResult);
-	}	
+	}
 
 	override vector GetBaseAngles()
 	{
 		vector a;
 		a[0] = m_fUpDownAngle;
 		a[1] = m_fLeftRightAngle;
-		a[2] = m_fUpDownAngleAdd;
+		a[2] = 0;
+		return a;
+	}
+
+	override vector GetAdditiveAngles()
+	{
+		vector a;
+		a[0] = m_fUpDownAngleAdd;
+		a[1] = m_fLeftRightAngleAdd;
+		a[2] = 0;
 		return a;
 	}
 
 	//! runtime config
 	protected 	vector  m_CameraOffsetMS;	//!< model space offset
 	protected 	float 	m_fDistance;		//!< distance from start
-	protected 	float 	m_fRoll;			//!< camera roll
 	
 	//! runtime values 
-	protected 	float 	m_fUpDownAngle;		//!< up down angle in rad
-	protected 	float 	m_fUpDownAngleAdd;	//!< up down angle in rad
-	protected 	float 	m_fLeftRightAngle;	//!< left right angle in rad (in freelook only)
+	protected 	float 	m_fUpDownAngle;			//!< up down angle in rad
+	protected 	float 	m_fUpDownAngleAdd;		//!< up down angle in rad
+	protected 	float 	m_fLeftRightAngle;		//!< left right angle in rad
+	protected 	float 	m_fLeftRightAngleAdd;	//!< left right angle in rad
 	
 	//! lag offsets
 	protected	vector	m_LagOffsetPosition;

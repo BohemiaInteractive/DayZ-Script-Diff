@@ -110,16 +110,6 @@ class ImprovisedExplosive : ExplosivesBase
 		m_RAIB.Pair(trigger);
 	}
 	
-	override void UnpairRemote()
-	{
-		if (GetPairDevice())
-		{
-			GetPairDevice().UnpairRemote();
-		}
-
-		m_RAIB.Unpair();
-	}
-
 	override EntityAI GetPairDevice()
 	{
 		return m_RAIB.GetPairDevice();

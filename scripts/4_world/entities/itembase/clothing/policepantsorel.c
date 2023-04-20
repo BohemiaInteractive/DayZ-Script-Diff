@@ -1,4 +1,4 @@
-class PolicePantsOrel extends Clothing
+class PolicePantsOrel extends Pants_Base
 {
 	override void SetActions()
 	{

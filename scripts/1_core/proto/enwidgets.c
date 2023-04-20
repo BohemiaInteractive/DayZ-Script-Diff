@@ -107,7 +107,16 @@ class Widget: Managed
 {
 	proto void ~Widget();
 	proto private void Widget();
+	
 	proto static string TranslateString(string stringId);
+	
+	//! Set global LV of widgets, value between [-15, 0], default: 0, lower value is less bright
+	proto static void SetLV(float lv);
+	//! Set global LV of the text in widgets, value between [-15, 0], default: 0, lower value is less bright
+	proto static void SetTextLV(float lv);
+	//! Set global lighting of objects in widgets, value between [0, 1], default: 1, lower value is less bright
+	proto static void SetObjectLighting(float lighting);
+	
 	proto native owned string GetName();
 	proto native void SetName(string name);
 	proto native owned string GetTypeName();
@@ -128,7 +137,9 @@ class Widget: Managed
 	proto native bool IsVisible();
 	proto native bool IsVisibleHierarchy();
 	proto native void SetPos(float x, float y, bool immedUpdate = true);
-	proto native void SetSize(float x, float y, bool immedUpdate = true);
+	proto native void SetSize(float w, float h, bool immedUpdate = true);
+	proto native void SetScreenPos(float x, float y, bool immedUpdate = true);
+	proto native void SetScreenSize(float w, float h, bool immedUpdate = true);
 	proto native void SetColor(int color);
 	proto native int GetColor();
 	proto native void SetRotation(float roll, float pitch, float yaw, bool immedUpdate = true);

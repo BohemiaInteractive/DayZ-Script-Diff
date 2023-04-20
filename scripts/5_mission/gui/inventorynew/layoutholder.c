@@ -34,7 +34,7 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 		HideOwnedTooltip();
 		m_am_entity1 = item;
 		m_am_entity2 = null;
-		ContextMenu cmenu = GetGame().GetUIManager().GetMenu().GetContextMenu();
+		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
 
 		cmenu.Hide();
 		cmenu.Clear();

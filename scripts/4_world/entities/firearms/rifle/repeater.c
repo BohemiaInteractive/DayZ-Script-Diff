@@ -65,11 +65,11 @@ class RPTLoadedJammed extends WeaponStateJammed
  **/
 class Repeater_Base extends Rifle_Base
 {
-	ref WeaponStateBase D0;
-	ref WeaponStateBase C0;
-	ref	WeaponStateBase C1;
-	ref	WeaponStateBase DF;
-	ref	WeaponStateBase JF;
+	ref WeaponStableState D0;
+	ref WeaponStableState C0;
+	ref	WeaponStableState C1;
+	ref	WeaponStableState DF;
+	ref	WeaponStableState JF;
 	
 	
 	override void InitStateMachine ()
@@ -208,7 +208,7 @@ class Repeater_Base extends Rifle_Base
 		
 //---------------------------------------------	
 		
-		m_fsm.SetInitialState(D0);
+		SetInitialState(D0);
 
 		SelectionBulletHide();
 		HideMagazine();

@@ -119,6 +119,7 @@ class Rag extends ItemBase
 
 	override void OnCombine(ItemBase other_item)
 	{
+		super.OnCombine(other_item);
 		if (m_Cleanness == 1 && other_item.m_Cleanness == 0)
 			SetCleanness(0);
 	}	

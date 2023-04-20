@@ -6,7 +6,7 @@ class Sedan_02 extends CarScript
 
 	void Sedan_02()
 	{
-		//m_dmgContactCoef		= 0.130;
+		m_dmgContactCoef		= 0.0790;
 
 		m_EngineStartOK			= "Sedan_02_engine_start_SoundSet";
 		m_EngineStartBattery	= "Sedan_02_engine_failed_start_battery_SoundSet";

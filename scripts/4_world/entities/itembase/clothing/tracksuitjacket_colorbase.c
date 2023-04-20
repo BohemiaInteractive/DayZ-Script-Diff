@@ -1,4 +1,4 @@
-class TrackSuitJacket_ColorBase extends Clothing
+class TrackSuitJacket_ColorBase extends Top_Base
 {
 	override void SetActions()
 	{

@@ -52,6 +52,10 @@ class ActionDropItem : ActionSingleUseBase
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
+		HumanCommandMove hcm = player.GetCommand_Move();
+		if (hcm && hcm.IsChangingStance())
+			return false;
+		
 		if (player.GetCommand_Vehicle())
 			return false;
 		

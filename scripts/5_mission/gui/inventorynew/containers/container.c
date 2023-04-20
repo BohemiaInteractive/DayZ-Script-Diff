@@ -369,17 +369,196 @@ class Container extends LayoutHolder
 		return false;
 	}
 	
+	bool CanOpenCloseContainer()
+	{
+		EntityAI focusedEntity = GetFocusedItem();
+		if (focusedEntity)
+		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanOpenCloseContainerEx(focusedEntity);
+		
+			return CanOpenCloseContainerEx(focusedEntity);
+		}
+
+		return false;		
+	}
+	
+	bool CanOpenCloseContainerEx(EntityAI focusedEntity)
+	{
+		return false;
+	}
+	
+	bool CanSplit()
+	{
+		EntityAI focusedEntity = GetFocusedItem();
+		if (focusedEntity)
+		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanSplitEx(focusedEntity);
+		
+			return CanSplitEx(focusedEntity);
+		}
+
+		return false;		
+	}
+	
+	bool CanSplitEx(EntityAI focusedEntity)
+	{
+		if (focusedEntity)
+		{
+			return focusedEntity.CanBeSplit();
+		}
+		return false;
+	}
+	
+	bool CanDrop()
+	{
+		EntityAI focusedEntity = GetFocusedItem();
+		if (focusedEntity)
+		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanDropEx(focusedEntity);
+		
+			return CanDropEx(focusedEntity);
+		
+		}
+
+		return false;
+	}
+	
+	bool CanDropEx(EntityAI focusedEntity)
+	{
+		if (focusedEntity)
+		{
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		
+			if (player)
+			{
+				return player.CanDropEntity(focusedEntity);
+			}
+		}
+		return false;
+	}
+	
+	bool CanSwapOrTakeToHands()
+	{
+		EntityAI focusedEntity = GetFocusedItem();
+		if (focusedEntity)
+		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanSwapOrTakeToHandsEx(focusedEntity);
+		
+			return CanSwapOrTakeToHandsEx(focusedEntity);
+		}
+
+		return false;	
+	}
+	
+	bool CanSwapOrTakeToHandsEx(EntityAI focusedEntity)
+	{
+		if (focusedEntity)
+		{
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			EntityAI entityInHands = player.GetItemInHands();
+			if (entityInHands)
+			{
+				InventoryLocation il = new InventoryLocation();
+	
+				if (!GameInventory.CanSwapEntitiesEx(focusedEntity, entityInHands))
+				{
+					return GameInventory.CanForceSwapEntitiesEx( focusedEntity, null, entityInHands, il );
+				}
+				else
+				{
+					return true;
+				}
+			}
+			else
+			{		
+				return player.GetInventory().CanAddEntityIntoHands(focusedEntity);
+			}
+		}
+		return false;	
+	}
+	
 	bool CanEquip()
 	{
-		if( GetFocusedContainer() )
-			return GetFocusedContainer().CanEquip();
+		EntityAI focusedEntity = GetFocusedItem();
+		if (focusedEntity)
+		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanEquipEx(focusedEntity);
+		
+			return CanEquipEx(focusedEntity);
+		}
+
+		return false;	
+	}
+	
+	bool CanEquipEx(EntityAI focusedEntity)
+	{
+		bool found = false;
+		if (focusedEntity)
+		{
+			InventoryLocation il = new InventoryLocation;
+			found = GetGame().GetPlayer().GetInventory().FindFreeLocationFor(focusedEntity,FindInventoryLocationType.ATTACHMENT,il);
+
+		}
+		return found;
+	}
+	
+	bool CanTakeToInventory()
+	{
+		EntityAI focusedEntity = GetFocusedItem();
+		if (focusedEntity)
+		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanTakeToInventoryEx(focusedEntity);
+		
+			return CanTakeToInventoryEx(focusedEntity);
+		}
+
+		return false;
+	}
+	
+	bool CanTakeToInventoryEx(EntityAI focusedEntity)
+	{
+		if (focusedEntity)
+		{
+			
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			if (focusedEntity.GetHierarchyRootPlayer() != player)
+			{
+				return player.GetInventory().CanAddEntityToInventory(focusedEntity,FindInventoryLocationType.CARGO);
+			}
+		}
 		return false;
 	}
 	
 	bool CanCombine()
 	{
-		if( GetFocusedContainer() )
-			return GetFocusedContainer().CanCombine();
+		EntityAI focusedEntity = GetFocusedItem();
+		if (focusedEntity)
+		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanCombineEx(focusedEntity);
+		
+			return CanCombineEx(focusedEntity);
+		}
+
+		return false;
+	}
+	
+	bool CanCombineEx(EntityAI focusedEntity)
+	{
+		if (focusedEntity)
+		{
+			EntityAI entityInHands = PlayerBase.Cast(GetGame().GetPlayer()).GetItemInHands();
+			if (focusedEntity != entityInHands)
+			{
+				return ( ItemManager.GetCombinationFlags( entityInHands, focusedEntity ) != 0 );
+			}
+		}
 		return false;
 	}
 	

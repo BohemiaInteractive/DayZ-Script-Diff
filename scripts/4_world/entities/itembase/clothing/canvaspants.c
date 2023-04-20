@@ -1,4 +1,4 @@
-class CanvasPants_ColorBase extends Clothing
+class CanvasPants_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{
@@ -12,7 +12,7 @@ class CanvasPants_Grey extends CanvasPants_ColorBase {};
 class CanvasPants_Red extends CanvasPants_ColorBase {};
 class CanvasPants_Violet extends CanvasPants_ColorBase {};
 
-class CanvasPantsMidi_ColorBase extends Clothing
+class CanvasPantsMidi_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{

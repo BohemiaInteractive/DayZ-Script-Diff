@@ -13,7 +13,7 @@ class IodineTincture : Edible_Base
 		
 		AddAction(ActionDisinfectTarget);
 		AddAction(ActionDisinfectSelf);;
-		AddAction(ActionWashHandsItem);
+		AddAction(ActionWashHandsItemContinuous);
 		//AddAction(ActionForceDrinkDisinfectant);
 		//AddAction(ActionDrinkDisinfectant);
 	}

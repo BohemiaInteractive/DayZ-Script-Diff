@@ -1,4 +1,4 @@
-class LegsCover_Improvised extends Clothing
+class LegsCover_Improvised extends Pants_Base
 {
 	override void SetActions()
 	{

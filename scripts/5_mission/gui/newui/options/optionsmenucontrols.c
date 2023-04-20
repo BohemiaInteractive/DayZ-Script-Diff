@@ -369,8 +369,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		}
 		
 		Focus();
-		
-		GetGame().GetInput().EnableMouseAndKeyboard( m_KeyboardOption.GetIndex() );
 		GetGame().GetUIManager().ShowUICursor( m_MaKOptionAvailable && m_KeyboardOption.GetIndex() );
 		if (changed)
 			g_Game.UpdateInputDeviceDisconnectWarning();

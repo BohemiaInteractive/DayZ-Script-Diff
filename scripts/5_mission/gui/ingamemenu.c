@@ -29,9 +29,7 @@ class InGameMenu extends UIScriptedMenu
 		
 		Mission mission = g_Game.GetMission();
 		if (mission)
-		{
 			mission.Continue();
-		}
 	}
 
 	override Widget Init()
@@ -72,9 +70,7 @@ class InGameMenu extends UIScriptedMenu
 		
 		Mission mission = g_Game.GetMission();
 		if (mission)
-		{
 			mission.Pause();
-		}
 		
 		return layoutRoot;
 	}
@@ -87,7 +83,7 @@ class InGameMenu extends UIScriptedMenu
 		version_widget.SetText("#main_menu_version" + " " + version);
 
 		#ifdef PREVIEW_BUILD
-			version_widget.SetText("THIS IS PREVIEW");
+		version_widget.SetText("THIS IS PREVIEW");
 		#endif
 	}
 	
@@ -293,35 +289,26 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void UpdateGUI()
 	{
-		Man player = GetGame().GetPlayer();
-		bool player_is_alive = false;
-
-		if (player)
-		{
-			int life_state = player.GetPlayerState();
-
-			if (life_state == EPlayerStates.ALIVE)
-			{
-				player_is_alive = true;
-			}
-		}
-		
 		#ifdef BULDOZER
 		m_RestartButton.Show(false);
 		m_RespawnButton.Show(false);
 		#else
+		Man player = GetGame().GetPlayer();
+		bool playerAlive = player && player.GetPlayerState() == EPlayerStates.ALIVE;
+
 		if (GetGame().IsMultiplayer())
 		{
-			m_RestartButton.Show(player_is_alive && player.IsUnconscious());
-			m_RespawnButton.Show(!player_is_alive);
+			m_RestartButton.Show(playerAlive && player.IsUnconscious());
+			m_RespawnButton.Show(!playerAlive);
 		}
 		else
 		{
 			m_RestartButton.Show(true);
 			m_RespawnButton.Show(false);
-			m_SeparatorPanel.Show(player_is_alive);
+			m_SeparatorPanel.Show(playerAlive);
 		}
-		m_ContinueButton.Show(player_is_alive);
+
+		m_ContinueButton.Show(playerAlive);
 		#endif
 	}
 	
@@ -384,38 +371,23 @@ class InGameMenu extends UIScriptedMenu
 			return;
 				
 		TextWidget label = TextWidget.Cast(w.FindWidget(w.GetName() + "_label"));
-		
 		if (label)
-		{
 			label.SetText(text);
-		}
 		
 	}
 	
 	protected void ButtonSetColor(Widget w, int color)
 	{
-		if (!w)
-			return;
-		
 		Widget panel = w.FindWidget(w.GetName() + "_panel");
-		
 		if (panel)
-		{
 			panel.SetColor(color);
-		}
 	}
 	
 	protected void ButtonSetTextColor(Widget w, int color)
 	{
-		if (!w)
-			return;
-
-		TextWidget label	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
-				
+		TextWidget label = TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
 		if (label)
-		{
 			label.SetColor(color);
-		}
 	}
 	
 	void SetServerInfoVisibility(bool show)
@@ -423,14 +395,6 @@ class InGameMenu extends UIScriptedMenu
 		m_ServerInfoPanel.Show(show);
 	}
 	
-	void ToggleFavoriteServer()
-	{
-		//TODO insert favorite mechanism here
-		GetServersResultRow info = OnlineServices.GetCurrentServerInfo();
-		bool favorite = !info.m_Favorite;
-		
-		OnlineServices.SetServerFavorited(info.GetIP(), info.m_HostPort, info.m_SteamQueryPort, favorite);		
-		m_UnfavoriteImage.Show(!favorite);
-		m_FavoriteImage.Show(favorite);
-	}
+	//! DEPRECATED
+	void ToggleFavoriteServer();
 }

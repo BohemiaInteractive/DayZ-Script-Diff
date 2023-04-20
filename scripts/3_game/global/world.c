@@ -63,6 +63,14 @@ class World: Managed
 	
 	proto native void SetExplicitVolumeFactor_EnvSounds2D(float factor, float fadeTime);
 	
+	
+	/**
+	\brief Affects env sound controller value 'Shooting' 
+		\param sound position
+		\param relative value (0..1) - how much should be value decreased
+	*/		
+	proto native void AddEnvShootingSource(vector position, float shootingValDecrease);
+	
 	proto int GetWorldSize();
 
 	/**
@@ -94,7 +102,14 @@ class World: Managed
 	proto native void SetUserLightingLerp(float val);
 
 	
+	/**
+	returns reference to AIWorld
+	*/	
 	proto native AIWorld GetAIWorld();
+	
+	proto native void MarkObjectForPathgraphUpdate(Object object);
+	proto native void ProcessMarkedObjectsForPathgraphUpdate();
+
 	
 	/*!
 	@code

@@ -231,6 +231,12 @@ class MissionGameplay extends MissionBase
 	
 	override void OnUpdate(float timeslice)
 	{
+		super.OnUpdate(timeslice);
+		
+#ifdef DIAG_DEVELOPER
+		UpdateInputDeviceDiag();
+#endif
+		
 		Man player = GetGame().GetPlayer();
 		PlayerBase playerPB = PlayerBase.Cast(player);
 		TickScheduler(timeslice);
@@ -328,32 +334,21 @@ class MissionGameplay extends MissionBase
 			}
 		}
 		
-		//Special behaviour for leaning [CONSOLE ONLY]
-		if ( playerPB && !GetGame().IsInventoryOpen() )
+		if (playerPB)
 		{
-			if ( playerPB.IsRaised() || playerPB.IsInRasedProne() )
+			//Special behaviour for leaning [CONSOLE ONLY]
+			if (playerPB.IsRaised() || playerPB.IsInRasedProne())
 			{
-				GetUApi().GetInputByID(UALeanLeft).Unlock();
-				GetUApi().GetInputByID(UALeanRight).Unlock();
+				GetUApi().GetInputByID(UALeanLeftGamepad).Unlock();
+				GetUApi().GetInputByID(UALeanRightGamepad).Unlock();
 			}
 			else
 			{
-				GetUApi().GetInputByID(UALeanLeft).Lock();
-				GetUApi().GetInputByID(UALeanRight).Lock();	
+				GetUApi().GetInputByID(UALeanLeftGamepad).Lock();
+				GetUApi().GetInputByID(UALeanRightGamepad).Lock();	
 			}
-		}
-		else
-		{
-			if ( playerPB )
-			{
-				GetUApi().GetInputByID(UALeanLeft).Lock();
-				GetUApi().GetInputByID(UALeanRight).Lock();	
-			}
-		}
-		
-		//Special behaviour for freelook & zeroing [CONSOLE ONLY]
-		if ( playerPB )
-		{
+			
+			//Special behaviour for freelook & zeroing [CONSOLE ONLY]
 			if (playerPB.IsRaised())
 			{
 				GetUApi().GetInputByID(UALookAround).Lock();		//disable freelook
@@ -509,7 +504,7 @@ class MissionGameplay extends MissionBase
 				}
 			}
 			
-			if (CfgGameplayHandler.GetMapIgnoreMapOwnership())
+			if (CfgGameplayHandler.GetMapIgnoreMapOwnership() && !CfgGameplayHandler.GetUse3DMap())
 			{
 				if (GetUApi().GetInputByID(UAMapToggle).LocalPress() && !m_UIManager.GetMenu())
 				{
@@ -1073,7 +1068,7 @@ class MissionGameplay extends MissionBase
 	{
 		UIScriptedMenu menu = GetUIManager().GetMenu();
 		
-		if ( !menu && GetGame().GetPlayer().GetHumanInventory().CanOpenInventory() && !GetGame().GetPlayer().IsInventorySoftLocked() && GetGame().GetPlayer().GetHumanInventory().IsInventoryUnlocked() )
+		if ( !menu && GetGame().GetPlayer().GetHumanInventory().CanOpenInventory() && !GetGame().GetPlayer().IsInventorySoftLocked() )
 		{
 			if( !m_InventoryMenu )
 			{
@@ -1203,6 +1198,7 @@ class MissionGameplay extends MissionBase
 		// open ingame menu
 		GetUIManager().EnterScriptedMenu( MENU_INGAME, GetGame().GetUIManager().GetMenu() );
 		AddActiveInputExcludes({"menu"});
+		AddActiveInputRestriction(EInputRestrictors.INVENTORY);
 	}
 	
 	override void Continue()
@@ -1219,21 +1215,9 @@ class MissionGameplay extends MissionBase
 		
 		m_PauseQueued = false;
 		RemoveActiveInputExcludes({"menu"},true);
+		RemoveActiveInputRestriction(EInputRestrictors.INVENTORY);
 		GetUIManager().CloseMenu(MENU_INGAME);
-		//GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(CloseInGameMenu,1,true);
 	}
-	
-	/*void CloseInGameMenu()
-	{
-		if (GetUIManager().IsMenuOpen(MENU_INGAME))
-		{
-			GetUIManager().CloseMenu(MENU_INGAME);
-		}
-		else
-		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(CloseInGameMenu);
-		}
-	}*/
 	
 	override bool IsMissionGameplay()
 	{
@@ -1243,9 +1227,9 @@ class MissionGameplay extends MissionBase
 	override void AbortMission()
 	{
 		#ifdef BULDOZER
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.RequestExit, IDC_MAIN_QUIT);
+		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.RequestExit, IDC_MAIN_QUIT);
 		#else
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().AbortMission);
+		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().AbortMission);
 		#endif
 	}
 	
@@ -1525,7 +1509,7 @@ class MissionGameplay extends MissionBase
 		PlayerBase playerBase = PlayerBase.Cast(player);
 		if (playerBase)
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(playerBase.ShowDeadScreen, false, 0);//CallLater(playerBase.ShowDeadScreen, DayZPlayerImplement.DEAD_SCREEN_DELAY, false, false, 0);
+			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(playerBase.ShowDeadScreen, false, 0);
 		}
 		
 		GetGame().GetSoundScene().SetSoundVolume(g_Game.m_volume_sound,1);

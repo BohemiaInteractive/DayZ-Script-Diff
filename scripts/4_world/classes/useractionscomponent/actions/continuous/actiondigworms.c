@@ -29,9 +29,9 @@ class ActionDigWorms: ActionContinuousBase
 		m_ConditionTarget = new CCTSurface(UAMaxDistances.DEFAULT);
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if ( player.IsPlacingLocal() )
+		if (player.IsPlacingLocal())
 			return false;
 		
 		// Check if player is standing on terrain
@@ -39,41 +39,15 @@ class ActionDigWorms: ActionContinuousBase
 		float height = GetGame().SurfaceY(plr_pos[0], plr_pos[2]);
 		height = plr_pos[1] - height;
 		
-		if ( height > 0.4 )
+		if (height > 0.4)
 			return false; // Player is not standing on ground
 		
-		if ( !GetGame().IsDedicatedServer() )
+		if (!player.IsPlacingLocal())
 		{
-			if ( !player.IsPlacingLocal() /*&& player.IsCurrentCameraAimedAtGround()*/ )
-			{
-				if ( target )
-				{
-					string surface_type;
-					vector position;
-					position = target.GetCursorHitPos();
-					
-					GetGame().SurfaceGetType( position[0], position[2], surface_type );
-					
-					//float distance = vector.Distance(plr_pos,position);
-					
-					if ( GetGame().IsSurfaceFertile(surface_type) )
-					{
-						return true;
-					}
-				}
-			}
-		
-			return false;
+			return IsTargetFertile(target);
 		}
-		else
-		{
-			return true;
-		}
-	}
 	
-	override bool ActionConditionContinue( ActionData action_data )
-	{
-		return true;
+		return false;
 	}
 	
 	override bool SetupAction( PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL )
@@ -117,5 +91,24 @@ class ActionDigWorms: ActionContinuousBase
 			m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_DIGMANIPULATE;
 			m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
 		}
+	}
+	
+	bool IsTargetFertile(ActionTarget target)
+	{
+		if (target)
+		{
+			string surface_type;
+			vector position;
+			position = target.GetCursorHitPos();
+			
+			GetGame().SurfaceGetType(position[0], position[2], surface_type);
+			
+			if (GetGame().IsSurfaceFertile(surface_type))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 };

@@ -1,4 +1,4 @@
-class TTSKOPants extends Clothing
+class TTSKOPants extends Pants_Base
 {
 	override void SetActions()
 	{

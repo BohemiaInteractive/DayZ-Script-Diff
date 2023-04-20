@@ -14,6 +14,11 @@ class EmoteBase
 		return true;
 	}
 	
+	bool CanBeCanceledNormally(notnull EmoteCB callback)
+	{
+		return true;
+	}
+	
 	//! Checks for valid stance mask
 	bool EmoteFBStanceCheck(int stancemask)
 	{
@@ -36,9 +41,8 @@ class EmoteBase
 		return false;
 	}
 	
-	void OnBeforeStandardCallbackCreated(int callback_ID, int stancemask, bool is_fullbody)
-	{
-	}
+	void OnBeforeStandardCallbackCreated(int callback_ID, int stancemask, bool is_fullbody);
+	void OnCallbackEnd();
 	
 	bool EmoteStartOverride(typename callbacktype, int id, int mask, bool fullbody)
 	{

@@ -1,4 +1,4 @@
-class Ushanka_ColorBase extends Clothing
+class Ushanka_ColorBase extends HeadGear_Base
 {
 	override void SetActions()
 	{

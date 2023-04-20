@@ -208,6 +208,7 @@ class PowerGenerator extends ItemBase
 	override void EEItemAttached(EntityAI item, string slot_name)
 	{
 		super.EEItemAttached(item, slot_name);
+		GetCompEM().InteractBranch(this);
 		
 		ItemBase item_IB = ItemBase.Cast(item);
 		
@@ -225,6 +226,8 @@ class PowerGenerator extends ItemBase
 	override void EEItemDetached(EntityAI item, string slot_name)
 	{
 		super.EEItemDetached(item, slot_name);
+		
+		GetCompEM().InteractBranch(this);
 		
 		ItemBase item_IB = ItemBase.Cast(item);
 		
@@ -269,7 +272,7 @@ class PowerGenerator extends ItemBase
 			DPrint(error);
 		}
 	}
-
+	
 	// Adds fuel (energy) to the generator
 	// Returns how much fuel was accepted
 	float AddFuel(float available_fuel)
@@ -278,7 +281,7 @@ class PowerGenerator extends ItemBase
 		{
 			return 0;
 		}
-		
+		GetCompEM().InteractBranch(this);
 		float needed_fuel = GetMaxFuel() - GetFuel();
 		
 		if (needed_fuel > available_fuel)

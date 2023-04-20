@@ -72,7 +72,7 @@ class ActionDeployObject: ActionDeployBase
 	}
 	
 	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
-	{	
+	{
 		if (super.SetupAction(player, target, item, action_data, extra_data))
 		{
 			PlaceObjectActionData poActionData;
@@ -80,6 +80,8 @@ class ActionDeployObject: ActionDeployBase
 			poActionData.m_AlreadyPlaced = false;
 			if (!GetGame().IsDedicatedServer())
 			{
+				player.GetHologramLocal().SetUpdatePosition(false);
+				
 				Hologram hologram = player.GetHologramLocal();
 				if (hologram)
 				{
@@ -142,7 +144,6 @@ class ActionDeployObject: ActionDeployBase
 		{
 			//local singleplayer			
 			action_data.m_Player.PlacingStartServer(action_data.m_MainItem);
-			action_data.m_Player.GetHologramLocal().SetUpdatePosition(false);
 			action_data.m_MainItem.SetIsBeingPlaced(true);
 		}
 	}
@@ -170,11 +171,18 @@ class ActionDeployObject: ActionDeployBase
 		poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData.m_AlreadyPlaced)
 		{
-			EntityAI entity_for_placing = action_data.m_MainItem;
 			action_data.m_Player.PlacingCancelLocal();
 			
 			//action terminated locally, send cancel to server
 			poActionData.m_Player.GetActionManager().RequestEndAction();
+			if (action_data.m_Player.GetHologramLocal())
+				action_data.m_Player.GetHologramLocal().SetUpdatePosition(true);
+			
+			InventoryLocation source = new InventoryLocation;
+			if (action_data.m_MainItem.GetInventory().GetCurrentInventoryLocation(source) && source.GetType() == InventoryLocationType.GROUND)
+			{
+				action_data.m_Player.PredictiveTakeEntityToHands(action_data.m_MainItem);
+			}
 		}
 	}
 	
@@ -187,8 +195,7 @@ class ActionDeployObject: ActionDeployBase
 		poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData.m_AlreadyPlaced)
 		{
-			EntityAI entity_for_placing = action_data.m_MainItem;
-			GetGame().ClearJunctureEx(action_data.m_Player, entity_for_placing);
+			GetGame().ClearJunctureEx(action_data.m_Player, action_data.m_MainItem);
 			action_data.m_MainItem.SetIsBeingPlaced(false);
 		
 			if (GetGame().IsMultiplayer())
@@ -202,17 +209,9 @@ class ActionDeployObject: ActionDeployBase
 				action_data.m_Player.PlacingCancelLocal();
 				action_data.m_Player.PlacingCancelServer();
 			}
-			
-			InventoryLocation source = new InventoryLocation;
-			if (action_data.m_MainItem.GetInventory().GetCurrentInventoryLocation(source) && source.GetType() == InventoryLocationType.GROUND)
-			{
-				action_data.m_Player.ServerTakeEntityToHands(action_data.m_MainItem);
-			}
 		}
 		else
 		{
-			//TODO: make OnEND placement event and move there
-			
 			action_data.m_MainItem.SetIsDeploySound(false);
 			action_data.m_MainItem.SetIsPlaceSound(false);
 			action_data.m_MainItem.SoundSynchRemoteReset();

@@ -1,6 +1,6 @@
 class PlayerConstants 
 {
-	static const float WEAPON_RAISE_BLEND_DELAY = 0.136;
+	static const float WEAPON_RAISE_BLEND_DELAY = 0.2;
 	static const float MELEE2_MOVEMENT_BLEND_DELAY = 0.35;
 	static const float HEAVY_HIT_THRESHOLD = 0.5; //defines what is considered a 'heavy hit' from the indicator's standpoint
 	//----------------------------------------------------------
@@ -237,8 +237,10 @@ class PlayerConstants
 	//----------------------------------------------------------
 	
 																	//(positive values mean the distance under water surface, ie 0.1 --> 10cm under water, -0.1 --> 10cm above water)
-	static const float DROWNING_DEFAULT_THRESHOLD 			= 0.25;	//what water level value does it take for the player to be considered drowning while swimming - values <0.35 observed as the highest during swimming
-	static const float DROWNING_SWIMMING_THRESHOLD 			= 0.4;	//what water level value does it take for the player to be considered drowning while swimming - values <0.35 observed as the highest during swimming
-	static const float DROWNING_UNCONSCIOUS_THRESHOLD 		= 0.1;	//what water level value does it take for the player to be considered drowning while unconscious -  0.10 seemed a reasonable value based on visual observation and matching it to water depth values(can be adjust more precisely though)
+	static const float 	DROWNING_DEFAULT_THRESHOLD 			= 0.25;	//what water level value does it take for the player to be considered drowning while swimming - values <0.35 observed as the highest during swimming
+	static const float 	DROWNING_SWIMMING_THRESHOLD 		= 0.4;	//what water level value does it take for the player to be considered drowning while swimming - values <0.35 observed as the highest during swimming
+	static const float	DROWNING_UNCONSCIOUS_THRESHOLD 		= 0.1;	//what water level value does it take for the player to be considered drowning while unconscious -  0.10 seemed a reasonable value based on visual observation and matching it to water depth values(can be adjust more precisely though)
+	static const int	DROWNING_BUBBLE_FREQUENCY_MAX		= 4000; //how often should bubbles appear when the stamina is at its highest,(in ms)
+	static const int	DROWNING_BUBBLE_FREQUENCY_MIN		= 1000; //how often should bubbles appear when the stamina is at its lowest,(in ms)
 	
 }

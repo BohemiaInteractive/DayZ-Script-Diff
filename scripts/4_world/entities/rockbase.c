@@ -34,6 +34,7 @@ class RockBase: Object
 		case "Pickaxe":
 		case "SledgeHammer":
 		case "Hammer":
+		case "Mace":
 			output_map.Insert("Stone",1);
 			break;
  		case "PipeWrench":
@@ -64,6 +65,7 @@ class RockBase: Object
 			case "Crowbar":
 				return 50;
 			case "Hammer":
+			case "Mace":
 				return 40;
 			}
 		}

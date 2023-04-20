@@ -1,4 +1,4 @@
-class LeatherHat_ColorBase extends ClothingBase
+class LeatherHat_ColorBase extends HeadGear_Base
 {
 	/*override bool CanPutAsAttachment( EntityAI parent )
 	{

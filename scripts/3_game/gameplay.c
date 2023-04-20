@@ -124,6 +124,9 @@ class ScriptInputUserData : ParamsWriteContext
 
 	proto native void Reset ();
 	proto native void Send ();
+
+	proto native bool CopyFrom(ParamsReadContext other);
+
 	proto native static bool CanStoreInputUserData ();
 };
 
@@ -350,13 +353,15 @@ class PlayerIdentityBase : Managed
 	proto int GetBandwidthAvg();
 	
 	//! nick (short) name of player
-	proto string GetName();
+	proto owned string GetName();
+	//! nick without any processing
+	proto owned string GetPlainName();
 	//! full name of player
-	proto string GetFullName();
+	proto owned string GetFullName();
 	//! unique id of player (hashed steamID, database Xbox id...) can be used in database or logs
-	proto string GetId();
+	proto owned string GetId();
 	//! plaintext unique id of player (cannot be used in database or logs)
-	proto string GetPlainId();
+	proto owned string GetPlainId();
 	//! id of player in one session (is reused after player disconnects)
 	proto int GetPlayerId();
 	
@@ -546,6 +551,8 @@ const EventType	DLCOwnerShipFailedEventTypeID;
 //! params: \ref SetFreeCameraEventParams
 const EventType	SetFreeCameraEventTypeID;
 //! no params
+const EventType	ConnectingStartEventTypeID;
+//! no params
 const EventType	ConnectingAbortEventTypeID;
 //! params: \ref PlayerDeathEventParams
 const EventType	PlayerDeathEventTypeID;
@@ -689,6 +696,11 @@ class Mission
 	
 	Hud GetHud()
 	{ 
+		return NULL;
+	}
+
+	ObjectSnapCallback GetInventoryDropCallback()
+	{
 		return NULL;
 	}
 	
@@ -1225,7 +1237,7 @@ enum OptionAccessType
 	AT_OPTIONS_VON_INPUT_MODE
 };
 
-//! Used for script-based game options. For anything C++ based, you would most likely use "Option Access Type" below
+//! Used for script-based game options. For anything C++ based, you would most likely use "Option Access Type" above
 enum OptionIDsScript
 {
 	OPTION_HUD = 100, //starts at 100 to avoid ID conflict with AT_
@@ -1236,7 +1248,8 @@ enum OptionIDsScript
 	OPTION_QUICKBAR,
 	OPTION_SERVER_INFO,
 	OPTION_BLEEDINGINDICATION,
-	OPTION_CONNECTIVITY_INFO
+	OPTION_CONNECTIVITY_INFO,
+	OPTION_HUD_BRIGHTNESS
 };
 
 // -------------------------------------------------------------------------

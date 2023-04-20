@@ -76,21 +76,31 @@ class BleedingSourcesManagerBase
 	//for inventory location, get the active bits
 	int GetBleedingSourceBitsByInvLocation(int inv_location)
 	{
-		if(m_BleedingSourcesByLocation.Contains(inv_location))
+		if (m_BleedingSourcesByLocation.Contains(inv_location))
 		{
 			return m_BleedingSourcesByLocation.Get(inv_location);
 		}
+
 		return 0;
 	}
 
 	//for inventory location, get the active bits
 	int GetFreeBleedingSourceBitsByInvLocation(int inv_location)
 	{
-		if(m_BleedingSourcesZonesMaskByLocation.Contains(inv_location))
+		if (m_BleedingSourcesZonesMaskByLocation.Contains(inv_location))
 		{
 			return (~m_BleedingSourcesZonesMaskByLocation.Get(inv_location) & GetBleedingSourceBitsByInvLocation(inv_location)) | (m_BleedingSourcesZonesMaskByLocation.Get(inv_location) & ~GetBleedingSourceBitsByInvLocation(inv_location));//xor
 		}
+
 		return 0;
+	}
+	
+	bool IsBleedingSourceActive(string name)
+	{
+		name.ToLower();
+		int bit = GetBitFromSelectionName(name);
+
+		return m_Player.GetBleedingBits() & bit;
 	}
 	
 	

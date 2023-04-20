@@ -18,7 +18,7 @@ class HandStartAction extends HandStateBase
 
 		if (e.m_Player)
 		{
-			Human hmn = Human.Cast(e.m_Player);
+			auto hmn = e.m_Player;
 			HumanCommandWeapons hcw = hmn.GetCommandModifier_Weapons();
 			if (hcw)
 			{

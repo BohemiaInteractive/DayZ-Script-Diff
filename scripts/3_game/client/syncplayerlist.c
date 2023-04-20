@@ -20,7 +20,7 @@ class SyncPlayerList
 				{
 					SyncPlayer sync_player = new SyncPlayer;
 					sync_player.m_UID = p_identity.GetPlainId();
-					sync_player.m_PlayerName = p_identity.GetName();
+					sync_player.m_PlayerName = p_identity.GetPlainName();
 					m_PlayerList.Insert(sync_player);
 				}
 				else

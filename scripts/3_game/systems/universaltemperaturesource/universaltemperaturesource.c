@@ -6,13 +6,11 @@ class UniversalTemperatureSourceSettings
 	float m_TemperatureCap		= float.MAX;	//! temperature cap that will limit the return value from GetTemperature method
 	float m_RangeFull			= 1;			//! range where the full temperature is given to receiver
 	float m_RangeMax			= 2;			//! maximum range where the receiver can get some temperature
-	// ? characteristic of heating/freezing ?
 	
-	bool m_Updateable 			= false;		//! if the Update is running peridocially
+	bool m_Updateable 			= false;		//! if the Update is running periodically
 	bool m_ManualUpdate  		= false;		//! update is called manually (ex. own tick of parent entity)
 	bool m_AffectStat			= false;		//! if the temperature generated is also set as Temperature Stat on Item itself
-	
-	// TODO: not needed probably
+
 	vector m_Position			= vector.Zero;
 	EntityAI m_Parent			= null;			//! parent Entity of the UTS
 }

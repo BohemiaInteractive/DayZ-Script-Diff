@@ -243,5 +243,9 @@ class WoodBase extends Plant
 		}
 	}
 	
+	override bool CanBeActionTarget()
+	{
+		return super.CanBeActionTarget() && !IsDamageDestroyed();
+	}
 
 };

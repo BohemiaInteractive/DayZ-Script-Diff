@@ -1,4 +1,4 @@
-class TTsKOJacket_ColorBase extends Clothing 
+class TTsKOJacket_ColorBase extends Top_Base 
 {
 	override void SetActions()
 	{

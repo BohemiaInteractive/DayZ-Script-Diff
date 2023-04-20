@@ -72,7 +72,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 
 	protected void RegisterCooldowns()
 	{
-		m_CooldownTimers = new map<int, ref Timer>;
+		m_CooldownTimers = new map<int, ref Timer>();
 		m_CooldownTimers.Insert(EFightLogicCooldownCategory.EVADE, new Timer(CALL_CATEGORY_SYSTEM)); // evades
 	}
 
@@ -651,7 +651,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		if (m_MeleeCombat.GetFinisherType() > -1)
 		{
 			if (GetGame().IsServer())
-				DamageSystem.CloseCombatDamage(m_DZPlayer, target, m_MeleeCombat.GetHitZoneIdx(), DetermineFinisherAmmo(m_MeleeCombat.GetFinisherType()), m_MeleeCombat.GetHitPos());
+				DamageSystem.CloseCombatDamage(m_DZPlayer, target, m_MeleeCombat.GetHitZoneIdx(), DetermineFinisherAmmo(m_MeleeCombat.GetFinisherType()), m_MeleeCombat.GetHitPos(), ProcessDirectDamageFlags.NO_ATTACHMENT_TRANSFER);
 				
 			return true;
 		}
@@ -676,15 +676,15 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 			{
 				hitPosWS = targetEntity.ModelToWorld(targetEntity.GetDefaultHitPosition());
 				
-				if (WeaponDestroyedCheck(weapon,ammo))
+				if (WeaponDestroyedCheck(weapon, ammo))
 				{
-					DamageSystem.CloseCombatDamage(m_DZPlayer, target, hitZoneIdx, ammo, hitPosWS);					
-					//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common::CloseCombatDamage:: target: %1, hitzone: %2, ammo: %3", target, hitZoneIdx, ammo));
+					DamageSystem.CloseCombatDamage(m_DZPlayer, target, hitZoneIdx, ammo, hitPosWS);
+					//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[a]::CloseCombatDamage:: target: %1, hitzone: %2, ammo: %3", target, hitZoneIdx, ammo));
 				}
 				else
 				{
 					m_DZPlayer.ProcessMeleeHit(weapon, weaponMode, target, hitZoneIdx, hitPosWS);
-					//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common::ProcessMeleeHit:: target: %1, hitzone: %2, meleeMode: %3", target, hitZoneIdx, weaponMode));
+					//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[b]::ProcessMeleeHit:: target: %1, hitzone: %2, meleeMode: %3", target, hitZoneIdx, weaponMode));
 				}
 			}
 		}
@@ -694,8 +694,8 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 			if (GetGame().IsServer() && targetEntity)
 			{
 				hitPosWS = targetEntity.ModelToWorld(targetEntity.GetDefaultHitPosition()); //! override hit pos by pos defined in type
-				targetEntity.EEHitBy(null, 0, m_DZPlayer, hitZoneIdx, "", ammo, hitPosWS, 1.0);
-				//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common::EEHitBy:: target: %1, hitzone: %2, meleeMode: %3", target, hitZoneIdx, weaponMode));
+				DamageSystem.CloseCombatDamage(m_DZPlayer, target, hitZoneIdx, DUMMY_LIGHT_AMMO, hitPosWS);
+				//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[c]::CloseCombatDamage:: target: %1, hitzone: %2, meleeMode: %3", target, hitZoneIdx, weaponMode));
 			}
 		}
 	}
@@ -860,7 +860,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 									bleedingManager.AttemptAddBleedingSourceBySelection("RightForeArmRoll");
 								}
 							}
-						break;
+							break;
 						
 						case 2:
 							player = PlayerBase.Cast( DZPlayer );
@@ -872,11 +872,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 									bleedingManager.AttemptAddBleedingSourceBySelection("LeftForeArmRoll");
 								}
 							}
-						break;
-						
-						default:
-							//Do nothing here
-						break;
+							break;
 					}
 				}
 				else
@@ -896,7 +892,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 									bleedingManager.AttemptAddBleedingSourceBySelection("LeftToeBase");
 								}
 							}
-						break;
+							break;
 						
 						case 2:
 							player = PlayerBase.Cast( DZPlayer );
@@ -908,11 +904,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 									bleedingManager.AttemptAddBleedingSourceBySelection("LeftFoot");
 								}
 							}
-						break;
-						
-						default:
-							//Do nothing here
-						break;
+							break;
 					}
 				}
 			}

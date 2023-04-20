@@ -1,4 +1,4 @@
-class LeatherSack_ColorBase extends Clothing
+class LeatherSack_ColorBase extends Backpack_Base
 {
 	override bool IsClothing()
 	{

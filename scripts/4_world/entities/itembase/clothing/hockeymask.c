@@ -1,21 +1,12 @@
-class HockeyMask extends Clothing
+class HockeyMask extends Mask_Base
 {
-	override bool CanPutAsAttachment( EntityAI parent )
+	override protected void InitGlobalExclusionValues()
 	{
-		if (!super.CanPutAsAttachment(parent)) {return false;}
+		super.InitGlobalExclusionValues();
 		
-		Clothing headgear = Clothing.Cast(parent.FindAttachmentBySlotName("Headgear"));
-		if ( headgear && (headgear.ConfigGetBool("noMask") && !PumpkinHelmet.Cast(headgear)) )
-		{
-			return false;
-		}
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_0);
 		
-		Clothing eyewear = Clothing.Cast(parent.FindAttachmentBySlotName("Eyewear"));
-		if ( eyewear && SportGlasses_ColorBase.Cast(eyewear) )
-		{
-			return false;
-		}
-		
-		return true;
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_TIGHT_0);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_REGULAR_0);
 	}
 }

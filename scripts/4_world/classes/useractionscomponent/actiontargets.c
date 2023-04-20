@@ -35,7 +35,7 @@ class VicinityObjects
 	{
 		for (int i = 0; i < objects.Count(); i++)
 		{
-			if (objects[i].GetType() != "")
+			if (objects[i].GetType() != "" && objects[i].CanBeActionTarget())
 			{
 				StoreVicinityObject(objects[i]);
 				//Print("storing, 2nd pass: " + objects[i]);
@@ -191,17 +191,6 @@ class ActionTargets
 		m_Targets.Clear();
 	}
 	
-	vector CalculateRayStart()
-	{
-		vector rayStart = GetGame().GetCurrentCameraPosition();
-		if (m_Player.GetCurrentCamera() && m_Player.GetCurrentCamera().IsInherited(DayZPlayerCamera3rdPerson))
-		{
-			//! tmp hotfix - move the start point for a bit in 3p view (camera collision issue related)
-			rayStart = GetGame().GetCurrentCameraPosition() + GetGame().GetCurrentCameraDirection() * 0.5;
-		}
-		return rayStart;
-	}
-	
 	void Update()
 	{	
 		int i;
@@ -219,7 +208,7 @@ class ActionTargets
 		vector playerPos = m_Player.GetPosition();
 		vector headingDirection = MiscGameplayFunctions.GetHeadingVector(m_Player);
 
-		m_RayStart = CalculateRayStart();
+		m_RayStart = GetGame().GetCurrentCameraPosition();
 		m_RayEnd = m_RayStart + GetGame().GetCurrentCameraDirection() * c_RayDistance;
 
 		RaycastRVParams rayInput = new RaycastRVParams(m_RayStart, m_RayEnd, m_Player);
@@ -254,7 +243,7 @@ class ActionTargets
 					
 					cursorTarget = res.obj;
 					Class.CastTo(cursorTargetEntity,cursorTarget);
-					if ( cursorTarget && ((cursorTarget.IsDamageDestroyed() && (cursorTarget.IsTree() || cursorTarget.IsBush())) || (cursorTargetEntity && cursorTargetEntity.IsHologram())) )
+					if (cursorTarget && !cursorTarget.CanBeActionTarget())
 						continue;
 					//! if the cursor target is a proxy
 					if ( res.hierLevel > 0 )
@@ -749,6 +738,9 @@ class ActionTargets
 	//! misc
 	private const int OBSTRUCTED_COUNT_THRESHOLD	= 3;
 	private const int GROUPING_COUNT_THRESHOLD		= 10;
+	
+	//! DEPRECATED
+	vector CalculateRayStart();
 };
 
 class ObjectGroup

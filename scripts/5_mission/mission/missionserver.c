@@ -8,6 +8,7 @@ class MissionServer extends MissionBase
 	ref array<ref CorpseData> m_DeadPlayersArray;
 	ref map<PlayerBase, ref LogoutInfo> m_LogoutPlayers;
 	ref map<PlayerBase, ref LogoutInfo> m_NewLogoutPlayers;
+	ref RainProcurementHandler m_RainProcHandler;
 	const int SCHEDULER_PLAYERS_PER_TICK = 5;
 	int m_currentPlayer;
 	int m_RespawnMode;
@@ -64,6 +65,7 @@ class MissionServer extends MissionBase
 				
 		m_LogoutPlayers = new map<PlayerBase, ref LogoutInfo>;
 		m_NewLogoutPlayers = new map<PlayerBase, ref LogoutInfo>;
+		m_RainProcHandler = new RainProcurementHandler(this);
 	}
 	
 	void ~MissionServer()
@@ -91,10 +93,13 @@ class MissionServer extends MissionBase
 	
 	override void OnUpdate(float timeslice)
 	{
+		super.OnUpdate(timeslice);
+		
 		UpdateDummyScheduler();
 		TickScheduler(timeslice);
 		UpdateLogoutPlayers();		
 		m_WorldData.UpdateBaseEnvTemperature(timeslice);	// re-calculate base enviro temperature
+		m_RainProcHandler.Update(timeslice);
 		
 		RandomArtillery(timeslice);
 		
@@ -740,4 +745,10 @@ class MissionServer extends MissionBase
 		rpc.Write(m_RespawnMode);
 		rpc.Send(null, ERPCs.RPC_SERVER_RESPAWN_MODE, true, identity);
 	}
+	
+	override RainProcurementHandler GetRainProcurementHandler()
+	{
+		return m_RainProcHandler;
+	}
 }
+

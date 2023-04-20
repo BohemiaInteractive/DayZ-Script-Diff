@@ -50,7 +50,7 @@ class PeelPotato extends RecipeBase
 		InsertIngredient(1,"M9A1_Bayonet");
 		InsertIngredient(1,"Mosin_Bayonet");
 		InsertIngredient(1,"SKS_Bayonet");
-		InsertIngredient(1,"Wrench");
+		InsertIngredient(1,"Sword");
 		InsertIngredient(1,"Screwdriver");
 		InsertIngredient(1,"Hatchet");
 		InsertIngredient(1,"HandSaw");

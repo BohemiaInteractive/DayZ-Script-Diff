@@ -107,6 +107,12 @@ class MissionMainMenu extends MissionBase
 
 	override void OnUpdate(float timeslice)
 	{
+		super.OnUpdate(timeslice);
+		
+#ifdef DIAG_DEVELOPER
+		UpdateInputDeviceDiag();
+#endif
+		
 		if ( g_Game.IsLoading() )
 		{
 			return;

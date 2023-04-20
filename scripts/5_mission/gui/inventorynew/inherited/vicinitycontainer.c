@@ -228,10 +228,6 @@ class VicinityContainer: CollapsibleContainer
 				return;
 			player.PredictiveSwapEntities( item, receiver_item );
 		}
-		/*else if( player.CanDropEntity( item ) )
-		{
-			player.PredictiveDropEntity( item );
-		}*/
 		
 		ItemManager.GetInstance().HideDropzones();
 		ItemManager.GetInstance().SetIsDragging( false );
@@ -248,51 +244,53 @@ class VicinityContainer: CollapsibleContainer
 	{
 		OnDropReceivedFromHeader( w, x, y, receiver );
 	}
-
-	override void OnDropReceivedFromHeader( Widget w, int x, int y, Widget receiver )
+	
+	void OnDropReceivedFromEmptySpace( Widget w, int x, int y, Widget receiver )
 	{
-		if ( !w )
+		OnDropReceivedFromHeader( w, x, y, receiver );
+	}
+
+	override void OnDropReceivedFromHeader(Widget w, int x, int y, Widget receiver)
+	{
+		if (!w)
 			return;
 		
 		ItemManager.GetInstance().HideDropzones();
-		ItemManager.GetInstance().SetIsDragging( false );
+		ItemManager.GetInstance().SetIsDragging(false);
 		
-		ItemPreviewWidget ipw = ItemPreviewWidget.Cast( w.FindAnyWidget( "Render" ) );
+		ItemPreviewWidget ipw = ItemPreviewWidget.Cast(w.FindAnyWidget("Render"));
 		
-		if ( !ipw )
+		if (!ipw)
 		{
 			string name = w.GetName();
-			name.Replace( "PanelWidget", "Render" );
-			ipw = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
+			name.Replace("PanelWidget", "Render");
+			ipw = ItemPreviewWidget.Cast(w.FindAnyWidget(name));
 		}
 		
-		if ( !ipw )
+		if (!ipw)
 		{
-			ipw = ItemPreviewWidget.Cast( w );
+			ipw = ItemPreviewWidget.Cast(w);
+			if (!ipw)
+				return;
 		}
-		if ( !ipw )
-			return;
 		
 		EntityAI item = ipw.GetItem();
-		if ( !ipw.IsInherited( ItemPreviewWidget ) || !item )
-		{
-			return;
-		}
-		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		
-		if ( !item.GetInventory().CanRemoveEntity() || m_ShowedItemIcons.Find( item ) > -1 )
+		if (!ipw.IsInherited(ItemPreviewWidget) || !item)
 			return;
 		
-		if ( player.CanDropEntity( item ) )
+		if (!item.GetInventory().CanRemoveEntity() || m_ShowedItemIcons.Find(item) > -1)
+			return;
+		
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());		
+		if (player.CanDropEntity(item))
 		{
-			ItemBase item_base = ItemBase.Cast( item );
-			if ( item_base )
+			ItemBase itemBase = ItemBase.Cast(item);
+			if (itemBase)
 			{
-				if ( item_base.GetTargetQuantityMax() < item_base.GetQuantity() )
-					item_base.SplitIntoStackMaxClient( null, -1 );
+				if (itemBase.GetTargetQuantityMax() < itemBase.GetQuantity())
+					itemBase.SplitIntoStackMaxClient(null, -1);
 				else
-					player.PhysicalPredictiveDropItem( item_base );
+					player.PhysicalPredictiveDropItem(itemBase);
 			}
 		}
 
@@ -301,11 +299,6 @@ class VicinityContainer: CollapsibleContainer
 		{
 			menu.RefreshQuickbar();
 		}
-	}
-
-	void OnDropReceivedFromEmptySpace( Widget w, int x, int y, Widget receiver )
-	{
-		OnDropReceivedFromHeader( w, x, y, receiver );
 	}
 
 	override void UpdateInterval()
@@ -531,28 +524,6 @@ class VicinityContainer: CollapsibleContainer
 				}
 			}
 		}
-
-
-//			Print(m_ShowedItems.Count());
-/*		bool need_update_focus = false;
-		for ( i = 0; i < m_ShowedItems.Count(); i++ )
-		{
-			EntityAI ent = m_ShowedItems.GetKey( i );
-			m_ShowedItems.GetElement( i ).UpdateInterval();
-			Container con = m_ShowedItems.GetElement( i );
-			if ( !new_showed_items.Contains( ent ) )
-			{
-				GetMainWidget().Update();
-				if ( con.IsActive() )
-					need_update_focus = true;
-				Container.Cast( GetParent() ).Remove( con );
-				Remove( con );
-			}
-			else
-			{
-				UpdateHeader(ent,con,player); //squeezed here, the map is iterated over enough already..
-			}
-		}*/
 		
 		for ( int ic = 0; ic < m_ShowedCargos.Count(); ic++ )
 		{
@@ -604,9 +575,22 @@ class VicinityContainer: CollapsibleContainer
 			ToggleContainer(c);
 		}
 	}
+	
+	override bool CanOpenCloseContainerEx(EntityAI focusedEntity)
+	{
+		if (focusedEntity)
+		{
+			ClosableContainer c = ClosableContainer.Cast( m_ShowedItems.Get( focusedEntity ) );
+			if (c && c.IsDisplayable())
+			{	
+				return true;
+			}
+		}
+		return false;
+	}
 
 	//Call from ExpandCollapseContainer - not call
-	void ToggleContainer( Container conta )
+	void ToggleContainer( notnull Container conta )
 	{
 		conta.Toggle();
 	}
@@ -616,10 +600,13 @@ class VicinityContainer: CollapsibleContainer
 		EntityAI item = GetFocusedItem();
 		Container conta;
 			
-		if( m_ShowedItems && item )
+		if (m_ShowedItems && item)
 		{
 			conta = m_ShowedItems.Get( item );
-			ToggleContainer( conta );
+			if (conta)
+			{		
+				ToggleContainer( conta );
+			}
 		}
 	}
 	
@@ -665,5 +652,18 @@ class VicinityContainer: CollapsibleContainer
 			}
 			ItemManager.GetInstance().SetWidgetDraggable(cont.GetHeader().GetMainWidget(),draggable);
 		}
+	}
+	
+	override bool SplitItem()
+	{
+		ItemBase item = ItemBase.Cast(GetFocusedItem());
+		if (item)
+		{
+			if (item.HasQuantity() && item.CanBeSplit())
+			{
+				item.OnRightClick();
+			}
+		}
+		return false;
 	}
 }

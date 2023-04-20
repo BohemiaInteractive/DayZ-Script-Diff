@@ -1,4 +1,1 @@
-class SmershBag extends Clothing
-{
-	
-};
+class SmershBag extends Backpack_Base {};

@@ -372,7 +372,7 @@ class Magazine : InventoryItemSuper
 				float resultingHealth = (currentAmount * GetHealth() + numberOfTransferredBullets * other_magazine.GetHealth()) / GetAmmoCount();
 				SetHealth("", "", resultingHealth);
 			}
-			
+			OnCombine(other_item);
 			other_magazine.SetSynchDirty();
 			SetSynchDirty();
 		}

@@ -525,26 +525,29 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 		super.OnHide();
 	}
 	
-	/*override void Refresh()
+	override bool CanOpenCloseContainerEx(EntityAI focusedEntity)
 	{
-		super.Refresh();
-		
-		if (m_CollapsibleHeader)
+		if (m_OpenedContainers.Count() > m_ActiveIndex)
 		{
-			bool show = false;
-			Container cont;
-			int count = m_Body.Count();
-			for ( int i = 0; i < count; i++ )
+			ClosableContainer c;
+			SlotsIcon icon = GetFocusedSlotsIcon();
+			
+			if (icon)
 			{
-				cont = Container.Cast(m_Body.Get( i ));
-				if (cont && cont.IsOpened())
-				{
-					show = true;
-					break;
-				}
+				c = ClosableContainer.Cast(icon.GetContainer());
 			}
 			
-			m_CollapsibleHeader.SetArrowButtonOpened(!show);
+			if (c && c.IsDisplayable())
+			{
+				return true;
+			}
 		}
-	}*/
+		
+		return false;
+	}
+	
+	override bool CanSplitEx(EntityAI focusedEntity)
+	{
+		return false;
+	}
 }

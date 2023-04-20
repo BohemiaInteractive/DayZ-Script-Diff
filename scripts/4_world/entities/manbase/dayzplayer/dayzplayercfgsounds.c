@@ -162,10 +162,15 @@ class DayZPlayerTypeAttachmentSoundLookupTableImpl extends DayZPlayerTypeAttachm
 }
 
 
+
+
 class DayZPlayerTypeVoiceSoundLookupTableImpl extends DayZPlayerTypeVoiceSoundLookupTable
 {
 	void DayZPlayerTypeVoiceSoundLookupTableImpl()
 	{
+		// this produces 2 maps: 
+		// 1) map where the key is 'ID' of anim event and the value is sound lookup table
+		// 2) map of unique lookup table instances where the table name hash is a key, and a lookup table is the value
 		m_pSoundTableInstances = new map<int, ref PlayerVoiceLookupTable>;
 		m_pSoundTables = new map<int, PlayerVoiceLookupTable>();
 		

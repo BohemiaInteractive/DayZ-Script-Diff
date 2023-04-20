@@ -1,4 +1,4 @@
-class PrisonerCap extends Clothing
+class PrisonerCap extends HeadGear_Base
 {
 	override void SetActions()
 	{

@@ -43,8 +43,8 @@ class FireplaceBase extends ItemBase
 	const float PARAM_SMALL_FIRE_TEMPERATURE 		= 150;		//! maximum fireplace temperature of a small fire (degree Celsius)
 	const float PARAM_NORMAL_FIRE_TEMPERATURE 		= 1000;		//! maximum fireplace temperature of a normal fire (degree Celsius)
 	const float PARAM_MIN_FIRE_TEMPERATURE 			= 30;		//! minimum fireplace temperature under which the fireplace is inactive (degree Celsius)
-	const float	PARAM_TEMPERATURE_INCREASE 			= 9;		//! how much will temperature increase when fireplace is burning (degree Celsius)
-	const float	PARAM_TEMPERATURE_DECREASE 			= 20;		//! how much will temperature decrease when fireplace is cooling (degree Celsius)
+	const float	PARAM_TEMPERATURE_INCREASE 			= 3;		//! how much will temperature increase when fireplace is burning (degree Celsius per second)
+	const float	PARAM_TEMPERATURE_DECREASE 			= 3;		//! how much will temperature decrease when fireplace is cooling (degree Celsius per second)
 	const float	PARAM_MAX_WET_TO_IGNITE 			= 0.2;		//! maximum wetness value when the fireplace can be ignited
 	const float PARAM_MIN_TEMP_TO_REIGNITE 			= 30;		//! minimum fireplace temperature under which the fireplace can be reignited using air only (degree Celsius)
 	const float	PARAM_IGNITE_RAIN_THRESHOLD 		= 0.1;		//! maximum rain value when the fireplace can be ignited
@@ -292,16 +292,15 @@ class FireplaceBase extends ItemBase
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
  			m_UTSSettings 					= new UniversalTemperatureSourceSettings();
-			m_UTSSettings.m_UpdateInterval	= 3;
-			m_UTSSettings.m_Updateable		= true;
 			m_UTSSettings.m_AffectStat		= true;
+			m_UTSSettings.m_ManualUpdate	= true;
 			m_UTSSettings.m_TemperatureMin	= 0;
 			m_UTSSettings.m_TemperatureMax	= PARAM_NORMAL_FIRE_TEMPERATURE;
 			m_UTSSettings.m_TemperatureCap	= PARAM_MAX_TRANSFERED_TEMPERATURE;
 			m_UTSSettings.m_RangeFull		= PARAM_FULL_HEAT_RADIUS;
 			m_UTSSettings.m_RangeMax		= PARAM_HEAT_RADIUS;
 			
-			m_UTSLFireplace= new UniversalTemperatureSourceLambdaFireplace();
+			m_UTSLFireplace = new UniversalTemperatureSourceLambdaFireplace();
 			m_UTSLFireplace.SetSmallFireplaceTemperatureMax(PARAM_SMALL_FIRE_TEMPERATURE);
 			m_UTSLFireplace.SetNormalFireplaceTemperatureMax(PARAM_NORMAL_FIRE_TEMPERATURE);
 
@@ -1437,11 +1436,6 @@ class FireplaceBase extends ItemBase
 				
 				if (item.IsAnyInherited({ItemBook, Paper, GiftWrapPaper, EyeMask_ColorBase}))
 				{
-					//Debug
-					//Print( "Item consumed = " + item.GetType() + " time = " + m_debug_fire_consume_time.ToString() );
-					//m_debug_fire_consume_time = 0;
-					//
-					
 					RemoveFromFireConsumables(fireConsumable);
 					item.Delete();
 				}
@@ -1457,11 +1451,6 @@ class FireplaceBase extends ItemBase
 					{
 						fireConsumable.SetRemainingEnergy(fireConsumable.GetEnergy());
 					}
-
-					//Debug
-					//Print( "Item consumed = " + item.GetType() + " time = " + m_debug_fire_consume_time.ToString() );
-					//m_debug_fire_consume_time = 0;
-					//
 					
 					item.AddQuantity(-1);
 					SetItemToConsume();
@@ -1472,8 +1461,7 @@ class FireplaceBase extends ItemBase
 		CalcAndSetQuantity();
 	}
 
-	//GetKindlingCount
-	//Returns count of all kindling type items (define in 'm_KindlingTypes') attached to fireplace
+	//! Returns count of all kindling type items (define in 'm_KindlingTypes') attached to fireplace
 	protected int GetKindlingCount()
 	{
 		int attachmentsCount = GetInventory().AttachmentCount();
@@ -1490,8 +1478,7 @@ class FireplaceBase extends ItemBase
 		return kindlingCount;
 	}
 
-	//GetFuelCount
-	//Returns count of all fuel type items (define in 'm_FuelTypes') attached to fireplace
+	//! Returns count of all fuel type items (define in 'm_FuelTypes') attached to fireplace
 	protected int GetFuelCount()
 	{
 		int attachmentsCount = GetInventory().AttachmentCount();
@@ -1500,14 +1487,14 @@ class FireplaceBase extends ItemBase
 		for (int i = 0; i < attachmentsCount; ++i)
 		{
 			ItemBase item = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(i));
-			if (!IsKindling(item))
+			if (IsFuel(item))
 				fuelCount++;
 		}
 		
 		return fuelCount;
 	}
 
-	//returns if item attached to fireplace is kindling
+	//! Returns if item attached to fireplace is kindling
 	protected bool IsKindling(ItemBase item)
 	{
 		FireConsumableType fireConsumableType = m_FireConsumableTypes.Get(item.Type());
@@ -1525,7 +1512,7 @@ class FireplaceBase extends ItemBase
 		return fireConsumableType && fireConsumableType.IsKindling();
 	}
 
-	//returns if item attached to fireplace is fuel
+	//! Returns if item attached to fireplace is fuel
 	protected bool IsFuel(ItemBase item)
 	{
 		FireConsumableType fireConsumableType = m_FireConsumableTypes.Get(item.Type());
@@ -1560,15 +1547,13 @@ class FireplaceBase extends ItemBase
 	//Has last attached item
 	bool HasLastAttachment()
 	{
-		return ( GetInventory().AttachmentCount() == 1 );
+		return GetInventory().AttachmentCount() == 1;
 	}
 
 	//Has last fuel/kindling attached
 	bool HasLastFuelKindlingAttached()
 	{
-		int fuel_kindling_count = GetFuelCount() + GetKindlingCount();
-
-		return ( fuel_kindling_count == 1 );
+		return (GetFuelCount() + GetKindlingCount()) == 1;
 	}
 
 	
@@ -1600,7 +1585,7 @@ class FireplaceBase extends ItemBase
 
 		if (m_HasAshes)
 		{
-			SetBurntFirewood();		//set burnt wood visual
+			SetBurntFirewood();
 		}
 	}
 
@@ -1707,39 +1692,32 @@ class FireplaceBase extends ItemBase
 	// 1. start heating
 	// 2. heating
 	// 3. stop heating
-	void StartFire( bool force_start = false )
+	void StartFire(bool force_start = false)
 	{
 		//stop cooling process if active
-		if ( m_CoolingTimer )
+		if (m_CoolingTimer)
 		{
 			m_CoolingTimer.Stop();
-			m_CoolingTimer = NULL;
+			m_CoolingTimer = null;
 		}
 		
 		//set under roof flag (was fire ignited under roof?)
 		if (MiscGameplayFunctions.IsUnderRoof(this))
-		{
 			m_RoofAbove = true;
-		}
 		
 		//start fire
-		if ( !IsBurning() || force_start )	
+		if (!IsBurning() || force_start)
 		{
-			//set fuel to consume
 			SetItemToConsume();
-			
-			//set fire state
-			SetBurningState( true );
-			
+			SetBurningState(true);
 			m_UTSource.SetActive(true);
-			//start heating
 			StartHeating();
 			
 			//Update navmesh
-			if ( !IsFireplaceIndoor() )
+			if (!IsFireplaceIndoor())
 			{
-				SetAffectPathgraph( false, true );
-				GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( GetGame().UpdatePathgraphRegionByObject, 100, false, this );
+				SetAffectPathgraph(false, true);
+				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(GetGame().UpdatePathgraphRegionByObject, 100, false, this);
 			}
 		}
 		
@@ -1750,32 +1728,30 @@ class FireplaceBase extends ItemBase
 	protected void StartHeating()
 	{
 		//visual
-		SetObjectMaterial( 0, MATERIAL_FIREPLACE_GLOW );
+		SetObjectMaterial(0, MATERIAL_FIREPLACE_GLOW);
 		
-		if ( IsWindy() && !IsRoofAbove() && !IsOven() && !IsBarrelWithHoles() )
+		if (IsWindy() && !IsRoofAbove() && !IsOven() && !IsBarrelWithHoles())
 		{
 			StopFire();
 			return;
 		}
 		
-		if ( GetWet() > PARAM_BURN_WET_THRESHOLD )		
+		if (GetWet() > PARAM_BURN_WET_THRESHOLD)
 		{
-			StopFire( FireplaceFireState.EXTINGUISHED_FIRE );
+			StopFire(FireplaceFireState.EXTINGUISHED_FIRE);
 			return;
 		}
 		
 		//create area damage
-		if ( IsBaseFireplace() && !IsOven() )
-		{
+		if (IsBaseFireplace() && !IsOven())
 			CreateAreaDamage();
-		}
 		
-		m_HeatingTimer = new Timer( CALL_CATEGORY_GAMEPLAY );
-		m_HeatingTimer.Run( TIMER_HEATING_UPDATE_INTERVAL, this, "Heating", NULL, true );	
+		m_HeatingTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
+		m_HeatingTimer.Run(TIMER_HEATING_UPDATE_INTERVAL, this, "Heating", null, true);
 		
 		//Setup the noise parameters on fire start
 		m_NoisePar = new NoiseParams();
-		if ( IsRoofAbove() || IsOven() || IsFireplaceIndoor() ) //If we have a roof, we are probably inside
+		if (IsRoofAbove() || IsOven() || IsFireplaceIndoor()) //If we have a roof, we are probably inside
 			m_NoisePar.LoadFromPath("CfgVehicles FireplaceBase NoiseFireplaceSpecial");
 		else
 			m_NoisePar.LoadFromPath("CfgVehicles FireplaceBase NoiseFireplaceBase");
@@ -1784,45 +1760,31 @@ class FireplaceBase extends ItemBase
 	//Do heating
 	protected void Heating()
 	{
-		//!DEBUG
-		/*
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		player.MessageAction ( "Heating..." );
-		*/
-		
 		float temperature = GetTemperature();
 		float temperature_modifier = 0;
 		
 		//check burning conditions
-		if ( GetWet() > PARAM_BURN_WET_THRESHOLD )		//wetness condition
+		if (GetWet() > PARAM_BURN_WET_THRESHOLD)
 		{
-			StopFire( FireplaceFireState.EXTINGUISHED_FIRE );
+			StopFire(FireplaceFireState.EXTINGUISHED_FIRE);
 			return; 
 		}
 		else
 		{
-			if ( m_FireConsumables.Count() == 0 )		//fire consumable condition
+			if (m_FireConsumables.Count() == 0)
 			{
 				StopFire();
 				return; 				
 			}
 		}
-
-		//DEBUG
-		/*
-		string s_message = "-> fire amount = " + PARAM_FIRE_CONSUM_RATE_AMOUNT.ToString() + " burn rate = " + GetFuelBurnRateMP().ToString() + " temp loss = " + GetTemperatureLossMP().ToString();
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		player.MessageAction (s_message);
-		Print ( s_message );
-		*/
 		
 		//spend actual fire consumable
-		float amount = ( PARAM_FIRE_CONSUM_RATE_AMOUNT * GetFuelBurnRateMP() ) * TIMER_HEATING_UPDATE_INTERVAL;
-		SpendFireConsumable( amount );
+		float amount = PARAM_FIRE_CONSUM_RATE_AMOUNT * GetFuelBurnRateMP() * TIMER_HEATING_UPDATE_INTERVAL;
+		SpendFireConsumable(amount);
 		
 		//set wetness if raining and alter temperature modifier (which will lower temperature increase because of rain)
 		float rain = GetGame().GetWeather().GetRain().GetActual();
-		if ( rain >= PARAM_BURN_WET_THRESHOLD && ( IsRainingAbove() && !MiscGameplayFunctions.IsUnderRoof( this ) ) )
+		if (rain >= PARAM_BURN_WET_THRESHOLD && (IsRainingAbove() && !MiscGameplayFunctions.IsUnderRoof(this)))
 		{
 			//set wet to fireplace
 			AddWetnessToFireplace(PARAM_WET_INCREASE_COEF * rain);
@@ -1838,7 +1800,9 @@ class FireplaceBase extends ItemBase
 
 		// temperature via UniversalTemperatureSource
 		m_UTSLFireplace.SetFuelCount(GetFuelCount());
-		m_UTSLFireplace.SetCurrentTemperature(GetTemperature() + PARAM_TEMPERATURE_INCREASE - temperature_modifier);
+		temperature = GetTemperature() + (PARAM_TEMPERATURE_INCREASE * TIMER_HEATING_UPDATE_INTERVAL) - temperature_modifier;
+		m_UTSLFireplace.SetCurrentTemperature(temperature);
+		m_UTSource.Update(m_UTSSettings, m_UTSLFireplace);
 		
 		//check fire state
 		if ( GetFireState() != FireplaceFireState.EXTINGUISHING_FIRE )
@@ -1933,92 +1897,56 @@ class FireplaceBase extends ItemBase
 	// 3. stop cooling
 	void StopFire( FireplaceFireState fire_state = FireplaceFireState.END_FIRE )
 	{
-		//Debug
-		//PlayerBase player = ( PlayerBase ) GetGame().GetPlayer();
-		//if (player != NULL) {player.MessageAction ( "Stop fire..." );}
-		//Print("Stop fire...");
-		
-		//Stop heating
 		StopHeating();
-		
-		//spend item
-		SpendFireConsumable( 0 );
-		
-		//turn fire off
-		SetBurningState( false );
-		
-		//start cooling
+		SpendFireConsumable(0);
+		SetBurningState(false);
 		StartCooling();
-		
-		//Refresh fire visual
-		SetFireState( fire_state );
+		SetFireState(fire_state);
 		
 		//Update navmesh
-		if ( !IsFireplaceIndoor() )
+		if (!IsFireplaceIndoor())
 		{
-			SetAffectPathgraph( false, false );
-			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( GetGame().UpdatePathgraphRegionByObject, 100, false, this );
+			SetAffectPathgraph(false, false);
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(GetGame().UpdatePathgraphRegionByObject, 100, false, this);
 		}
 		
 		Synchronize();
 	}
 	
-	//Stop heating
 	protected void StopHeating()
 	{
-		//Debug
-		//PlayerBase player = ( PlayerBase ) GetGame().GetPlayer();
-		//if (player != NULL) {player.MessageAction ( "Stop heating..." );}
-		//Print("Stop heating...");
-		
-		//Stop heating
-		if ( !m_HeatingTimer ) //Check in case we stop fire as it starts for feedback
+		if (!m_HeatingTimer)
 			return;
 		
 		m_HeatingTimer.Stop();
-		m_HeatingTimer = NULL;
+		m_HeatingTimer = null;
 	}	
 
-	//Start cooling
 	protected void StartCooling()
 	{
-		//Debug
-		//PlayerBase player = ( PlayerBase ) GetGame().GetPlayer();
-		//if (player != NULL) {player.MessageAction ( "Start cooling..." );}
-		//Print("Start cooling...");
-		
-		//stop heating timer if active
-		if ( m_HeatingTimer )
+		if (m_HeatingTimer)
 		{
 			m_HeatingTimer.Stop();
-			m_HeatingTimer = NULL;
+			m_HeatingTimer = null;
 		}
 		
 		//Start cooling
-		m_CoolingTimer = new Timer( CALL_CATEGORY_GAMEPLAY );
-		m_CoolingTimer.Run( TIMER_COOLING_UPDATE_INTERVAL, this, "Cooling", NULL, true );
+		m_CoolingTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
+		m_CoolingTimer.Run(TIMER_COOLING_UPDATE_INTERVAL, this, "Cooling", null, true);
 	}
 
-	//Start cooling       
 	protected void Cooling()
 	{
-		//Debug
-		/*
-		PlayerBase player = ( PlayerBase ) GetGame().GetPlayer();
-		player.MessageAction ( "Cooling..." );
-		Print("Cooling...");
-		*/
-		
 		float wetness = GetWet();
 		float temperature = GetTemperature();
 		float temperature_modifier = 0;
 		
-		if ( this && !IsBurning() && temperature >= 10 )
+		if (!IsBurning() && temperature >= 10)
 		{
 			//check wetness
 			//set wetness if raining and alter temperature modifier (which will lower temperature increase because of rain)
 			float rain = GetGame().GetWeather().GetRain().GetActual();
-			if ( IsRainingAbove() && !IsRoofAbove() )
+			if (IsRainingAbove() && !IsRoofAbove())
 			{
 				//set wet to fireplace
 				AddWetnessToFireplace(PARAM_WET_INCREASE_COEF * rain);
@@ -2026,7 +1954,7 @@ class FireplaceBase extends ItemBase
 				//set temperature modifier
 				temperature_modifier = temperature_modifier + ( PARAM_TEMPERATURE_DECREASE * rain );
 			}
-			else		//subtrackt wetness
+			else //subtract wetness
 			{
 				AddWetnessToFireplace(-PARAM_WET_COOLING_DECREASE_COEF);
 			}
@@ -2036,7 +1964,9 @@ class FireplaceBase extends ItemBase
 
 			// temperature via UniversalTemperatureSource
 			m_UTSLFireplace.SetFuelCount(GetFuelCount());
-			m_UTSLFireplace.SetCurrentTemperature(GetTemperature() - PARAM_TEMPERATURE_DECREASE - temperature_modifier );
+			temperature = GetTemperature() - (PARAM_TEMPERATURE_DECREASE * TIMER_COOLING_UPDATE_INTERVAL) - temperature_modifier;
+			m_UTSLFireplace.SetCurrentTemperature(temperature);
+			m_UTSource.Update(m_UTSSettings, m_UTSLFireplace);
 			
 			//damage cargo items
 			BurnItemsInFireplace();
@@ -2101,14 +2031,9 @@ class FireplaceBase extends ItemBase
 
 	protected void StopCooling()
 	{
-		//Debug
-		//PlayerBase player = ( PlayerBase ) GetGame().GetPlayer();
-		//if (player != NULL) {player.MessageAction ( "Stop cooling..." );}
-		//Print("Stop cooling...");
-		
 		//stop all fire visuals
-		SetFireState( FireplaceFireState.NO_FIRE );	
-		SetObjectMaterial( 0, MATERIAL_FIREPLACE_NOGLOW );
+		SetFireState(FireplaceFireState.NO_FIRE);
+		SetObjectMaterial(0, MATERIAL_FIREPLACE_NOGLOW);
 		
 		//Stop cooling
 		m_CoolingTimer.Stop();
@@ -2118,13 +2043,14 @@ class FireplaceBase extends ItemBase
 		DestroyAreaDamage();
 
 		//remove cookware audio visuals
-		if ( GetCookingEquipment() )
+		if (GetCookingEquipment())
 		{
-			Bottle_Base cooking_pot = Bottle_Base.Cast( GetCookingEquipment() );
+			Bottle_Base cooking_pot = Bottle_Base.Cast(GetCookingEquipment());
 			if ( cooking_pot )
 				cooking_pot.RemoveAudioVisualsOnClient();
 		}
-		if ( DirectCookingSlotsInUse() )
+
+		if (DirectCookingSlotsInUse())
 		{
 			for ( int i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++ )
 			{
@@ -2369,7 +2295,7 @@ class FireplaceBase extends ItemBase
 		SetWet(wetness);
 		
 		//decrease temperature
-		if ( amount > 0 )
+		if (amount > 0)
 		{
 			float temperature = GetTemperature();
 			temperature = temperature * ( 1 - ( wetness * 0.5 ) );

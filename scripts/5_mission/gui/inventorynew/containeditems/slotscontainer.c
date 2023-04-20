@@ -227,7 +227,7 @@ class SlotsContainer: Container
 	{
 		SlotsIcon focus_icon = GetFocusedSlotsIcon();
 
-		if(focus_icon)
+		if(focus_icon && !focus_icon.IsReserved())
 		{
 			return EntityAI.Cast(focus_icon.GetObject());
 		}

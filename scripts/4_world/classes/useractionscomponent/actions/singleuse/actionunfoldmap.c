@@ -83,9 +83,6 @@ class ActionUnfoldMapCB : ActionBaseCB
 	
 	override void OnFinish(bool pCanceled)	
 	{
-		//super.OnFinish(pCanceled);
-		
-		//Print(pCanceled);
 		if ( m_ActionData && m_ActionData.m_Player )
 		{
 			if ( m_ActionData && m_ActionData.m_ActionComponent )
@@ -118,7 +115,8 @@ class ActionUnfoldMapCB : ActionBaseCB
 		if (m_ActionData.m_Player.IsSwimming() || m_ActionData.m_Player.IsClimbing() || m_ActionData.m_Player.IsFalling() || m_ActionData.m_Player.IsClimbingLadder() || m_ActionData.m_Player.IsUnconscious() || m_ActionData.m_Player.IsRestrained())
 			return;
 		
-		if ( m_CancelCondition ) { return; }
+		if (m_CancelCondition)
+			return;
 		
 		ItemMap chernomap = ItemMap.Cast(m_ActionData.m_Player.GetItemInHands());
 		if (chernomap && !m_ActionData.m_Player.IsMapOpen() && !m_MapFolding)
@@ -129,23 +127,25 @@ class ActionUnfoldMapCB : ActionBaseCB
 			{
 				//chernomap.SyncMapMarkers();
 			}
+
 			if (!GetGame().IsDedicatedServer())
 			{
 				UIManager 	m_UIManager;
-				UIScriptedMenu 	map_menu;
+				UIScriptedMenu 	mapMenu;
 				m_UIManager = GetGame().GetUIManager();
 				m_UIManager.CloseAll();
-				if ( !CfgGameplayHandler.GetUse3DMap() )
+				if (!CfgGameplayHandler.GetUse3DMap())
 				{
-					map_menu = m_UIManager.EnterScriptedMenu(MENU_MAP, NULL);
-					map_menu.InitMapItem(chernomap);
-					map_menu.LoadMapMarkers();
+					mapMenu = m_UIManager.EnterScriptedMenu(MENU_MAP, null);
+					mapMenu.InitMapItem(chernomap);
+					mapMenu.LoadMapMarkers();
 					GetGame().GetMission().AddActiveInputExcludes({"map"});
 				}
 				else
 				{
 					GetGame().GetMission().AddActiveInputExcludes({"loopedactions"});
 				}
+
 				GetGame().GetMission().AddActiveInputRestriction(EInputRestrictors.MAP);
 			}			
 		}

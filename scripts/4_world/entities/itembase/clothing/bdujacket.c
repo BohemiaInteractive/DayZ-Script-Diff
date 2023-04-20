@@ -1,4 +1,4 @@
-class BDUJacket extends Clothing
+class BDUJacket extends Top_Base
 {
 	override void SetActions()
 	{

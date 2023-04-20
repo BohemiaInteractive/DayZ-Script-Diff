@@ -55,27 +55,7 @@ class BiosSessionService
 		if ( m_GetSessionAttempts < 10 )
 			GetSessionAsync( m_CurrentHandle );
 		else
-		{
-			GetGame().GetUserManager().SelectUserEx(OnlineServices.GetBiosUser());
-			if ( g_Game.GetGameState() != DayZGameState.IN_GAME )
-			{
-				if ( GetGame().GetMission() )
-				{
-					GetGame().GetUIManager().CloseAllSubmenus();
-					GetGame().GetMission().AbortMission();
-				
-					g_Game.SetGameState( DayZGameState.MAIN_MENU );
-					g_Game.SetLoadState( DayZLoadState.MAIN_MENU_START );
-					g_Game.GamepadCheck();
-				}
-				else
-				{
-					g_Game.MainMenuLaunch();
-				}
-			}
-			
-			GetGame().GetUIManager().ShowDialog( "#str_xbox_join_fail_title", "#str_xbox_join_fail", 444, DBT_OK, DBB_NONE, DMT_INFO, GetGame().GetUIManager().GetMenu() );
-		}
+			g_Game.DisconnectSessionEx(DISCONNECT_SESSION_FLAGS_JOIN);
 	}
 	
 	//! Gets a session from a join handle
@@ -198,9 +178,7 @@ class BiosSessionService
 			}
 			case DayZGameState.CONNECTING:
 			{
-				g_Game.GetUIManager().CloseAll();
-				g_Game.DisconnectSessionForce();
-				g_Game.DisconnectSessionScript();
+				g_Game.DisconnectSessionEx(DISCONNECT_SESSION_FLAGS_FORCE);
 				// Intentionally no break, fall through to connecting
 			}
 			default:
@@ -227,33 +205,10 @@ class BiosSessionService
 		
 		#ifdef PLATFORM_XBOX
 			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( TryGetSession, 100, false, "" );
-		#else
-			#ifdef PLATFORM_PS4
-				GetGame().GetUserManager().SelectUserEx(OnlineServices.GetBiosUser());
-				if( g_Game.GetGameState() != DayZGameState.IN_GAME )
-				{
-					if( GetGame().GetMission() )
-					{
-						if( g_Game.GetGameState() != DayZGameState.MAIN_MENU )
-						{
-							GetGame().GetUIManager().CloseAllSubmenus();
-							GetGame().GetMission().AbortMission();
-							if (g_Game.GetGameState() == DayZGameState.JOIN)
-								NotificationSystem.AddNotification(NotificationType.JOIN_FAIL_GET_SESSION, 6);
-							g_Game.SetGameState( DayZGameState.MAIN_MENU );
-							g_Game.SetLoadState( DayZLoadState.MAIN_MENU_START );
-							g_Game.GamepadCheck();
-							return;
-						}
-					}
-					else
-					{
-						g_Game.MainMenuLaunch();
-					}
-				}
-				NotificationSystem.AddNotification( NotificationType.JOIN_FAIL_GET_SESSION, 6 );
-			#endif
 		#endif
+		#ifdef PLATFORM_PS4
+			g_Game.DisconnectSessionEx(DISCONNECT_SESSION_FLAGS_JOIN);
+		#endif		
 	}
 	
 	//! Callback function

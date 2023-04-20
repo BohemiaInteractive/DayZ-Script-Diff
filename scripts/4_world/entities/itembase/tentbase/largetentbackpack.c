@@ -1,4 +1,4 @@
-class LargeTentBackPack extends Clothing
+class LargeTentBackPack extends Backpack_Base
 {		
 	ref protected EffectSound 	m_RepackingLoopSound;	
 	

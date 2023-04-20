@@ -20,40 +20,30 @@ class CCTWaterSurface : CCTBase
 		if (!target || (target && target.GetObject()))
 			return false;
 		
-		string surfaceType;
-
 		//! use hit position from ActionTarget otherwise player's position
 		vector hitPosition = target.GetCursorHitPos();
 		if (hitPosition == vector.Zero)
-		{
-			float waterLevel = player.GetCurrentWaterLevel();
 			hitPosition = player.GetPosition();
-			if (waterLevel > 0.0)
-			{
-				g_Game.SurfaceGetType3D(hitPosition[0], hitPosition[1] + waterLevel, hitPosition[2], surfaceType);
-				
-				return Surface.AllowedWaterSurface(hitPosition[1] + waterLevel, surfaceType, m_AllowedSurfaceList);
-			}
-				
-			return false;
-		}
 		
-		g_Game.SurfaceGetType3D(hitPosition[0], hitPosition[1], hitPosition[2], surfaceType);
-		
-		float surfaceHeight = g_Game.SurfaceY(hitPosition[0], hitPosition[2]);
-		float heightDiff = Math.AbsFloat(hitPosition[1] - surfaceHeight);
-		if (heightDiff > HEIGHT_DIFF_LIMIT_METERS)
-			return false;
+		string surfaceType;
+		float waterLevel = player.GetCurrentWaterLevel();
+		g_Game.SurfaceGetType3D(hitPosition[0], hitPosition[1] + waterLevel, hitPosition[2], surfaceType);
 
-		float distSq = vector.DistanceSq(player.GetPosition(), hitPosition);		
+		if (waterLevel > 0.0)
+			return Surface.AllowedWaterSurface(hitPosition[1] + waterLevel, surfaceType, m_AllowedSurfaceList);
+
+		float surfaceHeight = g_Game.SurfaceY(hitPosition[0], hitPosition[2]);		
 		//! special handling for sea
 		if (!surfaceType)
 		{
-			float waterDepth = g_Game.GetWaterDepth(hitPosition);
-			hitPosition[1] = heightDiff;
-			distSq = distSq - waterDepth * waterDepth;
+			surfaceHeight = hitPosition[1];
 		}
 
+		float heightDiff = Math.AbsFloat(hitPosition[1] - surfaceHeight);
+		if (surfaceType != "" && heightDiff > HEIGHT_DIFF_LIMIT_METERS)
+			return false;
+		
+		float distSq = vector.DistanceSq(player.GetPosition(), hitPosition);
 		if (distSq > m_MaximalActionDistanceSq)
 			return false;
 

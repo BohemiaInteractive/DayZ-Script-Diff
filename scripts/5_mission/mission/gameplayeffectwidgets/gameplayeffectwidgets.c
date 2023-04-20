@@ -57,6 +57,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		
 		InitWidgetSet(EffectWidgetsTypes.MASK_OCCLUDER,false,EffectWidgetsTypes.MASK_OCCLUDER);
 		InitWidgetSet(EffectWidgetsTypes.HELMET_OCCLUDER);
+		InitWidgetSet(EffectWidgetsTypes.HELMET2_OCCLUDER);
 		InitWidgetSet(EffectWidgetsTypes.MOTO_OCCLUDER);
 		InitWidgetSet(EffectWidgetsTypes.NVG_OCCLUDER,false,EffectWidgetsTypes.NVG_OCCLUDER);
 		InitWidgetSet(EffectWidgetsTypes.PUMPKIN_OCCLUDER,false,EffectWidgetsTypes.NVG_OCCLUDER);
@@ -204,6 +205,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		ret.Insert(EffectWidgetsTypes.NVG_OCCLUDER);
 		ret.Insert(EffectWidgetsTypes.PUMPKIN_OCCLUDER);
 		ret.Insert(EffectWidgetsTypes.EYEPATCH_OCCLUDER);
+		ret.Insert(EffectWidgetsTypes.HELMET2_OCCLUDER);
 		
 		return ret;
 	}
@@ -466,6 +468,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 			case EffectWidgetsTypes.MOTO_OCCLUDER:
 			case EffectWidgetsTypes.EYEPATCH_OCCLUDER:
 			case EffectWidgetsTypes.HELMET_OCCLUDER:
+			case EffectWidgetsTypes.HELMET2_OCCLUDER:
 			case EffectWidgetsTypes.MASK_OCCLUDER:
 			{
 				CalculateOccluderEffect(type,timeSlice,p,handle);
@@ -501,6 +504,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 			case EffectWidgetsTypes.MOTO_OCCLUDER:
 			case EffectWidgetsTypes.EYEPATCH_OCCLUDER:
 			case EffectWidgetsTypes.HELMET_OCCLUDER:
+			case EffectWidgetsTypes.HELMET2_OCCLUDER:
 			case EffectWidgetsTypes.MASK_OCCLUDER:
 			{
 				UpdateOccluderEffect(ImageWidget.Cast(w),type,timeSlice,p,handle);

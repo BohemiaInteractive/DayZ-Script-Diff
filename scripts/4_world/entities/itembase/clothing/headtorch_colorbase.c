@@ -27,24 +27,10 @@ class Headtorch_ColorBase extends Clothing
 		m_Timer.Run(1 , this, "CheckParent", NULL, false);
 	}
 	
-	override bool CanPutAsAttachment(EntityAI parent)
+	override protected void InitGlobalExclusionValues()
 	{
-		if (!super.CanPutAsAttachment(parent))
-			return false;
-		
-		Clothing helmet = Clothing.Cast(parent.FindAttachmentBySlotName("Headgear"));
-		if (helmet && helmet.ConfigGetBool("noNVStrap"))
-		{
-			return false;
-		}
-		
-		Clothing mask = Clothing.Cast(parent.FindAttachmentBySlotName("Mask"));
-		if (mask && mask.ConfigGetBool("noEyewear"))
-		{
-			return false;
-		}
-		
-		return true;
+		super.InitGlobalExclusionValues();
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADSTRAP_0);
 	}
 	
 	void CheckParent()
@@ -137,7 +123,7 @@ class Headtorch_ColorBase extends Clothing
 			}
 			else if (owner.IsZombie())
 			{
-				int slot_id = InventorySlots.GetSlotIdFromString("Headgear");
+				int slot_id = InventorySlots.GetSlotIdFromString("Eyewear");
 				EntityAI item_EAI = owner.GetInventory().FindAttachment(slot_id);
 				ItemBase item_IB = ItemBase.Cast(item_EAI);
 				
@@ -202,8 +188,7 @@ class Headtorch_ColorBase extends Clothing
 	{
 		super.OnWasDetached(parent, slot_id);
 		
-		PlayerBase player = PlayerBase.Cast(parent);
-		if (player)
+		if (parent && (parent.IsPlayer() || parent.IsZombie()))
 		{
 			if (m_Light)
 			{

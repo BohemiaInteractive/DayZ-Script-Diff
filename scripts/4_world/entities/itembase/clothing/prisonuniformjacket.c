@@ -1,4 +1,4 @@
-class PrisonUniformJacket extends Clothing
+class PrisonUniformJacket extends Top_Base
 {
 	override void SetActions()
 	{

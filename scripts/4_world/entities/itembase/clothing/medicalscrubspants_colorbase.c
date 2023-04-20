@@ -1,4 +1,4 @@
-class MedicalScrubsPants_ColorBase extends Clothing
+class MedicalScrubsPants_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{

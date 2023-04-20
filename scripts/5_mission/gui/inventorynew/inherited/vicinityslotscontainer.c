@@ -73,14 +73,6 @@ class VicinitySlotsContainer: Container
 		return ent.IsTakeable();
 	}
 	
-	override bool CanCombine()
-	{
-		ItemBase ent = ItemBase.Cast(  GetFocusedItem() );
-		ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
-		
-		return ( ItemManager.GetCombinationFlags( item_in_hands, ent ) != 0 );
-	}
-	
 	override bool CanCombineAmmo()
 	{
 		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
@@ -90,21 +82,6 @@ class VicinitySlotsContainer: Container
 		Class.CastTo(amc, m_player.GetActionManager());
 
 		return ( amc.CanPerformActionFromInventory( item_in_hands, ent ) || amc.CanSetActionFromInventory( item_in_hands, ent ) );
-	}
-	
-	override bool CanEquip()
-	{
-		EntityAI ent = GetFocusedItem();
-		InventoryLocation il = new InventoryLocation;
-		bool found = GetGame().GetPlayer().GetInventory().FindFreeLocationFor(ent,FindInventoryLocationType.ATTACHMENT,il);
-		if (found)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
 	}
 	
 	override bool EquipItem()

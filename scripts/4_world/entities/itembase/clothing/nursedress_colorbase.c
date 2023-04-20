@@ -1,4 +1,4 @@
-class NurseDress_ColorBase extends Clothing
+class NurseDress_ColorBase extends Top_Base
 {
 	override void SetActions()
 	{

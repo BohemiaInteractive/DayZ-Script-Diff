@@ -5,15 +5,13 @@ class CharcoalTablets extends Edible_Base
 		super.SetActions();
 		
 		AddAction(ActionForceConsumeSingle);
-		AddAction(ActionConsumeSingle);
+		AddAction(ActionEatTabletFromWrapper);
 	}
 	
 	override void OnConsume(float amount, PlayerBase consumer)
 	{
 		if (!consumer.GetModifiersManager().IsModifierActive(eModifiers.MDF_CHARCOAL))
-		{
-			consumer.GetModifiersManager().ActivateModifier(eModifiers.MDF_CHARCOAL);	
-		}
+			consumer.GetModifiersManager().ActivateModifier(eModifiers.MDF_CHARCOAL);
 		
 	}
 }

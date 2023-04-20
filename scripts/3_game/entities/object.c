@@ -1,9 +1,65 @@
 enum ProcessDirectDamageFlags
 {
+	ALL_TRANSFER,
 	NO_ATTACHMENT_TRANSFER, //!< Do not transfer damage to attachments
 	NO_GLOBAL_TRANSFER, 	//!< Do not transfer damage to global
 	NO_TRANSFER, 			//!< NO_ATTACHMENT_TRANSFER | NO_GLOBAL_TRANSFER
 }
+
+class ObjectSnapCallback
+{
+	Object m_Owner;				//! The owner performing the snap callback
+	vector m_OwnerPosition;		//! The position of the owner in world space
+	vector m_OwnerDirection;	//! The direction of the owner in world space
+
+	vector m_Offset;			//! The true center of the bounding box of the object to be dropped in model space
+	vector m_Extents;			//! The size of the boundig box, centered
+
+	vector m_DirectionFunc;		//! How much should the direction be favoured. 
+
+	bool m_DebugEnabled;		//! If 'OnDebug' is to be called
+	vector m_Transform[4];		//! The transformation currently being debugged
+
+	/**@brief Initialization of script variables
+	 * 
+	**/
+	void OnSetup()
+	{
+	}
+
+	/**@brief Debug callback for rendering on the screen
+	**/
+	void OnDebug(vector p0, vector p1, bool hasHit, bool found)
+	{
+	}
+
+	/**@brief Called for first layer contacts to determine if this object should be snapped around or default rv raycast placement is fine
+	 * @return True if bounding snap is to be used
+	 * 
+	**/
+	bool OnFirstContact(Object other)
+	{
+		return false;
+	}
+
+	/**@brief Initial query around the owner position to see if an object should be processed in contact testing
+	 * @return True if the object should be counted
+	 * 
+	**/
+	bool OnQuery(Object other)
+	{
+		return true;
+	}
+
+	/**@brief Ray cast line test from owner to a tested position
+	 * @return True if the line test should be broken and make the transformation invalid
+	 * 
+	**/
+	bool OnCollide(Object other)
+	{
+		return true;
+	}
+};
 
 class Object extends IEntity
 {
@@ -149,6 +205,71 @@ class Object extends IEntity
 	//! Is useful in the case where a parent is being deleted, since the children will be deleted first
 	//! So to know if something was removed or detached from it's parent, use this check to see if it is because the parent is being deleted
 	proto native bool IsPendingDeletion();
+
+	//! Native functions for getting the level used for calculating the pivot
+	proto native	int			GetGeometryLevel();
+	proto native	int			GetFireGeometryLevel();
+	proto native	int			GetViewGeometryLevel();
+
+#ifdef DEVELOPER
+	//! Conversion between enfusion and RV bone formats for hierarchy
+	proto 			bool		ToBonePivot(out int pivot, int level, int bone);
+	proto 			bool		FromBonePivot(int pivot, out int level, out int bone);
+#endif
+
+	//! Get the pivot point of the bone from the component index in the LOD, lvel can be geometry, fire, or view
+	proto 			int			GetBonePivot(int level, int component);
+
+	//! returns local space, model space, world space position of the bone 
+	proto native	vector		GetBonePositionLS(int pivot);
+	proto native 	vector		GetBonePositionMS(int pivot);
+	proto native 	vector		GetBonePositionWS(int pivot);
+
+	//! returns local space, model space, world space orientation (quaternion) of a bone 
+	proto native	void 		GetBoneRotationLS(int pivot, out float quaternion[4]);
+	proto native 	void 		GetBoneRotationMS(int pivot, out float quaternion[4]);
+	proto native 	void 		GetBoneRotationWS(int pivot, out float quaternion[4]);
+
+	//! returns local space, model space, world space transformations of a bone 
+	proto native	void 		GetBoneTransformLS(int pivot, out vector transform[4]);
+	proto native 	void 		GetBoneTransformMS(int pivot, out vector transform[4]);
+	proto native 	void 		GetBoneTransformWS(int pivot, out vector transform[4]);
+	
+	/**
+	\brief Get corner positions in worldspace aligned to the orientation of the object (currently only TOP/BOTTOM supported)
+	@param axis The axis the object is aligned to
+	@param corners array[4] of vector, each a corner aligned to the axis ({0,0}, {0,1}, {1,0}, {1,1})
+	\return true if collision box exists, false otherwise
+	*/
+	proto native	void 		GetTightlyPackedCorners(ETransformationAxis axis, out vector corners[4]);
+
+#ifdef DIAG_DEVELOPER
+	void DebugDrawTightlyPackedCorners(ETransformationAxis axis, int color)
+	{
+#ifndef SERVER
+		vector points[2];
+		vector corners[4];
+		
+		GetTightlyPackedCorners(axis, corners);
+
+		points[0] = corners[0];
+		points[1] = corners[1];
+		Shape.CreateLines(color, ShapeFlags.TRANSP | ShapeFlags.ONCE | ShapeFlags.NOOUTLINE | ShapeFlags.NOZBUFFER, points, 2);
+
+		points[0] = corners[1];
+		points[1] = corners[3];
+		Shape.CreateLines(color, ShapeFlags.TRANSP | ShapeFlags.ONCE | ShapeFlags.NOOUTLINE | ShapeFlags.NOZBUFFER, points, 2);
+
+		points[0] = corners[3];
+		points[1] = corners[2];
+		Shape.CreateLines(color, ShapeFlags.TRANSP | ShapeFlags.ONCE | ShapeFlags.NOOUTLINE | ShapeFlags.NOZBUFFER, points, 2);
+
+		points[0] = corners[2];
+		points[1] = corners[0];
+		Shape.CreateLines(color, ShapeFlags.TRANSP | ShapeFlags.ONCE | ShapeFlags.NOOUTLINE | ShapeFlags.NOZBUFFER, points, 2);
+#endif
+	}
+#endif
 	
 	//! Retrieve position
 	proto native vector GetPosition();
@@ -386,9 +507,14 @@ class Object extends IEntity
 		return !IsDamageDestroyed();
 	}
 
-		
 	//! Returns if this entity is Man
 	bool IsMan()
+	{
+		return false;
+	}
+
+	//! Checks if this instance is of type DayZCreature
+	bool IsDayZCreature()
 	{
 		return false;
 	}
@@ -635,7 +761,7 @@ class Object extends IEntity
 	
 	bool CanBeIgnoredByDroppedItem()
 	{
-		return IsBush() || IsTree();
+		return IsBush() || IsTree() || IsMan() || IsDayZCreature() || IsItemBase();
 	}
 	
 	//! Disables icon in the vicinity, useful for large, immovable items, that are not buildings
@@ -1157,12 +1283,11 @@ class Object extends IEntity
 		return false;
 	}
 	
-	void PostAreaDamageActions() {}
-	void PreAreaDamageActions() {}
+	void PostAreaDamageActions();
+	void PreAreaDamageActions();
 	
-	
-	void SpawnDamageDealtEffect() { }
-	void OnPlayerRecievedHit(){}
+	void SpawnDamageDealtEffect();
+	void OnPlayerRecievedHit();
 	
 	bool HasNetworkID()
 	{
@@ -1207,7 +1332,33 @@ class Object extends IEntity
 	void SetDebugItem();
 	#endif
 	
+	void AddArrow(Object arrow, int componentIndex)
+	{
+		int pivot = GetBonePivot(GetFireGeometryLevel(), componentIndex);
+
+		vector parentTransMat[4];
+		vector arrowTransMat[4];
+		
+		if (pivot == -1)
+		{
+			GetTransform(parentTransMat);
+		}
+		else
+		{
+			GetBoneTransformWS(pivot, parentTransMat);
+		}
+		
+		arrow.GetTransform(arrowTransMat);
+		Math3D.MatrixInvMultiply4(parentTransMat, arrowTransMat, arrowTransMat);
+		arrow.SetTransform(arrowTransMat);
+		
+		AddChild(arrow, pivot);
+	}
 	
+	bool CanBeActionTarget()
+	{
+		return !IsHologram();
+	}
 	//Debug
 	//----------------------------------------------
 	/*void DbgAddPxyPhy(string slot)

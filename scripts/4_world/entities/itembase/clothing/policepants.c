@@ -1,4 +1,4 @@
-class PolicePants extends Clothing
+class PolicePants extends Pants_Base
 {
 	override void SetActions()
 	{

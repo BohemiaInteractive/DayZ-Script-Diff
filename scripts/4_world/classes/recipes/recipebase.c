@@ -5,6 +5,7 @@ class RecipeBase
 {
 	string m_ItemsToCreate[MAXIMUM_RESULTS];
 	ref array<string> m_Ingredients[MAX_NUMBER_OF_INGREDIENTS];
+	ref array<string> m_SoundCategories[MAX_NUMBER_OF_INGREDIENTS];
 	
 	ItemBase m_Items[MAX_NUMBER_OF_INGREDIENTS];
 	
@@ -55,6 +56,7 @@ class RecipeBase
 		for(int i = 0; i < MAX_NUMBER_OF_INGREDIENTS; i++)
 		{
 			m_Ingredients[i] = new array<string>;
+			m_SoundCategories[i] = new array<string>;
 			m_IngredientsSorted[i] = NULL;
 		}
 		
@@ -132,8 +134,14 @@ class RecipeBase
 
 	void InsertIngredient(int index, string ingredient)
 	{
+		InsertIngredientEx(index, ingredient, "");
+	}
+	
+	void InsertIngredientEx(int index, string ingredient, string soundCategory)
+	{
 		array<string> ptr = m_Ingredients[index];
 		ptr.Insert(ingredient);
+		m_SoundCategories[index].Insert(soundCategory);
 	}
 	
 	void RemoveIngredient(int index, string ingredient)
@@ -144,6 +152,7 @@ class RecipeBase
 			if(ptr[i] == ingredient)
 			{
 				ptr.Remove(i);
+				m_SoundCategories[index].Remove(i);
 				return;
 			}
 		}
@@ -531,7 +540,7 @@ class RecipeBase
 		*/
 		if( CheckRecipe(item1,item2,player) )
 		{
-			ref array<ItemBase> spawned_objects = new array<ItemBase>;
+			array<ItemBase> spawned_objects = new array<ItemBase>;
 			SpawnItems(m_IngredientsSorted, player,spawned_objects );
 			
 			ApplyModificationsResults(m_IngredientsSorted, spawned_objects, NULL, player);
@@ -595,6 +604,24 @@ class RecipeBase
 			}
 		}
 	}
+	
+	string GetSoundCategory(int ingredientIndex, ItemBase item)
+	{
+		string itemType = item.GetType();
+		array<string> ptr = m_Ingredients[ingredientIndex];
+		
+		for (int x = 0; x < ptr.Count(); x++)
+		{
+			if (GetGame().IsKindOf(itemType, ptr.Get(x)))
+			{
+				return m_SoundCategories[ingredientIndex].Get(x);
+			}
+		}
+		return "";
+	}
+	
+	
+	
 
 	bool IsItemInRecipe(string item)
 	{

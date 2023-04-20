@@ -130,23 +130,25 @@ enum AnimRangedWeaponType
 	Shotgun 	= 1836650908
 }
 
-
 class AnimSoundEvent
 {
 	int m_iID;
-	ref SoundObjectBuilder m_SoundObjectBuilder;
-	ref SoundParams m_SoundParams;
-	autoptr NoiseParams m_NoiseParams;
-	bool m_IsValid = false;
-
+	ref SoundObjectBuilder 			m_SoundObjectBuilder;
+	ref SoundParams 				m_SoundParams;
+	autoptr NoiseParams 			m_NoiseParams;
+	bool 							m_IsValid = false;
+	SoundLookupTable 				m_Table;
+	
+	
 	void AnimSoundEvent(string soundPath)
 	{
 		m_iID = GetGame().ConfigGetInt(soundPath + "id");
 
-		if ( !GetGame().IsDedicatedServer() )
+		#ifndef SERVER
+
+		string soundSetName;
+		if (GetGame().ConfigGetText(soundPath + "soundSet", soundSetName))
 		{
-			string soundSetName;
-			GetGame().ConfigGetText(soundPath + "soundSet", soundSetName);
 			m_SoundParams = new SoundParams(soundSetName);
 			if (m_SoundParams.IsValid())
 			{
@@ -154,6 +156,21 @@ class AnimSoundEvent
 				m_IsValid = true;
 			}
 		}
+		
+		string tableName;
+		if (GetGame().ConfigGetText(soundPath + "soundLookupTable", tableName))
+		{
+			m_Table = AnimSoundLookupTableBank.GetInstance().GetActionTable(tableName);
+			if (m_Table)
+			{
+				m_IsValid = true;
+				//Print("Found lookup table '"+tableName +"' for anim event-----------------------------------------> " + m_iID);
+			}
+		}
+		#endif
+
+		
+		
 		
 		if ( GetGame().IsServer() )
 		{
@@ -180,11 +197,20 @@ class AnimSoundEvent
 	{
 		return m_SoundObjectBuilder;
 	}
+	
+	SoundObjectBuilder GetSoundBuilderEx(int paramHash = 0)
+	{
+		if (m_Table && paramHash)
+		{
+			return m_Table.GetSoundBuilder(paramHash);
+		}
+		return m_SoundObjectBuilder;
+	}
 
 	SoundObject GetSoundObject(vector position)
 	{
-		m_SoundObjectBuilder.UpdateEnvSoundControllers(position);
-		return m_SoundObjectBuilder.BuildSoundObject();
+		GetSoundBuilderEx().UpdateEnvSoundControllers(position);
+		return GetSoundBuilderEx().BuildSoundObject();
 	}
 }
 
@@ -251,7 +277,6 @@ class AnimStepEvent
 	string m_sSoundLookupTableName;
 	StepSoundLookupTable m_soundLookupTable;
 	autoptr NoiseParams m_NoiseParams;
-	//autoptr array<ref AnimEffectParams> m_EffectsParams;
 
 	void AnimStepEvent(string stepPath)
 	{
@@ -272,10 +297,6 @@ class AnimStepEvent
 				m_NoiseParams.Load(noiseName);
 			}
 		}
-
-		//autoptr array<string> effectNames = new array<string>;
-		//m_EffectsParams = new array<ref AnimEffectParams>;
-		//GetGame().ConfigGetTextArray(stepPath + "effects", effectNames);
 	}
 	
 	SoundObjectBuilder GetSoundBuilder(int surfaceHash)

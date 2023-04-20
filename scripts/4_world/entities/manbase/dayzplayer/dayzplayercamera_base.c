@@ -66,18 +66,10 @@ enum NVTypes
 	MAX
 }
 
-enum ECameraZoomType
-{
-	NONE 	= 0,
-	NORMAL 	= 1,
-	SHALLOW	= 2
-}
-
-
 class DayZPlayerCameraBase extends DayZPlayerCamera
 {
 	static const float 	CONST_NEARPLANE_OPTICS_MIN = 0.04; //Minimal safe near plane value, artifacts on the far plane otherwise!
-	
+
 	protected 	Weapon_Base		m_weaponUsed;
 	protected 	ItemOptics 		m_opticsUsed;
 	protected	ref CameraShake		m_CameraShake;
@@ -90,20 +82,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 		m_fFovAbsVel[0] = 0;
 		m_WeaponSwayModifier = 1;
 		
-		// ordered in likelihood of occurance for perf. reasons
-		if (m_pPlayer.GetEyeZoomLevel() == ECameraZoomType.NONE)
-		{
-			m_fFovAbsolute		= g_Game.GetUserFOV();
-		}
-		else if (m_pPlayer.GetEyeZoomLevel() == ECameraZoomType.NORMAL)
-		{
-			m_fFovAbsolute		= GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM;
-		}
-		else
-		{
-			m_fFovAbsolute		= GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM_SHALLOW;
-		}
-		
+		m_fFovAbsolute = GetDayZGame().GetFOVByZoomType(m_pPlayer.GetEyeZoomLevel());
 		//!
 		/*
 		{
@@ -139,6 +118,86 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			SetCameraNVType(player.GetNVType());
 		}
 	}
+
+	float UpdateUDAngleUnlocked(out float pAngle, out float pAngleAdd, float pMin, float pMax, float pDt)
+	{
+		float target = m_CommandWeapons.GetBaseAimingAngleUD();
+		
+		if (m_pInput.CameraIsTracking())	
+ 		{
+			pAngleAdd = m_pInput.GetTracking()[1] * Math.RAD2DEG;
+			pAngle = target;
+ 
+			m_fUDAngleVel[0] = 0;
+ 		}
+		else
+		{
+			if (Math.AbsFloat(pAngleAdd) > 0.001)
+			{
+				pAngleAdd 	= pAngle + pAngleAdd - target;
+				pAngle 		= target;
+			}
+			
+			if (m_pInput.CameraIsFreeLook())	
+	 		{
+				pAngleAdd += m_pInput.GetAimDelta(pDt)[1] * Math.RAD2DEG;
+	 
+				m_fUDAngleVel[0] = 0;
+	 		}
+	 		else
+	 		{
+				pAngleAdd = Math.SmoothCD(pAngleAdd, 0.0, m_fUDAngleVel, 0.14, 1000, pDt);
+			}
+	
+			if (!m_pInput.CameraIsFreeLook())
+			{
+				pAngle += m_pInput.GetAimDelta(pDt)[1] * Math.RAD2DEG;
+	 		}
+		}
+		
+		pAngle = Limit(pAngle, pMin, pMax);
+		pAngleAdd = Limit(pAngle + pAngleAdd, pMin, pMax) - pAngle;
+		return pAngle + pAngleAdd;
+ 	}
+
+	float UpdateLRAngleUnlocked(out float pAngle, out float pAngleAdd, float pMin, float pMax, float pDt)
+	{
+		float target = 0;
+		
+		if (m_pInput.CameraIsTracking())	
+ 		{
+			pAngleAdd = m_pInput.GetTracking()[0] * Math.RAD2DEG;
+			pAngle = target;
+ 
+			m_fUDAngleVel[0] = 0;
+ 		}
+		else
+		{
+			if (Math.AbsFloat(pAngleAdd) > 0.001)
+			{
+				pAngleAdd 	= pAngle + pAngleAdd - target;
+				pAngle 		= target;
+			}
+			
+			if (m_pInput.CameraIsFreeLook() || m_bForceFreeLook)	
+	 		{
+				pAngleAdd += m_pInput.GetAimDelta(pDt)[0] * Math.RAD2DEG;
+	 
+				m_fLRAngleVel[0] = 0;
+	 		}
+	 		else
+	 		{
+				pAngleAdd = Math.SmoothCD(pAngleAdd, 0.0, m_fLRAngleVel, 0.14, 1000, pDt);
+			}
+			
+			pAngleAdd = pAngleAdd + pAngle;
+		}
+		
+		pAngle = Limit(pAngle, pMin, pMax);
+		pAngleAdd = Limit(pAngle + pAngleAdd, pMin, pMax) - pAngle;
+		
+		return pAngle + pAngleAdd;
+ 	}
 
 	float UpdateUDAngle(out float pAngle, out float pAngleAdd, float pMin, float pMax, float pDt)
 	{
@@ -226,23 +285,23 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 
 	
 
-	void 	StdFovUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
+	void StdFovUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
 	{
 		//! change abs FOV for naked eye zoom
 		switch (m_pPlayer.GetEyeZoomLevel())
 		{
 			// ordered in likelihood of occurance for perf. reasons
 			case ECameraZoomType.NONE:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, g_Game.GetUserFOV(), m_fFovAbsVel, 0.1, 1000, pDt);
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.NONE), m_fFovAbsVel, 0.1, 1000, pDt);
 				break;
 			case ECameraZoomType.NORMAL:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GameConstants.DZPLAYER_CAMERA_FOV_EYEZOOM, m_fFovAbsVel, 0.1, 1000, pDt);
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.NORMAL), m_fFovAbsVel, 0.1, 1000, pDt);
 				break;
 			case ECameraZoomType.SHALLOW:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, 0.6, m_fFovAbsVel, 0.1, 1000, pDt);
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.SHALLOW), m_fFovAbsVel, 0.1, 1000, pDt);
 				break;
 			default:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, g_Game.GetUserFOV(), m_fFovAbsVel, 0.1, 1000, pDt);
+				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.NONE), m_fFovAbsVel, 0.1, 1000, pDt);
 				break;
 		}
 		
@@ -282,7 +341,6 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 
 	override void OnActivate(DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
 	{
-		//PrintString("OnActivate DayZPlayerCameraBase");
 		InitCameraOnPlayer(true);
 		SetCameraPPDelay(pPrevCamera);
 		
@@ -313,7 +371,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	{
 	}
 	
-	void SetCameraNV(bool nightvision) //TODO - revise use, may be set more often than needed
+	void SetCameraNV(bool nightvision)
 	{
 		m_IsNightvision = nightvision;
 	}
@@ -341,7 +399,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 		if ( player.IsNVGWorking() != IsCameraNV() || player.GetNVType() != GetCameraNVType() )
 		{
 			SetCameraNV(player.IsNVGWorking());
-			SetCameraNVType(player.GetNVType()); //TODO - ???
+			SetCameraNVType(player.GetNVType());
 			SetCameraPP(true, this);
 		}
 	}
@@ -367,9 +425,19 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 		}
 	}
 	
+	override float GetCurrentYaw()
+	{
+		return m_CurrentCameraYaw;
+	}
+	
 	override float GetCurrentPitch()
 	{
 		return m_CurrentCameraPitch;
+	}
+	
+	override float GetCurrentRoll()
+	{
+		return m_CurrentCameraRoll;
 	}
 	
 	void ForceFreelook(bool state)
@@ -387,8 +455,11 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NONE:
 			{
 				PPERequesterBank.GetRequester(PPERequester_CameraNV).Stop();
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+				{
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				}
 			}
 			break;
 			
@@ -398,18 +469,24 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_OPTICS_ON:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DEFAULT_OPTICS) );
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+				{
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				}
 			}
 			break;
 			
-			//daytime filter modes; TODO!
+			//daytime filter modes
 			case NVTypes.NV_OPTICS_KAZUAR_DAY:
 			case NVTypes.NV_OPTICS_STARLIGHT_DAY:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DAYTIME_OPTICS) );
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+				{
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				}
 			}
 			break;
 			
@@ -417,31 +494,40 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_OPTICS_OFF:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_NO_BATTERY) );
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+				{
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				}
 			}
 			break;
 			
 			case NVTypes.NV_GOGGLES:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DEFAULT_GLASSES) );
-				GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+				{
+					GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				}
 			}
 			break;
 			
 			case NVTypes.NV_PUMPKIN:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_PUMPKIN) );
-				GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
-				GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+				{
+					GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+				}
 			}
 			break;
 		}
 		
 		if (PlayerBaseClient.Cast(m_pPlayer))
 		{
-			PlayerBaseClient.Cast(m_pPlayer).SwitchPersonalLight(NVtype < 1); //TODO 
+			PlayerBaseClient.Cast(m_pPlayer).SwitchPersonalLight(NVtype < 1);
 		}
 	}
 	
@@ -462,7 +548,11 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	protected bool					m_bForceFreeLook;
 	protected float					m_WeaponSwayModifier;
 	protected float 				m_CameraPPDelay;
+
+	protected float 				m_CurrentCameraYaw;
 	protected float 				m_CurrentCameraPitch;
+	protected float 				m_CurrentCameraRoll;
+
 	protected HumanCommandWeapons	m_CommandWeapons;
 	protected bool 					m_IsNightvision;
 	protected int 					m_NightvisionType;

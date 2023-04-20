@@ -17,6 +17,11 @@ class ActionWashHandsWell: ActionContinuousBase
 		m_Text = "#wash_hands";
 	}
 	
+	override typename GetInputType()
+	{
+		return ContinuousInteractActionInput;
+	}
+	
 	override void CreateConditionComponents()  
 	{		
 		m_ConditionItem = new CCINone;
@@ -25,7 +30,7 @@ class ActionWashHandsWell: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		return player.HasBloodyHands() && !player.GetItemInHands() && target.GetObject() && target.GetObject().IsWell();
+		return player.HasBloodyHands() && !player.GetItemInHands() && target.GetObject() && target.GetObject().IsWell() && !player.GetItemOnSlot("Gloves");
 	}
 
 	override void OnFinishProgressServer( ActionData action_data )

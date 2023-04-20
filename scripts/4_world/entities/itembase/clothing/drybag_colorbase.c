@@ -1,4 +1,4 @@
-class DryBag_ColorBase extends Clothing {};
+class DryBag_ColorBase extends Backpack_Base {};
 class DryBag_Orange extends DryBag_ColorBase {};
 class DryBag_Yellow extends DryBag_ColorBase {};
 class DryBag_Blue extends DryBag_ColorBase {};

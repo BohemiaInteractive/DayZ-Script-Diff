@@ -304,7 +304,8 @@ class CarWheel extends InventoryItemSuper
 		super.OnWasAttached(parent, slot_id);
 		
 		#ifndef SERVER
-		SEffectManager.PlaySound(m_AttachSound, GetPosition());
+		EffectSound effect = SEffectManager.PlaySound(m_AttachSound, GetPosition());
+		effect.SetAutodestroy(true);
 		#endif
 	}
 	
@@ -313,7 +314,8 @@ class CarWheel extends InventoryItemSuper
 		super.OnWasDetached(parent, slot_id);
 		
 		#ifndef SERVER
-		SEffectManager.PlaySound(m_DetachSound, GetPosition());
+		EffectSound effect = SEffectManager.PlaySound(m_DetachSound, GetPosition());
+		effect.SetAutodestroy(true);
 		#endif
 	}
 };

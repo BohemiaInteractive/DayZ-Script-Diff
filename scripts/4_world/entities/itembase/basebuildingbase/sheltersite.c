@@ -63,7 +63,8 @@ class ShelterSite extends BaseBuildingBase
 			PluginAdminLog admin_log = PluginAdminLog.Cast( GetPlugin(PluginAdminLog) );
 			if (admin_log)
 			{
-				admin_log.DirectAdminLogPrint(" built " + shelter_type + " with Hands ");
+				string playerPrefix = admin_log.GetPlayerPrefix(PlayerBase.Cast(player), player.GetIdentity());
+				admin_log.DirectAdminLogPrint(playerPrefix +" built " + shelter_type + " with Hands ");
 			}
 		}
 		//super.OnPartBuiltServer( part_name, action_id );

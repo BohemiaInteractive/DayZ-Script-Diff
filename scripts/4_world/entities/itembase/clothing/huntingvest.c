@@ -1,1 +1,1 @@
-class HuntingVest extends Clothing {};
+class HuntingVest extends Vest_Base {};

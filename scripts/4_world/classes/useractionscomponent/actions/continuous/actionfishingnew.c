@@ -27,7 +27,13 @@ class FishingActionData : ActionData
 class ActionFishingNewCB : ActionContinuousBaseCB
 {
 	FishingActionData 	m_ActionDataFishing;
-	ref array<string> 	m_JunkTypes = {"Wellies_Black","Wellies_Brown","Wellies_Green","Wellies_Grey","Pot"};
+	ref array<string> 	m_JunkTypes = {
+		"Wellies_Black",
+		"Wellies_Brown",
+		"Wellies_Green",
+		"Wellies_Grey",
+		"Pot"
+	};
 	
 	override void CreateActionComponent()
 	{
@@ -45,17 +51,17 @@ class ActionFishingNewCB : ActionContinuousBaseCB
 			return;
 		}
 		
-		if ( m_ActionDataFishing.m_State == UA_FINISHED )
+		if (m_ActionDataFishing.m_State == UA_FINISHED)
 		{
-			if ( m_ActionDataFishing.m_FishingResult == 1 )
+			if (m_ActionDataFishing.m_FishingResult == 1)
 				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
-			else if ( m_ActionDataFishing.m_FishingResult == 0 )
+			else if (m_ActionDataFishing.m_FishingResult == 0)
 				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
 		}
-		else if (m_ActionDataFishing.m_State == UA_CANCEL )
+		else if (m_ActionDataFishing.m_State == UA_CANCEL)
 		{
 			ActionContinuousBase action = ActionContinuousBase.Cast(m_ActionDataFishing.m_Action);
-			if(action.HasAlternativeInterrupt())
+			if (action.HasAlternativeInterrupt())
 			{
 				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
 			}
@@ -63,16 +69,18 @@ class ActionFishingNewCB : ActionContinuousBaseCB
 			{
 				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
 			}
+
 			m_Canceled = true;
 			return;
 		}
 		else
 		{
-			if ( m_ActionDataFishing.m_FishingResult == 1 )
+			if (m_ActionDataFishing.m_FishingResult == 1)
 				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
-			else if ( m_ActionDataFishing.m_FishingResult == 0 )
+			else if (m_ActionDataFishing.m_FishingResult == 0)
 				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
 		}
+
 		m_ActionDataFishing.m_State = UA_FINISHED;
 	}
 	
@@ -95,7 +103,7 @@ class ActionFishingNewCB : ActionContinuousBaseCB
 				m_ActionDataFishing.m_Bait.AddHealth(-m_ActionDataFishing.FISHING_DAMAGE);
 			}
 			
-			float rnd = Math.RandomFloatInclusive(0.0,1.0);
+			float rnd = Math.RandomFloatInclusive(0.0, 1.0);
 			if (rnd > m_ActionDataFishing.FISHING_GARBAGE_CHANCE)
 			{
 				if (m_ActionDataFishing.m_IsSurfaceSea)
@@ -107,9 +115,9 @@ class ActionFishingNewCB : ActionContinuousBaseCB
 			{
 				if ( !m_ActionDataFishing.m_IsSurfaceSea )
 				{
-					string junk_type = m_JunkTypes.Get(Math.RandomInt(0,m_JunkTypes.Count()));
-					fish = ItemBase.Cast(GetGame().CreateObjectEx(junk_type,m_ActionDataFishing.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
-					fish.SetHealth("","Health",fish.GetMaxHealth("","Health") * 0.1);
+					string junkType = m_JunkTypes.Get(Math.RandomInt(0, m_JunkTypes.Count()));
+					fish = ItemBase.Cast(GetGame().CreateObjectEx(junkType, m_ActionDataFishing.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+					fish.SetHealth("", "Health", fish.GetMaxHealth("", "Health") * 0.1);
 				}
 			}
 			
@@ -181,14 +189,14 @@ class ActionFishingNew: ActionContinuousBase
 		m_SpecialtyWeight 	= UASoftSkillsWeight.PRECISE_MEDIUM;
 		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_FISHING;
 		m_FullBody 			= true;
-		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
+		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_CROUCH;
 		m_Text 				= "#start_fishing";
 	}
 	
 	override void CreateConditionComponents()  
 	{
 		m_ConditionItem 	= new CCINonRuined();
-		m_ConditionTarget 	= new CCTWaterSurface(UAMaxDistances.LARGE, ALLOWED_WATER_SURFACES);
+		m_ConditionTarget 	= new CCTWaterSurface(UAMaxDistances.BASEBUILDING, ALLOWED_WATER_SURFACES);
 	}
 	
 	override bool HasTarget()
@@ -201,7 +209,7 @@ class ActionFishingNew: ActionContinuousBase
 		return true;
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		ItemBase bait;		
 		FishingRod_Base_New rod = FishingRod_Base_New.Cast(item);
@@ -217,19 +225,23 @@ class ActionFishingNew: ActionContinuousBase
 	
 	override ActionData CreateActionData()
 	{
-		FishingActionData action_data = new FishingActionData;
-		return action_data;
+		FishingActionData actionData = new FishingActionData();
+		return actionData;
 	}
 	
-	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
+	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = null)
 	{
-		if ( super.SetupAction( player, target, item, action_data, extra_data))
+		if (super.SetupAction(player, target, item, action_data, extra_data))
 		{
-			vector pos_cursor = action_data.m_Target.GetCursorHitPos();
-			if (GetGame().SurfaceIsSea(pos_cursor[0],pos_cursor[2]))
+			vector cursorPosition = action_data.m_Target.GetCursorHitPos();
+			if (cursorPosition == vector.Zero)
+				cursorPosition = player.GetPosition();
+
+			if (GetGame().SurfaceIsSea(cursorPosition[0], cursorPosition[2]))
 			{
 				FishingActionData.Cast(action_data).m_IsSurfaceSea = true;
 			}
+
 			FishingRod_Base_New rod = FishingRod_Base_New.Cast(action_data.m_MainItem);
 			if (rod)
 			{
@@ -279,21 +291,22 @@ class ActionFishingNew: ActionContinuousBase
 	{
 		super.WriteToContext(ctx, action_data);
 		
-		if( HasTarget() )
+		if (HasTarget())
 		{
 			ctx.Write(action_data.m_Target.GetCursorHitPos());
 		}
 	}
 	
-	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
+	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data)
 	{		
 		super.ReadFromContext(ctx, action_recive_data);
 		
-		if( HasTarget() )
+		if (HasTarget())
 		{
 			vector cursor_position;
-			if ( !ctx.Read(cursor_position) )
+			if (!ctx.Read(cursor_position))
 				return false;
+
 			action_recive_data.m_Target.SetCursorHitPos(cursor_position);
 		}
 		return true;
@@ -306,27 +319,27 @@ class ActionFishingNew: ActionContinuousBase
 		
 		FishingActionData fad = FishingActionData.Cast(action_data);
 		float rnd = fad.m_Player.GetRandomGeneratorSyncManager().GetRandom01(RandomGeneratorSyncUsage.RGSGeneric);
-		float daytime_modifier = 1;
-		float hook_modifier = 1;
+		float daytimeModifier = 1;
+		float hookModifier = 1;
 		float chance;
 		
-		daytime_modifier = GetGame().GetDayTime();
-		if ( (daytime_modifier > 18 && daytime_modifier < 22) || (daytime_modifier > 5 && daytime_modifier < 9) )
+		daytimeModifier = GetGame().GetDayTime();
+		if ((daytimeModifier > 18 && daytimeModifier < 22) || (daytimeModifier > 5 && daytimeModifier < 9))
 		{
-			daytime_modifier = 1;
+			daytimeModifier = 1;
 		}
 		else
 		{
-			daytime_modifier = 0.5;
+			daytimeModifier = 0.5;
 		}
 		
 		//fishing with an empty hook
 		if (fad.IsBaitEmptyHook())
 		{
-			hook_modifier = 0.05;
+			hookModifier = 0.05;
 		}
 		
-		chance = 1 - (((fad.FISHING_SUCCESS * daytime_modifier) + fad.m_RodQualityModifier)) * hook_modifier;
+		chance = 1 - (((fad.FISHING_SUCCESS * daytimeModifier) + fad.m_RodQualityModifier)) * hookModifier;
 		
 		if (rnd > chance)
 		{
@@ -336,6 +349,7 @@ class ActionFishingNew: ActionContinuousBase
 		{
 			return 0;
 		}
+
 		return -1;
 	}
-};
+}

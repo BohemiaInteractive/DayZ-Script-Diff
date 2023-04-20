@@ -67,6 +67,26 @@ class RestrainingToolLocked extends ItemBase
 		}	
 	}
 	
+	override void EEKilled(Object killer)
+	{
+		super.EEKilled(killer);
+		
+		InventoryLocation inventoryLocation = new InventoryLocation();
+		GetInventory().GetCurrentInventoryLocation(inventoryLocation);
+		if (!inventoryLocation || !inventoryLocation.IsValid())
+			return;
+
+		if (inventoryLocation.GetType() == InventoryLocationType.HANDS)
+		{
+			PlayerBase player = PlayerBase.Cast(inventoryLocation.GetParent());
+			if (player && player.IsRestrained())
+			{
+				player.SetRestrained(false);
+				MiscGameplayFunctions.TransformRestrainItem(this, null, player, player);
+			}
+		}
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();

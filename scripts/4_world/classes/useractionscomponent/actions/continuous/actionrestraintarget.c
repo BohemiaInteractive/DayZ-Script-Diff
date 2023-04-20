@@ -160,15 +160,24 @@ class ActionRestrainTarget: ActionContinuousBase
 class ChainedDropAndRestrainLambda : DestroyItemInCorpsesHandsAndCreateNewOnGndLambda
 {
 	PlayerBase m_SourcePlayer;
+	ExplosivesBase m_PairedExplosive;
 
 	void ChainedDropAndRestrainLambda (EntityAI old_item, string new_item_type, PlayerBase player, bool destroy = false, PlayerBase src_player = null)
 	{
 		m_SourcePlayer = src_player;
 	}
 	
-	override void OnSuccess(EntityAI entity)
+	override void OnSuccess(EntityAI new_item)
 	{
 		super.OnSuccess(new_item);
+		
+		if (m_PairedExplosive)
+		{
+			m_PairedExplosive.UnpairRemote();
+			ItemBase ib = ItemBase.Cast(new_item);
+			ib.PairWithDevice(m_PairedExplosive);
+			m_PairedExplosive.Arm();
+		}
 		
 		// as soon as previous op is finish, start another one
 		EntityAI item_in_hands_source = m_SourcePlayer.GetHumanInventory().GetEntityInHands();
@@ -185,6 +194,14 @@ class ChainedDropAndRestrainLambda : DestroyItemInCorpsesHandsAndCreateNewOnGndL
 		{
 			Error("ChainedDropAndRestrainLambda: missing source item in hands!");
 		}
+	}
+	
+	override void CopyOldPropertiesToNew (notnull EntityAI old_item, EntityAI new_item)
+	{
+		super.CopyOldPropertiesToNew(old_item, new_item);
+		RemoteDetonatorTrigger trigger = RemoteDetonatorTrigger.Cast(old_item);
+		if (trigger)
+			m_PairedExplosive = ExplosivesBase.Cast(trigger.GetControlledDevice());
 	}
 }
 

@@ -59,6 +59,10 @@ class WeaponStableState extends WeaponStateBase
 					m_weapon.SetWeaponAnimState(m_animState);
 					fsmDebugSpam("[wpnfsm] " + Object.GetDebugName(m_weapon) + " state=" + m_weapon.GetCurrentState().Type() + " synchronized remote anim state: " + typename.EnumToString(PistolAnimState, curr) + " --> " + typename.EnumToString(PistolAnimState, m_animState));
 				}
+			}
+			else
+			{
+				m_weapon.SetGroundAnimFrameIndex(m_animState);
 			}		
 		}
 	}

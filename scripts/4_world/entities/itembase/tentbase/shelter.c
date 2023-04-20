@@ -26,7 +26,7 @@ class ShelterBase extends TentBase
 	{		
 		super.EEInit();
 		
-		Pitch(true, true);
+		TryPitch(true, true);
 	}
 	
 	void Deconstruct()

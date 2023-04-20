@@ -1,78 +1,26 @@
+#ifdef PLATFORM_CONSOLE
+enum ConsoleActionToolbarMask
+{
+	EMPTY					= 0,
+	TO_HANDS_SWAP_VICINITY	= 1,
+	TO_HANDS_SWAP_INVENTORY	= 2,
+	DROP					= 4,
+	EQUIP					= 8,
+	SPLIT					= 16,
+	TO_INVENTORY			= 32,
+	OPEN_CLOSE_CONTAINER	= 64,
+	MICROMANAGMENT			= 128,
+	QUICKSLOT				= 256,
+	COMBINE					= 512,
+}
+#endif
+
 enum Direction
 {
 	RIGHT,
 	LEFT,
 	UP,
 	DOWN
-}
-
-enum ConsoleToolbarType
-{
-	//Local Player
-	PLAYER_EQUIPMENT_SLOTS_ITEM,
-	PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_CARGO,
-	PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_QUANTITY,
-	PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_ATTACHMENTS,
-	PLAYER_EQUIPMENT_SLOTS_ITEM_FREE,
-	
-	PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER,
-	PLAYER_CARGO_CONTAINER_ITEM,
-	PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP,
-	PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY,
-	PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS,
-	PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS_NO_EQUIP,
-	
-	PLAYER_ITEM_WITH_ATTACHMENTS_CONTAINER_ITEM,
-	
-	//Vicinity Player
-	VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM,
-	VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_CARGO,
-	VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_ATTACHMENTS,
-	VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_FREE,
-	
-	VICNITY_PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER,
-	VICNITY_PLAYER_CARGO_CONTAINER_ITEM,
-	VICNITY_PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP,
-	VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY,
-	VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS,
-	VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS_NO_EQUIP,
-	
-	VICNITY_PLAYER_ITEM_WITH_ATTACHMENTS_CONTAINER_ITEM,
-	
-	//Vicinity Zombie
-	VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM,
-	VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_WITH_CARGO,
-	VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_WITH_ATTACHMENTS,
-	VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_FREE,
-	
-	VICNITY_ZOMBIE_CARGO_CONTAINER_EMPTY_CONTAINER,
-	VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM,
-	VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_NO_EQUIP,
-	VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_QUANTITY,
-	VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS,
-	VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS_NO_EQUIP,
-	
-	VICNITY_ZOMBIE_ITEM_WITH_ATTACHMENTS_CONTAINER_ITEM,
-	
-	//Local Player Hands
-	HANDS_ITEM,
-	HANDS_ITEM_NO_EQUIP,
-	HANDS_ITEM_WITH_QUANTITY,
-	HANDS_ITEM_EMPTY,
-	
-	//Vicinity Container
-	VICINITY_CONTAINER_LIST_ITEM_WITH_CONTAINER,
-	VICINITY_CONTAINER_LIST_ITEM_WITH_CONTAINER_NO_EQUIP,
-	VICINITY_CONTAINER_LIST_ITEM,
-	VICINITY_CONTAINER_LIST_ITEM_NO_EQUIP,
-	VICINITY_CONTAINER_LIST_ITEM_WITH_QUANTITY,
-	VICINITY_CONTAINER_LIST_HEADER,
-	VICINITY_CONTAINER_LIST_EMPTY_ITEM,
-	
-	VICINITY_CONTAINER_DETAILS_EMPTY,
-	VICINITY_CONTAINER_DETAILS_ITEM,
-	VICINITY_CONTAINER_DETAILS_ITEM_NO_EQUIP,
-	VICINITY_CONTAINER_DETAILS_ITEM_WITH_QUANTITY
 }
 
 class Inventory: LayoutHolder
@@ -220,7 +168,7 @@ class Inventory: LayoutHolder
 			case EInputDeviceType.CONTROLLER:
 				m_BottomConsoleToolbar.Show(true);
 				UpdateConsoleToolbar();
-			break;
+				break;
 	
 			default:
 				if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
@@ -230,7 +178,7 @@ class Inventory: LayoutHolder
 					m_TopConsoleToolbarHands.Show(false);
 					m_TopConsoleToolbarEquipment.Show(false);
 				}
-			break;
+				break;
 		}
 	}
 	
@@ -872,9 +820,7 @@ class Inventory: LayoutHolder
 					if (item && item.GetInventory().CanRemoveEntity())
 					{
 						if (m_RightArea.TransferItemToVicinity())
-						{
 							m_HadFastTransferred = true;
-						}
 					}
 				}
 				
@@ -1030,16 +976,22 @@ class Inventory: LayoutHolder
 				DisableMicromanagement();
 				if (m_RightArea.IsActive())
 				{
-					if ((m_RightArea.CanCombine() || m_RightArea.CanCombineAmmo()) && m_RightArea.Combine())
+					if (m_RightArea.CanCombine())
 					{
-						mission.HideInventory();
+						if (m_RightArea.Combine())
+						{
+							mission.HideInventory();
+						}
 					}
 				}
 				else if (m_LeftArea.IsActive())
 				{
-					if ((m_LeftArea.CanCombine() || m_LeftArea.CanCombineAmmo()) && m_LeftArea.Combine())
+					if (m_LeftArea.CanCombine())
 					{
-						mission.HideInventory();
+						if (m_LeftArea.Combine())
+						{
+							mission.HideInventory();
+						}
 					}
 				}
 			#endif
@@ -1280,122 +1232,83 @@ class Inventory: LayoutHolder
 		}
 	}
 	
-	string ConsoleToolbarTypeToString(int console_toolbar_type)
+
+	#ifdef PLATFORM_CONSOLE
+	protected string GetConsoleToolbarText(int mask)
 	{
-		string to_hands_swap_vicinity	= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIPutInHandsFromVicinity", GetStringVariant("UAUIPutInHandsFromVicinity",{"#STR_Controls_TakeInHandsSwap","#STR_USRACT_HoldToHandSwap",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string to_hands_swap_inv		= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIPutInHandsFromInventory", GetStringVariant("UAUIPutInHandsFromInventory",{"#STR_Controls_TakeInHandsSwap","#STR_USRACT_HoldToHandSwap",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string drop						= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIFastTransferToVicinity", "#dayz_context_menu_drop", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string equip 					= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIFastEquip", "#dayz_context_menu_equip", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string split 					= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUISplit", GetStringVariant("UAUISplit",{"#dayz_context_menu_split","#STR_Controls_HoldSplit",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string to_inventory 			= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIFastTransferItem", "#dayz_context_menu_to_inventory", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string open_close_container 	= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIExpandCollapseContainer", "#dayz_context_menu_open_close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string micromanagment 			= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIDragNDrop", "#dayz_context_menu_micro", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string quickslot 				= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIQuickbarRadialInventoryOpen", "#ps4_dayz_context_menu_quickslot", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string result = "";
 		
-		switch (console_toolbar_type)
+		string toHandsSwapVicinity	= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIPutInHandsFromVicinity", GetStringVariant("UAUIPutInHandsFromVicinity",{"#STR_Controls_TakeInHandsSwap","#STR_USRACT_HoldToHandSwap",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string toHandsSwapInv		= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIPutInHandsFromInventory", GetStringVariant("UAUIPutInHandsFromInventory",{"#STR_Controls_TakeInHandsSwap","#STR_USRACT_HoldToHandSwap",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string drop					= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIFastTransferToVicinity", "#dayz_context_menu_drop", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string equip 				= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIFastEquip", "#dayz_context_menu_equip", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string split 				= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUISplit", GetStringVariant("UAUISplit",{"#dayz_context_menu_split","#STR_Controls_HoldSplit",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string toInventory 			= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIFastTransferItem", "#dayz_context_menu_to_inventory", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string openCloseContainer 	= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIExpandCollapseContainer", "#dayz_context_menu_open_close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string micromanagment 		= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIDragNDrop", "#dayz_context_menu_micro", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string quickslot 			= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIQuickbarRadialInventoryOpen", "#ps4_dayz_context_menu_quickslot", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		string combine 				= string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUICombine", GetStringVariant("UAUICombine",{"#dayz_context_menu_combine","#dayz_context_menu_combine_hold",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		
+		if (mask & ConsoleActionToolbarMask.OPEN_CLOSE_CONTAINER)
 		{
-			case ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM:
-				return to_hands_swap_inv + drop + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_CARGO:
-				return open_close_container + to_hands_swap_inv + drop + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_QUANTITY:
-				return to_hands_swap_inv + drop + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_ATTACHMENTS:
-				return open_close_container + to_hands_swap_inv + drop + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM_FREE:
-				return "";
-			
-			case ConsoleToolbarType.PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER:
-				return "";
-			case ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM:
-				return to_hands_swap_inv + drop + equip + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP:
-				return to_hands_swap_inv + drop + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY:
-				return to_hands_swap_inv + drop + split + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS:
-				return to_hands_swap_inv + drop + equip + micromanagment + quickslot;
-			case ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS_NO_EQUIP:
-				return to_hands_swap_inv + drop + micromanagment + quickslot;
-			
-			case ConsoleToolbarType.VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM:
-				return to_hands_swap_vicinity + micromanagment;
-			case ConsoleToolbarType.VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_CARGO:
-				return open_close_container + to_hands_swap_vicinity + micromanagment;
-			case ConsoleToolbarType.VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_ATTACHMENTS:
-				return open_close_container + to_hands_swap_vicinity + micromanagment;
-			case ConsoleToolbarType.VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_FREE:
-				return "";
-			
-			case ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER:
-				return "";
-			case ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM:
-				return to_hands_swap_vicinity + to_inventory + equip + micromanagment;
-			case ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP:
-				return to_hands_swap_vicinity + to_inventory + micromanagment;
-			case ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY:
-				return to_hands_swap_vicinity + to_inventory + split + micromanagment;
-			case ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS:
-				return to_hands_swap_vicinity + to_inventory + equip + micromanagment;
-			case ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS_NO_EQUIP:
-				return to_hands_swap_vicinity + to_inventory + micromanagment;
-			
-			case ConsoleToolbarType.VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM:
-				return to_hands_swap_vicinity + micromanagment;
-			case ConsoleToolbarType.VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_WITH_CARGO:
-				return open_close_container + to_hands_swap_vicinity + micromanagment;
-			case ConsoleToolbarType.VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_WITH_ATTACHMENTS:
-				return open_close_container + to_hands_swap_vicinity + micromanagment;
-			case ConsoleToolbarType.VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_FREE:
-				return "";
-			
-			case ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_EMPTY_CONTAINER:
-				return "";
-			case ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM:
-				return to_hands_swap_vicinity + to_inventory + equip + micromanagment;
-			case ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_NO_EQUIP:
-				return to_hands_swap_vicinity + to_inventory + micromanagment;
-			case ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_QUANTITY:
-				return to_hands_swap_vicinity + to_inventory + split + micromanagment;
-			case ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS:
-				return to_hands_swap_vicinity + to_inventory + equip + micromanagment;
-			case ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_ATTACHMENTS_NO_EQUIP:
-				return to_hands_swap_vicinity + to_inventory + micromanagment;
-			
-			case ConsoleToolbarType.HANDS_ITEM:
-				return to_inventory + drop + equip  + micromanagment + quickslot;
-			case ConsoleToolbarType.HANDS_ITEM_NO_EQUIP:
-				return to_inventory + drop  + micromanagment + quickslot;
-			case ConsoleToolbarType.HANDS_ITEM_WITH_QUANTITY:
-				return to_inventory + drop + split  + micromanagment + quickslot;
-			case ConsoleToolbarType.HANDS_ITEM_EMPTY:
-				return "";
-			
-			case ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_WITH_CONTAINER:
-				return open_close_container + to_hands_swap_vicinity + to_inventory + equip  + micromanagment;
-			case ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_WITH_CONTAINER_NO_EQUIP:
-				return open_close_container + to_hands_swap_vicinity + to_inventory  + micromanagment;
-			case ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM:
-				return to_hands_swap_vicinity + to_inventory + equip  + micromanagment;
-			case ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_NO_EQUIP:
-				return to_hands_swap_vicinity + to_inventory + micromanagment;
-			case ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_WITH_QUANTITY:
-				return to_hands_swap_vicinity + to_inventory + micromanagment;
-			case ConsoleToolbarType.VICINITY_CONTAINER_LIST_HEADER:
-				return open_close_container ;
-			case ConsoleToolbarType.VICINITY_CONTAINER_LIST_EMPTY_ITEM:
-				return "";
-			
-			case ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_EMPTY:
-				return "";
-			case ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM:
-				return to_hands_swap_vicinity + to_inventory + equip + micromanagment;
-			case ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_NO_EQUIP:
-				return to_hands_swap_vicinity + to_inventory + micromanagment;
-			case ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_WITH_QUANTITY:
-				return to_hands_swap_vicinity + to_inventory + split + micromanagment;
+			result += openCloseContainer;
+		}		
+		if (mask & ConsoleActionToolbarMask.TO_HANDS_SWAP_VICINITY)
+		{
+			result += toHandsSwapVicinity;
 		}
-		return "";
+		if (mask & ConsoleActionToolbarMask.TO_HANDS_SWAP_INVENTORY)
+		{
+			result += toHandsSwapInv;
+		}
+		if (mask & ConsoleActionToolbarMask.TO_INVENTORY)
+		{
+			result += toInventory;
+		}
+		if (mask & ConsoleActionToolbarMask.DROP)
+		{
+			result += drop;
+		}
+		if (mask & ConsoleActionToolbarMask.SPLIT)
+		{
+			result += split;
+		}
+		if (mask & ConsoleActionToolbarMask.EQUIP)
+		{
+			result += equip;
+		}
+		if (mask & ConsoleActionToolbarMask.COMBINE)
+		{
+			result += combine;
+		}
+		if (mask & ConsoleActionToolbarMask.MICROMANAGMENT)
+		{
+			result += micromanagment;
+		}
+		if (mask & ConsoleActionToolbarMask.QUICKSLOT)
+		{
+			result += quickslot;
+		}
+
+		return result;
+	}
+	#endif
+
+	Container GetFocusedArea()
+	{
+		if (m_LeftArea && m_LeftArea.IsActive())
+		{
+			return m_LeftArea;
+		}
+		else if (m_RightArea && m_RightArea.IsActive())
+		{
+			return m_RightArea;
+		}
+		else if (m_HandsArea && m_HandsArea.IsActive())
+		{
+			return m_HandsArea;
+		}
+		return null;
 	}
 	
 	//Console toolbar
@@ -1407,414 +1320,101 @@ class Inventory: LayoutHolder
 		}
 		
 		#ifdef PLATFORM_CONSOLE
-		string combine = string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUICombine", GetStringVariant("UAUICombine",{"#dayz_context_menu_combine","#dayz_context_menu_combine_hold",""}), EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		string context_text;
+		int combinationFlag = 0;
+		string contextualText;
+		InventoryLocation il;
 		
-		if (m_LeftArea && m_LeftArea.IsActive())
+		Container focusedArea = GetFocusedArea();
+		if (focusedArea)
 		{
-			VicinityContainer vicinity_container = m_LeftArea.GetVicinityContainer();
-			if (vicinity_container.IsVicinityContainerIconsActive())
+			Container focusedContainer = GetFocusedArea().GetFocusedContainer();
+			EntityAI focusedItem = GetFocusedArea().GetFocusedItem();
+			
+			if (!(focusedItem && focusedItem.IsSetForDeletion()))
 			{
-				VicinitySlotsContainer vicinity_icons_container = vicinity_container.GetVicinityIconsContainer();
-				if (vicinity_icons_container.IsItemWithContainerActive())
+				if (focusedContainer)
 				{
-					if (vicinity_icons_container.CanEquip())
+					if (focusedItem)
 					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_WITH_CONTAINER);
+						il = new InventoryLocation;
+						focusedItem.GetInventory().GetCurrentInventoryLocation( il );
 					}
-					else if (!vicinity_icons_container.IsTakeable())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_HEADER);
-					}
-					else
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_WITH_CONTAINER_NO_EQUIP);
-					}
-				}
-				else if (vicinity_icons_container.IsItemWithQuantityActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_WITH_QUANTITY);
-				}
-				else if (vicinity_icons_container.IsItemActive())
-				{
-					if (vicinity_icons_container.CanEquip())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM);
-					}
-					else
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_ITEM_NO_EQUIP);
-					}
-				}
-				else if (vicinity_icons_container.IsEmptyItemActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_EMPTY_ITEM);
-				}
-				
-				if (vicinity_icons_container.CanCombine() || vicinity_icons_container.CanCombineAmmo())
-				{
-					context_text += combine;
-				}
-			}
-			else if (vicinity_container.IsContainerWithCargoActive())
-			{
-				ContainerWithCargo iwc = ContainerWithCargo.Cast(vicinity_container.GetFocusedContainer());
-				if (iwc.IsEmpty())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_EMPTY);
-				}
-				else if (iwc.IsItemWithQuantityActive())
-				{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_WITH_QUANTITY);
-				}
-				else if (iwc.IsItemActive())
-				{
-					if (iwc.CanEquip())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM);
-					}
-					else
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_NO_EQUIP);
-					}
-				}
-				
-				if (iwc.CanCombine() || iwc.CanCombineAmmo())
-				{
-					context_text += combine;
-				}
-			}
-			else if (vicinity_container.IsItemWithAttachmentsActive())
-			{
-				ContainerWithCargoAndAttachments iwca = ContainerWithCargoAndAttachments.Cast(vicinity_container.GetFocusedContainer());
-				if (iwca.IsEmpty())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_EMPTY);
-				}
-				else if (iwca.IsItemWithQuantityActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_WITH_QUANTITY);
-				}
-				else if (iwca.IsItemActive())
-				{
-					if (iwca.CanEquip())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM);
-					}
-					else
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_NO_EQUIP);
-					}
-				}
-				
-				if (iwca.CanCombine() || iwca.CanCombineAmmo())
-				{
-					context_text += combine;
-				}
-			}
-			else if (AttachmentCategoriesContainer.Cast(m_LeftArea.GetFocusedContainer()))
-			{
-				AttachmentCategoriesContainer acc = AttachmentCategoriesContainer.Cast(m_LeftArea.GetFocusedContainer());
-				if (acc.IsEmpty())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_EMPTY);
-				}
-				else if (acc.IsItemWithQuantityActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_WITH_QUANTITY);
-				}
-				else if (acc.IsItemActive())
-				{
-					if (acc.CanEquip())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM);
-					}
-					else
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_DETAILS_ITEM_NO_EQUIP);
-					}
-				}
-				else if (acc.IsHeaderActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICINITY_CONTAINER_LIST_HEADER);
-				}
-				
-				if (acc.CanCombine() || acc.CanCombineAmmo())
-				{
-					context_text += combine;
-				}
-			}
-			else if (PlayerContainer.Cast(m_LeftArea.GetFocusedContainer()))
-			{
-				PlayerContainer pcc = PlayerContainer.Cast(m_LeftArea.GetFocusedContainer());
-				if (pcc.IsPlayerEquipmentActive())
-				{
-					if (pcc.IsItemActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM);
-					}
-					else if (pcc.IsItemWithContainerActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_CARGO);
-					}
-					else if (pcc.IsEmptyItemActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_EQUIPMENT_SLOTS_ITEM_FREE);
-					}
+	
+					bool canBeManipulated;
+					PlayerBase player;
+					PlayerBase itemPlayerOwner;
 					
-					if (pcc.CanCombine() || pcc.CanCombineAmmo())
+					if (focusedItem)
 					{
-						context_text += combine;
-					}
-				}
-				else if (pcc.IsContainerWithCargoActive())
-				{
-					ContainerWithCargo iwc1a = ContainerWithCargo.Cast(pcc.GetFocusedContainer());
-					if (iwc1a.IsEmpty())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER);
-					}
-					else if (iwc1a.IsItemWithQuantityActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY);
-					}
-					else if (iwc1a.IsItemActive())
-					{
-						if (iwc1a.CanEquip())
+						player = PlayerBase.Cast(GetGame().GetPlayer());
+						itemPlayerOwner = PlayerBase.Cast(focusedItem.GetHierarchyRootPlayer());
+						il = new InventoryLocation;
+						focusedItem.GetInventory().GetCurrentInventoryLocation( il );
+						
+						canBeManipulated = !player.GetInventory().HasInventoryReservation( focusedItem, null ) && !player.GetInventory().IsInventoryLocked() && !player.IsItemsToDelete();
+						canBeManipulated = canBeManipulated && focusedItem.GetInventory().CanRemoveEntity();
+						
+						EntityAI parent = il.GetParent();
+						if (parent)
 						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM);
-						}
-						else
-						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP);
+							canBeManipulated = canBeManipulated && AttachmentsOutOfReach.IsAttachmentReachable( parent, "", il.GetSlot() );
+							canBeManipulated = canBeManipulated && !parent.GetInventory().GetSlotLock(  il.GetSlot() );
 						}
 					}
 					
-					if (iwc1a.CanCombine() || iwc1a.CanCombineAmmo())
+					if (canBeManipulated)
 					{
-						context_text += combine;
-					}
-				}
-				else if (pcc.IsItemWithAttachmentsActive())
-				{
-					ContainerWithCargoAndAttachments iwca1a = ContainerWithCargoAndAttachments.Cast(pcc.GetFocusedContainer());
-					if (iwca1a.IsEmpty())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER);
-					}
-					else if (iwca1a.IsItemWithQuantityActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY);
-					}
-					else if (iwca1a.IsItemActive())
-					{
-						if (iwca1a.CanEquip())
+						if (focusedItem)
 						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM);
+							combinationFlag |= ConsoleActionToolbarMask.MICROMANAGMENT;
 						}
-						else
+						
+						if (focusedContainer.CanEquipEx(focusedItem))
 						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP);
+							combinationFlag |= ConsoleActionToolbarMask.EQUIP;
 						}
-					}
-					
-					if (iwca1a.CanCombine() || iwca1a.CanCombineAmmo())
-					{
-						context_text += combine;
-					}
-				}
-			}
-			else if (ZombieContainer.Cast(m_LeftArea.GetFocusedContainer()))
-			{
-				ZombieContainer zcc = ZombieContainer.Cast(m_LeftArea.GetFocusedContainer());
-				if (zcc.IsZombieEquipmentActive())
-				{
-					if (zcc.IsItemActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM);
-					}
-					else if (zcc.IsItemWithContainerActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_WITH_CARGO);
-					}
-					else if (zcc.IsEmptyItemActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_EQUIPMENT_SLOTS_ITEM_FREE);
-					}
-					
-					if (zcc.CanCombine() || zcc.CanCombineAmmo())
-					{
-						context_text += combine;
-					}
-				}
-				else if (zcc.IsContainerWithCargoActive())
-				{
-					ContainerWithCargo iwc1b = ContainerWithCargo.Cast(zcc.GetFocusedContainer());
-					if (iwc1b.IsEmpty())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_EMPTY_CONTAINER);
-					}
-					else if (iwc1b.IsItemWithQuantityActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_QUANTITY);
-					}
-					else if (iwc1b.IsItemActive())
-					{
-						if (iwc1b.CanEquip())
+						
+						if (focusedContainer.CanSwapOrTakeToHandsEx(focusedItem))
 						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM);
+							combinationFlag |= ConsoleActionToolbarMask.TO_HANDS_SWAP_VICINITY;
 						}
-						else
+						
+						if (player!= null && player == itemPlayerOwner)
 						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_NO_EQUIP);
+							if (focusedContainer.CanDropEx(focusedItem))
+							{
+								combinationFlag |= ConsoleActionToolbarMask.DROP;
+							}
+						}
+						
+						if (focusedContainer.CanCombineEx(focusedItem))
+						{
+							combinationFlag |= ConsoleActionToolbarMask.COMBINE;
+						}
+						
+						if (focusedContainer.CanSplitEx(focusedItem))
+						{
+							combinationFlag |= ConsoleActionToolbarMask.SPLIT;
+						}
+						
+						if (focusedContainer.CanTakeToInventoryEx(focusedItem))
+						{
+							combinationFlag |= ConsoleActionToolbarMask.TO_INVENTORY;
 						}
 					}
 					
-					if (iwc1b.CanCombine() || iwc1b.CanCombineAmmo())
+					if (focusedContainer.CanOpenCloseContainerEx(focusedItem))
 					{
-						context_text += combine;
-					}
-				}
-				else if (zcc.IsItemWithAttachmentsActive())
-				{
-					ContainerWithCargoAndAttachments iwca1b = ContainerWithCargoAndAttachments.Cast(zcc.GetFocusedContainer());
-					if (iwca1b.IsEmpty())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_EMPTY_CONTAINER);
-					}
-					else if (iwca1b.IsItemWithQuantityActive())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_WITH_QUANTITY);
-					}
-					else if (iwca1b.IsItemActive())
-					{
-						if (iwca1b.CanEquip())
-						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM);
-						}
-						else
-						{
-							context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.VICNITY_ZOMBIE_CARGO_CONTAINER_ITEM_NO_EQUIP);
-						}
+						combinationFlag |= ConsoleActionToolbarMask.OPEN_CLOSE_CONTAINER;
 					}
 					
-					if (iwca1b.CanCombine() || iwca1b.CanCombineAmmo())
+					if (player!= null && player == itemPlayerOwner)
 					{
-						context_text += combine;
+						combinationFlag |= ConsoleActionToolbarMask.QUICKSLOT;
 					}
 				}
 			}
-		}
-		else if (m_RightArea && m_RightArea.IsActive())
-		{
-			PlayerContainer player_container = m_RightArea.GetPlayerContainer();
-			if (m_RightArea.IsPlayerEquipmentActive())
-			{
-				if (player_container.IsItemActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM);
-				}
-				else if (player_container.IsItemWithContainerActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_CARGO);
-				}
-				else if (player_container.IsItemWithQuantityActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM_WITH_QUANTITY);
-				}
-				else if (player_container.IsEmptyItemActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_EQUIPMENT_SLOTS_ITEM_FREE);
-				}
-				
-				if (player_container.CanCombine() || player_container.CanCombineAmmo())
-				{
-					context_text += combine;
-				}
-			}
-			else if (player_container.IsContainerWithCargoActive())
-			{
-				ContainerWithCargo iwc1 = ContainerWithCargo.Cast(player_container.GetFocusedContainer());
-				if (iwc1.IsEmpty())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER);
-				}
-				else if (iwc1.IsItemWithQuantityActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY);
-				}
-				else if (iwc1.IsItemActive())
-				{
-					if (iwc1.CanEquip())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM);
-					}
-					else
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP);
-					}
-				}
-				
-				if (iwc1.CanCombine() || iwc1.CanCombineAmmo())
-				{
-					context_text += combine;
-				}
-			}
-			else if (player_container.IsItemWithAttachmentsActive())
-			{
-				ContainerWithCargoAndAttachments iwca1 = ContainerWithCargoAndAttachments.Cast(player_container.GetFocusedContainer());
-				if (iwca1.IsEmpty())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_EMPTY_CONTAINER);
-				}
-				else if (iwca1.IsItemWithQuantityActive())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_WITH_QUANTITY);
-				}
-				else if (iwca1.IsItemActive())
-				{
-					if (iwca1.CanEquip())
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM);
-					}
-					else
-					{
-						context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.PLAYER_CARGO_CONTAINER_ITEM_NO_EQUIP);
-					}
-				}
-				
-				if (iwca1.CanCombine() || iwca1.CanCombineAmmo())
-				{
-					context_text += combine;
-				}
-			}
-		}
-		else if (m_HandsArea && m_HandsArea.IsActive())
-		{
-			if (m_HandsArea.IsItemWithQuantityActive())
-			{
-				context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.HANDS_ITEM_WITH_QUANTITY);
-			}
-			else if (m_HandsArea.IsItemActive())
-			{
-				if (m_HandsArea.CanEquip())
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.HANDS_ITEM);
-				}
-				else
-				{
-					context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.HANDS_ITEM_NO_EQUIP);
-				}
-			}
-			else  if (m_HandsArea.IsEmpty())
-			{
-				context_text = ConsoleToolbarTypeToString(ConsoleToolbarType.HANDS_ITEM_EMPTY);
-			}
-		}
-		
-		string general_text_left;
-		string general_text_right;
-		
+			contextualText = GetConsoleToolbarText(combinationFlag);
 		if (m_TopConsoleToolbarVicinity)
 			m_TopConsoleToolbarVicinity.Show(m_LeftArea.IsActive());
 		if (m_TopConsoleToolbarHands)
@@ -1822,8 +1422,8 @@ class Inventory: LayoutHolder
 		if (m_TopConsoleToolbarEquipment)
 			m_TopConsoleToolbarEquipment.Show(m_RightArea.IsActive());
 		if (m_BottomConsoleToolbarRichText)
-			m_BottomConsoleToolbarRichText.SetText(context_text + " ");
-		
+			m_BottomConsoleToolbarRichText.SetText(contextualText + " ");
+		}
 		#endif
 	}
 	

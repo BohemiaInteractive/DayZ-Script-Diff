@@ -118,6 +118,12 @@ class Weapon_Base extends Weapon
 		
 		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleGun );
 	}
+	
+	void SetInitialState(WeaponStableState initState)
+	{
+		m_fsm.SetInitialState(initState);
+		SetGroundAnimFrameIndex(initState.m_animState);
+	}
 
 	override protected float GetWeightSpecialized(bool forceRecalc = false)
 	{
@@ -278,6 +284,7 @@ class Weapon_Base extends Weapon
 	void SetWeaponAnimState(int state)
 	{
 		m_weaponAnimState = state;
+		SetGroundAnimFrameIndex(state);
 	}
 	void ResetWeaponAnimState()
 	{
@@ -463,6 +470,13 @@ class Weapon_Base extends Weapon
 		{
 			if (!m_fsm.OnStoreLoad(ctx, version))
 				return false;
+			
+			WeaponStableState wss = WeaponStableState.Cast(m_fsm.GetCurrentState());
+			if (wss)
+			{
+				SetGroundAnimFrameIndex(wss.m_animState);
+			}
+			
 		}
 		else
 		{
@@ -986,18 +1000,6 @@ class Weapon_Base extends Weapon
 		super.EEItemAttached(item, slot_name);
 
 		GetPropertyModifierObject().UpdateModifiers();
-		
-		/*if (ItemOptics.Cast(item))
-		{
-			PlayerBase player = PlayerBase.Cast( GetHierarchyRootPlayer() );
-			if( player )
-			{
-				if( player.GetItemInHands() == this )
-				{
-					player.SetOpticsPreload(true,item);
-				}
-			}
-		}*/
 	}
 
 	override void EEItemDetached(EntityAI item, string slot_name)
@@ -1005,18 +1007,6 @@ class Weapon_Base extends Weapon
 		super.EEItemDetached(item, slot_name);
 
 		GetPropertyModifierObject().UpdateModifiers();
-		
-		/*if (ItemOptics.Cast(item))
-		{
-			PlayerBase player = PlayerBase.Cast( GetHierarchyRootPlayer() );
-			if( player )
-			{
-				if( player.GetItemInHands() == this )
-				{
-					player.SetOpticsPreload(false,item);
-				}
-			}
-		}*/
 	}
 	
 	override void EEItemLocationChanged(notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc)
@@ -1041,12 +1031,13 @@ class Weapon_Base extends Weapon
 	{
 		super.OnItemLocationChanged(old_owner,new_owner);
 		
-		// HACK "resets" optics memory on optics
+		// "resets" optics memory on optics
 		PlayerBase player;
-		if ( PlayerBase.CastTo(player,old_owner) )
+		if (PlayerBase.CastTo(player,old_owner))
 		{ 
 			player.SetReturnToOptics(false);
 		}
+
 		HideWeaponBarrel(false);
 	}
 	
@@ -1068,26 +1059,6 @@ class Weapon_Base extends Weapon
 
 		return true;
 	}
-	
-	/*override bool CanReceiveAttachment(EntityAI attachment,int slotId)
-	{
-		if( !super.CanReleaseAttachment( attachment ) )
-			return false;
-		Magazine mag = Magazine.Cast(attachment);
-		if(mag)
-		{
-			PlayerBase player = PlayerBase.Cast( GetHierarchyRootPlayer() );
-			if( player )
-			{
-				if( player.GetItemInHands() == this )
-				return true;
-			}
-			return false;
-		}
-
-		return true;
-	}*/
-	
 	
 	override bool CanRemoveFromHands(EntityAI parent)
 	{
@@ -1120,12 +1091,14 @@ class Weapon_Base extends Weapon
 		DayZPlayer p = DayZPlayer.Cast(GetHierarchyParent());
 		if (p && p.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
-			ScriptRemoteInputUserData ctx = new ScriptRemoteInputUserData;
+			ScriptRemoteInputUserData ctx = new ScriptRemoteInputUserData();
 
 			ctx.Write(INPUT_UDT_WEAPON_REMOTE_EVENT);
 			e.WriteToContext(ctx);
 
-			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(this) + " send 2 remote: sending e=" + e + " id=" + e.GetEventID() + " p=" + e.m_player + "  m=" + e.m_magazine); }
+			if (LogManager.IsWeaponLogEnable())
+				wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(this) + " send 2 remote: sending e=" + e + " id=" + e.GetEventID() + " p=" + e.m_player + "  m=" + e.m_magazine);
+
 			p.StoreInputForRemotes(ctx);
 		}
 	}
@@ -1136,7 +1109,10 @@ class Weapon_Base extends Weapon
 		return new DefaultRecoil(this);
 	}
 
-	int GetWeaponSpecificCommand(int weaponAction, int subCommand) { return subCommand; }
+	int GetWeaponSpecificCommand(int weaponAction, int subCommand)
+	{
+		return subCommand;
+	}
 
 	bool CanFire()
 	{
@@ -1148,7 +1124,7 @@ class Weapon_Base extends Weapon
 	bool CanEnterIronsights()
 	{
 		ItemOptics optic = GetAttachedOptics();
-		if ( !optic )
+		if (!optic)
 			return true;
 		
 		return optic.HasWeaponIronsightsOverride();
@@ -1205,6 +1181,7 @@ class Weapon_Base extends Weapon
 		vector hit_pos, hit_normal; //junk
 		Object obj;
 		ItemBase attachment;
+		HumanMovementState movementState = new HumanMovementState();
 		
 		m_LiftWeapon = false;
 		// not a gun, no weap.raise for now
@@ -1218,7 +1195,8 @@ class Weapon_Base extends Weapon
 		}
 		
 		// weapon not raised
-		if ( player.GetInputController() && !player.GetInputController().IsWeaponRaised() )
+		player.GetMovementState(movementState);
+		if (!movementState.IsRaised())
 			return false;
 		
 		usti_hlavne_position = GetSelectionPositionLS( "Usti hlavne" ); 	// Usti hlavne

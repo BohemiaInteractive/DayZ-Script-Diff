@@ -55,9 +55,7 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	
 	override bool CanDetachAttachment( EntityAI parent )
 	{
-		if ( GetNumberOfItems() == 0)
-			return true;
-		return false;
+		return GetNumberOfItems() == 0;
 	}
 	
 	
@@ -306,7 +304,7 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
 			return false;
 
-		if ( !IsOpen() || GetHierarchyParent() )
+		if (!IsOpen())
 			return false;
 
 		return super.CanReceiveItemIntoCargo( item );

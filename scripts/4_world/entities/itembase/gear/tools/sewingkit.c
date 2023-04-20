@@ -30,7 +30,8 @@ class SewingKit: Inventory_Base
 	
 	override void OnCombine(ItemBase other_item)
 	{
-		if(m_Cleanness == 1 && other_item.m_Cleanness == 0)
+		super.OnCombine(other_item);
+		if (m_Cleanness == 1 && other_item.m_Cleanness == 0)
 			SetCleanness(0);
 	}
 };

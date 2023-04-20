@@ -1,4 +1,4 @@
-class Breeches_ColorBase extends Clothing
+class Breeches_ColorBase extends Pants_Base
 {
 	override void SetActions()
 	{

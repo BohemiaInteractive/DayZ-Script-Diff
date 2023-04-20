@@ -41,6 +41,7 @@ class PurifyWater extends RecipeBase
 		InsertIngredient(1,"Vodka");//you can insert multiple ingredients this way
 		InsertIngredient(1,"WaterPouch_ColorBase");//you can insert multiple ingredients this way
 		InsertIngredient(1,"Barrel_ColorBase");//you can insert multiple ingredients this way
+		InsertIngredient(1,"Cauldron");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[1] = 0;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing
@@ -64,7 +65,7 @@ class PurifyWater extends RecipeBase
 
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
-		return true;
+		return ingredients[1].GetQuantity() > 0;
 	}
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion

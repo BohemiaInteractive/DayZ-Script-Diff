@@ -54,6 +54,7 @@ class CutOutPumpkinSeeds extends CutOutSeeds
 		InsertIngredient(1,"Shovel");
 		InsertIngredient(1,"Crowbar");
 		InsertIngredient(1,"Hammer");
+		InsertIngredient(1,"Mace");
 		InsertIngredient(1,"Wrench");
 		InsertIngredient(1,"LugWrench");
 		InsertIngredient(1,"Screwdriver");

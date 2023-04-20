@@ -1,4 +1,4 @@
-class TelnyashkaShirt extends Clothing
+class TelnyashkaShirt extends Top_Base
 {
 	override void SetActions()
 	{

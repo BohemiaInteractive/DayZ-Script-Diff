@@ -23,7 +23,8 @@ class Debug
 	static private const string LOG_DEBUG_TF				= "TestFramework";
 	static private const string LOG_DEBUG_WEIGHT			= "Weight";
 	static private const string LOG_DEBUG_MELEE				= "Melee";
-	
+	static private const string LOG_DEBUG_WEATHER			= "Weather";
+
 	static private const string	LOG_INFO					= "Info";
 	static private const string	LOG_WARNING					= "Warning";
 	static private const string	LOG_ERROR					= "Error";
@@ -185,6 +186,12 @@ class Debug
 		LogMessage(LOG_DEBUG_MELEE, plugin, GetDebugName(entity), author, label, logMessage);
 	}
 	
+	static void	WeatherLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
+	{
+		if (LogManager.IsWeatherLogEnabled())
+			LogMessage(LOG_DEBUG_WEATHER, plugin, entity, author, label, message);
+	}
+	
 	/**
 	\brief Prints debug message with normal prio
 		\param msg \p string Debug message for print
@@ -232,26 +239,29 @@ class Debug
 	
 	static void	LogArrayInt(array<int> arr = NULL, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		if (arr== NULL) return;
+		if (arr == null)
+			return;
+
 		for (int i = 0; i < arr.Count(); i++)
 		{
-			LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i).ToString() );
-		
+			LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i).ToString());
 		}
 	}
 	
 	static void	LogArrayString(array<string> arr = NULL, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		if (arr== NULL) return;	
+		if (arr == null)
+			return;
+			
 		for (int i = 0; i < arr.Count(); i++)
 		{
-			LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i) );	
+			LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i));
 		}
 	}
 	
 	static void	ReceivedLogMessageFromServer(string message)
 	{
-		if ( LogManager.IsLogsEnable() )
+		if (LogManager.IsLogsEnable())
 			SaveLog(message);
 	}
 	
@@ -395,6 +405,7 @@ class Debug
 		base_classes.Insert(CFG_SOUND_SETS);
 		base_classes.Insert(CFG_SOUND_SHADERS);
 		base_classes.Insert(CFG_NONAI_VEHICLES);
+		base_classes.Insert(CFG_SOUND_TABLES);
 	}
 	
 	/**
@@ -445,14 +456,12 @@ class Debug
 	//---------------------------------------------------------------
 	//-------private
 	
-	static private bool				m_EnabledLogs;
+	static private bool				m_EnabledLogs; //! DEPRECATED
 		
 	static private void LogMessage(string level, string plugin, string entity, string author, string label, string message)
 	{
-		if (GetGame() == NULL || LogManager.IsLogsEnable() == false )
-		{
+		if (GetGame() == null || !LogManager.IsLogsEnable())
 			return;
-		}
 		
 		bool is_server_log = ( GetGame().IsServer() && GetGame().IsMultiplayer() );
 		
@@ -473,10 +482,10 @@ class Debug
 		if ( is_server_log )
 		{
 			SaveLog(msg);
-#ifdef DEVELOPER //not sendig log to clients on stable
+			#ifdef DEVELOPER //not sendig log to clients on stable
 			Param1<string> msg_p = new Param1<string>(msg);
 			CallMethod(CALL_ID_SEND_LOG, msg_p);
-#endif
+			#endif
 		}
 		else
 		{
@@ -486,42 +495,34 @@ class Debug
 	
 	static private void	SaveLog(string log_message)
 	{
-		#ifdef DEVELOPER
 		#ifndef SERVER
 		CachedObjectsParams.PARAM1_STRING.param1 = log_message;
-		GetDispatcher().CallMethod(CALL_ID_SCR_CNSL_ADD_PRINT,CachedObjectsParams.PARAM1_STRING);
+		GetDispatcher().CallMethod(CALL_ID_SCR_CNSL_ADD_PRINT, CachedObjectsParams.PARAM1_STRING);
+		#endif		
 		
-		//Previous was saved to separate file
-		FileHandle file_index = OpenFile(GetFileName(), FileMode.APPEND);
-		
-		if ( file_index == 0 )
-		{
+		FileHandle fileHandle = OpenFile(GetFileName(), FileMode.APPEND);		
+		if (fileHandle == 0)
 			return;
-		}
-			
-		FPrintln(file_index, log_message);
-		
-		CloseFile(file_index);
+
+		FPrintln(fileHandle, log_message);
+		CloseFile(fileHandle);
+
+		#ifdef DIAG_DEVELOPER
+		Print(string.Format("%1", log_message));
 		#endif
-		#endif
-		Print(log_message);
 
 	}
 	
 	static void	ClearLogs()
 	{
-		if ( FileExist( GetFileName() ) )
+		if (FileExist(GetFileName()))
 		{
-			FileHandle file_index = OpenFile( GetFileName(), FileMode.WRITE );
-			
-			if ( file_index == 0 )
-			{
+			FileHandle fileHandle = OpenFile(GetFileName(), FileMode.WRITE);
+			if (fileHandle == 0)
 				return;
-			}
 				
-			FPrintln( file_index, "" );
-			
-			CloseFile( file_index );	
+			FPrintln(fileHandle, "");
+			CloseFile(fileHandle);	
 		}
 	}
 	
@@ -557,21 +558,23 @@ class LogManager
 	static bool m_DoInventoryReservationLog;
 	static bool m_DoInventoryHFSMLog;
 	static bool m_DoWeaponLog;
+	static bool m_DoWeatherLog;
 	
 	static void Init()
 	{
-#ifdef DEVELOPER 
-		m_DoLogs = true;
-#else
-		m_DoLogs = false;
-#endif
+		#ifdef DIAG_DEVELOPER
+		m_DoLogs 					= true;
+		#else
+		m_DoLogs					= IsCLIParam("doLogs");
+		#endif
 
-		m_DoActionDebugLog = IsCLIParam("doActionLog");
-		m_DoSymptomDebugLog = IsCLIParam("doSymptomLog");
-		m_DoInventoryMoveLog = IsCLIParam("doInvMoveLog");
+		m_DoActionDebugLog 			= IsCLIParam("doActionLog");
+		m_DoSymptomDebugLog 		= IsCLIParam("doSymptomLog");
+		m_DoInventoryMoveLog 		= IsCLIParam("doInvMoveLog");
 		m_DoInventoryReservationLog = IsCLIParam("doInvReservLog");
-		m_DoInventoryHFSMLog = IsCLIParam("doInvHFSMLog");
-		m_DoWeaponLog = IsCLIParam("doWeaponLog");
+		m_DoInventoryHFSMLog 		= IsCLIParam("doInvHFSMLog");
+		m_DoWeaponLog 				= IsCLIParam("doWeaponLog");
+		m_DoWeatherLog 				= IsCLIParam("doWeatherLog");
 	}
 	
 	static bool IsLogsEnable()
@@ -642,6 +645,11 @@ class LogManager
 	static void WeaponLogEnable(bool enable)
 	{
 		m_DoWeaponLog = enable;
+	}
+	
+	static bool IsWeatherLogEnabled()
+	{
+		return m_DoWeatherLog;
 	}
 }
 

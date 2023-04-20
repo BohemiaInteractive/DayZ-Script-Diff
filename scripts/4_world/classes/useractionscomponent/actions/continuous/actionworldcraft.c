@@ -89,6 +89,20 @@ class ActionWorldCraft: ActionContinuousBase
 		return true;		
 	}
 	
+	override string GetSoundCategory(ActionData action_data)
+	{
+		WorldCraftActionData actionDataWorldCraft = WorldCraftActionData.Cast(action_data);
+		
+		ItemBase target = ItemBase.Cast(actionDataWorldCraft.m_Target.GetObject());
+		ItemBase item = actionDataWorldCraft.m_MainItem;
+		
+		PluginRecipesManager recipesManager = PluginRecipesManager.Cast(GetPlugin(PluginRecipesManager));
+		
+		string soundCat = recipesManager.GetSoundCategory(actionDataWorldCraft.m_RecipeID,target, item);
+		
+		return soundCat;
+	}
+	
 	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL )
 	{
 		if (super.SetupAction(player, target, item, action_data, extra_data ))

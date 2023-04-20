@@ -1,4 +1,4 @@
-class MouthRag extends Clothing
+class MouthRag extends Mask_Base
 {
 	bool m_IncomingLambdaChange;
 	

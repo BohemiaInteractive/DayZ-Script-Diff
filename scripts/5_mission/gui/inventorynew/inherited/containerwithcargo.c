@@ -34,11 +34,6 @@ class ContainerWithCargo extends ClosableContainer
 		return m_CargoGrid.IsItemActive();
 	}
 	
-	override bool CanEquip()
-	{
-		return m_CargoGrid.CanEquip();
-	}
-	
 	override bool CanCombine()
 	{
 		return m_CargoGrid.CanCombine();

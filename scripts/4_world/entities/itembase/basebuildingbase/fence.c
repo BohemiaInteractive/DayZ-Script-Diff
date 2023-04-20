@@ -300,11 +300,7 @@ class Fence extends BaseBuildingBase
 		
 		super.OnPartBuiltServer( player, part_name, action_id );
 		
-		SetGateState( CheckGateState() );
-		
-		//drop attachments without carrier part
-		if (constrution_part.IsGate())
-			//GateAttachmentsSanityCheck();
+		SetGateState(CheckGateState());
 		
 		//update visuals (server)
 		UpdateVisuals();

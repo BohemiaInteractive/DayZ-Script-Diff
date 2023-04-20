@@ -1,4 +1,4 @@
-class TacticalShirt_ColorBase extends Clothing 
+class TacticalShirt_ColorBase extends Top_Base 
 {
 	override void SetActions()
 	{

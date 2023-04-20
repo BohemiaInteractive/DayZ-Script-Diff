@@ -1,4 +1,4 @@
-class HeadCover_Improvised extends Clothing
+class HeadCover_Improvised extends HeadGear_Base
 {
 	override void SetActions()
 	{

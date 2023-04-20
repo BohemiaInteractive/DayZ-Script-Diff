@@ -18,5 +18,10 @@
         "m_Icon": "",
         "m_TitleText": "#server_browser_connecting_failed",
         "m_DescriptionText": "#server_browser_error_unknown"
+    },
+    "4": {
+        "m_Icon": "",
+        "m_TitleText": "#options_game_connectivity_disconnect",
+        "m_DescriptionText": "#STR_MP_SESSION_LOST"
     }
 }

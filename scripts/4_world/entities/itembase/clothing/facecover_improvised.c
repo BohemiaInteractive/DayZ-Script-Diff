@@ -1,4 +1,4 @@
-class FaceCover_Improvised extends Clothing
+class FaceCover_Improvised extends Mask_Base
 {
 	override void SetActions()
 	{

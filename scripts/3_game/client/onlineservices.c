@@ -234,7 +234,7 @@ class OnlineServices
 	static void LoadFriends()
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
 			m_ClientServices.GetSocialService().GetFriendsAsync();
 		}
@@ -247,7 +247,7 @@ class OnlineServices
 	static void ShowUserProfile( string uid )
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
 			m_ClientServices.GetSocialService().ShowUserProfileAsync( uid );
 		}
@@ -311,7 +311,7 @@ class OnlineServices
 	static void LoadPermissions( array<string> player_list )
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
 			array<EBiosPrivacyPermission> perms = new array<EBiosPrivacyPermission>;
 			perms.Insert( EBiosPrivacyPermission.COMMUNICATE_VOICE );
@@ -393,11 +393,11 @@ class OnlineServices
 	{
 		#ifdef PLATFORM_CONSOLE
 			GetClientServices();
-			if( m_ClientServices )
+			if ( m_ClientServices )
 			{
 				string addr;
 				int port;
-				if( GetGame().GetHostAddress( addr, port ) )
+				if ( GetGame().GetHostAddress( addr, port ) )
 				{
 					ErrorCaught( m_ClientServices.GetSessionService().ShowInviteToGameplaySessionAsync( addr, port ) );
 				}
@@ -413,7 +413,7 @@ class OnlineServices
 	{
 		#ifdef PLATFORM_CONSOLE
 			GetClientServices();
-			if( m_ClientServices )
+			if ( m_ClientServices )
 			{
 				ErrorCaught( m_ClientServices.GetPrivacyService().GetPrivilegeAsync( EBiosPrivacyPrivilege.MULTIPLAYER_GAMEPLAY, true ) );
 			}
@@ -429,7 +429,7 @@ class OnlineServices
 	static void LoadVoicePrivilege()
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
 			ErrorCaught( m_ClientServices.GetPrivacyService().GetPrivilegeAsync( EBiosPrivacyPrivilege.COMMUNICATE_VOICE, true ) );
 		}
@@ -441,13 +441,13 @@ class OnlineServices
 	
 	static void OnLoadMPPrivilege( EBiosError err )
 	{
-		if( !ErrorCaught( err ) )
+		if ( !ErrorCaught( err ) )
 		{
 			g_Game.TryConnect();
 		}
 		else
 		{
-			if( g_Game.GetGameState() != DayZGameState.MAIN_MENU )
+			if ( g_Game.GetGameState() != DayZGameState.MAIN_MENU )
 			{
 				g_Game.MainMenuLaunch();
 			}
@@ -461,7 +461,7 @@ class OnlineServices
 	
 	static void OnLoadVoicePrivilege( EBiosError err )
 	{
-		if( g_Game.GetGameState() == DayZGameState.IN_GAME )
+		if ( g_Game.GetGameState() == DayZGameState.IN_GAME )
 		{
 			#ifdef PLATFORM_PS4
 			GetGame().GetWorld().DisableReceiveVoN( ErrorCaught( err ) );
@@ -473,7 +473,7 @@ class OnlineServices
 	static void SetSessionHandle( string handle )
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
 			m_ClientServices.GetSessionService().m_CurrentHandle = handle;
 		}
@@ -482,7 +482,7 @@ class OnlineServices
 	static string GetSessionHandle()
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
 			return m_ClientServices.GetSessionService().m_CurrentHandle;
 		}
@@ -492,7 +492,7 @@ class OnlineServices
 	static void GetSession()
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
 			m_ClientServices.GetSessionService().TryGetSession( GetSessionHandle() );
 		}
@@ -518,10 +518,10 @@ class OnlineServices
 	{
 		m_MultiplayState = state;
 		bool is_multiplay;
-		if( ClientData.GetSimplePlayerList() )
+		if ( ClientData.GetSimplePlayerList() )
 			is_multiplay = state && ( ClientData.GetSimplePlayerList().Count() > 1 );
 
-		if( m_ClientServices )
+		if ( m_ClientServices )
 			m_ClientServices.GetSessionService().SetMultiplayState(is_multiplay);
 	}
 	
@@ -529,10 +529,10 @@ class OnlineServices
 	{
 		string addr;
 		int port;
-		if( GetGame().GetHostAddress( addr, port ) )
+		if ( GetGame().GetHostAddress( addr, port ) )
 		{
 			GetClientServices();
-			if( m_ClientServices )
+			if ( m_ClientServices )
 			{
 				m_ClientServices.GetSessionService().EnterGameplaySessionAsync( addr, port );
 				SetMultiplayState(true);
@@ -543,17 +543,17 @@ class OnlineServices
 	static void LeaveGameplaySession()
 	{
 		GetClientServices();
-		if( m_ClientServices )
+		if ( m_ClientServices )
 		{
-			if( m_CurrentServerInfo )
+			if ( m_CurrentServerInfo )
 				m_ClientServices.GetSessionService().LeaveGameplaySessionAsync(m_CurrentServerInfo.m_HostIp, m_CurrentServerInfo.m_HostPort);
-			else if( m_CurrentServerIP != "" )
+			else if ( m_CurrentServerIP != "" )
 				m_ClientServices.GetSessionService().LeaveGameplaySessionAsync(m_CurrentServerIP, m_CurrentServerPort);
 				
 			SetMultiplayState(false);
 			m_FirstFriendsLoad = true;
 			
-			if( m_FriendsList )
+			if ( m_FriendsList )
 				m_FriendsList.Clear();
 		}
 	}
@@ -562,10 +562,10 @@ class OnlineServices
 	{
 		string addr;
 		int port;
-		if( GetGame().GetHostAddress( addr, port ) )
+		if ( GetGame().GetHostAddress( addr, port ) )
 		{
 			GetClientServices();
-			if( m_ClientServices )
+			if ( m_ClientServices )
 			{
 				m_ClientServices.GetSessionService().SetGameplayActivityAsync( addr, port );
 			}
@@ -576,10 +576,10 @@ class OnlineServices
 	{
 		string addr;
 		int port;
-		if( GetGame().GetHostAddress( addr, port ) )
+		if ( GetGame().GetHostAddress( addr, port ) )
 		{
 			GetClientServices();
-			if( m_ClientServices )
+			if ( m_ClientServices )
 			{
 				m_PendingInvites = invitees;
 				m_ClientServices.GetSessionService().InviteToGameplaySessionAsync( addr, port, GetPendingInviteList() );
@@ -594,12 +594,12 @@ class OnlineServices
 	static array<string> GetPendingInviteList()
 	{
 		array<string> already_on_server = ClientData.GetSimplePlayerList();
-		if( already_on_server && m_PendingInvites )
+		if ( already_on_server && m_PendingInvites )
 		{
 			array<string> new_to_server = new array<string>;
-			foreach( string invitee : m_PendingInvites )
+			foreach ( string invitee : m_PendingInvites )
 			{
-				if( already_on_server.Find( invitee ) == -1 )
+				if ( already_on_server.Find( invitee ) == -1 )
 				{
 					new_to_server.Insert( invitee );
 				}
@@ -621,7 +621,7 @@ class OnlineServices
 	static void AutoConnectToEmptyServer()
 	{
 		GetClientServices();
-		if( m_ClientServices && m_AutoConnectTries == 0 )
+		if ( m_ClientServices && m_AutoConnectTries == 0 )
 		{
 			m_AutoConnectTries = 1;
 			GetFirstServerWithEmptySlotInput input = new GetFirstServerWithEmptySlotInput;
@@ -635,11 +635,11 @@ class OnlineServices
 		GetServersResultRow result;
 		array<ref GetServersResultRow> results_free = new array<ref GetServersResultRow>;
 		
-		if( results && results.m_Result && results.m_Result.m_Results && results.m_Result.m_Results.Count() > 0 )
+		if ( results && results.m_Result && results.m_Result.m_Results && results.m_Result.m_Results.Count() > 0 )
 		{
-			foreach( GetServersResultRow result_temp : results.m_Result.m_Results )
+			foreach ( GetServersResultRow result_temp : results.m_Result.m_Results )
 			{
-				if( result_temp.m_FreeSlots > 0 )
+				if ( result_temp.m_FreeSlots > 0 )
 				{
 					results_free.Insert( result_temp );
 				}
@@ -700,7 +700,7 @@ class OnlineServices
 	{
 		#ifdef PLATFORM_XBOX
 		#ifndef PLATFORM_WINDOWS
-		if( m_TrialService )
+		if ( m_TrialService )
 			return m_TrialService.IsGameTrial( sim );
 		#endif
 		#endif
@@ -711,7 +711,7 @@ class OnlineServices
 	{
 		#ifdef PLATFORM_XBOX
 		#ifndef PLATFORM_WINDOWS
-		if( m_TrialService )
+		if ( m_TrialService )
 			return m_TrialService.IsGameActive( sim );
 		#endif
 		#endif

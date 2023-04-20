@@ -45,19 +45,6 @@ class PluginDiagMenuServer : PluginDiagMenu
 				}
 				break;
 			}
-			case ERPCs.DIAG_VEHICLE_DEBUG_OUTPUT:
-			{
-				if (ctx.Read(CachedObjectsParams.PARAM1_INT))
-					CarScript.DEBUG_OUTPUT_TYPE = CachedObjectsParams.PARAM1_INT.param1;
-				break;
-			}
-			
-			case ERPCs.DIAG_VEHICLES_DUMP_CRASH_DATA_REQUEST:
-			{
-				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
-					CrashDebugData.SendData(player);
-				break;
-			}	
 		}
 	}
 	

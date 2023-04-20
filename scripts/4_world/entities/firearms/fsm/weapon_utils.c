@@ -1,7 +1,7 @@
 bool pushToChamberFromAttachedMagazine(Weapon_Base weapon, int muzzleIndex)
 {
 	Magazine mag = weapon.GetMagazine(muzzleIndex);
-	if (mag)
+	if (mag && !mag.IsDamageDestroyed())
 	{
 		if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " chamberFromAttachedMagazine, using attached magazine mag=" + mag.ToString()); }
 		float damage;
@@ -24,7 +24,8 @@ bool pushToChamberFromAttachedMagazine(Weapon_Base weapon, int muzzleIndex)
 	}
 	else
 	{
-		Error("[wpnfsm] " + Object.GetDebugName(weapon) + " chamberFromAttachedMagazine, error - no magazine attached");
+		if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " chamberFromAttachedMagazine - magazine destroyer or no attached"); }
+		//Error("[wpnfsm] " + Object.GetDebugName(weapon) + " chamberFromAttachedMagazine, error - no magazine attached");
 	}
 	return false;
 }

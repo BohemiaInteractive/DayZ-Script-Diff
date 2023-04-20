@@ -1,1 +1,1 @@
-class PoliceVest extends Clothing {};
+class PoliceVest extends Vest_Base {};

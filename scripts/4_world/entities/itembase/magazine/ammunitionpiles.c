@@ -48,6 +48,20 @@ class Ammunition_Base: Magazine_Base
 		
 		return GetAmmoCount() * GetConfigWeightModified();
 	}
+	
+	override void SetQuantityToMinimum()
+	{
+		ServerSetAmmoCount(1);
+	}
+	
+	override void SetFromProjectile(ProjectileStoppedInfo info)
+	{
+		SetQuantityToMinimum();
+
+		float dmg = 1 - info.GetProjectileDamage();
+		SetCartridgeDamageAtIndex(0,dmg);
+		SetHealth01("","",dmg);
+	}
 };
 
 class Ammo_45ACP: Ammunition_Base {};
@@ -68,11 +82,50 @@ class Ammo_12gaSlug: Ammunition_Base {};
 class Ammo_357: Ammunition_Base {};
 class Ammo_545x39: Ammunition_Base {};
 class Ammo_545x39Tracer: Ammunition_Base {};
-class Ammo_ArrowComposite: Ammunition_Base {};
-class Ammo_SharpStick: Ammunition_Base {};
-class Ammo_ArrowPrimitive: Ammunition_Base {};
-class Ammo_ArrowBoned: Ammunition_Base {};
-class Ammo_ArrowBolt: Ammunition_Base {};
+class Bolt_Base: Ammunition_Base
+{
+	override bool IsInventoryVisible()
+	{
+		//! omitted super call is intended
+		return CanBeActionTarget();
+	}
+
+	override bool CanBeActionTarget()
+	{
+		if (super.CanBeActionTarget())
+		{
+			EntityAI parent = EntityAI.Cast(GetParent());
+			if (parent)
+			{
+				return !parent.IsManageArrows();
+			}
+		}
+		return true;
+	}
+	
+	override void EEParentedTo(EntityAI parent)
+	{
+		PlayerBase pOwner = PlayerBase.Cast(parent); 
+		if (pOwner)
+		{
+			ArrowManagerPlayer amp = pOwner.GetArrowManager();
+			amp.AddArrow(this);	
+		}
+	}
+	
+	/*override void EEParentedFrom(EntityAI parent)
+	{
+		PlayerBase pOwner = PlayerBase.Cast(parent); 
+		if (pOwner)
+		{
+			ArrowManagerPlayer amp = pOwner.GetArrowManager();
+			amp.RemoveArrow(this);	
+		}
+	}*/
+}
+class Ammo_HuntingBolt : Bolt_Base {}
+class Ammo_ImprovisedBolt_1 : Bolt_Base {}
+class Ammo_ImprovisedBolt_2 : Bolt_Base {}
 class Ammo_DartSyringe: Ammunition_Base {};
 class Ammo_Flare: Ammunition_Base {};
 class Ammo_RPG7_HE: Ammunition_Base {};

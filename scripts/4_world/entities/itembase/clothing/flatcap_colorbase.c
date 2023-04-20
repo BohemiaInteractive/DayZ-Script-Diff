@@ -1,4 +1,4 @@
-class FlatCap_ColorBase extends Clothing
+class FlatCap_ColorBase extends HeadGear_Base
 {
 	override void SetActions()
 	{

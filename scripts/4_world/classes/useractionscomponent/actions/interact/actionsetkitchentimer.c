@@ -37,14 +37,7 @@ class ActionSetKitchenTimer: ActionContinuousBase
 	{
 		return false;
 	}	
-	
-	override void OnStart(ActionData action_data)
-	{
-	}
-	
-	override void OnStartServer(ActionData action_data)
-	{
-	}
+
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{	

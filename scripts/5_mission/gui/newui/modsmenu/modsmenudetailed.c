@@ -37,7 +37,7 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 	
 	void Open()
 	{
-		if( !m_Root.IsVisible() )
+		if ( !m_Root.IsVisible() )
 			m_Scroll.VScrollToPos( 0 );
 		m_Root.Show( true );
 	}
@@ -65,14 +65,14 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 	
 	void Highlight( ModInfo mod_ref )
 	{
-		if( m_Highlighted )
+		if ( m_Highlighted )
 		{
 			m_Data.Get( m_Highlighted ).Deselect();
 			m_Content.Update();
 		}
 		
 		m_Highlighted = mod_ref;
-		if( m_Highlighted )
+		if ( m_Highlighted )
 		{
 			m_Data.Get( m_Highlighted ).Select();
 			m_Content.Update();
@@ -115,9 +115,9 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 	
 	void Select( ModInfo mod_ref, bool show )
 	{
-		if( mod_ref )
+		if ( mod_ref )
 		{
-			if( show )
+			if ( show )
 			{
 				m_Highlighted = mod_ref;
 				m_Data.Get( mod_ref ).Select();
@@ -125,7 +125,7 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 			else
 			{
 				m_Data.Get( mod_ref ).Deselect();
-				if( m_Highlighted == mod_ref )
+				if ( m_Highlighted == mod_ref )
 				{
 					m_Highlighted = null;
 				}
@@ -137,10 +137,10 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 	
 	void PrepareTooltip( ModInfo mod_ref )
 	{
-		if( m_Tooltip )
+		if ( m_Tooltip )
 		{
 			m_TooltipMod = mod_ref;
-			if( !m_TooltipTimer )
+			if ( !m_TooltipTimer )
 				m_TooltipTimer = new Timer(CALL_CATEGORY_GUI);
 			
 			m_TooltipTimer.Run( 1, this, "ShowTooltip" );
@@ -149,25 +149,25 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 	
 	void ShowTooltip()
 	{
-		if( m_Tooltip )
+		if ( m_Tooltip )
 			m_Tooltip.ShowTooltip( m_TooltipMod );
 	}
 	
 	void HideTooltip()
 	{
-		if( m_TooltipTimer )
+		if ( m_TooltipTimer )
 			m_TooltipTimer.Stop();
 		
 		m_TooltipMod = null;
-		if( m_Tooltip )
+		if ( m_Tooltip )
 			m_Tooltip.HideTooltip();
 	}
 
 	void LoadEntries( array<ref ModInfo> data )
 	{
-		foreach(ModInfo var : data)
+		foreach (ModInfo var : data)
 		{
-			ref ModsMenuDetailedEntry entry = new ModsMenuDetailedEntry(var, m_Content, this);
+			ModsMenuDetailedEntry entry = new ModsMenuDetailedEntry(var, m_Content, this);
 			m_Data.Insert(var, entry);
 		}
 		
@@ -175,7 +175,7 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 		float y_c = m_Scroll.GetContentHeight();
 		float x, y;
 		m_Content.GetScreenSize( x, y );
-		if( y > y_c )
+		if ( y > y_c )
 		{
 			m_Scroll.SetAlpha( 1 );
 		}
@@ -183,7 +183,7 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 	
 	override bool OnMouseButtonUp(Widget w, int x, int y, int button)
 	{
-		if( w == m_CloseButton )
+		if ( w == m_CloseButton )
 		{
 			Close();
 			return true;

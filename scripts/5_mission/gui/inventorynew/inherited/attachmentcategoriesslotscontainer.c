@@ -104,11 +104,6 @@ class AttachmentCategoriesSlotsContainer: Container
 		return false;
 	}
 	
-	override bool CanEquip()
-	{
-		return false;
-	}
-	
 	override bool CanCombine()
 	{
 		return false;

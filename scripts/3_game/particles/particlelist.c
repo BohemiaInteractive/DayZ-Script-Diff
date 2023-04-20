@@ -301,7 +301,9 @@ class ParticleList
 	static const int WATER_JET						= RegisterParticle("water_jet");
 	static const int WATER_JET_WEAK					= RegisterParticle("water_jet_weak");
 	static const int WATER_SPILLING					= RegisterParticle("water_spilling");
-
+	
+	// Drowning bubbles
+	static const int DROWNING_BUBBLES				= RegisterParticle("breath_bubbles");
 	
 	static int RegisterParticle(string file_name)
 	{

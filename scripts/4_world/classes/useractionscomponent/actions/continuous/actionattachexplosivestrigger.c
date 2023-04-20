@@ -110,8 +110,7 @@ class ActionAttachExplosivesTrigger : ActionContinuousBase
 		{
 			if (explosive)
 			{
-				explosive.PairRemote(trigger);
- 				trigger.SetControlledDevice(explosive);
+				explosive.PairWithDevice(trigger);
 				explosive.Arm();
 			}
 		}
@@ -135,6 +134,7 @@ class ActionAttachExplosivesTrigger : ActionContinuousBase
 			ItemBase receiver = ItemBase.Cast(explosive.GetInventory().CreateAttachment("RemoteDetonatorReceiver"));
 			if (receiver)
 			{
+				MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem, receiver);
 				receiver.LockToParent();
 				RemoteDetonatorTrigger.SpawnInPlayerHands(action_data.m_Player);
 			}

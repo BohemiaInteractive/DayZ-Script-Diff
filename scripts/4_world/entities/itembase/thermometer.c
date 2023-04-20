@@ -2,9 +2,8 @@ class Thermometer extends ItemBase
 {
 	float GetTemperatureValue(PlayerBase player)
 	{
-		string temp;
 		float value;
-		if( player.GetModifiersManager() && player.GetModifiersManager().IsModifierActive(eModifiers.MDF_FEVER) )
+		if (player && player.IsSyncedModifierActive(eModifierSyncIDs.MODIFIER_SYNC_FEVER))
 		{
 			value = Math.RandomFloatInclusive(PlayerConstants.HIGH_TEMPERATURE_L, PlayerConstants.HIGH_TEMPERATURE_H);
 		}
@@ -14,8 +13,6 @@ class Thermometer extends ItemBase
 		}
 		value = Math.Round(value * 10) / 10;
 		return value;
-		//temp = value.ToString();
-		//return temp + "C";
 	}
 	
 	override void SetActions()

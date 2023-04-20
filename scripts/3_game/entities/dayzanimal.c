@@ -46,6 +46,12 @@ class DayZCreature extends EntityAI
 	proto native bool IsDeathProcessed();
 	proto native bool IsDeathConditionMet();
 	
+	//---------------------------------------------------------
+	// bone transforms 
+
+	//! returns bone index for a name (-1 if pBoneName doesn't exist)
+	proto native 	int 		GetBoneIndexByName(string pBoneName);
+	
 	override bool IsDayZCreature()
 	{
 		return true;
@@ -60,6 +66,43 @@ class DayZCreature extends EntityAI
 	{
 		return IsRuined();
 	}
+	
+	override bool IsManageArrows()
+	{
+		return true;
+	}	
+	
+	override void AddArrow(Object arrow, int componentIndex)
+	{
+		CachedObjectsArrays.ARRAY_STRING.Clear();
+		GetActionComponentNameList(componentIndex, CachedObjectsArrays.ARRAY_STRING, "fire");
+		
+		int pivot = -1;
+		
+		
+		for (int i = 0; i < CachedObjectsArrays.ARRAY_STRING.Count() && pivot == -1; i++)
+		{
+			pivot = GetBoneIndexByName(CachedObjectsArrays.ARRAY_STRING.Get(i));
+		}
+		
+		vector parentTransMat[4];
+		vector arrowTransMat[4];
+		
+		if (pivot == -1)
+		{
+			GetTransform(parentTransMat);
+		}
+		else
+		{
+			GetBoneTransformWS(pivot, parentTransMat);
+		}
+		
+		arrow.GetTransform(arrowTransMat);
+		Math3D.MatrixInvMultiply4(parentTransMat, arrowTransMat, arrowTransMat);
+		arrow.SetTransform(arrowTransMat);
+		
+		AddChild(arrow, pivot);
+	} 
 }
 
 class DayZCreatureAI extends DayZCreature 
@@ -556,8 +599,6 @@ class DayZAnimal extends DayZCreatureAI
 			{
 				StartCommand_Death(0, 0);
 			}
-			
-			dBodySetInteractionLayer(this, PhxInteractionLayers.RAGDOLL);
 	
 			return true;
 		}

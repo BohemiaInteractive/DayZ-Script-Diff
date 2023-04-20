@@ -5,7 +5,7 @@ class ActionWringClothesCB : ActionContinuousBaseCB
 	override void CreateActionComponent()
 	{
 		//m_ActionData.m_ActionComponent = new CAContinuousWringClothes(QUANTITY_WRINGLED_PER_SECOND, UATimeSpent.WASH_HANDS);
-		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.WASH_HANDS);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.WRING);
 	}
 };
 

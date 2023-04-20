@@ -106,7 +106,7 @@ class BiosPrivacyService
 	*/
 	void OnPrivilege(EBiosPrivacyPrivilege privilege, EBiosError error)
 	{
-		switch( privilege )
+		switch ( privilege )
 		{
 			case EBiosPrivacyPrivilege.MULTIPLAYER_GAMEPLAY:
 			{

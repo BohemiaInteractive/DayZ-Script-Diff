@@ -6,6 +6,7 @@ enum NotificationType
 	INVITE_FAIL_SAME_SERVER,
 	JOIN_FAIL_GET_SESSION,
 	CONNECT_FAIL_GENERIC,
+	DISCONNECTED,
 	//Please add types before this item
 	NOTIFICATIONS_END
 }

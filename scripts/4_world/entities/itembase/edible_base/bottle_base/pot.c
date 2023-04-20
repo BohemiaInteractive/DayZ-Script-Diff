@@ -1,14 +1,7 @@
 class Pot extends Bottle_Base
 {
-	void Pot()
-	{
-
-	}
-	
-	void ~Pot()
-	{
-
-	}
+	void Pot();
+	void ~Pot();
 	
 	override bool IsContainer()
 	{
@@ -50,12 +43,12 @@ class Pot extends Bottle_Base
 		return "pour_End_Water_Pot_SoundSet";
 	}
 	
-	override bool CanPutInCargo( EntityAI parent )
+	override bool CanPutInCargo(EntityAI parent)
 	{
-		if ( !super.CanPutInCargo( parent ) )
+		if (!super.CanPutInCargo(parent))
 			return false;
 		
-		if ( parent && IsCargoException4x3( parent ) )
+		if (parent && IsCargoException4x3(parent))
 			return false;
 		
 		return true;
@@ -63,10 +56,10 @@ class Pot extends Bottle_Base
 	
 	override bool CanReceiveItemIntoCargo(EntityAI item)
 	{
-		if ( !super.CanReceiveItemIntoCargo( item ) )
+		if (!super.CanReceiveItemIntoCargo(item))
 			return false;
 
-		if ( IsCargoException4x3( item ) )
+		if (IsCargoException4x3(item))
 			return false;
 
 		return true;
@@ -74,28 +67,14 @@ class Pot extends Bottle_Base
 	
 	override bool CanLoadItemIntoCargo(EntityAI item)
 	{
-		if ( !super.CanLoadItemIntoCargo( item ) )
+		if (!super.CanLoadItemIntoCargo(item))
 			return false;
 
-		if ( IsCargoException4x3( item ) )
+		if (IsCargoException4x3(item))
 			return false;
 
 		return true;
 	}
-	
-	/*override void EECargoIn(EntityAI item)
-	{
-		super.EECargoIn(item);
-
-		if (GetGame().IsServer())
-		{
-			//! when the pot contains some liquid set the wetness of item to max
-			if (GetQuantity() > 0 && GetLiquidType() >= LIQUID_WATER)
-			{
-				SoakItem(item);
-			}
-		}
-	}*/
 	
 	override bool IsOpen()
 	{
@@ -113,14 +92,8 @@ class Pot extends Bottle_Base
 		
 		RemoveAction(ActionDrink);
 		RemoveAction(ActionEmptyBottleBase);
+
 		AddAction(ActionDrinkCookingPot);
-		AddAction(ActionFillBottleBase);
-		AddAction(ActionWaterGardenSlot);
-		AddAction(ActionWaterPlant);
-		AddAction(ActionForceDrink);
-		AddAction(ActionDrainLiquid);
-		AddAction(ActionPourLiquid);
-		//AddAction(ActionTransferLiquid);
 		AddAction(ActionEmptyCookingPot);
 	}
 }

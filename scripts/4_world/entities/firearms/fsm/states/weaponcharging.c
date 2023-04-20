@@ -334,3 +334,37 @@ class WeaponChargingMultiple extends WeaponStateBase
 	}
 };
 
+/**@class 	WeaponCharging
+ * @brief	charging of weapon without ammo to be chambered
+ */
+class WeaponChargingStretch extends WeaponStateBase
+{
+	WeaponActions m_action;
+	int m_actionType;
+
+	ref WeaponCharging_Start m_start;
+	ref WeaponCharging_CK m_onCK;
+
+	void WeaponChargingStretch (Weapon_Base w = NULL, WeaponStateBase parent = NULL, WeaponActions action = WeaponActions.NONE, int actionType = -1)
+	{
+		m_action = action;
+		m_actionType = actionType;
+
+		// setup nested state machine
+		m_start = new WeaponCharging_Start(m_weapon, this, m_action, m_actionType);
+		m_onCK = new WeaponCharging_CK(m_weapon, this);
+
+		// events
+		WeaponEventBase __ck_ = new WeaponEventAnimCocked;
+		WeaponEventBase _fin_ = new WeaponEventHumanCommandActionFinished;
+
+		m_fsm = new WeaponFSM(this); // @NOTE: set owner of the submachine fsm
+		// transitions
+		m_fsm.AddTransition(new WeaponTransition(  m_start, _fin_, NULL ));
+		m_fsm.AddTransition(new WeaponTransition(  m_start, __ck_, m_onCK)); // some anims do not send BE event
+		m_fsm.AddTransition(new WeaponTransition(   m_onCK, _fin_, NULL));
+
+		m_fsm.SetInitialState(m_start);
+	}
+};
+

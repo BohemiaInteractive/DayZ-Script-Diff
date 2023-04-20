@@ -29,28 +29,9 @@ class ActionMeasureTemperatureTarget : ActionContinuousBase
 		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
 		Thermometer thermometer = Thermometer.Cast(action_data.m_MainItem);
 
-		if(thermometer)
+		if (thermometer)
 		{
 			ntarget.SetLastUAMessage("" + thermometer.GetTemperatureValue(ntarget).ToString() + "#degrees_celsius");
-		}
-	}
-
-	override void OnFinishProgressServer( ActionData action_data )
-	{
-		if (!GetGame().IsMultiplayer())
-		{
-			OnFinishProgressClient(action_data);
-			return;
-		}
-			
-		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
-		Thermometer thermometer = Thermometer.Cast(action_data.m_MainItem);
-		
-		if(thermometer)
-		{
-			ScriptRPC rpc = new ScriptRPC();
-			rpc.Write(thermometer.GetTemperatureValue(ntarget));
-			rpc.Send(ntarget, ERPCs.RPC_SYNC_THERMOMETER, true, ntarget.GetIdentity() );
 		}
 	}
 };

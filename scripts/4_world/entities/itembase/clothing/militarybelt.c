@@ -1,4 +1,4 @@
-class MilitaryBelt: Clothing
+class MilitaryBelt: Belt_Base
 {
 	override bool CanPutInCargo( EntityAI parent )
 	{

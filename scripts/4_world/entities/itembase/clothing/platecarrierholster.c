@@ -1,1 +1,1 @@
-class PlateCarrierHolster extends Clothing {};
+class PlateCarrierHolster extends Vest_Base {};

@@ -49,13 +49,10 @@ class InventoryItemType
 
 	AnimSoundEvent GetSoundEvent(int event_id)
 	{
-		for (int i = 0; i < m_animSoundEvents.Count(); i++)
+		foreach (AnimSoundEvent soundEvent : m_animSoundEvents)
 		{
-			AnimSoundEvent soundEvent = m_animSoundEvents.Get(i);
 			if (soundEvent.m_iID == event_id)
-			{
 				return soundEvent;
-			}
 		}
 
 		return null;

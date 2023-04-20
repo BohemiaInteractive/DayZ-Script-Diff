@@ -91,12 +91,12 @@ class RBF_JAM_BU1_MA1 extends WeaponStateJammed
  **/
 class RifleBoltFree_Base extends Rifle_Base
 {
-	ref WeaponStateBase C00;
-	ref	WeaponStateBase C10;
-	ref	WeaponStateBase C11;
-	ref	WeaponStateBase C01;
-	ref	WeaponStateBase JF0;
-	ref	WeaponStateBase JF1;
+	ref WeaponStableState C00;
+	ref	WeaponStableState C10;
+	ref	WeaponStableState C11;
+	ref	WeaponStableState C01;
+	ref	WeaponStableState JF0;
+	ref	WeaponStableState JF1;
 
 	void RifleBoltFree_Base ()
 	{
@@ -347,7 +347,7 @@ class RifleBoltFree_Base extends Rifle_Base
 		m_fsm.AddTransition(new WeaponTransition(  Unjam_JF1,		_fin_,	C11));
 		m_fsm.AddTransition(new WeaponTransition(  Unjam_JF1,		_abt_,	JF1));
 
-		m_fsm.SetInitialState(C00);
+		SetInitialState(C00);
 
 		SelectionBulletHide();
 		HideMagazine();

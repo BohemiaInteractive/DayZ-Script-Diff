@@ -14,18 +14,7 @@ class DrowningMdfr: ModifierBase
 
 	bool CheckIsDrowning(PlayerBase player)
 	{
-		int index = player.GetBoneIndexByName("head");
-		vector pos = player.GetBonePositionWS(index);
-		float depth = g_Game.GetWaterDepth(pos);
-		if (player.IsSwimming())
-		{
-			return depth > PlayerConstants.DROWNING_SWIMMING_THRESHOLD;
-		}
-		else if (player.IsUnconscious())
-		{
-			return depth > PlayerConstants.DROWNING_UNCONSCIOUS_THRESHOLD;
-		}
-		return depth > PlayerConstants.DROWNING_DEFAULT_THRESHOLD;
+		return player.GetDrowningWaterLevelCheck();
 	}
 	
 	override bool ActivateCondition(PlayerBase player)

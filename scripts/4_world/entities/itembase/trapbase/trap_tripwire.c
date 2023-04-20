@@ -107,11 +107,12 @@ class TripwireTrap : TrapBase
 	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner)
 	{
 		super.OnItemLocationChanged(old_owner, new_owner);
-		
-		PlayerBase player = PlayerBase.Cast( new_owner );
+
+		PlayerBase player = PlayerBase.Cast(new_owner);
 		if (player)
 		{
 			StartDeactivate(player);
+			return;
 		}
 	}
 	
@@ -129,6 +130,28 @@ class TripwireTrap : TrapBase
 			}
 			
 			m_ResultOfAdvancedPlacing = false;
+		}
+		
+		if (oldLoc.GetType() == InventoryLocationType.GROUND && newLoc.GetType() == InventoryLocationType.CARGO)
+		{
+			SetInactive();
+			DeleteTrigger();
+			SetState(FOLDED);
+			RefreshState();
+		}
+	}
+	
+	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
+	{
+		super.EEHealthLevelChanged(oldLevel, newLevel, zone);
+
+		if (GetGame().IsServer())
+		{
+			if (newLevel == GameConstants.STATE_RUINED)
+			{
+				SetState(TRIGGERED);
+				RefreshState();
+			}
 		}
 	}
 	
@@ -352,7 +375,7 @@ class TripwireTrap : TrapBase
 	// Tripwire cannot be taken if deployed with attachment
 	override bool IsTakeable()
 	{
-		return !IsRuined() && (GetState() != DEPLOYED || (GetInventory().AttachmentCount() == 0 && GetState() == DEPLOYED));
+		return GetState() != DEPLOYED || (GetInventory().AttachmentCount() == 0 && GetState() == DEPLOYED);
 	}
 	
 	override string GetDeploySoundset()

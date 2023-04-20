@@ -59,7 +59,7 @@ class ActionFillBottleBase: ActionContinuousBase
 
 		CCTWaterSurface waterCheck = new CCTWaterSurface(UAMaxDistances.DEFAULT, ALLOWED_WATER_SURFACES);
 		if (waterCheck.Can(player, target))
-			return GetLiquidType(player, target, item);
+			return GetLiquidType(player,target,item) != -1;
 
 		return false;
 	}

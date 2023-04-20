@@ -2,7 +2,7 @@
  *  Game Class provide most "world" or global engine API functions.
  */
 
-static int GAME_STORAGE_VERSION = 130;
+static int GAME_STORAGE_VERSION = 134;
 
 class CGame
 {
@@ -652,6 +652,8 @@ class CGame
 	*/
 	proto native bool		PreloadObject( string type, float distance );
 
+	proto native Object		CreateStaticObjectUsingP3D(string p3dFilename, vector position, vector orientation, float scale = 1.0, bool createLocal = false);
+	
 	/**
 	\brief Creates object of certain type
 	@param type of objects to create
@@ -807,12 +809,22 @@ class CGame
 	proto native UIManager	GetUIManager();
 	proto native DayZPlayer		GetPlayer();
 	proto native void		GetPlayers( out array<Man> players );
+	DayZPlayer GetPlayerByIndex(int index = 0)
+	{
+		array<Man> players();
+		GetPlayers(players);
+		if (index >= players.Count())
+			return null;
+		return DayZPlayer.Cast(players[index]);
+	}
 	
 	//! Stores login userdata as parameters which are sent to server	
 	proto native void		StoreLoginData(ParamsWriteContext ctx);
 	
 	//! Returns the direction where the mouse points, from the camera view
 	proto native vector		GetPointerDirection();
+	//! Transforms position in world to position in screen in pixels as x, y component of vector, z parameter represents distance between camera and world_pos
+	proto native vector		GetWorldDirectionFromScreen(vector world_pos);
 	//! Transforms position in world to position in screen in pixels as x, y component of vector, z parameter represents distance between camera and world_pos
 	proto native vector		GetScreenPos(vector world_pos);
 	//! Transforms position in world to position in screen in percentage (0.0 - 1.0) as x, y component of vector, z parameter represents distance between camera and world_pos
@@ -988,7 +1000,7 @@ class CGame
 	//! Server config parsing. Returns 0 if not found.
 	proto native int		ServerConfigGetInt(string name);
 	
-	// Interny build
+	// Internal build
 	proto native bool		IsDebug();
 	
 //#ifdef PLATFORM_XBOX
@@ -1334,6 +1346,8 @@ class CGame
 	ScriptCallQueue GetCallQueue(int call_category) {}
 
 	ScriptInvoker GetUpdateQueue(int call_category) {}
+
+	ScriptInvoker GetPostUpdateQueue(int call_category) {}
 	/**
   Returns TimerQueue for certain category
   @param call_category call category, valid values are:

@@ -195,8 +195,6 @@ class VicinityItemManager
 	void RefreshVicinityItems()
 	{
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-		if (player.GetActionManager() && player.GetActionManager().GetRunningAction())
-			return;
 		
 		array<Object> objectsInVicinity 	= new array<Object>();
 		array<CargoBase> proxyCargos 		= new array<CargoBase>();

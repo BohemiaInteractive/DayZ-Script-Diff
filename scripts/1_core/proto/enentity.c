@@ -288,6 +288,21 @@ class IEntity: Managed
 	proto external void GetTransform(out vector mat[]);
 
 	/**
+	\brief Returns render transformation of Entity. Must pass in vector array size of 4
+		\param mat \p vector[4] matrix to be get
+		@code
+			Man player = g_Game.GetPlayer();
+	
+			vector mat[4];
+			player.GetRenderTransform(mat);
+			Print( mat );
+	
+			>> <0.989879,-0,0.141916>,<0,1,0>,<-0.141916,0,0.989879>,<2545.08,15.6754,2867.49>
+		@endcode
+	*/
+	proto external void GetRenderTransform(out vector mat[]);
+
+	/**
 	\brief Returns local transformation of Entity. It returns only so much vectors as array is big
 		\param mat \p vector[1...4] matrix to be get
 		@code
@@ -546,6 +561,9 @@ class IEntity: Managed
 	
 	//! Returns if the hierarchy component was created with positionOnly
 	proto native bool IsHierarchyPositionOnly();
+
+	//! Returns the hierarchy component pivot
+	proto native int GetHierarchyPivot();
 
 	//! Returns pointer to parent Entity in hierarchy
 	proto native IEntity GetParent();

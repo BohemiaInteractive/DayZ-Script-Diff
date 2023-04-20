@@ -1,4 +1,4 @@
-class SmershVest extends Clothing
+class SmershVest extends Vest_Base
 {
 	override void EEItemAttached(EntityAI item, string slot_name)
 	{

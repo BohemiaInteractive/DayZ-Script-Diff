@@ -337,7 +337,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		
 		widget = m_Root.FindAnyWidget(itemWidget);
 		
-		if (entity && !m_Player.GetItemAccessor().IsItemInHandsHidden())
+		if (entity && m_Player && !m_Player.GetItemAccessor().IsItemInHandsHidden())
 		{
 			descText.ToUpper();
 			TextWidget itemName;
@@ -550,7 +550,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		
 		widget = m_Root.FindAnyWidget(itemWidget);
 
-		if (enabled)
+		if (enabled && m_Player)
 		{
 			TextWidget txtModeWidget;
 			TextWidget txtZeroingWidget;
@@ -602,7 +602,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 	{
 		Widget widget = m_Root.FindAnyWidget(actionWidget);
 
-		if (action && (!action.HasTarget() || m_Player.GetCommand_Vehicle()))
+		if (action && (!action.HasTarget() || (m_Player && m_Player.GetCommand_Vehicle())))
 		{
 			TextWidget actionName;
 			Class.CastTo(actionName, widget.FindAnyWidget(descWidget));

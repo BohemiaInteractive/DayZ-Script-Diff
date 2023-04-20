@@ -234,33 +234,6 @@ class HandsContainer: Container
 		return false;
 	}
 	
-	override bool CanEquip()
-	{
-		if (m_ActiveIndex == 0)
-		{
-			EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
-			if ( item_in_hands.IsInherited( Magazine ) || GetGame().GetPlayer().GetInventory().HasInventoryReservation(item_in_hands, null)  )
-			{
-				return false;
-			}
-			InventoryLocation il = new InventoryLocation;
-			bool found = GetGame().GetPlayer().GetInventory().FindFreeLocationFor(item_in_hands,FindInventoryLocationType.ATTACHMENT,il);
-			if (found)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else if( GetFocusedContainer() )
-		{
-			return GetFocusedContainer().CanEquip();
-		}
-		return false;
-	}
-	
 	override bool SplitItem()
 	{
 		if (m_ActiveIndex == 0)
@@ -765,7 +738,7 @@ class HandsContainer: Container
 	{
 		if ( entity1 && entity2 ) PrintString( "Showing action menu for " + entity1.GetDisplayName() + " and " + entity2.GetDisplayName() );
 
-		ContextMenu cmenu = GetGame().GetUIManager().GetMenu().GetContextMenu();
+		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
 		m_am_entity1 = entity1;
 		m_am_entity2 = entity2;
 		cmenu.Hide();

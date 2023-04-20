@@ -1,4 +1,4 @@
-class DenimJacket extends Clothing
+class DenimJacket extends Top_Base
 {
 	override void SetActions()
 	{

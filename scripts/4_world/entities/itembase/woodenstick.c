@@ -1,4 +1,4 @@
-class WoodenStick extends ItemBase
+class WoodenStick : ItemBase
 {
 	override void SetActions()
 	{
@@ -9,6 +9,5 @@ class WoodenStick extends ItemBase
 		AddAction(ActionAttach);
 		AddAction(ActionDetach);
 		AddAction(ActionAttachToConstruction);
-		
 	}
 }

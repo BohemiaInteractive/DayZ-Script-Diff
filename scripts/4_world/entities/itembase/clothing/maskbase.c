@@ -1,4 +1,5 @@
-class MaskBase extends Clothing
+//! gas mask base
+class MaskBase extends Mask_Base
 {
 	float m_LowFilterEventTime;
 	
@@ -21,12 +22,6 @@ class MaskBase extends Clothing
 	{
 		GetInventory().CreateInInventory("GasMask_Filter");
 	}
-	
-	override void EEItemAttached(EntityAI item, string slot_name)
-	{
-		super.EEItemAttached(item, slot_name);
-	}
-	
 	
 	EntityAI GetExternalFilter()
 	{
@@ -134,5 +129,15 @@ class MaskBase extends Clothing
 	{
 		float damage = quantity * filter.GetFilterDamageRatio();
 		filter.AddHealth("","", -damage);
+	}
+	
+	override protected void InitGlobalExclusionValues()
+	{
+		super.InitGlobalExclusionValues();
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_2);
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_TIGHT_0);
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADGEAR_HELMET_0);
 	}
 }

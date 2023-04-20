@@ -158,4 +158,26 @@ class Clothing extends Clothing_Base
 	}
 };
 
+  //////////////////////
+ //intermediate types//
+//////////////////////
+class Belt_Base : Clothing {};
+class Backpack_Base : Clothing {};
+class Glasses_Base : Clothing
+{
+	override protected void InitGlobalExclusionValues()
+	{
+		super.InitGlobalExclusionValues();
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_REGULAR_0);
+	}
+};
+class Gloves_Base : Clothing {};
+class HeadGear_Base : Clothing {};
+class Mask_Base : Clothing {};
+class Pants_Base : Clothing {};
+class Shoes_Base : Clothing {};
+class Top_Base : Clothing {};
+class Vest_Base : Clothing {};
+
 typedef Clothing ClothingBase;

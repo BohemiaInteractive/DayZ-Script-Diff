@@ -35,7 +35,7 @@ class ActionTakeItemToHands: ActionInteractBase
 			return false;
 		
 		EntityAI targetParent = EntityAI.Cast(targetItem.GetHierarchyParent());
-		if (!targetItem.IsTakeable() || targetItem.IsBeingPlaced() || ( targetItem.GetHierarchyParent() && !BaseBuildingBase.Cast(targetParent) ) || ((targetParent && !targetItem.CanDetachAttachment(targetParent)) || (targetParent && !targetParent.CanReleaseAttachment(targetItem))))
+		if (!targetItem.IsTakeable() || targetItem.IsBeingPlaced() || targetItem.IsSetForDeletion() || ( targetItem.GetHierarchyParent() && !BaseBuildingBase.Cast(targetParent) ) || ((targetParent && !targetItem.CanDetachAttachment(targetParent)) || (targetParent && !targetParent.CanReleaseAttachment(targetItem))))
 			return false;
 		
 		return player.GetInventory().CanAddEntityIntoHands(targetItem);

@@ -19,3 +19,14 @@ class DirtBikeHelmet_Police extends DirtBikeHelmet_ColorBase {};
 class DirtBikeHelmet_Red extends DirtBikeHelmet_ColorBase {};
 class DirtBikeHelmet_Black extends DirtBikeHelmet_ColorBase {};
 class DirtBikeHelmet_Blue extends DirtBikeHelmet_ColorBase {};
+
+class DirtBikeHelmet_Visor : ClothingBase {};
+class DirtBikeHelmet_Mouthguard : ClothingBase
+{
+	override protected void InitGlobalExclusionValues()
+	{
+		super.InitGlobalExclusionValues();
+		
+		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_2);
+	}
+};

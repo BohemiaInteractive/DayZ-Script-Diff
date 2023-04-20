@@ -29,6 +29,7 @@ class DayZPlayerSyncJunctures
 	static const int SJ_STAMINA							= 23;
 	static const int SJ_STAMINA_MISC					= 24;
 	static const int SJ_ADS_RESET						= 25;
+	static const int SJ_INVENTORY_FAILURE				= 26;
 	#ifdef DEVELOPER
 	static const int SJ_DEBUG_GET_IN_CAR				= 200;
 	#endif

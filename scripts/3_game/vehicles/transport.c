@@ -90,40 +90,66 @@ class Transport extends EntityAI
 	
 	int GetAnimInstance()
 	{
+#ifndef CFGMODS_DEFINE_TEST
 		Error("GetAnimInstance() not implemented");
 		return 0;
+#else
+		return 2;
+#endif
 	}
 
 	int GetSeatAnimationType( int posIdx )
 	{
+#ifndef CFGMODS_DEFINE_TEST
 		Error("GetSeatAnimationType() not implemented");
+#endif
 		return 0;
 	}
 
 	int Get3rdPersonCameraType()
 	{
+#ifndef CFGMODS_DEFINE_TEST
 		Error("Get3rdPersonCameraType() not implemented");
 		return 0;
+#else
+		return 31;
+#endif
 	}
 	
 	bool CrewCanGetThrough( int posIdx )
 	{
+#ifndef CFGMODS_DEFINE_TEST
 		return false;
+#else
+		return true;
+#endif
 	}
 	
 	bool CanReachSeatFromSeat( int currentSeat, int nextSeat )
 	{
+#ifndef CFGMODS_DEFINE_TEST
 		return false;
+#else
+		return true;
+#endif
 	}
 	
 	bool CanReachSeatFromDoors( string pSeatSelection, vector pFromPos, float pDistance = 1.0 )
 	{
-		return false;		
+#ifndef CFGMODS_DEFINE_TEST
+		return false;
+#else
+		return true;
+#endif	
 	}
 
 	bool CanReachDoorsFromSeat( string pDoorsSelection, int pCurrentSeat )
 	{
+#ifndef CFGMODS_DEFINE_TEST
 		return false;
+#else
+		return true;
+#endif
 	}
 	
 	int GetSeatIndexFromDoor( string pDoorSelection )

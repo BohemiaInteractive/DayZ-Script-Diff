@@ -1,4 +1,4 @@
-class PilotkaCap extends Clothing
+class PilotkaCap extends HeadGear_Base
 {
 	override void SetActions()
 	{

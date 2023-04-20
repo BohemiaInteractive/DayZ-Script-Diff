@@ -21,7 +21,6 @@ class TentBase extends ItemBase
 	static const int PITCHED 	= 1;
 	const float MAX_PLACEMENT_HEIGHT_DIFF = 1.5;
 	
-	//bool m_DamageSystemStarted = false;
 	protected int m_State;
 	protected int m_StateLocal = -1;
 	protected bool m_IsEntrance;
@@ -60,12 +59,12 @@ class TentBase extends ItemBase
 	
 	void ~TentBase()
 	{
-		if ( GetGame() )
+		if (GetGame())
 		{
 			DestroyClutterCutter();
 		}
 		
-		SEffectManager.DestroyEffect( m_DeployLoopSound );
+		SEffectManager.DestroyEffect(m_DeployLoopSound);
 	}
 	
 	override string GetInvulnerabilityTypeString()
@@ -93,37 +92,36 @@ class TentBase extends ItemBase
 		return EMeleeTargetType.NONALIGNABLE;
 	}
 	
-	override void OnStoreSave( ParamsWriteContext ctx )
+	override void OnStoreSave(ParamsWriteContext ctx)
 	{   
-		super.OnStoreSave( ctx );
+		super.OnStoreSave(ctx);
 		
-		ctx.Write( m_State );
-		ctx.Write( m_OpeningMask );
+		ctx.Write(m_State);
+		ctx.Write(m_OpeningMask);
 	}
 	
-	override bool OnStoreLoad( ParamsReadContext ctx, int version )
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
-		//Print("+-+OnStoreLoad");
-		if ( !super.OnStoreLoad( ctx, version ) )
+		if (!super.OnStoreLoad(ctx, version))
 			return false;
 		
-		ctx.Read( m_State );
+		ctx.Read(m_State);
 		if (version >= 110)
 		{
-			if (!ctx.Read( m_OpeningMask ))
+			if (!ctx.Read(m_OpeningMask))
 				Print("ERROR: no opening mask found! Default openinng settings initialized.");
 		}
 		
-		if ( m_State == PITCHED )
+		if (m_State == PITCHED)
 		{
-			Pitch( true );
+			TryPitch(true);
 						
-			if ( GetGame().IsServer() )
+			if (GetGame().IsServer())
 			{
-				if ( !m_ClutterCutter && HasClutterCutter() )
+				if (!m_ClutterCutter && HasClutterCutter())
 				{		
-					m_ClutterCutter = GetGame().CreateObjectEx( GetClutterCutter(), GetPosition(), ECE_PLACE_ON_SURFACE );
-					m_ClutterCutter.SetOrientation( GetOrientation() );
+					m_ClutterCutter = GetGame().CreateObjectEx(GetClutterCutter(), GetPosition(), ECE_PLACE_ON_SURFACE);
+					m_ClutterCutter.SetOrientation(GetOrientation());
 				}
 				
 				RefreshAttachements();
@@ -131,7 +129,7 @@ class TentBase extends ItemBase
 		}
 		else
 		{
-			Pack( true );
+			Pack(true);
 		}
 		
 		return true;
@@ -141,13 +139,13 @@ class TentBase extends ItemBase
 	{
 		super.RefreshPhysics();
 		
-		if ( m_State == PITCHED )
+		if (m_State == PITCHED)
 		{
-			Pitch( false, true );
+			TryPitch(false, true);
 		}
 		else
 		{
-			Pack( false, true );
+			Pack(false, true);
 		}
 	}
 	
@@ -155,10 +153,10 @@ class TentBase extends ItemBase
 	{
 		super.OnItemLocationChanged(old_owner, new_owner);
 		
-		if ( new_owner || old_owner )
+		if (new_owner || old_owner)
 		{
 			if (GetInventory().CountInventory() == 1) // refuse to pack tent with anything inside
-				Pack( false );
+				Pack(false);
 		}
 	}
 	
@@ -166,17 +164,17 @@ class TentBase extends ItemBase
 	{
 		super.OnVariablesSynchronized();
 		
-		if ( IsDeploySound() )
+		if (IsDeploySound())
 		{
 			PlayDeploySound();
 		}
 		else
 		{
-			if ( m_State == PITCHED )
+			if (m_State == PITCHED)
 			{
-				if ( IsManipulatedEntrance() && IsSoundSynchRemote() )
+				if (IsManipulatedEntrance() && IsSoundSynchRemote())
 				{
-					if ( m_IsToggle )
+					if (m_IsToggle)
 					{
 						SoundTentOpenPlay();
 					}
@@ -185,9 +183,9 @@ class TentBase extends ItemBase
 						SoundTentClosePlay();
 					}
 				}
-				else if ( IsManipulatedWindow() && IsSoundSynchRemote() )
+				else if (IsManipulatedWindow() && IsSoundSynchRemote())
 				{
-					if ( m_IsToggle )
+					if (m_IsToggle)
 					{
 						SoundTentOpenWindowPlay();
 					}
@@ -199,35 +197,32 @@ class TentBase extends ItemBase
 			}
 		}
 		
-		if ( CanPlayDeployLoopSound() )
+		if (CanPlayDeployLoopSound())
 		{
 			PlayDeployLoopSound();
 		}
 		
-		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
+		if (m_DeployLoopSound && !CanPlayDeployLoopSound())
 		{
 			StopDeployLoopSound();
 		}
 		
-		if ( m_State != m_StateLocal )
+		if (m_State != m_StateLocal)
 		{
 			if (m_State == PACKED)
-				Pack( false );
+				Pack(false);
 			else
-				Pitch( false );
+				TryPitch(false);
 			
 			m_StateLocal = m_State;
 		}
 		
-		if ( (m_OpeningMaskLocal != m_OpeningMask) ) //opening synchronization for physics recalculation
+		if ((m_OpeningMaskLocal != m_OpeningMask)) //opening synchronization for physics recalculation
 		{
-			//if (m_DamageSystemStarted)
-			{
-				HandleOpeningsPhysics();
-				m_OpeningMaskLocal = m_OpeningMask;
-			}
+			HandleOpeningsPhysics();
+			m_OpeningMaskLocal = m_OpeningMask;
 			
-			if ( m_State == PACKED )
+			if (m_State == PACKED)
 			{
 				Pack(false); //intentional
 			}
@@ -236,27 +231,26 @@ class TentBase extends ItemBase
 	
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
-		//Print("EEHealthLevelChanged");
 		super.EEHealthLevelChanged(oldLevel,newLevel,zone);
 		
 		if (m_FixDamageSystemInit)
 			return;
 		
-		if ( zone == "" && GetState() == PITCHED && newLevel == GameConstants.STATE_RUINED && GetGame().IsServer() )
+		if (zone == "" && GetState() == PITCHED && newLevel == GameConstants.STATE_RUINED && GetGame().IsServer())
 			MiscGameplayFunctions.DropAllItemsInInventoryInBounds(this, m_HalfExtents);
 		
-		if ( zone != "Body" && zone != "Inventory" && zone != "" )
+		if (zone != "Body" && zone != "Inventory" && zone != "")
 		{
 			if (newLevel == GameConstants.STATE_RUINED)
 			{
 				array<string> selections = new array<string>;
 				DamageSystem.GetComponentNamesFromDamageZone(this,zone,selections);
-				for( int j = 0; j < selections.Count(); j++ )
+				for (int j = 0; j < selections.Count(); j++)
 				{
 					if (selections.Get(j) != "")
 					{
-						RemoveProxyPhysics( selections.Get(j) ); //To keep
-						//HideSelection( selections.Get(j) ); //To change
+						RemoveProxyPhysics(selections.Get(j)); //To keep
+						//HideSelection(selections.Get(j)); //To change
 						AnimateCamonetByOpeningSelection(selections.Get(j)); //To keep
 					}
 				}
@@ -265,49 +259,48 @@ class TentBase extends ItemBase
 			{
 				if (GetState() == PITCHED)
 				{
-					Pitch( true );
+					TryPitch(true);
 				}
 			}
 		}
-		//m_DamageSystemStarted = true;
 	}
 	
 	void HideAllAnimationsAndProxyPhysics(bool hide_animations = true, bool hide_physics = true)
 	{
 		string cfg_path = "cfgVehicles " + GetType() + " AnimationSources";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if (GetGame().ConfigIsExisting(cfg_path))
 		{
-			int	selections = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	selections = GetGame().ConfigGetChildrenCount(cfg_path);
 			string proxy_selection_name;
 			
-			for ( int i = 0; i < selections; i++ )
+			for (int i = 0; i < selections; i++)
 			{
 				string selection_name;
-				GetGame().ConfigGetChildName( cfg_path, i, selection_name );
+				GetGame().ConfigGetChildName(cfg_path, i, selection_name);
 				if (hide_animations)
 				{
-					SetAnimationPhase( selection_name, 1 );
+					SetAnimationPhase(selection_name, 1);
 				}
 				
 				proxy_selection_name = selection_name;
 				proxy_selection_name.ToLower();	
 				if (hide_physics)
 				{
-					RemoveProxyPhysics( proxy_selection_name );
+					RemoveProxyPhysics(proxy_selection_name);
 				}
 			}
 		}
 	}
 	
-	bool ConditionIntoInventory( EntityAI player )
+	bool ConditionIntoInventory(EntityAI player)
 	{
 		return CanBeManipulated();
 	}
 
-	override bool CanPutIntoHands( EntityAI parent )
+	override bool CanPutIntoHands(EntityAI parent)
 	{
-		if( !super.CanPutIntoHands( parent ) )
+		if (!super.CanPutIntoHands(parent))
 		{		
 			return false;
 		}
@@ -315,9 +308,9 @@ class TentBase extends ItemBase
 		return CanBeManipulated();
 	}
 
-	override bool CanPutInCargo( EntityAI parent )
+	override bool CanPutInCargo(EntityAI parent)
 	{
-		if( !super.CanPutInCargo( parent ) )
+		if (!super.CanPutInCargo(parent))
 		{			
 			return false;
 		}
@@ -325,7 +318,7 @@ class TentBase extends ItemBase
 		return CanBeManipulated();
 	}
 	
-	bool ConditionOutOfHands( EntityAI player )
+	bool ConditionOutOfHands(EntityAI player)
 	{
 		return CanBeManipulated();
 	}
@@ -342,29 +335,29 @@ class TentBase extends ItemBase
 		EntityAI eai_xlights;
 
 		slot_id_camo = InventorySlots.GetSlotIdFromString("CamoNet");
-		m_CamoNet = CamoNet.Cast(GetInventory().FindAttachment( slot_id_camo ));
+		m_CamoNet = CamoNet.Cast(GetInventory().FindAttachment(slot_id_camo));
 		
 		slot_id_xlights = InventorySlots.GetSlotIdFromString("Lights");
-		eai_xlights = GetInventory().FindAttachment( slot_id_xlights );
+		eai_xlights = GetInventory().FindAttachment(slot_id_xlights);
 		
-		if ( m_CamoNet )
+		if (m_CamoNet)
 		{
 			HandleCamoNetAttachment(false);
-			//SetAnimationPhase( "Camonet", 0 );
+			//SetAnimationPhase("Camonet", 0);
 			
-			if ( !IsKindOf ( "MediumTent" ) )
+			if (!IsKindOf ("MediumTent"))
 			{
-				AddProxyPhysics( "camonet" );
+				AddProxyPhysics("camonet");
 			}	
 		}
 		
-		if ( eai_xlights )
+		if (eai_xlights)
 		{
-			SetAnimationPhase( "Xlights", 0 );
-			SetAnimationPhase( "Xlights_glass_r", 0 );
-			SetAnimationPhase( "Xlights_glass_g", 0 );
-			SetAnimationPhase( "Xlights_glass_b", 0 );
-			SetAnimationPhase( "Xlights_glass_y", 0 );
+			SetAnimationPhase("Xlights", 0);
+			SetAnimationPhase("Xlights_glass_r", 0);
+			SetAnimationPhase("Xlights_glass_g", 0);
+			SetAnimationPhase("Xlights_glass_b", 0);
+			SetAnimationPhase("Xlights_glass_y", 0);
 		}
 	}
 	
@@ -372,28 +365,28 @@ class TentBase extends ItemBase
 	{
 		super.EEItemAttached(item, slot_name);
 		
-		if ( item.IsKindOf ( "CamoNet" ) ) 
+		if (item.IsKindOf ("CamoNet")) 
 		{
 			m_CamoNet = CamoNet.Cast(item);
 			HandleCamoNetAttachment(false);
-			//SetAnimationPhase( "Camonet", 0 );
+			//SetAnimationPhase("Camonet", 0);
 			
-			if ( !IsKindOf ( "MediumTent" ) )
+			if (!IsKindOf ("MediumTent"))
 			{
-				AddProxyPhysics( "camonet" );
+				AddProxyPhysics("camonet");
 			}		
 		}
 		
-		if ( item.IsKindOf ( "XmasLights" ) ) 
+		if (item.IsKindOf ("XmasLights")) 
 		{
-			SetAnimationPhase( "Xlights", 0 );
-			SetAnimationPhase( "Xlights_glass_r", 0 );
-			SetAnimationPhase( "Xlights_glass_g", 0 );
-			SetAnimationPhase( "Xlights_glass_b", 0 );
-			SetAnimationPhase( "Xlights_glass_y", 0 );
+			SetAnimationPhase("Xlights", 0);
+			SetAnimationPhase("Xlights_glass_r", 0);
+			SetAnimationPhase("Xlights_glass_g", 0);
+			SetAnimationPhase("Xlights_glass_b", 0);
+			SetAnimationPhase("Xlights_glass_y", 0);
 			
-			XmasLights xlights = XmasLights.Cast( item );
-			xlights.AttachToObject( this );
+			XmasLights xlights = XmasLights.Cast(item);
+			xlights.AttachToObject(this);
 		}
 	}
 
@@ -401,42 +394,42 @@ class TentBase extends ItemBase
 	{
 		super.EEItemDetached(item, slot_name);
 				
-		if ( item.IsKindOf ( "CamoNet" ) ) 
+		if (item.IsKindOf ("CamoNet")) 
 		{
 			m_CamoNet = null;
 			HandleCamoNetAttachment(true);
-			//SetAnimationPhase( "Camonet", 1 );
+			//SetAnimationPhase("Camonet", 1);
 			
-			if ( !IsKindOf ( "MediumTent" ) )
+			if (!IsKindOf ("MediumTent"))
 			{
-				RemoveProxyPhysics( "camonet" );
+				RemoveProxyPhysics("camonet");
 			}
 		}
 		
-		if ( item.IsKindOf ( "XmasLights" ) ) 
+		if (item.IsKindOf ("XmasLights")) 
 		{
-			SetAnimationPhase( "Xlights", 1 );
-			SetAnimationPhase( "Xlights_glass_r", 1 );
-			SetAnimationPhase( "Xlights_glass_g", 1 );
-			SetAnimationPhase( "Xlights_glass_b", 1 );
-			SetAnimationPhase( "Xlights_glass_y", 1 );
+			SetAnimationPhase("Xlights", 1);
+			SetAnimationPhase("Xlights_glass_r", 1);
+			SetAnimationPhase("Xlights_glass_g", 1);
+			SetAnimationPhase("Xlights_glass_b", 1);
+			SetAnimationPhase("Xlights_glass_y", 1);
 			
-			XmasLights xlights = XmasLights.Cast( item );
-			xlights.DetachFromObject( this );	
+			XmasLights xlights = XmasLights.Cast(item);
+			xlights.DetachFromObject(this);	
 		}
 	}
 		
 	override int GetViewIndex()
 	{
-		if ( MemoryPointExists( "invView2" ) )
+		if (MemoryPointExists("invView2"))
 		{		
 			InventoryLocation il = new InventoryLocation;
-			GetInventory().GetCurrentInventoryLocation( il );
+			GetInventory().GetCurrentInventoryLocation(il);
 			InventoryLocationType type = il.GetType();
 			
-			if ( GetState() == PACKED )
+			if (GetState() == PACKED)
 			{
-				switch ( type )
+				switch (type)
 				{
 					case InventoryLocationType.CARGO:
 					{
@@ -466,7 +459,7 @@ class TentBase extends ItemBase
 			}
 			else
 			{
-				switch ( type )
+				switch (type)
 				{
 					case InventoryLocationType.CARGO:
 					{
@@ -510,9 +503,9 @@ class TentBase extends ItemBase
 
 	bool CanBePacked()
 	{
-		if ( GetState() == PITCHED )
+		if (GetState() == PITCHED)
 		{
-			if ( GetInventory().GetCargo().GetItemCount() == 0 && GetInventory().AttachmentCount() == 0 )
+			if (GetInventory().GetCargo().GetItemCount() == 0 && GetInventory().AttachmentCount() == 0)
 			{
 				return true;
 			}
@@ -523,7 +516,7 @@ class TentBase extends ItemBase
 
 	bool CanBeManipulated()
 	{
-		if ( GetState() == PACKED )
+		if (GetState() == PACKED)
 		{
 			return true;
 		}
@@ -533,9 +526,9 @@ class TentBase extends ItemBase
 		}
 	}
 	
-	bool CanAttach( ItemBase item )
+	bool CanAttach(ItemBase item)
 	{
-		if ( item.IsKindOf ( "CamoNet" ) && GetState() == PITCHED ) 
+		if (item.IsKindOf ("CamoNet") && GetState() == PITCHED) 
 		{
 			return true;
 		}
@@ -548,7 +541,7 @@ class TentBase extends ItemBase
 		return false;
 	}
 	
-	void Pack( bool update_navmesh, bool init = false )
+	void Pack(bool update_navmesh, bool init = false)
 	{
 		HideAllAnimationsAndProxyPhysics();
 		
@@ -561,25 +554,25 @@ class TentBase extends ItemBase
 				
 		GetInventory().LockInventory(HIDE_INV_FROM_SCRIPT);
 		
-		if ( update_navmesh ) 
+		if (update_navmesh) 
 		{
 			RegenerateNavmesh();	
 		}
 						
 		DestroyClutterCutter();
 		
-		if (GetGame().IsServer())
+		if (GetGame().IsServer() && !IsHologram())
 			MiscGameplayFunctions.DropAllItemsInInventoryInBounds(this, m_HalfExtents);
 		
 		SetSynchDirty();
 		
-		if ( ( !GetGame().IsDedicatedServer() ) && !init )
+		if ((!GetGame().IsDedicatedServer()) && !init)
 		{
 			GetOnViewIndexChanged().Invoke();
 		}
 	}
 
-	void Pitch( bool update_navmesh, bool init = false )
+	void Pitch(bool update_navmesh, bool init = false)
 	{
 		HideAllAnimationsAndProxyPhysics();
 		
@@ -592,17 +585,32 @@ class TentBase extends ItemBase
 		
 		GetInventory().UnlockInventory(HIDE_INV_FROM_SCRIPT);
 		
-		if ( update_navmesh ) 
+		if (update_navmesh) 
 		{
 			RegenerateNavmesh();
 		}
 
 		SetSynchDirty();
 		
-		if ( ( !GetGame().IsDedicatedServer() ) && !init )
+		if ((!GetGame().IsDedicatedServer()) && !init)
 		{
 			GetOnViewIndexChanged().Invoke();
 		}
+	}
+	
+	protected void TryPitch(bool update_navmesh, bool init = false)
+	{
+		if (GetHierarchyRootPlayer())
+		{
+			if (GetGame().IsDedicatedServer())
+			{
+				Pack(update_navmesh,init);
+			}
+			
+			return;
+		}
+		
+		Pitch(update_navmesh,init);
 	}
 	
 	void UpdateVisuals()
@@ -610,24 +618,24 @@ class TentBase extends ItemBase
 		string proxy_selection_name;
 		string animation_name;
 		
-		if ( GetState() == PITCHED )
+		if (GetState() == PITCHED)
 		{
-			for ( int i = 0; i < m_ShowAnimationsWhenPitched.Count(); i++ )
+			for (int i = 0; i < m_ShowAnimationsWhenPitched.Count(); i++)
 			{
 				animation_name = m_ShowAnimationsWhenPitched.Get(i);
 				
-				SetAnimationPhase( animation_name, 0 );
+				SetAnimationPhase(animation_name, 0);
 			}
 			
 			HandleOpeningsVisuals();
 		}
 		else
 		{
-			for ( int j = 0; j < m_ShowAnimationsWhenPacked.Count(); j++ )
+			for (int j = 0; j < m_ShowAnimationsWhenPacked.Count(); j++)
 			{
 				animation_name = m_ShowAnimationsWhenPacked.Get(j);
 				
-				SetAnimationPhase( animation_name, 0 );
+				SetAnimationPhase(animation_name, 0);
 			}
 		}
 	}
@@ -637,28 +645,28 @@ class TentBase extends ItemBase
 		string proxy_selection_name;
 		string animation_name;
 		
-		if ( GetState() == PITCHED )
+		if (GetState() == PITCHED)
 		{	
-			for ( int i = 0; i < m_ShowAnimationsWhenPitched.Count(); i++ )
+			for (int i = 0; i < m_ShowAnimationsWhenPitched.Count(); i++)
 			{
 				animation_name = m_ShowAnimationsWhenPitched.Get(i);
 				
 				proxy_selection_name = animation_name;
 				proxy_selection_name.ToLower();
-				AddProxyPhysics( proxy_selection_name );
+				AddProxyPhysics(proxy_selection_name);
 			}
 			
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(HandleOpeningsPhysics);
 		}
 		else
 		{
-			for ( int j = 0; j < m_ShowAnimationsWhenPacked.Count(); j++ )
+			for (int j = 0; j < m_ShowAnimationsWhenPacked.Count(); j++)
 			{
 				animation_name = m_ShowAnimationsWhenPacked.Get(j);
 				
 				proxy_selection_name = animation_name;
 				proxy_selection_name.ToLower();
-				AddProxyPhysics( proxy_selection_name );
+				AddProxyPhysics(proxy_selection_name);
 			}
 		}
 	}
@@ -666,13 +674,13 @@ class TentBase extends ItemBase
 	//refresh visual/physics state
 	void Refresh()
 	{
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( UpdateVisuals );
+		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(UpdateVisuals);
 		UpdatePhysics();
 	}
 	
-	bool CanToggleAnimations( string selection )
+	bool CanToggleAnimations(string selection)
 	{
-		for ( int i = 0; i < m_ToggleAnimations.Count(); i++ )
+		for (int i = 0; i < m_ToggleAnimations.Count(); i++)
 		{
 			ToggleAnimations toggle = m_ToggleAnimations.GetKey(i);
 			string toggle_off = toggle.GetToggleOff();
@@ -680,7 +688,7 @@ class TentBase extends ItemBase
 			string toggle_on = toggle.GetToggleOn();
 			toggle_on.ToLower();
 			
-			if ( toggle_off == selection || toggle_on == selection )
+			if (toggle_off == selection || toggle_on == selection)
 			{
 				string zone;
 				DamageSystem.GetDamageZoneFromComponentName(this,selection,zone);
@@ -719,9 +727,9 @@ class TentBase extends ItemBase
 	}
 	
 	//used by user action
-	void ToggleAnimation( string selection )
+	void ToggleAnimation(string selection)
 	{
-		if ( m_State == PACKED )
+		if (m_State == PACKED)
 		{
 			return;
 		}
@@ -729,7 +737,7 @@ class TentBase extends ItemBase
 		bool is_closed;
 		ResetToggle();
 		
-		for ( int i = 0; i < m_ToggleAnimations.Count(); i++ )
+		for (int i = 0; i < m_ToggleAnimations.Count(); i++)
 		{
 			ToggleAnimations toggle = m_ToggleAnimations.GetKey(i);
 			
@@ -738,25 +746,25 @@ class TentBase extends ItemBase
 			string toggle_on = toggle.GetToggleOn();
 			toggle_on.ToLower();
 			
-			if ( toggle_off == selection || toggle_on == selection )
+			if (toggle_off == selection || toggle_on == selection)
 			{
 				is_closed = m_OpeningMask & toggle.GetOpeningBit();
-				if ( is_closed )
+				if (is_closed)
 				{
-					SetAnimationPhase( toggle.GetToggleOff(), 0 );
-					AddProxyPhysics( toggle.GetToggleOff() );
-					SetAnimationPhase( toggle.GetToggleOn(), 1 );
-					RemoveProxyPhysics( toggle.GetToggleOn() );
-					m_ToggleAnimations.Set( toggle, false );
+					SetAnimationPhase(toggle.GetToggleOff(), 0);
+					AddProxyPhysics(toggle.GetToggleOff());
+					SetAnimationPhase(toggle.GetToggleOn(), 1);
+					RemoveProxyPhysics(toggle.GetToggleOn());
+					m_ToggleAnimations.Set(toggle, false);
 					m_IsToggle = true;
 					m_OpeningMask &= ~toggle.GetOpeningBit();
 					
-					if ( selection.Contains("window") )
+					if (selection.Contains("window"))
 					{
 						ManipulateWindow();
 					}
 					
-					if ( selection.Contains("entrance") || selection.Contains("door") )
+					if (selection.Contains("entrance") || selection.Contains("door"))
 					{
 						ManipulateEntrance();
 					}
@@ -765,20 +773,20 @@ class TentBase extends ItemBase
 				}
 				else
 				{
-					SetAnimationPhase( toggle.GetToggleOff(), 1 );
-					RemoveProxyPhysics( toggle.GetToggleOff() );
-					SetAnimationPhase( toggle.GetToggleOn(), 0 );
-					AddProxyPhysics( toggle.GetToggleOn() );
-					m_ToggleAnimations.Set( toggle, true );
+					SetAnimationPhase(toggle.GetToggleOff(), 1);
+					RemoveProxyPhysics(toggle.GetToggleOff());
+					SetAnimationPhase(toggle.GetToggleOn(), 0);
+					AddProxyPhysics(toggle.GetToggleOn());
+					m_ToggleAnimations.Set(toggle, true);
 					m_IsToggle = false;
 					m_OpeningMask |= toggle.GetOpeningBit();
 					
-					if ( selection.Contains("window") )
+					if (selection.Contains("window"))
 					{
 						ManipulateWindow();
 					}
 					
-					if ( selection.Contains("entrance") || selection.Contains("door") )
+					if (selection.Contains("entrance") || selection.Contains("door"))
 					{
 						ManipulateEntrance();
 					}
@@ -793,7 +801,7 @@ class TentBase extends ItemBase
 	
 	void HandleCamoNetAttachment(bool hide)
 	{
-		SetAnimationPhase( "CamoNet", hide );
+		SetAnimationPhase("CamoNet", hide);
 	}
 	
 	void AnimateCamonetToggle(ToggleAnimations toggle) {};
@@ -810,31 +818,31 @@ class TentBase extends ItemBase
 	
 	void SoundTentOpenPlay()
 	{
-		EffectSound sound =	SEffectManager.PlaySound( GetSoundOpen(), GetPosition() );
-		sound.SetAutodestroy( true );
+		EffectSound sound =	SEffectManager.PlaySound(GetSoundOpen(), GetPosition());
+		sound.SetAutodestroy(true);
 	}
 	
 	void SoundTentClosePlay()
 	{
-		EffectSound sound =	SEffectManager.PlaySound( GetSoundClose(), GetPosition() );
-		sound.SetAutodestroy( true );
+		EffectSound sound =	SEffectManager.PlaySound(GetSoundClose(), GetPosition());
+		sound.SetAutodestroy(true);
 	}
 	
 	void SoundTentOpenWindowPlay()
 	{
-		EffectSound sound =	SEffectManager.PlaySound( GetSoundOpenWindow(), GetPosition() );
-		sound.SetAutodestroy( true );
+		EffectSound sound =	SEffectManager.PlaySound(GetSoundOpenWindow(), GetPosition());
+		sound.SetAutodestroy(true);
 	}
 	
 	void SoundTentCloseWindowPlay()
 	{
-		EffectSound sound =	SEffectManager.PlaySound( GetSoundCloseWindow(), GetPosition() );
-		sound.SetAutodestroy( true );
+		EffectSound sound =	SEffectManager.PlaySound(GetSoundCloseWindow(), GetPosition());
+		sound.SetAutodestroy(true);
 	}
 	
 	void RegenerateNavmesh()
 	{
-		SetAffectPathgraph( true, false );
+		SetAffectPathgraph(true, false);
 		
 		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(GetGame().UpdatePathgraphRegionByObject, 100, false, this);
 	}
@@ -844,11 +852,11 @@ class TentBase extends ItemBase
 	
 	void DestroyClutterCutter()
 	{
-		if ( GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if (GetGame().IsMultiplayer() || GetGame().IsServer())
 		{
-			if ( m_ClutterCutter )
+			if (m_ClutterCutter)
 			{
-				GetGame().ObjectDelete( m_ClutterCutter );
+				GetGame().ObjectDelete(m_ClutterCutter);
 			}
 		}
 	}
@@ -862,32 +870,32 @@ class TentBase extends ItemBase
 		return true;
 	}
 	
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
-		super.OnPlacementComplete( player, position, orientation );
+		super.OnPlacementComplete(player, position, orientation);
 		
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			Pitch( true );
+			TryPitch(true);
 			
-			SetIsDeploySound( true );
+			SetIsDeploySound(true);
 		}
 	}
 	
 	void PlayDeployLoopSound()
 	{		
-		if ( !GetGame().IsDedicatedServer() )
+		if (!GetGame().IsDedicatedServer())
 		{		
-			if ( !m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying() )
+			if (!m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying())
 			{
-				m_DeployLoopSound = SEffectManager.PlaySound( GetLoopDeploySoundset(), GetPosition() );
+				m_DeployLoopSound = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
 			}
 		}
 	}
 	
 	void StopDeployLoopSound()
 	{
-		if ( !GetGame().IsDedicatedServer() )
+		if (!GetGame().IsDedicatedServer())
 		{	
 			m_DeployLoopSound.SetSoundFadeOut(0.5);
 			m_DeployLoopSound.SoundStop();
@@ -925,13 +933,13 @@ class TentBase extends ItemBase
 			{
 				SetAnimationPhase(toggle.GetToggleOff(),1);
 				SetAnimationPhase(toggle.GetToggleOn(),is_ruined);
-				m_ToggleAnimations.Set( toggle, false );
+				m_ToggleAnimations.Set(toggle, false);
 			}
 			else
 			{
 				SetAnimationPhase(toggle.GetToggleOn(),1);
 				SetAnimationPhase(toggle.GetToggleOff(),is_ruined);
-				m_ToggleAnimations.Set( toggle, true );
+				m_ToggleAnimations.Set(toggle, true);
 			}
 			//AnimateCamonetToggle(toggle);
 		}
@@ -956,18 +964,18 @@ class TentBase extends ItemBase
 			is_ruined = (GetHealthLevel(zone) == GameConstants.STATE_RUINED);
 			
 			//re-adding physics to avoid proxy physics stacking
-			RemoveProxyPhysics( toggle.GetToggleOff() );
-			RemoveProxyPhysics( toggle.GetToggleOn() );
+			RemoveProxyPhysics(toggle.GetToggleOff());
+			RemoveProxyPhysics(toggle.GetToggleOn());
 			
 			if (!is_ruined && GetState() == PITCHED)
 			{
 				if (is_closed)
 				{
-					AddProxyPhysics( toggle.GetToggleOn() );
+					AddProxyPhysics(toggle.GetToggleOn());
 				}
 				else
 				{
-					AddProxyPhysics( toggle.GetToggleOff() );
+					AddProxyPhysics(toggle.GetToggleOff());
 				}
 			}
 		}
@@ -978,46 +986,46 @@ class TentBase extends ItemBase
 		return 110;
 	}
 
-	override bool CanReceiveItemIntoCargo( EntityAI item )
+	override bool CanReceiveItemIntoCargo(EntityAI item)
 	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED || m_IsBeingPacked )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED || m_IsBeingPacked)
 			return false;
 		
-		return super.CanReceiveItemIntoCargo( item );
+		return super.CanReceiveItemIntoCargo(item);
 	}
 	
-	override bool CanLoadItemIntoCargo( EntityAI item )
+	override bool CanLoadItemIntoCargo(EntityAI item)
 	{
-		if (!super.CanLoadItemIntoCargo( item ))
+		if (!super.CanLoadItemIntoCargo(item))
 			return false;
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 		
 		return true;
 	}
 	
-	override bool CanReceiveAttachment( EntityAI attachment, int slotId )
+	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
 	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 		
 		return super.CanReceiveAttachment(attachment, slotId);
 	}
 	
-	override bool CanLoadAttachment( EntityAI attachment )
+	override bool CanLoadAttachment(EntityAI attachment)
 	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 		
 		return super.CanLoadAttachment(attachment);
 	}
 	
-	override bool CanBePlaced( Man player, vector position )
+	override bool CanBePlaced(Man player, vector position)
 	{
 		vector playerpos = player.GetPosition();
 		float delta1 = playerpos[1] - position[1];
 		
-		if( delta1 > MAX_PLACEMENT_HEIGHT_DIFF || delta1 < -MAX_PLACEMENT_HEIGHT_DIFF )
+		if (delta1 > MAX_PLACEMENT_HEIGHT_DIFF || delta1 < -MAX_PLACEMENT_HEIGHT_DIFF)
 			return false;
 		return true;
 	}

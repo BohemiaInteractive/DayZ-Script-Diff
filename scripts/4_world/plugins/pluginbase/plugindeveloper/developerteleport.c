@@ -9,18 +9,30 @@ class DeveloperTeleport
 			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 			vector pos_player = player.GetPosition();
 			
+			Object ignore;
+			if (!Class.CastTo(ignore, player.GetParent()))
+			{
+				ignore = player;
+			}
+
 			vector rayStart = GetGame().GetCurrentCameraPosition();
 			vector rayEnd = rayStart + GetGame().GetCurrentCameraDirection() * 1000;		
 			vector hitPos;
 			vector hitNormal;
 			int hitComponentIndex;		
-			DayZPhysics.RaycastRV(rayStart, rayEnd, hitPos, hitNormal, hitComponentIndex, NULL, NULL, player);
+			DayZPhysics.RaycastRV(rayStart, rayEnd, hitPos, hitNormal, hitComponentIndex, NULL, NULL, ignore);
 				
 			float distance = vector.Distance( pos_player, hitPos );
 			
 			if ( distance < TELEPORT_DISTANCE_MAX )
 			{
-				SetPlayerPosition(PlayerBase.Cast( GetGame().GetPlayer() ), hitPos);
+				bool breakSync = false;
+				
+				#ifdef DIAG_DEVELOPER
+				breakSync = DiagMenu.GetBool(DiagMenuIDs.MISC_TELEPORT_BREAKS_SYNC);
+				#endif
+				
+				SetPlayerPosition(player, hitPos, breakSync);
 			}
 			else
 			{
@@ -39,10 +51,22 @@ class DeveloperTeleport
 		vector hitNormal;
 		float hitFraction;
 		Object hitObj;
-
-		if (DayZPhysics.SphereCastBullet(rayStart, rayEnd, 0.01, PhxInteractionLayers.TERRAIN | PhxInteractionLayers.ROADWAY | PhxInteractionLayers.ITEM_LARGE|PhxInteractionLayers.BUILDING|PhxInteractionLayers.VEHICLE, player, hitObj, hitPos, hitNormal, hitFraction))
+			
+		Object ignore;
+		if (!Class.CastTo(ignore, player.GetParent()))
 		{
-			DeveloperTeleport.SetPlayerPosition( player, hitPos );
+			ignore = player;
+		}
+
+		if (DayZPhysics.SphereCastBullet(rayStart, rayEnd, 0.01, PhxInteractionLayers.TERRAIN | PhxInteractionLayers.ROADWAY | PhxInteractionLayers.ITEM_LARGE|PhxInteractionLayers.BUILDING|PhxInteractionLayers.VEHICLE, ignore, hitObj, hitPos, hitNormal, hitFraction))
+		{
+			bool breakSync = false;
+				
+			#ifdef DIAG_DEVELOPER
+			breakSync = DiagMenu.GetBool(DiagMenuIDs.MISC_TELEPORT_BREAKS_SYNC);
+			#endif
+				
+			SetPlayerPosition(player, hitPos, breakSync);
 			
 			if (DeveloperFreeCamera.IsFreeCameraEnabled())
 			{
@@ -52,28 +76,40 @@ class DeveloperTeleport
 	}
 	
 	// Set Player Position (MP support)
-	static void SetPlayerPosition(PlayerBase player, vector position)
+	static void SetPlayerPosition(PlayerBase player, vector position, bool breakSync = false)
 	{
-		if ( GetGame().IsServer() )
+		Object object = player;
+		
+		HumanCommandVehicle vehCmd = player.GetCommand_Vehicle();
+		if (vehCmd)
 		{
-			HumanCommandVehicle vehCmd = player.GetCommand_Vehicle();
-			if ( vehCmd )
-			{
-				Car car = Car.Cast( vehCmd.GetTransport() );
-				if ( car )
-				{
-					car.ForcePosition( position );
-					car.Update();
-				}
-			}
-			else
-			{
-				player.SetPosition( position );
-			}
+			object = vehCmd.GetTransport();
+		}
+		
+#ifdef DIAG_DEVELOPER
+		if (GetGame().IsMultiplayer() && breakSync)
+		{
+			vector v;
+			v[0] = Math.RandomFloat(-Math.PI, Math.PI);
+			v[1] = Math.RandomFloat(-Math.PI, Math.PI);
+			v[2] = Math.RandomFloat(-Math.PI, Math.PI);
+			dBodySetAngularVelocity(object, v);
+			SetVelocity(object, vector.Zero);
+			
+			v[0] = Math.RandomFloat(-Math.PI, Math.PI);
+			v[1] = Math.RandomFloat(-Math.PI, Math.PI);
+			v[2] = Math.RandomFloat(-Math.PI, Math.PI);
+			object.SetOrientation(v  * Math.RAD2DEG);
+		}
+#endif
+		
+		if (GetGame().IsServer())
+		{
+			object.SetPosition(position);
 		}
 		else
 		{
-			Param3<float, float, float> params = new Param3<float, float, float>(position[0], position[1], position[2]);
+			Param4<float, float, float, bool> params = new Param4<float, float, float, bool>(position[0], position[1], position[2], breakSync);
 			player.RPCSingleParam(ERPCs.DEV_RPC_TELEPORT, params, true);
 		}
 	}
@@ -81,22 +117,17 @@ class DeveloperTeleport
 	// Set Player Direction (MP support)
 	static void SetPlayerDirection(PlayerBase player, vector direction)
 	{
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
 			HumanCommandVehicle vehCmd = player.GetCommand_Vehicle();
-			if ( vehCmd )
+			if (vehCmd)
 			{
-				Car car = Car.Cast( vehCmd.GetTransport() );
-				if ( car )
-				{
-					car.ForceDirection( direction );
-					car.Update();
-				}
+				Transport transport = vehCmd.GetTransport();
+				if (transport)
+					transport.SetDirection(direction);
 			}
 			else
-			{
-				player.SetDirection( direction );
-			}
+				player.SetDirection(direction);
 		}
 		else
 		{
@@ -121,14 +152,14 @@ class DeveloperTeleport
 	
 	static protected void OnRPCSetPlayerPosition(PlayerBase player, ParamsReadContext ctx)
 	{
-		Param3<float, float, float> p = new Param3<float, float, float>(0, 0, 0);
+		Param4<float, float, float, bool> p = new Param4<float, float, float, bool>(0, 0, 0, false);
 		if (ctx.Read(p))
 		{
 			vector v = "0 0 0";
 			v[0] = p.param1;
 			v[1] = p.param2;
 			v[2] = p.param3;
-			SetPlayerPosition(player, v);
+			SetPlayerPosition(player, v, p.param4);
 		}
 	}
 	

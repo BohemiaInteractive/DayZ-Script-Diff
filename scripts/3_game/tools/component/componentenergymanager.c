@@ -1377,7 +1377,6 @@ class ComponentEnergyManager : Component
 		}
 		
 		UpdateCanWork();
-		
 		m_ThisEntityAI.OnIsPlugged(source_device);
 	}
 
@@ -1385,7 +1384,6 @@ class ComponentEnergyManager : Component
 	void OnIsUnplugged( EntityAI last_energy_source ) 
 	{
 		UpdateCanWork();
-		
 		m_ThisEntityAI.OnIsUnplugged( last_energy_source );
 	}
 
@@ -1500,6 +1498,33 @@ class ComponentEnergyManager : Component
 		}
 	}
 
+	//! Gets called originally when the player is interacting with an item containing this energy component, then recursively following the branches of connection from the original item to the peripheries
+	//! External calling of this function is not automatic for all item interactions and may need to be implemented on case by case bases
+	//! Avoid using for gameplay logic, use 'OnInteractBranch' instead
+	void InteractBranch(EntityAI originalCaller, Man player = null, int system = 0)
+	{
+		OnInteractBranch(originalCaller, player, system);
+		if ( GetSocketsCount() > 0 )
+		{
+			array<EntityAI> devices = GetPluggedDevices();
+			
+			foreach ( EntityAI device : devices)
+			{
+				if ( device != originalCaller ) // originalCaller check here prevents infinite loops
+				{
+					device.GetCompEM().InteractBranch( originalCaller, player, system );
+				}
+			}
+		}
+	}
+	
+	//! Called when the player is interacting with an item containing this energy component, or when interacting with an item this device is connected to
+	protected void OnInteractBranch(EntityAI originalCaller, Man player, int system)
+	{
+		m_ThisEntityAI.IncreaseLifetime();
+	
+	}
+		
 	// 'Wakes up' all devices down the network so they start working, if they have enough power, and are switched ON
 	protected void WakeUpWholeBranch( EntityAI original_caller )
 	{
@@ -1603,6 +1628,8 @@ class ComponentEnergyManager : Component
 	{
 		if ( CanReceivePlugFrom(device_to_plug) )
 		{
+			device_to_plug.IncreaseLifetime();
+			InteractBranch(m_ThisEntityAI);
 			if ( device_to_plug.GetCompEM().IsPlugged() )
 				device_to_plug.GetCompEM().UnplugThis();
 			
@@ -1727,9 +1754,11 @@ class ComponentEnergyManager : Component
 	// Updates the device's state of power. This function is visualized in the diagram at DayZ Confluence >> Camping & Squatting >> Electricity >> Energy Manager functionalities
 	void DeviceUpdate()
 	{
-		//vector pos = m_ThisEntityAI.GetPosition();
-		//string debug_message = "Object " + m_ThisEntityAI.GetType() + "  |  Energy: " + GetEnergy() + "  |  IsAtReach: " + (IsEnergySourceAtReach(pos)).ToString();
-		//Print(debug_message);
+		/*
+		vector pos = m_ThisEntityAI.GetPosition();
+		string debug_message = "Object " + m_ThisEntityAI.GetType() + "  |  Energy: " + GetEnergy() + "  |  IsAtReach: " + (IsEnergySourceAtReach(pos)).ToString();
+		Print(debug_message);
+		*/
 		
 		if ( !m_IsPassiveDevice )
 		{

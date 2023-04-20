@@ -16,6 +16,7 @@ enum eNotifiers
 	NTF_PILLS,
 	NTF_HEARTBEAT,
 	NTF_FRACTURE,
+	NTF_LEGS,
 	//----------------------------
 	NTF_COUNT,// !!! LAST ITEM !!!
 
@@ -55,7 +56,8 @@ class NotifiersManager
 		m_Notifiers.Insert(new BloodNotfr(this));
 		m_Notifiers.Insert(new PillsNotfr(this));
 		m_Notifiers.Insert(new HeartbeatNotfr(this));
-		m_Notifiers.Insert(new FracturedLegNotfr(this)); //New addition
+		m_Notifiers.Insert(new FracturedLegNotfr(this));
+		m_Notifiers.Insert(new InjuredLegNotfr(this));
 		
 	}
 	

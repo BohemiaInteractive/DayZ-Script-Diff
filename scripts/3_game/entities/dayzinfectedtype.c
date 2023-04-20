@@ -29,7 +29,7 @@ class DayZInfectedType extends DayZCreatureAIType
 		//! registers default hit compoent for the entity
 		m_DefaultHitComponent = "Torso";
 		//! registers default hit position component for entity
-		m_DefaultHitPositionComponent = "Pelvis";
+		m_DefaultHitPositionComponent = "Spine1";
 		
 		//! list of components suitable for melee finisher attacks (used in fight logic)
 		m_SuitableFinisherHitComponents = new array<string>;
@@ -98,17 +98,19 @@ class DayZInfectedType extends DayZCreatureAIType
 		array<ref DayZInfectedAttackType> attackGroup = GetAttackGroup(pAttackGroupType);
 		float rnd;
 		float highestUtility = -1;
-		DayZInfectedAttackType mostSuitableAttack = NULL;
+		DayZInfectedAttackType mostSuitableAttack = null;
 		
-		for ( int i = 0; i < attackGroup.Count(); ++i )
+		Math.Randomize(GetWorldTime() + (int)pDistance);
+		
+		for (int i = 0; i < attackGroup.Count(); ++i)
 		{
 			rnd = Math.RandomFloat01();
 			DayZInfectedAttackType attackType = attackGroup.Get(i);
 			float utility = ComputeAttackUtility(attackType, pDistance, pPitch, rnd);
-			if ( utility <= 0 )
+			if (utility <= 0)
 				continue;
 			
-			if ( utility > highestUtility )
+			if (utility > highestUtility)
 			{
 				mostSuitableAttack = attackType;
 				highestUtility = utility;
@@ -169,20 +171,22 @@ class DayZInfectedType extends DayZCreatureAIType
 	protected float ComputeAttackUtility(DayZInfectedAttackType pAttackType, float pTargetDistance, int pPitch, float pProbability)
 	{
 		// pitch
-		if ( pAttackType.m_Pitch != pPitch )
+		if (pAttackType.m_Pitch != pPitch)
 			return 0;
 
 		// distance
-		float distDiff = ( pAttackType.m_Distance ) - pTargetDistance;
-		if ( distDiff < 0 )
+		float distDiff = pAttackType.m_Distance - pTargetDistance;
+		if (distDiff < 0)
 			return 0;
+
 		float distDiffFrac = distDiff / 10;
 		float utilityDistance = (1 - distDiffFrac) * 100; // distance is most important
 		
 		// probability
 		float probDiff = pAttackType.m_Probability - pProbability;
-		if ( probDiff < 0 )
+		if (probDiff < 0)
 			return 0;
+
 		float utilityProbability = (1 - probDiff) * 10; // distance is most important
 		
 		// total
@@ -194,13 +198,13 @@ class DayZInfectedType extends DayZCreatureAIType
 
 	protected array<ref DayZInfectedAttackType> GetAttackGroup(DayZInfectedAttackGroupType pType)
 	{
-		switch ( pType )
+		switch (pType)
 		{
-		case DayZInfectedAttackGroupType.CHASE:
-			return m_ChaseAttacksGroup;
-			
-		case DayZInfectedAttackGroupType.FIGHT:
-			return m_FightAttacksGroup;
+			case DayZInfectedAttackGroupType.CHASE:
+				return m_ChaseAttacksGroup;
+				
+			case DayZInfectedAttackGroupType.FIGHT:
+				return m_FightAttacksGroup;
 		}
 		
 		return NULL;

@@ -47,7 +47,8 @@ class ActionConstructor
 //		actions.Insert(ActionAttachToCharger);
 		actions.Insert(ActionTurnOnTransmitter);	
 		actions.Insert(ActionTurnOffTransmitter);
-		actions.Insert(ActionWashHandsItem);
+		//actions.Insert(ActionWashHandsItem);
+		actions.Insert(ActionWashHandsItemContinuous);
 		actions.Insert(ActionTakeABiteCan);
 		actions.Insert(ActionForceABiteCan);
 		actions.Insert(ActionPlaceFireplaceIndoor);
@@ -100,6 +101,8 @@ class ActionConstructor
 		actions.Insert(ActionDisarmExplosive);
 		actions.Insert(ActionDisarmExplosiveWithRemoteDetonator);
 		actions.Insert(ActionDisarmExplosiveWithRemoteDetonatorUnpaired);
+		actions.Insert(ActionEatPillFromBottle);
+		actions.Insert(ActionEatTabletFromWrapper);
 
 		// Continuous use actions
 		actions.Insert(ActionWorldCraft);
@@ -214,8 +217,8 @@ class ActionConstructor
 		actions.Insert(ActionLockDoors);
 		actions.Insert(ActionUnlockDoors);
 		actions.Insert(ActionUnpackBox);
-		//actions.Insert(ActionWashHandsWater);
-		//actions.Insert(ActionWashHandsWell);
+		actions.Insert(ActionWashHandsWater);
+		actions.Insert(ActionWashHandsWell);
 		actions.Insert(ActionDrinkCan);
 		actions.Insert(ActionStripCarrierVest);
 		actions.Insert(ActionBuildOven);
@@ -319,8 +322,8 @@ class ActionConstructor
 		actions.Insert(ActionCloseCarDoors);
 		actions.Insert(ActionOpenCarDoorsOutside);
 		actions.Insert(ActionCloseCarDoorsOutside);
-		actions.Insert(ActionWashHandsWellOne);
-		actions.Insert(ActionWashHandsWaterOne);
+		//actions.Insert(ActionWashHandsWellOne);
+		//actions.Insert(ActionWashHandsWaterOne);
 		actions.Insert(ActionGetOutTransport);
 		actions.Insert(ActionAnimateSeats);
 		actions.Insert(ActionAnimateCarSelection);

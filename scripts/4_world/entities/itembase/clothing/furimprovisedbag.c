@@ -1,1 +1,1 @@
-class FurImprovisedBag : Clothing {};
+class FurImprovisedBag : Backpack_Base {};

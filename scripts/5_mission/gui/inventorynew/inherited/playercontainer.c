@@ -504,14 +504,6 @@ class PlayerContainer: CollapsibleContainer
 		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), null, PlayerBase.Cast( GetGame().GetPlayer() ) );
 	}
 	
-	override bool CanCombine()
-	{
-		ItemBase ent =  ItemBase.Cast( GetFocusedItem() );
-		ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
-		
-		return ( ItemManager.GetCombinationFlags( item_in_hands, ent ) != 0 );
-	}
-	
 	override bool SplitItem()
 	{
 		if( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
@@ -1058,6 +1050,19 @@ class PlayerContainer: CollapsibleContainer
 			c.Toggle();
 			Refresh();
 		}
+	}
+	
+	override bool CanOpenCloseContainerEx(EntityAI focusedEntity)
+	{
+		if (focusedEntity)
+		{
+			ClosableContainer c = ClosableContainer.Cast( m_ShowedItems.Get( focusedEntity ) );
+			if (c && c.IsDisplayable())
+			{	
+				return true;
+			}
+		}
+		return false;
 	}
 
 	// Mouse button UP or Call other fn

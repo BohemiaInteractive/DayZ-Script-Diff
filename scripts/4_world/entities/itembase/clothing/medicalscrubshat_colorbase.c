@@ -1,4 +1,4 @@
-class MedicalScrubsHat_ColorBase extends Clothing
+class MedicalScrubsHat_ColorBase extends HeadGear_Base
 {
 	override void SetActions()
 	{

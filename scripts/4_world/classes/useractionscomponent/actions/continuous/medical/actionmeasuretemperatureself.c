@@ -32,18 +32,16 @@ class ActionMeasureTemperatureSelf: ActionContinuousBase
 	{
 		return false;
 	}
-
-	override void OnFinishProgressServer( ActionData action_data )
+	
+	override void OnFinishProgressClient( ActionData action_data )
 	{	
 		Thermometer thermometer = Thermometer.Cast(action_data.m_MainItem);
 		
-		if(thermometer)
+		if (thermometer)
 		{
-			ScriptRPC rpc = new ScriptRPC();
-			rpc.Write(thermometer.GetTemperatureValue(action_data.m_Player));
-			rpc.Send(action_data.m_Player, ERPCs.RPC_SYNC_THERMOMETER, true, action_data.m_Player.GetIdentity() );
+			float value = thermometer.GetTemperatureValue(action_data.m_Player);
+			action_data.m_Player.m_Hud.SetTemperature(value.ToString() + "#degrees_celsius");
 		}
 		
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

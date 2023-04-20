@@ -1,4 +1,4 @@
-class SurgicalMask extends Clothing
+class SurgicalMask extends Mask_Base
 {
 	override void SetActions()
 	{

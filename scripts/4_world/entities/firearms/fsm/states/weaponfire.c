@@ -110,6 +110,7 @@ class WeaponFireWithEject extends WeaponFire
 			if (Class.CastTo(p, e.m_player))
 				p.GetAimingModel().SetRecoil(m_weapon);
 			m_weapon.EjectCasing(mi);
+			m_weapon.EffectBulletHide(mi);
 			m_weapon.OnFire(mi);
 		}
 		super.OnEntry(e);

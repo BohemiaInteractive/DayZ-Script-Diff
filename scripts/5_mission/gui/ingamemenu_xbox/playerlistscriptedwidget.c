@@ -103,7 +103,7 @@ class PlayerListScriptedWidget extends ScriptedWidgetEventHandler
 				m_Entries.Find( player2.m_Uid, player_widget );
 				if ( !player_widget )
 				{
-					AddPlayer ( player2.m_DisplayName, player2.m_Uid, false );
+					AddPlayer( player2.m_DisplayName, player2.m_Uid, false );
 				}
 			}
 		}

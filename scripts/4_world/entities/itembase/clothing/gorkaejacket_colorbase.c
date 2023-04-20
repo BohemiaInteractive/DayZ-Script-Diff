@@ -1,4 +1,4 @@
-class GorkaEJacket_ColorBase extends Clothing 
+class GorkaEJacket_ColorBase extends Top_Base 
 {
 	override void SetActions()
 	{

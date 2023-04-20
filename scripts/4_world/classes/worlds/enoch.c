@@ -74,9 +74,9 @@ class EnochData extends WorldData
 	
 	override bool WeatherOnBeforeChange( EWeatherPhenomenon type, float actual, float change, float time )
 	{
-		float phmnValue 0;
-		int phmnTime 5;
-		int phmnLength 10;
+		int phmnTime 	= 5;
+		int phmnLength 	= 10;
+		float phmnValue = 0;
 
 		m_Weather.SetStorm( 1.0, STORM_THRESHOLD, 20 );
 
@@ -84,7 +84,7 @@ class EnochData extends WorldData
 		m_Weather.SetWindMaximumSpeed( 20 );
 		m_Weather.SetWindFunctionParams( 0.1, 1.0, 20 );
 		
-		switch( type )
+		switch (type)
 		{
 			//-----------------------------------------------------------------------------------------------------------------------------
 			case EWeatherPhenomenon.OVERCAST:
@@ -173,8 +173,8 @@ class EnochData extends WorldData
 
 				m_Weather.GetOvercast().Set( phmnValue, phmnTime, phmnLength );
 
-				Debug.Log(string.Format("Enoch::Weather::Overcast:: (%1) overcast: %2", g_Game.GetDayTime(), actual));
-				Debug.Log(string.Format("Enoch::Weather::Overcast::Rain:: (%1) %2", g_Game.GetDayTime(), m_Weather.GetRain().GetActual()));
+				Debug.WeatherLog(string.Format("Enoch::Weather::Overcast:: (%1) overcast: %2", g_Game.GetDayTime(), actual));
+				Debug.WeatherLog(string.Format("Enoch::Weather::Overcast::Rain:: (%1) %2", g_Game.GetDayTime(), m_Weather.GetRain().GetActual()));
 
 				return true;
 
@@ -190,7 +190,7 @@ class EnochData extends WorldData
 				if ( actualOvercast <= RAIN_THRESHOLD )
 				{
 					m_Weather.GetRain().Set( 0.0, RAIN_TIME_MIN, RAIN_TIME_MAX );
-					Debug.Log(string.Format("Enoch::Weather::Rain::ForceEnd:: (%1) %2 -> 0", g_Game.GetDayTime(), actual));
+					Debug.WeatherLog (string.Format("Enoch::Weather::Rain::ForceEnd:: (%1) %2 -> 0", g_Game.GetDayTime(), actual));
 					return true;
 				}
 			
@@ -201,7 +201,7 @@ class EnochData extends WorldData
 					phmnLength = 0;
 
 					m_Weather.GetRain().Set( phmnValue, phmnTime, phmnLength );	
-					Debug.Log(string.Format("Enoch::Weather::Rain::ForceStorm:: (%1) %2 -> %3", g_Game.GetDayTime(), actual, phmnValue));
+					Debug.WeatherLog(string.Format("Enoch::Weather::Rain::ForceStorm:: (%1) %2 -> %3", g_Game.GetDayTime(), actual, phmnValue));
 					return true;
 				}
 			
@@ -278,7 +278,7 @@ class EnochData extends WorldData
 		
 				m_Weather.GetRain().Set( phmnValue, phmnTime, phmnLength );
 
-				Debug.Log(string.Format("Enoch::Weather::Rain:: (%1) %2", g_Game.GetDayTime(), actual));
+				Debug.WeatherLog(string.Format("Enoch::Weather::Rain:: (%1) %2", g_Game.GetDayTime(), actual));
 				return true;
 			
 			//-----------------------------------------------------------------------------------------------------------------------------
@@ -292,7 +292,7 @@ class EnochData extends WorldData
 					m_Weather.GetFog().Set( 0.0, 1800, 0 );
 				}
 			
-				Debug.Log(string.Format("Enoch::Weather::Fog:: (%1) %2", g_Game.GetDayTime(), actual));
+				Debug.WeatherLog(string.Format("Enoch::Weather::Fog:: (%1) %2", g_Game.GetDayTime(), actual));
 
 				return true;
 		}

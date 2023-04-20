@@ -27,6 +27,9 @@ const int ECE_NOSURFACEALIGN				= 262144;	// do not align object on surface/ ter
 const int ECE_KEEPHEIGHT					= 524288;	// keep height when creating object (do not use trace or placement on surface)
 
 const int ECE_NOLIFETIME					= 4194304;	// do not set lifetime when creating the object
+const int ECE_NOPERSISTENCY_WORLD			= 8388608;	// do not save this object in world
+const int ECE_NOPERSISTENCY_CHAR			= 16777216;	// do not save this object in character
+const int ECE_DYNAMIC_PERSISTENCY			= 33554432;	// spawns in without persistency, once player takes it, persistency will be enabled if available
 
 // note: use predefined combination when not solving something specific
 //

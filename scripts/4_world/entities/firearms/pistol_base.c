@@ -146,16 +146,16 @@ class Pistol_OPE_DIS_BU0_MA1 extends WeaponStableState
  **/
 class Pistol_Base extends Weapon_Base
 {
-	ref WeaponStateBase CD00;
-	ref WeaponStateBase CC00;
-	ref WeaponStateBase CC10;
-	ref WeaponStateBase CJF0;
-	ref WeaponStateBase OD00;
-	ref WeaponStateBase CD01;
-	ref WeaponStateBase CC01;
-	ref WeaponStateBase CC11;
-	ref WeaponStateBase CJF1;
-	ref WeaponStateBase OD01;
+	ref WeaponStableState CD00;
+	ref WeaponStableState CC00;
+	ref WeaponStableState CC10;
+	ref WeaponStableState CJF0;
+	ref WeaponStableState OD00;
+	ref WeaponStableState CD01;
+	ref WeaponStableState CC01;
+	ref WeaponStableState CC11;
+	ref WeaponStableState CJF1;
+	ref WeaponStableState OD01;
 	
 	override bool CanChamberBullet (int muzzleIndex, Magazine mag)
 	{
@@ -567,7 +567,7 @@ class Pistol_Base extends Weapon_Base
 		m_fsm.AddTransition(new WeaponTransition(  Unjam_CJF1,		_abt_,	CC11));
 		
 
-		m_fsm.SetInitialState(CD00);
+		SetInitialState(CD00);
 		SelectionBulletHide();
 		HideMagazine();
 		m_fsm.Start();

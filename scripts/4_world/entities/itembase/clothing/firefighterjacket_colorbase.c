@@ -1,4 +1,4 @@
-class FirefighterJacket_ColorBase extends Clothing
+class FirefighterJacket_ColorBase extends Top_Base
 {
 	override void SetActions()
 	{
