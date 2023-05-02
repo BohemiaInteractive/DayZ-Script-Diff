@@ -584,7 +584,7 @@ class Pistol_Base extends Weapon_Base
 		}
 		else
 		{
-			chanceToJam = chanceToJam + ((1.0 - chanceToJam) * 0.1);
+			chanceToJam = chanceToJam + ((1.0 - chanceToJam) * 0.06);
 		}
 		
 		return chanceToJam;

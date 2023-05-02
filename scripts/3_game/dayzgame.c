@@ -1093,12 +1093,15 @@ class DayZGame extends CGame
 			
 			m_FoodDecayModifier = GetCEApi().GetCEGlobalFloat("FoodDecay");
 			
-			if (m_FoodDecayModifier == float.MIN)//check for legacy INT format, if value == float.MIN when read as FLOAT, it is of type INT, so we read it as such bellow
+			//check for legacy INT format, if value == float.MIN when read as FLOAT, it is of type INT, so we read it as such below	
+			if (m_FoodDecayModifier == float.MIN)
 			{
 				m_FoodDecayModifier = GetCEApi().GetCEGlobalInt("FoodDecay");
 			}
-			ObjectSpawnerHandler.OnGameplayDataHandlerLoad();//we need to perform the load here as some objects behaving correctly after spawn is dependent on CE being initialized before spawning them
 		}
+		
+		//we need to perform the load here as some objects behaving correctly after spawn is dependent on CE being initialized before spawning them
+		ObjectSpawnerHandler.OnGameplayDataHandlerLoad();
 	}
 	
 	// ------------------------------------------------------------
@@ -3294,11 +3297,11 @@ class DayZGame extends CGame
 		if (simulation == "shotArrow")
 		{
 			string pile;
+			
 			GetGame().ConfigGetText("cfgAmmo " + info.GetAmmoType() + " spawnPileType", pile);
 			
-			EntityAI arrow = EntityAI.Cast(GetGame().CreateObject(pile, info.GetPos(), ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
-			arrow.SetDirection(Vector(0,0,1));
-			
+			EntityAI arrow = EntityAI.Cast(GetGame().CreateObjectEx(pile, info.GetPos(), ECE_DYNAMIC_PERSISTENCY));
+			arrow.PlaceOnSurface();	
 			arrow.SetFromProjectile(info);
 		}
 	}
@@ -3324,9 +3327,8 @@ class DayZGame extends CGame
 			dir.Normalize();
 			pos -= dir * ARROW_PIERCE_DEPTH;
 			
-			EntityAI arrow = EntityAI.Cast(GetGame().CreateObject(pile, pos, ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
+			EntityAI arrow = EntityAI.Cast(GetGame().CreateObjectEx(pile, pos, ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
 			arrow.SetDirection(dir);
-			
 			arrow.SetFromProjectile(info);
 		}
 	}
@@ -3348,9 +3350,8 @@ class DayZGame extends CGame
 			dir.Normalize();
 			pos -= dir * ARROW_PIERCE_DEPTH;
 			
-			EntityAI arrow = EntityAI.Cast(GetGame().CreateObject(pile, pos, ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
+			EntityAI arrow = EntityAI.Cast(GetGame().CreateObjectEx(pile, pos, ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
 			arrow.SetDirection(dir);
-			
 			arrow.SetFromProjectile(info);
 
 			info.GetHitObj().AddArrow(arrow, info.GetComponentIndex());

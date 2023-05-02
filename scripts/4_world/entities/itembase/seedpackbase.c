@@ -62,4 +62,12 @@ class EmptySeedsPackLambda : ReplaceItemWithNewLambdaBase
 		Class.CastTo(unboxed, new_item);
 		unboxed.SetQuantity(m_ItemCount);
 	}
+	
+	override void OnSuccess(EntityAI new_item)
+	{
+		super.OnSuccess(new_item);
+		
+		//spawns wrapping Paper
+		ItemBase paper = ItemBase.Cast( GetGame().CreateObjectEx("Paper", new_item.GetHierarchyRoot().GetPosition(), ECE_PLACE_ON_SURFACE) );
+	}
 };

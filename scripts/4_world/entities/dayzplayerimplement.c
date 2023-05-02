@@ -393,6 +393,22 @@ class DayZPlayerImplement extends DayZPlayer
 	bool CanStartConsumingStamina(EStaminaConsumers consumer) {};
 	void DepleteStamina(EStaminaModifiers modifier, float dT = -1) {};
 	
+	bool IsInVehicle()
+	{
+		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_VEHICLE || (GetParent() != null && GetParent().IsInherited(Transport));
+	}
+	
+	bool IsSwimming()
+	{
+		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_SWIM;
+	}
+	
+	bool IsClimbingLadder()
+	{
+		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_LADDER;
+	}
+	
+	
 	bool PlaySoundEvent(EPlayerSoundEventID id, bool from_anim_system = false, bool is_from_server = false) {};
 	bool PlaySoundEventEx(EPlayerSoundEventID id, bool from_anim_system = false, bool is_from_server = false, int param = 0) {};
 
@@ -1714,17 +1730,21 @@ class DayZPlayerImplement extends DayZPlayer
 		
 		if (hic.IsZoomToggle() && !m_MovementState.IsRaised())        
 		{
-			float pSpeed;
-			vector pLocalDirection;
-			hic.GetMovement(pSpeed ,pLocalDirection);
-			
-			if (m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_ERECT && pSpeed == 3)
+			m_CameraEyeZoomLevel = ECameraZoomType.NORMAL;
+			if ((IsClimbingLadder() && Math.AbsInt(m_MovementState.m_iMovement) == 2) || (IsSwimming() && m_MovementState.m_iMovement == 3))
 			{
 				m_CameraEyeZoomLevel = ECameraZoomType.SHALLOW;
 			}
-			else
+			else if (!IsClimbingLadder() && !IsSwimming() && !IsInVehicle())
 			{
-				m_CameraEyeZoomLevel = ECameraZoomType.NORMAL;
+				float pSpeed;
+				vector pLocalDirection;
+				hic.GetMovement(pSpeed ,pLocalDirection);
+				
+				if (m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_ERECT && pSpeed == 3)
+				{
+					m_CameraEyeZoomLevel = ECameraZoomType.SHALLOW;
+				}
 			}
 		}
 		else
@@ -2150,7 +2170,7 @@ class DayZPlayerImplement extends DayZPlayer
 					AddNoise(npar);
 				}
 				
-				if (fallDamageData.m_Height >= DayZPlayerImplementFallDamage.FD_DMG_FROM_HEIGHT && GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
+				if (fallDamageData.m_Height >= DayZPlayerImplementFallDamage.HEALTH_HEIGHT_LOW && GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 				{
 					OnPlayerRecievedHit();
 				}

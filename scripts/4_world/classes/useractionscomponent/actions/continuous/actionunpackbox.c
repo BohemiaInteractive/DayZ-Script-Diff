@@ -63,9 +63,6 @@ class ActionUnpackBox: ActionContinuousBase
 				UnboxLambda lambda = new UnboxLambda(action_data.m_MainItem, itemType, action_data.m_Player, itemCount);
 				action_data.m_Player.ServerReplaceItemInHandsWithNew(lambda);
 				
-				//spawns wrapping Paper
-				ItemBase paper = ItemBase.Cast( GetGame().CreateObjectEx("Paper", action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE) );
-				
 				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 			}
 		}
@@ -95,6 +92,14 @@ class UnboxLambda : ReplaceItemWithNewLambdaBase
 			unboxed.SetQuantity(m_ItemCount);
 			Print("UnboxLambda::SetupNewItem new_item=" + new_item + " count=" + m_ItemCount);
 		}
+	}
+	
+	override void OnSuccess(EntityAI new_item)
+	{
+		super.OnSuccess(new_item);
+		
+		//spawns wrapping Paper
+		ItemBase paper = ItemBase.Cast( GetGame().CreateObjectEx("Paper", new_item.GetHierarchyRoot().GetPosition(), ECE_PLACE_ON_SURFACE) );
 	}
 };
 

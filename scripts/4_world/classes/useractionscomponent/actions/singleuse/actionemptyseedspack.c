@@ -44,10 +44,4 @@ class ActionEmptySeedsPack: ActionSingleUseBase
 			item_SPB.EmptySeedPack( player );
 		}
 	}
-	
-	override void OnEndServer( ActionData action_data )
-	{
-		//spawns wrapping Paper
-		ItemBase paper = ItemBase.Cast( GetGame().CreateObjectEx("Paper", action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE) );
-	}
 };

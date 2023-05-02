@@ -4954,15 +4954,7 @@ class PlayerBase extends ManBase
 	}
 	*/
 	
-	bool IsSwimming()
-	{
-		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_SWIM;
-	}
 	
-	bool IsClimbingLadder()
-	{
-		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_LADDER;
-	}
 	
 	bool IsClimbing()
 	{
@@ -4973,12 +4965,6 @@ class PlayerBase extends ManBase
 	{
 		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_FALL;
 	}
-	
-	bool IsInVehicle()
-	{
-		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_VEHICLE || (GetParent() != null && GetParent().IsInherited(Transport));
-	}
-
 	override bool IsFighting()
 	{
 		return m_IsFighting;

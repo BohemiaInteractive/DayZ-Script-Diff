@@ -23,8 +23,9 @@ class DayZPlayerImplementFallDamage
 	static const string	FALL_DAMAGE_AMMO_HEALTH_ATTACHMENT	= "FallDamageHealthAttachment";
 	static const string	FALL_DAMAGE_AMMO_HEALTH_OTHER_ATTACHMENTS	= "FallDamageHealthOtherAttachments";
 
-	private const float		HEALTH_HEIGHT_LOW 		= 5;
-	private const float		HEALTH_HEIGHT_HIGH 		= 14;
+	const float		HEALTH_HEIGHT_LOW 		= 5;
+	const float		HEALTH_HEIGHT_HIGH 		= 14;
+
 	private const float		SHOCK_HEIGHT_LOW 		= 3;
 	private const float		SHOCK_HEIGHT_HIGH 		= 12;
 	private const float		BROKENLEGS_HEIGHT_LOW 	= 5;

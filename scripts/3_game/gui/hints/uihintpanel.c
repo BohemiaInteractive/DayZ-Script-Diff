@@ -19,11 +19,11 @@ class UiHintPanel extends ScriptedWidgetEventHandler
 	protected TextWidget 			m_UiPageingLabel;
 	// Data		
 	protected ref array<ref HintPage>	m_ContentList;
-	protected int 					m_PageIndex;
+	protected int 					m_PageIndex = int.MIN;
 	protected DayZGame				m_Game;
 	protected bool					m_Initialized;
 	protected Widget 				m_ParentWidget;
-	protected int					m_PreviousRandomIndex;
+	protected int					m_PreviousRandomIndex = int.MIN;
 	
 	// ---------------------------------------------------------
 	

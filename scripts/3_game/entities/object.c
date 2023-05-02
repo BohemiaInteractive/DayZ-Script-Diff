@@ -1350,6 +1350,10 @@ class Object extends IEntity
 		
 		arrow.GetTransform(arrowTransMat);
 		Math3D.MatrixInvMultiply4(parentTransMat, arrowTransMat, arrowTransMat);
+		
+		// orthogonalize matrix - parent might be skewed
+		Math3D.MatrixOrthogonalize4(arrowTransMat);
+		
 		arrow.SetTransform(arrowTransMat);
 		
 		AddChild(arrow, pivot);

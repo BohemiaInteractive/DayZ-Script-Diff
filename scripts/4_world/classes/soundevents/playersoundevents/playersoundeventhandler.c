@@ -29,6 +29,7 @@ enum EPlayerSoundEventID
 	DROWNING_BREATH,
 	DROWNING_PAIN,
 	PICKUP_HEAVY,
+	THIRST,
 	//--------------
 	// Count bellow, put enums above
 	//--------------
@@ -84,6 +85,7 @@ class PlayerSoundEventHandler extends SoundEventHandler
 		RegisterState(new DrowningEvent1());
 		RegisterState(new DrowningEvent2());
 		RegisterState(new PickupHeavySoundEvent());
+		RegisterState(new ThirstSoundEvent());
 
 
 	}

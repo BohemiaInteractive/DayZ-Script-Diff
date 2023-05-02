@@ -207,6 +207,18 @@ class Math3D
 	proto static void MatrixInvMultiply3(vector mat0[3], vector mat1[3], out vector res[3]);
 
 	/**
+	\brief Orthogonalizes matrix
+	    \param[it] mat \p matrix which should be orthogonalized
+	*/
+	proto static void MatrixOrthogonalize4(vector mat[4]);
+	
+	/**
+	\brief Orthogonalizes matrix
+	    \param[it] mat \p matrix which should be orthogonalized
+	*/
+	proto static void MatrixOrthogonalize3(vector mat[3]);
+	
+	/**
 	\brief Creates identity matrix
 	    \param[out] mat \p created identity matrix
 		@code
@@ -217,6 +229,7 @@ class Math3D
 			>> <1,0,0>,<0,1,0>,<0,0,1>,<0,0,0>
 		@endcode
 	*/
+	
 	static void MatrixIdentity4(out vector mat[4])
 	{
 		mat[0] = "1 0 0";

@@ -40,8 +40,13 @@ class ThirstMdfr: ModifierBase
 		
 		if ( water <= PlayerConstants.LOW_WATER_THRESHOLD )
 		{
+			player.SetMixedSoundState( eMixedSoundStates.THIRSTY );
 			if ((player.GetStomach().GetDigestingType() & PlayerStomach.DIGESTING_WATER) == 0)
 				player.AddHealth("GlobalHealth", "Health", -PlayerConstants.LOW_WATER_DAMAGE_PER_SEC * deltaT );
+		}
+		else
+		{
+			player.UnsetMixedSoundState( eMixedSoundStates.THIRSTY );
 		}
 	}
 };

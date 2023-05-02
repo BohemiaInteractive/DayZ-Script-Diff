@@ -6,6 +6,7 @@ enum eSoundHandlers
 	STAMINA,
 	HUNGER,
 	INJURY,
+	THIRST,
 	//FREEZING,
 	
 	//------
@@ -62,6 +63,7 @@ class PlayerSoundManagerServer extends PlayerSoundManagerBase
 	{
 		RegisterHandler(new StaminaSoundHandlerServer(m_Player));
 		RegisterHandler(new HungerSoundHandlerServer(m_Player));
+		RegisterHandler(new ThirstSoundHandlerServer(m_Player));
 		RegisterHandler(new InjurySoundHandlerServer(m_Player));
 	}
 	
@@ -92,6 +94,7 @@ class PlayerSoundManagerClient extends PlayerSoundManagerBase
 	{
 		RegisterHandler(new StaminaSoundHandlerClient(m_Player));
 		RegisterHandler(new HungerSoundHandlerClient(m_Player));
+		RegisterHandler(new ThirstSoundHandlerClient(m_Player));
 		RegisterHandler(new InjurySoundHandlerClient(m_Player));
 		//RegisterHandler(new FreezingSoundHandlerClient(m_Player));
 	}

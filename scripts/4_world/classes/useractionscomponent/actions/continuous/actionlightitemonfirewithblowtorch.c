@@ -8,6 +8,11 @@ class ActionLightItemOnFireWithBlowtorchCB : ActionLightItemOnFireCB
 
 class ActionLightItemOnFireWithBlowtorch : ActionLightItemOnFire
 {
+	void ActionLightItemOnFireWithBlowtorch()
+	{
+		m_CallbackClass = ActionLightItemOnFireWithBlowtorchCB;
+	}
+	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		Blowtorch bt = Blowtorch.Cast(item);
@@ -50,7 +55,7 @@ class ActionLightItemOnFireWithBlowtorch : ActionLightItemOnFire
 		return false;
 	}
 	
-	override void OnUpdate(ActionData action_data)
+	override void OnUpdateServer(ActionData action_data)
 	{
 		super.OnUpdate(action_data);
 
@@ -59,7 +64,7 @@ class ActionLightItemOnFireWithBlowtorch : ActionLightItemOnFire
 			Interrupt(action_data);
 		}
 	}
-
+	
 	override void OnExecuteServer(ActionData action_data)
 	{
 		super.OnExecuteServer(action_data);
