@@ -9,5 +9,6 @@ class WoodenStick : ItemBase
 		AddAction(ActionAttach);
 		AddAction(ActionDetach);
 		AddAction(ActionAttachToConstruction);
+		AddAction(ActionCraftBolts);
 	}
 }

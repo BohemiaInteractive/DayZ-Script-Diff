@@ -139,9 +139,6 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftArmbandFlag);
 		RegisterRecipe(new DeCraftDetonator);		
 		RegisterRecipe(new RepairPlanks);
-		//arrows
-		RegisterRecipe(new CraftBolt);
-		RegisterRecipe(new CraftBoltFeather);
 		//"paint" recipes
 		/*RegisterRecipe(new PaintFirefighterAxe);
 		RegisterRecipe(new PaintGhillieHoodGreen);

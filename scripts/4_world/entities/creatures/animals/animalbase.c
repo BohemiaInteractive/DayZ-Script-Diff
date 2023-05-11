@@ -1,5 +1,17 @@
 class AnimalBase extends DayZAnimal
 {
+	protected ref ArrowManagerBase m_ArrowManager;
+	
+	void AnimalBase()
+	{
+		m_ArrowManager = new ArrowManagerBase(this);
+	}
+	
+	override ArrowManagerBase GetArrowManager()
+	{
+		return m_ArrowManager;
+	}
+	
 	override bool IsRefresherSignalingViable()
 	{
 		return false;

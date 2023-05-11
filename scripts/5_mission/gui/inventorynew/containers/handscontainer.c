@@ -1431,7 +1431,7 @@ class HandsContainer: Container
 
 	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT )
+		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
 			if( w == null )
 			{

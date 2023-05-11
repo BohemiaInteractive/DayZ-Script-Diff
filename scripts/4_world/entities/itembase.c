@@ -3560,24 +3560,22 @@ class ItemBase extends InventoryItem
 		return m_HeatIsolation;
 	}
 
-	float GetLiquidModifierCoef()
+	float GetDryingIncrement(string pIncrementName)
 	{
-		return ConfigGetFloat("liquidModifierCoef");
-	}
-
-	float GetTransferableWetnessCoef()
-	{
-		return ConfigGetFloat("transferableWetnessCoef");
-	}
-
-	float GetDryingIncrements(EDryingIncrementCategory pos)
-	{
-		array<float> increments = new array<float>();
-		ConfigGetFloatArray("dryingIncrements", increments);
-		if (increments.Count() == EnumTools.GetEnumSize(EDryingIncrementCategory))
-			return increments[pos];
+		string paramPath = string.Format("CfgVehicles %1 EnvironmentWetnessIncrements Drying %2", GetType(), pIncrementName);
+		if (GetGame().ConfigIsExisting(paramPath))
+			return GetGame().ConfigGetFloat(paramPath);
 		
-		return 0;
+		return 0.0;
+	}
+	
+	float GetSoakingIncrement(string pIncrementName)
+	{
+		string paramPath = string.Format("CfgVehicles %1 EnvironmentWetnessIncrements Soaking %2", GetType(), pIncrementName);
+		if (GetGame().ConfigIsExisting(paramPath))
+			return GetGame().ConfigGetFloat(paramPath);
+		
+		return 0.0;
 	}
 	//----------------------------------------------------------------
 	override void SetWet(float value, bool allow_client = false)
@@ -4441,13 +4439,13 @@ class ItemBase extends InventoryItem
 					AddWet(delta * GameConstants.WETNESS_RATE_WETTING_LIQUID);
 				// drying
 				else if (m_VarWet > m_VarWetMin)						
-					AddWet(-1 * delta * GetDryingIncrements(EDryingIncrementCategory.GROUND) * 2);
+					AddWet(-1 * delta * GetDryingIncrement("ground") * 2);
 			}
 			else
 			{
 				// drying on ground or inside non-itembase (car, ...)
 				if (m_VarWet > m_VarWetMin)
-					AddWet(-1 * delta * GetDryingIncrements(EDryingIncrementCategory.GROUND));
+					AddWet(-1 * delta * GetDryingIncrement("ground"));
 			}
 		}
 	}

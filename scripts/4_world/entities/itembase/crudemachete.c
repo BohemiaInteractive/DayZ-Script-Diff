@@ -24,5 +24,6 @@ class CrudeMachete extends ToolBase
 		AddAction(ActionMineTreeBark);
 		AddAction(ActionBurnSewSelf);
 		AddAction(ActionDigWorms);
+		AddAction(ActionCraftBolts);
 	}
 }

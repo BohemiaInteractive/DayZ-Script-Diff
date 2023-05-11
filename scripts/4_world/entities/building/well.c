@@ -7,7 +7,12 @@ class Well extends BuildingSuper
 	
 	override bool IsWell()
 	{
-		return true;
+		return GetWaterSourceObjectType();
+	}
+	
+	override EWaterSourceObjectType GetWaterSourceObjectType()
+	{
+		return EWaterSourceObjectType.WELL;
 	}
 	
 	override float GetLiquidThroughputCoef()

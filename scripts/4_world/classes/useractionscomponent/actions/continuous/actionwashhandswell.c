@@ -4,7 +4,7 @@ class ActionWashHandsWellCB : ActionContinuousBaseCB
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.WASH_HANDS);
 	}
-};
+}
 
 class ActionWashHandsWell: ActionContinuousBase
 {
@@ -14,6 +14,7 @@ class ActionWashHandsWell: ActionContinuousBase
 		m_CommandUID		= DayZPlayerConstants.CMD_ACTIONFB_WASHHANDSWELL;
 		m_FullBody			= true;
 		m_StanceMask		= DayZPlayerConstants.STANCEMASK_CROUCH;
+
 		m_Text = "#wash_hands";
 	}
 	
@@ -24,23 +25,19 @@ class ActionWashHandsWell: ActionContinuousBase
 	
 	override void CreateConditionComponents()  
 	{		
-		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTObject(UAMaxDistances.DEFAULT);
+		m_ConditionItem		= new CCINone();
+		m_ConditionTarget	= new CCTObject(UAMaxDistances.DEFAULT);
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		return player.HasBloodyHands() && !player.GetItemInHands() && target.GetObject() && target.GetObject().IsWell() && !player.GetItemOnSlot("Gloves");
+		return player.HasBloodyHands() && !player.GetItemInHands() && target.GetObject() && target.GetObject().GetWaterSourceObjectType() != EWaterSourceObjectType.NONE && !player.GetItemOnSlot("Gloves");
 	}
 
-	override void OnFinishProgressServer( ActionData action_data )
+	override void OnFinishProgressServer(ActionData action_data)
 	{
-		PluginLifespan module_lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
-		module_lifespan.UpdateBloodyHandsVisibility( action_data.m_Player, false );
+		PluginLifespan moduleLifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
+		moduleLifespan.UpdateBloodyHandsVisibility(action_data.m_Player, false);
 	}
 
-	/*override void OnCompleteServer( ActionData action_data )
-	{
-		OnFinishProgressServer(action_data);
-	}*/
-};
+}

@@ -148,6 +148,8 @@ class ActionSkinning: ActionContinuousBase
 				}
 			}
 			
+			DropArrows(body);
+			
 			/*
 			DropEquipAndDestroyRootLambda lambda(body_PB, "", action_data.m_Player);
 			action_data.m_Player.ServerReplaceItemWithNew(lambda);
@@ -262,13 +264,44 @@ class ActionSkinning: ActionContinuousBase
 		
 		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
+	
+	vector GetRandomPos(vector body_pos)
+	{
+		return body_pos + Vector(Math.RandomFloat01() - 0.5, 0, Math.RandomFloat01() - 0.5);
+	}
+	
+	private void DropArrows(EntityAI body)
+	{
+		ArrowManagerBase arrowManager = body.GetArrowManager();
+		if (arrowManager)
+		{
+			vector bodyPos = body.GetPosition();
+			int count = arrowManager.GetArrowsCount();
+			for (int i = count - 1; i >= 0; i--)
+			{
+				EntityAI arrow = arrowManager.GetArrow(i);
+				body.RemoveChild(arrow);
+				
+				vector m4[4];
+				Math3D.MatrixIdentity4(m4);
+				
+				vector pos = GetRandomPos(bodyPos);
+				m4[3] = pos;
+	
+				arrow.PlaceOnSurfaceRotated(m4, pos);
+			
+				arrow.SetTransform(m4);
+				arrow.PlaceOnSurface();
+			}
+		}
+	}
 
 	// Spawns an organ defined in the given config
 	ItemBase CreateOrgan( PlayerBase player, vector body_pos, string item_to_spawn, string cfg_skinning_organ_class, ItemBase tool)
 	{
 		// Create item from config
 		ItemBase added_item;
-		vector pos_rnd = body_pos + Vector(Math.RandomFloat01() - 0.5, 0, Math.RandomFloat01() - 0.5);
+		vector pos_rnd = GetRandomPos(body_pos);
 		Class.CastTo(added_item,  GetGame().CreateObjectEx( item_to_spawn, pos_rnd, ECE_PLACE_ON_SURFACE ) );
 		
 		// Check if skinning is configured for this body

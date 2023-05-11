@@ -30,7 +30,7 @@ class Headtorch_ColorBase extends Clothing
 	override protected void InitGlobalExclusionValues()
 	{
 		super.InitGlobalExclusionValues();
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADSTRAP_0);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_HEADSTRAP_0);
 	}
 	
 	void CheckParent()

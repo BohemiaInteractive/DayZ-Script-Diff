@@ -1,6 +1,9 @@
 typedef Param3<string, string, string> LogTemplate;
 typedef int LogTemplateID;
 
+/*
+ * OBSOLETE: kept for possible backward compatibility only
+ */
 class LogTemplates
 {
 	static private ref map<LogTemplateID, ref LogTemplate> m_LogTemplates;

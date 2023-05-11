@@ -31,6 +31,8 @@ class CollisionInfoBase: ProjectileStoppedInfo
 class ObjectCollisionInfo: CollisionInfoBase
 {
 	proto native Object GetHitObj();
+	proto native vector GetHitObjPos();
+	proto native vector GetHitObjRot();
 	proto native int GetComponentIndex();
 }
 
@@ -395,14 +397,16 @@ class DayZProfilesOptions
 	private ref map<EDayZProfilesOptions, ref DayZProfilesOptionInt> m_DayZProfilesOptionsInt;
 	private ref map<EDayZProfilesOptions, ref DayZProfilesOptionFloat> m_DayZProfilesOptionsFloat;
 	private DayZGame m_Game
+	
+	void DayZProfilesOptions()
+	{
+		m_DayZProfilesOptionsBool 	= new map<EDayZProfilesOptions, ref DayZProfilesOptionBool>();
+		m_DayZProfilesOptionsInt 	= new map<EDayZProfilesOptions, ref DayZProfilesOptionInt>();
+		m_DayZProfilesOptionsFloat 	= new map<EDayZProfilesOptions, ref DayZProfilesOptionFloat>();
+	}
 
 	void RegisterProfileOption(EDayZProfilesOptions option, string profileOptionName, bool def = true)
 	{
-		if (!m_DayZProfilesOptionsBool)
-		{
-			m_DayZProfilesOptionsBool = new map<EDayZProfilesOptions, ref DayZProfilesOptionBool>();
-		}
-		
 		if (!m_DayZProfilesOptionsBool.Contains(option))
 		{
 			//! init of DayZProfilesOption - profileOptionName, value from Profiles files, or use default value
@@ -420,11 +424,6 @@ class DayZProfilesOptions
 	
 	void RegisterProfileOptionInt(EDayZProfilesOptions option, string profileOptionName, int defaultValue = 0)
 	{
-		if (!m_DayZProfilesOptionsInt)
-		{
-			m_DayZProfilesOptionsInt = new map<EDayZProfilesOptions, ref DayZProfilesOptionInt>();
-		}
-		
 		if (!m_DayZProfilesOptionsInt.Contains(option))
 		{
 			//! init of DayZProfilesOption - profileOptionName, value from Profiles files, or use default value
@@ -439,11 +438,6 @@ class DayZProfilesOptions
 	
 	void RegisterProfileOptionFloat(EDayZProfilesOptions option, string profileOptionName, float defaultValue = 0.0)
 	{
-		if (!m_DayZProfilesOptionsFloat)
-		{
-			m_DayZProfilesOptionsFloat = new map<EDayZProfilesOptions, ref DayZProfilesOptionFloat>();
-		}
-		
 		if (!m_DayZProfilesOptionsFloat.Contains(option))
 		{
 			//! init of DayZProfilesOption - profileOptionName, value from Profiles files, or use default value
@@ -985,10 +979,11 @@ class DayZGame extends CGame
 		
 		for (int i = 0; i < CALL_CATEGORY_COUNT; i++)
 		{
-			m_callQueue[i] = new ScriptCallQueue;
-			m_updateQueue[i] = new ScriptInvoker;
-			m_postUpdateQueue[i] = new ScriptInvoker;
-			m_timerQueue[i] = new TimerQueue;
+			m_callQueue[i] 		= new ScriptCallQueue();
+			m_updateQueue[i] 	= new ScriptInvoker();
+			m_timerQueue[i] 	= new TimerQueue();
+			
+			m_postUpdateQueue[i] = new ScriptInvoker();
 		}
 		
 		m_dragQueue = new DragQueue;
@@ -1000,6 +995,7 @@ class DayZGame extends CGame
 		{
 			m_IsStressTest = true;
 		}
+
 		if (CommandlineGetParam("doAimLogs", tmp))
 		{
 			m_AimLoggingEnabled = true;
@@ -1025,13 +1021,12 @@ class DayZGame extends CGame
 			
 		Debug.Init();
 		Component.Init();
-		LogTemplates.Init();
 		CachedObjectsParams.Init();
 		CachedObjectsArrays.Init();
 		GetUApi().PresetSelect(GetUApi().PresetCurrent());
 
-		m_DayZProfileOptions = new DayZProfilesOptions;
-		GetCallQueue(CALL_CATEGORY_GUI).Call(DeferredInit);
+		m_DayZProfileOptions = new DayZProfilesOptions();
+		
 		GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(GlobalsInit);
 		
 		string path = "cfgVehicles";
@@ -1064,21 +1059,19 @@ class DayZGame extends CGame
 	// ------------------------------------------------------------
 	void DeferredInit()
 	{
-		
 		GameOptions opt = new GameOptions();
 		opt.Initialize();
 		
 		GetInput().UpdateConnectedInputDeviceList();
-		
-		RegisterProfilesOptions();
+
 		m_UserFOV = GetUserFOVFromConfig();
 		SetHudBrightness(GetHUDBrightnessSetting());
 		
-		m_volume_sound = GetSoundScene().GetSoundVolume();
-		m_volume_speechEX = GetSoundScene().GetSpeechExVolume();
-		m_volume_music = GetSoundScene().GetMusicVolume();
-		m_volume_VOIP = GetSoundScene().GetVOIPVolume();
-		m_volume_radio = GetSoundScene().GetRadioVolume();
+		m_volume_sound 		= GetSoundScene().GetSoundVolume();
+		m_volume_speechEX 	= GetSoundScene().GetSpeechExVolume();
+		m_volume_music 		= GetSoundScene().GetMusicVolume();
+		m_volume_VOIP 		= GetSoundScene().GetVOIPVolume();
+		m_volume_radio 		= GetSoundScene().GetRadioVolume();
 		
 		PPEManagerStatic.GetPPEManager().Init();
 		GetMenuDefaultCharacterData();
@@ -1997,6 +1990,9 @@ class DayZGame extends CGame
 	override bool OnInitialize()
 	{
 		ParticleList.PreloadParticles();
+		
+		RegisterProfilesOptions();
+		DeferredInit();
 		
 		InitNotifications();
 		m_Visited = new TStringArray;
@@ -3310,13 +3306,13 @@ class DayZGame extends CGame
 	
 	// ------------------------------------------------------------
 	void OnProjectileStoppedInTerrain(TerrainCollisionInfo info)
-	{	
+	{
 		string simulation;
 		
 		if (info.GetIsWater())
 			return;
 		
-		GetGame().ConfigGetText("cfgAmmo " + info.GetAmmoType() + " simulation", simulation);	
+		GetGame().ConfigGetText("cfgAmmo " + info.GetAmmoType() + " simulation", simulation);
 		if (simulation == "shotArrow")
 		{
 			string pile;
@@ -3354,7 +3350,7 @@ class DayZGame extends CGame
 			arrow.SetDirection(dir);
 			arrow.SetFromProjectile(info);
 
-			info.GetHitObj().AddArrow(arrow, info.GetComponentIndex());
+			info.GetHitObj().AddArrow(arrow, info.GetComponentIndex(), info.GetHitObjPos(), info.GetHitObjRot());
 		}
 	}
 	
@@ -3529,7 +3525,7 @@ class DayZGame extends CGame
 		Widget.SetTextLV(value);
 	}
 	
-	private float GetHUDBrightnessSetting()
+	float GetHUDBrightnessSetting()
 	{
 		return g_Game.GetProfileOptionFloat(EDayZProfilesOptions.HUD_BRIGHTNESS);
 	}

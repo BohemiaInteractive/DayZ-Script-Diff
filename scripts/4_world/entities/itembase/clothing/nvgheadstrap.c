@@ -10,7 +10,7 @@ class NVGHeadstrap extends Glasses_Base
 	override protected void InitGlobalExclusionValues()
 	{
 		super.InitGlobalExclusionValues();
-		ClearSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_REGULAR_0);
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADSTRAP_0);
+		ClearSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_GLASSES_REGULAR_0);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_HEADSTRAP_0);
 	}
 };

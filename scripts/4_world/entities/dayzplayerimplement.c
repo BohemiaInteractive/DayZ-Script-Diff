@@ -2774,6 +2774,8 @@ class DayZPlayerImplement extends DayZPlayer
 					return AnimUpperBodyType.ChemlonDress;
 				case "Ghillie":
 					return AnimUpperBodyType.Ghillie;
+				case "Chainmail":
+					return AnimUpperBodyType.Chainmail;
 			}
 		}
 		

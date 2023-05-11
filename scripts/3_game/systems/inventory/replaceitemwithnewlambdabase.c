@@ -193,7 +193,7 @@ class ReplaceItemWithNewLambdaBase
 	protected void DeleteOldEntity()
 	{
 		hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step F) delete old item=" + m_OldItem);
-		GetGame().ObjectDelete(m_OldItem);
+		m_OldItem.DeleteSafe();
 	}
 	
 	/**@fn		CreateNetworkObjectInfo

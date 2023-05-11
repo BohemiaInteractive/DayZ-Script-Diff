@@ -330,7 +330,7 @@ class VicinitySlotsContainer: Container
 	
 	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT )
+		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
 			if( w == null )
 			{
@@ -488,14 +488,6 @@ class VicinitySlotsContainer: Container
 		ItemPreviewWidget item_preview = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
 		ItemBase item = ItemBase.Cast( item_preview.GetItem() );
 		bool draggable = ItemManager.GetInstance().EvaluateContainerDragabilityDefault(item);
-		#ifdef DIAG_DEVELOPER
-		if ( item )
-		{
-			if ( GetDayZGame().IsLeftCtrlDown() )
-				ShowActionMenu( item );
-		}
-		#endif
-		
 		ItemManager.GetInstance().SetWidgetDraggable( w, draggable );
 	}
 	
@@ -508,6 +500,14 @@ class VicinitySlotsContainer: Container
 		EntityAI item = item_preview.GetItem();
 		InventoryItem itemAtPos = InventoryItem.Cast( item );
 		Container conta;
+		
+		#ifdef DIAG_DEVELOPER
+		if ( ItemBase.Cast(item) )
+		{
+			if ( GetDayZGame().IsLeftCtrlDown() && button == MouseState.RIGHT )
+				ShowActionMenu( ItemBase.Cast(item) );
+		}
+		#endif
 		
 		if( m_Parent )
 		{

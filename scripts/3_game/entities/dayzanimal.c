@@ -67,12 +67,12 @@ class DayZCreature extends EntityAI
 		return IsRuined();
 	}
 	
-	override bool IsManageArrows()
+	override bool IsManagingArrows()
 	{
 		return true;
 	}	
 	
-	override void AddArrow(Object arrow, int componentIndex)
+	override void AddArrow(Object arrow, int componentIndex, vector closeBonePosWS, vector closeBoneRotWS)
 	{
 		CachedObjectsArrays.ARRAY_STRING.Clear();
 		GetActionComponentNameList(componentIndex, CachedObjectsArrays.ARRAY_STRING, "fire");
@@ -94,11 +94,19 @@ class DayZCreature extends EntityAI
 		}
 		else
 		{
-			GetBoneTransformWS(pivot, parentTransMat);
+			vector rotMatrix[3];
+			Math3D.YawPitchRollMatrix(closeBoneRotWS * Math.RAD2DEG,rotMatrix);
+			
+			parentTransMat[0] = rotMatrix[0];
+			parentTransMat[1] = rotMatrix[1];
+			parentTransMat[2] = rotMatrix[2];
+			parentTransMat[3] = closeBonePosWS;
 		}
 		
 		arrow.GetTransform(arrowTransMat);
 		Math3D.MatrixInvMultiply4(parentTransMat, arrowTransMat, arrowTransMat);
+		// orthogonalize matrix - parent might be skewed
+		Math3D.MatrixOrthogonalize4(arrowTransMat);
 		arrow.SetTransform(arrowTransMat);
 		
 		AddChild(arrow, pivot);

@@ -23,5 +23,6 @@ class KukriKnife extends ToolBase
 		AddAction(ActionDigWorms);
 		AddAction(ActionShaveTarget);
 		AddAction(ActionShave);
+		AddAction(ActionCraftBolts);
 	}
 }

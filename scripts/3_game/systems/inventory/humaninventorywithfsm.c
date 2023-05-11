@@ -83,6 +83,8 @@ class HumanInventoryWithFSM : HumanInventory
 		// start FSM
 		m_FSM.SetInitialState(m_Empty);
 		m_FSM.Start();
+		
+		super.Init();
 	}
 
 	bool CanProcessHandEvents () { return m_FSM && m_FSM.IsRunning(); }

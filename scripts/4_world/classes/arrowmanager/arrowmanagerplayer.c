@@ -1,11 +1,9 @@
 class ArrowManagerPlayer : ArrowManagerBase
 {	
-	private PlayerBase m_PlayerOwner;
 	private static ref map<int,typename> m_TypeHashTable;
 	
 	void ArrowManagerPlayer(PlayerBase player)
 	{
-		m_PlayerOwner = player;
 		if (!m_TypeHashTable)
 		{
 			InitializeHash();
@@ -56,8 +54,8 @@ class ArrowManagerPlayer : ArrowManagerBase
 			string type = arrow.GetType();
 			ctx.Write(type.Hash());
 			
-			vector angle = arrow.GetAngles();
-			vector pos = arrow.GetPosition();
+			vector angle = arrow.GetLocalYawPitchRoll();
+			vector pos = arrow.GetLocalPosition();
 			
 			ctx.Write(angle[0]);
 			ctx.Write(angle[1]);
@@ -68,7 +66,6 @@ class ArrowManagerPlayer : ArrowManagerBase
 			
 			int pivot = arrow.GetHierarchyPivot();
 			ctx.Write(pivot);
-			
 		}
 
 		return true;
@@ -92,19 +89,17 @@ class ArrowManagerPlayer : ArrowManagerBase
 		for (int i = 0; i < count; i++)
 		{
 		
-			if (version == 1)
+			if (version >= 1)
 			{
 				int hash;
 				if (!ctx.Read(hash))
 				{
 					return false;
 				}
+
 				float angleF[3];
 				float posF[3];
 				float value;
-				vector angle = "0 0 0";
-				vector pos = "0 0 0";
-				
 				
 				if (!ctx.Read(value))
 				{
@@ -142,8 +137,9 @@ class ArrowManagerPlayer : ArrowManagerBase
 				}
 				posF[2] = value;
 				
-				
-				
+				vector angle = "0 0 0";
+				vector pos = "0 0 0";
+
 				angle = vector.ArrayToVec(angleF);
 				pos = vector.ArrayToVec(posF);
 				
@@ -153,25 +149,22 @@ class ArrowManagerPlayer : ArrowManagerBase
 					return false;
 				}
 				
-				typename arrow_type = GetArrowTypeFromHash(hash);
-				EntityAI arrow = EntityAI.Cast(GetGame().CreateObject(arrow_type.ToString(), pos, ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
-				arrow.SetQuantityToMinimum();
-				if (arrow)
+				if (version >= 2)
 				{
-					arrow.SetYawPitchRoll(angle);
-					/// TODO MW - delete debug prints 
-					vector angleT = arrow.GetAngles();
-					vector posT = arrow.GetPosition();
-					Print("- After load - Before attach - Angle - " + angleT + " Position  - " + posT);
-					/// --------
-					m_PlayerOwner.AddArrow(arrow,pivot);
+					#ifdef SERVER
+					int spawnFlags = ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY;
+					#else
+					int spawnFlags = ECE_LOCAL|ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY;
+					#endif
 					
-					/// TODO MW - delete debug prints 	
-					angleT = arrow.GetAngles();
-					posT = arrow.GetPosition();
-				
-					Print("- After load - After attach - Angle - " + angleT + " Position  - " + posT);
-					/// --------
+					typename arrowType = GetArrowTypeFromHash(hash);
+					EntityAI arrow = EntityAI.Cast(GetGame().CreateObjectEx(arrowType.ToString(), pos, spawnFlags));
+					if (arrow)
+					{
+						arrow.SetQuantityToMinimum();
+						arrow.SetYawPitchRoll(angle);
+						m_Owner.AddChild(arrow, pivot);
+					}
 				}
 			}
 		

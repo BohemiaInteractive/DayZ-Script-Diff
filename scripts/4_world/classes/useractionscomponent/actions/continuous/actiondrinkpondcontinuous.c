@@ -9,7 +9,7 @@ class ActionDrinkPondContinuousCB : ActionContinuousBaseCB
 class ActionDrinkPondContinuous: ActionContinuousBase
 {
 	private const float WATER_DRANK_PER_SEC = 35;
-	private const string ALLOWED_WATER_SURFACES = string.Format("%1|%2", UAWaterType.FRESH, UAWaterType.STILL);
+	protected const string ALLOWED_WATER_SURFACES = string.Format("%1|%2", UAWaterType.FRESH, UAWaterType.STILL);
 	
 	void ActionDrinkPondContinuous()
 	{

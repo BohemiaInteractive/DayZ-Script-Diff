@@ -55,5 +55,6 @@ class AK_Bayonet extends ToolBase
 		AddAction(ActionDisarmMine);
 		AddAction(ActionDisarmExplosive);
 		AddAction(ActionShave);
+		AddAction(ActionCraftBolts);
 	}
 }

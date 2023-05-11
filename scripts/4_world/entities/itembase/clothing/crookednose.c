@@ -4,10 +4,10 @@ class CrookedNose extends Mask_Base
 	{
 		super.InitGlobalExclusionValues();
 		
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_0);
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_1);
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_2);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_MASK_0);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_MASK_1);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_MASK_2);
 		
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADGEAR_HELMET_0);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_HEADGEAR_HELMET_0);
 	}
 }

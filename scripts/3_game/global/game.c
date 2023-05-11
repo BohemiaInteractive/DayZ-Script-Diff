@@ -763,6 +763,9 @@ class CGame
 	proto native void		SetDiagDrawMode(int diag_draw_mode);
 	//! Gets current debug draw mode
 	proto native int		GetDiagDrawMode();
+
+	//! If physics extrapolation is enabled, always true on retail release builds
+	proto native bool		IsPhysicsExtrapolationEnabled();
 	
 	/**
 	\brief Returns average FPS of last 16 frames

@@ -18,13 +18,11 @@ class ActionManagerClient: ActionManagerBase
 	
 	protected ref ActionData 					m_PendingActionData;
 
-	//protected bool								m_ActionWantEnd;		//If set action try end // send request to server to end
 	protected bool 								m_ActionWantEndRequest_Send;		//Request to server was sended
 	protected bool								m_ActionInputWantEnd_Send;	
 
 	void ActionManagerClient(PlayerBase player) 
 	{
-		//ActionManagerBase(player);
 		m_HandInventoryLocationTest = new InventoryLocation;
 		m_HandInventoryLocationTest.SetHands(player,null);
 		m_LastAcknowledgmentID = 1;
@@ -64,15 +62,13 @@ class ActionManagerClient: ActionManagerBase
 			switch (m_CurrentActionData.m_State)
 			{
 				case UA_AM_PENDING:
-					//ProcessActionInputEnd();
 					break;
 			
 				case UA_AM_ACCEPTED:
 					int condition_mask = ActionBase.ComputeConditionMask(m_Player, m_CurrentActionData.m_Target, m_CurrentActionData.m_MainItem);
-				
+					
 					m_CurrentActionData.m_Action.ClearInventoryReservationEx(m_CurrentActionData);
-					//bool can_be_action_done = ((condition_mask & m_CurrentActionData.m_Action.m_ConditionMask) == condition_mask);
-					bool can_be_action_done = m_CurrentActionData.m_Action.Can(m_Player,m_CurrentActionData.m_Target,m_CurrentActionData.m_MainItem);
+					bool can_be_action_done = ((condition_mask & m_CurrentActionData.m_Action.m_ConditionMask) == condition_mask);
 					// check pCurrentCommandID before start or reject 
 					if (m_ActionPossible && can_be_action_done && pCurrentCommandID != DayZPlayerConstants.COMMANDID_SWIM)
 					{
@@ -93,8 +89,6 @@ class ActionManagerClient: ActionManagerBase
 				case UA_AM_REJECTED:
 					OnActionEnd();
 					m_PendingActionAcknowledgmentID = -1;
-			
-					//m_Player.GetDayZPlayerInventory().UnlockHands();
 					break;
 			
 				default:
@@ -844,7 +838,6 @@ class ActionManagerClient: ActionManagerBase
 			if (m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
 			{
 				m_SelectedActionInputToSrollIndex = index;
-				//PossibleGUIUpdate();
 				break;
 			}
 		}		
@@ -864,7 +857,6 @@ class ActionManagerClient: ActionManagerBase
 			if (m_OrderedStandartActionInputs[index].GetPossibleActionsCount() > 1)
 			{
 				m_SelectedActionInputToSrollIndex = index;
-				//PossibleGUIUpdate();
 				break;
 			}
 		}
@@ -1269,14 +1261,13 @@ class ActionManagerClient: ActionManagerBase
 	//! client requests action interrupt
 	void RequestInterruptAction()
 	{
-		ScriptInputUserData ctx = new ScriptInputUserData;
-		if (ctx.CanStoreInputUserData())
+		if (ScriptInputUserData.CanStoreInputUserData())
 		{
+			ScriptInputUserData ctx = new ScriptInputUserData;
 			ctx.Write(INPUT_UDT_STANDARD_ACTION_END_REQUEST);
 			ctx.Write(DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT);
 			ctx.Send();
 		}
-		
 	}
 	
 	private ref ActionTarget m_ForceTarget;

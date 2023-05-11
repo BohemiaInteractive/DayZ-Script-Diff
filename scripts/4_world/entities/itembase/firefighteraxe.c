@@ -17,5 +17,6 @@ class FirefighterAxe extends ToolBase
 		//AddAction(ActionSawPlanks);
 		AddAction(ActionUnrestrainTarget);
 		AddAction(ActionSkinning);
+		AddAction(ActionCraftBolts);
 	}
 }

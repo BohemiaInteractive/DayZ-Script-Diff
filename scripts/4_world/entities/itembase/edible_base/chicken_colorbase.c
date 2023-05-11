@@ -22,6 +22,9 @@ class DeadChicken_ColorBase extends Edible_Base
 	
 	override bool CanBeSkinned()
 	{
+		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+			return false;
+
 		return true;
 	}
 }

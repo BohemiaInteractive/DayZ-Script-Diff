@@ -33,6 +33,8 @@ class ZombieBase extends DayZInfected
 	protected bool m_IsCrawling; //'DayZInfectedCommandCrawl' is transition to crawl only, 'DayZInfectedCommandMove' used after that, hence this VARIABLE_WET
 	
 	protected bool m_FinisherInProgress = false; //is this object being backstabbed?
+	
+	protected ref ArrowManagerBase m_ArrowManager;
 
 
 
@@ -69,6 +71,8 @@ class ZombieBase extends DayZInfected
 		m_TargetableObjects.Insert(AnimalBase);
 		
 		m_OrientationTimer = 0;
+		
+		m_ArrowManager = new ArrowManagerBase(this);
 	}
 	
 	//! synced variable(s) handler
@@ -1093,7 +1097,7 @@ class ZombieBase extends DayZInfected
 		//Print("DbgZombies | DumbZombie off: " + GetGame().GetTime());
 	}
 	
-	override void AddArrow(Object arrow, int componentIndex)
+	override void AddArrow(Object arrow, int componentIndex, vector closeBonePosWS, vector closeBoneRotWS)
 	{
 		CachedObjectsArrays.ARRAY_STRING.Clear();
 		GetActionComponentNameList(componentIndex, CachedObjectsArrays.ARRAY_STRING, "fire");
@@ -1115,20 +1119,33 @@ class ZombieBase extends DayZInfected
 		}
 		else
 		{
-			GetBoneTransformWS(pivot, parentTransMat);
+			vector rotMatrix[3];
+			Math3D.YawPitchRollMatrix(closeBoneRotWS * Math.RAD2DEG,rotMatrix);
+			
+			parentTransMat[0] = rotMatrix[0];
+			parentTransMat[1] = rotMatrix[1];
+			parentTransMat[2] = rotMatrix[2];
+			parentTransMat[3] = closeBonePosWS;
 		}
 		
 		arrow.GetTransform(arrowTransMat);
 		Math3D.MatrixInvMultiply4(parentTransMat, arrowTransMat, arrowTransMat);
+		// orthogonalize matrix - parent might be skewed
+		Math3D.MatrixOrthogonalize4(arrowTransMat);
 		arrow.SetTransform(arrowTransMat);
 		
 		AddChild(arrow, pivot);
 	}
 	
-	override bool IsManageArrows()
+	override bool IsManagingArrows()
 	{
 		return true;
-	}	
+	}
+	
+	override ArrowManagerBase GetArrowManager()
+	{
+		return m_ArrowManager;
+	}
 }
 
 //! an extendable data container

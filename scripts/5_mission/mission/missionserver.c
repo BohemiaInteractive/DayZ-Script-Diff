@@ -93,8 +93,6 @@ class MissionServer extends MissionBase
 	
 	override void OnUpdate(float timeslice)
 	{
-		super.OnUpdate(timeslice);
-		
 		UpdateDummyScheduler();
 		TickScheduler(timeslice);
 		UpdateLogoutPlayers();		

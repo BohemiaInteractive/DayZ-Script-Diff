@@ -587,7 +587,6 @@ class Environment
 			ItemBase parentItem;
 			bool isParentWet 			= false;
 			bool parentContainsLiquid 	= false;
-			float liquidModifier 		= 1.0;
 			InventoryLocation iLoc 		= new InventoryLocation();
 
 			if (pItem.GetInventory().GetCurrentInventoryLocation(iLoc))
@@ -604,7 +603,6 @@ class Environment
 						if ((parentItem.GetLiquidType() != 0) && (parentItem.GetQuantity() > 0))
 						{
 							parentContainsLiquid = true;
-							liquidModifier = pItem.GetLiquidModifierCoef();
 						}
 					}
 					
@@ -620,7 +618,6 @@ class Environment
 				wettingCoef = GetWetDelta();
 				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [normal]", pItem.GetDisplayName(), wettingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
 				pItem.AddWet(wettingCoef);
-				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * liquidModifier);
 
 				if (pItem.GetInventory().GetCargo())
 				{
@@ -644,21 +641,23 @@ class Environment
 							ApplyWetnessToItem(itemAtt);
 					}
 				}
+				
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER);
 			}
 
 			if (parentContainsLiquid)
 			{
-				wettingCoef = GetWetDelta() * liquidModifier;
+				wettingCoef = pItem.GetSoakingIncrement("parentWithLiquid");
 				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent contains liquid]", pItem.GetDisplayName(), wettingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
 				pItem.AddWet(wettingCoef);
-				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * pItem.GetLiquidModifierCoef());
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER);
 			}
 	
 			if (isParentWet)
 			{
 				if (pItem.GetWet() < parentItem.GetWet())
 				{
-					wettingCoef = GetWetDelta() * pItem.GetTransferableWetnessCoef();
+					wettingCoef = pItem.GetSoakingIncrement("wetParent");
 					LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent wet]", pItem.GetDisplayName(), wettingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
 					pItem.AddWet(wettingCoef);
 				}
@@ -678,9 +677,9 @@ class Environment
 	{
 		if (pItem)
 		{
-			float dryingIncrement = pItem.GetDryingIncrements(EDryingIncrementCategory.PLAYER);
+			float dryingIncrement = pItem.GetDryingIncrement("player");
 			if (pDrynessData.m_UseTemperatureSources)
-				dryingIncrement = pItem.GetDryingIncrements(EDryingIncrementCategory.PLAYER_FIREPLACE);
+				dryingIncrement = pItem.GetDryingIncrement("playerHeatSource");
 			
 			ItemBase parentItem;
 			bool isParentWet 			= false;
@@ -713,12 +712,12 @@ class Environment
 			
 			if (!isParentWet && !parentContainsLiquid)
 			{
+				
 				dryingCoef = (-1 * GameConstants.ENVIRO_TICK_RATE * dryingIncrement) / pDrynessData.m_TemperatureSourceDistance;
 				if (pItem.GetWet() >= GameConstants.STATE_DAMP)
 				{
 					LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [normal]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
-					pItem.AddWet(dryingCoef);
-					pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER);
+					pItem.AddWet(dryingCoef);			
 				}
 				
 				if (pItem.GetInventory().GetCargo())
@@ -743,15 +742,17 @@ class Environment
 							ApplyDrynessToItemEx(itemAtt, pDrynessData);
 					}
 				}
+				
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER);
 			}
 			
 			if (parentContainsLiquid)
 			{
 				//! adds wetness to item inside parent item containing liquid
-				dryingCoef = (GameConstants.ENVIRO_TICK_RATE * dryingIncrement * pItem.GetLiquidModifierCoef()) / pDrynessData.m_TemperatureSourceDistance;
+				dryingCoef = (GameConstants.ENVIRO_TICK_RATE * pItem.GetSoakingIncrement("parentWithLiquid")) / pDrynessData.m_TemperatureSourceDistance;
 				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent contains liquid]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
 				pItem.AddWet(dryingCoef);
-				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER * pItem.GetLiquidModifierCoef());
+				pItem.AddTemperature(GameConstants.ENVIRO_TICK_RATE * GameConstants.TEMPERATURE_RATE_COOLING_PLAYER);
 			}
 	
 			if (isParentWet)
@@ -759,7 +760,7 @@ class Environment
 				if (pItem.GetWet() < parentItem.GetWet())
 				{
 					//! adds wetness to item inside wet parent item
-					dryingCoef = (GameConstants.ENVIRO_TICK_RATE * dryingIncrement * pItem.GetTransferableWetnessCoef()) / pDrynessData.m_TemperatureSourceDistance;
+					dryingCoef = (GameConstants.ENVIRO_TICK_RATE * pItem.GetSoakingIncrement("wetParent")) / pDrynessData.m_TemperatureSourceDistance;
 					LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent wet]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
 					pItem.AddWet(dryingCoef);
 				}

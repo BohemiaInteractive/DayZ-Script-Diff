@@ -1,8 +1,5 @@
 class FirearmActionLoadBullet : FirearmActionBase
 {	
-	//-----------------------------------------------------
-	// 	Action events and methods
-	//-----------------------------------------------------
 	void FirearmActionLoadBullet() 
 	{
 		m_Text = "#load_bullet";
@@ -13,33 +10,61 @@ class FirearmActionLoadBullet : FirearmActionBase
 		return AC_SINGLE_USE;
 	}
 	
-	/*string GetTargetDescription()
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		return "default target description";
-	}*/
-	
-	/*protected bool ActionConditionContinue( ActionData action_data ) //condition for action
-	{
-		return true;
-	}*/
-	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item ) //condition for action
-	{
-		if (!super.ActionCondition( player, target, item ))
+		if (!super.ActionCondition(player, target, item))
 			return false;
 		
-		HumanCommandWeapons hcw = player.GetCommandModifier_Weapons();		
-		Magazine mag = Magazine.Cast(target.GetObject());	
-		Weapon_Base wpn = Weapon_Base.Cast(item);
-		return mag && player.GetWeaponManager().CanLoadBullet(wpn,mag) && hcw && hcw.GetRunningAction() != WeaponActions.CHAMBERING;
+		HumanCommandWeapons hcw = player.GetCommandModifier_Weapons();
+		if (!target.GetObject())
+			return false;
+		
+		Magazine mag = null;
+		EntityAI entity = EntityAI.Cast(target.GetObject());
+		if (entity && entity.IsManagingArrows() && entity.IsDamageDestroyed())
+		{
+			ArrowManagerBase arrowManager = ArrowManagerBase.Cast(entity.GetArrowManager());
+			if (arrowManager)
+				mag = Magazine.Cast(arrowManager.GetFirstArrow());
+		}
+		else
+			mag = Magazine.Cast(target.GetObject());
+		
+		Weapon_Base weapon = Weapon_Base.Cast(item);
+		return mag && player.GetWeaponManager().CanLoadBullet(weapon, mag) && hcw && hcw.GetRunningAction() != WeaponActions.CHAMBERING;
 	}
 	
-	override void Start( ActionData action_data )
+	override void Start(ActionData action_data)
 	{
-		super.Start( action_data );
-		Magazine mag = Magazine.Cast(action_data.m_Target.GetObject());	
+		super.Start(action_data);
+
+		Magazine mag;
+		EntityAI entity = EntityAI.Cast(action_data.m_Target.GetObject());
+		if (entity && entity.IsManagingArrows() && entity.IsDamageDestroyed())
+		{
+			ArrowManagerBase arrowManager = ArrowManagerBase.Cast(entity.GetArrowManager());
+			if (arrowManager)
+			{
+				mag = Magazine.Cast(arrowManager.AcquireFirstArrow(false));
+			}
+		}
+		else
+			mag = Magazine.Cast(action_data.m_Target.GetObject());
 
 		action_data.m_Player.GetWeaponManager().LoadBullet(mag, this);
+	}
+	
+	override Object GetDisplayInteractObject(PlayerBase player, ActionTarget target)
+	{
+		EntityAI entity = EntityAI.Cast(target.GetObject());
+		if (!entity || (entity && entity.IsManagingArrows() && !entity.IsDamageDestroyed()))
+			return null;
+		
+		ArrowManagerBase arrowManager = entity.GetArrowManager();
+		if (arrowManager)
+			return arrowManager.GetFirstArrow();
+		
+		return null;
 	}
 	
 	override bool CanBePerformedFromInventory()
@@ -51,33 +76,11 @@ class FirearmActionLoadBullet : FirearmActionBase
 	{
 		return true;
 	}
-	
-	// action need first have permission from server before can start
-	/*bool UseAcknowledgment()
-	{
-		return true;
-	}*/
-
-	
-	/*override int GetState( ActionData action_data )
-	{
-		return UA_PROCESSING;
-	}*/
-	
-	/*override float GetProgress( ActionData action_data )
-	{
-		return -1;
-	}*/
-};
+}
 
 class FirearmActionLoadBulletQuick : FirearmActionBase
 {	
-	//-----------------------------------------------------
-	// 	Action events and methods
-	//-----------------------------------------------------
-	void FirearmActionLoadBulletQuick() 
-	{
-	}
+	void FirearmActionLoadBulletQuick();
 	
 	override typename GetInputType()
 	{
@@ -86,8 +89,8 @@ class FirearmActionLoadBulletQuick : FirearmActionBase
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINonRuined();
-		m_ConditionTarget = new CCTSelf;
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTSelf();
 	}
 	
 	override bool HasProgress()
@@ -95,38 +98,37 @@ class FirearmActionLoadBulletQuick : FirearmActionBase
 		return false;
 	}
 		
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item ) //condition for action
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if (!super.ActionCondition( player, target, item ))
+		if (!super.ActionCondition(player, target, item))
 			return false;
 		
 		HumanCommandWeapons hcw = player.GetCommandModifier_Weapons();		
-		Weapon_Base weapon = Weapon_Base.Cast( item );		
+		Weapon_Base weapon = Weapon_Base.Cast(item);
+
 		return player.GetWeaponManager().CanLoadBullet(weapon, player.GetWeaponManager().GetPreparedMagazine(), true) && hcw && hcw.GetRunningAction() != WeaponActions.CHAMBERING;
-		
-		
-		//return (weapon.IsChamberEmpty(0) || weapon.IsChamberFiredOut(0)) && player.GetWeaponManager().GetPreparedMagazine()!= null;
 	}
 	
 	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
 	{
-		if ( super.SetupAction( player, target, item, action_data, extra_data))
+		if (super.SetupAction(player, target, item, action_data, extra_data))
 		{
-			if ( !GetGame().IsDedicatedServer() )
-			{
-				ActionTarget newTarget = new ActionTarget(player.GetWeaponManager().GetPreparedMagazine(), null, -1, vector.Zero, -1);
-				action_data.m_Target = newTarget;
-			}
+			#ifndef SERVER
+			ActionTarget newTarget = new ActionTarget(player.GetWeaponManager().GetPreparedMagazine(), null, -1, vector.Zero, -1);
+			action_data.m_Target = newTarget;
+			#endif
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	override void Start( ActionData action_data )
+	override void Start(ActionData action_data)
 	{
-		super.Start( action_data );
+		super.Start(action_data);
+		
 		Magazine mag = Magazine.Cast(action_data.m_Target.GetObject());
-
 		action_data.m_Player.GetWeaponManager().LoadBullet(mag, this);
 	}
-};
+}

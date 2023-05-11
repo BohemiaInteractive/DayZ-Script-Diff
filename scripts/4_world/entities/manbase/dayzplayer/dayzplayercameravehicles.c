@@ -8,7 +8,7 @@ class DayZPlayerCamera1stPersonVehicle extends DayZPlayerCamera1stPerson
 		super.OnUpdate(pDt, pOutResult);
 
 		pOutResult.m_fUseHeading 		= 0.0;
-		pOutResult.m_bUpdateEveryFrame 	= true;
+		pOutResult.m_bUpdateEveryFrame 	= GetGame().IsPhysicsExtrapolationEnabled();
 	}
 }
 
@@ -131,7 +131,7 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 		pOutResult.m_fUseHeading 		= 0.0;
 		pOutResult.m_fInsideCamera 		= 0.0;
 		pOutResult.m_fIgnoreParentRoll 	= 1.0;
-		pOutResult.m_bUpdateEveryFrame 	= true;
+		pOutResult.m_bUpdateEveryFrame 	= GetGame().IsPhysicsExtrapolationEnabled();
 		
 		StdFovUpdate(pDt, pOutResult);
 		

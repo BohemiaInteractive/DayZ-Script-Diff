@@ -26,5 +26,6 @@ class Cleaver extends ToolBase
 		AddAction(ActionDigWorms);
 		AddAction(ActionShaveTarget);
 		AddAction(ActionShave);
+		AddAction(ActionCraftBolts);
 	}
 }

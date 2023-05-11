@@ -52,11 +52,11 @@ class ActionDigWorms: ActionContinuousBase
 	
 	override bool SetupAction( PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL )
 	{	
-		if( super.SetupAction( player, target, item, action_data, extra_data ) )
+		if (super.SetupAction(player, target, item, action_data, extra_data))
 		{
-			if ( item )
+			if (item)
 			{
-				SetDiggingAnimation( item );
+				SetDiggingAnimation(item);
 			}
 			
 			return true;
@@ -70,13 +70,13 @@ class ActionDigWorms: ActionContinuousBase
 		return true;
 	}
 
-	override void OnFinishProgressServer( ActionData action_data )
+	override void OnFinishProgressServer(ActionData action_data)
 	{	
 		ItemBase worms;
-		Class.CastTo(worms,  GetGame().CreateObjectEx("Worm", action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE) );
+		Class.CastTo(worms,  GetGame().CreateObjectEx("Worm", action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 		worms.SetQuantity(10,false);
 		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 4);
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 	}
 	
 	void SetDiggingAnimation( ItemBase item )

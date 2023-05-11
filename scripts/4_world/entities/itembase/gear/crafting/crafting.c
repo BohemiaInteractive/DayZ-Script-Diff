@@ -14,10 +14,21 @@ class GorkaHelmetVisor: Inventory_Base
 	{
 		super.InitGlobalExclusionValues();
 		
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_2);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_MASK_2);
+		AddSingleExclusionValueGlobal(EAttExclusions.SHAVING_HEADGEAR_ATT_0);
 	}
 };
-class ChickenFeather: Inventory_Base {};
+
+class ChickenFeather: Inventory_Base 
+{
+	override void SetActions()
+	{
+		super.SetActions();
+
+		AddAction(ActionCraftBoltsFeather);
+	}
+};
+
 class LongWoodenStick: Inventory_Base
 {
 	override void SetActions()

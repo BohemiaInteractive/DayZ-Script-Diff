@@ -29,5 +29,6 @@ class CombatKnife extends ToolBase
 		AddAction(ActionDisarmMine);
 		AddAction(ActionDisarmExplosive);
 		AddAction(ActionShave);
+		AddAction(ActionCraftBolts);
 	}
 }

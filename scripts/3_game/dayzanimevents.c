@@ -111,7 +111,8 @@ enum AnimUpperBodyType
 	LeatherJacket		= 2008520095,
 	Coat				= 3549415,
 	ChemlonDress		= -1491825621,
-	Ghillie				= 602194810
+	Ghillie				= 602194810,
+	Chainmail			= -563873622,
 }
 
 enum AnimBackType

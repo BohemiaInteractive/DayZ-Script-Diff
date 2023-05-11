@@ -706,11 +706,15 @@ class ActionTargetsCursor extends ScriptedWidgetEventHandler
 		
 		if (m_Interact)
 		{
-			m_DisplayInteractTarget = m_Interact.GetDisplayInteractObject(m_Player,m_Target);
-		} 
+			m_DisplayInteractTarget = m_Interact.GetDisplayInteractObject(m_Player, m_Target);
+		}
+		else if (m_Single)
+		{
+			m_DisplayInteractTarget = m_Single.GetDisplayInteractObject(m_Player, m_Target);
+		}
 		else if (m_ContinuousInteract)
 		{
-			m_DisplayInteractTarget = m_ContinuousInteract.GetDisplayInteractObject(m_Player,m_Target);
+			m_DisplayInteractTarget = m_ContinuousInteract.GetDisplayInteractObject(m_Player, m_Target);
 		}
 		else
 		{

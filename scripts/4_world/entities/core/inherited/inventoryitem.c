@@ -202,29 +202,6 @@ class CarWheel extends InventoryItemSuper
 	//! Returns wheel width.
 	proto native float GetWidth();
 
-/*	Invoke car phys, when wheel was attached
-	not working properly, postponed for now
-	override void OnWasAttached( EntityAI parent, int slot_name )
-	{
-		IEntity iePrnt = IEntity.Cast( parent );
-		dBodyActive( iePrnt, ActiveState.ACTIVE);
-		dBodyApplyImpulse( iePrnt, "0 1 0");
-	}
-*/
-
-
-	/*
-	override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
-	{
-		Print("CarWheel>>> EEHitBy");
-		Print( dmgZone );
-		Print( damageResult );
-		Print( source );
-		Print( component );
-		Print( damageResult.GetDamage(dmgZone, "Health") );
-	}
-	*/
-
 	override bool DisplayNameRuinAttach()
 	{
 		return true;
@@ -237,47 +214,56 @@ class CarWheel extends InventoryItemSuper
 	
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
-		super.EEHealthLevelChanged( oldLevel, newLevel, zone );
+		super.EEHealthLevelChanged(oldLevel, newLevel, zone);
 		
-		if ( newLevel ==  GameConstants.STATE_RUINED )
+		if (newLevel ==  GameConstants.STATE_RUINED)
 		{
 			string newWheel = "";
-			switch ( GetType() )
+			switch (GetType())
 			{
 				case "HatchbackWheel":
 					newWheel = "HatchbackWheel_Ruined";
-				break;
+					break;
 	
 				case "CivSedanWheel":
 					newWheel = "CivSedanWheel_Ruined";
-				break;
+					break;
 	
 				case "Hatchback_02_Wheel":
 					newWheel = "Hatchback_02_Wheel_Ruined";
-				break;
+					break;
 				
 				case "Sedan_02_Wheel":
 					newWheel = "Sedan_02_Wheel_Ruined";
-				break;
+					break;
 	
 				case "Truck_01_Wheel":
 					newWheel = "Truck_01_Wheel_Ruined";
-				break;
+					break;
 	
 				case "Truck_01_WheelDouble":
 					newWheel = "Truck_01_WheelDouble_Ruined";
-				break;
+					break;
+
 				case "Offroad_02_Wheel":
 					newWheel = "Offroad_02_Wheel_Ruined";
-				break;
+					break;
 			}
-
-			if ( newWheel != "" )
+			
+			if (newWheel != "")
 			{
 				//Unlock to allow creating a new item
 				if (IsLockedInSlot())
-				{
 					UnlockFromParent();
+				
+				IEntity child = GetChildren();
+				while (child)
+				{
+					RemoveChild(child, true);
+					vector matrix[4];
+					GetTransform(matrix);
+					GetInventory().DropEntityWithTransform(InventoryMode.SERVER, this, EntityAI.Cast(child), matrix);
+					child = GetSibling();
 				}
 
 				ReplaceWheelLambda lambda = new ReplaceWheelLambda(this, newWheel, null);
@@ -325,10 +311,10 @@ class CarWheel_Ruined : CarWheel
 	override bool CanPutAsAttachment(EntityAI parent)
 	{
 		// So that the lambda can always put it to the Transport
-		if ( parent.IsInherited(Transport) && parent.IsRuined() )
+		if (parent.IsInherited(Transport) && parent.IsRuined())
 		{
 			InventoryLocation loc = new InventoryLocation();
-			if ( GetInventory().GetCurrentInventoryLocation(loc) );
+			if (GetInventory().GetCurrentInventoryLocation(loc))
 			{
 				return loc.GetType() == InventoryLocationType.UNKNOWN;
 			}
@@ -336,10 +322,8 @@ class CarWheel_Ruined : CarWheel
 			return false;
 		}
 
-		if ( !super.CanPutAsAttachment(parent) )
-		{
+		if (!super.CanPutAsAttachment(parent))
 			return false;
-		}
 
 		return true;
 	}
@@ -349,46 +333,45 @@ class CarWheel_Ruined : CarWheel
 		super.EEHealthLevelChanged( oldLevel, newLevel, zone );
 		#ifdef DEVELOPER
 		// used when fixing the whole car through debug
-		if ( newLevel ==  GameConstants.STATE_PRISTINE )
+		if (newLevel ==  GameConstants.STATE_PRISTINE)
 		{
 			string newWheel = "";
-			switch ( GetType() )
+			switch (GetType())
 			{
 				case "HatchbackWheel_Ruined":
 					newWheel = "HatchbackWheel";
-				break;
+					break;
 	
 				case "CivSedanWheel_Ruined":
 					newWheel = "CivSedanWheel";
-				break;
+					break;
 	
 				case "Hatchback_02_Wheel_Ruined":
 					newWheel = "Hatchback_02_Wheel";
-				break;
+					break;
 				
 				case "Sedan_02_Wheel_Ruined":
 					newWheel = "Sedan_02_Wheel";
-				break;
+					break;
 	
 				case "Truck_01_Wheel_Ruined":
 					newWheel = "Truck_01_Wheel";
-				break;
+					break;
 	
 				case "Truck_01_WheelDouble_Ruined":
 					newWheel = "Truck_01_WheelDouble";
-				break;
+					break;
+
 				case "Offroad_02_Wheel_Ruined":
 					newWheel = "Offroad_02_Wheel";
-				break;
+					break;
 			}
 
-			if ( newWheel != "" )
+			if (newWheel != "")
 			{
 				//Unlock to allow creating a new item
 				if (IsLockedInSlot())
-				{
 					UnlockFromParent();
-				}
 
 				ReplaceWheelLambda lambda = new ReplaceWheelLambda(this, newWheel, null);
 				lambda.SetTransferParams(true, true, true);
@@ -403,14 +386,15 @@ class CarWheel_Ruined : CarWheel
 class ReplaceWheelLambda : TurnItemIntoItemLambda
 {
 	vector m_oldOri;
-	void ReplaceWheelLambda(EntityAI old_item, string new_item_type, PlayerBase player) {}
+
+	void ReplaceWheelLambda(EntityAI old_item, string new_item_type, PlayerBase player);
 	
 	// No super, because we want to skip the LocationCanRemove check...
 	override protected bool CanExecuteLambda()
 	{
 		return m_OldItem != null;
 	}
-
+	
 	override void CopyOldPropertiesToNew(notnull EntityAI old_item, EntityAI new_item)
 	{
 		super.CopyOldPropertiesToNew(old_item, new_item);
@@ -419,9 +403,10 @@ class ReplaceWheelLambda : TurnItemIntoItemLambda
 	
 	override protected void OnSuccess(EntityAI new_item)
 	{
-		super.OnSuccess( new_item );
-		if ( new_item )
-			new_item.SetOrientation( m_oldOri );
+		super.OnSuccess(new_item);
+		
+		if (new_item)
+			new_item.SetOrientation(m_oldOri);
 	}
 }
 
@@ -497,25 +482,7 @@ class CarDoor extends InventoryItemSuper
 	{
 		return true;
 	}
-	
-/*
-	override void OnWasAttached( EntityAI parent, int slot_name )
-	{
-		
-		SoundParams soundParams = new SoundParams("offroad_door_close_SoundSet");
-		SoundObjectBuilder soundBuilder = new SoundObjectBuilder(soundParams);
-		SoundObject soundObject = soundBuilder.BuildSoundObject();
-		soundObject.SetPosition(GetPosition());
-		GetGame().GetSoundScene().Play3D(soundObject, soundBuilder);
-	}
-*/
-/*
-	void CloseDoors()
-	{
-		SetAnimationPhase();
-		
-	}
-*/
+
 	override void SetActions()
 	{
 		super.SetActions();

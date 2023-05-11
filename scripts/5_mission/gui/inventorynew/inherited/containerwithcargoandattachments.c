@@ -680,7 +680,7 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 
 	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT )
+		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
 			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 			if( w == NULL || player.GetInventory().IsInventoryLocked() )

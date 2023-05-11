@@ -113,6 +113,7 @@ class Crossbow_Base : Archery_Base
 		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_fin_,	C));	
 			Mech_L.AddTransition(new WeaponTransition(  Mech_L.m_start,	_abt_,	L));	
 			Mech_L.AddTransition(new WeaponTransition(  Mech_L.m_eject,	_abt_,	C));
+			Mech_L.AddTransition(new WeaponTransition(  Mech_L.m_hideB,	_abt_,	C));
 			
 		
 		//Chamber bolt

@@ -23,7 +23,7 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 				
 				if (nearestItem.GetWet() >= GameConstants.STATE_DAMP)
 				{
-					dryModifier = (-1 * pSettings.m_UpdateInterval * nearestItem.GetDryingIncrements(EDryingIncrementCategory.GROUND_TEMPSOURCE)) / distance;
+					dryModifier = (-1 * pSettings.m_UpdateInterval * nearestItem.GetDryingIncrement("groundHeatSource")) / distance;
 					Math.Clamp(dryModifier, nearestItem.GetWetMin(), nearestItem.GetWetMax());
 					nearestItem.AddWet(dryModifier);
 				}
@@ -38,7 +38,7 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 						dryModifier = 0;
 						if (cargoItem.GetWet() >= GameConstants.STATE_DAMP)
 						{
-							dryModifier = (-1 * pSettings.m_UpdateInterval * cargoItem.GetDryingIncrements(EDryingIncrementCategory.GROUND_TEMPSOURCE)) / distance;
+							dryModifier = (-1 * pSettings.m_UpdateInterval * cargoItem.GetDryingIncrement("groundHeatSource")) / distance;
 							Math.Clamp(dryModifier, cargoItem.GetWetMin(), cargoItem.GetWetMax());
 							cargoItem.AddWet(dryModifier);
 						}

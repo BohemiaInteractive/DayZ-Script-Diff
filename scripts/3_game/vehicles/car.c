@@ -188,6 +188,18 @@ class Car extends Transport
 		\param in should be in range <0, 1>
 	*/
 	proto native void SetHandbrake( float in );
+	
+	/*!
+		Sets if brakes should activate without a driver present
+	*/
+	proto native void SetBrakesActivateWithoutDriver( bool activate = true );
+	
+	//! Returns the current clutch value in range <0, 1>.
+	proto native float GetClutch();
+	/*!
+		Sets the clutch state.
+	*/
+	proto native void SetClutchState( bool in );
 
 	//!	Returns index of the current gear.
 	proto native int GetGear();
@@ -240,6 +252,12 @@ class Car extends Transport
 //-----------------------------------------------------------------------------
 // engine
 
+	//! Returns engine's min operating rpm
+	proto native float EngineGetRPMMin();
+	
+	//! Returns engine's idle rpm before engine stalls.
+	proto native float EngineGetRPMIdle();
+	
 	//! Returns engine's max rpm before engine blows up.
 	proto native float EngineGetRPMMax();
 

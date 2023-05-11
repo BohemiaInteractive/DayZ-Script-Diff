@@ -35,8 +35,6 @@ class DayZIntroSceneXbox: Managed
 	//==================================
 	void DayZIntroSceneXbox()
 	{
-		Print("DayZIntroSceneXbox Start");
-		
 		m_MenuData = g_Game.GetMenuData();
 		
 		m_LastPlayedCharacterID = m_MenuData.GetLastPlayedCharacter();
@@ -92,6 +90,8 @@ class DayZIntroSceneXbox: Managed
 		
 		// Xbox check update
 		CheckXboxClientUpdateLoopStart();
+		
+		g_Game.SetHudBrightness(g_Game.GetHUDBrightnessSetting());
 		
 		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(SetInitPostprocesses);
 	}

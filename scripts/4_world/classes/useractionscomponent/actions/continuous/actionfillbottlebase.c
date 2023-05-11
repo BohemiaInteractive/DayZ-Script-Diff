@@ -51,15 +51,15 @@ class ActionFillBottleBase: ActionContinuousBase
 			if (vector.DistanceSq(player.GetPosition(), targetObject.GetPosition()) > UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT)
 				return false;
 			
-			if (targetObject.IsWell() || targetObject.IsFuelStation())
+			if (targetObject.GetWaterSourceObjectType() != EWaterSourceObjectType.NONE || targetObject.GetWaterSourceObjectType() == EWaterSourceObjectType.THROUGH || targetObject.IsFuelStation())
 			{
-				return GetLiquidType(player,target,item) != -1;
+				return GetLiquidType(player, target, item) != -1;
 			}
 		}
 
 		CCTWaterSurface waterCheck = new CCTWaterSurface(UAMaxDistances.DEFAULT, ALLOWED_WATER_SURFACES);
 		if (waterCheck.Can(player, target))
-			return GetLiquidType(player,target,item) != -1;
+			return GetLiquidType(player, target, item) != -1;
 
 		return false;
 	}
@@ -91,7 +91,7 @@ class ActionFillBottleBase: ActionContinuousBase
 			if (Liquid.CanFillContainer(item, LIQUID_GASOLINE))
 				return LIQUID_GASOLINE;
 		}
-		else if ((!target.GetObject() || target.GetObject().IsWell()) && Liquid.CanFillContainer(item, LIQUID_WATER))
+		else if ((!target.GetObject() || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.THROUGH) && Liquid.CanFillContainer(item, LIQUID_WATER))
 		{
 			return LIQUID_WATER;
 		}

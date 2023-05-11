@@ -19,5 +19,6 @@ class StoneKnife extends ToolBase
 		AddAction(ActionMineBush);
 		AddAction(ActionMineTreeBark);
 		AddAction(ActionDigWorms);
+		AddAction(ActionCraftBolts);
 	}
 }

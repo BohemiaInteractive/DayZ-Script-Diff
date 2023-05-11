@@ -79,9 +79,9 @@ class OptionsMenu extends UIScriptedMenu
 		m_Version.SetText(version);
 		
 		#ifdef PLATFORM_WINDOWS
-			SetFocus(layoutRoot);
+		SetFocus(layoutRoot);
 		#else
-			ToggleFocus();
+		ToggleFocus();
 		#endif
 		
 		m_Tabber.m_OnTabSwitch.Insert(OnTabSwitch);
@@ -161,16 +161,16 @@ class OptionsMenu extends UIScriptedMenu
 			case 2:
 			{
 				#ifdef PLATFORM_XBOX
-					m_ControlsTab.Focus();
+				m_ControlsTab.Focus();
 				#else
-					m_VideoTab.Focus();
+				m_VideoTab.Focus();
 				#endif
 				break;
 			}
 			case 3:
 			{
 				#ifndef PLATFORM_XBOX
-					m_ControlsTab.Focus();
+				m_ControlsTab.Focus();
 				#endif
 				break;
 			}
@@ -183,7 +183,7 @@ class OptionsMenu extends UIScriptedMenu
 	{
 		m_ControlsTab.Apply();
 		
-		//if (m_GameTab.IsChanged())
+		if (m_GameTab.IsChanged())
 		{
 			m_GameTab.Apply();
 		}
@@ -395,31 +395,26 @@ class OptionsMenu extends UIScriptedMenu
 		switch (m_ActiveTabIdx)
 		{
 			case 0:
-			{
 				m_GameTab.SetToDefaults();
 				break;
-			}
+
 			case 1:
-			{
 				m_SoundsTab.SetToDefaults();
 				break;
-			}
+
 			case 2:
-			{
 				#ifdef PLATFORM_XBOX
-					m_ControlsTab.SetToDefaults();
+				m_ControlsTab.SetToDefaults();
 				#else
-					m_VideoTab.SetToDefaults();
+				m_VideoTab.SetToDefaults();
 				#endif
 				break;
-			}
+
 			case 3:
-			{
 				#ifndef PLATFORM_XBOX
-					m_ControlsTab.SetToDefaults();
+				m_ControlsTab.SetToDefaults();
 				#endif
 				break;
-			}
 		}
 		
 		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
@@ -460,7 +455,7 @@ class OptionsMenu extends UIScriptedMenu
 		m_SoundsTab.ToggleDependentOptions(mode,state);
 		m_ControlsTab.ToggleDependentOptions(mode,state);
 		#ifndef PLATFORM_XBOX
-			m_VideoTab.ToggleDependentOptions(mode,state);
+		m_VideoTab.ToggleDependentOptions(mode,state);
 		#endif
 	}
 	
@@ -476,16 +471,16 @@ class OptionsMenu extends UIScriptedMenu
 			m_ControlsTab.SetOptions(m_Options);
 
 		#ifndef PLATFORM_XBOX
-			if (m_VideoTab)
-				m_VideoTab.SetOptions(m_Options);
+		if (m_VideoTab)
+			m_VideoTab.SetOptions(m_Options);
 		#endif
 	}
 	
 	void ReloadVideoOptions()
 	{
 		#ifndef PLATFORM_XBOX
-			if (m_VideoTab)
-				m_VideoTab.SetOptions(m_Options);
+		if (m_VideoTab)
+			m_VideoTab.SetOptions(m_Options);
 		#endif
 	}
 	
@@ -593,9 +588,9 @@ class OptionsMenu extends UIScriptedMenu
 		string version;
 		GetGame().GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
-			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
+		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
-			version = "#main_menu_version" + " " + version;
+		version = "#main_menu_version" + " " + version;
 		#endif
 		
 		m_Version.SetText(version);

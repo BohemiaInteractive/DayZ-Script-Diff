@@ -53,5 +53,6 @@ class SKS_Bayonet extends Inventory_Base
 		AddAction(ActionDigWorms);
 		AddAction(ActionShaveTarget);
 		AddAction(ActionShave);
+		AddAction(ActionCraftBolts);
 	}
 }

@@ -13,5 +13,6 @@ class WoodAxe extends ToolBase
 		//AddAction(ActionBuildPart);
 		AddAction(ActionUnrestrainTarget);
 		AddAction(ActionSkinning);
+		AddAction(ActionCraftBolts);
 	}
 }

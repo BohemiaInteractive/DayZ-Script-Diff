@@ -26,6 +26,6 @@ class Mich2001Helmet extends HelmetBase
 	{
 		super.InitGlobalExclusionValues();
 		
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_HEADSTRAP_0);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_HEADSTRAP_0);
 	}
 };

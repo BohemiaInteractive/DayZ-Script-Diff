@@ -85,6 +85,16 @@ class ActionBaseCB : HumanCommandActionCallback
 				DayZPlayerSyncJunctures.SendActionInterrupt(m_ActionData.m_Player);
 			}
 		}
+		else
+		{
+			if (ScriptInputUserData.CanStoreInputUserData())
+			{
+				ScriptInputUserData ctx = new ScriptInputUserData;
+				ctx.Write(INPUT_UDT_STANDARD_ACTION_END_REQUEST);
+				ctx.Write(DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT);
+				ctx.Send();
+			}
+		}
 		m_Interrupted = true;
 	}
 	
@@ -136,16 +146,6 @@ class AnimatedActionBase : ActionBase
 		m_CallbackClass = ActionBaseCB;
 	}
 	
-
-	
-	// Server version call on single too
-	/*protected void OnStartServer( ActionData action_data ) //setup of action parameters, called before performing action
-	{
-	}
-	protected void OnStartClient( ActionData action_data ) //setup of action parameters, called before performing action
-	{
-	}*/
-	
 	protected void OnAlternativeEndServer( PlayerBase player ) //method called when action has not met conditions in action component
 	{
 	}
@@ -159,20 +159,6 @@ class AnimatedActionBase : ActionBase
 	protected void OnInterruptClient( PlayerBase player ) //method called when action has not met conditions in action component
 	{
 	}
-	
-	/*protected void OnCompleteLoopServer( ActionData action_data ) //method called on succesful finishing of action (before out animation - continuous actions only )
-	{
-	}
-	protected void OnCompleteLoopClient( ActionData action_data ) //method called on succesful finishing of action (before out animation - continuous actions only )
-	{
-	}*/
-	
-	/*protected void OnRepeatServer( ActionData action_data ) //method called on succesful finishing of action
-	{
-	}
-	protected void OnRepeatClient( ActionData action_data ) //method called on succesful finishing of action
-	{
-	}*/
 	
 	protected void OnExecute( ActionData action_data )
 	{
@@ -278,7 +264,6 @@ class AnimatedActionBase : ActionBase
 
 		if( !IsInstant() )
 		{
-		//player.GetActionManager().DisableActions();
 			CreateAndSetupActionCallback(action_data);
 		}
 		/*Debug
@@ -286,28 +271,6 @@ class AnimatedActionBase : ActionBase
 		Print("ActionBase.c : Start");
 		*/
 	}
-
-	/*override bool Can( PlayerBase player, ActionTarget target, ItemBase item )
-	{
-		if ( !m_FullBody && (!player || !player.IsPlayerInStance(GetStanceMask(player))) )
-		{
-			return false;
-		}
-		if ( m_ConditionItem && m_ConditionItem.Can(player, item) && m_ConditionTarget && m_ConditionTarget.Can(player, target) && ActionCondition(player, target, item) ) 
-		{	
-			return true;
-		}
-		return false;
-	}
-	
-	protected override bool CanContinue( ActionData action_data )
-	{
-		if ( action_data.m_Player.IsPlayerInStance(action_data.m_PossibleStanceMask) && m_ConditionItem && m_ConditionItem.CanContinue(action_data.m_Player,action_data.m_MainItem) && m_ConditionTarget && m_ConditionTarget.CanContinue(action_data.m_Player,action_data.m_Target) && ActionConditionContinue(action_data) )
-		{
-			return true;
-		}
-		return false;
-	}*/
 	
 	override void Interrupt( ActionData action_data )
 	{
@@ -349,14 +312,7 @@ class AnimatedActionBase : ActionBase
 		else
 		{
 			switch ( state )
-			{				
-				//case UA_SETEND_2:
-					//OnAlternativeEnd();
-					//InformPlayers(player,target,UA_ERROR);
-					//callback.Interrupt();
-					//callback.SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);//jtomasik - tohle pak zapoj do toho endovani az ti vse ostatni pobezi,  ted prehraje END2 (a tim to i ukonci), pozdeji by mozna piti prazdne lahve atp. mela byt samostatna akce
-					//break;
-				
+			{
 				case UA_PROCESSING:	
 					if ( CanContinue(action_data) )
 					{	
@@ -370,70 +326,15 @@ class AnimatedActionBase : ActionBase
 						Do(action_data, UA_CANCEL);
 					}
 					break;
-				/*case UA_REPEAT:
-					if ( CanContinue(action_data) )
-					{
-						if ( GetGame().IsServer() )  
-						{
-							OnRepeatServer(action_data);
-							//ApplyModifiers(action_data);
-						}
-						else
-						{
-							OnRepeatClient(action_data);
-						}
-						InformPlayers(action_data.m_Player,action_data.m_Target,UA_REPEAT);
-						action_data.m_WasExecuted = false;
-
-						Do(action_data, UA_PROCESSING);
-					}
-					else
-					{
-						action_data.m_Callback.Interrupt();
-						InformPlayers(action_data.m_Player,action_data.m_Target,UA_FINISHED);
-						Do(action_data, UA_FINISHED);
-					}				
-					break;*/
 				
-				/*case UA_ANIM_EVENT:
-					if( CanContinue(action_data))
-					{
-						if ( GetGame().IsServer() )
-						{
-							OnExecuteServer(action_data);
-							ApplyModifiers(action_data);
-						}
-						else
-						{
-							OnExecuteClient(action_data);
-						}
-						InformPlayers(action_data.m_Player,action_data.m_Target,UA_REPEAT);
-						Do(action_data, UA_PROCESSING);
-					}
-					else
-					{
-						action_data.m_Callback.Interrupt();
-						InformPlayers(action_data.m_Player, action_data.m_Target, UA_CANCEL);
-						Do(action_data, UA_CANCEL);
-					}
-					break;*/
 				case UA_FINISHED:
-					//OnCompleteLoop(action_data);
 					InformPlayers(action_data.m_Player,action_data.m_Target,UA_FINISHED);
 					action_data.m_Callback.EndActionComponent();
 					break;
-
+				
 				case UA_CANCEL:
 					InformPlayers(action_data.m_Player,action_data.m_Target,UA_CANCEL);
 					action_data.m_Callback.EndActionComponent();
-					/*if ( GetGame().IsServer() )  
-					{
-						OnInterruptServer(action_data);
-					}
-					else
-					{
-						OnInterruptClient(action_data);
-					}*/
 					break;	
 				
 				case UA_INITIALIZE:
@@ -460,7 +361,6 @@ class AnimatedActionBase : ActionBase
 			{
 				OnEndServer(action_data);
 				action_data.m_Player.SetSoundCategoryHash(0);
-				//ApplyModifiers(action_data);
 			}
 			else
 			{
@@ -495,8 +395,6 @@ class AnimatedActionBase : ActionBase
 			}
 			action_data.m_Callback.Interrupt();
 		}
-		
-		//player.GetActionManager().EnableActions();
 	}
 	
 	override float GetProgress( ActionData action_data )

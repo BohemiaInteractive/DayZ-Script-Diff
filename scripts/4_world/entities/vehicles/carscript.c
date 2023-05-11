@@ -122,6 +122,10 @@ class CarContactData
 
 typedef map<string, ref array<ref CarContactData>> CarContactCache
 
+#ifdef DEVELOPER 
+CarScript _car;
+#endif
+
 /*!
 	Base script class for all motorized wheeled vehicles.
 */
@@ -275,6 +279,10 @@ class CarScript extends Car
 	
 	void CarScript()
 	{
+#ifdef DEVELOPER 
+		_car = this;
+#endif
+
 		SetEventMask(/*EntityEvent.CONTACT |*/ EntityEvent.POSTSIMULATE);
 		
 		m_ContactCache = new CarContactCache;

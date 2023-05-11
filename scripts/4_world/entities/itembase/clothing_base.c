@@ -169,7 +169,7 @@ class Glasses_Base : Clothing
 	{
 		super.InitGlobalExclusionValues();
 		
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_GLASSES_REGULAR_0);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_GLASSES_REGULAR_0);
 	}
 };
 class Gloves_Base : Clothing {};

@@ -37,20 +37,19 @@ class Bandana_ColorBase: Clothing
 		}
 	}
 	
-	override protected int GetAttachmentExclusionInitSlotValue(int slotId)
+	override protected set<int> GetAttachmentExclusionInitSlotValue(int slotId)
 	{
-		int ret = 0;
+		set<int> ret = super.GetAttachmentExclusionInitSlotValue(slotId);
 		switch (slotId)
 		{
 			case InventorySlots.HEADGEAR:
-				ret = 0; //no discernable conflict zone here
+				return ret;//no discernable conflict zone here
 			break;
 			
 			default:
-				ret |= 1 << EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_3;
+				ret.Insert(EAttExclusions.EXCLUSION_MASK_3);
 			break;
 		}
-		
 		return ret;
 	}
 };

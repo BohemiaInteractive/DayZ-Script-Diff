@@ -99,6 +99,8 @@ class Object extends IEntity
 	
 	//! Retrieve LOD name
 	proto native owned string GetLODName(LOD lod);
+
+	proto native vector GetBoundingCenter();
 	
 	//! Retrieve LOD by given name
 	LOD GetLODByName( string name )
@@ -489,6 +491,7 @@ class Object extends IEntity
 		return GetGame().GetModelName(GetType());
 	}
 
+	proto native owned string GetShapeName();
 
 	int Release()
 	{
@@ -632,7 +635,13 @@ class Object extends IEntity
 		return false;
 	}
 	
+	EWaterSourceObjectType GetWaterSourceObjectType()
+	{
+		return EWaterSourceObjectType.NONE;
+	}
+	
 	//! Returns if this entity is Well (extends Building)
+	//! DEPRECATED by GetWaterSourceObjectType
 	bool IsWell()
 	{
 		return false;
@@ -1332,10 +1341,9 @@ class Object extends IEntity
 	void SetDebugItem();
 	#endif
 	
-	void AddArrow(Object arrow, int componentIndex)
+	void AddArrow(Object arrow, int componentIndex, vector closeBonePosWS, vector closeBoneRotWS)
 	{
 		int pivot = GetBonePivot(GetFireGeometryLevel(), componentIndex);
-
 		vector parentTransMat[4];
 		vector arrowTransMat[4];
 		
@@ -1348,11 +1356,16 @@ class Object extends IEntity
 			GetBoneTransformWS(pivot, parentTransMat);
 		}
 		
+		float scale = GetScale();
+		scale = 1 / (scale * scale);
+		
 		arrow.GetTransform(arrowTransMat);
 		Math3D.MatrixInvMultiply4(parentTransMat, arrowTransMat, arrowTransMat);
 		
 		// orthogonalize matrix - parent might be skewed
 		Math3D.MatrixOrthogonalize4(arrowTransMat);
+				
+		arrowTransMat[3] = arrowTransMat[3] * scale;
 		
 		arrow.SetTransform(arrowTransMat);
 		

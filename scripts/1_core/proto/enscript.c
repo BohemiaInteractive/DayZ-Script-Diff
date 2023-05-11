@@ -726,6 +726,45 @@ class set<Class T>
 	proto int Copy(set<T> from);
 	proto native void Swap(set<T> other);
 	proto int Init(T init[]);
+	
+	void InsertSet(set<T> other)
+	{
+		int count = other.Count();
+		for (int i = 0; i < count; i++)
+		{
+			T item = other[i];
+			Insert(item);
+		}
+	}
+	
+	void RemoveItem(T value)
+	{
+		int remove_index = Find(value);
+		if (remove_index >= 0)
+		{
+			Remove(remove_index);
+		}
+	}
+	
+	void RemoveItems(set<T> other)
+	{
+		int count = other.Count();
+		for (int i = 0; i < count; i++)
+		{
+			T item = other[i];
+			RemoveItem(item);
+		}
+	}
+	
+	void Debug()
+	{
+		Print(string.Format("Set count: %1", Count()));
+		for (int i = 0; i < Count(); i++)
+		{
+			T item = Get(i);
+			Print(string.Format("[%1] => %2", i, item));
+		}
+	}
 };
 
 //force these to compile so we can link C++ methods to them

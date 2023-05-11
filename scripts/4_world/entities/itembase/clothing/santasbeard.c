@@ -10,6 +10,6 @@ class SantasBeard extends Mask_Base
 	{
 		super.InitGlobalExclusionValues();
 		
-		AddSingleExclusionValueGlobal(EAttachmentExclusionFlags.OCCUPANCY_ZONE_MASK_0);
+		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_MASK_0);
 	}
 }

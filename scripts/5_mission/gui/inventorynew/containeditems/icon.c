@@ -134,7 +134,7 @@ class Icon: LayoutHolder
 
 	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT )
+		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
 			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 			if( player.GetInventory().HasInventoryReservation( m_Obj, null ) || player.GetInventory().IsInventoryLocked() || player.IsItemsToDelete() )

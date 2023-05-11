@@ -917,8 +917,10 @@ class PlayerBase extends ManBase
 	override void EEDelete(EntityAI parent)
 	{
 		SEffectManager.DestroyEffect(m_FliesEff);
-//		ErrorEx("DbgFlies | StopSoundSet | exit 1 ",ErrorExSeverity.INFO);
 		StopSoundSet(m_SoundFliesEffect);
+
+		if (GetArrowManager())
+			GetArrowManager().ClearArrows();
 	}
 	
 	float ConvertNonlethalDamage(float damage)
@@ -1248,6 +1250,7 @@ class PlayerBase extends ManBase
 		AddAction(ActionGetOutTransport, InputActionMap);
 		
 		AddAction(ActionUnrestrainTargetHands, InputActionMap);
+		AddAction(ActionTakeArrow, InputActionMap);
 		
 		//AddAction(ActionPickupChicken, InputActionMap);
 		//AddAction(ActionSwitchLights);
@@ -1603,7 +1606,7 @@ class PlayerBase extends ManBase
 		return m_WeaponManager;		
 	}
 	
-	ArrowManagerPlayer GetArrowManager()
+	override ArrowManagerBase GetArrowManager()
 	{
 		return m_ArrowManager;
 	}
@@ -2968,8 +2971,7 @@ class PlayerBase extends ManBase
 	{
 		if (m_hac && !m_MapClosingSyncSent)
 		{
-			ScriptInputUserData ctx = new ScriptInputUserData;
-			if (ctx.CanStoreInputUserData())
+			if (ScriptInputUserData.CanStoreInputUserData())
 			{
 				int command_ID = DayZPlayerConstants.CMD_ACTIONINT_END;
 				if (cancelled)
@@ -3671,6 +3673,8 @@ class PlayerBase extends ManBase
 		
 		if (GetInventory())
 			GetInventory().LockInventory(LOCK_FROM_SCRIPT);
+		
+		CloseInventoryMenu();
 		
 		ItemBase itemInHand = GetItemInHands();
 		EntityAI itemOnHead = FindAttachmentBySlotName("Headgear");
@@ -6301,8 +6305,6 @@ class PlayerBase extends ManBase
 				LocalDestroyEntityInHands();
 			}
 		}
-		
-		GetArrowManager().ClearArrows();
 	}
 	
 	//! Drops all clothes/wearables this character is carrying on themselves.
@@ -6490,7 +6492,17 @@ class PlayerBase extends ManBase
 	
 	bool HasCoveredFaceForShave()
 	{
-		return m_FaceCoveredForShaveLayers > 0;
+		return m_FaceCoveredForShaveLayers > 0 || IsExclusionFlagPresent(GetFaceCoverageShaveValues());
+	}
+	
+	//! returns a set of face covering values (supplementary)
+	static set<int> GetFaceCoverageShaveValues()
+	{
+		set<int> ret = new set<int>;
+		ret.Insert(EAttExclusions.SHAVING_MASK_ATT_0);
+		ret.Insert(EAttExclusions.SHAVING_HEADGEAR_ATT_0);
+		
+		return ret;
 	}
 	
 	eBloodyHandsTypes HasBloodyHandsEx()
@@ -6652,8 +6664,10 @@ class PlayerBase extends ManBase
 			{
 				ctx.Write(false);
 			}
+			
+			ArrowManagerPlayer arrowManager = ArrowManagerPlayer.Cast(GetArrowManager());
+			arrowManager.Save(ctx);
 		}
-		GetArrowManager().Save(ctx);
 	}
 
 	
@@ -6807,11 +6821,12 @@ class PlayerBase extends ManBase
 					SetPosition(position);
 				}
 			}
-		}
 		
-		if (version >= 134)
-		{
-			GetArrowManager().Load(ctx);
+			if (version >= 134)
+			{
+				ArrowManagerPlayer arrowManager = ArrowManagerPlayer.Cast(GetArrowManager());
+				arrowManager.Load(ctx);
+			}
 		}
 		
 		Print("---- PlayerBase OnStoreLoad SUCCESS ----");
@@ -7269,6 +7284,9 @@ class PlayerBase extends ManBase
 			//remove bloody hands
 			PluginLifespan moduleLifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
 			moduleLifespan.UpdateBloodyHandsVisibilityEx(this, eBloodyHandsTypes.CLEAN);
+			
+			if (GetArrowManager())
+				GetArrowManager().ClearArrows();
 
 		}
 		else
@@ -9025,20 +9043,28 @@ class PlayerBase extends ManBase
 		}
 	}
 	
-	override void AddArrow(Object arrow, int componentIndex)
+	override void AddArrow(Object arrow, int componentIndex, vector closeBonePosWS, vector closeBoneRotWS)
 	{
 		CachedObjectsArrays.ARRAY_STRING.Clear();
-		GetActionComponentNameList(componentIndex, CachedObjectsArrays.ARRAY_STRING, "fire");
+		GetActionComponentNameList(componentIndex, CachedObjectsArrays.ARRAY_STRING, LOD.NAME_FIRE);
 		
-		int pivot = -1;
+		int pivot = componentIndex;
+		int newPivot = -1;
 		
-		for (int i = 0; i < CachedObjectsArrays.ARRAY_STRING.Count() && pivot == -1; i++)
+		for (int i = 0; i < CachedObjectsArrays.ARRAY_STRING.Count() && newPivot == -1; i++)
 		{
-			pivot = GetBoneIndexByName(CachedObjectsArrays.ARRAY_STRING.Get(i));
+			newPivot = GetBoneIndexByName(CachedObjectsArrays.ARRAY_STRING.Get(i));
+		}
+		
+		if (newPivot != -1)
+		{
+			pivot = newPivot;
 		}
 		
 		vector parentTransMat[4];
 		vector arrowTransMat[4];
+		
+		arrow.GetTransform(arrowTransMat);
 		
 		if (pivot == -1)
 		{
@@ -9046,17 +9072,23 @@ class PlayerBase extends ManBase
 		}
 		else
 		{
-			GetBoneTransformWS(pivot, parentTransMat);
+			vector rotMatrix[3];
+			Math3D.YawPitchRollMatrix(closeBoneRotWS * Math.RAD2DEG,rotMatrix);
+			
+			parentTransMat[0] = rotMatrix[0];
+			parentTransMat[1] = rotMatrix[1];
+			parentTransMat[2] = rotMatrix[2];
+			parentTransMat[3] = closeBonePosWS;
 		}
 		
-		arrow.GetTransform(arrowTransMat);
 		Math3D.MatrixInvMultiply4(parentTransMat, arrowTransMat, arrowTransMat);
+		Math3D.MatrixOrthogonalize4(arrowTransMat);
 		arrow.SetTransform(arrowTransMat);
 		
 		AddChild(arrow, pivot);
 	}
 	
-	override bool IsManageArrows()
+	override bool IsManagingArrows()
 	{
 		return true;
 	}	

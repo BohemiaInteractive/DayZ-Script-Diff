@@ -49,19 +49,34 @@ enum EInventoryIconVisibility
 	HIDE_HANDS_SLOT = 4
 }
 
-//!EXCLUSIVITY flags, restrict attachment combinations
-enum EAttachmentExclusionFlags
+//!EXCLUSIVITY values, restrict attachment combinations
+enum EAttExclusions
 {
-	//OCCUPANCY_INVALID = -1,
-	OCCUPANCY_ZONE_HEADGEAR_HELMET_0, //full helmet
-	//OCCUPANCY_ZONE_HEADGEAR_HELMET_0_A, //example of another 'vector' of potential conflict, like between helmet and eyewear..otherwise the other non-helmet entities would collide through the 'OCCUPANCY_ZONE_HEADSTRAP_0' value.
-	OCCUPANCY_ZONE_HEADSTRAP_0,
-	OCCUPANCY_ZONE_MASK_0,
-	OCCUPANCY_ZONE_MASK_1,
-	OCCUPANCY_ZONE_MASK_2, //Mostly Gasmasks
-	OCCUPANCY_ZONE_MASK_3, //bandana mask special behavior
-	OCCUPANCY_ZONE_GLASSES_REGULAR_0,
-	OCCUPANCY_ZONE_GLASSES_TIGHT_0,
+	OCCUPANCY_INVALID = -1,
+	//Legacy relations
+	LEGACY_EYEWEAR_HEADGEAR,
+	LEGACY_EYEWEAR_MASK,
+	LEGACY_HEADSTRAP_HEADGEAR,
+	LEGACY_HEADSTRAP_MASK,
+	LEGACY_HEADGEAR_MASK,
+	LEGACY_HEADGEAR_EYEWEWEAR,
+	LEGACY_HEADGEAR_HEADSTRAP,
+	LEGACY_MASK_HEADGEAR,
+	LEGACY_MASK_EYEWEWEAR,
+	LEGACY_MASK_HEADSTRAP,
+	//
+	EXCLUSION_HEADGEAR_HELMET_0, //full helmet
+	//EXCLUSION_HEADGEAR_HELMET_0_A, //example of another 'vector' of potential conflict, like between helmet and eyewear..otherwise the other non-helmet entities would collide through the 'EXCLUSION_HEADSTRAP_0' value.
+	EXCLUSION_HEADSTRAP_0,
+	EXCLUSION_MASK_0,
+	EXCLUSION_MASK_1,
+	EXCLUSION_MASK_2, //Mostly Gasmasks
+	EXCLUSION_MASK_3, //bandana mask special behavior
+	EXCLUSION_GLASSES_REGULAR_0,
+	EXCLUSION_GLASSES_TIGHT_0,
+	//values to solve the edge-cases with shaving action
+	SHAVING_MASK_ATT_0,
+	SHAVING_HEADGEAR_ATT_0,
 }
 
 class EntityAI extends Entity
@@ -71,9 +86,9 @@ class EntityAI extends Entity
 	bool 								m_PreparedToDelete = false;
 	bool 								m_RefresherViable = false;
 	bool								m_WeightDirty = 1;
-	private ref map<int,int>			m_AttachmentExclusionMaskMap; //own masks for different slots <slot,mask>. Kept on instance to better respond to various state changes
-	private int 						m_AttachmentExclusionMaskGlobal; //additional mask values and simple item values. Independent of slot-specific behavior!
-	private int 						m_AttachmentExclusionMaskChildren; //additional mask values and simple item values
+	private ref map<int,ref set<int>>	m_AttachmentExclusionSlotMap; //own masks for different slots <slot,mask>. Kept on instance to better respond to various state changes
+	private ref set<int>				m_AttachmentExclusionMaskGlobal; //additional mask values and simple item values. Independent of slot-specific behavior!
+	private ref set<int> 				m_AttachmentExclusionMaskChildren; //additional mask values and simple item values
 	
 	ref DestructionEffectBase			m_DestructionBehaviourObj;
 	
@@ -718,7 +733,7 @@ class EntityAI extends Entity
 	
 	void OnInventoryInit()
 	{
-		InitAttachmentExclusonValues();
+		InitAttachmentExclusionValues();
 	}
 	
 	//! Called upon object creation
@@ -1227,21 +1242,21 @@ class EntityAI extends Entity
 	{
 		//generic occupancy check
 		EntityAI currentAtt = GetInventory().FindAttachment(slotId);
-		bool internalConflictCheck = !attachment.CheckInternalExclusionConflicts(slotId);
+		bool hasInternalConflict = attachment.HasInternalExclusionConflicts(slotId);
 		if (currentAtt) //probably a swap or same-type swap
 		{
-			int diff = attachment.GetAttachmentExclusionMaskAll(slotId);
-			diff &= ~currentAtt.GetAttachmentExclusionMaskAll(slotId);
-			if (diff == 0)
+			set<int> diff = attachment.GetAttachmentExclusionMaskAll(slotId);
+			diff.RemoveItems(currentAtt.GetAttachmentExclusionMaskAll(slotId));
+			if (diff.Count() == 0)
 			{
-				return internalConflictCheck;
+				return !hasInternalConflict;
 			}
 			else
 			{
-				return internalConflictCheck && !IsExclusionFlagPresentRecursive(diff,slotId);
+				return !hasInternalConflict && !IsExclusionFlagPresentRecursive(diff,slotId);
 			}
 		}
-		return internalConflictCheck && !IsExclusionFlagPresentRecursive(attachment.GetAttachmentExclusionMaskAll(slotId),slotId);
+		return !hasInternalConflict && !IsExclusionFlagPresentRecursive(attachment.GetAttachmentExclusionMaskAll(slotId),slotId);
 	}
 	
 	/**@fn		CanLoadAsAttachment
@@ -3080,25 +3095,29 @@ class EntityAI extends Entity
 //////////////////////////////////
 // attachment exclusion section //
 //////////////////////////////////
-	private void InitAttachmentExclusonValues()
+	private void InitAttachmentExclusionValues()
 	{
-		m_AttachmentExclusionMaskChildren = 0;
+		m_AttachmentExclusionSlotMap = new map<int,ref set<int>>();
+		m_AttachmentExclusionMaskGlobal = new set<int>;
+		m_AttachmentExclusionMaskChildren = new set<int>();
+	
+		int count = GetInventory().GetSlotIdCount();
+		//no sense in performing inits for something that cannot be attached anywhere (hand/lefthand and some other 'special' slots are the reason for creating 'new' sets above)
+		if (count == 0)
+			return;
 		
 		InitInherentSlotExclusionMap();
-		//InitLegacyConfigExclusionValues();
 		InitGlobalExclusionValues();
+		InitLegacyConfigExclusionValues();
 	}
 	
 	//! map stored on instance to better respond to various state changes
 	private void InitInherentSlotExclusionMap()
 	{
 		int count = GetInventory().GetSlotIdCount();
-		if (count == 0)
-			return;
-		
-		m_AttachmentExclusionMaskMap = new map<int,int>();
-		//starting with the INVALID slot, so it is always in the map
+		//starting with the INVALID slot, so it is always in the map of attachable items
 		SetAttachmentExclusionMaskSlot(InventorySlots.INVALID,GetAttachmentExclusionInitSlotValue(InventorySlots.INVALID));
+		
 		int slotId;
 		for (int i = 0; i < count; i++) 
 		{
@@ -3108,62 +3127,234 @@ class EntityAI extends Entity
 	}
 	
 	//! override this to modify slot behavior for specific items, or just set 'm_AttachmentExclusionMaskGlobal' value for simple items
-	protected int GetAttachmentExclusionInitSlotValue(int slotId)
+	protected set<int> GetAttachmentExclusionInitSlotValue(int slotId)
 	{
-		return 0;
+		set<int> dflt = new set<int>;
+		return dflt;
 	}
 	
-	//backwards compatibility?
+	//Initiated last, and only for items that do not have others defined already
 	protected void InitLegacyConfigExclusionValues()
 	{
-		return;
+		bool performLegacyInit = InitLegacyExclusionCheck();
+		
+		//adding implicit slot info AFTER the check is performed
+		InitLegacySlotExclusionValuesImplicit();
+		
+		if (performLegacyInit)
+			InitLegacySlotExclusionValuesDerived();
 	}
-	
-	//! override to init part of the mask, independent of slot-specific behavior
-	protected void InitGlobalExclusionValues()
+
+	//returns 'false' if the script initialization 
+	protected bool InitLegacyExclusionCheck()
 	{
-		m_AttachmentExclusionMaskGlobal = 0;
-	}
-	
-	//! to help with item staging exclusions; human-friendlier 'add' method
-	protected void AddSingleExclusionValueGlobal(EAttachmentExclusionFlags rawValue)
-	{
-		m_AttachmentExclusionMaskGlobal |= 1 << rawValue;
-	}
-	
-	//! to help with item staging exclusions; human-friendlier 'remove' method
-	protected void ClearSingleExclusionValueGlobal(EAttachmentExclusionFlags rawValue)
-	{
-		m_AttachmentExclusionMaskGlobal &= 0 << rawValue;
-	}
-	
-	//! sets the entire bitmask
-	protected void SetAttachmentExclusionMaskGlobal(int value)
-	{
-		m_AttachmentExclusionMaskGlobal = value;
-	}
-	
-	//! sets the mask for specific slot
-	protected void SetAttachmentExclusionMaskSlot(int slotId, int value)
-	{
-		if (m_AttachmentExclusionMaskMap)
+		//first check the globals
+		if (m_AttachmentExclusionMaskGlobal.Count() > 0)
+			return false;
+		
+		//now the map
+		int count = m_AttachmentExclusionSlotMap.Count();
+		if (count > 1) //more than InventorySlots.INVALID
 		{
-			m_AttachmentExclusionMaskMap.Set(slotId,value);
+			for (int i = 0; i < count; i++)
+			{
+				int countSet = m_AttachmentExclusionSlotMap.GetElement(i).Count();
+				if (countSet > 0) //SOMETHING is defined
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+
+	/**@fn		InitLegacySlotExclusionValuesImplicit
+	 * @brief	adding base one-directional relations between headgear, masks, eyewear, and headstraps (exception)
+	 *
+	 * @note: 'InitLegacyConfigExclusionValues' adds them the other way if the item does not have any script-side exclusions AND has some legacy config parameter.
+	**/
+	protected void InitLegacySlotExclusionValuesImplicit()
+	{
+		int slotId;
+		int slotCount = GetInventory().GetSlotIdCount();
+		for (int i = 0; i < slotCount; i++) 
+		{
+			slotId = GetInventory().GetSlotId(i);
+			set<int> tmp;
+			switch (slotId)
+			{
+				case InventorySlots.HEADGEAR:
+				{
+					tmp = new set<int>;
+					tmp.Copy(GetAttachmentExclusionInitSlotValue(slotId));
+					tmp.Insert(EAttExclusions.LEGACY_HEADGEAR_MASK);
+					tmp.Insert(EAttExclusions.LEGACY_HEADGEAR_HEADSTRAP);
+					tmp.Insert(EAttExclusions.LEGACY_HEADGEAR_EYEWEWEAR);
+					SetAttachmentExclusionMaskSlot(slotId,tmp);
+					break;
+				}
+				
+				case InventorySlots.MASK:
+				{
+					tmp = new set<int>;
+					tmp.Copy(GetAttachmentExclusionInitSlotValue(slotId));
+					tmp.Insert(EAttExclusions.LEGACY_MASK_HEADGEAR);
+					tmp.Insert(EAttExclusions.LEGACY_MASK_HEADSTRAP);
+					tmp.Insert(EAttExclusions.LEGACY_MASK_EYEWEWEAR);
+					SetAttachmentExclusionMaskSlot(slotId,tmp);
+					break;
+				}
+				
+				case InventorySlots.EYEWEAR:
+				{
+					tmp = new set<int>;
+					tmp.Copy(GetAttachmentExclusionInitSlotValue(slotId));
+					if (ConfigGetBool("isStrap"))
+					{
+						tmp.Insert(EAttExclusions.LEGACY_HEADSTRAP_HEADGEAR);
+						tmp.Insert(EAttExclusions.LEGACY_HEADSTRAP_MASK);
+					}
+					else
+					{
+						tmp.Insert(EAttExclusions.LEGACY_EYEWEAR_HEADGEAR);
+						tmp.Insert(EAttExclusions.LEGACY_EYEWEAR_MASK);
+					}
+					SetAttachmentExclusionMaskSlot(slotId,tmp);
+					break;
+				}
+			}
+		}
+	}
+	
+	protected void InitLegacySlotExclusionValuesDerived()
+	{
+		int slotId;
+		int slotCount = GetInventory().GetSlotIdCount();
+		for (int i = 0; i < slotCount; i++) 
+		{
+			slotId = GetInventory().GetSlotId(i);
+			set<int> tmp;
+			switch (slotId)
+			{
+				case InventorySlots.HEADGEAR:
+				{
+					tmp = new set<int>;
+					tmp.Copy(GetAttachmentExclusionMaskSlot(slotId));
+					if (ConfigGetBool("noNVStrap"))
+					{
+						tmp.Insert(EAttExclusions.LEGACY_HEADSTRAP_HEADGEAR);
+					}
+					if (ConfigGetBool("noMask"))
+					{
+						tmp.Insert(EAttExclusions.LEGACY_MASK_HEADGEAR);
+					}
+					if (ConfigGetBool("noEyewear"))
+					{
+						tmp.Insert(EAttExclusions.LEGACY_EYEWEAR_HEADGEAR);
+					}
+					SetAttachmentExclusionMaskSlot(slotId,tmp);
+					break;
+				}
+				
+				case InventorySlots.MASK:
+				{
+					tmp = new set<int>;
+					tmp.Copy(GetAttachmentExclusionMaskSlot(slotId));
+					if (ConfigGetBool("noNVStrap"))
+					{
+						tmp.Insert(EAttExclusions.LEGACY_HEADSTRAP_MASK);
+					}
+					if (ConfigGetBool("noHelmet"))
+					{
+						tmp.Insert(EAttExclusions.LEGACY_HEADGEAR_MASK);
+					}
+					if (ConfigGetBool("noEyewear"))
+					{
+						tmp.Insert(EAttExclusions.LEGACY_EYEWEAR_MASK);
+					}
+					SetAttachmentExclusionMaskSlot(slotId,tmp);
+					break;
+				}
+				
+				case InventorySlots.EYEWEAR:
+				{
+					tmp = new set<int>;
+					tmp.Copy(GetAttachmentExclusionMaskSlot(slotId));
+					if (ConfigGetBool("isStrap"))
+					{
+						if (ConfigGetBool("noHelmet"))
+						{
+							tmp.Insert(EAttExclusions.LEGACY_HEADGEAR_HEADSTRAP);
+						}
+						if (ConfigGetBool("noMask"))
+						{
+							tmp.Insert(EAttExclusions.LEGACY_MASK_HEADSTRAP);
+						}
+					}
+					else
+					{
+						if (ConfigGetBool("noHelmet"))
+						{
+							tmp.Insert(EAttExclusions.LEGACY_HEADGEAR_EYEWEWEAR);
+						}
+						if (ConfigGetBool("noMask"))
+						{
+							tmp.Insert(EAttExclusions.LEGACY_MASK_EYEWEWEAR);
+						}
+					}
+					SetAttachmentExclusionMaskSlot(slotId,tmp);
+					break;
+				}
+			}
+		}
+	}
+
+	//! override to init part of the mask, independent of slot-specific behavior
+	protected void InitGlobalExclusionValues();
+	
+	//! to help with item staging exclusions
+	protected void AddSingleExclusionValueGlobal(EAttExclusions value)
+	{
+		if (m_AttachmentExclusionMaskGlobal.Find(value) == -1)
+			m_AttachmentExclusionMaskGlobal.Insert(value);
+	}
+	
+	//! to help with item staging exclusions
+	protected void ClearSingleExclusionValueGlobal(EAttExclusions value)
+	{
+		int idx = m_AttachmentExclusionMaskGlobal.Find(value);
+		if (idx != -1)
+			m_AttachmentExclusionMaskGlobal.Remove(idx);
+	}
+	
+	protected void SetAttachmentExclusionMaskGlobal(set<int> values)
+	{
+		m_AttachmentExclusionMaskGlobal.Clear();
+		m_AttachmentExclusionMaskGlobal.Copy(values);
+	}
+	
+	//! sets values for specific slot
+	protected void SetAttachmentExclusionMaskSlot(int slotId, set<int> values)
+	{
+		if (m_AttachmentExclusionSlotMap)
+		{
+			m_AttachmentExclusionSlotMap.Set(slotId,values);
 		}
 		else
-			ErrorEx("m_AttachmentExclusionMaskMap not available! Fill the 'inventorySlot[]' in the " + this + " config file.");
+			ErrorEx("m_AttachmentExclusionSlotMap not available! Fill the 'inventorySlot[]' in the " + this + " config file.");
 	}
 	
-	private void PropagateExclusionValueRecursive(int value, int slotId)
+	private void PropagateExclusionValueRecursive(set<int> values, int slotId)
 	{
-		if (value != 0)
+		if (values && values.Count() != 0)
 		{
-			int passThis;
+			set<int> passThis;
 			InventoryLocation lcn = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation(lcn);
-			if (CheckExclusionAccessPropagation(lcn.GetSlot(), slotId, value, passThis))
+			if (CheckExclusionAccessPropagation(lcn.GetSlot(), slotId, values, passThis))
 			{
-				m_AttachmentExclusionMaskChildren |= passThis;
+				m_AttachmentExclusionMaskChildren.InsertSet(passThis);
 				EntityAI parent = GetHierarchyParent();
 				if (parent)
 					parent.PropagateExclusionValueRecursive(passThis,lcn.GetSlot());
@@ -3171,16 +3362,20 @@ class EntityAI extends Entity
 		}
 	}
 	
-	private void ClearExclusionValueRecursive(int value, int slotId)
+	private void ClearExclusionValueRecursive(set<int> values, int slotId)
 	{
-		if (value != 0)
+		if (values && values.Count() != 0)
 		{
-			int passThis;
+			set<int> passThis;
 			InventoryLocation lcn = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation(lcn);
-			if (CheckExclusionAccessPropagation(lcn.GetSlot(), slotId, value, passThis))
+			if (CheckExclusionAccessPropagation(lcn.GetSlot(), slotId, values, passThis))
 			{
-				m_AttachmentExclusionMaskChildren &= ~passThis;
+				int count = passThis.Count();
+				for (int i = 0; i < count; i++)
+				{
+					m_AttachmentExclusionMaskChildren.RemoveItem(passThis[i]);
+				}
 				EntityAI parent = GetHierarchyParent();
 				if (parent)
 					parent.ClearExclusionValueRecursive(passThis,lcn.GetSlot());
@@ -3189,66 +3384,85 @@ class EntityAI extends Entity
 	}
 	
 	//! Slot-specific, children (attachments), and additional (state etc.) masks combined
-	int GetAttachmentExclusionMaskAll(int slotId)
+	set<int> GetAttachmentExclusionMaskAll(int slotId)
 	{
-		int maskValue = 0;
-		if (m_AttachmentExclusionMaskMap)
-			maskValue = m_AttachmentExclusionMaskMap.Get(slotId);
+		set<int> values = new set<int>();
+		set<int> slotValues = GetAttachmentExclusionMaskSlot(slotId);
+		if (slotValues)
+			values.InsertSet(slotValues);
+		values.InsertSet(m_AttachmentExclusionMaskGlobal);
+		values.InsertSet(m_AttachmentExclusionMaskChildren);
 		
-		return maskValue | m_AttachmentExclusionMaskGlobal | m_AttachmentExclusionMaskChildren;
+		return values;
 	}
 	
 	//! Specific slot behavior
-	int GetAttachmentExclusionMaskSlot(int slotId)
+	set<int> GetAttachmentExclusionMaskSlot(int slotId)
 	{
-		int maskValue = 0;
-		if (m_AttachmentExclusionMaskMap)
-			maskValue = m_AttachmentExclusionMaskMap.Get(slotId);
-		
-		return maskValue;
+		return m_AttachmentExclusionSlotMap.Get(slotId);
 	}
 	
 	//! Global mask value, independent of slot-specific behavior!
-	int GetAttachmentExclusionMaskGlobal()
+	set<int> GetAttachmentExclusionMaskGlobal()
 	{
 		return m_AttachmentExclusionMaskGlobal;
 	}
 	
 	//! Mask value coming from the item's attachments
-	int GetAttachmentExclusionMaskChildren()
+	set<int> GetAttachmentExclusionMaskChildren()
 	{
 		return m_AttachmentExclusionMaskChildren;
 	}
 	
-	//! checks if any attachment or item state would interfere with attachment
-	private bool CheckInternalExclusionConflicts(int targetSlot)
+	//! checks if any attachment or item state would interfere with this being attached into a different slot (Headgear -> Mask)
+	private bool HasInternalExclusionConflicts(int targetSlot)
 	{
-		int slotMask = 0;
-	 	if (m_AttachmentExclusionMaskMap)
-			slotMask = m_AttachmentExclusionMaskMap.Get(targetSlot);
-		
-		return (slotMask & m_AttachmentExclusionMaskGlobal) | (slotMask & m_AttachmentExclusionMaskChildren) | (m_AttachmentExclusionMaskGlobal & m_AttachmentExclusionMaskChildren);
+		set<int> targetSlotValues = GetAttachmentExclusionMaskSlot(targetSlot);
+		if (targetSlotValues) //can be null, if so, no conflict
+		{
+			set<int> additionalValues = new set<int>(); //NOT slot values
+			additionalValues.InsertSet(GetAttachmentExclusionMaskGlobal());
+			additionalValues.InsertSet(GetAttachmentExclusionMaskChildren());
+			
+			int countTarget = targetSlotValues.Count();
+			for (int i = 0; i < countTarget; i++)
+			{
+				if (additionalValues.Find(targetSlotValues[i]) != -1)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	//! checks 'this' if the incoming flag is present for the current state (slot behavior and others)
-	private bool IsExclusionFlagPresent(EAttachmentExclusionFlags value)
+	protected bool IsExclusionFlagPresent(set<int> values)
 	{
 		int slotId;
 		string slotName;
 		GetInventory().GetCurrentAttachmentSlotInfo(slotId,slotName); //if currently attached, treat it accordingly
-		return GetAttachmentExclusionMaskAll(slotId) & value;
+		
+		set<int> currentSlotValuesAll = GetAttachmentExclusionMaskAll(slotId);
+		int count = values.Count();
+		for (int i = 0; i < count; i++)
+		{
+			if (currentSlotValuesAll.Find(values[i]) != -1)
+				return true;
+		}
+		return false;
 	}
 	
 	//! Gets flag from what is effectively an owner
-	private bool IsExclusionFlagPresentRecursive(EAttachmentExclusionFlags value, int targetSlot)
+	protected bool IsExclusionFlagPresentRecursive(set<int> values, int targetSlot)
 	{
-		if (value != 0)
+		if (values && values.Count() != 0)
 		{
 			InventoryLocation lcn = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation(lcn);
 			EntityAI parent = GetHierarchyParent();
-			int passThis;
-			if (CheckExclusionAccessCondition(lcn.GetSlot(),targetSlot, value, passThis))
+			set<int> passThis;
+			if (CheckExclusionAccessCondition(lcn.GetSlot(),targetSlot, values, passThis))
 			{
 				if (parent && parent != this) //we reached root if false
 				{
@@ -3262,59 +3476,63 @@ class EntityAI extends Entity
 	}
 	
 	//!
-	protected bool CheckExclusionAccessCondition(int occupiedSlot, int targetSlot, int mask, inout int adjustedMask)
+	protected bool CheckExclusionAccessCondition(int occupiedSlot, int targetSlot, set<int> value, inout set<int> adjustedValue)
 	{
-		bool occupiedException = occupiedSlot == InventorySlots.HANDS || occupiedSlot == InventorySlots.SHOULDER || occupiedSlot == InventorySlots.MELEE;
-		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE;
+		bool occupiedException = occupiedSlot == InventorySlots.HANDS || occupiedSlot == InventorySlots.SHOULDER || occupiedSlot == InventorySlots.MELEE || occupiedSlot == InventorySlots.LEFTHAND;
+		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE || targetSlot == InventorySlots.LEFTHAND;
 		
 		if (occupiedException)
 		{
-			adjustedMask = mask;
+			adjustedValue = value;
 			return false;
 		}
 		
 		if (targetException)
 		{
-			adjustedMask = 0;
+			adjustedValue = null;
 			return false;
 		}
 		
-		AdjustExclusionAccessCondition(occupiedSlot,targetSlot,mask,adjustedMask);
-		return adjustedMask != 0;
+		AdjustExclusionAccessCondition(occupiedSlot,targetSlot,value,adjustedValue);
+		return adjustedValue.Count() != 0;
 	}
 	
 	//!if we want to filter 
-	protected void AdjustExclusionAccessCondition(int occupiedSlot, int testedSlot, int mask, inout int adjustedMask)
+	protected void AdjustExclusionAccessCondition(int occupiedSlot, int testedSlot, set<int> value, inout set<int> adjustedValue)
 	{
-		adjustedMask = mask;
+		adjustedValue = value;
 	}
 
 	//! special propagation contition
-	protected bool CheckExclusionAccessPropagation(int occupiedSlot, int targetSlot, int mask, inout int adjustedMask)
+	protected bool CheckExclusionAccessPropagation(int occupiedSlot, int targetSlot, set<int> value, inout set<int> adjustedValue)
 	{
-		bool occupiedException = occupiedSlot == InventorySlots.HANDS || occupiedSlot == InventorySlots.SHOULDER || occupiedSlot == InventorySlots.MELEE;
-		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE;
+		bool occupiedException = occupiedSlot == InventorySlots.HANDS || occupiedSlot == InventorySlots.SHOULDER || occupiedSlot == InventorySlots.MELEE || occupiedSlot == InventorySlots.LEFTHAND;
+		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE || targetSlot == InventorySlots.LEFTHAND;
 		
 		if (targetException)
 		{
-			adjustedMask = 0;
+			adjustedValue = null;
 			return false;
 		}
 		
-		AdjustExclusionAccessPropagation(occupiedSlot,targetSlot,mask,adjustedMask);
-		return adjustedMask != 0;
+		AdjustExclusionAccessPropagation(occupiedSlot,targetSlot,value,adjustedValue);
+		return adjustedValue.Count() != 0;
 	}
 	
 	//!if we want to filter propagation specifically; DO NOT override unless you know what you are doing.
-	protected void AdjustExclusionAccessPropagation(int occupiedSlot, int testedSlot, int mask, inout int adjustedMask)
+	protected void AdjustExclusionAccessPropagation(int occupiedSlot, int testedSlot, set<int> value, inout set<int> adjustedValue)
 	{
-		AdjustExclusionAccessCondition(occupiedSlot,testedSlot,mask,adjustedMask);
-		//adjustedMask = mask;
+		AdjustExclusionAccessCondition(occupiedSlot,testedSlot,value,adjustedValue);
 	}
 
-	bool IsManageArrows()
+	bool IsManagingArrows()
 	{
 		return false;
+	}
+
+	ArrowManagerBase GetArrowManager()
+	{
+		return null;
 	}
 
 	void SetFromProjectile(ProjectileStoppedInfo info)

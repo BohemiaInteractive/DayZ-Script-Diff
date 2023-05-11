@@ -693,8 +693,9 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 			//! play hit animation for dummy hits
 			if (GetGame().IsServer() && targetEntity)
 			{
+				DummyHitSelector(m_HitType, ammo);
 				hitPosWS = targetEntity.ModelToWorld(targetEntity.GetDefaultHitPosition()); //! override hit pos by pos defined in type
-				DamageSystem.CloseCombatDamage(m_DZPlayer, target, hitZoneIdx, DUMMY_LIGHT_AMMO, hitPosWS);
+				DamageSystem.CloseCombatDamage(m_DZPlayer, target, hitZoneIdx, ammo, hitPosWS);
 				//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[c]::CloseCombatDamage:: target: %1, hitzone: %2, meleeMode: %3", target, hitZoneIdx, weaponMode));
 			}
 		}

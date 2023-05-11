@@ -56,11 +56,16 @@ class Ammunition_Base: Magazine_Base
 	
 	override void SetFromProjectile(ProjectileStoppedInfo info)
 	{
+		float dmgPerUse = GetGame().ConfigGetFloat("cfgAmmo " + info.GetAmmoType() + " dmgPerUse");
+		float totalDmg = info.GetProjectileDamage() + dmgPerUse;
+		float health = Math.Max(1 - totalDmg, 0);
+		
 		SetQuantityToMinimum();
-
-		float dmg = 1 - info.GetProjectileDamage();
-		SetCartridgeDamageAtIndex(0,dmg);
-		SetHealth01("","",dmg);
+		SetHealth01("","", health);
+		
+		// SetCartridgeDamageAtIndex() MUST be called AFTER SetHealth01()!!
+		// otherwise, decreasing health by less than an entire health level get ignored
+		SetCartridgeDamageAtIndex(0, totalDmg);
 	}
 };
 
@@ -97,7 +102,7 @@ class Bolt_Base: Ammunition_Base
 			EntityAI parent = EntityAI.Cast(GetParent());
 			if (parent)
 			{
-				return !parent.IsManageArrows();
+				return !parent.IsManagingArrows();
 			}
 		}
 		return true;
@@ -105,33 +110,52 @@ class Bolt_Base: Ammunition_Base
 	
 	override void EEParentedTo(EntityAI parent)
 	{
-		PlayerBase pOwner = PlayerBase.Cast(parent); 
-		if (pOwner)
+		if (!parent)
+			return;
+
+		ArrowManagerBase arrowManager = parent.GetArrowManager();
+		if (arrowManager)
 		{
-			ArrowManagerPlayer amp = pOwner.GetArrowManager();
-			amp.AddArrow(this);	
+			arrowManager.AddArrow(this);	
 		}
 	}
 	
-	/*override void EEParentedFrom(EntityAI parent)
+	override void EEParentedFrom(EntityAI parent)
 	{
-		PlayerBase pOwner = PlayerBase.Cast(parent); 
-		if (pOwner)
+		if (!parent)
+			return;
+
+		ArrowManagerBase arrowManager = parent.GetArrowManager(); 
+		if (arrowManager)
 		{
-			ArrowManagerPlayer amp = pOwner.GetArrowManager();
-			amp.RemoveArrow(this);	
+			arrowManager.RemoveArrow(this);	
 		}
-	}*/
+	}
 }
-class Ammo_HuntingBolt : Bolt_Base {}
-class Ammo_ImprovisedBolt_1 : Bolt_Base {}
-class Ammo_ImprovisedBolt_2 : Bolt_Base {}
+
 class Ammo_DartSyringe: Ammunition_Base {};
 class Ammo_Flare: Ammunition_Base {};
 class Ammo_RPG7_HE: Ammunition_Base {};
 class Ammo_RPG7_AP: Ammunition_Base {};
 class Ammo_LAW_HE: Ammunition_Base {};
 class Ammo_GrenadeM4 : Ammunition_Base {};
+
+//bolts
+class Ammo_HuntingBolt : Bolt_Base {}
+
+class Ammo_ImprovisedBolt_1 : Bolt_Base 
+{
+	override void SetActions()
+	{
+		super.SetActions();
+
+		AddAction(ActionCraftBoltsFeather);
+	}
+}
+
+class Ammo_ImprovisedBolt_2 : Bolt_Base {}
+// 40mm
+
 class Ammo_40mm_Base: Ammunition_Base
 {
 	override bool IsTakeable()

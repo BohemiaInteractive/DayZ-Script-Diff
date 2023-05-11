@@ -227,13 +227,11 @@ class PlayerContainer: CollapsibleContainer
 	
 	void MouseClick( Widget w, int x, int y, int button )
 	{
-		
 		SlotsIcon slots_icon;
 		w.GetUserData(slots_icon);
 		
 		EntityAI item;
 		bool reserved;
-		
 		
 		if (slots_icon)
 		{
@@ -369,7 +367,7 @@ class PlayerContainer: CollapsibleContainer
 	
 	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT )
+		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
 			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 			

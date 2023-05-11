@@ -207,6 +207,7 @@ class ActionConstructor
 		actions.Insert(ActionDestroyPart);
 		actions.Insert(ActionCPR);
 		actions.Insert(ActionDrinkPondContinuous);
+		actions.Insert(ActionDrinkThroughContinuous);
 		actions.Insert(ActionEat);
 		actions.Insert(ActionEatSmall);
 		actions.Insert(ActionMineTreeBark);
@@ -351,6 +352,7 @@ class ActionConstructor
 		actions.Insert(ActionDetachFromTarget_SpecificSlot_MetalSheets);
 		actions.Insert(ActionDetachFromTarget_SpecificSlotsCategory_Barrel);
 		actions.Insert(ActionDetachFromTarget_SpecificSlotsCategory_WoodenCrate);
+		actions.Insert(ActionTakeArrow);
 		
 		//vehicle actions
 		actions.Insert(ActionSwitchLights);
@@ -391,5 +393,8 @@ class ActionConstructor
 		actions.Insert(ActionUseUndergroundPanel);
 		actions.Insert(ActionUseUndergroundLever);
 		actions.Insert(ActionUnrestrainTargetHands);
+		
+		actions.Insert(ActionCraftBolts);
+		actions.Insert(ActionCraftBoltsFeather);
 	}
 };

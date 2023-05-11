@@ -200,30 +200,27 @@ class WeaponManager
 //---------------------------------------------------------------------------
 	bool CanLoadBullet(Weapon_Base wpn, Magazine mag, bool reservationCheck = true)
 	{
-		if ( !wpn || !mag )
+		if (!wpn || !mag)
 			return false;
 		
-		if ( m_player.GetHumanInventory().GetEntityInHands() != wpn )
+		if (m_player.GetHumanInventory().GetEntityInHands() != wpn)
 			return false;
 		
-		if( mag.IsDamageDestroyed() || wpn.IsDamageDestroyed())
+		if (mag.IsDamageDestroyed() || wpn.IsDamageDestroyed())
 			return false;
 		
-		//if ( mag.GetHierarchyRootPlayer() && mag.GetHierarchyRootPlayer() != m_player )
-		//	return false;
-		
-		if( wpn.IsJammed(/*wpn.GetCurrentMuzzle()*/) )
+		if (wpn.IsJammed())
 			return false;
 	
-		if( m_player.IsItemsToDelete())
+		if (m_player.IsItemsToDelete())
 			return false;
 		
-		if ( reservationCheck && (m_player.GetInventory().HasInventoryReservation(wpn,null) || m_player.GetInventory().HasInventoryReservation(mag,null)))
+		if (reservationCheck && (m_player.GetInventory().HasInventoryReservation(wpn, null) || m_player.GetInventory().HasInventoryReservation(mag, null)))
 			return false;
 		
-		for( int i = 0; i < wpn.GetMuzzleCount(); i++)
+		for (int i = 0; i < wpn.GetMuzzleCount(); i++)
 		{
-			if( wpn.CanChamberBullet( i, mag ) )
+			if (wpn.CanChamberBullet(i, mag))
 				return true;
 		}
 		

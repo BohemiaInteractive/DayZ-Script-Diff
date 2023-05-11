@@ -491,7 +491,7 @@ class AttachmentCategoriesRow: ClosableContainer
 	
 	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT )
+		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
 			if( w == null )
 			{
@@ -865,7 +865,7 @@ class AttachmentCategoriesRow: ClosableContainer
 		}
 		
 		#ifdef DIAG_DEVELOPER		
-		if ( GetDayZGame().IsLeftCtrlDown() && button == 1 )
+		if ( GetDayZGame().IsLeftCtrlDown() && button == MouseState.RIGHT )
 		{
 			SlotsIcon user_data;
 			w.GetUserData(user_data);
