@@ -363,7 +363,11 @@ class Weapon extends InventoryItemSuper
 	 * @return	 currently used value in zeroing
 	 **/	
 	proto native float GetCurrentZeroing(int muzzleIndex = 0);
-
+	/**@fn		GetZeroingClamp
+	 * @brief	returns maximum allowed discrete distance for the muzzle. Limits attached optics zeroing only! '0' if unclamped
+	 * @return	 maximum allowed discrete distance for the muzzle
+	 **/
+	proto native float GetZeroingClamp(int muzzleIndex = 0);
 	/**
 	 * @fn		FlashlightOn
 	 * @brief	attempt to turn on flashlight

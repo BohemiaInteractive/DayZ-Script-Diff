@@ -23,7 +23,10 @@ class ArrowManagerBase
 	void ClearArrows()
 	{
 		foreach (EntityAI arrow : m_Arrows)
-			arrow.DeleteSafe();
+		{
+			if (arrow)
+				arrow.DeleteSafe();
+		}
 
 		m_Arrows.Clear();
 	}

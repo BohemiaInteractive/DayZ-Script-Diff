@@ -167,6 +167,11 @@ class ItemOptics extends InventoryItemSuper
 	 **/
 	proto native float GetZeroingDistanceZoomMax();
 
+	/**
+	 * @fn		SetZeroingClampDist
+	 * @brief	Sets zeroing clamp for the optics and updates the clamp if dist > 0. Used when attached to weapon.
+	 **/
+	proto native void SetZeroingClampDist(float dist);
 
 	
 	/*override void EEItemAttached(EntityAI item, string slot_name)
@@ -231,7 +236,11 @@ class ItemOptics extends InventoryItemSuper
 		
 		SetTakeable(false);
 		
-		AdjustAttachedOpticsZeroing(Weapon.Cast(parent));
+		Weapon wep;
+		if (Class.CastTo(wep,parent))
+		{
+			SetZeroingClampDist(wep.GetZeroingClamp(wep.GetCurrentMuzzle()));
+		}
 	}
 
 	override void OnWasDetached( EntityAI parent, int slot_id )
@@ -245,6 +254,12 @@ class ItemOptics extends InventoryItemSuper
 		}
 		
 		SetTakeable(true);
+		
+		Weapon wep;
+		if (Class.CastTo(wep,parent))
+		{
+			SetZeroingClampDist(0.0);
+		}
 	}
 	
 	override void OnInventoryExit(Man player)
@@ -527,60 +542,6 @@ class ItemOptics extends InventoryItemSuper
 	}
 	
 	void UpdateSelectionVisibility() {}
-	
-	protected void AdjustAttachedOpticsZeroing(Weapon weapon)
-	{
-		if (HasWeaponIronsightsOverride())
-		{
-			bool originalState = IsUsingWeaponIronsightsOverride();
-			UseWeaponIronsightsOverride(!originalState);
-			SetStepZeroing(GetClampedOpticsZeroing(GetStepZeroing(),weapon));
-			UseWeaponIronsightsOverride(originalState);
-		}
-		SetStepZeroing(GetClampedOpticsZeroing(GetStepZeroing(),weapon));
-	}
-	
-	//! returns clamped zeroing step, if applicable
-	int GetClampedOpticsZeroing(int step, Weapon weapon)
-	{
-		if (weapon)
-		{
-			string path = "cfgWeapons " + weapon.GetType() + " OpticsInfo discreteDistanceClampOpticsMax";
-			if (GetGame().ConfigIsExisting(path))
-			{
-				float clampValue = GetGame().ConfigGetFloat(path);
-				array<float> DDOptic = new array<float>;
-				
-				if (IsUsingWeaponIronsightsOverride())
-					path = "cfgVehicles " + GetType() + " OpticsInfoWeaponOverride discreteDistance";
-				else
-					path = "cfgVehicles " + GetType() + " OpticsInfo discreteDistance";
-				
-				GetGame().ConfigGetFloatArray(path,DDOptic);
-				int count = DDOptic.Count();
-				if (clampValue > 0.0 && step >= 0 && step < count)
-				{
-					float stepValue = DDOptic[step];
-					if (stepValue > clampValue)
-					{
-						//find the closest one
-						for (int i = step - 1; i > -1; i--)
-						{
-							stepValue = DDOptic[i];
-							if (stepValue <= clampValue)
-							{
-								return i;
-							}
-						}
-						//settle for the lowest one
-						//ErrorEx("No valid discreteDistance found between " + weapon + " and " + this + ", weapon clamp value: " + clampValue + ", lowest optics value: " + stepValue);
-						return 0;
-					}
-				}
-			}
-		}
-		return step;
-	}
 	
 	override void SetActions()
 	{

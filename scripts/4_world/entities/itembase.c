@@ -991,6 +991,13 @@ class ItemBase extends InventoryItem
 		super.EECargoIn(item);
 	}
 	
+	override void OnMovedInsideCargo(EntityAI container)
+	{
+		super.OnMovedInsideCargo(container);
+		
+		MiscGameplayFunctions.RemoveAllAttachedChildrenByTypename(this, {Bolt_Base});
+	}
+	
 	override void EEItemLocationChanged(notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc)
 	{
 		super.EEItemLocationChanged(oldLoc,newLoc);
@@ -1262,8 +1269,11 @@ class ItemBase extends InventoryItem
 			}
 		}
 	}
+	
 	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
+		MiscGameplayFunctions.RemoveAllAttachedChildrenByTypename(this, {Bolt_Base});
+		
 		super.OnWasAttached(parent, slot_id);
 		
 		if (HasQuantity())
@@ -1278,15 +1288,6 @@ class ItemBase extends InventoryItem
 		
 		if (HasQuantity())
 			UpdateNetSyncVariableFloat("m_VarQuantity", GetQuantityMin(), m_VarQuantityMax);
-		
-		//PlayDetachSound(InventorySlots.GetSlotName(slot_id));
-		
-		PlayerBase player = PlayerBase.Cast(parent);
-		if (player)
-		{
-			if (!GetGame().IsServer())
-				return;
-		}
 	}
 	
 	override string ChangeIntoOnAttach(string slot)
@@ -3940,13 +3941,12 @@ class ItemBase extends InventoryItem
 		{
 			ItemBase filter = ItemBase.Cast(FindAttachmentBySlotName("GasMaskFilter"));
 			if (filter)
-			{
 				return filter.GetProtectionLevel(type, false, system);//it's a valid filter, return the protection
-			}
-			else return 0;//otherwise return 0 when no filter attached
+			else
+				return 0;//otherwise return 0 when no filter attached
 		}
 
-		string subclass_path, entryName;
+		string subclassPath, entryName;
 
 		switch (type)
 		{
@@ -3961,9 +3961,9 @@ class ItemBase extends InventoryItem
 				break;
 		}
 		
-		subclass_path = "CfgVehicles " + this.GetType() + " Protection ";
+		subclassPath = "CfgVehicles " + this.GetType() + " Protection ";
 		
-		return GetGame().ConfigGetFloat(subclass_path + entryName);
+		return GetGame().ConfigGetFloat(subclassPath + entryName);
 	}
 	
 	
@@ -3972,8 +3972,9 @@ class ItemBase extends InventoryItem
 	override void EEOnCECreate()
 	{
 		//Print("EEOnCECreate");
-		if (!IsMagazine() && HasQuantity()) SetCEBasedQuantity();
-		//SetCEBasedQuantity();
+		if (!IsMagazine() && HasQuantity())
+			SetCEBasedQuantity();
+
 		SetZoneDamageCEInit();
 	}
 	
@@ -3982,10 +3983,17 @@ class ItemBase extends InventoryItem
 	// OPEN/CLOSE USER ACTIONS
 	//-------------------------
 	//! Implementations only
-	void Open() {}
-	void Close() {}
-	bool IsOpen() {return true;}
-	override bool CanDisplayCargo() {return IsOpen();}
+	void Open();
+	void Close();
+	bool IsOpen()
+	{
+		return true;
+	}
+
+	override bool CanDisplayCargo()
+	{
+		return IsOpen();
+	}
 	
 	
 	// ------------------------------------------------------------

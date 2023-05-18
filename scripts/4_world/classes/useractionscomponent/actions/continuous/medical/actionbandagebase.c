@@ -31,8 +31,5 @@ class ActionBandageBase: ActionContinuousBase
 		{
 			item.Delete();
 		}
-		
-		ArrowManagerBase arrowManager = player.GetArrowManager();
-		arrowManager.DropFirstArrow();
 	}
 };

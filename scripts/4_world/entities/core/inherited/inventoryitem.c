@@ -259,7 +259,7 @@ class CarWheel extends InventoryItemSuper
 				IEntity child = GetChildren();
 				while (child)
 				{
-					RemoveChild(child, true);
+					RemoveChild(child, false);
 					vector matrix[4];
 					GetTransform(matrix);
 					GetInventory().DropEntityWithTransform(InventoryMode.SERVER, this, EntityAI.Cast(child), matrix);

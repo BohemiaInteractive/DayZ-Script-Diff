@@ -41,20 +41,21 @@ class ActionCraftBolts: ActionContinuousBase
 	
 	void ActionCraftBolts()
 	{
-		m_CallbackClass = ActionCraftBoltsCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
-		m_FullBody = true;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
-		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
+		m_CallbackClass 	= ActionCraftBoltsCB;
+		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
+		m_FullBody 			= true;
+		m_StanceMask		= DayZPlayerConstants.STANCEMASK_CROUCH;
+		m_SpecialtyWeight 	= UASoftSkillsWeight.ROUGH_HIGH;
+		
 		m_Text = "#STR_CraftBolt0";
-		InitCuttingTypes();
 
+		InitCuttingTypes();
 	}
 	
 	override void CreateConditionComponents()  
 	{		
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNone;
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTNonRuined();
 	}
 	
 	protected bool IsCuttingType(Object item)
@@ -62,7 +63,7 @@ class ActionCraftBolts: ActionContinuousBase
 		return CUTTING_TYPES.Find(item.ClassName()) >= 0;
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		if (IsCuttingType(item))
 		{
@@ -75,10 +76,11 @@ class ActionCraftBolts: ActionContinuousBase
 			// material in hands
 			return IsCuttingType(target.GetObject());
 		}
+
 		return false;
 	}
 
-	override void OnStartServer( ActionData action_data )
+	override void OnStartServer(ActionData action_data)
 	{
 		m_IsKnifeInHands = IsCuttingType(action_data.m_MainItem);
 		m_ResultEntity = null;
@@ -119,11 +121,11 @@ class ActionCraftBolts: ActionContinuousBase
 		if (!added)
 		{
 			m_ResultEntity = Ammunition_Base.Cast(action_data.m_Player.SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_1", action_data.m_Player.GetPosition()));
+			m_ResultEntity.SetHealth("", "", material.GetHealth("", ""));
 			m_ResultEntity.ServerSetAmmoCount(1);
 		}
 		
 		material.AddQuantity(-1);
-		
 		knife.AddHealth("","",-3);
 	}
 };

@@ -148,8 +148,6 @@ class ActionSkinning: ActionContinuousBase
 				}
 			}
 			
-			DropArrows(body);
-			
 			/*
 			DropEquipAndDestroyRootLambda lambda(body_PB, "", action_data.m_Player);
 			action_data.m_Player.ServerReplaceItemWithNew(lambda);
@@ -177,6 +175,7 @@ class ActionSkinning: ActionContinuousBase
 			}
 		}
 		
+		DropArrows(body);
 		GetGame().ObjectDelete(body); // Temporal deletion of the body
 
 		// clutter cutter removed due to issues with audio it causes when players steps on it.

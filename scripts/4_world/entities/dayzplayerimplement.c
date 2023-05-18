@@ -873,7 +873,7 @@ class DayZPlayerImplement extends DayZPlayer
 		{
 			if (optic && (optic.IsInOptics() || optic.IsUsingWeaponIronsightsOverride()))
 			{
-				optic.SetStepZeroing(optic.GetClampedOpticsZeroing(optic.GetStepZeroing() + 1,weapon));
+				optic.StepZeroingUp();
 			}
 			else
 			{
@@ -884,7 +884,7 @@ class DayZPlayerImplement extends DayZPlayer
 		{
 			if (optic && (optic.IsInOptics() || optic.IsUsingWeaponIronsightsOverride()))
 			{
-				optic.SetStepZeroing(optic.GetClampedOpticsZeroing(optic.GetStepZeroing() - 1,weapon));
+				optic.StepZeroingDown();
 			}
 			else
 			{

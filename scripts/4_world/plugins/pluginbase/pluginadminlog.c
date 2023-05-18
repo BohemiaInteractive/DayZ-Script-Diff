@@ -234,9 +234,11 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 					break;
 						
 				case DamageType.CUSTOM:		// Others (Vehicle hit, fall, fireplace, barbed wire ...)
+					float globalHealthDamage = damageResult.GetDamage("", "Health");
 					if (ammo == DayZPlayerImplementFallDamage.FALL_DAMAGE_AMMO_HEALTH || ammo == DayZPlayerImplementFallDamage.FALL_DAMAGE_AMMO_SHOCK || ammo == DayZPlayerImplementFallDamage.FALL_DAMAGE_AMMO_HEALTH_OTHER_ATTACHMENTS)
 					{
-						LogPrint( m_PlayerPrefix + " hit by " + ammo );	
+						if (globalHealthDamage > 0.0)
+							LogPrint(m_PlayerPrefix + " hit by " + ammo);	
 					}
 					else if ( source.GetType() == "AreaDamageManager" )  
 					{

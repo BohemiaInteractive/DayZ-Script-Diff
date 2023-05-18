@@ -613,7 +613,9 @@ class ActionBase : ActionBase_Basic
 	}
 	
 	void Interrupt(ActionData action_data)
-	{}
+	{
+		End(action_data);
+	}
 	
 	void OnEndInput(ActionData action_data)
 	{}

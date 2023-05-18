@@ -3340,16 +3340,31 @@ class DayZGame extends CGame
 			string pile;
 			GetGame().ConfigGetText("cfgAmmo " + info.GetAmmoType() + " spawnPileType", pile);
 			
+			EntityAI arrow = null;
+			EntityAI ent = EntityAI.Cast(info.GetHitObj());
+			if (ent)
+			{
+				EntityAI parent = ent.GetHierarchyParent();
+				if (parent && parent.IsPlayer())
+				{
+					arrow = EntityAI.Cast(GetGame().CreateObjectEx(pile, parent.GetPosition(), ECE_DYNAMIC_PERSISTENCY));
+					arrow.PlaceOnSurface();	
+					arrow.SetFromProjectile(info);
+	
+					return;
+				}
+			}
+			
 			vector pos = info.GetPos();
 			vector dir = -info.GetInVelocity();
 			
 			dir.Normalize();
 			pos -= dir * ARROW_PIERCE_DEPTH;
 			
-			EntityAI arrow = EntityAI.Cast(GetGame().CreateObjectEx(pile, pos, ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
+			arrow = EntityAI.Cast(GetGame().CreateObjectEx(pile, pos, ECE_KEEPHEIGHT|ECE_DYNAMIC_PERSISTENCY));
 			arrow.SetDirection(dir);
 			arrow.SetFromProjectile(info);
-
+			
 			info.GetHitObj().AddArrow(arrow, info.GetComponentIndex(), info.GetHitObjPos(), info.GetHitObjRot());
 		}
 	}

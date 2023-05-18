@@ -1235,10 +1235,10 @@ class GameInventory
 	bool DropEntityWithTransform(InventoryMode mode, EntityAI owner, notnull EntityAI item, vector transform[4])
 	{
 		inventoryDebugPrint("[inv] I::Drop(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
-		InventoryLocation src = new InventoryLocation;
+		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
-			InventoryLocation dst = new InventoryLocation;
+			InventoryLocation dst = new InventoryLocation();
 			if (!SetGroundPosByTransform(owner, item, dst, transform))
 			{
 				OnInventoryFailure(InventoryCommandType.SYNC_MOVE, InventoryValidationReason.DROP_PREVENTED, src, dst);

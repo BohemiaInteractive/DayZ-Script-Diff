@@ -15,19 +15,20 @@ class ActionCraftBoltsFeather: ActionContinuousBase
 	
 	void ActionCraftBoltsFeather()
 	{
-		m_CallbackClass = ActionCraftBoltsFeatherCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
-		m_FullBody = true;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
-		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
+		m_CallbackClass 	= ActionCraftBoltsFeatherCB;
+		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
+		m_FullBody 			= true;
+		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_CROUCH;
+		m_SpecialtyWeight 	= UASoftSkillsWeight.ROUGH_HIGH;
+
 		m_Text = "#STR_CraftBolt1";
 
 	}
 	
 	override void CreateConditionComponents()  
 	{		
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNone;
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTNonRuined();
 	}
 	
 	protected bool IsFeatherType(string itemInHandsType)
@@ -35,7 +36,7 @@ class ActionCraftBoltsFeather: ActionContinuousBase
 		return itemInHandsType == "ChickenFeather";
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		if (IsFeatherType(item.ClassName()))
 		{
@@ -51,7 +52,7 @@ class ActionCraftBoltsFeather: ActionContinuousBase
 		return false;
 	}
 
-	override void OnStartServer( ActionData action_data )
+	override void OnStartServer(ActionData action_data)
 	{
 		m_IsFeatherInHands = IsFeatherType(action_data.m_MainItem.ClassName());
 		m_ResultEntity = null;
@@ -87,6 +88,7 @@ class ActionCraftBoltsFeather: ActionContinuousBase
 		
 		if (m_ResultEntity)
 		{
+			type = m_ResultEntity.ConfigGetString("Ammo");
 			if (m_ResultEntity.GetAmmoCount() < m_ResultEntity.GetAmmoMax())
 			{
 				m_ResultEntity.ServerStoreCartridge(dmg, type);
@@ -97,8 +99,10 @@ class ActionCraftBoltsFeather: ActionContinuousBase
 		if (!added)
 		{
 			m_ResultEntity = Ammunition_Base.Cast(action_data.m_Player.SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_2", action_data.m_Player.GetPosition()));
+			type = m_ResultEntity.ConfigGetString("Ammo");
 			m_ResultEntity.ServerSetAmmoCount(0);
 			m_ResultEntity.ServerStoreCartridge(dmg, type);
+			m_ResultEntity.SetHealth01("", "", bolt.GetHealth01("", ""));
 		}
 
 		feather.AddQuantity(-1);

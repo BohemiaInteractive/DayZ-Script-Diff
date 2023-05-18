@@ -231,6 +231,9 @@ class Shape
  */
 class DiagMenu
 {
+	//! Checks if DiagMenu is initialized
+	static proto bool IsInitialized();
+	
 	//! To be used before registering scripted diags
 	static proto void InitScriptDiags();
 	//! To be used when scripted diags should not be present

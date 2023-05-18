@@ -2647,6 +2647,8 @@ class PlayerBase extends ManBase
 
 		if (item)
 		{
+			MiscGameplayFunctions.RemoveAllAttachedChildrenByTypename(item, {Bolt_Base});
+
 			Weapon_Base w;
 			if (Class.CastTo(w, item))
 			{
@@ -7178,6 +7180,19 @@ class PlayerBase extends ManBase
 	void OnBleedingSourceRemoved()
 	{
 		m_BleedingSourceCount--;
+		if (GetGame().IsServer())
+		{
+			ArrowManagerBase arrowManager = GetArrowManager();
+			if (GetBleedingSourceCount() > 0)
+			{
+				arrowManager.DropFirstArrow();
+			}
+			else
+			{
+				arrowManager.DropAllArrows();
+			}
+		}
+		
 		if (IsControlledPlayer())
 		{
 			if (!GetGame().IsDedicatedServer())
@@ -7195,6 +7210,8 @@ class PlayerBase extends ManBase
 	
 	void OnBleedingSourceRemovedEx(ItemBase item)
 	{
+		
+		
 		OnBleedingSourceRemoved();
 
 	}

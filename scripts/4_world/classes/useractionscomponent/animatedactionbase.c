@@ -71,7 +71,7 @@ class ActionBaseCB : HumanCommandActionCallback
 	{
 	}	
 	
-	//data
+	//// THIS Interrupt is use for initialize interrupt - WARNING Interrupt with parametr is used for handling interrupt
 	void Interrupt()
 	{
 		if ( GetGame().IsServer() )
@@ -272,6 +272,7 @@ class AnimatedActionBase : ActionBase
 		*/
 	}
 	
+	// THIS Interrupt is use for ACTUAL handling of intrrupt on action side - WARNING Interrupt without parametr is used for initialize interrupt
 	override void Interrupt( ActionData action_data )
 	{
 		if ( action_data.m_Callback )

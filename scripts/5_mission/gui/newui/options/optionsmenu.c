@@ -294,6 +294,8 @@ class OptionsMenu extends UIScriptedMenu
 		UpdateControlsElements();
 		UpdateControlsElementVisibility();
 		#endif
+		
+		m_Tabber.AlignTabbers();
 	}
 	
 	//resets it all
@@ -380,6 +382,8 @@ class OptionsMenu extends UIScriptedMenu
 		UpdateControlsElements();
 		UpdateControlsElementVisibility();
 		#endif
+		
+		m_Tabber.AlignTabbers();
 	}
 	
 	void SetToDefaults()
