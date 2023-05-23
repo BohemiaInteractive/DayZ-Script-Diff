@@ -31,7 +31,7 @@ class ActionWashHandsWell: ActionContinuousBase
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		return player.HasBloodyHands() && !player.GetItemInHands() && target.GetObject() && target.GetObject().GetWaterSourceObjectType() != EWaterSourceObjectType.NONE && !player.GetItemOnSlot("Gloves");
+		return player.HasBloodyHands() && !player.GetItemInHands() && target.GetObject() && (target.GetObject().GetWaterSourceObjectType() != EWaterSourceObjectType.NONE || target.GetObject().IsWell()) && !player.GetItemOnSlot("Gloves");
 	}
 
 	override void OnFinishProgressServer(ActionData action_data)

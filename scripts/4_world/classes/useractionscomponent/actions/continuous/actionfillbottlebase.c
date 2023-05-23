@@ -91,7 +91,7 @@ class ActionFillBottleBase: ActionContinuousBase
 			if (Liquid.CanFillContainer(item, LIQUID_GASOLINE))
 				return LIQUID_GASOLINE;
 		}
-		else if ((!target.GetObject() || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.THROUGH) && Liquid.CanFillContainer(item, LIQUID_WATER))
+		else if ((!target.GetObject() || target.GetObject().IsWell() || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.THROUGH) && Liquid.CanFillContainer(item, LIQUID_WATER))
 		{
 			return LIQUID_WATER;
 		}

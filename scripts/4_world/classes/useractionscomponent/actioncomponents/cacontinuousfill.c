@@ -105,7 +105,7 @@ class CAContinuousFill : CAContinuousBase
 	}
 	//---------------------------------------------------------------------------
 	
-	void CalcAndSetQuantity( ActionData action_data )
+	void CalcAndSetQuantity(ActionData action_data)
 	{
 		m_SpentQuantity_total += m_SpentQuantity;
 		if (GetGame().IsServer())
@@ -116,14 +116,11 @@ class CAContinuousFill : CAContinuousBase
 				SetACData(m_SpentUnits);
 			}
 			
-			bool inject_agents = true;
-			
-			if (action_data.m_Target.GetObject() && action_data.m_Target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL)
-			{
-				inject_agents = false;
-			}
+			bool injectAgents = true;
+			if (action_data.m_Target.GetObject() && (action_data.m_Target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || action_data.m_Target.GetObject().IsWell()))
+				injectAgents = false;
 
-			Liquid.FillContainerEnviro(action_data.m_MainItem, m_liquid_type, m_SpentQuantity, inject_agents);
+			Liquid.FillContainerEnviro(action_data.m_MainItem, m_liquid_type, m_SpentQuantity, injectAgents);
 		}
 
 		m_SpentQuantity = 0;

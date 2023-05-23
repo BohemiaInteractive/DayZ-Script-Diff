@@ -1027,6 +1027,7 @@ class DayZGame extends CGame
 
 		m_DayZProfileOptions = new DayZProfilesOptions();
 		
+		GetCallQueue(CALL_CATEGORY_GUI).Call(DeferredInit);
 		GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(GlobalsInit);
 		
 		string path = "cfgVehicles";
@@ -1065,7 +1066,6 @@ class DayZGame extends CGame
 		GetInput().UpdateConnectedInputDeviceList();
 
 		m_UserFOV = GetUserFOVFromConfig();
-		SetHudBrightness(GetHUDBrightnessSetting());
 		
 		m_volume_sound 		= GetSoundScene().GetSoundVolume();
 		m_volume_speechEX 	= GetSoundScene().GetSpeechExVolume();
@@ -1992,7 +1992,7 @@ class DayZGame extends CGame
 		ParticleList.PreloadParticles();
 		
 		RegisterProfilesOptions();
-		DeferredInit();
+		SetHudBrightness(GetHUDBrightnessSetting());
 		
 		InitNotifications();
 		m_Visited = new TStringArray;

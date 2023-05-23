@@ -42,7 +42,7 @@ class ActionDrinkWellContinuous: ActionContinuousBase
 		if (!player.CanEatAndDrink())
 			return false;
 		
-		return target.GetObject() && target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL;
+		return target.GetObject() && (target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || target.GetObject().IsWell());
 	}
 
 	override void OnStart(ActionData action_data)

@@ -26,7 +26,7 @@ class ActionWashHandsWellOne extends ActionInteractLoopBase
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item )
 	{	
-		return player.HasBloodyHands() && !player.GetItemInHands() && !player.GetItemOnSlot("Gloves") && target.GetObject() && target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL;
+		return player.HasBloodyHands() && !player.GetItemInHands() && !player.GetItemOnSlot("Gloves") && target.GetObject() && (target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || target.GetObject().IsWell());
 	}
 
 	override void OnEndServer(ActionData action_data)
