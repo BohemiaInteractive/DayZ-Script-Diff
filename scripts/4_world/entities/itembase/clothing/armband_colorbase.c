@@ -98,4 +98,7 @@ class Armband_Red extends Armband_ColorBase {};
 class Armband_Green extends Armband_ColorBase {};
 class Armband_Pink extends Armband_ColorBase {};
 class Armband_Blue extends Armband_ColorBase {};
+class Armband_Rex extends Armband_ColorBase {};
+class Armband_Zagorky extends Armband_ColorBase {};
+class Armband_Crook extends Armband_ColorBase {};
 class Armband_Black extends Armband_ColorBase {};

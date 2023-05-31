@@ -7,7 +7,7 @@ class Well extends BuildingSuper
 	
 	override bool IsWell()
 	{
-		return GetWaterSourceObjectType();
+		return GetWaterSourceObjectType() == EWaterSourceObjectType.WELL;
 	}
 	
 	override EWaterSourceObjectType GetWaterSourceObjectType()

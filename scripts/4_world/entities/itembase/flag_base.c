@@ -144,3 +144,6 @@ class Flag_CHEL extends Flag_Base {};
 class Flag_Zenit extends Flag_Base {};
 class Flag_HunterZ extends Flag_Base {};
 class Flag_BrainZ extends Flag_Base {};
+class Flag_Rex extends Flag_Base {};
+class Flag_Zagorky extends Flag_Base {};
+class Flag_Crook extends Flag_Base {};

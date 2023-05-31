@@ -14,151 +14,53 @@ class TreeHard_t_acer2s: TreeHard
 };
 @endcode
 */
-class TreeHard extends PlantSuper
+class TreeHard : PlantSuper
 {
-	override void OnTreeCutDown( EntityAI cutting_entity )
+	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
-		//int tree_hard = 14;
-		
-		//ToolBase cut_tree_tool = ToolBase.Cast( cutting_tool );		
-		GetGame().RPCSingleParam( cutting_entity, PlantType.TREE_HARD, NULL, true );
+		GetGame().RPCSingleParam(cutting_entity, PlantType.TREE_HARD, null, true);
 	}
 	
 	override bool IsTree()
 	{
 		return true;
 	}
-	/*
-	override void InitMiningValues()
+
+	override bool CanBeAutoDeleted()
 	{
-		super.InitMiningValues();
-		
-		//m_BarkType = "Bark_Oak";
-	};
-	*/
-	/*override int GetAmountOfDrops(ItemBase item)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 1000; //HOTFIX "infinite" bark
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 4;
-		}
-		else
-		{
-			return 100; 
-		}
+		return false;
 	}
-	
-	override void GetMaterialAndQuantityMap(ItemBase item, out map<string,int> output_map)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			output_map.Insert("Bark_Oak",1);
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			output_map.Insert("FireWood",1);
-			//output_map.Insert("WoodenStick",1);
-		}
-	}
-	
-	override float GetDamageToMiningItemEachDrop(ItemBase item)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 3;
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 2;
-		}
-		else
-		{
-			return 0; 
-		}
-	}*/
 };
 
 //-----------------------------------------------------------------------------
 //! For specific tree declaration see description of \ref TreeHard
-class TreeSoft extends PlantSuper
+class TreeSoft : PlantSuper
 {
-	override void OnTreeCutDown( EntityAI cutting_entity )
+	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
-		//ToolBase cut_tree_tool = ToolBase.Cast( cutting_tool );
-		GetGame().RPCSingleParam( cutting_entity, PlantType.TREE_SOFT, NULL, true );
+		GetGame().RPCSingleParam(cutting_entity, PlantType.TREE_SOFT, null, true);
 	}
 	
 	override bool IsTree()
 	{
 		return true;
 	}
-	/*
-	override void InitMiningValues()
+
+	override bool CanBeAutoDeleted()
 	{
-		super.InitMiningValues();
-		
-		m_BarkType = "Bark_Oak";
-	};
-	*/
-	/*override int GetAmountOfDrops(ItemBase item)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 1000; //HOTFIX "infinite" bark
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 3;
-		}
-		else
-		{
-			return 100; 
-		}
+		return false;
 	}
-	
-	override void GetMaterialAndQuantityMap(ItemBase item, out map<string,int> output_map)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			output_map.Insert("Bark_Oak",1);
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			//output_map.Insert("FireWood",1);
-			output_map.Insert("WoodenStick",1);
-		}
-	}
-	
-	override float GetDamageToMiningItemEachDrop(ItemBase item)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 2;
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 2;
-		}
-		else
-		{
-			return 0; 
-		}
-	}*/
 };
 
 //-----------------------------------------------------------------------------
 //! For specific tree declaration see description of \ref TreeHard
 //! default values for hard bushes
-class BushHard extends PlantSuper
+class BushHard : PlantSuper
 {
-	override void OnTreeCutDown( EntityAI cutting_entity )
+	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
-		//ToolBase cut_tree_tool = ToolBase.Cast( cutting_tool );		
-		GetGame().RPCSingleParam( cutting_entity, PlantType.BUSH_HARD, NULL, true );
+	
+		GetGame().RPCSingleParam(cutting_entity, PlantType.BUSH_HARD, null, true);
 	}
 	
 	override bool IsBush()
@@ -166,109 +68,28 @@ class BushHard extends PlantSuper
 		return true;
 	}
 	
-	/*override int GetAmountOfDrops(ItemBase item)
+	override bool CanBeAutoDeleted()
 	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 1;
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 1;
-		}
-		else
-		{
-			return 3;
-		}
+		return false;
 	}
-	
-	override void GetMaterialAndQuantityMap(ItemBase item, out map<string,int> output_map)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			output_map.Insert("LongWoodenStick",1);
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			output_map.Insert("LongWoodenStick",1);
-			//output_map.Insert("WoodenStick",1);
-		}
-	}
-	
-	override float GetDamageToMiningItemEachDrop(ItemBase item)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 2;
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}*/
 };
 
 //-----------------------------------------------------------------------------
 //! For specific tree declaration see description of \ref TreeHard
-class BushSoft extends PlantSuper
+class BushSoft : PlantSuper
 {
-	override void OnTreeCutDown( EntityAI cutting_entity )
+	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
-		//ToolBase cut_tree_tool = ToolBase.Cast( cutting_tool );		
-		GetGame().RPCSingleParam( cutting_entity, PlantType.BUSH_SOFT, NULL, true );
+		GetGame().RPCSingleParam(cutting_entity, PlantType.BUSH_SOFT, null, true);
 	}
 	
 	override bool IsBush()
 	{
 		return true;
 	}
-	
-	/*override int GetAmountOfDrops(ItemBase item)
+
+		override bool CanBeAutoDeleted()
 	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 1;
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 1;
-		}
-		else
-		{
-			return 3;
-		}
+		return false;
 	}
-	
-	override void GetMaterialAndQuantityMap(ItemBase item, out map<string,int> output_map)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			output_map.Insert("LongWoodenStick",1);
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			output_map.Insert("LongWoodenStick",1);
-			//output_map.Insert("WoodenStick",1);
-		}
-	}
-	
-	override float GetDamageToMiningItemEachDrop(ItemBase item)
-	{
-		if ( item && item.KindOf("Knife") )
-		{
-			return 1;
-		}
-		else if ( item && item.KindOf("Axe") )
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}*/
 };

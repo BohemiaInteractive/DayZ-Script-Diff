@@ -696,6 +696,10 @@ class set<Class T>
 {
 	proto native int Count();
 	proto native void Clear();
+	/*!
+	Tries to find the first occurance of given value in the set.
+	\return Index of the first occurance of `value` if found, -1 otherwise
+	*/
 	proto int Find(T value);
 	proto T Get(int n);
 	/*!

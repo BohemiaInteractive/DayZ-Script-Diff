@@ -205,7 +205,6 @@ class BleedingSourcesManagerBase
 			AddBleedingSource(bit);
 			return true;
 		}
-		
 		return false;
 	}
 	
@@ -241,8 +240,15 @@ class BleedingSourcesManagerBase
 	
 	protected bool CanAddBleedingSource(int bit)
 	{
-		if (!GetBleedingSourceMeta(bit)) return false;
-		return ((m_Player.GetBleedingBits() & bit) == 0 );
+		if (!GetBleedingSourceMeta(bit)) 
+		{
+			return false;
+		}
+		if ((m_Player.GetBleedingBits() & bit) == 0)
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	protected void AddBleedingSourceEx(int bit, eBleedingSourceType type = eBleedingSourceType.NORMAL, int context = 0)
@@ -254,7 +260,6 @@ class BleedingSourcesManagerBase
 	protected void AddBleedingSource(int bit)
 	{
 		BleedingSourceZone bsz = GetBleedingSourceMeta(bit);
-		
 		vector orientation = bsz.GetOrientation();
 		vector offset = bsz.GetOffset();
 		string bone_name =  bsz.GetBoneName();

@@ -689,6 +689,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			return true;
 		}
 
+		EnableMovableOverride(src.GetItem());
 		if (!PlayerCheckRequestSrc(src, GameInventory.c_MaxItemDistanceRadius))
 		{
 			#ifdef DEVELOPER
@@ -699,6 +700,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			#endif
 			
 			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " failed src check with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src));		
+			RemoveMovableOverride(src.GetItem());
 			return true;
 		}
 		
@@ -713,8 +715,10 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			#endif
 
 			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " is cheating with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
+			RemoveMovableOverride(src.GetItem());
 			return true;
 		}
+		RemoveMovableOverride(src.GetItem());
 		
 		syncDebugPrint("[syncinv] " + Object.GetDebugName(GetDayZPlayerOwner()) + " STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " HandleInputData t=" + GetGame().GetTime() + "ms received cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 
@@ -761,6 +765,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 				
 				validation.m_Result = InventoryValidationResult.JUNCTURE;
+				EnableMovableOverride(src.GetItem());
 				return true;
 			}
 			else if (result_mv == JunctureRequestResult.JUNCTURE_DENIED)
@@ -853,6 +858,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			//!					always being enforced for players? What if that create message is recieved later? Does the hands on other clients become desynchronized?
 			return true;
 		}
+		
+		//! TODO(kumarjac):	Is this one correct to be 'RemoveMovableOverride' or are the other Validate methdos wrong with 'EnableMovableOverride'?
+		if (itemSrc)
+			RemoveMovableOverride(itemSrc);
+		if (itemDst)
+			RemoveMovableOverride(itemDst);
 
 		if (!e.CheckRequestSrc())
 		{
@@ -868,6 +879,11 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				ctx = new ScriptInputUserData;
 				InventoryInputUserData.SerializeHandEvent(ctx, e);
 			}
+
+			if (itemSrc)
+				RemoveMovableOverride(itemSrc);
+			if (itemDst)
+				RemoveMovableOverride(itemDst);
 
 			return true;
 		}
@@ -889,6 +905,10 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			
 			//! TODO(kumarjac): Not a cheat, could be desync
 			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " is cheating with cmd=" + typename.EnumToString(InventoryCommandType, type) + " event=" + e.DumpToString());
+			if (itemSrc)
+				RemoveMovableOverride(itemSrc);
+			if (itemDst)
+				RemoveMovableOverride(itemDst);
 			return true;
 		}
 		
@@ -907,8 +927,16 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			InventoryInputUserData.SerializeHandEvent(ctx, e);
 			
 			syncDebugPrint("[desync] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " CANNOT do cmd=HAND_EVENT e=" + e.DumpToString());
+			if (itemSrc)
+				RemoveMovableOverride(itemSrc);
+			if (itemDst)
+				RemoveMovableOverride(itemDst);
 			return true;
 		}
+		if (itemSrc)
+			RemoveMovableOverride(itemSrc);
+		if (itemDst)
+			RemoveMovableOverride(itemDst);
 
 		//! Check if this this is being executed on the server and not by a juncture or AI
 		if (!validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
@@ -938,6 +966,11 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				InventoryInputUserData.SerializeHandEvent(ctx, e);
 			
 				validation.m_Result = InventoryValidationResult.JUNCTURE;
+				
+				if (itemSrc)
+					EnableMovableOverride(itemSrc);
+				if (itemDst)
+					EnableMovableOverride(itemDst);
 				return true;
 			}
 			else if (result_ev == JunctureRequestResult.JUNCTURE_DENIED)
@@ -1033,6 +1066,9 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 
 			return true;
 		}
+				
+		EnableMovableOverride(src1.GetItem());
+		EnableMovableOverride(src2.GetItem());
 		
 		if (!PlayerCheckRequestSrc(src1, GameInventory.c_MaxItemDistanceRadius))
 		{
@@ -1044,6 +1080,8 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			#endif
 			
 			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " failed src1 check with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src1=" + InventoryLocation.DumpToStringNullSafe(src1));
+			RemoveMovableOverride(src1.GetItem());
+			RemoveMovableOverride(src2.GetItem());
 			return true;
 		}
 
@@ -1056,6 +1094,8 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			}
 			#endif
 			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " failed src2 check with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2));
+			RemoveMovableOverride(src1.GetItem());
+			RemoveMovableOverride(src2.GetItem());
 			return true;
 		}
 
@@ -1070,8 +1110,13 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			#endif
 			
 			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " is cheating with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+			RemoveMovableOverride(src1.GetItem());
+			RemoveMovableOverride(src2.GetItem());
 			return true;
 		}
+				
+		RemoveMovableOverride(src1.GetItem());
+		RemoveMovableOverride(src2.GetItem());
 		
 		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
@@ -1131,6 +1176,8 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				#endif
 
 				validation.m_Result = InventoryValidationResult.JUNCTURE;
+				EnableMovableOverride(src1.GetItem());
+				EnableMovableOverride(src2.GetItem());
 				return true;
 			}
 			else if (result_sw == JunctureRequestResult.JUNCTURE_DENIED)

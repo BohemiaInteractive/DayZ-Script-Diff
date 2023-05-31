@@ -822,7 +822,7 @@ class PlayerBase extends ManBase
 	{
 		super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
 		
-		if (m_AdminLog && !IsDamageDestroyed())
+		if (m_AdminLog)
 		{
 			m_AdminLog.PlayerHitBy(damageResult, damageType, this, source, component, dmgZone, ammo);
 		}
@@ -1251,6 +1251,7 @@ class PlayerBase extends ManBase
 		
 		AddAction(ActionUnrestrainTargetHands, InputActionMap);
 		AddAction(ActionTakeArrow, InputActionMap);
+		AddAction(ActionTakeArrowToHands, InputActionMap);
 		
 		//AddAction(ActionPickupChicken, InputActionMap);
 		//AddAction(ActionSwitchLights);
@@ -2324,6 +2325,10 @@ class PlayerBase extends ManBase
 		SEffectManager.DestroyEffect(m_FliesEff);
 //		ErrorEx("DbgFlies | StopSoundSet | exit 2 ",ErrorExSeverity.INFO);
 		StopSoundSet(m_SoundFliesEffect);
+		if (m_AdminLog)
+		{
+			m_AdminLog.PlayerCorpseDestroyed(this);
+		}
 	}
 
 	void OnCameraChanged(DayZPlayerCameraBase new_camera)

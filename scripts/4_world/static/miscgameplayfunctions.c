@@ -1600,22 +1600,19 @@ class MiscGameplayFunctions
 			Object child = Object.Cast(parent.GetChildren());
 			while (child)
 			{
-				//! get rid of lookup for ParticleSource and others
-				if (!child.IsInherited(EntityAI))
-					return;
+				Object childToRemove = child;
+				child = Object.Cast(child.GetSibling());
 	
-				if (child.IsAnyInherited(listOfTypenames))
+				if (childToRemove.IsAnyInherited(listOfTypenames))
 				{
-					vector pos = child.GetPosition();
-					Object childToDelete = child;
-					child = Object.Cast(child.GetSibling());
-					parent.RemoveChild(childToDelete, false);
+					vector pos = childToRemove.GetPosition();			
+					parent.RemoveChild(childToRemove, false);
 	
 					vector m4[4];
 					Math3D.MatrixIdentity4(m4);
 					m4[3] = pos;
-					childToDelete.SetTransform(m4);
-					childToDelete.PlaceOnSurface();
+					childToRemove.SetTransform(m4);
+					childToRemove.PlaceOnSurface();
 				}
 			}
 		}

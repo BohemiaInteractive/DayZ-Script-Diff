@@ -71,7 +71,6 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		#endif
 		m_Version.SetText(version);
 		
-		OnlineServices.Init();
 		OnlineServices.m_ServersAsyncInvoker.Insert(OnLoadServersAsync);
 		OnlineServices.m_ServerModLoadAsyncInvoker.Insert(OnLoadServerModsAsync);
 		LoadFavoriteServers();

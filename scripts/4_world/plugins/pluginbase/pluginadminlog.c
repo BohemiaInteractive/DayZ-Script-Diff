@@ -27,6 +27,8 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 	autoptr array<Man>				m_PlayerArray; 	
 	const int 						TIMER_PLAYERLIST = GetPlayerListTimer();
 		
+	protected const ref set<Man>	m_AlreadyReportedDead = new set<Man>();//holds a list of dead players so that we know not to report their EEHitBy events any longer. We can't use IsAlive() as that would disqualify the killing EEHitBy event, which is necessary to report
+	
 	static int GetPlayerListTimer()
 	{
 		return 300; // seconds
@@ -157,6 +159,7 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			{
 				LogPrint( m_PlayerPrefix + " killed by " + m_PlayerPrefix2);
 			}
+			m_AlreadyReportedDead.Insert(player);
 		}
 		else 
 		{
@@ -168,6 +171,8 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 	{
 		if ( player && source )		
 		{
+			if (m_AlreadyReportedDead.Find(player) != -1)
+				return;
 			m_PlayerPrefix = GetPlayerPrefix( player ,  player.GetIdentity() ) + "[HP: " + player.GetHealth().ToString() + "]";
 			m_HitMessage = GetHitMessage( damageResult, component, dmgZone, ammo );
 			
@@ -374,5 +379,10 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 	void DirectAdminLogPrint(string str)
 	{
 		LogPrint(str);
+	}
+	
+	void PlayerCorpseDestroyed(Man player)
+	{
+		m_AlreadyReportedDead.RemoveItem(player);
 	}
 }

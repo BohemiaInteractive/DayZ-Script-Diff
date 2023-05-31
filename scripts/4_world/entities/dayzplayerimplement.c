@@ -140,7 +140,7 @@ class DayZPlayerImplement extends DayZPlayer
 	protected bool										m_PullPlayerOutOfVehicleKeepsInLocalSpace = false;
 	protected int										m_PullPlayerOutOfVehicleState = -1;
 	int													m_ActionSoundCategoryHash;
-
+	
 	//! constructor 
 	void 	DayZPlayerImplement()
 	{
@@ -197,7 +197,7 @@ class DayZPlayerImplement extends DayZPlayer
 	{
 		return m_FallDamage;
 	}
-
+	
 	void ~DayZPlayerImplement()
 	{
 	}
@@ -1331,7 +1331,14 @@ class DayZPlayerImplement extends DayZPlayer
 			if (EvaluateDamageHitAnimation(damageResult, damageType, source, dmgZone, ammo, modelPos, animType, animHitDir, animHitFullbody))
 				DayZPlayerSyncJunctures.SendDamageHitEx(this, animType, animHitDir, animHitFullbody, damageResult, damageType, source, dmgZone, ammo, modelPos);
 			else
-				RequestSoundEvent(EPlayerSoundEventID.TAKING_DMG_LIGHT);
+			{
+				bool skipSoundRequest = false;
+				if (damageType == DamageType.CUSTOM && GetCommand_Fall())
+					skipSoundRequest = GetFallDamage().GetLandType() < HumanCommandFall.LANDTYPE_MEDIUM;
+
+				if (!skipSoundRequest)
+					RequestSoundEvent(EPlayerSoundEventID.TAKING_DMG_LIGHT);
+			}
 		}
 
 		// interupt melee for non-blocked hit or heavy hit
@@ -2132,7 +2139,7 @@ class DayZPlayerImplement extends DayZPlayer
 			{
 				DayZPlayerType type = GetDayZPlayerType();
 				NoiseParams npar;
-				
+
 				FallDamageData fallDamageData = new FallDamageData();
 				fallDamageData.m_Height = m_FallYDiff - GetPosition()[1];
 

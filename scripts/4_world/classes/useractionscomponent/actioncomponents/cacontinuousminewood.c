@@ -7,8 +7,7 @@ class CAContinuousMineWood : CAContinuousBase
 	protected float					m_DamageToMiningItemEachDrop;
 	protected float					m_AdjustedDamageToMiningItemEachDrop;
 	protected int 					m_AmountOfDrops;
-	//protected string				m_Material;
-	//protected float 				m_AmountOfMaterialPerDrop;
+	protected int 					m_CurrentAssumedDrops;
 	protected ref map<string,int> 	m_MaterialAndQuantityMap;
 	protected float					m_TimeToComplete;
 	protected ref Param1<float>		m_SpentUnits;
@@ -37,12 +36,6 @@ class CAContinuousMineWood : CAContinuousBase
 		m_MaterialAndQuantityMap = new map<string,int>;
 		m_DataLoaded = GetMiningData(action_data);
 		
-		/*
-		for(int i = 0; i < m_MaterialAndQuantityMap.Count(); i++)
-		{
-			Print("material = " + m_MaterialAndQuantityMap.GetKey(i) + "; quantity = " + m_MaterialAndQuantityMap.GetElement(i));
-		}
-		*/
 		if (m_CycleTimeOverride > -1.0)
 		{
 			m_TimeBetweenMaterialDrops = m_CycleTimeOverride;
@@ -79,7 +72,8 @@ class CAContinuousMineWood : CAContinuousBase
 					float damage = 0;
 					if (m_AmountOfDrops > 0)
 						damage = (1 / m_AmountOfDrops) * 100;
-					targetObject.DecreaseHealth("","",damage,true);
+					
+					targetObject.DecreaseHealth("", "", damage, targetObject.CanBeAutoDeleted());
 					CreatePrimaryItems(action_data);
 					if (action_data.m_MainItem)
 						action_data.m_MainItem.DecreaseHealth( "", "", m_AdjustedDamageToMiningItemEachDrop );
@@ -87,34 +81,41 @@ class CAContinuousMineWood : CAContinuousBase
 					{
 						DamagePlayersHands(action_data.m_Player);
 					}
-				}
-				if ( targetObject.IsDamageDestroyed() )
-				{
-					if ( m_SpentUnits )
-					{
-						m_SpentUnits.param1 = m_TimeElpased;
-						SetACData(m_SpentUnits);
-					}
 					
-					if ( WoodBase.Cast(targetObject) )
+					if ( targetObject.IsDamageDestroyed() ) //client does not know the target is destroyed yet, happens on the next Execute!
 					{
-						WoodBase target_woodbase = WoodBase.Cast(targetObject);
+						if ( m_SpentUnits )
+						{
+							m_SpentUnits.param1 = m_TimeElpased;
+							SetACData(m_SpentUnits);
+						}
 						
-						if (target_woodbase.GetSecondaryOutput() != "")
-							CreateSecondaryItems(action_data,target_woodbase.GetSecondaryOutput(),target_woodbase.GetSecondaryDropsAmount());
+						if ( WoodBase.Cast(targetObject) )
+						{
+							WoodBase target_woodbase = WoodBase.Cast(targetObject);
+							
+							if (target_woodbase.GetSecondaryOutput() != "")
+								CreateSecondaryItems(action_data,target_woodbase.GetSecondaryOutput(),target_woodbase.GetSecondaryDropsAmount());
+						}
+						
+						if (action_data.m_MainItem)
+						{
+							targetObject.OnTreeCutDown( action_data.m_MainItem );
+						}
+						else
+						{
+							targetObject.OnTreeCutDown( action_data.m_Player );
+						}
 					}
-					
-					if (action_data.m_MainItem)
-					{
-						targetObject.OnTreeCutDown( action_data.m_MainItem );
-					}
-					else
-					{
-						targetObject.OnTreeCutDown( action_data.m_Player );
-					}
+				}
+				
+				m_CurrentAssumedDrops++;
+				if (m_CurrentAssumedDrops >= m_AmountOfDrops) //assumed end, client does not know the target is destroyed yet
+				{
 					OnCompletePogress(action_data);
 					return UA_FINISHED;
 				}
+				
 				m_TimeElpased = m_TimeElpased - m_AdjustedTimeBetweenMaterialDrops;
 				OnCompletePogress(action_data);
 			}
@@ -124,18 +125,7 @@ class CAContinuousMineWood : CAContinuousBase
 	
 	override float GetProgress()
 	{
-		//float progress = m_TimeElpased/m_AdjustedTimeBetweenMaterialDrops;
 		return m_TimeElpased/m_AdjustedTimeBetweenMaterialDrops;
-	}
-		
-	override int Cancel( ActionData action_data )
-	{	
-		ToolBase cut_tree_tool = ToolBase.Cast( action_data.m_MainItem );
-		
-		if (!cut_tree_tool)
-			return super.Cancel( action_data );
-		
-		return super.Cancel( action_data );
 	}
 	
 	//---------------------------------------------------------------------------
@@ -146,10 +136,9 @@ class CAContinuousMineWood : CAContinuousBase
 		WoodBase ntarget;
 		if ( Class.CastTo(ntarget, action_data.m_Target.GetObject()) )
 		{
-			m_AmountOfDrops = /*Math.Max(1,*/ntarget.GetAmountOfDropsEx(action_data.m_MainItem,adata.m_HarvestType)/*)*/;
+			m_AmountOfDrops = ntarget.GetAmountOfDropsEx(action_data.m_MainItem,adata.m_HarvestType);
+			m_CurrentAssumedDrops = 0;
 			m_CycleTimeOverride = ntarget.GetCycleTimeOverride(); //TODO
-			//m_Material = ntarget.GetMaterial(action_data.m_MainItem);
-			//m_AmountOfMaterialPerDrop = Math.Max(1,ntarget.GetAmountOfMaterialPerDrop(action_data.m_MainItem));
 			ntarget.GetMaterialAndQuantityMapEx(action_data.m_MainItem,m_MaterialAndQuantityMap, adata.m_HarvestType);
 			m_DamageToMiningItemEachDrop = ntarget.GetDamageToMiningItemEachDropEx(action_data.m_MainItem, adata.m_HarvestType );
 			m_AdjustedDamageToMiningItemEachDrop = action_data.m_Player.GetSoftSkillsManager().SubtractSpecialtyBonus( m_DamageToMiningItemEachDrop, m_Action.GetSpecialtyWeight(), true );
@@ -174,26 +163,22 @@ class CAContinuousMineWood : CAContinuousBase
 				{
 					m_MinedItem[i] = ItemBase.Cast(GetGame().CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 					m_MinedItem[i].SetQuantity(increment);
-					//Print("CreateItems | first stack");
 				}
 				else if (m_MinedItem[i].HasQuantity())
 				{
 					if ( m_MinedItem[i].IsFullQuantity() )
 					{
 						int stack_max = m_MinedItem[i].GetQuantityMax();
-
-						//Print("CreateItems | new stack");
+						
 						increment -= stack_max - m_MinedItem[i].GetQuantity();
 						if (increment >= 1.0)
 						{
-							//m_MinedItem[i].SetQuantity(stack_max);
 							m_MinedItem[i] = ItemBase.Cast(GetGame().CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 							m_MinedItem[i].SetQuantity(increment,false);
 						}
 					}
 					else
 					{
-						//Print("CreateItems | adding quantity to: " + (m_MinedItem[i].GetQuantity() + increment));
 						m_MinedItem[i].AddQuantity(increment,false);
 					}
 				}
@@ -221,7 +206,7 @@ class CAContinuousMineWood : CAContinuousBase
 		
 		int increment = quantity_secondary;
 		int stack_max = m_SecondaryItem.GetQuantityMax();
-		int stacks_amount;// = Math.Ceil(increment/m_SecondaryItem.GetQuantityMax());
+		int stacks_amount;
 		
 		stacks_amount = Math.Ceil(increment/stack_max);
 		
@@ -242,7 +227,6 @@ class CAContinuousMineWood : CAContinuousBase
 	
 	void DamagePlayersHands(PlayerBase player)
 	{
-		//m_AdjustedDamageToMiningItemEachDrop
 		ItemBase gloves = ItemBase.Cast(player.FindAttachmentBySlotName("Gloves"));
 		if ( gloves && !gloves.IsDamageDestroyed() )
 		{
@@ -251,7 +235,6 @@ class CAContinuousMineWood : CAContinuousBase
 		else
 		{
 			int rand = Math.RandomIntInclusive(0,9);
-			//Print("rand: " + rand);
 			if ( rand == 0 )
 			{
 				rand = Math.RandomIntInclusive(0,1);

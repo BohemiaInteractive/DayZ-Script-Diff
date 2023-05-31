@@ -26,17 +26,6 @@ class DamageLightSoundEvent extends DamageSoundEvents
 		m_ID = EPlayerSoundEventID.TAKING_DMG_LIGHT;
 		m_SoundVoiceAnimEventClassID = 12;
 	}
-	
-	override bool CanPlay(PlayerBase player)
-	{
-		if (!super.CanPlay(player))
-			return false;
-
-		if (player.GetCommand_Fall())
-			return player.GetFallDamage().GetLandType() > HumanCommandFall.LANDTYPE_LIGHT;
-		
-		return true;
-	}
 }
 
 class DamageHeavySoundEvent extends DamageSoundEvents

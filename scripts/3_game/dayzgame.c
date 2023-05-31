@@ -1573,6 +1573,11 @@ class DayZGame extends CGame
 				}
 				break;
 			}
+			case SelectedUserChangedEventTypeID:
+			{
+				OnlineServices.Init();
+				break;
+			}
 			case LoginStatusEventTypeID:
 			{
 				LoginStatusEventParams loginStatusParams;
@@ -2184,6 +2189,17 @@ class DayZGame extends CGame
 	
 	void MainMenuLaunch()
 	{
+#ifdef PLATFORM_WINDOWS
+		BiosUserManager user_manager = GetUserManager();
+		if (user_manager)
+		{
+			if (user_manager.GetTitleInitiator())
+			{
+				user_manager.SelectUserEx(user_manager.GetTitleInitiator());
+			}
+		}
+#endif
+		
 		SetGameState(DayZGameState.MAIN_MENU);
 		SetLoadState(DayZLoadState.MAIN_MENU_START);		
 		StartRandomCutscene(GetMainMenuWorld());		

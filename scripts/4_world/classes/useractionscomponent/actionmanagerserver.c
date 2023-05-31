@@ -327,6 +327,8 @@ class ActionManagerServer: ActionManagerBase
 	
 	override void Interrupt()
 	{
+		super.Interrupt();
+		
 		if (m_CurrentActionData)
 			DayZPlayerSyncJunctures.SendActionInterrupt(m_Player);
 	}

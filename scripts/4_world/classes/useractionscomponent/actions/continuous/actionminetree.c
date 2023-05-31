@@ -76,21 +76,26 @@ class ActionMineTree : ActionMineBase
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		
 		//Action not allowed if player has broken legs
 		if (player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
 			return false;
 		
 		Object targetObject = target.GetObject();
-		//GetMaterialAndQuantityMap
 		
 		return targetObject.IsTree() && targetObject.IsCuttable();
+	}
+	
+	//! not checking target damage anymore, callback takes care of that
+	override bool CanContinue(ActionData action_data)
+	{
+		if (!action_data.m_Player.IsPlayerInStance(action_data.m_PossibleStanceMask) || !m_ConditionItem || !m_ConditionItem.CanContinue(action_data.m_Player,action_data.m_MainItem))
+			return false;
+
+		return ActionConditionContinue(action_data);
 	}
 	
 	override void OnFinishProgressServer( ActionData action_data )
 	{
 		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
-		// "hiding" of map item
-		//action_data.m_Target.GetObject().SetOrigin("0 0 0");
 	}
 };

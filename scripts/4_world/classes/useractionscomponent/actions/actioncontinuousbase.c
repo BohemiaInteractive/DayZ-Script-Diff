@@ -5,17 +5,11 @@ class ActionContinuousBaseCB : ActionBaseCB
 		
 	bool CancelCondition()
 	{
-		/*if(m_Interrupted)
-		{
-			return DefaultCancelCondition();
-		}*/
-		//SetCommand(DayZPlayerConstants.CMD_ACTIONINT_ACTIONLOOP);
-		//Print("cancel condition enabled: " + GetState().ToString() );
 		if ( !m_ActionData )
 		{
 			return DefaultCancelCondition();
 		}
-		if ( !m_Interrupted && (GetState() == STATE_LOOP_LOOP || GetState() == STATE_LOOP_LOOP2 || m_inLoop) )
+		if ((GetState() == STATE_LOOP_LOOP || GetState() == STATE_LOOP_LOOP2 || m_inLoop) )
 		{
 			ActionContinuousBase actionS = ActionContinuousBase.Cast(m_ActionData.m_Action);	
 			if ( m_ActionData.m_State == UA_INITIALIZE )
@@ -25,7 +19,8 @@ class ActionContinuousBaseCB : ActionBaseCB
 				m_callLoopEnd = true;
 			}
 			
-			actionS.Do(m_ActionData, m_ActionData.m_State);
+			if (!m_Interrupted)
+				actionS.Do(m_ActionData, m_ActionData.m_State);
 		}
 		else if (m_callLoopEnd == true)
 		{

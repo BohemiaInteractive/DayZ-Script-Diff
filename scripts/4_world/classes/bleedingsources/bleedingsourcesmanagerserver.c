@@ -150,7 +150,6 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 	void ProcessHit(float damage, EntityAI source, int component, string zone, string ammo, vector modelPos)
 	{
 		float dmg_max = m_Player.GetMaxHealth(zone, "Blood");
-		float dmg = damage;
 		float bleed_threshold = GetGame().ConfigGetFloat( "CfgAmmo " + ammo + " DamageApplied " + "bleedThreshold" );
 		bleed_threshold = Math.Clamp(bleed_threshold,0,1);
 		//Print("dmg_max = " + dmg_max);
@@ -166,7 +165,7 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 				AttemptAddBleedingSource(component);
 			}
 		}
-		else if ( dmg > (dmg_max * (1 - bleed_threshold)) )
+		else if (damage >= (dmg_max * (1 - bleed_threshold)) )
 		{
 			AttemptAddBleedingSource(component);
 			//Print("BLEEDING");

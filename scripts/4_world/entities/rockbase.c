@@ -1,8 +1,13 @@
-class RockBase: Object 
+class RockBase : Object 
 {
 	override bool IsRock()
 	{
 		return true;
+	}
+	
+	override bool CanBeAutoDeleted()
+	{
+		return false;
 	}
 
 	int GetAmountOfDrops(ItemBase item)

@@ -49,9 +49,12 @@ class ObjectSpawnerHandler
 			int flags = ECE_SETUP | ECE_UPDATEPATHGRAPH | ECE_CREATEPHYSICS | ECE_NOLIFETIME | ECE_DYNAMIC_PERSISTENCY;
 			
 			if (item.enableCEPersistency)
+			{
 				flags &= ~ECE_DYNAMIC_PERSISTENCY;
+				flags &= ~ECE_NOLIFETIME;
+			}
 			
-			object = GetGame().CreateObjectEx(item.name, vector.ArrayToVec(item.pos), flags);
+			object = GetGame().CreateObjectEx(item.name, vector.ArrayToVec(item.pos), flags, RF_IGNORE);
 			if ( object )
 			{
 				object.SetOrientation( vector.ArrayToVec(item.ypr));

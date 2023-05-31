@@ -353,6 +353,7 @@ class ActionConstructor
 		actions.Insert(ActionDetachFromTarget_SpecificSlotsCategory_Barrel);
 		actions.Insert(ActionDetachFromTarget_SpecificSlotsCategory_WoodenCrate);
 		actions.Insert(ActionTakeArrow);
+		actions.Insert(ActionTakeArrowToHands);
 		
 		//vehicle actions
 		actions.Insert(ActionSwitchLights);

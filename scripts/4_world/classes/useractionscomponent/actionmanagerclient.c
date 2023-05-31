@@ -1254,6 +1254,8 @@ class ActionManagerClient: ActionManagerBase
 	
 	override void Interrupt()
 	{
+		super.Interrupt();
+		
 		if (m_CurrentActionData)
 			m_Interrupted = true;
 	}

@@ -773,6 +773,11 @@ class Object extends IEntity
 		return IsBush() || IsTree() || IsMan() || IsDayZCreature() || IsItemBase();
 	}
 	
+	bool CanBeAutoDeleted()
+	{
+		return true;
+	}
+	
 	//! Disables icon in the vicinity, useful for large, immovable items, that are not buildings
 	bool DisableVicinityIcon()
 	{
