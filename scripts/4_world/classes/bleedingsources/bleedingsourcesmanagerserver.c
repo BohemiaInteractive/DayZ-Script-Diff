@@ -165,7 +165,7 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 				AttemptAddBleedingSource(component);
 			}
 		}
-		else if (damage >= (dmg_max * (1 - bleed_threshold)) )
+		else if (damage > (dmg_max * (1 - bleed_threshold)) )
 		{
 			AttemptAddBleedingSource(component);
 			//Print("BLEEDING");

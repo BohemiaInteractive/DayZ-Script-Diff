@@ -9072,15 +9072,18 @@ class PlayerBase extends ManBase
 		
 		int pivot = componentIndex;
 		int newPivot = -1;
-		
+		string compName;
 		for (int i = 0; i < CachedObjectsArrays.ARRAY_STRING.Count() && newPivot == -1; i++)
 		{
-			newPivot = GetBoneIndexByName(CachedObjectsArrays.ARRAY_STRING.Get(i));
+			compName = CachedObjectsArrays.ARRAY_STRING.Get(i);
+			newPivot = GetBoneIndexByName(compName);
+			
 		}
 		
 		if (newPivot != -1)
 		{
 			pivot = newPivot;
+			
 		}
 		
 		vector parentTransMat[4];
@@ -9108,6 +9111,16 @@ class PlayerBase extends ManBase
 		arrow.SetTransform(arrowTransMat);
 		
 		AddChild(arrow, pivot);
+		
+		#ifdef SERVER
+		// creating bleeding source
+		BleedingSourcesManagerServer bleedingManager = GetBleedingManagerServer();
+		if (bleedingManager)
+		{
+			if (!bleedingManager.AttemptAddBleedingSourceBySelection(compName))
+				bleedingManager.AttemptAddBleedingSourceBySelection("Pelvis");//fallback, if we can't attach bleeding source to the fallback location because there already is another one, it's fine, we are just trying make sure there is at least one
+		}
+		#endif
 	}
 	
 	override bool IsManagingArrows()
