@@ -75,7 +75,7 @@ class ActionUnmountBarbedWire: ActionContinuousBase
 	
 	override string GetAdminLogMessage( ActionData action_data )
 	{
-		string message = string.Format("Player %1 Unmounted BarbedWire from %2", action_data.m_Player, action_data.m_Target.GetObject() );
+		string message = string.Format("Player %1 Unmounted BarbedWire from %2", action_data.m_Player, action_data.m_Target.GetObject().ClassName() );
 		return message;
 	}
 }

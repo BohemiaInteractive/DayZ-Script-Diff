@@ -86,18 +86,22 @@ class VicinitySlotsContainer: Container
 	
 	override bool EquipItem()
 	{
-		EntityAI ent = GetFocusedItem();
-		bool res = false;
-		
-		if( ent && !ent.IsInherited( Magazine ))
-		{
-			res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment( ent );
-			if(!res)
+		if (CanEquip())
+		{	
+			EntityAI ent = GetFocusedItem();
+			bool res = false;
+			
+			if( ent && !ent.IsInherited( Magazine ))
 			{
-				res = GetGame().GetPlayer().GetInventory().TakeEntityToInventory(InventoryMode.PREDICTIVE,FindInventoryLocationType.ATTACHMENT,ent);
+				res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment( ent );
+				if(!res)
+				{
+					res = GetGame().GetPlayer().GetInventory().TakeEntityToInventory(InventoryMode.PREDICTIVE,FindInventoryLocationType.ATTACHMENT,ent);
+				}
 			}
+			return res;
 		}
-		return res;
+		return false;
 	}
 	
 	override bool InspectItem()
@@ -114,24 +118,27 @@ class VicinitySlotsContainer: Container
 		
 	override bool TransferItem()
 	{
-		ItemBase ent = ItemBase.Cast( GetFocusedItem() );
-		if( ent )
+		if (CanTakeToInventory())
 		{
-			if ( ent.IsTakeable() )
+			ItemBase ent = ItemBase.Cast(GetFocusedItem());
+			if (ent)
 			{
-				InventoryLocation il = new InventoryLocation;
-				GetGame().GetPlayer().GetInventory().FindFreeLocationFor( ent, FindInventoryLocationType.CARGO, il );
-				if( il.IsValid() && GetGame().GetPlayer().GetInventory().LocationCanAddEntity( il ) )
+				if (ent.IsTakeable())
 				{
-					SplitItemUtils.TakeOrSplitToInventoryLocation( PlayerBase.Cast( GetGame().GetPlayer() ), il );
-					return true;
+					InventoryLocation il = new InventoryLocation;
+					GetGame().GetPlayer().GetInventory().FindFreeLocationFor( ent, FindInventoryLocationType.CARGO, il );
+					if (il.IsValid() && GetGame().GetPlayer().GetInventory().LocationCanAddEntity( il ))
+					{
+						SplitItemUtils.TakeOrSplitToInventoryLocation( PlayerBase.Cast( GetGame().GetPlayer() ), il );
+						return true;
+					}
 				}
 			}
 		}
 		return false;
 	}
 	
-	override bool Combine( )
+	override bool Combine()
 	{
 		ItemBase ent = ItemBase.Cast( GetFocusedItem() );
 		
@@ -172,7 +179,7 @@ class VicinitySlotsContainer: Container
 								selected_item.SplitIntoStackMaxClient( null, -1 );
 							else
 								player.PhysicalPredictiveDropItem( selected_item );
-							ItemManager.GetInstance().SetSelectedItem( null, null, null, null );
+							ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
 							return true;
 						}
 					}

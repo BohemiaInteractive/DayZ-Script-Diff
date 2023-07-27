@@ -38,7 +38,7 @@ class VSS_Base : RifleBoltFree_Base
 		if ( Class.CastTo(entity, this) )
 		{
 			entity.GetInventory().CreateInInventory( "PSO1Optic" );	
-			entity.SpawnEntityOnGroundPos("Mag_VSS_10Rnd", entity.GetPosition());
+			SpawnAttachedMagazine("Mag_VSS_10Rnd");
 		}
 	}
 };

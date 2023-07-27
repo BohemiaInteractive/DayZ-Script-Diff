@@ -118,14 +118,14 @@ class DoubleBarrelEmptyEmpty extends WeaponStableState
 
 class DoubleBarrel_Base : Rifle_Base
 {
-	ref WeaponStateBase L_L;
-	ref WeaponStateBase L_E;
-	ref WeaponStateBase E_L;
-	ref WeaponStateBase F_L;
-	ref WeaponStateBase F_F;
-	ref WeaponStateBase F_E;
-	ref WeaponStateBase E_F;
-	ref WeaponStateBase E_E;
+	ref WeaponStableState L_L;
+	ref WeaponStableState L_E;
+	ref WeaponStableState E_L;
+	ref WeaponStableState F_L;
+	ref WeaponStableState F_F;
+	ref WeaponStableState F_E;
+	ref WeaponStableState E_F;
+	ref WeaponStableState E_E;
 	
 	override void InitStateMachine()
 	{
@@ -286,7 +286,7 @@ class DoubleBarrel_Base : Rifle_Base
 		
 		
 		
-		m_fsm.SetInitialState(E_E);
+		SetInitialState(E_E);
 		
 		for(int i = 0; i < GetMuzzleCount(); i++)
 		{

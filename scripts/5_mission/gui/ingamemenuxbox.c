@@ -1,7 +1,5 @@
 class InGameMenuXbox extends UIScriptedMenu
 {
-//#ifdef PLATFORM_CONSOLE
-	
 	// Widgets texts id
 	protected  string 						m_MuteButtonTextID;
 	protected  string 						m_UnmuteButtonTextID;
@@ -340,7 +338,7 @@ class InGameMenuXbox extends UIScriptedMenu
 	{
 		if (GetGame().IsMultiplayer())
 		{
-			GetGame().GetUIManager().CloseAll();
+			//GetGame().GetUIManager().CloseAll();
 			GetGame().GetMenuDefaultCharacterData(false).SetRandomCharacterForced(random);
 			GetGame().RespawnPlayer();
 
@@ -428,7 +426,8 @@ class InGameMenuXbox extends UIScriptedMenu
 		
 		if (m_PlayerAlive)
 		{
-			m_RestartButton.Show(player.IsUnconscious());
+			if (player)
+				m_RestartButton.Show(player.IsUnconscious());
 		}
 		else
 		{
@@ -500,7 +499,8 @@ class InGameMenuXbox extends UIScriptedMenu
 		
 		if (m_PlayerAlive)
 		{
-			m_RestartButton.Show(player.IsUnconscious());
+			if (player)
+				m_RestartButton.Show(player.IsUnconscious());
 		}
 		else
 		{
@@ -765,14 +765,10 @@ class InGameMenuXbox extends UIScriptedMenu
 		Man player = GetGame().GetPlayer();
 		if (m_PlayerAlive)
 		{
-			if (player.IsUnconscious())
-			{
+			if (player && player.IsUnconscious())
 				SetFocus(m_RestartButton);
-			}
 			else
-			{
 				SetFocus(m_ContinueButton);
-			}
 		}
 		else
 		{
@@ -812,5 +808,4 @@ class InGameMenuXbox extends UIScriptedMenu
 		layoutRoot.FindAnyWidget("play_panel_root2").Show(onlineOpen && !toolbarShow);
 		layoutRoot.FindAnyWidget("dayz_logo").Show(!onlineOpen);
 	}
-//#endif
 }

@@ -49,12 +49,10 @@ class ActionGagTarget: ActionContinuousBase
 		
 		if (CanReceiveAction(action_data.m_Target))
 		{
-			MouthRag m_Gag = MouthRag.Cast(ntarget.GetInventory().CreateAttachmentEx("MouthRag",InventorySlots.MASK));
-
-			if (m_Gag)
+			ItemBase m_Gag;
+			if (Class.CastTo(m_Gag,ntarget.GetInventory().CreateAttachmentEx("MouthRag",InventorySlots.MASK)))
 			{
 				m_Gag.SetHealth01("", "", action_data.m_MainItem.GetHealth01("", ""));
-				ntarget.CheckForGag();
 				
 				action_data.m_MainItem.TransferModifiers(ntarget);
 				action_data.m_MainItem.Delete();

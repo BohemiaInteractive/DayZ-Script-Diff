@@ -4,6 +4,10 @@
 
 class UiHintPanel extends ScriptedWidgetEventHandler
 {	
+	#ifdef DIAG_DEVELOPER
+	static int				m_ForcedIndex = -1;//only for debug purposes
+	#endif
+	
 	// Const
 	protected int 			m_SlideShowDelay			= 25000;											// The speed of the slideshow 
 	protected string 				m_RootPath			= "Gui/layouts/new_ui/hints/in_game_hints.layout";	// Layout path 
@@ -166,6 +170,17 @@ class UiHintPanel extends ScriptedWidgetEventHandler
 	// Set a random page index 
 	protected void RandomizePageIndex()
 	{
+		#ifdef DIAG_DEVELOPER
+		if (DiagMenu.IsInitialized())
+		{
+			if (m_ForcedIndex != -1)
+			{
+				m_PageIndex = Math.Clamp(m_ForcedIndex,0,m_ContentList.Count() - 1);
+				return;	
+			}
+		}	
+		#endif
+		
 		Math.Randomize(m_Game.GetTime());
 		Math.RandomFloat01();//throw-away value, without calling this, the next random number is always the same, calling Math.Randomize(-1) makes no difference
 		while (m_PageIndex == m_PreviousRandomIndex)

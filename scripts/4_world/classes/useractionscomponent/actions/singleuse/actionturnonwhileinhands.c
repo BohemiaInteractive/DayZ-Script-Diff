@@ -38,6 +38,11 @@ class ActionTurnOnWhileInHands : ActionSingleUseBase
 			m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONMOD_PRESS_TRIGGER;
 			m_CommandUIDProne 	= DayZPlayerConstants.CMD_ACTIONFB_PRESS_TRIGGER;
 		}
+		else if (item.IsInherited(Heatpack))
+		{
+			m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONMOD_HEATPACK;
+			m_CommandUIDProne 	= DayZPlayerConstants.CMD_ACTIONFB_HEATPACK;
+		}
 		else
 		{
 			m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONMOD_ITEM_ON;

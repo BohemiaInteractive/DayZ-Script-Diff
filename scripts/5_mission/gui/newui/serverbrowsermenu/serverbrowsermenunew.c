@@ -12,7 +12,6 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	protected Widget				m_Back;
 	protected Widget				m_CustomizeCharacter;
 	protected TextWidget			m_PlayerName;
-	protected TextWidget			m_Version;
 	
 	protected TabberUI				m_Tabber;
 	protected ref ServerBrowserTab	m_OfficialTab;
@@ -45,7 +44,6 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		m_Back					= layoutRoot.FindAnyWidget("back_button");
 		m_CustomizeCharacter	= layoutRoot.FindAnyWidget("customize_character");
 		m_PlayerName			= TextWidget.Cast(layoutRoot.FindAnyWidget("character_name_text"));
-		m_Version				= TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
 		m_Favorites 			= new TStringArray;
 		
 		#ifndef PLATFORM_CONSOLE
@@ -69,7 +67,6 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		#else
 		version = "#main_menu_version" + " " + version;
 		#endif
-		m_Version.SetText(version);
 		
 		OnlineServices.m_ServersAsyncInvoker.Insert(OnLoadServersAsync);
 		OnlineServices.m_ServerModLoadAsyncInvoker.Insert(OnLoadServerModsAsync);
@@ -398,7 +395,6 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		#else
 			version = "#main_menu_version" + " " + version;
 		#endif
-		m_Version.SetText(version);
 	}
 	
 	override void Update(float timeslice)

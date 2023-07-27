@@ -568,17 +568,20 @@ class CargoContainer extends Container
 	
 	override bool TransferItemToVicinity()
 	{
-		Man player = GetGame().GetPlayer();
-		if( GetFocusedIcon() )
+		if (CanDrop())
 		{
-			ItemBase item = ItemBase.Cast( GetFocusedIcon().GetObject() );
-			if( item && player.CanDropEntity( item ) )
+			Man player = GetGame().GetPlayer();
+			if( GetFocusedIcon() )
 			{
-				if( item.GetTargetQuantityMax() < item.GetQuantity() )
-					item.SplitIntoStackMaxClient( null, -1 );
-				else
-					player.PhysicalPredictiveDropItem( item );
-				return true;
+				ItemBase item = ItemBase.Cast( GetFocusedIcon().GetObject() );
+				if( item && player.CanDropEntity( item ) )
+				{
+					if( item.GetTargetQuantityMax() < item.GetQuantity() )
+						item.SplitIntoStackMaxClient( null, -1 );
+					else
+						player.PhysicalPredictiveDropItem( item );
+					return true;
+				}
 			}
 		}
 		return false;
@@ -780,13 +783,16 @@ class CargoContainer extends Container
 	
 	override bool TransferItem()
 	{
-		if( GetFocusedIcon() )
+		if (CanTakeToInventory())
 		{
-			EntityAI entity = EntityAI.Cast( GetFocusedIcon().GetObject() );
-			if( entity )
+			if (GetFocusedIcon())
 			{
-				GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
-				return true;
+				EntityAI entity = EntityAI.Cast( GetFocusedIcon().GetObject() );
+				if (entity)
+				{
+					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
+					return true;
+				}
 			}
 		}
 		return false;
@@ -794,19 +800,22 @@ class CargoContainer extends Container
 	
 	override bool SplitItem()
 	{
-		if( GetFocusedIcon() )
+		if (CanSplit())
 		{
-			ItemBase entity = ItemBase.Cast( GetFocusedIcon().GetObject() );
-			if( entity )
+			if ( GetFocusedIcon() )
 			{
-				if( entity.HasQuantity() && entity.CanBeSplit() )
+				ItemBase entity = ItemBase.Cast( GetFocusedIcon().GetObject() );
+				if ( entity )
 				{
-					entity.OnRightClick();
-					Icon icon = m_ShowedItemPositions.Get( entity ).param1;
-					
-					if ( icon )
+					if ( entity.HasQuantity() && entity.CanBeSplit() )
 					{
-						icon.SetQuantity();
+						entity.OnRightClick();
+						Icon icon = m_ShowedItemPositions.Get( entity ).param1;
+						
+						if ( icon )
+						{
+							icon.SetQuantity();
+						}
 					}
 				}
 			}
@@ -816,13 +825,16 @@ class CargoContainer extends Container
 	
 	override bool EquipItem()
 	{
-		if( GetFocusedIcon() )
-		{
-			ItemBase entity = ItemBase.Cast( GetFocusedIcon().GetObject() );
-			if( entity )
+		if (CanEquip())
+		{	
+			if (GetFocusedIcon())
 			{
-				GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, entity );
-				return true;
+				ItemBase entity = ItemBase.Cast( GetFocusedIcon().GetObject() );
+				if( entity )
+				{
+					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, entity );
+					return true;
+				}
 			}
 		}
 		return false;
@@ -836,7 +848,7 @@ class CargoContainer extends Container
 			ItemBase item = ItemBase.Cast(focused_item.GetObject());
 			if (item && item.IsTakeable())
 			{
-				ItemManager.GetInstance().SetSelectedItem( item, this, null, null );
+				ItemManager.GetInstance().SetSelectedItemEx(item, this, focused_item);
 				return true;
 			}
 		}
@@ -910,16 +922,19 @@ class CargoContainer extends Container
 	
 	override bool Combine()
 	{
-		if( GetFocusedIcon() )
+		if (CanCombine())
 		{
-			Icon icon = GetFocusedIcon();
-			if( icon )
+			if (GetFocusedIcon())
 			{
-				EntityAI item_in_hands	= GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
-				EntityAI prev_item		= EntityAI.Cast( icon.GetObject() );
-				if( item_in_hands && prev_item )
+				Icon icon = GetFocusedIcon();
+				if( icon )
 				{
-					return icon.CombineItems( item_in_hands, prev_item );
+					EntityAI item_in_hands	= GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+					EntityAI prev_item		= EntityAI.Cast( icon.GetObject() );
+					if( item_in_hands && prev_item )
+					{
+						return icon.CombineItems( item_in_hands, prev_item );
+					}
 				}
 			}
 		}

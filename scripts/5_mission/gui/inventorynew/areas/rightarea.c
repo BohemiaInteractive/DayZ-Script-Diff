@@ -86,6 +86,16 @@ class RightArea: Container
 		m_PlayerContainer.UnfocusGrid();
 	}
 	
+	override bool CanTakeToInventory()
+	{
+		return false;
+	}
+	
+	override bool CanTakeToInventoryEx(EntityAI focusedEntity)
+	{
+		return false;
+	}
+	
 	bool HasEntityContainerVisible(EntityAI entity)
 	{
 		return m_PlayerContainer.HasEntityContainerVisible(entity);

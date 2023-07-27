@@ -154,9 +154,7 @@ class BearTrap extends TrapBase
 		{
 			zoneUsed = "LeftLeg";
 			if (Math.RandomIntInclusive(0, 1) == 1)
-			{
 				zoneUsed = "RightLeg";
-			}
 		}
 		
 		//! Generic limp handling
@@ -183,8 +181,8 @@ class BearTrap extends TrapBase
 		}
 		else if (Class.CastTo(zombie,obj))
 		{
-			zombie.SetHealth("LeftLeg","Health",0.0);
-			zombie.SetHealth("RightLeg","Health",0.0);
+			zombie.SetHealth("LeftLeg", "Health", 0.0);
+			zombie.SetHealth("RightLeg", "Health", 0.0);
 		}
 	}
 	

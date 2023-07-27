@@ -595,7 +595,7 @@ class ZombieBase extends DayZInfected
 			SoundObjectBuilder objectBuilder = sound_event.GetSoundBuilder();
 			if (NULL != objectBuilder)
 			{
-				objectBuilder.UpdateEnvSoundControllers(GetPosition());
+				objectBuilder.AddEnvSoundVariables(GetPosition());
 				SoundObject soundObject = objectBuilder.BuildSoundObject();
 				AttenuateSoundIfNecessary(soundObject);
 				aw = PlaySound(soundObject, objectBuilder);

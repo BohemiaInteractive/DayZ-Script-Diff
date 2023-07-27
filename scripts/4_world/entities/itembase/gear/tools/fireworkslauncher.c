@@ -336,8 +336,7 @@ class FireworksLauncher: FireworksBase
 		RegisterNetSyncVariableInt("m_RandomSeed", 0, 1023);
 		int lastIndex = m_ColorSequence.Count() - 1;
 		RegisterNetSyncVariableInt("m_ColorSequenceIndex", 0, lastIndex);
-		
-		m_RandomSeed = Math.Randomize(Math.RandomInt(0,1023));
+		m_RandomSeed = Math.RandomInt(0,1023);
 		m_ColorSequenceIndex = Math.RandomIntInclusive(0, lastIndex);
 	}
 	
@@ -362,12 +361,16 @@ class FireworksLauncher: FireworksBase
 	{
 		m_ColorSequence.Insert("RGBYPBRGBRGBYPBRGBRGBYPBRGBPBRGBRGBY");
 		m_ColorSequence.Insert("PGPYPBYPYPBYYPBRPYPBYYPBRGBPBRGRGBRB");
-		m_ColorSequence.Insert("GRPBRGBRYPBYYPBRPYPBYYPBRGBPBRGRGBRB");
+		m_ColorSequence.Insert("YPBRPYPBYYPBRGBPBRGRGBRBGRPBRGBRYPBY");
 		m_ColorSequence.Insert("YRBGPRYPGRYBGRGRGBRBBYPYPBYRYPGRYGRP");
 		m_ColorSequence.Insert("BGRYPYRPBYYPYRBGPRYPGBYPBRGBPBRGBRGB");
 		m_ColorSequence.Insert("RYGRPBRGBYPBRRPBRGBBRBBYPYPRGBRGBRPY");
 		m_ColorSequence.Insert("GBRGBYRGBYPBRRPBRBYRYPGPYPRGBRGBRPYG");
 		m_ColorSequence.Insert("RYPBYYPBRGBYPBRGBRBGBPBRGRGBRBGRYPYR");
+		m_ColorSequence.Insert("PBRGBYPBRGBRBGBPBRGRGBRBGRYPYRRYPBYY");
+		m_ColorSequence.Insert("RGRGBRBBYPYPBYRYPGRYGRPYRBGPRYPGRYBG");
+		m_ColorSequence.Insert("RBYRYPGPYPRGBRGBRPYGGBRGBYRGBYPBRRPB");
+		m_ColorSequence.Insert("PRGBRGBRPYGGBRRBYRYPGPYGBYRGBYPBRRPB");
 	}
 	
 	string GetColorSequence()
@@ -470,7 +473,7 @@ class FireworksLauncher: FireworksBase
 	}
 	
 	//! Executed on Server when some item ignited this one
-	override protected void OnIgnitedThis( EntityAI fire_source)
+	override void OnIgnitedThis( EntityAI fire_source)
 	{
 		super.OnIgnitedThis(fire_source);
 		if (m_Events)

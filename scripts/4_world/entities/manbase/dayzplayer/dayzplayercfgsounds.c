@@ -41,46 +41,46 @@ class DayZPlayerTypeStepSoundLookupTableImpl extends DayZPlayerTypeStepSoundLook
 		
 		if (pMovement == DayZPlayerConstants.MOVEMENTIDX_WALK)
 		{
-			soundBuilder.SetVariable("walk", 1);
-			soundBuilder.SetVariable("run", 0);
-			soundBuilder.SetVariable("sprint", 0);
+			soundBuilder.AddVariable("walk", 1);
+			soundBuilder.AddVariable("run", 0);
+			soundBuilder.AddVariable("sprint", 0);
 		}
 		else if (pMovement == DayZPlayerConstants.MOVEMENTIDX_RUN)
 		{
-			soundBuilder.SetVariable("walk", 0);
-			soundBuilder.SetVariable("run", 1);
-			soundBuilder.SetVariable("sprint", 0);
+			soundBuilder.AddVariable("walk", 0);
+			soundBuilder.AddVariable("run", 1);
+			soundBuilder.AddVariable("sprint", 0);
 		}
 		else if (pMovement == DayZPlayerConstants.MOVEMENTIDX_SPRINT)
 		{
-			soundBuilder.SetVariable("walk", 0);
-			soundBuilder.SetVariable("run", 0);
-			soundBuilder.SetVariable("sprint", 1);
+			soundBuilder.AddVariable("walk", 0);
+			soundBuilder.AddVariable("run", 0);
+			soundBuilder.AddVariable("sprint", 1);
 		}
 		else
 		{
-			soundBuilder.SetVariable("walk", 0);
-			soundBuilder.SetVariable("run", 0);
-			soundBuilder.SetVariable("sprint", 0);
+			soundBuilder.AddVariable("walk", 0);
+			soundBuilder.AddVariable("run", 0);
+			soundBuilder.AddVariable("sprint", 0);
 		}
 		
 		if (pBoots == AnimBootsType.None)
 		{
-			soundBuilder.SetVariable("bare", 1);
-			soundBuilder.SetVariable("sneakers", 0);
-			soundBuilder.SetVariable("boots", 0);
+			soundBuilder.AddVariable("bare", 1);
+			soundBuilder.AddVariable("sneakers", 0);
+			soundBuilder.AddVariable("boots", 0);
 		}
 		else if (pBoots == AnimBootsType.Sneakers)
 		{
-			soundBuilder.SetVariable("bare", 0);
-			soundBuilder.SetVariable("sneakers", 1);
-			soundBuilder.SetVariable("boots", 0);
+			soundBuilder.AddVariable("bare", 0);
+			soundBuilder.AddVariable("sneakers", 1);
+			soundBuilder.AddVariable("boots", 0);
 		}
 		else if (pBoots == AnimBootsType.Boots)
 		{
-			soundBuilder.SetVariable("bare", 0);
-			soundBuilder.SetVariable("sneakers", 0);
-			soundBuilder.SetVariable("boots", 1);
+			soundBuilder.AddVariable("bare", 0);
+			soundBuilder.AddVariable("sneakers", 0);
+			soundBuilder.AddVariable("boots", 1);
 		}
 		
 		return soundBuilder;

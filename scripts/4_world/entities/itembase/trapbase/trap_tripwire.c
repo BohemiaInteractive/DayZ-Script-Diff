@@ -345,8 +345,6 @@ class TripwireTrap : TrapBase
 	// On placement complete, set state, play sound, create trigger and synch to client
 	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
-		super.OnPlacementComplete(player, position, orientation);
-		
 		SetIsPlaceSound(true);
 		if (GetGame().IsServer())
 		{

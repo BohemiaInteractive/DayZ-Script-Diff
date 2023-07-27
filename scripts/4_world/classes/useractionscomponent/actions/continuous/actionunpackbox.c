@@ -83,14 +83,12 @@ class UnboxLambda : ReplaceItemWithNewLambdaBase
 			Magazine pile;
 			Class.CastTo(pile, new_item);
 			pile.ServerSetAmmoCount(m_ItemCount);
-			Print("UnboxLambda::SetupNewMagazine new_item=" + new_item + " count=" + m_ItemCount);
 		}
 		else
 		{
 			ItemBase unboxed;
 			Class.CastTo(unboxed, new_item);
 			unboxed.SetQuantity(m_ItemCount);
-			Print("UnboxLambda::SetupNewItem new_item=" + new_item + " count=" + m_ItemCount);
 		}
 	}
 	

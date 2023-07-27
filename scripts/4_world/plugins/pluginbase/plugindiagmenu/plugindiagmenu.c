@@ -89,7 +89,7 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				// LEVEL 2 - Script > Vehicles
 				//---------------------------------------------------------------
-				DiagMenu.RegisterItem(DiagMenuIDs.VEHICLE_DEBUG_OUTPUT, "lalt+6", "Crash Log", DiagMenuIDs.VEHICLES, "None, Basic, Extended, Contact, Basic+Contact");
+				DiagMenu.RegisterItem(DiagMenuIDs.VEHICLE_DEBUG_OUTPUT, "", "Crash Log", DiagMenuIDs.VEHICLES, "None, Basic, Extended, Contact, Basic+Contact");
 				DiagMenu.RegisterBool(DiagMenuIDs.VEHICLE_DUMP_CRASH_DATA, "lalt+7", "Dump Crash Data", DiagMenuIDs.VEHICLES);
 			}
 
@@ -145,6 +145,8 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_RESET_PLAYER_MAX, "lalt+3", "Reset Player Max", DiagMenuIDs.CHEATS_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_INVENTORY_ACCESS, "", "Inventory Access", DiagMenuIDs.CHEATS_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_FIX_ITEMS, "", "Fix Inventory Items", DiagMenuIDs.CHEATS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_CREATE_HIT, "lalt+5", "Create Hit Heavy", DiagMenuIDs.CHEATS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_CREATE_HIT_LIGHT, "lalt+6", "Create Hit Light", DiagMenuIDs.CHEATS_MENU);
 			}
 			
 			//---------------------------------------------------------------
@@ -155,7 +157,7 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				// LEVEL 2 - Script > Player Agents
 				//---------------------------------------------------------------
-				DiagMenu.RegisterBool(DiagMenuIDs.PLAYER_AGENTS_INJECTS_SHOW, "lalt+5", "Allow Inject Actions", DiagMenuIDs.PLAYER_AGENTS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.PLAYER_AGENTS_INJECTS_SHOW, "", "Allow Inject Actions", DiagMenuIDs.PLAYER_AGENTS_MENU);
 			}
 			
 			//---------------------------------------------------------------
@@ -250,7 +252,7 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_SHOW_PLUG_ARROWS, "", "Show Energy Manager Plug Arrows", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_BREATH_VAPOR_LVL, "", "Breath Vapor", DiagMenuIDs.MISC_MENU);
 					DiagMenu.SetValue(DiagMenuIDs.MISC_BREATH_VAPOR_LVL, true);				
-				DiagMenu.RegisterBool(DiagMenuIDs.MISC_TARGETABLE_BY_AI, "", "Toggle Targetable By AI", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_TARGETABLE_BY_AI, "lalt+t", "Toggle Targetable By AI", DiagMenuIDs.MISC_MENU);
 					DiagMenu.SetValue(DiagMenuIDs.MISC_TARGETABLE_BY_AI, true);
 				DiagMenu.RegisterMenu(DiagMenuIDs.MISC_HIT_INDICATION_MENU, "Hit Indication", DiagMenuIDs.MISC_MENU);
 				{
@@ -277,6 +279,10 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_CONNECTION_STATS, "lalt+4", "Show Connection Stats", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PLAYER_SYMPTOMS_SHOW, "", "Show States", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_INPUT_DEVICE_DISCONNECT_DBG, "", "InputDevice states", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_DEBUG_MONITOR, "", "Debug Monitor", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterRange(DiagMenuIDs.MISC_FORCE_HINT_INDEX, "", "Force Hint Index", DiagMenuIDs.MISC_MENU, "-1, 512, -1, 1");
+				if (UiHintPanel.m_ForcedIndex != -1)
+					DiagMenu.SetRangeValue(DiagMenuIDs.MISC_FORCE_HINT_INDEX,UiHintPanel.m_ForcedIndex);
 			}
 			
 			//---------------------------------------------------------------
@@ -404,6 +410,7 @@ class PluginDiagMenu : PluginBase
 					DiagMenu.RegisterBool(DiagMenuIDs.LOGS_INVENTORY_RESERVATION, "", "Log Reservations", DiagMenuIDs.LOGS_INVENTORY_MENU);
 					DiagMenu.RegisterBool(DiagMenuIDs.LOGS_INVENTORY_HFSM, "", "Log HandFSM", DiagMenuIDs.LOGS_INVENTORY_MENU);
 				}
+				DiagMenu.RegisterBool(DiagMenuIDs.LOGS_BLEEDING_CHANCES, "", "Bleeding Chances Logs", DiagMenuIDs.LOGS_MENU);
 			}
 			
 			//---------------------------------------------------------------
@@ -667,6 +674,20 @@ class PluginDiagMenu : PluginBase
 				player.FixAllInventoryItems();
 				break;
 			}
+			//---------------------------------------------------------------
+			//---------------------------DAMAGE DEBUG------------------------
+			// hardcoded for Heavy and Light, but Light can be converted to some sort of setup if we need to have even more times with more settings, ie. we could first set-up the hit params and then perform it
+			case ERPCs.DIAG_CHEATS_CREATE_HIT:
+			{
+				player.ProcessDirectDamage(DamageType.CUSTOM, player, "", "Dummy_Heavy", "0 0 0");
+				break;
+			}
+			
+			case ERPCs.DIAG_CHEATS_CREATE_HIT_LIGHT:
+			{
+				player.ProcessDirectDamage(DamageType.CUSTOM, player, "", "MeleeFist", "0 0 0");
+				break;
+			}
 			
 			//---------------------------------------------------------------
 			// LEVEL 2 - Script > Soft Skills
@@ -851,6 +872,14 @@ class PluginDiagMenu : PluginBase
 			}
 			
 			//---------------------------------------------------------------
+			case ERPCs.DIAG_MISC_DEBUG_MONITOR:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+					GetGame().SetDebugMonitorEnabled(CachedObjectsParams.PARAM1_BOOL.param1);
+				break;
+			}
+			
+			//---------------------------------------------------------------
 			// LEVEL 2 - Script > Simulate script
 			//---------------------------------------------------------------			
 			case ERPCs.DIAG_SIMULATE_INFINITE_LOOP:
@@ -989,6 +1018,13 @@ class PluginDiagMenu : PluginBase
 				break;
 			}
 			
+			//---------------------------------------------------------------
+			case ERPCs.DIAG_LOGS_BLEEDING_CHANCES:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+					LogManager.BleedingChancesLogEnable(CachedObjectsParams.PARAM1_BOOL.param1);
+				break;
+			}
 			
 			//---------------------------------------------------------------
 			// LEVEL 2 - Script > Base Building

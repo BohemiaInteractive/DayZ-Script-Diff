@@ -278,10 +278,10 @@ class MiscGameplayFunctions
 			MiscGameplayFunctions.TransferItemVariables(source_ib, target_ib, exclude_quantity);
 		}
 
-		if( !GetGame().IsClient())
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			//if( transfer_health ) target_ib.SetHealth("", "", source.GetHealth("",""));
-			target_ib.SetHealth("", "", source.GetHealth01("","") * target_ib.GetMaxHealth("",""));
+			if( transfer_health )
+				target_ib.SetHealth01("", "", source.GetHealth01("",""));
 		}
 	}
 
@@ -1617,6 +1617,16 @@ class MiscGameplayFunctions
 			}
 		}
 	}
+	//! Fills the provided array with all children entities in hierarchy of this entity
+	static void GetAttachedChildren(IEntity parent, array<IEntity> outputObjects)
+	{
+		IEntity child = parent.GetChildren();
+		while (child)
+		{
+			outputObjects.Insert(child);
+			child = child.GetSibling();
+		}
+	}	
 };
 
 class DestroyItemInCorpsesHandsAndCreateNewOnGndLambda : ReplaceAndDestroyLambda

@@ -1,4 +1,19 @@
-class ContaminatedArea_Static : EffectArea
+class ContaminatedArea_Base : EffectArea
+{
+	override void OnPlayerEnterServer(PlayerBase player, EffectTrigger trigger)
+	{
+		super.OnPlayerEnterServer(player, trigger);
+		player.IncreaseContaminatedAreaCount();
+	}
+	
+	override void OnPlayerExitServer(PlayerBase player, EffectTrigger trigger)
+	{
+		super.OnPlayerExitServer(player, trigger);
+		player.DecreaseContaminatedAreaCount();
+	}
+}
+
+class ContaminatedArea_Static : ContaminatedArea_Base
 {
 	// ----------------------------------------------
 	// 				INITIAL SETUP

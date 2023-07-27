@@ -33,12 +33,20 @@ class AttachmentsWrapper: AttachmentsGroupContainer
 	
 	override bool TransferItemToVicinity()
 	{
-		return m_Attachments.TransferItemToVicinity();
+		if (CanDrop())
+		{
+			return m_Attachments.TransferItemToVicinity();
+		}
+		return false;
 	}
 	
 	override bool TransferItem()
 	{
-		return m_Attachments.TransferItem();
+		if (CanTakeToInventory())
+		{
+			return m_Attachments.TransferItem();
+		}
+		return false;
 	}
 	
 	override bool InspectItem()

@@ -33,7 +33,7 @@ class ActionCookOnStick: ActionContinuousBase
 		FireplaceBase fireplace_target = FireplaceBase.Cast(target.GetObject());
 		Object targetObject = target.GetObject();
 		Edible_Base item_on_stick = Edible_Base.Cast(item.GetAttachmentByType(Edible_Base));
-		if (fireplace_target && item_on_stick && item_on_stick.CanBeCookedOnStick())
+		if (fireplace_target && fireplace_target.CanCookOnStick() && item_on_stick && item_on_stick.CanBeCookedOnStick())
 		{
 			//fireplace
 			if (fireplace_target.IsBaseFireplace())
@@ -52,7 +52,7 @@ class ActionCookOnStick: ActionContinuousBase
 				{
 					return true;
 				}	
-			}			
+			}
 		}
 		
 		return false;

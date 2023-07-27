@@ -97,9 +97,10 @@ class MissionGameplay extends MissionBase
 			return;
 		}
 		
-		#ifdef DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		if (!GetGame().IsMultiplayer())//to make it work in single during development
 		{
+			CfgGameplayHandler.LoadData();
 			UndergroundAreaLoader.SpawnAllTriggerCarriers();
 		}
 		#endif
@@ -171,7 +172,12 @@ class MissionGameplay extends MissionBase
 	override void OnMissionStart()
 	{
 		g_Game.SetConnecting(false);
+
+#ifndef FEATURE_CURSOR
+		//! Only once the game is loaded should we take control of the cursor
 		GetUIManager().ShowUICursor(false);
+#endif
+
 		g_Game.SetMissionState( DayZGame.MISSION_STATE_GAME );
 		
 	}
@@ -223,19 +229,39 @@ class MissionGameplay extends MissionBase
 
 		if (m_DebugMonitor)
 			m_DebugMonitor.Hide();
+#ifndef FEATURE_CURSOR
 		g_Game.GetUIManager().ShowUICursor(false);
+#endif
 		PPEManagerStatic.GetPPEManager().StopAllEffects(PPERequesterCategory.ALL);
 		EnableAllInputs();
 		g_Game.SetMissionState( DayZGame.MISSION_STATE_FINNISH );
 	}
 	
 	override void OnUpdate(float timeslice)
-	{
-		super.OnUpdate(timeslice);
-		
+	{		
 #ifdef DIAG_DEVELOPER
 		UpdateInputDeviceDiag();
 #endif
+
+#ifdef FEATURE_CURSOR
+		if (GetTimeStamp() == 0)
+		{
+			if (!g_Game.IsAppActive() || IsCLIParam("launchPaused"))
+			{
+				m_PauseQueued = true;
+			}
+			else
+			{
+				//! Only once the game is loaded should we take control of the cursor
+				GetUIManager().ShowUICursor(false);
+			}
+		}
+#endif
+
+		if (m_PauseQueued && !IsPaused())
+		{
+			Pause();
+		}
 		
 		Man player = GetGame().GetPlayer();
 		PlayerBase playerPB = PlayerBase.Cast(player);
@@ -249,6 +275,7 @@ class MissionGameplay extends MissionBase
 		InspectMenuNew inspect = InspectMenuNew.Cast( m_UIManager.FindMenu(MENU_INSPECT) );
 		Input input = GetGame().GetInput();
 		ActionBase runningAction;
+		bool manualInputUnlockProcessed = false;
 		
 		if ( playerPB )
 		{
@@ -296,7 +323,7 @@ class MissionGameplay extends MissionBase
 			GetUApi().GetInputByID(UALeanLeft).Unlock();
 			GetUApi().GetInputByID(UALeanRight).Unlock();
 			
-			RefreshExcludes();
+			manualInputUnlockProcessed = true;
 		}
 		
 		//Radial quickbar
@@ -341,11 +368,15 @@ class MissionGameplay extends MissionBase
 			{
 				GetUApi().GetInputByID(UALeanLeftGamepad).Unlock();
 				GetUApi().GetInputByID(UALeanRightGamepad).Unlock();
+				
+				manualInputUnlockProcessed = true;
 			}
-			else
+			else if (!GetUApi().GetInputByID(UALeanLeftGamepad).IsLocked() || !GetUApi().GetInputByID(UALeanRightGamepad).IsLocked())
 			{
 				GetUApi().GetInputByID(UALeanLeftGamepad).Lock();
 				GetUApi().GetInputByID(UALeanRightGamepad).Lock();	
+				
+				manualInputUnlockProcessed = true;
 			}
 			
 			//Special behaviour for freelook & zeroing [CONSOLE ONLY]
@@ -356,17 +387,44 @@ class MissionGameplay extends MissionBase
 				
 				GetUApi().GetInputByID(UAZeroingUp).Unlock();		//enable zeroing
 				GetUApi().GetInputByID(UAZeroingDown).Unlock();
+				
+				manualInputUnlockProcessed = true;
 			}
-			else
+			else if (GetUApi().GetInputByID(UALookAround).IsLocked() || GetUApi().GetInputByID(UALookAroundToggle).IsLocked())
 			{
 				GetUApi().GetInputByID(UALookAround).Unlock();	//enable freelook
 				GetUApi().GetInputByID(UALookAroundToggle).Unlock();	//enable freelook
 				
 				GetUApi().GetInputByID(UAZeroingUp).Lock();		//disable zeroing
 				GetUApi().GetInputByID(UAZeroingDown).Lock();
+				
+				manualInputUnlockProcessed = true;
+			}
+		}
+#else
+		if (playerPB)
+		{
+			//Special behaviour for freelook & zeroing [PC ONLY]
+			if (playerPB.IsInIronsights() || playerPB.IsInOptics())
+			{
+				GetUApi().GetInputByID(UALookAround).Lock();		//disable freelook
+				GetUApi().GetInputByID(UALookAroundToggle).Lock();		//disable freelook
+			}
+			else if (GetUApi().GetInputByID(UALookAround).IsLocked() || GetUApi().GetInputByID(UALookAroundToggle).IsLocked())
+			{
+				GetUApi().GetInputByID(UALookAround).Unlock();	//enable freelook
+				GetUApi().GetInputByID(UALookAroundToggle).Unlock();	//enable freelook
+				
+				manualInputUnlockProcessed = true;
 			}
 		}
 #endif
+		
+		if (manualInputUnlockProcessed)
+		{
+			RefreshExcludes();
+		}
+		
 		//Gestures
 		if ( GetUApi().GetInputByID(UAUIGesturesOpen).LocalPress() )
 		{
@@ -526,7 +584,7 @@ class MissionGameplay extends MissionBase
 			{
 				m_LifeState = life_state;
 				
-				if (m_LifeState != EPlayerStates.ALIVE)
+				if (m_LifeState != EPlayerStates.ALIVE && !player.IsUnconscious())
 				{
 					CloseAllMenus();
 				}
@@ -1180,6 +1238,8 @@ class MissionGameplay extends MissionBase
 			return;
 		}
 
+		m_PauseQueued = true;
+
 		if ( g_Game.IsClient() && g_Game.GetGameState() != DayZGameState.IN_GAME )
 		{
 			return;
@@ -1191,14 +1251,19 @@ class MissionGameplay extends MissionBase
 			return;
 		}
 		
-		m_PauseQueued = true;
-		
 		CloseAllMenus();
 		
 		// open ingame menu
-		GetUIManager().EnterScriptedMenu( MENU_INGAME, GetGame().GetUIManager().GetMenu() );
+		UIScriptedMenu menu = GetUIManager().EnterScriptedMenu( MENU_INGAME, GetGame().GetUIManager().GetMenu() );
+		if (!menu || !menu.IsVisible())
+		{
+			return;
+		}
+
 		AddActiveInputExcludes({"menu"});
 		AddActiveInputRestriction(EInputRestrictors.INVENTORY);
+
+		m_PauseQueued = false;
 	}
 	
 	override void Continue()
@@ -1212,8 +1277,7 @@ class MissionGameplay extends MissionBase
 		{
 			return;
 		}
-		
-		m_PauseQueued = false;
+
 		RemoveActiveInputExcludes({"menu"},true);
 		RemoveActiveInputRestriction(EInputRestrictors.INVENTORY);
 		GetUIManager().CloseMenu(MENU_INGAME);
@@ -1282,6 +1346,16 @@ class MissionGameplay extends MissionBase
 		{
 			m_DebugMonitor = new DebugMonitor();
 			m_DebugMonitor.Init();
+		}
+		else
+			m_DebugMonitor.Show();
+
+	}
+	override void HideDebugMonitor()
+	{
+		if (m_DebugMonitor)
+		{
+			m_DebugMonitor.Hide();
 		}
 	}
 	

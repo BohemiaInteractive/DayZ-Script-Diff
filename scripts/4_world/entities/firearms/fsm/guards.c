@@ -543,6 +543,43 @@ class WeaponGuardMagazinesHaveEqualSizes extends WeaponGuardBase
 	}
 };
 
+class WeaponGuardWeaponCharged extends WeaponGuardBase
+{
+	protected Weapon_Base m_weapon;
+	
+	void WeaponGuardWeaponCharged (Weapon_Base w = NULL) { m_weapon = w; }
+	
+	override bool GuardCondition (WeaponEventBase e)
+	{
+		return m_weapon.IsCharged();
+	}
+}
+
+class WeaponGuardWeaponDischarged extends WeaponGuardBase
+{
+	protected Weapon_Base m_weapon;
+	
+	void WeaponGuardWeaponDischarged (Weapon_Base w = NULL) { m_weapon = w; }
+	
+	override bool GuardCondition (WeaponEventBase e)
+	{
+		return !m_weapon.IsCharged();
+	}
+}
+
+class WeaponGuardWeaponOpen extends WeaponGuardBase
+{
+	protected Weapon_Base m_weapon;
+	
+	void WeaponGuardWeaponOpen (Weapon_Base w = NULL) { m_weapon = w; }
+	
+	override bool GuardCondition (WeaponEventBase e)
+	{
+		return !m_weapon.IsWeaponOpen();
+	}
+}
+
+
 class WeaponGuardWeaponManagerWantContinue extends WeaponGuardBase
 {
 	override bool GuardCondition (WeaponEventBase e)

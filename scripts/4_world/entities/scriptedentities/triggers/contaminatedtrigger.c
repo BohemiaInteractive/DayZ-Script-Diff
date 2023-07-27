@@ -10,22 +10,13 @@ class ContaminatedTrigger extends EffectTrigger
 	override void OnEnterServerEvent( TriggerInsider insider )
 	{
 		super.OnEnterServerEvent( insider );
+		//Print("Entered A " + GetType());
 		if ( insider )
 		{
-			PlayerBase playerInsider = PlayerBase.Cast( insider.GetObject() );
+			DayZCreatureAI creature = DayZCreatureAI.Cast( insider.GetObject() );
 			
-			
-			if ( playerInsider )
-			{
-				playerInsider.GetModifiersManager().ActivateModifier( eModifiers.MDF_AREAEXPOSURE );
-			}
-			else
-			{		
-				DayZCreatureAI creature = DayZCreatureAI.Cast( insider.GetObject() );
-				
-				if(creature)
-					creature.IncreaseEffectTriggerCount();
-			}
+			if (creature)
+				creature.IncreaseEffectTriggerCount();
 		}
 		
 	}
@@ -33,22 +24,14 @@ class ContaminatedTrigger extends EffectTrigger
 	override void OnLeaveServerEvent( TriggerInsider insider )
 	{
 		super.OnLeaveServerEvent( insider );
-		
+		//Print("Left A " + GetType());
 		if ( insider )
 		{
-			PlayerBase playerInsider = PlayerBase.Cast( insider.GetObject() );
+			DayZCreatureAI creature = DayZCreatureAI.Cast( insider.GetObject() );
 			
-			if ( playerInsider && !m_Manager.IsPlayerInTriggerType( playerInsider, this ) )
-			{
-				playerInsider.GetModifiersManager().DeactivateModifier( eModifiers.MDF_AREAEXPOSURE );
-			}
-			else
-			{
-				DayZCreatureAI creature = DayZCreatureAI.Cast( insider.GetObject() );
-				
-				if(creature)
-					creature.DecreaseEffectTriggerCount();
-			}
+			if (creature)
+				creature.DecreaseEffectTriggerCount();
+			
 		}
 	}
 	
@@ -120,40 +103,37 @@ class ContaminatedTrigger_Dynamic : ContaminatedTrigger
 		SetSynchDirty();
 	}
 	
-	override void OnEnterClientEvent( TriggerInsider insider )
+	
+	override protected void OnStayClientEvent(TriggerInsider insider, float deltaTime) 
 	{
-		if ( insider.GetObject().IsInherited( PlayerBase ) )
+		//no super, overriding parent behaviour
+		if ( insider.GetObject().IsMan() )
 		{
 			PlayerBase playerInsider = PlayerBase.Cast( insider.GetObject() );
 			
 			// We will only handle the controlled player, as effects are only relevant to this player instance
 			if ( playerInsider.IsControlledPlayer() )
 			{
-				// If it is first entrance, we fire the following
-				if ( !m_Manager.IsPlayerInTriggerType( playerInsider, this ) )
+				// We check if we are not in the standard LIVE state
+				bool nonDefaultState = m_AreaState > eAreaDecayStage.LIVE;
+				if ( nonDefaultState )
 				{
-					// We check if we are not in the standard LIVE state
-					bool nonDefaultState = m_AreaState > eAreaDecayStage.LIVE;
-					if ( nonDefaultState )
-					{
-						// if not we check the specific state and update local effect values
-						int localPartBirthRate;
-						if ( m_AreaState == eAreaDecayStage.DECAY_START )
-							localPartBirthRate = 20;
-						else
-							localPartBirthRate = 10;
-						
-						playerInsider.SetContaminatedEffectEx( true, m_PPERequester, m_AroundPartId, m_TinyPartId, GetAmbientSoundsetName(), nonDefaultState, localPartBirthRate );
-					}
+					// if not we check the specific state and update local effect values
+					int localPartBirthRate;
+					if ( m_AreaState == eAreaDecayStage.DECAY_START )
+						localPartBirthRate = 20;
 					else
-						playerInsider.SetContaminatedEffectEx( true, m_PPERequester, m_AroundPartId, m_TinyPartId, GetAmbientSoundsetName() );
+						localPartBirthRate = 10;
+					
+					playerInsider.RequestTriggerEffect(this, m_PPERequester, m_AroundPartId, m_TinyPartId, GetAmbientSoundsetName(), nonDefaultState, localPartBirthRate );
 				}
-				
-				// We then handle the update of player trigger state in manager
-				m_Manager.OnPlayerEnter( playerInsider, this );
+				else
+					playerInsider.RequestTriggerEffect(this, m_PPERequester, m_AroundPartId, m_TinyPartId, GetAmbientSoundsetName() );
 			}
 		}
 	}
+
+	
 	
 	override void OnVariablesSynchronized()
 	{
@@ -177,12 +157,22 @@ class ContaminatedTrigger_Dynamic : ContaminatedTrigger
 						else
 							localPartBirthRate = 10;
 						
-						// Update the local effects
-						playerInsider.SetContaminatedEffectEx( true, m_PPERequester, m_AroundPartId, m_TinyPartId, GetAmbientSoundsetName(), nonDefaultState, localPartBirthRate );
+						//Update the local effects
+						playerInsider.RequestTriggerEffect(this, m_PPERequester, m_AroundPartId, m_TinyPartId, GetAmbientSoundsetName(), nonDefaultState, localPartBirthRate, true );
 					}
+					return;
 				}
 			}
 		}
 	}
-	
+}
+
+
+class ContaminatedTrigger_Local : ContaminatedTrigger
+{
+	override string GetAmbientSoundsetName()
+	{
+		return "";
+	}
+
 }

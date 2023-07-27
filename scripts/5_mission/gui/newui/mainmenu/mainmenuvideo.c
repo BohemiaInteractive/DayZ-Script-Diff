@@ -4,8 +4,8 @@ class MainMenuVideo extends UIScriptedMenu
 	
 	protected VideoWidget			m_Video;
 	protected ref Timer				m_VideoPlayTimer;
-	protected ref WidgetFadeTimer	m_VideoFadeTimer;
 	bool							m_IsPaused;
+	bool							m_FileLoaded;
 	
 	override Widget Init()
 	{
@@ -13,17 +13,9 @@ class MainMenuVideo extends UIScriptedMenu
 		m_Video					= VideoWidget.Cast(layoutRoot.FindAnyWidget("video"));
 		
 		m_VideoPlayTimer		= new Timer();
-		m_VideoFadeTimer		= new WidgetFadeTimer();
+		m_FileLoaded = false;
 		
-		#ifdef PLATFORM_PS4
-			m_Video.LoadVideo("/app0/video/DayZ_onboarding_MASTER.mp4", 0);
-		#else
-			m_Video.LoadVideo("G:\\video\\DayZ_onboarding_MASTER.mp4", 0);
-		#endif
-		m_Video.Play(VideoCommand.REWIND);
-		m_Video.Play(VideoCommand.PLAY);
-		m_VideoFadeTimer.FadeIn(m_Video, 1.5);
-		m_VideoPlayTimer.Run(0.005, this, "PlayVideoLoop", null, true);
+		m_VideoPlayTimer.Run(1.0, this, "PlayVideoLoop", null, true);
 		
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
@@ -59,7 +51,19 @@ class MainMenuVideo extends UIScriptedMenu
 	
 	void PlayVideoLoop()
 	{
-		if (m_Video && !m_IsPaused && !m_Video.Play(VideoCommand.ISPLAYING))
+		if (!m_FileLoaded)
+		{
+			#ifdef PLATFORM_PS4
+				m_Video.LoadVideo("/app0/video/DayZ_onboarding_MASTER.mp4", 0);
+			#else
+				m_Video.LoadVideo("G:\\video\\DayZ_onboarding_MASTER.mp4", 0);
+			#endif
+			m_FileLoaded = true;
+			
+			m_Video.Play(VideoCommand.REWIND);
+			m_Video.Play(VideoCommand.PLAY);
+		}
+		else if (m_Video && !m_IsPaused && !m_Video.Play(VideoCommand.ISPLAYING))
 		{
 			StopVideo();
 		}

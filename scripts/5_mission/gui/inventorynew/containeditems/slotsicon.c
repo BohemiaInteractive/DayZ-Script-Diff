@@ -31,6 +31,7 @@ class SlotsIcon: LayoutHolder
 	protected Widget				m_ColorWidget;
 	protected Widget				m_SelectedPanel;
 	protected Widget				m_EmptySelectedPanel;
+	protected Widget				m_MicromanagedPanel;
 	
 	protected Widget				m_QuantityPanel;
 	protected TextWidget			m_QuantityItem;
@@ -71,6 +72,7 @@ class SlotsIcon: LayoutHolder
 		m_ColorWidget			= m_MainWidget.FindAnyWidget( "Color" + index );
 		m_SelectedPanel			= m_MainWidget.FindAnyWidget( "Selected" + index );
 		m_EmptySelectedPanel    = m_MainWidget.FindAnyWidget( "EmptySelected" + index );
+		m_MicromanagedPanel    = m_MainWidget.FindAnyWidget( "Micromanaged" + index );
 		
 		m_QuantityPanel			= m_MainWidget.FindAnyWidget( "QuantityPanel" + index );
 		m_QuantityItem			= TextWidget.Cast( m_MainWidget.FindAnyWidget( "Quantity" + index ) );
@@ -251,6 +253,11 @@ class SlotsIcon: LayoutHolder
 	{
 		return m_EmptySelectedPanel;
 	}
+	
+	Widget GetMicromanagedPanel()
+	{
+		return m_MicromanagedPanel;
+	}
 
 	Widget GetQuantityPanel()
 	{
@@ -306,9 +313,15 @@ class SlotsIcon: LayoutHolder
 	{
 		return m_RadialIcon;
 	}
+	
+	bool IsFocused()
+	{
+		return GetCursorWidget().IsVisible();
+	}
 
 	override void SetActive( bool active )
 	{
+#ifdef PLATFORM_CONSOLE	
 		super.SetActive( active );
 		float x, y;
 		if( active && GetObject() )
@@ -323,6 +336,7 @@ class SlotsIcon: LayoutHolder
 		}
 		
 		m_SelectedPanel.Show( active );
+#endif
 	}
 	
 	override void SetLayoutName()
@@ -496,6 +510,12 @@ class SlotsIcon: LayoutHolder
 			m_PanelWidget.Show( true );
 			
 			Refresh();
+#ifdef PLATFORM_CONSOLE			
+			if ( IsFocused() )
+			{
+				Inventory.GetInstance().UpdateConsoleToolbar();
+			}
+#endif
 		}
 	}
 	
@@ -549,7 +569,10 @@ class SlotsIcon: LayoutHolder
 		}
 		
 		m_ColWidget.Show( false );
+#ifdef PLATFORM_CONSOLE	
 		m_SelectedPanel.Show( false );
+#endif
+		m_CursorWidget.Show( false );
 		m_EmptySelectedPanel.Show( false );
 		m_MountedWidget.Show( false );
 		m_OutOfReachWidget.Show( false );
@@ -618,7 +641,7 @@ class SlotsIcon: LayoutHolder
 		PrepareOwnedTooltip( m_Item, x, y );
 		if( GetDragWidget() != m_PanelWidget && !IsOutOfReach() )
 		{
-			m_SelectedPanel.Show( true );
+			m_CursorWidget.Show( true );
 		}
 		return true;
 	}
@@ -649,7 +672,7 @@ class SlotsIcon: LayoutHolder
 		HideOwnedTooltip();
 		if( GetDragWidget() != m_PanelWidget )
 		{
-			m_SelectedPanel.Show( false );
+			m_CursorWidget.Show( false );
 		}
 		return true;
 	}
@@ -729,7 +752,7 @@ class SlotsIcon: LayoutHolder
 			}
 		
 			m_ColWidget.Show( true );
-			m_SelectedPanel.Show( true );
+			m_CursorWidget.Show( true );
 			
 			ItemManager.GetInstance().SetDraggedItem( m_Item );
 		}
@@ -744,9 +767,9 @@ class SlotsIcon: LayoutHolder
 		w.ClearFlags( WidgetFlags.EXACTSIZE );
 		w.SetSize( 1, 1 );
 		m_ColWidget.Show( false );
-		m_SelectedPanel.Show( false );
+		m_CursorWidget.Show( false );
 		m_EmptySelectedPanel.Show( false );
-		m_SelectedPanel.SetColor( ARGBF( 1, 1, 1, 1 ) );
+		m_CursorWidget.SetColor( ARGBF( 1, 1, 1, 1 ) );
 		m_ItemPreview.SetForceFlipEnable(true);
 	}
 	

@@ -111,14 +111,14 @@ class BAREM_JAM_BU1_MA1 extends WeaponStateJammed
 
 class BoltActionRifle_ExternalMagazine_Base : BoltActionRifle_Base
 {
-	ref WeaponStateBase C00;
-	ref	WeaponStateBase C10;
-	ref	WeaponStateBase C01;
-	ref	WeaponStateBase C11;
-	ref	WeaponStateBase CF0;
-	ref	WeaponStateBase CF1;
-	ref	WeaponStateBase JF0;
-	ref	WeaponStateBase JF1;
+	ref WeaponStableState C00;
+	ref	WeaponStableState C10;
+	ref	WeaponStableState C01;
+	ref	WeaponStableState C11;
+	ref	WeaponStableState CF0;
+	ref	WeaponStableState CF1;
+	ref	WeaponStableState JF0;
+	ref	WeaponStableState JF1;
 	
 	override void InitStateMachine()
 	{
@@ -331,44 +331,29 @@ class BoltActionRifle_ExternalMagazine_Base : BoltActionRifle_Base
 		m_fsm.AddTransition(new WeaponTransition( C00,				__A__,	Attach_C00, NULL, new WeaponGuardCanAttachMag(this))); // attach from CLO/b0/m0
 		m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_fin_,	C01, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_fin_,	C11));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_abt_,	C11, NULL, new WeaponGuardCurrentChamberFull(this)));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_abt_,	C01, NULL, new WeaponGuardHasMag(this)));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_abt_,	C00));
-			Attach_C00.AddTransition(new WeaponTransition( Attach_C00.m_start,		_abt_,	C00));
-			Attach_C00.AddTransition(new WeaponTransition( Attach_C00.m_eject,		_abt_,	C00));
-			Attach_C00.AddTransition(new WeaponTransition( Attach_C00.m_attach,		_abt_,	C00));
-			Attach_C00.AddTransition(new WeaponTransition( Attach_C00.m_onCK,		_abt_,	C01));
-			Attach_C00.AddTransition(new WeaponTransition( Attach_C00.m_chamber,	_abt_,	C11));	
-
-
+		m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_abt_,	C11, NULL, new WeaponGuardCurrentChamberFull(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_abt_,	C01, NULL, new WeaponGuardHasMag(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_C00,		_abt_,	C00));
 	
 		m_fsm.AddTransition(new WeaponTransition( C10,				__A__,	Attach_C10, NULL, new WeaponGuardCanAttachMag(this))); // attach from CLO/b1/m0
 		m_fsm.AddTransition(new WeaponTransition(  Attach_C10,		_fin_,	C11));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_C10,		_abt_,	C11, NULL, new WeaponGuardHasMag(this)));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_C10,		_abt_,	C10));
-			Attach_C10.AddTransition(new WeaponTransition( Attach_C10.m_start,		_abt_,	C10));
-			Attach_C10.AddTransition(new WeaponTransition( Attach_C10.m_attach,		_abt_,	C10));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_C10,		_abt_,	C11, NULL, new WeaponGuardHasMag(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_C10,		_abt_,	C10));
+
 		
 		m_fsm.AddTransition(new WeaponTransition( CF0,				__A__,	Attach_CF0, NULL, new WeaponGuardCanAttachMag(this))); // attach from CLO/b1/m0
 		m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_fin_,	C01, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_fin_,	C11));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	CF1, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	C11, NULL, new WeaponGuardCurrentChamberFull(this)));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	C01, NULL, new WeaponGuardHasMag(this)));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	C00));
-			Attach_CF0.AddTransition(new WeaponTransition( Attach_CF0.m_start,		_abt_,	CF0));
-			Attach_CF0.AddTransition(new WeaponTransition( Attach_CF0.m_eject,		_abt_,	C00));
-			Attach_CF0.AddTransition(new WeaponTransition( Attach_CF0.m_attach,		_abt_,	C00));
-			Attach_CF0.AddTransition(new WeaponTransition( Attach_CF0.m_onCK,		_abt_,	C01));
-			Attach_CF0.AddTransition(new WeaponTransition( Attach_CF0.m_chamber,	_abt_,	C11));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	CF1, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	C11, NULL, new WeaponGuardCurrentChamberFull(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	C01, NULL, new WeaponGuardHasMag(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_CF0,		_abt_,	C00));
 			
 		
 		m_fsm.AddTransition(new WeaponTransition( JF0,				__A__,	Attach_JF0, NULL, new WeaponGuardCanAttachMag(this))); // attach from JAM/b1/m0
 		m_fsm.AddTransition(new WeaponTransition(  Attach_JF0,		_fin_,	JF1));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_JF0,		_abt_,	JF1, NULL, new WeaponGuardHasMag(this)));
-		//m_fsm.AddTransition(new WeaponTransition(  Attach_JF0,		_abt_,	JF0));
-			Attach_JF0.AddTransition(new WeaponTransition( Attach_JF0.m_start,		_abt_,	JF0));
-			Attach_JF0.AddTransition(new WeaponTransition( Attach_JF0.m_attach,		_abt_,	JF0));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_JF0,		_abt_,	JF1, NULL, new WeaponGuardHasMag(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_JF0,		_abt_,	JF0));
 
 		// replace magazine
 		m_fsm.AddTransition(new WeaponTransition( C11,				__S__,	Reload_C11, NULL, new WeaponGuardCanSwapMag(this))); // swap in Chg/b1/m1
@@ -431,7 +416,7 @@ class BoltActionRifle_ExternalMagazine_Base : BoltActionRifle_Base
 		m_fsm.AddTransition(new WeaponTransition(  Unjam_JF1,		_fin_,	C11));
 		m_fsm.AddTransition(new WeaponTransition(  Unjam_JF1,		_abt_,	JF1));
 
-		m_fsm.SetInitialState(C00);
+		SetInitialState(C00);
 
 		SelectionBulletHide();
 		HideMagazine();

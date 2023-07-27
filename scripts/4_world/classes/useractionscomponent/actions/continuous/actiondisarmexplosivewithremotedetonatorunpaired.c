@@ -69,4 +69,25 @@ class ActionDisarmExplosiveWithRemoteDetonatorUnpaired : ActionDisarmExplosiveWi
 		
 		return false;
 	}
+	
+	override void OnFinishProgressServer(ActionData action_data)
+	{
+		ExplosivesBase target = ExplosivesBase.Cast(action_data.m_Target.GetObject());
+		ItemBase detonator = ItemBase.Cast(action_data.m_MainItem);
+		
+		target.Disarm();
+		target.SetTakeable(true);
+		
+		//! claymore has integrated detonator
+		if (target.IsInherited(ClaymoreMine))
+		{
+			detonator.Delete();
+			return;
+		}
+		
+		ReplaceItemWithNewLambdaBase lambda = new ReplaceDetonatorItemLambda(detonator, "RemoteDetonator");
+		MiscGameplayFunctions.TurnItemIntoItemEx(action_data.m_Player, lambda);
+		//! refresh IK, item changed
+		action_data.m_Player.GetItemAccessor().OnItemInHandsChanged();
+	}
 }

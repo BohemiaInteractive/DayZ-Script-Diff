@@ -57,7 +57,10 @@ class KitBase extends ItemBase
 		UpdateVisuals();
 		UpdatePhysics();
 		
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleKit );
+		if (GetGame().IsServer())
+		{
+			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleKit );
+		}
 	}
 	
 	override bool DisassembleOnLastDetach()

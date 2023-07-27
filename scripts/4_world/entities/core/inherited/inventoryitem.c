@@ -930,13 +930,12 @@ class Clothing_Base extends ItemBase
 	// Better name for this would have been "MufflePlayer" or "ChangeVoiceEffect" (Too late to change in case a mod already uses this)
 	void MutePlayer(PlayerBase player, bool state)
 	{
-		if ( GetGame() )
-		{	
-			if (( GetGame().IsServer() && GetGame().IsMultiplayer() ) || ( GetGame().GetPlayer() == player ))
-			{
-				GetGame().SetVoiceEffect(player, GetVoiceEffect(), state);
-			}
+		#ifdef SERVER
+		if (GetGame() && player.GetIdentity() != null)
+		{
+			GetGame().SetVoiceEffect(player, GetVoiceEffect(), state);
 		}
+		#endif
 	}
 	
 	//!

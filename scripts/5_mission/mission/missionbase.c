@@ -144,6 +144,9 @@ class MissionBase extends MissionBaseWorld
 		case MENU_SCRIPTCONSOLE_DIALOG_PRESET_RENAME:
 			menu = new ScriptConsoleRenamePresetDialog;
 			break;
+		case MENU_SCRIPTCONSOLE_UNIVERSAL_INFO_DIALOG:
+			menu = new ScriptConsoleUniversalInfoDialog;
+			break;
 		case MENU_CHAT_INPUT:
 			menu = new ChatInputMenu;
 			break;
@@ -251,7 +254,10 @@ class MissionBase extends MissionBaseWorld
 
 	void SpawnItems();
 	
-	void UpdateInputDevicesAvailability();
+	void UpdateInputDevicesAvailability()
+	{
+		g_Game.RefreshMouseCursorVisibility();
+	}
 
 	override void OnKeyPress(int key)
 	{

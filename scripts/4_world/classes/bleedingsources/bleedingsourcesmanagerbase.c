@@ -269,8 +269,6 @@ class BleedingSourcesManagerBase
 		int inventory_loc = bsz.GetInvLocation();
 		m_BleedingSourcesByLocation.Set(inventory_loc, (m_BleedingSourcesByLocation.Get(inventory_loc) | bit));
 		m_BleedingSources.Insert(bit, new BleedingSource(m_Player, bit,bone_name, orientation, offset, max_time, flow_modifier, particle_name) );
-		
-		m_Player.OnBleedingSourceAdded();
 	}
 	
 	int GetBleedingSourceActiveTime(int bit)
@@ -315,7 +313,6 @@ class BleedingSourcesManagerBase
 			int inventory_loc = bsz.GetInvLocation();
 			m_BleedingSourcesByLocation.Set(inventory_loc, (m_BleedingSourcesByLocation.Get(inventory_loc) & ~bit));//deactivate the bit
 			m_BleedingSources.Remove(bit);
-			m_Player.OnBleedingSourceRemovedEx(m_Item);
 			return true;
 		}
 		return false;

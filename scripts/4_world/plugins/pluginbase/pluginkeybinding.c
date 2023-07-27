@@ -76,6 +76,7 @@ class PluginKeyBinding extends PluginBase
 		RegisterKeyBind(	 MENU_ANY						,KeyCode.KC_LCONTROL	,KeyCode.KC_NUMPAD0	,"PluginDayzPlayerDebug","ToggleDebugWindowEvent"		,"[LCtrl]+[NUMPAD0]"			,"Open/Close Player debug window");
 		RegisterKeyBind(	 MENU_ANY						,KeyCode.KC_LCONTROL	,KeyCode.KC_DECIMAL	,"PluginDayzPlayerDebug","ToggleDebugWindowEventP"		,"[LCtrl]+[DECIMAL]"			,"Open/Close Player debug window");
 		RegisterKeyBind(	 MENU_ANY						,KeyCode.KC_LCONTROL	,KeyCode.KC_I		,"PluginDayZInfectedDebug","ToggleDebugWindowEvent"							,"[LCtrl]+[NUMPAD1]"			,"Open/Close Infected debug window");
+		RegisterKeyBind(	 MENU_ANY						,KeyCode.KC_LCONTROL	,KeyCode.KC_O		,"PluginDayZInfectedDebug","PossesInfected"							,"[LCtrl]+[NUMPAD1]"			,"Open/Close Infected debug window");
 		RegisterKeyBind(	 MENU_NONE						,KeyCode.KC_LCONTROL	,KeyCode.KC_SCROLL	,"PluginNutritionDumper"		,"CheckInit"					,"[LCtrl]+[SCROLL LOCK]"		,"Enable Door Ruler");
 		RegisterKeyBind(	 MENU_NONE						,KeyCode.KC_LCONTROL	,KeyCode.KC_RBRACKET,"PluginCharPlacement"	,"CheckInit"					,"[LCtrl]+[)]"					,"Enable CharPlacer");
 		

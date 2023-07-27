@@ -605,7 +605,14 @@ class ActionManagerClient: ActionManagerBase
 
 			if (LogManager.IsActionLogEnable())
 			{
-				Debug.ActionLog("Item = " + item + ", " + target.DumpToString(), action.ToString() , "n/a", "ActionStart", m_Player.ToString());
+				if ( target )
+				{
+					Debug.ActionLog("Item = " + item + ", " + target.DumpToString(), action.ToString() , "n/a", "ActionStart", m_Player.ToString());
+				}
+				else
+				{
+					Debug.ActionLog("Item = " + item + ", no target", action.ToString() , "n/a", "ActionStart", m_Player.ToString());
+				}
 			}
 			m_Interrupted = false;
 			if (GetGame().IsMultiplayer() && !action.IsLocal())

@@ -63,12 +63,14 @@ class EffectArea : House
 	int						m_TinyParticleID = ParticleList.CONTAMINATED_AREA_GAS_TINY;
 	string 					m_PPERequesterType;
 	int 					m_PPERequesterIdx = -1;
+	int						m_EffectsPriority;						// When multiple areas overlap, only the area with the highest priority will play its effects
 	
 	// Other values and storage
 	string 					m_TriggerType = "ContaminatedTrigger"; 	// The trigger class used by this zone
-	CylinderTrigger			m_Trigger; 								// The trigger used to determine if player is inside toxic area
+	EffectTrigger			m_Trigger; 								// The trigger used to determine if player is inside toxic area
 
 	ref array<Particle> 	m_ToxicClouds; 							// All static toxic clouds in ContaminatedArea
+	
 
 	// ----------------------------------------------
 	// 				INITIAL SETUP
@@ -413,7 +415,7 @@ class EffectArea : House
 				//Debug.Log("We override area local effects");
 				EffectTrigger.Cast( m_Trigger ).SetLocalEffects( m_AroundParticleID, m_TinyParticleID, m_PPERequesterIdx );
 			}
-			
+			m_Trigger.Init(this, m_EffectsPriority);
 			//Debug.Log("We created the trigger at : " + m_Trigger.GetWorldPosition() );
 		}
 	}
@@ -440,4 +442,14 @@ class EffectArea : House
 		
 		super.EEDelete( parent );
 	}
+	
+	void OnPlayerEnterServer(PlayerBase player, EffectTrigger trigger)
+	{
+		player.IncreaseEffectAreaCount();
+	}
+	void OnPlayerExitServer(PlayerBase player, EffectTrigger trigger)
+	{
+		player.DecreaseEffectAreaCount();
+	}
+	
 }

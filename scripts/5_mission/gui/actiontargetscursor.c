@@ -50,8 +50,13 @@ class ATCCachedObject
 	}
 };
 
-class ActionTargetsCursor extends ScriptedWidgetEventHandler
+class ActionTargetsCursor : ScriptedWidgetEventHandler
 {
+	private const ref array<typename> VISION_OBSTRUCTION_PPEFFECTS_TYPES = {
+		PPERequester_BurlapSackEffects,
+		PPERequester_FlashbangEffects
+	};
+
 	protected PlayerBase 					m_Player;
 	protected ActionTarget 					m_Target;
 	protected ref ATCCachedObject			m_CachedObject;
@@ -300,15 +305,20 @@ class ActionTargetsCursor extends ScriptedWidgetEventHandler
 			m_Player = null;
 			m_AM = null;
 		}
-		
 
-		if (!m_Player) GetPlayer();
-		if (!m_AM) GetActionManager();
-		if (m_Player.IsInVehicle()) m_Hidden = true;
+		if (!m_Player)
+			GetPlayer();
+
+		if (!m_AM)
+			GetActionManager();
 		
-		
+		if (m_Player.IsInVehicle() || m_AM.GetRunningAction())
+			m_Hidden = true;
+
+		bool isVisionObstructionActive = PPEManagerStatic.GetPPEManager().IsAnyRequesterRunning(VISION_OBSTRUCTION_PPEFFECTS_TYPES);
+				
 		//! don't show floating widget if it's disabled in profile or the player is unconscious
-		if (GetGame().GetUIManager().GetMenu() || !g_Game.GetProfileOption(EDayZProfilesOptions.HUD) || m_Hud.IsHideHudPlayer() || m_Player.IsUnconscious())
+		if (GetGame().GetUIManager().GetMenu() || !g_Game.GetProfileOption(EDayZProfilesOptions.HUD) || m_Hud.IsHideHudPlayer() || m_Player.IsUnconscious() || isVisionObstructionActive)
 		{
 			HideWidget();
 			return;
@@ -317,22 +327,18 @@ class ActionTargetsCursor extends ScriptedWidgetEventHandler
 		GetTarget();
 		GetActions();
 
-		bool show_target = (m_Target && !m_Hidden) || m_Interact || m_ContinuousInteract;
-		if (!show_target)
+		//! check if action has target, otherwise don't show the widget		
+		bool showTarget = (m_Target && !m_Hidden) || m_Interact || m_ContinuousInteract;
+		if (!showTarget)
 		{
-			//! check if action has target, otherwise don't show the widget
 			if (m_Single)
-			{
-				show_target = m_Single.HasTarget();
-			}
+				showTarget = m_Single.HasTarget();
 
 			if (m_Continuous)
-			{
-				show_target = show_target || m_Continuous.HasTarget();
-			}
+				showTarget = showTarget || m_Continuous.HasTarget();
 		}
 
-		if (show_target)
+		if (showTarget)
 		{
 			//! cursor with fixed position (environment interaction mainly)
 			if (m_Target.GetObject() == null && (m_Interact || m_ContinuousInteract || m_Single || m_Continuous))
@@ -492,8 +498,8 @@ class ActionTargetsCursor extends ScriptedWidgetEventHandler
 			{
 				compName = object.GetActionComponentName(compIdx);
 				object.GetActionComponentNameList(compIdx, components);
-				
-				if (object.GetActionComponentNameList(compIdx, components) == 0 && !object.IsInventoryItem())
+
+				if (!object.IsInventoryItem() && (object.HasFixedActionTargetCursorPosition() || object.GetActionComponentNameList(compIdx, components) == 0))
 				{
 					m_FixedOnPosition = true;
 					return;
@@ -725,18 +731,17 @@ class ActionTargetsCursor extends ScriptedWidgetEventHandler
 	protected void GetTarget()
 	{
 		if (!m_AM)
-		{
 			return;
-		}
 
 		m_Target = m_AM.FindActionTarget();
 		if (m_Target && m_Target.GetObject() && m_Target.GetObject().IsItemBase())
 		{
 			ItemBase item = ItemBase.Cast(m_Target.GetObject());
-			if (!item.IsTakeable() || (m_Player && m_Player.IsInVehicle()))
-			{
+			InventoryLocation invLocation = new InventoryLocation();
+			item.GetInventory().GetCurrentInventoryLocation(invLocation);
+
+			if (!item.IsTakeable() || (m_Player && m_Player.IsInVehicle()) || invLocation.GetType() != InventoryLocationType.GROUND)
 				m_Hidden = true;
-			}
 		}
 	}
 	
@@ -744,10 +749,8 @@ class ActionTargetsCursor extends ScriptedWidgetEventHandler
 	{
 		string desc = "";
 		if (action && action.GetText())
-		{
 			desc = action.GetText();
-			return desc;
-		}
+
 		return desc;
 	}
 	

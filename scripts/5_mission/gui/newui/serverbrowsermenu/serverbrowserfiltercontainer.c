@@ -36,7 +36,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		ref array<string> two_options = { "#server_browser_disabled", "#server_browser_show" };
 		
 		m_SearchByName				= EditBoxWidget.Cast( root.FindAnyWidget( "search_name_setting_option" ) );
-		m_SearchByIP				= EditBoxWidget.Cast( root.FindAnyWidget( "search_ip_setting_option" ) );
 		
 		m_RegionFilter				= new OptionSelectorMultistate( root.FindAnyWidget( "region_setting_option" ), 0, this, false, region_options );
 		m_PingFilter				= new OptionSelectorMultistate( root.FindAnyWidget( "ping_setting_option" ), 0, this, false, ping_options );
@@ -76,7 +75,9 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		#endif
 		
 		#ifdef PLATFORM_WINDOWS
-			#ifndef PLATFORM_CONSOLE
+			#ifndef PLATFORM_CONSOLE	
+				m_SearchByIP				= EditBoxWidget.Cast( root.FindAnyWidget( "search_ip_setting_option" ) );
+		
 				m_SearchByName.SetHandler( this );
 				m_SearchByIP.SetHandler( this );
 		
@@ -490,7 +491,7 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		{
 			input.SetFriendsPlaying( m_FriendsPlayingFilter.IsEnabled() );
 		}
-		
+
 		//6 Search by Battleye Protection
 		if( m_BattleyeFilter.IsSet() )
 		{
@@ -559,7 +560,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		ref GetServersInput input = new GetServersInput;
 		
 		input.m_RowsPerPage = SERVER_BROWSER_PAGE_SIZE;
-		//input.m_Platform = 1;
 
 		#ifdef PLATFORM_XBOX
 			input.m_Platform = 2;
@@ -576,27 +576,13 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 				input.SetNameFilter( name_text );
 			}
 		}
-		#ifdef PLATFORM_CONSOLE
 		if( m_RegionFilter.IsSet() )
 		{
 			input.SetRegionIdFilter( m_RegionFilter.GetValue() );
 		}
-		#endif
 		if( m_PingFilter.IsSet() )
 		{
 			input.SetPingFilter( m_PingFilter.GetStringValue().ToInt() );
-		}
-		if( m_FriendsPlayingFilter.IsSet() )
-		{
-			#ifdef PLATFORM_WINDOWS
-				input.SetFriendsPlaying( m_FriendsPlayingFilter.IsEnabled() );
-			#endif
-		}
-		if( m_PreviouslyPlayedFilter.IsSet() )
-		{
-			#ifdef PLATFORM_WINDOWS
-				input.SetPreviouslyPlayed( m_PreviouslyPlayedFilter.IsEnabled() );
-			#endif
 		}
 		if( m_KeyboardFilter.IsSet() )
 		{
@@ -626,69 +612,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		{
 			input.SetIsDLC( m_DLCFilter.IsEnabled() );
 		}
-		
-		#ifdef PLATFORM_WINDOWS
-			#ifndef PLATFORM_CONSOLE
-				if( m_SearchByIP )
-				{
-					string ip_text = m_SearchByIP.GetText();
-					if( ip_text != "" )
-					{
-						TStringArray arr	= new TStringArray;
-						ip_text.Split( ":", arr );
-						string ip;
-						int port;
-						ip					= arr.Get( 0 );
-				
-						if( arr.Count() > 1 )
-							port			= arr.Get( 1 ).ToInt();
-						
-						#ifdef PLATFORM_CONSOLE
-						input.SetHostIp( ip );
-						if( port > 0 )
-							input.SetHostPort( port );
-						#else
-						input.SetHostIp( ip_text );
-						if( port > 0 )
-							input.SetHostPort( port );
-						#endif
-					}
-				}
-				if( m_CharacterAliveFilter.IsSet() )
-				{
-					//Character filter
-				}
-				if( m_ThirdPersonFilter.IsSet() )
-				{
-					input.SetModeIdFilter( m_ThirdPersonFilter.IsEnabled() );
-					input.SetThirdPerson( m_ThirdPersonFilter.IsEnabled() );
-				}
-				if( m_VersionMatchFilter.IsSet() )
-				{
-					input.SetProperVersionMatch( m_VersionMatchFilter.IsEnabled() );
-				}
-				if( m_BattleyeFilter.IsSet() )
-				{
-					input.SetBattleyeProtection( m_BattleyeFilter.IsEnabled() );
-					//input.SetAntiCheatFilter( m_BattleyeFilter.IsEnabled() );
-				}
-				if( m_PublicFilter.IsSet() )
-				{
-					input.SetPublic( m_PublicFilter.IsEnabled() );
-				}
-				if( m_AcceleratedTimeFilter.IsSet() )
-				{
-					input.SetAcceleratedTime( m_AcceleratedTimeFilter.IsEnabled() );
-				}
-				if( m_PingFilter.IsSet() )
-				{
-					string aa = m_PingFilter.GetOptions()[m_PingFilter.GetValue()];
-					int aaa = aa.Substring(1, aa.Length() - 1).ToInt();
-			
-					input.SetPingFilter( aaa );
-				}
-			#endif
-		#endif
 		
 		return input;
 	}

@@ -448,10 +448,7 @@ class Object extends IEntity
 	proto native void SetDynamicPhysicsLifeTime(float lifeTime);
 
 	//! Called when tree is chopped down. 'cutting_entity' can be tool, or player, if cutting bush with bare hands
-	void OnTreeCutDown( EntityAI cutting_entity )
-	{
-		
-	}
+	void OnTreeCutDown(EntityAI cutting_entity);
 	
 	//! Get config class of object
 	string GetType()
@@ -464,13 +461,11 @@ class Object extends IEntity
 	
 	//! Get display name of entity
 	string GetDisplayName()
-//	string GetName()
 	{
 		string tmp;
 		if (NameOverride(tmp))
 		{
 			tmp = Widget.TranslateString(tmp);
-			//tmp.ToUpper();
 		}
 		else
 		{
@@ -491,6 +486,7 @@ class Object extends IEntity
 		return GetGame().GetModelName(GetType());
 	}
 
+	//! Return path and name of the model
 	proto native owned string GetShapeName();
 
 	int Release()
@@ -1381,6 +1377,12 @@ class Object extends IEntity
 	{
 		return !IsHologram();
 	}
+	
+	bool HasFixedActionTargetCursorPosition()
+	{
+		return false;
+	}
+
 	//Debug
 	//----------------------------------------------
 	/*void DbgAddPxyPhy(string slot)

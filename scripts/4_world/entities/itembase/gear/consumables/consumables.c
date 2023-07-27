@@ -43,11 +43,13 @@ class Bandana_ColorBase: Clothing
 		switch (slotId)
 		{
 			case InventorySlots.HEADGEAR:
-				return ret;//no discernable conflict zone here
+				return ret;//no discernable conflict here
 			break;
 			
 			default:
 				ret.Insert(EAttExclusions.EXCLUSION_MASK_3);
+				
+				ret.Insert(EAttExclusions.SHAVING_MASK_ATT_0);
 			break;
 		}
 		return ret;

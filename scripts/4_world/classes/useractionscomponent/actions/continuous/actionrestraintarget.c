@@ -219,7 +219,7 @@ class RestrainTargetPlayerLambda : TurnItemIntoItemLambda
 		OverrideNewLocation(targetHnd);
 	}
 	
-	override void OnSuccess(EntityAI entity)
+	override void OnSuccess(EntityAI new_item)
 	{
 		super.OnSuccess(new_item);
 

@@ -14,6 +14,24 @@ class Building extends EntityAI
 	proto native void UnlockDoor(int index);
 	proto native vector GetDoorSoundPos(int index);
 	proto native float GetDoorSoundDistance(int index);
+
+	proto native void OutputDoorLog();
+	
+	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	{
+		//! For identifying navmesh related issues
+		button1 = "Output Door Log";
+	}
+
+	override void OnDebugButtonPressServer(int button_index)
+	{
+		switch (button_index)
+		{
+		case 1:
+			OutputDoorLog();
+		break;
+		}
+	}
 	
 	override bool IsBuilding()
 	{

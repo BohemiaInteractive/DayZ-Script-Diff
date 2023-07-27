@@ -17,7 +17,7 @@ class TrapTrigger : Trigger
 	
 	override protected bool CanAddObjectAsInsider(Object object)
 	{
-		return object.IsInherited(EntityAI) && m_ParentObj && m_ParentObj.IsActive();
+		return object.IsInherited(EntityAI) && m_ParentObj && m_ParentObj.IsActive() && m_ParentObj.GetTrapTrigger() == this;
 	}
 	
 	override protected void OnEnterServerEvent(TriggerInsider insider)
@@ -41,7 +41,6 @@ class TrapTrigger : Trigger
 	}
 	
 	#ifdef DEVELOPER
-	
 	override void DebugSendDmgTrigger()
 	{
 		if ( m_CanSendDbg )

@@ -437,7 +437,9 @@ class DayZPlayerCamera3rdPersonCrouchRaised extends DayZPlayerCamera3rdPersonCro
 // *************************************************************************************
 class DayZPlayerCamera3rdPersonProneBase extends DayZPlayerCamera3rdPerson
 {
-    protected 	float 	m_LookAtLRAngle;
+	protected vector m_BaseOffset
+	protected float  m_BaseOffsetVelX[1], m_BaseOffsetVelY[1], m_BaseOffsetVelZ[1];
+    protected float  m_LookAtLRAngle;
 	
 	float UpdateLRAngleLookAt(float pMin, float pMax, float pDt)
 	{
@@ -457,6 +459,20 @@ class DayZPlayerCamera3rdPersonProneBase extends DayZPlayerCamera3rdPerson
 		}
 
 		return m_LookAtLRAngle;
+	}
+
+	override void OnActivate(DayZPlayerCamera pPrevCamera, DayZPlayerCameraResult pPrevCameraResult)
+	{
+		super.OnActivate(pPrevCamera, pPrevCameraResult);
+
+		if (m_iBoneIndex != -1)
+		{
+			m_BaseOffset = m_pPlayer.GetBonePositionMS(m_iBoneIndex);
+		}
+		else
+		{
+			m_BaseOffset = "0 0 0";
+		}
 	}
 
 
@@ -493,11 +509,10 @@ class DayZPlayerCamera3rdPersonProneBase extends DayZPlayerCamera3rdPerson
 		//! base bone pos 
 		if (m_iBoneIndex != -1)
 		{
-			pOutResult.m_CameraTM[3]	= m_pPlayer.GetBonePositionMS(m_iBoneIndex);
-		}
-		else
-		{
-			pOutResult.m_CameraTM[3]	= "0 0 0";
+			vector bonePos = m_pPlayer.GetBonePositionMS(m_iBoneIndex);
+			m_BaseOffset[0] = Math.SmoothCD(m_BaseOffset[0], bonePos[0], m_BaseOffsetVelX, 0.14, 1000, pDt);
+			m_BaseOffset[1] = Math.SmoothCD(m_BaseOffset[1], bonePos[1], m_BaseOffsetVelY, 0.14, 1000, pDt);
+			m_BaseOffset[2] = Math.SmoothCD(m_BaseOffset[2], bonePos[2], m_BaseOffsetVelZ, 0.14, 1000, pDt);
 		}
 
 		//! apply shoulder dist
@@ -507,7 +522,7 @@ class DayZPlayerCamera3rdPersonProneBase extends DayZPlayerCamera3rdPerson
 		lsOffset[0] = lsOffset[0] + shoulderDist;
 
 		// ls offset + ms offset + shoulder width			
-		pOutResult.m_CameraTM[3] = pOutResult.m_CameraTM[3] + pOutResult.m_CameraTM[0] * lsOffset[0] + pOutResult.m_CameraTM[1] * lsOffset[1] + pOutResult.m_CameraTM[2] * lsOffset[2] + msOffset;
+		pOutResult.m_CameraTM[3] = m_BaseOffset + pOutResult.m_CameraTM[0] * lsOffset[0] + pOutResult.m_CameraTM[1] * lsOffset[1] + pOutResult.m_CameraTM[2] * lsOffset[2] + msOffset;
 
 		m_CurrentCameraYaw = UpdateLRAngleLookAt(-180, 180, pDt);
 		Math3D.YawPitchRollMatrix(GetCurrentOrientation(), pOutResult.m_CameraTM);

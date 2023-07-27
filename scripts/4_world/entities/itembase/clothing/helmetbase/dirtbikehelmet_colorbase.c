@@ -28,6 +28,7 @@ class DirtBikeHelmet_Mouthguard : ClothingBase
 		super.InitGlobalExclusionValues();
 		
 		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_MASK_2);
+		
 		AddSingleExclusionValueGlobal(EAttExclusions.SHAVING_HEADGEAR_ATT_0);
 	}
 };

@@ -47,6 +47,7 @@ class ComponentEnergyManager : Component
 	
 	protected 		float			m_EnergyUsage;
 	protected 		float			m_Energy;
+	protected 		float			m_EnergyAtSpawn;
 	protected 		float			m_EnergyStorageMax;
 	protected 		float			m_ReduceMaxEnergyByDamageCoef;
 	protected 		float			m_SocketsCount;
@@ -183,7 +184,8 @@ class ComponentEnergyManager : Component
 		m_HasElectricityIcon			= GetGame().ConfigGetFloat(cfg_energy_manager + "hasIcon");
 		m_AutoSwitchOffWhenInCargo 		= GetGame().ConfigGetFloat(cfg_energy_manager + "autoSwitchOffWhenInCargo");
 		
-		m_Energy						= GetGame().ConfigGetFloat(cfg_energy_manager + "energyAtSpawn");
+		m_EnergyAtSpawn					= GetGame().ConfigGetFloat(cfg_energy_manager + "energyAtSpawn");
+		m_Energy = m_EnergyAtSpawn;
 		m_EnergyStorageMax				= GetGame().ConfigGetFloat(cfg_energy_manager + "energyStorageMax");
 		m_ReduceMaxEnergyByDamageCoef	= GetGame().ConfigGetFloat(cfg_energy_manager + "reduceMaxEnergyByDamageCoef");
 		m_SocketsCount					= GetGame().ConfigGetFloat(cfg_energy_manager + "powerSocketsCount");
@@ -538,10 +540,7 @@ class ComponentEnergyManager : Component
 	//! Energy manager: Sets stored energy for this device between 0 and MAX based on relative input value between 0 and 1
 	void SetEnergy0To1(float energy01)
 	{
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client can't change energy value.
-		{
-			SetEnergy( Math.Lerp(0, GetEnergyMax(),energy01));
-		}
+		SetEnergy( Math.Lerp(0, GetEnergyMax(),energy01));
 	}
 
 	//! Energy manager: Shows/Hides all selections this system works with. Call this if something is wrong with selections (like during Init and Restore event in config)
@@ -1282,6 +1281,11 @@ class ComponentEnergyManager : Component
 	float GetEnergyMaxPristine()
 	{
 		return m_EnergyStorageMax;
+	}
+	
+	float GetEnergyAtSpawn()
+	{
+		return m_EnergyAtSpawn;
 	}
 	
 	//! Energy manager: Returns the length of the virtual power cord.

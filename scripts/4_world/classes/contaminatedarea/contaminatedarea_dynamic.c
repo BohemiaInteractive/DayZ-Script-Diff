@@ -28,7 +28,7 @@ class ShellLight extends PointLightBase
 }
 
 // The dynamic Contaminated area, using it's own default settings
-class ContaminatedArea_Dynamic : EffectArea
+class ContaminatedArea_Dynamic : ContaminatedArea_Base
 {
 	protected ref Timer 	m_StartupTimer;
 	protected ref Timer 	m_FXTimer;

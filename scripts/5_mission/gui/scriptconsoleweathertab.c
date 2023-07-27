@@ -1,20 +1,6 @@
-class ScriptConsoleTab
+class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 {
-	protected Widget m_Root;
-	ref Timer m_RPCTimer = new Timer();
-	void ScriptConsoleTab(Widget root)
-	{
-		m_Root = root;
-	}
-	
-	void Update(float timeslice);
-
-	bool OnChange(Widget w, int x, int y, bool finished);
-	bool OnClick(Widget w, int x, int y, int button);
-}
-
-class ScriptConsoleWeatherTab : ScriptConsoleTab
-{
+	protected ref Timer m_RPCTimer = new Timer();
 	protected const int INTERPOLATION_MAX = 920;
 	protected const int DURATION_MAX = 920;
 	
@@ -112,7 +98,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTab
 		m_RainDurationTimeValue = m_RainDurationTimeSlider.GetCurrent() / 100 * DURATION_MAX;
 	}
 	
-	void ScriptConsoleWeatherTab(Widget root)
+	void ScriptConsoleWeatherTab(Widget root, ScriptConsole console)
 	{
 		// FOG
 		m_FogValueSetSlider = SliderWidget.Cast(root.FindAnyWidget("SliderFogValue"));

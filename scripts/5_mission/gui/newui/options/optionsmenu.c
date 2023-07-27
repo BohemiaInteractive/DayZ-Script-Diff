@@ -209,6 +209,12 @@ class OptionsMenu extends UIScriptedMenu
 		#ifdef PLATFORM_CONSOLE
 		UpdateControlsElements();
 		UpdateControlsElementVisibility();
+		
+		IngameHud hud;
+		if (GetGame().GetMission() && Class.CastTo(hud,GetGame().GetMission().GetHud()))
+		{
+			hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+		}
 		#endif
 		
 		if (m_Options.NeedRestart())

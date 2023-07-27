@@ -311,7 +311,6 @@ class LandMineTrap extends TrapBase
 		AddAction(ActionAttach);
 		AddAction(ActionDetach);
 		AddAction(ActionTogglePlaceObject);
-		AddAction(ActionActivateTrap);
 		AddAction(ActionDeployObject);
 	}
 	

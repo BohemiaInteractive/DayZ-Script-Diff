@@ -16,22 +16,9 @@ class ModsMenuSimpleEntry extends ScriptedWidgetEventHandler
 		m_Data			= data;
 		m_ParentMenu	= parent_menu;
 		
-		if ( data.GetIsDLC() )
-		{
-			bool isOwned = data.GetIsOwned();
-			m_ModButton.SetSort( index );
-			m_ModButton.FindAnyWidget("ModOwnership").Show( true );
-			m_ModButton.FindAnyWidget("Owned").Show( isOwned );
-			m_ModButton.FindAnyWidget("Unowned").Show( !isOwned );
-		}
-		else
-		{
-			m_ModButton.SetSort( index + 5 );
-		}
-		
-		
+		m_ModButton.SetSort(index);
 		m_ModButton.SetHandler(this);
-
+		
 		LoadData();
 	}
 	
@@ -51,14 +38,18 @@ class ModsMenuSimpleEntry extends ScriptedWidgetEventHandler
 		}
 		else
 		{
-			//Load default image
+			m_Icon.LoadImageFile(0, ModInfo.DEFAULT_LOGO);
 		}
 		
 		if (logo_over != "")
 		{
-			m_HasLogoOver = true;
 			m_Icon.LoadImageFile(1, logo_over);
 		}
+		else
+		{
+			m_Icon.LoadImageFile(1, ModInfo.DEFAULT_LOGO_OVER);
+		}
+		m_HasLogoOver = true;
 	}
 	
 	override bool OnClick(Widget w, int x, int y, int button)

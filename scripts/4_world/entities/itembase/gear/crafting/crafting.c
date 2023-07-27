@@ -15,6 +15,7 @@ class GorkaHelmetVisor: Inventory_Base
 		super.InitGlobalExclusionValues();
 		
 		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_MASK_2);
+		
 		AddSingleExclusionValueGlobal(EAttExclusions.SHAVING_HEADGEAR_ATT_0);
 	}
 };
@@ -38,7 +39,6 @@ class LongWoodenStick: Inventory_Base
 		AddAction(ActionClapBearTrapWithThisItem);
 		AddAction(ActionBreakLongWoodenStick);
 		AddAction(ActionAttachToConstruction);
-		
 	}
 };
 

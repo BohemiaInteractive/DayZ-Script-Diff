@@ -238,6 +238,19 @@ class PPEManager extends Managed
 		return false;
 	}
 	
+	bool IsAnyRequesterRunning(array<typename> requesters)
+	{
+		foreach (typename requesterType : requesters)
+		{
+			PPERequesterBase ppeRequester;
+			GetExistingRequester(requesterType, ppeRequester);
+			if (ppeRequester && ppeRequester.IsRequesterRunning())
+				return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	/brief Originally designed to rip the requester data from all relevant mat/params, but that proved too costly and volatile.
 	/note Still, it is here, use at your own peril.

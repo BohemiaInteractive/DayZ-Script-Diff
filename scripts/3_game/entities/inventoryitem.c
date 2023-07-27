@@ -97,9 +97,9 @@ class InventoryItem extends EntityAI
 		SoundObjectBuilder soundBuilder = m_SoundImpactTable.GetSoundBuilder(surfaceHash);
 		if (soundBuilder != null)
 		{
-			soundBuilder.SetVariable("weight", weight);
-			soundBuilder.SetVariable("speed", velocity);
-			soundBuilder.UpdateEnvSoundControllers(GetPosition());
+			soundBuilder.AddVariable("weight", weight);
+			soundBuilder.AddVariable("speed", velocity);
+			soundBuilder.AddEnvSoundVariables(GetPosition());
 				
 			SoundObject soundObject = soundBuilder.BuildSoundObject();
 			if (soundObject != null)
@@ -165,16 +165,18 @@ class InventoryItem extends EntityAI
 
 		vector add = impact.RelativeVelocityBefore.Normalized() * size.Length();
 		string surfaceImpact;
-		if (DayZPhysics.GetHitSurface(
+		if (DayZPhysics.GetHitSurfaceAndLiquid(
 			Object.Cast(other),
 			impact.Position + add,
 			impact.Position - add,
-			surfaceImpact))
+			surfaceImpact,
+			liquid))
 		{
 			return surfaceImpact;
 		}
 		string surface;
 		GetGame().SurfaceUnderObjectEx(this, surface, surfaceImpact, liquid);
+
 		return surfaceImpact;
 	}
 	

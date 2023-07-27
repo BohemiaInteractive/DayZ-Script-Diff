@@ -99,7 +99,7 @@ class CameraToolsMenu extends UIScriptedMenu
 		super.OnHide();
 		if ( !m_IsPlaying && GetGame() && GetGame().GetMission() && GetGame().GetUIManager())
 		{
-			GetGame().GetUIManager().ShowCursor(false);
+			GetGame().GetUIManager().ShowUICursor(false);
 			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
 		}
 	}
@@ -383,7 +383,7 @@ class CameraToolsMenu extends UIScriptedMenu
 		if ( m_Cameras.Count() > 0 )
 		{
 			layoutRoot.Show( false );
-			GetGame().GetUIManager().ShowCursor( false );
+			GetGame().GetUIManager().ShowUICursor( false );
 			m_CameraLines = new array<ref Param6<vector, vector, float, float, float, int>>;
 			
 			foreach ( CTKeyframe keyframe : m_Cameras )
@@ -430,7 +430,7 @@ class CameraToolsMenu extends UIScriptedMenu
 	void Stop()
 	{
 		layoutRoot.Show( true );
-		GetGame().GetUIManager().ShowCursor( true );
+		GetGame().GetUIManager().ShowUICursor( true );
 		
 		m_Camera1.SetActive( false );
 		m_Camera2.SetActive( false );
@@ -725,7 +725,7 @@ class CameraToolsMenu extends UIScriptedMenu
 		{
 			GetGame().GetInput().ResetGameFocus();
 			GetGame().GetInput().ChangeGameFocus(-1);
-			GetGame().GetUIManager().ShowCursor(false);
+			GetGame().GetUIManager().ShowUICursor(false);
 			GetGame().GetMission().RemoveActiveInputExcludes({"menu"});
 			SetFocus( layoutRoot );
 			return true;

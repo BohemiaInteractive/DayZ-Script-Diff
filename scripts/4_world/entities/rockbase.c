@@ -12,19 +12,8 @@ class RockBase : Object
 
 	int GetAmountOfDrops(ItemBase item)
 	{
-		if (item)
-		{
-			switch (item.GetType())
-			{
-			case "Pickaxe":
-				return 4;
-	 		case "SledgeHammer":
-				return 8;
-			}
-		}
-
-		return 1;
-	}	
+		return -1;
+	}
 	
 	/* Defines the yield of the action*/
 	void GetMaterialAndQuantityMap(ItemBase item, out map<string,int> output_map)

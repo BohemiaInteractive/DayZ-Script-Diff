@@ -12,37 +12,33 @@ class ActionUncoverHeadBase: ActionContinuousBase
 	void UncoverHead(PlayerBase target, PlayerBase source)
 	{
 		EntityAI attachment;
-		if( !source.GetHumanInventory().GetEntityInHands() )
+		if (Class.CastTo(attachment, target.GetInventory().FindAttachment(InventorySlots.HEADGEAR)) && attachment.GetType() == "BurlapSackCover")
 		{
-			ItemBase item = ItemBase.Cast(HumanInventory.Cast(source.GetInventory()).CreateInHands("BurlapSack"));
-		}
-		else
-		{
-			EntityAI entity = source.GetInventory().CreateInInventory("BurlapSack");
-			
-			if( !entity )//full inventory
+			ItemBase new_item = null;
+			if (!source.GetHumanInventory().GetEntityInHands())
 			{
-				vector m4[4];
-				source.GetTransformWS(m4);
-				InventoryLocation target_gnd = new InventoryLocation;
-				target_gnd.SetGround(null, m4);
-				entity = GameInventory.LocationCreateEntity(target_gnd, "BurlapSack",ECE_IN_INVENTORY,RF_DEFAULT);
+				new_item = ItemBase.Cast(HumanInventory.Cast(source.GetInventory()).CreateInHands("BurlapSack"));
 			}
-		
-			ItemBase new_item = ItemBase.Cast(entity);
+			else
+			{
+				if (!Class.CastTo(new_item,source.GetInventory().CreateInInventory("BurlapSack")))//full inventory
+				{
+					vector m4[4];
+					source.GetTransformWS(m4);
+					InventoryLocation target_gnd = new InventoryLocation;
+					target_gnd.SetGround(null, m4);
+					new_item = ItemBase.Cast(GameInventory.LocationCreateEntity(target_gnd, "BurlapSack",ECE_IN_INVENTORY,RF_DEFAULT));
+				}
+			}
 			
-		}
-		
-		Class.CastTo(attachment, target.GetInventory().FindAttachment(InventorySlots.HEADGEAR));
-		if ( attachment && attachment.GetType() == "BurlapSackCover" )
-		{
 			if (new_item)
+			{
 				MiscGameplayFunctions.TransferItemProperties(attachment,new_item,true,false,true);
-			
-			attachment.Delete();
+				attachment.Delete();
+				
+				source.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
+			}
 		}
-
-		source.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 
 }
@@ -80,7 +76,6 @@ class ActionUncoverHeadSelf: ActionUncoverHeadBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
 		UncoverHead(action_data.m_Player, action_data.m_Player);
-
 	}
 
 

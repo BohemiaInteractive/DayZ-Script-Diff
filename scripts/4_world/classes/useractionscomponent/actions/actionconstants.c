@@ -25,17 +25,18 @@ class UAQuantityConsumed
  */
 class UATimeSpent
 {
-	const float DEFAULT = 1;
-	const float DEFAULT_PICK = 1.5;
-	const float DEFAULT_FILL = 8;
-	const float DEFAULT_SORT = 2;
-	const float DEFAULT_CONSTRUCT = 5;
-	const float DEFAULT_DECONSTRUCT = 15;
-	const float DEFAULT_REPAIR_CYCLE = 5;
-	const float DEFAULT_DESTROY = 60;
-	const float DEFAULT_PLACE = 0;
-	const float DEFAULT_DEPLOY = 5;
-	const float DEFAULT_CRAFT = 6;
+	const float DEFAULT 				= 1;
+	const float DEFAULT_PICK 			= 1.5;
+	const float DEFAULT_FILL 			= 8;
+	const float DEFAULT_SORT 			= 2;
+	const float DEFAULT_CONSTRUCT 		= 5;
+	const float DEFAULT_DECONSTRUCT 	= 15;
+	const float DEFAULT_REPAIR_CYCLE 	= 5;
+	const float DEFAULT_DESTROY 		= 60;
+	const float DEFAULT_PLACE 			= 0;
+	const float DEFAULT_DEPLOY 			= 5;
+	const float DEFAULT_CRAFT 			= 6;
+	const float DEFAULT_DECRAFT 		= 5;
 	
 	const float BANDAGE = 4;
 	const float ADD_FUEL_TO_TORCH = 4;

@@ -457,21 +457,24 @@ class PlayerContainer: CollapsibleContainer
 	
 	override bool TransferItemToVicinity()
 	{
-		if( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
+		if (CanDrop())
 		{
-			return GetFocusedContainer().TransferItemToVicinity();
-		}
-		else
-		{
-			Man player = GetGame().GetPlayer();
-			ItemBase item = ItemBase.Cast(GetFocusedItem());
-			if( item && player.CanDropEntity( item ) )
+			if (GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ))
 			{
-				if( item.GetTargetQuantityMax() < item.GetQuantity() )
-					item.SplitIntoStackMaxClient( null, -1 );
-				else
-					player.PhysicalPredictiveDropItem( item );
-				return true;
+				return GetFocusedContainer().TransferItemToVicinity();
+			}
+			else
+			{
+				Man player = GetGame().GetPlayer();
+				ItemBase item = ItemBase.Cast(GetFocusedItem());
+				if ( item && player.CanDropEntity( item ) )
+				{
+					if ( item.GetTargetQuantityMax() < item.GetQuantity() )
+						item.SplitIntoStackMaxClient( null, -1 );
+					else
+						player.PhysicalPredictiveDropItem( item );
+					return true;
+				}
 			}
 		}
 		return false;
@@ -504,9 +507,12 @@ class PlayerContainer: CollapsibleContainer
 	
 	override bool SplitItem()
 	{
-		if( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
+		if (CanSplit())
 		{
-			return GetFocusedContainer().SplitItem();
+			if ( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
+			{
+				return GetFocusedContainer().SplitItem();
+			}
 		}
 		
 		return false;
@@ -514,17 +520,20 @@ class PlayerContainer: CollapsibleContainer
 	
 	override bool EquipItem()
 	{
-		if( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
-		{
-			return GetFocusedContainer().EquipItem();
-		}
-		else
-		{
-			EntityAI item = GetFocusedItem();
-			if( item )
+		if (CanEquip())
+		{		
+			if ( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
 			{
-				GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, item );
-				return true;
+				return GetFocusedContainer().EquipItem();
+			}
+			else
+			{
+				EntityAI item = GetFocusedItem();
+				if( item )
+				{
+					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, item );
+					return true;
+				}
 			}
 		}
 		return false;
@@ -532,33 +541,36 @@ class PlayerContainer: CollapsibleContainer
 	
 	override bool TransferItem()
 	{
-		LeftArea left_area = LeftArea.Cast( GetParent() );
-		EntityAI item;
-		if( left_area )
+		if (CanTakeToInventory())
 		{
-			if( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
+			LeftArea left_area = LeftArea.Cast( GetParent() );
+			EntityAI item;
+			if (left_area)
 			{
-				return GetFocusedContainer().TransferItem();
+				if (GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ))
+				{
+					return GetFocusedContainer().TransferItem();
+				}
+				else
+				{
+					item = GetFocusedItem();
+					if( item )
+					{
+						GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, item );
+						return true;
+					}
+				}
 			}
 			else
 			{
-				item = GetFocusedItem();
-				if( item )
+				if (!GetFocusedContainer().IsInherited( ContainerWithCargo ) && !GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ))
 				{
-					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, item );
-					return true;
-				}
-			}
-		}
-		else
-		{
-			if( !GetFocusedContainer().IsInherited( ContainerWithCargo ) && !GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
-			{
-				item = GetFocusedItem();
-				if( item )
-				{
-					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, item );
-					return true;
+					item = GetFocusedItem();
+					if( item )
+					{
+						GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, item );
+						return true;
+					}
 				}
 			}
 		}
@@ -572,20 +584,23 @@ class PlayerContainer: CollapsibleContainer
 	
 	override bool Combine()
 	{
-		if( GetFocusedContainer() && ( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) ) )
+		if (CanCombine())
 		{
-			return GetFocusedContainer().Combine();
-		}
-		else
-		{
-			EntityAI item = GetFocusedItem();
-			ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
-			
-			Icon hands_icon = ItemManager.GetInstance().GetHandsPreview().GetIcon();
-						
-			if( item_in_hands && item )
+			if ( GetFocusedContainer() && ( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) ) )
 			{
-				return hands_icon.CombineItems( item_in_hands, item );
+				return GetFocusedContainer().Combine();
+			}
+			else
+			{
+				EntityAI item = GetFocusedItem();
+				ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+				
+				Icon hands_icon = ItemManager.GetInstance().GetHandsPreview().GetIcon();
+							
+				if( item_in_hands && item )
+				{
+					return hands_icon.CombineItems( item_in_hands, item );
+				}
 			}
 		}
 		return true;
@@ -609,19 +624,19 @@ class PlayerContainer: CollapsibleContainer
 				{
 					if(  selected_item.GetInventory().CanRemoveEntity() )
 					{
-						if( m_Player.GetInventory().CanAddAttachmentEx( selected_item, focused_slot.GetSlotID() ) )
+						if (m_Player.GetInventory().CanAddAttachmentEx( selected_item, focused_slot.GetSlotID() ))
 						{
 							player.PredictiveTakeEntityToTargetAttachmentEx( m_Player, selected_item, focused_slot.GetSlotID());
 							//m_Player.PredictiveTakeEntityAsAttachmentEx( selected_item, focused_slot.GetSlotID() );
-							ItemManager.GetInstance().SetSelectedItem( null, null, null, null );
+							ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
 							return true;
 						
 						}
-						else if( m_Player.GetInventory().CanAddAttachment( selected_item ) )
+						else if (m_Player.GetInventory().CanAddAttachment( selected_item ))
 						{
 							player.PredictiveTakeEntityToTargetAttachment( m_Player, selected_item );
 							//m_Player.PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, selected_item );
-							ItemManager.GetInstance().SetSelectedItem( null, null, null, null );
+							ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
 							return true;
 						}
 					}

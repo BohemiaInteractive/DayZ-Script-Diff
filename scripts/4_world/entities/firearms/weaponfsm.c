@@ -252,7 +252,7 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 					
 						repaired |= ValidateAndRepairHelper(weapon,
 							"ChamberRepair",
-							state.IsChamberFull(0), weapon.IsChamberFull(0),
+							state.IsChamberFull(0), weapon.IsChamberFullEx(0),
 							new WeaponEventLoad1Bullet, new WeaponEventMechanism,
 							state);
 						

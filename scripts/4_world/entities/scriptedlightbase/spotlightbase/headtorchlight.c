@@ -34,4 +34,16 @@ class HeadtorchLight extends SpotLightBase
 		FadeBrightnessTo( m_DefaultBrightness * coef, time );
 		FadeRadiusTo( m_DefaultRadius * coef, time );
 	}
+	
+	void PerformVisibilityCheck(EntityAI owner)
+	{
+		if (!owner.IsFlagSet(EntityFlags.VISIBLE) && IsEnabled())
+		{
+			SetEnabled(false);
+		}
+		else if (owner.IsFlagSet(EntityFlags.VISIBLE) && !IsEnabled())
+		{
+			SetEnabled(true);
+		}
+	}
 }

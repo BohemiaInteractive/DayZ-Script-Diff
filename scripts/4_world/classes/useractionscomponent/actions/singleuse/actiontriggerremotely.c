@@ -59,6 +59,8 @@ class ActionTriggerRemotely : ActionSingleUseBase
 
 	override void OnExecuteServer(ActionData action_data)
 	{
+		super.OnExecuteServer(action_data);
+
 		RemoteDetonatorTrigger rdt = RemoteDetonatorTrigger.Cast(action_data.m_MainItem);
 		if (rdt && rdt.IsConnected()) 
 		{

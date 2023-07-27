@@ -98,7 +98,7 @@ class ItemBase extends InventoryItem
 	// agent system
 	private int	m_AttachedAgents;
 
-	// Declarations
+	//! appears to be deprecated, legacy code
 	void TransferModifiers(PlayerBase reciever);
 	
 	
@@ -301,11 +301,8 @@ class ItemBase extends InventoryItem
 		AddAction(ActionTakeItem);
 		AddAction(ActionTakeItemToHands);
 		AddAction(ActionWorldCraft);
-		//AddAction(ActionWorldCraftSwitch);
 		AddAction(ActionDropItem);
 		AddAction(ActionAttachWithSwitch);
-		//AddAction();
-		//AddAction();
 	}
 	
 	void AddAction(typename actionName)
@@ -782,13 +779,31 @@ class ItemBase extends InventoryItem
 	{
 		if (GetEconomyProfile())
 		{
-			float q_min = GetEconomyProfile().GetQuantityMin();
 			float q_max = GetEconomyProfile().GetQuantityMax();
 			if (q_max > 0)
 			{
+				float q_min = GetEconomyProfile().GetQuantityMin();
 				float quantity_randomized = Math.RandomFloatInclusive(q_min, q_max);
-				//PrintString("<==> Normalized quantity for item: "+ GetType()+", qmin:"+q_min.ToString()+"; qmax:"+q_max.ToString()+";quantity:" +quantity_randomized.ToString());
+				
+				if (HasComponent(COMP_TYPE_ENERGY_MANAGER))//more direct access for speed
+				{
+					ComponentEnergyManager comp = GetCompEM();
+					if (comp && (comp.GetEnergyMaxPristine() || comp.GetEnergyAtSpawn()))//checking for a potential for energy, we need to check both values, as both are optional, only when both are set to 0, we know the item can't have energy
+					{
+						//Print("setting EM quantity for " + this + " to " + quantity_randomized);
+						comp.SetEnergy0To1(quantity_randomized);
+					}
+					/*
+					else
+						Print("NOT setting EM quantity for " + this + " to " + quantity_randomized);
+					*/
+				}
+				else if (HasQuantity())
+				{
 					SetQuantityNormalized(quantity_randomized, false);
+					//PrintString("<==> Normalized quantity for item: "+ GetType()+", qmin:"+q_min.ToString()+"; qmax:"+q_max.ToString()+";quantity:" +quantity_randomized.ToString());
+				}
+				
 			}
 		}
 	}
@@ -912,7 +927,8 @@ class ItemBase extends InventoryItem
 	
 	override bool CanObstruct()
 	{
-		return !IsPlayerInside(PlayerBase.Cast(g_Game.GetPlayer()), "");
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
+		return !player || !IsPlayerInside(player, "");
 	}
 	
 	override bool IsBeingPlaced()
@@ -2114,7 +2130,7 @@ class ItemBase extends InventoryItem
 		
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.MAKE_SPECIAL, "Make Special", FadeColors.LIGHT_GREY));
 		// watch
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.WATCH_ITEM, "Watch", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.WATCH_ITEM, "Watch (CTRL-Z)", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.WATCH_PLAYER, "Watch Player", FadeColors.LIGHT_GREY));
 		
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.RED));
@@ -3329,17 +3345,11 @@ class ItemBase extends InventoryItem
 	{
 		return m_VarQuantityInit;
 	}
+	
 	//----------------------------------------------------------------
 	bool HasQuantity()
 	{
-		if (GetQuantityMax() - GetQuantityMin() == 0)
-		{
-			return false;			
-		}
-		else
-		{
-			return true;			
-		}
+		return !(GetQuantityMax() - GetQuantityMin() == 0);
 	}
 
 	override float GetQuantity()
@@ -3464,15 +3474,35 @@ class ItemBase extends InventoryItem
 		return (variable & m_VariablesMask);
 	}
 	
+	//-----------------------------------------------------------------
+	
+	override void ClearInventory()
+	{
+		if ((GetGame().IsServer() || !GetGame().IsMultiplayer()) && GetInventory())
+		{
+			GameInventory inv = GetInventory();
+			array<EntityAI> items = new array<EntityAI>;
+			inv.EnumerateInventory(InventoryTraversalType.INORDER, items);
+			for (int i = 0; i < items.Count(); i++)
+			{
+				ItemBase item = ItemBase.Cast(items.Get(i));
+				if (item)
+				{
+					GetGame().ObjectDelete(item);
+				}
+			}
+		}
+	}
+	
 	//-------------------------	Energy
 
 	//----------------------------------------------------------------
 	float GetEnergy()
 	{
 		float energy = 0;
-		if (this.HasEnergyManager())
+		if (HasEnergyManager())
 		{
-			energy = this.GetCompEM().GetEnergy();
+			energy = GetCompEM().GetEnergy();
 		}
 		return energy;
 	}
@@ -3972,7 +4002,7 @@ class ItemBase extends InventoryItem
 	override void EEOnCECreate()
 	{
 		//Print("EEOnCECreate");
-		if (!IsMagazine() && HasQuantity())
+		if (!IsMagazine())
 			SetCEBasedQuantity();
 
 		SetZoneDamageCEInit();
@@ -4418,19 +4448,10 @@ class ItemBase extends InventoryItem
 		}
 	}
 	
+	//!DEPRECATED in use, but returns correct values nontheless. Check performed elsewhere
 	bool IsCoverFaceForShave(string slot_name)
 	{
-		if (slot_name == "Mask")
-		{
-			return true;
-		}
-
-		if (ConfigGetBool("noMask"))
-		{
-			return true;
-		}
-
-		return false;
+		return IsExclusionFlagPresent(PlayerBase.GetFaceCoverageShaveValues());
 	}
 	
 	void ProcessItemWetness(float delta, bool hasParent, bool hasRootAsPlayer, ItemBase refParentIB)
@@ -4633,7 +4654,7 @@ class ItemBase extends InventoryItem
 	#endif
 }
 
-EntityAI SpawnItemOnLocation (string object_name, notnull InventoryLocation loc, bool full_quantity)
+EntityAI SpawnItemOnLocation(string object_name, notnull InventoryLocation loc, bool full_quantity)
 {
 	EntityAI entity = SpawnEntity(object_name, loc, ECE_IN_INVENTORY, RF_DEFAULT);
 	if (entity)
@@ -4653,22 +4674,49 @@ EntityAI SpawnItemOnLocation (string object_name, notnull InventoryLocation loc,
 	return entity;
 }
 
-void SetupSpawnedItem (ItemBase item, float health, float quantity)
+void SetupSpawnedItem(ItemBase item, float health, float quantity)
 {
 	if (item)
 	{
-		if (quantity == -1)
-		{
-			if (item.HasQuantity())
-				quantity = item.GetQuantityInit();
-		}
-		
 		if (health > 0)
 			item.SetHealth("", "", health);
 
-		if (quantity > 0)
+		
+		if (item.HasEnergyManager())
 		{
-			item.SetQuantity(quantity);
+			if (quantity >= 0)
+			{		
+				item.GetCompEM().SetEnergy0To1(quantity);
+			}
+			else
+			{
+				item.GetCompEM().SetEnergy(Math.AbsFloat(quantity));
+			}
+		}
+		else if (item.IsMagazine())
+		{
+			Magazine mag = Magazine.Cast(item);
+			if (quantity >= 0)
+			{		
+				mag.ServerSetAmmoCount(mag.GetAmmoMax() * quantity);
+			}
+			else
+			{		
+				mag.ServerSetAmmoCount(Math.AbsFloat(quantity));
+			}
+			
+		}
+		else
+		{
+			if (quantity >= 0)
+			{		
+				item.SetQuantityNormalized(quantity, false);
+			}
+			else
+			{
+				item.SetQuantity(Math.AbsFloat(quantity));
+			}
+			
 		}
 	}
 }

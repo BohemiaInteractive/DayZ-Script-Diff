@@ -1,4 +1,4 @@
-class Battery9V extends ItemBase
+class Battery9V : ItemBase
 {
 	private int				m_Efficiency0To10; // Synchronized variable
 	static private float 	m_EfficiencyDecayStart = 0.1; // At this % of maximum energy the output of the battery starts to weaken.
@@ -7,14 +7,6 @@ class Battery9V extends ItemBase
 	{
 		m_Efficiency0To10 = 10;
 		RegisterNetSyncVariableInt("m_Efficiency0To10");
-	}
-	
-	//Update Battery energy level before it overrides quantity
-	override void SetCEBasedQuantity()
-	{
-		super.SetCEBasedQuantity();
-		if ( GetCompEM() )
-			GetCompEM().SetEnergy( GetCompEM().GetEnergyMax() * ( GetQuantity() / GetQuantityMax() ) );
 	}
 	
 	//! Returns efficiency of this battery. The value is synchronized from server to all clients and is accurate down to 0.1 units.
@@ -34,13 +26,13 @@ class Battery9V extends ItemBase
 	{
 		super.OnEnergyConsumed();
 		
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			float energy_coef = GetCompEM().GetEnergy0To1();
+			float energyCoef = GetCompEM().GetEnergy0To1();
 			
-			if ( energy_coef < m_EfficiencyDecayStart  &&  m_EfficiencyDecayStart > 0 )
+			if (energyCoef < m_EfficiencyDecayStart && m_EfficiencyDecayStart > 0)
 			{
-				m_Efficiency0To10 = Math.Round(  (energy_coef / m_EfficiencyDecayStart) * 10  );
+				m_Efficiency0To10 = Math.Round((energyCoef / m_EfficiencyDecayStart) * 10);
 				SetSynchDirty();
 			}
 		}
@@ -51,13 +43,12 @@ class Battery9V extends ItemBase
 	{
 		super.OnEnergyAdded();
 		
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			float energy_coef = GetCompEM().GetEnergy0To1();
-			
-			if ( energy_coef < m_EfficiencyDecayStart  &&  m_EfficiencyDecayStart > 0)
+			float energyCoef = GetCompEM().GetEnergy0To1();
+			if (energyCoef < m_EfficiencyDecayStart && m_EfficiencyDecayStart > 0)
 			{
-				m_Efficiency0To10 = Math.Round(  (energy_coef / m_EfficiencyDecayStart) * 10  );
+				m_Efficiency0To10 = Math.Round((energyCoef / m_EfficiencyDecayStart) * 10);
 				SetSynchDirty();
 			}
 			else

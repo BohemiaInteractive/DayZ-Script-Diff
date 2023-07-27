@@ -58,7 +58,14 @@ class DeveloperTeleport
 			ignore = player;
 		}
 
-		if (DayZPhysics.SphereCastBullet(rayStart, rayEnd, 0.01, PhxInteractionLayers.TERRAIN | PhxInteractionLayers.ROADWAY | PhxInteractionLayers.ITEM_LARGE|PhxInteractionLayers.BUILDING|PhxInteractionLayers.VEHICLE, ignore, hitObj, hitPos, hitNormal, hitFraction))
+		int layers = 0;
+		layers |= PhxInteractionLayers.TERRAIN;
+		layers |= PhxInteractionLayers.ROADWAY;
+		layers |= PhxInteractionLayers.ITEM_LARGE;
+		layers |= PhxInteractionLayers.BUILDING;
+		layers |= PhxInteractionLayers.VEHICLE;
+		layers |= PhxInteractionLayers.RAGDOLL;
+		if (DayZPhysics.SphereCastBullet(rayStart, rayEnd, 0.01, layers, ignore, hitObj, hitPos, hitNormal, hitFraction))
 		{
 			bool breakSync = false;
 				

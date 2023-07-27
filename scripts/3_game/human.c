@@ -50,6 +50,9 @@ class HumanInputController
 
 	//--------------------------------------------------------------
 
+	//! stance change button was pressed
+	proto native bool			IsStanceChange();
+
 	//! jump/climb action was pressed
 	proto native bool			IsJumpClimb();
 
@@ -613,6 +616,8 @@ class HumanCommandUnconscious
 	private void ~HumanCommandUnconscious() {}
 	
 	proto native void 	WakeUp(int targetStance = -1);
+	proto native bool	IsWakingUp();
+	
 	proto native bool	IsOnLand();
 	proto native bool	IsInWater();
 }
@@ -1255,6 +1260,9 @@ class Human extends Man
 
 	//! gets human transform in World Space
 	proto native	void 		GetTransformWS(out vector pTm[4]);
+	
+	//! makes test if there's enough space for character's collider assuming that character can be pushed away from obstacle - usable for checking if character is in some tight space
+	proto native	bool		CheckFreeSpace(vector localDir, float distance, bool useHeading, vector posOffset = vector.Zero, float xzScale = 1.0);
 
 	//! makes test if character can physically move in given direction - length of dir means distance, returns distance fraction
 	proto			float		CollisionMoveTest(vector dir, vector offset, float xzScale, IEntity ignoreEntity, out IEntity hitEntity, out vector hitPosition, out vector hitNormal);
@@ -1287,6 +1295,9 @@ class Human extends Man
 
 	proto native	bool		PhysicsIsSolid();
 	proto native	void		PhysicsSetSolid(bool pSolid);
+
+	//! Sets and synchronize interaction layers 'RAGDOLL' and 'RAGDOLL_NO_CHARACTER' to prevent body stacking and players going through dead creatures
+	proto native	void		PhysicsSetRagdoll(bool pEnable);
 
 	//---------------------------------------------------------
 	// controller 

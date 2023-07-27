@@ -574,6 +574,10 @@ class DayZPlayerImplement extends DayZPlayer
 				Class.CastTo(callback, StartCommand_Death(type, m_DeathHitDir, DayZPlayerCommandDeathCallback));
 				Class.CastTo(callback.m_pPlayer, this);
 			}
+			else
+			{
+				PhysicsSetRagdoll(true);
+			}
 			
 			// disable voice communication
 			GetGame().GetWorld().SetVoiceOn(false, false);
@@ -1380,9 +1384,13 @@ class DayZPlayerImplement extends DayZPlayer
 		}
 		if (m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_UNCONSCIOUS)
 		{
-			m_fLastHeadingDiff = 0;
-			//pModel.m_iCamMode = DayZPlayerConstants.CAMERAMODE_HEAD;
-			return false;
+			HumanCommandUnconscious	hcu = GetCommand_Unconscious();
+			if (!hcu.IsWakingUp())
+			{
+				m_fLastHeadingDiff = 0;
+				//pModel.m_iCamMode = DayZPlayerConstants.CAMERAMODE_HEAD;
+				return false;
+			}
 		}
 		
 		if (m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_CLIMB)
@@ -1499,6 +1507,13 @@ class DayZPlayerImplement extends DayZPlayer
 		
 		if (!DayZPlayerUtils.PlayerCanChangeStance(this, DayZPlayerConstants.STANCEIDX_ERECT) || !DayZPlayerUtils.PlayerCanChangeStance(this, DayZPlayerConstants.STANCEIDX_RAISEDERECT))
 			return false;
+		
+		HumanCommandMove hcm = GetCommand_Move();
+		if (hcm)
+		{
+			if (hcm.IsChangingStance())
+				return false;
+		}
 		
 		return true;
 	}
@@ -2190,7 +2205,7 @@ class DayZPlayerImplement extends DayZPlayer
 		}
 
 		// start falling ? 
-		if (PhysicsIsFalling(false))
+		if (PhysicsIsFalling(false) && !IsAlreadyInFallingCommand(pCurrentCommandID))
 		{
 			StartCommand_Fall(0);
 			SetFallYDiff(GetPosition()[1]);
@@ -2226,7 +2241,11 @@ class DayZPlayerImplement extends DayZPlayer
 		if (hic.IsJumpClimb())
 		{
 			m_JumpClimb.JumpOrClimb();
-			return;
+
+			if (m_JumpClimb.WasSuccessful())
+			{
+				return;
+			}
 		}
 
 		HumanCommandAdditives ad = GetCommandModifier_Additives();
@@ -3084,8 +3103,8 @@ class DayZPlayerImplement extends DayZPlayer
 				SoundObjectBuilder builder = soundEvent.GetSoundBuilderEx(m_ActionSoundCategoryHash);
 				if (builder)
 				{
-					builder.SetVariable("quantity", quantity);
-					builder.SetVariable("interior", IsSoundInsideBuilding());
+					builder.AddVariable("quantity", quantity);
+					builder.AddVariable("interior", IsSoundInsideBuilding());
 					
 					SoundObject soundObject = builder.BuildSoundObject();
 					if (soundObject != NULL)
@@ -3142,32 +3161,32 @@ class DayZPlayerImplement extends DayZPlayer
 	{
 		if (m_ClimbingLadderType == "wood")
 		{
-			soundObjectBuilder.SetVariable("laddertype", 1);
+			soundObjectBuilder.AddVariable("laddertype", 1);
 		}
 		else
 		{
-			soundObjectBuilder.SetVariable("laddertype", 0);
+			soundObjectBuilder.AddVariable("laddertype", 0);
 		}
 		
 		AnimBootsType pBoots = GetBootsType();
 		
 		if (pBoots == AnimBootsType.None)
 		{
-			soundObjectBuilder.SetVariable("bare", 1);
-			soundObjectBuilder.SetVariable("sneakers", 0);
-			soundObjectBuilder.SetVariable("boots", 0);
+			soundObjectBuilder.AddVariable("bare", 1);
+			soundObjectBuilder.AddVariable("sneakers", 0);
+			soundObjectBuilder.AddVariable("boots", 0);
 		}
 		else if (pBoots == AnimBootsType.Sneakers)
 		{
-			soundObjectBuilder.SetVariable("bare", 0);
-			soundObjectBuilder.SetVariable("sneakers", 1);
-			soundObjectBuilder.SetVariable("boots", 0);
+			soundObjectBuilder.AddVariable("bare", 0);
+			soundObjectBuilder.AddVariable("sneakers", 1);
+			soundObjectBuilder.AddVariable("boots", 0);
 		}
 		else if (pBoots == AnimBootsType.Boots)
 		{
-			soundObjectBuilder.SetVariable("bare", 0);
-			soundObjectBuilder.SetVariable("sneakers", 0);
-			soundObjectBuilder.SetVariable("boots", 1);
+			soundObjectBuilder.AddVariable("bare", 0);
+			soundObjectBuilder.AddVariable("sneakers", 0);
+			soundObjectBuilder.AddVariable("boots", 1);
 		}
 	}
 
@@ -3190,7 +3209,7 @@ class DayZPlayerImplement extends DayZPlayer
 				{
 					SetVariablesLadderSoundObjectBuilder(objectBuilder);
 				}
-				objectBuilder.UpdateEnvSoundControllers(GetPosition());
+				objectBuilder.AddEnvSoundVariables(GetPosition());
 
 				SoundObject soundObject = objectBuilder.BuildSoundObject();
 				if (soundObject != NULL)
@@ -3275,8 +3294,8 @@ class DayZPlayerImplement extends DayZPlayer
 				femaleVoiceType = player.GetVoiceType();
 			}
 
-			soundBuilder.SetVariable("male", maleVoiceType);
-			soundBuilder.SetVariable("female", femaleVoiceType);
+			soundBuilder.AddVariable("male", maleVoiceType);
+			soundBuilder.AddVariable("female", femaleVoiceType);
 			
 			// end of weirdness
 			SoundObject soundObject = soundBuilder.BuildSoundObject();
@@ -3360,6 +3379,11 @@ class DayZPlayerImplement extends DayZPlayer
 	}
 
 #endif
+
+	bool IsAlreadyInFallingCommand(int pCurrentCommandID)
+	{
+		return false;
+	}
 	
 	//! movement sliding override, originally for FB gestures
 	void OverrideSlidePoseAngle(float value)
@@ -3472,6 +3496,13 @@ class DayZPlayerImplement extends DayZPlayer
 	{
 		return CanPickupHeavyItem(item1) && CanPickupHeavyItem(item2);
 	}
+
+#ifdef DIAG_DEVELOPER
+	Weapon_Base SpawnWeaponInHands(string type)
+	{
+		return Weapon_Base.Cast(GetHumanInventory().CreateInHands(type));
+	}
+#endif
 	
 ///////////////////////////////////
 //Obsolete stuff below this point//

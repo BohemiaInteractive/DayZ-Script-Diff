@@ -208,3 +208,46 @@ class DestructionEffectMetalicMechanism : DestructionEffectBase
 	{
 	}
 }
+
+class DestructionEffectSpookyGoat : DestructionEffectBase
+{
+	override void Init()
+	{
+		m_EntityIsTakeable = false;
+		
+		m_ParticlePersistent = ParticleList.NONE;
+		m_ParticleOneTime = ParticleList.GRENADE_M18_BLACK_END;
+		
+		m_SoundSetOneTime = "";
+		m_SoundSetPersistent= "";
+		
+		m_ReplaceWithEntity = "";
+		m_KeepHealthOnReplace = false;
+		m_ReplaceDelay = 0;
+		
+		m_HasExplosionDamage = false;
+		m_AmmoType = "";
+		m_DamageType = DamageType.EXPLOSION;
+	}
+	
+	
+	override void OnEntityDestroyedOneTimeClient(EntityAI entity, int oldLevel, string zone)
+	{
+	}
+	
+	override void OnEntityDestroyedOneTimeServer(EntityAI entity, int oldLevel, string zone)
+	{
+	}
+	
+	override void OnEntityDestroyedPersistentClient(EntityAI entity, string zone)
+	{
+	}
+	
+	override void OnEntityDestroyedPersistentServer(EntityAI entity, string zone)
+	{
+	}
+	
+	override void OnExplosionEffects(Object source, Object directHit, int componentIndex, string surface, vector pos, vector surfNormal, float energyFactor, float explosionFactor, bool isWater, string ammoType)
+	{
+	}
+}

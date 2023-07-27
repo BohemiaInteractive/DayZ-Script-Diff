@@ -142,7 +142,7 @@ class HandsPreview: Container
 	{
 		if( m_Item )
 		{
-			ItemManager.GetInstance().SetSelectedItem( m_Item, null, null, null );
+			ItemManager.GetInstance().SetSelectedItemEx(m_Item, null, null);
 			return true;
 		}
 		return false;

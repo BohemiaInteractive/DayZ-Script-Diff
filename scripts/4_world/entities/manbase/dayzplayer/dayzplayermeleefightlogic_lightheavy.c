@@ -136,9 +136,10 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		
 		//! Check if we need to damage
 		if (HandleHitEvent(pCurrentCommandID, pInputs, itemInHands, pMovementState, pContinueAttack))
-		{
 			return false;
-		}
+		
+		if (player.IsEmotePlaying())
+			return false;
 
 		//! Actually pressing a button to start a melee attack
 		if ((pInputs.IsAttackButtonDown() && !isFireWeapon) || (pInputs.IsMeleeWeaponAttack() && isFireWeapon) || (pContinueAttack && isFireWeapon))
@@ -147,15 +148,11 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 			
 			//! do not perform attacks when blocking
 			if (m_IsInBlock || m_IsEvading)
-			{
 				return false;
-			}
 			
 			//! if the item in hands cannot be used as melee weapon
 			if (itemInHands && !itemInHands.IsMeleeWeapon() && !isFireWeapon)
-			{
 				return false;
-			}
 			
 			//! Currently not performing any attacks, so here we start the initial
 			if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_MOVE)
@@ -605,13 +602,15 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 	{
 		int hitZoneIdx = m_MeleeCombat.GetHitZoneIdx();
 		int weaponMode = m_MeleeCombat.GetWeaponMode();
+		int forcedWeaponMode = -1;
 		vector hitPosWS;
 		bool forcedDummy = false;
+
 
 		PlayerBase targetPlayer = PlayerBase.Cast(target);
 
 		//! Melee Hit/Impact modifiers
-		if ( targetPlayer )
+		if (targetPlayer)
 		{
 			vector targetPos = targetPlayer.GetPosition();
 			vector agressorPos = m_DZPlayer.GetPosition();
@@ -622,18 +621,16 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 			//! if the oponnent is in Melee Block shift the damage down
 			if (targetPlayer.GetMeleeFightLogic() && targetPlayer.GetMeleeFightLogic().IsInBlock() && hitAngle <= GameConstants.PVP_MAX_BLOCKABLE_ANGLE)
 			{
-				if ( weaponMode > 0 )
+				if (weaponMode > 0)
 				{
-					weaponMode--; // Heavy -> Light shift
+					forcedWeaponMode = --weaponMode; // Heavy -> Light shift
 				}
 				else
-				{
 					forcedDummy = true; // dummy hits, cannot shift lower than 0
-				}
 			}
 		}
 
-		EvaluateHit_Common(weapon, target, forcedDummy);
+		EvaluateHit_Common(weapon, target, forcedDummy, forcedWeaponMode);
 	}
 	
 	protected void EvaluateHit_Infected(InventoryItem weapon, Object target)
@@ -659,12 +656,15 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		return false;
 	}
 	
-	protected void EvaluateHit_Common(InventoryItem weapon, Object target, bool forcedDummy=false)
+	protected void EvaluateHit_Common(InventoryItem weapon, Object target, bool forcedDummy=false, int forcedWeaponMode = -1)
 	{
 		int hitZoneIdx = m_MeleeCombat.GetHitZoneIdx();
 		int weaponMode = m_MeleeCombat.GetWeaponMode();
 		vector hitPosWS;
 		string ammo;
+		
+		if (forcedWeaponMode > -1)
+			weaponMode = forcedWeaponMode;
 
 		EntityAI targetEntity = EntityAI.Cast(target);
 
@@ -684,7 +684,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 				else
 				{
 					m_DZPlayer.ProcessMeleeHit(weapon, weaponMode, target, hitZoneIdx, hitPosWS);
-					//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[b]::ProcessMeleeHit:: target: %1, hitzone: %2, meleeMode: %3", target, hitZoneIdx, weaponMode));
+					//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[b]::ProcessMeleeHit:: target: %1, hitzone: %2, meleeMode: %3, forcedWeaponMode:%4", target, hitZoneIdx, weaponMode));
 				}
 			}
 		}
@@ -696,7 +696,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 				DummyHitSelector(m_HitType, ammo);
 				hitPosWS = targetEntity.ModelToWorld(targetEntity.GetDefaultHitPosition()); //! override hit pos by pos defined in type
 				DamageSystem.CloseCombatDamage(m_DZPlayer, target, hitZoneIdx, ammo, hitPosWS);
-				//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[c]::CloseCombatDamage:: target: %1, hitzone: %2, meleeMode: %3", target, hitZoneIdx, weaponMode));
+				//Debug.MeleeLog(m_DZPlayer, string.Format("EvaluateHit_Common[c]::CloseCombatDamage:: target: %1, hitzone: %2, meleeMode: %3, ammo: %4", target, hitZoneIdx, weaponMode, ammo));
 			}
 		}
 	}

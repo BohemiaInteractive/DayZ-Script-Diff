@@ -36,6 +36,7 @@ class RepairWithPliers extends RecipeBase
 		InsertIngredient(1,"Chainmail");//you can insert multi	ple ingredients this way
 		InsertIngredient(1,"Chainmail_Coif");//you can insert multiple ingredients this way
 		InsertIngredient(1,"Chainmail_Leggings");//you can insert multiple ingredients this way
+		InsertIngredient(1,"WitchHoodCoif_ColorBase");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[1] = 0;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

@@ -85,6 +85,11 @@ class TrapBase extends ItemBase
 	
 	void OnUpdate(EntityAI victim);
 	
+	TrapTrigger GetTrapTrigger()
+	{
+		return m_TrapTrigger;
+	}
+	
 	//! this event is called all variables are synchronized on client
     override void OnVariablesSynchronized()
     {
@@ -123,11 +128,10 @@ class TrapBase extends ItemBase
 	{
 		super.EEDelete(parent);
 
-		//GetGame() can be sometimes NULL when turning off server
-		if ( GetGame() && m_TrapTrigger )
+		if (GetGame() && m_TrapTrigger)
 		{
-			GetGame().ObjectDelete( m_TrapTrigger );
-			m_TrapTrigger = NULL;
+			GetGame().ObjectDelete(m_TrapTrigger);
+			m_TrapTrigger = null;
 		}
 	}
 
@@ -136,7 +140,6 @@ class TrapBase extends ItemBase
 		super.OnStoreSave(ctx);
 		
 		ctx.Write(m_IsActive);
-		
 		ctx.Write(m_IsInProgress);
 	}
 	
@@ -310,9 +313,7 @@ class TrapBase extends ItemBase
 			SetSynchDirty();
 
 			if (victim && !victim.GetAllowDamage())
-			{
 				return;
-			}
 
 			Param1<EntityAI> p = new Param1<EntityAI>(victim);
 			GetGame().RPCSingleParam(this, ERPCs.RPC_TRAP_VICTIM, p, true);
@@ -330,43 +331,35 @@ class TrapBase extends ItemBase
 			switch (rpc_type)
 			{
 				case ERPCs.RPC_TRAP_VICTIM:
-				
-					ref Param1<EntityAI> p_victim = new Param1<EntityAI>(NULL);
+					Param1<EntityAI> victim = new Param1<EntityAI>(null);
 					
-					if (ctx.Read(p_victim))
+					if (ctx.Read(victim))
 					{
-						if (p_victim.param1)
-						{
-							SnapOnObject(p_victim.param1);
-						}
+						if (victim.param1)
+							SnapOnObject(victim.param1);
 					}
 					
-				break;
+					break;
 				
 				case ERPCs.RPC_TRAP_DISARM:
 					OnDisarm();
-				break;
+					break;
 				
 				case SoundTypeTrap.ACTIVATING:
 			
-					ref Param1<bool> p = new Param1<bool>(false);
+					Param1<bool> p = new Param1<bool>(false);
 					
+					bool isActivating = false;
 					if (ctx.Read(p))
-					{
-						bool play = p.param1;
-					}
+						isActivating = p.param1;
 					
-					if ( play )
-					{
+					if (isActivating)
 						PlayDeployLoopSound();
-					}
 					
-					if ( !play )
-					{
+					if (!isActivating)
 						StopDeployLoopSound();
-					}
 			
-				break;
+					break;
 			}
 		}
 	}
@@ -421,34 +414,28 @@ class TrapBase extends ItemBase
 
 	void SetupTrap()
 	{ 
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			if ( GetHierarchyRootPlayer() && GetHierarchyRootPlayer().CanDropEntity( this ) )  // kvoli desyncu
-			{
-				SetupTrapPlayer( PlayerBase.Cast( GetHierarchyRootPlayer() ) );
-			}
+			if (GetHierarchyRootPlayer() && GetHierarchyRootPlayer().CanDropEntity(this))
+				SetupTrapPlayer(PlayerBase.Cast(GetHierarchyRootPlayer()));
 		}
 	}
 
 	void SetupTrapPlayer( PlayerBase player, bool set_position = true )
 	{ 
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			if ( set_position )
+			if (set_position)
 			{
-				Error("Mojmir: TODO");
-				player.LocalDropEntity( this );
+				player.LocalDropEntity(this);
 				
-				vector trapPos = ( player.GetDirection() ) * 1.5;
+				vector trapPos = player.GetDirection() * 1.5;
 				trapPos[1] = 0;
-				SetPosition( player.GetPosition() + trapPos );
+				SetPosition(player.GetPosition() + trapPos);
 			}
 					
-			if ( m_NeedActivation == false )
-			{
+			if (m_NeedActivation == false)
 				SetActive();
-			}
-			//player.MessageStatus( m_InfoSetup );
 		}
 	}
 
@@ -513,14 +500,10 @@ class TrapBase extends ItemBase
 		
 		m_IsActive = false;
 		if (m_Timer && stop_timer)
-		{
 			m_Timer.Stop();
-		}
 		
 		if (m_AddDeactivationDefect)
-		{
 			AddDefect();
-		}
 		
 		DeleteTrigger();
 		RefreshState();
@@ -541,8 +524,11 @@ class TrapBase extends ItemBase
 	
 	void DeleteTrigger()
 	{
-		GetGame().ObjectDelete(m_TrapTrigger);
-		m_TrapTrigger = null;
+		if (m_TrapTrigger)
+		{
+			m_TrapTrigger.SetParentObject(null);
+			m_TrapTrigger.DeleteSafe();
+		}
 	}
 
 	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner) 
@@ -574,19 +560,27 @@ class TrapBase extends ItemBase
 	{
 		super.EEItemAttached(item, slot_name);
 		
-		if ( GetGame().IsServer() )
-		{
+		if (GetGame().IsServer())
 			RefreshState();
-		}
 	}	
 	
 	override void EEItemDetached(EntityAI item, string slot_name)
 	{
 		super.EEItemDetached(item, slot_name);
 		
-		if ( GetGame().IsServer() )
-		{
+		if (GetGame().IsServer())
 			RefreshState();
+	}
+	
+	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
+	{
+		super.OnPlacementComplete(player, position, orientation);
+		
+		if (GetGame().IsServer())
+		{
+			SetOrientation(orientation);
+			SetPosition(position);
+			PlaceOnSurface();
 		}
 	}
 	

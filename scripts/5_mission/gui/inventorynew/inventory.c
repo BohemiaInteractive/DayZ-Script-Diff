@@ -45,6 +45,7 @@ class Inventory: LayoutHolder
 	
 	protected bool							m_HadFastTransferred;
 	protected bool							m_HadInspected;
+	protected bool							m_NeedUpdateConsoleToolbar;
 	
 	protected static Inventory				m_Instance;
 	
@@ -129,6 +130,8 @@ class Inventory: LayoutHolder
 		
 		m_BottomConsoleToolbar			= GetRootWidget().FindAnyWidget("BottomConsoleToolbar");
 		m_BottomConsoleToolbarRichText	= RichTextWidget.Cast(GetRootWidget().FindAnyWidget("ContextToolbarText"));
+		
+		m_NeedUpdateConsoleToolbar = false;
 		
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
@@ -704,6 +707,11 @@ class Inventory: LayoutHolder
 				}
 			}
 			
+			if (GetUApi().GetInputByID(UAUIDragNDrop).LocalHoldBegin())
+			{
+				EnableMicromanagement();
+			}
+			
 			if (GetUApi().GetInputByID(UAUISplit).LocalPress())
 			{
 				if (m_HandsArea.IsActive())
@@ -866,11 +874,6 @@ class Inventory: LayoutHolder
 		{
 			if (!m_HadFastTransferred && GetUApi().GetInputByID(UAUIFastTransferItem).LocalPress()) //transfers item to inventory (not hands, or hands last?)
 			{
-				if (ItemManager.GetInstance().IsMicromanagmentMode())
-				{
-					return;
-				}
-				
 				if (m_LeftArea.IsActive())
 				{
 					item = InventoryItem.Cast(m_LeftArea.GetFocusedItem());
@@ -948,21 +951,12 @@ class Inventory: LayoutHolder
 			{
 				player = PlayerBase.Cast(GetGame().GetPlayer());
 				item_to_assign = player.GetItemInHands();
+				m_HandsArea.AddItemToQuickbarRadial(item_to_assign);
 			}
 			else if (m_RightArea.IsActive())
 			{
 				item_to_assign = m_RightArea.GetFocusedItem();
-			}
-			
-			if (item_to_assign && dpi && !dpi.IsProcessing())
-			{
-				RadialQuickbarMenu.SetItemToAssign(item_to_assign);
-				
-				//open radial quickbar menu
-				if (!GetGame().GetUIManager().IsMenuOpen(MENU_RADIAL_QUICKBAR))
-				{
-					RadialQuickbarMenu.OpenMenu(GetGame().GetUIManager().FindMenu(MENU_INVENTORY));
-				}				
+				m_RightArea.AddItemToQuickbarRadial(item_to_assign);
 			}
 		}
 		#endif
@@ -973,7 +967,7 @@ class Inventory: LayoutHolder
 			if (GetMainWidget().IsVisible())
 			{
 			#ifdef PLATFORM_CONSOLE
-				DisableMicromanagement();
+				//DisableMicromanagement();
 				if (m_RightArea.IsActive())
 				{
 					if (m_RightArea.CanCombine())
@@ -1024,6 +1018,10 @@ class Inventory: LayoutHolder
 		m_RightArea.UpdateInterval();
 		m_HandsArea.UpdateInterval();
 		m_PlayerPreview.UpdateInterval();
+		
+		#ifdef PLATFORM_CONSOLE
+			UpdateConsoleToolbarCheck();
+		#endif
 	}
 	
 	void AddQuickbarItem(InventoryItem item, int index)
@@ -1070,7 +1068,7 @@ class Inventory: LayoutHolder
 		if (ItemManager.GetInstance().IsMicromanagmentMode())
 		{
 			ItemManager.GetInstance().SetItemMicromanagmentMode(false);
-			ItemManager.GetInstance().SetSelectedItem(null, null, null, null);
+			ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
 			UpdateConsoleToolbar();
 			HideOwnedTooltip();
 		}
@@ -1181,7 +1179,7 @@ class Inventory: LayoutHolder
 				hud.ShowHudInventory(false);
 			}
 		}
-		ItemManager.GetInstance().SetSelectedItem(null, null, null, null);
+		ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
 	}
 	
 	void UpdateSpecialtyMeter()
@@ -1311,14 +1309,24 @@ class Inventory: LayoutHolder
 		return null;
 	}
 	
+	#ifdef PLATFORM_CONSOLE
+	void UpdateConsoleToolbarCheck()
+	{
+		if ( m_NeedUpdateConsoleToolbar )
+		{
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			if (player.GetInventory().GetAnyInventoryReservationCount() == 0)
+			{
+				m_NeedUpdateConsoleToolbar = false;
+				UpdateConsoleToolbar();
+			}
+		}
+	}
+	#endif
+	
 	//Console toolbar
 	void UpdateConsoleToolbar()
 	{
-		if (!IsVisible())
-		{
-			return;
-		}
-		
 		#ifdef PLATFORM_CONSOLE
 		int combinationFlag = 0;
 		string contextualText;
@@ -1340,66 +1348,77 @@ class Inventory: LayoutHolder
 						focusedItem.GetInventory().GetCurrentInventoryLocation( il );
 					}
 	
-					bool canBeManipulated;
+					bool canBeManipulated = false;
 					PlayerBase player;
 					PlayerBase itemPlayerOwner;
 					
+					player = PlayerBase.Cast(GetGame().GetPlayer());
+					
+					m_NeedUpdateConsoleToolbar = player.GetInventory().GetAnyInventoryReservationCount() > 0;
+					
 					if (focusedItem)
 					{
-						player = PlayerBase.Cast(GetGame().GetPlayer());
 						itemPlayerOwner = PlayerBase.Cast(focusedItem.GetHierarchyRootPlayer());
 						il = new InventoryLocation;
 						focusedItem.GetInventory().GetCurrentInventoryLocation( il );
 						
 						canBeManipulated = !player.GetInventory().HasInventoryReservation( focusedItem, null ) && !player.GetInventory().IsInventoryLocked() && !player.IsItemsToDelete();
+						m_NeedUpdateConsoleToolbar |= !canBeManipulated;
 						canBeManipulated = canBeManipulated && focusedItem.GetInventory().CanRemoveEntity();
 						
 						EntityAI parent = il.GetParent();
-						if (parent)
+						if ( parent && il.GetType() == InventoryLocationType.ATTACHMENT )
 						{
 							canBeManipulated = canBeManipulated && AttachmentsOutOfReach.IsAttachmentReachable( parent, "", il.GetSlot() );
 							canBeManipulated = canBeManipulated && !parent.GetInventory().GetSlotLock(  il.GetSlot() );
 						}
-					}
 					
-					if (canBeManipulated)
-					{
-						if (focusedItem)
+						if (canBeManipulated)
 						{
-							combinationFlag |= ConsoleActionToolbarMask.MICROMANAGMENT;
-						}
-						
-						if (focusedContainer.CanEquipEx(focusedItem))
-						{
-							combinationFlag |= ConsoleActionToolbarMask.EQUIP;
-						}
-						
-						if (focusedContainer.CanSwapOrTakeToHandsEx(focusedItem))
-						{
-							combinationFlag |= ConsoleActionToolbarMask.TO_HANDS_SWAP_VICINITY;
-						}
-						
-						if (player!= null && player == itemPlayerOwner)
-						{
-							if (focusedContainer.CanDropEx(focusedItem))
+							if (!ItemManager.GetInstance().IsMicromanagmentMode())
 							{
-								combinationFlag |= ConsoleActionToolbarMask.DROP;
+								combinationFlag |= ConsoleActionToolbarMask.MICROMANAGMENT;
 							}
-						}
-						
-						if (focusedContainer.CanCombineEx(focusedItem))
-						{
-							combinationFlag |= ConsoleActionToolbarMask.COMBINE;
-						}
-						
-						if (focusedContainer.CanSplitEx(focusedItem))
-						{
-							combinationFlag |= ConsoleActionToolbarMask.SPLIT;
-						}
-						
-						if (focusedContainer.CanTakeToInventoryEx(focusedItem))
-						{
-							combinationFlag |= ConsoleActionToolbarMask.TO_INVENTORY;
+							
+							if (focusedContainer.CanEquipEx(focusedItem))
+							{
+								combinationFlag |= ConsoleActionToolbarMask.EQUIP;
+							}
+							
+							if (player!= null && player == itemPlayerOwner)
+							{
+								if (focusedContainer.CanSwapOrTakeToHandsEx(focusedItem))
+								{
+									combinationFlag |= ConsoleActionToolbarMask.TO_HANDS_SWAP_INVENTORY;
+								}
+								
+								if (focusedContainer.CanDropEx(focusedItem))
+								{
+									combinationFlag |= ConsoleActionToolbarMask.DROP;
+								}
+							}
+							else
+							{
+								if (focusedContainer.CanSwapOrTakeToHandsEx(focusedItem))
+								{
+									combinationFlag |= ConsoleActionToolbarMask.TO_HANDS_SWAP_VICINITY;
+								}
+							}
+							
+							if (focusedContainer.CanCombineEx(focusedItem))
+							{
+								combinationFlag |= ConsoleActionToolbarMask.COMBINE;
+							}
+							
+							if (focusedContainer.CanSplitEx(focusedItem))
+							{
+								combinationFlag |= ConsoleActionToolbarMask.SPLIT;
+							}
+							
+							if (focusedArea.CanTakeToInventoryEx(focusedItem))
+							{
+								combinationFlag |= ConsoleActionToolbarMask.TO_INVENTORY;
+							}
 						}
 					}
 					
@@ -1408,7 +1427,7 @@ class Inventory: LayoutHolder
 						combinationFlag |= ConsoleActionToolbarMask.OPEN_CLOSE_CONTAINER;
 					}
 					
-					if (player!= null && player == itemPlayerOwner)
+					if (player!= null && focusedContainer.CanAddToQuickbarEx(focusedItem))
 					{
 						combinationFlag |= ConsoleActionToolbarMask.QUICKSLOT;
 					}

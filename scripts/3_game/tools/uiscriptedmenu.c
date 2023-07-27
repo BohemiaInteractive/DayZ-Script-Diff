@@ -14,6 +14,11 @@ class UIMenuPanel: Managed
 	proto native void DestroySubmenu();
 	proto native bool IsAnyMenuVisible();
 	proto native bool IsVisible();
+
+#ifdef FEATURE_CURSOR
+	//! Signal when the menu is created through 'UIManager.CreateScriptedMenu'
+	proto native bool IsCreatedHidden();
+#endif
 	
 	//! If visibility of application is changed. On console it is called when application is suspended or constrained.
 	//! @param isVisible indicate if application is visible in foreground
@@ -72,18 +77,23 @@ class UIScriptedMenu extends UIMenuPanel
 	
 	void LockControls()
 	{
+#ifdef FEATURE_CURSOR
+		if (IsCreatedHidden())
+			return;
+#endif
+
 		if (UseMouse())
 		{
 			GetGame().GetInput().ChangeGameFocus(1, INPUT_DEVICE_MOUSE);
 			GetGame().GetUIManager().ShowUICursor(true);
 		}
 
-		if(UseKeyboard())
+		if (UseKeyboard())
 		{
 			GetGame().GetInput().ChangeGameFocus(1, INPUT_DEVICE_KEYBOARD);
 		}
 		
-		if(UseGamepad())
+		if (UseGamepad())
 		{
 			GetGame().GetInput().ChangeGameFocus(1, INPUT_DEVICE_GAMEPAD);
 		}
@@ -91,6 +101,11 @@ class UIScriptedMenu extends UIMenuPanel
 	
 	void UnlockControls()
 	{
+#ifdef FEATURE_CURSOR
+		if (IsCreatedHidden())
+			return;
+#endif
+
 		if (UseMouse())
 		{
 			GetGame().GetInput().ChangeGameFocus(-1, INPUT_DEVICE_MOUSE);

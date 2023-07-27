@@ -174,7 +174,7 @@ class ImpactMaterials
 					if ( object_type == "" )
 						object_type = "OBJECT_WITHOUT_CONFIG_CLASS";
 
-					ErrorEx(string.Format("Object '%1' with model file: %2.p3d has undefined 'Hit_...' material! Cannot play impact effect.", object_type, directHit.GetModelName()));
+					ErrorEx(string.Format("Object '%1' with model file: %2 has undefined 'Hit_...' material! Cannot play impact effect.", object_type, directHit.GetShapeName()));
 					eff = EffBulletImpactBase.Cast(GetImpactEffect("Hit_ErrorNoMaterial", ammoType).Spawn());
 				}
 			}

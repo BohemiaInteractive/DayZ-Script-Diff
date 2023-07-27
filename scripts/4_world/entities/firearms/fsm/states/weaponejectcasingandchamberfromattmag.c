@@ -110,6 +110,7 @@ class WeaponEjectAllMuzzles extends WeaponStateBase
 					m_weapon.HideBullet(i);
 				}
 			}
+			m_weapon.SetCharged(true);
 		}
 		//m_weapon.SelectionBulletHide();
 	}

@@ -751,6 +751,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("RemoteDetonatorTrigger",				"dz/anims/workspaces/player/player_main/props/player_main_1h_detonator.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/gear/DetonatorTrigger.anm");
 		pType.AddItemInHandsProfileIK("RemoteDetonatorReceiver",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,			"dz/anims/anm/player/ik/gear/DetonatorReceiver.anm");
 		pType.AddItemInHandsProfileIK("Blowtorch",							"dz/anims/workspaces/player/player_main/props/player_main_1h_blowtorch.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/gear/BlowTorch.anm");
+		pType.AddItemInHandsProfileIK("Whetstone",							"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,			"dz/anims/anm/player/ik/gear/WoodenStick.anm");
 		
 		//! Tools two handed
 		pType.AddItemInHandsProfileIK("PipeWrench",							"dz/anims/workspaces/player/player_main/weapons/player_main_2h_pipewrench.asi",		twoHanded,				"dz/anims/anm/player/ik/two_handed/pipewrench.anm");
@@ -956,6 +957,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 
 	
 		//! Containers - 2handed		
+		pType.AddItemInHandsProfileIK("ArmyPouch_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_2h.asi",						twoHanded,				    "dz/anims/anm/player/ik/two_handed/armypouch.anm");
 		pType.AddItemInHandsProfileIK("WaterproofBag_ColorBase",			"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/WaterproofBag.anm");	
 		pType.AddItemInHandsProfileIK("TaloonBag_ColorBase",				"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/taloon_g.anm");	
 		pType.AddItemInHandsProfileIK("TortillaBag",						"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/tortilla_g.anm");	
@@ -974,6 +976,10 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("GiftBox_Small",						"dz/anims/workspaces/player/player_main/props/player_main_2h_pot.asi",				twoHanded,					"dz/anims/anm/player/ik/two_handed/Cauldron.anm"); //TODO - placeholder, make a proper IK
 		pType.AddItemInHandsProfileIK("GiftBox_Medium",						"dz/anims/workspaces/player/player_main/player_main_2h.asi",						twoHanded,					"dz/anims/anm/player/ik/two_handed/BatteryCar.anm"); //TODO - placeholder, make a proper IK
 		pType.AddItemInHandsProfileIK("GiftBox_Large",						"dz/anims/workspaces/player/player_main/player_main_2h.asi",						twoHanded,					"dz/anims/anm/player/ik/vehicles/BatteryTruck.anm"); //TODO - placeholder, make a proper IK
+		pType.AddItemInHandsProfileIK("SlingBag",							"dz/anims/workspaces/player/player_main/player_main_2h.asi",	                	twoHanded,					"dz/anims/anm/player/ik/two_handed/slingbag.anm");
+		pType.AddItemInHandsProfileIK("DuffelBagSmall_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_2h.asi",	                	twoHanded,					"dz/anims/anm/player/ik/two_handed/duffelbagsmall.anm");
+		pType.AddItemInHandsProfileIK("CanvasBag_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_2h.asi",                    	twoHanded,					"dz/anims/anm/player/ik/two_handed/canvasbag.anm");
+		pType.AddItemInHandsProfileIK("DrysackBag_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_2h.asi",                     	twoHanded,					"dz/anims/anm/player/ik/two_handed/drysackbag.anm");
 		
 		//! Containers - Heavy	
 		pType.AddItemInHandsProfileIK("TrashCan",							"dz/anims/workspaces/player/player_main/player_main_heavy.asi",						heavyItemBehaviour,			"dz/anims/anm/player/ik/gear/banana.anm"); // Not configured
@@ -1004,7 +1010,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("ImprovisedRope",						"dz/anims/workspaces/player/player_main/props/player_main_1h_rope.asi",				toolsOneHanded,				"dz/anims/anm/player/ik/gear/banana.anm"); // Not configured
 		pType.AddItemInHandsProfileIK("MetalWire",							"dz/anims/workspaces/player/player_main/props/player_main_1h_rope.asi",				toolsOneHanded,				"dz/anims/anm/player/ik/gear/metalwire.anm");
 		pType.AddItemInHandsProfileIK("Torch",								"dz/anims/workspaces/player/player_main/props/player_main_1h_torch.asi",			toolsOneHanded,				"dz/anims/anm/player/ik/gear/torch.anm");
-		pType.AddItemInHandsProfileIK("ChickenFeather",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/banana.anm"); // Not configured
+		pType.AddItemInHandsProfileIK("ChickenFeather",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/petrol_lighter.anm");	
 		pType.AddItemInHandsProfileIK("GorkaHelmetVisor",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/Maska_glass_g.anm");
 		pType.AddItemInHandsProfileIK("HandDrillKit",						"dz/anims/workspaces/player/player_main/props/player_main_1h_handdrillkit.asi",		toolsOneHanded, 			"dz/anims/anm/player/ik/gear/hand_drill_kit.anm");
 		pType.AddItemInHandsProfileIK("WoodenStick",						"dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi",			toolsOneHanded,				"dz/anims/anm/player/ik/gear/WoodenStick.anm"); 
@@ -1028,7 +1034,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("CannabisSeedsPack",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/zucchini_seeds_pack.anm");
 		pType.AddItemInHandsProfileIK("AntiPestsSpray",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/DesinfectantSpray.anm"); 
 		pType.AddItemInHandsProfileIK("ParticleTest",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/banana.anm"); // Not configured
-		pType.AddItemInHandsProfileIK("PlantMaterial",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/plant_material.anm"); 
+		pType.AddItemInHandsProfileIK("PlantMaterial",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/plant_material.anm");
 	}	
 		
 	//! Drinks	
@@ -1125,7 +1131,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("AgaricusMushroom",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mushroom_agaricus.anm"); // Not configured
 		pType.AddItemInHandsProfileIK("AuriculariaMushroom",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mushroom_auricularia.anm"); // Not configured
 		pType.AddItemInHandsProfileIK("AmanitaMushroom",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mushroom_amanita.anm"); // Not configured
-		pType.AddItemInHandsProfileIK("MacrolepiotaMushroom",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mushroom_macrolepiota.anm"); // Not configured
+		pType.AddItemInHandsProfileIK("MacrolepiotaMushroom",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/Mushroom_boletus.anm"); // Not configured
 		pType.AddItemInHandsProfileIK("LactariusMushroom",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mushroom_lactarius.anm"); // Not configured
 		pType.AddItemInHandsProfileIK("PsilocybeMushroom",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mushroom_psilocybe.anm");
 		pType.AddItemInHandsProfileIK("BoletusMushroom",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/Mushroom_boletus.anm");		
@@ -1272,9 +1278,9 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("NVGHeadstrap",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/NVG_Headstrap.anm");
 		pType.AddItemInHandsProfileIK("Headtorch_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/head_torch.anm");
 		pType.AddItemInHandsProfileIK("Balaclava3Holes_ColorBase",		"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/balaclava_3holes.anm");
-		pType.AddItemInHandsProfileIK("WitchHat",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/balaclava_3holes.anm");
-		pType.AddItemInHandsProfileIK("WitchHood_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/balaclava_3holes.anm");
-		pType.AddItemInHandsProfileIK("CrookedNose",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/aviators_glasses.anm");
+		pType.AddItemInHandsProfileIK("WitchHat",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/cowboy_hat.anm");
+		pType.AddItemInHandsProfileIK("WitchHood_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/zmijovka_cap.anm");
+		pType.AddItemInHandsProfileIK("CrookedNose",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/balaclava_mask.anm");
 		pType.AddItemInHandsProfileIK("HockeyMask",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
 		pType.AddItemInHandsProfileIK("Mich2001Helmet",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
 		pType.AddItemInHandsProfileIK("GP5GasMask",						"dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi",			toolsOneHanded,					"dz/anims/anm/player/ik/gear/carp_live.anm"); //Temporary
@@ -1290,7 +1296,8 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("MimeMask_Male",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
 		pType.AddItemInHandsProfileIK("MimeMask_Female",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm"); //Temporary
 		pType.AddItemInHandsProfileIK("EyeMask_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/clothing/Eyepatch.anm");
-		pType.AddItemInHandsProfileIK("Chainmail_Coif",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm");
+		pType.AddItemInHandsProfileIK("Chainmail_Coif",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/clothing/chainmail_coif.anm");
+		pType.AddItemInHandsProfileIK("WitchHoodCoif_ColorBase",	"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/clothing/witchhood_coif.anm");
 	}
 
 	//! Belts
@@ -1301,6 +1308,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("NylonKnifeSheath",		"dz/anims/workspaces/player/player_main/player_main_1h.asi",								toolsOneHanded,					"dz/anims/anm/player/ik/clothing/belts/nylon_KnifeSheath.anm");
 		pType.AddItemInHandsProfileIK("LeatherKnifeSheath",		"dz/anims/workspaces/player/player_main/player_main_1h.asi",								toolsOneHanded,					"dz/anims/anm/player/ik/clothing/belts/leather_KnifeSheath.anm");
 		pType.AddItemInHandsProfileIK("LeatherBelt_ColorBase",	"dz/anims/workspaces/player/player_main/player_main_1h.asi",								toolsOneHanded,					"dz/anims/anm/player/ik/clothing/belts/leather_belt.anm");
+		pType.AddItemInHandsProfileIK("HipPack_ColorBase",		"dz/anims/workspaces/player/player_main/player_main_1h.asi",								toolsOneHanded,					"dz/anims/anm/player/ik/clothing/belts/hippack.anm");
 
 	}
 	

@@ -77,6 +77,7 @@ enum EAttExclusions
 	//values to solve the edge-cases with shaving action
 	SHAVING_MASK_ATT_0,
 	SHAVING_HEADGEAR_ATT_0,
+	SHAVING_EYEWEAR_ATT_0,
 }
 
 class EntityAI extends Entity
@@ -140,7 +141,11 @@ class EntityAI extends Entity
 	//Called when an location in this item is reserved (EntityAI item) - attachment
 	protected ref ScriptInvoker		m_OnAttachmentSetLock;
 	//Called when this item is unreserved (EntityAI item) - attachment
-	protected ref ScriptInvoker		m_OnAttachmentReleaseLock;
+	protected ref ScriptInvoker		m_OnAttachmentReleaseLock;	
+	//Called when this entity is hit
+	protected ref ScriptInvoker		m_OnHitByInvoker;	
+	//Called when this entity is killed
+	protected ref ScriptInvoker		m_OnKilledInvoker;
 	
 	void EntityAI()
 	{
@@ -479,22 +484,17 @@ class EntityAI extends Entity
 	// now includes information on final object position
 	void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" ) { }
 
-	void OnPlacementCancelled( Man player )
+	void OnPlacementCancelled(Man player)
 	{
 		if (m_EM)
 		{
-			Man attached_to = Man.Cast( GetHierarchyParent() );
-			if (!attached_to || attached_to == player )// Check for exception with attaching a cable reel to an electric fence
+			Man attachedTo = Man.Cast(GetHierarchyParent());
+			if (!attachedTo || attachedTo == player)// Check for exception with attaching a cable reel to an electric fence
 			{
 				//If cord length is 0, item powersource is most likely an attachment and should not be unplugged
-				//if (em.GetCordLength() <= 0)
 				if (m_EM.GetCordLength() <= 0)
-				{
-					//em.SwitchOff();
 					return;
-				}
-				//em.UnplugAllDevices();
-				//em.UnplugThis();
+
 				m_EM.UnplugAllDevices();
 				m_EM.UnplugThis();
 			}
@@ -679,9 +679,10 @@ class EntityAI extends Entity
 	
 	void CheckForDestroy()
 	{
-		if ( IsPrepareToDelete() )
+		if (IsPrepareToDelete())
 		{
-			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( TryDelete, DELETE_CHECK_DELAY, false);
+			OnBeforeTryDelete();
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TryDelete, DELETE_CHECK_DELAY, false);
 		}
 	}
 	
@@ -692,21 +693,18 @@ class EntityAI extends Entity
 	
 	bool TryDelete()
 	{
-		if ( !IsPrepareToDelete() )
-			return false;
-		
-		if ( GetGame().HasInventoryJunctureItem(this) )
+		if (GetGame().HasInventoryJunctureItem(this))
 		{
-			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( TryDelete, DELETE_CHECK_DELAY, false);
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TryDelete, DELETE_CHECK_DELAY, false);
 			return false;
 		}
 		
-		OnBeforeTryDelete();
 		DeleteSafe();
+
 		return true;
 	}
 	
-	void OnBeforeTryDelete() {}
+	void OnBeforeTryDelete();
 	
 	//! Returns root of current hierarchy (for example: if this entity is in Backpack on gnd, returns Backpack)
 	proto native EntityAI GetHierarchyRoot();
@@ -725,10 +723,8 @@ class EntityAI extends Entity
 	{
 		if (!GetHierarchyParent())
 			return lvl;
-		else
-		{
-			return GetHierarchyParent().GetHierarchyLevel(lvl+1);
-		}
+
+		return GetHierarchyParent().GetHierarchyLevel(lvl+1);
 	}
 	
 	void OnInventoryInit()
@@ -901,6 +897,8 @@ class EntityAI extends Entity
 	//! called on server when the entity is killed
 	void EEKilled(Object killer)
 	{
+		if (m_OnKilledInvoker)
+			m_OnKilledInvoker.Invoke(this, killer);
 		//analytics
 		GetGame().GetAnalyticsServer().OnEntityKilled( killer, this );
 		
@@ -940,6 +938,8 @@ class EntityAI extends Entity
 	
 	void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
 	{
+		if (m_OnHitByInvoker)
+			m_OnHitByInvoker.Invoke(this, damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
 		#ifdef DEVELOPER
 		//Print("EEHitBy: " + this + "; damageResult:"+ damageResult.GetDamage("","") +"; damageType: "+ damageType +"; source: "+ source +"; component: "+ component +"; dmgZone: "+ dmgZone +"; ammo: "+ ammo +"; modelPos: "+ modelPos);
 		#endif
@@ -1121,6 +1121,20 @@ class EntityAI extends Entity
 		if( !m_OnAttachmentReleaseLock )
 			m_OnAttachmentReleaseLock = new ScriptInvoker;
 		return m_OnAttachmentReleaseLock;
+	}
+	
+	ScriptInvoker GetOnHitByInvoker()
+	{
+		if ( !m_OnHitByInvoker )
+			m_OnHitByInvoker = new ScriptInvoker;
+		return m_OnHitByInvoker;
+	}
+	
+	ScriptInvoker GetOnKilledInvoker()
+	{
+		if ( !m_OnKilledInvoker )
+			m_OnKilledInvoker = new ScriptInvoker;
+		return m_OnKilledInvoker;
 	}
 	
 	
@@ -1570,7 +1584,15 @@ class EntityAI extends Entity
 	void OnWasAttached( EntityAI parent, int slot_id );
 	
 	// !Called on CHILD when it's detached from parent.
-	void OnWasDetached( EntityAI parent, int slot_id );
+	void OnWasDetached( EntityAI parent, int slot_id )
+	{
+		if (!IsFlagSet(EntityFlags.VISIBLE))
+		{
+			SetInvisible(false);
+			OnInvisibleSet(false);
+			SetInvisibleRecursive(false,parent);
+		}
+	}
 	
 	void OnCargoChanged() { }
 	
@@ -2066,6 +2088,14 @@ class EntityAI extends Entity
 	 **/	
 	proto native void RegisterNetSyncVariableFloat(string variableName, float minValue = 0, float maxValue = 0, int precision = 1);
 	
+	/**
+	 * @fn		RegisterNetSyncVariableObject
+	 * @brief	registers object variable synchronized over network, only synchronizes if network id is assigned. Doesn't handle object despawn on client
+	 *
+	 * @param[in]	variableName	\p		which variable should be synchronized
+	 **/	
+	proto native void RegisterNetSyncVariableObject(string variableName);
+	
 	proto native void UpdateNetSyncVariableInt(string variableName, float minValue = 0, float maxValue = 0);
 	proto native void UpdateNetSyncVariableFloat(string variableName, float minValue = 0, float maxValue = 0, int precision = 1);
 
@@ -2077,8 +2107,10 @@ class EntityAI extends Entity
 	
 	//! Change texture in hiddenSelections
 	proto native void SetObjectTexture(int index, string texture_name);
+	proto native owned string GetObjectTexture(int index);
 	//! Change material in hiddenSelections
 	proto native void SetObjectMaterial(int index, string mat_name);
+	proto native owned string GetObjectMaterial(int index);
 		
 	proto native bool	IsPilotLight();
 	proto native void SetPilotLight(bool isOn);
@@ -2307,7 +2339,8 @@ class EntityAI extends Entity
 		text += "Weight: " + GetWeightEx() + "\n";
 		text += "Disabled: " + GetIsSimulationDisabled() + "\n";
 		#ifdef SERVER
-		text += "CE Lifetime default: " + (int)GetEconomyProfile().GetLifetime() + "\n";
+		if (GetEconomyProfile())
+			text += "CE Lifetime default: " + (int)GetEconomyProfile().GetLifetime() + "\n";
 		text += "CE Lifetime remaining: " + (int)GetLifetime() + "\n";
 		#endif
 		
@@ -2953,6 +2986,7 @@ class EntityAI extends Entity
 				}
 				
 				item.SetInvisible(invisible);
+				item.OnInvisibleSet(invisible);
 			}
 		}
 	}
@@ -3537,7 +3571,9 @@ class EntityAI extends Entity
 
 	void SetFromProjectile(ProjectileStoppedInfo info)
 	{
-	}	
+	}
+
+	void ClearInventory();
 };
 
 #ifdef DEVELOPER

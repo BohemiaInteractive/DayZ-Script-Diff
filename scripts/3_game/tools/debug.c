@@ -18,6 +18,7 @@ class Debug
 	static private const string	LOG_DEBUG_INV_MOVE			= "Inv Move";
 	static private const string	LOG_DEBUG_INV_RESERVATION	= "Inv Rrsv";
 	static private const string	LOG_DEBUG_INV_HFSM			= "HFSM";
+	static private const string	LOG_DEBUG_BLEEDING_CHANCES	= "Bleeding";
 	static private const string LOG_DEBUG_TRIGGER			= "Trigger";
 	static private const string LOG_DEBUG_PARTICLE			= "Particle";
 	static private const string LOG_DEBUG_TF				= "TestFramework";
@@ -158,6 +159,11 @@ class Debug
 	static void	InventoryHFSMLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
 		LogMessage(LOG_DEBUG_INV_HFSM, plugin, entity, author, label, message);
+	}
+	
+	static void	BleedingChancesLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
+	{
+		LogMessage(LOG_DEBUG_BLEEDING_CHANCES, plugin, entity, author, label, message);
 	}
 	
 	static void	TriggerLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
@@ -559,6 +565,7 @@ class LogManager
 	static bool m_DoInventoryHFSMLog;
 	static bool m_DoWeaponLog;
 	static bool m_DoWeatherLog;
+	static bool m_DoBleedingChanceLog;
 	
 	static void Init()
 	{
@@ -651,6 +658,16 @@ class LogManager
 	{
 		return m_DoWeatherLog;
 	}
+	
+	static bool IsBleedingChancesLogEnable()
+	{
+		return m_DoBleedingChanceLog;
+	}
+	
+	static void BleedingChancesLogEnable(bool enable)
+	{
+		m_DoBleedingChanceLog = enable;
+	} 
 }
 
 enum WeightDebugType

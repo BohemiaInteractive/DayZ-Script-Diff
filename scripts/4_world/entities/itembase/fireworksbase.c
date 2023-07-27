@@ -93,7 +93,7 @@ class FireworksBase: Inventory_Base
 	}
 	
 	//! Executed on Server when some item ignited this one
-	override protected void OnIgnitedThis( EntityAI fire_source)
+	override void OnIgnitedThis( EntityAI fire_source)
 	{
 		SetState(EFireworksState.IGNITED);
 	}

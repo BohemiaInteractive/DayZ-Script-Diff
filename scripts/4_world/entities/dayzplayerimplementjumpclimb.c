@@ -4,9 +4,25 @@ class DayZPlayerImplementJumpClimb
 	{
 		m_Player = pPlayer;
 	}
+
+	//! Only valid immediately after 'JumpOrClimb' is called
+	bool WasSuccessful()
+	{
+		return m_bIsJumpInProgress || m_bWasClimb;
+	}
 	
+	//! Can't change to bool return
 	void JumpOrClimb()
 	{
+		//! Reset states
+		m_bWasClimb = false;
+
+		//! Early exit if the player is being heavy damaged so the stagger animation can't be skipped
+		if (m_Player.GetCommand_Damage())
+		{
+			return;
+		}
+
 		SHumanCommandClimbSettings hcls = m_Player.GetDayZPlayerType().CommandClimbSettingsW();
 		
 		if ( m_Player.m_MovementState.m_iMovement != DayZPlayerConstants.MOVEMENTIDX_IDLE )
@@ -35,11 +51,11 @@ class DayZPlayerImplementJumpClimb
 			}
 		}
 		
-		if ( !m_Player.CanJump() )
-			return;
-		
-		Jump();
-		m_Player.DepleteStamina(EStaminaModifiers.JUMP);
+		if ( m_Player.CanJump() )
+		{
+			Jump();
+			m_Player.DepleteStamina(EStaminaModifiers.JUMP);
+		}
 	}
 	
 	void CheckAndFinishJump(int pLandType = 0)
@@ -58,6 +74,8 @@ class DayZPlayerImplementJumpClimb
 		{
 			m_Player.StartCommand_Climb(pClimbRes, climbType);
 			m_Player.StopHandEvent();
+
+			m_bWasClimb = true;
 		}
 		
 		return climbType != -1;
@@ -91,4 +109,5 @@ class DayZPlayerImplementJumpClimb
 	
 	// Private variable members
 	private DayZPlayerImplement m_Player;
+	private bool m_bWasClimb;
 }

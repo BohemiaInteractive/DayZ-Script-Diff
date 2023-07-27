@@ -35,13 +35,16 @@ class ScriptConsoleAddLocation extends UIScriptedMenu
 		{
 			string name = m_EditboxName.GetText();
 			ScriptConsole console = ScriptConsole.Cast(GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE));
-			if (!console.IsLocationNameAvailable(name) || name == "" || m_EditboxPos.GetText() == "")
-				return false;
-			m_ConfigDebugProfile.CustomLocationsAdd(name, m_EditboxPos.GetText().BeautifiedToVector());
-			Close();
-			
-			console.RefreshLocations();
-			return true;
+			ScriptConsoleGeneralTab tab = ScriptConsoleGeneralTab.Cast(console.GetTabHandler(ScriptConsole.TAB_GENERAL));
+			if (tab)
+			{
+				if (!tab.IsLocationNameAvailable(name) || name == "" || m_EditboxPos.GetText() == "")
+					return false;
+				m_ConfigDebugProfile.CustomLocationsAdd(name, m_EditboxPos.GetText().BeautifiedToVector());
+				Close();
+				tab.RefreshLocations();
+				return true;
+			}
 		}
 		else if (w.GetUserID() == IDC_CANCEL)
 		{

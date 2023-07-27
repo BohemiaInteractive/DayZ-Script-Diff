@@ -40,12 +40,14 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 		if ( !m_Root.IsVisible() )
 			m_Scroll.VScrollToPos( 0 );
 		m_Root.Show( true );
+		GetGame().GetMission().GetOnModMenuVisibilityChanged().Invoke(false);
 	}
 	
 	void Close()
 	{
 		Highlight( null );
 		m_Root.Show( false );
+		GetGame().GetMission().GetOnModMenuVisibilityChanged().Invoke(true);
 	}
 	
 	bool IsOpen()

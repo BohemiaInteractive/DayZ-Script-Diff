@@ -50,9 +50,29 @@ class Math
 			>> 2
 		@endcode
 	*/
+	
 	static int RandomIntInclusive(int min, int max)
 	{
 		return Math.RandomInt(min, max+1);
+	}
+	
+	/**
+	\brief Returns a random \p bool .
+		\return \p bool - Random bool either 0 or 1
+		@code
+			Print( Math.RandomBool() );
+			Print( Math.RandomBool() );
+			Print( Math.RandomBool() );
+	
+			>> true
+			>> true
+			>> false
+		@endcode
+	*/
+	
+	static bool RandomBool()
+	{
+		return RandomIntInclusive(0,1);
 	}
 	
 	/**

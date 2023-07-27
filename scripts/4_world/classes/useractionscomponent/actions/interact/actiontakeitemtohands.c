@@ -48,7 +48,7 @@ class ActionTakeItemToHands: ActionInteractBase
 	
 	override void OnExecute(ActionData action_data)
 	{
-		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+		if (GetGame().IsDedicatedServer())
 			return;
 	
 		ItemBase ntarget = ItemBase.Cast(action_data.m_Target.GetObject());

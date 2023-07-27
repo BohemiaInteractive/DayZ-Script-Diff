@@ -787,6 +787,7 @@ enum DayZPlayerConstants
 	CMD_ACTIONMOD_STOP_ALARM			= 251,
 	CMD_ACTIONMOD_EAT_PILL			    = 527,      // erc,cro
 	CMD_ACTIONMOD_EAT_TABLET			= 528,      // erc,cro
+	CMD_ACTIONMOD_HEATPACK			    = 529,      // erc,cro
 
 	CMD_ACTIONMOD_DROPITEM_HANDS		= 900,		// erc, cro
 	CMD_ACTIONMOD_DROPITEM_INVENTORY	= 901,		// erc, cro
@@ -888,6 +889,7 @@ enum DayZPlayerConstants
 	CMD_ACTIONFB_STOP_ALARM				= 251,
 	CMD_ACTIONFB_EAT_PILL				= 527,      // pne
 	CMD_ACTIONFB_EAT_TABLET				= 528,      // pne
+	CMD_ACTIONFB_HEATPACK			    = 529,      // pne
 
 	CMD_ACTIONFB_DROPITEM_HANDS		= 900,			// pne, pne back
 	

@@ -118,6 +118,7 @@ class FlashbangEffect
 			m_FlashbangEffectSound.SetSoundMaxVolume(Math.Clamp(m_SoundMaxActual,0.1,1.0)); //TODO
 			m_FlashbangEffectSound.SetSoundLoop(true);
 			m_FlashbangEffectSound.SoundPlay();
+			m_FlashbangEffectSound.SetAutodestroy(true);
 			
 			SetAttenuationFilter();
 		}
@@ -141,6 +142,7 @@ class FlashbangEffect
 		if (m_FlashbangEffectSound)
 		{
 			m_FlashbangEffectSound.SoundStop();
+			SEffectManager.DestroyEffect(m_FlashbangEffectSound);
 		}
 	}
 	

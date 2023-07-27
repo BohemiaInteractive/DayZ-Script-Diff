@@ -21,6 +21,7 @@ class ItemManager
 	protected Container					m_SelectedContainer;
 	protected Widget					m_SelectedWidget;
 	protected SlotsIcon					m_SelectedIcon;
+	protected LayoutHolder				m_SelectedBaseIcon;
 	
 	protected HandsPreview				m_HandsPreview;
 	
@@ -62,6 +63,7 @@ class ItemManager
 	void SetItemMicromanagmentMode( bool item_micromanagment_mode )
 	{
 		m_ItemMicromanagmentMode = item_micromanagment_mode;
+		Inventory.GetInstance().UpdateConsoleToolbar();
 	}
 	
 	bool IsMicromanagmentMode()
@@ -105,6 +107,51 @@ class ItemManager
 		m_SelectedContainer	= selected_container;
 		m_SelectedWidget	= selected_widget;
 		m_SelectedIcon		= selected_icon;
+	}
+	
+	void SetSelectedItemEx( EntityAI selected_item, Container selected_container, LayoutHolder selected_icon )
+	{
+		SlotsIcon	sIcon;
+		Icon		icon;
+		
+		m_SelectedItem		= selected_item;
+		m_SelectedContainer	= selected_container;
+		
+		if (m_SelectedBaseIcon)
+		{
+			sIcon 	= SlotsIcon.Cast(m_SelectedBaseIcon);
+			icon	= Icon.Cast(m_SelectedBaseIcon);
+			if (sIcon)
+			{
+				sIcon.GetMicromanagedPanel().Show(false);
+			}
+			else if (icon)
+			{
+				icon.GetMicromanagedPanel().Show(false);
+			}
+		}
+		
+		if (selected_icon)
+		{
+			sIcon 	= SlotsIcon.Cast(selected_icon);
+			icon	= Icon.Cast(selected_icon);
+			
+			if (sIcon)
+			{
+				m_SelectedWidget = sIcon.GetCursorWidget();
+				sIcon.GetMicromanagedPanel().Show(true);
+			}
+			else if (icon)
+			{
+				m_SelectedWidget = icon.GetCursorWidget();
+				icon.GetMicromanagedPanel().Show(true);
+			}
+		}
+		else
+		{
+			m_SelectedWidget = null;
+		}
+		m_SelectedBaseIcon		= selected_icon;
 	}
 
 	void ClearDefaultOpenStates()

@@ -30,20 +30,35 @@ class Man extends EntityAI
 		SetFlags(EntityFlags.TOUCHTRIGGERS, false);
 	}
 
-	override bool IsMan() { return true; }
-	override bool IsHealthVisible() { return false; }
+	override bool IsMan()
+	{
+		return true;
+	}
+
+	override bool IsHealthVisible()
+	{
+		return false;
+	}
+
+	override bool HasFixedActionTargetCursorPosition()
+	{
+		return true;
+	}
+
 	bool IsUnconscious();
 
-	int GetPlayerState ()
+	int GetPlayerState()
 	{
-		if( IsAlive() ) return EPlayerStates.ALIVE;
-		else return EPlayerStates.DEAD;
+		if (IsAlive())
+			return EPlayerStates.ALIVE;
+		
+		return EPlayerStates.DEAD;
 	}
 	
-	void AddItemToDelete( EntityAI item ){}
+	void AddItemToDelete(EntityAI item);
 
 	///@{ inventory
-	HumanInventory GetHumanInventory ()
+	HumanInventory GetHumanInventory()
 	{
 		HumanInventory i = HumanInventory.Cast(GetInventory());
 		return i;
@@ -828,17 +843,7 @@ class Man extends EntityAI
 		return true;
 	}
 	
-	void UpdateInventoryMenu()
-	{
-		if( GetGame().IsClient() )
-		{
-			UIScriptedMenu menu = GetGame().GetUIManager().FindMenu(MENU_INVENTORY);
-			if( menu )
-			{
-				//menu.Refresh();
-			}
-		}
-	}
+	void UpdateInventoryMenu();
 	
 	///@{ Stats
 	//! Registers new stat type for this player.

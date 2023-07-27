@@ -343,10 +343,6 @@ class Fireplace extends FireplaceBase
 		
 		//no attachments left, no cargo items & no ashes are present
 		CheckForDestroy();
-
-		//TODO
-		//add SetViewIndex when detaching various attachments
-
 		RefreshFireplaceVisuals();
 	}
 	
@@ -359,23 +355,19 @@ class Fireplace extends FireplaceBase
 		if (stand)
 		{
 			if (equipment)
-			{
 				stand.LockToParent();
-			}
 			else
-			{
 				stand.UnlockFromParent();
-			}
 		}
 	}
-	
 	
 	override void OnBeforeTryDelete() 
 	{
 		super.OnBeforeTryDelete();
+
 		MiscGameplayFunctions.DropAllItemsInInventoryInBounds(this, m_HalfExtents);
 	}
-	
+
 	override bool IsPrepareToDelete()
 	{
 		return GetInventory().AttachmentCount() == 0 && !IsBurning() && !HasAshes();

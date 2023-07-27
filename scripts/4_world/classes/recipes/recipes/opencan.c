@@ -24,12 +24,12 @@ class OpenCan extends RecipeBase
 		
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"BakedBeansCan");//you can insert multiple ingredients this way
-		InsertIngredient(0,"PeachesCan");//you can insert multiple ingredients this way
-		InsertIngredient(0,"TacticalBaconCan");//you can insert multiple ingredients this way
-		InsertIngredient(0,"SpaghettiCan");//you can insert multiple ingredients this way
-		InsertIngredient(0,"SardinesCan");//you can insert multiple ingredients this way
-		InsertIngredient(0,"UnknownFoodCan");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"BakedBeansCan", "openBeanCan");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"PeachesCan", "openBeanCan");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"TacticalBaconCan", "openBeanCan");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"SpaghettiCan", "openBeanCan");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"SardinesCan", "openBeanCan");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"UnknownFoodCan", "openBeanCan");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing

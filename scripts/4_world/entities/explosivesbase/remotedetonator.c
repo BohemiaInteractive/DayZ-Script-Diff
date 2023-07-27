@@ -152,7 +152,7 @@ class RemoteDetonatorTrigger : RemoteDetonator
 		return m_RAIB.GetPairDevice();
 	}
 	
-	static RemoteDetonatorTrigger SpawnInPlayerHands(notnull EntityAI pEntity)
+	static RemoteDetonatorTrigger SpawnInPlayerHands(notnull EntityAI pEntity, EntityAI deviceToPair = null)
 	{
 		string type = "RemoteDetonatorTrigger";
 		RemoteDetonatorTrigger rdt;
@@ -162,20 +162,27 @@ class RemoteDetonatorTrigger : RemoteDetonator
 			ItemBase inHandsItem = player.GetItemInHands();
 			if (inHandsItem)
 			{
-				ReplaceItemWithNewLambdaBase lambda = new ReplaceDetonatorItemLambda(inHandsItem, type);
-				MiscGameplayFunctions.TurnItemIntoItemEx(player, lambda);
+				if (deviceToPair)
+				{
+					ReplaceDetonatorItemOnArmLambda onArmLambda = new ReplaceDetonatorItemOnArmLambda(inHandsItem, type);
+					onArmLambda.SetPairDevice(deviceToPair);
+					MiscGameplayFunctions.TurnItemIntoItemEx(player, onArmLambda);
+				}
+				else
+				{
+					ReplaceDetonatorItemLambda lambda = new ReplaceDetonatorItemLambda(inHandsItem, type);
+					MiscGameplayFunctions.TurnItemIntoItemEx(player, lambda);
+				}
+				
+
 				rdt = RemoteDetonatorTrigger.Cast(player.GetItemInHands());
 			}
 			else
-			{
 				rdt = RemoteDetonatorTrigger.Cast(player.GetHumanInventory().CreateInHands(type));
-			}
 			
 			//! item replaced, use different IK
 			if (player.GetItemInHands())
-			{
 				player.GetItemAccessor().OnItemInHandsChanged();
-			}
 		}
 		
 		return rdt;
@@ -255,5 +262,70 @@ class ReplaceDetonatorItemLambda : ReplaceItemWithNewLambdaBase
 		super.CopyOldPropertiesToNew(old_item, new_item);
 
 		MiscGameplayFunctions.TransferItemProperties(old_item, new_item);		
+	}
+}
+
+class ReplaceDetonatorItemOnArmLambda : ReplaceDetonatorItemLambda
+{
+	EntityAI m_PairDevice
+
+	void SetPairDevice(EntityAI device)
+	{
+		m_PairDevice = device;
+	}
+	
+	override void OnSuccess(EntityAI new_item)
+	{
+		super.OnSuccess(new_item);
+		
+		RemoteDetonator detonator = RemoteDetonator.Cast(new_item);
+		if (detonator)
+		{
+			ExplosivesBase explosive = ExplosivesBase.Cast(m_PairDevice);
+			if (explosive)
+			{
+				ItemBase receiver = ItemBase.Cast(explosive.GetInventory().CreateAttachment("RemoteDetonatorReceiver"));
+				if (receiver)
+				{
+					MiscGameplayFunctions.TransferItemProperties(detonator, receiver);
+					receiver.LockToParent();
+					explosive.SetTakeable(false);
+					explosive.PairWithDevice(detonator);
+					explosive.Arm();
+				}
+			}
+		}
+	}
+	
+	override void OnAbort()
+	{
+		ExplosivesBase explosive = ExplosivesBase.Cast(m_PairDevice);
+		if (explosive)
+		{
+			explosive.LockTriggerSlots();
+			explosive.SetTakeable(true);
+		}
+	}
+}
+
+class ReplaceDetonatorItemOnDisarmLambda : ReplaceDetonatorItemLambda
+{
+	override void OnSuccess(EntityAI new_item)
+	{
+		super.OnSuccess(new_item);
+		
+		RemoteDetonator detonator = RemoteDetonator.Cast(m_OldItem);
+		if (detonator)
+		{
+			if (detonator.GetRemotelyActivatedItemBehaviour())
+			{
+				ExplosivesBase explosive = ExplosivesBase.Cast(detonator.GetRemotelyActivatedItemBehaviour().GetPairDevice());
+				if (explosive)
+				{
+					explosive.Disarm();
+					explosive.SetTakeable(true);
+				}
+			}
+		}
 	}
 }

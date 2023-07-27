@@ -2,6 +2,8 @@ class UIManager
 {
 	//! Create & open menu with specific id (see \ref MenuID) and set its parent
 	proto native UIScriptedMenu EnterScriptedMenu(int id, UIMenuPanel parent);
+	proto native UIScriptedMenu CreateScriptedMenu(int id, UIMenuPanel parent);
+
 	proto native void EnterServerBrowser(UIMenuPanel parentMenu);
 
 	proto native UIScriptedMenu ShowScriptedMenu(UIScriptedMenu menu, UIMenuPanel parent);
@@ -13,13 +15,6 @@ class UIManager
 	proto native void CloseSpecificDialog(int id);
 	proto native void CloseDialog();
 	proto native void HideDialog();
-	
-	UIScriptedMenu CreateScriptedMenu(int id, UIMenuPanel parent)
-	{
-		UIScriptedMenu menu = EnterScriptedMenu(id, parent);
-		HideScriptedMenu( menu );
-		return menu;
-	}
 	
 	/**
   \brief Shows message dialog
@@ -46,6 +41,7 @@ class UIManager
 	@endcode
 	*/
 	proto native void ShowDialog(string caption, string text, int id, int butts /*DBT_*/, int def/*DBB_*/, int type /*DMT_*/, UIScriptedMenu handler);
+	//! natively checks game focus on cursor hiding
 	proto native bool ShowCursor(bool visible);
 	proto native bool IsCursorVisible();
 	proto native bool IsDialogQueued();
@@ -121,7 +117,8 @@ class UIManager
 		UIMenuPanel menu = GetMenu();
 		
 		while (menu)
-		{if (menu.GetID() == id)
+		{
+			if (menu.GetID() == id)
 			{
 				menu.Close();
 				return true;
@@ -242,10 +239,9 @@ class UIManager
 		return false;
 	}
 	
-	//UI cursor
 	void ShowUICursor( bool visible )
 	{
-		ShowCursor( visible );
+		g_Game.SetMouseCursorDesiredVisibility(visible);
 	}
 };
 

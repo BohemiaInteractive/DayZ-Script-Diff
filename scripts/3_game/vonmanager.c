@@ -120,6 +120,9 @@ class VONManagerImplementation : VONManagerBase
 		}
 #endif
 		int oldLevel = GetGame().GetVoiceLevel();
+		if (oldLevel == -1) //VoN system not initialized!
+			return;
+				
 		int newLevel = -1;
 		
 		if (inp.LocalPress_ID(UAVoiceDistanceUp,false))
@@ -136,7 +139,7 @@ class VONManagerImplementation : VONManagerBase
 			}
 		}
 		
-		if (newLevel != -1)
+		if (newLevel > -1)
 		{
 			if (m_VoNToggled)
 			{

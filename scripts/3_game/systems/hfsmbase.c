@@ -180,7 +180,7 @@ class HFSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Clas
 			fsmDebugPrint("[hfsm] root::FindAbortDestinationState(" + e.Type().ToString() + ")");
 
 		// 1) look in submachine first (if any)
-		if (m_State.HasFSM())
+		if (m_State && m_State.HasFSM())
 		{
 			HFSMBase<FSMStateBase, FSMEventBase, FSMActionBase, FSMGuardBase> a = m_State.GetFSM();
 			FSMStateBase abort_dst = a.FindAbortDestinationState(e);
@@ -211,7 +211,7 @@ class HFSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Clas
 	 * @return	FSM_TERMINATED state machine has terminated
 	 * @return	FSM_ABORTED state machine has aborted
 	 **/
-	FSMStateBase ProcessAbortEvent (FSMEventBase e, out ProcessEventResult result)
+	FSMStateBase ProcessAbortEvent(FSMEventBase e, out ProcessEventResult result)
 	{
 		if (GetOwnerState())
 			fsmDebugPrint("[hfsm] SUB! " + GetOwnerState().Type().ToString() + "::ProcessAbortEvent(" + e.Type().ToString() + ")");
@@ -219,7 +219,7 @@ class HFSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Clas
 			fsmDebugPrint("[hfsm] root::ProcessAbortEvent(" + e.Type().ToString() + ")");
 
 		// 1) look in submachine first (if any)
-		if (m_State.HasFSM())
+		if (m_State && m_State.HasFSM())
 		{
 			HFSMBase<FSMStateBase, FSMEventBase, FSMActionBase, FSMGuardBase> a = m_State.GetFSM();
 			ProcessEventResult subfsm_res;
@@ -313,7 +313,7 @@ class HFSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Clas
 	 * @return	FSM_NO_TRANSITION if no unguarded transition found in submachine or local machine
 	 * @return	FSM_TERMINATED state machine has terminated
 	 **/
-	ProcessEventResult ProcessEvent (FSMEventBase e)
+	ProcessEventResult ProcessEvent(FSMEventBase e)
 	{
 		if (GetOwnerState())
 			fsmDebugPrint("[hfsm] SUB!::" + GetOwnerState().Type().ToString() + "::ProcessEvent(" + e.Type().ToString() + ")");
@@ -325,7 +325,7 @@ class HFSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Clas
 			ProcessCompletionTransitions();
 
 		// 2) submachine then (if any)
-		if (m_State.HasFSM())
+		if (m_State && m_State.HasFSM())
 		{
 			ProcessEventResult subfsm_res = m_State.ProcessEvent(e);
 

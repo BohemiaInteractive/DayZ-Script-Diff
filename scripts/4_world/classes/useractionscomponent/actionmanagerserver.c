@@ -298,7 +298,7 @@ class ActionManagerServer: ActionManagerBase
 					}
 					else
 					{
-						OnActionEnd();
+						Interrupt();
 					}
 					m_PendingActionAcknowledgmentID = -1;
 					break;

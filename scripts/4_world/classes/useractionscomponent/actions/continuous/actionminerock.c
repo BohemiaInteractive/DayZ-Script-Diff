@@ -44,6 +44,22 @@ class ActionMineRock: ActionMineBase
 	{	
 		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
+	
+	override string GetSoundCategory(ActionData action_data)
+    {
+		ItemBase item = action_data.m_MainItem;
+        if (item.IsKindOf("Hammer"))
+		{
+			return "MinningLight";
+		}
+		else if (item.IsKindOf("MeatTenderizer"))
+		{
+			return "MinningHard";
+		}
+		
+		return "";
+    }
+	
 };
 
 class ActionMineRock1H : ActionMineRock

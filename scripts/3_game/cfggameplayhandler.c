@@ -49,8 +49,17 @@ class CfgGameplayHandler
 			GetGame().GetWorldName( m_Path );
 			m_Path = string.Format("DZ/worlds/%1/ce/cfgGameplay.json", m_Path );
 		}
+
+		bool cfgGameplayFileEnabled = GetGame().ServerConfigGetInt( "enableCfgGameplayFile" );
+
+#ifdef DIAG_DEVELOPER
+		if (!GetGame().IsDedicatedServer())
+		{
+			cfgGameplayFileEnabled = true;
+		}
+#endif
 		
-		if (!GetGame().ServerConfigGetInt( "enableCfgGameplayFile" ) || !FileExist( m_Path ))
+		if (!cfgGameplayFileEnabled || !FileExist( m_Path ))
 		{
 			m_Data.InitServer();//legacy call
 			InitData();

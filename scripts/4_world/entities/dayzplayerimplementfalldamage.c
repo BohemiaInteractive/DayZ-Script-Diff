@@ -20,7 +20,7 @@ class DayZPlayerImplementFallDamage
 	static const string	FALL_DAMAGE_AMMO_HEALTH = "FallDamageHealth";
 	static const string	FALL_DAMAGE_AMMO_SHOCK 	= "FallDamageShock";
 
-	static const string	FALL_DAMAGE_AMMO_HEALTH_ATTACHMENT	= "FallDamageHealthAttachment";
+	static const string	FALL_DAMAGE_AMMO_HEALTH_ATTACHMENT			= "FallDamageHealthAttachment";
 	static const string	FALL_DAMAGE_AMMO_HEALTH_OTHER_ATTACHMENTS	= "FallDamageHealthOtherAttachments";
 
 	const float		HEALTH_HEIGHT_LOW 		= 5;
@@ -143,8 +143,8 @@ class DayZPlayerImplementFallDamage
 			
 			vector posMS = m_Player.WorldToModel(m_Player.GetPosition());
 
-			m_Player.ProcessDirectDamage(DT_CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_HEALTH, posMS, m_FallDamageData.m_HealthCoef);
-			m_Player.ProcessDirectDamage(DT_CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_SHOCK, posMS, m_FallDamageData.m_ShockCoef);
+			m_Player.ProcessDirectDamage(DamageType.CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_HEALTH, posMS, m_FallDamageData.m_HealthCoef);
+			m_Player.ProcessDirectDamage(DamageType.CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_SHOCK, posMS, m_FallDamageData.m_ShockCoef);
 
 			if (playerBase)
 				playerBase.ForceUpdateInjuredState();

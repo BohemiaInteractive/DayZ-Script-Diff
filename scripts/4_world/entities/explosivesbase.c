@@ -114,7 +114,18 @@ class ExplosivesBase : ItemBase
 		}
 			
 	}
-	
+
+	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
+	{
+		super.OnPlacementComplete(player, position, orientation);
+		
+		if (GetGame().IsServer())
+		{
+			SetOrientation(orientation);
+			SetPosition(position);
+			PlaceOnSurface();
+		}
+	}
 	
 	protected void CreateLight()
 	{

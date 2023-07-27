@@ -424,6 +424,7 @@ class string
 	\brief Gets n-th character from string
 		\param index character index
 		\return \p string character on index-th position in string
+		\warning VME When index less than 0 or greater than string length  
 		@code
 			string str = "Hello World";
 			Print( str[4] ); // Print( str.Get(4) );
@@ -431,13 +432,14 @@ class string
 			>> 'o'
 		@endcode
 	*/ 			
-	string Get(int index)
-	{
-		return value.Substring(index, 1);
-	}
+	proto string Get(int index);
 	
 	/**
-	\brief Sets n-th character in string
+	\brief Replaced n-th character in string with character
+		\param index character index to be replaced
+		\param character character value to replace with
+		\warning VME When index less than 0 or greater than string length  
+		\warning VME When character is empty or greater than length of 1
 		@code
 			string str = "Hello World";
 			str[4] = "O";
@@ -446,14 +448,7 @@ class string
 			>> 'HellO World'
 		@endcode
 	*/ 
-	void Set(int n, string _value)
-	{
-	    string pre = value.Substring(0, n);
-	    n += 1;
-	    int length = value.Length() - n;
-	    string post = value.Substring(n, length);
-	    value = pre + _value + post;
-	}
+	proto void Set(int index, string character);
 	
 	/**
 	\brief Gets n-th character from string

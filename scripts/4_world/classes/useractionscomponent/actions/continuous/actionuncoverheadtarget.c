@@ -27,37 +27,34 @@ class ActionUncoverHeadTarget: ActionUncoverHeadBase
 	{
 		return ContinuousInteractActionInput;
 	}
-
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{	
 		PlayerBase targetPlayer;
-		if( Class.CastTo(targetPlayer, target.GetObject()) )
+		if (Class.CastTo(targetPlayer, target.GetObject()))
 		{
-			if ( IsWearingBurlap(targetPlayer) )
+			if (IsWearingBurlap(targetPlayer))
 			{
 				return true;
 			}
 		}
 		return false;
 	}
-
 	
-	
-	override void OnFinishProgressServer( ActionData action_data )
+	override void OnFinishProgressServer(ActionData action_data)
 	{
 		PlayerBase targetPlayer = PlayerBase.Cast(action_data.m_Target.GetObject());
 		if (CanReceiveAction(action_data.m_Target))
 		{
-			UncoverHead(PlayerBase.Cast( action_data.m_Target.GetObject()),action_data.m_Player);
+			UncoverHead(PlayerBase.Cast(action_data.m_Target.GetObject()),action_data.m_Player);
 		}
 	}
 	
-	
-	bool IsWearingBurlap( PlayerBase player )
+	bool IsWearingBurlap(PlayerBase player)
 	{
 		EntityAI attachment;
 		Class.CastTo(attachment, player.GetInventory().FindAttachment(InventorySlots.HEADGEAR));
-		if ( attachment && attachment.GetType() == "BurlapSackCover" )
+		if (attachment && attachment.GetType() == "BurlapSackCover")
 		{
 			return true;
 		}

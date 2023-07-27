@@ -435,9 +435,9 @@ class WidgetFadeTimer extends TimerBase
 	*/
 	void FadeIn(Widget w, float time, bool continue_ = false)
 	{
-		float alpha = w.GetAlpha();
+		m_alpha = w.GetAlpha();
 		
-		if (continue_ && alpha > 0.95)
+		if (continue_ && m_alpha > 0.95)
 		{
 			w.SetAlpha(1.0);
 			w.Show(true);
@@ -451,14 +451,14 @@ class WidgetFadeTimer extends TimerBase
 	
 		if (m_widget)
 		{
-			alpha = m_widget.GetAlpha();
+			m_alpha = m_widget.GetAlpha();
 			m_widget.SetAlpha(0);
 			m_widget.Show(true);
 		}
 	
 		if (continue_)
 		{
-			m_time = alpha * time;
+			m_time = m_alpha * time;
 		}
 	}
 
@@ -496,7 +496,7 @@ class WidgetFadeTimer extends TimerBase
 			m_time = (1.0 - m_alpha) * time;
 		}
 	}
-
+	
 	override private void OnTimer()
 	{
 		if (m_widget)
@@ -512,22 +512,24 @@ class WidgetFadeTimer extends TimerBase
 			}
 		}
 	}
-
+	
 	override private void OnUpdate()
 	{
 		float timeDiff = m_time / m_duration;
-		float progress = Math.Max( 0.0, timeDiff );
-	
-		if ( m_widget )
+		float progress;
+		if (m_widget)
 		{
-			if ( m_fadeIn )
+			if (m_fadeIn)
 			{
-				m_widget.SetAlpha( timeDiff );
+				progress = timeDiff;
 			}
 			else
 			{
-				m_widget.SetAlpha( m_alpha - timeDiff );
+				progress = Math.Lerp(m_alpha,0,timeDiff);
+				progress = Math.Clamp(progress,0,1);
 			}
+			
+			m_widget.SetAlpha(progress);
 		}
 	}
 };

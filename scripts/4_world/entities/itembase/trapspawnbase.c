@@ -477,16 +477,19 @@ class TrapSpawnBase extends ItemBase
 	// ADVANCED PLACEMENT
 	//================================================================
 	
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
-		super.OnPlacementComplete( player, position, orientation );
+		super.OnPlacementComplete(player, position, orientation);
 		
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			SetupTrapPlayer( PlayerBase.Cast( player ), false );
-			SetIsDeploySound( true );			
+			SetOrientation(orientation);
+			SetPosition(position);
+			PlaceOnSurface();
+			SetupTrapPlayer(PlayerBase.Cast(player), false);
+			SetIsDeploySound(true);
 			SetActive();
-		}	
+		}
 	}
 	
 	void PlayDeployLoopSound()

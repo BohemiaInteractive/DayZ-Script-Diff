@@ -167,10 +167,25 @@ class Crossbow_Base : Archery_Base
 	
 	override void OnDebugSpawn()
 	{
-		super.OnDebugSpawn();
+		//super.OnDebugSpawn();
+
+		GetInventory().CreateInInventory( "ACOGOptic_6x" );
 		
-		GameInventory inventory = GetInventory();
-		inventory.CreateInInventory( "ACOGOptic_6x" );
+		EntityAI entity;
+
+		SpawnEntityOnGroundPos("Ammo_HuntingBolt", GetPosition());
+		SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_1", GetPosition());
+		SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_2", GetPosition());
+			
+		SpawnEntityOnGroundPos("ACOGOptic", GetPosition());
+		entity = SpawnEntityOnGroundPos("M68Optic", GetPosition());
+		entity.GetInventory().CreateInInventory( "Battery9V" );
+		entity = SpawnEntityOnGroundPos("M4_T3NRDSOptic", GetPosition());
+		entity.GetInventory().CreateInInventory( "Battery9V" );
+		entity = SpawnEntityOnGroundPos("ReflexOptic", GetPosition());
+		entity.GetInventory().CreateInInventory( "Battery9V" );
+		entity = SpawnEntityOnGroundPos("StarlightOptic", GetPosition());
+		entity.GetInventory().CreateInInventory( "Battery9V" );
 	}
 }
 

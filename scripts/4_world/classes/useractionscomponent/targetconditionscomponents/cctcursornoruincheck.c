@@ -14,11 +14,14 @@ class CCTCursorNoRuinCheck : CCTBase
 	
 	override bool Can( PlayerBase player, ActionTarget target )
 	{
-		if( !target )
+		if (!target)
 			return false;
 		
 		Object targetObject = target.GetObject();
-		if ( !player || !targetObject )
+		if (!targetObject)
+			targetObject = target.GetParent();
+		
+		if (!player || !targetObject)
 			return false;
 		
 		vector playerHeadPos;
@@ -27,6 +30,6 @@ class CCTCursorNoRuinCheck : CCTBase
 		float distanceRoot = vector.DistanceSq(target.GetCursorHitPos(), player.GetPosition());
 		float distanceHead = vector.DistanceSq(target.GetCursorHitPos(), playerHeadPos);
 		
-		return ( distanceRoot <= m_MaximalActionDistanceSq || distanceHead <= m_MaximalActionDistanceSq );
+		return (distanceRoot <= m_MaximalActionDistanceSq || distanceHead <= m_MaximalActionDistanceSq);
 	}
 };

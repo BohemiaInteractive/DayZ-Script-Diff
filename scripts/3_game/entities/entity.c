@@ -36,7 +36,9 @@ class Entity extends ObjectTyped
 	
 	//! Turns on/off invisibility
 	proto native void SetInvisible(bool invisible);
-
+	
+	//! event
+	void OnInvisibleSet(bool invisible);
 	/**
 	\brief On server, entity's transformation is directly changed to targetTransform, on client entity's transformation is interpolated to targetTransform in time deltaT
 	@param targetTransform

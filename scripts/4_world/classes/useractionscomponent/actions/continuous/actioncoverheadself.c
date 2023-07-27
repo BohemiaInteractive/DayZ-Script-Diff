@@ -31,29 +31,27 @@ class ActionCoverHeadSelf: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{	
-		if ( IsWearingHeadgear(player) ) 
+		if (IsWearingHeadgear(player)) 
 			return false;
 
 		return true;
 	}
 
 	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		//setaperture will be called from here, or from statemachine
-		//GetGame().GetWorld().SetAperture(10000);
-		ItemBase new_item = ItemBase.Cast(action_data.m_Player.GetInventory().CreateInInventory("BurlapSackCover"));
-		if( new_item )
+	{
+		ItemBase new_item;
+		if (Class.CastTo(new_item,action_data.m_Player.GetInventory().CreateAttachmentEx("BurlapSackCover",InventorySlots.HEADGEAR)))
 		{
 			MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem,new_item,true,false,true);
 			action_data.m_MainItem.Delete();
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 		}
 	}
 
 
 	bool IsWearingHeadgear( PlayerBase player )
 	{
-		if ( player.GetInventory().FindAttachment(InventorySlots.HEADGEAR) )
+		if (player.GetInventory().FindAttachment(InventorySlots.HEADGEAR))
 		{
 			return true;
 		}

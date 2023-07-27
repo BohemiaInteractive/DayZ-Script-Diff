@@ -76,19 +76,16 @@ class RifleSingleShotManual_Base extends RifleSingleShot_Base
 		m_fsm.AddTransition(new WeaponTransition( E,			__L__,	Chamber_E));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_fin_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_fin_,	L));
-			Chamber_E.AddTransition(new WeaponTransition(  Chamber_E.m_start,	_abt_,	E));
-			Chamber_E.AddTransition(new WeaponTransition(  Chamber_E.m_eject,	_abt_,	E));
-			Chamber_E.AddTransition(new WeaponTransition(  Chamber_E.m_chamber,	_abt_,	E));
-			Chamber_E.AddTransition(new WeaponTransition(  Chamber_E.m_w4t,		_abt_,	L));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	L));
 		
 		m_fsm.AddTransition(new WeaponTransition( F,			__L__,	Chamber_F));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	L));
-			Chamber_F.AddTransition(new WeaponTransition(  Chamber_F.m_start,	_abt_,	F));
-			Chamber_F.AddTransition(new WeaponTransition(  Chamber_F.m_eject,	_abt_,	E));
-			Chamber_F.AddTransition(new WeaponTransition(  Chamber_F.m_chamber,	_abt_,	E));
-			Chamber_F.AddTransition(new WeaponTransition(  Chamber_F.m_w4t,		_abt_,	L));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	L));
 
 		// fire
 		m_fsm.AddTransition(new WeaponTransition( E,			__T__,	Trigger_E)); // fire cocked

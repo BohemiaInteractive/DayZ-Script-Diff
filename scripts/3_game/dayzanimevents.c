@@ -210,7 +210,7 @@ class AnimSoundEvent
 
 	SoundObject GetSoundObject(vector position)
 	{
-		GetSoundBuilderEx().UpdateEnvSoundControllers(position);
+		GetSoundBuilderEx().AddEnvSoundVariables(position);
 		return GetSoundBuilderEx().BuildSoundObject();
 	}
 }
@@ -267,7 +267,7 @@ class AnimSoundVoiceEvent
 
 	SoundObject GetSoundObject(vector position)
 	{
-		m_SoundObjectBuilder.UpdateEnvSoundControllers(position);
+		m_SoundObjectBuilder.AddEnvSoundVariables(position);
 		return m_SoundObjectBuilder.BuildSoundObject();
 	}
 }

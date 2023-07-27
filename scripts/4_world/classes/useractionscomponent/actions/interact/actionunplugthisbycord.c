@@ -1,4 +1,4 @@
-class ActionUnplugThisByCord: ActionInteractBase
+class ActionUnplugThisByCord : ActionInteractBase
 {
 	void ActionUnplugThisByCord()
 	{
@@ -10,21 +10,20 @@ class ActionUnplugThisByCord: ActionInteractBase
 		return false;
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		Object targetObject = target.GetObject();
-		ItemBase target_IB = ItemBase.Cast( targetObject );
+		ItemBase targetItem = ItemBase.Cast(target.GetObject());
 		
-		if ( target_IB  &&  target_IB.HasEnergyManager() )
+		if (targetItem && targetItem.HasEnergyManager())
 		{
-			string selection = targetObject.GetActionComponentName(target.GetComponentIndex());			
-			if ( selection == ComponentEnergyManager.SEL_CORD_PLUGGED )
+			string selection = targetItem.GetActionComponentName(target.GetComponentIndex());			
+			if (selection == ComponentEnergyManager.SEL_CORD_PLUGGED)
 			{
 				return true;
 			}
 			
 			// Special case for unfolded spotlight
-			if ( selection == Spotlight.SEL_CORD_PLUGGED_U )
+			if (selection == Spotlight.SEL_CORD_PLUGGED_U)
 			{
 				return true;
 			}
@@ -33,15 +32,15 @@ class ActionUnplugThisByCord: ActionInteractBase
 		return false;
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{	
-		ItemBase target_IB = ItemBase.Cast( action_data.m_Target.GetObject() ); // cast to ItemBase
-		target_IB.GetCompEM().UnplugThis();
+		ItemBase targetItem = ItemBase.Cast(action_data.m_Target.GetObject());
+		targetItem.GetCompEM().UnplugThis();
 		
-		if ( target_IB.IsInherited(Spotlight) )
+		if (targetItem.IsInherited(Spotlight))
 		{
-			target_IB.HideSelection ( Spotlight.SEL_CORD_PLUGGED_U );
-			target_IB.ShowSelection ( Spotlight.SEL_CORD_FOLDED_U );
+			targetItem.HideSelection(Spotlight.SEL_CORD_PLUGGED_U);
+			targetItem.ShowSelection(Spotlight.SEL_CORD_FOLDED_U);
 		}
 	}
 };

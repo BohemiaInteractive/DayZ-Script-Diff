@@ -10,16 +10,13 @@ class ActiondeployObjectCB : ActionContinuousBaseCB
 	override void CreateActionComponent()
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousTime(m_ActionData.m_MainItem.GetDeployTime());
-		
 	}
 	
 	//!DEPRECATED
-	void DropDuringPlacing()
-	{
-	}
-};
+	void DropDuringPlacing();
+}
 
-class ActionDeployBase: ActionContinuousBase
+class ActionDeployBase : ActionContinuousBase
 {
 	protected const float POSITION_OFFSET = 0.5; // The forward offset at which the item will be placed (if not using hologram)
 	
@@ -28,13 +25,14 @@ class ActionDeployBase: ActionContinuousBase
 		m_CallbackClass		= ActiondeployObjectCB;
 		m_SpecialtyWeight 	= UASoftSkillsWeight.PRECISE_LOW;
 		m_FullBody			= true;
+
 		m_Text = "#deploy_object";
 	}
 	
 	override void CreateConditionComponents()  
 	{	
-		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTNone;
+		m_ConditionItem 	= new CCINone();
+		m_ConditionTarget 	= new CCTNone();
 	}
 	
 	override bool HasTarget()
@@ -49,7 +47,7 @@ class ActionDeployBase: ActionContinuousBase
 	
 	override ActionData CreateActionData()
 	{
-		PlaceObjectActionData action_data = new PlaceObjectActionData;
+		PlaceObjectActionData action_data = new PlaceObjectActionData();
 		return action_data;
 	}
 	
@@ -60,6 +58,7 @@ class ActionDeployBase: ActionContinuousBase
 		
 		if (!poActionData)
 			return;
+
 		if (!action_data.m_MainItem)
 			return;
 		
@@ -70,14 +69,12 @@ class ActionDeployBase: ActionContinuousBase
 		// In case of placement with hologram
 		if (action_data.m_Player.GetHologramServer())
 		{
-			position = action_data.m_Player.GetLocalProjectionPosition();
+			position 	= action_data.m_Player.GetLocalProjectionPosition();
 			orientation = action_data.m_Player.GetLocalProjectionOrientation();
 			
 			action_data.m_Player.GetHologramServer().EvaluateCollision(action_data.m_MainItem);
 			if (GetGame().IsMultiplayer() && action_data.m_Player.GetHologramServer().IsColliding())
-			{
 				return;
-			}
 			
 			action_data.m_Player.GetHologramServer().PlaceEntity(entity_for_placing);
 			
@@ -86,16 +83,15 @@ class ActionDeployBase: ActionContinuousBase
 		}
 		else
 		{
-			position = action_data.m_Player.GetPosition();
+			position 	= action_data.m_Player.GetPosition();
 			orientation = action_data.m_Player.GetOrientation();
-		
-			position = position + (action_data.m_Player.GetDirection() * POSITION_OFFSET);
+			position 	= position + (action_data.m_Player.GetDirection() * POSITION_OFFSET);
 		}
-		
+
 		action_data.m_Player.PlacingCompleteServer();
 		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation);
 		
-		MoveEntityToFinalPosition(action_data, position, orientation);		
+		MoveEntityToFinalPosition(action_data, position, orientation);			
 		GetGame().ClearJunctureEx(action_data.m_Player, entity_for_placing);
 		action_data.m_MainItem.SetIsBeingPlaced(false);
 		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
@@ -106,7 +102,7 @@ class ActionDeployBase: ActionContinuousBase
 	void DropDuringPlacing(PlayerBase player)
 	{
 		ItemBase item;
-		if (!Class.CastTo(item,player.GetItemInHands()))
+		if (!Class.CastTo(item, player.GetItemInHands()))
 			return;
 		
 		if (item.IsBasebuildingKit())
@@ -134,14 +130,10 @@ class ActionDeployBase: ActionContinuousBase
 			destination.SetGroundEx(entity_for_placing, position, direction);
 			
 			if (GetGame().IsMultiplayer())
-			{
 				action_data.m_Player.ServerTakeToDst(source, destination);
-			}		
-			//local singleplayer
-			else
-			{
+			else // singleplayer
 				MoveEntityToFinalPositionSinglePlayer(action_data, source, destination);
-			}			
+		
 		}
 	}
 	

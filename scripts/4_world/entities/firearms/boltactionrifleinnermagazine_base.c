@@ -67,10 +67,10 @@ class BARIMLoadedJammed extends WeaponStateJammed
  **/
 class BoltActionRifle_InnerMagazine_Base extends BoltActionRifle_Base
 {
-	ref WeaponStateBase C0;
-	ref	WeaponStateBase C1;
-	ref	WeaponStateBase D1;
-	ref	WeaponStateBase JF;
+	ref WeaponStableState C0;
+	ref	WeaponStableState C1;
+	ref	WeaponStableState D1;
+	ref	WeaponStableState JF;
 	
 	
 	override void InitStateMachine ()
@@ -199,7 +199,7 @@ class BoltActionRifle_InnerMagazine_Base extends BoltActionRifle_Base
 		
 //---------------------------------------------	
 		
-		m_fsm.SetInitialState(C0);
+		SetInitialState(C0);
 
 		SelectionBulletHide();
 		HideMagazine();

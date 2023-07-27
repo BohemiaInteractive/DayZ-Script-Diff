@@ -7,6 +7,11 @@ class ContaminatedArea_Local : ContaminatedArea_Dynamic
 	// 				INITIAL SETUP
 	// ----------------------------------------------
 	
+	void ContaminatedArea_Local()
+	{
+		m_EffectsPriority = -10;
+	}
+	
 	override void SetupZoneData(  EffectAreaParams params )
 	{
 		params.m_ParamPartId 		= ParticleList.CONTAMINATED_AREA_GAS_AROUND;
@@ -15,7 +20,7 @@ class ContaminatedArea_Local : ContaminatedArea_Dynamic
 		params.m_ParamNegHeight 	= 5;
 		params.m_ParamRadius 		= 10;
 		params.m_ParamOuterToggle 	= false;
-		params.m_ParamTriggerType 	= "ContaminatedTrigger_Dynamic";
+		params.m_ParamTriggerType 	= "ContaminatedTrigger_Local";
 		
 		params.m_ParamAroundPartId 	= 0;
 		params.m_ParamTinyPartId 	= 0;
@@ -54,7 +59,6 @@ class ContaminatedArea_Local : ContaminatedArea_Dynamic
 
 	override void Tick()
 	{
-		super.Tick();
 		m_Lifetime -= TICK_RATE;
 		if (m_Lifetime <= 0)
 		{

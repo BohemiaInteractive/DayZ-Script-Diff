@@ -91,7 +91,8 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		if (m_Root)
 			delete m_Root;
 		
-		GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
+		if (GetGame().GetContentDLCService())
+			GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
 	}
 
 	ServerBrowserMenuNew GetRootMenu()
@@ -417,16 +418,19 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		m_CurrentLoadedPage = 0;
 		
 		m_EntryWidgets.Clear();
-
-#ifndef PLATFORM_CONSOLE // PLATFORM_WINDOWS
-		m_CurrentFilterInput = m_Filters.GetFilterOptionsPC();
-		m_CurrentFilterInput.m_Page = 0;
-#else
+		
+#ifdef PLATFORM_CONSOLE
 		m_CurrentFilterInput = m_Filters.GetFilterOptionsConsoles();
-		m_CurrentFilterInput.m_SortBy = GetSortOption();
 		m_CurrentFilterInput.m_SortOrder = m_SortOrder;
 		m_CurrentFilterInput.m_Page = GetCurrentPage();
+		#ifndef PLATFORM_WINDOWS
+			m_CurrentFilterInput.m_SortBy = GetSortOption();
+		#endif
+#else // PLATFORM_WINDOWS
+		m_CurrentFilterInput = m_Filters.GetFilterOptionsPC();
+		m_CurrentFilterInput.m_Page = 0;
 #endif
+
 		m_Loading = true;
 		switch ( m_TabType )
 		{

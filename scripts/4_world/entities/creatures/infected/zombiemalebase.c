@@ -218,7 +218,8 @@ class ZmbM_Mummy extends ZombieMaleBase
 {
 	#ifndef SERVER
 	protected ZombieMummyLight m_EyeLight;
-	void ZmbM_Mummy()
+	
+	override void EEInit()
 	{
 		if (!IsDamageDestroyed())//walking up to or connecting to already dead zombies check
 			m_EyeLight = ZombieMummyLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(ZombieMummyLight, this, "MummyLight"));
@@ -233,8 +234,19 @@ class ZmbM_Mummy extends ZombieMaleBase
 	{
 		if (m_EyeLight)
 			m_EyeLight.FadeOut(15);
+		
+		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( ChangeVisual, 1000);
+	}
+	
+	void ChangeVisual()
+	{
+		int index = GetHiddenSelectionIndex("camo");
+		
+		SetObjectMaterial(index, "dz\\characters\\zombies\data\\Mummy_dead.rvmat");
+		SetObjectTexture(index, "dz\\characters\\zombies\\data\\Mummy_dead_CO.paa");
 	}
 	#endif
+
 	override bool ResistContaminatedEffect()
 	{
 		return true;

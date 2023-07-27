@@ -81,7 +81,10 @@ class DayZPlayerImplementThrowing
 				}
 				else
 				{
-					if ( m_bThrowingInProgress )
+					HumanCommandMove hcm = m_Player.GetCommand_Move();
+					bool standingFromBack = hcm && hcm.IsStandingFromBack();
+					
+					if ( m_bThrowingInProgress && !standingFromBack)
 					{
 						m_bThrowingInProgress = false;
 						
@@ -149,6 +152,10 @@ class DayZPlayerImplementThrowing
 	
 	bool CanChangeThrowingStance(HumanInputController pHic)
 	{
+		// basic stance has priority
+		if( pHic.IsStanceChange() )
+			return false;
+		
 		// don't change mode in raise
 		if( pHic.IsWeaponRaised() )
 			return false;

@@ -69,25 +69,21 @@ class ActionLightItemOnFire: ActionContinuousBase
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{	
-		ItemBase target_item = ItemBase.Cast(target.GetObject());
+		ItemBase targetItem = ItemBase.Cast(target.GetObject());
 		
-		if (target_item && item)
+		if (targetItem && item)
 		{
 			// when igniting item on the ground with igniter in hands
-			if (!target_item.IsIgnited() && !IsItemInCargoOfSomething(target_item) && item.CanIgniteItem(target_item) && target_item.CanBeIgnitedBy(item))
+			if (!targetItem.IsIgnited() && !IsItemInCargoOfSomething(targetItem) && item.CanIgniteItem(targetItem) && targetItem.CanBeIgnitedBy(item))
 			{
 				// oven stage of standard fireplace
-				if (target_item.IsKindOf("Fireplace"))
+				if (targetItem.IsKindOf("Fireplace"))
 				{
-					if (Fireplace.Cast(target_item).IsOven())
-					{
+					if (Fireplace.Cast(targetItem).IsOven())
 						return true;
-					}
 					
-					if (Fireplace.CanIgniteEntityAsFireplace(target_item))
-					{
+					if (Fireplace.CanIgniteEntityAsFireplace(targetItem))
 						return true;
-					}
 
 					return false;
 				}
@@ -95,7 +91,7 @@ class ActionLightItemOnFire: ActionContinuousBase
 				return true;
 			}
 			// when igniting item in hands from something on ground
-			else if (!item.IsIgnited() && !IsItemInCargoOfSomething(item) && target_item.CanIgniteItem(item) && item.CanBeIgnitedBy(target_item))
+			else if (!item.IsIgnited() && !IsItemInCargoOfSomething(item) && targetItem.CanIgniteItem(item) && item.CanBeIgnitedBy(targetItem))
 			{
 				return true;
 			}

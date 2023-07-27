@@ -46,20 +46,20 @@ class ActionPlugIn: ActionSingleUseBase
 		{
 			ItemBase attachedDevice = GetAttachedDevice(targetIB);
 			if (attachedDevice)
-			{
 				targetIB = attachedDevice;
-			}
 			
 			action_data.m_MainItem.GetCompEM().PlugThisInto(targetIB);
 		
 			if (!action_data.m_Player.IsPlacingServer())
 			{
+				action_data.m_Player.PlacingStartServer(action_data.m_MainItem);
+
 				Process(action_data);
 			}
 		}
 	}
 	
-	void Process( ActionData action_data )
+	void Process(ActionData action_data)
 	{
 		ItemBase targetIB = ItemBase.Cast(action_data.m_Target.GetObject());
 
@@ -69,13 +69,9 @@ class ActionPlugIn: ActionSingleUseBase
 	override void OnExecuteClient(ActionData action_data)
 	{	
 		if (!action_data.m_Player.IsPlacingLocal())
-		{
 			action_data.m_Player.TogglePlacingLocal();
-		}
 		else
-		{
 			Process(action_data);
-		}
 	}
 	
 	ItemBase GetAttachedDevice(ItemBase parent)
@@ -84,9 +80,7 @@ class ActionPlugIn: ActionSingleUseBase
 		{
 			ItemBase parentAttachment = ItemBase.Cast(parent.GetAttachmentByType(MetalWire));
 			if (!parentAttachment)
-			{
 				parentAttachment = ItemBase.Cast(parent.GetAttachmentByType(BarbedWire));
-			}
 
 			return parentAttachment;
 		}

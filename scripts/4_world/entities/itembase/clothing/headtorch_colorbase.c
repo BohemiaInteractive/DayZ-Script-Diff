@@ -21,10 +21,13 @@ class Headtorch_ColorBase extends Clothing
 	
 	void Headtorch_ColorBase()
 	{
-		if (!m_Timer)
-			m_Timer = new Timer(CALL_CATEGORY_SYSTEM);
+		if (GetGame().IsServer())
+		{
+			if (!m_Timer)
+				m_Timer = new Timer(CALL_CATEGORY_SYSTEM);
 			
-		m_Timer.Run(1 , this, "CheckParent", NULL, false);
+			m_Timer.Run(1 , this, "CheckParent", NULL, false);
+		}
 	}
 	
 	override protected void InitGlobalExclusionValues()
@@ -52,6 +55,8 @@ class Headtorch_ColorBase extends Clothing
 	
 	override void OnWorkStart()
 	{
+		super.OnWorkStart();
+		
 		if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
 		{
 			CreateHeadtorchLight();
@@ -68,14 +73,32 @@ class Headtorch_ColorBase extends Clothing
 			SetObjectMaterial(REFLECTOR_ID, LIGHT_ON_REFLECTOR);
 		}
 	}
+	
+	override void OnWorkStop()
+	{
+		super.OnWorkStop();
+		
+		if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
+		{
+			if (m_Light)
+				m_Light.FadeOut();
+			
+			m_Light = NULL;
+		}
+		
+		SetObjectMaterial(GLASS_ID, LIGHT_OFF_GLASS);
+		SetObjectMaterial(REFLECTOR_ID, LIGHT_OFF_REFLECTOR);
+	}
 
 	override void OnWork(float consumed_energy)
 	{
+		super.OnWork(consumed_energy);
+		
 		if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
 		{
 			Battery9V battery = Battery9V.Cast(GetCompEM().GetEnergySource());
 			
-			if (battery  &&  m_Light)
+			if (battery && m_Light)
 			{
 				float efficiency = battery.GetEfficiency0To1();
 				
@@ -102,6 +125,8 @@ class Headtorch_ColorBase extends Clothing
 			m_Light = HeadtorchLight.Cast(ScriptedLightBase.CreateLight( HeadtorchLight, "0 0 0"));
 		
 		OnLightCreated();
+		
+		m_Light.PerformVisibilityCheck(this);
 		
 		EntityAI owner = GetHierarchyParent();
 		
@@ -198,20 +223,6 @@ class Headtorch_ColorBase extends Clothing
 		}
 	}
 	
-	override void OnWorkStop()
-	{
-		if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
-		{
-			if (m_Light)
-				m_Light.FadeOut();
-			
-			m_Light = NULL;
-		}
-		
-		SetObjectMaterial(GLASS_ID, LIGHT_OFF_GLASS);
-		SetObjectMaterial(REFLECTOR_ID, LIGHT_OFF_REFLECTOR);
-	}
-	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -229,5 +240,13 @@ class Headtorch_ColorBase extends Clothing
 	override ItemBase GetLightSourceItem()
 	{
 		return this;
+	}
+	
+	override void OnInvisibleSet(bool invisible)
+	{
+		if (m_Light)
+		{
+			m_Light.SetEnabled(!invisible);
+		}
 	}
 };

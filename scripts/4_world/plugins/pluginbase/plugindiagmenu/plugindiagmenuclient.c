@@ -9,7 +9,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 	static int m_SystemsMask;
 	
 	// Cheats
-	bool m_ModifiersDisabled;
+	bool m_ModifiersEnabled = true;
 	int m_IsInvincible;	
 	bool m_StaminaDisabled;
 	
@@ -53,6 +53,8 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_RESET_PLAYER_MAX, CBCheatsResetPlayerMax);
 		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_INVENTORY_ACCESS, CBCheatsInventoryAccess);
 		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_FIX_ITEMS, CBCheatsFixItems);
+		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_CREATE_HIT, CBCreateHit);
+		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_CREATE_HIT_LIGHT, CBCreateHitLight);
 		
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Player Agents
@@ -79,6 +81,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_DISABLE_PERSONAL_LIGHT, CBMiscPersonalLight);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_ITEM_DEBUG_ACTIONS, CBMiscItemDebugActions); // Is enabled by default now
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_LOG_PLAYER_STATS, CBMiscLogPlayerStats);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_FORCE_HINT_INDEX, CBMiscForceHintIndex);
 		
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Misc -> Environment
@@ -132,6 +135,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		// LEVEL 2 - Script > Misc
 		//---------------------------------------------------------------	
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_FREEZE_ENTITY, CBMiscFreezeEntity);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DEBUG_MONITOR, CBDebugMonitor);
 
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Simulate script
@@ -195,6 +199,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.LOGS_ACTIONS, CBLogsActions);
 		DiagMenu.BindCallback(DiagMenuIDs.LOGS_WEAPONS, CBLogsWeapons);
 		DiagMenu.BindCallback(DiagMenuIDs.LOGS_SYMPTOMS, CBLogsSymptoms);
+		DiagMenu.BindCallback(DiagMenuIDs.LOGS_BLEEDING_CHANCES, CBLogsBleedingChances);
 
 		//---------------------------------------------------------------
 		// LEVEL 3 - Script > Logs > InventoryLogs
@@ -328,7 +333,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 	static void CBCheatsModifiers(bool enabled)
 	{
 		PluginDiagMenuClient pluginDiag = PluginDiagMenuClient.Cast(GetPlugin(PluginDiagMenuClient));
-		DiagToggleRPCServer(enabled, pluginDiag.m_ModifiersDisabled, ERPCs.DIAG_CHEATS_MODIFIERS);
+		DiagToggleRPCServer(enabled, pluginDiag.m_ModifiersEnabled, ERPCs.DIAG_CHEATS_MODIFIERS);
 	}
 	
 	//---------------------------------------------
@@ -379,6 +384,16 @@ class PluginDiagMenuClient : PluginDiagMenu
 	static void CBCheatsFixItems(bool enabled, int id)
 	{
 		DiagButtonRPC(enabled, id, ERPCs.DIAG_CHEATS_ITEMS_FIX, true);
+	}
+	
+	static void CBCreateHit(bool enabled, int id)
+	{
+		DiagButtonRPC(enabled, id, ERPCs.DIAG_CHEATS_CREATE_HIT, true);
+	}
+	
+	static void CBCreateHitLight(bool enabled, int id)
+	{
+		DiagButtonRPC(enabled, id, ERPCs.DIAG_CHEATS_CREATE_HIT_LIGHT, true);
 	}
 	
 	//---------------------------------------------
@@ -448,6 +463,12 @@ class PluginDiagMenuClient : PluginDiagMenu
 	{
 		PluginDiagMenuClient pluginDiag = PluginDiagMenuClient.Cast(GetPlugin(PluginDiagMenuClient));
 		DiagToggleRPC(enabled, pluginDiag.m_LogPlayerStats, ERPCs.DIAG_MISC_LOG_PLAYER_STATS);
+ 	}
+	
+	//---------------------------------------------
+	static void CBMiscForceHintIndex(int index)
+	{
+		UiHintPanel.m_ForcedIndex = index;
  	}
 	
 	//---------------------------------------------	
@@ -670,6 +691,17 @@ class PluginDiagMenuClient : PluginDiagMenu
 	{
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		GetGame().GetMission().GetHud().SpawnHitDirEffect(player, DiagMenu.GetRangeValue(DiagMenuIDs.MISC_HIT_INDICATION_SPAWN_HIT_DIRECTION), 1.0);
+	}
+	
+	//---------------------------------------------
+	static void CBDebugMonitor(bool enabled, int id)
+	{
+		SendDiagRPC(enabled, ERPCs.DIAG_MISC_DEBUG_MONITOR, true);
+		
+		if (enabled)
+			GetGame().GetMission().CreateDebugMonitor();
+		else
+			GetGame().GetMission().HideDebugMonitor();
 	}
 	
 	//---------------------------------------------
@@ -985,6 +1017,12 @@ class PluginDiagMenuClient : PluginDiagMenu
 	static void CBLogsInventoryHFSM(bool enabled)
 	{
 		DiagToggleRPC(enabled, LogManager.IsInventoryHFSMLogEnable(), ERPCs.DIAG_LOGS_INVENTORY_HFSM);
+	}
+	
+	//---------------------------------------------
+	static void CBLogsBleedingChances(bool enabled)
+	{
+		DiagToggleRPC(enabled, LogManager.IsBleedingChancesLogEnable(), ERPCs.DIAG_LOGS_BLEEDING_CHANCES);
 	}
 	
 	//---------------------------------------------

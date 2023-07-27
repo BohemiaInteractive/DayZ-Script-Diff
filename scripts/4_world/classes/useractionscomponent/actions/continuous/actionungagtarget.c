@@ -13,7 +13,7 @@ class ActionUngagTarget: ActionContinuousBase
 	{
 	
 		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTMan(UAMaxDistances.DEFAULT);
+		m_ConditionTarget = new CCTMan(UAMaxDistances.DEFAULT,false);
 	}
 	
 	override typename GetInputType()
@@ -21,12 +21,12 @@ class ActionUngagTarget: ActionContinuousBase
 		return ContinuousInteractActionInput;
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		PlayerBase targetPlayer;
-		if( Class.CastTo(targetPlayer, target.GetObject()) )
+		if (Class.CastTo(targetPlayer, target.GetObject()))
 		{
-			if ( IsWearingGag(targetPlayer) && null == player.GetHumanInventory().GetEntityInHands()) 
+			if (IsWearingGag(targetPlayer) && null == player.GetHumanInventory().GetEntityInHands()) 
 			{
 				return true;
 			}
@@ -34,29 +34,28 @@ class ActionUngagTarget: ActionContinuousBase
 		return false;
 	}
 
-	override void OnFinishProgressServer( ActionData action_data )
+	override void OnFinishProgressServer(ActionData action_data)
 	{
-		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
+		PlayerBase ntarget = PlayerBase.Cast(action_data.m_Target.GetObject());
 		if (CanReceiveAction(action_data.m_Target))
 		{
 			EntityAI attachment;
 			Class.CastTo(attachment, ntarget.GetInventory().FindAttachment(InventorySlots.MASK));
 			
-			if ( attachment && attachment.GetType() == "MouthRag" )
+			if (attachment && attachment.GetType() == "MouthRag")
 			{
 				UngagSelfLambda lamb = new UngagSelfLambda(attachment, "Rag", action_data.m_Player);
 				lamb.SetTransferParams(true, true, true, false, 1);
 				action_data.m_Player.ServerReplaceItemElsewhereWithNewInHands(lamb);
-				//action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 			}
 		}
 	}
 	
-	bool IsWearingGag( PlayerBase player )
+	bool IsWearingGag(PlayerBase player)
 	{
 		EntityAI attachment;
 		Class.CastTo(attachment, player.GetInventory().FindAttachment(InventorySlots.MASK));
-		if ( attachment && attachment.GetType() == "MouthRag" )
+		if (attachment && attachment.GetType() == "MouthRag")
 		{
 			return true;
 		}

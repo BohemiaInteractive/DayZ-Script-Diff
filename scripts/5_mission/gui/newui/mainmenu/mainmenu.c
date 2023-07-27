@@ -39,6 +39,13 @@ class MainMenu extends UIScriptedMenu
 	protected ref ModsMenuSimple	m_ModsSimple;
 	protected ref ModsMenuDetailed	m_ModsDetailed;
 	protected ref ModsMenuTooltip	m_ModsTooltip;
+	
+	protected Widget 								m_DlcFrame;
+	protected ref map<string,ref ModInfo> 			m_AllDlcsMap;
+	protected ref JsonDataDLCList 					m_DlcData;
+	protected ref array<ref MainMenuDlcHandlerBase> m_DlcHandlers;
+	protected ref MainMenuDlcHandlerBase 			m_DisplayedDlcHandler;
+	
 
 	override Widget Init()
 	{
@@ -56,6 +63,7 @@ class MainMenu extends UIScriptedMenu
 		m_PrevCharacter				= layoutRoot.FindAnyWidget("prev_character");
 		m_NextCharacter				= layoutRoot.FindAnyWidget("next_character");
 
+		m_DlcFrame 					= layoutRoot.FindAnyWidget("dlc_Frame");
 		m_Version					= TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
 		m_ModdedWarning				= TextWidget.Cast(layoutRoot.FindAnyWidget("ModdedWarning"));
 		m_CharacterRotationFrame	= layoutRoot.FindAnyWidget("character_rotation_frame");
@@ -98,8 +106,10 @@ class MainMenu extends UIScriptedMenu
 		Refresh();
 		
 		LoadMods();
+		//PopulateDlcFrame();
 		
 		GetDayZGame().GetBacklit().MainMenu_OnShow();
+		GetGame().GetMission().GetOnModMenuVisibilityChanged().Insert(ShowDlcFrame);
 	
 		g_Game.SetLoadState(DayZLoadState.MAIN_MENU_CONTROLLER_SELECT);
 		
@@ -108,7 +118,10 @@ class MainMenu extends UIScriptedMenu
 	
 	void ~MainMenu()
 	{
-		
+		if (GetGame().GetMission())
+		{
+			GetGame().GetMission().GetOnModMenuVisibilityChanged().Remove(ShowDlcFrame);
+		}
 	}
 	
 	void LoadMods()
@@ -121,6 +134,8 @@ class MainMenu extends UIScriptedMenu
 			modArray.Remove(modArray.Count() - 1);
 			modArray.Invert();
 		}
+		
+		FilterDlcs(modArray);
 		
 		if (m_ModsSimple)
 			delete m_ModsSimple;
@@ -137,6 +152,60 @@ class MainMenu extends UIScriptedMenu
 			m_ModsDetailed = new ModsMenuDetailed(modArray, layoutRoot.FindAnyWidget("ModsDetailed"), m_ModsTooltip, this);
 			
 			m_ModsSimple = new ModsMenuSimple(modArray, layoutRoot.FindAnyWidget("ModsSimple"), m_ModsDetailed);
+		}
+	}
+	
+	void FilterDlcs(inout array<ref ModInfo> modArray)
+	{
+		if (!m_AllDlcsMap)
+			m_AllDlcsMap = new map<string,ref ModInfo>;
+		m_AllDlcsMap.Clear();
+		
+		int count = modArray.Count();
+		ModInfo info;
+		for (int i = count - 1; i > -1; i--)
+		{
+			info = modArray[i];
+			if (info.GetIsDLC())
+			{
+				m_AllDlcsMap.Set(info.GetName(),info);
+				modArray.Remove(i);
+			}
+		}
+	}
+	
+	void ShowDlcFrame(bool show)
+	{
+		m_DlcFrame.Show(show);
+		if (m_DisplayedDlcHandler)
+			m_DisplayedDlcHandler.ShowInfoPanel(show);
+	}
+	
+	void PopulateDlcFrame()
+	{
+		if (!m_DlcHandlers)
+			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>;
+		
+		m_DlcData = DlcDataLoader.GetData();
+		int count = m_DlcData.DLCs.Count();
+		JsonDataDLCInfo data;
+		ModInfo info;
+		
+		for (int i = 0; i < count; i++)
+		{
+			data = m_DlcData.DLCs[i];
+			info = m_AllDlcsMap.Get(data.Name);
+			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(m_AllDlcsMap.Get(data.Name),m_DlcFrame,data);
+			
+			if (data.Name == "Livonia DLC")
+			{
+				handler.ShowInfoPanel(true);
+				m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
+			}
+			else
+				handler.ShowInfoPanel(false);
+			
+			m_DlcHandlers.Insert(handler);
 		}
 	}
 	
@@ -315,8 +384,7 @@ class MainMenu extends UIScriptedMenu
 	override void Refresh()
 	{
 		string name;
-		
-		if (m_ScenePC)
+		if (m_ScenePC && g_Game.GetGameState() == DayZGameState.MAIN_MENU)
 		{
 			OnChangeCharacter();
 		}		
@@ -331,6 +399,8 @@ class MainMenu extends UIScriptedMenu
 		if (g_Game.GetGameState() != DayZGameState.MAIN_MENU)
 			return;
 		
+		if (m_DisplayedDlcHandler)
+			m_DisplayedDlcHandler.ShowInfoPanel(true);
 		SetFocus(null);
 		OnChangeCharacter(false);
 		LoadMods();
@@ -339,6 +409,8 @@ class MainMenu extends UIScriptedMenu
 	
 	override void OnHide()
 	{
+		if (m_DisplayedDlcHandler)
+			m_DisplayedDlcHandler.ShowInfoPanel(false);
 		GetDayZGame().GetBacklit().MainMenu_OnHide();
 	}
 	

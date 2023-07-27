@@ -102,7 +102,9 @@ class MissionMainMenu extends MissionBase
 		m_IntroScenePC = null;
 		m_IntroSceneXbox = null;
 		m_CreditsMenu = null;
+#ifndef DIAG_DEVELOPER
 		g_Game.GetUIManager().ShowUICursor(false);
+#endif
 	}
 
 	override void OnUpdate(float timeslice)

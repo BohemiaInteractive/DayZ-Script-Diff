@@ -4,12 +4,6 @@ class SpookyArea : EffectArea
 	// ----------------------------------------------
 	// 				INITIAL SETUP
 	// ----------------------------------------------
-	
-	override void SetupZoneData(  EffectAreaParams params )
-	{
-		super.SetupZoneData( params );
-	}
-	
 	override void EEInit()
 	{
 		// We make sure we have the particle array
@@ -34,12 +28,6 @@ class SpookyArea : EffectArea
 		super.EEInit();
 	}
 	
-	// We spawn particles and setup trigger
-	override void InitZone()
-	{
-		super.InitZone();
-	}
-	
 	override void InitZoneServer()
 	{
 		super.InitZoneServer();
@@ -56,9 +44,24 @@ class SpookyArea : EffectArea
 		// We spawn VFX on client
 		PlaceParticles( GetWorldPosition(), m_Radius, m_InnerRings, m_InnerSpacing, m_OuterRingToggle, m_OuterSpacing, m_OuterRingOffset, m_ParticleID );
 	}
-	
-	override void EEDelete( EntityAI parent )
+}
+
+class SpookyArea23 : SpookyArea
+{
+	override void OnPlayerEnterServer(PlayerBase player, EffectTrigger trigger)
 	{
-		super.EEDelete( parent );
+		super.OnPlayerEnterServer(player, trigger);
+		
+		EntityAI spookyEntity = EntityAI.Cast(GetGame().CreateObjectEx("SpookyPlayerStalker","0 0 0",ECE_SETUP));
+		int boneIdx = player.GetBoneIndexByName("Head");
+		player.AddChild(spookyEntity,boneIdx,true);
+	}
+	
+	override void OnPlayerExitServer(PlayerBase player, EffectTrigger trigger)
+	{
+		super.OnPlayerExitServer(player, trigger);
+		
+		array<typename> types = {SpookyPlayerStalker};
+		MiscGameplayFunctions.RemoveAllAttachedChildrenByTypename(player,types);
 	}
 }

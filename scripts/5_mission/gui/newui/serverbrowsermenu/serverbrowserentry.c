@@ -332,25 +332,24 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 	
 	void SetPopulation( int population, int slots )
 	{
-		string pop_text	= "#server_browser_entry_empty";
+		int color = ARGBF(1, 1, 1, 1);
+		string pop_text = population.ToString() + "/" + slots.ToString();
 		
 		if ( slots > 0 )
 		{
 			float pop_percentage = population / slots;
 
-			if ( population == 0 )
-				pop_text	= "#server_browser_entry_empty";
-			else if ( pop_percentage < 0.33 )
-				pop_text	= "#server_browser_entry_low";
-			else if ( pop_percentage < 0.66 )
-				pop_text	= "#server_browser_entry_medium";
-			else if ( pop_percentage != 1 )
-				pop_text	= "#server_browser_entry_high";
-			else
-				pop_text	= "#server_browser_entry_full";
+			if (pop_percentage >= 1)
+				color	= ARGBF( 1, 1, 0, 0 );
+			else if ( pop_percentage >= 0.8 )
+				color	= ARGBF( 1, 1, 0.5, 0 );
 		}
 
-		m_ServerPopulation.SetText( pop_text );
+		m_ServerPopulation.SetText(pop_text);
+		m_ServerPopulation.SetColor(color);
+		m_ServerPopulation.SetBold(true);
+		m_ServerPopulation.SetOutline(1);
+		
 	}
 	
 	void SetSlots( int slots )
@@ -684,7 +683,10 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		if (!IsOnline())
 		{
 			alpha = 0.5;
+			m_ServerPopulation.SetBold(false);
+			m_ServerPopulation.SetOutline(0);
 			m_ServerPopulation.SetText("-");
+			
 			m_ServerSlots.SetText("-");			
 			m_ServerPing.SetText("-");
 			m_ServerPing.SetColor( ARGB( 255, 255, 255, 255) );
@@ -743,6 +745,7 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		{
 			m_Root.SetColor( ARGB( 255, 200, 0, 0) );
 			UpdateColors();
+			m_ServerPopulation.SetColor(ARGBF(1,1,1,1));
 		}
 	}
 	
@@ -760,6 +763,9 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 
 		m_Root.SetColor( ARGB( 255, 0, 0, 0) );			
 		UpdateColors();		
+		
+		SetPopulation(m_ServerData.m_CurrentNumberPlayers, m_ServerData.m_MaxPlayers);
+
 		
 		float alpha = 0.3;
 		if ( m_Index % 2 )

@@ -114,9 +114,12 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "OnAbort", e.m_Player.ToString() );
 		}
 		#endif
-		e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
-		if ( GetGame().IsServer() )
-			GetGame().ClearJuncture(e.m_Player, m_Dst.GetItem());
+		if (m_Dst)
+		{
+			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
+			if ( GetGame().IsServer() )
+				GetGame().ClearJuncture(e.m_Player, m_Dst.GetItem());
+		}
 		m_Dst = null;
 
 		super.OnAbort(e);

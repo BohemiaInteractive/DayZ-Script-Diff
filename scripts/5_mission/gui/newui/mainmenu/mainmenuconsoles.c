@@ -8,7 +8,6 @@ class MainMenuConsole extends UIScriptedMenu
 	protected TextWidget			m_PlayerName;
 	protected TextWidget			m_Version;
 	
-	protected Widget				m_OpenDLC;
 	protected Widget				m_ChangeAccount;
 	protected Widget				m_CustomizeCharacter;
 	protected Widget				m_PlayVideo;
@@ -20,7 +19,12 @@ class MainMenuConsole extends UIScriptedMenu
 	
 	protected ref Widget			m_LastFocusedButton;
 	
-	protected ref ModsMenuDetailed	m_ModsDetailed;
+	protected ref array<ref ModInfo> 				m_AllDLCs;
+	protected Widget 								m_DlcFrame;
+	protected ref map<string,ref ModInfo> 			m_AllDlcsMap;
+	protected ref JsonDataDLCList 					m_DlcData;
+	protected ref array<ref MainMenuDlcHandlerBase> m_DlcHandlers;
+	protected ref MainMenuDlcHandlerBase 			m_DisplayedDlcHandler;
 
 	override Widget Init()
 	{
@@ -28,7 +32,6 @@ class MainMenuConsole extends UIScriptedMenu
 		
 		m_PlayerName				= TextWidget.Cast(layoutRoot.FindAnyWidget("character_name_xbox"));
 		
-		m_OpenDLC					= layoutRoot.FindAnyWidget("show_dlc");
 		m_ChangeAccount				= layoutRoot.FindAnyWidget("choose_account");
 		m_CustomizeCharacter		= layoutRoot.FindAnyWidget("customize_character");
 		m_PlayVideo					= layoutRoot.FindAnyWidget("play_video");
@@ -38,6 +41,7 @@ class MainMenuConsole extends UIScriptedMenu
 		m_Play						= layoutRoot.FindAnyWidget("play");
 		m_MessageButton				= layoutRoot.FindAnyWidget("message_button");
 		
+		m_DlcFrame 					= layoutRoot.FindAnyWidget("dlc_Frame");
 		m_Version					= TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
 		m_Mission					= MissionMainMenu.Cast(GetGame().GetMission());
 		m_LastFocusedButton			= m_Play;
@@ -52,7 +56,6 @@ class MainMenuConsole extends UIScriptedMenu
 			GetGame().SaveProfile();
 		}
 		
-		UpdateControlsElements();
 		UpdateControlsElementVisibility();
 		LoadMods();		
 		Refresh();
@@ -66,7 +69,7 @@ class MainMenuConsole extends UIScriptedMenu
 		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 		
 		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
-
+		
 		return layoutRoot;
 	}
 	
@@ -77,39 +80,79 @@ class MainMenuConsole extends UIScriptedMenu
 			GetGame().GetMission().GetOnInputPresetChanged().Remove(OnInputPresetChanged);
 			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
 		}
-
+		
 		if (GetGame().GetContentDLCService())
 			GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
 	}
 	
 	void OnDLCChange(EDLCId dlcId)
 	{
+		m_AllDLCs = null;
 		LoadMods();
 	}
 	
 	void LoadMods()
 	{
-		array<ref ModInfo> modArray = new array<ref ModInfo>;
+		if (m_AllDLCs != null)
+			return;
 		
-		GetGame().GetModInfos(modArray);
-		if (modArray.Count() > 0)
+		m_AllDLCs = new array<ref ModInfo>;
+		
+		GetGame().GetModInfos(m_AllDLCs);
+		if (m_AllDLCs.Count() > 0)
 		{
-			modArray.Remove(modArray.Count() - 1);
-			modArray.Invert();
+			m_AllDLCs.Remove(m_AllDLCs.Count() - 1);
+			m_AllDLCs.Invert();
 		}
 		
-		if (m_ModsDetailed)
-			delete m_ModsDetailed;
+		FilterDLCs(m_AllDLCs);
+		//PopulateDlcFrame();
 		
-		if (modArray.Count() > 0)
+		UpdateControlsElements();
+	}
+	
+	//! leaves ONLY DLCs
+	void FilterDLCs(inout array<ref ModInfo> modArray)
+	{
+		if (!m_AllDlcsMap)
+			m_AllDlcsMap = new map<string,ref ModInfo>;
+		m_AllDlcsMap.Clear();		
+		
+		int count = modArray.Count();
+		for (int i = count - 1; i > -1; i--)
 		{
-			ImageWidget dlc_icon = ImageWidget.Cast(layoutRoot.FindAnyWidget("show_dlc_icon"));
-			ModInfo info = modArray[0];
-			bool isOwned = info.GetIsOwned();
-			dlc_icon.LoadImageFile(0, info.GetLogoSmall());
-			dlc_icon.FindAnyWidget("Owned").Show(isOwned);
-			dlc_icon.FindAnyWidget("Unowned").Show(!isOwned);
-			m_ModsDetailed = new ModsMenuDetailed(modArray, layoutRoot.FindAnyWidget("ModsDetailed"), null, this);
+			if (!modArray[i].GetIsDLC())
+				modArray.Remove(i);
+			
+			m_AllDlcsMap.Set(modArray[i].GetName(),modArray[i]);
+		}
+	}
+	
+	void PopulateDlcFrame()
+	{
+		if (!m_DlcHandlers)
+			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>;
+		
+		m_DlcData = DlcDataLoader.GetData();
+		int count = m_DlcData.DLCs.Count();
+		JsonDataDLCInfo data;
+		ModInfo info;
+		
+		for (int i = 0; i < count; i++)
+		{
+			data = m_DlcData.DLCs[i];
+			info = m_AllDlcsMap.Get(data.Name);
+			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(m_AllDlcsMap.Get(data.Name),m_DlcFrame,data);
+			
+			if (data.Name == "Livonia DLC")
+			{
+				handler.ShowInfoPanel(true);
+				m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
+			}
+			else
+				handler.ShowInfoPanel(false);
+			
+			m_DlcHandlers.Insert(handler);
 		}
 	}
 
@@ -169,23 +212,6 @@ class MainMenuConsole extends UIScriptedMenu
 		{
 			m_LastFocusedButton = m_ChangeAccount;
 			ChangeAccount();
-			return true;
-		}
-		else if (w == m_OpenDLC)
-		{
-			m_LastFocusedButton = m_OpenDLC;
-			if (m_ModsDetailed.IsOpen())
-			{
-				m_ModsDetailed.Close();
-			}
-			else
-			{
-				m_ModsDetailed.Open();
-				m_ModsDetailed.HighlightFirst();
-			}
-			#ifdef PLATFORM_CONSOLE
-			UpdateControlsElements();
-			#endif
 			return true;
 		}
 		else if (w == m_MessageButton)
@@ -249,6 +275,8 @@ class MainMenuConsole extends UIScriptedMenu
 		{
 			m_ScenePC.GetIntroCamera().LookAt(m_ScenePC.GetIntroCharacter().GetPosition() + Vector(0, 1, 0));
 		}
+		if (m_DisplayedDlcHandler)
+			m_DisplayedDlcHandler.ShowInfoPanel(true);
 		
 		super.OnShow();
 		#ifdef PLATFORM_CONSOLE
@@ -263,6 +291,8 @@ class MainMenuConsole extends UIScriptedMenu
 	
 	override void OnHide()
 	{
+		if (m_DisplayedDlcHandler)
+			m_DisplayedDlcHandler.ShowInfoPanel(false);
 		GetDayZGame().GetBacklit().MainMenu_OnHide();
 	}
 
@@ -295,14 +325,14 @@ class MainMenuConsole extends UIScriptedMenu
 		{
 			if (CanStoreBeOpened())
 			{
-				m_ModsDetailed.GetHighlighted().GoToStore();
+				m_DisplayedDlcHandler.GetModInfo().GoToStore();
 			}
 		}
 	}
 	
 	bool CanStoreBeOpened()
 	{
-		return (m_ModsDetailed && m_ModsDetailed.IsOpen() && m_ModsDetailed.GetHighlighted() && !GetGame().GetContentDLCService().OwnsAllDLC());
+		return m_DisplayedDlcHandler != null;
 	}
 	
 	void OpenMenuServerBrowser()

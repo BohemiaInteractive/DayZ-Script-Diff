@@ -96,8 +96,48 @@ class Animal_CapraHircus extends AnimalBase
 	{
 		return "GoatBleat_A_SoundSet";
 	}
+	
 }
 class Animal_CapraHircusF extends Animal_CapraHircus {}
+class Animal_CapraHircus_Spooky extends Animal_CapraHircus
+{
+	override string GetDestructionBehaviour()
+    {
+       	return "DestructionEffectSpookyGoat";
+   	}
+ 
+	override bool IsDestructionBehaviour()
+   	{	
+		return true;
+	}
+	
+	#ifndef SERVER
+	protected GoatLight m_EyeLight;
+	
+	override void EEInit()
+	{
+		if (!IsDamageDestroyed())//walking up to or connecting to already dead zombies check
+			m_EyeLight = GoatLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(GoatLight, this, "GoatLight"));
+	}
+
+	void ~Animal_CapraHircus_Spooky()
+	{
+		if (m_EyeLight)
+			m_EyeLight.Destroy();
+	}
+	override void OnDamageDestroyed(int oldLevel)
+	{
+		if (m_EyeLight)
+			m_EyeLight.FadeOut(15);
+			
+	}
+	#endif
+	
+	override bool ResistContaminatedEffect()
+	{
+		return true;
+	}
+}
 
 class Animal_CapreolusCapreolus extends AnimalBase
 {

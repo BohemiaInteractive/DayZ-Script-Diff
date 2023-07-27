@@ -29,6 +29,30 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		m_LightDistance = 50;
 	}
 	
+	override bool CanCookOnStick()
+	{
+		return false;
+	}
+	
+	override bool IsBaseFireplace()
+	{
+		return true;
+	}
+	
+	override void CreateAreaDamage()
+	{
+		DestroyAreaDamage();
+		
+		m_AreaDamage = new AreaDamageLoopedDeferred(this);
+		m_AreaDamage.SetDamageComponentType(AreaDamageComponentTypes.HITZONE);
+		m_AreaDamage.SetExtents("-0.15 0 -0.15", "0.15 0.75 0.15");
+		m_AreaDamage.SetLoopInterval(0.5);
+		m_AreaDamage.SetDeferDuration(0.5);
+		m_AreaDamage.SetHitZones({"Head","Torso","LeftHand","LeftLeg","LeftFoot","RightHand","RightLeg","RightFoot"});
+		m_AreaDamage.SetAmmoName("FireDamage");
+		m_AreaDamage.Spawn();
+	}
+	
 	override int GetDamageSystemVersionChange()
 	{
 		return 110;

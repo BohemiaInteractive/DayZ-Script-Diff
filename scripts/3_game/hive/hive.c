@@ -21,6 +21,9 @@ class Hive
 	proto native void CharacterExit( Man player );
 
 	proto native void CallUpdater( string content );
+
+	//! Only valid during login
+	proto native bool CharacterIsLoginPositionChanged( Man player );
 };
 
 proto native Hive CreateHive();

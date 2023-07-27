@@ -276,6 +276,8 @@ class FireplaceBase extends ItemBase
 	
 	protected void ~FireplaceBase()
 	{
+		DestroyAreaDamage();
+
 		if (GetLightEntity())
 		{
 			GetLightEntity().FadeOut();
@@ -585,10 +587,9 @@ class FireplaceBase extends ItemBase
 		return false;
 	}
 
-	//Destroy
+	//! [DEPRECATED]
 	void DestroyFireplace()
 	{
-		//delete object
 		DeleteSafe();
 	}
 	
@@ -600,7 +601,8 @@ class FireplaceBase extends ItemBase
 	override void EECargoOut(EntityAI item)
 	{
 		super.EECargoOut(item);
-		CheckForDestroy();	
+
+		CheckForDestroy();
 	}
 	
 	//================================================================
@@ -2413,38 +2415,35 @@ class FireplaceBase extends ItemBase
 	}
 
 	//Check there is water surface bellow fireplace
-	static bool IsEntityOnWaterSurface( notnull EntityAI entity_ai )
+	static bool IsEntityOnWaterSurface(notnull EntityAI entity_ai)
 	{
-		vector fireplace_pos = entity_ai.GetPosition();	
-		if ( GetGame().SurfaceIsSea( fireplace_pos[0], fireplace_pos[2] ) )
+		vector fireplacePosition = entity_ai.GetPosition();
+		string surfaceType;
+		g_Game.SurfaceGetType3D(fireplacePosition[0], fireplacePosition[1] + g_Game.SurfaceGetSeaLevel(), fireplacePosition[2], surfaceType);
+		if (!surfaceType)
+		{
+			float waterLevelDiff = fireplacePosition[1] - g_Game.SurfaceGetSeaLevel();
+			return waterLevelDiff < 0.5;
+		}
+		else if (surfaceType.Contains("water"))
 		{
 			return true;
-		}
-		else if ( GetGame().SurfaceIsPond( fireplace_pos[0], fireplace_pos[2] ) )
-		{
-			return true;
-		}
-		else
-		{
-			string surface_type;
-			GetGame().SurfaceGetType3D( fireplace_pos[0], fireplace_pos[1] + 1.0, fireplace_pos[2], surface_type );
-			return surface_type.Contains("water");
 		}
 		
 		return false;
 	}
 	bool IsOnWaterSurface()
 	{
-		return FireplaceBase.IsEntityOnWaterSurface( this );
+		return FireplaceBase.IsEntityOnWaterSurface(this);
 	}
 	
 	//check if the surface is interior
-	static bool IsEntityOnInteriorSurface( notnull EntityAI entity_ai )
+	static bool IsEntityOnInteriorSurface(notnull EntityAI entity_ai)
 	{
-		string surface_type;
-		vector fireplace_pos = entity_ai.GetPosition();
-		GetGame().SurfaceGetType3D( fireplace_pos[0], fireplace_pos[1] + 1.0, fireplace_pos[2], surface_type );
-		return ( ( GetGame().ConfigGetInt( "CfgSurfaces " + surface_type + " interior" ) ) == 1 );
+		string surfaceType;
+		vector fireplacePosition = entity_ai.GetPosition();
+		GetGame().SurfaceGetType3D(fireplacePosition[0], fireplacePosition[1] + 1.0, fireplacePosition[2], surfaceType);
+		return (GetGame().ConfigGetInt("CfgSurfaces " + surfaceType + " interior") == 1);
 	}
 	bool IsOnInteriorSurface()
 	{

@@ -105,6 +105,10 @@ class ModsMenuDetailedEntry extends ScriptedWidgetEventHandler
 		{
 			m_IconBig.LoadImageFile(0, logo);
 		}
+		else
+		{
+			m_IconBig.LoadImageFile(0, ModInfo.DEFAULT_PICTURE);
+		}
 		
 		//Load Small Icon
 		if (logo != "")
@@ -115,6 +119,10 @@ class ModsMenuDetailedEntry extends ScriptedWidgetEventHandler
 		{
 			m_IconSmall.LoadImageFile(0, picture);
 		}
+		else
+		{
+			m_IconSmall.LoadImageFile(0, ModInfo.DEFAULT_LOGO_SMALL);
+		}
 
 		if (name != "")
 		{
@@ -124,9 +132,13 @@ class ModsMenuDetailedEntry extends ScriptedWidgetEventHandler
 		if (description != "")
 		{
 			m_Description.SetText(description);
-			m_Description.Update();
-			m_Detail.Update();
 		}
+		else
+		{
+			m_Description.SetText(ModInfo.DEFAULT_OVERVIEW);
+		}
+		m_Description.Update();
+		m_Detail.Update();
 		
 		if (author != "")
 		{

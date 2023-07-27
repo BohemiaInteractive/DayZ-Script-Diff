@@ -9,6 +9,7 @@ class Land_FuelStation_Feed extends FuelStation
 	
 	override void OnExplosionEffects(Object source, Object directHit, int componentIndex, string surface, vector pos, vector surfNormal, float energyFactor, float explosionFactor, bool isWater, string ammoType)
 	{
+		super.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
 		if ( !GetGame().IsDedicatedServer() )
 		{	
 			vector n = surfNormal.VectorToAngles() + "0 90 0";

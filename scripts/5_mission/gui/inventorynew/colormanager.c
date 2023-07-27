@@ -31,14 +31,14 @@ class ColorManager
 	
 	void SetColor( Widget w, int color )
 	{
-		if( w.FindAnyWidget( "Selected" ) )
+		if ( w.FindAnyWidget( "Cursor" ) )
 		{
-			w.FindAnyWidget( "Selected" ).SetColor( color );
+			w.FindAnyWidget( "Cursor" ).SetColor( color );
 		}
 		else
 		{
 			string name = w.GetName();
-			name.Replace( "PanelWidget", "Selected" );
+			name.Replace( "PanelWidget", "Cursor" );
 			Widget w2 = w.GetParent().FindAnyWidget( name );
 			if( w2 )
 			{

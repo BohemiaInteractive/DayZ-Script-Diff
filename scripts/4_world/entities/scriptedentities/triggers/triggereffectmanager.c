@@ -1,7 +1,3 @@
-/*
-DISCLAIMER: may undergo some changes in the course of 1.14 experimental stage.
-*/
-
 // Used for Effect based triggers ( such as Contaminated areas )
 // Allows us to unify these triggers and treat Enter / Exit events as if all triggers were one
 class TriggerEffectManager
@@ -61,6 +57,8 @@ class TriggerEffectManager
 				{
 					// First time this player enters this type of trigger, we set the trigger count to 1
 					playerMap.Insert( player, 1 );
+					if (trigger.GetEffectArea())
+						trigger.GetEffectArea().OnPlayerEnterServer(player, trigger);
 					//Debug.Log("We insert a player");
 				}
 				
@@ -71,10 +69,15 @@ class TriggerEffectManager
 				// We didn't have the map yet, we create it and register this player in it
 				playerMap = new map<PlayerBase, int>;
 				playerMap.Insert( player, 1 );
+				if (trigger.GetEffectArea())
+					trigger.GetEffectArea().OnPlayerEnterServer(player, trigger);
 				m_PlayerInsiderMap.Insert( trigger_type, playerMap );
 			}
 		}
 	}
+	
+	void OnPlayerInsideEffectAreaEnter(PlayerBase player);
+	void OnPlayerInsideEffectAreaExit(PlayerBase player);
 	
 	// Same as OnPlayerEnter, but we decrease trigger count on each trigger leave and remove player from map when count is 0
 	void OnPlayerExit( notnull PlayerBase player, notnull EffectTrigger trigger )
@@ -95,6 +98,9 @@ class TriggerEffectManager
 				{
 					// The player left the last trigger of this type they were in
 					playerMap.Remove( player );
+					if (trigger.GetEffectArea())
+						trigger.GetEffectArea().OnPlayerExitServer(player,trigger);
+					player.RemoveCurrentEffectTrigger();
 					//Debug.Log("We removed this player from this trigger type");
 				}
 			}

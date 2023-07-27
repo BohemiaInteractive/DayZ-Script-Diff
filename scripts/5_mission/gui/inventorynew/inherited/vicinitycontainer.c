@@ -656,12 +656,15 @@ class VicinityContainer: CollapsibleContainer
 	
 	override bool SplitItem()
 	{
-		ItemBase item = ItemBase.Cast(GetFocusedItem());
-		if (item)
+		if ( CanSplit() )
 		{
-			if (item.HasQuantity() && item.CanBeSplit())
+			ItemBase item = ItemBase.Cast(GetFocusedItem());
+			if (item)
 			{
-				item.OnRightClick();
+				if (item.HasQuantity() && item.CanBeSplit())
+				{
+					item.OnRightClick();
+				}
 			}
 		}
 		return false;

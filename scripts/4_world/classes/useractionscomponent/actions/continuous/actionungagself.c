@@ -4,7 +4,6 @@ class ActionUngagSelf: ActionContinuousBase
 	{
 		m_CallbackClass = ActionUncoverHeadSelfCB;
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_COVERHEAD_SELF;
-		//m_FullBody = true;
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
 		m_Text = "#ungag";
 	}
@@ -38,7 +37,6 @@ class ActionUngagSelf: ActionContinuousBase
 			lamb.SetTransferParams(true, true, true, false, 1);
 			action_data.m_Player.ServerReplaceItemElsewhereWithNewInHands(lamb);
 		}
-		//action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	bool IsWearingGag( PlayerBase player )
@@ -56,6 +54,7 @@ class ActionUngagSelf: ActionContinuousBase
 class UngagSelfLambda : TurnItemIntoItemLambda
 {
 	MouthRag gag;
+	EntityAI m_OriginalOwner;
 	
 	void UngagSelfLambda (EntityAI old_item, string new_item_type, PlayerBase player)
 	{
@@ -65,13 +64,20 @@ class UngagSelfLambda : TurnItemIntoItemLambda
 		InventoryLocation targetHnd = new InventoryLocation;
 		targetHnd.SetHands(player, null);
 		OverrideNewLocation(targetHnd);
+		m_OriginalOwner = m_OldItem.GetHierarchyRoot();
 	}
 	
-	/*override void OnSuccess (EntityAI new_item)
+	override void OnSuccess (EntityAI new_item)
 	{
+		super.OnSuccess(new_item);
 		
+		PlayerBase player;
+		if (Class.CastTo(player,m_OriginalOwner))
+		{
+			player.CheckForGag();
+		}
 	}
-	*/
+	
 	override void OnAbort ()
 	{
 		if (gag)

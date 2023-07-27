@@ -65,6 +65,25 @@ class BleedingSourcesManagerRemote extends BleedingSourcesManagerBase
 			}
 		}
 	}
+	
+	
+	override protected void AddBleedingSource(int bit)
+	{
+		super.AddBleedingSource(bit);
+		if (GetGame().IsMultiplayer())
+			m_Player.OnBleedingSourceAdded();
+	}
+	
+	override protected bool RemoveBleedingSource(int bit)
+	{
+		if (super.RemoveBleedingSource(bit))
+		{
+			if (GetGame().IsMultiplayer())
+				m_Player.OnBleedingSourceRemovedEx(m_Item);
+			return true;
+		}
+		return false;
+	}
 
 	void OnBleedingBitsUpdate(int old_mask, int new_mask)
 	{

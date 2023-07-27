@@ -31,14 +31,14 @@ class InventoryLocation
 	 * @brief		verify current set inventory location
 	 * @return	true if valid, false otherwise
 	 **/
-	proto native bool IsValid ();
+	proto native bool IsValid();
 	/**
 	 * @fn		GetType
 	 * @brief	returns type of InventoryLocation
 	 *
 	 * @see	InventoryLocationType for known types of inventory locations
 	 **/
-	proto native int GetType ();
+	proto native int GetType();
 	/**
 	 * @fn		GetParent
 	 * @brief	returns parent of current inventory location
@@ -47,7 +47,7 @@ class InventoryLocation
 	 *
 	 * @return parent entity, null otherwise
 	 **/
-	proto native EntityAI GetParent ();
+	proto native EntityAI GetParent();
 	/**
 	 * @fn		GetItem
 	 * @brief	returns item of current inventory location
@@ -57,7 +57,7 @@ class InventoryLocation
 	 *
 	 * @return	item
 	 **/
-	proto native EntityAI GetItem ();
+	proto native EntityAI GetItem();
 	/**
 	 * @fn		GetSlot
 	 * @brief	returns slot id if current type is Attachment
@@ -66,43 +66,43 @@ class InventoryLocation
 	 *
 	 * @return	slot id if attachment, -1 otherwise
 	 **/
-	proto native int GetSlot ();
+	proto native int GetSlot();
 	/**
 	 * @fn		GetIdx
 	 * @brief	returns index of cargo if current type is Cargo / ProxyCargo
 	 * @return	index or -1
 	 **/
-	proto native int GetIdx ();
+	proto native int GetIdx();
 	/**
 	 * @fn		GetRow
 	 * @brief	returns row of cargo if current type is Cargo / ProxyCargo
 	 * @return	row or -1
 	 **/
-	proto native int GetRow ();
+	proto native int GetRow();
 	/**
 	 * @fn		GetCol
 	 * @brief	returns column of cargo if current type is Cargo / ProxyCargo
 	 * @return	index or -1
 	 **/
-	proto native int GetCol ();
+	proto native int GetCol();
 	/**
 	 * @fn		GetFlip
 	 * @brief	returns flip status of cargo
 	 * @return	true/false
 	 **/
-	proto native bool GetFlip ();
+	proto native bool GetFlip();
 	/**
 	 * @fn		GetPos
 	 * @brief	returns position of item in world if type is Ground
 	 * @return	position
 	 **/
-	proto native vector GetPos ();
+	proto native vector GetPos();
 	/**
 	 * @fn		GetDir
 	 * @brief	returns direction of item in world if type is Ground
 	 * @return	position
 	 **/	
-	proto native void GetDir (out float dir[4]);
+	proto native void GetDir(out float dir[4]);
 
 	/**
 	 * @fn		SetGround
@@ -110,7 +110,7 @@ class InventoryLocation
 	 * @param[in]	e		entity with this inventory location (null for new spawns)
 	 * @param[in]	mat	transformation matrix
 	 **/
-	proto native void SetGround (EntityAI e, vector mat[4]);
+	proto native void SetGround(EntityAI e, vector mat[4]);
 	/**
 	 * @fn		SetGroundEx
 	 * @brief	sets current inventory location type to Ground with transformation mat
@@ -118,7 +118,7 @@ class InventoryLocation
 	 * @param[in]	pos		position vector
 	 * @param[in]	dir		direction quat
 	 **/
-	proto native void SetGroundEx (EntityAI e, vector pos, float dir[4]);
+	proto native void SetGroundEx(EntityAI e, vector pos, float dir[4]);
 	/**
 	 * @fn		SetAttachment
 	 * @brief	sets current inventory location type to Attachment with slot id set to <slotId>
@@ -126,7 +126,7 @@ class InventoryLocation
 	 * @param[in]	e		entity with this inventory location (null for new spawns)
 	 * @param[in]	slotId		slot id where the item will be attached
 	 **/
-	proto native void SetAttachment (notnull EntityAI parent, EntityAI e, int slotId);
+	proto native void SetAttachment(notnull EntityAI parent, EntityAI e, int slotId);
 	
 	/**
 	 * @fn		SetCargoAuto
@@ -136,7 +136,7 @@ class InventoryLocation
 	 * @param[in]	row		row of the cargo
 	 * @param[in]	col		column of the cargo
 	 **/
-	proto native void SetCargoAuto (notnull CargoBase cargo, EntityAI e, int row, int col, bool flip);
+	proto native void SetCargoAuto(notnull CargoBase cargo, EntityAI e, int row, int col, bool flip);
 
 	/**
 	 * @fn		SetCargo
@@ -147,7 +147,7 @@ class InventoryLocation
 	 * @param[in]	row		row of the cargo
 	 * @param[in]	col		column of the cargo
 	 **/
-	proto native void SetCargo (notnull EntityAI parent, EntityAI e, int idx, int row, int col, bool flip);
+	proto native void SetCargo(notnull EntityAI parent, EntityAI e, int idx, int row, int col, bool flip);
 	/**
 	 * @fn		SetProxyCargo
 	 * @brief	sets current inventory location type to ProxyCargo with coordinates (idx, row, col)
@@ -160,45 +160,45 @@ class InventoryLocation
 	 * @param[in]	col		column of the cargo
 	 *
 	 **/
-	proto native void SetProxyCargo (notnull EntityAI parent, EntityAI e, int idx, int row, int col, bool flip);
+	proto native void SetProxyCargo(notnull EntityAI parent, EntityAI e, int idx, int row, int col, bool flip);
 	/**
 	 * @fn		SetHands
 	 * @brief	sets current inventory location type to Hands
 	 * @param[in]	parent		parent entity the item <e> will be attached to. this'd better be inherited from Person
 	 * @param[in]	e		entity with this inventory location (null for new spawns)
 	 **/
-	proto native void SetHands (notnull EntityAI parent, EntityAI e);
+	proto native void SetHands(notnull EntityAI parent, EntityAI e);
 	
 	/**
 	 * @fn		SetParent
 	 * brief	sets current inventory location's GetParent
 	 **/
-	proto native void SetParent (notnull EntityAI parent);
+	proto native void SetParent(notnull EntityAI parent);
 	/**
 	 * @fn		SetItem
 	 * brief	sets current inventory location's item
 	 **/
-	proto native void SetItem (notnull EntityAI item);
+	proto native void SetItem(notnull EntityAI item);
 
 	// direct set methods
-	proto native void SetSlot (int slotId);
-	proto native void SetIndex (int idx);
-	proto native void SetRow (int row);
-	proto native void SetCol (int col);
-	proto native void SetFlip (bool flip);
+	proto native void SetSlot(int slotId);
+	proto native void SetIndex(int idx);
+	proto native void SetRow(int row);
+	proto native void SetCol(int col);
+	proto native void SetFlip(bool flip);
 
 	/**
 	 * @fn		Reset
 	 **/
-	proto native void Reset ();
+	proto native void Reset();
 	
-	proto native bool CompareLocationOnly (notnull InventoryLocation other);
+	proto native bool CompareLocationOnly(notnull InventoryLocation other);
 
 	/**
 	 * @fn		CollidesWith
 	 * @brief	checks if inventory locations collides each with other
 	 **/
-	proto native bool CollidesWith (notnull InventoryLocation rhs);
+	proto native bool CollidesWith(notnull InventoryLocation rhs);
 
 	/**
 	 * @fn		Copy
@@ -206,23 +206,23 @@ class InventoryLocation
 	 *
 	 * @NOTE	it copies all data (except enforce internal data)
 	 **/
-	proto native InventoryLocation Copy (notnull InventoryLocation rhs);
+	proto native InventoryLocation Copy(notnull InventoryLocation rhs);
 	/**
 	 * @fn		CopyLocationFrom
 	 * @brief	copies location to another location without m_item member
 	 *
 	 * @NOTE	it does NOT do a copy of m_item member!
 	 **/
-	proto native InventoryLocation CopyLocationFrom (notnull InventoryLocation rhs, bool copyFlip);
+	proto native InventoryLocation CopyLocationFrom(notnull InventoryLocation rhs, bool copyFlip);
 	
-	static string DumpToStringNullSafe (InventoryLocation loc)
+	static string DumpToStringNullSafe(InventoryLocation loc)
 	{
 		if (loc)
 			return loc.DumpToString();
 		return "{ null }";
 	}
 	
-	string DumpToString ()
+	string DumpToString()
 	{
 		string res = "{ type=" + typename.EnumToString(InventoryLocationType, GetType());
 		switch (GetType())
@@ -278,7 +278,7 @@ class InventoryLocation
 		return res;
 	}
 
-	bool ReadFromContext (ParamsReadContext ctx)
+	bool ReadFromContext(ParamsReadContext ctx)
 	{
 		EntityAI parent;
 		EntityAI item;
@@ -309,7 +309,14 @@ class InventoryLocation
 					return false;
 				
 				if (!item)
-					break; // item is not in bubble
+				{
+#ifdef DIAG_DEVELOPER
+#ifdef SERVER
+					Error(string.Format("Item=%1 does not exist on server!", Object.GetDebugName(item)));
+#endif
+#endif
+					break; // parent or item is not in bubble
+				}
 
 				SetGroundEx(item, pos, dir);
 				break;
@@ -325,7 +332,14 @@ class InventoryLocation
 					return false;
 				
 				if (!parent || !item)
+				{
+#ifdef DIAG_DEVELOPER
+#ifdef SERVER
+					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+#endif
+#endif
 					break; // parent or item is not in bubble
+				}
 
 				SetAttachment(parent, item, slot);
 				break;
@@ -346,7 +360,14 @@ class InventoryLocation
 					return false;
 				
 				if (!parent || !item)
+				{
+#ifdef DIAG_DEVELOPER
+#ifdef SERVER
+					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+#endif
+#endif
 					break; // parent or item is not in bubble
+				}
 
 				SetCargo(parent, item, idx, row, col, flp);
 				break;
@@ -359,7 +380,14 @@ class InventoryLocation
 					return false;
 				
 				if (!parent || !item)
+				{
+#ifdef DIAG_DEVELOPER
+#ifdef SERVER
+					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+#endif
+#endif
 					break; // parent or item is not in bubble
+				}
 
 				SetHands(parent, item);
 				break;
@@ -380,7 +408,14 @@ class InventoryLocation
 					return false;
 				
 				if (!parent || !item)
+				{
+#ifdef DIAG_DEVELOPER
+#ifdef SERVER
+					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+#endif
+#endif
 					break; // parent or item is not in bubble
+				}
 
 				SetProxyCargo(parent, item, idx, row, col, flp);
 				break;
@@ -394,7 +429,7 @@ class InventoryLocation
 		return true;
 	}
 
-	bool WriteToContext (ParamsWriteContext ctx)
+	bool WriteToContext(ParamsWriteContext ctx)
 	{
 		if (!ctx.Write(GetType()))
 		{
@@ -545,7 +580,7 @@ class InventoryLocation
 	}
 };
 
-bool OptionalLocationWriteToContext (InventoryLocation loc, notnull ParamsWriteContext ctx)
+bool OptionalLocationWriteToContext(InventoryLocation loc, notnull ParamsWriteContext ctx)
 {
 	if (loc)
 	{
@@ -567,7 +602,7 @@ bool OptionalLocationWriteToContext (InventoryLocation loc, notnull ParamsWriteC
 	return true;
 }
 
-bool OptionalLocationReadFromContext (out InventoryLocation loc, notnull ParamsReadContext ctx)
+bool OptionalLocationReadFromContext(out InventoryLocation loc, notnull ParamsReadContext ctx)
 {
 	bool present = false;
 	if (!ctx.Read(present))
@@ -579,7 +614,7 @@ bool OptionalLocationReadFromContext (out InventoryLocation loc, notnull ParamsR
 	if (!present)
 		return true;
 
-	loc = new InventoryLocation;
+	loc = new InventoryLocation();
 	if (!loc.ReadFromContext(ctx))
 	{
 		Error("OptionalLocationReadFromContext - cannot read (present) inventorylocation from context!");

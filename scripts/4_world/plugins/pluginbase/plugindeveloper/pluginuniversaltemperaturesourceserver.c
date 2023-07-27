@@ -33,21 +33,19 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 		m_UTemperatureSourceDebugs.Clear();
 		
 		if (!player)
-		{
 			return;
-		}
 
 		vector playerPos				= player.GetPosition();
-		array<Object> nearestObjects	= new array<Object>;
+		array<Object> nearestObjects	= new array<Object>();
 
 		GetGame().GetObjectsAtPosition(playerPos, LOOKUP_RADIUS, nearestObjects, null);
 
 		UTemperatureSource uts;
 		UTemperatureSourceDebug utsd;
 
-		for (int i = 0; i < nearestObjects.Count(); i++)
+		foreach (Object nearestObject : nearestObjects)
 		{
-			EntityAI ent = EntityAI.Cast(nearestObjects.Get(i));
+			EntityAI ent = EntityAI.Cast(nearestObject);
 			if (ent && ent.IsUniversalTemperatureSource() && ent != player)
 			{
 				uts = ent.GetUniversalTemperatureSource();
@@ -83,9 +81,8 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 	void SendDebug()
 	{
 		int clientCount = m_ClientList.Count();
-		for (int i = 0; i < clientCount; ++i)
+		foreach (PlayerBase player : m_ClientList)
 		{
-			PlayerBase player = m_ClientList.Get(i);
 			if (player)
 			{		
 				GatherTemperatureSources(player);
@@ -94,10 +91,7 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 				rpc.Send(player, ERPCs.DEV_UTS_DEBUG_DATA, true, player.GetIdentity());
 			}
 			else
-			{
-				m_ClientList.Remove(i);
-				--i;
-			}
+				m_ClientList.RemoveItem(player);
 		}
 	}
 

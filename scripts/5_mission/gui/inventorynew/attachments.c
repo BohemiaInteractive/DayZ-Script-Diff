@@ -120,7 +120,7 @@ class Attachments
 		
 		if (icon && !icon.IsOutOfReach())
 		{
-			ItemManager.GetInstance().SetSelectedItem( item, null, icon.GetCursorWidget(), icon );
+			ItemManager.GetInstance().SetSelectedItemEx(item, null, icon);
 			return true;
 		}
 		return false;
@@ -143,14 +143,14 @@ class Attachments
 					if( m_Entity.GetInventory().CanAddAttachmentEx( selected_item, focused_slot.GetSlotID() ) )
 					{
 						player.PredictiveTakeEntityToTargetAttachmentEx( m_Entity, selected_item, focused_slot.GetSlotID() );
-						ItemManager.GetInstance().SetSelectedItem( null, null, null, null );
+						ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
 						return true;
 					
 					}
 					else if( m_Entity.GetInventory().CanAddAttachment( selected_item ) )
 					{
 						player.PredictiveTakeEntityToTargetAttachment(m_Entity, selected_item);
-						ItemManager.GetInstance().SetSelectedItem( null, null, null, null );
+						ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
 						return true;
 					}
 				}
@@ -288,13 +288,13 @@ class Attachments
 	bool TransferItemToVicinity()
 	{
 		ItemBase item = ItemBase.Cast(GetFocusedItem());
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		if( item && !GetFocusedSlotsIcon().IsOutOfReach() )
+		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer());
+		if (item && !GetFocusedSlotsIcon().IsOutOfReach() )
 		{
-			if( item.GetTargetQuantityMax() < item.GetQuantity() )
+			if (item.GetTargetQuantityMax() < item.GetQuantity())
 				item.SplitIntoStackMaxClient( null, -1 );
 			else
-				player.PhysicalPredictiveDropItem( item );
+				player.PhysicalPredictiveDropItem(item);
 			return true;
 		}
 		return false;

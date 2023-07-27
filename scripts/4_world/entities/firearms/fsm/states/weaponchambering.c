@@ -84,6 +84,7 @@ class WeaponChambering_Base extends WeaponStateBase
 
 class WeaponChambering_Cartridge extends WeaponChambering_Base
 {
+	override bool IsWaitingForActionFinish () { return true; }
 	override void OnEntry (WeaponEventBase e)
 	{
 		super.OnEntry(e);
@@ -151,6 +152,7 @@ class WeaponChambering_Cartridge extends WeaponChambering_Base
 		else
 			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot load chamber chamber!"); }
 
+		m_weapon.SetCharged(true);
 		m_magazineType = string.Empty;
 		m_type = string.Empty;
 		super.OnExit(e);
@@ -401,8 +403,8 @@ class WeaponChambering extends WeaponStateBase
 		m_fsm.AddTransition(new WeaponTransition(m_start  , __ck_, m_onCK));
 		m_fsm.AddTransition(new WeaponTransition(m_start  , __bs_, m_chamber));
 		m_fsm.AddTransition(new WeaponTransition(m_onCK  , __be_, m_eject));
-		m_fsm.AddTransition(new WeaponTransition(m_onCK  , __bs_, m_chamber));		
-		m_fsm.AddTransition(new WeaponTransition(m_eject  , __bs_, m_chamber));		
+		m_fsm.AddTransition(new WeaponTransition(m_onCK  , __bs_, m_chamber));	
+		m_fsm.AddTransition(new WeaponTransition(m_eject  , __bs_, m_chamber));
 		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bc_, m_w4t));
 		m_fsm.AddTransition(new WeaponTransition(m_w4t    , _fin_, null));
 		

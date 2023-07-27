@@ -6,5 +6,6 @@ class Stone extends ItemBase
 
 		AddAction(ActionAttach);
 		AddAction(ActionDetach);
+		AddAction(ActionAttachToConstruction);
 	}
 }

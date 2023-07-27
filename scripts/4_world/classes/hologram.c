@@ -523,7 +523,7 @@ class Hologram
 
 		vector center;
 		vector relativeOffset; //we need to lift BBox, because it is calculated from the bottom of projection, and not from the middle
-		vector absoluteOffset = "0 0.01 0"; //we need to lift BBox even more, because it colliddes with house floors due to various reasons (probably geometry or float imperfections)
+		vector absoluteOffset = "0 0.05 0"; //we need to lift BBox even more, because it colliddes with house floors due to various reasons (probably geometry or float imperfections)
 		vector orientation = GetProjectionOrientation();
 		vector edgeLength;
 		vector minMax[2];
@@ -572,16 +572,16 @@ class Hologram
 		if (CfgGameplayHandler.GetDisableIsBaseViableCheck())
 			return true;
 		
-		vector from_left_close = m_Projection.CoordToParent( GetLeftCloseProjectionVector() );
+		vector from_left_close = m_Projection.CoordToParent(GetLeftCloseProjectionVector());
 		vector to_left_close_down = from_left_close + "0 -1 0";
 
-		vector from_right_close = m_Projection.CoordToParent( GetRightCloseProjectionVector() );
+		vector from_right_close = m_Projection.CoordToParent(GetRightCloseProjectionVector());
 		vector to_right_close_down = from_right_close + "0 -1 0";
 
-		vector from_left_far = m_Projection.CoordToParent( GetLeftFarProjectionVector() );
+		vector from_left_far = m_Projection.CoordToParent(GetLeftFarProjectionVector());
 		vector to_left_far_down = from_left_far + "0 -1 0";
 
-		vector from_right_far = m_Projection.CoordToParent( GetRightFarProjectionVector() );
+		vector from_right_far = m_Projection.CoordToParent(GetRightFarProjectionVector());
 		vector to_right_far_down = from_right_far + "0 -1 0";
 		
 		vector contact_pos_left_close;
@@ -604,25 +604,27 @@ class Hologram
 		Object obj_right_close;
 		Object obj_left_far;
 		Object obj_right_far;
+		
+		const float RAYCAST_RADIUS = 0.2;
 
 		//Not sure what the intention here was before, but it boiled down to a very bloated version of what you see here right now
-		DayZPhysics.RaycastRV( from_left_close, to_left_close_down, contact_pos_left_close, contact_dir_left_close, contact_component_left_close, results_left_close, null, m_Projection, false, false, ObjIntersectFire );
+		DayZPhysics.RaycastRV(from_left_close, to_left_close_down, contact_pos_left_close, contact_dir_left_close, contact_component_left_close, results_left_close, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
 		if (results_left_close.Count() > 0)
 			obj_left_close = results_left_close[results_left_close.Count() - 1];
 
-		DayZPhysics.RaycastRV( from_right_close, to_right_close_down, contact_pos_right_close, contact_dir_right_close, contact_component_right_close, results_right_close, null, m_Projection, false, false, ObjIntersectFire );
+		DayZPhysics.RaycastRV(from_right_close, to_right_close_down, contact_pos_right_close, contact_dir_right_close, contact_component_right_close, results_right_close, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
 		if (results_right_close.Count() > 0)	
 			obj_right_close = results_right_close[results_right_close.Count() - 1];
 
-		DayZPhysics.RaycastRV( from_left_far, to_left_far_down, contact_pos_left_far, contact_dir_left_far, contact_component_left_far, results_left_far, null, m_Projection, false, false, ObjIntersectFire );
+		DayZPhysics.RaycastRV(from_left_far, to_left_far_down, contact_pos_left_far, contact_dir_left_far, contact_component_left_far, results_left_far, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
 		if (results_left_far.Count() > 0) 
 			obj_left_far = results_left_far[results_left_far.Count() - 1];
 
-		DayZPhysics.RaycastRV( from_right_far, to_right_far_down, contact_pos_right_far, contact_dir_right_far, contact_component_right_far, results_right_far, null, m_Projection, false, false, ObjIntersectFire );
+		DayZPhysics.RaycastRV(from_right_far, to_right_far_down, contact_pos_right_far, contact_dir_right_far, contact_component_right_far, results_right_far, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
 		if (results_right_far.Count() > 0)
 			obj_right_far = results_right_far[results_right_far.Count() - 1];
 		
-		return IsBaseIntact( obj_left_close, obj_right_close, obj_left_far, obj_right_far ) && IsBaseStatic( obj_left_close ) && IsBaseFlat( contact_pos_left_close, contact_pos_right_close, contact_pos_left_far, contact_pos_right_far );
+		return IsBaseIntact(obj_left_close, obj_right_close, obj_left_far, obj_right_far ) && IsBaseStatic( obj_left_close ) && IsBaseFlat( contact_pos_left_close, contact_pos_right_close, contact_pos_left_far, contact_pos_right_far);
 	}
 
 	bool IsCollidingGPlot()

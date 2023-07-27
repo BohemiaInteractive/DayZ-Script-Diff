@@ -54,12 +54,10 @@ class UndergroundTriggerCarrier extends UndergroundTriggerCarrierBase
 			UndergroundTrigger trigger = UndergroundTrigger.Cast(GetGame().CreateObjectEx( "UndergroundTrigger", GetPosition(), ECE_LOCAL ));
 			if (trigger)
 			{
-				#ifdef DEVELOPER
+				#ifdef DIAG_DEVELOPER
 				trigger.m_Local = true;
 				#endif
 				trigger.SetPosition(vector.Zero);
-				if (GetOrientation() != vector.Zero)
-					trigger.SetOrientation(GetOrientation());
 				AddChild(trigger,-1);
 				trigger.Init(data);
 				

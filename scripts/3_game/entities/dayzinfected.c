@@ -15,7 +15,7 @@ enum DayZInfectedConstants
 	MINDSTATE_ALERTED,
 	MINDSTATE_CHASE,
 	MINDSTATE_FIGHT,
-};
+}
 
 enum DayZInfectedConstantsMovement
 {
@@ -41,15 +41,9 @@ class DayZInfectedCommandMove extends AnimCommandBase
 	proto native bool IsTurning();
 }
 
-class DayZInfectedCommandDeath extends AnimCommandBase
-{
-	
-}
+class DayZInfectedCommandDeath extends AnimCommandBase {}
 
-class DayZInfectedCommandHit   extends AnimCommandBase
-{
-
-}
+class DayZInfectedCommandHit extends AnimCommandBase {}
 
 class DayZInfectedCommandAttack extends AnimCommandBase
 {
@@ -60,10 +54,7 @@ class DayZInfectedCommandVault extends AnimCommandBase
 	proto native bool WasLand();
 }
 
-class DayZInfectedCommandCrawl extends AnimCommandBase
-{
-
-}
+class DayZInfectedCommandCrawl extends AnimCommandBase {}
 
 /**
 *\brief DayZInfectedCommandScript fully scriptable command
@@ -109,7 +100,6 @@ class DayZInfectedCommandScript extends AnimCommandBase
 	proto native 	void	PostPhys_LockRotation();							//! do not process rotations !
 }
 
-
 class DayZInfected extends DayZCreatureAI
 {	
 	proto native DayZInfectedType GetDayZInfectedType();
@@ -136,62 +126,49 @@ class DayZInfected extends DayZCreatureAI
 	proto native	void 		GetTransformWS(out vector pTm[4]);
 	
 	const float LEG_CRIPPLE_THRESHOLD = 74.0;
+
 	bool 		m_HeavyHitOverride;
+
 	//-------------------------------------------------------------
-	void DayZInfected()
-	{
-	}
+	void DayZInfected();
+	void ~DayZInfected();
 	
 	//-------------------------------------------------------------
-	void ~DayZInfected()
-	{
-	}
-	
-	//-------------------------------------------------------------
-	
 	override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
 	{
 		super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
 		
-		/*Print("damageResult: " + damageResult.GetDamage(dmgZone,"Health"));
-		Print("dmgZone: " + dmgZone);
-		Print("component: " + component);
-		Print("----------------");*/
-		
-		if ( ammo.ToType().IsInherited(Nonlethal_Base) )
+		if (ammo.ToType().IsInherited(Nonlethal_Base))
 		{
-			//Print("DayZInfected | EEHitBy | nonlethal hit");
 			float dam = damageResult.GetDamage(dmgZone,"Shock");
-			//Print("shock damage: " + damageResult.GetDamage(dmgZone,"Shock"));
-			//Print("GetHealth - before: " + GetHealth());
-			HandleSpecialZoneDamage(dmgZone,dam);
-			AddHealth("","Health",-ConvertNonlethalDamage(dam));
-			//Print("GetHealth - after: " + GetHealth());
+			HandleSpecialZoneDamage(dmgZone, dam);
+			AddHealth("", "Health", -ConvertNonlethalDamage(dam));
 		}
 		
-		if ( !IsAlive() )
+		if (!IsAlive())
 		{
-			if ( !m_DeathSyncSent ) //to be sent only once on hit/death
+			if (!m_DeathSyncSent) //to be sent only once on hit/death
 			{
 				Man killer = source.GetHierarchyRootPlayer();
 				
-				if ( !m_KillerData ) //only one player is considered killer in the event of crossfire
+				if (!m_KillerData) //only one player is considered killer in the event of crossfire
 				{
-					m_KillerData = new KillerData;
+					m_KillerData = new KillerData();
 					m_KillerData.m_Killer = killer;
 					m_KillerData.m_MurderWeapon = source;
 				}
 				
-				if ( killer && killer.IsPlayer() )
+				if (killer && killer.IsPlayer())
 				{
 					// was infected killed by headshot?
-					if ( dmgZone == "Head" ) //no "Brain" damage zone defined (nor can it be caught like on player, due to missing command handler), "Head" is sufficient
+					if (dmgZone == "Head") //no "Brain" damage zone defined (nor can it be caught like on player, due to missing command handler), "Head" is sufficient
 					{
 						m_KilledByHeadshot = true;
 						if (m_KillerData.m_Killer == killer)
 							m_KillerData.m_KillerHiTheBrain = true;
 					}
 				}
+
 				SyncEvents.SendEntityKilled(this, m_KillerData.m_Killer, m_KillerData.m_MurderWeapon, m_KillerData.m_KillerHiTheBrain);
 				m_DeathSyncSent = true;
 			}
@@ -200,30 +177,23 @@ class DayZInfected extends DayZCreatureAI
 	
 	float ConvertNonlethalDamage(float damage)
 	{
-		float converted_dmg = damage * GameConstants.PROJECTILE_CONVERSION_INFECTED;
-		//Print("ConvertNonlethalDamage | " + converted_dmg);
-		return converted_dmg;
+		return damage * GameConstants.PROJECTILE_CONVERSION_INFECTED;
 	}
 	
 	void HandleSpecialZoneDamage(string dmgZone, float damage)
 	{
-		if ( damage < LEG_CRIPPLE_THRESHOLD )
+		if (damage < LEG_CRIPPLE_THRESHOLD)
 			return;
 		
 		if (dmgZone == "LeftLeg" || dmgZone == "RightLeg")
-		{
 			SetHealth(dmgZone,"Health",0.0);
-		}
-		if (dmgZone == "Torso" || dmgZone == "Head") //TODO separate behaviour for head hits, anim/AI
-		{
+
+		if (dmgZone == "Torso" || dmgZone == "Head")
 			m_HeavyHitOverride = true;
-		}
 	}
 	
 	override int GetHideIconMask()
 	{
 		return EInventoryIconVisibility.HIDE_VICINITY;
 	}
-	
-	//void SetCrawlTransition(string zone) {}
 }

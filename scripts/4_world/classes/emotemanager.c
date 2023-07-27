@@ -134,6 +134,7 @@ class EmoteManager
 	protected bool			m_MouseButtonPressed;
 	protected bool 			m_PlayerDies;
 	protected bool 			m_controllsLocked;
+	protected bool 			m_InventoryAccessLocked;
 	protected bool 			m_EmoteLockState;
 	protected int 			m_DeferredEmoteExecution;
 	protected int  			m_GestureID;
@@ -160,6 +161,8 @@ class EmoteManager
 		m_Player = player;
 		m_HIC = m_Player.GetInputController();
 		m_ItemIsOn = false;
+		m_controllsLocked = false;
+		m_InventoryAccessLocked = false;
 		m_RPSOutcome = -1;
 		m_DeferredEmoteExecution = CALLBACK_CMD_INVALID;
 		
@@ -584,7 +587,6 @@ class EmoteManager
 		
 		if (!CanPlayEmote(id))
 		{
-			m_Player.SetInventorySoftLock(false);
 			return false;
 		}
 		
@@ -616,23 +618,13 @@ class EmoteManager
 				}
 				else
 				{
-					Error("EmoteManager | DetermineEmoteData failed!");
+					ErrorEx("EmoteManager | DetermineEmoteData failed!");
 				}
 			}
 		}
 		
-		if (m_bEmoteIsPlaying)
-		{
-			m_Player.SetInventorySoftLock(true);
-			if (m_Callback.m_IsFullbody)
-			{
-				SetEmoteLockState(true);
-			}
-			
-			return true;
-		}
-		
-		return false;
+		SetEmoteLockState(m_bEmoteIsPlaying);
+		return m_bEmoteIsPlaying;
 	}
 	
 	//creates Emote callback
@@ -837,11 +829,6 @@ class EmoteManager
 					ctx.Write(m_RPSOutcome);
 				}
 				ctx.Send();
-				
-				if (id > 0)
-				{
-					m_Player.SetInventorySoftLock(true);
-				}
 			}
 			m_MenuEmote = NULL;
 		}
@@ -976,7 +963,20 @@ class EmoteManager
 	//!
 	void SetEmoteLockState(bool state)
 	{
-		DayZPlayerCameraBase camera = DayZPlayerCameraBase.Cast(m_Player.GetCurrentCamera());
+		//separate inventory access locking
+		if (state != m_InventoryAccessLocked)
+		{
+			m_Player.SetInventorySoftLock(state);
+			m_InventoryAccessLocked = state;
+		}
+		
+		//full emote locking (
+		if (state == m_EmoteLockState)
+		{
+			ErrorEx("emote lock state already set",ErrorExSeverity.INFO);
+			return;
+		}
+		
 		if (!m_HandInventoryLocation)
 		{
 			m_HandInventoryLocation = new InventoryLocation;
@@ -986,35 +986,25 @@ class EmoteManager
 		if (!state)
 		{
 			if (m_Player.GetInventory().HasInventoryReservation(null, m_HandInventoryLocation))
-			{
 				m_Player.GetInventory().ClearInventoryReservationEx(null, m_HandInventoryLocation);
-			}
 			
 			if (m_Player.GetActionManager())
 				m_Player.GetActionManager().EnableActions(true);
-			
-			m_Player.SetInventorySoftLock(false);
-						
+				
 			if (m_controllsLocked)
-			{
 				m_controllsLocked = false;
-			}
 		}
 		else
 		{
 			if (!m_Player.GetInventory().HasInventoryReservation(null, m_HandInventoryLocation))
-			{
 				m_Player.GetInventory().AddInventoryReservationEx(null, m_HandInventoryLocation, GameInventory.c_InventoryReservationTimeoutMS);
-			}
 				
 			if (m_Player.GetActionManager())
 				m_Player.GetActionManager().EnableActions(false);
 			
 			//Movement lock in fullbody anims
 			if (m_Callback && m_Callback.m_IsFullbody && !m_controllsLocked)
-			{
 				m_controllsLocked = true;
-			}
 		}
 		m_EmoteLockState = state;
 	}

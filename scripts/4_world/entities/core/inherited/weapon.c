@@ -94,6 +94,10 @@ class Weapon extends InventoryItemSuper
 	 * @returns true if full
 	 **/
 	proto native bool IsChamberFull(int muzzleIndex);
+	bool IsChamberFullEx(int muzzleIndex)
+	{
+		return IsChamberFull(muzzleIndex);
+	}
 
 	/**@fn		HasInternalMagazine
 	 * @note 	passing in -1 will check all muzzles

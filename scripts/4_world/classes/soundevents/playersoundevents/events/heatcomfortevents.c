@@ -27,6 +27,6 @@ class HotSoundEvent extends HeatComfortEventsBase
 	void HotSoundEvent()
 	{
 		m_ID = EPlayerSoundEventID.HOT;
-		m_SoundVoiceAnimEventClassID = 1111111;
+		m_SoundVoiceAnimEventClassID = 30;
 	}
 }

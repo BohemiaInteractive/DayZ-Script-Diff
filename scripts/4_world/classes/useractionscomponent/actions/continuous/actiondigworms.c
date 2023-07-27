@@ -29,6 +29,14 @@ class ActionDigWorms: ActionContinuousBase
 		m_ConditionTarget = new CCTSurface(UAMaxDistances.DEFAULT);
 	}
 	
+	override bool Can(PlayerBase player, ActionTarget target, ItemBase item, int condition_mask)
+	{
+		if (!super.Can(player, target, item, condition_mask))
+			return false;
+		
+		return player.CheckFreeSpace(vector.Forward, 0.8, false);
+	}
+	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		if (player.IsPlacingLocal())
@@ -42,12 +50,7 @@ class ActionDigWorms: ActionContinuousBase
 		if (height > 0.4)
 			return false; // Player is not standing on ground
 		
-		if (!player.IsPlacingLocal())
-		{
-			return IsTargetFertile(target);
-		}
-	
-		return false;
+		return IsTargetFertile(target);
 	}
 	
 	override bool SetupAction( PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL )

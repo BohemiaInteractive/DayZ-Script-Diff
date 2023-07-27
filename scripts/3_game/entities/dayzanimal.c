@@ -110,7 +110,12 @@ class DayZCreature extends EntityAI
 		arrow.SetTransform(arrowTransMat);
 		
 		AddChild(arrow, pivot);
-	} 
+	}
+	
+	override bool HasFixedActionTargetCursorPosition()
+	{
+		return true;
+	}
 }
 
 class DayZCreatureAI extends DayZCreature 
@@ -249,7 +254,7 @@ class DayZCreatureAI extends DayZCreature
 			SoundObjectBuilder objectBuilder = sound_event.GetSoundBuilder();
 			if(NULL != objectBuilder)
 			{
-				objectBuilder.UpdateEnvSoundControllers(GetPosition());
+				objectBuilder.AddEnvSoundVariables(GetPosition());
 				SoundObject soundObject = objectBuilder.BuildSoundObject();
 				PlaySound(soundObject, objectBuilder);
 			}
@@ -269,7 +274,7 @@ class DayZCreatureAI extends DayZCreature
 			SoundObjectBuilder objectBuilder = sound_event.GetSoundBuilder();
 			if(NULL != objectBuilder)
 			{
-				objectBuilder.UpdateEnvSoundControllers(GetPosition());
+				objectBuilder.AddEnvSoundVariables(GetPosition());
 				SoundObject soundObject = objectBuilder.BuildSoundObject();
 				AttenuateSoundIfNecessary(soundObject);
 				PlaySound(soundObject, objectBuilder);
@@ -289,7 +294,7 @@ class DayZCreatureAI extends DayZCreature
 		if(soundBuilder == NULL)
 			return;
 		
-		soundBuilder.UpdateEnvSoundControllers(GetPosition());
+		soundBuilder.AddEnvSoundVariables(GetPosition());
 		SoundObject soundObject = soundBuilder.BuildSoundObject();
 		AttenuateSoundIfNecessary(soundObject);
 		PlaySound(soundObject, soundBuilder);

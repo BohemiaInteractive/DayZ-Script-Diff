@@ -36,6 +36,19 @@ class Colors
 	const int COLOR_DRIED			= 0x00FFEB48;
 	const int COLOR_BURNED			= 0x00888888;
 	const int COLOR_ROTTEN			= 0x00A93F15;
+	
+	const int COLOR_DAYZ_RED 				= 0xffd70d11;
+	const int COLOR_DAYZ_DARK_BLUE 			= 0xff13151b;
+	const int COLOR_DAYZ_SMOKY_BLUE 		= 0xff262a33;
+	const int COLOR_DAYZ_WHITE_BLUE 		= 0xfff9fcfe;
+	const int COLOR_DAYZ_LIGHT_SHADE 		= 0xff7d7f85;
+	const int COLOR_DAYZ_WASHOUT 			= 0xffcfd2d6;
+	
+	const int COLOR_LIVONIA_EMERALD_GREEN 	= 0xff4a8765;
+	const int COLOR_LIVONIA_FOREST_GREEN 	= 0xff47533e;
+	const int COLOR_LIVONIA_DARK_GREEN 		= 0xff1c2118;
+	const int COLOR_LIVONIA_BLACK_GREEN 	= 0xff0b100a;
+	const int COLOR_LIVONIA_OLIVE 			= 0xff8e8045;
 }
 
 class FadeColors

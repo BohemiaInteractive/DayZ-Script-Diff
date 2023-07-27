@@ -11,9 +11,9 @@ class ActionArmExplosiveCB : ActionContinuousBaseCB
 		
 		RegisterAnimationEvent("CraftingAction", UA_IN_CRAFTING);
 	}
-};
+}
 
-class ActionArmExplosive: ActionContinuousBase
+class ActionArmExplosive : ActionContinuousBase
 {	
 	void ActionArmExplosive()
 	{
@@ -28,7 +28,7 @@ class ActionArmExplosive: ActionContinuousBase
 	override void CreateConditionComponents()  
 	{	
 		m_ConditionTarget 	= new CCTNonRuined(UAMaxDistances.DEFAULT);
-		m_ConditionItem 	= new CCINotPresent;
+		m_ConditionItem 	= new CCINotPresent();
 	}
 	
 	override typename GetInputType()
@@ -44,15 +44,11 @@ class ActionArmExplosive: ActionContinuousBase
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		if (target.GetParent())
-		{
 			return false;
-		}
 
-		ItemBase tgt_item = ItemBase.Cast(target.GetObject());
-		if (tgt_item && tgt_item.IsBeingPlaced())
-		{
+		ItemBase targetItem = ItemBase.Cast(target.GetObject());
+		if (targetItem && targetItem.IsBeingPlaced())
 			return false;
-		}
 
 		ExplosivesBase explosive = ExplosivesBase.Cast(target.GetObject());
 
@@ -61,14 +57,10 @@ class ActionArmExplosive: ActionContinuousBase
 	
 	override void OnFinishProgressServer(ActionData action_data)
 	{
+		super.OnFinishProgressServer(action_data);
+
 		ExplosivesBase explosive = ExplosivesBase.Cast(action_data.m_Target.GetObject());
 		if (explosive)
-		{
-			vector orientation	= action_data.m_Player.GetOrientation();
-			vector position		= action_data.m_Player.GetPosition();
-			position 			= position + (action_data.m_Player.GetDirection() * 0.5);
-
-			explosive.OnPlacementComplete(action_data.m_Player, position, orientation);
-		}
+			explosive.OnPlacementComplete(action_data.m_Player, explosive.GetPosition(), action_data.m_Player.GetOrientation());
 	}
 }

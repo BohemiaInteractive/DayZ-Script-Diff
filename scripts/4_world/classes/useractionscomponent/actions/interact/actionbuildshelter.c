@@ -319,4 +319,9 @@ class ActionBuildShelter: ActionContinuousBase
 		EffectSound sound =	SEffectManager.PlaySound(m_SoundsetBuildFinish, action_data.m_Target.GetObject().GetPosition());
 		sound.SetAutodestroy( true );
 	}
+	
+	override string GetSoundCategory(ActionData action_data)
+    {
+        return "Base_building";
+    }
 }

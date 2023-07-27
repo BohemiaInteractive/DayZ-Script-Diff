@@ -95,6 +95,8 @@ class PluginDayZInfectedDebug extends PluginBase
 	ref PluginDayZInfectedDebugUIHandler m_pUIHandler;
 	ref array<ref PluginDayZInfectedDebugAttackDesc> m_AttackDescriptors = new array<ref PluginDayZInfectedDebugAttackDesc>;
 	
+	private ref array<Shape> m_DebugShapes = new array<Shape>();
+	
 	//! status refresh timer
 	ref Timer							m_TickTimer;
 
@@ -129,7 +131,7 @@ class PluginDayZInfectedDebug extends PluginBase
 	{
 		switch (pMode)
 		{
-		case 0:		Hide(); ReleaseFocus();	break;
+		case 0:		Hide(); ReleaseFocus(); CleanupDebugShapes(m_DebugShapes);	break;
 		case 1:		Show(); ReleaseFocus();	break;
 		case 2:		Show(); CaptureFocus();	break;
 		}
@@ -190,6 +192,21 @@ class PluginDayZInfectedDebug extends PluginBase
 		if(m_MainWnd) 
 		{
 			m_MainWnd.Show(show);
+		}
+	}
+	
+	override void OnUpdate(float delta_time)
+	{
+		super.OnUpdate(delta_time);
+		
+		CleanupDebugShapes(m_DebugShapes);
+
+		if (m_IsActive)
+		{
+			if (!m_ControlledInfected)
+				return;
+		
+			m_DebugShapes.Insert(Debug.DrawSphere(m_ControlledInfected.GetPosition() + "0 2 0", 0.25, FadeColors.RED));	
 		}
 	}
 
@@ -268,56 +285,54 @@ class PluginDayZInfectedDebug extends PluginBase
 	//! buttons clicks
 	bool OnClick(Widget w, int x, int y, int button)
 	{
-		if( !m_HasFocus )
-			return false;
-		
-		if( w == m_SpawnEntityButton )
+		if (w == m_SpawnEntityButton)
 		{
 			ResetValues();
 			SpawnNewInfectedEntity();
 			return true;
 		}
-		if( w == m_CardMovementButton )
+
+		if (w == m_CardMovementButton)
 		{
 			ShowCard(0);
 			return true;
 		}
-		else if( w == m_CardFightButton )
+		else if (w == m_CardFightButton)
 		{
 			ShowCard(1);
 			return true;
 		}
-		else if( w == m_StartTurnButton )
+		else if (w == m_StartTurnButton)
 		{
 			m_CH_DoTurn = true;
 			return true;
 		}
-		else if( w == m_StartVaultButton )
+		else if (w == m_StartVaultButton)
 		{
 			m_CH_DoVault = true;
 			return true;
 		}
-		else if( w == m_KnucleOutButton )
+		else if (w == m_KnucleOutButton)
 		{
 			m_CH_DoKnucleOut = true;
 			return true;
 		}
-		else if( w == m_StartCrawlingButton )
+		else if (w == m_StartCrawlingButton)
 		{
 			m_CH_GoToCrawl = true;
 			return true;
 		}
-		else if( w == m_StartHitButton )
+		else if (w == m_StartHitButton)
 		{
 			m_CH_DoHit = true;
 			return true;
 		}
-		else if( w == m_StartDeathButton )
+		else if (w == m_StartDeathButton)
 		{
 			m_CH_StartDeath = true;
 			return true;
 		}
-		else if( w == m_StartAttackButton )
+		else if (w == m_StartAttackButton)
 		{
 			m_CH_DoAttack = true;
 			return true;
@@ -335,13 +350,30 @@ class PluginDayZInfectedDebug extends PluginBase
 	//!
 	void ResetValues()
 	{
+		m_CH_DoTurn 		= false;
+		m_CH_DoVault 		= false;
+		m_CH_DoKnucleOut 	= false;
+		m_CH_GoToCrawl 		= false;
+		m_CH_DoHit 			= false;
+		m_CH_StartDeath 	= false;
+		m_CH_DoAttack 		= false;
+		m_MovementSpeedEB.SetText("0");
+		m_MainWnd.Update();
 	}
 	
 	//!
 	void SpawnNewInfectedEntity()
 	{
-		m_ControlledInfected = DayZInfected.Cast(GetGame().CreateObject("ZmbF_JournalistNormal_Blue", GetGame().GetPlayer().GetPosition(), 0, true));
+		m_ControlledInfected = DayZInfected.Cast(GetGame().CreateObjectEx("ZmbF_JournalistNormal_Blue", GetGame().GetPlayer().GetPosition(), ECE_PLACE_ON_SURFACE|ECE_INITAI|ECE_EQUIP_ATTACHMENTS));
 		m_ControlledInfected.GetAIAgent().SetKeepInIdle(true);
+	}
+	
+	protected void PossesInfected()
+	{
+		ResetValues();
+		FreeDebugCamera.GetInstance().SetActive(true);
+		m_ControlledInfected = DayZInfected.Cast(FreeDebugCamera.GetInstance().GetCrosshairObject());
+		FreeDebugCamera.GetInstance().SetActive(false);
 	}
 	
 	//!
@@ -440,6 +472,16 @@ class PluginDayZInfectedDebug extends PluginBase
 		{
 			m_AttackTypeCB.AddItem(m_AttackDescriptors.Get(i).name);
 		}
+	}
+	
+	private void CleanupDebugShapes(array<Shape> shapesArr)
+	{
+		for ( int it = 0; it < shapesArr.Count(); ++it )
+		{
+			Debug.RemoveShape( shapesArr[it] );
+		}
+		
+		shapesArr.Clear();
 	}
 }
 

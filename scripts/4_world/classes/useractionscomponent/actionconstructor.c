@@ -397,5 +397,9 @@ class ActionConstructor
 		
 		actions.Insert(ActionCraftBolts);
 		actions.Insert(ActionCraftBoltsFeather);
+		
+		actions.Insert(ActionDeCraftWitchHoodCoif);
+		
+		actions.Insert(ActionDeCraftDrysackBag);
 	}
 };

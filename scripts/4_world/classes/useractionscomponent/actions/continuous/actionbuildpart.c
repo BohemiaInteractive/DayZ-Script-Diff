@@ -125,6 +125,11 @@ class ActionBuildPart: ActionContinuousBase
 		}
 	}
 	
+	override string GetSoundCategory(ActionData action_data)
+    {
+        return "Base_building";
+    }
+	
 	override ActionData CreateActionData()
 	{
 		BuildPartActionData action_data = new BuildPartActionData;

@@ -16,7 +16,9 @@ class DispatcherCaller extends Dispatcher
 		if ( ui_menu && ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			scripted_console.Add(p.param1);
+			ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
+			if (tab)
+				tab.Add(p.param1);
 		}
 	}
 	
@@ -26,7 +28,9 @@ class DispatcherCaller extends Dispatcher
 		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			scripted_console.HistoryBack();
+			ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
+			if (tab)
+				tab.HistoryBack();
 		}
 	}
 	
@@ -36,22 +40,26 @@ class DispatcherCaller extends Dispatcher
 		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			scripted_console.HistoryForward();
+			ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
+			if (tab)
+				tab.HistoryForward();
 		}
 	}
 
+	/*
 	private Param ScriptConsoleGetSelectedItem()
 	{
 		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
 		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
+			//ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
 			scripted_console.GetCurrentItemName();
 		}
 
 		return null;
 	}
-
+*/
 		
 	private void SceneEditorCommand(Param params)
 	{
@@ -95,7 +103,7 @@ class DispatcherCaller extends Dispatcher
 			MissionGameplayHideInventory();
 			break;
 		case CALL_ID_SCR_CNSL_GETSELECTEDITEM:
-			return new Param1<string>(ScriptConsole.GetLastSelectedObject());
+			return new Param1<string>(ScriptConsoleItemsTab.GetLastSelectedObject());
 		}
 		
 		return null;

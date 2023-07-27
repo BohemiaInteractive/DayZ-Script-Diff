@@ -24,8 +24,14 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 	
 	override protected void AddBleedingSource(int bit)
 	{
+		#ifdef DEVELOPER
+		if (m_Player && !m_Player.GetAllowDamage())//full invincibility prevents bleeding source creation
+			return;
+		#endif
+		
 		m_Player.SetBleedingBits(m_Player.GetBleedingBits() | bit );
 		super.AddBleedingSource(bit);
+		m_Player.OnBleedingSourceAdded();
 	}
 	
 	override protected bool RemoveBleedingSource(int bit)
@@ -33,6 +39,10 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 		if(!super.RemoveBleedingSource(bit))
 		{
 			Error("Failed to remove bleeding source:" + bit);
+		}
+		else
+		{
+			m_Player.OnBleedingSourceRemovedEx(m_Item);
 		}
 		
 		int inverse_bit_mask = ~bit;
@@ -150,27 +160,48 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 	void ProcessHit(float damage, EntityAI source, int component, string zone, string ammo, vector modelPos)
 	{
 		float dmg_max = m_Player.GetMaxHealth(zone, "Blood");
-		float bleed_threshold = GetGame().ConfigGetFloat( "CfgAmmo " + ammo + " DamageApplied " + "bleedThreshold" );
+		float bleed_threshold = GetGame().ConfigGetFloat("CfgAmmo " + ammo + " DamageApplied bleedThreshold");
+		string damageTypeString = GetGame().ConfigGetTextOut("CfgAmmo " + ammo + " DamageApplied type");
 		bleed_threshold = Math.Clamp(bleed_threshold,0,1);
-		//Print("dmg_max = " + dmg_max);
-		//Print("dmg = " + dmg);
-		//Print("bleed_threshold = " + bleed_threshold);
-
-		//hackerino for zombino:
-		if (source && source.IsZombie())
+		float bleedingChance;
+		bool createBleedingSource = false;
+		
+		// 'true' only when the damageTypeString is handled there
+		if (BleedChanceData.CalculateBleedChance(damageTypeString, damage, bleed_threshold,bleedingChance))
 		{
-			int chance = Math.RandomInt(0,100); //Cast die, probability comes from Blood damage in infected ammo config
+			float roll = Math.RandomFloat01();
+			createBleedingSource = bleedingChance != 0 && bleedingChance >= roll;
+			
+			#ifdef DEVELOPER
+			if (LogManager.IsBleedingChancesLogEnable())
+			{	
+				Debug.BleedingChancesLog(roll.ToString(), "BleedingSourcesManagerServer" , "n/a", "bleeding random roll:");
+			}
+			#endif
+		}
+		else if (source && source.IsZombie())
+		{
+			int chance = Math.RandomInt(0,100);
 			if (chance <= damage)
 			{
-				AttemptAddBleedingSource(component);
+				createBleedingSource = true;
 			}
 		}
 		else if (damage > (dmg_max * (1 - bleed_threshold)) )
 		{
-			AttemptAddBleedingSource(component);
-			//Print("BLEEDING");
+			createBleedingSource = true;
 		}
-
+		
+		if (createBleedingSource)
+		{
+			#ifdef DEVELOPER
+			if (LogManager.IsBleedingChancesLogEnable())
+			{	
+				Debug.BleedingChancesLog("true", "BleedingSourcesManagerServer" , "n/a", "Attempting to create bleeding source");
+			}
+			#endif
+			AttemptAddBleedingSource(component);
+		}
 	}
 	
 	void DebugActivateBleedingSource(int source)

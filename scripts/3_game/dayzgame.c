@@ -293,6 +293,9 @@ class LoginTimeBase extends LoginScreenBase
 		text = Widget.TranslateString(text);
 		text = string.Format(text, m_FullTime.m_Seconds, m_FullTime.m_Minutes, m_FullTime.m_Hours, m_FullTime.m_Days);
 		m_txtLabel.SetText(text);
+		
+		if (m_IsRespawn && time <= 1)
+			GetGame().SetLoginTimerFinished();
 	}
 		
 	void SetStatus(string status)
@@ -688,7 +691,6 @@ class LoadingScreen
 	ref UiHintPanelLoading m_HintPanel;
 	void LoadingScreen(DayZGame game)
 	{
-		
 		m_DayZGame = game;
 		
 		m_WidgetRoot = game.GetLoadingWorkspace().CreateWidgets("gui/layouts/loading.layout");
@@ -922,8 +924,11 @@ class DayZGame extends CGame
 	private bool 	m_IsConnecting;
 	private bool	m_ConnectFromJoin;
 	private bool	m_ShouldShowControllerDisconnect;
+	private bool	m_CursorDesiredVisibilityScript = true;
 	private int		m_PreviousGamepad;
 	private float	m_UserFOV;
+
+	private float	m_DeltaTime;
 
 	float 	m_volume_sound;
 	float 	m_volume_speechEX;
@@ -1017,12 +1022,15 @@ class DayZGame extends CGame
 		{
 			m_loading.ShowEx(this);
 		}
+
+		RefreshMouseCursorVisibility();
 	#endif
 			
 		Debug.Init();
 		Component.Init();
 		CachedObjectsParams.Init();
 		CachedObjectsArrays.Init();
+		BleedChanceData.InitBleedChanceData();
 		GetUApi().PresetSelect(GetUApi().PresetCurrent());
 
 		m_DayZProfileOptions = new DayZProfilesOptions();
@@ -1050,6 +1058,7 @@ class DayZGame extends CGame
 	private void ~DayZGame()
 	{
 		PPEManagerStatic.DestroyManagerStatic();
+		BleedChanceData.Cleanup();
 		NotificationSystem.CleanupInstance();
 		
 		g_Game = null;
@@ -1836,19 +1845,17 @@ class DayZGame extends CGame
 	// ------------------------------------------------------------
 	void LoginTimeCountdown()
 	{
-		// countdown on the login screen
-		if (m_LoginTimeScreen)
+		if (m_LoginTime > 0)
 		{
-			if (m_LoginTime > 0)
-			{
+			if (m_LoginTimeScreen)
 				m_LoginTimeScreen.SetTime(m_LoginTime);
-				m_LoginTime--;
-			}
-			else
-			{
-				// stop the call loop
-				CancelLoginTimeCountdown();
-			}
+
+			m_LoginTime--;
+		}
+		else
+		{
+			// stop the call loop
+			CancelLoginTimeCountdown();
 		}
 	}
 	
@@ -1873,8 +1880,10 @@ class DayZGame extends CGame
 			
 			GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this.LoginTimeCountdown, 1000, true);
 		}
+
 		if (GetPlayer())
 			GetPlayer().StopDeathDarkeningEffect();
+
 		PPERequesterBank.GetRequester(PPERequester_DeathDarkening).Start(new Param1<float>(1.0));
 	}
 	
@@ -1984,12 +1993,14 @@ class DayZGame extends CGame
 	// ------------------------------------------------------------
 	override void OnActivateMessage()
 	{
+		RefreshMouseCursorVisibility();
 	}
 
 	// ------------------------------------------------------------
 	override void OnDeactivateMessage()
 	{
-	}		
+		RefreshMouseCursorVisibility();
+	}
 	
 	// ------------------------------------------------------------
 	override bool OnInitialize()
@@ -2313,6 +2324,7 @@ class DayZGame extends CGame
 			}
 			
 			SelectGamepad();
+			g_Game.SetHudBrightness(g_Game.GetHUDBrightnessSetting());
 		}
 	}
 	
@@ -2777,8 +2789,7 @@ class DayZGame extends CGame
 		m_IsRightAltHolding  = false;
 	}
 
-	float m_DeltaTime;
-
+	// ------------------------------------------------------------
 	float GetDeltaT()
 	{
 		return m_DeltaTime;
@@ -3641,6 +3652,65 @@ class DayZGame extends CGame
 			m_ConnectedInputDeviceList = new array<int>;
 		}
 		return m_ConnectedInputDeviceList;
+	}
+	
+	void SetMouseCursorDesiredVisibility(bool visible)
+	{
+		m_CursorDesiredVisibilityScript = visible;
+
+		RefreshMouseCursorVisibility();
+	}
+	
+	bool GetMouseCursorDesiredVisibility()
+	{
+		return m_CursorDesiredVisibilityScript;
+	}
+	
+	//! extend as needed, only game focus and M&K setting (consoles only!) are checked natively
+	bool CanDisplayMouseCursor()
+	{
+		//! Only checking on console because while loading on PC, the mouse might not be detected
+#ifdef PLATFORM_CONSOLE
+		if (GetInput())
+		{
+			return GetInput().IsMouseConnected();
+		}
+#endif
+
+		//! Platform defaults
+#ifdef PLATFORM_CONSOLE
+		return false;
+#else
+		return true;
+#endif
+	}
+	
+	void RefreshMouseCursorVisibility()
+	{
+#ifndef NO_GUI
+#ifdef FEATURE_CURSOR
+		if (!IsAppActive())
+		{
+			ShowCursorWidget(true);
+		}
+		else
+#endif
+		{
+			bool showCursor = m_CursorDesiredVisibilityScript && CanDisplayMouseCursor();
+			
+			UIManager ui = GetUIManager();
+			if (ui)
+			{
+				//! Handles app active-ness
+				ui.ShowCursor(showCursor);
+			}
+			else
+			{
+				//! Fallback, just in-case
+				ShowCursorWidget(showCursor);
+			}
+		}
+#endif
 	}
 	
 	///////////////

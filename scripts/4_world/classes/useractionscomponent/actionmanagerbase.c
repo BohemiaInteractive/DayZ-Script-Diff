@@ -120,12 +120,15 @@ class ActionManagerBase
 			if (m_Interrupted)
 			{
 				LocalInterrupt();
-				m_Interrupted = false;
 			}
 			else if (m_CurrentActionData.m_State != UA_AM_PENDING && m_CurrentActionData.m_State != UA_AM_REJECTED && m_CurrentActionData.m_State != UA_AM_ACCEPTED)
 			{
 				m_CurrentActionData.m_Action.OnUpdate(m_CurrentActionData);
 			}
+		}
+		else if (m_Interrupted)
+		{
+			m_Interrupted = false;
 		}
 	}
 	
@@ -257,6 +260,8 @@ class ActionManagerBase
 	{
 		if (m_CurrentActionData && m_CurrentActionData.m_Action)
 			m_CurrentActionData.m_Action.Interrupt(m_CurrentActionData);
+		else
+			m_Interrupted = false;
 	} 
 	
 	void OnInteractAction(); //Interact

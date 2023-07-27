@@ -11,6 +11,7 @@ class WeaponChamberFromAttMag extends WeaponStateBase
 		if(e)
 		{
 			int mi = m_weapon.GetCurrentMuzzle();
+			m_weapon.SetCharged(true);
 			pushToChamberFromAttachedMagazine(m_weapon, mi);
 		}
 	}
@@ -56,5 +57,29 @@ class WeaponChamberFromAttMagOnExit extends WeaponStateBase
 	}
 };
 
+// load bullet from att mag (no anim)
+class WeaponEjectAndChamberFromAttMag extends WeaponEjectAllMuzzles
+{
+	void WeaponEjectAndChamberFromAttMag (Weapon_Base w = NULL, WeaponStateBase parent = NULL, int action = -1, int actionType = -1)
+	{ }
 
+	override void OnExit (WeaponEventBase e)
+	{
+		if (e)
+		{
+			int mi = m_weapon.GetCurrentMuzzle();
+			pushToChamberFromAttachedMagazine(m_weapon, mi);
+		}
+		super.OnExit(e);
+	}
+	override void OnAbort (WeaponEventBase e)
+	{
+		if (e)
+		{
+			int mi = m_weapon.GetCurrentMuzzle();
+			pushToChamberFromAttachedMagazine(m_weapon, mi);
+		}
+		super.OnAbort(e);
+	}
+};
 

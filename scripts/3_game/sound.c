@@ -52,8 +52,22 @@ class SoundObjectBuilder
 	}
 
 	proto native void Initialize(SoundParams soundParams);
-	proto native void UpdateEnvSoundControllers(vector position);
-	proto native void SetVariable(string name, float value);
+
+	proto native void AddEnvSoundVariables(vector position);
+	proto native void AddVariable(string name, float value);
+	proto void AddVariables(notnull array<string> names, array<float> values = null);
+	
+	//! Deprecated - same functionality, just poor naming
+	void UpdateEnvSoundControllers(vector position)
+	{
+		AddEnvSoundVariables(position);
+	}
+
+	//! Deprecated - same functionality, just poor naming
+	void SetVariable(string name, float value)
+	{
+		AddVariable(name, value);
+	}
 }
 
 
@@ -61,8 +75,22 @@ class SoundObject
 {
 	void SoundObject(SoundParams soundParams);
 	
+	proto void UpdateVariables(notnull array<float> values);
+
+	//! Note:	'SoundObject' is not an Entity, and therefore can not be accessed by using 'IEntity.GetChildren', 
+	//! 		though internally 'SoundObject.SetParent' is similiar to 'IEntity.AddChild' by creating an 'EntityHierarchyComponent'
+	proto native void SetParent(IEntity parent, int pivot = -1);
+	proto native IEntity GetParent();
+	proto native int GetHierarchyPivot();
+	
+	//! Note:	Sets the position locally if parented, retrieves globally with the sound offset
 	proto native void SetPosition(vector position);
 	proto native vector GetPosition();
+	
+	//! Note:	Sets the speed locally if parented, retrieves globally with the parent speed
+	proto native void SetSpeed(vector speed);
+	proto native vector GetSpeed();
+
 	proto native void SetOcclusionObstruction(float occlusion, float obstruction);
 	proto native void SetKind(WaveKind kind);
 	proto native void Initialize(SoundParams soundParams);
@@ -126,9 +154,10 @@ class AbstractWave
 	proto void SetVolumeRelative(float value);
 	proto void SetFrequency(float value);
 	proto float GetFrequency();
-	proto void SetPosition(vector position);
+	proto void SetPosition(vector position, vector velocity = "0 0 0");
 	proto void SetFadeInFactor(float volume);
 	proto void SetFadeOutFactor(float volume);
+	proto void SetDoppler(bool setDoppler);
 	proto void Skip(float timeSec);
 	proto bool IsHeaderLoaded();
 	

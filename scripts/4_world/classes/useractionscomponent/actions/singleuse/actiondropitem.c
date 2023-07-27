@@ -44,6 +44,11 @@ class ActionDropItem : ActionSingleUseBase
 	{
 		return false;
 	}
+	
+	override bool UseAcknowledgment()
+	{
+		return false;
+	}
 
 	override bool ActionConditionContinue(ActionData action_data)
 	{
@@ -64,6 +69,9 @@ class ActionDropItem : ActionSingleUseBase
 	
 	override void OnExecuteServer(ActionData action_data)
 	{
+		if (action_data.m_Player.IsPlacingServer())
+			action_data.m_Player.PlacingCancelServer();
+
 		if (!GetGame().IsMultiplayer()) 
 			PhysicalDropItem(action_data);
 	}

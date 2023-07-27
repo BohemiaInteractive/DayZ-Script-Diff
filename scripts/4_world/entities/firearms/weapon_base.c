@@ -49,6 +49,8 @@ class Weapon_Base extends Weapon
 	protected bool m_LiftWeapon = false;
 	protected bool m_BayonetAttached;
 	protected bool m_ButtstockAttached;
+	protected bool m_Charged = false;
+	protected bool m_WeaponOpen = false;
 	protected int m_BurstCount;
 	protected int m_BayonetAttachmentIdx;
 	protected int m_ButtstockAttachmentIdx;
@@ -116,13 +118,38 @@ class Weapon_Base extends Weapon
 	{
 		super.EEInit();
 		
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleGun );
+		if (GetGame().IsServer())
+		{
+			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleGun );
+		}
 	}
 	
 	void SetInitialState(WeaponStableState initState)
 	{
 		m_fsm.SetInitialState(initState);
+		SetCharged(!initState.IsDischarged());
+		SetWeaponOpen(!initState.IsWeaponOpen());
 		SetGroundAnimFrameIndex(initState.m_animState);
+	}
+	
+	bool IsCharged()
+	{
+		return m_Charged;
+	}
+	
+	void SetCharged(bool value)
+	{
+		m_Charged = value;
+	}	
+	
+	bool IsWeaponOpen()
+	{
+		return m_WeaponOpen;
+	}
+	
+	void SetWeaponOpen(bool value)
+	{
+		m_WeaponOpen = value;
 	}
 
 	override protected float GetWeightSpecialized(bool forceRecalc = false)
@@ -376,9 +403,20 @@ class Weapon_Base extends Weapon
 	void SyncSelectionState(bool has_bullet, bool has_mag)
 	{
 		if (has_bullet)
+		{	
+			string ChamberedAmmoTypeName;
+			float ChamberedAmmoDmg;
+			GetCartridgeInfo(0, ChamberedAmmoDmg, ChamberedAmmoTypeName);
+			EffectBulletShow(0, ChamberedAmmoDmg, ChamberedAmmoTypeName);
+			//ShowBullet(0);
 			SelectionBulletShow();
+		}
 		else
+		{	
+			//HideBullet(0);
 			SelectionBulletHide();
+			EffectBulletHide(0);
+		}
 
 		if (has_mag)
 			ShowMagazine();

@@ -371,6 +371,9 @@ class Container extends LayoutHolder
 	
 	bool CanOpenCloseContainer()
 	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
 		EntityAI focusedEntity = GetFocusedItem();
 		if (focusedEntity)
 		{
@@ -404,6 +407,9 @@ class Container extends LayoutHolder
 	
 	bool CanSplitEx(EntityAI focusedEntity)
 	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
 		if (focusedEntity)
 		{
 			return focusedEntity.CanBeSplit();
@@ -428,6 +434,9 @@ class Container extends LayoutHolder
 	
 	bool CanDropEx(EntityAI focusedEntity)
 	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
 		if (focusedEntity)
 		{
 			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
@@ -456,6 +465,9 @@ class Container extends LayoutHolder
 	
 	bool CanSwapOrTakeToHandsEx(EntityAI focusedEntity)
 	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
 		if (focusedEntity)
 		{
 			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
@@ -482,7 +494,7 @@ class Container extends LayoutHolder
 	}
 	
 	bool CanEquip()
-	{
+	{	
 		EntityAI focusedEntity = GetFocusedItem();
 		if (focusedEntity)
 		{
@@ -497,12 +509,30 @@ class Container extends LayoutHolder
 	
 	bool CanEquipEx(EntityAI focusedEntity)
 	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
 		bool found = false;
 		if (focusedEntity)
 		{
 			InventoryLocation il = new InventoryLocation;
-			found = GetGame().GetPlayer().GetInventory().FindFreeLocationFor(focusedEntity,FindInventoryLocationType.ATTACHMENT,il);
-
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			found = player.GetInventory().FindFreeLocationFor(focusedEntity,FindInventoryLocationType.ATTACHMENT,il);
+			
+			if (!found)
+			{
+				for (int i = 0; i < focusedEntity.GetInventory().GetSlotIdCount(); i++)
+				{				
+					int slot_id = focusedEntity.GetInventory().GetSlotId(i);
+					EntityAI slot_item = player.GetInventory().FindAttachment( slot_id );
+					if (slot_item && player.GetInventory().CanSwapEntitiesEx( focusedEntity, slot_item ))
+					{
+						found = true; 
+						break;
+					}
+					
+				}
+			}
 		}
 		return found;
 	}
@@ -523,14 +553,13 @@ class Container extends LayoutHolder
 	
 	bool CanTakeToInventoryEx(EntityAI focusedEntity)
 	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
 		if (focusedEntity)
 		{
-			
 			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-			if (focusedEntity.GetHierarchyRootPlayer() != player)
-			{
-				return player.GetInventory().CanAddEntityToInventory(focusedEntity,FindInventoryLocationType.CARGO);
-			}
+			return player.GetInventory().CanAddEntityToInventory(focusedEntity,FindInventoryLocationType.CARGO);
 		}
 		return false;
 	}
@@ -551,6 +580,9 @@ class Container extends LayoutHolder
 	
 	bool CanCombineEx(EntityAI focusedEntity)
 	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
 		if (focusedEntity)
 		{
 			EntityAI entityInHands = PlayerBase.Cast(GetGame().GetPlayer()).GetItemInHands();
@@ -566,6 +598,46 @@ class Container extends LayoutHolder
 	{
 		if( GetFocusedContainer() )
 			return GetFocusedContainer().CanCombineAmmo();
+		return false;
+	}
+	
+	bool CanAddToQuickbarEx(EntityAI focusedEntity)
+	{
+		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+			return false;
+		
+		if (focusedEntity)
+		{
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			if (focusedEntity.GetHierarchyRootPlayer() == player)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	bool AddItemToQuickbarRadial(EntityAI itemToAssign)
+	{
+		if ( CanAddToQuickbarEx(itemToAssign) )
+		{
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			DayZPlayerInventory dpi;
+			dpi = player.GetDayZPlayerInventory();
+			
+			if (itemToAssign && dpi && !dpi.IsProcessing())
+			{
+				RadialQuickbarMenu.SetItemToAssign(itemToAssign);
+				
+				//open radial quickbar menu
+				if (!GetGame().GetUIManager().IsMenuOpen(MENU_RADIAL_QUICKBAR))
+				{
+					RadialQuickbarMenu.OpenMenu(GetGame().GetUIManager().FindMenu(MENU_INVENTORY));
+				}				
+			}
+			return true;
+		}
 		return false;
 	}
 	

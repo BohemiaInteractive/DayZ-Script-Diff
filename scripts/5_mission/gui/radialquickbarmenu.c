@@ -805,8 +805,7 @@ class RadialQuickbarMenu extends UIScriptedMenu
 	protected void UpdateControlsElements()
 	{
 		Widget toolbarBackSpacer = layoutRoot.FindAnyWidget("BackSpacer");
-		//Widget toolbarNavigateSpacer = layoutRoot.FindAnyWidget("Navigate");
-		
+
 		RichTextWidget toolbarSelectIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("SelectIcon"));
 		RichTextWidget toolbarBackIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
 		
@@ -814,7 +813,7 @@ class RadialQuickbarMenu extends UIScriptedMenu
 		string backAction;
 		int controllerID;
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+		if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.MOUSE_AND_KEYBOARD)
 		{
 			selectAction = "UAMenuSelect";
 			backAction = "UAMenuBack";

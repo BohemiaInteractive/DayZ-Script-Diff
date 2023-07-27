@@ -168,15 +168,6 @@ class VehicleBattery : ItemBase
 		return m_EfficiencyDecayStart;
 	}
 	
-	//Update Battery energy level before it overrides quantity
-	override void SetCEBasedQuantity()
-	{
-		super.SetCEBasedQuantity();
-
-		if (GetCompEM())
-			GetCompEM().SetEnergy( GetCompEM().GetEnergyMax() * (GetQuantity() / GetQuantityMax()));
-	}
-	
 	override void OnEnergyConsumed()
 	{
 		super.OnEnergyConsumed();

@@ -110,7 +110,7 @@ class CAContinuousMineWood : CAContinuousBase
 				}
 				
 				m_CurrentAssumedDrops++;
-				if (m_CurrentAssumedDrops >= m_AmountOfDrops) //assumed end, client does not know the target is destroyed yet
+				if (m_AmountOfDrops > 0 && m_CurrentAssumedDrops >= m_AmountOfDrops) //assumed end, client does not know the target is destroyed yet
 				{
 					OnCompletePogress(action_data);
 					return UA_FINISHED;

@@ -1,7 +1,10 @@
 class ModsMenuSimple extends ScriptedWidgetEventHandler
 {
+	protected const int 									MOD_DISPLAY_COUNT_MAX = 3;
+	
 	protected Widget										m_Root;
 	protected Widget										m_MoreButton;
+	protected Widget										m_MoreHighlight;
 	protected ref map<ModInfo, ref ModsMenuSimpleEntry>		m_Data;
 	protected ModsMenuDetailed								m_DetailMenu;
 	
@@ -9,6 +12,7 @@ class ModsMenuSimple extends ScriptedWidgetEventHandler
 	{
 		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_simple.layout", parent);
 		m_MoreButton = m_Root.FindAnyWidget("ModMore");
+		m_MoreHighlight = m_Root.FindAnyWidget("ModMoreOverlay");
 		m_Data = new map<ModInfo, ref ModsMenuSimpleEntry>;
 		m_DetailMenu = detail_menu;
 		
@@ -23,43 +27,70 @@ class ModsMenuSimple extends ScriptedWidgetEventHandler
 
 	void LoadEntries(array<ref ModInfo> data)
 	{
-		int count;
-		if( data.Count() > 13 )
-		{
-			count = 13;
-			m_Root.FindAnyWidget("ModMore").Show(true);
-		}
-		else
-		{
-			count = data.Count();
-			m_Root.FindAnyWidget("ModMore").Show(false);
-		}
+		m_MoreButton.Show(data.Count() > MOD_DISPLAY_COUNT_MAX);
+		int count = Math.Clamp(data.Count(),0,MOD_DISPLAY_COUNT_MAX);
 		
-		bool has_mods = false;
-		for (int i = count - 1; i >= 0; i--)
+		for (int i = 0; i < count; i++)
 		{
-			ref ModsMenuSimpleEntry entry = new ModsMenuSimpleEntry(data.Get(i), i, m_Root, this);
-			m_Data.Insert(data.Get(i), entry);
-			has_mods = ( has_mods || !data.Get(i).GetIsDLC() );
+			ref ModsMenuSimpleEntry entry = new ModsMenuSimpleEntry(data[i], i, m_Root, this);
+			m_Data.Insert(data[i], entry);
 		}
-		
-		m_Root.FindAnyWidget("mods_separator_panel").Show( has_mods );
 	}
 	
-	void Select( ModInfo mod )
+	void Select(ModInfo mod)
 	{
 		m_DetailMenu.Open();
-		m_DetailMenu.Highlight( mod );
+		m_DetailMenu.Highlight(mod);
 	}
 	
 	override bool OnMouseButtonUp(Widget w, int x, int y, int button)
 	{
-		if( w == m_MoreButton )
+		if (w == m_MoreButton)
 		{
-			if( m_DetailMenu.IsOpen() )
+			if (m_DetailMenu.IsOpen())
 				m_DetailMenu.Close();
 			else
 				m_DetailMenu.Open();
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnMouseEnter(Widget w, int x, int y)
+	{
+		if (w == m_MoreButton)
+		{
+			m_MoreHighlight.Show(true);
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
+	{
+		if (enterW != m_MoreButton)
+		{
+			m_MoreHighlight.Show(false);
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnFocus(Widget w, int x, int y)
+	{
+		if (w == m_MoreButton)
+		{
+			m_MoreHighlight.Show(true);
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnFocusLost(Widget w, int x, int y)
+	{
+		if (w == m_MoreButton)
+		{
+			m_MoreHighlight.Show(false);
 			return true;
 		}
 		return false;

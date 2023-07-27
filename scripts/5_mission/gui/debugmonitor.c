@@ -66,7 +66,12 @@ class DebugMonitor
 		string position = string.Format(" %1 %2 %3", value[0].ToString(), value[1].ToString(), value[2].ToString());
 		m_pValuesListboxWidget.SetItem(3, position, NULL, 0);
 	}
-
+	
+	void Show()
+	{
+		m_WidgetRoot.Show(true);
+	}
+	
 	void Hide()
 	{
 		m_WidgetRoot.Show(false);

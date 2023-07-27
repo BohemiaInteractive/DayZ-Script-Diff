@@ -2,6 +2,23 @@
 //! NOTE: The deltaTime passed in is the one for the Insider specifically.
 class TriggerEvents : ScriptedEntity
 {	
+	protected ref ScriptInvoker		m_OnEnterInvoker;
+	protected ref ScriptInvoker		m_OnLeaveInvoker;
+	
+	ScriptInvoker GetOnEnterInvoker()
+	{
+		if ( !m_OnEnterInvoker )
+			m_OnEnterInvoker = new ScriptInvoker;
+		return m_OnEnterInvoker;
+	}
+	
+	ScriptInvoker GetOnLeaveInvoker()
+	{
+		if ( !m_OnLeaveInvoker )
+			m_OnLeaveInvoker = new ScriptInvoker;
+		return m_OnLeaveInvoker;
+	}
+	
 	/** \name OnEnter
  		Called when an object enters the trigger
 	*/
@@ -13,6 +30,9 @@ class TriggerEvents : ScriptedEntity
 		#endif
 		
 		OnEnterBeginEvent(insider);
+		
+		if (m_OnEnterInvoker)
+			m_OnEnterInvoker.Invoke(insider);
 		
 		if ( GetGame().IsServer() )
 			OnEnterServerEvent(insider);
@@ -113,6 +133,9 @@ class TriggerEvents : ScriptedEntity
 		#endif
 		
 		OnLeaveBeginEvent(insider);
+		
+		if (m_OnLeaveInvoker)
+			m_OnLeaveInvoker.Invoke(insider);
 		
 		if ( GetGame() && GetGame().IsServer() )
 			OnLeaveServerEvent(insider);

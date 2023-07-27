@@ -210,6 +210,10 @@ class UndergroundHandlerClient
 			m_AmbientSound.SetSoundVolume(1-m_EyeAcco);
 			//Print(m_AmbientSound.GetSoundVolume());
 		}
+		else
+		{
+			m_Player.PlaySoundSetLoop(m_AmbientSound, "Underground_SoundSet",3,3);
+		}
 	}
 	
 	void Tick(float timeSlice)

@@ -27,7 +27,6 @@ class EffectSound : Effect
 	*	Generic data for the sound
 	*/
 	//@{
-	protected Object					m_SoundParent;
 	protected WaveKind					m_SoundWaveKind;
 	protected string					m_SoundSetName;	
 	protected bool						m_SoundLoop;
@@ -38,6 +37,7 @@ class EffectSound : Effect
 	protected float						m_SoundWaveVolume;
 	protected float						m_SoundWaveVolumeMax;
 	protected float						m_SoundWaveTime;
+	protected int						m_SoundDoppler;
 	//@}
 	
 	/** \name Fading data
@@ -66,6 +66,7 @@ class EffectSound : Effect
 		m_SoundWaveVolumeMax = 1;
 		m_SoundAutodestroy = false;
 		m_SoundWaveStopping = false;
+		m_SoundDoppler = -1;
 	}
 	
 	/**
@@ -152,18 +153,21 @@ class EffectSound : Effect
 		
 		if (m_SoundSetName != "")
 		{
+			vector position = GetCurrentLocalPosition();
+
 			if ( SoundLoadEx(params) )
 			{
 				if (m_SetEnvVariables && m_SoundParams)
 				{
-					m_SoundObjectBuilder.UpdateEnvSoundControllers(GetPosition());
+					m_SoundObjectBuilder.AddEnvSoundVariables(GetPosition());
 					m_SoundObject = m_SoundObjectBuilder.BuildSoundObject();
 					m_SoundObject.SetKind( m_SoundWaveKind );
+					m_SoundObject.SetParent( m_ParentObject );
 				}
 				
 				if ( m_SoundObject )
 				{
-					SetCurrentPosition(GetPosition(), false);
+					SetCurrentLocalPosition(position, false);
 					m_SoundWaveObject = GetGame().GetSoundScene().Play3D( m_SoundObject, m_SoundObjectBuilder );
 					if( !m_SoundWaveObject )
 						return false;
@@ -308,7 +312,7 @@ class EffectSound : Effect
 			m_SoundObjectBuilder = new SoundObjectBuilder( m_SoundParams );
 			if (m_SetEnvVariables)
 			{
-				m_SoundObjectBuilder.UpdateEnvSoundControllers(GetPosition());
+				m_SoundObjectBuilder.AddEnvSoundVariables(GetPosition());
 			}
 			
 			m_SoundObject = m_SoundObjectBuilder.BuildSoundObject();
@@ -316,6 +320,7 @@ class EffectSound : Effect
 			if ( m_SoundObject )
 			{
 				m_SoundObject.SetKind( m_SoundWaveKind );
+				m_SoundObject.SetParent( m_ParentObject );
 			}
 			else
 			{
@@ -445,12 +450,10 @@ class EffectSound : Effect
 	{
 		if ( IsSoundPlaying() )
 		{
-			// Make the sound follow the parent
-			if ( m_SoundParent )
+			if (m_SoundDoppler != -1)
 			{
-				SetCurrentPosition( m_SoundParent.ModelToWorld( GetLocalPosition() ) );
-			}
-			
+				m_SoundWaveObject.SetDoppler(m_SoundDoppler);
+			}	
 			// FadeIn
 			if ( m_SoundWaveStarting )
 			{
@@ -628,14 +631,16 @@ class EffectSound : Effect
 	
 	/**
 	\brief Set parent for the sound to follow
-		\note The position of the sound is adjusted to the parent in Event_OnFrameUpdate...
-		\note There is no real parenting with sound, so the setters and getters for parents do the exact same
 		\param parent_obj \p Object The parent for the sound to follow
 	*/
 	override void SetParent(Object parent_obj)
 	{
 		super.SetParent(parent_obj); // ...
-		m_SoundParent = parent_obj; // ......
+
+		if (m_SoundObject)
+		{
+			m_SoundObject.SetParent(parent_obj);
+		}
 	}
 	
 	/**
@@ -644,24 +649,10 @@ class EffectSound : Effect
 	*/
 	override Object GetParent()
 	{
-		// .........
-		if (m_SoundParent)
-			return m_SoundParent;
+		if (m_SoundObject)
+			return Object.Cast(m_SoundObject.GetParent());
 		else
 			return super.GetParent();
-	}
-	
-	/**
-	\brief Set parent for the sound to follow
-		\note The position of the sound is adjusted to the parent in Event_OnFrameUpdate...
-		\note There is no real parenting with sound, so the setters and getters for parents do the exact same
-		\param parent_obj \p Object The parent for the sound to follow
-		\param updateCached \p bool Whether to update the cached variable
-	*/
-	override void SetCurrentParent(Object parent_obj, bool updateCached = true)
-	{
-		super.SetCurrentParent(parent_obj, updateCached); // ...
-		m_SoundParent = parent_obj; // ......
 	}
 	
 	/**
@@ -671,9 +662,8 @@ class EffectSound : Effect
 	*/
 	override Object GetCurrentParent()
 	{
-		// .........
-		if (m_SoundParent)
-			return m_SoundParent;
+		if (m_SoundObject)
+			return Object.Cast(m_SoundObject.GetParent());
 		else
 			return super.GetParent(); // Yes, intentionally this one
 	}
@@ -688,7 +678,14 @@ class EffectSound : Effect
 		super.SetCurrentPosition(pos, updateCached);
 		
 		if (m_SoundObject)
+		{
+			Object parent = GetParent();
+			
+			if (parent)
+				pos = parent.WorldToModel(pos);
+
 			m_SoundObject.SetPosition(pos);
+		}
 	}
 	
 	/**
@@ -699,8 +696,11 @@ class EffectSound : Effect
 	{
 		if (m_SoundObject)
 			return m_SoundObject.GetPosition();
-		else
-			return super.GetCurrentPosition();
+		
+		if (m_ParentObject)
+			return m_ParentObject.ModelToWorld(GetPosition());
+
+		return GetPosition();
 	}
 	
 	/**
@@ -714,12 +714,7 @@ class EffectSound : Effect
 				
 		if (m_SoundObject)
 		{
-			Object parent = GetParent();
-			
-			if (parent)
-				m_SoundObject.SetPosition(parent.ModelToWorld(pos));
-			else
-				m_SoundObject.SetPosition(pos);
+			m_SoundObject.SetPosition(pos);
 		}
     }
 
@@ -733,13 +728,14 @@ class EffectSound : Effect
 		{
 			Object parent = GetParent();
 			
+			//TODO(kumarjac): Create and expose 'SoundObject.GetLocalPosition'
 			if (parent)
 				return parent.WorldToModel(m_SoundObject.GetPosition());
 			else
 				return m_SoundObject.GetPosition();
 		}
 		else
-			return super.GetCurrentLocalPosition();
+			return GetPosition();
 	}
 	
 	/**
@@ -784,8 +780,8 @@ class EffectSound : Effect
 	}
 	
 	/**
-	\brief Sets whether UpdateEnvSoundControllers needs to be called during Loading
-		\param setEnvVariables \p bool Whether UpdateEnvSoundControllers is called
+	\brief Sets whether AddEnvSoundVariables needs to be called during Loading
+		\param setEnvVariables \p bool Whether AddEnvSoundVariables is called
 	*/
 	void SetEnviromentVariables(bool setEnvVariables)
 	{
@@ -870,6 +866,20 @@ class EffectSound : Effect
 	void SetSoundFadeOut(float fade_out)
 	{
 		m_SoundFadeOutDuration = fade_out;
+	}
+
+	/**
+	\brief Set if the sound has the doppler effect enabled
+		\param setDoppler \p float If the doppler effect is enabled
+	*/
+	void SetDoppler(bool setDoppler)
+	{
+		//! bool is a fancy int, ensure the bool is 0 or 1 and don't allow -1 here since resetting isn't supported
+		m_SoundDoppler = 0;
+		if (setDoppler)
+		{
+			m_SoundDoppler = 1;
+		}
 	}
 	
 	//@}

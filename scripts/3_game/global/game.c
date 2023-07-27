@@ -211,6 +211,11 @@ class CGame
 	proto native void		RequestRestart(int code);
 
 	/**
+  \brief Returns if the application is focused on PC, returns true always on console
+	*/
+	proto native bool		IsAppActive();
+
+	/**
   \brief Gets the server address. (from client)
 	*/
 	proto bool				GetHostAddress( out string address, out int port );
@@ -983,6 +988,7 @@ class CGame
 	proto native void		AbortMission();
 	proto native void		RespawnPlayer();
 	proto native bool		CanRespawnPlayer();
+	proto native void		SetLoginTimerFinished();
 
 	proto native void		SetMainMenuWorld(string world);
 	proto native owned string GetMainMenuWorld();	

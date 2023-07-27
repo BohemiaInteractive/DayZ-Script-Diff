@@ -75,12 +75,11 @@ class MissionServer extends MissionBase
 	
 	override void OnInit()
 	{
-		//Print("OnInit()");
 		super.OnInit();
 		CfgGameplayHandler.LoadData();
 		UndergroundAreaLoader.SpawnAllTriggerCarriers();
 		//Either pass consts in Init.c or insert all desired coords (or do both ;))
-		m_FiringPos = new array<vector>;
+		m_FiringPos = new array<vector>();
 	}
 	
 	override void OnMissionStart()
@@ -106,7 +105,6 @@ class MissionServer extends MissionBase
 	
 	override void OnGameplayDataHandlerLoad()
 	{
-		//Print("MissionServer - OnGameplayDataHandlerLoad()");
 		m_RespawnMode = CfgGameplayHandler.GetDisableRespawnDialog();
 		GetGame().SetDebugMonitorEnabled(GetGame().ServerConfigGetInt("enableDebugMonitor"));
 		

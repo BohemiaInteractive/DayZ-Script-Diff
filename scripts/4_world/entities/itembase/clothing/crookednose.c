@@ -10,4 +10,13 @@ class CrookedNose extends Mask_Base
 		
 		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_HEADGEAR_HELMET_0);
 	}
+	
+	override protected set<int> GetAttachmentExclusionInitSlotValue(int slotId)
+	{
+		set<int> ret = super.GetAttachmentExclusionInitSlotValue(slotId);
+		
+		//allows shaving
+		ret.RemoveItem(EAttExclusions.SHAVING_MASK_ATT_0);
+		return ret;
+	}
 }

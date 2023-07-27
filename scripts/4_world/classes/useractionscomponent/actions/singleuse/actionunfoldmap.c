@@ -227,17 +227,6 @@ class ActionUnfoldMap: ActionBase
 		}
 		
 		super.Interrupt(action_data);
-		
-		if ( action_data.m_Callback )
-		{
-			action_data.m_Callback.Cancel();
-		}
-		else
-		{
-			End( action_data );
-		}
-		
-		action_data.m_State = UA_INTERRUPT;
 	}
 	
 	void OpenMap( ActionData action_data )

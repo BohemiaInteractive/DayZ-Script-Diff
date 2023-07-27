@@ -128,12 +128,12 @@ class HandAnimatedMovingToAtt extends HandStateBase
 		}
 		else
 		{
-			GetGame().ClearJuncture(e.m_Player, m_Entity);
+			GetGame().ClearJunctureEx(e.m_Player, m_Entity);
 		}
 		
 		m_Entity = null;
 		m_ilEntity = null;
-
+		
 		super.OnAbort(e);
 	}
 

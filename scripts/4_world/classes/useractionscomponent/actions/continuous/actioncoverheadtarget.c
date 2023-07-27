@@ -38,12 +38,10 @@ class ActionCoverHeadTarget: ActionContinuousBase
 	}
 
 	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		//setaperture will be called from here, or from statemachine
+	{
 		PlayerBase ntarget;
-		Class.CastTo(ntarget, action_data.m_Target.GetObject());
 		
-		if (CanReceiveAction(action_data.m_Target))
+		if (Class.CastTo(ntarget, action_data.m_Target.GetObject()) && CanReceiveAction(action_data.m_Target))
 		{
 			CoverHeadOfTargetPlayerLambda lambda = new CoverHeadOfTargetPlayerLambda(action_data.m_MainItem, "BurlapSackCover", ntarget);
 			action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere(lambda);
@@ -52,28 +50,13 @@ class ActionCoverHeadTarget: ActionContinuousBase
 		}
 	}
 	
-	/*
-	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		//setaperture will be called from here, or from statemachine
-		GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
-		PlayerBase ntarget;
-		Class.CastTo(ntarget, action_data.m_Target.GetObject());
-		ntarget.GetInventory().CreateInInventory("BurlapSackCover");
-		//ntarget.CreateInInventory("BurlapSackCover","cargo_headgear");
-		action_data.m_MainItem.TransferModifiers(ntarget);
-		action_data.m_MainItem.Delete();
-		GetInventory().LockInventory(LOCK_FROM_SCRIPT);
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
-	}
-*/
 	bool IsWearingHeadgear( PlayerBase player)
 	{
 		if ( player.GetInventory().FindAttachment(InventorySlots.HEADGEAR) )
 		{
 			return true;
 		}
-		return false;		
+		return false;
 	}
 };
 
@@ -88,12 +71,5 @@ class CoverHeadOfTargetPlayerLambda : TurnItemIntoItemLambda
 		InventoryLocation targetAtt = new InventoryLocation;
 		targetAtt.SetAttachment(m_TargetPlayer, NULL, InventorySlots.HEADGEAR);
 		OverrideNewLocation(targetAtt);
-	}
-	
-	override void OnSuccess(EntityAI entity)
-	{
-		super.OnSuccess(new_item);
-
-		//m_TargetPlayer.SetRestrained(true);
 	}
 };

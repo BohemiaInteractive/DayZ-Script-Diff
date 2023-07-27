@@ -107,7 +107,6 @@ class Land_Underground_EntranceBase : House
 	
 	void NavmeshUpdate()
 	{
-		GetGame().UpdatePathgraphRegionByObject(this);
 	}
 	
 	void OnUpdateClient(float timeSlice);
@@ -123,6 +122,9 @@ class Land_Underground_EntranceBase : House
 	{
 		m_AnimPhase = m_AnimTimerDoorServer.GetValue() / AdjustTime(GetOpeningTime());// make 0..1
 		SetAnimationPhaseNow("EntranceDoor",m_AnimPhase);
+
+		GetGame().GetWorld().UpdatePathgraphDoorByAnimationSourceName(this, "EntranceDoor");
+
 		SetSynchDirty();
 	}
 	

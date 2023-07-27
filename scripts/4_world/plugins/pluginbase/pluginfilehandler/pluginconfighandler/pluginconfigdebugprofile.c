@@ -1032,7 +1032,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		
 		if ( param == NULL )
 		{
-			return -1;
+			return 1;
 		}
 		else
 		{

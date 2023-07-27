@@ -303,7 +303,7 @@ class SceneEditorMenu extends UIScriptedMenu
 					quantity = m_ConfigDebugProfile.GetItemQuantity( preset_name, i );
 				}
 				
-				m_Developer.SpawnEntityInInventory(player, preset_array.Get(i), health, quantity);
+				m_Developer.SpawnEntityInPlayerInventory(player, preset_array.Get(i), health, quantity);
 			}
 		}
 	}
@@ -505,7 +505,7 @@ class SceneEditorMenu extends UIScriptedMenu
 					health = m_ConfigDebugProfile.GetItemHealth( GetCurrentPresetName(), GetCurrentItemIndex() );
 					quantity = m_ConfigDebugProfile.GetItemQuantity( GetCurrentPresetName(), GetCurrentItemIndex() );
 				}
-				m_Developer.SpawnEntityInInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_SelectedObject, health, quantity);
+				m_Developer.SpawnEntityInPlayerInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_SelectedObject, health, quantity);
 				return true;
 			}
 		}
@@ -627,7 +627,7 @@ class SceneEditorMenu extends UIScriptedMenu
 
 				case m_SpawnInInventoryButton:
 				{
-					m_Developer.SpawnEntityInInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_SelectedObject, health, quantity);
+					m_Developer.SpawnEntityInPlayerInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_SelectedObject, health, quantity);
 					break;
 				}
 			}

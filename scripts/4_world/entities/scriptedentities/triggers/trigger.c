@@ -55,7 +55,7 @@ class Trigger : TriggerEvents
 		SetEventMask(EntityEvent.INIT /*| EntityEvent.TOUCH*/ | EntityEvent.FRAME | EntityEvent.ENTER | EntityEvent.LEAVE );
 		SetFlags(EntityFlags.TRIGGER, false);
 		
-		m_insiders = new array<ref TriggerInsider>;
+		m_insiders = new array<ref TriggerInsider>;		
 	}
 	
 	//! dtor
@@ -257,11 +257,6 @@ class Trigger : TriggerEvents
 		#ifdef TRIGGER_DEBUG_NORMAL
 		Debug.TriggerLog(string.Format("%1: inserted at index %2", GetDebugName(obj), index), "Trigger", "", "AddInsider", GetDebugName(this));
 		#endif
-						
-		//!DEBUG
-		#ifdef DIAG_DEVELOPER
-		DebugSendDmgTrigger();
-		#endif
 	}
 	
 	//! Removing of TriggerInsider
@@ -278,11 +273,6 @@ class Trigger : TriggerEvents
 			m_insiders.Remove(index);
 		else
 			m_insiders.RemoveItemUnOrdered(insider);
-		
-		//!DEBUG
-		#ifdef DIAG_DEVELOPER
-		DebugSendDmgTrigger();
-		#endif
 	}
 	
 	//! Removing of TriggerInsider through Object
@@ -306,11 +296,10 @@ class Trigger : TriggerEvents
 	//! Update the current TriggerInsider inside the Trigger, timeout paramter is deprecated
 	protected void UpdateInsiders(int timeout)
 	{
-		//!DEBUG
 		#ifdef DIAG_DEVELOPER
 		DebugSendDmgTrigger();
 		#endif
-		
+
 		// Don't do anything if there aren't any insiders
 		if ( m_insiders.Count() == 0 )
 			return;
@@ -361,14 +350,15 @@ class Trigger : TriggerEvents
 	override void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx)
 	{	
 		super.OnRPC(sender, rpc_type, ctx);
+
 		#ifdef DIAG_DEVELOPER
-		switch ( rpc_type )
+		switch (rpc_type)
 		{
 			case ERPCs.DIAG_TRIGGER_DEBUG:
 				DebugTriggerInfo data = new DebugTriggerInfo(vector.Zero, vector.Zero, vector.Zero, vector.Zero, 0, "", null);
 			
-				if ( ctx.Read( data ) )
-					DebugDmgTrigger( data.param1, data.param2, data.param3, data.param4, data.param5, data.param6, data.param7 );
+				if (ctx.Read(data))
+					DebugDmgTrigger(data.param1, data.param2, data.param3, data.param4, data.param5, data.param6, data.param7);
 			break;
 		}
 		#endif
@@ -389,22 +379,22 @@ class Trigger : TriggerEvents
 		data.param6 = m_DebugAreaType;
 		data.param7 = m_insiders;
 		
-		if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
+		if (GetGame().IsMultiplayer() && GetGame().IsServer())
 			PluginDiagMenuServer.SendDataToSubscribersServer(this, ESubscriberSystems.TRIGGERS, ERPCs.DIAG_TRIGGER_DEBUG, data, false);
 		else if (!GetGame().IsMultiplayer() || m_Local)
-			DebugDmgTrigger( data.param1, data.param2, data.param3, data.param4, data.param5, data.param6, data.param7 );
+			DebugDmgTrigger(data.param1, data.param2, data.param3, data.param4, data.param5, data.param6, data.param7);
 	}
 	
 	protected ref array<Shape> dbgTargets = new array<Shape>();
 	
 	void DebugDmgTrigger( vector pos, vector orientation, vector min, vector max, float radius, string dmgType, array<ref TriggerInsider> insiders)
 	{
-		CleanupDebugShapes( dbgTargets );
-		
+		CleanupDebugShapes(dbgTargets);
+
 		bool enableDebug = DiagMenu.GetBool(DiagMenuIDs.TRIGGER_DEBUG);
-		if ( enableDebug )
+		if (enableDebug)
 		{
-			if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
+			if (GetGame().IsMultiplayer() && GetGame().IsServer())
 			{
 				return;
 			}
@@ -436,21 +426,21 @@ class Trigger : TriggerEvents
 				break;
 			}
 			
-			if ( GetGame().IsMultiplayer() || GetGame().IsServer() )
+			if (GetGame().IsMultiplayer() || GetGame().IsServer())
 				m_dbgInsiders = insiders;
 		
-			if ( m_dbgInsiders.Count() > 0 )
+			if (m_dbgInsiders.Count() > 0)
 			{
 				//Change colour to make state clearer
-				dbgShape.SetColor( COLOR_YELLOW_A );
+				dbgShape.SetColor(COLOR_YELLOW_A);
 				
-				for ( int i = 0; i < m_dbgInsiders.Count(); i++ )
+				for (int i = 0; i < m_dbgInsiders.Count(); i++)
 				{
-					EntityAI insider_EAI = EntityAI.Cast( m_dbgInsiders[i].GetObject() );
-					if ( insider_EAI )
+					EntityAI insider_EAI = EntityAI.Cast(m_dbgInsiders[i].GetObject());
+					if (insider_EAI)
 					{
 						vector insiderPos = insider_EAI.GetWorldPosition() + "0 0.1 0";						
-						dbgTargets.Insert( Debug.DrawArrow( w_pos, insiderPos ) );
+						dbgTargets.Insert(Debug.DrawArrow(w_pos, insiderPos));
 					}
 				}
 			}
@@ -463,23 +453,23 @@ class Trigger : TriggerEvents
 
 		switch (GetTriggerShape())
 		{
-		case TriggerShape.BOX:
-			dbgShape = Debug.DrawBox(min, max, color);
-
-			vector mat[4];
-			GetTransform(mat);
-			dbgShape.CreateMatrix(mat);
-			dbgShape.SetMatrix(mat);
-		break;
-		case TriggerShape.CYLINDER:
-			dbgShape = Debug.DrawCylinder(pos, radius, max[1], color, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE);
-		break;
-		case TriggerShape.SPHERE:
-			dbgShape = Debug.DrawSphere(pos, radius, color, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE);
-		break;
-		default:
-			ErrorEx("TriggerShape not found", ErrorExSeverity.WARNING);
-		break;
+			case TriggerShape.BOX:
+				dbgShape = Debug.DrawBoxEx(min, max, color, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE);
+	
+				vector mat[4];
+				GetTransform(mat);
+				dbgShape.CreateMatrix(mat);
+				dbgShape.SetMatrix(mat);
+				break;
+			case TriggerShape.CYLINDER:
+				dbgShape = Debug.DrawCylinder(pos, radius, max[1], color, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE);
+				break;
+			case TriggerShape.SPHERE:
+				dbgShape = Debug.DrawSphere(pos, radius, color, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE);
+				break;
+			default:
+				ErrorEx("TriggerShape not found", ErrorExSeverity.WARNING);
+				break;
 		}
 
 		dbgTargets.Insert(dbgShape);
@@ -489,9 +479,9 @@ class Trigger : TriggerEvents
 	
 	protected void CleanupDebugShapes(array<Shape> shapes)
 	{
-		for (int it = 0; it < shapes.Count(); ++it)
+		foreach (Shape shape : shapes)
 		{
-			Debug.RemoveShape(shapes[it]);
+			Debug.RemoveShape(shape);
 		}
 
 		shapes.Clear();

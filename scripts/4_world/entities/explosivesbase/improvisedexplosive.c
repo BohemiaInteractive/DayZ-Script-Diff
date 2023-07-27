@@ -90,6 +90,16 @@ class ImprovisedExplosive : ExplosivesBase
 		}
 	}
 	
+	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
+	{
+		super.OnPlacementComplete(player, position, orientation);
+		
+		if (GetGame().IsServer())
+		{
+			SetOrientation(vector.Up);
+		}
+	}
+	
 	override void EEItemLocationChanged(notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc)
 	{
 		super.EEItemLocationChanged(oldLoc, newLoc);
@@ -302,10 +312,10 @@ class ImprovisedExplosive : ExplosivesBase
 			for (attachmentIdx = 0; attachmentIdx < attachmentsCache.Count(); attachmentIdx++)
 			{
 				attachment = ItemBase.Cast(attachmentsCache[attachmentIdx]);
-				if (attachment.IsAnyInherited({RemoteDetonator,ClockBase}))
+				if (attachment.IsAnyInherited({RemoteDetonator, ClockBase}))
 				{
 					//! defer damage to trigger attachments to allow ringing
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment.SetGlobalHealth, delayFor * 1000, false, "", "", 0.0);
+					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment.SetGlobalHealth, delayFor * 1000, false, 0.0);
 				}
 
 				if (attachment && !attachment.IsAnyInherited({RemoteDetonator, ClockBase}))

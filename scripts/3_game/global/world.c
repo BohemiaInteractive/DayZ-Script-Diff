@@ -107,6 +107,12 @@ class World: Managed
 	*/	
 	proto native AIWorld GetAIWorld();
 	
+	/**
+	For entities that aren't a house, any animation source that contains "door" is treated as a door by the pathgraph.
+	Using the phase value where 0=CLOSED, 1=OPENED, we can update the state of the door without regenerating the tile
+	*/	
+	proto native void UpdatePathgraphDoorByAnimationSourceName(notnull Object object, string animSourceName);
+	
 	proto native void MarkObjectForPathgraphUpdate(Object object);
 	proto native void ProcessMarkedObjectsForPathgraphUpdate();
 

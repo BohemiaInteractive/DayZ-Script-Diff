@@ -687,10 +687,6 @@ class EmoteSuicide extends EmoteBase
 			if (callback_ID == DayZPlayerConstants.CMD_SUICIDEFB_PISTOL || callback_ID == DayZPlayerConstants.CMD_SUICIDEFB_RIFLE)
 				m_Player.OverrideShootFromCamera(false);
 		}
-		else if (callback_ID < 0)
-		{
-			m_Player.SetInventorySoftLock(false);
-		}
 	}
 	
 	override void OnCallbackEnd()

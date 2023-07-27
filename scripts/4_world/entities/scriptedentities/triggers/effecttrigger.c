@@ -2,19 +2,22 @@
 // Registers in TriggerEffectManager and handles parameter setting through cfgEffectArea.json file
 class EffectTrigger : CylinderTrigger
 {
-	int m_AroundPartId; // The main particles spawned around player when in trigger
-	int m_TinyPartId; // The smaller particles spawned around player when in trigger
-	int m_PPERequester; // The Post Processing used when player is in trigger
-	float m_DeltaTime;
-	float m_TimeAccuStay;
-	bool m_DealDamageFlag;
-	TriggerEffectManager m_Manager;
+	int 					m_AroundPartId; // The main particles spawned around player when in trigger
+	int 					m_TinyPartId; // The smaller particles spawned around player when in trigger
+	int 					m_PPERequester; // The Post Processing used when player is in trigger
+	float 					m_DeltaTime;
+	float 					m_TimeAccuStay;
+	bool 					m_DealDamageFlag;
+	TriggerEffectManager 	m_Manager;
+	EffectArea 				m_EffectArea;
+	int						m_EffectsPriority;
 	
 	void EffectTrigger()
 	{
 		RegisterNetSyncVariableInt("m_AroundPartId");
 		RegisterNetSyncVariableInt("m_TinyPartId");
 		RegisterNetSyncVariableInt("m_PPERequester");
+		RegisterNetSyncVariableInt("m_EffectsPriority");
 		
 		m_Manager = TriggerEffectManager.GetInstance();
 		m_Manager.RegisterTriggerType( this );
@@ -33,6 +36,21 @@ class EffectTrigger : CylinderTrigger
 		SetSynchDirty();
 	}
 	
+	EffectArea GetEffectArea()
+	{
+		return m_EffectArea;
+	}
+	
+	void Init(EffectArea area, int priority)
+	{
+		m_EffectArea = area;
+		m_EffectsPriority = priority;
+	}
+	
+	int GetEffectsPriority()
+	{
+		return m_EffectsPriority;
+	}
 	
 	string GetAmbientSoundsetName()
 	{
@@ -66,6 +84,7 @@ class EffectTrigger : CylinderTrigger
 	
 	override bool CanAddObjectAsInsider(Object object)
 	{
+		#ifdef SERVER
 		DayZCreatureAI creature = DayZCreatureAI.Cast( object );
 		if(creature)
 		{
@@ -76,9 +95,19 @@ class EffectTrigger : CylinderTrigger
 			PlayerBase player = PlayerBase.Cast(object);
 			return player != null;
 		}
+		#else
+		PlayerBase player = PlayerBase.Cast(object);
+		return (player && player.IsControlledPlayer());
+		#endif
 	}
 	
-	
+	override protected void OnStayClientEvent(TriggerInsider insider, float deltaTime) 
+	{
+		super.OnStayClientEvent(insider, deltaTime);
+		PlayerBase player = PlayerBase.Cast(insider.GetObject());
+		if (player)
+			player.RequestTriggerEffect(this, m_PPERequester, m_AroundPartId, m_TinyPartId, GetAmbientSoundsetName() );
+	}
 	
 	override void OnEnterServerEvent( TriggerInsider insider )
 	{
@@ -110,7 +139,7 @@ class EffectTrigger : CylinderTrigger
 			// We will only handle the controlled player, as effects are only relevant to this player instance
 			if (playerInsider && playerInsider.IsControlledPlayer() )
 			{
-				SetupClientEffects(true, playerInsider);
+				//SetupClientEffects(true, playerInsider);
 				// We then handle the update of player trigger state in manager
 				m_Manager.OnPlayerEnter( playerInsider, this );
 			}
@@ -148,7 +177,7 @@ class EffectTrigger : CylinderTrigger
 			{
 				// We first handle the update of player trigger state in manager
 				m_Manager.OnPlayerExit( playerInsider, this );
-				SetupClientEffects(false, playerInsider);
+				//SetupClientEffects(false, playerInsider);
 			}
 		}
 	}

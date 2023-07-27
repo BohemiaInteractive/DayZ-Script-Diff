@@ -46,7 +46,7 @@ class SlotsContainer: Container
 	{
 		if ( index >= 0 && index < m_Icons.Count() )
 		{
-			m_Icons.Get( index ).GetCursorWidget().Show( true );
+			m_Icons.Get( index ).GetSelectedPanel().Show( true );
 		}
 		UpdateIcon();
 	}
@@ -141,8 +141,8 @@ class SlotsContainer: Container
 		float x, y;
 		SlotsIcon icon = GetSlotIcon( m_FocusedColumn );
 			
-		icon.GetCursorWidget().Show( true );
-		icon.GetCursorWidget().GetScreenPos( x, y );
+		icon.GetSelectedPanel().Show( true );
+		icon.GetSelectedPanel().GetScreenPos( x, y );
 	
 		EntityAI focused_item = GetFocusedItem();
 		if ( focused_item )
@@ -151,7 +151,7 @@ class SlotsContainer: Container
 		}
 		else
 		{
-			PrepareOwnedSlotsTooltip( icon.GetCursorWidget(), icon.GetSlotDisplayName(), icon.GetSlotDesc(), x, y );
+			PrepareOwnedSlotsTooltip( icon.GetSelectedPanel(), icon.GetSlotDisplayName(), icon.GetSlotDesc(), x, y );
 		}
 	}
 	
@@ -159,13 +159,13 @@ class SlotsContainer: Container
 	{
 		for (int i = 0; i < m_Icons.Count(); i++)
 		{
-			m_Icons.Get( i ).GetCursorWidget().Show( false );
+			m_Icons.Get( i ).GetSelectedPanel().Show( false );
 		}
 	}
 	
 	override void Unfocus()
 	{
-		Widget w = m_Icons.Get( m_FocusedColumn ).GetCursorWidget();
+		Widget w = m_Icons.Get( m_FocusedColumn ).GetSelectedPanel();
 		if ( w )
 		{
 			w.Show( false );
@@ -179,7 +179,7 @@ class SlotsContainer: Container
 		
 		if( item && !item.IsLockedInSlot() && !icon.IsOutOfReach() && !icon.IsReserved() && item.IsTakeable())
 		{
-			ItemManager.GetInstance().SetSelectedItem( item, null, icon.GetCursorWidget(), icon );
+			ItemManager.GetInstance().SetSelectedItemEx(item, null, icon);
 			return true;
 		}
 		return false;

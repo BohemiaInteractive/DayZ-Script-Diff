@@ -1,58 +1,45 @@
-class ActionPullOutPlug: ActionInteractBase
+class ActionPullOutPlug : ActionInteractBase
 {
 	void ActionPullOutPlug()
 	{
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_INTERACTONCE;
+
 		m_Text = "#pull_out_plug";
 	}
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		Object targetObject = target.GetObject();
-		EntityAI target_EAI = EntityAI.Cast( target.GetObject() );
+		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
 		
-		if ( target_EAI.HasEnergyManager() )
+		if (targetEntity.HasEnergyManager())
 		{
-			string selection = targetObject.GetActionComponentName(target.GetComponentIndex());
+			string selection = targetEntity.GetActionComponentName(target.GetComponentIndex());
 			
 			
-			if ( GetGame().IsServer() )
-			{
-				EntityAI device = target_EAI.GetCompEM().GetPlugOwner(selection);
-				
-				if ( device )
-				{
-					return true;
-				}
-			}
+			if (GetGame().IsServer())
+				return targetEntity.GetCompEM().GetPlugOwner(selection) != null;
 			else
-			{
-				return target_EAI.GetCompEM().IsSelectionAPlug(selection);
-			}
+				return targetEntity.GetCompEM().IsSelectionAPlug(selection);
 		}
 		
 		return false;
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{	
 		Object targetObject = action_data.m_Target.GetObject();
-		if ( targetObject )
+		if (targetObject)
 		{
-			EntityAI target_EAI = EntityAI.Cast( targetObject );
+			EntityAI targetEntity = EntityAI.Cast(targetObject);
 			string selection = targetObject.GetActionComponentName(action_data.m_Target.GetComponentIndex());
 			
-			EntityAI device = EntityAI.Cast( target_EAI.GetCompEM().GetPlugOwner(selection) );
-			if ( device )
-			{
+			EntityAI device = EntityAI.Cast(targetEntity.GetCompEM().GetPlugOwner(selection));
+			if (device)
 				device.GetCompEM().UnplugThis();
-			}
 			
 			// Disable Advanced Placement
-			if ( action_data.m_Player.IsPlacingServer() )
-			{
+			if (action_data.m_Player.IsPlacingServer())
 				action_data.m_Player.PlacingCancelServer();
-			}
 		}
 	}
-};
+}

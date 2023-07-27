@@ -22,10 +22,13 @@ class ScriptConsoleRenamePresetDialog extends UIScriptedMenu
 		if ( ui_menu != NULL )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-
-			m_Editbox.SetText( scripted_console.GetCurrentPresetName() );
-			m_Label.SetText("RENAME PRESET");
-			m_Message.SetText( scripted_console.GetCurrentPresetName() );
+			ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ITEMS));
+			if (tab)
+			{
+				m_Editbox.SetText( tab.GetCurrentPresetName() );
+				m_Label.SetText("RENAME PRESET");
+				m_Message.SetText( tab.GetCurrentPresetName() );
+			}
 		}
 
 		return layoutRoot;
@@ -41,9 +44,13 @@ class ScriptConsoleRenamePresetDialog extends UIScriptedMenu
 			if ( ui_menu != NULL )
 			{
 				ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-				scripted_console.RenamePreset( m_Editbox.GetText() );
-				Close();
-				return true;
+				ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ITEMS));
+				if (tab)
+				{
+					tab.RenamePreset( m_Editbox.GetText() );
+					Close();
+					return true;
+				}
 			}
 		}
 		else if (w.GetUserID() == IDC_CANCEL)

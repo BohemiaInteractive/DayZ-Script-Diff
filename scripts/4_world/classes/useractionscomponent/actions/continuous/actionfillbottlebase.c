@@ -48,6 +48,12 @@ class ActionFillBottleBase: ActionContinuousBase
 		Object targetObject = target.GetObject();
 		if (targetObject)
 		{
+			Land_FuelStation_Feed fuelstation = Land_FuelStation_Feed.Cast(targetObject);
+			if (fuelstation)
+			{
+				if (!fuelstation.HasFuelToGive())
+					return false;
+			}
 			if (vector.DistanceSq(player.GetPosition(), targetObject.GetPosition()) > UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT)
 				return false;
 			

@@ -26,8 +26,6 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 	ref Timer						m_Timer;
 	autoptr array<Man>				m_PlayerArray; 	
 	const int 						TIMER_PLAYERLIST = GetPlayerListTimer();
-		
-	protected const ref set<Man>	m_AlreadyReportedDead = new set<Man>();//holds a list of dead players so that we know not to report their EEHitBy events any longer. We can't use IsAlive() as that would disqualify the killing EEHitBy event, which is necessary to report
 	
 	static int GetPlayerListTimer()
 	{
@@ -81,13 +79,18 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			}
 		}
 		
-		if ( !identity ) 	// return partial message even if it fails to fetch identity 
+		if ( identity ) 	// return partial message even if it fails to fetch identity 
 		{
-			return "Player \"" + "Unknown/Dead Entity" + "\" (id=" + "Unknown" + " pos=<" +  m_PosArray[0] + ", " + m_PosArray[1] + ", " + m_PosArray[2] + ">)";
+			//return "Player \"" + "Unknown/Dead Entity" + "\" (id=" + "Unknown" + " pos=<" +  m_PosArray[0] + ", " + m_PosArray[1] + ", " + m_PosArray[2] + ">)";
+			m_PlayerName = "\"" + identity.GetName() + "\"";
+			m_Pid = identity.GetId();
+		}
+		else
+		{
+			m_PlayerName = player.GetCachedName();
+			m_Pid = player.GetCachedID();
 		}
 		
-		m_PlayerName = "\"" + identity.GetName() + "\"";
-		m_Pid = identity.GetId();
 		
 		if ( !player.IsAlive() )
 		{
@@ -178,15 +181,12 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			}
 			
 		}
-		m_AlreadyReportedDead.Insert(player);
 	}
 		
 	void PlayerHitBy( TotalDamageResult damageResult, int damageType, PlayerBase player, EntityAI source, int component, string dmgZone, string ammo ) // PlayerBase.c 
 	{
 		if ( player && source )		
 		{
-			if (m_AlreadyReportedDead.Find(player) != -1)
-				return;
 			string playerPrefix = GetPlayerPrefix( player ,  player.GetIdentity() ) + "[HP: " + player.GetHealth().ToString() + "]";
 			string playerPrefix2;
 			m_HitMessage = GetHitMessage( damageResult, component, dmgZone, ammo );
@@ -208,7 +208,7 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 					
 						LogPrint( playerPrefix + " hit by " + playerPrefix2 + m_HitMessage );
 					}
-					else if ( source.IsMeleeWeapon() )			// Melee weapons
+					else if ( source.IsMeleeWeapon() || source.IsWeapon())			// Melee weapons
 					{				
 						m_ItemInHands = source.GetDisplayName();		
 						playerSource = PlayerBase.Cast( source.GetHierarchyParent() );
@@ -394,10 +394,5 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 	void DirectAdminLogPrint(string str)
 	{
 		LogPrint(str);
-	}
-	
-	void PlayerCorpseDestroyed(Man player)
-	{
-		m_AlreadyReportedDead.RemoveItem(player);
 	}
 }

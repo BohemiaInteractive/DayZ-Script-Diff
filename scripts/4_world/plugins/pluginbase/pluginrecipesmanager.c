@@ -73,10 +73,11 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 		m_EnableDebugCrafting = enable;
 	}
 
-
 	string GetRecipeName(int recipe_id)
 	{
-		if ( m_RecipeList[recipe_id] ) return m_RecipeList[recipe_id].GetName();
+		if (m_RecipeList[recipe_id])
+			return m_RecipeList[recipe_id].GetName();
+
 		return "";
 	}
 
@@ -341,6 +342,20 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 			FPrintln(file, line);
 		}
 		CloseFile(file);
+	}
+	
+	array<RecipeBase> GetRecipesForItem(string itemName)
+	{
+		CacheObject co = PluginRecipesManager.m_RecipeCache.Get(itemName);
+		array<int> ids = co.GetRecipes();
+
+		array<RecipeBase> recipes = new array<RecipeBase>();
+		foreach (int recipeID : ids)
+		{
+			recipes.Insert(m_RecipeList[recipeID]);
+		}
+
+		return recipes;
 	}
 	
 	protected bool RecipeSanityCheck(int num_of_ingredients, InventoryItemBase items[], PlayerBase player)

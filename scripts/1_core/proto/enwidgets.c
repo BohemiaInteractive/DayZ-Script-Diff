@@ -380,6 +380,8 @@ class ButtonWidget extends UIWidget
 
 	proto native void SetText(string text);
 
+	proto void GetText(out string text);
+
 	proto native void SetTextOffset(float xoffset, float yoffset);
 /**
 \param align ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
@@ -568,6 +570,7 @@ class ScriptedWidgetEventHandler: Managed
 
 //Common Widget API
 proto native void SetCursorWidget(Widget cursor);
+//! direct mouse cursor visibility control
 proto native void ShowCursorWidget(bool show);
 proto native bool LoadWidgetImageSet(string filename);
 proto native void LoadWidgetStyles(string filename);
