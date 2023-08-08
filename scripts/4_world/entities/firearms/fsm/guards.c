@@ -429,6 +429,24 @@ class WeaponGuardChamberHasRoomForMoreThanOne extends WeaponGuardBase
 	}
 };
 
+class WeaponGuardInternalMagazineHasRoomForBullet extends WeaponGuardBase
+{
+	protected Weapon_Base m_weapon;
+	void WeaponGuardInternalMagazineHasRoomForBullet (Weapon_Base w = NULL) { m_weapon = w; }
+
+	override bool GuardCondition (WeaponEventBase e)
+	{
+		int mi = m_weapon.GetCurrentMuzzle();
+		if (m_weapon.GetInternalMagazineMaxCartridgeCount(mi) - m_weapon.GetInternalMagazineCartridgeCount(mi) >= 1)
+		{
+			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " guard - chamber has room for bullet"); }
+			return true;
+		}
+		if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " guard - chamber has no room for bullet"); }
+		return false;
+	}
+};
+
 class WeaponGuardChamberHasRoomForOne extends WeaponGuardBase
 {
 	protected Weapon_Base m_weapon;
@@ -575,7 +593,7 @@ class WeaponGuardWeaponOpen extends WeaponGuardBase
 	
 	override bool GuardCondition (WeaponEventBase e)
 	{
-		return !m_weapon.IsWeaponOpen();
+		return m_weapon.IsWeaponOpen();
 	}
 }
 

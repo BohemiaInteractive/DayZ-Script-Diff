@@ -407,13 +407,16 @@ class CarScript extends Car
 	}
 	
 	#ifdef DIAG_DEVELOPER
-	void Repair()
+	
+	override void FixEntity()
 	{
 		if (GetGame().IsServer())
 		{
 			FillUpCarFluids();
 			//server and single
-			FixEntity();
+			
+			for (int i = 5; i > 0; i--)//there is a problem with wheels when performed only once, this solves it
+				super.FixEntity();
 			if (!GetGame().IsMultiplayer())
 			{
 				//single
@@ -425,8 +428,21 @@ class CarScript extends Car
 			//MP client
 			SEffectManager.DestroyEffect(m_engineFx);	
 		}
-		
 	}
+
+	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	{
+		button1 = "Repair";
+	}
+	
+	override void OnDebugButtonPressServer(int button_index)
+	{
+		if (button_index == 1)
+		{
+			FixEntity();
+		}
+	}
+
 	#endif
 	
 	

@@ -38,22 +38,252 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 	
 	override protected ProcessEventResult ProcessLocalTransition(FSMTransition<WeaponStateBase, WeaponEventBase, WeaponActionBase, WeaponGuardBase> t, WeaponEventBase e)
 	{
-		ProcessEventResult res = super.ProcessLocalTransition(t, e);
-		ValidateAndRepair();
-		return res;
-	}
-	
-	override WeaponStateBase ProcessAbortEvent(WeaponEventBase e, out ProcessEventResult result)
-	{
-		WeaponStateBase res = super.ProcessAbortEvent(e, result);
-		ValidateAndRepair();
-		return res;
+		fsmDebugPrint("[hfsm] (local) state=" + t.m_srcState.ToString() + "-------- event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
+
+		if (t.m_action)
+			t.m_action.Action(e);	// 2) execute transition action (if any)
+
+		m_State = t.m_dstState;		// 3) change state to new
+
+		if (t.m_dstState != NULL)
+		{
+			m_State.OnEntry(e);		// 4a) call onEntry on new state
+
+			if (GetOwnerState())
+				GetOwnerState().OnSubMachineChanged(t.m_srcState, t.m_dstState);	// 5a) notify owner state about change in submachine
+			
+			if (m_State)
+				m_State.OnStateChanged(t.m_srcState, t.m_dstState); // 5b) notify current state about change in machine
+
+			ValidateAndRepair();
+			return ProcessEventResult.FSM_OK;
+		}
+		else
+		{
+			fsmDebugPrint("[hfsm] terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
+
+			if (GetOwnerState())
+				GetOwnerState().OnSubMachineChanged(t.m_srcState, NULL);	// 5) notify owner state about change in submachine
+			ValidateAndRepair();
+			return ProcessEventResult.FSM_TERMINATED; // 4b) or terminate
+		}
 	}
 	
 	override protected ProcessEventResult ProcessAbortTransition(FSMTransition<WeaponStateBase, WeaponEventBase, WeaponActionBase, WeaponGuardBase> t, WeaponEventBase e)
 	{
-		ProcessEventResult res = super.ProcessAbortTransition(t, e);
-		ValidateAndRepair();
+		fsmDebugPrint("[hfsm] (local abort) state=" + t.m_srcState.ToString() + "-------- ABORT event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
+
+		if (t.m_action)
+			t.m_action.Action(e);	// 2) execute transition action (if any)
+
+		auto tmp = t.m_srcState.GetParentState();
+		if (tmp == t.m_dstState.GetParentState())
+		{
+			m_State = t.m_dstState;		// 3) change state to new (or NULL)
+
+			if (t.m_dstState != NULL)
+			{
+				m_State.OnEntry(e);		// 4a1) call onEntry on new state (see 4a2) )
+				ValidateAndRepair();
+				return ProcessEventResult.FSM_OK;
+			}
+			else
+			{
+				fsmDebugPrint("[hfsm] abort & terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
+				return ProcessEventResult.FSM_TERMINATED; // 4b) or terminate
+			}
+		}
+		else
+		{
+			m_State = NULL;
+			ValidateAndRepair();
+			return ProcessEventResult.FSM_ABORTED; // 4c) or signal abort to parent (with appropriate transition)
+		}
+	}
+	
+	override WeaponStateBase ProcessAbortEvent (WeaponEventBase e, out ProcessEventResult result)
+	{
+		if (GetOwnerState())
+			fsmDebugPrint("[hfsm] SUB! " + GetOwnerState().Type().ToString() + "::ProcessAbortEvent(" + e.Type().ToString() + ")");
+		else
+			fsmDebugPrint("[hfsm] root::ProcessAbortEvent(" + e.Type().ToString() + ")");
+
+		// 1) look in submachine first (if any)
+		if (m_State && m_State.HasFSM())
+		{
+			HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionBase, WeaponGuardBase> a = m_State.GetFSM();
+			ProcessEventResult subfsm_res;
+			WeaponStateBase abort_dst = a.ProcessAbortEvent(e, subfsm_res);
+
+			switch (subfsm_res)
+			{
+				case ProcessEventResult.FSM_OK:
+				{
+					fsmDebugPrint("[hfsm] event processed by sub machine=" + m_State.ToString());
+					result = subfsm_res;		// 1.1) submachine accepted event
+					ValidateAndRepair();
+					return NULL;
+				}
+				case ProcessEventResult.FSM_ABORTED:
+				{
+					fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString());
+					
+					m_State.OnAbort(e); // 1.2) submachine aborted, abort submachine owner (i.e. this)
+
+					if (GetOwnerState() == abort_dst.GetParentState())
+					{
+						fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString() + " & abort destination reached.");
+						m_State = abort_dst;
+						m_State.OnEntry(e);		// 1.3) submachine aborted, call onEntry on new state (cross-hierarchy transition)
+						result = ProcessEventResult.FSM_OK;
+						ValidateAndRepair();
+						return NULL;
+					}
+					else
+					{
+						result = ProcessEventResult.FSM_ABORTED; // 1.4) submachine has aborted, look for destination state in parent
+						ValidateAndRepair();
+						return NULL;
+					}
+
+					break;
+				}
+				case ProcessEventResult.FSM_TERMINATED:
+				{
+					break; // submachine has finished, look for local transitions from exited submachine
+				}
+				case ProcessEventResult.FSM_NO_TRANSITION:
+				{
+					fsmDebugPrint("[hfsm] aborted (but no transition) sub machine=" + m_State.ToString());
+					break; // submachine has no transition, look for transitions in local machine
+				}
+			}
+		}
+
+		// 2) local transitions
+		int i = FindFirstUnguardedTransition(e);
+		if (i == -1)
+		{
+			fsmDebugPrint("[hfsm] abort event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			result = ProcessEventResult.FSM_NO_TRANSITION;
+			ValidateAndRepair();
+			return NULL;
+		}
+		
+		m_State.OnAbort(e);
+		
+		i = FindFirstUnguardedTransition(e);
+		if (i == -1)
+		{
+			fsmDebugPrint("[hfsm] abort event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			result = ProcessEventResult.FSM_NO_TRANSITION;
+			ValidateAndRepair();
+			return NULL;
+		}
+
+		FSMTransition<WeaponStateBase, WeaponEventBase, WeaponActionBase, WeaponGuardBase> t = m_Transitions.Get(i);
+		ProcessEventResult res = ProcessAbortTransition(t, e);
+		result = res;
+		switch (res)
+		{
+			case ProcessEventResult.FSM_OK:
+			{
+				//fsmDebugSpam("[hfsm] abort event processed by machine=" + m_State.ToString());
+				ValidateAndRepair();
+				return NULL; // machine accepted event
+			}
+			case ProcessEventResult.FSM_ABORTED:
+			{
+				fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString() + " will fall-through to dst=" + t.m_dstState);
+				ValidateAndRepair();
+				return t.m_dstState; // store destination state for parent(s)
+			}
+
+			case ProcessEventResult.FSM_TERMINATED:
+			{
+				fsmDebugPrint("[hfsm] aborted & terminated sub machine=" + m_State.ToString());
+				break; // submachine has finished, look for local transitions from exited submachine
+			}
+			case ProcessEventResult.FSM_NO_TRANSITION:
+			{	
+				break; // submachine has no transition, look for transitions in local machine
+			}
+		}
+		return NULL;
+	}	
+	
+	override ProcessEventResult ProcessEvent (WeaponEventBase e)
+	{
+		if (GetOwnerState())
+			fsmDebugPrint("[hfsm] SUB!::" + GetOwnerState().Type().ToString() + "::ProcessEvent(" + e.Type().ToString() + ")");
+		else
+			fsmDebugPrint("[hfsm] root::ProcessEvent(" + e.Type().ToString() + " =" + e.DumpToString());
+
+		// 1) completion transitions have priority (if any)
+		if (m_HasCompletions)
+			ProcessCompletionTransitions();
+
+		// 2) submachine then (if any)
+		if (m_State && m_State.HasFSM())
+		{
+			ProcessEventResult subfsm_res = m_State.ProcessEvent(e);
+
+			switch (subfsm_res)
+			{
+				case ProcessEventResult.FSM_OK:
+				{
+					fsmDebugSpam("[hfsm] event processed by sub machine=" + m_State.ToString());
+					return subfsm_res; // submachine accepted event
+				}
+				case ProcessEventResult.FSM_TERMINATED:
+				{
+					break; // submachine has finished, look for local transitions from exited submachine
+				}
+				case ProcessEventResult.FSM_NO_TRANSITION:
+				{	
+					break; // submachine has no transition, look for transitions in local machine
+				}
+			}
+		}
+
+		// 3) local transitions
+		int i = FindFirstUnguardedTransition(e);
+		if (i == -1)
+		{
+			fsmDebugPrint("[hfsm] event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			return ProcessEventResult.FSM_NO_TRANSITION;
+		}
+		
+		m_State.OnExit(e);
+		
+		// 3.5) find correct transition after handled exit
+		i = FindFirstUnguardedTransition(e);
+		if (i == -1)
+		{
+			fsmDebugPrint("[hfsm] event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			return ProcessEventResult.FSM_NO_TRANSITION;
+		}
+
+		FSMTransition<WeaponStateBase, WeaponEventBase, WeaponActionBase, WeaponGuardBase> row = m_Transitions.Get(i);
+		ProcessEventResult res;
+		if (row.m_dstState != NULL)
+		{
+			// this is regular transition
+			if (row.m_srcState.GetParentState() == row.m_dstState.GetParentState())
+				res = LocalTransition(i, e); // transition is within this state machine
+			else
+				Error("cross-hierarchy transition or misconfigured transition detected!");
+				//res = HierarchicTransition(i, e); // transition has to cross hierarchy
+		}
+		else
+		{
+			// this is terminating transition
+			if (row.m_srcState.GetParentState() == GetOwnerState())
+				res = LocalTransition(i, e); // terminating transition is within this state machine
+			else
+				Error("cross-hierarchy transition or misconfigured transition detected!");
+				//res = HierarchicTransition(i, e); // source node crosses hierarchy (terminate lies always within this machine)
+		}
 		return res;
 	}
 

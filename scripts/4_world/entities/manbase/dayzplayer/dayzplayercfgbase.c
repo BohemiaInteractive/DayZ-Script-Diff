@@ -976,7 +976,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("GiftBox_Small",						"dz/anims/workspaces/player/player_main/props/player_main_2h_pot.asi",				twoHanded,					"dz/anims/anm/player/ik/two_handed/Cauldron.anm"); //TODO - placeholder, make a proper IK
 		pType.AddItemInHandsProfileIK("GiftBox_Medium",						"dz/anims/workspaces/player/player_main/player_main_2h.asi",						twoHanded,					"dz/anims/anm/player/ik/two_handed/BatteryCar.anm"); //TODO - placeholder, make a proper IK
 		pType.AddItemInHandsProfileIK("GiftBox_Large",						"dz/anims/workspaces/player/player_main/player_main_2h.asi",						twoHanded,					"dz/anims/anm/player/ik/vehicles/BatteryTruck.anm"); //TODO - placeholder, make a proper IK
-		pType.AddItemInHandsProfileIK("SlingBag",							"dz/anims/workspaces/player/player_main/player_main_2h.asi",	                	twoHanded,					"dz/anims/anm/player/ik/two_handed/slingbag.anm");
+		pType.AddItemInHandsProfileIK("SlingBag_ColorBase",					"dz/anims/workspaces/player/player_main/player_main_2h.asi",	           			twoHanded,					"dz/anims/anm/player/ik/two_handed/slingbag.anm");
 		pType.AddItemInHandsProfileIK("DuffelBagSmall_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_2h.asi",	                	twoHanded,					"dz/anims/anm/player/ik/two_handed/duffelbagsmall.anm");
 		pType.AddItemInHandsProfileIK("CanvasBag_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_2h.asi",                    	twoHanded,					"dz/anims/anm/player/ik/two_handed/canvasbag.anm");
 		pType.AddItemInHandsProfileIK("DrysackBag_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_2h.asi",                     	twoHanded,					"dz/anims/anm/player/ik/two_handed/drysackbag.anm");

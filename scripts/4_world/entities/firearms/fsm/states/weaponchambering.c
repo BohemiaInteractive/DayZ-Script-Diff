@@ -100,6 +100,7 @@ class WeaponChambering_Cartridge extends WeaponChambering_Base
 					m_weapon.SelectionBulletShow();
 					m_weapon.ShowBullet(m_weapon.GetCurrentMuzzle());
 					m_weapon.EffectBulletShow( m_weapon.GetCurrentMuzzle(), m_damage, m_type);
+					m_weapon.SetWeaponOpen(false);
 				}
 				else
 					Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot take cartridge from magazine");
@@ -177,6 +178,8 @@ class WeaponChambering_Cartridge_ChambToMag extends WeaponChambering_Cartridge
 			else
 				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot load chamber chamber!"); }
 		}
+		
+		m_weapon.SetWeaponOpen(false);
 		super.OnExit(e);
 	}
 }
@@ -975,7 +978,7 @@ class WeaponMagnumChambering extends WeaponStateBase
 		m_fsm.AddTransition(new WeaponTransition(m_eject, __bs_, m_chamber));
 		m_fsm.AddTransition(new WeaponTransition(m_rotate, __bs_, m_chamber));		
 		
-		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_w4sb2, null, new GuardAnd(new GuardAnd(new WeaponGuardHasAmmoInLoopedState(m_chamber), new WeaponGuardChamberMultiHasRoomBulltetIgnoreLast(m_weapon)),new WeaponGuardWeaponManagerWantContinue())));
+		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_w4sb2, null, new GuardAnd(new GuardAnd(new WeaponGuardHasAmmoInLoopedState(m_chamber), new WeaponGuardChamberMultiHasRoomBulltet(m_weapon)),new WeaponGuardWeaponManagerWantContinue())));
 		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_endLoop));
 		//m_fsm.AddTransition(new WeaponTransition(m_rotate, __bh_, m_chamber));
 		//m_fsm.AddTransition(new WeaponTransition(m_w4sb2, 	__bh_, m_hideB));

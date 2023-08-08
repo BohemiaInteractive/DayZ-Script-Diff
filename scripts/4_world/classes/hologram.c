@@ -604,23 +604,21 @@ class Hologram
 		Object obj_right_close;
 		Object obj_left_far;
 		Object obj_right_far;
-		
-		const float RAYCAST_RADIUS = 0.2;
 
 		//Not sure what the intention here was before, but it boiled down to a very bloated version of what you see here right now
-		DayZPhysics.RaycastRV(from_left_close, to_left_close_down, contact_pos_left_close, contact_dir_left_close, contact_component_left_close, results_left_close, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
+		DayZPhysics.RaycastRV(from_left_close, to_left_close_down, contact_pos_left_close, contact_dir_left_close, contact_component_left_close, results_left_close, null, m_Projection, false, false, ObjIntersectFire);
 		if (results_left_close.Count() > 0)
 			obj_left_close = results_left_close[results_left_close.Count() - 1];
 
-		DayZPhysics.RaycastRV(from_right_close, to_right_close_down, contact_pos_right_close, contact_dir_right_close, contact_component_right_close, results_right_close, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
+		DayZPhysics.RaycastRV(from_right_close, to_right_close_down, contact_pos_right_close, contact_dir_right_close, contact_component_right_close, results_right_close, null, m_Projection, false, false, ObjIntersectFire);
 		if (results_right_close.Count() > 0)	
 			obj_right_close = results_right_close[results_right_close.Count() - 1];
 
-		DayZPhysics.RaycastRV(from_left_far, to_left_far_down, contact_pos_left_far, contact_dir_left_far, contact_component_left_far, results_left_far, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
+		DayZPhysics.RaycastRV(from_left_far, to_left_far_down, contact_pos_left_far, contact_dir_left_far, contact_component_left_far, results_left_far, null, m_Projection, false, false, ObjIntersectFire);
 		if (results_left_far.Count() > 0) 
 			obj_left_far = results_left_far[results_left_far.Count() - 1];
 
-		DayZPhysics.RaycastRV(from_right_far, to_right_far_down, contact_pos_right_far, contact_dir_right_far, contact_component_right_far, results_right_far, null, m_Projection, false, false, ObjIntersectFire, RAYCAST_RADIUS, CollisionFlags.FIRSTCONTACT);
+		DayZPhysics.RaycastRV(from_right_far, to_right_far_down, contact_pos_right_far, contact_dir_right_far, contact_component_right_far, results_right_far, null, m_Projection, false, false, ObjIntersectFire);
 		if (results_right_far.Count() > 0)
 			obj_right_far = results_right_far[results_right_far.Count() - 1];
 		

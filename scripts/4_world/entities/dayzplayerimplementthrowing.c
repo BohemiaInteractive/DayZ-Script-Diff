@@ -188,6 +188,9 @@ class DayZPlayerImplementThrowing
 			if( playerPB.GetWeaponManager().IsRunning() )
 				return false;
 		}
+		
+		if (!CheckFreeSpace() )
+			return false;
 
 		return true;
 	}
@@ -205,6 +208,10 @@ class DayZPlayerImplementThrowing
 		{
 			return false;
 		}
+		
+		if (!CheckFreeSpace() )
+			return false;
+
 		return true;
 	}
 	
@@ -214,6 +221,11 @@ class DayZPlayerImplementThrowing
 			return false;
 		
 		return CanContinueThrowing(pHic);
+	}
+	
+	bool CheckFreeSpace()
+	{
+		return m_Player.CheckFreeSpace(vector.Forward, 0.7, false);
 	}
 	
 	private DayZPlayer m_Player;

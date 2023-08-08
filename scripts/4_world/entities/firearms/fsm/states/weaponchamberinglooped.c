@@ -53,7 +53,7 @@ class LoopedChambering extends WeaponStateBase
 		m_fsm.AddTransition(new WeaponTransition(m_eject,	__bs_, m_chamber));
 		
 
-		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_w4sb2, NULL, new GuardAnd(new GuardAnd(new WeaponGuardHasAmmoInLoopedState(m_chamber), new WeaponGuardChamberHasRoomForMoreThanOne(m_weapon)),new WeaponGuardWeaponManagerWantContinue())));
+		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_w4sb2, NULL, new GuardAnd(new GuardAnd(new WeaponGuardHasAmmoInLoopedState(m_chamber), new WeaponGuardInternalMagazineHasRoomForBullet(m_weapon)),new WeaponGuardWeaponManagerWantContinue())));
 		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_endLoop));
 		m_fsm.AddTransition(new WeaponTransition(m_w4sb2, 	__bh_, m_hideB));
 		m_fsm.AddTransition(new WeaponTransition(m_hideB, 	__bs_, m_chamber));
@@ -312,7 +312,7 @@ class LoopedChamberingEjectLast extends WeaponStateBase
 		m_fsm.AddTransition(new WeaponTransition(m_start  , __bs_, m_chamber));
 		
 
-		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_w4sb2, NULL, new GuardAnd(new GuardAnd(new WeaponGuardHasAmmoInLoopedState(m_chamber), new WeaponGuardChamberHasRoomForMoreThanOne(m_weapon)),new WeaponGuardWeaponManagerWantContinue())));
+		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_w4sb2, NULL, new GuardAnd(new GuardAnd(new WeaponGuardHasAmmoInLoopedState(m_chamber), new WeaponGuardInternalMagazineHasRoomForBullet(m_weapon)),new WeaponGuardWeaponManagerWantContinue())));
 		m_fsm.AddTransition(new WeaponTransition(m_chamber, __bM_, m_endLoop));
 		m_fsm.AddTransition(new WeaponTransition(m_w4sb2,	__bh_, m_hideB));
 		m_fsm.AddTransition(new WeaponTransition(m_hideB,	__bs_, m_chamber));

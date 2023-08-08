@@ -167,4 +167,50 @@ class ScriptCaller
 	proto void Init(func fn);	
 	//! Invoke call on the registered func, throws errors if unsuccessful
 	proto void Invoke(void param1 = null, void param2 = null, void param3 = null, void param4 = null, void param5 = null, void param6 = null, void param7 = null, void param8 = null, void param9 = null);
+
+	//! Checks if the ScriptCaller is valid
+	proto bool IsValid();
+
+	/**
+	\brief Compares this script caller against another script caller
+		\note May return true even if either one is invalid
+
+	@code
+		class SomeClass
+		{
+			void SomeMethod()
+			{
+			}
+		}
+
+		void Test()
+		{
+			SomeClass instanceA = new SomeClass();
+			SomeClass instanceB = new SomeClass();
+
+			ScriptCaller callerA;
+			ScriptCaller callerB;
+
+			//! Two methods that are to the same instance
+			callerA = ScriptCaller.Create(instanceA.SomeMethod);
+			callerB = ScriptCaller.Create(instanceA.SomeMethod);
+
+			Print(callerA.Equals(callerB)); //! "1"
+			Print(callerA == callerB); //! "0"
+			Print(callerA); //! "ScriptCaller callerA = ScriptCaller<87bc2d40>"
+			Print(callerB); //! "ScriptCaller callerB = ScriptCaller<87bc3600>"
+
+			//! Two methods belonging to different instances
+			callerA = ScriptCaller.Create(instanceA.SomeMethod);
+			callerB = ScriptCaller.Create(instanceB.SomeMethod);
+
+			Print(callerA.Equals(callerB)); //! "0"
+			Print(callerA == callerB); //! "0"
+			Print(callerA); //! "ScriptCaller callerA = ScriptCaller<87bc3c40>"
+			Print(callerB); //! "ScriptCaller callerB = ScriptCaller<87bc2d40>"
+		}
+	@endcode
+	*/
+	proto bool Equals(notnull ScriptCaller other);
+
 };

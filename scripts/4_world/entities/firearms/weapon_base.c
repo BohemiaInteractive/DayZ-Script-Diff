@@ -404,10 +404,13 @@ class Weapon_Base extends Weapon
 	{
 		if (has_bullet)
 		{	
-			string ChamberedAmmoTypeName;
-			float ChamberedAmmoDmg;
-			GetCartridgeInfo(0, ChamberedAmmoDmg, ChamberedAmmoTypeName);
-			EffectBulletShow(0, ChamberedAmmoDmg, ChamberedAmmoTypeName);
+			string chamberedAmmoTypeName;
+			float chamberedAmmoDmg;
+			
+			if ( GetCartridgeInfo(0, chamberedAmmoDmg, chamberedAmmoTypeName) )
+			{
+				EffectBulletShow(0, chamberedAmmoDmg, chamberedAmmoTypeName);
+			}
 			//ShowBullet(0);
 			SelectionBulletShow();
 		}

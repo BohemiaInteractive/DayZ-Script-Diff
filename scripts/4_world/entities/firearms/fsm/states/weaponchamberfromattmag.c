@@ -12,6 +12,7 @@ class WeaponChamberFromAttMag extends WeaponStateBase
 		{
 			int mi = m_weapon.GetCurrentMuzzle();
 			m_weapon.SetCharged(true);
+			m_weapon.SetWeaponOpen(false);
 			pushToChamberFromAttachedMagazine(m_weapon, mi);
 		}
 	}

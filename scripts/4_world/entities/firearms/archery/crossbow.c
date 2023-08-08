@@ -14,7 +14,7 @@ enum XBStableStateID
 
 class XBUncockedEmpty extends WeaponStableState
 {
-	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { Uncocked Empty UE"); } super.OnEntry(e); }
+	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { Uncocked Empty UE"); } m_weapon.SetCharged(false); super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } Uncocked Empty UE"); } }
 	override int GetCurrentStateID () { return XBStableStateID.UncockedEmpty; }
 	override bool HasBullet () { return false; }
@@ -25,7 +25,7 @@ class XBUncockedEmpty extends WeaponStableState
 };
 class XBCockedEmpty extends WeaponStableState
 {
-	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { Cocked Empty CE"); } super.OnEntry(e); }
+	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { Cocked Empty CE"); } m_weapon.SetCharged(true); super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } Cocked Empty CE"); } }
 	override int GetCurrentStateID () { return XBStableStateID.CockedEmpty; }
 	override bool HasBullet () { return false; }
@@ -36,7 +36,7 @@ class XBCockedEmpty extends WeaponStableState
 };
 class XBLoaded extends WeaponStableState
 {
-	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { Loaded L"); } super.OnEntry(e); }
+	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { Loaded L"); } m_weapon.SetCharged(true); super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } Loaded L"); } }
 	override int GetCurrentStateID () { return XBStableStateID.Loaded; }
 	override bool HasBullet () { return true; }
@@ -105,31 +105,33 @@ class Crossbow_Base : Archery_Base
 		m_fsm.AddTransition(new WeaponTransition( C,			__M__,	C));
 		
 		m_fsm.AddTransition(new WeaponTransition( U,			__M__,	Mech_U));
-		m_fsm.AddTransition(new WeaponTransition(  Mech_U,		_fin_,	C));		
-			Mech_U.AddTransition(new WeaponTransition(  Mech_U.m_start,	_abt_,	U));
-			Mech_U.AddTransition(new WeaponTransition(  Mech_U.m_onCK,	_abt_,	C));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_U,		_fin_,	U, null, new WeaponGuardWeaponDischarged(this)));		
+		m_fsm.AddTransition(new WeaponTransition(  Mech_U,		_fin_,	C ));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_U,		_abt_,	U, null, new WeaponGuardWeaponDischarged(this)));		
+		m_fsm.AddTransition(new WeaponTransition(  Mech_U,		_abt_,	C ));
 		
 		m_fsm.AddTransition(new WeaponTransition( L,			__M__,	Mech_L));
-		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_fin_,	C));	
-			Mech_L.AddTransition(new WeaponTransition(  Mech_L.m_start,	_abt_,	L));	
-			Mech_L.AddTransition(new WeaponTransition(  Mech_L.m_eject,	_abt_,	C));
-			Mech_L.AddTransition(new WeaponTransition(  Mech_L.m_hideB,	_abt_,	C));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_fin_,	C, null, new WeaponGuardChamberEmpty(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_fin_,	L));	
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_abt_,	C, null, new WeaponGuardChamberEmpty(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_abt_,	L));
 			
 		
 		//Chamber bolt
 		m_fsm.AddTransition(new WeaponTransition( U,			__L__,	Chamber_U));
-		m_fsm.AddTransition(new WeaponTransition(  Chamber_U,		_fin_,	L));		
-			Chamber_U.AddTransition(new WeaponTransition(  Chamber_U.m_start,	_abt_,	U));
-			Chamber_U.AddTransition(new WeaponTransition(  Chamber_U.m_onCK,	_abt_,	C));
-			Chamber_U.AddTransition(new WeaponTransition(  Chamber_U.m_chamber,	_abt_,	C));
-			Chamber_U.AddTransition(new WeaponTransition(  Chamber_U.m_w4t,		_abt_,	L));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_U,		_fin_,	L, null, new WeaponGuardChamberFull(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_U,		_fin_,	C, null, new WeaponGuardWeaponCharged(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_U,		_fin_,	U));	
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_U,		_abt_,	L, null, new WeaponGuardChamberFull(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_U,		_abt_,	C, null, new WeaponGuardWeaponCharged(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_U,		_abt_,	U));
 		
 		
 		m_fsm.AddTransition(new WeaponTransition( C,			__L__,	Chamber_C));
-		m_fsm.AddTransition(new WeaponTransition(  Chamber_C,		_fin_,	L));		
-			Chamber_C.AddTransition(new WeaponTransition(  Chamber_C.m_start,	_abt_,	C));
-			Chamber_C.AddTransition(new WeaponTransition(  Chamber_C.m_chamber,	_abt_,	C));
-			Chamber_C.AddTransition(new WeaponTransition(  Chamber_C.m_w4t,		_abt_,	L));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C,		_fin_,	L, null, new WeaponGuardChamberFull(this)));		
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C,		_fin_,	C));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C,		_abt_,	L, null, new WeaponGuardChamberFull(this)));		
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C,		_abt_,	C));
 		
 		m_fsm.AddTransition(new WeaponTransition( C,			__T__,	Trigger_C));
 		m_fsm.AddTransition(new WeaponTransition(  Trigger_C,	_fin_,	U));
@@ -150,10 +152,6 @@ class Crossbow_Base : Archery_Base
 		m_fsm.AddTransition(new WeaponTransition(  Trigger_L,	_abt_,	U));
 
 		SelectionBulletHide();
-		for (int i = 0; i<m_bulletSelectionIndex.Count(); i++)
-		{	
-			HideBullet(i);
-		}
 		EffectBulletHide(0);
 		
 		SetInitialState(U);

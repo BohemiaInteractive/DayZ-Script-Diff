@@ -39,7 +39,7 @@ class SKS_CLO_BU1 extends WeaponStableState
 };
 class SKS_OPN_BU0 extends WeaponStableState
 {
-	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { open nobull"); } super.OnEntry(e); }
+	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { open nobull"); } m_weapon.SetWeaponOpen(true); super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } open nobull"); } }
 	override int GetCurrentStateID () { return SKSStableStateID.SKS_OPN_BU0; }
 	override bool HasBullet () { return false; }
@@ -68,10 +68,10 @@ class SKS_JAM_BU1 extends WeaponStateJammed
  **/
 class SKS_Base extends Rifle_Base
 {
-	ref WeaponStateBase C0;
-	ref	WeaponStateBase C1;
-	ref	WeaponStateBase L0;
-	ref	WeaponStateBase JF;
+	ref WeaponStableState C0;
+	ref	WeaponStableState C1;
+	ref	WeaponStableState L0;
+	ref	WeaponStableState JF;
 	
 	override RecoilBase SpawnRecoilObject()
 	{
@@ -157,14 +157,12 @@ class SKS_Base extends Rifle_Base
 		m_fsm.AddTransition(new WeaponTransition(  Mech_C1,		_abt_,	C1));
 		
 		m_fsm.AddTransition(new WeaponTransition( L0, 			__M__,	Mech_L0)); // charge from dischg nobullet nomag
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L0,		_fin_,	L0, NULL, new WeaponGuardWeaponOpen(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Mech_L0,		_fin_,	C0, NULL, new WeaponGuardCurrentChamberEmpty(this) ));
-		m_fsm.AddTransition(new WeaponTransition(  Mech_L0,		_fin_,	C0));
-			Mech_L0.AddTransition(new WeaponTransition( Mech_L0.m_start,		_abt_,	L0));
-			Mech_L0.AddTransition(new WeaponTransition( Mech_L0.m_onBE,			_abt_,	C0));
-			Mech_L0.AddTransition(new WeaponTransition( Mech_L0.m_onBEFireOut,	_abt_,	C0));
-			Mech_L0.AddTransition(new WeaponTransition( Mech_L0.m_hideB,		_abt_,	C0));
-			Mech_L0.AddTransition(new WeaponTransition( Mech_L0.m_chamber,		_abt_,	C1));
-			Mech_L0.AddTransition(new WeaponTransition( Mech_L0.m_onCK,			_abt_,	C0));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L0,		_fin_,	C1));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L0,		_abt_,	L0, NULL, new WeaponGuardWeaponOpen(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L0,		_abt_,	C0, NULL, new WeaponGuardCurrentChamberEmpty(this) ));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L0,		_abt_,	C1));
 		
 		
 				/*m_start = new WeaponCharging_Start(m_weapon, this, m_action, m_actionType);
@@ -212,21 +210,23 @@ class SKS_Base extends Rifle_Base
 
 		// load cartridge
 		m_fsm.AddTransition(new WeaponTransition( C0,			__L__,	Chamber_C0));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C0,	_fin_,	L0, NULL, new WeaponGuardWeaponOpen(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C0,	_fin_,	C0, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_C0,	_fin_,	C1));
-			Chamber_C0.AddTransition(new WeaponTransition( Chamber_C0.m_start,		_abt_,	C0));
-			Chamber_C0.AddTransition(new WeaponTransition( Chamber_C0.m_eject,		_abt_,	L0));
-			Chamber_C0.AddTransition(new WeaponTransition( Chamber_C0.m_chamber,	_abt_,	C1));
-			Chamber_C0.AddTransition(new WeaponTransition( Chamber_C0.m_w4sb2,		_abt_,	C1));
-			Chamber_C0.AddTransition(new WeaponTransition( Chamber_C0.m_hideB,		_abt_,	C1));
-			Chamber_C0.AddTransition(new WeaponTransition( Chamber_C0.m_endLoop,	_abt_,	C1));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C0,	_abt_,	L0, NULL, new WeaponGuardWeaponOpen(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C0,	_abt_,	C0, NULL, new WeaponGuardCurrentChamberEmpty(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_C0,	_abt_,	C1));
 		
 		m_fsm.AddTransition(new WeaponTransition( C1,			__L__,	Chamber_C1, NULL, new GuardNot(new WeaponGuardInnerMagazineFullShareChamber(this))));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_C1,	_fin_,	C1));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_C1,	_abt_,	C1));
 		
 		m_fsm.AddTransition(new WeaponTransition( L0,			__L__,	Chamber_L0, NULL, new GuardNot(new WeaponGuardInnerMagazineFullShareChamber(this))));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_L0,	_fin_,	L0, NULL, new WeaponGuardWeaponOpen(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_L0,	_fin_,	C0, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_L0,	_fin_,	C1));
-		m_fsm.AddTransition(new WeaponTransition(  Chamber_L0,	_abt_,	L0, NULL, new WeaponGuardCurrentChamberEmpty(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_L0,	_abt_,	L0, NULL, new WeaponGuardWeaponOpen(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_L0,	_abt_,	C0, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_L0,	_abt_,	C1));
 
 		
@@ -239,7 +239,7 @@ class SKS_Base extends Rifle_Base
 		m_fsm.AddTransition(new WeaponTransition(  Unjam_JF,	_abt_,	C0, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Unjam_JF,	_abt_,	C1));
 
-		m_fsm.SetInitialState(C0);
+		SetInitialState(C0);
 
 		SelectionBulletHide();
 		HideMagazine();

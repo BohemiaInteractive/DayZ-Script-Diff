@@ -102,7 +102,7 @@ class MissionMainMenu extends MissionBase
 		m_IntroScenePC = null;
 		m_IntroSceneXbox = null;
 		m_CreditsMenu = null;
-#ifndef DIAG_DEVELOPER
+#ifndef FEATURE_CURSOR
 		g_Game.GetUIManager().ShowUICursor(false);
 #endif
 	}

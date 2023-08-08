@@ -1222,6 +1222,21 @@ class BaseBuildingBase extends ItemBase
 		
 		GetConstruction().UpdateVisuals();
 	}
+	
+	#ifdef DIAG_DEVELOPER
+	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	{
+		button1 = "Repair";
+	}
+	
+	override void OnDebugButtonPressServer(int button_index)
+	{
+		if (button_index == 1)
+		{
+			FixEntity();
+		}
+	}
+	#endif
 }
 
 void bsbDebugPrint (string s)

@@ -13,6 +13,9 @@ enum PhxInteractionLayers
 	CHARACTER_NO_GRAVITY,
 	RAGDOLL_NO_CHARACTER,
 
+	//! Redefinition of 'RAGDOLL_NO_CHARACTER'
+	FIREGEOM,
+
 	DOOR,
 	RAGDOLL,
 

@@ -2874,66 +2874,84 @@ class PlayerBase extends ManBase
 		if (mngr && hic)
 		{
 			mngr.Update(pCurrentCommandID);
-			
-			//PrintString(m_ShouldBeUnconscious.ToString());
-			if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_UNCONSCIOUS)
-			{
-				if (!m_UnconsciousDebug)
-				{
-					OnUnconsciousUpdate(pDt, m_LastCommandBeforeUnconscious);
-					if (!m_IsUnconscious) 
-					{
-						m_IsUnconscious = true;
-						OnUnconsciousStart();
-					}
 
-					HumanCommandUnconscious	hcu = GetCommand_Unconscious();
+			HumanCommandUnconscious		hcu = GetCommand_Unconscious();
+			HumanCommandVehicle			hcv = GetCommand_Vehicle();
+
+			if (!m_UnconsciousDebug)
+			{
+				//! When the player should be and is unconscious 
+				if (m_ShouldBeUnconscious && m_IsUnconscious)
+				{
 					if (hcu)
 					{
 						//! Player can start floating while unconscious
 						m_Swimming.m_bWasSwimming |= hcu.IsInWater();
+					}
 
-						if (!m_ShouldBeUnconscious && m_UnconsciousTime > 2)//m_UnconsciousTime > x   -> protection for a player being broken when attempting to wake him up too early into unconsciousness
-						{
-							int wakeUpStance = DayZPlayerConstants.STANCEIDX_PRONE;
-							
-							//! Don't set the stance if we are swimming or in a vehicle, stance change animation could play
-							if (m_Swimming.m_bWasSwimming || m_LastCommandBeforeUnconscious == DayZPlayerConstants.COMMANDID_VEHICLE)
-								wakeUpStance = -1;
-								
-							hcu.WakeUp(wakeUpStance);
-						}
-					}
-				}
-			}
-			else
-			{
-				if (m_ShouldBeUnconscious && pCurrentCommandID != DayZPlayerConstants.COMMANDID_UNCONSCIOUS && pCurrentCommandID != DayZPlayerConstants.COMMANDID_DEATH && pCurrentCommandID != DayZPlayerConstants.COMMANDID_FALL && pCurrentCommandID != DayZPlayerConstants.COMMANDID_MOD_DAMAGE && pCurrentCommandID != DayZPlayerConstants.COMMANDID_DAMAGE)
-				{			
-					m_LastCommandBeforeUnconscious = pCurrentCommandID;
-					HumanCommandVehicle vehicleCommand = GetCommand_Vehicle();
-					if (vehicleCommand) 
+					if (m_Swimming.m_bWasSwimming)
 					{
-						if (vehicleCommand.ShouldBeKnockedOut())
-						{
-							m_TransportCache = null;
-							vehicleCommand.KnockedOutVehicle();
-							int damageHitAnim = 1;
-							float damageHitDir = 0;
-							StartCommand_Damage(damageHitAnim, m_DamageHitDir);
-							TryHideItemInHands(false,true);
-						}
-						else
-						{
-							m_TransportCache = vehicleCommand.GetTransport();	
-						}
+						m_LastCommandBeforeUnconscious = DayZPlayerConstants.COMMANDID_SWIM;
 					}
-					StartCommand_Unconscious(0);	
+
+					OnUnconsciousUpdate(pDt, m_LastCommandBeforeUnconscious);
 				}
-				if (m_IsUnconscious /*&& pCurrentCommandID != DayZPlayerConstants.COMMANDID_DEATH*/)
+				//! When the player will be unconscious, or is being blocked from being unconscious
+				else if (m_ShouldBeUnconscious)
 				{
-					m_IsUnconscious = false;
-					OnUnconsciousStop(pCurrentCommandID);
+					//! If the player is getting in/out or switching seats, delay unconsciousness until after animation has finished
+					bool isTransitioning = hcv && (hcv.IsGettingIn() || hcv.IsGettingOut() || hcv.IsSwitchSeat());
+
+					if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_UNCONSCIOUS)
+					{
+						OnUnconsciousUpdate(pDt, m_LastCommandBeforeUnconscious);
+
+						m_IsUnconscious = true;
+						OnUnconsciousStart();
+					}
+					//! Death gate - prevent unlikely occurence of death -> unconsciousness transition
+					//! Fall gate - prevent unconciousness animation from playing while falling, doesn't look good
+					//! Transition gate - prevent unconciousness while previous command is transitioning
+					else if (pCurrentCommandID != DayZPlayerConstants.COMMANDID_DEATH && pCurrentCommandID != DayZPlayerConstants.COMMANDID_FALL && !isTransitioning)
+					{
+						m_LastCommandBeforeUnconscious = pCurrentCommandID;
+
+						if (hcv)
+						{
+							m_TransportCache = hcv.GetTransport();	
+						}
+						
+						//! TODO: rework vehicle command Knockout back to force player prone after they have exited the vehicle
+
+						StartCommand_Unconscious(0);
+					}
+				}
+				//! When the player is waking up
+				else if (m_IsUnconscious && m_UnconsciousTime > 2) //! protection for a player being broken when attempting to wake them up too early into unconsciousness
+				{
+					//! Make sure the player is actually unconscious
+					if (hcu && pCurrentCommandID == DayZPlayerConstants.COMMANDID_UNCONSCIOUS)
+					{
+						OnUnconsciousUpdate(pDt, m_LastCommandBeforeUnconscious);
+
+						int wakeUpStance = DayZPlayerConstants.STANCEIDX_PRONE;
+
+						//! Don't set the stance if we are swimming or in a vehicle, stance change animation could play
+						if (m_Swimming.m_bWasSwimming || m_LastCommandBeforeUnconscious == DayZPlayerConstants.COMMANDID_VEHICLE)
+							wakeUpStance = -1;
+
+						hcu.WakeUp(wakeUpStance);
+
+						m_IsUnconscious = false;
+						OnUnconsciousStop(pCurrentCommandID);
+					}
+					else
+					{
+						//! Maybe instead error out or notify of possible desync?
+
+						m_IsUnconscious = false;
+						OnUnconsciousStop(pCurrentCommandID);
+					}
 				}
 			}
 			
@@ -5043,14 +5061,13 @@ class PlayerBase extends ManBase
 	{
 		ItemBase item = GetItemInHands();
 		if (IsRaised() || (item && item.IsHeavyBehaviour()))
-		{
 			return false;
-		}
+		
+		if (item && GetThrowing() && GetThrowing().IsThrowingModeEnabled())
+			return false;
 		
 		if (GetBrokenLegs() != eBrokenLegs.NO_BROKEN_LEGS)
-		{
 			return false;
-		}
 		
 		return true;
 	}
@@ -7408,7 +7425,7 @@ class PlayerBase extends ManBase
 			CarScript car = CarScript.Cast(vehCmd.GetTransport());
 			if (car)
 			{
-				car.Repair();
+				car.FixEntity();
 			}
 		}
 		#endif

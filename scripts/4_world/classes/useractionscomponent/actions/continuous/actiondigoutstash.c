@@ -24,6 +24,15 @@ class ActionDigOutStash: ActionContinuousBase
 		m_ConditionItem 	= new CCINonRuined();
 	}
 	
+	override bool Can(PlayerBase player, ActionTarget target, ItemBase item, int condition_mask)
+	{
+		if (!super.Can(player, target, item, condition_mask))
+			return false;
+		
+		return player.CheckFreeSpace(vector.Forward, 1.0, false);
+	}
+	
+	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		ItemBase target_IB;
