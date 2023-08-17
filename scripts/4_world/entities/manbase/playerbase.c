@@ -2766,6 +2766,8 @@ class PlayerBase extends ManBase
 	
 	override void CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)	
 	{
+		EvaluateDamageHit(pCurrentCommandID);
+
 		// lower implement 
 		super.CommandHandler(pDt,pCurrentCommandID,pCurrentCommandFinished);
 
@@ -2924,26 +2926,31 @@ class PlayerBase extends ManBase
 						//! TODO: rework vehicle command Knockout back to force player prone after they have exited the vehicle
 
 						StartCommand_Unconscious(0);
+						SetFallYDiff(GetPosition()[1]);
 					}
 				}
 				//! When the player is waking up
-				else if (m_IsUnconscious && m_UnconsciousTime > 2) //! protection for a player being broken when attempting to wake them up too early into unconsciousness
+				else if (m_IsUnconscious)
 				{
 					//! Make sure the player is actually unconscious
 					if (hcu && pCurrentCommandID == DayZPlayerConstants.COMMANDID_UNCONSCIOUS)
 					{
 						OnUnconsciousUpdate(pDt, m_LastCommandBeforeUnconscious);
 
-						int wakeUpStance = DayZPlayerConstants.STANCEIDX_PRONE;
+						//! protection for a player being broken when attempting to wake them up too early into unconsciousness
+						if (m_UnconsciousTime > 2)
+						{
+							int wakeUpStance = DayZPlayerConstants.STANCEIDX_PRONE;
 
-						//! Don't set the stance if we are swimming or in a vehicle, stance change animation could play
-						if (m_Swimming.m_bWasSwimming || m_LastCommandBeforeUnconscious == DayZPlayerConstants.COMMANDID_VEHICLE)
-							wakeUpStance = -1;
+							//! Don't set the stance if we are swimming or in a vehicle, stance change animation could play
+							if (m_Swimming.m_bWasSwimming || m_LastCommandBeforeUnconscious == DayZPlayerConstants.COMMANDID_VEHICLE)
+								wakeUpStance = -1;
 
-						hcu.WakeUp(wakeUpStance);
+							hcu.WakeUp(wakeUpStance);
 
-						m_IsUnconscious = false;
-						OnUnconsciousStop(pCurrentCommandID);
+							m_IsUnconscious = false;
+							OnUnconsciousStop(pCurrentCommandID);
+						}
 					}
 					else
 					{
@@ -3242,6 +3249,39 @@ class PlayerBase extends ManBase
 		}
 	}
 
+	override bool IsLanded(int pCurrentCommandID)
+	{
+		if (super.IsLanded(pCurrentCommandID))
+		{
+			return true;
+		}
+
+		//! Handle fall damage for unconscious
+		if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_UNCONSCIOUS)
+		{
+			bool wasFalling = m_IsUnconsciousFalling;
+			m_IsUnconsciousFalling = PhysicsIsFalling(false);
+			return wasFalling && !m_IsUnconsciousFalling;
+		}
+
+		//! No fall damage for players currently being damaged, animation is temporary
+
+		return false;
+	}
+
+	override bool OnLand(int pCurrentCommandID, FallDamageData fallDamageData)
+	{
+		if (super.OnLand(pCurrentCommandID, fallDamageData))
+		{
+			return true;
+		}
+
+		//! Nothing happens for unconscious
+		//! Nothing happens for being damaged
+
+		return false;
+	}
+
 	override bool IsAlreadyInFallingCommand(int pCurrentCommandID)
 	{
 		if (super.IsAlreadyInFallingCommand(pCurrentCommandID))
@@ -3249,13 +3289,9 @@ class PlayerBase extends ManBase
 			return true;
 		}
 
-		//! Don't allow the character to switch to the falling command if they are unconscious 
-		if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_UNCONSCIOUS)
-		{
-			return true;
-		}
-
-		return false;
+		//! Don't switch to falling command if unconscious 
+		//! Don't switch to falling command if being damaged
+		return pCurrentCommandID == DayZPlayerConstants.COMMANDID_UNCONSCIOUS || pCurrentCommandID == DayZPlayerConstants.COMMANDID_DAMAGE;
 	}
 	
 	void OnUnconsciousStart()

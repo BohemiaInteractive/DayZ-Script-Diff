@@ -374,9 +374,7 @@ class MissionGameplay extends MissionBase
 			else if (!GetUApi().GetInputByID(UALeanLeftGamepad).IsLocked() || !GetUApi().GetInputByID(UALeanRightGamepad).IsLocked())
 			{
 				GetUApi().GetInputByID(UALeanLeftGamepad).Lock();
-				GetUApi().GetInputByID(UALeanRightGamepad).Lock();	
-				
-				manualInputUnlockProcessed = true;
+				GetUApi().GetInputByID(UALeanRightGamepad).Lock();
 			}
 			
 			//Special behaviour for freelook & zeroing [CONSOLE ONLY]
@@ -397,23 +395,6 @@ class MissionGameplay extends MissionBase
 				
 				GetUApi().GetInputByID(UAZeroingUp).Lock();		//disable zeroing
 				GetUApi().GetInputByID(UAZeroingDown).Lock();
-				
-				manualInputUnlockProcessed = true;
-			}
-		}
-#else
-		if (playerPB)
-		{
-			//Special behaviour for freelook & zeroing [PC ONLY]
-			if (playerPB.IsInIronsights() || playerPB.IsInOptics())
-			{
-				GetUApi().GetInputByID(UALookAround).Lock();		//disable freelook
-				GetUApi().GetInputByID(UALookAroundToggle).Lock();		//disable freelook
-			}
-			else if (GetUApi().GetInputByID(UALookAround).IsLocked() || GetUApi().GetInputByID(UALookAroundToggle).IsLocked())
-			{
-				GetUApi().GetInputByID(UALookAround).Unlock();	//enable freelook
-				GetUApi().GetInputByID(UALookAroundToggle).Unlock();	//enable freelook
 				
 				manualInputUnlockProcessed = true;
 			}

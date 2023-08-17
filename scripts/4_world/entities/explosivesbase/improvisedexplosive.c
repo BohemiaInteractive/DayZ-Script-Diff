@@ -39,17 +39,10 @@ class ImprovisedExplosive : ExplosivesBase
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdHigh");
 	}
 
-	override void EOnInit(IEntity other, int extra)
-	{
-		LockTriggerSlots();
-	}
-	
 	override bool HasLockedTriggerSlots()
 	{
-		for (int i = 0; i < SLOT_TRIGGERS_COUNT; i++)
-		{
-			return GetInventory().GetSlotLock(InventorySlots.GetSlotIdFromString(SLOT_TRIGGERS[i]));
-		}
+		foreach (string triggerSlot : SLOT_TRIGGERS)
+			return GetInventory().GetSlotLock(InventorySlots.GetSlotIdFromString(triggerSlot));
 		
 		return false;
 	}
@@ -68,6 +61,35 @@ class ImprovisedExplosive : ExplosivesBase
 		{
 			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(SLOT_TRIGGERS[i]), false);
 		}
+	}
+	
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
+	{
+		if (!super.OnStoreLoad(ctx, version))
+			return false;
+
+		if (version <= 134) // up to 1.21
+		{
+			foreach (string triggerSlotName : SLOT_TRIGGERS)
+			{
+				int slotId = InventorySlots.GetSlotIdFromString(triggerSlotName);
+				bool locked = GetInventory().GetSlotLock(slotId);
+				while (locked)
+				{
+					GetInventory().SetSlotLock(slotId, false);
+					locked = GetInventory().GetSlotLock(slotId);
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	override void OnStoreSave(ParamsWriteContext ctx)
+	{
+		super.OnStoreSave(ctx);
+		
+		LockTriggerSlots();
 	}
 	
  	override void OnVariablesSynchronized()

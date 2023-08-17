@@ -1,23 +1,24 @@
+//!base class for promo implementation
 class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 {
 	protected const string 	TEXT_OWNED = "#layout_dlc_owned";
 	protected const string 	TEXT_UNOWNED = "#layout_dlc_unowned";
 	
-	protected bool 			m_FileLoaded;
-	protected bool 			m_VideoPaused;
-	protected int 			m_ColorBackgroundOriginal;
+	protected bool 					m_FileLoaded;
+	protected bool 					m_VideoPaused;
+	protected int 					m_ColorBackgroundOriginal;
 	
-	protected Widget 		m_Root;
-	protected Widget 		m_BannerFrame;
-	protected Widget 		m_Background;
-	protected Widget 		m_StoreButton;
-	protected Widget 		m_GamepadStoreImage;
-	protected TextWidget 	m_TitleTextDlc;
-	protected TextWidget 	m_DescriptionTextDlc;
-	protected VideoWidget 	m_VideoWidget;
-	protected ref Timer		m_VideoPlayTimer; //...
-	protected ref Timer		m_PlaybackStartTimer;
-	protected ref ModInfo 	m_ThisModInfo;
+	protected Widget 				m_Root;
+	protected Widget 				m_BannerFrame;
+	protected Widget 				m_Background;
+	protected Widget 				m_StoreButton;
+	protected Widget 				m_GamepadStoreImage;
+	protected ImageWidget 			m_DlcPromotionImage;
+	protected TextWidget 			m_TitleTextDlc;
+	protected MultilineTextWidget 	m_DescriptionTextDlc;
+	protected VideoWidget 			m_VideoWidget;
+	protected ref Timer				m_VideoPlayTimer; //to be removed with modified playback functionality
+	protected ref ModInfo 			m_ThisModInfo;
 	protected ref JsonDataDLCInfo 	m_DlcInfo;
 	
 	protected ref BannerHandlerBase m_BannerHandler;
@@ -58,18 +59,20 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 			m_GamepadStoreImage = m_Root.FindAnyWidget("image_button_ps");
 		#endif
 		m_VideoWidget = VideoWidget.Cast(m_Root.FindAnyWidget("dlc_Video"));
+		m_VideoWidget.Show(false); //hotfix
+		m_DlcPromotionImage = ImageWidget.Cast(m_Root.FindAnyWidget("dlc_ImageMain"));
+		m_DlcPromotionImage.Show(true);
 		m_VideoPlayTimer = new Timer();
-		m_PlaybackStartTimer = new Timer();
 		m_FileLoaded = false;
 		m_VideoPaused = false;
 		m_BannerFrame = m_Root.FindAnyWidget("dlc_BannerFrame");
 		m_BannerHandler = new BannerHandlerBase(m_BannerFrame);
 		m_TitleTextDlc = TextWidget.Cast(m_Root.FindAnyWidget("dlc_title"));
-		m_DescriptionTextDlc = TextWidget.Cast(m_Root.FindAnyWidget("dlc_Description"));
+		m_DescriptionTextDlc = MultilineTextWidget.Cast(m_Root.FindAnyWidget("dlc_Description"));
+		m_DescriptionTextDlc.SetLineBreakingOverride(LinebreakOverrideMode.LINEBREAK_WESTERN);
 		m_ColorBackgroundOriginal = m_Background.GetColor();
 		
-		UpdateOwnedStatus();
-		SetDlcData();
+		UpdateAllPromotionInfo();
 	}
 	
 	void CreateRootWidget(Widget parent)
@@ -90,6 +93,9 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	
 	void OnPanelVisibilityChanged()
 	{
+		UpdateAllPromotionInfo();
+		return; //hotfix
+		
 		if (IsInfoPanelVisible())
 			StartVideo();
 		else
@@ -100,12 +106,6 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	{
 		m_ThisModInfo.GoToStore();
 		return super.OnClick(w,x,y,button);
-	}
-	
-	void SetDlcData()
-	{
-		m_TitleTextDlc.SetText(m_DlcInfo.HeaderText);
-		m_DescriptionTextDlc.SetText(m_DlcInfo.DescriptionText);
 	}
 	
 	void LoadVideoFile()
@@ -210,9 +210,30 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		UpdateOwnedStatus();
 	}
 	
+	//updates on language change etc.
+	protected void UpdateAllPromotionInfo()
+	{
+		UpdateDlcData();
+		UpdateOwnedStatus();
+		UpdateIconVisibility();
+	}
+	
+	protected void UpdateDlcData()
+	{
+		m_TitleTextDlc.SetText(m_DlcInfo.HeaderText);
+		m_DescriptionTextDlc.SetText(m_DlcInfo.DescriptionText);
+	}
+	
+	protected void UpdateIconVisibility()
+	{
+		#ifdef PLATFORM_CONSOLE
+		m_GamepadStoreImage.Show(!GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER);
+		#endif
+	}
+	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		m_GamepadStoreImage.Show(!GetGame().GetInput().IsEnabledMouseAndKeyboard() || pInputDeviceType == EInputDeviceType.CONTROLLER);
+		UpdateIconVisibility();
 	}
 	
 	ModInfo GetModInfo()

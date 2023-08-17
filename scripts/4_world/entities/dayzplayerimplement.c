@@ -108,6 +108,7 @@ class DayZPlayerImplement extends DayZPlayer
 	protected bool 										m_Suicide;
 	protected bool										m_IsUnconscious;
 	protected bool										m_ShouldBeUnconscious;
+	protected bool										m_IsUnconsciousFalling;
 	bool												m_UnconsciousDebug;
 	protected int			 							m_LastCommandBeforeUnconscious;
 	ref WeaponDebug										m_WeaponDebug;
@@ -1109,11 +1110,20 @@ class DayZPlayerImplement extends DayZPlayer
 	float m_DamageHitDir = 0.0;
 	float m_DamageHealth = 0.0;
 
-	bool HandleDamageHit(int pCurrentCommandID)
+	bool IsInFullbodyDamageAnimation()
 	{
+		return (m_DamageHitFullbody && m_DamageHitAnimType != -1) || GetCommand_Damage() != null;
+	}
+
+	//! Must be ran at the start of CommandHandler before Jump is triggered
+	void EvaluateDamageHit(int pCurrentCommandID)
+	{
+		//! Reset damage hit to prevent animation from playing unnecessarily when it is already cancelled out
+		m_DamageHitAnimType = -1;
+
 		if (!m_SyncedHitDataArray || m_SyncedHitDataArray.Count() == 0)
 		{
-			return false;
+			return;
 		}
 		
 		//evaluate all hit data
@@ -1148,18 +1158,23 @@ class DayZPlayerImplement extends DayZPlayer
 			}
 		}
 		
+		m_SyncedHitDataArray.Clear();
+		m_DamageHealth = 0.0;
+
+		//! ignore hit impacts in prone (for now)
+		if (m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_PRONE || m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_RAISEDPRONE)
+		{
+			return;
+		}
+		
 		//general effects
 		m_DamageHitFullbody = greatest_hit.m_Fullbody;
 		m_DamageHitAnimType = greatest_hit.m_AnimType;
 		m_DamageHitDir = greatest_hit.m_HitDir;
-		
-		m_SyncedHitDataArray.Clear();
-		m_DamageHealth = 0.0;
-		
-		//! ignore hit impacts in prone (for now)
-		if (m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_PRONE || m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_RAISEDPRONE)
-			return false;
-		
+	}
+
+	bool HandleDamageHit(int pCurrentCommandID)
+	{
 		// If transportcache is not null, player is unconscious inside of a car and should not head into a damage command
 		if (m_DamageHitAnimType != -1 && m_TransportCache == null && !CommitedSuicide())
 		{
@@ -2147,10 +2162,9 @@ class DayZPlayerImplement extends DayZPlayer
 		//--------------------------------------------
 		// fall handling
 
-		if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_FALL)
+		if (IsAlreadyInFallingCommand(pCurrentCommandID))
 		{
-			HumanCommandFall fall = GetCommand_Fall();
-			if (fall.PhysicsLanded())
+			if (IsLanded(pCurrentCommandID))
 			{
 				DayZPlayerType type = GetDayZPlayerType();
 				NoiseParams npar;
@@ -2162,7 +2176,7 @@ class DayZPlayerImplement extends DayZPlayer
 				if (fallDamageData.m_Height < 0.5)
 				{
 					fallDamageData.m_LandType = HumanCommandFall.LANDTYPE_NONE; 
-					fall.Land(fallDamageData.m_LandType);
+					OnLand(pCurrentCommandID, fallDamageData);
 					npar = type.GetNoiseParamsLandLight();
 					AddNoise(npar);
 				}
@@ -2173,21 +2187,21 @@ class DayZPlayerImplement extends DayZPlayer
 					else
 						fallDamageData.m_LandType = HumanCommandFall.LANDTYPE_LIGHT;
 					
-					fall.Land(fallDamageData.m_LandType);
+					OnLand(pCurrentCommandID, fallDamageData);
 					npar = type.GetNoiseParamsLandLight();
 					AddNoise(npar);
 				}
 				else if (fallDamageData.m_Height < 5.0)
 				{
 					fallDamageData.m_LandType = HumanCommandFall.LANDTYPE_MEDIUM;
-					fall.Land(fallDamageData.m_LandType);
+					OnLand(pCurrentCommandID, fallDamageData);
 					npar = type.GetNoiseParamsLandHeavy();
 					AddNoise(npar);
 				}
 				else
 				{
 					fallDamageData.m_LandType = HumanCommandFall.LANDTYPE_HEAVY;
-					fall.Land(fallDamageData.m_LandType);
+					OnLand(pCurrentCommandID, fallDamageData);
 					npar = type.GetNoiseParamsLandHeavy();
 					AddNoise(npar);
 				}
@@ -2201,12 +2215,15 @@ class DayZPlayerImplement extends DayZPlayer
 				m_JumpClimb.CheckAndFinishJump(fallDamageData.m_LandType);
 			}
 
-			return;
+			//! If we are not in fall command then something else is currently running and we can safely continue here, otherwise terminate here
+			if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_FALL)
+			{
+				return;
+			}
 		}
-
-		// start falling ? 
-		if (PhysicsIsFalling(false) && !IsAlreadyInFallingCommand(pCurrentCommandID))
+		else if (PhysicsIsFalling(false)) 
 		{
+			// Not in a falling command but the controller is falling, start default fall
 			StartCommand_Fall(0);
 			SetFallYDiff(GetPosition()[1]);
 			return;
@@ -3380,9 +3397,40 @@ class DayZPlayerImplement extends DayZPlayer
 
 #endif
 
+	bool IsLanded(int pCurrentCommandID)
+	{
+		if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_FALL)
+		{
+			HumanCommandFall fall = GetCommand_Fall();
+
+			if (fall)
+			{
+				return fall.PhysicsLanded();
+			}
+		}
+		
+		return false;
+	}
+
+	bool OnLand(int pCurrentCommandID, FallDamageData fallDamageData)
+	{
+		if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_FALL)
+		{
+			HumanCommandFall fall = GetCommand_Fall();
+
+			if (fall)
+			{
+				fall.Land(fallDamageData.m_LandType);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	bool IsAlreadyInFallingCommand(int pCurrentCommandID)
 	{
-		return false;
+		return pCurrentCommandID == DayZPlayerConstants.COMMANDID_FALL;
 	}
 	
 	//! movement sliding override, originally for FB gestures

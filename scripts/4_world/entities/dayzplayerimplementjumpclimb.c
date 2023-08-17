@@ -18,7 +18,7 @@ class DayZPlayerImplementJumpClimb
 		m_bWasClimb = false;
 
 		//! Early exit if the player is being heavy damaged so the stagger animation can't be skipped
-		if (m_Player.GetCommand_Damage())
+		if (m_Player.IsInFullbodyDamageAnimation())
 		{
 			return;
 		}

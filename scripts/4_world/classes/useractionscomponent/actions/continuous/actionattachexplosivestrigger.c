@@ -122,20 +122,20 @@ class ActionAttachExplosivesTrigger : ActionContinuousBase
 	
 	protected void AttachItem(ActionData action_data)
 	{
-		EntityAI target_EAI;	
+		EntityAI targetEAI;	
 		if (action_data.m_Target.IsProxy())
 		{
-			target_EAI = EntityAI.Cast(action_data.m_Target.GetParent());
+			targetEAI = EntityAI.Cast(action_data.m_Target.GetParent());
 		}
 		else
 		{
-			target_EAI = EntityAI.Cast(action_data.m_Target.GetObject());
+			targetEAI = EntityAI.Cast(action_data.m_Target.GetObject());
 		}
 		
-		if (target_EAI && action_data.m_MainItem)
+		if (targetEAI && action_data.m_MainItem)
 		{
-			int slot_id = InventorySlots.GetSlotIdFromString(action_data.m_MainItem.GetExplosiveTriggerSlotName());
-			action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(target_EAI, action_data.m_MainItem, slot_id);
+			int slotId = InventorySlots.GetSlotIdFromString(action_data.m_MainItem.GetExplosiveTriggerSlotName());
+			action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(targetEAI, action_data.m_MainItem, slotId);
 		}
 	}
 }

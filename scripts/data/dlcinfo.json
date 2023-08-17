@@ -5,12 +5,6 @@
 			"HeaderText": "#layout_dlc_header_livonia",
 			"DescriptionText": "#description_dlc_livonia1",
 			"VideoFileName": "DayZ_Livonia_promo_main_menu.mp4"
-		},
-		{
-			"Name": "TestDLC",
-			"HeaderText": "SomeOtherHeaderText",
-			"DescriptionText": "SomeOtherDescriptionText",
-			"VideoFileName": "DayZ_Livonia_promo_main_menu.mp4"
 		}
 	]
 }

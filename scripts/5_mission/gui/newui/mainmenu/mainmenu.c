@@ -106,7 +106,7 @@ class MainMenu extends UIScriptedMenu
 		Refresh();
 		
 		LoadMods();
-		//PopulateDlcFrame();
+		PopulateDlcFrame();
 		
 		GetDayZGame().GetBacklit().MainMenu_OnShow();
 		GetGame().GetMission().GetOnModMenuVisibilityChanged().Insert(ShowDlcFrame);

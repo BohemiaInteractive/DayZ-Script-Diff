@@ -28,11 +28,11 @@ class ActionUpgradeTorchFromGasPump: ActionContinuousBase
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		Land_FuelStation_Feed fuelstation = Land_FuelStation_Feed.Cast(target.GetObject());
-		Torch torch = Torch.Cast(item);
+		FlammableBase flammable = FlammableBase.Cast(item);
 		
-		if ( fuelstation  &&  fuelstation.HasFuelToGive() )
+		if ( flammable && fuelstation  &&  fuelstation.HasFuelToGive() )
 		{
-			return torch.CanReceiveUpgrade();
+			return flammable.CanReceiveUpgrade();
 		}
 		
 		return false;

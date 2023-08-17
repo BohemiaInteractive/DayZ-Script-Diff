@@ -106,7 +106,7 @@ class MainMenuConsole extends UIScriptedMenu
 		}
 		
 		FilterDLCs(m_AllDLCs);
-		//PopulateDlcFrame();
+		PopulateDlcFrame();
 		
 		UpdateControlsElements();
 	}
@@ -507,9 +507,6 @@ class MainMenuConsole extends UIScriptedMenu
 		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
 		string context = InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_credits", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
 		
-		if (CanStoreBeOpened())
-			context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "#mod_detail_info_store", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-
 #ifndef PLATFORM_PS4
 		context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#layout_xbox_main_menu_toolbar_account", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 #endif

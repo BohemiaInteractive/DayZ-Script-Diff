@@ -18,11 +18,6 @@ class Plastic_Explosive : ExplosivesBase
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdHigh");
 	}
 	
-	override void EOnInit(IEntity other, int extra)
-	{
-		LockTriggerSlots();
-	}
-
 	//! special behaviour - do not call super from ExplosivesBase
 	override void EEKilled(Object killer)	
 	{
@@ -43,6 +38,32 @@ class Plastic_Explosive : ExplosivesBase
 	override void UnlockTriggerSlots()
 	{
 		GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(SLOT_TRIGGER), false);
+	}
+	
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
+	{
+		if (!super.OnStoreLoad(ctx, version))
+			return false;
+
+		if (version <= 134) // up to 1.21
+		{
+			int slotId = InventorySlots.GetSlotIdFromString(SLOT_TRIGGER);
+			bool locked = GetInventory().GetSlotLock(slotId);
+			while (locked)
+			{
+				GetInventory().SetSlotLock(slotId, false);
+				locked = GetInventory().GetSlotLock(slotId);
+			}
+		}
+		
+		return true;
+	}
+	
+	override void OnStoreSave(ParamsWriteContext ctx)
+	{
+		super.OnStoreSave(ctx);
+		
+		LockTriggerSlots();
 	}
 
 	override void OnVariablesSynchronized()
@@ -294,24 +315,16 @@ class Plastic_Explosive : ExplosivesBase
 	{
 		super.EEItemAttached(item, slot_name);
 
-		switch (slot_name)
-		{
-		case SLOT_TRIGGER:
+		if (slot_name == SLOT_TRIGGER)
 			OnTriggerAttached(item);
-		break;
-		}
 	}
 	
 	override void EEItemDetached(EntityAI item, string slot_name)
 	{
 		super.EEItemDetached(item, slot_name);
 
-		switch (slot_name)
-		{
-		case SLOT_TRIGGER:
+		if (slot_name == SLOT_TRIGGER)
 			OnTriggerDetached(item);
-		break;
-		}
 	}
 	
 	override void UpdateLED(int pState)

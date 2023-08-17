@@ -754,7 +754,6 @@ class FlammableBase : ItemBase
 		super.SetActions();
 		
 		AddAction(ActionLightItemOnFire);
-		AddAction(ActionUpgradeTorchFromGasPump);
 	}
 	
 	override void OnAttachmentQuantityChangedEx(ItemBase item, float delta)
@@ -918,6 +917,13 @@ class Torch : FlammableBase
 		m_BurnTimePerFullFuelDose = m_BurnTimePerFullFuelDoseEx;
 		m_MaxConsumableLardQuantity = m_MaxConsumableLardQuantityEx;
 		m_MaxConsumableFuelQuantity = m_MaxConsumableFuelQuantityEx;
+	}
+	
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionUpgradeTorchFromGasPump);
 	}
 	
 	// !Called on CHILD when it's attached to parent.

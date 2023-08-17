@@ -248,6 +248,7 @@ class ParticleList
 	// EXPLOSIONS
 	static const int EXPLOSION_LANDMINE				= RegisterParticle("explosion_landmine_01");
 	static const int EXPLOSION_TEST					= RegisterParticle("explosion_placeholder");
+	static const int EXPLOSION_GOAT					= RegisterParticle("explosion_goat");
 	
 	// ENVIRO EFX
 	static const int SMOKING_HELI_WRECK				= RegisterParticle("smoke_heli_wreck_01");

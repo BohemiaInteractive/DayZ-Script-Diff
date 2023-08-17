@@ -1,17 +1,16 @@
-// PPE when player is in contaminated area trigger
+// PPE when player is in spooky area trigger
 class PPERequester_SpookyAreaTint extends PPERequester_GameplayBase
 {
-	/*
 	protected vector m_StartRGB = vector.Zero;
 	protected float m_AccumulatedTime = 0;
 	protected bool m_FadeIn = false;
 	protected bool m_FadeOut = false;
 	
-	const float FADE_TIME = 6;
+	const float FADE_TIME = 3;
 	// the end result is 1 - the value set here
-	const float R_TARGET = 0.0;
-	const float G_TARGET = 0.3;
-	const float B_TARGET = 0.4;
+	const float R_TARGET = 0.60; // 0.31  79   129 0.50
+	const float G_TARGET = 0.28; // 0.80 204   184 0.72
+	const float B_TARGET = 0.07; // 0.95 242   239 0.93
 	
 	override protected void OnStart( Param par = null )
 	{
@@ -22,7 +21,8 @@ class PPERequester_SpookyAreaTint extends PPERequester_GameplayBase
 		m_FadeIn = true;
 		m_FadeOut = false;
 		
-		//().GetWorld().LoadNewLightingCfg("$mission:lighting_halloween.txt");
+		SetTargetValueFloat(PostProcessEffectType.FilmGrain,PPEFilmGrain.PARAM_SHARPNESS,false,10.0,PPEFilmGrain.L_1_TOXIC_TINT,PPOperators.HIGHEST);
+		SetTargetValueFloat(PostProcessEffectType.FilmGrain,PPEFilmGrain.PARAM_GRAINSIZE,false,1.0,PPEFilmGrain.L_2_TOXIC_TINT,PPOperators.LOWEST);
 	}
 	
 	override protected void OnUpdate( float delta )
@@ -40,15 +40,22 @@ class PPERequester_SpookyAreaTint extends PPERequester_GameplayBase
 			SetTargetValueColor(PostProcessEffectType.Glow,PPEGlow.PARAM_COLORIZATIONCOLOR,{m_StartRGB[0], m_StartRGB[1], m_StartRGB[2], 0.0},PPEGlow.L_23_TOXIC_TINT,PPOperators.MULTIPLICATIVE);
 		}
 		
-		if ( m_FadeOut && m_AccumulatedTime <= FADE_TIME )
+		if ( m_FadeOut )
 		{
-			m_AccumulatedTime += delta;
-		
-			m_StartRGB[0] = ( 1 - R_TARGET ) + FadeColourMult( 0, R_TARGET, m_AccumulatedTime / FADE_TIME );
-			m_StartRGB[1] = ( 1 - G_TARGET ) + FadeColourMult( 0, G_TARGET, m_AccumulatedTime / FADE_TIME );
-			m_StartRGB[2] = ( 1 - B_TARGET ) + FadeColourMult( 0, B_TARGET, m_AccumulatedTime / FADE_TIME );
+			if (m_AccumulatedTime <= FADE_TIME)
+			{
+				m_AccumulatedTime += delta;
 			
-			SetTargetValueColor(PostProcessEffectType.Glow,PPEGlow.PARAM_COLORIZATIONCOLOR,{m_StartRGB[0], m_StartRGB[1], m_StartRGB[2], 0.0},PPEGlow.L_23_TOXIC_TINT,PPOperators.MULTIPLICATIVE);
+				m_StartRGB[0] = ( 1 - R_TARGET ) + FadeColourMult( 0, R_TARGET, m_AccumulatedTime / FADE_TIME );
+				m_StartRGB[1] = ( 1 - G_TARGET ) + FadeColourMult( 0, G_TARGET, m_AccumulatedTime / FADE_TIME );
+				m_StartRGB[2] = ( 1 - B_TARGET ) + FadeColourMult( 0, B_TARGET, m_AccumulatedTime / FADE_TIME );
+				
+				SetTargetValueColor(PostProcessEffectType.Glow,PPEGlow.PARAM_COLORIZATIONCOLOR,{m_StartRGB[0], m_StartRGB[1], m_StartRGB[2], 0.0},PPEGlow.L_23_TOXIC_TINT,PPOperators.MULTIPLICATIVE);
+			}
+			else
+			{
+				Stop(); //proper termination after a fadeout
+			}
 		}
 	}
 	
@@ -74,5 +81,4 @@ class PPERequester_SpookyAreaTint extends PPERequester_GameplayBase
 		Easing.EaseInOutSine( output );
 		return output;
 	}
-	*/
 }

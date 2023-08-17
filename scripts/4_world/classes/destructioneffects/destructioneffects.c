@@ -216,7 +216,7 @@ class DestructionEffectSpookyGoat : DestructionEffectBase
 		m_EntityIsTakeable = false;
 		
 		m_ParticlePersistent = ParticleList.NONE;
-		m_ParticleOneTime = ParticleList.GRENADE_M18_BLACK_END;
+		m_ParticleOneTime = ParticleList.EXPLOSION_GOAT;
 		
 		m_SoundSetOneTime = "";
 		m_SoundSetPersistent= "";
