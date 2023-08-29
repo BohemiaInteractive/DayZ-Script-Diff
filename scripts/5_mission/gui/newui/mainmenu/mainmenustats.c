@@ -56,23 +56,26 @@ class MainMenuStats extends ScriptedWidgetEventHandler
 	{
 		PlayerBase player;
 		MissionMainMenu missionMainMenu = MissionMainMenu.Cast(GetGame().GetMission());
-		
-		#ifdef PLATFORM_WINDOWS
-		player = missionMainMenu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
-		#endif
-		#ifdef PLATFORM_CONSOLE
-		player = missionMainMenu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
-		#endif
-		
-		if (player)
-		{
-			TimeConversions.ConvertSecondsToFullTime(player.StatGet(AnalyticsManagerServer.STAT_PLAYTIME), m_TimeSurvivedFull);			
-			m_TimeSurvivedValue.SetText(m_TimeSurvivedFull.FormatedNonZero());
 
-			m_PlayersKilledValue.SetText(GetValueString(player.StatGet(AnalyticsManagerServer.STAT_PLAYERS_KILLED)));
-			m_InfectedKilledValue.SetText(GetValueString(player.StatGet(AnalyticsManagerServer.STAT_INFECTED_KILLED)));
-			m_DistanceTraveledValue.SetText(GetDistanceString(player.StatGet(AnalyticsManagerServer.STAT_DISTANCE)));
-			m_LongRangeShotValue.SetText(GetDistanceString(player.StatGet(AnalyticsManagerServer.STAT_LONGEST_SURVIVOR_HIT), true));
+		if (missionMainMenu && missionMainMenu.GetIntroScenePC())
+		{
+			#ifdef PLATFORM_WINDOWS
+			player = missionMainMenu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
+			#endif
+			#ifdef PLATFORM_CONSOLE
+			player = missionMainMenu.GetIntroScenePC().GetIntroCharacter().GetCharacterObj();
+			#endif
+		
+			if (player)
+			{
+				TimeConversions.ConvertSecondsToFullTime(player.StatGet(AnalyticsManagerServer.STAT_PLAYTIME), m_TimeSurvivedFull);			
+				m_TimeSurvivedValue.SetText(m_TimeSurvivedFull.FormatedNonZero());
+	
+				m_PlayersKilledValue.SetText(GetValueString(player.StatGet(AnalyticsManagerServer.STAT_PLAYERS_KILLED)));
+				m_InfectedKilledValue.SetText(GetValueString(player.StatGet(AnalyticsManagerServer.STAT_INFECTED_KILLED)));
+				m_DistanceTraveledValue.SetText(GetDistanceString(player.StatGet(AnalyticsManagerServer.STAT_DISTANCE)));
+				m_LongRangeShotValue.SetText(GetDistanceString(player.StatGet(AnalyticsManagerServer.STAT_LONGEST_SURVIVOR_HIT), true));
+			}
 		}
 	}
 	

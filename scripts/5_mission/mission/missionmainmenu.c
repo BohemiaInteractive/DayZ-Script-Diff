@@ -145,33 +145,6 @@ class MissionMainMenu extends MissionBase
 		}
 	}
 	
-	override void OnKeyRelease(int key)
-	{
-		super.OnKeyRelease(key);
-		
-		if ( key == KeyCode.KC_Q )
-		{
-			/*
-			array<int> list = new  array<int>();
-			
-			Print("Start--------");
-			list.Debug();
-			
-			int i = 0;
-			while ( i < 20 )
-			{
-				SortedInsert(list, Math.RandomIntInclusive(0, 20));
-				i += 1;
-			}
-			
-			
-			
-			Print("End--------");
-			list.Debug();
-			*/
-		}
-	}
-	
 	void PlayMusic()
 	{
 		if ( !m_MenuMusic )

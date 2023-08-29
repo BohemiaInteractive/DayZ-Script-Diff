@@ -1427,6 +1427,7 @@ class DayZGame extends CGame
 				LoadingHide();
 				CancelLoginTimeCountdown();
 				SetConnecting(false);
+				SetGameState(DayZGameState.MAIN_MENU);
 				m_FirstConnect = true;
 				#ifdef PLATFORM_CONSOLE
 				if (GetUserManager().GetSelectedUser())
@@ -1435,13 +1436,12 @@ class DayZGame extends CGame
 					OnlineServices.ClearCurrentServerInfo();
 					if (GetGameState() == DayZGameState.IN_GAME)
 					{
-						SetGameState(DayZGameState.MAIN_MENU);
 						SetLoadState(DayZLoadState.MAIN_MENU_START);
 					}
 				}
 				m_Notifications.ClearVoiceNotifications();
 				#endif
-				
+
 				// analytics - disconnected player
 				StatsEventDisconnectedData discData = new StatsEventDisconnectedData();
 				discData.m_CharacterId = g_Game.GetDatabaseID();
@@ -1646,10 +1646,6 @@ class DayZGame extends CGame
 				if (Class.CastTo(connectivityStatsParams, params))
 				{
 					PlayerIdentity playerIdentity = connectivityStatsParams.param1;
-					
-					//int pingAct = playerIdentity.GetPingAct();
-					//int pingMin = playerIdentity.GetPingMin();
-					//int pingMax = playerIdentity.GetPingMax();
 					
 					int pingAvg = playerIdentity.GetPingAvg();
 					if (pingAvg < GetWorld().GetPingWarningThreshold())
@@ -3719,7 +3715,6 @@ class DayZGame extends CGame
 	void CreateGamepadDisconnectMenu();
 	void DeleteGamepadDisconnectMenu();
 };
-
 
 DayZGame g_Game;
 

@@ -2393,7 +2393,6 @@ class PlayerBase extends ManBase
 		}
 		
 		SEffectManager.DestroyEffect(m_FliesEff);
-//		ErrorEx("DbgFlies | StopSoundSet | exit 2 ",ErrorExSeverity.INFO);
 		StopSoundSet(m_SoundFliesEffect);
 	}
 
@@ -2867,9 +2866,6 @@ class PlayerBase extends ManBase
 			ProcessDrowning(pDt);
 		}
 		UpdateDelete();
-		//PrintString(pCurrentCommandID.ToString());
-		//PrintString(m_IsUnconscious.ToString());
-		//PrintString("currentCommand:" +pCurrentCommandID.ToString());
 		
 		HandleDamageHit(pCurrentCommandID);
 		
@@ -2955,9 +2951,11 @@ class PlayerBase extends ManBase
 					else
 					{
 						//! Maybe instead error out or notify of possible desync?
-
-						m_IsUnconscious = false;
-						OnUnconsciousStop(pCurrentCommandID);
+						if (IsAlive())
+						{
+							m_IsUnconscious = false;
+							OnUnconsciousStop(pCurrentCommandID);
+						}
 					}
 				}
 			}
@@ -3297,7 +3295,6 @@ class PlayerBase extends ManBase
 	void OnUnconsciousStart()
 	{
 		CloseInventoryMenu();
-		//if (GetInventory()) GetInventory().LockInventory(LOCK_FROM_SCRIPT);
 		
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
@@ -3334,15 +3331,12 @@ class PlayerBase extends ManBase
 		}
 		
 		SetMasterAttenuation("UnconsciousAttenuation");
-		
-		//PrintString("OnUnconsciousStart");
 	}
 	
 	void OnUnconsciousStop(int pCurrentCommandID)
 	{	
 		m_UnconRefillModifier =1;
 		SetSynchDirty();
-		//if (GetInventory()) GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
 		m_UnconsciousTime = 0;
 		m_UnconsciousVignetteTarget = 2;
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT) 
@@ -3378,8 +3372,6 @@ class PlayerBase extends ManBase
 		}
 		
 		SetMasterAttenuation("");
-		
-		//PrintString("OnUnconsciousStop");
 	}
 
 	void OnUnconsciousUpdate(float pDt, int last_command)
@@ -3394,10 +3386,7 @@ class PlayerBase extends ManBase
 				m_ShockSimplified = shock_simplified;
 				SetSynchDirty();
 			}
-			
-			//PrintString(last_command.ToString());
-			//PrintString(DayZPlayerConstants.COMMANDID_SWIM.ToString());
-			
+
 			if (m_UnconsciousTime > PlayerConstants.UNCONSCIOUS_IN_WATER_TIME_LIMIT_TO_DEATH && last_command == DayZPlayerConstants.COMMANDID_SWIM)
 			{
 				SetHealth("","",-100);
@@ -3467,14 +3456,12 @@ class PlayerBase extends ManBase
 		GetGame().GetMission().RemoveActiveInputRestriction(EInputRestrictors.INVENTORY);
 	}
 	
-	void ShockRefill(float pDt)
-	{
-		//functionality moved to ShockMdfr::OnTick
-	}
+	//! functionality moved to ShockMdfr::OnTick
+	void ShockRefill(float pDt);
 	
 	//BrokenLegs
 	// -----------------------
-	
+
 	eBrokenLegs GetBrokenLegs()
 	{
 		return Math.AbsInt(m_BrokenLegState);//negative value denotes first time activation
@@ -3877,6 +3864,7 @@ class PlayerBase extends ManBase
 	override void OnCommandDeathStart()
 	{	
 		m_AnimCommandStarting = HumanMoveCommandID.CommandDeath;
+
 		AbortWeaponEvent();	
 		GetWeaponManager().DelayedRefreshAnimationState(10);
 		RequestHandAnimationStateRefresh();
@@ -3919,7 +3907,6 @@ class PlayerBase extends ManBase
 	
 	override void OnStanceChange(int previousStance, int newStance)
 	{
-
 		int prone = DayZPlayerConstants.STANCEMASK_PRONE | DayZPlayerConstants.STANCEMASK_RAISEDPRONE;
 		int notProne = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_RAISEDERECT | DayZPlayerConstants.STANCEMASK_RAISEDCROUCH;
 		
@@ -5894,10 +5881,8 @@ class PlayerBase extends ManBase
 	
 	void SetNewCharName()
 	{
-		//Print("SetNewCharName");
-		g_Game.GetMenuData().SaveCharacter(false,true);
+		g_Game.GetMenuData().SaveCharacter(false, true);
 		g_Game.GetMenuData().SetCharacterName(g_Game.GetMenuData().GetLastPlayedCharacter(), g_Game.GetMenuDefaultCharacterData(false).GetCharacterName());
-		//g_Game.GetMenuData().SaveCharacter(false,true);
 		g_Game.GetMenuData().SaveCharactersLocal();
 	}
 

@@ -131,7 +131,7 @@ class MainMenuConsole extends UIScriptedMenu
 	void PopulateDlcFrame()
 	{
 		if (!m_DlcHandlers)
-			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>;
+			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>();
 		
 		m_DlcData = DlcDataLoader.GetData();
 		int count = m_DlcData.DLCs.Count();
@@ -142,7 +142,7 @@ class MainMenuConsole extends UIScriptedMenu
 		{
 			data = m_DlcData.DLCs[i];
 			info = m_AllDlcsMap.Get(data.Name);
-			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(m_AllDlcsMap.Get(data.Name),m_DlcFrame,data);
+			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(info, m_DlcFrame, data);
 			
 			if (data.Name == "Livonia DLC")
 			{

@@ -13,7 +13,7 @@ class WaterproofBag_ColorBase : Container_Base
 		if (parent && parent.IsKindOf("AmmoBox"))
 			return false;
 		
-		if (GetNumberOfItems() > 0)
+		if (GetNumberOfItems() > 0 && parent.IsKindOf("WaterproofBag_ColorBase"))
 			return false;
 
 		return true;

@@ -126,7 +126,7 @@ class MainMenu extends UIScriptedMenu
 	
 	void LoadMods()
 	{
-		array<ref ModInfo> modArray = new array<ref ModInfo>;		
+		array<ref ModInfo> modArray = new array<ref ModInfo>();
 		GetGame().GetModInfos(modArray);
 
 		if (modArray.Count() > 0)
@@ -158,7 +158,7 @@ class MainMenu extends UIScriptedMenu
 	void FilterDlcs(inout array<ref ModInfo> modArray)
 	{
 		if (!m_AllDlcsMap)
-			m_AllDlcsMap = new map<string,ref ModInfo>;
+			m_AllDlcsMap = new map<string,ref ModInfo>();
 		m_AllDlcsMap.Clear();
 		
 		int count = modArray.Count();
@@ -184,7 +184,7 @@ class MainMenu extends UIScriptedMenu
 	void PopulateDlcFrame()
 	{
 		if (!m_DlcHandlers)
-			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>;
+			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>();
 		
 		m_DlcData = DlcDataLoader.GetData();
 		int count = m_DlcData.DLCs.Count();
@@ -195,7 +195,7 @@ class MainMenu extends UIScriptedMenu
 		{
 			data = m_DlcData.DLCs[i];
 			info = m_AllDlcsMap.Get(data.Name);
-			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(m_AllDlcsMap.Get(data.Name),m_DlcFrame,data);
+			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(info, m_DlcFrame, data);
 			
 			if (data.Name == "Livonia DLC")
 			{
@@ -385,9 +385,7 @@ class MainMenu extends UIScriptedMenu
 	{
 		string name;
 		if (m_ScenePC && g_Game.GetGameState() == DayZGameState.MAIN_MENU)
-		{
 			OnChangeCharacter();
-		}		
 		
 		string version;
 		GetGame().GetVersion(version);
@@ -396,13 +394,12 @@ class MainMenu extends UIScriptedMenu
 	
 	override void OnShow()
 	{
-		if (g_Game.GetGameState() != DayZGameState.MAIN_MENU)
-			return;
-		
 		if (m_DisplayedDlcHandler)
 			m_DisplayedDlcHandler.ShowInfoPanel(true);
+
 		SetFocus(null);
 		OnChangeCharacter(false);
+		m_Stats.UpdateStats();
 		LoadMods();
 		return;
 	}
@@ -411,6 +408,7 @@ class MainMenu extends UIScriptedMenu
 	{
 		if (m_DisplayedDlcHandler)
 			m_DisplayedDlcHandler.ShowInfoPanel(false);
+
 		GetDayZGame().GetBacklit().MainMenu_OnHide();
 	}
 	
