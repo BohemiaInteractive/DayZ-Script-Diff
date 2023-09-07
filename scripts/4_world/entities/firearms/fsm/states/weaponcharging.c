@@ -72,6 +72,7 @@ class WeaponCharging_CK extends WeaponStateBase
 	{
 		super.OnEntry(e);
 		m_weapon.SetCharged(true);
+		m_weapon.SetWeaponOpen(false);
 	}
 };
 

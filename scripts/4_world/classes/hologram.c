@@ -243,26 +243,24 @@ class Hologram
 	}
 	
 	// update loop for visuals and collisions of the hologram
-	void UpdateHologram( float timeslice )
+	void UpdateHologram(float timeslice)
 	{
-		if ( !m_Parent )
+		if (!m_Parent)
 		{
 			m_Player.TogglePlacingLocal();
 			
 			return;
 		}
 		
-		if ( m_Player.IsSwimming() || m_Player.IsClimbingLadder() || m_Player.IsRaised() || m_Player.IsClimbing() || m_Player.IsRestrained() || m_Player.IsUnconscious() )
+		if (IsRestrictedFromAdvancedPlacing())
 		{
 			m_Player.TogglePlacingLocal();
 			
 			return;
 		}
 
-		if ( !GetUpdatePosition() )
-		{
+		if (!GetUpdatePosition())
 			return;
-		} 
 		
 		
 		#ifdef DIAG_DEVELOPER
@@ -271,15 +269,15 @@ class Hologram
 		#endif
 
 		// update hologram position	
-		SetProjectionPosition( GetProjectionEntityPosition( m_Player ) );
-		SetProjectionOrientation( AlignProjectionOnTerrain( timeslice ) );
+		SetProjectionPosition(GetProjectionEntityPosition(m_Player));
+		SetProjectionOrientation(AlignProjectionOnTerrain(timeslice));
 
 		EvaluateCollision();
 		RefreshTrigger();
-		CheckPowerSource();	
+		CheckPowerSource();
 		RefreshVisual();
 
-		m_Projection.OnHologramBeingPlaced( m_Player );
+		m_Projection.OnHologramBeingPlaced(m_Player);
 	}
 	
 	vector AlignProjectionOnTerrain( float timeslice )
@@ -432,22 +430,23 @@ class Hologram
 			#ifdef DIAG_DEVELOPER
 			DebugText("Inherits from TrapSpawnBase, checking IsPlaceableAtposition", true);
 			#endif
-			TrapSpawnBase trap_spawn_base;
-			Class.CastTo( trap_spawn_base,  m_Projection );
-			SetIsColliding( !trap_spawn_base.IsPlaceableAtPosition( m_Projection.GetPosition() ) );
+
+			TrapSpawnBase trapSpawnBase;
+			Class.CastTo(trapSpawnBase, m_Projection);
+			SetIsColliding(!trapSpawnBase.IsPlaceableAtPosition(m_Projection.GetPosition()));
 		}
-		else if ( m_Projection.IsInherited( TrapBase ))
+		else if (m_Projection.IsInherited(TrapBase))
 		{
 			#ifdef DIAG_DEVELOPER
 			DebugText("Inherits from TrapBase, checking IsPlaceableAtposition", true);
 			#endif
-			TrapBase trap_base;
-			Class.CastTo(trap_base,  m_Projection);
-			SetIsColliding( !trap_base.IsPlaceableAtPosition( m_Projection.GetPosition() ) );
+			TrapBase trapBase;
+			Class.CastTo(trapBase, m_Projection);
+			SetIsColliding(!trapBase.IsPlaceableAtPosition(m_Projection.GetPosition()));
 		}
 		else
 		{
-			SetIsColliding( false );
+			SetIsColliding(false);
 		}
 	}
 	
@@ -1531,6 +1530,26 @@ class Hologram
 		}
 
 		return SUFFIX_MATERIAL_DEPLOYABLE;
+	}
+	
+	private bool IsRestrictedFromAdvancedPlacing()
+	{
+		if (m_Player.IsJumpInProgress())
+			return true;
+		if (m_Player.IsSwimming())
+			return true;
+		if (m_Player.IsClimbingLadder())
+			return true;
+		if (m_Player.IsRaised())
+			return true;
+		if (m_Player.IsClimbing())
+			return true;
+		if (m_Player.IsRestrained())
+			return true;
+		if (m_Player.IsUnconscious())
+			return true;
+		
+		return false;
 	}
 };
 

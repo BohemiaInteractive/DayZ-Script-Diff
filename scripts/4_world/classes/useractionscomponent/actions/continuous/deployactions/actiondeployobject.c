@@ -4,12 +4,12 @@ class PlaceObjectActionReciveData : ActionReciveData
 	vector m_Orientation;
 }
 
-class ActionDeployObject: ActionDeployBase
+class ActionDeployObject : ActionDeployBase
 {			 
 	void ActionDeployObject()
 	{
-		m_CommandUID		= 0;
-		m_StanceMask		= DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
+		m_CommandUID = 0;
+		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
 	}
 	
 	override bool HasAlternativeInterrupt()
@@ -22,11 +22,13 @@ class ActionDeployObject: ActionDeployBase
 		return true;
 	}
 	
+	override bool CanBeUsedWithBrokenLegs()
+	{
+		return false;
+	}
+	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if (player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
-			return false;
-		
 		//Client
 		if (!GetGame().IsDedicatedServer())
 		{
@@ -48,9 +50,6 @@ class ActionDeployObject: ActionDeployBase
 	
 	override bool ActionConditionContinue(ActionData action_data)
 	{
-		if (action_data.m_Player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
-			return false;
-		
 		//Server
 		if (GetGame().IsDedicatedServer())
 		{
@@ -108,9 +107,7 @@ class ActionDeployObject: ActionDeployBase
 	
 	override void OnStartClient(ActionData action_data)
 	{		
-		PlaceObjectActionData poActionData;
-		poActionData = PlaceObjectActionData.Cast(action_data);
-		
+		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData)
 			return;
 		
@@ -150,9 +147,7 @@ class ActionDeployObject: ActionDeployBase
 			
 	override void OnFinishProgressClient(ActionData action_data)
 	{
-		PlaceObjectActionData poActionData;
-		poActionData = PlaceObjectActionData.Cast(action_data);
-		
+		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData)
 			return;
 		
@@ -164,11 +159,12 @@ class ActionDeployObject: ActionDeployBase
 		
 		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation);
 	}
-	
+
 	override void OnEndClient(ActionData action_data)
 	{
-		PlaceObjectActionData poActionData;
-		poActionData = PlaceObjectActionData.Cast(action_data);
+		super.OnEndClient(action_data);
+
+		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData.m_AlreadyPlaced)
 		{
 			action_data.m_Player.PlacingCancelLocal();
@@ -188,11 +184,12 @@ class ActionDeployObject: ActionDeployBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
+		super.OnEndServer(action_data);
+
 		if (!action_data || !action_data.m_MainItem)
 			return;
 		
-		PlaceObjectActionData poActionData;
-		poActionData = PlaceObjectActionData.Cast(action_data);
+		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData.m_AlreadyPlaced)
 		{
 			GetGame().ClearJunctureEx(action_data.m_Player, action_data.m_MainItem);
@@ -247,8 +244,7 @@ class ActionDeployObject: ActionDeployBase
 	{
 		super.WriteToContext(ctx, action_data);
 		
-		PlaceObjectActionData poActionData;
-		poActionData = PlaceObjectActionData.Cast(action_data);
+		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
 
 		ctx.Write(poActionData.m_Position);
 		ctx.Write(poActionData.m_Orientation);
@@ -257,9 +253,8 @@ class ActionDeployObject: ActionDeployBase
 	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data)
 	{
 		if (!action_recive_data)
-		{
 			action_recive_data = new PlaceObjectActionReciveData;
-		}
+
 		super.ReadFromContext(ctx, action_recive_data);
 		PlaceObjectActionReciveData action_data_po = PlaceObjectActionReciveData.Cast(action_recive_data);
 		

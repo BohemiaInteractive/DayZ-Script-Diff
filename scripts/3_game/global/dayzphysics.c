@@ -214,6 +214,8 @@ class DayZPhysics
 	proto static bool	GeometryOverlapBullet(vector transform[4], dGeom geometry, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
 
 	proto static bool	EntityOverlapBullet(vector transform[4], IEntity entity, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+
+	proto static bool	EntityOverlapSingleBullet(vector transform[4], IEntity entity, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
 	
 	proto static bool	SphereOverlapBullet(vector position, float radius, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
 	

@@ -477,10 +477,12 @@ class Pistol_Base extends Weapon_Base
 		m_fsm.AddTransition(new WeaponTransition(  Attach_CC10,		_abt_,	CC10));
 		
 		m_fsm.AddTransition(new WeaponTransition( OD00,				__A__,	Attach_OD00, NULL, new WeaponGuardCanAttachMag(this))); // attach from OPE/b0/m0
-		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_fin_,	OD00, NULL, new WeaponGuardWeaponOpen(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_fin_,	OD00, NULL, new GuardNot(new WeaponGuardHasMag(this))));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_fin_,	OD01, NULL, new WeaponGuardWeaponOpen(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_fin_,	CC01, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_fin_,	CC11));
-		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_abt_,	OD00, NULL, new WeaponGuardWeaponOpen(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_abt_,	OD00, NULL, new GuardNot(new WeaponGuardHasMag(this))));
+		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_abt_,	OD01, NULL, new WeaponGuardWeaponOpen(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_abt_,	CC01, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Attach_OD00,		_abt_,	CC11));
 
