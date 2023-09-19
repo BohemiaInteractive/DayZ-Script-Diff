@@ -14,7 +14,7 @@ class TrapBase extends ItemBase
 	protected const int DAMAGE_TRIGGER_MINE 		= 75;
 	protected const float UPDATE_TIMER_INTERVAL 	= 0.05;
 
-	int   m_InitWaitTime; 			//After this time after deployment, the trap is activated
+	float   m_InitWaitTime; 		//After this time after deployment, the trap is activated
 	bool m_NeedActivation;			//If activation of trap is needed
 	float m_DefectRate; 			//Added damage after trap activation
 	float m_DamagePlayers; 			//How much damage player gets when caught
@@ -44,7 +44,7 @@ class TrapBase extends ItemBase
 	protected TrapTrigger m_TrapTrigger;
 	
 	protected ref array<int> m_ClothingDmg;
-	protected ref EffectSound 	m_DeployLoopSound;	
+	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
 	
 	void TrapBase()
 	{
@@ -519,6 +519,7 @@ class TrapBase extends ItemBase
 			m_TrapTrigger.SetOrientation(GetOrientation());
 			m_TrapTrigger.SetExtents(mins, maxs);
 			m_TrapTrigger.SetParentObject(this);
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(DeferredEnableTrigger);
 		}
 	}
 	
@@ -529,6 +530,12 @@ class TrapBase extends ItemBase
 			m_TrapTrigger.SetParentObject(null);
 			m_TrapTrigger.DeleteSafe();
 		}
+	}
+	
+	void DeferredEnableTrigger()
+	{
+		if (m_TrapTrigger)
+			m_TrapTrigger.SetEnabled();
 	}
 
 	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner) 
@@ -642,26 +649,9 @@ class TrapBase extends ItemBase
 	// ADVANCED PLACEMENT
 	//================================================================
 		
-	void PlayDeployLoopSound()
-	{		
-		#ifndef SERVER
-		if (!m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying())
-		{
-			m_DeployLoopSound = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
-		}
-		#endif
-	}
+	void PlayDeployLoopSound(); //deprecated
 	
-	void StopDeployLoopSound()
-	{
-		#ifndef SERVER
-		if (m_DeployLoopSound)
-		{
-			m_DeployLoopSound.SetSoundFadeOut(0.5);
-			m_DeployLoopSound.SoundStop();
-		}
-		#endif
-	}
+	void StopDeployLoopSound(); //deprecated
 	
 	override void SetActions()
 	{

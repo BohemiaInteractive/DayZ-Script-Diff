@@ -1,11 +1,19 @@
 //! Trigger used by traps
 class TrapTrigger : Trigger
 {
+	bool m_Enabled = false;
 	TrapBase m_ParentObj;
 	
 	#ifdef DEVELOPER
 	bool m_CanSendDbg = true;
 	#endif
+	
+	void TrapTrigger()
+	{
+		int mask = GetEventMask();
+		mask &= ~EntityEvent.INIT;
+		SetEventMask(mask);
+	}
 	
 	void SetParentObject( TrapBase obj )
 	{
@@ -17,7 +25,7 @@ class TrapTrigger : Trigger
 	
 	override protected bool CanAddObjectAsInsider(Object object)
 	{
-		return object.IsInherited(EntityAI) && m_ParentObj && m_ParentObj.IsActive() && m_ParentObj.GetTrapTrigger() == this;
+		return m_Enabled && object.IsInherited(EntityAI) && m_ParentObj && m_ParentObj.IsActive() && m_ParentObj.GetTrapTrigger() == this;
 	}
 	
 	override protected void OnEnterServerEvent(TriggerInsider insider)
@@ -38,6 +46,12 @@ class TrapTrigger : Trigger
 		{
 			m_ParentObj.RemoveFromObject(EntityAI.Cast(insider.GetObject()));
 		}
+	}
+	
+	//! prevents insider adding in the wrong position, HOTFIX
+	void SetEnabled()
+	{
+		m_Enabled = true;
 	}
 	
 	#ifdef DEVELOPER

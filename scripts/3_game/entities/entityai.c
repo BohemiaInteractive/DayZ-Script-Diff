@@ -477,29 +477,10 @@ class EntityAI extends Entity
 	// End of fire distribution ^
 	
 	// ADVANCED PLACEMENT EVENTS
-	void OnPlacementStarted( Man player ) { }
-		
-	void OnHologramBeingPlaced( Man player ) { }
-	
-	// now includes information on final object position
-	void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" ) { }
-
-	void OnPlacementCancelled(Man player)
-	{
-		if (m_EM)
-		{
-			Man attachedTo = Man.Cast(GetHierarchyParent());
-			if (!attachedTo || attachedTo == player)// Check for exception with attaching a cable reel to an electric fence
-			{
-				//If cord length is 0, item powersource is most likely an attachment and should not be unplugged
-				if (m_EM.GetCordLength() <= 0)
-					return;
-
-				m_EM.UnplugAllDevices();
-				m_EM.UnplugThis();
-			}
-		}
-	}
+	void OnPlacementStarted(Man player);		
+	void OnHologramBeingPlaced(Man player);
+	void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0");
+	void OnPlacementCancelled(Man player);
 	
 	bool CanBePlaced( Man player, vector position ) { return true; }
 

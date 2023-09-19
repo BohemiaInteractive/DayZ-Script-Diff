@@ -3428,7 +3428,7 @@ class PlayerBase extends ManBase
 	
    	override bool IsUnconscious()
 	{
-		return m_IsUnconscious;
+		return m_MovementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_UNCONSCIOUS || m_IsUnconscious;
 	}
 	
 	override bool CanBeTargetedByAI(EntityAI ai)

@@ -1859,7 +1859,7 @@ class DayZGame extends CGame
 	void OnRespawnEvent(int time)
 	{	
 		// use login time screen for respawn timer
-		if (time > 0)
+		if (time >= 0)
 		{	
 			m_LoginTime = time;
 			if (!m_LoginTimeScreen)

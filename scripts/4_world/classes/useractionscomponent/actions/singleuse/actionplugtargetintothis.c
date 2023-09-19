@@ -29,7 +29,7 @@ class ActionPlugTargetIntoThis: ActionSingleUseBase
 		}
 		
 		if (!super.Can(player, target, item))
-		{		
+		{
 			if (m_Retoggle)
 			{				
 				m_Retoggle = false;
@@ -58,7 +58,7 @@ class ActionPlugTargetIntoThis: ActionSingleUseBase
 			// Special case for vehicle batteries
 			if (item.IsInherited(VehicleBattery))
 			{
-				MetalWire metalWire = MetalWire.Cast( item.GetCompEM().GetPluggedDevice());
+				MetalWire metalWire = MetalWire.Cast(item.GetCompEM().GetPluggedDevice());
 				
 				if (metalWire && metalWire.GetCompEM().CanReceivePlugFrom(targetIB))
 				{
@@ -88,23 +88,23 @@ class ActionPlugTargetIntoThis: ActionSingleUseBase
 	void Process(ActionData action_data)
 	{
 		ItemBase targetIB = ItemBase.Cast(action_data.m_Target.GetObject());
-		
+
 		if (action_data.m_MainItem.IsInherited(VehicleBattery))
 		{
 			// Car/truck batteries can have a metal wire attached through which they can power common electric appliances
-			
 			MetalWire metalWire = MetalWire.Cast(action_data.m_MainItem.GetCompEM().GetPluggedDevice());
-			
 			if (metalWire)
-			{
 				targetIB.GetCompEM().PlugThisInto(metalWire);
-			}
 		}
 		else
 		{
 			// Everything else in general
 			targetIB.GetCompEM().PlugThisInto(action_data.m_MainItem);
 		}
+		
+		Spotlight spotlight;
+		if (Spotlight.CastTo(spotlight, targetIB))
+			spotlight.Unfold();
 		
 		targetIB.GetInventory().TakeEntityAsAttachment(InventoryMode.LOCAL, action_data.m_MainItem);
 		action_data.m_Player.ServerDropEntity(action_data.m_MainItem);

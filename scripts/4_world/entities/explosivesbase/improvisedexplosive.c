@@ -176,15 +176,6 @@ class ImprovisedExplosive : ExplosivesBase
 		return true;
 	}
 	
-	override bool CanPutIntoHands(EntityAI parent)
-	{
-		return IsTakeable();
-	}
-
-	override bool CanRemoveFromHands(EntityAI parent)
-	{
-		return IsTakeable();
-	}
 	
 	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
 	{

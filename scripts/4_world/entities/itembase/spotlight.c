@@ -366,13 +366,9 @@ class Spotlight extends ItemBase
 		foreach (string selection : selections)
 		{		
 			if (GetGame().IsMultiplayer() && GetGame().IsServer())
-			{
 				playerPB.GetHologramServer().SetSelectionToRefresh(selection);		
-			}
 			else
-			{
 				playerPB.GetHologramLocal().SetSelectionToRefresh(selection);
-			}
 		}
 	}
 	
@@ -431,7 +427,7 @@ class Spotlight extends ItemBase
 	
 	override int GetViewIndex()
 	{
-		if (MemoryPointExists( "invView2" ) && !m_IsFolded)
+		if (MemoryPointExists("invView2") && !m_IsFolded)
 		{
 			return 1;
 		}

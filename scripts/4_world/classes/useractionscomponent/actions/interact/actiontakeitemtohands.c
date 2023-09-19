@@ -46,6 +46,15 @@ class ActionTakeItemToHands: ActionInteractBase
 		return true;
 	}
 	
+	override void OnEndServer(ActionData action_data)
+	{
+		super.OnEndServer(action_data);
+		
+		EntityAI takenEntity = EntityAI.Cast(action_data.m_Target.GetObject());
+		if (takenEntity && takenEntity.GetCompEM() && takenEntity.GetCompEM().IsPlugged())
+			takenEntity.GetCompEM().UnplugThis();
+	}
+	
 	override void OnExecute(ActionData action_data)
 	{
 		if (GetGame().IsDedicatedServer())

@@ -57,9 +57,6 @@ class CableReel extends ItemBase
 		}
 		
 		return true;
-		
-		/*bool allow_into_inv = !GetCompEM().IsPlugged();
-		return allow_into_inv;*/
 	}
 
 	// Event called on item when it is placed in the player(Man) inventory, passes the owner as a parameter
@@ -77,10 +74,8 @@ class CableReel extends ItemBase
 		
 		GetCompEM().UnplugAllDevices();		
 		
-		if ( !player_PB.IsPlacingLocal() )
-		{
+		if (!player_PB.IsPlacingLocal())
 			GetCompEM().UnplugThis();
-		}
 	}
 	
 	override bool CanRemoveFromHands( EntityAI player ) 
@@ -102,21 +97,22 @@ class CableReel extends ItemBase
 	// ADVANCED PLACEMENT
 	//================================================================
 	
-	override void OnPlacementStarted( Man player )
+	override void OnPlacementStarted(Man player)
 	{
-		super.OnPlacementStarted( player );
+		super.OnPlacementStarted(player);
+
+		array<string> selections = {
+			SEL_CORD_PLUGGED,
+			SEL_CORD_FOLDED
+		};
 		
-		ref array<string> array_of_selections = {SEL_CORD_PLUGGED, SEL_CORD_FOLDED};
-		PlayerBase player_PB = PlayerBase.Cast( player );
-				
-		if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
-		{
-			if ( player_PB.GetHologramServer() )
-				player_PB.GetHologramServer().SetSelectionToRefresh( array_of_selections );
-		}
-		else
-		{
-			player_PB.GetHologramLocal().SetSelectionToRefresh( array_of_selections );
+		PlayerBase playerPB = PlayerBase.Cast(player);
+		foreach (string selection : selections)
+		{		
+			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+				playerPB.GetHologramServer().SetSelectionToRefresh(selection);		
+			else
+				playerPB.GetHologramLocal().SetSelectionToRefresh(selection);
 		}
 	}
 	
@@ -137,7 +133,6 @@ class CableReel extends ItemBase
 		super.SetActions();
 		RemoveAction(ActionTakeItemToHands);
 		
-		//AddAction(ActionClapBearTrapWithThisItem);
 		AddAction(ActionPlugIn);
 		AddAction(ActionPlugTargetIntoThis);
 		AddAction(ActionTogglePlaceObject);

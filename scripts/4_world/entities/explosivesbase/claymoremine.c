@@ -90,30 +90,7 @@ class ClaymoreMine : ExplosivesBase
 		}
 	}
 	
-	override bool CanPutInCargo(EntityAI parent)
-	{
-		if (!super.CanPutInCargo(parent))
-		{
-			return false;
-		}
 
-		return IsTakeable();
-	}
-	
-	override bool CanPutIntoHands(EntityAI parent)
-	{
-		if (!super.CanPutIntoHands(parent))
-		{
-			return false;
-		}
-
-		return IsTakeable();
-	}
-
-	override bool CanRemoveFromHands(EntityAI parent)
-	{
-		return IsTakeable();
-	}
 	
 	override RemotelyActivatedItemBehaviour GetRemotelyActivatedItemBehaviour()
 	{
@@ -243,7 +220,7 @@ class ClaymoreMine : ExplosivesBase
 
 	override bool IsTakeable()
 	{
-		return !GetArmed();
+		return !GetArmed() && super.IsTakeable();
 	}
 	
 	override bool IsDeployable()

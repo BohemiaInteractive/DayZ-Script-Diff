@@ -389,28 +389,32 @@ class BatteryCharger extends ItemBase
 	// ADVANCED PLACEMENT
 	//================================================================
 	
-	override void OnPlacementStarted( Man player )
+	override void OnPlacementStarted(Man player)
 	{	
-		super.OnPlacementStarted( player );
+		super.OnPlacementStarted(player);
 		
-		SetAnimationPhase( SEL_CLIPS_DETACHED, 0);
-		SetAnimationPhase( SEL_CLIPS_FOLDED, 1);
-		SetAnimationPhase( SEL_SWITCH_ON, 1);
-		SetAnimationPhase( SEL_SWITCH_OFF, 1);
-		SetAnimationPhase( SEL_LIGHT_STATE_1, 1);
-		SetAnimationPhase( SEL_LIGHT_STATE_2, 1);
-		SetAnimationPhase( SEL_LIGHT_STATE_3, 1);
+		SetAnimationPhase(SEL_CLIPS_DETACHED, 0);
+		SetAnimationPhase(SEL_CLIPS_FOLDED, 1);
+		SetAnimationPhase(SEL_SWITCH_ON, 1);
+		SetAnimationPhase(SEL_SWITCH_OFF, 1);
+		SetAnimationPhase(SEL_LIGHT_STATE_1, 1);
+		SetAnimationPhase(SEL_LIGHT_STATE_2, 1);
+		SetAnimationPhase(SEL_LIGHT_STATE_3, 1);
 	
-		ref array<string> array_of_selections = {SEL_CORD_PLUGGED, SEL_CORD_FOLDED, SEL_CLIPS_DETACHED, SEL_CLIPS_FOLDED};	
-		PlayerBase player_PB = PlayerBase.Cast( player );
-				
-		if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
-		{
-			player_PB.GetHologramServer().SetSelectionToRefresh( array_of_selections );
-		}
-		else
-		{
-			player_PB.GetHologramLocal().SetSelectionToRefresh( array_of_selections );
+		array<string> selections = {
+			SEL_CORD_PLUGGED,
+			SEL_CORD_FOLDED,
+			SEL_CLIPS_DETACHED,
+			SEL_CLIPS_FOLDED
+		};
+		
+		PlayerBase playerPB = PlayerBase.Cast(player);
+		foreach (string selection : selections)
+		{		
+			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+				playerPB.GetHologramServer().SetSelectionToRefresh(selection);		
+			else
+				playerPB.GetHologramLocal().SetSelectionToRefresh(selection);
 		}
 	}
 	

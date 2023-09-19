@@ -951,13 +951,13 @@ class Hologram
 	void CheckPowerSource()
 	{
 		//in range of its power source.
-		if ( m_Player && m_Parent && m_Parent.HasEnergyManager() && m_Parent.GetCompEM().IsPlugged() )
+		if (m_Player && m_Parent && m_Parent.HasEnergyManager() && m_Parent.GetCompEM().IsPlugged())
 		{
 			// Unplug the device when the player is too far from the power source.
 			m_Parent.GetCompEM().UpdatePlugState();
 			
 			// Delete local hologram when plug is rippled out and advanced placement is active
-			if( GetGame().IsMultiplayer() && GetGame().IsClient() )
+			if (GetGame().IsMultiplayer() && GetGame().IsClient())
 			{
 				if (!m_Parent.GetCompEM().IsPlugged())
 					m_Player.TogglePlacingLocal();

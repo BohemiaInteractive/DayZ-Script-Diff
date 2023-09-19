@@ -228,6 +228,31 @@ class ExplosivesBase : ItemBase
 		SetSynchDirty();
 	}
 	
+	override bool CanPutInCargo(EntityAI parent)
+	{
+		if (!super.CanPutInCargo(parent))
+		{
+			return false;
+		}
+
+		return IsTakeable();
+	}
+	
+	override bool CanPutIntoHands(EntityAI parent)
+	{
+		if (!super.CanPutIntoHands(parent))
+		{
+			return false;
+		}
+
+		return IsTakeable();
+	}
+
+	override bool CanRemoveFromHands(EntityAI parent)
+	{
+		return IsTakeable();
+	}
+	
 	bool GetDefused()
 	{
 		return m_Defused;	

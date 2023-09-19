@@ -89,31 +89,6 @@ class Plastic_Explosive : ExplosivesBase
 		}
 	}
 	
-	override bool CanPutInCargo( EntityAI parent )
-	{
-		if ( !super.CanPutInCargo(parent) )
-		{
-			return false;
-		}
-
-		return IsTakeable();
-	}
-	
-	override bool CanPutIntoHands(EntityAI parent)
-	{
-		if (!super.CanPutIntoHands(parent))
-		{
-			return false;
-		}
-
-		return IsTakeable();
-	}
-
-	override bool CanRemoveFromHands(EntityAI parent)
-	{
-		return IsTakeable();
-	}
-	
 	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
 	{
 		InventoryLocation il = new InventoryLocation();

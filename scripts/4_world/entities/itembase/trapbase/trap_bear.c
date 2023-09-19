@@ -16,7 +16,7 @@ class BearTrap extends TrapBase
 		m_DamagePlayers 			= 5; 				// How much damage player gets when caught
 		m_DamageOthers 				= 5;         		// How much damage other entities(CreatureAI) gets when caught
 		m_DefectRate 				= 0;
-		m_InitWaitTime 				= 0; 				// After this time after deployment, the trap is activated
+		m_InitWaitTime 				= 0.0; 				// After this time after deployment, the trap is activated
 		m_AnimationPhaseGrounded 	= "placing";
 		m_AnimationPhaseSet 		= "BearTrap_Set";
 		m_AnimationPhaseTriggered 	= "placing";
@@ -230,9 +230,6 @@ class BearTrap extends TrapBase
 		{
 			PlayerBase player_PB = PlayerBase.Cast(player);
 			StartActivate(player_PB);
-			
-			m_TrapTrigger.SetPosition(position);
-			m_TrapTrigger.SetOrientation(orientation);
 		}	
 	}
 	
