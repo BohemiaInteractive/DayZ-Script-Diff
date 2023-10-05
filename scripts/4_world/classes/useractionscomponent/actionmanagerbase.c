@@ -1,6 +1,3 @@
-typedef Param3<int, int, string> TSelectableActionInfo;
-typedef Param4<int, int, string, int> TSelectableActionInfoWithColor;
-
 class TSelectableActionInfoArray extends array<ref TSelectableActionInfo>
 {
 	bool IsSameAs(TSelectableActionInfoArray other)
@@ -29,8 +26,6 @@ class TSelectableActionInfoArray extends array<ref TSelectableActionInfo>
 		return true;
 	}
 }
-
-class TSelectableActionInfoArrayEx extends array<ref Param> {}
 
 class ActionManagerBase
 {

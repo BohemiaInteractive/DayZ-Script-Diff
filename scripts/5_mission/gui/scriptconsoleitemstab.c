@@ -15,6 +15,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected static EntityAI 					m_PreviewEntity;
 	protected static float	 					m_ItemQuantity = 1;
 	
+	
 	protected ref array<Widget> 				m_CategoryButtonsWidgets = new array<Widget>;
 	protected ref array<string> 				m_CategoryButtonsNames = {"FIREARMS","MELEE","ATTACHMENTS","MAGAZINES","AMMO","FOOD","MEDICAL","CARS","BACKPACKS","B-BUILDING"};
 	protected ref map<Widget, string>			m_SpawnButtonsOriginalText = new map<Widget, string>();
@@ -25,6 +26,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected bool 								m_FilterOrderReversed;
 	protected string 							m_SelectedObject;
 	protected bool								m_IsShiftDown;
+	protected string							m_FilterTextPrev;
 	//Widgets
 	protected CheckBoxWidget			m_CategoryMergeType;
 	protected CheckBoxWidget			m_ItemPreviewCheckbox;
@@ -50,9 +52,10 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected ButtonWidget 				m_SpawnGroundPatternGrid;
 	protected ButtonWidget 				m_SpawnOnTarget;
 	protected ButtonWidget 				m_SpawnOnCursor;
+	protected ButtonWidget 				m_SpawnInHands;
 	protected ButtonWidget 				m_SpawnBatchButton;
 	protected ButtonWidget				m_ListActions;
-	protected EditBoxWidget 			m_ObjectFilter;
+	protected MultilineEditBoxWidget 	m_ObjectFilter;
 	protected EditBoxWidget 			m_SpawnDistanceEditBox;
 	protected EditBoxWidget 			m_RectSpawnRow;
 	protected EditBoxWidget 			m_RectSpawnColumn;
@@ -82,7 +85,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		m_FilterOrderImage	= ImageWidget.Cast(root.FindAnyWidget("ObjectFilterSortPic"));
 		m_ClearInventory		= CheckBoxWidget.Cast(root.FindAnyWidget("ForceClearCheckbox"));
 		m_DrawDistanceWidget	= EditBoxWidget.Cast(root.FindAnyWidget("DrawItemDistance"));
-		m_ObjectFilter = EditBoxWidget.Cast(root.FindAnyWidget("ObjectFilter"));
+		m_ObjectFilter = MultilineEditBoxWidget.Cast(root.FindAnyWidget("ObjectFilter"));
 		m_SpawnDistanceEditBox = EditBoxWidget.Cast(root.FindAnyWidget("SpawnDistance"));
 		m_SelectedObjectText = TextWidget.Cast(root.FindAnyWidget("SelectedObject"));
 		m_ObjectsTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("ObjectsList"));
@@ -108,6 +111,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		m_SpawnGroundButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonSpawnInGround"));
 		m_SpawnOnTarget = ButtonWidget.Cast(root.FindAnyWidget("ButtonSpawnInTarget"));
 		m_SpawnOnCursor = ButtonWidget.Cast(root.FindAnyWidget("ButtonSpawnCursor"));
+		m_SpawnInHands = ButtonWidget.Cast(root.FindAnyWidget("ButtonSpawnHands"));
 		m_SpawnBatchButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonSpawnBatch"));
 		
 		string text;
@@ -119,16 +123,11 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		m_SpawnButtonsOriginalText.Insert(m_SpawnOnTarget, text);
 		m_SpawnOnCursor.GetText(text);
 		m_SpawnButtonsOriginalText.Insert(m_SpawnOnCursor, text);
+		m_SpawnInHands.GetText(text);
+		m_SpawnButtonsOriginalText.Insert(m_SpawnInHands, text);
 		m_SpawnBatchButton.GetText(text);
 		m_SpawnButtonsOriginalText.Insert(m_SpawnBatchButton, text);
-		
-		/*
-		m_SpawnButtonsOriginalText.Insert(m_SpawnInInvButton, "In Inventory");
-		m_SpawnButtonsOriginalText.Insert(m_SpawnGroundButton, "On Ground");
-		m_SpawnButtonsOriginalText.Insert(m_SpawnOnTarget, "In Target");
-		m_SpawnButtonsOriginalText.Insert(m_SpawnOnCursor, "On Cursor");
-		m_SpawnButtonsOriginalText.Insert(m_SpawnBatchButton, "Spawn");
-		*/
+
 		m_ListActions = ButtonWidget.Cast(root.FindAnyWidget("ListActions"));
 
 		
@@ -170,6 +169,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	
 	protected void Init()
 	{
+		m_RefreshFilterTimer.Run(0.85, this, "ChangeFilterItems", null, true);
 		m_PresetDeleteButton.Show(false);
 		m_PresetRenameButton.Show(false);
 		m_DrawDistanceWidget.SetText(DRAW_DISTANCE.ToString());
@@ -238,7 +238,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			m_SelectedObjectIsPreset = 0;
 		}
 		
-		ChangeFilterItems();
+		ChangeFilterItems(true);
 		
 		RenderPresets();
 		//RenderPresetItems();
@@ -293,7 +293,6 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		
 		GetGame().GetObjectsAtPosition(GetGame().GetPlayer().GetPosition(), distance, objects, proxies);
 		int i = 0;
-		ScriptConsole.m_MarkedEntities.Clear();
 		foreach (Object o: objects)
 		{
 			if (o.IsKindOf(type))
@@ -910,14 +909,16 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	}
 	
 	
-	void ChangeFilter(TStringArray classes, TextListboxWidget widget, EditBoxWidget filterWidget, int categoryMask = -1, bool ignoreScope = false)
+	void ChangeFilter(TStringArray classes, TextListboxWidget widget, MultilineEditBoxWidget filterWidget, int categoryMask = -1, bool ignoreScope = false)
 	{
 		widget.ClearItems();
 		
 		TStringArray filters;
 		TIntArray filterColors;
 		
-		PrepareFilters(filterWidget.GetText(),filters, filterColors);
+		string widgetText;
+		filterWidget.GetText(widgetText);
+		PrepareFilters(widgetText, filters, filterColors);
 		
 		map<string,int> itemsAndColors = new map<string,int>();
 		map<string,ref TStringArray> itemsByFilters = new map<string,ref TStringArray>();
@@ -1029,7 +1030,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			m_FilterOrderImage.SetRotation(0,0,180,true);
 		else
 			m_FilterOrderImage.SetRotation(0,0,0,true);
-		ChangeFilterItems();
+		ChangeFilterItems(true);
 		if (m_ConfigDebugProfile)
 		{
 			m_ConfigDebugProfile.SetFilterOrderReversed(reversed);
@@ -1049,7 +1050,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			{
 				m_ObjectsScope = 2;
 			}
-			ChangeFilterItems();
+			ChangeFilterItems(true);
 			return true;
 		}
 		else if (w == m_ClearInventory)
@@ -1074,16 +1075,17 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 				cbw.SetTextColor(ARGB(255, 255, 255,255));
 			}
 
-			ChangeFilterItems();
+			ChangeFilterItems(true);
 			return true;
 		}
 		
+		/*
 		if (w == m_ObjectFilter)
 		{
 			m_RefreshFilterTimer.Run(0.85, this, "ChangeFilterItems", null, false);
 			return true;
-		}
-		else if (w == m_QuantityEditBox && (GetCurrentItemIndex() >= 0 || GetCurrentPresetName() != ""))
+		}*/
+		if (w == m_QuantityEditBox && (GetCurrentItemIndex() >= 0 || GetCurrentPresetName() != ""))
 		{
 			m_ConfigDebugProfile.SetItemQuantity(GetCurrentPresetName(), GetCurrentItemIndex(), m_QuantityEditBox.GetText().ToFloat());
 			return true;
@@ -1166,14 +1168,14 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			{
 				m_ConfigDebugProfile.SetMergeType(m_CategoryMergeType.IsChecked());
 			}
-			ChangeFilterItems();
+			ChangeFilterItems(true);
 			// Refresh UI by new settings
 			m_MissionGameplay.GetHudDebug().RefreshByLocalProfile();
 			return true;
 		}
 		else if (w == m_ObjectFilter)
 		{
-			ChangeFilterItems();
+			ChangeFilterItems(true);
 			return true;
 		}
 		else if (w == m_ItemPreviewCheckbox)
@@ -1187,7 +1189,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 				}
 			}
 		}
-		else if (w == m_SpawnInInvButton || w == m_SpawnGroundButton || w == m_SpawnOnTarget || w == m_SpawnOnCursor)
+		else if (w == m_SpawnInInvButton || w == m_SpawnGroundButton || w == m_SpawnOnTarget || w == m_SpawnOnCursor || w == m_SpawnInHands)
 		{
 			SaveProfileSpawnDistance();
 
@@ -1259,13 +1261,19 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 						
 						case m_SpawnOnTarget:
 						{
-							m_Developer.SpawnEntityInInventory(target, m_SelectedObject, health, quantity, m_IsShiftDown);
+							if (target && target.IsInherited(EntityAI))
+								m_Developer.SpawnEntityInInventory(target, m_SelectedObject, health, quantity, m_IsShiftDown);
 							break;
 						}
 
 						case m_SpawnInInvButton:
 						{
 							m_Developer.SpawnEntityInPlayerInventory(player, m_SelectedObject, -1, quantity, m_IsShiftDown);
+							break;
+						}
+						case m_SpawnInHands:
+						{
+							m_Developer.SpawnEntityInPlayerInventory(player, m_SelectedObject, -1, quantity, m_IsShiftDown,"", FindInventoryLocationType.HANDS);
 							break;
 						}
 						case m_SpawnOnCursor:
@@ -1441,7 +1449,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 				
 				if (button == 0)		//LMB
 				{
-					m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, 100, distance);
+					m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, 1, distance);
 					return true;
 				}
 				else if (button == 1)		//RMB
@@ -1459,7 +1467,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 				}
 				else if (button == 2) //MMB
 				{
-					m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, 100, distance,-1, true);
+					m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, 1, distance,-1, true);
 					return true;
 				}
 			}
@@ -1497,6 +1505,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		SetTextSpawnButton(m_SpawnOnTarget, m_IsShiftDown);
 		SetTextSpawnButton(m_SpawnOnCursor, m_IsShiftDown);
 		SetTextSpawnButton(m_SpawnBatchButton, m_IsShiftDown);
+		SetTextSpawnButton(m_SpawnInHands, m_IsShiftDown);
 	}
 	
 	TStringArray GetItemsClasses()
@@ -1504,10 +1513,29 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		return {CFG_VEHICLESPATH, CFG_WEAPONSPATH, CFG_MAGAZINESPATH, CFG_AMMO};
 	}
 	
-	void ChangeFilterItems()
+	protected string PreprocessFilterText(MultilineEditBoxWidget w)
 	{
-		string txt = (m_ConfigDebugProfile.GetItemSearch());
-		m_ConfigDebugProfile.SetItemSearch(m_ObjectFilter.GetText());
+		string widgetText;
+		w.GetText(widgetText);
+		
+		if (widgetText.Contains(","))
+		{
+			widgetText.Replace(","," ");
+			w.SetLine(0,widgetText);
+		}
+		return widgetText;
+	}
+	
+	void ChangeFilterItems(bool forced = false)
+	{
+		string widgetText = PreprocessFilterText(m_ObjectFilter);
+		if (widgetText == m_FilterTextPrev && !forced)
+			return;
+		
+		m_FilterTextPrev = widgetText;
+		string txt = m_ConfigDebugProfile.GetItemSearch();
+
+		m_ConfigDebugProfile.SetItemSearch(widgetText);
 		ChangeFilter(GetItemsClasses(), m_ObjectsTextListbox,m_ObjectFilter, m_CategoryMask);
 	}
 	
@@ -1564,6 +1592,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		m_PreviewEntity.GetActions(ContinuousDefaultActionInput, continuousActions);
 		if (continuousActions)
 		{
+			ActionBase_Basic craftingAction;
 			message += "\n== Continuous (LMB hold)\n\n";
 			foreach (ActionBase_Basic caction : continuousActions)
 			{
@@ -1574,15 +1603,20 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 				}
 				else
 				{
-					PluginRecipesManager pluginRecipesManager = PluginRecipesManager.Cast(GetPlugin(PluginRecipesManager));
-					array<RecipeBase> recipes = pluginRecipesManager.GetRecipesForItem(m_PreviewEntity.GetType());
-					foreach (RecipeBase recipe : recipes)
-					{
-						if (recipe.IsItemInRecipe("Inventory_Base"))
-							continue;
-						
-						message += string.Format("%1 <%2>\n", Widget.TranslateString(recipe.GetName()), recipe.Type());
-					}
+					craftingAction = caction;
+				}
+			}
+			message += "\n== Crafting recipes \n\n";
+			if (craftingAction)
+			{	
+				PluginRecipesManager pluginRecipesManager = PluginRecipesManager.Cast(GetPlugin(PluginRecipesManager));
+				array<RecipeBase> recipes = pluginRecipesManager.GetRecipesForItem(m_PreviewEntity.GetType());
+				foreach (RecipeBase recipe : recipes)
+				{
+					if (recipe.IsItemInRecipe("Inventory_Base"))
+						continue;
+					
+					message += string.Format("%1 <%2>\n", Widget.TranslateString(recipe.GetName()), recipe.Type());
 				}
 			}
 		}

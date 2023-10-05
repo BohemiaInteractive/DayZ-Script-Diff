@@ -293,8 +293,17 @@ class ParticleList
 	static const int FIREWORKS_AFTERBURN_START		= RegisterParticle("fireworks_small_02");
 	static const int FIREWORKS_AFTERBURN_END		= RegisterParticle("fireworks_small_03");
 	
-	static const int GRENADE_CHEM_BREAK				= RegisterParticle("contaminated_area_gas_grenade");
+	//Fireworks anniversary
+	static const int FIREWORKS_EXPLOSION_THANKS1	= RegisterParticle("fireworks_ThankYou_anim");
+	static const int FIREWORKS_EXPLOSION_THANKS2	= RegisterParticle("fireworks_For10_anim");
+	static const int FIREWORKS_EXPLOSION_THANKS3	= RegisterParticle("fireworks_Amazing_anim");
+	static const int FIREWORKS_EXPLOSION_THANKS4	= RegisterParticle("fireworks_Years_anim");
+	static const int FIREWORKS_EXPLOSION_THANKS5	= RegisterParticle("fireworks_Dayz_anim");
 	
+	
+	//pox grenade
+	static const int GRENADE_CHEM_BREAK				= RegisterParticle("contaminated_area_gas_grenade");
+	//Claymore
 	static const int CLAYMORE_EXPLOSION				= RegisterParticle("explosion_claymore_01");
 	static const int PLASTIC_EXPLOSION				= RegisterParticle("explosion_plastic_01");
 	

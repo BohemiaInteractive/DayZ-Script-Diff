@@ -89,41 +89,46 @@ class BroomBase : FlammableBase
 		SetHealth01("","", health01);
 		GetCompEM().SetEnergy( time );
 	}
-	
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		button1 = "SetBurnTimeTo15Secs";
-		button2 = "SetBurnTimeTo1Min";
-		button3 = "SetBurnTimeTo10Min";
-		button4 = "SetBurnTimeToMax";
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.BROOM_BURN_VERY_SHORT, "SetBurnTimeTo15Secs", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.BROOM_BURN_SHORT, "SetBurnTimeTo1Min", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.BROOM_BURN_MEDIUM, "SetBurnTimeTo10Min", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.BROOM_BURN_LONG, "SetBurnTimeToMax", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		
+		super.GetDebugActions(outputList);
 	}
 	
-	
-	override void OnDebugButtonPressServer(int button_index)
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
-		if (button_index == 1)
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			DebugSetHealthAndEnergy(15);
-			OnIgnitedThis(null);
+			if (action_id == EActions.BROOM_BURN_VERY_SHORT)
+			{
+				DebugSetHealthAndEnergy(15);
+				OnIgnitedThis(null);
+			}
+			else if (action_id == EActions.BROOM_BURN_SHORT)
+			{
+				DebugSetHealthAndEnergy(60);
+				OnIgnitedThis(null);
+			}
+			else if (action_id == EActions.BROOM_BURN_MEDIUM)
+			{
+				DebugSetHealthAndEnergy(600);
+				OnIgnitedThis(null);
+			}
+			else if (action_id == EActions.BROOM_BURN_LONG)
+			{
+				DebugSetHealthAndEnergy(GetCompEM().GetEnergyMaxPristine());
+				OnIgnitedThis(null);
+			}
 		}
-		
-		if (button_index == 2)
-		{
-			DebugSetHealthAndEnergy(60);
-			OnIgnitedThis(null);
-		}
-		
-		if (button_index == 3)
-		{
-			DebugSetHealthAndEnergy(600);
-			OnIgnitedThis(null);
-		}
-		
-		if (button_index == 4)
-		{
-			DebugSetHealthAndEnergy(GetCompEM().GetEnergyMaxPristine());
-			OnIgnitedThis(null);
-		}
+		return false;
 	}
 	
 }

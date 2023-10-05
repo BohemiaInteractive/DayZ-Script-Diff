@@ -17,7 +17,6 @@ class ClaymoreMine : ExplosivesBase
 
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdLow");
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdHigh");
-
 		UpdateLED(ERemoteDetonatorLEDState.OFF, true);
 	}
 	
@@ -46,7 +45,7 @@ class ClaymoreMine : ExplosivesBase
 #endif
 #endif
 	}
-	
+
 	override protected void InitiateExplosion()
 	{
 		if (GetDefused())
@@ -249,7 +248,22 @@ class ClaymoreMine : ExplosivesBase
 		
 		return 0;
 	}
-			
+	
+	override protected bool UsesGlobalDeploy()
+	{
+		return true;
+	}
+	
+	override string GetDeploySoundset()
+	{
+		return "placeClaymore_SoundSet";
+	}
+	
+	override string GetLoopDeploySoundset()
+	{
+		return "claymore_deploy_Soundset";
+	}
+	
 	override void OnDebugSpawn()
 	{
 		RemoteDetonatorTrigger rdt = RemoteDetonatorTrigger.Cast(SpawnEntityOnGroundPos("RemoteDetonatorTrigger", GetPosition() + GetDirection() * 0.5));

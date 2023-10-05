@@ -665,7 +665,6 @@ class GesturesMenu extends UIScriptedMenu
 	protected void UpdateControlsElements()
 	{
 		Widget toolbarBackSpacer = layoutRoot.FindAnyWidget("BackSpacer");
-		//Widget toolbarNavigateSpacer = layoutRoot.FindAnyWidget("NavigateSpacer");
 		
 		RichTextWidget toolbarSelectIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("SelectIcon"));
 		RichTextWidget toolbarBackIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
@@ -674,7 +673,7 @@ class GesturesMenu extends UIScriptedMenu
 		string backAction;
 		int controllerID;
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+		if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.MOUSE_AND_KEYBOARD)
 		{
 			selectAction = "UAMenuSelect";
 			backAction = "UAMenuBack";
@@ -692,9 +691,7 @@ class GesturesMenu extends UIScriptedMenu
 		toolbarBackSpacer.Show(instance.m_IsCategorySelected);
 	}
 	
-//-----------------------------------------------------------------
+	//-----------------------------------------------------------------
 	//!DEPRECATED
-	protected void OnMenuRelease()
-	{
-	}
+	protected void OnMenuRelease();
 }	

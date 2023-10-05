@@ -80,6 +80,10 @@ enum EAttExclusions
 	SHAVING_EYEWEAR_ATT_0,
 }
 
+class TSelectableActionInfoArrayEx extends array<ref Param> {}
+typedef Param3<int, int, string> TSelectableActionInfo;
+typedef Param4<int, int, string, int> TSelectableActionInfoWithColor;
+
 class EntityAI extends Entity
 {
 	bool 								m_DeathSyncSent;
@@ -482,7 +486,10 @@ class EntityAI extends Entity
 	void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0");
 	void OnPlacementCancelled(Man player);
 	
-	bool CanBePlaced( Man player, vector position ) { return true; }
+	bool CanBePlaced(Man player, vector position)
+	{
+		return true;
+	}
 
 	//! Method which returns message why object can't be placed at given position
 	string CanBePlacedFailMessage( Man player, vector position )
@@ -645,6 +652,18 @@ class EntityAI extends Entity
 	bool IsSetForDeletion()
 	{
 		return IsPreparedToDelete() || m_PendingDelete || ToDelete() || IsPendingDeletion();
+	}
+	
+	override bool CanBeActionTarget()
+	{
+		if (super.CanBeActionTarget())
+		{
+			return !IsSetForDeletion();
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	void SetPrepareToDelete()
@@ -1184,11 +1203,8 @@ class EntityAI extends Entity
 	//! Called when an item fails to get loaded into the inventory of an entity and gets dropped
 	void OnBinLoadItemsDropped()
 	{
-		if ( GetHierarchyRootPlayer() )
-		{
-			//GetGame().RPCSingleParam(GetHierarchyRootPlayer(), ERPCs.RPC_WARNING_ITEMDROP, null, true, GetHierarchyRootPlayer().GetIdentity());
+		if (GetHierarchyRootPlayer())
 			GetHierarchyRootPlayer().SetProcessUIWarning(true);
-		}
 	}
 	
 	//! Sets all animation values to 1, making them INVISIBLE if they are configured in models.cfg in such way. These selections must also be defined in the entity's config class in 'AnimationSources'. 
@@ -1534,7 +1550,7 @@ class EntityAI extends Entity
 	 **/		
 	bool CanDisplayCargo()
 	{
-		return true;
+		return GetInventory().GetCargo() != null;
 	}
 	
 	/**@fn		CanAssignToQuickbar
@@ -1582,13 +1598,13 @@ class EntityAI extends Entity
 		return false;
 	}
 	
-	proto native GameInventory GetInventory ();
-	proto native void CreateAndInitInventory ();
-	proto native void DestroyInventory ();
+	proto native GameInventory GetInventory();
+	proto native void CreateAndInitInventory();
+	proto native void DestroyInventory();
 		
 	int GetSlotsCountCorrect()
 	{
-		if( GetInventory() )
+		if (GetInventory())
 			return GetInventory().GetAttachmentSlotsCount();
 		else
 			return -1;
@@ -1791,7 +1807,7 @@ class EntityAI extends Entity
 	*/
 	bool PredictiveTakeEntityAsAttachment(notnull EntityAI item)
 	{
-		if ( GetGame().IsMultiplayer() )
+		if (GetGame().IsMultiplayer())
 			return GetInventory().TakeEntityAsAttachment(InventoryMode.JUNCTURE, item);
 		else
 			return GetInventory().TakeEntityAsAttachment(InventoryMode.PREDICTIVE, item);
@@ -1805,9 +1821,20 @@ class EntityAI extends Entity
 		return GetInventory().TakeEntityAsAttachment(InventoryMode.SERVER, item);
 	}
 
-	bool PredictiveDropEntity (notnull EntityAI item) { return false; }
-	bool LocalDropEntity (notnull EntityAI item) { return false; }
-	bool ServerDropEntity (notnull EntityAI item) { return false; }
+	bool PredictiveDropEntity(notnull EntityAI item)
+	{
+		return false;
+	}
+	
+	bool LocalDropEntity(notnull EntityAI item)
+	{
+		return false;
+	}
+	
+	bool ServerDropEntity(notnull EntityAI item)
+	{
+		return false;
+	}
 
 	/**
 	\brief Get attached entity by type
@@ -1839,7 +1866,10 @@ class EntityAI extends Entity
 	/**
 	\brief Returns if item can be dropped out from this entity
 	*/
-	bool CanDropEntity(notnull EntityAI item) { return true; }
+	bool CanDropEntity(notnull EntityAI item)
+	{
+		return true;
+	}
 
 	/**
 	 **/
@@ -1870,9 +1900,9 @@ class EntityAI extends Entity
 	
 	// Forward declarations to allow lower modules to access properties that are modified from higher modules
 	// These are mainly used within the ItemBase
-	void SetWet(float value, bool allow_client = false) {};
-	void AddWet(float value) {};
-	void SetWetMax() {};
+	void SetWet(float value, bool allow_client = false);
+	void AddWet(float value);
+	void SetWetMax();
 
 	float GetWet()
 	{
@@ -2337,24 +2367,10 @@ class EntityAI extends Entity
 	}
 	
 	
-	void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
-	{/*
-		button1 = "DebugButton1";
-		button2 = "DebugButton2";
-		button3 = "DebugButton3";
-		button4 = "DebugButton4";
-	*/
-	}
+	void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4){}//DEPRICATED, USE GetDebugActions / OnAction
+	void OnDebugButtonPressClient(int button_index){}//DEPRICATED, USE GetDebugActions / OnAction
+	void OnDebugButtonPressServer(int button_index){}//DEPRICATED, USE GetDebugActions / OnAction
 	
-	void OnDebugButtonPressClient(int button_index)
-	{
-		// you can react here to debug button press, buttons are indexed starting at 1 and up
-	}
-	
-	void OnDebugButtonPressServer(int button_index)
-	{
-		// you can react here to debug button press, buttons are indexed starting at 1 and up
-	}
 	
 	Shape DebugBBoxDraw()
 	{
@@ -2529,6 +2545,8 @@ class EntityAI extends Entity
 	#ifdef DIAG_DEVELOPER
 	void FixEntity()
 	{
+		if (!(GetGame().IsServer()))
+			return;
 		SetFullHealth();
 		
 		if (GetInventory())
@@ -2674,6 +2692,75 @@ class EntityAI extends Entity
 	
 	void UpdateWeight(WeightUpdateType updateType = WeightUpdateType.FULL, float weightAdjustment = 0);
 	
+	float GetSingleInventoryItemWeightEx(){}
+
+	void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	{
+		//fix entity
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FIX_ENTITY, "Fix Entity", FadeColors.LIGHT_GREY));
+	
+		//weight
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_TOTAL_WEIGHT, "Print Weight", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_TOTAL_WEIGHT_RECALC, "Print Weight Verbose", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_PLAYER_WEIGHT, "Print Player Weight", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_PLAYER_WEIGHT_RECALC, "Print Player Weight Verbose", FadeColors.LIGHT_GREY));
+	}
+	bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (action_id == EActions.FIX_ENTITY)
+		{
+			#ifdef DIAG_DEVELOPER
+			FixEntity();
+			#endif
+		}
+		else if (action_id == EActions.GET_TOTAL_WEIGHT) //Prints total weight of item + its contents
+		{
+			WeightDebug.ClearWeightDebug();
+			#ifndef SERVER
+			Debug.Log("======================== "+  GetType() +" =================================");
+			#endif
+			Debug.Log("Weight:" + GetWeightEx().ToString());
+			Debug.Log("Weight excluding cargo and attachments:" + GetSingleInventoryItemWeightEx());
+			Debug.Log("----------------------------------------------------------------------------------------------");
+		}
+		else if (action_id == EActions.GET_TOTAL_WEIGHT_RECALC) //Prints total weight of item + its contents
+		{
+			WeightDebug.ClearWeightDebug();
+			WeightDebug.SetVerbosityFlags(WeightDebugType.RECALC_FORCED);
+			#ifndef SERVER
+			Debug.Log("======================== "+  GetType() +" RECALC ===========================");
+			#endif
+			Debug.Log("Weight:" + GetWeightEx(true).ToString());
+			Debug.Log("Weight excluding cargo and attachments:" + GetSingleInventoryItemWeightEx());
+			WeightDebug.PrintAll(this);
+			Debug.Log("----------------------------------------------------------------------------------------------");
+			WeightDebug.SetVerbosityFlags(0);
+		}
+		else if (action_id == EActions.GET_PLAYER_WEIGHT) //Prints total weight of item + its contents
+		{
+			WeightDebug.ClearWeightDebug();
+			#ifndef SERVER
+			Debug.Log("======================== PLAYER: "+player+" ===========================");
+			#endif
+			Debug.Log("New overall weight Player:"+player.GetWeightEx().ToString());
+
+			Debug.Log("----------------------------------------------------------------------------------------------");
+		}
+		else if (action_id == EActions.GET_PLAYER_WEIGHT_RECALC) //Prints total weight of item + its contents
+		{
+			WeightDebug.ClearWeightDebug();
+			WeightDebug.SetVerbosityFlags(WeightDebugType.RECALC_FORCED);
+			#ifndef SERVER
+			Debug.Log("======================== PLAYER RECALC: "+player+" ===========================");
+			#endif
+			Debug.Log("New overall weight Player:"+player.GetWeightEx(true).ToString());
+			WeightDebug.PrintAll(player);
+			Debug.Log("----------------------------------------------------------------------------------------------");
+			WeightDebug.SetVerbosityFlags(0);
+		}
+		return false;
+	}
+
 	///@{ view index
 	//! Item view index is used to setup which camera will be used in item view widget in inventory.
 	//! With this index you can setup various camera angles for different item states (e.g. fireplace, weapons).

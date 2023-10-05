@@ -172,28 +172,6 @@ class ItemOptics extends InventoryItemSuper
 	 * @brief	Sets zeroing clamp for the optics and updates the clamp if dist > 0. Used when attached to weapon.
 	 **/
 	proto native void SetZeroingClampDist(float dist);
-
-	
-	/*override void EEItemAttached(EntityAI item, string slot_name)
-	{
-		super.EEItemAttached(item, slot_name);
-		
-		// could maybe just ask for energy component on item?
-		if (slot_name == "BatteryD")
-		{
-			item.GetCompEM().SwitchOn();
-		}
-	}*/
-	
-	/*override void EEItemDetached(EntityAI item, string slot_name)
-	{
-		super.EEItemDetached(item, slot_name);
-		
-		if (slot_name == "BatteryD")
-		{
-			item.GetCompEM().SwitchOff();
-		}
-	}*/
 	
 	override void OnWorkStart()
 	{
@@ -549,7 +527,12 @@ class ItemOptics extends InventoryItemSuper
 		
 		AddAction(ActionViewOptics);
 	}
-};	
+	
+	override void OnDebugSpawn()
+	{
+		GetInventory().CreateAttachment("Battery9V");
+	}
+}
 
 typedef ItemOptics OpticBase;
 

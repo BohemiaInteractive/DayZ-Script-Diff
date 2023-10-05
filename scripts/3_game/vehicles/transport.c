@@ -56,8 +56,7 @@ class Transport extends EntityAI
 	
 	//! Handles death of player in vehicle and awakes its physics if needed
 	proto native void CrewDeath( int posIdx );
-
-
+	
 	override bool IsTransport()
 	{
 		return true;
@@ -78,11 +77,26 @@ class Transport extends EntityAI
 		return true;
 	}
 	
+	bool IsAnyCrewPresent()
+	{
+		for (int index = 0; index < CrewSize(); ++index)
+		{
+			if (CrewMember(index) != null)
+				return true;
+		}
+		
+		return false;
+	}
+	
 	float GetTransportCameraDistance()
 	{
 		return 4.0;
 	}
 	
+	void MarkCrewMemberUnconscious(int crewMemberIndex);
+	void MarkCrewMemberDead(int crewMemberIndex);
+	protected void HandleByCrewMemberState(ECrewMemberState state);
+
 	vector GetTransportCameraOffset()
 	{
 		return "0 1.3 0";

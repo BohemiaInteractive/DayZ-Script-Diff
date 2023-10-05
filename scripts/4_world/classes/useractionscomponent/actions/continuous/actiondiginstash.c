@@ -61,7 +61,7 @@ class ActionDigInStash: ActionContinuousBase
 
 			//! was initialized from inventory?
 			EntityAI entityToCheck = targetIB;
-			if (targetIB.GetInventory().IsInCargo());
+			if (targetIB.GetInventory().IsInCargo())
 				entityToCheck = player;
 			
 			// here we check if a stash is nearby and block digging a new one in close proximity
@@ -84,7 +84,6 @@ class ActionDigInStash: ActionContinuousBase
 			int liquidType;
 			string surfaceType;
 			GetGame().SurfaceUnderObject(entityToCheck, surfaceType, liquidType);
-			
 			if (!GetGame().IsSurfaceDigable(surfaceType))
 			{
 				return false;

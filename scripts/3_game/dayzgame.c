@@ -413,7 +413,7 @@ class DayZProfilesOptions
 		if (!m_DayZProfilesOptionsBool.Contains(option))
 		{
 			//! init of DayZProfilesOption - profileOptionName, value from Profiles files, or use default value
-			bool profileVal = GetGame().GetProfileValueBool(profileOptionName, def);
+			bool profileVal = GetProfileValueBool(profileOptionName, def);
 
 			m_DayZProfilesOptionsBool.Set(option, new DayZProfilesOptionBool(profileOptionName, profileVal, def));
 			SetProfileOptionBool(option, profileVal);
@@ -462,7 +462,7 @@ class DayZProfilesOptions
 
 		foreach (EDayZProfilesOptions e_opt, DayZProfilesOptionBool r_opt : m_DayZProfilesOptionsBool)
 		{
-			bool profileVal = GetGame().GetProfileValueBool(r_opt.param1, r_opt.param3);
+			bool profileVal = GetProfileValueBool(r_opt.param1, r_opt.param3);
 			SetProfileOptionBool(e_opt, profileVal);
 		}	
 	}
@@ -873,6 +873,8 @@ class LoadingScreen
 
 class DayZGame extends CGame
 {
+	protected ref BillboardSetHandler m_BillboardSetHandler;
+	
 	const int MISSION_STATE_MAINMENU = 0;
 	const int MISSION_STATE_GAME = 1;
 	const int MISSION_STATE_FINNISH = 2;
@@ -2047,7 +2049,7 @@ class DayZGame extends CGame
 	void InitNotifications()
 	{
 		NotificationSystem.InitInstance();
-		m_Notifications = new NotificationUI;
+		m_Notifications = new NotificationUI();
 	}
 	
 	protected ref Widget		m_IntroMenu;
@@ -2256,9 +2258,15 @@ class DayZGame extends CGame
 				if (selected_user)
 				#endif
 				{
-					GetGame().GetInput().IdentifyGamepad(GamepadButton.BUTTON_NONE);
-					GetInput().SelectActiveGamepad(gamepad);
-					user_manager.SelectUserEx(selected_user);
+					if (user_manager.SelectUserEx(selected_user))
+					{
+						GetGame().GetInput().IdentifyGamepad(GamepadButton.BUTTON_NONE);
+						GetInput().SelectActiveGamepad(gamepad);
+					}
+					else
+					{
+						selected_user = user_manager.GetSelectedUser();
+					}
 					
 					#ifdef PLATFORM_PS4
 					if (!selected_user.IsOnline())
@@ -2598,7 +2606,7 @@ class DayZGame extends CGame
 		{
 			if (!(flags & DisconnectSessionFlags.JOIN_ERROR_CHECK) || GetGameState() == DayZGameState.JOIN)
 			{
-				NotificationSystem.AddNotification(NotificationType.JOIN_FAIL_GET_SESSION, 6);
+				NotificationSystem.AddNotification(NotificationType.JOIN_FAIL_GET_SESSION, NotificationSystem.DEFAULT_TIME_DISPLAYED);
 			}
 		}
 		
@@ -2623,7 +2631,7 @@ class DayZGame extends CGame
 			{	
 				if (flags & DisconnectSessionFlags.DISCONNECT_ERROR_ENABLED)
 				{
-					NotificationSystem.AddNotification(NotificationType.DISCONNECTED, 6);
+					NotificationSystem.AddNotification(NotificationType.DISCONNECTED, NotificationSystem.DEFAULT_TIME_DISPLAYED);
 				}
 				
 				GetGame().GetMission().AbortMission();
@@ -3071,6 +3079,19 @@ class DayZGame extends CGame
 					GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(DelayedMidAirDetonation, soundDelay, false, delayedSoundPos[0], delayedSoundPos[1], delayedSoundPos[2]);
 					break;
 				}
+				case ERPCs.RPC_SET_BILLBOARDS:
+				{
+					if (!m_BillboardSetHandler)
+						m_BillboardSetHandler = new BillboardSetHandler();
+					
+					Param1<int> indexP = new Param1<int>(-1);
+					if (ctx.Read(indexP))
+					{
+						int index = indexP.param1;
+						m_BillboardSetHandler.OnRPCIndex(index);
+					}
+					break;
+				}
 				#endif
 				#endif
 
@@ -3101,20 +3122,6 @@ class DayZGame extends CGame
 				*/
 
 				#ifdef DEVELOPER
-				case ERPCs.DEV_RPC_ITEM_DIAG_BUTTON:
-				{
-					if (ctx.Read(CachedObjectsParams.PARAM1_INT))
-					{
-						EntityAI entity = EntityAI.Cast(_item);
-						if (entity)
-						{
-							entity.OnDebugButtonPressServer(CachedObjectsParams.PARAM1_INT.param1);
-						}
-					}	
-
-					break;
-				}
-				
 				case ERPCs.DEV_SET_WEATHER:
 				{
 					Param1<DebugWeatherRPCData> p1data = new Param1<DebugWeatherRPCData>(null);
@@ -3137,6 +3144,7 @@ class DayZGame extends CGame
 					{
 						ErrorEx("Failed to read weather debug data");
 					}
+					break;
 				}
 				#endif
 				
@@ -3707,6 +3715,11 @@ class DayZGame extends CGame
 			}
 		}
 #endif
+	}
+
+	BillboardSetHandler GetBillboardHandler()
+	{
+		return m_BillboardSetHandler;
 	}
 	
 	///////////////

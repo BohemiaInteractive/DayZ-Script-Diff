@@ -21,7 +21,5 @@ class DisinfectantAlcohol: Edible_Base
 		AddAction(ActionDisinfectSelf);
 		AddAction(ActionFillGeneratorTank);
 		AddAction(ActionWashHandsItemContinuous);
-		//AddAction(ActionForceDrinkAlcohol);
-		//AddAction(ActionDrinkAlcohol);
 	}
 };

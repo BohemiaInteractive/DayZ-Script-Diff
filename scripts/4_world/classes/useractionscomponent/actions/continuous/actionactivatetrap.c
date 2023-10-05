@@ -122,33 +122,11 @@ class ActionActivateTrap : ActionContinuousBase
 			{
 				TrapBase trap = TrapBase.Cast(targetObject);
 				trap.OnPlacementComplete(action_data.m_Player, position, orientation);
-				trap.StartActivate(action_data.m_Player);				
+				trap.StartActivate(action_data.m_Player);
 			}
 			else if (targetObject.IsInherited(TrapSpawnBase))
 			{
 				TrapSpawnBase spawnTrap = TrapSpawnBase.Cast( targetObject );
-				Trap_RabbitSnare snareTrap;
-				
-				// We want to make sure the snare trap is standing upwards
-				if (CastTo(snareTrap, spawnTrap))
-				{
-					vector rotation_matrix[3];
-					float direction[4];
-					InventoryLocation source = new InventoryLocation();
-					InventoryLocation destination = new InventoryLocation();
-					
-					Math3D.YawPitchRollMatrix(orientation, rotation_matrix);
-					Math3D.MatrixToQuat(rotation_matrix, direction);
-					
-					if (spawnTrap.GetInventory().GetCurrentInventoryLocation(source))
-					{
-						destination.SetGroundEx(spawnTrap, position, direction);
-						
-						if (GetGame().IsMultiplayer())
-							action_data.m_Player.ServerTakeToDst(source, destination);
-					}
-				}
-				
 				spawnTrap.OnPlacementComplete(action_data.m_Player, position, orientation);
 			}
 		}

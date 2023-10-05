@@ -1,4 +1,4 @@
-class KitchenTimer: ClockBase
+class KitchenTimer : ClockBase
 {
 	const string		RINGING_SOUND 				= "KitchenTimer_Ring_Loop_SoundSet";
 	const string		DESTROYED_SOUND 			= "AlarmClock_Destroyed_SoundSet";
@@ -15,10 +15,10 @@ class KitchenTimer: ClockBase
 	{
 		super.Init();
 	
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
 			m_NoiseSystem = GetGame().GetNoiseSystem();
-			if ( m_NoiseSystem && !m_NoisePar )
+			if ( m_NoiseSystem && !m_NoisePar)
 			{
 				// Create and load noise parameters
 				m_NoisePar = new NoiseParams;
@@ -30,6 +30,7 @@ class KitchenTimer: ClockBase
 	override void SetActions()
 	{
 		super.SetActions();
+
 		AddAction(ActionSetKitchenTimer);
 		AddAction(ActionResetKitchenTimer);
 	}
@@ -42,7 +43,7 @@ class KitchenTimer: ClockBase
 	override string GetToggleSound()
 	{
 		return "";
-	};
+	}
 	
 	override string GetRingingSound()
 	{
@@ -121,9 +122,9 @@ class KitchenTimer: ClockBase
 			{
 				TurnOff();
 			}
-			else if ( m_NoiseSystem )
+			else if (m_NoiseSystem)
 			{
-				m_NoiseSystem.AddNoiseTarget( GetPosition(), UPDATE_TICK_RATE, m_NoisePar);
+				m_NoiseSystem.AddNoiseTarget(GetPosition(), UPDATE_TICK_RATE, m_NoisePar);
 			}
 		}
 	}
@@ -137,12 +138,13 @@ class KitchenTimer: ClockBase
 	override protected void OnRingingStopClient()
 	{
 		if (m_RingingSoundLoop)
-			PlaySoundSet( m_RingingStopSound, GetRingingStopSound(), 0, 0);
+			PlaySoundSet(m_RingingStopSound, GetRingingStopSound(), 0, 0);
+
 		super.OnRingingStopClient();
 		
 	}
 	
-	override bool OnStoreLoad( ParamsReadContext ctx, int version )
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
 		if (!super.OnStoreLoad(ctx, version))
 			return false;
@@ -154,14 +156,13 @@ class KitchenTimer: ClockBase
 
 		EAlarmClockState state;		
 		
-		if ( !ctx.Read( state ) )
+		if (!ctx.Read(state))
 		{
 			return false;
 		}
 
 		int time;
-		
-		if (!ctx.Read( time ))
+		if (!ctx.Read(time))
 		{
 			return false;
 		}
@@ -172,7 +173,7 @@ class KitchenTimer: ClockBase
 		{
 			SetAlarmTimeServerSecs(time);
 		}
-		else if (state == EAlarmClockState.RINGING )
+		else if (state == EAlarmClockState.RINGING)
 		{
 			MakeRingingStart();
 		}
@@ -186,7 +187,6 @@ class KitchenTimer: ClockBase
 		
 		ctx.Write(m_State);
 		ctx.Write(m_AlarmInSecs);
-
 	}
 	
 	
@@ -200,7 +200,7 @@ class KitchenTimer: ClockBase
 		SetAnimationPhaseNow("ClockAlarm", time01);
 		m_AlarmInSecs = Time01ToSeconds(time01);
 		
-		if (m_AlarmInSecs > 0 )
+		if (m_AlarmInSecs > 0)
 		{
 			TurnOn();
 		}
@@ -216,24 +216,34 @@ class KitchenTimer: ClockBase
 	//------------- DEBUG --------------
 	//----------------------------------
 	
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		button1 = "SetAlarmAhead";
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ALARM_SET_AHEAD, "Set Alarm Ahead", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		
+		super.GetDebugActions(outputList);
 	}
 	
-	override void OnDebugButtonPressServer(int button_index)
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
-		if (button_index == 1)
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			SetAlarmTimeServerSecs(10);
+			if (action_id == EActions.ALARM_SET_AHEAD)
+			{
+				SetAlarmTimeServerSecs(20);
+			}
 		}
+		return false;
 	}
 
 	override string GetDebugText()
 	{
 		string debug_output;
 		
-		if( GetGame().IsDedicatedServer())
+		if (GetGame().IsDedicatedServer())
 		{
 			debug_output = "alarm in: " + m_AlarmInSecs.ToString() + " secs" + "\n";
 			debug_output +=  "current state: " +  typename.EnumToString(EAlarmClockState, m_State) + "\n";
@@ -244,6 +254,7 @@ class KitchenTimer: ClockBase
 		{
 			debug_output = "this is client";
 		}
+
 		return debug_output;
 	}
 	

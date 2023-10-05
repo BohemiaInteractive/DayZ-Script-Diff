@@ -131,7 +131,7 @@ class DestructionEffectGasCanister : DestructionEffectBase
 		m_ParticlePersistent = ParticleList.NONE;
 		m_ParticleOneTime = ParticleList.RGD5;
 		
-		m_SoundSetOneTime = "Flare_Gun_Shot_SoundSet";
+		m_SoundSetOneTime = "";
 		m_SoundSetPersistent= "";
 		
 		m_ReplaceWithEntity = "";

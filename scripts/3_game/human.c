@@ -4,9 +4,12 @@
 
 */
 
-
-
-
+enum HumanInputControllerOverrideType
+{
+	DISABLED,
+	ENABLED,		//! Permenantly active until DISABLED is passed
+	ONE_FRAME,		//! Will apply value and then DISABLED on subsequent CommandHandler call
+};
 
 // *************************************************************************************
 // ! HumanInputController - what we know about the input - human.GetInputController()
@@ -228,25 +231,28 @@ class HumanInputController
 	// overrides
 
 	//!
-	proto native void 			OverrideMovementSpeed(bool pOverride, float pVal);
+	proto native void 			OverrideMovementSpeed(HumanInputControllerOverrideType overrideType, float value);
 
 	//!
-	proto native void 			OverrideMovementAngle(bool pOverride, float pVal);
+	proto native void 			OverrideMovementAngle(HumanInputControllerOverrideType overrideType, float value);
 	
 	//!
-	proto native void 			OverrideAimChangeX(bool pOverride, float pVal);
+	proto native void 			OverrideAimChangeX(HumanInputControllerOverrideType overrideType, float value);
 
 	//!
-	proto native void 			OverrideAimChangeY(bool pOverride, float pVal);
+	proto native void 			OverrideAimChangeY(HumanInputControllerOverrideType overrideType, float value);
 
 	//!
-	proto native void 			OverrideMeleeEvade(bool pOverride, bool pValue);
+	proto native void 			OverrideMeleeEvade(HumanInputControllerOverrideType overrideType, bool value);
 
 	//!
-	proto native void 			OverrideRaise(bool pOverride, bool pValue);
+	proto native void 			OverrideRaise(HumanInputControllerOverrideType overrideType, bool value);
 
 	//! 
-	proto native void 			Override3rdIsRightShoulder(bool pOverride, bool pValue);
+	proto native void 			Override3rdIsRightShoulder(HumanInputControllerOverrideType overrideType, bool value);
+
+	//!
+	proto native void 			OverrideFreeLook(HumanInputControllerOverrideType overrideType, bool value);
 
 
 	//--------------------------------------------------------------

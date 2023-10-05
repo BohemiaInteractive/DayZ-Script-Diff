@@ -1,8 +1,9 @@
 class ActionEmptyBottleBaseCB : ActionContinuousBaseCB
 {	
+	bool m_RPCStopAlreadySent;//since stopping contains a sound tail, we need to stop it only once, this bool ensures that
 	override void CreateActionComponent()
 	{
-		float EmptiedQuantity;// = QUANTITY_EMPTIED_PER_SEC;
+		float EmptiedQuantity;
 		Bottle_Base bottle = Bottle_Base.Cast(m_ActionData.m_MainItem);
 		if (bottle)
 			EmptiedQuantity = bottle.GetLiquidEmptyRate() * bottle.GetLiquidThroughputCoef();
@@ -36,15 +37,10 @@ class ActionEmptyBottleBase: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		/*vector 	pos_cursor = target.GetCursorHitPos();
-		vector 	pos_head;
-		MiscGameplayFunctions.GetHeadBonePos( player, pos_head );
-		float distance = vector.Distance(pos_cursor, pos_head);*/
-				
 		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
 			return true;
 		
-		if ( item.IsLiquidPresent() /*&& player.IsCurrentCameraAimedAtGround()*/ )
+		if (item.IsLiquidPresent())
 		{
 			return true;
 		}
@@ -62,21 +58,32 @@ class ActionEmptyBottleBase: ActionContinuousBase
 	
 	override void OnStartAnimationLoop( ActionData action_data )
 	{
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
-		{
-			Bottle_Base vessel_in_hands = Bottle_Base.Cast( action_data.m_MainItem );
-			Param1<bool> play = new Param1<bool>( true );
-			GetGame().RPCSingleParam( vessel_in_hands, SoundTypeBottle.EMPTYING, play, true );
-		}
+		SendRPC(action_data,true);
+	}
+	
+	override void OnEndAnimationLoop( ActionData action_data )
+	{
+		SendRPC(action_data,false);
 	}
 	
 	override void OnEndServer( ActionData action_data )
 	{
+		SendRPC(action_data,false);
+	}
+
+	protected void SendRPC(ActionData actionData, bool enable)
+	{
 		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
 		{
-			Bottle_Base target_vessel = Bottle_Base.Cast( action_data.m_MainItem );
-			Param1<bool> play = new Param1<bool>( false );
+			ActionEmptyBottleBaseCB comp = ActionEmptyBottleBaseCB.Cast(actionData.m_Callback);
+			if (comp.m_RPCStopAlreadySent)
+				return;
+			
+			Bottle_Base target_vessel = Bottle_Base.Cast( actionData.m_MainItem );
+			Param1<bool> play = new Param1<bool>( enable );
 			GetGame().RPCSingleParam( target_vessel, SoundTypeBottle.EMPTYING, play, true );
+			if (!enable)
+				comp.m_RPCStopAlreadySent = true;
 		}
 	}
 };

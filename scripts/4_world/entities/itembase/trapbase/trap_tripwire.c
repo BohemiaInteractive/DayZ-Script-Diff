@@ -23,7 +23,7 @@ class TripwireTrap : TrapBase
 	void TripwireTrap()
 	{
 		m_DamagePlayers = 0; 			//How much damage player gets when caught
-		m_InitWaitTime = 0; 			//After this time after deployment, the trap is activated
+		m_InitWaitTime = 0.0; 			//After this time after deployment, the trap is activated
 		m_DefectRate = 15;
 		m_NeedActivation = false;
 		m_AnimationPhaseGrounded = "inventory";
@@ -75,6 +75,8 @@ class TripwireTrap : TrapBase
 		m_TrapTrigger.SetOrientation(GetOrientation());
 		m_TrapTrigger.SetExtents(mins, maxs);
 		m_TrapTrigger.SetParentObject(this);
+		
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(DeferredEnableTrigger);
 	}
 	
 	override void OnSteppedOn(EntityAI victim)
@@ -431,26 +433,34 @@ class TripwireTrap : TrapBase
 		SetState(DEPLOYED);
 		StartActivate(null);
 	}
-	
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		button1 = "Activate";
-		button2 = "Deactivate";
-	}
-	
-	override void OnDebugButtonPressServer(int button_index)
-	{
-		switch (button_index)
-		{
-			case 1:
-				StartActivate(null);
-			break;
-			case 2:
-				SetInactive();
-			break;
-		}
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ACTIVATE_ENTITY, "Activate", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEACTIVATE_ENTITY, "Deactivate", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
 		
+		super.GetDebugActions(outputList);
 	}
+	
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		{
+			if (action_id == EActions.ACTIVATE_ENTITY)
+			{
+				StartActivate(null);
+			}
+			else if (action_id == EActions.DEACTIVATE_ENTITY)
+			{
+				SetInactive();
+			}
+		}
+		return false;
+	}
+	
 #endif
 }
 

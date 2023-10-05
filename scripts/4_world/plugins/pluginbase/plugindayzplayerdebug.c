@@ -1222,6 +1222,9 @@ class PluginDayzPlayerDebug extends PluginBase
 		RegisterAnimation("RAISE FLAG", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_RAISE_FLAG, true, DayZPlayerConstants.STANCEMASK_ERECT);
 		RegisterAnimation("LOWER FLAG", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_LOWER_FLAG, true, DayZPlayerConstants.STANCEMASK_ERECT);
 		RegisterAnimation("SET ALARM CLOCK", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_SET_ALARM, true, DayZPlayerConstants.STANCEMASK_PRONE);
+		RegisterAnimation("SHOVEL DIG", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_SHOVEL_DIG, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("VEHICLE_PUSH", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_VEHICLE_PUSH, true, DayZPlayerConstants.STANCEMASK_ERECT);
+
 		//! one time
 		RegisterAnimation("PICK UP HANDS", TYPE_FB_ONETIME, DayZPlayerConstants.CMD_ACTIONFB_PICKUP_HANDS, true, DayZPlayerConstants.STANCEMASK_PRONE);
 		RegisterAnimation("PICK UP INVENTORY", TYPE_FB_ONETIME, DayZPlayerConstants.CMD_ACTIONFB_PICKUP_INVENTORY, true, DayZPlayerConstants.STANCEMASK_PRONE);

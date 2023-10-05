@@ -32,7 +32,7 @@ class ActionCloseDoors: ActionInteractBase
 				if (!IsInReach(player, target, UAMaxDistances.DEFAULT))
 					return false;
 
-				return building.IsDoorOpen(doorIndex);
+				return building.CanDoorBeClosed(doorIndex);
 			}
 		}		
 
@@ -47,7 +47,11 @@ class ActionCloseDoors: ActionInteractBase
 			int doorIndex = building.GetDoorIndex(action_data.m_Target.GetComponentIndex());
 			if (doorIndex != -1)
 			{
-				building.CloseDoor(doorIndex);
+				if (building.IsDoorOpen(doorIndex))
+				{
+					building.CloseDoor(doorIndex);
+				}
+				
 			}
 		}
 	}

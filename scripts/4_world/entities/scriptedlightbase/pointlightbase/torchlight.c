@@ -10,8 +10,8 @@ class TorchLight extends PointLightBase
 		SetBrightnessTo(m_TorchBrightness);
 		SetCastShadow(true);
 		SetFadeOutTime(1);
-		SetDiffuseColor(1.0, 0.45, 0.25);
-		SetAmbientColor(1.0, 0.45, 0.25);
+		SetDiffuseColor(1.3, 0.35, 0.15);
+		SetAmbientColor(1.3, 0.35, 0.15);
 		SetFlareVisible(false);
 		SetFlickerAmplitude(0.55);
 		SetFlickerSpeed(0.75);

@@ -861,6 +861,8 @@ enum DayZPlayerConstants
 	CMD_ACTIONFB_FLAME_REPAIR			= 115,		// erc, cro	
 	CMD_ACTIONFB_TURN_VALVE				= 116,		// erc
 	CMD_ACTIONFB_SET_ALARM				= 250,		// erc,cro			??not sure
+	CMD_ACTIONFB_SHOVEL_DIG		     	= 117,		// cro			    [end, end2]
+	CMD_ACTIONFB_VEHICLE_PUSH			= 118,		// erc
 	
 	// onetime 
 	CMD_ACTIONFB_PICKUP_HANDS			= 500,		// pne

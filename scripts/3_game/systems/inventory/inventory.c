@@ -178,6 +178,19 @@ class GameInventory
 	 * @return	number of slots for attachments
 	 **/
 	proto native int GetAttachmentSlotsCount();
+	/**@fn		HasAttachmentSlot
+	 * @return	true if this entity has attachments slot with id=slotId
+	 **/
+	/*proto native*/bool HasAttachmentSlot(int slotId) //TODO - flip to code
+	{
+		int count = GetAttachmentSlotsCount();
+		for (int i = 0; i < count; i++)
+		{
+			if (GetAttachmentSlotId(i) == slotId)
+				return true;
+		}
+		return false;
+	}
 	/**@fn		HasInventorySlot
 	 * @return	true if this entity has inventory slot with id=slotId
 	 **/

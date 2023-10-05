@@ -420,6 +420,19 @@ class string
 		}
 	}
 
+	// !Joins array of strings into a single string, separated by 'separator'. Inverse of Split
+	static string Join(string separator, notnull TStringArray tokens)
+	{
+		string output;
+		foreach (int i, string s: tokens)
+		{
+			if (i != 0)
+				output += separator;
+			output += s;
+		}
+		return output;
+	}
+
 	/**
 	\brief Gets n-th character from string
 		\param index character index

@@ -95,6 +95,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_HudDVersion		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Version"));
 		
 		m_LocationAddButton	= ButtonWidget.Cast(root.FindAnyWidget("AddButton"));
+		//m_LocationAddButton.SetHandler(ToolTipEventHandler.GetInstance());
 		m_LocationRemoveButton	= ButtonWidget.Cast(root.FindAnyWidget("RemoveButton"));
 
 		m_TimeSlider		= SliderWidget.Cast(root.FindAnyWidget("TimeSlider"));
@@ -120,7 +121,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		DEBUG_MAP_ZOOM = m_DebugMapWidget.GetScale();
 
 		PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPlugin(PluginRemotePlayerDebugClient));
-		if (SHOW_OTHERS && plugin_remote_client)
+		if (SHOW_OTHERS && plugin_remote_client && GetGame().GetPlayer())
 			plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(GetGame().GetPlayer()), 0);
 	}
 
@@ -160,8 +161,11 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		
 		UpdateHudDebugSetting();
 
-		m_DebugMapWidget.SetScale(DEBUG_MAP_ZOOM);
-		m_DebugMapWidget.SetMapPos(GetGame().GetPlayer().GetWorldPosition());
+		if (GetGame().GetPlayer())
+		{
+			m_DebugMapWidget.SetScale(DEBUG_MAP_ZOOM);
+			m_DebugMapWidget.SetMapPos(GetGame().GetPlayer().GetWorldPosition());
+		}
 		m_TeleportXYZ.SetText(DEFAULT_POS_XYZ);
 		
 		m_LateInit.Run(0.05, this, "LateInit", null, false);
@@ -211,7 +215,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			
 		}
 		PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPlugin(PluginRemotePlayerDebugClient));
-		if (SHOW_OTHERS && plugin_remote_client)
+		if (SHOW_OTHERS && plugin_remote_client && GetGame().GetPlayer())
 		{
 			plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(GetGame().GetPlayer()), 1);
 			m_UpdatePlayerPositions = 1;
@@ -296,6 +300,11 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	
 	void RefreshPlayerPosEditBoxes()
 	{
+		if (!GetGame().GetPlayer())
+		{
+			return;
+		}
+
 		vector player_pos = GetGame().GetPlayer().GetPosition();
 		SetMapPos(player_pos);
 	}
@@ -329,7 +338,11 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		
 		RefreshDateWidgets(year, month, day, hour, minute);
 		GetGame().GetWorld().SetDate(year, month, day, hour, minute);
-		GetGame().GetPlayer().RPCSingleParam(ERPCs.DEV_RPC_SET_TIME, p5, true);
+
+		if (GetGame().GetPlayer())
+		{
+			GetGame().GetPlayer().RPCSingleParam(ERPCs.DEV_RPC_SET_TIME, p5, true);
+		}
 	}
 	
 	
@@ -342,16 +355,17 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		mouse_pos[1] = y;
 		world_pos = m_DebugMapWidget.ScreenToMap(mouse_pos);
 		world_pos[1] = GetGame().SurfaceY(world_pos[0], world_pos[2]);
-		vector player_pos = GetGame().GetPlayer().GetWorldPosition();
-		//player_pos[1] = 0;
-		float dst = (world_pos - player_pos).Length();
 		
 		if (m_MouseCurPos)
 		{
 			m_MouseCurPos.SetText("Mouse: "+ MiscGameplayFunctions.TruncateToS(world_pos[0]) +", "+ MiscGameplayFunctions.TruncateToS(world_pos[1]) +", "+ MiscGameplayFunctions.TruncateToS(world_pos[2]));
 		}
-		if (m_PlayerMouseDiff)
+		if (m_PlayerMouseDiff && GetGame().GetPlayer())
 		{
+			vector player_pos = GetGame().GetPlayer().GetWorldPosition();
+			//player_pos[1] = 0;
+			float dst = (world_pos - player_pos).Length();
+
 			m_PlayerMouseDiff.SetText("Distance: " + MiscGameplayFunctions.TruncateToS(dst));
 		}
 	}
@@ -387,7 +401,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 				
 				SetMapPos(world_pos);
 			}
-			else if (button == 1)
+			else if (button == 1 && GetGame().GetPlayer())
 			{
 				SetMapPos(GetGame().GetPlayer().GetWorldPosition());
 			}
@@ -406,7 +420,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	{
 		super.OnChange(w, x, y, finished);
 		
-		if (w == m_ShowOthers)
+		if (w == m_ShowOthers && GetGame().GetPlayer())
 		{
 			PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPlugin(PluginRemotePlayerDebugClient));
 			if (m_ShowOthers.IsChecked())
@@ -713,10 +727,13 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 				}
 			}
 		}
-		vector player_pos = player.GetWorldPosition();
-		m_DebugMapWidget.AddUserMark(player_pos,"You", COLOR_RED,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
-		if (player_pos != GetMapPos())
-			m_DebugMapWidget.AddUserMark(GetMapPos(),"Pos", COLOR_BLUE,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+		if (player)
+		{
+			vector player_pos = player.GetWorldPosition();
+			m_DebugMapWidget.AddUserMark(player_pos,"You", COLOR_RED,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+			if (player_pos != GetMapPos())
+				m_DebugMapWidget.AddUserMark(GetMapPos(),"Pos", COLOR_BLUE,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+		}
 		UpdateMousePos();
 		if (!m_PlayerPosRefreshBlocked)
 			RefreshPlayerPosEditBoxes();

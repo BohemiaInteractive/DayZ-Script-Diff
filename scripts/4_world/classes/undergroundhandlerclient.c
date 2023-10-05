@@ -16,21 +16,21 @@ class UndergroundHandlerClient
 	const float ACCO_MODIFIER = 1;//when we calculate eye accommodation between 0..1 based on the breadcrumbs values and distances, we multiply the result by this modifier to get the final eye accommodation value
 	const float DEFAULT_INTERPOLATION_SPEED = 7;
 	const string UNDERGROUND_LIGHTING = "dz\\data\\lighting\\lighting_underground.txt";
-	private ref AnimationTimer 	m_AnimTimerLightBlend;
+	protected ref AnimationTimer 	m_AnimTimerLightBlend;
 	
-	private PlayerBase 				m_Player;
-	private PPERUndergroundAcco 	m_Requester;
-	private PPERequester_CameraNV 	m_NVRequester;
-	private ref set<UndergroundTrigger> m_InsideTriggers = new set<UndergroundTrigger>();
+	protected PlayerBase 				m_Player;
+	protected PPERUndergroundAcco 		m_Requester;
+	protected PPERequester_CameraNV 	m_NVRequester;
+	protected ref set<UndergroundTrigger> m_InsideTriggers = new set<UndergroundTrigger>();
 	
-	private float 		m_EyeAccoTarget = 1;
-	private float 		m_AccoInterpolationSpeed;
-	private float 		m_EyeAcco = 1;
-	private float 		m_LightingLerpTarget;
-	private float 		m_LightingLerp;
-	private EffectSound m_AmbientSound;
+	protected float 		m_EyeAccoTarget = 1;
+	protected float 		m_AccoInterpolationSpeed;
+	protected float 		m_EyeAcco = 1;
+	protected float 		m_LightingLerpTarget;
+	protected float 		m_LightingLerp;
+	protected EffectSound m_AmbientSound;
 	
-	private UndergroundTrigger m_TransitionalTrigger;
+	protected UndergroundTrigger m_TransitionalTrigger;
 	
 	void UndergroundHandlerClient(PlayerBase player)
 	{
@@ -51,7 +51,7 @@ class UndergroundHandlerClient
 		}
 	}
 	
-	private PPERUndergroundAcco GetRequester()
+	protected PPERUndergroundAcco GetRequester()
 	{
 		if (!m_Requester)
 		{
@@ -78,7 +78,7 @@ class UndergroundHandlerClient
 		OnTriggerInsiderUpdate();
 	}
 	
-	private void CalculateEyeAccoTarget()
+	protected void CalculateEyeAccoTarget()
 	{
 		if (m_TransitionalTrigger && m_TransitionalTrigger.m_Data.Breadcrumbs.Count() >= 2)
 		{
@@ -172,7 +172,7 @@ class UndergroundHandlerClient
 		}
 	}
 	
-	private void ProcessEyeAcco(float timeSlice)
+	protected void ProcessEyeAcco(float timeSlice)
 	{
 		CalculateEyeAccoTarget();
 		bool reachedTarget = CalculateEyeAcco(timeSlice);
@@ -180,13 +180,14 @@ class UndergroundHandlerClient
 		if(reachedTarget && !m_Player.m_UndergroundPresence)
 		{
 			GetRequester().Stop();
-			m_NVRequester.SetUndergroundExposureCoef(1.0);
+			UpdateNVGRequester(1);
+			//m_NVRequester.SetUndergroundExposureCoef(1.0);
 			m_Player.KillUndergroundHandler();
 		}
 
 	}
 	
-	private void ProcessLighting(float timeSlice)
+	protected void ProcessLighting(float timeSlice)
 	{
 		#ifdef DEVELOPER
 		if (!DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_DISABLE_DARKENING) )
@@ -202,7 +203,7 @@ class UndergroundHandlerClient
 		#endif
 	}
 	
-	private void ProcessSound(float timeSlice)
+	protected void ProcessSound(float timeSlice)
 	{
 		GetGame().GetWorld().SetExplicitVolumeFactor_EnvSounds2D(m_EyeAcco, 0);
 		if (m_AmbientSound)
@@ -234,7 +235,7 @@ class UndergroundHandlerClient
 		
 	}
 	
-	private void ApplyEyeAcco()
+	protected void ApplyEyeAcco()
 	{
 		#ifdef DIAG_DEVELOPER
 		if (!DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_DISABLE_DARKENING) )
@@ -254,10 +255,16 @@ class UndergroundHandlerClient
 		{
 			undergrounNVExposureCoef = 1.0;
 		}
-		m_NVRequester.SetUndergroundExposureCoef(undergrounNVExposureCoef);
+		//m_NVRequester.SetUndergroundExposureCoef(undergrounNVExposureCoef);
+		UpdateNVGRequester(undergrounNVExposureCoef);
 	}
 	
-	private bool CalculateEyeAcco(float timeSlice)
+	protected void UpdateNVGRequester(float value)
+	{
+		m_NVRequester.SetUndergroundExposureCoef(value);
+	}
+	
+	protected bool CalculateEyeAcco(float timeSlice)
 	{
 		if (m_TransitionalTrigger || !m_Player.m_UndergroundPresence || (m_EyeAccoTarget == 1))
 		{
@@ -279,7 +286,7 @@ class UndergroundHandlerClient
 	
 	
 	
-	private void OnTriggerInsiderUpdate()
+	protected void OnTriggerInsiderUpdate()
 	{
 		EUndergroundTriggerType bestType = EUndergroundTriggerType.UNDEFINED;
 		m_TransitionalTrigger = null;
@@ -312,7 +319,7 @@ class UndergroundHandlerClient
 	}
 	
 	
-	private void SetUndergroundPresence(UndergroundTrigger trigger)
+	protected void SetUndergroundPresence(UndergroundTrigger trigger)
 	{
 		EUndergroundPresence newPresence = EUndergroundPresence.NONE;
 		EUndergroundPresence oldPresence = m_Player.m_UndergroundPresence;
@@ -342,7 +349,7 @@ class UndergroundHandlerClient
 		
 	}
 	
-	private void EnableLights(bool enable)
+	protected void EnableLights(bool enable)
 	{
 		foreach (ScriptedLightBase light:ScriptedLightBase.m_NightTimeOnlyLights)
 		{
@@ -372,7 +379,7 @@ class UndergroundHandlerClient
 	}
 	
 	
-	private void OnUndergroundPresenceUpdate(EUndergroundPresence newPresence, EUndergroundPresence oldPresence)
+	protected void OnUndergroundPresenceUpdate(EUndergroundPresence newPresence, EUndergroundPresence oldPresence)
 	{
 		//Print("-----> On Undeground Presence update " + EnumTools.EnumToString(EUndergroundPresence, newPresence) + " " + EnumTools.EnumToString(EUndergroundPresence, oldPresence));
 		if (newPresence > EUndergroundPresence.NONE)
@@ -421,4 +428,5 @@ class UndergroundHandlerClient
 		DbgUI.End();
 	}
 	#endif
-} 
+}
+

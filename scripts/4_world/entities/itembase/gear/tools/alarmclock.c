@@ -60,20 +60,33 @@ class AlarmClock_ColorBase: ClockBase
 	{
 		return HIT_SOUND;
 	}
-	
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
-	{
-		button1 = "SetAlarmAhead1Min";
-	}
-	
+
 	override string GetExplosiveTriggerSlotName()
 	{
 		return "TriggerAlarmClock";
 	}
 	
-	override void OnDebugButtonPressServer(int button_index)
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		SetAlarmInXMins(1);
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ACTIVATE_ENTITY, "SetAlarmAhead1Min", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		
+		super.GetDebugActions(outputList);
+	}
+	
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		{
+			if (action_id == EActions.ACTIVATE_ENTITY)
+			{
+				SetAlarmInXMins(1);
+			}
+			
+		}
+		return false;
 	}
 
 	override string GetDebugText()

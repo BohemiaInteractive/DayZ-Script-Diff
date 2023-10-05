@@ -24,8 +24,8 @@ class CraftHandDrillKit extends RecipeBase
 		
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"Bark_Oak");//you can insert multiple ingredients this way
-		InsertIngredient(0,"Bark_Birch");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Bark_Oak" 		, "HandDrill_craft");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Bark_Birch" 		, "HandDrill_craft");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing

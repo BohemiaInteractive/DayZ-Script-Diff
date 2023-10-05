@@ -37,21 +37,8 @@ class ActionOpenDoors: ActionInteractBase
 				if (!IsInReach(player, target, UAMaxDistances.DEFAULT)) 
 					return false;
 				
-				if (building.IsDoorOpen(doorIndex))
-					return false;
+				return building.CanDoorBeOpened(doorIndex, CheckIfDoorIsLocked());
 
-				if (CheckIfDoorIsLocked())
-				{
-					if (building.IsDoorLocked(doorIndex))
-						return false;
-				}
-				else
-				{
-					if (!building.IsDoorLocked(doorIndex))
-						return false;
-				}
-
-				return true;
 			}
 		}
 
@@ -66,7 +53,10 @@ class ActionOpenDoors: ActionInteractBase
 			int doorIndex = building.GetDoorIndex(action_data.m_Target.GetComponentIndex());
 			if (doorIndex != -1)
 			{
-				building.OpenDoor(doorIndex);
+				if (!building.IsDoorOpen(doorIndex))
+				{
+					building.OpenDoor(doorIndex);
+				}
 			}
 		}
 	}

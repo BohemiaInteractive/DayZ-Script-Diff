@@ -436,7 +436,6 @@ class CarDoor extends InventoryItemSuper
 
 	override bool CanDetachAttachment(EntityAI parent)
 	{
-		//parent.FindAtt
 		InventoryLocation loc = new InventoryLocation();
 		
 		bool isPresent = GetInventory().GetCurrentInventoryLocation( loc );
@@ -773,7 +772,6 @@ class HeadlightH7 extends ItemBase
 	{
 		super.SetActions();
 		
-		//AddAction(ActionAttach); //REMOVING DUPLICATE METHODS
 		AddAction(ActionAttachOnSelection);
 		AddAction(ActionDetach);
 	}
@@ -789,8 +787,8 @@ class GlowPlug extends ItemBase
 	{
 		super.SetActions();
 		
-		AddAction(ActionAttachOnSelection);
 		AddAction(ActionDetach);
+		AddAction(ActionAttach);
 	}
 };
 
@@ -810,9 +808,7 @@ class SparkPlug extends ItemBase
 	{
 		super.SetActions();
 		
-		//AddAction(ActionAttach); //REMOVING DUPLICATE METHODS
 		AddAction(ActionAttachOnSelection);
-		//AddAction(ActionInsertSparkplug); //DEPRECATED, not fully functionnal DO NOT USE
 		AddAction(ActionDetach);
 	}
 };
@@ -1142,11 +1138,6 @@ class ItemMap extends InventoryItemSuper
 		
 		return true;
 	}
-	
-	/*array<vector,int,int,string> GetMarkerArray()
-	{
-		return m_MarkerArray;
-	}*/
 	
 	void InsertMarker(vector pos, string text, int color, int idx)
 	{

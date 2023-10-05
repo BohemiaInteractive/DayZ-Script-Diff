@@ -484,13 +484,13 @@ class ActionManagerClient: ActionManagerBase
 				action_target = m_Targets.GetTarget(i);
 				Object targetObject = action_target.GetObject();
 				Object targetParent = action_target.GetParent();
-
-				if (targetParent && targetParent.IsEntityAI())
+				
+				if (targetParent)
 				{
 					break;
 				}
-
-				if (targetObject && (targetObject.IsEntityAI() || targetObject.IsWoodBase() || targetObject.IsRock()))
+				
+				if (targetObject)
 				{
 					break;
 				}

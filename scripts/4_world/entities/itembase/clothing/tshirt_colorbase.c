@@ -16,3 +16,5 @@ class TShirt_Red extends TShirt_ColorBase {};
 class TShirt_RedBlackStripes extends TShirt_ColorBase {};
 class TShirt_White extends TShirt_ColorBase {};
 class TShirt_Grey extends TShirt_ColorBase {};
+class TShirt_10thAnniversary extends TShirt_ColorBase {};
+

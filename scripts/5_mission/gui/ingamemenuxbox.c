@@ -427,7 +427,7 @@ class InGameMenuXbox extends UIScriptedMenu
 		if (m_PlayerAlive)
 		{
 			if (player)
-				m_RestartButton.Show(player.IsUnconscious());
+				m_RestartButton.Show(player.IsUnconscious() && !CfgGameplayHandler.GetDisableRespawnInUnconsciousness());
 		}
 		else
 		{

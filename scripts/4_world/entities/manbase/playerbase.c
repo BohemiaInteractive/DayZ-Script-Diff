@@ -1339,7 +1339,7 @@ class PlayerBase extends ManBase
 		
 		return m_UndergroundHandler;
 	}
-	
+
 	void KillUndergroundHandler()
 	{
 		m_UndergroundHandler = null;
@@ -1372,7 +1372,7 @@ class PlayerBase extends ManBase
 		
 		AddAction(ActionUnrestrainTargetHands, InputActionMap);
 		AddAction(ActionTakeArrow, InputActionMap);
-		AddAction(ActionTakeArrowToHands, InputActionMap);		
+		AddAction(ActionTakeArrowToHands, InputActionMap);
 	}
 	
 	void SetActions() // Backwards compatibility, not recommended to use
@@ -1633,12 +1633,10 @@ class PlayerBase extends ManBase
 	}
 	
 	#ifdef DIAG_DEVELOPER
-	void SetStaminaEnabled(bool value)
+	void SetStaminaDisabled(bool value)
 	{
 		if (m_StaminaHandler)
-		{
-			m_StaminaHandler.SetStaminaEnabled(value);
-		}
+			m_StaminaHandler.SetStaminaDisabled(value);
 	}
 	#endif
 	
@@ -2066,7 +2064,10 @@ class PlayerBase extends ManBase
 		
 		if (GetGame().IsMultiplayer() || GetGame().IsServer())
 		{
-			m_ModuleLifespan.SynchLifespanVisual(this, m_LifeSpanState, m_HasBloodyHandsVisible, m_HasBloodTypeVisible, m_BloodType);
+			if (m_ModuleLifespan)
+			{
+				m_ModuleLifespan.SynchLifespanVisual(this, m_LifeSpanState, m_HasBloodyHandsVisible, m_HasBloodTypeVisible, m_BloodType);
+			}
 		}
 		
 		if (IsControlledPlayer())//true only on client for the controlled character
@@ -2314,6 +2315,20 @@ class PlayerBase extends ManBase
 		}
 		
 		return false;	
+	}
+	
+	override bool CanPlaceItem(EntityAI item)
+	{
+		if (m_UndergroundPresence > EUndergroundPresence.NONE)
+		{
+			TStringSet disallowedUndergroundTypes = CfgGameplayHandler.GetDisallowedTypesInUnderground();
+			foreach (string t: disallowedUndergroundTypes)
+			{
+				if (item.IsKindOf(t))
+					return false;
+			}
+		}
+		return true;
 	}
 	
 	void SetUnderground(EUndergroundPresence presence)
@@ -2920,7 +2935,7 @@ class PlayerBase extends ManBase
 						}
 						
 						//! TODO: rework vehicle command Knockout back to force player prone after they have exited the vehicle
-
+						m_JumpClimb.CheckAndFinishJump();
 						StartCommand_Unconscious(0);
 						SetFallYDiff(GetPosition()[1]);
 					}
@@ -3311,9 +3326,15 @@ class PlayerBase extends ManBase
 			m_EffectWidgets.AddSuspendRequest(EffectWidgetSuspends.UNCON);
 		}
 		
-		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !GetGame().IsMultiplayer())
+		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || (!GetGame().IsMultiplayer() && GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT))
 		{
 			SetSynchDirty();
+			
+			if (m_LastCommandBeforeUnconscious == DayZPlayerConstants.COMMANDID_VEHICLE)
+			{
+				if (m_TransportCache)
+					m_TransportCache.MarkCrewMemberUnconscious(m_TransportCache.CrewMemberIndex(this));
+			}
 			 
 			// disable voice communication
 			GetGame().EnableVoN(this, false);
@@ -3392,7 +3413,7 @@ class PlayerBase extends ManBase
 				SetHealth("","",-100);
 			}
 		}
-		if (!GetGame().IsDedicatedServer())
+		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
 			GetGame().GetMission().GetHud().ShowHudUI(false);
 			GetGame().GetMission().GetHud().ShowQuickbarUI(false);
@@ -3909,6 +3930,12 @@ class PlayerBase extends ManBase
 	{
 		int prone = DayZPlayerConstants.STANCEMASK_PRONE | DayZPlayerConstants.STANCEMASK_RAISEDPRONE;
 		int notProne = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_RAISEDERECT | DayZPlayerConstants.STANCEMASK_RAISEDCROUCH;
+
+		if (IsStance(previousStance, DayZPlayerConstants.STANCEMASK_PRONE) && IsStance(newStance, DayZPlayerConstants.STANCEMASK_ERECT))
+			m_SprintedTimePerStanceMin = PlayerConstants.FULL_SPRINT_DELAY_FROM_PRONE;
+		
+		if (IsStance(previousStance, DayZPlayerConstants.STANCEMASK_PRONE) && IsStance(previousStance, DayZPlayerConstants.STANCEMASK_CROUCH) || (IsStance(previousStance, DayZPlayerConstants.STANCEMASK_CROUCH) && IsStance(newStance, DayZPlayerConstants.STANCEMASK_ERECT)))
+			m_SprintedTimePerStanceMin = PlayerConstants.FULL_SPRINT_DELAY_FROM_CROUCH;
 		
 		if ((IsStance(previousStance, prone) && IsStance(newStance, notProne)) || (IsStance(previousStance, notProne) && IsStance(newStance, prone)))
 		{
@@ -4710,6 +4737,7 @@ class PlayerBase extends ManBase
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !GetGame().IsMultiplayer())
 		{
 			GetGame().GetMission().AddDummyPlayerToScheduler(this);
+			OnSelectPlayer();
 		}
 	}
 	
@@ -5831,6 +5859,10 @@ class PlayerBase extends ManBase
 			m_ConstructionActionData = new ConstructionActionData();
 			
 		}
+		else if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_SINGLEPLAYER)
+		{
+			m_ActionManager = new ActionManagerServer(this);
+		}
 		
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
@@ -6387,7 +6419,7 @@ class PlayerBase extends ManBase
 
 	void CloseInventoryMenu()
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
 #ifndef NO_GUI
 			UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
@@ -6467,7 +6499,7 @@ class PlayerBase extends ManBase
 	
 	void ShavePlayer()
 	{
-		SetLastShavedSeconds(StatGet("playtime"));
+		SetLastShavedSeconds(StatGet(AnalyticsManagerServer.STAT_PLAYTIME));
 
 		m_ModuleLifespan.UpdateLifespan(this, true);
 	}
@@ -7031,7 +7063,7 @@ class PlayerBase extends ManBase
 		int hour, minute, second;
 		GetHourMinuteSecond(hour, minute, second);
 		float distance;
-		distance = StatGet("playtime");
+		distance = StatGet(AnalyticsManagerServer.STAT_DISTANCE);
 		if (m_AnalyticsTimer)
 		{
 			StatsEventMeasuresData data = new StatsEventMeasuresData();
@@ -7762,7 +7794,7 @@ class PlayerBase extends ManBase
 	}
 	
 	// -------------------------------------------------------------------------
-	void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
 		PluginTransmissionAgents pluginTransmissionAgents = PluginTransmissionAgents.Cast(GetPlugin(PluginTransmissionAgents));
 		

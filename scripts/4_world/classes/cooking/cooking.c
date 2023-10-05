@@ -41,7 +41,7 @@ class Cooking
 		if (item_to_cook && item_to_cook.CanBeCooked())
 		{
 			//! enable cooking sound		
-			item_to_cook.MakeSoundsOnClient(true);
+			item_to_cook.MakeSoundsOnClient(true, pCookingMethod.param1);
 
 			//! update food
 			UpdateCookingState(item_to_cook, pCookingMethod.param1, cookingEquip, pCookingMethod.param2);
@@ -446,35 +446,41 @@ class Cooking
 
 		switch (cooking_equipment.Type())
 		{
-		case COOKING_EQUIPMENT_POT:
-		case COOKING_EQUIPMENT_CAULDRON:
-		case COOKING_EQUIPMENT_FRYINGPAN:
-			if (cooking_equipment.GetQuantity() > 0)
-			{
-				if (cooking_equipment.GetLiquidType() == LIQUID_GASOLINE)
+			case COOKING_EQUIPMENT_POT:
+			case COOKING_EQUIPMENT_CAULDRON:
+			case COOKING_EQUIPMENT_FRYINGPAN:
+				if (cooking_equipment.GetQuantity() > 0)
 				{
-					//! when cooking in gasoline, jump to drying state(will be burnt then)
-					val = new Param2<CookingMethodType, float>(CookingMethodType.DRYING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
+					if (cooking_equipment.GetLiquidType() == LIQUID_GASOLINE)
+					{
+						//! when cooking in gasoline, jump to drying state(will be burnt then)
+						val = new Param2<CookingMethodType, float>(CookingMethodType.DRYING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
+						break;
+					}
+	
+					val = new Param2<CookingMethodType, float>(CookingMethodType.BOILING, TIME_WITH_SUPPORT_MATERIAL_COEF);
+					break;
+				}
+				
+				if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
+				{
+					//has lard in cargo, slower process
+					val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITH_SUPPORT_MATERIAL_COEF);
 					break;
 				}
 
-				val = new Param2<CookingMethodType, float>(CookingMethodType.BOILING, TIME_WITH_SUPPORT_MATERIAL_COEF);
+				if (cooking_equipment.GetInventory().GetCargo().GetItemCount() > 0)
+				{
+					val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
+					break;
+				}
+				
+				val = new Param2<CookingMethodType, float>(CookingMethodType.NONE, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
 				break;
-			}
 			
-			if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
-			{
-				//has lard in cargo, slower process
-				val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITH_SUPPORT_MATERIAL_COEF);
+			default:
+				val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
 				break;
-			}
-			
-			val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
-		break;
-		
-		default:
-			val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
-		break;
 		}
 
 		return val;

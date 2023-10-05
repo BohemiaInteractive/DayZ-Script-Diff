@@ -131,6 +131,25 @@ class UndergroundTrigger : ManTrigger
 	{
 		//disable parent behaviour
 	}
+	
+	
+	
+	
+	#ifdef DEVELOPER
+	override protected void OnEnterServerEvent(TriggerInsider insider) 
+	{
+		#ifndef SERVER//to make it work in single during development
+		OnEnterClientEvent(insider);
+		#endif
+	}
+	override protected void OnLeaveServerEvent(TriggerInsider insider) 
+	{
+		#ifndef SERVER//to make it work in single during development
+		OnLeaveClientEvent(insider);
+		#endif
+	}
+	#endif
+	
 	override protected void OnEnterClientEvent(TriggerInsider insider) 
 	{
 		//Print("OnEnterClientEvent " + this);
@@ -160,18 +179,5 @@ class UndergroundTrigger : ManTrigger
 			}
 		}
 	}
-	#ifdef DEVELOPER
-	override protected void OnEnterServerEvent(TriggerInsider insider) 
-	{
-		#ifndef SERVER//to make it work in single during development
-		OnEnterClientEvent(insider);
-		#endif
-	}
-	override protected void OnLeaveServerEvent(TriggerInsider insider) 
-	{
-		#ifndef SERVER//to make it work in single during development
-		OnLeaveClientEvent(insider);
-		#endif
-	}
-	#endif
+
 };

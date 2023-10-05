@@ -194,6 +194,10 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				// LEVEL 2 - Script > Misc
 				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_ACTION_ON_CURSOR, "", "Perform Diag On Cursor", DiagMenuIDs.MISC_MENU);
+#ifdef DIAG_MISC_ACTION_ON_CURSOR
+					DiagMenu.SetValue(DiagMenuIDs.MISC_ACTION_ON_CURSOR, true);
+#endif
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_DISABLE_PERSONAL_LIGHT, "", "Disable Personal Light", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_ITEM_DEBUG_ACTIONS, "", "Item Debug Actions", DiagMenuIDs.MISC_MENU); // Is enabled by default now
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_LOG_PLAYER_STATS, "", "Log Player Stats", DiagMenuIDs.MISC_MENU);
@@ -229,7 +233,7 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_DRAW_CHECKERBOARD, "", "Draw Checkerboard on screen", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_BULLET_IMPACT, "", "BulletImpact", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PRESENCE_NOTIFIER_DBG, "", "Show Presence to AI dbg", DiagMenuIDs.MISC_MENU);
-				DiagMenu.RegisterBool(DiagMenuIDs.MISC_GO_UNCONSCIOUS, "", "Go Unconscious", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_GO_UNCONSCIOUS, "lctrl+m", "Go Unconscious", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_GO_UNCONSCIOUS_DELAYED, "", "Uncons. in 10sec", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_QUICK_RESTRAIN, "", "Quick Restrain", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterMenu(DiagMenuIDs.MISC_HAIR_MENU, "Hair Hiding", DiagMenuIDs.MISC_MENU);
@@ -641,8 +645,8 @@ class PluginDiagMenu : PluginBase
 			//---------------------------------------------------------------
 			case ERPCs.DIAG_CHEATS_DISABLE_STAMINA:
 			{
-				if (ctx.Read(CachedObjectsParams.PARAM1_INT))
-					player.SetStaminaEnabled(CachedObjectsParams.PARAM1_INT.param1);
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+					player.SetStaminaDisabled(CachedObjectsParams.PARAM1_BOOL.param1);
 				break;
 			}
 			
@@ -757,14 +761,14 @@ class PluginDiagMenu : PluginBase
 				if (ctx.Read( CachedObjectsParams.PARAM1_FLOAT))
 				{
 					//reset playtime
-					player.StatUpdate("playtime", player.StatGet("playtime") * -1);
+					player.StatUpdate(AnalyticsManagerServer.STAT_PLAYTIME, player.StatGet(AnalyticsManagerServer.STAT_PLAYTIME) * -1);
 					//set new playtime
-					player.StatUpdate("playtime", CachedObjectsParams.PARAM1_FLOAT.param1 );
-					player.SetLastShavedSeconds( 0 );
+					player.StatUpdate(AnalyticsManagerServer.STAT_PLAYTIME, CachedObjectsParams.PARAM1_FLOAT.param1 );
+					player.SetLastShavedSeconds(0);
 					//update lifespan
 					PluginLifespan pluginLifespann = PluginLifespan.Cast(GetPlugin(PluginLifespan));
 					pluginLifespann.ChangeFakePlaytime( player, CachedObjectsParams.PARAM1_FLOAT.param1 );
-					pluginLifespann.UpdateLifespan( player, true );
+					pluginLifespann.UpdateLifespan(player, true);
 				}
 				break;
 			}

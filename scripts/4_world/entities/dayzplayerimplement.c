@@ -88,6 +88,7 @@ class DayZPlayerImplement extends DayZPlayer
 	protected SHumanCommandMoveSettings 				m_MoveSettings;
 	protected float 									m_FallYDiff;
 	protected float										m_SprintedTime;
+	protected float										m_SprintedTimePerStanceMin;
 	protected bool										m_SprintFull;
 	protected bool										m_IsRaised;
 	protected bool										m_ShouldReload;
@@ -147,6 +148,7 @@ class DayZPlayerImplement extends DayZPlayer
 	{
 		m_SprintFull = false;
 		m_SprintedTime = 0;
+		m_SprintedTimePerStanceMin = PlayerConstants.FULL_SPRINT_DELAY_DEFAULT;
 		m_AimingModel = new DayZPlayerImplementAiming(this);
 		m_MeleeCombat = new DayZPlayerImplementMeleeCombat(this);
 		m_MeleeFightLogic = new DayZPlayerMeleeFightLogic_LightHeavy(this);
@@ -553,6 +555,7 @@ class DayZPlayerImplement extends DayZPlayer
 					
 					if (m_WasInVehicle)
 					{
+						transport.MarkCrewMemberDead(transport.CrewMemberIndex(this));
 						transport.CrewDeath(crewPos);
 					}
 					else
@@ -2080,7 +2083,7 @@ class DayZPlayerImplement extends DayZPlayer
 				return;
 			}
 
-			//! default behaviou after finish is to start move
+			//! default behaviour after finish is to start move
 			if (m_Swimming.m_bWasSwimming)
 			{
 				StartCommand_Swim();
@@ -2118,15 +2121,18 @@ class DayZPlayerImplement extends DayZPlayer
 			
 			return;
 		}
-
+		
 		//! Sprint attack limiting - player has to be in full sprint for at least 0.5s
 		//--------------------------------------------
 		HumanCommandMove hcm = GetCommand_Move();
 		if (hcm && hcm.GetCurrentMovementSpeed() > 2.99 && m_MovementState.m_iMovement == DayZPlayerConstants.MOVEMENTIDX_SPRINT)
 		{
 			m_SprintedTime += pDt;
-			if (m_SprintedTime > 0.5)
+			if (m_SprintedTime > m_SprintedTimePerStanceMin)
+			{
 				m_SprintFull = true;
+				m_SprintedTimePerStanceMin = PlayerConstants.FULL_SPRINT_DELAY_DEFAULT;
+			}
 			else
 				m_SprintFull = false;
 		}
@@ -2408,7 +2414,7 @@ class DayZPlayerImplement extends DayZPlayer
 							{
 								InventoryLocation dst = new InventoryLocation;
 								dst.SetHands(this, NULL);
-								EntityAI item = GetGame().SpawnEntity(m_DebugWeaponChangeItem, dst,ECE_IN_INVENTORY,RF_DEFAULT);
+								EntityAI item = SpawnEntity(m_DebugWeaponChangeItem, dst,ECE_IN_INVENTORY,RF_DEFAULT);
 							}
 
 							//! start show

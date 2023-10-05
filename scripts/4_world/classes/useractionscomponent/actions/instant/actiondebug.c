@@ -2,11 +2,13 @@ class ActionDebugReciveData : ActionReciveData
 {
 	ItemBase 	m_Item;
 	int			m_DebugActionID;
+	EntityAI	m_Entity;
 }
 
 class ActionDebugData : ActionData
 {
 	int			m_DebugActionID;
+	EntityAI	m_Entity;
 }
 
 class ActionDebug : ActionInstantBase
@@ -37,8 +39,8 @@ class ActionDebug : ActionInstantBase
 		
 		if (!GetGame().IsDedicatedServer() )
 		{
-			ref Param2<ItemBase,int> ndata = Param2<ItemBase,int>.Cast( extra_data );
-			action_data_d.m_MainItem = ndata.param1;
+			ref Param2<EntityAI,int> ndata = Param2<EntityAI,int>.Cast( extra_data );
+			action_data_d.m_Entity = ndata.param1;
 			action_data_d.m_DebugActionID = ndata.param2;
 		}
 		
@@ -57,7 +59,7 @@ class ActionDebug : ActionInstantBase
 		ActionDebugData action_data_d;
 		Class.CastTo( action_data_d, action_data );
 		
-		ctx.Write(action_data_d.m_MainItem);
+		ctx.Write(action_data_d.m_Entity);
 		ctx.Write(action_data_d.m_DebugActionID);
 	}
 	
@@ -70,15 +72,15 @@ class ActionDebug : ActionInstantBase
 		
 		ActionDebugReciveData action_recive_data_d = ActionDebugReciveData.Cast(action_recive_data);
 		
-		ItemBase item;
+		EntityAI ent;
 		int debugActionID;
 		
-		if(!ctx.Read(item))
+		if(!ctx.Read(ent))
 			return false;
 		if(!ctx.Read(debugActionID))
 			return false;
 		
-		action_recive_data_d.m_Item = item;
+		action_recive_data_d.m_Entity = ent;
 		action_recive_data_d.m_DebugActionID = debugActionID;
 		return true;
 	}
@@ -88,7 +90,7 @@ class ActionDebug : ActionInstantBase
 		ActionDebugReciveData action_recive_data_d = ActionDebugReciveData.Cast(action_recive_data);
 		ActionDebugData action_data_d = ActionDebugData.Cast(action_data);
 		
-		action_data_d.m_MainItem = action_recive_data_d.m_Item;
+		action_data_d.m_Entity = action_recive_data_d.m_Entity;
 		action_data_d.m_DebugActionID = action_recive_data_d.m_DebugActionID;
 	}
 	
@@ -96,8 +98,8 @@ class ActionDebug : ActionInstantBase
 	{
 		ActionDebugData action_data_d;
 		Class.CastTo( action_data_d, action_data );
-		
-		action_data_d.m_MainItem.OnAction(action_data_d.m_DebugActionID,action_data_d.m_Player,NULL);
+		if (action_data_d.m_Entity && !action_data_d.m_Entity.IsSetForDeletion())
+			action_data_d.m_Entity.OnAction(action_data_d.m_DebugActionID,action_data_d.m_Player,NULL);
 	}
 	
 	override bool UseAcknowledgment()

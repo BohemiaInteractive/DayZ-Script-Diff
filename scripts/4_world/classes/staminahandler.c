@@ -264,7 +264,7 @@ class StaminaHandler
 	protected ref StaminaModifiers			m_StaminaModifiers;
 	
 	#ifdef DIAG_DEVELOPER
-	protected bool 							m_StaminaEnabled = true;
+	protected bool 							m_StaminaDisabled;
 	#endif
 	
 	void StaminaHandler(PlayerBase player)
@@ -394,10 +394,8 @@ class StaminaHandler
 	void Update(float deltaT, int pCurrentCommandID)
 	{
 		#ifdef DIAG_DEVELOPER
-		if (!m_StaminaEnabled || DiagMenu.GetBool(DiagMenuIDs.CHEATS_DISABLE_STAMINA))
-		{
+		if (m_StaminaDisabled)
 			return;
-		}
 		#endif
 		if (m_Player)
 		{
@@ -678,32 +676,90 @@ class StaminaHandler
 	
 	protected void RegisterStaminaConsumers()
 	{
-		//! stamina consumers registration
 		m_StaminaConsumers = new StaminaConsumers();
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.HOLD_BREATH, GameConstants.STAMINA_HOLD_BREATH_THRESHOLD_ACTIVATE,GameConstants.STAMINA_HOLD_BREATH_THRESHOLD_DRAIN);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.SPRINT, CfgGameplayHandler.GetStaminaMinCap() + 15);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.JUMP, GameConstants.STAMINA_JUMP_THRESHOLD);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.VAULT, GameConstants.STAMINA_VAULT_THRESHOLD);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.CLIMB, GameConstants.STAMINA_CLIMB_THRESHOLD);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.MELEE_HEAVY, GameConstants.STAMINA_MELEE_HEAVY_THRESHOLD);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.MELEE_EVADE, GameConstants.STAMINA_MELEE_EVADE_THRESHOLD);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.ROLL, GameConstants.STAMINA_ROLL_THRESHOLD);
-		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.DROWN,0);
+
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.HOLD_BREATH,
+			GameConstants.STAMINA_HOLD_BREATH_THRESHOLD_ACTIVATE,
+			GameConstants.STAMINA_HOLD_BREATH_THRESHOLD_DRAIN,
+		);
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.SPRINT,
+			CfgGameplayHandler.GetStaminaMinCap() + 15,
+		);
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.JUMP,
+			GameConstants.STAMINA_JUMP_THRESHOLD,
+		);
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.VAULT,
+			GameConstants.STAMINA_VAULT_THRESHOLD,
+		);
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.CLIMB,
+			GameConstants.STAMINA_CLIMB_THRESHOLD,
+		);
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.MELEE_HEAVY,
+			GameConstants.STAMINA_MELEE_HEAVY_THRESHOLD,
+		);
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.MELEE_EVADE,
+			GameConstants.STAMINA_MELEE_EVADE_THRESHOLD,
+		);
+		m_StaminaConsumers.RegisterConsumer(
+			EStaminaConsumers.ROLL,
+			GameConstants.STAMINA_ROLL_THRESHOLD,
+		);
+		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.DROWN, 0);
+		m_StaminaConsumers.RegisterConsumer(EStaminaConsumers.PUSH, 0);
 	}
 
 	protected void RegisterStaminaModifiers()
 	{
-		//! stamina modifiers registration
 		m_StaminaModifiers = new StaminaModifiers();
-		m_StaminaModifiers.RegisterExponential(EStaminaModifiers.HOLD_BREATH, GameConstants.STAMINA_DRAIN_HOLD_BREATH_START * CfgGameplayHandler.GetHoldBreathStaminaModifier(), GameConstants.STAMINA_DRAIN_HOLD_BREATH_EXPONENT * CfgGameplayHandler.GetHoldBreathStaminaModifier(),0,GameConstants.STAMINA_DRAIN_HOLD_BREATH_DURATION);
+
+		m_StaminaModifiers.RegisterExponential(
+			EStaminaModifiers.HOLD_BREATH,
+			GameConstants.STAMINA_DRAIN_HOLD_BREATH_START * CfgGameplayHandler.GetHoldBreathStaminaModifier(),
+			GameConstants.STAMINA_DRAIN_HOLD_BREATH_EXPONENT * CfgGameplayHandler.GetHoldBreathStaminaModifier(), 0, GameConstants.STAMINA_DRAIN_HOLD_BREATH_DURATION,
+		);
+		m_StaminaModifiers.RegisterExponential(
+			EStaminaModifiers.PUSH_CAR,
+			GameConstants.STAMINA_DRAIN_HOLD_BREATH_START,
+			GameConstants.STAMINA_DRAIN_HOLD_BREATH_EXPONENT * CfgGameplayHandler.GetHoldBreathStaminaModifier(), 0, GameConstants.STAMINA_DRAIN_HOLD_BREATH_DURATION,
+		);
 		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.DROWN, 10);
-		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.JUMP, GameConstants.STAMINA_DRAIN_JUMP * CfgGameplayHandler.GetObstacleTraversalStaminaModifier());
-		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.VAULT, GameConstants.STAMINA_DRAIN_VAULT * CfgGameplayHandler.GetObstacleTraversalStaminaModifier());
-		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.CLIMB, GameConstants.STAMINA_DRAIN_CLIMB * CfgGameplayHandler.GetObstacleTraversalStaminaModifier());
-		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.MELEE_LIGHT, GameConstants.STAMINA_DRAIN_MELEE_LIGHT  * CfgGameplayHandler.GetMeleeStaminaModifier());
-		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.MELEE_HEAVY, GameConstants.STAMINA_DRAIN_MELEE_HEAVY  * CfgGameplayHandler.GetMeleeStaminaModifier());
-		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.OVERALL_DRAIN, CfgGameplayHandler.GetStaminaMax(), 5.0);
-		m_StaminaModifiers.RegisterRandomized(EStaminaModifiers.MELEE_EVADE, 3 * CfgGameplayHandler.GetMeleeStaminaModifier(), GameConstants.STAMINA_DRAIN_MELEE_EVADE * CfgGameplayHandler.GetMeleeStaminaModifier());
+		m_StaminaModifiers.RegisterFixed(
+			EStaminaModifiers.JUMP,
+			GameConstants.STAMINA_DRAIN_JUMP * CfgGameplayHandler.GetObstacleTraversalStaminaModifier(),
+		);
+		m_StaminaModifiers.RegisterFixed(
+			EStaminaModifiers.VAULT,
+			GameConstants.STAMINA_DRAIN_VAULT * CfgGameplayHandler.GetObstacleTraversalStaminaModifier(),
+		);
+		m_StaminaModifiers.RegisterFixed(
+			EStaminaModifiers.CLIMB,
+			GameConstants.STAMINA_DRAIN_CLIMB * CfgGameplayHandler.GetObstacleTraversalStaminaModifier(),
+		);
+		m_StaminaModifiers.RegisterFixed(
+			EStaminaModifiers.MELEE_LIGHT,
+			GameConstants.STAMINA_DRAIN_MELEE_LIGHT  * CfgGameplayHandler.GetMeleeStaminaModifier(),
+		);
+		m_StaminaModifiers.RegisterFixed(
+			EStaminaModifiers.MELEE_HEAVY,
+			GameConstants.STAMINA_DRAIN_MELEE_HEAVY  * CfgGameplayHandler.GetMeleeStaminaModifier(),
+		);
+		m_StaminaModifiers.RegisterFixed(
+			EStaminaModifiers.OVERALL_DRAIN,
+			CfgGameplayHandler.GetStaminaMax(),
+			5.0,
+		);
+		m_StaminaModifiers.RegisterRandomized(
+			EStaminaModifiers.MELEE_EVADE,
+			3 * CfgGameplayHandler.GetMeleeStaminaModifier(),
+			GameConstants.STAMINA_DRAIN_MELEE_EVADE * CfgGameplayHandler.GetMeleeStaminaModifier(),
+		);
 		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.ROLL, GameConstants.STAMINA_DRAIN_ROLL);
 	}
 
@@ -885,10 +941,8 @@ class StaminaHandler
 	void DepleteStamina(EStaminaModifiers modifier, float dT = -1)
 	{
 		#ifdef DIAG_DEVELOPER
-		if (!m_StaminaEnabled || DiagMenu.GetBool(DiagMenuIDs.CHEATS_DISABLE_STAMINA))
-		{
+		if (m_StaminaDisabled)
 			return;
-		}
 		#endif
 		float val = 0.0;
 		float current_time = m_Player.GetSimulationTimeStamp();
@@ -904,12 +958,14 @@ class StaminaHandler
 					dT = 1;
 				}
 				m_StaminaDepletion = m_StaminaDepletion + sm.GetMaxValue() * dT;
-			break;
+
+				break;
 			
 			case m_StaminaModifiers.RANDOMIZED:
 				val = Math.RandomFloat(sm.GetMinValue(), sm.GetMaxValue());
 				m_StaminaDepletion = m_StaminaDepletion + val;
-			break;
+
+				break;
 			
 			case m_StaminaModifiers.LINEAR:
 				if (!sm.IsInUse())
@@ -922,7 +978,7 @@ class StaminaHandler
 				val = Math.Lerp(sm.GetMinValue(), sm.GetMaxValue(), time);
 				m_StaminaDepletion = m_StaminaDepletion + val;
 			
-			break;
+				break;
 			
 			case m_StaminaModifiers.EXPONENTIAL:
 				if (!sm.IsInUse())
@@ -944,7 +1000,7 @@ class StaminaHandler
 				val = Math.Pow(sm.GetMinValue(),exp);
 				m_StaminaDepletion = m_StaminaDepletion + val;
 			
-			break;
+				break;
 		}
 
 		//! run cooldown right after depletion
@@ -955,9 +1011,9 @@ class StaminaHandler
 	}
 	
 	#ifdef DIAG_DEVELOPER
-	void SetStaminaEnabled(bool value)
+	void SetStaminaDisabled(bool value)
 	{
-		m_StaminaEnabled = value;
+		m_StaminaDisabled = value;
 	}
 	#endif
 };

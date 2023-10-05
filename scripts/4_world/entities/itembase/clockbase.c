@@ -40,7 +40,7 @@ class ClockBase : Inventory_Base
 	
 	void Init() 
 	{
-		RegisterNetSyncVariableInt("m_State",0, EAlarmClockState.COUNT - 1);
+		RegisterNetSyncVariableInt("m_State", 0, EAlarmClockState.COUNT - 1);
 	}
 	
 	override void SetActions()
@@ -154,6 +154,7 @@ class ClockBase : Inventory_Base
 	protected void OnRingingStartClient()
 	{
 		PlaySoundSetLoop( m_RingingSoundLoop, GetRingingSound(), 0, 0 );
+
 		if (m_WorkingSound)
 		{
 			SEffectManager.DestroyEffect(m_WorkingSound);
@@ -185,7 +186,7 @@ class ClockBase : Inventory_Base
 	
 	protected void SetupTimerServer()
 	{
-		m_TimerUpdate = new Timer;
+		m_TimerUpdate = new Timer();
 		m_TimerUpdate.Run(UPDATE_TICK_RATE , this, "OnUpdate", null, true);
 	}
 	

@@ -196,7 +196,7 @@ class NotificationUI
 		for ( int i = 0; i < m_WidgetTimers.Count(); )
 		{
 			Widget w		= m_WidgetTimers.GetElement( i );
-			float new_alpha	= Math.Clamp( w.GetAlpha() - timeslice / NOTIFICATION_FADE_TIME, 0, 1 );
+			float new_alpha	= Math.Clamp( w.GetAlpha() - timeslice / NotificationSystem.NOTIFICATION_FADE_TIME, 0, 1 );
 			if ( new_alpha > 0 )
 			{
 				w.SetAlpha( new_alpha );
@@ -207,7 +207,7 @@ class NotificationUI
 				Widget w_c5 = w.FindAnyWidget( "Name" );
 				if ( w_c && w_c2 )
 				{
-					float new_alpha_cont	= Math.Clamp( w_c.GetAlpha() - timeslice / NOTIFICATION_FADE_TIME, 0, 1 );
+					float new_alpha_cont	= Math.Clamp( w_c.GetAlpha() - timeslice / NotificationSystem.NOTIFICATION_FADE_TIME, 0, 1 );
 					w_c.SetAlpha( new_alpha_cont );
 					w_c2.SetAlpha( new_alpha_cont );
 					w_c3.SetAlpha( new_alpha_cont );
@@ -215,7 +215,7 @@ class NotificationUI
 				}
 				if ( w_c5 )
 				{
-					float new_alpha_voice	= Math.Clamp( w_c5.GetAlpha() - timeslice / NOTIFICATION_FADE_TIME, 0, 1 );
+					float new_alpha_voice	= Math.Clamp( w_c5.GetAlpha() - timeslice / NotificationSystem.NOTIFICATION_FADE_TIME, 0, 1 );
 					w_c5.SetAlpha(new_alpha_voice);
 				}
 				i++;

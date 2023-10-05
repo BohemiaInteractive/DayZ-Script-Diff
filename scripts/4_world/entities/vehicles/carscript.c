@@ -39,6 +39,7 @@ enum ECarHornState
 	SHORT	= 1,
 	LONG	= 2
 }
+
 #ifdef DIAG_DEVELOPER
 enum EVehicleDebugOutputType
 {
@@ -271,6 +272,9 @@ class CarScript extends Car
 
 	protected bool m_EngineZoneReceivedHit;
 	
+	protected ref set<int> m_UnconsciousCrewMemberIndices;
+	protected ref set<int> m_DeadCrewMemberIndices;
+	
 	#ifdef DEVELOPER 
 	private const int DEBUG_MESSAGE_CLEAN_TIME_SECONDS = 10;
 	private float m_DebugMessageCleanTime;
@@ -283,7 +287,7 @@ class CarScript extends Car
 		_car = this;
 #endif
 
-		SetEventMask(/*EntityEvent.CONTACT |*/ EntityEvent.POSTSIMULATE);
+		SetEventMask(EntityEvent.POSTSIMULATE);
 		
 		m_ContactCache = new CarContactCache;
 		
@@ -305,6 +309,9 @@ class CarScript extends Car
 		m_PlayCrashSoundHeavy = false;
 		
 		m_CarHornState = ECarHornState.OFF;
+		
+		m_UnconsciousCrewMemberIndices 	= new set<int>();
+		m_DeadCrewMemberIndices 		= new set<int>();
 		
 		RegisterNetSyncVariableBool("m_HeadlightsOn");
 		RegisterNetSyncVariableBool("m_BrakesArePressed");
@@ -429,20 +436,6 @@ class CarScript extends Car
 			SEffectManager.DestroyEffect(m_engineFx);	
 		}
 	}
-
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
-	{
-		button1 = "Repair";
-	}
-	
-	override void OnDebugButtonPressServer(int button_index)
-	{
-		if (button_index == 1)
-		{
-			FixEntity();
-		}
-	}
-
 	#endif
 	
 	
@@ -543,6 +536,80 @@ class CarScript extends Car
 	{
 		SEffectManager.DestroyEffect(sound);
 	}
+
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	{
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_HORN_START_SHORT, "Car Horn Start Short", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_HORN_START_LONG, "Car Horn Start Long", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_HORN_STOP, "Car Horn Stop", FadeColors.LIGHT_GREY));
+
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "Car Fuel", FadeColors.RED));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_FUEL_FULL, "Full", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_FUEL_EMPTY, "Empty", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_FUEL_INCREASE, "10% increase", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_FUEL_DECREASE, "10% decrease", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "Car Cooler", FadeColors.RED));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_FULL, "Full", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_EMPTY, "Empty", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANTL_INCREASE, "10% increase", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANTL_DECREASE, "10% decrease", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+		
+		super.GetDebugActions(outputList);
+	}
+	
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+
+		if (!GetGame().IsServer())
+		{
+			return false;
+		}
+
+		switch (action_id)
+		{
+			case EActions.CAR_HORN_START_SHORT:
+				SetCarHornState(ECarHornState.SHORT);
+				return true;
+			case EActions.CAR_HORN_START_LONG:
+				SetCarHornState(ECarHornState.LONG);
+				return true;
+			case EActions.CAR_HORN_STOP:
+				SetCarHornState(ECarHornState.OFF);
+				return true;
+
+			case EActions.CAR_FUEL_FULL:
+				Fill(CarFluid.FUEL, GetFluidCapacity(CarFluid.FUEL));
+				return true;
+			case EActions.CAR_FUEL_EMPTY:
+				LeakAll(CarFluid.FUEL);
+				return true;
+			case EActions.CAR_FUEL_INCREASE:
+				Fill(CarFluid.FUEL, GetFluidCapacity(CarFluid.FUEL) * 0.1);
+				return true;
+			case EActions.CAR_FUEL_DECREASE:
+				Leak(CarFluid.FUEL, GetFluidCapacity(CarFluid.FUEL) * 0.1);
+				return true;
+
+			case EActions.CAR_COOLANT_FULL:
+				Fill(CarFluid.COOLANT, GetFluidCapacity(CarFluid.COOLANT));
+				return true;
+			case EActions.CAR_COOLANT_EMPTY:
+				LeakAll(CarFluid.COOLANT);
+				return true;
+			case EActions.CAR_COOLANTL_INCREASE:
+				Fill(CarFluid.COOLANT, GetFluidCapacity(CarFluid.COOLANT) * 0.1);
+				return true;
+			case EActions.CAR_COOLANTL_DECREASE:
+				Leak(CarFluid.COOLANT, GetFluidCapacity(CarFluid.COOLANT) * 0.1);
+				return true;
+		}
+	
+		return false;
+	}
 	
 	override void OnVariablesSynchronized()
 	{
@@ -578,40 +645,40 @@ class CarScript extends Car
 
 		switch (slot_name)
 		{
-		case "Reflector_1_1":
-			if (GetGame().IsServer())
-			{
-				SetHealth("Reflector_1_1", "Health", item.GetHealth());
-			}
-		break;
-		case "Reflector_2_1":
-			if (GetGame().IsServer())
-			{
-				SetHealth("Reflector_2_1", "Health", item.GetHealth());
-			}
-		break;
-		case "CarBattery":
-		case "TruckBattery":
-			if (GetGame().IsServer())
-			{
-				m_BatteryHealth = item.GetHealth01();
-			}
-		break;
-		case "SparkPlug":
-		case "GlowPlug":
-			if (GetGame().IsServer())
-			{
-				m_PlugHealth = item.GetHealth01();
-			}
-		break;
-		case "CarRadiator":
-			if (GetGame().IsServer())
-			{
-				m_RadiatorHealth = item.GetHealth01();
-			}
-			
-			m_Radiator = item;
-		break;
+			case "Reflector_1_1":
+				if (GetGame().IsServer())
+				{
+					SetHealth("Reflector_1_1", "Health", item.GetHealth());
+				}
+				break;
+			case "Reflector_2_1":
+				if (GetGame().IsServer())
+				{
+					SetHealth("Reflector_2_1", "Health", item.GetHealth());
+				}
+				break;
+			case "CarBattery":
+			case "TruckBattery":
+				if (GetGame().IsServer())
+				{
+					m_BatteryHealth = item.GetHealth01();
+				}
+				break;
+			case "SparkPlug":
+			case "GlowPlug":
+				if (GetGame().IsServer())
+				{
+					m_PlugHealth = item.GetHealth01();
+				}
+				break;
+			case "CarRadiator":
+				if (GetGame().IsServer())
+				{
+					m_RadiatorHealth = item.GetHealth01();
+				}
+				
+				m_Radiator = item;
+				break;
 		}
 		
 		if (GetGame().IsServer())
@@ -725,10 +792,10 @@ class CarScript extends Car
 
 			switch (slotSelectionName)
 			{
-			case "wheel_spare_1":
-			case "wheel_spare_2":
-				return CanManipulateSpareWheel(slotSelectionName);
-			break;
+				case "wheel_spare_1":
+				case "wheel_spare_2":
+					return CanManipulateSpareWheel(slotSelectionName);
+					break;
 			}
 		}
 		
@@ -757,10 +824,10 @@ class CarScript extends Car
 
 			switch (slotSelectionName)
 			{
-			case "wheel_spare_1":
-			case "wheel_spare_2":
-				return CanManipulateSpareWheel(slotSelectionName);
-			break;
+				case "wheel_spare_1":
+				case "wheel_spare_2":
+					return CanManipulateSpareWheel(slotSelectionName);
+					break;
 			}
 		}
 
@@ -778,6 +845,9 @@ class CarScript extends Car
 		
 		if (GetGame().IsServer())
 		{
+			HandleByCrewMemberState(ECrewMemberState.UNCONSCIOUS);
+			HandleByCrewMemberState(ECrewMemberState.DEAD);
+
 			#ifdef DIAG_DEVELOPER
 			if (DEBUG_OUTPUT_TYPE & EVehicleDebugOutputType.CONTACT)
 			{
@@ -1377,6 +1447,58 @@ class CarScript extends Car
 				break;
 		}
 		#endif
+	}
+	
+	override void MarkCrewMemberUnconscious(int crewMemberIndex)
+	{
+		set<int> crewMemberIndicesCopy = new set<int>();
+		crewMemberIndicesCopy.Copy(m_UnconsciousCrewMemberIndices);
+		crewMemberIndicesCopy.Insert(crewMemberIndex);
+
+		m_UnconsciousCrewMemberIndices = crewMemberIndicesCopy;
+	}
+	
+	override void MarkCrewMemberDead(int crewMemberIndex)
+	{
+		set<int> crewMemberIndicesCopy = new set<int>();
+		crewMemberIndicesCopy.Copy(m_DeadCrewMemberIndices);
+		crewMemberIndicesCopy.Insert(crewMemberIndex);
+
+		m_DeadCrewMemberIndices = crewMemberIndicesCopy;
+	}
+	
+	override void HandleByCrewMemberState(ECrewMemberState state)
+	{
+		switch (state)
+		{
+			case ECrewMemberState.UNCONSCIOUS:
+				foreach (int unconsciousCrewMemberIndex : m_UnconsciousCrewMemberIndices)
+				{
+					if (unconsciousCrewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
+					{
+						EngineStop();
+						SetBrake(0.5);
+					}
+					
+					m_UnconsciousCrewMemberIndices.RemoveItem(unconsciousCrewMemberIndex);
+				}
+
+				break
+			
+			case ECrewMemberState.DEAD:
+				foreach (int deadCrewMemberIndex : m_DeadCrewMemberIndices)
+				{
+					if (deadCrewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
+					{
+						EngineStop();
+						SetBrake(0.5);
+					}
+					
+					m_DeadCrewMemberIndices.RemoveItem(deadCrewMemberIndex);
+				}
+
+				break
+		}
 	}
 
 	//! DEPRECATED	
@@ -2288,6 +2410,7 @@ class CarScript extends Car
 		AddAction(ActionSwitchLights);
 		AddAction(ActionCarHornShort);
 		AddAction(ActionCarHornLong);
+		AddAction(ActionPushCar);
 	}
 	
 	void AddAction(typename actionName)
@@ -2443,6 +2566,8 @@ class CarScript extends Car
 		}
 	}
 	
+
+	
 	protected void GenerateCarHornAINoise(int pState)
 	{
 		if (pState != ECarHornState.OFF)
@@ -2477,6 +2602,11 @@ class CarScript extends Car
 	float GetMomentum()
 	{
 		return GetVelocity(this).Length() * dBodyGetMass(this);
+	}
+	
+	static float GetPushForceCoefficientMultiplier()
+	{
+		return 1.0;
 	}
 
 #ifdef DEVELOPER

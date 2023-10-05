@@ -95,32 +95,22 @@ class TrapBase extends ItemBase
     {
         super.OnVariablesSynchronized();
 		
-		if ( IsDeploySound() )
-		{
+		if (IsDeploySound())
 			PlayDeploySound();
-		}
 		
-		if ( CanPlayDeployLoopSound() )
-		{
+		if (CanPlayDeployLoopSound())
 			PlayDeployLoopSound();
-		}
 					
-		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
-		{
+		if (m_DeployLoopSound && !CanPlayDeployLoopSound())
 			StopDeployLoopSound();
-		}
 		
-		if ( GetGame().IsMultiplayer() )
+		if (GetGame().IsMultiplayer())
 		{
-			if (m_IsActive)
-			{
+			if (m_IsActive && !m_IsInProgress)
 				SetActive();
-			}
 			
 			if (m_IsInProgress && !m_IsActive)
-			{
 				StartActivate(null);
-			}
 		}
 	}
 	
@@ -295,7 +285,6 @@ class TrapBase extends ItemBase
 	void RemoveFromObject(EntityAI victim)
 	{
 		OnSteppedOut(victim);
-		Synch(null);
 	}
 	
 	void OnSteppedOn(EntityAI victim)
@@ -310,8 +299,6 @@ class TrapBase extends ItemBase
 	{
 		if (GetGame().IsServer())
 		{
-			SetSynchDirty();
-
 			if (victim && !victim.GetAllowDamage())
 				return;
 
@@ -463,7 +450,7 @@ class TrapBase extends ItemBase
 		{
 			CreateTrigger();
 			RefreshState();
-			Synch(null);
+			SetSynchDirty();
 		}
 		
 		OnActivate();
@@ -471,24 +458,22 @@ class TrapBase extends ItemBase
 
 	void OnActivate();
 
-	void StartActivate( PlayerBase player )
+	void StartActivate(PlayerBase player)
 	{
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
-			m_Timer = new Timer( CALL_CATEGORY_SYSTEM );
+			m_Timer = new Timer(CALL_CATEGORY_SYSTEM);
 			HideSelection("safety_pin");
 			
-			if ( m_InitWaitTime > 0 )
+			if (m_InitWaitTime > 0)
 			{
 				m_IsInProgress = true;
-				m_Timer.Run( m_InitWaitTime, this, "SetActive" );
+				m_Timer.Run(m_InitWaitTime, this, "SetActive");
 			
-				Synch(null);
+				SetSynchDirty();
 			}
 			else
-			{
 				SetActive();
-			}
 		}
 	}
 	
@@ -504,10 +489,10 @@ class TrapBase extends ItemBase
 		
 		if (m_AddDeactivationDefect)
 			AddDefect();
-		
+
+		SetSynchDirty();		
 		DeleteTrigger();
 		RefreshState();
-		Synch(null);
 	}
 	
 	void CreateTrigger()
@@ -526,7 +511,7 @@ class TrapBase extends ItemBase
 	void DeleteTrigger()
 	{
 		if (m_TrapTrigger)
-		{
+		{	
 			m_TrapTrigger.SetParentObject(null);
 			m_TrapTrigger.DeleteSafe();
 		}
@@ -588,6 +573,7 @@ class TrapBase extends ItemBase
 			SetOrientation(orientation);
 			SetPosition(position);
 			PlaceOnSurface();
+			SetSynchDirty();
 		}
 	}
 	

@@ -41,7 +41,7 @@ class PluginItemDiagnosticEventHandler extends ScriptedWidgetEventHandler
 class PluginItemDiagnostic extends PluginDeveloper
 {
 	Object m_Entity;
-	
+
 	
 	ref Timer 						myTimer1;
 	ref map<PlayerBase,Object> 	m_ObserversMap = new map<PlayerBase,Object>;
@@ -88,7 +88,16 @@ class PluginItemDiagnostic extends PluginDeveloper
 		ShowWidgets(false);
 		#endif
 	}
-	
+
+	void ~PluginItemDiagnostic()
+	{
+		ClearProperties();
+		if (m_ItemLine)
+		{
+			m_ItemLine.Destroy();
+			m_ItemLine = null;
+		}
+	}
 	
 	override void OnInit()
 	{
@@ -104,26 +113,27 @@ class PluginItemDiagnostic extends PluginDeveloper
 			}
 		}
 	}
-	
-	void ~PluginItemDiagnostic()
-	{
-		ClearProperties();
-		if (m_ItemLine)
-		{
-			m_ItemLine.Destroy();
-			m_ItemLine = null;
-		}
-	}
 
 	bool OnMouseButtonDown(Widget w, int x, int y, int button)
 	{
-		SetDragging(true);
+		if (button == 0)
+			SetDragging(true);
+		if (button == 1)
+		{
+			if (m_Entity)
+			{
+				float xx, yy;
+				m_DebugRootWidget.GetPos(xx,yy);
+				ContextMenu.DisplayContextMenu(x - xx, y - yy, EntityAI.Cast(m_Entity), m_DebugRootWidget, this);
+			}
+		}
 		return true;
 	}
 	
 	bool OnMouseButtonUp(Widget w, int x, int y, int button)
 	{
-		SetDragging(false);
+		if (button == 0)
+			SetDragging(false);
 		return true;
 	}
 	
@@ -161,37 +171,12 @@ class PluginItemDiagnostic extends PluginDeveloper
 	bool OnClick( Widget w, int x, int y, int button )
 	{
 		SetDragging(false);
-		int index;
 		
-		if (w == m_DebugButtonWidget1)
-		{
-			index = 1;
-		}
-		else if (w == m_DebugButtonWidget2)
-		{
-			index = 2;
-		}		
-		else if (w == m_DebugButtonWidget3)
-		{
-			index = 3;
-		}
-		else if (w == m_DebugButtonWidget4)
-		{
-			index = 4;
-		}
-		else if (w == m_CloseButton)
+		if (w == m_CloseButton)
 		{
 			ToggleDebugWindowEvent();
 			return true;
 		}
-		
-		#ifdef DEVELOPER
-		EntityAI entity = EntityAI.Cast(_item);
-		if(entity)
-			entity.OnDebugButtonPressClient(index);
-		#endif
-		
-		GetGame().RPCSingleParam(null, ERPCs.DEV_RPC_ITEM_DIAG_BUTTON, new Param1<int>(index),true, GetGame().GetPlayer().GetIdentity());
 		return true;
 	}
 	
@@ -235,10 +220,17 @@ class PluginItemDiagnostic extends PluginDeveloper
 	
 	void ShowWidgets(bool show)
 	{
+		
 		m_IsActive = show;
 			
 		if(m_DebugRootWidget) 
 			m_DebugRootWidget.Show(show);
+	}
+
+	void OnSelectAction(EntityAI ent, int actionId)
+	{
+		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		player.GetActionManager().OnInstantAction(ActionDebug,new Param2<EntityAI,int>(ent,actionId));
 	}
 
 	void ReleaseFocus()
@@ -490,13 +482,14 @@ class PluginItemDiagnostic extends PluginDeveloper
 		m_DebugOutputServer.SetText(debug_text_server);
 		m_DebugOutputClient.SetText(item.GetDebugText());
 		
+		/*
 		string button1, button2, button3, button4;
 		item.GetDebugButtonNames(button1, button2, button3, button4);
 		m_DebugButtonWidget1.SetText(button1);
 		m_DebugButtonWidget2.SetText(button2);
 		m_DebugButtonWidget3.SetText(button3);
 		m_DebugButtonWidget4.SetText(button4);
-		
+		*/
 		
 	
 	}	

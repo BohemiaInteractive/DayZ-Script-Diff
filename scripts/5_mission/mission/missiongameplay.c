@@ -327,7 +327,7 @@ class MissionGameplay extends MissionBase
 		}
 		
 		//Radial quickbar
-		if (GetUApi().GetInputByID(UAUIQuickbarRadialOpen).LocalPress())
+		if (GetUApi().GetInputByID(UAUIQuickbarRadialOpen).LocalPress() && playerPB)
 		{
 			//open quickbar menu
 			if ( playerPB.IsAlive() && !playerPB.IsRaised() && !playerPB.IsUnconscious() && !playerPB.GetCommand_Vehicle() )	//player hands not raised, player is not in prone and player is not interacting with vehicle
@@ -407,7 +407,7 @@ class MissionGameplay extends MissionBase
 		}
 		
 		//Gestures
-		if ( GetUApi().GetInputByID(UAUIGesturesOpen).LocalPress() )
+		if ( GetUApi().GetInputByID(UAUIGesturesOpen).LocalPress() && playerPB)
 		{
 			//open gestures menu
 			if ( !playerPB.IsRaised() && (playerPB.GetActionManager().ActionPossibilityCheck(playerPB.m_MovementState.m_CommandTypeId) || playerPB.IsEmotePlaying()) && !playerPB.GetCommand_Vehicle() )

@@ -223,6 +223,7 @@ class TimerBase: Managed
 	protected float m_duration;
 	protected float m_time;
 	protected array<TimerBase> m_timerQueue;
+	protected float m_RunTime;
 
 	void ~TimerBase()
 	{
@@ -272,6 +273,7 @@ class TimerBase: Managed
 	{
 		if (IsRunning())
 		{
+			m_RunTime += timeslice;
 			m_time = m_time + timeslice;
 	
 			if (m_time >= m_duration)
@@ -314,6 +316,9 @@ class TimerBase: Managed
 	float GetRemaining() {
 			return m_duration - m_time;
 	}
+	
+	float GetRunTime()
+		return m_RunTime;
 		
 	protected void OnInit(int category)
 	{
@@ -329,6 +334,7 @@ class TimerBase: Managed
 		
 	protected void OnStart(float duration, bool loop)
 	{
+		m_RunTime = 0;
 		m_duration = duration;
 		m_loop = loop;
 		m_time = 0;

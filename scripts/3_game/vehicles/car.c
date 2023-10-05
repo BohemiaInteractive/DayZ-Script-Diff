@@ -336,6 +336,12 @@ class Car extends Transport
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native bool WheelIsLocked( int wheelIdx );
+	
+	//! How many wheel can be attached to a car (hubs only)
+	proto native int WheelCount();
+	
+	//! Number of actually attached wheels (hubs only)
+	proto native int WheelCountPresent();
 
 //-----------------------------------------------------------------------------
 

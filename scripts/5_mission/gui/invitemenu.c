@@ -13,11 +13,28 @@ class InviteMenu extends UIScriptedMenu
 		m_iTime = 15;
 
 		m_FullTime = new FullTimeData();
+
+		if (GetGame().GetMission())
+		{
+			GetGame().GetMission().AddActiveInputExcludes({"menu"});
+
+			GetGame().GetMission().GetHud().ShowHudUI(false);
+			GetGame().GetMission().GetHud().ShowQuickbarUI(false);
+		}
 	}
 	
 	void ~InviteMenu()
 	{
-		m_FullTime = null;
+		if (GetGame() && GetGame().GetMission())
+		{
+			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+			
+			GetGame().GetMission().GetHud().ShowHudUI(true);
+			GetGame().GetMission().GetHud().ShowQuickbarUI(true);
+	
+			GetGame().GetMission().GetOnInputPresetChanged().Remove(OnInputPresetChanged);
+			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
+		}
 	}
 	
 	override Widget Init()
@@ -28,17 +45,6 @@ class InviteMenu extends UIScriptedMenu
 		m_DescriptionText 	= TextWidget.Cast(layoutRoot.FindAnyWidget("txtDescription"));
 		m_bCancel 			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("bCancel"));
 		
-		#ifdef PLATFORM_CONSOLE
-		m_bCancel.Show(false);
-		
-		layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
-		RichTextWidget toolbar_b = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
-		toolbar_b.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		#else
-		m_bCancel.Show(true);
-		layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
-		#endif
-		
 		// player should sit down if possible
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		if (player && player.GetEmoteManager() && !player.IsRestrained() && !player.IsUnconscious()) 
@@ -46,6 +52,14 @@ class InviteMenu extends UIScriptedMenu
 			player.GetEmoteManager().CreateEmoteCBFromMenu(EmoteConstants.ID_EMOTE_SITA);
 			player.GetEmoteManager().GetEmoteLauncher().SetForced(EmoteLauncher.FORCE_DIFFERENT);
 		}
+		
+		if (GetGame().GetMission())
+		{		
+			GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+			GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		}
+		
+		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 		
 		SetTime(m_iTime);
 		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateTime, 1000, true);
@@ -56,10 +70,7 @@ class InviteMenu extends UIScriptedMenu
 	override void Update(float timeslice)
 	{
 		if (GetUApi().GetInputByID(UAUIBack).LocalPress())
-		{
 			Cancel();
-			Close();
-		}
 		
 		if (m_iTime <= 0)
 		{
@@ -69,6 +80,19 @@ class InviteMenu extends UIScriptedMenu
 			OnlineServices.GetInviteServerInfo(ip, port);
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(g_Game.ConnectFromJoin, ip, port);
 		}
+	}
+	
+	override bool OnClick(Widget w, int x, int y, int button)
+	{
+		super.OnClick(w, x, y, button);
+		
+		if (w.GetUserID() == IDC_CANCEL)
+		{
+			Cancel();
+			return true;
+		}
+
+		return false;
 	}
 	
 	void SetTime(int time)
@@ -108,5 +132,37 @@ class InviteMenu extends UIScriptedMenu
 		g_Game.SetGameState(DayZGameState.IN_GAME);
 		g_Game.SetLoadState(DayZLoadState.CONNECT_CONTROLLER_SELECT);
 		Close();
+	}
+	
+	protected void OnInputPresetChanged()
+	{
+		#ifdef PLATFORM_CONSOLE
+		UpdateControlsElements();
+		#endif
+	}
+
+	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
+	{
+		UpdateControlsElements();
+		UpdateControlsElementVisibility();
+	}
+	
+	protected void UpdateControlsElements()
+	{
+		RichTextWidget toolbarText = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
+		string context = string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#dialog_cancel", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		
+		toolbarText.SetText(context);
+	}
+	
+	protected void UpdateControlsElementVisibility()
+	{
+		bool toolbarShow = false;
+		#ifdef PLATFORM_CONSOLE
+		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		#endif
+		
+		layoutRoot.FindAnyWidget("BottomConsoleToolbar").Show(toolbarShow);
+		m_bCancel.Show(!toolbarShow);
 	}
 }

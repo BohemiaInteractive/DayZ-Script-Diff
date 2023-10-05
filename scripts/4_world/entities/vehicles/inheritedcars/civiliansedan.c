@@ -418,6 +418,11 @@ class CivilianSedan extends CarScript
 		GetInventory().CreateInInventory("CivSedanWheel");
 		GetInventory().CreateInInventory("CivSedanWheel");
 	}
+	
+	override static float GetPushForceCoefficientMultiplier()
+	{
+		return 1.5;
+	}
 }
 
 class CivilianSedan_Wine extends CivilianSedan

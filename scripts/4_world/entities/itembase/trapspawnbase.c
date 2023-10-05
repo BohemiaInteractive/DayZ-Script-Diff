@@ -483,9 +483,22 @@ class TrapSpawnBase extends ItemBase
 		
 		if (GetGame().IsServer())
 		{
-			SetOrientation(orientation);
-			SetPosition(position);
-			PlaceOnSurface();
+			vector rotation_matrix[3];
+			float direction[4];
+			Math3D.YawPitchRollMatrix(orientation, rotation_matrix);
+			Math3D.MatrixToQuat(rotation_matrix, direction);
+			InventoryLocation source = new InventoryLocation;
+			InventoryLocation destination = new InventoryLocation;
+			
+			if (GetInventory().GetCurrentInventoryLocation(source))
+			{		
+				destination.SetGroundEx(this, position, direction);
+				if (GetGame().IsMultiplayer())
+					player.ServerTakeToDst(source, destination);
+				else // singleplayer
+					player.GetInventory().TakeToDst(InventoryMode.LOCAL, source, destination);
+			}
+			
 			SetupTrapPlayer(PlayerBase.Cast(player), false);
 			SetIsDeploySound(true);
 			SetActive();

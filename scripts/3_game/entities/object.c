@@ -200,6 +200,18 @@ class Object extends IEntity
 	//! return true if selection containts action component, 'geometry' can be "fire" or "view" (default "" for mixed/legacy mode)
 	proto native bool IsActionComponentPartOfSelection(int componentIndex, string selectionName, string geometry = "");
 	
+	//! outputs action component index list by given selection, 'geometry' can be "fire" or "view" (default "" for mixed/legacy mode)
+	proto void GetActionComponentsForSelectionName(int level, string selectionName, TIntArray componentIndices);
+	
+	//! The center of the component, in model space
+	proto vector GetActionComponentCenter(int level, int componentIndex);
+	
+	//! The center of the component, in model space
+	proto vector GetActionComponentCenterOOB(int level, int componentIndex);
+	
+	//! The AABB of the component
+	proto void GetActionComponentMinMax(int level, int componentIndex, out vector min, out vector max);
+	
 	//! Flag to determine this object is marked to be deleted soon
 	proto native bool ToDelete();
 	
@@ -212,6 +224,7 @@ class Object extends IEntity
 	proto native	int			GetGeometryLevel();
 	proto native	int			GetFireGeometryLevel();
 	proto native	int			GetViewGeometryLevel();
+	proto native	int			GetMemoryLevel();
 
 #ifdef DEVELOPER
 	//! Conversion between enfusion and RV bone formats for hierarchy
@@ -219,8 +232,11 @@ class Object extends IEntity
 	proto 			bool		FromBonePivot(int pivot, out int level, out int bone);
 #endif
 
-	//! Get the pivot point of the bone from the component index in the LOD, lvel can be geometry, fire, or view
+	//! Get the pivot point of the bone from the component index in the LOD, level can be geometry, fire, view or memory
 	proto 			int			GetBonePivot(int level, int component);
+
+	//! Get the pivots assigned to the animation source at the specified LOD
+	proto native	void		GetBonePivotsForAnimationSource(int level, string animationSource, out TIntArray pivots);
 
 	//! returns local space, model space, world space position of the bone 
 	proto native	vector		GetBonePositionLS(int pivot);
@@ -762,6 +778,12 @@ class Object extends IEntity
 	bool CanProxyObstruct()
 	{
 		return HasProxyParts() || CanUseConstruction();
+	}
+	
+	//! can the object's own proxy geometry obstruct it? Currently checking 'ObjIntersectView'
+	bool CanProxyObstructSelf()
+	{
+		return false;
 	}
 	
 	bool CanBeIgnoredByDroppedItem()

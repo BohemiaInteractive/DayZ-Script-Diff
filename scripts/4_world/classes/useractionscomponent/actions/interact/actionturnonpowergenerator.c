@@ -8,7 +8,7 @@ class ActionTurnOnPowerGenerator: ActionInteractBase
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		PowerGenerator pg = PowerGenerator.Cast(target.GetObject());
+		PowerGeneratorBase pg = PowerGeneratorBase.Cast(target.GetObject());
 
 		if (pg)
 		{

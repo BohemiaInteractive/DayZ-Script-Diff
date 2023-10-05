@@ -56,6 +56,7 @@ class ITEM_GeneralData : ITEM_DataBase
 	bool disableBaseDamage;
 	bool disableContainerDamage;
 	bool disableRespawnDialog;
+	bool disableRespawnInUnconsciousness;
 
 };
 
@@ -82,6 +83,7 @@ class ITEM_PlayerData : ITEM_DataBase
 	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
 	bool disablePersonalLight;
 	bool disable2dMap;
+	bool usePlayerSpawnGearFile = false;
 
 };
 
@@ -213,6 +215,10 @@ class ITEM_HologramData : ITEM_DataBase
 	
 	override void InitServer()
 	{
+		disallowedTypesInUnderground = new TStringSet();
+		disallowedTypesInUnderground.Insert("FenceKit");
+		disallowedTypesInUnderground.Insert("TerritoryFlagKit");
+		disallowedTypesInUnderground.Insert("WatchtowerKit");
 	}
 	
 	override bool ValidateServer()
@@ -232,6 +238,7 @@ class ITEM_HologramData : ITEM_DataBase
 	bool disableHeightPlacementCheck;
 	bool disableIsUnderwaterCheck;
 	bool disableIsInTerrainCheck;
+	ref TStringSet disallowedTypesInUnderground;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------

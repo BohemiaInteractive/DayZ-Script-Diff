@@ -23,5 +23,10 @@
         "m_Icon": "",
         "m_TitleText": "#options_game_connectivity_disconnect",
         "m_DescriptionText": "#STR_MP_SESSION_LOST"
+    },
+    "5": {
+        "m_Icon": "",
+        "m_TitleText": "#server_browser_error_unknown",
+        "m_DescriptionText": ""
     }
 }

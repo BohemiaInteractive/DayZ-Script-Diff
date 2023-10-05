@@ -534,4 +534,44 @@ class PluginConfigViewer extends PluginBase
 	{
 		return GetConfig( class_path, ":" );
 	}
+
+	string GetBaseClasses(string path, string item)
+	{
+		string adjustedPath = path;
+		bool run = true;
+		TStringArray resultArr = new TStringArray();
+		resultArr.Insert(item);
+		while (run)
+		{
+			//Print("checking for path:'" + adjustedPath +"'");
+			string baseClass = "";
+			run = GetGame().ConfigGetBaseName( adjustedPath, baseClass );
+			if (baseClass)
+			{
+				TStringArray strs = new TStringArray;
+				adjustedPath.Split(" ",strs);
+				strs.Remove(strs.Count() - 1);
+				strs.Insert(baseClass);
+			
+				adjustedPath = string.Join(" ", strs);
+				resultArr.Insert(baseClass);
+				if (adjustedPath == path)
+					break;
+			}
+			
+		}
+		string result;
+		resultArr.Invert();
+		foreach (int i, string str: resultArr)
+		{
+			if (i != 0)
+				result += " >> " + str;
+			else
+				result += str;
+		}
+			
+		return result;
+	}
+
+
 }

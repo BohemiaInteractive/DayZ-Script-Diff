@@ -269,27 +269,6 @@ class ZombieBase extends DayZInfected
 
 	//-------------------------------------------------------------
 	//!
-	//! ModOverrides
-	//! 
-	// these functions are for modded overide in script command mods 
-
-	bool	ModCommandHandlerBefore(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
-	{
-		return false;
-	}
-
-	bool	ModCommandHandlerInside(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
-	{
-		return false;
-	}
-	
-	bool	ModCommandHandlerAfter(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
-	{
-		return false;
-	}
-
-	//-------------------------------------------------------------
-	//!
 	//! CommandHandlerDebug
 	//! 
 

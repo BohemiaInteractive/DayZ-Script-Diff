@@ -80,7 +80,7 @@ class InspectMenuNew extends UIScriptedMenu
 		if (w == m_item_widget)
 		{
 			GetGame().GetDragQueue().Call(this, "UpdateRotation");
-			g_Game.GetMousePos(m_characterRotationX, m_characterRotationY);
+			GetMousePos(m_characterRotationX, m_characterRotationY);
 			return true;
 		}
 		return false;

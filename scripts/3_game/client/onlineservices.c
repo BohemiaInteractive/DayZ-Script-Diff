@@ -298,7 +298,7 @@ class OnlineServices
 					{
 						if ( m_FriendsList.Contains( player.m_UID ) )
 						{
-							NotificationSystem.AddNotification( NotificationType.FRIEND_CONNECTED, 6, player.m_PlayerName + " " + "#ps4_invite_has_joined_your_session" );
+							NotificationSystem.AddNotification( NotificationType.FRIEND_CONNECTED, NotificationSystem.DEFAULT_TIME_DISPLAYED, player.m_PlayerName + " " + "#ps4_invite_has_joined_your_session" );
 						}
 					}
 					ClientData.m_LastNewPlayers.m_PlayerList.Clear();
@@ -545,8 +545,10 @@ class OnlineServices
 		GetClientServices();
 		if ( m_ClientServices )
 		{
-			if ( m_CurrentServerInfo )
-				m_ClientServices.GetSessionService().LeaveGameplaySessionAsync(m_CurrentServerInfo.m_HostIp, m_CurrentServerInfo.m_HostPort);
+			GetServersResultRow currentServerInfo = GetCurrentServerInfo();
+			
+			if ( currentServerInfo )
+				m_ClientServices.GetSessionService().LeaveGameplaySessionAsync(currentServerInfo.m_HostIp, currentServerInfo.m_HostPort);
 			else if ( m_CurrentServerIP != "" )
 				m_ClientServices.GetSessionService().LeaveGameplaySessionAsync(m_CurrentServerIP, m_CurrentServerPort);
 				

@@ -73,7 +73,7 @@ class BiosUserManager
 	
 		@param user the user to select.
 	*/
-	proto native void SelectUser(BiosUser user);
+	proto native bool SelectUser(BiosUser user);
 	
 	//! Returns the currently selected user.
 	/*!
@@ -87,16 +87,25 @@ class BiosUserManager
 	*/
 	proto native EBiosError GetUserDatabaseIdAsync();
 	
-	void SelectUserEx(BiosUser user)
+	bool SelectUserEx(BiosUser user)
 	{
+		bool success = false;
+		
 		BiosUser selectedUser = GetSelectedUser();
 		if (selectedUser && selectedUser != user && g_Game.GetGameState() != DayZGameState.MAIN_MENU)
 		{
-			SelectUser(user);
+			success = SelectUser(user);
 			g_Game.DisconnectSessionEx(DISCONNECT_SESSION_FLAGS_FORCE & ~DisconnectSessionFlags.SELECT_USER);
 		}
 		else
-			SelectUser(user);
+			success = SelectUser(user);
+		
+		if (!success)
+		{
+			NotificationSystem.AddNotification(NotificationType.GENERIC_ERROR, NotificationSystem.DEFAULT_TIME_DISPLAYED);
+		}
+		
+		return success;
 	}
 	
 	//! Callback function.
@@ -139,11 +148,13 @@ class BiosUserManager
 		}
 		else if ( !OnlineServices.ErrorCaught( error ) )
 		{
-			SelectUserEx( user );
-			if ( GetGame().GetMission() )
-				GetGame().GetMission().Reset();
-			OnGameNameChanged( user );
-			g_Game.SelectUser(GetGame().GetInput().GetUserGamepad(user));
+			if (SelectUserEx( user ))
+			{
+				if ( GetGame().GetMission() )
+					GetGame().GetMission().Reset();
+				OnGameNameChanged( user );
+				g_Game.SelectUser(GetGame().GetInput().GetUserGamepad(user));
+			}
 		}
 	}
 

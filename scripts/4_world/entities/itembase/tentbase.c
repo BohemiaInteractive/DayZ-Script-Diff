@@ -77,6 +77,12 @@ class TentBase extends ItemBase
 		return true;
 	}
 	
+	//! prevents showing cargo when outside the tent geometry
+	override bool CanProxyObstructSelf()
+	{
+		return true;
+	}
+	
 	override bool IsItemTent()
 	{
 		return true;

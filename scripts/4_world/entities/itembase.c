@@ -79,6 +79,8 @@ class ItemBase extends InventoryItem
 	protected bool m_CanBeDigged;
 	protected bool m_IsResultOfSplit //! distinguish if item has been created as new or it came from splitting (server only flag)
 	
+	protected ref EffectSound			m_DeployLoopSoundEx;
+	
 	string	m_SoundAttType;
 	// items color variables
 	int 	m_ColorComponentR;
@@ -265,7 +267,19 @@ class ItemBase extends InventoryItem
 		RegisterNetSyncVariableBool("m_IsTakeable");
 		RegisterNetSyncVariableBool("m_IsHologram");
 		
+		if (UsesGlobalDeploy())
+		{
+			RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
+			RegisterNetSyncVariableBool("m_IsDeploySound");
+		}
+		
 		m_LockSoundSet = ConfigGetString("lockSoundSet");
+	}
+	
+	// allows for checking whether or not we can safely register net sync variables without causing VMEs for duplicate registration
+	protected bool UsesGlobalDeploy()
+	{
+		return false;
 	}
 	
 	override int GetQuickBarBonus()
@@ -694,6 +708,25 @@ class ItemBase extends InventoryItem
 		return m_LastRegisteredWeaponID;
 	}
 	
+	void PlayDeployLoopSoundEx()
+	{		
+		if (!GetGame().IsDedicatedServer() && !m_DeployLoopSoundEx)
+		{		
+			m_DeployLoopSoundEx = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
+			m_DeployLoopSoundEx.SetAutodestroy(true);
+		}
+	}
+	
+	void StopDeployLoopSoundEx()
+	{
+		if (!GetGame().IsDedicatedServer())
+		{	
+			m_DeployLoopSoundEx.SetSoundFadeOut(0.5);
+			m_DeployLoopSoundEx.SoundStop();
+		}
+	}
+	
+	
 	/**
 	\brief Re-sets DamageSystem changes
 	\return storage version on which the config changes occured (default -1, to be overriden!)
@@ -704,9 +737,16 @@ class ItemBase extends InventoryItem
 		return -1;
 	}
 	
+	
+	
 	// -------------------------------------------------------------------------
 	void ~ItemBase()
 	{
+		#ifndef SERVER
+		if (m_DeployLoopSoundEx)
+			SEffectManager.DestroyEffect(m_DeployLoopSoundEx);
+		#endif
+		
 		if (GetGame() && GetGame().GetPlayer() && (!GetGame().IsDedicatedServer()))
 		{
 			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
@@ -736,6 +776,8 @@ class ItemBase extends InventoryItem
 		SEffectManager.DestroyEffect(m_LockingSound);
 	}
 
+	
+	
 	// -------------------------------------------------------------------------
 	static int GetDebugActionsMask()
 	{
@@ -998,15 +1040,10 @@ class ItemBase extends InventoryItem
 		return edible.GetFoodToxicity();
 
 	}
-*/
+	*/
 	
 	
 	// -------------------------------------------------------------------------
-	override void EECargoIn(EntityAI item)
-	{
-		super.EECargoIn(item);
-	}
-	
 	override void OnMovedInsideCargo(EntityAI container)
 	{
 		super.OnMovedInsideCargo(container);
@@ -1823,7 +1860,7 @@ class ItemBase extends InventoryItem
 		if (parent)
 		{
 			parent.OnAttachmentQuantityChangedEx(this, delta);
-		}
+		}		
 	}
 	
 	//! Called on server side when some attachment's quantity is changed. Call super.OnAttachmentQuantityChanged(item); first when overriding this event.
@@ -2095,14 +2132,10 @@ class ItemBase extends InventoryItem
 	}
 	
 	// -------------------------------------------------------------------------	
-	void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		//weight
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_TOTAL_WEIGHT, "Print Weight", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_TOTAL_WEIGHT_RECALC, "Print Weight Verbose", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_PLAYER_WEIGHT, "Print Player Weight", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_PLAYER_WEIGHT_RECALC, "Print Player Weight Verbose", FadeColors.LIGHT_GREY));
-		
+		super.GetDebugActions(outputList);
+			
 		//quantity
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ADD_QUANTITY, "Quantity +20%", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.REMOVE_QUANTITY, "Quantity -20%", FadeColors.LIGHT_GREY));
@@ -2136,36 +2169,14 @@ class ItemBase extends InventoryItem
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.RED));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.RED));
-
-		string button1, button2, button3, button4;
-		GetDebugButtonNames(button1, button2, button3, button4);
-		
-		if (button1)
-		{
-			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEBUG_ITEM_WATCH_BUTTON_RANGE_START, button1, FadeColors.LIGHT_GREY));
-		}
-
-		if (button2)
-		{
-			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEBUG_ITEM_WATCH_BUTTON_RANGE_START+1, button2, FadeColors.LIGHT_GREY));
-		}
-
-		if (button3)
-		{
-			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEBUG_ITEM_WATCH_BUTTON_RANGE_START+2, button3, FadeColors.LIGHT_GREY));
-		}
-
-		if (button4)
-		{
-			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEBUG_ITEM_WATCH_BUTTON_RANGE_START+3, button4, FadeColors.LIGHT_GREY));
-		}
 	}
 	
 	// -------------------------------------------------------------------------	
 	// -------------------------------------------------------------------------		
 	// -------------------------------------------------------------------------	
-	bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
+		super.OnAction(action_id, player, ctx);
 		if (action_id >= EActions.RECIPES_RANGE_START && action_id < EActions.RECIPES_RANGE_END)
 		{
 			PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast(GetPlugin(PluginRecipesManager));
@@ -2176,51 +2187,6 @@ class ItemBase extends InventoryItem
 				float anim_length = plugin_recipes_manager.GetRecipeLengthInSecs(idWithoutOffset);
 				float specialty_weight = plugin_recipes_manager.GetRecipeSpecialty(idWithoutOffset);
 			}
-		}
-		else if (action_id == EActions.GET_TOTAL_WEIGHT) //Prints total weight of item + its contents
-		{
-			WeightDebug.ClearWeightDebug();
-			#ifndef SERVER
-			Debug.Log("======================== "+  GetType() +" =================================");
-			#endif
-			Debug.Log("Weight:" + GetWeightEx().ToString());
-			Debug.Log("Weight excluding cargo and attachments:" + GetSingleInventoryItemWeightEx());
-			Debug.Log("----------------------------------------------------------------------------------------------");
-		}
-		else if (action_id == EActions.GET_TOTAL_WEIGHT_RECALC) //Prints total weight of item + its contents
-		{
-			WeightDebug.ClearWeightDebug();
-			WeightDebug.SetVerbosityFlags(WeightDebugType.RECALC_FORCED);
-			#ifndef SERVER
-			Debug.Log("======================== "+  GetType() +" RECALC ===========================");
-			#endif
-			Debug.Log("Weight:" + GetWeightEx(true).ToString());
-			Debug.Log("Weight excluding cargo and attachments:" + GetSingleInventoryItemWeightEx());
-			WeightDebug.PrintAll(this);
-			Debug.Log("----------------------------------------------------------------------------------------------");
-			WeightDebug.SetVerbosityFlags(0);
-		}
-		else if (action_id == EActions.GET_PLAYER_WEIGHT) //Prints total weight of item + its contents
-		{
-			WeightDebug.ClearWeightDebug();
-			#ifndef SERVER
-			Debug.Log("======================== PLAYER: "+player+" ===========================");
-			#endif
-			Debug.Log("New overall weight Player:"+player.GetWeightEx().ToString());
-
-			Debug.Log("----------------------------------------------------------------------------------------------");
-		}
-		else if (action_id == EActions.GET_PLAYER_WEIGHT_RECALC) //Prints total weight of item + its contents
-		{
-			WeightDebug.ClearWeightDebug();
-			WeightDebug.SetVerbosityFlags(WeightDebugType.RECALC_FORCED);
-			#ifndef SERVER
-			Debug.Log("======================== PLAYER RECALC: "+player+" ===========================");
-			#endif
-			Debug.Log("New overall weight Player:"+player.GetWeightEx(true).ToString());
-			WeightDebug.PrintAll(player);
-			Debug.Log("----------------------------------------------------------------------------------------------");
-			WeightDebug.SetVerbosityFlags(0);
 		}
 		#ifndef SERVER
 		else if (action_id == EActions.WATCH_PLAYER)
@@ -3173,6 +3139,21 @@ class ItemBase extends InventoryItem
 			#endif
 		}
 		
+		if (CanPlayDeployLoopSound())
+		{
+			PlayDeployLoopSoundEx();
+		}
+		
+		if (m_DeployLoopSoundEx && !CanPlayDeployLoopSound())
+		{
+			StopDeployLoopSoundEx();
+		}
+		
+		if (IsDeploySound())
+		{
+			PlayDeploySound();
+		}
+		
 		if (!dBodyIsDynamic(this) && m_WantPlayImpactSound)
 		{
 			PlayImpactSound(m_ConfigWeight, m_ImpactSpeed, m_ImpactSoundSurfaceHash);
@@ -3363,7 +3344,7 @@ class ItemBase extends InventoryItem
 	}
 	
 	//Calculates weight of single item without attachments and cargo
-	float GetSingleInventoryItemWeightEx()
+	override float GetSingleInventoryItemWeightEx()
 	{
 		//this needs to be first stored inside local variables, when returned directly during inside  return call, the result is completely different due to enforce script bug
 		float weightEx = GetWeightEx();//overall weight of the item
@@ -3684,16 +3665,16 @@ class ItemBase extends InventoryItem
 		if (g_Game.IsServer())
 			return true;
 		
-		if (allow_client) return true;
+		if (allow_client)
+			return true;
+
 		if (GetGame().IsClient() && GetGame().IsMultiplayer()) 
 		{
 			Error("Attempting to change variable client side, variables are supposed to be changed on server only !!");
 			return false;
 		}
-		else
-		{
-			return true;			
-		}
+
+		return true;
 	}
 	
 	float GetItemModelLength()
@@ -3778,7 +3759,9 @@ class ItemBase extends InventoryItem
 
 	void SetLiquidType(int value, bool allow_client = false)
 	{
-		if (!IsServerCheck(allow_client)) return;
+		if (!IsServerCheck(allow_client))
+			return;
+
 		m_VarLiquidType = value;
 		SetVariableMask(VARIABLE_LIQUIDTYPE);
 	}
@@ -3842,7 +3825,10 @@ class ItemBase extends InventoryItem
 		{
 			m_AdminLog.OnPlacementComplete(player, this);
 		}
-		
+		if (GetGame().IsServer())
+		{
+			SetIsDeploySound(true);
+		}
 		super.OnPlacementComplete(player, position, orientation);
 	}
 		

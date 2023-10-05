@@ -1,86 +1,102 @@
-class MissionLoader extends UIScriptedWindow
+class JsonMissionLoaderData
 {
-	string				m_PathToMissions;
-	TextListboxWidget	m_WgtLstMsnList;
-	ButtonWidget		m_WgtBtnMsnPlay;
-	ButtonWidget		m_WgtBtnMsnClose;
-	
-	ref TStringArray		m_ListMissionsNames;
-	
-	void MissionLoader( int id )
+	ref TStringArray MissionPaths;
+
+	static JsonMissionLoaderData GetData()
 	{
-		m_Id = id;
-	}
+		JsonMissionLoaderData data;
 		
+		string path = CFG_FILE_MISSION_LIST;
+		
+		if (!FileExist(path))
+		{
+			DayZGame dzg = GetDayZGame();
+			
+			data = new JsonMissionLoaderData();
+			data.MissionPaths = {dzg.GetMissionFolderPath()};
+			JsonFileLoader<JsonMissionLoaderData>.JsonSaveFile(path, data);
+		}
+		else
+		{
+			JsonFileLoader<JsonMissionLoaderData>.JsonLoadFile( path, data );	
+		}
+		return data;
+	}
+}
+
+class MissionLoader extends UIScriptedMenu
+{
+	
+	protected TextListboxWidget			m_WgtLstMsnList;
+	protected ButtonWidget				m_WgtBtnMsnPlay;
+	protected ButtonWidget				m_WgtBtnMsnClose;
+	protected ref TStringArray			m_ListMissionsNames;
+	protected ref JsonMissionLoaderData m_MissionData;
+	
 	override Widget Init()
 	{
-		m_ListMissionsNames = GetMissionList();
+		m_MissionData = JsonMissionLoaderData.GetData();
 		
-		m_WgtRoot			= GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_mission_loader.layout", GetGame().GetUIManager().GetMenu().GetLayoutRoot() );	
+		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_mission_loader.layout");	
 		
-		m_WgtLstMsnList = TextListboxWidget.Cast( m_WgtRoot.FindAnyWidget("wgt_lst_missions") );
-		m_WgtBtnMsnPlay = ButtonWidget.Cast( m_WgtRoot.FindAnyWidget("wgt_btn_mission_play") );
-		m_WgtBtnMsnClose = ButtonWidget.Cast( m_WgtRoot.FindAnyWidget("wgt_btn_mission_close") );
-		
-		for ( int i = 0; i < m_ListMissionsNames.Count(); ++i )
+		m_WgtLstMsnList = TextListboxWidget.Cast( layoutRoot.FindAnyWidget("wgt_lst_missions") );
+		m_WgtBtnMsnPlay = ButtonWidget.Cast( layoutRoot.FindAnyWidget("wgt_btn_mission_play") );
+		m_WgtBtnMsnClose = ButtonWidget.Cast( layoutRoot.FindAnyWidget("wgt_btn_mission_close") );
+
+		foreach (string path:m_MissionData.MissionPaths)
 		{
-			string mission_name = m_ListMissionsNames.Get(i);
-			m_WgtLstMsnList.AddItem(mission_name, NULL, 0);
-		}
-
-		return m_WgtRoot;
-	}
-
-	private TStringArray GetMissionList()
-	{
-		string	file_name;
-		int 	file_attr;
-		int		flags;
-		TStringArray list = new TStringArray;
-		
-		m_PathToMissions = "$saves:\\missions";
-		
-		string path_find_pattern = m_PathToMissions+"\\*"; //*/
-		FindFileHandle file_handler = FindFile(path_find_pattern, file_name, file_attr, flags);
-		
-		bool found = true;
-		while ( found )
-		{				
-			if ( file_attr & FileAttr.DIRECTORY )
-			{
-				list.Insert(file_name);
-			}
-			
-			found = FindNextFile(file_handler, file_name, file_attr);;
+			m_WgtLstMsnList.AddItem(path, NULL, 0);
 		}
 		
-		return list;
+		return layoutRoot;
 	}
 
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
-		if ( w == m_WgtBtnMsnPlay )
-		{
-			int row_index = m_WgtLstMsnList.GetSelectedRow();
-			
-			string mission_name = m_ListMissionsNames.Get(row_index);
-			
-			string mission_path = m_PathToMissions+"\\"+mission_name;
-			
-			Log(mission_path);
-			
-			GetGame().PlayMission(mission_path);
-			
-			return true;
-		}
+		super.OnClick(w, x, y, button);
 		
 		if ( w == m_WgtBtnMsnClose )
 		{
-			CloseWindow();
+			Close();
 			
 			return true;
 		}
-		
+		else if ( w == m_WgtBtnMsnPlay )
+		{
+			int rowIndex = m_WgtLstMsnList.GetSelectedRow();
+			string missionPath = m_MissionData.MissionPaths.Get(rowIndex);
+			GetGame().PlayMission(missionPath);
+			return true;
+		}
 		return false;
-	}	
+	}
+	
+	
+	override bool OnDoubleClick(Widget w, int x, int y, int button)
+	{
+		super.OnClick(w, x, y, button);
+		
+		if (w == m_WgtLstMsnList)
+		{
+			int rowIndex = m_WgtLstMsnList.GetSelectedRow();
+			string missionPath = m_MissionData.MissionPaths.Get(rowIndex);
+			GetGame().PlayMission(missionPath);
+		}
+		return false;
+	}
+	
+	override bool OnKeyDown(Widget w, int x, int y, int key)
+	{
+		super.OnKeyDown(w,x,y,key);
+		switch (key)
+		{
+			case KeyCode.KC_ESCAPE:
+			{
+				Close();
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

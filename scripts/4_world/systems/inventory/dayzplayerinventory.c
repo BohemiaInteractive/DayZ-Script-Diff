@@ -912,7 +912,8 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			return true;
 		}
 		
-		if (!e.CanPerformEventEx(validation))
+		//! if it already happened on server, remote just needs to comply
+		if (!validation.m_IsRemote && !e.CanPerformEventEx(validation))
 		{
 			#ifdef DEVELOPER
 			if ( LogManager.IsInventoryMoveLogEnable() )

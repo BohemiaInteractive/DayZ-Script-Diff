@@ -77,6 +77,7 @@ class MissionServer extends MissionBase
 	{
 		super.OnInit();
 		CfgGameplayHandler.LoadData();
+		PlayerSpawnHandler.LoadData();
 		UndergroundAreaLoader.SpawnAllTriggerCarriers();
 		//Either pass consts in Init.c or insert all desired coords (or do both ;))
 		m_FiringPos = new array<vector>();
@@ -189,22 +190,20 @@ class MissionServer extends MissionBase
 	
 	void UpdatePlayersStats()
 	{
-		PluginLifespan module_lifespan;
-		Class.CastTo(module_lifespan, GetPlugin(PluginLifespan));
-		array<Man> players = new array<Man>;
+		PluginLifespan moduleLifespan;
+		Class.CastTo(moduleLifespan, GetPlugin(PluginLifespan));
+		array<Man> players = new array<Man>();
 		GetGame().GetPlayers(players);
 			
-		for (int i = 0; i < players.Count(); i++)
+		foreach (Man man : players)
 		{
 			PlayerBase player;
-			Class.CastTo(player, players.Get(i));
-			if (player)
+			if (Class.CastTo(player, man))
 			{
-				// NEW STATS API
-				player.StatUpdateByTime("playtime");
-				player.StatUpdateByPosition("dist");
+				player.StatUpdateByTime(AnalyticsManagerServer.STAT_PLAYTIME);
+				player.StatUpdateByPosition(AnalyticsManagerServer.STAT_DISTANCE);
 
-				module_lifespan.UpdateLifespan(player);
+				moduleLifespan.UpdateLifespan(player);
 			}
 		}
 		
@@ -489,8 +488,28 @@ class MissionServer extends MissionBase
 	PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)
 	{
 		string characterType;
-		//m_RespawnMode = GetGame().ServerConfigGetInt("setRespawnMode"); //todo - init somewhere safe
-		//SyncRespawnModeInfo(identity);
+		if (PlayerSpawnHandler.IsInitialized())
+		{
+			PlayerSpawnPreset presetData = PlayerSpawnHandler.GetRandomCharacterPreset();
+			if (presetData && presetData.IsValid())
+			{
+				characterType = presetData.GetRandomCharacterType();
+				if (CreateCharacter(identity, pos, ctx, characterType) != null)
+				{
+					PlayerSpawnHandler.ProcessEquipmentData(m_player,presetData);
+					return m_player;
+				}
+				else
+				{
+					ErrorEx("Failed to create character from type: " + characterType + ", using default spawning method");
+				}
+			}
+			else
+			{
+				ErrorEx("Failed to load PlayerSpawnPreset data properly, using default spawning method");
+			}
+		}
+		
 		// get login data for new character
 		if (ProcessLoginData(ctx) && (m_RespawnMode == GameConstants.RESPAWN_MODE_CUSTOM) && !GetGame().GetMenuDefaultCharacterData(false).IsRandomCharacterForced())
 		{

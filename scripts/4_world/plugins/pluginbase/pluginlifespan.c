@@ -217,24 +217,19 @@ class PluginLifespan extends PluginBase
 // Facial hair
 //-----------------------------
 	
-	void UpdateLifespan( PlayerBase player, bool force_update = false )
+	void UpdateLifespan(PlayerBase player, bool force_update = false)
 	{
-		if ( player != NULL )
+		if (player != null)
 		{
-			// NEW STATS API
-			if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
-			{
-				float player_playtime = player.StatGet("playtime");
-			}
-			else
-			{
-				player_playtime = m_FakePlaytime;
-			}
+			float playerPlaytime = m_FakePlaytime;
+
+			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+				playerPlaytime = player.StatGet(AnalyticsManagerServer.STAT_PLAYTIME);
 						
-			float player_beard = player_playtime - player.GetLastShavedSeconds();
-			player_beard = player_beard / 60.0;
+			float playerBeard = playerPlaytime - player.GetLastShavedSeconds();
+			playerBeard = playerBeard / 60.0;
 			
-			UpdateLifespanLevel( player, player_beard, force_update );
+			UpdateLifespanLevel(player, playerBeard, force_update);
 		}
 	} 
 

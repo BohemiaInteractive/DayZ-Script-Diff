@@ -172,6 +172,11 @@ class CfgGameplayHandler
 		return m_Data.GeneralData.disableRespawnDialog;
 	}
 	//----------------------------------------------------------------------------------
+	static bool GetDisableRespawnInUnconsciousness()
+	{
+		return m_Data.GeneralData.disableRespawnInUnconsciousness;
+	}
+	//----------------------------------------------------------------------------------
 	static float GetSprintStaminaModifierErc()
 	{
 		return m_Data.PlayerData.StaminaData.sprintStaminaModifierErc;
@@ -321,6 +326,11 @@ class CfgGameplayHandler
 		return m_Data.BaseBuildingData.ConstructionData.disableDistanceCheck;
 	}
 	//----------------------------------------------------------------------------------
+	static TStringSet GetDisallowedTypesInUnderground()
+	{
+		return m_Data.BaseBuildingData.HologramData.disallowedTypesInUnderground;
+	}
+	//----------------------------------------------------------------------------------
 	static bool GetHitIndicationOverrideEnabled() //TODO - ?
 	{
 		return m_Data.UIData.HitIndicationData.hitDirectionOverrideEnabled;
@@ -420,6 +430,11 @@ class CfgGameplayHandler
 	static bool GetAllowStaminaAffectInertia()
 	{
 		return m_Data.PlayerData.MovementData.allowStaminaAffectInertia;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetUsePlayerSpawnGearFile()
+	{
+		return m_Data.PlayerData.usePlayerSpawnGearFile;
 	}
 	//----------------------------------------------------------------------------------
 }

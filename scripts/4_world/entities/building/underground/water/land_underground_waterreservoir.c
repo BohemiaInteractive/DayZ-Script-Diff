@@ -1280,45 +1280,55 @@ class Land_Underground_WaterReservoir : BuildingBase
 
 		return debug_output;	
 	}
-
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		button1 = "Reset state";
-		button2 = "Drain";
-		button3 = "Fill";
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SPECIALIZED_ACTION1, "Reset state", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SPECIALIZED_ACTION2, "Drain", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SPECIALIZED_ACTION3, "Fill", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		
+		super.GetDebugActions(outputList);
 	}
 	
-	override void OnDebugButtonPressServer(int button_index)
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
-		switch (button_index)
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-		case 1:
-			ResetState();
-			ActualWaterLevelStageSettings(VALVE_INDEX_DRAIN);
-			PreviousWaterLevelStageSettings(VALVE_INDEX_DRAIN);
-			ActualWaterLevelStageSettings(VALVE_INDEX_FILL);
-			PreviousWaterLevelStageSettings(VALVE_INDEX_FILL);
-		break;
-		case 2:
-			ResetState();
-			m_ValveStates[VALVE_INDEX_DRAIN]				= 1;
-			m_PressureAnimationRequests[VALVE_INDEX_DRAIN]	= 1;
-			m_DrainValveWaterLevelStageIndex 				= 1;
-			m_DrainValvePressureLevelStageIndex 			= 1;
-			SetLastActiveValve(VALVE_INDEX_DRAIN);
-			SetSynchDirty();
-		break;
-		case 3:
-			ResetState();
-			m_ValveStates[VALVE_INDEX_FILL]					= 1;
-			m_PressureAnimationRequests[VALVE_INDEX_FILL] 	= 1;
-			m_FillValveWaterLevelStageIndex 				= 1;
-			m_FillValvePressureLevelStageIndex 				= 1;
-			SetLastActiveValve(VALVE_INDEX_FILL);
-			SetSynchDirty();
-		break;
+			if (action_id == EActions.SPECIALIZED_ACTION1)
+			{
+				ResetState();
+				ActualWaterLevelStageSettings(VALVE_INDEX_DRAIN);
+				PreviousWaterLevelStageSettings(VALVE_INDEX_DRAIN);
+				ActualWaterLevelStageSettings(VALVE_INDEX_FILL);
+				PreviousWaterLevelStageSettings(VALVE_INDEX_FILL);
+			}
+			else if (action_id == EActions.SPECIALIZED_ACTION2)
+			{
+				ResetState();
+				m_ValveStates[VALVE_INDEX_DRAIN]				= 1;
+				m_PressureAnimationRequests[VALVE_INDEX_DRAIN]	= 1;
+				m_DrainValveWaterLevelStageIndex 				= 1;
+				m_DrainValvePressureLevelStageIndex 			= 1;
+				SetLastActiveValve(VALVE_INDEX_DRAIN);
+			}
+			else if (action_id == EActions.SPECIALIZED_ACTION3)
+			{
+				ResetState();
+				m_ValveStates[VALVE_INDEX_FILL]					= 1;
+				m_PressureAnimationRequests[VALVE_INDEX_FILL] 	= 1;
+				m_FillValveWaterLevelStageIndex 				= 1;
+				m_FillValvePressureLevelStageIndex 				= 1;
+				SetLastActiveValve(VALVE_INDEX_FILL);
+				SetSynchDirty();
+			}
 		}
+		return false;
 	}
+	
+	
 #endif
 }
 

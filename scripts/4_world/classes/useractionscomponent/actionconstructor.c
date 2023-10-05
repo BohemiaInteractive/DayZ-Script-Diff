@@ -44,10 +44,8 @@ class ActionConstructor
 		actions.Insert(ActionPlantSeed);
 		actions.Insert(ActionDisinfectPlantBit);
 		actions.Insert(ActionTurnOnHeatpack);
-//		actions.Insert(ActionAttachToCharger);
 		actions.Insert(ActionTurnOnTransmitter);	
 		actions.Insert(ActionTurnOffTransmitter);
-		//actions.Insert(ActionWashHandsItem);
 		actions.Insert(ActionWashHandsItemContinuous);
 		actions.Insert(ActionTakeABiteCan);
 		actions.Insert(ActionForceABiteCan);
@@ -359,6 +357,7 @@ class ActionConstructor
 		actions.Insert(ActionSwitchLights);
 		actions.Insert(ActionCarHornShort);
 		actions.Insert(ActionCarHornLong);
+		actions.Insert(ActionPushCar);
 		
 		//Instant action - debug
 		actions.Insert(ActionDebug);

@@ -37,6 +37,21 @@ class ExplosivesBase : ItemBase
 	protected vector					m_ParticlePosition;
 	protected vector					m_ParticleOrientation;
 	
+	void ExplosivesBase()
+	{
+		m_DeleteTimer 	= new Timer();
+		m_AmmoTypes 	= new array<string>();
+
+		SetAmmoType(DEFAULT_AMMO_TYPE);		
+		SetParticleExplosion(ParticleList.INVALID); //! no effect
+		SetParticlePosition(WorldToModel(GetPosition()));
+		SetParticleOrientation(vector.Zero);
+		
+		RegisterNetSyncVariableBool("m_Armed");
+		RegisterNetSyncVariableBool("m_Defused");
+	}
+	
+	
 	override bool IsExplosive()
 	{
 		return true;
@@ -209,7 +224,8 @@ class ExplosivesBase : ItemBase
 		
 		OnDisarmed(pWithTool);
 	}
-	
+
+	void OnBeforeDisarm();
 	void OnDisarmed(bool pWithTool);
 	
 	bool CanBeDisarmed()
@@ -280,7 +296,7 @@ class ExplosivesBase : ItemBase
 		m_ParticleExplosionId = particle;
 	}
 
-	//! set position for smoke particle - needs to be in Local Space
+	//! set position for smoke particle - needs to be in Local Space 
 	void SetParticlePosition(vector local_pos)
 	{
 		m_ParticlePosition = local_pos;
@@ -337,17 +353,7 @@ class ExplosivesBase : ItemBase
 	void LockTriggerSlots();
 	void UnlockTriggerSlots();
 	
-	void ExplosivesBase()
-	{
-		m_DeleteTimer 	= new Timer();
-		m_AmmoTypes 	= new array<string>();
-
-		SetAmmoType(DEFAULT_AMMO_TYPE);		
-		SetParticleExplosion(ParticleList.INVALID); //! no effect
-		SetParticlePosition(WorldToModel(GetPosition()));
-		SetParticleOrientation(vector.Zero);
-		
-		RegisterNetSyncVariableBool("m_Armed");
-		RegisterNetSyncVariableBool("m_Defused");
-	}
+	void LockExplosivesSlots();
+	void UnlockExplosivesSlots();
+	
 }

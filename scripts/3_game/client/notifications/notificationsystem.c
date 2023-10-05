@@ -1,4 +1,4 @@
-const static float NOTIFICATION_FADE_TIME = 3.0;
+const static float NOTIFICATION_FADE_TIME = 3.0; //! DEPRECATED (moved into NotificationSystem)
 
 enum NotificationType
 {
@@ -7,6 +7,7 @@ enum NotificationType
 	JOIN_FAIL_GET_SESSION,
 	CONNECT_FAIL_GENERIC,
 	DISCONNECTED,
+	GENERIC_ERROR,
 	//Please add types before this item
 	NOTIFICATIONS_END
 }
@@ -16,26 +17,29 @@ class NotificationRuntimeData
 	ref NotificationData	m_StaticData;
 	
 	float					m_NotificationTime;
+	float					m_TimeRemaining;
 	string					m_DetailText;
 	
-	void NotificationRuntimeData( float time, NotificationData data, string detail_text )
+	void NotificationRuntimeData(float time, NotificationData data, string detail_text)
 	{
-		m_NotificationTime	= time + NOTIFICATION_FADE_TIME;
+		m_NotificationTime	= time;
+		m_TimeRemaining		= time;
 		m_StaticData		= data;
-		if ( detail_text != "" )
+
+		if (detail_text != "")
 			m_DetailText	= detail_text;
 		else
 			m_DetailText	= m_StaticData.m_DescriptionText;
 	}
-	
-	void SetTime( float time )
-	{
-		m_NotificationTime = time;
-	}
-	
+
 	float GetTime()
 	{
 		return m_NotificationTime;
+	}
+	
+	float GetRemainingTime()
+	{
+		return m_TimeRemaining;
 	}
 	
 	string GetIcon()
@@ -52,21 +56,36 @@ class NotificationRuntimeData
 	{
 		return m_DetailText;
 	}
+	
+	void UpdateRemainingTime(float updateInterval)
+	{
+		m_TimeRemaining -= updateInterval;
+	}
+	
+	//! DEPRECATED
+	void SetTime(float time);
 }
 
 class NotificationSystem
 {
-	protected static const string								JSON_FILE_PATH = "Scripts/Data/notifications.json";					
-	protected static const int									MAX_NOTIFICATIONS = 5;					
+	const int DEFAULT_TIME_DISPLAYED 	= 10;
+	const float NOTIFICATION_FADE_TIME 	= 3.0;
+
+	protected static const string JSON_FILE_PATH = "Scripts/Data/notifications.json";					
+	protected static const int MAX_NOTIFICATIONS = 5;
+
+	private static const float UPDATE_INTERVAL_THRESHOLD = 1.0;
 	
 	protected static ref NotificationSystem						m_Instance;
-				
+	
 	protected ref array<ref NotificationRuntimeData>			m_TimeArray;
 	protected ref array<ref NotificationRuntimeData>			m_DeferredArray;
 	protected ref map<NotificationType, ref NotificationData>	m_DataArray;
 	
-	ref ScriptInvoker									m_OnNotificationAdded = new ScriptInvoker;
-	ref ScriptInvoker									m_OnNotificationRemoved = new ScriptInvoker;
+	private static float m_TimeElapsed;
+	
+	ref ScriptInvoker m_OnNotificationAdded = new ScriptInvoker();
+	ref ScriptInvoker m_OnNotificationRemoved = new ScriptInvoker();
 	
 	static void InitInstance()
 	{
@@ -89,10 +108,9 @@ class NotificationSystem
 	
 	void NotificationSystem()
 	{
-		#ifndef WORKBENCH
-		m_TimeArray = new array<ref NotificationRuntimeData>;
-		m_DeferredArray = new array<ref NotificationRuntimeData>;
-		#endif
+		m_TimeElapsed 	= 0.0;
+		m_TimeArray 	= new array<ref NotificationRuntimeData>();
+		m_DeferredArray = new array<ref NotificationRuntimeData>();
 	}
 	
 	/**
@@ -103,11 +121,11 @@ class NotificationSystem
 	@param detail_text additional text that can be added to the notification under the title - will not display additional text if not set
 	@param icon the icon that is displayed in the notification - will use default icon if not set
 	*/
-	static void SendNotificationToPlayerExtended( Man player, float show_time, string title_text, string detail_text = "", string icon = "" )
+	static void SendNotificationToPlayerExtended(Man player, float show_time, string title_text, string detail_text = "", string icon = "")
 	{
-		if ( player )
+		if (player)
 		{
-			SendNotificationToPlayerIdentityExtended( player.GetIdentity(), show_time, title_text, detail_text, icon );
+			SendNotificationToPlayerIdentityExtended(player.GetIdentity(), show_time, title_text, detail_text, icon);
 		}
 	}
 	
@@ -119,7 +137,7 @@ class NotificationSystem
 	@param detail_text additional text that can be added to the notification under the title - will not display additional text if not set
 	@param icon the icon that is displayed in the notification - will use default icon if not set
 	*/
-	static void SendNotificationToPlayerIdentityExtended( PlayerIdentity player, float show_time, string title_text, string detail_text = "", string icon = "" )
+	static void SendNotificationToPlayerIdentityExtended(PlayerIdentity player, float show_time, string title_text, string detail_text = "", string icon = "")
 	{
 		ScriptRPC rpc = new ScriptRPC();
 		
@@ -138,11 +156,11 @@ class NotificationSystem
 	@param show_time amount of time this notification is displayed
 	@param detail_text additional text that can be added to the notification under the title - will not display additional text if not set
 	*/
-	static void SendNotificationToPlayer( Man player, NotificationType type, float show_time, string detail_text = "" )
+	static void SendNotificationToPlayer(Man player, NotificationType type, float show_time, string detail_text = "")
 	{
-		if ( player )
+		if (player)
 		{
-			SendNotificationToPlayerIdentity( player.GetIdentity(), type, show_time, detail_text );
+			SendNotificationToPlayerIdentity(player.GetIdentity(), type, show_time, detail_text);
 		}
 	}
 	
@@ -170,20 +188,19 @@ class NotificationSystem
 	@param show_time amount of time this notification is displayed
 	@param detail_text additional text that can be added to the notification under the title - will not display additional text if not set
 	*/
-	static void AddNotification( NotificationType type, float show_time, string detail_text = "" )
+	static void AddNotification(NotificationType type, float show_time, string detail_text = "")
 	{
-		if ( m_Instance.m_TimeArray.Count() < MAX_NOTIFICATIONS )
+		if (m_Instance.m_TimeArray.Count() < MAX_NOTIFICATIONS)
 		{
-			float time = GetGame().GetTickTime() + show_time;
-			NotificationRuntimeData data = new NotificationRuntimeData(time, m_Instance.GetNotificationData( type ), detail_text);
+			NotificationRuntimeData data = new NotificationRuntimeData(show_time, m_Instance.GetNotificationData(type), detail_text);
 			
-			m_Instance.m_TimeArray.Insert( data );
-			m_Instance.m_OnNotificationAdded.Invoke( data );
+			m_Instance.m_TimeArray.Insert(data);
+			m_Instance.m_OnNotificationAdded.Invoke(data);
 		}
 		else
 		{
-			NotificationRuntimeData data_def = new NotificationRuntimeData(show_time, m_Instance.GetNotificationData( type ), detail_text);
-			m_Instance.m_DeferredArray.Insert( data_def );
+			NotificationRuntimeData dataDeferred = new NotificationRuntimeData(show_time, m_Instance.GetNotificationData(type), detail_text);
+			m_Instance.m_DeferredArray.Insert(dataDeferred);
 		}
 	}
 	
@@ -194,96 +211,106 @@ class NotificationSystem
 	@param detail_text additional text that can be added to the notification under the title - will not display additional text if not set
 	@param icon the icon that is displayed in the notification - will use default icon if not set
 	*/
-	static void AddNotificationExtended( float show_time, string title_text, string detail_text = "", string icon = "" )
+	static void AddNotificationExtended(float show_time, string title_text, string detail_text = "", string icon = "")
 	{
-		if ( m_Instance.m_TimeArray.Count() < MAX_NOTIFICATIONS )
+		if (m_Instance.m_TimeArray.Count() < MAX_NOTIFICATIONS)
 		{
-			float time = GetGame().GetTickTime() + show_time;
+			NotificationData tempData = new NotificationData(icon, title_text);
+			NotificationRuntimeData data = new NotificationRuntimeData(show_time, tempData, detail_text);
 			
-			NotificationData temp_data = new NotificationData( icon, title_text );
-			NotificationRuntimeData data = new NotificationRuntimeData(time, temp_data, detail_text);
-			
-			m_Instance.m_TimeArray.Insert( data );
-			m_Instance.m_OnNotificationAdded.Invoke( data );
+			m_Instance.m_TimeArray.Insert(data);
+			m_Instance.m_OnNotificationAdded.Invoke(data);
 		}
 		else
 		{
-			NotificationData temp_data_def = new NotificationData( icon, title_text );
-			NotificationRuntimeData data_def = new NotificationRuntimeData(show_time, temp_data_def, detail_text);
-			m_Instance.m_DeferredArray.Insert( data_def );
+			NotificationData tempDataDeferred = new NotificationData(icon, title_text);
+			NotificationRuntimeData dataDeferred = new NotificationRuntimeData(show_time, tempDataDeferred, detail_text);
+			m_Instance.m_DeferredArray.Insert(dataDeferred);
 		}
 	}
 	
 	static void Update(float timeslice)
 	{
-		if ( m_Instance )
+		if (m_Instance)
 		{
-			array<NotificationRuntimeData> to_remove = new array<NotificationRuntimeData>;
-			foreach ( NotificationRuntimeData data : m_Instance.m_TimeArray )
+			if (g_Game.GetGameState() != DayZGameState.IN_GAME && g_Game.GetGameState() != DayZGameState.MAIN_MENU)
+				return;
+	
+			m_TimeElapsed += timeslice;
+			if (m_TimeElapsed >= UPDATE_INTERVAL_THRESHOLD)
 			{
-				if ( data.GetTime() < GetGame().GetTickTime() )
+				array<NotificationRuntimeData> expiredNotifications = new array<NotificationRuntimeData>();
+				foreach (NotificationRuntimeData visibleNotificationData : m_Instance.m_TimeArray)
 				{
-					to_remove.Insert( data );
-				} 
-			}
-			
-			foreach ( NotificationRuntimeData data2 : to_remove )
-			{
-				m_Instance.m_TimeArray.RemoveItem( data2 );
-				m_Instance.m_OnNotificationRemoved.Invoke( data2 );
-				
-				if ( m_Instance.m_DeferredArray.Count() > 0 )
-				{
-					NotificationRuntimeData data_def = m_Instance.m_DeferredArray.Get( m_Instance.m_DeferredArray.Count() - 1 );
-					float time = GetGame().GetTickTime() + data_def.GetTime();
-					data_def.SetTime( time );
-					m_Instance.m_TimeArray.Insert( data_def );
-					m_Instance.m_OnNotificationAdded.Invoke( data_def );
-					m_Instance.m_DeferredArray.Remove( m_Instance.m_DeferredArray.Count() - 1 );
+					if (visibleNotificationData.GetRemainingTime() <= 0.0)
+						expiredNotifications.Insert(visibleNotificationData);
+					else
+						visibleNotificationData.UpdateRemainingTime(UPDATE_INTERVAL_THRESHOLD);
 				}
+				
+				foreach (NotificationRuntimeData expiredNotificationData : expiredNotifications)
+				{
+					m_Instance.m_OnNotificationRemoved.Invoke(expiredNotificationData);
+					m_Instance.m_TimeArray.RemoveItem(expiredNotificationData);
+					
+					if (m_Instance.m_DeferredArray.Count() > 0)
+					{
+						int count = m_Instance.m_DeferredArray.Count();
+						NotificationRuntimeData deferredNotificationData = m_Instance.m_DeferredArray.Get(count - 1);
+						m_Instance.m_TimeArray.Insert(deferredNotificationData);
+						m_Instance.m_OnNotificationAdded.Invoke(deferredNotificationData);
+						m_Instance.m_DeferredArray.Remove(count - 1);
+					}
+				}
+	
+				m_TimeElapsed = 0;
 			}
 		}
 	}
 	
-	protected NotificationData GetNotificationData( NotificationType type )
+	protected NotificationData GetNotificationData(NotificationType type)
 	{
-		if ( m_DataArray.Contains(type) )
-		{
-			return m_DataArray.Get( type );
-		}
+		if (m_DataArray.Contains(type))
+			return m_DataArray.Get(type);
 		
 		return null;
 	}
 	
 	static void LoadNotificationData()
 	{
-		map<NotificationType, NotificationData> data_array;
-		m_Instance.m_DataArray = new map<NotificationType, ref NotificationData>;
-		JsonFileLoader<map<NotificationType, NotificationData>>.JsonLoadFile( JSON_FILE_PATH, data_array );
+		map<NotificationType, NotificationData> dataArray;
+		m_Instance.m_DataArray = new map<NotificationType, ref NotificationData>();
+		JsonFileLoader<map<NotificationType, NotificationData>>.JsonLoadFile(JSON_FILE_PATH, dataArray);
 		
-		m_Instance.m_DataArray.Copy( data_array );
+		m_Instance.m_DataArray.Copy(dataArray);
 		
-		array<int> types = new array<int>;
-		NotificationType type_curr = 0;
-		while ( type_curr != NotificationType.NOTIFICATIONS_END )
+		array<int> notificationTypes = new array<int>();
+		NotificationType notificationType = 0;
+		while (notificationType != NotificationType.NOTIFICATIONS_END)
 		{
-			types.Insert( type_curr );
-			type_curr++;
+			notificationTypes.Insert(notificationType);
+			notificationType++;
 		}
 		
-		for ( int i = 0; i < m_Instance.m_DataArray.Count(); i++ )
+		for (int i = 0; i < m_Instance.m_DataArray.Count(); ++i)
 		{
-			types.RemoveItem( m_Instance.m_DataArray.GetKey( i ) );
+			notificationTypes.RemoveItem(m_Instance.m_DataArray.GetKey(i));
 		}
 		
-		if ( types.Count() > 0 )
+		if (notificationTypes.Count() > 0)
 		{
-			foreach ( NotificationType type2 : types )
+			foreach (NotificationType notificationType2 : notificationTypes)
 			{
-				NotificationData data2 = new NotificationData( "please_add_an_icon", "please_add_a_title", "optional_description" );
-				m_Instance.m_DataArray.Insert( type2, data2 );
+				NotificationData notificationData = new NotificationData(
+					"please_add_an_icon",
+					"please_add_a_title",
+					"optional_description",
+				);
+
+				m_Instance.m_DataArray.Insert(notificationType2, notificationData);
 			}
-			JsonFileLoader<map<NotificationType, ref NotificationData>>.JsonSaveFile( JSON_FILE_PATH, m_Instance.m_DataArray );
+
+			JsonFileLoader<map<NotificationType, ref NotificationData>>.JsonSaveFile(JSON_FILE_PATH, m_Instance.m_DataArray);
 		}
 	}
 }

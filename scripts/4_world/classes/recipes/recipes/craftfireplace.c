@@ -24,14 +24,14 @@ class CraftFireplace extends RecipeBase
 		
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"WoodenStick");//you can insert multiple ingredients this way
-		InsertIngredient(0,"Firewood");//you can insert multiple ingredients this way
-		InsertIngredient(0,"Rag");//you can insert multiple ingredients this way
-		InsertIngredient(0,"BandageDressing");//you can insert multiple ingredients this way
-		InsertIngredient(0,"Paper");//you can insert multiple ingredients this way
-		InsertIngredient(0,"ItemBook");//you can insert multiple ingredients this way
-		InsertIngredient(0,"Bark_Birch");//you can insert multiple ingredients this way
-		InsertIngredient(0,"Bark_Oak");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"WoodenStick" , 		"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Firewood" , 			"FireplaceDeploy_firewood");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Rag" , 				"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"BandageDressing" ,	"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Paper" ,			 	"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"ItemBook" , 			"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Bark_Birch" , 		"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Bark_Oak" , 			"FireplaceDeploy");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing

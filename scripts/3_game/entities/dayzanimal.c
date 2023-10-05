@@ -116,6 +116,27 @@ class DayZCreature extends EntityAI
 	{
 		return true;
 	}
+
+	//-------------------------------------------------------------
+	//!
+	//! ModOverrides
+	//! 
+	// these functions are for modded overide in script command mods 
+
+	bool	ModCommandHandlerBefore(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
+	{
+		return false;
+	}
+
+	bool	ModCommandHandlerInside(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
+	{
+		return false;
+	}
+	
+	bool	ModCommandHandlerAfter(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
+	{
+		return false;
+	}
 }
 
 class DayZCreatureAI extends DayZCreature 
@@ -343,6 +364,150 @@ class DayZCreatureAI extends DayZCreature
 	{
 		return "";
 	}
+	
+	// ================
+	// CINEMATIC CONTROLLER
+	// ================
+	
+	DayZPlayer m_Cinematic_Player;
+	
+	void Cinematic_TakeControl(DayZPlayer player)
+	{
+		m_Cinematic_Player = player;
+	}
+
+	bool Cinematic_CanJump()
+	{
+		return true;
+	}
+	
+	override bool ModCommandHandlerBefore(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
+	{
+		if (!m_Cinematic_Player)
+		{
+			return super.ModCommandHandlerBefore(pDt, pCurrentCommandID, pCurrentCommandFinished);
+		}
+		
+		UAInterface input = m_Cinematic_Player.GetInputInterface();
+			
+		DayZCreatureAIInputController controller;
+		GetGame().GameScript.CallFunction(this, "GetInputController", controller, 0);
+			
+		if (!input || !controller)
+		{
+			return super.ModCommandHandlerBefore(pDt, pCurrentCommandID, pCurrentCommandFinished);
+		}
+		
+		float movementX = input.SyncedValue_ID(UAAimRight) - input.SyncedValue_ID(UAAimLeft);
+		
+		float maxTurnSpeed = 100.0;
+		movementX = Math.Clamp(movementX * maxTurnSpeed * pDt, -180, 180);
+		
+		if (input.SyncedValue_ID(UALookAround) > 0)
+		{
+			movementX = 0;
+		}
+		
+		bool isJump = input.SyncedValue_ID(UAGetOver) > 0;
+		bool isMove = input.SyncedValue_ID(UAMoveForward) > 0;
+		
+		bool isRest = input.SyncedValue_ID(UAMoveBack) > 0;
+		bool isSleep = input.SyncedValue_ID(UAReloadMagazine) > 0;
+
+		float heading = GetOrientation()[0] + movementX;
+		
+		int iAlert = 0;
+		float fAlert = 0;
+		int iSpeed = 0;
+		float fSpeed = 0;
+		
+		if (isMove)
+		{
+			iAlert = 1;
+			fAlert = 0.2;
+			
+			bool isSprint = input.SyncedValue_ID(UATurbo) > 0;
+			bool isJog = input.SyncedValue_ID(UAWalkRunTemp) > 0;
+			bool isWalk = !isSprint && !isJog;
+			if (isSprint)
+			{
+				//! sprint
+				iSpeed = 3;
+			}
+			else if (isJog)
+			{
+				//! jog
+				iSpeed = 2;
+			}
+			else if (isWalk)
+			{
+				//! walk
+				iSpeed = 1;
+			}
+		}
+		
+		DayZAnimalInputController animalController;
+		if (Class.CastTo(animalController, controller))
+		{
+			animalController.OverrideBehaviourSlot(true, DayZAnimalBehaviourSlot.NON_SPECIFIC_THREAT);
+			animalController.OverrideBehaviourAction(true, DayZAnimalBehaviourAction.TRAVELING_INPUT);
+			
+			if (!isMove)
+			{
+				if (isRest)
+				{
+					iSpeed = 0;
+					animalController.OverrideBehaviourAction(true, DayZAnimalBehaviourAction.IDLE1_INPUT);
+				}
+				
+				if (isSleep)
+				{
+					iSpeed = 0;
+					animalController.OverrideBehaviourAction(true, DayZAnimalBehaviourAction.WALKING_INPUT);
+				}
+			}
+		}
+			
+		bool lowVel = GetVelocity(this).Length() < 0.5;
+		if (iSpeed > 0 && lowVel)
+		{
+			iAlert = 4;
+			fAlert = 1.0;
+			
+			iSpeed = 3;
+		}
+		
+		if (animalController)
+		{
+			switch (iSpeed)
+			{
+			case 0:
+				fSpeed = 0;
+				break;
+			case 1:
+				fSpeed = 2;
+				break;
+			case 2:
+				fSpeed = 3;
+				break;
+			case 3:
+				fSpeed = 5;
+				break;
+			}
+		}
+		
+		controller.OverrideTurnSpeed(true, Math.PI2 / pDt);
+		controller.OverrideMovementSpeed(true, fSpeed);
+		controller.OverrideHeading(true, heading * Math.DEG2RAD);
+		controller.OverrideAlertLevel(true, true, iAlert, fAlert);
+		
+		if (Cinematic_CanJump() && isJump)
+		{
+			controller.OverrideJump(true, 101, 2.0);
+		}
+
+		return true;
+	}
 }
 
 enum DayZAnimalConstants
@@ -566,27 +731,6 @@ class DayZAnimal extends DayZCreatureAI
 		{
 			return;
 		}
-	}
-	
-	//-------------------------------------------------------------
-	//!
-	//! ModOverrides
-	//! 
-	// these functions are for modded overide in script command mods 
-
-	bool ModCommandHandlerBefore(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
-	{
-		return false;
-	}
-
-	bool ModCommandHandlerInside(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
-	{
-		return false;
-	}
-	
-	bool ModCommandHandlerAfter(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
-	{
-		return false;
 	}
 	
 	bool m_DamageHitToProcess = false;

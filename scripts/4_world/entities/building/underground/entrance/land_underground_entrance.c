@@ -269,32 +269,40 @@ class Land_Underground_EntranceBase : House
 		return debug_output;
 	}
 	
-	override void OnDebugButtonPressServer(int button_index)
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		if (button_index == 1)
-		{
-			if (m_DoorState == EUndegroundEntranceState.CLOSED)
-				OpenServer(true);
-		}
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ACTIVATE_ENTITY, "Open", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEACTIVATE_ENTITY, "Close", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
 		
-		if (button_index == 2)
-		{
-			// just for debug controls
-			if (!m_AnimTimerDoorServer)
-				m_AnimTimerDoorServer = new AnimationTimer();
-	
-			if (m_DoorState == EUndegroundEntranceState.OPENING_G)
-			{
-				GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).Remove(SetDoorStateServer);
-				SetDoorStateServer(EUndegroundEntranceState.CLOSING_A);
-			}
-		}
+		super.GetDebugActions(outputList);
 	}
 	
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
-		button1 = "Open";
-		button2 = "Close";
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		{
+			if (action_id == EActions.ACTIVATE_ENTITY)
+			{
+				if (m_DoorState == EUndegroundEntranceState.CLOSED)
+					OpenServer(true);
+			}
+			else if (action_id == EActions.DEACTIVATE_ENTITY)
+			{
+				// just for debug controls
+				if (!m_AnimTimerDoorServer)
+					m_AnimTimerDoorServer = new AnimationTimer();
+		
+				if (m_DoorState == EUndegroundEntranceState.OPENING_G)
+				{
+					GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).Remove(SetDoorStateServer);
+					SetDoorStateServer(EUndegroundEntranceState.CLOSING_A);
+				}
+			}
+		}
+		return false;
 	}
 	#endif
 }

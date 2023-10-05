@@ -6,6 +6,11 @@ class Hologram
 	protected const int SPAWN_FLAGS 	= ECE_LOCAL;
 	#endif
 	
+	
+	#ifdef DIAG_DEVELOPER
+	string m_CollisionDetails;
+	#endif
+	
 	protected const string SUFFIX_MATERIAL_DEPLOYABLE 	= "_deployable.rvmat";
 	protected const string SUFFIX_MATERIAL_UNDEPLOYABLE = "_undeployable.rvmat";
 	protected const string SUFFIX_MATERIAL_POWERED 		= "_powered.rvmat";
@@ -264,7 +269,7 @@ class Hologram
 		
 		
 		#ifdef DIAG_DEVELOPER
-		DebugConfigValues();	
+		DebugConfigValues();
 		DestroyDebugCollisionBox();
 		#endif
 
@@ -277,7 +282,7 @@ class Hologram
 		CheckPowerSource();
 		RefreshVisual();
 
-		m_Projection.OnHologramBeingPlaced(m_Player);
+		m_Projection.OnHologramBeingPlaced( m_Player );
 	}
 	
 	vector AlignProjectionOnTerrain( float timeslice )
@@ -420,10 +425,22 @@ class Hologram
 	#endif
 
 	void EvaluateCollision(ItemBase action_item = null)
-	{	
-		if ( IsFloating() || IsHidden() || IsCollidingBBox(action_item) || IsCollidingPlayer() || IsClippingRoof() || !IsBaseViable() || IsCollidingGPlot() || IsCollidingZeroPos() || IsCollidingAngle() || !IsPlacementPermitted() || !HeightPlacementCheck() || IsUnderwater() || IsInTerrain() )
+	{
+		#ifdef DIAG_DEVELOPER
+		m_CollisionDetails = "";
+		#endif
+
+		if (!m_Player.CanPlaceItem(m_Projection))
 		{
-			SetIsColliding( true );
+			#ifdef DIAG_DEVELOPER
+			m_CollisionDetails += "[Player]";
+			#endif
+			SetIsColliding(true);
+			
+		}
+		else if (IsFloating() || IsHidden() || IsCollidingBBox(action_item) || IsCollidingPlayer() || IsClippingRoof() || !IsBaseViable() || IsCollidingGPlot() || IsCollidingZeroPos() || IsCollidingAngle() || !IsPlacementPermitted() || !HeightPlacementCheck() || IsUnderwater() || IsInTerrain())
+		{
+			SetIsColliding(true);
 		}
 		else if ( m_Projection.IsInherited( TrapSpawnBase ))
 		{
@@ -784,11 +801,11 @@ class Hologram
 	{
 		if (CfgGameplayHandler.GetDisableIsPlacementPermittedCheck())
 			return true;
-		ItemBase item = m_Player.GetItemInHands();
-		bool isTrue = ( item && item.Type() == GetProjectionEntity().Type() && !item.CanBePlaced(m_Player, GetProjectionPosition()) );
-		isTrue = !isTrue; // ??????
+
+		bool isTrue = m_Parent && m_Parent.CanBePlaced(m_Player, GetProjectionPosition());
+
 		#ifdef DIAG_DEVELOPER
-		DebugText("IsPlacementPermitted(must be true): ", true, isTrue, " (Note: CanBePlaced function on item and projection type must be same as item type)");
+		DebugText("IsPlacementPermitted(must be true): ", true, isTrue, " (Note: ItemBase::CanBePlaced() return value)");
 		#endif
 		return isTrue;
 	}
@@ -1277,7 +1294,7 @@ class Hologram
 	void SetIsColliding( bool is_colliding )
 	{
 		#ifdef DIAG_DEVELOPER
-		DebugText("Is colliding: ", false, is_colliding);
+		DebugText("Is colliding: ", false, is_colliding, m_CollisionDetails);
 		#endif
 		m_IsColliding = is_colliding;
 	}

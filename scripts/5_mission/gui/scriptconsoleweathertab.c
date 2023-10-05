@@ -533,7 +533,13 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	
 	protected void SendRPC(DebugWeatherRPCData data)
 	{
-		GetGame().RPCSingleParam(null, ERPCs.DEV_SET_WEATHER, new Param1<DebugWeatherRPCData>(data), true, GetGame().GetPlayer().GetIdentity());
+		PlayerIdentity identity = null;
+		if (GetGame().GetPlayer())
+		{
+			identity = GetGame().GetPlayer().GetIdentity();
+		}
+		
+		GetGame().RPCSingleParam(null, ERPCs.DEV_SET_WEATHER, new Param1<DebugWeatherRPCData>(data), true, identity);
 	}
 	
 	protected void InvokeSendRPC()

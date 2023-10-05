@@ -357,7 +357,15 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	//========================================
 	override string GetFileName()
 	{
-		return CFG_FILE_DEBUG_PROFILE;
+		if (!FileExist(GetSubFolderName()))//---ALL LINES CONTAINING THIS COMMENT CAN BE REMOVED IN 1.23
+			return "$profile:debugProfile.cfg";//---ALL LINES CONTAINING THIS COMMENT CAN BE REMOVED IN 1.23
+		
+		return GetSubFolderName() + CFG_FILE_DEBUG_PROFILE;
+	}
+	
+	override string GetSubFolderName()
+	{
+		return CFG_FILE_DEBUG_DIR;
 	}
 
 	//========================================

@@ -323,7 +323,24 @@ class ReplaceDetonatorItemOnDisarmLambda : ReplaceDetonatorItemLambda
 				if (explosive)
 				{
 					explosive.Disarm();
-					explosive.SetTakeable(true);
+				}
+			}
+		}
+	}
+	
+	override void OnAbort()
+	{
+		super.OnAbort();
+		
+		RemoteDetonator detonator = RemoteDetonator.Cast(m_OldItem);
+		if (detonator)
+		{
+			if (detonator.GetRemotelyActivatedItemBehaviour())
+			{
+				ExplosivesBase explosive = ExplosivesBase.Cast(detonator.GetRemotelyActivatedItemBehaviour().GetPairDevice());
+				if (explosive)
+				{
+					explosive.LockExplosivesSlots();
 				}
 			}
 		}

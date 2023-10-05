@@ -59,7 +59,7 @@ class DayZIntroScenePC : DayZIntroScene
 	void CharacterRotationStart()
 	{
 		m_RotatingCharacter = true;
-		g_Game.GetMousePos(m_RotatingCharacterMouseX, m_RotatingCharacterMouseY);
+		GetMousePos(m_RotatingCharacterMouseX, m_RotatingCharacterMouseY);
 		
 		if (m_Character) 
 		{
@@ -90,7 +90,7 @@ class DayZIntroScenePC : DayZIntroScene
 			int actual_mouse_x;
 			int actual_mouse_y;
 			float coef;
-			g_Game.GetMousePos(actual_mouse_x, actual_mouse_y);
+			GetMousePos(actual_mouse_x, actual_mouse_y);
 		
 			m_DiffX = m_RotatingCharacterMouseX - actual_mouse_x;
 			

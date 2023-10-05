@@ -1306,13 +1306,8 @@ class MiscGameplayFunctions
 			return true;
 
 		cache.ObjectCenterPos = object.GetCenter();
-			
-		if (IsObjectObstructedProxy(object, cache, player))
-			return true;
-			
-		DayZPhysics.RaycastRV(cache.RaycastStart, cache.ObjectCenterPos, cache.ObjectContactPos, cache.ObjectContactDir, cache.ContactComponent, cache.HitObjects, object, GetGame().GetPlayer(), false, false, ObjIntersectFire, 0.0, CollisionFlags.ALLOBJECTS);
-			
-		return IsObjectObstructedFilter(object, cache, player);
+		
+		return IsObjectObstructedFilterEx(object, cache, player);
 	}
  	
 	static bool IsObjectObstructedProxy(Object object, IsObjectObstructedCache cache, PlayerBase player)
@@ -1366,6 +1361,51 @@ class MiscGameplayFunctions
 			//		}
 			//	}
 			//}
+		}
+		
+		return false;
+	}
+	
+	//! groups 'RaycastRVProxy' and 'RaycastRV' approaches into one method, allowes for comprehensive geometry override, if desired
+	static bool IsObjectObstructedFilterEx(Object object, IsObjectObstructedCache cache, PlayerBase player, int geometryTypeOverride = -1)
+	{
+		//first proxy geometries
+		RaycastRVParams rayInput = new RaycastRVParams(cache.RaycastStart, cache.ObjectCenterPos, player);
+		rayInput.flags = CollisionFlags.ALLOBJECTS;
+		if (geometryTypeOverride != -1)
+			rayInput.type = geometryTypeOverride; //default 'ObjIntersectView'
+		DayZPhysics.RaycastRVProxy(rayInput, cache.HitProxyObjects);
+		int count;
+		int i;
+		
+		if (cache.HitProxyObjects)
+		{
+			count = cache.HitProxyObjects.Count();
+			Object parent;
+			for (i = 0; i < count; i++)
+			{
+				if (cache.HitProxyObjects[i].hierLevel > 0) //parent has to exist, skipping nullcheck
+				{
+					parent = cache.HitProxyObjects[i].parent;
+					if (parent && !parent.IsMan() && parent.CanProxyObstruct())
+					{
+						if (parent != object || (parent == object && object.CanProxyObstructSelf()))
+							return true;
+					}	
+				}
+			}
+		}
+		
+		//second, regular raycast
+		int geometry = ObjIntersectFire; //default for the RV raycast
+		if (geometryTypeOverride != -1)
+			geometry = geometryTypeOverride;
+		DayZPhysics.RaycastRV(cache.RaycastStart, cache.ObjectCenterPos, cache.ObjectContactPos, cache.ObjectContactDir, cache.ContactComponent, cache.HitObjects, object, GetGame().GetPlayer(), false, false, geometry, 0.0, CollisionFlags.ALLOBJECTS);
+		count = cache.HitObjects.Count();
+		for (i = 0; i < count; i++ )
+		{
+			if (cache.HitObjects[i].CanObstruct())
+				return true;
 		}
 		
 		return false;
@@ -1626,8 +1666,17 @@ class MiscGameplayFunctions
 			outputObjects.Insert(child);
 			child = child.GetSibling();
 		}
+	}
+	
+	static void SoakItemInsideParentContainingLiquidAboveThreshold(notnull ItemBase item, notnull ItemBase parent, float liquidQuantityThresholdPercentage = 0.05)
+	{
+		if (g_Game.IsServer())
+		{
+			if (parent.GetLiquidType() != 0 && parent.GetQuantityNormalized() > liquidQuantityThresholdPercentage)
+				item.SetWetMax();
+		}
 	}	
-};
+}
 
 class DestroyItemInCorpsesHandsAndCreateNewOnGndLambda : ReplaceAndDestroyLambda
 {
@@ -1676,7 +1725,6 @@ class IsObjectObstructedCache // Pretending this is a struct
 	// Only inside data
 	void ClearCache()
 	{		
-		// TODO: What is fastest to assign to vector, "0 0 0" or Vector(0, 0, 0) ?
 		ObjectCenterPos = "0 0 0";
 		ObjectContactPos = "0 0 0";
 		ObjectContactDir = "0 0 0";
@@ -1684,10 +1732,4 @@ class IsObjectObstructedCache // Pretending this is a struct
 		HitProxyObjects.Clear();
 		HitObjects.Clear();
 	}
-	
-	// Clear everything
-	/*void Clear()
-	{
-		
-	}*/
 }

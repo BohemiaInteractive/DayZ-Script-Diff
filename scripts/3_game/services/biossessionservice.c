@@ -162,17 +162,17 @@ class BiosSessionService
 						g_Game.GetUIManager().CloseAll();
 						if (!g_Game.GetUIManager().EnterScriptedMenu( MENU_INVITE_TIMER, null ))
 						{
-							NotificationSystem.AddNotification( NotificationType.CONNECT_FAIL_GENERIC, 6 );
+							NotificationSystem.AddNotification( NotificationType.CONNECT_FAIL_GENERIC, NotificationSystem.DEFAULT_TIME_DISPLAYED );
 						}
 					}
 					else
 					{
-						NotificationSystem.AddNotification( NotificationType.JOIN_FAIL_GET_SESSION, 6 );
+						NotificationSystem.AddNotification( NotificationType.JOIN_FAIL_GET_SESSION, NotificationSystem.DEFAULT_TIME_DISPLAYED );
 					}
 				}
 				else
 				{
-					NotificationSystem.AddNotification( NotificationType.INVITE_FAIL_SAME_SERVER, 6, "#ps4_already_in_session" );
+					NotificationSystem.AddNotification( NotificationType.INVITE_FAIL_SAME_SERVER, NotificationSystem.DEFAULT_TIME_DISPLAYED, "#ps4_already_in_session" );
 				}
 				break;
 			}

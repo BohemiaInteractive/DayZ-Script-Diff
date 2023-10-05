@@ -42,15 +42,12 @@ class ActionDigWorms: ActionContinuousBase
 		if (player.IsPlacingLocal())
 			return false;
 		
-		// Check if player is standing on terrain
-		vector plr_pos = player.GetPosition();
-		float height = GetGame().SurfaceY(plr_pos[0], plr_pos[2]);
-		height = plr_pos[1] - height;
-		
-		if (height > 0.4)
-			return false; // Player is not standing on ground
-		
-		return IsTargetFertile(target);
+		return IsTargetFertile(target) && IsPlayerOnGround(player);
+	}
+	
+	override bool ActionConditionContinue(ActionData action_data)
+	{
+		return IsPlayerOnGround(action_data.m_Player);
 	}
 	
 	override bool SetupAction( PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL )
@@ -113,5 +110,14 @@ class ActionDigWorms: ActionContinuousBase
 		}
 		
 		return false;
+	}
+	
+	bool IsPlayerOnGround(PlayerBase player)
+	{
+		vector position = player.GetPosition();
+		float heightDiff = GetGame().SurfaceY(position[0], position[2]);
+		heightDiff = position[1] - heightDiff;
+		
+		return heightDiff <= 0.4; // Player is considered on ground
 	}
 };

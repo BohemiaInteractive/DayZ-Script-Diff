@@ -34,7 +34,7 @@ class CAContinuousFillPowerGenerator : CAContinuousFill
 			return UA_ERROR;
 		}
 		
-		PowerGenerator pg = PowerGenerator.Cast(action_data.m_Target.GetObject()); // get power generator
+		PowerGeneratorBase pg = PowerGeneratorBase.Cast(action_data.m_Target.GetObject()); // get power generator
 		
 		if ( pg.GetFuel() >= pg.GetMaxFuel() )
 		{
@@ -77,7 +77,7 @@ class CAContinuousFillPowerGenerator : CAContinuousFill
 		
 		if ( GetGame().IsServer() )
 		{
-			PowerGenerator pg = PowerGenerator.Cast(action_data.m_Target.GetObject()); // get power generator
+			PowerGeneratorBase pg = PowerGeneratorBase.Cast(action_data.m_Target.GetObject()); // get power generator
 			int consumed_fuel = pg.AddFuel( m_SpentQuantity );
 			action_data.m_MainItem.AddQuantity( -consumed_fuel );
 		}

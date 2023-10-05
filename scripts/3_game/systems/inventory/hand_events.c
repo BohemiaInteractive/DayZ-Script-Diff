@@ -202,9 +202,14 @@ class HandEventTake extends HandEventBase
 		return GameInventory.CheckMoveToDstRequest(m_Player, GetSrc(), GetDst(), GameInventory.c_MaxItemDistanceRadius);
 	}
 	
-	override bool CanPerformEvent ()
+	override bool CanPerformEventEx(InventoryValidation validation)
 	{
-		if (false == GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
+		if (validation.m_IsJuncture)
+		{
+			return true;
+		}
+		
+		if (!GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
 		{
 			#ifdef DEVELOPER
 			if ( LogManager.IsInventoryHFSMLogEnable() )
@@ -215,9 +220,10 @@ class HandEventTake extends HandEventBase
 			//hndDebugPrint("[desync] HandleInputData man=" + Object.GetDebugName(m_Player) + " CANNOT perform ev=" + DumpToString());
 			return false;
 		}
-		return true;
+		
+		return super.CanPerformEventEx(validation);
 	}
-
+	
 	override bool AcquireInventoryJunctureFromServer (notnull Man player)
 	{
 		InventoryLocation src = GetSrc();

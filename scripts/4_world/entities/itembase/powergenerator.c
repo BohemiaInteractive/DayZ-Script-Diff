@@ -1,4 +1,4 @@
-class PowerGenerator extends ItemBase
+class PowerGeneratorBase extends ItemBase
 {
 	float						m_Fuel;
 	private static float		m_FuelTankCapacity; // Capacity in ml.
@@ -24,7 +24,7 @@ class PowerGenerator extends ItemBase
 	protected ref UniversalTemperatureSourceLambdaEngine m_UTSLEngine;
 	
 	// Constructor
-	void PowerGenerator()	
+	void PowerGeneratorBase()	
 	{
 		SetEventMask(EntityEvent.INIT); // Enable EOnInit event
 		
@@ -34,7 +34,7 @@ class PowerGenerator extends ItemBase
 		RegisterNetSyncVariableBool("m_IsPlaceSound");
 	}
 	
-	void ~PowerGenerator()
+	void ~PowerGeneratorBase()
 	{
 		SEffectManager.DestroyEffect(m_Smoke);
 	}
@@ -385,4 +385,11 @@ class PowerGenerator extends ItemBase
 		
 		SetFuel(GetMaxFuel());
 	}
+}
+
+
+class PowerGenerator extends PowerGeneratorBase
+{
+
+
 }

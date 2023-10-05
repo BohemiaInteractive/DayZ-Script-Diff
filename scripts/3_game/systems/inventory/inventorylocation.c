@@ -312,7 +312,7 @@ class InventoryLocation
 				{
 #ifdef DIAG_DEVELOPER
 #ifdef SERVER
-					Error(string.Format("Item=%1 does not exist on server!", Object.GetDebugName(item)));
+					Debug.Log(string.Format("Item=%1 does not exist on server!", Object.GetDebugName(item)), "GROUND" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
 					break; // parent or item is not in bubble
@@ -335,7 +335,7 @@ class InventoryLocation
 				{
 #ifdef DIAG_DEVELOPER
 #ifdef SERVER
-					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "ATTACHMENT" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
 					break; // parent or item is not in bubble
@@ -363,7 +363,7 @@ class InventoryLocation
 				{
 #ifdef DIAG_DEVELOPER
 #ifdef SERVER
-					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "CARGO" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
 					break; // parent or item is not in bubble
@@ -383,7 +383,7 @@ class InventoryLocation
 				{
 #ifdef DIAG_DEVELOPER
 #ifdef SERVER
-					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "HANDS" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
 					break; // parent or item is not in bubble
@@ -411,7 +411,7 @@ class InventoryLocation
 				{
 #ifdef DIAG_DEVELOPER
 #ifdef SERVER
-					Error(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)));
+					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "PROXYCARGO" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
 					break; // parent or item is not in bubble
@@ -422,7 +422,7 @@ class InventoryLocation
 			}
 			default:
 			{
-				Error("ReadFromContext - really unknown location type, this should not happen, type=" + type);
+				ErrorEx("ReadFromContext - really unknown location type, this should not happen, type=" + type);
 				return false;
 			}
 		}

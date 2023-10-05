@@ -1,41 +1,42 @@
 class ActionExtinguishFireplaceByLiquidCB : ActionContinuousBaseCB
 {
-	private const float TIME_TO_REPEAT 				= 0.5;
-	private const float WETNESS_GAIN_MULTIPLIER 	= 1.0;
+	private const float TIME_TO_REPEAT 			= 0.5;
+	private const float WETNESS_GAIN_MULTIPLIER	= 1.0;
 	
 	override void CreateActionComponent()
 	{
-		m_ActionData.m_ActionComponent = new CAContinuousQuantityExtinguish( UAQuantityConsumed.FIREPLACE_LIQUID, TIME_TO_REPEAT, WETNESS_GAIN_MULTIPLIER );
+		m_ActionData.m_ActionComponent = new CAContinuousQuantityExtinguish(UAQuantityConsumed.FIREPLACE_LIQUID, TIME_TO_REPEAT, WETNESS_GAIN_MULTIPLIER);
 		CAContinuousQuantityExtinguish.Cast(m_ActionData.m_ActionComponent).MultiplyQuantityUsed(m_ActionData.m_MainItem.GetLiquidThroughputCoef());
 	}
-};
+}
 
-class ActionExtinguishFireplaceByLiquid: ActionContinuousBase
+class ActionExtinguishFireplaceByLiquid : ActionContinuousBase
 {
 	void ActionExtinguishFireplaceByLiquid()
 	{
-		m_CallbackClass = ActionExtinguishFireplaceByLiquidCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_EMPTY_VESSEL;
-		m_FullBody = true;
-		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_MEDIUM;
-		m_Text = "#extinguish";
+		m_CallbackClass 	= ActionExtinguishFireplaceByLiquidCB;
+		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_EMPTY_VESSEL;
+		m_SpecialtyWeight 	= UASoftSkillsWeight.ROUGH_MEDIUM;
+		m_FullBody 			= true;
+
+		m_Text 		= "#extinguish";
 	}
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINotRuinedAndEmpty;
-		m_ConditionTarget = new CCTObject(UAMaxDistances.SMALL);
+		m_ConditionItem 	= new CCINotRuinedAndEmpty();
+		m_ConditionTarget 	= new CCTObject(UAMaxDistances.SMALL);
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		Object target_object = target.GetObject();
+		Object targetObject = target.GetObject();
 		
-		if ( target_object.IsFireplace() )
+		if (targetObject.IsFireplace())
 		{
-			FireplaceBase fireplace_target = FireplaceBase.Cast( target_object );
+			FireplaceBase fireplace = FireplaceBase.Cast(targetObject);
 			
-			if ( fireplace_target.CanExtinguishFire() && !item.IsDamageDestroyed() && (item.GetLiquidType() & (GROUP_LIQUID_BLOOD | LIQUID_WATER | LIQUID_RIVERWATER | LIQUID_BEER)) )
+			if (fireplace.CanExtinguishFire() && !item.IsDamageDestroyed() && (item.GetLiquidType() & (GROUP_LIQUID_BLOOD | LIQUID_WATER | LIQUID_RIVERWATER | LIQUID_BEER)))
 			{
 				return true;
 			}
@@ -44,12 +45,17 @@ class ActionExtinguishFireplaceByLiquid: ActionContinuousBase
 		return false;
 	}
 	
-	override void OnEndServer( ActionData action_data )
+	override void OnStartAnimationLoop(ActionData action_data)
 	{
-		Object target_object = action_data.m_Target.GetObject();
-		FireplaceBase fireplace_target = FireplaceBase.Cast( target_object );
+		super.OnStartAnimationLoop(action_data);
 		
-		//reset fire state
-		fireplace_target.RefreshFireState();
+		FireplaceBase fireplace = FireplaceBase.Cast(action_data.m_Target.GetObject());
+		fireplace.SetExtinguishingState();
+	}
+	
+	override void OnEndServer(ActionData action_data)
+	{
+		FireplaceBase fireplace = FireplaceBase.Cast(action_data.m_Target.GetObject());		
+		fireplace.RefreshFireState();
 	}
 }

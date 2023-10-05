@@ -465,7 +465,7 @@ class RadialMenu : ScriptedWidgetEventHandler
 	{
 		int mouse_x;
 		int mouse_y;
-		GetGame().GetMousePos(mouse_x, mouse_y);
+		GetMousePos(mouse_x, mouse_y);
 		
 		float center_x;
 		float center_y;
@@ -483,7 +483,7 @@ class RadialMenu : ScriptedWidgetEventHandler
 	{
 		int mouse_x;
 		int mouse_y;
-		GetGame().GetMousePos(mouse_x, mouse_y);
+		GetMousePos(mouse_x, mouse_y);
 		
 		float center_x;
 		float center_y;

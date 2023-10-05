@@ -17,19 +17,23 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 	protected TextListboxWidget 	m_ConfigVariablesTextListbox;
 	protected ButtonWidget 			m_SelectedRowCopy;
 	protected ButtonWidget 			m_DumpParamButton;
+	protected TextWidget 			m_ClassPath;
+	
+	
 	protected Widget 				m_WgtClassesConfig;
 	protected PluginConfigViewer 	m_ModuleConfigViewer;
 	protected int					m_Row;
 	
 	void ScriptConsoleConfigTab(Widget root, ScriptConsole console)
 	{
-		m_WgtClassesConfig =  root.FindAnyWidget("ClassesPanel");
-		m_DumpParamButton	= ButtonWidget.Cast(root.FindAnyWidget("DumpParamButton"));
-		m_ObjectConfigFilter = EditBoxWidget.Cast(root.FindAnyWidget("ObjectConfigFilter"));
-		m_VariableConfigFilter = EditBoxWidget.Cast(root.FindAnyWidget("VariableConfigFilter"));
-		m_ConfigHierarchyTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("ConfigHierarchy"));
-		m_ConfigVariablesTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("ConfigVariables"));
-		m_SelectedRowCopy = ButtonWidget.Cast(root.FindAnyWidget("SelectedRowCopy"));
+		m_WgtClassesConfig 				= root.FindAnyWidget("ClassesPanel");
+		m_DumpParamButton				= ButtonWidget.Cast(root.FindAnyWidget("DumpParamButton"));
+		m_ObjectConfigFilter 			= EditBoxWidget.Cast(root.FindAnyWidget("ObjectConfigFilter"));
+		m_VariableConfigFilter 			= EditBoxWidget.Cast(root.FindAnyWidget("VariableConfigFilter"));
+		m_ConfigHierarchyTextListbox 	= TextListboxWidget.Cast(root.FindAnyWidget("ConfigHierarchy"));
+		m_ConfigVariablesTextListbox 	= TextListboxWidget.Cast(root.FindAnyWidget("ConfigVariables"));
+		m_SelectedRowCopy 				= ButtonWidget.Cast(root.FindAnyWidget("SelectedRowCopy"));
+		m_ClassPath 					= TextWidget.Cast(root.FindAnyWidget("ClassPath"));
 		
 		if (m_ConfigTextField)
 			m_ObjectConfigFilter.SetText(m_ConfigTextField);
@@ -74,9 +78,16 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 		{
 			TextListboxWidget wgt = TextListboxWidget.Cast(w);
 			wgt.GetItemData(row, 0,m_ConfigData);
+			RenderClassPath();
+			
 			return true;
 		}
 		return false;
+	}
+	
+	void RenderClassPath()
+	{
+		m_ClassPath.SetText(m_ModuleConfigViewer.GetBaseClasses(m_ConfigData.param4, m_ConfigData.param2));
 	}
 	
 	
@@ -380,6 +391,7 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 
 		string config_path = config_params.param4;
 		int deep = config_params.param5;
+		
 
 		string offset = "";
 		for (int i = 0; i < deep; i++)
@@ -417,6 +429,8 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 		m_ConfigHierarchyTextListbox.GetItemData(row, 0, config_params);
 		m_ConfigHierarchyTextListbox.GetItemData(row + 1, 0, config_params_next);
 
+		if (!config_params || !config_params_next)
+			return;
 		int deep = config_params.param5;
 		int deep_next = config_params_next.param5;
 		int max_count = m_ConfigHierarchyTextListbox.GetNumItems();
@@ -474,6 +488,7 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 			TStringArray variables;
 			string path = config_params.param4;
 			variables = m_ModuleConfigViewer.GetConfigVariables(path);
+
 			for (int i = 0; i < variables.Count(); i++)
 			{
 				string var = variables.Get(i);

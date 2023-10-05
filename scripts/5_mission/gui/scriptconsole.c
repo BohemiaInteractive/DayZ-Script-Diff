@@ -1,5 +1,143 @@
+class ScriptConsoleToolTipEventHandler : ScriptedWidgetEventHandler
+{
+	reference string HintMessage;
+	protected Widget m_Root;
+	
+	
+	protected float 			m_HoverTime;
+	protected bool				m_HoverSuccessTriggered;
+	protected Widget 			m_CurrentHoverWidget;
+	protected Widget 			m_HintWidgetRoot;
+	protected ImageWidget 		m_HintWidgetBackground;
+	protected RichTextWidget 	m_HintWidget;
+	
+	protected ref Timer m_Timer;
+	
+	void OnWidgetScriptInit(Widget w)
+	{
+		m_Root = w;
+		m_Root.SetHandler(this);
+		m_Root.SetFlags(WidgetFlags.VEXACTPOS);
+	}
+	
+	override bool OnMouseEnter(Widget w, int x, int y)
+	{
+		m_Timer = new Timer();
+		m_Timer.Run(0.1, this, "Tick", NULL, true);
+		
+		m_CurrentHoverWidget = w;
+		return true;
+	}
+	
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
+	{	
+		HoverInterrupt();
+		return true;
+	}
+	
+	protected bool Tick()
+	{
+		if (!m_Root.IsVisibleHierarchy())
+			HoverInterrupt();
+		if (m_CurrentHoverWidget && !m_HoverSuccessTriggered)
+		{
+			m_HoverTime += 0.1;
+			if (m_HoverTime > 1)
+			{
+				HoverSuccess();
+			}
+		}
+		return true;
+	}
+
+	protected void DisplayHint(string message)
+	{
+		if (message)
+		{
+			m_HintWidgetRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_hint.layout");
+			m_HintWidgetBackground = ImageWidget.Cast(m_HintWidgetRoot.FindAnyWidget("Background"));
+			m_HintWidget = RichTextWidget.Cast(m_HintWidgetRoot.FindAnyWidget("HintText"));
+			
+			m_HintWidgetRoot.Show(true);
+			m_HintWidget.SetText(message);
+			
+			int offsetX = 0;
+			int offsetY = 10;
+			
+			int screenW, screenH;
+			GetScreenSize(screenW, screenH);
+	
+			int mouseX, mouseY;
+			GetMousePos(mouseX,mouseY);
+			
+			float relativeX = mouseX / screenW;
+			float relativeY = mouseY / screenH;
+
+			int width, height;
+			m_HintWidget.GetTextSize(width, height);
+			if (relativeX > 0.8)
+				offsetX = -width - offsetX;
+			if (relativeY > 0.8)
+				offsetY = -height - offsetY;
+			
+			m_HintWidgetRoot.SetPos(mouseX + offsetX ,mouseY + offsetY);
+			m_HintWidgetBackground.SetScreenSize(width + 5, height + 5);
+			
+		}
+	}
+	
+	protected void HideHint()
+	{
+		if (m_HintWidgetRoot)
+			m_HintWidgetRoot.Show(false);
+	}
+	
+	
+	protected string GetMessage()
+	{
+		return HintMessage;
+	}
+	
+	protected void HoverSuccess()
+	{
+		m_HoverSuccessTriggered = true;
+		DisplayHint(GetMessage());
+	}
+	
+	protected void HoverInterrupt()
+	{
+		m_Timer = null;
+		m_HoverSuccessTriggered = false;
+		m_CurrentHoverWidget = null;
+		m_HoverTime = 0;
+		HideHint();
+	}
+}
+
+
+class JsonHintsData
+{
+	ref map<int, string> WidgetHintBindings;
+}
+
+
 class ScriptConsole extends UIScriptedMenu
 {
+	protected bool				m_HintEditMode;
+	protected float 			m_HoverTime;
+	protected bool				m_HoverSuccessTriggered;
+	protected Widget 			m_CurrentHoverWidget;
+	protected Widget 			m_HintWidgetRoot;
+	protected ImageWidget 		m_HintWidgetBackground;
+	protected Widget 			m_EditTooltipRoot;
+	protected RichTextWidget 	m_HintWidget;
+	protected ButtonWidget 		m_HintOkButton;
+	protected ButtonWidget 		m_HintCancelButton;
+	protected ButtonWidget 		m_HintClearButton;
+	protected EditBoxWidget 	m_HintInputText;
+	protected float 			m_PrevMouseX;
+	protected float 			m_PrevMouseY;
+	
 	//-------------------------------------
 	static const int TAB_GENERAL = 0;
 	static const int TAB_ITEMS = 1;
@@ -23,6 +161,46 @@ class ScriptConsole extends UIScriptedMenu
 	ButtonWidget 					m_CloseConsoleButton;
 	ButtonWidget 					m_Tab_buttons[TABS_COUNT];
 
+	
+	protected static const string HINTS_PATH_DEFAULT		= "Scripts/Data/internal/script_console_hints.json";
+	protected static const string HINTS_PATH_OPTIONAL 		= "$mission:script_console_hints.json";
+	
+	static ref JsonHintsData m_JsonData;
+	
+	const string NO_HINT_TEXT = "No hint";
+	
+	static void SaveData()
+	{
+		JsonFileLoader<JsonHintsData>.JsonSaveFile(HINTS_PATH_OPTIONAL, m_JsonData );
+	}
+	
+	
+	protected static JsonHintsData GetData()
+	{
+		string path = HINTS_PATH_OPTIONAL;
+		if ( !FileExist( path ) )
+			path = HINTS_PATH_DEFAULT;
+		
+		if ( !FileExist( path ) )
+			return null; //TODO: ERROR HANDLING
+		
+		JsonHintsData data;
+		JsonFileLoader<JsonHintsData>.JsonLoadFile( path, data );
+		
+		return data;
+	}
+	
+	void SetHintText(string text, Widget w)
+	{
+		if (m_JsonData && m_JsonData.WidgetHintBindings && w)
+		{
+			int hash = GetWidgetCombinedHash(w);
+			m_JsonData.WidgetHintBindings.Set(hash, text);
+			Print("setting: " + text);
+		}
+		HoverInterrupt();
+	}
+	
 	void ScriptConsole()
 	{
 		#ifndef SERVER
@@ -45,6 +223,8 @@ class ScriptConsole extends UIScriptedMenu
 			GetGame().GetMission().GetHud().ShowHudPlayer(true);
 			GetGame().GetMission().GetHud().ShowQuickbarPlayer(true);
 		}
+		if (m_HintWidgetRoot)
+			m_HintWidgetRoot.Unlink();
 		#endif
 		PluginItemDiagnostic plugin = PluginItemDiagnostic.Cast(GetPlugin(PluginItemDiagnostic));
 		if (plugin)
@@ -61,6 +241,13 @@ class ScriptConsole extends UIScriptedMenu
 		m_ConfigDebugProfile = PluginConfigDebugProfile.Cast(GetPlugin(PluginConfigDebugProfile));
 
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console.layout");
+		m_EditTooltipRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_tooltip_edit.layout", layoutRoot);
+		m_EditTooltipRoot.Show(false);
+		m_HintOkButton = ButtonWidget.Cast(m_EditTooltipRoot.FindAnyWidget("ButtonOk"));
+		m_HintCancelButton = ButtonWidget.Cast(m_EditTooltipRoot.FindAnyWidget("ButtonCancel"));
+		m_HintClearButton = ButtonWidget.Cast(m_EditTooltipRoot.FindAnyWidget("ButtonClear"));
+		m_HintInputText = EditBoxWidget.Cast(m_EditTooltipRoot.FindAnyWidget("InputText"));
+
 		m_ButtonsWindowWidget = layoutRoot.FindAnyWidget("TabButtons");
 		m_ButtonsWindowWidget.Show(true);
 		
@@ -94,8 +281,57 @@ class ScriptConsole extends UIScriptedMenu
 		return layoutRoot;
 	}
 	
-
+	protected void HideHint()
+	{
+		if (m_HintWidgetRoot)
+			m_HintWidgetRoot.Unlink();
+	}
 	
+	int GetWidgetCombinedHash(Widget w)
+	{
+		string nameThis = w.GetName();
+		string nameParent = "";
+		
+		if (w.GetParent())
+		{
+			nameParent = w.GetParent().GetName();
+		}
+		
+		string namesCombined = nameThis + nameParent;
+		return namesCombined.Hash();
+	}
+	
+	protected string GetMessage()
+	{
+		int hash = GetWidgetCombinedHash(m_CurrentHoverWidget);
+		
+		if (m_JsonData && m_JsonData.WidgetHintBindings)
+		{
+			if (m_JsonData.WidgetHintBindings.Contains(hash))
+			{
+				return m_JsonData.WidgetHintBindings.Get(hash);
+			}
+		}
+		//return "";
+		//return "No hint" + hash.ToString();
+		return NO_HINT_TEXT;
+	}
+	
+	protected void HoverSuccess()
+	{
+		m_JsonData = GetData();
+		m_HoverSuccessTriggered = true;
+		DisplayHint(GetMessage());
+	}
+	
+	protected void HoverInterrupt()
+	{
+		m_HoverSuccessTriggered = false;
+		//m_CurrentHoverWidget = null;
+		m_HoverTime = 0;
+		m_HintEditMode = false;
+		HideHint();
+	}
 
 	override bool OnKeyPress(Widget w, int x, int y, int key)
 	{
@@ -118,10 +354,41 @@ class ScriptConsole extends UIScriptedMenu
 	override void Update(float timeslice)
 	{
 		super.Update(timeslice);
+
+		int mouseX, mouseY;
+		GetMousePos(mouseX,mouseY);
+		float dist = Math.Sqrt(Math.AbsFloat(mouseX - m_PrevMouseX) + Math.AbsFloat(mouseY - m_PrevMouseY));
+		m_PrevMouseX = mouseX;
+		m_PrevMouseY = mouseY;
+		
+		if (dist < 1 && m_CurrentHoverWidget && !m_HoverSuccessTriggered)
+		{
+			m_HoverTime += timeslice;
+			if (m_HoverTime > 1)
+			{
+				HoverSuccess();
+			}
+		}
+		
+		if(dist > 1 && m_HoverSuccessTriggered)
+			HoverInterrupt();
 		
 		if (GetGame() && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			GetGame().GetUIManager().Back();
+		}
+		
+		
+	
+		if (!GetGame().IsMultiplayer() && KeyState(KeyCode.KC_RCONTROL) && KeyState(KeyCode.KC_NUMPAD0) && m_HintWidgetRoot && m_HintWidgetRoot.IsVisible())
+		{
+			ClearKey(KeyCode.KC_NUMPAD0);
+			m_EditTooltipRoot.Show(true);
+			string text = GetMessage();
+			if (text == NO_HINT_TEXT)
+				text = "";
+			m_HintInputText.SetText(text);
+			
 		}
 		
 		for (int i =0; i < TABS_COUNT; i++)
@@ -154,7 +421,25 @@ class ScriptConsole extends UIScriptedMenu
 			GetGame().GetMission().EnableAllInputs(true);
 			return true;
 		}
-		
+		else if (w == m_HintOkButton)
+		{
+			SetHintText(m_HintInputText.GetText(), m_CurrentHoverWidget);
+			HoverInterrupt();
+			m_EditTooltipRoot.Show(false);
+			SaveData();
+		}		
+		else if (w == m_HintCancelButton)
+		{
+			HoverInterrupt();
+			m_EditTooltipRoot.Show(false);
+			
+		}
+		else if (w == m_HintClearButton)
+		{
+			m_HintInputText.SetText("");
+			
+		}
+
 		for (int z =0; z < TABS_COUNT; z++)
 		{
 			if (m_TabHandlers[z])
@@ -191,12 +476,18 @@ class ScriptConsole extends UIScriptedMenu
 	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{
 		super.OnMouseLeave(w, enterW, x, y);
+		if(!m_EditTooltipRoot.IsVisible())
+			HoverInterrupt();
 		return false;
 	}
 	
 	override bool OnMouseEnter(Widget w, int x, int y)
 	{
 		super.OnMouseEnter(w, x, y);
+		if (!m_EditTooltipRoot.IsVisible())
+			m_CurrentHoverWidget = w;
+		
+		
 		
 		#ifdef PLATFORM_CONSOLE
 		return false;
@@ -361,6 +652,45 @@ class ScriptConsole extends UIScriptedMenu
 			m_TabHandlers[TAB_GENERAL] = new ScriptConsoleGeneralTab(layoutRoot, this);
 		}
 	}
+	
+	protected void DisplayHint(string message)
+	{
+		if (message)
+		{
+			m_HintWidgetRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_hint.layout");
+			m_HintWidgetBackground = ImageWidget.Cast(m_HintWidgetRoot.FindAnyWidget("Background"));
+			m_HintWidget = RichTextWidget.Cast(m_HintWidgetRoot.FindAnyWidget("HintText"));
+		
+			m_HintWidgetRoot.Show(true);
+			m_HintWidget.SetText(message);
+			
+			int offsetX = 0;
+			int offsetY = 10;
+			
+			int screenW, screenH;
+			GetScreenSize(screenW, screenH);
+	
+			int mouseX, mouseY;
+			GetMousePos(mouseX,mouseY);
+			
+			float relativeX = mouseX / screenW;
+			float relativeY = mouseY / screenH;
+
+			int width, height;
+			m_HintWidget.GetTextSize(width, height);
+			if (relativeX > 0.8)
+				offsetX = -width - offsetX;
+			if (relativeY > 0.8)
+				offsetY = -height - offsetY;
+			
+			m_HintWidgetRoot.SetPos(mouseX + offsetX ,mouseY + offsetY);
+			m_HintWidgetBackground.SetScreenSize(width + 5, height + 5);
+			
+		}
+	}
+	
+	
+	
 	
 	override void OnRPCEx(int rpc_type, ParamsReadContext ctx)
 	{

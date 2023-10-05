@@ -3,21 +3,19 @@ class MainMenuVideo extends UIScriptedMenu
 	protected string 				m_BackButtonTextID;
 	
 	protected VideoWidget			m_Video;
-	protected ref Timer				m_VideoPlayTimer;
-	bool							m_IsPaused;
-	bool							m_FileLoaded;
 	
 	override Widget Init()
 	{
 		layoutRoot 				= GetGame().GetWorkspace().CreateWidgets("gui/layouts/xbox/video_menu.layout");
 		m_Video					= VideoWidget.Cast(layoutRoot.FindAnyWidget("video"));
 		
-		m_VideoPlayTimer		= new Timer();
-		m_FileLoaded = false;
-		
-		m_VideoPlayTimer.Run(1.0, this, "PlayVideoLoop", null, true);
-		
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		
+		m_Video.Load("video\\DayZ_onboarding_MASTER.mp4");
+			
+		m_Video.Play();
+		
+		m_Video.SetCallback(VideoCallback.ON_END, StopVideo);
 		
 		return layoutRoot;
 	}
@@ -49,32 +47,11 @@ class MainMenuVideo extends UIScriptedMenu
 		UpdateControlsElements();
 	}
 	
-	void PlayVideoLoop()
-	{
-		if (!m_FileLoaded)
-		{
-			#ifdef PLATFORM_PS4
-				m_Video.LoadVideo("/app0/video/DayZ_onboarding_MASTER.mp4", 0);
-			#else
-				m_Video.LoadVideo("G:\\video\\DayZ_onboarding_MASTER.mp4", 0);
-			#endif
-			m_FileLoaded = true;
-			
-			m_Video.Play(VideoCommand.REWIND);
-			m_Video.Play(VideoCommand.PLAY);
-		}
-		else if (m_Video && !m_IsPaused && !m_Video.Play(VideoCommand.ISPLAYING))
-		{
-			StopVideo();
-		}
-	}
-	
 	void StopVideo()
 	{
 		if (m_Video)
 		{
-			m_VideoPlayTimer.Stop();
-			m_Video.Play(VideoCommand.KILL);
+			m_Video.Unload();
 			GetGame().GetUIManager().Back();
 		}
 	}
@@ -83,15 +60,13 @@ class MainMenuVideo extends UIScriptedMenu
 	{
 		if (m_Video)
 		{
-			if (m_Video.Play(VideoCommand.ISPLAYING))
+			if (m_Video.IsPlaying())
 			{
-				m_Video.Play(VideoCommand.STOP);
-				m_IsPaused = true;
+				m_Video.Pause();
 			}
 			else
 			{
-				m_Video.Play(VideoCommand.PLAY);
-				m_IsPaused = false;
+				m_Video.Play();
 			}
 		}
 	}
@@ -108,7 +83,7 @@ class MainMenuVideo extends UIScriptedMenu
 	{
 		if (!isVisible)
 		{
-			m_Video.Play(VideoCommand.KILL);
+			m_Video.Unload();
 		}
 	}
 	

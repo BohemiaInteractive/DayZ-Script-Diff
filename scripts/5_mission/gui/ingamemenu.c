@@ -167,7 +167,18 @@ class InGameMenu extends UIScriptedMenu
 		}
 		else if (w == m_RestartButton)
 		{
+			#ifdef DEVELOPER
+			if (GetGame().IsMultiplayer() || GetGame().GetPlayer().IsUnconscious())
+				OnClick_Restart();
+			else
+			{
+				PluginDeveloper plugin = PluginDeveloper.GetInstance();
+				if (plugin)
+					plugin.ToggleMissionLoader();
+			}
+			#else
 			OnClick_Restart();
+			#endif
 			return true;
 		}
 		else if (w == m_RespawnButton)
@@ -214,7 +225,7 @@ class InGameMenu extends UIScriptedMenu
 	{
 		Man player = GetGame().GetPlayer();
 		
-		if (player && player.IsUnconscious())
+		if (player && player.IsUnconscious() && !player.IsDamageDestroyed())
 		{
 			GetGame().GetUIManager().ShowDialog("#main_menu_respawn", "#main_menu_respawn_question", IDC_INT_RETRY, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
 		}
@@ -298,7 +309,7 @@ class InGameMenu extends UIScriptedMenu
 
 		if (GetGame().IsMultiplayer())
 		{
-			m_RestartButton.Show(playerAlive && player.IsUnconscious());
+			m_RestartButton.Show(playerAlive && player.IsUnconscious() && !CfgGameplayHandler.GetDisableRespawnInUnconsciousness());
 			m_RespawnButton.Show(!playerAlive);
 		}
 		else

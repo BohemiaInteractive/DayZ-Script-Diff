@@ -38,6 +38,12 @@ class ImprovisedExplosive : ExplosivesBase
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdLow");
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdHigh");
 	}
+	
+	override void EOnInit(IEntity other, int extra)
+	{
+		if (!g_Game.IsMultiplayer())
+			LockTriggerSlots();
+	}
 
 	override bool HasLockedTriggerSlots()
 	{
@@ -49,18 +55,26 @@ class ImprovisedExplosive : ExplosivesBase
 	
 	override void LockTriggerSlots()
 	{
-		for (int i = 0; i < SLOT_TRIGGERS_COUNT; i++)
-		{
-			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(SLOT_TRIGGERS[i]), true);
-		}
+		foreach (string triggerSlotName : SLOT_TRIGGERS)
+			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(triggerSlotName), true);
 	}
 	
 	override void UnlockTriggerSlots()
 	{
-		for (int i = 0; i < SLOT_TRIGGERS_COUNT; i++)
-		{
-			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(SLOT_TRIGGERS[i]), false);
-		}
+		foreach (string triggerSlotName : SLOT_TRIGGERS)
+			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(triggerSlotName), false);
+	}
+	
+	override void LockExplosivesSlots()
+	{	
+		foreach (string explosiveSlotName : SLOT_EXPLOSIVES)
+			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(explosiveSlotName), true);
+	}
+	
+	override void UnlockExplosivesSlots()
+	{	
+		foreach (string explosiveSlotName : SLOT_EXPLOSIVES)
+			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(explosiveSlotName), false);
 	}
 	
 	override bool OnStoreLoad(ParamsReadContext ctx, int version)
@@ -101,9 +115,10 @@ class ImprovisedExplosive : ExplosivesBase
 			m_RAIB.OnVariableSynchronized();
 		}
 
-		for (int i = 0; i < SLOT_TRIGGERS_COUNT; i++)
+		
+		foreach (string slotName : SLOT_TRIGGERS)
 		{
-			EntityAI trigger = GetInventory().FindAttachmentByName(SLOT_TRIGGERS[i]);
+			EntityAI trigger = GetInventory().FindAttachmentByName(slotName);
 			if (trigger)
 			{
 				UpdateVisuals(trigger);
@@ -150,22 +165,16 @@ class ImprovisedExplosive : ExplosivesBase
 	override bool CanBeArmed()
 	{
 		if (GetArmed())
-		{
 			return false;
-		}
 		
 		if (!HasLockedTriggerSlots())
-		{
 			return false;
-		}
 
-		for (int i = 0; i < SLOT_EXPLOSIVE_COUNT; i++)
+		foreach (string slotName : SLOT_EXPLOSIVES)
 		{
-			EntityAI explosive = GetInventory().FindAttachmentByName(SLOT_EXPLOSIVES[i]);
+			EntityAI explosive = GetInventory().FindAttachmentByName(slotName);
 			if (explosive)
-			{
 				return true;
-			}
 		}
 		
 		return false;
@@ -181,14 +190,13 @@ class ImprovisedExplosive : ExplosivesBase
 	{
 		InventoryLocation il = new InventoryLocation();
 		GetInventory().GetCurrentInventoryLocation(il);
-		for (int i = 0; i < SLOT_TRIGGERS_COUNT; i++)
+		
+		foreach (string slotName : SLOT_TRIGGERS)
 		{
-			if (slotId == InventorySlots.GetSlotIdFromString(SLOT_TRIGGERS[i]))
+			if (slotId == InventorySlots.GetSlotIdFromString(slotName))
 			{
 				if (il.GetType() == InventoryLocationType.HANDS)
-				{
 					return false;
-				}
 			}
 		}
 
@@ -201,11 +209,11 @@ class ImprovisedExplosive : ExplosivesBase
 
 		switch (slotName)
 		{
-		case SLOT_TRIGGER_ALARM_CLOCK:
-		case SLOT_TRIGGER_KITCHEN_TIMER:
-		case SLOT_TRIGGER_REMOTE:
-			return FindAttachmentBySlotName(slotName) != null;
-		break;
+			case SLOT_TRIGGER_ALARM_CLOCK:
+			case SLOT_TRIGGER_KITCHEN_TIMER:
+			case SLOT_TRIGGER_REMOTE:
+				return FindAttachmentBySlotName(slotName) != null;
+				break;
 		}
 
 		return true;
@@ -262,50 +270,41 @@ class ImprovisedExplosive : ExplosivesBase
 	{
 		if (GetGame().IsServer() && GetArmed())
 		{
-			ItemBase attachment;
 			bool isTimeTriggered = false;
-			array<ItemBase> attachmentsCache = new array<ItemBase>();
-			
-			//! cache attachments
-			int attachmentIdx;
-			for (attachmentIdx = 0; attachmentIdx < GetInventory().AttachmentCount(); attachmentIdx++)
-			{
-				attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(attachmentIdx));
-				if (attachment)
-				{
-					attachmentsCache.Insert(attachment);
-				}
-			}
 
-			//! unlock attachments first
-			for (attachmentIdx = 0; attachmentIdx < attachmentsCache.Count(); attachmentIdx++)
+			array<ItemBase> attachmentsCache = new array<ItemBase>();
+			for (int attachmentIdx = 0; attachmentIdx < GetInventory().AttachmentCount(); attachmentIdx++)
 			{
-				attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(attachmentIdx));
-				if (attachmentsCache[attachmentIdx])
-				{
-					attachmentsCache[attachmentIdx].UnlockFromParent();
-				}	
+				ItemBase attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(attachmentIdx));
+				if (attachment)
+					attachmentsCache.Insert(attachment);
 			}
 			
-			//! triggers specific handling
-			for (attachmentIdx = 0; attachmentIdx < attachmentsCache.Count(); attachmentIdx++)
+			foreach (ItemBase attachment1 : attachmentsCache)
+				attachment1.UnlockFromParent();
+			
+			//! attachment special handling on disarm
+			foreach (ItemBase attachment2 : attachmentsCache)
 			{
-				attachment = ItemBase.Cast(attachmentsCache[attachmentIdx]);
-				if (attachment.IsInherited(ClockBase))
+				if (attachment2.IsInherited(ClockBase))
 				{
 					isTimeTriggered = true;
+					break;
 				}
 			}
 			
 			//! go through attached explosives
-			for (attachmentIdx = 0; attachmentIdx < attachmentsCache.Count(); attachmentIdx++)
+			foreach (ItemBase attachment3 : attachmentsCache)
 			{
-				attachment = ItemBase.Cast(attachmentsCache[attachmentIdx]);
-				if (attachment && !attachment.IsAnyInherited({RemoteDetonator, ClockBase}))
+				if (attachment3)
 				{
-					GetInventory().DropEntityInBounds(InventoryMode.SERVER, this, attachment, "0.5 0 0.5", 0, 0, 0);
-					attachment.SetAnimationPhase(ANIM_PHASE_VISIBILITY, 1.0);
-					attachment.SetTakeable(false);
+					vector dropExtents = "0.5 0.0 0.5";
+					if (isTimeTriggered)
+						dropExtents[1] = 0.15; //! hard-case blocks shells (result of deferred delete)
+
+					GetInventory().DropEntityInBounds(InventoryMode.SERVER, this, attachment3, dropExtents, 0, 0, 0);
+					attachment3.SetAnimationPhase(ANIM_PHASE_VISIBILITY, 1.0);
+					attachment3.SetTakeable(false);
 				}
 			}
 			
@@ -322,19 +321,18 @@ class ImprovisedExplosive : ExplosivesBase
 			}
 
 			//! final traverse - attached explosives activation
-			for (attachmentIdx = 0; attachmentIdx < attachmentsCache.Count(); attachmentIdx++)
+			foreach (ItemBase attachment4 : attachmentsCache)
 			{
-				attachment = ItemBase.Cast(attachmentsCache[attachmentIdx]);
-				if (attachment.IsAnyInherited({RemoteDetonator, ClockBase}))
+				if (attachment4.IsAnyInherited({RemoteDetonator, ClockBase}))
 				{
 					//! defer damage to trigger attachments to allow ringing
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment.SetGlobalHealth, delayFor * 1000, false, 0.0);
+					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment4.DeleteSafe, delayFor * 1000, false);
 				}
 
-				if (attachment && !attachment.IsAnyInherited({RemoteDetonator, ClockBase}))
+				if (attachment4 && !attachment4.IsAnyInherited({RemoteDetonator, ClockBase}))
 				{
-					Param1<ItemBase> params = new Param1<ItemBase>(attachment);
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLaterByName(attachment, "OnActivatedByItem", delayFor * 1000, false, params);
+					Param1<ItemBase> params = new Param1<ItemBase>(attachment4);
+					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLaterByName(attachment4, "OnActivatedByItem", delayFor * 1000, false, params);
 					delayFor += TIME_TRIGGER_DELAY_SECS;					
 				}
 			}
@@ -350,11 +348,11 @@ class ImprovisedExplosive : ExplosivesBase
 
 		switch (slot_name)
 		{
-		case SLOT_TRIGGER_ALARM_CLOCK:
-		case SLOT_TRIGGER_KITCHEN_TIMER:
-		case SLOT_TRIGGER_REMOTE:
-			OnTriggerAttached(FindAttachmentBySlotName(slot_name));
-		break;
+			case SLOT_TRIGGER_ALARM_CLOCK:
+			case SLOT_TRIGGER_KITCHEN_TIMER:
+			case SLOT_TRIGGER_REMOTE:
+				OnTriggerAttached(FindAttachmentBySlotName(slot_name));
+				break;
 		}
 	}
 	
@@ -364,12 +362,17 @@ class ImprovisedExplosive : ExplosivesBase
 
 		switch (slot_name)
 		{
-		case SLOT_TRIGGER_ALARM_CLOCK:
-		case SLOT_TRIGGER_KITCHEN_TIMER:
-		case SLOT_TRIGGER_REMOTE:
-			OnTriggerDetached(FindAttachmentBySlotName(slot_name));
-		break;
+			case SLOT_TRIGGER_ALARM_CLOCK:
+			case SLOT_TRIGGER_KITCHEN_TIMER:
+			case SLOT_TRIGGER_REMOTE:
+				OnTriggerDetached(FindAttachmentBySlotName(slot_name));
+				break;
 		}
+	}
+	
+	override void OnBeforeDisarm()
+	{
+		UnlockExplosivesSlots();
 	}
 	
 	override void OnDisarmed(bool pWithTool)
@@ -377,33 +380,39 @@ class ImprovisedExplosive : ExplosivesBase
 		super.OnDisarmed(pWithTool);
 		
 		UnpairRemote();
-
-		for (int att = 0; att < GetInventory().AttachmentCount(); att++)
+		
+		array<ItemBase> attachmentsCache = new array<ItemBase>();
+		for (int attachmentIdx = 0; attachmentIdx < GetInventory().AttachmentCount(); attachmentIdx++)
 		{
-			ItemBase attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(att));
+			ItemBase attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(attachmentIdx));
 			if (attachment)
 			{
-				attachment.UnlockFromParent();
-
-				if (attachment.IsInherited(ClockBase))
+				attachmentsCache.Insert(attachment);
+			}	
+		}
+		
+		foreach (ItemBase attachment1 : attachmentsCache)
+			attachment1.UnlockFromParent();
+		
+		//! attachment special handling on disarm
+		foreach (ItemBase attachment2 : attachmentsCache)
+		{
+			if (attachment2.IsInherited(ClockBase))
+			{
+				if (pWithTool)
+					GetInventory().DropEntity(InventoryMode.SERVER, this, attachment2);
+			}
+			
+			if (attachment2.IsInherited(RemoteDetonator))
+			{
+				if (pWithTool)
 				{
-					if (pWithTool)
-					{
-						GetInventory().DropEntity(InventoryMode.SERVER, this, attachment);
-					}
+					GetInventory().DropEntity(InventoryMode.SERVER, this, attachment2);
+					attachment2.SetHealth("", "", 0.0);
 				}
-				
-				if (attachment.IsInherited(RemoteDetonator))
+				else
 				{
-					if (pWithTool)
-					{
-						GetInventory().DropEntity(InventoryMode.SERVER, this, attachment);
-						attachment.SetHealth("", "", 0.0);
-					}
-					else
-					{
-						attachment.Delete();
-					}
+					attachment2.Delete();
 				}
 			}
 		}
@@ -416,9 +425,7 @@ class ImprovisedExplosive : ExplosivesBase
 	{
 		RemoteDetonatorReceiver receiver = RemoteDetonatorReceiver.Cast(FindAttachmentBySlotName(SLOT_TRIGGER_REMOTE));
 		if (receiver)
-		{
 			receiver.UpdateLED(pState, true);
-		}
 	}
 	
 	protected void OnTriggerAttached(EntityAI entity)
@@ -427,18 +434,10 @@ class ImprovisedExplosive : ExplosivesBase
 		UpdateLED(ERemoteDetonatorLEDState.LIT);
 		
 		if (entity.IsInherited(ClockBase))
-		{
 			Arm();
-		}
 		
-		for (int att = 0; att < GetInventory().AttachmentCount(); att++)
-		{
-			ItemBase attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(att));
-			if (attachment)
-			{
-				attachment.LockToParent();
-			}
-		}
+		LockTriggerSlots();
+		LockExplosivesSlots();
 	}
 	
 	protected void OnTriggerDetached(EntityAI entity)
@@ -480,6 +479,21 @@ class ImprovisedExplosive : ExplosivesBase
 			SetAnimationPhase(ANIM_PHASE_TRIGGER_CLOCK, 1.0);
 			SetAnimationPhase(ANIM_PHASE_TRIGGER_REMOTE, 1.0);
 		}
+	}
+	
+	override string GetDeploySoundset()
+	{
+		return "placeImprovisedExplosive_SoundSet";
+	}
+	
+	override string GetLoopDeploySoundset()
+	{
+		return "improvisedexplosive_deploy_SoundSet";
+	}
+	
+	override protected bool UsesGlobalDeploy()
+	{
+		return true;
 	}
 	
 #ifdef DEVELOPER

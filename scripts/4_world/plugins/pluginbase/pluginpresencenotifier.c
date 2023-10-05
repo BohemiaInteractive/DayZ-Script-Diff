@@ -233,7 +233,6 @@ class PluginPresenceNotifier extends PluginBase
 		float speedCoef 		= 1.0;
 
 		m_pPlayer.GetMovementState(hms);
-		//Print(hms.m_iMovement);
 		switch (AITargetCallbacksPlayer.StanceToMovementIdxTranslation(hms))
 		{
 			case DayZPlayerConstants.MOVEMENTIDX_RUN:

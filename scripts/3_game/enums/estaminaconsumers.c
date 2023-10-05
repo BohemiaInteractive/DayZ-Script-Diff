@@ -9,4 +9,5 @@ enum EStaminaConsumers
 	CLIMB,
 	ROLL,
 	DROWN,
+	PUSH,
 }

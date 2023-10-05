@@ -67,6 +67,13 @@ class Bottle_Base extends Edible_Base
 		RemoveAudioVisuals();
 	}	
 	
+	override void EECargoIn(EntityAI item)
+	{
+		super.EECargoIn(item);
+		
+		MiscGameplayFunctions.SoakItemInsideParentContainingLiquidAboveThreshold(ItemBase.Cast(item), this);
+	}
+	
 	//================================================================
 	// PARTICLES & SOUNDS
 	//================================================================
@@ -140,7 +147,7 @@ class Bottle_Base extends Edible_Base
 		Synchronize();
 	}
 	
-	void RefreshAudioVisuals( CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned )
+	void RefreshAudioVisuals(CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned)
 	{
 		string soundName;
 		int particleId;
@@ -154,53 +161,64 @@ class Bottle_Base extends Edible_Base
 		//proper cooking methods
 		else
 		{
-			if (cooking_method == CookingMethodType.BOILING)
+			switch (cooking_method)
 			{
-				if (is_empty)											//EMPTY
-				{
-					soundName 	= SOUND_BOILING_EMPTY;
-					particleId 	= PARTICLE_BOILING_EMPTY;
-				}
-				else
-				{
-					if (is_done)										//DONE
+				case CookingMethodType.BOILING:
+					if (is_empty)
 					{
-						soundName 	= SOUND_BOILING_DONE;
-						particleId 	= PARTICLE_BOILING_DONE;
+						soundName 	= SOUND_BOILING_EMPTY;
+						particleId 	= PARTICLE_BOILING_EMPTY;
 					}
-					else												//START
+					else
 					{
-						soundName 	= SOUND_BOILING_START;
-						particleId 	= PARTICLE_BOILING_START;
+						if (is_done)
+						{
+							soundName 	= SOUND_BOILING_DONE;
+							particleId 	= PARTICLE_BOILING_DONE;
+						}
+						else
+						{
+							soundName 	= SOUND_BOILING_START;
+							particleId 	= PARTICLE_BOILING_START;
+						}
 					}
-				}
+
+					break;
+
+				case CookingMethodType.BAKING:
+					if (is_done)
+					{
+						soundName 	= SOUND_BAKING_DONE;
+						particleId 	= PARTICLE_BAKING_DONE;
+					}
+					else
+					{
+						soundName 	= SOUND_BAKING_START;
+						particleId 	= PARTICLE_BAKING_START	;
+					}
+
+					break;
+
+				case CookingMethodType.DRYING:
+					if (is_done)
+					{
+						soundName 	= SOUND_DRYING_DONE;
+						particleId 	= PARTICLE_DRYING_DONE;
+					}
+					else
+					{
+						soundName 	= SOUND_DRYING_START;
+						particleId 	= PARTICLE_DRYING_START;
+					}
+				
+					break;
+				
+				default:
+					soundName = "";
+					particleId = ParticleList.NONE;
+
+					break;
 			}
-			else if (cooking_method == CookingMethodType.BAKING)
-			{
-				if (is_done)											//DONE
-				{
-					soundName 	= SOUND_BAKING_DONE;
-					particleId 	= PARTICLE_BAKING_DONE;
-				}
-				else													//START
-				{
-					soundName 	= SOUND_BAKING_START;
-					particleId 	= PARTICLE_BAKING_START;
-				}
-			}
-			else if (cooking_method == CookingMethodType.DRYING)
-			{
-				if (is_done)											//DONE
-				{
-					soundName 	= SOUND_DRYING_DONE;
-					particleId 	= PARTICLE_DRYING_DONE;
-				}
-				else													//START
-				{
-					soundName 	= SOUND_DRYING_START;
-					particleId 	= PARTICLE_DRYING_START;
-				}
-			}			
 		}
 		
 		//play effects
@@ -215,7 +233,7 @@ class Bottle_Base extends Edible_Base
 	}
 	
 	//particles
-	void ParticleCookingStart( int particle_id )
+	void ParticleCookingStart(int particle_id)
 	{
 		#ifndef SERVER
 		if (m_ParticlePlaying != particle_id)

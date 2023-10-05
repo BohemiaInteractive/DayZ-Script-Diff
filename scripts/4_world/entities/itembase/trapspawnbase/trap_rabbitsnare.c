@@ -4,11 +4,11 @@ class Trap_RabbitSnare extends TrapSpawnBase
 	{
 		m_DefectRate = 15; 			//Added damage after trap activation
 		
-		m_InitWaitTime 							= Math.RandomInt(900, 1500);
+		m_InitWaitTime 							= Math.RandomInt(60, 900);
 		m_UpdateWaitTime 						= 30;
 		m_IsFoldable 							= true;
 		m_IsUsable 								= true;
-		m_MinimalDistanceFromPlayersToCatch 	= 30;
+		m_MinimalDistanceFromPlayersToCatch 	= 10;
 		
 		m_BaitCatchProb 						= 85;
 		m_NoBaitCatchProb						= 15;
@@ -154,7 +154,7 @@ class Trap_RabbitSnare extends TrapSpawnBase
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		super.OnPlacementComplete( player, position, orientation );
-			
+		SetOrientation(orientation);	
 		SetIsPlaceSound( true );
 	}
 	

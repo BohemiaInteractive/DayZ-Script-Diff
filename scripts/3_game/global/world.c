@@ -6,6 +6,12 @@ class World: Managed
 	proto void CheckSoundObstruction(EntityAI source,  bool inSource, out float obstruction, out float occlusion);
 
 	proto native void	GetPlayerList(out array<Man> players);
+
+	/**
+	\brief Sets the world time acceleration, overriding config. Mostly used for debug purposes.
+		\param timeMultiplier 0-64 acceleration value, -1 to reset back
+	*/
+	proto native void SetTimeMultiplier(float timeMultiplier);
 	
 	/**
 	\brief Get actual ingame world time

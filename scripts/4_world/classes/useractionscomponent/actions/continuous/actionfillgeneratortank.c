@@ -28,7 +28,7 @@ class ActionFillGeneratorTank: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		PowerGenerator pg;
+		PowerGeneratorBase pg;
 		
 		if ( Class.CastTo(pg,target.GetObject()) )
 		{

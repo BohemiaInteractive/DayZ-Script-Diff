@@ -18,6 +18,12 @@ class Plastic_Explosive : ExplosivesBase
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdHigh");
 	}
 	
+	override void EOnInit(IEntity other, int extra)
+	{
+		if (!g_Game.IsMultiplayer())
+			LockTriggerSlots();
+	}
+	
 	//! special behaviour - do not call super from ExplosivesBase
 	override void EEKilled(Object killer)	
 	{
@@ -343,6 +349,22 @@ class Plastic_Explosive : ExplosivesBase
 		{
 			SetAnimationPhase(ANIM_PHASE_TRIGGER_REMOTE, 1.0);
 		}
+	}
+	
+	
+	override string GetDeploySoundset()
+	{
+		return "placeImprovisedExplosive_SoundSet";
+	}
+	
+	override string GetLoopDeploySoundset()
+	{
+		return "improvisedexplosive_deploy_SoundSet";
+	}
+	
+	override protected bool UsesGlobalDeploy()
+	{
+		return true;
 	}
 }
 

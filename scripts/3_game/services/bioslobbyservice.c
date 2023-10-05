@@ -11,7 +11,8 @@ enum ESortType
 	SLOTS,
 	PING
 	FAVORITE,
-	PASSWORDED
+	PASSWORDED,
+	QUEUE
 };
 
 enum ESortOrder
@@ -46,6 +47,7 @@ class GetServersResultRow
 	int		m_MaxPlayers; 			// PC - max players
 	int		m_FreeSlots; 			// PC - max players
 	int		m_CurrentNumberPlayers;
+	int		m_PlayersInQueue;
 	string	m_GameVersion; 			// PC not work alway ""
 	bool	m_IsPasswordProtected;	// PC work
 	string	m_CreatedAt;
@@ -137,17 +139,46 @@ class GetServersResultRow
 			{
 				return m_Ping;
 			}
-			case ESortType.FAVORITE:
+			case ESortType.QUEUE:
 			{
-			
+				return m_PlayersInQueue;
 			}
-			case ESortType.PASSWORDED:
-			{
+		}		
+		return 0;
+	}
+	
+	// Returns 0 if values are equal, 
+	// a positive number if this entry is "greater than" other,
+	// and a negative number if this entry is "less than" other 
+	int CompareTo(GetServersResultRow other, ESortType sortType)
+	{	
+		// string comparison
+		if (sortType == ESortType.HOST)
+		{
+			string val1 = this.GetValueStr(ESortType.HOST);
+			string val2 = other.GetValueStr(ESortType.HOST);
 			
+			if (val1 == val2)
+				return 0;
+			
+			if (val1 < val2)
+				return 1;
+			
+			return -1;
+		}
+
+		// int comparison
+		int comparisonResult = other.GetValueInt(sortType) - this.GetValueInt(sortType);
+		if (comparisonResult == 0)
+		{
+			// if sorting by POPULATION, break ties using QUEUE size
+			if (sortType == ESortType.POPULATION)
+			{
+				comparisonResult = this.CompareTo(other, ESortType.QUEUE);	
 			}
 		}
 		
-		return 0;
+		return comparisonResult;
 	}
 };
 

@@ -1,16 +1,15 @@
-
 typedef map<int,float> BleedChanceMaxMap; //<bloodDamageReceived,chanceMax>
 
 //! Static data of bleeding chance probabilities; currently used for melee only
-class BleedChanceData: Managed
+class BleedChanceData : Managed
 {
-	static const float BLOOD_HITPOINTS_UNIVERSAL = 100.0;
+	private static const float BLOOD_HITPOINTS_UNIVERSAL = 100.0;
 	
-	static ref map<string,ref BleedChanceMaxMap> m_DamageTypeMap;
+	private static ref map<string, ref BleedChanceMaxMap> m_DamageTypeMap;
 	
 	static void InitBleedChanceData()
 	{
-		m_DamageTypeMap = new map<string,ref BleedChanceMaxMap>;
+		m_DamageTypeMap = new map<string,ref BleedChanceMaxMap>();
 		
 		InitMeleeChanceMap();
 		InitInfectedChanceMap();
@@ -21,7 +20,7 @@ class BleedChanceData: Managed
 		if (m_DamageTypeMap.Contains("Melee"))
 			ErrorEx("'Melee' damage type bleed chances already initialized!");
 		
-		ref BleedChanceMaxMap bleedChanceMaxMap = new BleedChanceMaxMap;
+		BleedChanceMaxMap bleedChanceMaxMap = new BleedChanceMaxMap();
 		
 		//keys have to be integers, recalculated later
 		bleedChanceMaxMap.Set(0,0.0);
@@ -44,7 +43,7 @@ class BleedChanceData: Managed
 		if (m_DamageTypeMap.Contains("Infected"))
 			ErrorEx("'Infected' damage type bleed chances already initialized!");
 		
-		ref BleedChanceMaxMap bleedChanceMaxMap = new BleedChanceMaxMap;
+		BleedChanceMaxMap bleedChanceMaxMap = new BleedChanceMaxMap();
 		
 		//keys have to be integers, recalculated later
 		bleedChanceMaxMap.Set(0,0.0);

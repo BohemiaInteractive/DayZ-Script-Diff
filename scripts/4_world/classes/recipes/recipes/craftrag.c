@@ -63,7 +63,7 @@ class CraftRag extends RecipeBase
 		
 		//ingredient 2
 		
-		InsertIngredient(1,"Inventory_Base");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"Inventory_Base" ,			 "Rags_craft");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[1] = 0;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

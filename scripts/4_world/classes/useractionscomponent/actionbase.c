@@ -582,8 +582,9 @@ class ActionBase : ActionBase_Basic
 		{
 			OnStartServer(action_data);
 			
-			if (GetSoundCategory(action_data))
-				action_data.m_Player.SetSoundCategoryHash(GetSoundCategory(action_data).Hash());
+			string soundCat = GetSoundCategory(action_data);
+			if (soundCat)
+				action_data.m_Player.SetSoundCategoryHash(soundCat.Hash());
 		}
 		else
 		{

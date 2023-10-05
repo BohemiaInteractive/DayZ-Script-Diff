@@ -138,17 +138,28 @@ class FireworksBase: Inventory_Base
 	}
 	
 	#ifdef DEVELOPER
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		button1 = "Ignite";
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ACTIVATE_ENTITY, "Ignite", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		
+		super.GetDebugActions(outputList);
 	}
 	
-	override void OnDebugButtonPressServer(int button_index)
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
-		if (button_index == 1)
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			OnIgnitedThis(null);
+			if (action_id == EActions.ACTIVATE_ENTITY)
+			{
+				OnIgnitedThis(null);
+			}
+			
 		}
+		return false;
 	}
 	#endif
 }

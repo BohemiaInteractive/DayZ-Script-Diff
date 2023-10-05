@@ -272,7 +272,7 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		
 		SetName( server_info.m_Name );
 		SetPasswordLocked( server_info.m_IsPasswordProtected );
-		SetPopulation( server_info.m_CurrentNumberPlayers, server_info.m_MaxPlayers );
+		SetPopulationEx( server_info );
 		SetSlots( server_info.m_MaxPlayers );
 		SetPing( server_info.m_Ping );
 		SetTime( server_info.m_TimeOfDay, server_info.m_EnvironmentTimeMul );
@@ -330,6 +330,7 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		m_ServerLock.Show( locked );
 	}
 	
+	// DEPRECATED
 	void SetPopulation( int population, int slots )
 	{
 		int color = ARGBF(1, 1, 1, 1);
@@ -350,6 +351,41 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		m_ServerPopulation.SetBold(true);
 		m_ServerPopulation.SetOutline(1);
 		
+	}
+	
+	private void SetPopulationEx(GetServersResultRow serverInfo)
+	{		
+		string popText = "";
+		int population = serverInfo.m_CurrentNumberPlayers;
+		int maxPlayers = serverInfo.m_MaxPlayers;
+		int playersInQueue = serverInfo.m_PlayersInQueue;
+		int color = ARGBF(1, 1, 1, 1);
+		
+		// sometimes servers report a queue size even though server isn't full,
+		// in which case we ignore queue size
+		if (playersInQueue > 0 && population == maxPlayers)
+		{
+			popText = population.ToString() + "+" + playersInQueue.ToString() + "/" + maxPlayers.ToString();
+		}
+		else
+		{
+			popText = population.ToString() + "/" + maxPlayers.ToString();
+		}
+		
+		if ( maxPlayers > 0 )
+		{
+			float pop_percentage = population / maxPlayers;
+
+			if (pop_percentage >= 1)
+				color	= ARGBF( 1, 1, 0, 0 );
+			else if ( pop_percentage >= 0.8 )
+				color	= ARGBF( 1, 1, 0.5, 0 );
+		}
+
+		m_ServerPopulation.SetText(popText);
+		m_ServerPopulation.SetColor(color);
+		m_ServerPopulation.SetBold(true);
+		m_ServerPopulation.SetOutline(1);
 	}
 	
 	void SetSlots( int slots )
@@ -426,11 +462,6 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 	void SetMapName( string mapName )
 	{
 		RefreshDLCIcon();
-/*
-		#ifdef PLATFORM_WINDOWS
-		m_ServerMods.SetText( "#STR_USRACT_MAP" + ": " + GetMapName() );
-		#endif
-*/		
 	}
 	
 	void RefreshDLCIcon()
@@ -692,19 +723,21 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 			m_ServerPing.SetColor( ARGB( 255, 255, 255, 255) );
 		}
 		
-#ifndef PLATFORM_CONSOLE
 		if (!IsOnline())
 		{
 			m_ServerTime.Show(false);
+#ifndef PLATFORM_CONSOLE
 			m_Expand.Show(false);
+#endif
 		}
 		
 		else
 		{
 			m_ServerTime.Show(true);
+#ifndef PLATFORM_CONSOLE
 			m_Expand.Show(true);
-		}
 #endif
+		}
 		
 		m_Root.SetAlpha(alpha);
 		m_ServerPopulation.SetAlpha(alpha);
@@ -764,7 +797,7 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		m_Root.SetColor( ARGB( 255, 0, 0, 0) );			
 		UpdateColors();		
 		
-		SetPopulation(m_ServerData.m_CurrentNumberPlayers, m_ServerData.m_MaxPlayers);
+		SetPopulationEx(m_ServerData);
 
 		
 		float alpha = 0.3;

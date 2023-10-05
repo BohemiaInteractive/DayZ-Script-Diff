@@ -189,6 +189,7 @@ const int MENU_WARNING_TELEPORT						= 41;
 const int MENU_CONNECT_ERROR						= 42;
 const int MENU_WARNING_INPUTDEVICE_DISCONNECT		= 43;
 const int MENU_SCRIPTCONSOLE_UNIVERSAL_INFO_DIALOG	= 44;
+const int MENU_MISSION_LOADER						= 45;
 
 
 const int GUI_WINDOW_MISSION_LOADER = 1;
@@ -215,14 +216,16 @@ const string CFG_SOUND_TABLES = "CfgSoundTables";
 const int		CFG_ARRAY_ITEMS_MAX		= 64;
 const string	CFG_FILE_FIXED_PROFILE	= "Scripts/profile_fixed.cfg";
 const string	CFG_FILE_USER_PROFILE	= "$profile:profile.cfg";
-const string	CFG_FILE_DEBUG_PROFILE	= "$profile:debugProfile.cfg";
+const string	CFG_FILE_DEBUG_PROFILE	= "debugProfile.cfg";
 const string	CFG_FILE_EMOTES_PROFILE	= "$profile:emotesProfile.cfg";
 const string	CFG_FILE_SEARCH_HISTORY	= "$profile:search_history.history";
-const string	CFG_FILE_ENS_HISTORY	= "$profile:script_enscript.history";
-const string	CFG_FILE_ENS_HISTORY_SERVER	= "$profile:script_enscriptServer.history";
+const string	CFG_FILE_ENS_HISTORY	= "script_enscript.history";
+const string	CFG_FILE_ENS_HISTORY_SERVER	= "script_enscriptServer.history";
 const string	CFG_FILE_SCRIPT_LOG		= "$profile:script.log";
 const string	CFG_FILE_SCRIPT_LOG_EXT	= "$profile:scriptExt.log";
 const string	CFG_FILE_ADDITIONAL_INFO= "$profile:serverInfo.cfg";
+const string 	CFG_FILE_DEBUG_DIR =	"$profile:ScriptConsole/";
+const string 	CFG_FILE_MISSION_LIST =	"$profile:missionlist.json";
 /** @}*/
 
 /**

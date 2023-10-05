@@ -42,14 +42,12 @@ class ActionDisarmExplosive : ActionContinuousBase
 	
 	override void OnFinishProgressServer(ActionData action_data)
 	{
-		ExplosivesBase explosive;
-		Class.CastTo(explosive, action_data.m_Target.GetObject());
-		
-		ToolBase tool;
-		Class.CastTo(tool, action_data.m_MainItem);
+		ExplosivesBase explosive = ExplosivesBase.Cast(action_data.m_Target.GetObject());
+		ToolBase tool = ToolBase.Cast(action_data.m_MainItem);
 		
 		if (Math.RandomIntInclusive(0, 100) < tool.GetDisarmRate())
 		{
+			explosive.OnBeforeDisarm();
 			explosive.Disarm(true);
 		}
 		else

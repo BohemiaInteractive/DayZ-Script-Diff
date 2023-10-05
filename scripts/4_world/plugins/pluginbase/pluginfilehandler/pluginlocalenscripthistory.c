@@ -1,32 +1,34 @@
 class PluginLocalEnscriptHistory extends PluginLocalHistoryBase
 {	
-	void PluginLocalEnscriptHistory()
+	override string GetSubFolderName()
 	{
+		return CFG_FILE_DEBUG_DIR;
 	}
-		
-	void ~PluginLocalEnscriptHistory()
-	{
-	}
-
+	
 	override string GetFileName()
 	{
-		return CFG_FILE_ENS_HISTORY;
+		if (!FileExist(GetSubFolderName()))//---ALL LINES CONTAINING THIS COMMENT CAN BE REMOVED IN 1.23
+			return "$profile:script_enscript.history";//---ALL LINES CONTAINING THIS COMMENT CAN BE REMOVED IN 1.23
+		
+		return GetSubFolderName() + CFG_FILE_ENS_HISTORY;
 	}
 }
 
 class PluginLocalEnscriptHistoryServer extends PluginLocalHistoryBase
 {	
-	void PluginLocalEnscriptHistoryServer()
-	{
-	}
-		
-	void ~PluginLocalEnscriptHistoryServer()
-	{
-	}
 
+	override string GetSubFolderName()
+	{
+		return CFG_FILE_DEBUG_DIR;
+	}
+	
 	override string GetFileName()
 	{
-		return CFG_FILE_ENS_HISTORY_SERVER;
+		if (!FileExist(GetSubFolderName()))//---ALL LINES CONTAINING THIS COMMENT CAN BE REMOVED IN 1.23
+			return "$profile:script_enscriptServer.history";//---ALL LINES CONTAINING THIS COMMENT CAN BE REMOVED IN 1.23
+		
+		return GetSubFolderName() + CFG_FILE_ENS_HISTORY_SERVER;
 	}
+
 }
 

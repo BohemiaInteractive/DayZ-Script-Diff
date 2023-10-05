@@ -28,6 +28,12 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 		m_player.GetActionManager().OnInstantAction(ActionDebug,new Param2<ItemBase,int>(item,actionId));
 	}
 	
+	void OnSelectActionEx(EntityAI item, int actionId)
+	{
+		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		m_player.GetActionManager().OnInstantAction(ActionDebug,new Param2<EntityAI,int>(item,actionId));
+	}
+	
 	void ShowActionMenu(InventoryItem item)
 	{
 		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
@@ -64,7 +70,7 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 				if (actionId == EActions.SEPARATOR)
 					cmenu.AddEx(actionText, textColor, this, "", null);
 				else
-					cmenu.AddEx(actionText, textColor, this, "OnSelectAction", new Param3<ItemBase, int, int>(itemBase, actionId, textColor));
+					cmenu.AddEx(actionText, textColor, this, "OnSelectActionEx", new Param3<EntityAI, int, int>(itemBase, actionId, textColor));
 			}
 		}
 

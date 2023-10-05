@@ -1077,6 +1077,13 @@ class Weapon_Base extends Weapon
 		if (PlayerBase.CastTo(player,old_owner))
 		{ 
 			player.SetReturnToOptics(false);
+			
+			//optics item state reset
+			ItemOptics optics;
+			if (Class.CastTo(optics,GetAttachedOptics()))
+			{
+				player.SwitchOptics(optics,false);
+			}
 		}
 
 		HideWeaponBarrel(false);

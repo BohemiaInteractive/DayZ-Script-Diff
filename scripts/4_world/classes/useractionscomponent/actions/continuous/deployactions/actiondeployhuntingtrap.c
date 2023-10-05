@@ -27,4 +27,9 @@ class ActionDeployHuntingTrap : ActionDeployBase
 	{
 		return GetGame().IsClient() || action_data.m_MainItem.CanBePlaced( action_data.m_Player, action_data.m_Player.GetPosition() );
 	}
+	
+	override void MoveEntityToFinalPosition(ActionData action_data, vector position, vector orientation)
+	{
+	
+	}
 }

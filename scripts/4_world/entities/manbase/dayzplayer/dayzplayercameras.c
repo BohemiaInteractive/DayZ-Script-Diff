@@ -164,9 +164,7 @@ class DayZPlayerCameras
 
 	static float 	OnCameraChange(DayZPlayer pPlayer, int pFrom, int pTo)
 	{
-		//Print("---transition change---");
 		float transTime = GetTransitionTime(pFrom, pTo);
-	    //Print("OnCameraChange:" + pFrom.ToString() + "->" + pTo.ToString() + " time:" + transTime.ToString());
-		return transTime;		
+		return transTime;
 	}
 }

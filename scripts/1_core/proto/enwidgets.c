@@ -42,6 +42,7 @@
 	TextListboxWidgetTypeID,
 	GenericListboxWidgetTypeID,
 	EditBoxWidgetTypeID,
+	PasswordEditBoxWidgetTypeID,
 	WorkspaceWidgetTypeID,
 	GridSpacerWidgetTypeID,
 	WrapSpacerWidgetTypeID,
@@ -349,6 +350,11 @@ class EditBoxWidget extends UIWidget
 	proto native void SetText(string str);
 };
 
+class PasswordEditBoxWidget extends EditBoxWidget
+{
+	proto native void SetHideText(bool hide);
+};
+
 class SliderWidget extends UIWidget
 {
 	proto native void SetMinMax(float minimum, float maximum);
@@ -375,7 +381,7 @@ class ProgressBarWidget extends SimpleProgressBarWidget
 class ButtonWidget extends UIWidget
 {
 	proto native bool GetState();
-
+ 
 	proto native bool SetState(bool state);
 
 	proto native void SetText(string text);
@@ -495,7 +501,7 @@ class ScrollWidget extends SpacerBaseWidget
 	proto native void VScrollToWidget(Widget child);
 };
 
-//VideoWidget
+//! Legacy, do not use
 enum VideoCommand
 {
 	PLAY,
@@ -507,11 +513,116 @@ enum VideoCommand
 	KILL
 };
 
+enum VideoState
+{
+	//! There is no video
+	NONE,
+	//! The video is playing
+	PLAYING,
+	//! The video is paused
+	PAUSED,
+	//! The video is paused at the beginning of the video
+	STOPPED,
+	//! The video is paused at the end of the video
+	FINISHED,
+};
+
+enum VideoCallback
+{
+	ON_PLAY,
+	ON_PAUSE,
+	ON_STOP,
+	ON_END,
+	ON_LOAD,
+	ON_SEEK,
+	ON_BUFFERING_START,
+	ON_BUFFERING_END,
+};
+
 class VideoWidget extends Widget
 {
-	proto native int Play(VideoCommand cmd);
-	proto native bool LoadVideo(string name, int soundScene);
+	//! Load a video file
+	proto native bool Load(string name, bool looping = false, int startTime = 0);
+	//! Unload the video, freeing up all resources
+	proto native void Unload();
+	
+	//! Starts video playback
+	proto native bool Play();
+	//! Pauses video playback
+	proto native bool Pause();
+	//! Stop video playback (cancels everything and sets it back at time 0)
+	proto native bool Stop();
+	
+	//! Set the desired time for the video (preload decides whether it will already load the next frames too)
+	proto native bool SetTime(int time, bool preload);	
+	//! Get the current time of the video
+	proto native int GetTime();
+	//! Get the total time of the video
+	proto native int GetTotalTime();
+	
+	//! Set whether the video should loop
+	proto native void SetLooping(bool looping);	
+	//! Whether looping is enabled
+	proto native bool IsLooping();
+	
+	//! QoL direct method to check for playing state (buffering while playing will still return true)
+	proto native bool IsPlaying();
+	//! Get the current state of the video
+	proto native VideoState GetState();
+	
+	/**
+	\brief Enable/Disable subtitles
+	\warning Subtitles need font to be assigned to VideoWidget in layout to work
+	\note Subtitles are in the format "videoName_Language.srt"
+	\note It is best to have the English one without language specified "videoName.srt"
+	*/
 	proto native void DisableSubtitles(bool disable);
+	//! Check if subtitles are disabled (enabled by default if available, so it will return false even if there are none)
+	proto native bool IsSubtitlesDisabled();
+	
+	//! Set a callback for a certain video event
+	proto void SetCallback(VideoCallback cb, func fn);
+	
+	//! Legacy, preferably not used, left for backwards compat
+	int Play(VideoCommand cmd)
+	{
+		// Yes, some things here do not do what the name implies
+		// And it returns 0 whether successful or not
+		// But this is what the old functionality looked like
+		// So for true backwards compat, it will be left like this
+		switch (cmd)
+		{
+			case VideoCommand.PLAY:
+				Play();
+				break;
+			case VideoCommand.STOP:
+				Pause();
+				break;
+			case VideoCommand.REWIND:
+				SetTime(0, true);
+				break;		
+			case VideoCommand.POSITION:
+				return GetTime();
+			case VideoCommand.REPEAT:
+				SetLooping(true);
+				break;
+			case VideoCommand.ISPLAYING:
+				return IsPlaying();
+			case VideoCommand.KILL:
+				Unload();
+				break;
+			default:
+				return 0;
+		}
+		
+		return 0;
+	}
+	
+	//! Legacy, preferably not used, left for backwards compat
+	bool LoadVideo(string name, int soundScene)
+	{
+		return Load(name);
+	}
 };
 
 /*! sets Widget typu RTTextureWidgetTypeID, to which it is possible to reference in shader as $rendertarget

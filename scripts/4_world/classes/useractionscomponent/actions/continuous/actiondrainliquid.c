@@ -67,4 +67,14 @@ class ActionDrainLiquid: ActionContinuousBase
 			GetGame().RPCSingleParam( target_vessel, SoundTypeBottle.EMPTYING, play, true );
 		}
 	}
+	
+	override void OnEnd( ActionData action_data )
+	{
+		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		{
+			Bottle_Base target_vessel = Bottle_Base.Cast( action_data.m_Target.GetObject());
+			Param1<bool> play = new Param1<bool>( false );
+			GetGame().RPCSingleParam( target_vessel, SoundTypeBottle.EMPTYING, play, true );
+		}
+	}
 };

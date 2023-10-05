@@ -36,7 +36,7 @@ class ActionLockDoors: ActionContinuousBase
 		{
 			int doorIndex = building.GetDoorIndex(target.GetComponentIndex());
 			if ( doorIndex != -1 )
-				return (!building.IsDoorOpen(doorIndex) && !building.IsDoorLocked(doorIndex));
+				return building.CanDoorBeLocked(doorIndex);
 		}		
 		return false;
 	}

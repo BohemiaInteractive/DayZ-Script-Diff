@@ -227,6 +227,9 @@ class MissionBase extends MissionBaseWorld
 			break;
 		case MENU_LOC_ADD:
 			menu = new ScriptConsoleAddLocation;
+			break;	
+		case MENU_MISSION_LOADER:
+			menu = new MissionLoader;
 			break;
 		}
 
@@ -236,20 +239,6 @@ class MissionBase extends MissionBaseWorld
 		}
 
 		return menu;
-	}
-
-	override UIScriptedWindow CreateScriptedWindow(int id)
-	{
-		UIScriptedWindow window = NULL;
-
-		switch (id)
-		{
-		case GUI_WINDOW_MISSION_LOADER:
-			window = new MissionLoader( GUI_WINDOW_MISSION_LOADER );
-			break;
-		}
-
-		return window;
 	}
 
 	void SpawnItems();

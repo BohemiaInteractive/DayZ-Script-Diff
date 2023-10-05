@@ -46,7 +46,6 @@ class ActionDisarmExplosiveWithRemoteDetonator : ActionDisarmExplosive
 		RemoteDetonatorTrigger rdt = RemoteDetonatorTrigger.Cast(item);
 		if (rdt && rdt.IsConnected())
 		{
-
 			if (explosive != rdt.GetControlledDevice())
 				return false;
 
@@ -60,14 +59,16 @@ class ActionDisarmExplosiveWithRemoteDetonator : ActionDisarmExplosive
 	
 	override void OnFinishProgressServer(ActionData action_data)
 	{
-		ExplosivesBase target = ExplosivesBase.Cast(action_data.m_Target.GetObject());
-		ItemBase detonator = ItemBase.Cast(action_data.m_MainItem);		
+		ExplosivesBase explosive = ExplosivesBase.Cast(action_data.m_Target.GetObject());
+		ItemBase detonator = ItemBase.Cast(action_data.m_MainItem);
+		
+		explosive.OnBeforeDisarm();
 		
 		//! claymore has integrated detonator
-		if (target.IsInherited(ClaymoreMine))
+		if (explosive.IsInherited(ClaymoreMine))
 		{
-			target.Disarm();
-			target.SetTakeable(true);
+			explosive.Disarm();
+			explosive.SetTakeable(true);
 			detonator.Delete();
 			return;
 		}

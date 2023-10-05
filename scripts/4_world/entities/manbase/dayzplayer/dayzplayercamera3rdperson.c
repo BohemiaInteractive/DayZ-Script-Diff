@@ -357,18 +357,10 @@ class DayZPlayerCamera3rdPersonErcRaised extends DayZPlayerCamera3rdPersonErc
 // *************************************************************************************
 class DayZPlayerCamera3rdPersonErcRaisedMelee extends DayZPlayerCamera3rdPersonErcRaised
 {
-	void DayZPlayerCamera3rdPersonErcRaisedMelee(DayZPlayer pPlayer, HumanInputController pInput)
+	override void HandleShoulderCameraOverride(HumanInputController pInput)
 	{
-		//Print("new camera: DayZPlayerCamera3rdPersonErcRaisedMelee");
-
-		//! shift on override - stay at current state
-		pInput.Override3rdIsRightShoulder(true, pInput.Camera3rdIsRightShoulder());
-	}
-
-	void ~DayZPlayerCamera3rdPersonErcRaisedMelee()
-	{
-		//! shift off override
-		m_pInput.Override3rdIsRightShoulder(false, false);
+		//! override - stay at current state
+		pInput.Override3rdIsRightShoulder(HumanInputControllerOverrideType.ENABLED, pInput.Camera3rdIsRightShoulder());
 	}
 }
 

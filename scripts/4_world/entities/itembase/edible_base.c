@@ -1,4 +1,4 @@
-class Edible_Base extends ItemBase
+class Edible_Base : ItemBase
 {
 	const string DIRECT_COOKING_SLOT_NAME 	= "DirectCooking";
 
@@ -15,20 +15,22 @@ class Edible_Base extends ItemBase
 	protected float m_DecayDelta = 0.0;
 	protected FoodStageType m_LastDecayStage = FoodStageType.NONE;
 	
+	private CookingMethodType m_CookedByMethod;
+	
 	void Edible_Base()
 	{
-		if ( HasFoodStage() )
+		if (HasFoodStage())
 		{
-			m_FoodStage = new FoodStage( this );
+			m_FoodStage = new FoodStage(this);
 			
-			//synchronized variables
-			RegisterNetSyncVariableInt( "m_FoodStage.m_FoodStageType", 	FoodStageType.NONE, FoodStageType.COUNT );
-			RegisterNetSyncVariableInt( "m_FoodStage.m_SelectionIndex", 0, 6 );
-			RegisterNetSyncVariableInt( "m_FoodStage.m_TextureIndex", 	0, 6 );
-			RegisterNetSyncVariableInt( "m_FoodStage.m_MaterialIndex", 	0, 6 );
-			RegisterNetSyncVariableFloat( "m_FoodStage.m_CookingTime", 	0, 600, 0 );						//min = 0; max = 0; precision = 0;
+			RegisterNetSyncVariableInt("m_FoodStage.m_FoodStageType",  FoodStageType.NONE, FoodStageType.COUNT);
+			RegisterNetSyncVariableInt("m_FoodStage.m_SelectionIndex", 0, 6);
+			RegisterNetSyncVariableInt("m_FoodStage.m_TextureIndex",   0, 6);
+			RegisterNetSyncVariableInt("m_FoodStage.m_MaterialIndex",  0, 6);
+			RegisterNetSyncVariableFloat("m_FoodStage.m_CookingTime",  0, 600, 0);
 
 			m_SoundPlaying = "";
+			m_CookedByMethod = CookingMethodType.NONE;
 			RegisterNetSyncVariableBool("m_MakeCookingSounds");
 		}
 	}
@@ -37,15 +39,13 @@ class Edible_Base extends ItemBase
 	{
 		super.EEInit();
 		
-		//update visual
 		UpdateVisuals();
 	}
 
-	override void EEDelete( EntityAI parent )
+	override void EEDelete(EntityAI parent)
 	{
-		super.EEDelete( parent );
+		super.EEDelete(parent);
 		
-		// remove audio
 		RemoveAudio();
 	}
 	
@@ -76,7 +76,7 @@ class Edible_Base extends ItemBase
 
 	void UpdateVisuals()
 	{
-		if ( GetFoodStage() )
+		if (GetFoodStage())
 		{
 			GetFoodStage().UpdateVisuals();
 		}
@@ -86,6 +86,7 @@ class Edible_Base extends ItemBase
 	{
 		AddQuantity(-amount, false, false);
 		OnConsume(amount, consumer);
+
 		return true;
 	}
 	
@@ -119,11 +120,10 @@ class Edible_Base extends ItemBase
 	{
 		super.OnVariablesSynchronized();
 		
-		//update visuals
 		UpdateVisuals();
 
 		//update audio
-		if ( m_MakeCookingSounds )
+		if (m_MakeCookingSounds)
 		{
 			RefreshAudio();
 		}
@@ -136,36 +136,31 @@ class Edible_Base extends ItemBase
 	//================================================================
 	// AUDIO EFFECTS (WHEN ON DCS)
 	//================================================================	
-	void MakeSoundsOnClient( bool soundstate )
+	void MakeSoundsOnClient(bool soundstate, CookingMethodType cookingMethod = CookingMethodType.NONE)
 	{
 		m_MakeCookingSounds = soundstate;
+		m_CookedByMethod 	= cookingMethod;
 
-		//synchronize
 		Synchronize();
 	}
+
 	protected void RefreshAudio()
 	{
-		string sound_name;
-		int particle_id;
+		string sound_name = "";
 
-		switch ( GetFoodStageType() )
+		switch (GetNextFoodStageType(m_CookedByMethod))
 		{
-			case FoodStageType.RAW:
-				sound_name = SOUND_BAKING_START;
-				break;
 			case FoodStageType.BAKED:
-				sound_name = SOUND_BAKING_DONE;
+				sound_name = SOUND_BAKING_START;
 				break;
 			case FoodStageType.BURNED:
 				sound_name = SOUND_BURNING_DONE;
-				break;
-			default:
-				sound_name = SOUND_BAKING_START;
 				break;
 		}
 
 		SoundCookingStart(sound_name);
 	}
+
 	protected void RemoveAudio()
 	{
 		m_MakeCookingSounds = false;
@@ -175,39 +170,39 @@ class Edible_Base extends ItemBase
 	//================================================================
 	// SERIALIZATION
 	//================================================================	
-	override void OnStoreSave( ParamsWriteContext ctx )
+	override void OnStoreSave(ParamsWriteContext ctx)
 	{   
-		super.OnStoreSave( ctx );
+		super.OnStoreSave(ctx);
 
-		if ( GetFoodStage() )
+		if (GetFoodStage())
 		{
-			GetFoodStage().OnStoreSave( ctx );
+			GetFoodStage().OnStoreSave(ctx);
 		}
 		
 		// food decay
-		ctx.Write( m_DecayTimer );
-		ctx.Write( m_LastDecayStage );
+		ctx.Write(m_DecayTimer);
+		ctx.Write(m_LastDecayStage);
 	}
 	
-	override bool OnStoreLoad( ParamsReadContext ctx, int version )
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
-		if ( !super.OnStoreLoad( ctx, version ) )
+		if (!super.OnStoreLoad(ctx, version))
 			return false;
 
-		if ( GetFoodStage() )
+		if (GetFoodStage())
 		{
-			if ( !GetFoodStage().OnStoreLoad( ctx, version ) )
-			return false;
+			if (!GetFoodStage().OnStoreLoad(ctx, version))
+				return false;
 		}
 		
-		if ( version >= 115 )
+		if (version >= 115)
 		{
-			if ( !ctx.Read( m_DecayTimer ) )
+			if (!ctx.Read(m_DecayTimer))
 			{
 				m_DecayTimer = 0.0;
 				return false;
 			}
-			if ( !ctx.Read( m_LastDecayStage ) )
+			if (!ctx.Read(m_LastDecayStage))
 			{
 				m_LastDecayStage = FoodStageType.NONE;
 				return false;
@@ -221,7 +216,6 @@ class Edible_Base extends ItemBase
 	{	
 		super.AfterStoreLoad();
 		
-		//synchronize
 		Synchronize();
 	}	
 

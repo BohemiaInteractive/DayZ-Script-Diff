@@ -10,8 +10,8 @@ class FireplaceLight extends PointLightBase
 		SetBrightnessTo(m_FireplaceBrightness);
 		SetCastShadow(true);
 		SetFadeOutTime(5);
-		SetDiffuseColor(1.0, 0.5, 0.3);
-		SetAmbientColor(1.0, 0.5, 0.3);
+		SetDiffuseColor(1.3, 0.35, 0.15);
+		SetAmbientColor(1.3, 0.35, 0.15);
 		SetFlareVisible(false);
 		SetFlickerAmplitude(0.3);
 		SetFlickerSpeed(0.9);

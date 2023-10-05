@@ -326,7 +326,7 @@ class Particle : ParticleBase
 	{
 		if (m_ParticleEffect)
 		{
-			return m_ParticleEffect.HasActiveParticle(m_ParticleEffect);
+			return ParticleHasActive(m_ParticleEffect);
 		}
 		
 		return false;
@@ -341,7 +341,7 @@ class Particle : ParticleBase
 	{
 		if (m_ParticleEffect)
 		{
-			return m_ParticleEffect.GetParticleCount(m_ParticleEffect);
+			return ParticleGetCount(m_ParticleEffect);
 		}
 		
 		return 0;

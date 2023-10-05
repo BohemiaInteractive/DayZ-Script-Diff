@@ -10,4 +10,5 @@ enum EStaminaModifiers
 	CLIMB,
 	ROLL,
 	DROWN,
+	PUSH_CAR,
 }

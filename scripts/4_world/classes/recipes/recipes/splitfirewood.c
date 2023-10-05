@@ -33,12 +33,12 @@ class SplitFirewood extends RecipeBase
 		m_IngredientUseSoftSkills[0] = false;// set 'true' to allow modification of the values by softskills on this ingredient
 		
 		//ingredient 2
-		InsertIngredient(1,"Hacksaw");
-		InsertIngredient(1,"HandSaw");
-		InsertIngredient(1,"Pickaxe");
-		InsertIngredient(1,"WoodAxe");
-		InsertIngredient(1,"Hatchet");
-		InsertIngredient(1,"FirefighterAxe");
+		InsertIngredientEx(1,"Hacksaw"  , 		 "FirewoodSplit_Saw");
+		InsertIngredientEx(1,"HandSaw"  , 		 "FirewoodSplit_Saw");
+		InsertIngredientEx(1,"Pickaxe"  , 		 "FirewoodSplit_Axe");
+		InsertIngredientEx(1,"WoodAxe"  , 		 "FirewoodSplit_Axe");
+		InsertIngredientEx(1,"Hatchet"  ,  		 "FirewoodSplit_Axe");
+		InsertIngredientEx(1,"FirefighterAxe" ,  "FirewoodSplit_Axe");
 		
 		m_IngredientAddHealth[1] = -4;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

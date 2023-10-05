@@ -26,6 +26,13 @@ class Barrel_ColorBase : DeployableContainer_Base
 		return 110;
 	}
 	
+	override void EECargoIn(EntityAI item)
+	{
+		super.EECargoIn(item);
+
+		MiscGameplayFunctions.SoakItemInsideParentContainingLiquidAboveThreshold(ItemBase.Cast(item), this);
+	}
+	
 	override void OnStoreSave( ParamsWriteContext ctx )
 	{   
 		super.OnStoreSave( ctx );

@@ -68,7 +68,7 @@ class PlayerPreview: LayoutHolder
 	
 	bool MouseButtonDown(Widget w, int x, int y, int button)
 	{
-		g_Game.GetMousePos( m_CharacterRotationX, m_CharacterRotationY );
+		GetMousePos( m_CharacterRotationX, m_CharacterRotationY );
 		m_IsHolding = true;
 		return true;
 	}

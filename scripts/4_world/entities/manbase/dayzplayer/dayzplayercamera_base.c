@@ -95,8 +95,15 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 
 		m_CommandWeapons = pPlayer.GetCommandModifier_Weapons();
 		Init();
+		HandleShoulderCameraOverride(pInput);
 	};
 	
+	//disabled by default, overrides on select 3rd person cameras
+	void HandleShoulderCameraOverride(HumanInputController pInput)
+	{
+		//! disable override
+		m_pInput.Override3rdIsRightShoulder(HumanInputControllerOverrideType.DISABLED, false);
+	}
 	
 	void ProcessCameraShake(float delta, out float leftRight, out float upDown)
 	{
@@ -533,7 +540,6 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	
 	void InitCameraOnPlayer(bool force = false)
 	{
-		//Print("" + this + " | " + GetGame().GetTime());
 		PlayerBase player = PlayerBase.Cast(m_pPlayer);
 		if (!player.GetCurrentPlayerCamera() || (force && player.GetCurrentPlayerCamera() != this))
 		{

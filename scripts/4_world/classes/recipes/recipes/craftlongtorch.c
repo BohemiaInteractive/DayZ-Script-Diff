@@ -73,12 +73,14 @@ class CraftLongTorch extends RecipeBase
 		if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
 		{
 			player.ServerTakeEntityToTargetAttachment(torch, rag);
-			torch.StandUp();
-			torch.CraftingInit(rag.GetQuantity());
+			
 		}
 		else if ( !GetGame().IsMultiplayer() )
 		{
 			player.LocalTakeEntityToTargetAttachment(torch, rag);
 		}
+		
+		torch.StandUp();
+		torch.CraftingInit(rag.GetQuantity());
 	}
 };

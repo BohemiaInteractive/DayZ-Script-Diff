@@ -202,6 +202,16 @@ proto native int GetParticleCount(notnull IEntity ent);
 // return if there are any active particles
 proto bool HasActiveParticle(notnull IEntity ent);
 
+int ParticleGetCount(IEntity ent)
+{
+	return GetParticleCount(ent);
+}
+
+bool ParticleHasActive(IEntity ent)
+{
+	return HasActiveParticle(ent);
+}
+
 // gets name of defined emitors in a particle effect
 // return number of emitors and their names in an array (max defines max. emitors to return)
 proto int GetParticleEmitors(notnull IEntity ent, out string emitors[], int max);

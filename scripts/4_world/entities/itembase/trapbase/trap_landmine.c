@@ -6,6 +6,7 @@ enum SoundTypeMine
 class LandMineTrap extends TrapBase
 {
 	protected ref EffectSound m_TimerLoopSound;
+	protected ref EffectSound m_SafetyPinSound;
 	protected ref EffectSound m_DisarmingLoopSound;
 	protected ref Timer m_DeleteTimer;
 	
@@ -46,9 +47,14 @@ class LandMineTrap extends TrapBase
 		
 		if (!GetGame().IsDedicatedServer())
 		{
-			EffectSound sound = SEffectManager.PlaySound("landmine_safetyPin_SoundSet", GetPosition(), 0, 0, false);
-			sound.SetAutodestroy( true );
-			m_TimerLoopSound = SEffectManager.PlaySound("landmine_timer2_SoundSet", GetPosition(), 0, 0, true);
+			if (m_SafetyPinSound)
+			{
+				m_SafetyPinSound = SEffectManager.PlaySound("landmine_safetyPin_SoundSet", GetPosition(), 0, 0, false);
+				m_SafetyPinSound.SetAutodestroy(true);
+			}
+			
+			if (!m_TimerLoopSound)
+				m_TimerLoopSound = SEffectManager.PlaySound("landmine_timer2_SoundSet", GetPosition(), 0, 0, true);
 		}
 	}
 	
@@ -174,10 +180,9 @@ class LandMineTrap extends TrapBase
 		{
 			obj.ProcessDirectDamage(DT_CLOSE_COMBAT, this, "", "LandMineExplosion_CarWheel", "0 0 0", 1);
 			Explode(DamageType.EXPLOSION);
+
 			if (m_UpdateTimer.IsRunning())
-			{
 				m_UpdateTimer.Stop();
-			}
 			
 		}
 
@@ -245,24 +250,18 @@ class LandMineTrap extends TrapBase
 		Param1<bool> p = new Param1<bool>(false);
 				
 		if (!ctx.Read(p))
-		{
 			return;
-		}
 
 		bool play = p.param1;
-		
 		switch (rpc_type)
 		{
-		case SoundTypeMine.DISARMING:
-			if (play)
-			{
-				PlayDisarmingLoopSound();
-			}
-			else
-			{
-				StopDisarmingLoopSound();
-			}
-			break;
+			case SoundTypeMine.DISARMING:
+				if (play)
+					PlayDisarmingLoopSound();
+				else
+					StopDisarmingLoopSound();
+	
+				break;
 		}
 	}
 	
@@ -325,24 +324,31 @@ class LandMineTrap extends TrapBase
 		StartActivate(null);
 	}
 	
-	override void GetDebugButtonNames(out string button1, out string button2, out string button3, out string button4)
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		button1 = "Activate";
-		button2 = "Deactivate";
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ACTIVATE_ENTITY, "Activate", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEACTIVATE_ENTITY, "Deactivate", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		
+		super.GetDebugActions(outputList);
 	}
 	
-	override void OnDebugButtonPressServer(int button_index)
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
-		switch (button_index)
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			case 1:
+			if (action_id == EActions.ACTIVATE_ENTITY)
+			{
 				StartActivate(null);
-			break;
-			case 2:
+			}
+			else if (action_id == EActions.DEACTIVATE_ENTITY)
+			{
 				SetInactive();
-			break;
+			}
 		}
-		
+		return false;
 	}
 #endif
 }

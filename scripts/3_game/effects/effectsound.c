@@ -724,10 +724,10 @@ class EffectSound : Effect
 	*/
 	override vector GetCurrentLocalPosition()
 	{
+		Object parent = GetParent();
+		
 		if (m_SoundObject)
 		{
-			Object parent = GetParent();
-			
 			//TODO(kumarjac): Create and expose 'SoundObject.GetLocalPosition'
 			if (parent)
 				return parent.WorldToModel(m_SoundObject.GetPosition());
@@ -735,7 +735,14 @@ class EffectSound : Effect
 				return m_SoundObject.GetPosition();
 		}
 		else
-			return GetPosition();
+		{
+			if (parent)
+				return GetLocalPosition();
+			else
+				return GetPosition();
+		}
+		
+		return vector.Zero;
 	}
 	
 	/**

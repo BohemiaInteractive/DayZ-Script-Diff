@@ -22,7 +22,7 @@ class SpookyEventWhisper : SpookyEventBase
 {
 	override protected void Init()
 	{
-		SetCoolDown(100);
+		SetCoolDown(80);
 		m_SoundSet = "SpookyArea_Whispering_SoundSet";
 	}
 	
@@ -37,9 +37,9 @@ class SpookyEventSteps : SpookyEventBase
 {
 	override protected void Init()
 	{
-		SetCoolDown(60);
+		SetCoolDown(40);
 		m_SoundSet = "SpookyArea_RunOnConcrete_SoundSet";
-		m_Surfaces = {"stone"};
+		m_Surfaces = {"stone", "gravel", "concrete", "wood", "asphalt", "tiles", "textile"};
 	}
 	
 	override protected void Do(PlayerBase player)
@@ -52,9 +52,14 @@ class SpookyEventRustle : SpookyEventBase
 {
 	override protected void Init()
 	{
-		SetCoolDown(140);
+		SetCoolDown(60);
 		m_SoundSet = "SpookyArea_IntenseFoliageRustle_SoundSet";
-		m_Surfaces = {"grass"};
+		m_Surfaces = {"grass", "dirt", "forest", "soil"};
+	}
+	
+	override protected bool CanDo(PlayerBase player, TStringVectorMap surfaceTypes)
+	{
+		return !player.IsSoundInsideBuilding();
 	}
 	
 	override protected void Do(PlayerBase player)
@@ -194,7 +199,7 @@ class SpookyTriggerEventsHandler
 	protected ref array<ref SpookyEventBase> 	m_SoundEvents;
 	protected PlayerBase						m_Player;
 	protected float 							m_TimeAccu;
-	protected const float 						CONSECUTIVE_EVENTS_COOLDOWN = 30;//min delay in seconds before two events
+	protected const float 						CONSECUTIVE_EVENTS_COOLDOWN = 20;//min delay in seconds before two events
 	protected const float 						EVENT_CHECK_FREQUENCY = 2;//when not in cooldown, the rate at which we query the events
 	protected const float						FIRST_EVENT_CHECK_DELAY = 15;//the delay between the first event check when we first enter the contaminated area
 	protected const float 						SURFACE_CHECK_POINT_DISTANCE = 2;//additional checks for surface are performed at this distance from the player

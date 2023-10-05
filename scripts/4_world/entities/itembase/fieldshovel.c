@@ -18,6 +18,7 @@ class FieldShovel extends ItemBase
 		AddAction(ActionBuryBody);
 		AddAction(ActionBuryAshes);
 		AddAction(ActionDigInStash);
+		AddAction(ActionDigOutStash);
 		AddAction(ActionFillObject);
 		AddAction(ActionDigWorms);
 		AddAction(ActionCreateGreenhouseGardenPlot);

@@ -8,6 +8,26 @@ class FullTimeData
 	int m_Minutes
 	int m_Seconds
 	
+	string FormatedAsTimestamp()
+	{
+		m_Hours += m_Days * 24;
+		
+		string h;
+		string m;
+		string s;
+		
+		if (m_Hours < 10)
+			h = "0";
+		
+		if (m_Minutes < 10)
+			m = "0";
+		
+		if (m_Seconds < 10)
+			s = "0";
+		
+		return string.Format("%1%2:%3%4:%5%6", h, m_Hours, m, m_Minutes, s, m_Seconds);
+	}
+	
 	string FormatedWithZero()
 	{
 		return string.Format("%1#STR_time_unit_abbrev_day_0 %2#STR_time_unit_abbrev_hour_0 %3#STR_time_unit_abbrev_minute_0 %4#STR_time_unit_abbrev_second_0", m_Days, m_Hours, m_Minutes, m_Seconds);

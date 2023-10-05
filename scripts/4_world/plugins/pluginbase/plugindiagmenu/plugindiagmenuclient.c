@@ -11,7 +11,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 	// Cheats
 	bool m_ModifiersEnabled = true;
 	int m_IsInvincible;	
-	bool m_StaminaDisabled;
+	bool m_StaminaDisabled;	
 	
 	// Misc
 	float m_Playtime;
@@ -352,6 +352,10 @@ class PluginDiagMenuClient : PluginDiagMenu
 	//---------------------------------------------
 	static void CBCheatsStaminaDisable(bool enabled)
 	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		if (player)
+			player.SetStaminaDisabled(enabled);
+
 		PluginDiagMenuClient pluginDiag = PluginDiagMenuClient.Cast(GetPlugin(PluginDiagMenuClient));
 		DiagToggleRPCServer(enabled, pluginDiag.m_StaminaDisabled, ERPCs.DIAG_CHEATS_DISABLE_STAMINA);
 	}
@@ -1074,8 +1078,25 @@ class PluginDiagMenuClient : PluginDiagMenu
 	{
 		if (!GetGame())
 			return null;
+
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+
+		if (DiagMenu.GetBool(DiagMenuIDs.MISC_ACTION_ON_CURSOR))
+		{
+			float hitFraction;
+			vector start = GetGame().GetCurrentCameraPosition();
+			vector end = start + (GetGame().GetCurrentCameraDirection() * 5.0);	
+
+			vector hitPos, hitNormal;
+			Object hitObj;
+			
+			PhxInteractionLayers hitMask = 0xFFFFFFFFFF;
+
+			DayZPhysics.RayCastBullet(start, end, hitMask, null, hitObj, hitPos, hitNormal, hitFraction);
+			Class.CastTo(player, hitObj);
+		}
 		
-		return PlayerBase.Cast(GetGame().GetPlayer());
+		return player;
 	}
 	
 	//---------------------------------------------
@@ -1280,7 +1301,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 			
 			if (!GetGame().IsMultiplayer() || !serverOnly)
 			{
-				SendDiagRPCSelf(value, rpc);
+				GetGame().RPCSelfSingleParam(player, rpc, value);
 			}
 		}
  	}

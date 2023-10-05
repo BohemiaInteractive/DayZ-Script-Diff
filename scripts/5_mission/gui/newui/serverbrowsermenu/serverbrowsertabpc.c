@@ -651,16 +651,77 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		m_Menu.SelectServer( server );
 	}
 		
-	int SortedInsert( GetServersResultRow entry, ESortType sort_type )
+	int SortedInsert(GetServersResultRow entry, ESortType sort_type)
 	{
-		if ( m_SortInverted[sort_type] )
+		return SortedInsertEx(entry, sort_type, m_SortInverted[sort_type]);
+	}
+
+	private int SortedInsertEx(GetServersResultRow entry, ESortType sortType, bool isDescending)
+	{		
+		array<ref GetServersResultRow> list = m_EntriesSorted[sortType];
+		int indexMax = list.Count() - 1;
+		int indexMin = 0;
+		int targetIndex = Math.Floor( indexMax / 2 );
+		int comparisonMultiplier = 1;
+		
+		// if order is descending, then invert comparison results
+		if (isDescending == true)
 		{
-			return SortedInsertDesc(entry, sort_type);
+			comparisonMultiplier = -1;
 		}
 		
-		return SortedInsertAsc(entry, sort_type);
+		if ( indexMax == -1 )
+		{
+			list.Insert( entry );
+			return 0;
+		}
+		
+		while ( true )
+		{
+			int comparisonResult = comparisonMultiplier * entry.CompareTo(list[targetIndex], sortType);	
+			
+			if ((indexMax - indexMin) <= 1)
+			{
+				for (int i = indexMin; i <= indexMax; i++ )
+				{
+					comparisonResult = comparisonMultiplier * entry.CompareTo(list[i], sortType);		
+					
+					if ( comparisonResult > 0 )
+					{
+						list.InsertAt( entry, i );
+						return i;
+					}
+				}
+				
+				// adding entry AFTER indexMax
+				targetIndex = Math.Min(indexMax + 1, list.Count());
+				list.InsertAt(entry, targetIndex);
+				return targetIndex;
+			}
+			
+			if (comparisonResult == 0)
+			{
+				list.InsertAt(entry, targetIndex);
+				return targetIndex;
+			}
+			
+			if (comparisonResult > 0)
+			{
+				indexMax = targetIndex;
+			}
+			
+			else if (comparisonResult < 0)
+			{
+				indexMin = targetIndex;
+			}
+			
+			targetIndex = indexMin + Math.Floor((indexMax - indexMin) / 2);	
+		}
+		
+		return 0;
 	}
 	
+	// DEPRECATED
 	int SortedInsertAsc( GetServersResultRow entry, ESortType sort_type )
 	{
 		array<ref GetServersResultRow> list = m_EntriesSorted[sort_type];
@@ -750,6 +811,7 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		return target_index;
 	}
 	
+	// DEPRECATED
 	int SortedInsertDesc( GetServersResultRow entry, ESortType sort_type )
 	{
 		array<ref GetServersResultRow> list = m_EntriesSorted[sort_type];

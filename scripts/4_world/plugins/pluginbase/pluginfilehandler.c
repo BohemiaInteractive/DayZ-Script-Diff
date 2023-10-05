@@ -44,6 +44,11 @@ class PluginFileHandler extends PluginBase
 		return string.Empty;
 	}
 	
+	string GetSubFolderName()
+	{
+		return string.Empty;
+	}
+	
 	void ClearFileNoSave()
 	{
 		m_FileContent.Clear();	
@@ -79,6 +84,11 @@ class PluginFileHandler extends PluginBase
 		if ( m_ReadOnly )
 		{
 			return false;
+		}
+		
+		if (GetSubFolderName() && !FileExist(GetSubFolderName()))
+		{
+			MakeDirectory(GetSubFolderName());
 		}
 		
 		//Log("SaveFile -> Opening File: "+GetFileName());

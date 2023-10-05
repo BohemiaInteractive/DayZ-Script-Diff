@@ -127,11 +127,11 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	}
 
 	//! DEPRECATED
-	void SetInteractXboxIcon(string imageset_name, string image_name) {};
-	void SetContinuousInteractXboxIcon(string imageset_name, string image_name) {};
-	void SetSingleXboxIcon(string imageset_name, string image_name) {};
-	void SetContinuousXboxIcon(string imageset_name, string image_name) {};
-	protected void SetXboxIcon(string name, string imageset_name, string image_name) {};
+	void SetInteractXboxIcon(string imageset_name, string image_name);
+	void SetContinuousInteractXboxIcon(string imageset_name, string image_name);
+	void SetSingleXboxIcon(string imageset_name, string image_name);
+	void SetContinuousXboxIcon(string imageset_name, string image_name);
+	protected void SetXboxIcon(string name, string imageset_name, string image_name);
 	//! ---------
 	
 	protected void SetControllerIcon(string pWidgetName, string pInputName)
@@ -314,6 +314,15 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		
 		if (m_Player.IsInVehicle() || m_AM.GetRunningAction())
 			m_Hidden = true;
+		
+		
+		/*
+		#ifdef DIAG_DEVELOPER
+		if (DeveloperFreeCamera.IsFreeCameraEnabled())
+			HideWidget();
+			return;
+		#endif
+		*/
 
 		bool isVisionObstructionActive = PPEManagerStatic.GetPPEManager().IsAnyRequesterRunning(VISION_OBSTRUCTION_PPEFFECTS_TYPES);
 				
@@ -980,71 +989,37 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	
 		//! when cargo in container
 		if (cargoCount > 0)
-		{
 			descText = string.Format("[+] %1  %2", descText, msg);
-			itemName.SetText(descText);
-		}
 		else
-		{
 			descText = string.Format("%1  %2", descText, msg);
-			itemName.SetText(descText);
-		}
 
+		itemName.SetText(descText);
 		widget.Show(true);
 	}
 	
 	protected void SetItemHealth(int health, string itemWidget, string healthWidget, bool enabled)
 	{
-		Widget widget;
-		
-		widget = m_Root.FindAnyWidget(itemWidget);
+		Widget widget = m_Root.FindAnyWidget(itemWidget);
 		
 		if (enabled)
 		{
 			ImageWidget healthMark;
 			Class.CastTo(healthMark, widget.FindAnyWidget(healthWidget));
+			int color = 0x00FFFFFF;
 
-			switch (health)
+			if (health == -1)
 			{
-				case -1 :
-					healthMark.GetParent().Show(false);
-					break;
-				case GameConstants.STATE_PRISTINE :
-					healthMark.SetColor(Colors.COLOR_PRISTINE);
-					healthMark.SetAlpha(0.5);
-					healthMark.GetParent().Show(true);
-					break;
-				case GameConstants.STATE_WORN :
-					healthMark.SetColor(Colors.COLOR_WORN);
-					healthMark.SetAlpha(0.5);
-					healthMark.GetParent().Show(true);
-					break;
-				case GameConstants.STATE_DAMAGED :
-					healthMark.SetColor(Colors.COLOR_DAMAGED);
-					healthMark.SetAlpha(0.5);
-					healthMark.GetParent().Show(true);
-					break;
-				case GameConstants.STATE_BADLY_DAMAGED:
-					healthMark.SetColor(Colors.COLOR_BADLY_DAMAGED);
-					healthMark.SetAlpha(0.5);
-					healthMark.GetParent().Show(true);
-					break;
-				case GameConstants.STATE_RUINED :
-					healthMark.SetColor(Colors.COLOR_RUINED);
-					healthMark.SetAlpha(0.5);
-					healthMark.GetParent().Show(true);
-					break;
-				default :
-					healthMark.SetColor(0x00FFFFFF);
-					healthMark.SetAlpha(0.5);
-					healthMark.GetParent().Show(true);
-					break;			
+				healthMark.GetParent().Show(false);
+				widget.Show(enabled);
+				return;
 			}
 			
-			widget.Show(true);
+			healthMark.SetColor(ItemManager.GetItemHealthColor(health));
+			healthMark.SetAlpha(0.5);
+			healthMark.GetParent().Show(true);
 		}
-		else
-			widget.Show(false);
+		
+		widget.Show(enabled);
 	}
 	
 	protected void SetItemQuantity(int type, float current, int min, int max, string itemWidget, string quantityPBWidget, string quantityTextWidget, bool enabled)

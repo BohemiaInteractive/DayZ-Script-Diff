@@ -131,6 +131,11 @@ class OptionSelectorSliderSetup extends OptionSelectorBase
 		return ret;
 	}
 	
+	void SetMax(float max)
+	{
+		m_MaxValue = max;
+	}
+	
 	override void ColorHighlight(Widget w)
 	{
 		if (!w)
