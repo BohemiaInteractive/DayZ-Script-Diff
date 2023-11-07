@@ -51,7 +51,7 @@ class ActionTakeItemToHands: ActionInteractBase
 		super.OnEndServer(action_data);
 		
 		EntityAI takenEntity = EntityAI.Cast(action_data.m_Target.GetObject());
-		if (takenEntity && takenEntity.GetCompEM() && takenEntity.GetCompEM().IsPlugged())
+		if (takenEntity && takenEntity.GetCompEM() && takenEntity.IsElectricAppliance())
 			takenEntity.GetCompEM().UnplugThis();
 	}
 	

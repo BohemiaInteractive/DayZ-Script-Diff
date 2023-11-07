@@ -204,9 +204,9 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 					bool isFavorited = m_Menu.IsFavorited(ipPort);
 					
 					entry = GetServerEntryByIndex( index );
+					entry.SetIsOnline(true);
 					entry.FillInfo( result );
 					entry.SetFavorite(isFavorited);
-					entry.SetIsOnline(true);
 					entry.UpdateEntry();
 					
 					if (isFavorited && m_OnlineFavServers.Find(ipPort) == -1)

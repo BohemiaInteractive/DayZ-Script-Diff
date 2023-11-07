@@ -1094,7 +1094,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("Snack_ColorBase",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/BloodBag_Sealed.anm");
 		pType.AddItemInHandsProfileIK("Crackers",							"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/saltycrackers.anm");
 		
-		pType.AddItemInHandsProfileIK("Candycane_Colorbase",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/zagorky.anm");
+		pType.AddItemInHandsProfileIK("Candycane_Colorbase",				"dz/anims/workspaces/player/player_main/props/player_main_1h_candycane.asi",		toolsOneHanded,				"dz/anims/anm/player/ik/gear/candycane.anm");
 
 		//! Food fruits		
 		pType.AddItemInHandsProfileIK("Apple",								"dz/anims/workspaces/player/player_main/props/player_main_1h_fruit.asi",			toolsOneHanded,				"dz/anims/anm/player/ik/gear/apple.anm");

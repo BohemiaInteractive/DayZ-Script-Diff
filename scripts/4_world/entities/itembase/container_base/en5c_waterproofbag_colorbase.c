@@ -1,10 +1,5 @@
 class WaterproofBag_ColorBase : Container_Base
 {
-	override bool IsContainer()
-	{
-		return true;
-	}
-	
 	override bool CanPutInCargo(EntityAI parent)
 	{
 		if (!super.CanPutInCargo(parent))
@@ -13,7 +8,7 @@ class WaterproofBag_ColorBase : Container_Base
 		if (parent && parent.IsKindOf("AmmoBox"))
 			return false;
 		
-		if (GetNumberOfItems() > 0 && parent.IsKindOf("WaterproofBag_ColorBase"))
+		if (GetNumberOfItems() > 0 || parent.IsKindOf("WaterproofBag_ColorBase"))
 			return false;
 
 		return true;

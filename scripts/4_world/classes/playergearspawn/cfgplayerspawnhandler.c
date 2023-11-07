@@ -1,31 +1,33 @@
 class PlayerSpawnHandler
 {
-	private static string m_Path = "$mission:cfgPlayerSpawnGear.json";
 	private static bool m_Initialized = false;
-	static ref PlayerSpawnJsonData m_Data;
+	static ref PlayerSpawnJsonData m_Data = new PlayerSpawnJsonData();
 	
 	static bool LoadData()
 	{
-		if (!FileExist(m_Path))
-		{
+		array<string> spawnGearPresetFiles = CfgGameplayHandler.GetPlayerSpawnGearPresetFiles();
+		if (!spawnGearPresetFiles || (spawnGearPresetFiles && spawnGearPresetFiles.Count() == 0))
 			return false;
+
+		m_Data.presets = {};
+
+		foreach (string spawnPresetFile : spawnGearPresetFiles)
+		{
+			string path = "$mission:"+spawnPresetFile;
+			if (!FileExist(path))
+				ErrorEx(string.Format("File \"%1\" does not exist", path), ErrorExSeverity.WARNING);
+			else
+			{
+				PlayerSpawnPreset preset;
+				JsonFileLoader<PlayerSpawnPreset>.JsonLoadFile(path, preset);
+				if (preset != null)
+					m_Data.presets.Insert(preset);
+			}
 		}
 
-		bool cfgPlayerSpawnGearFileUsed = CfgGameplayHandler.GetUsePlayerSpawnGearFile();
-
-#ifdef DIAG_DEVELOPER
-		if (!GetGame().IsDedicatedServer())
-		{
-			cfgPlayerSpawnGearFileUsed = true;
-		}
-#endif
-		if (cfgPlayerSpawnGearFileUsed)
-		{
-			JsonFileLoader<PlayerSpawnJsonData>.JsonLoadFile(m_Path, m_Data);
-			m_Initialized = true;
-		}
+		m_Initialized = m_Data.presets.Count() > 0;
 		
-		return cfgPlayerSpawnGearFileUsed;
+		return true;
 	}
 	
 	static bool IsInitialized()
@@ -155,7 +157,7 @@ class PlayerSpawnHandler
 		return true;
 	}
 	
-	private static bool SpawnDiscreteSlotItemSet(EntityAI parent, PlayerSpawnPresetDiscreteItemSetSlotData dis, int slotID)
+	private static bool SpawnDiscreteSlotItemSet(PlayerBase player, PlayerSpawnPresetDiscreteItemSetSlotData dis, int slotID)
 	{
 		if (!dis)
 		{
@@ -163,14 +165,19 @@ class PlayerSpawnHandler
 			return false;
 		}
 		
-		ItemBase item = ItemBase.Cast(parent.GetInventory().CreateAttachmentEx(dis.itemType,slotID));
+		ItemBase item;
+		if (slotID == InventorySlots.HANDS) //hands exception
+			item = ItemBase.Cast(player.GetHumanInventory().CreateInHands(dis.itemType));
+		else
+			item = ItemBase.Cast(player.GetInventory().CreateAttachmentEx(dis.itemType,slotID));
+		
 		if (item)
 		{
 			HandleNewItem(item,dis);
 		}
 		else if (dis.itemType != string.Empty)
 		{
-			Debug.Log("FAILED spawning item type: " + dis.itemType + " into slot: " + InventorySlots.GetSlotName(slotID) + " of parent: " + parent,"n/a","n/a","SpawnDiscreteSlotItemSet");
+			Debug.Log("FAILED spawning item type: " + dis.itemType + " into slot: " + InventorySlots.GetSlotName(slotID) + " of parent: " + player,"n/a","n/a","SpawnDiscreteSlotItemSet");
 			return false;
 		}
 		
@@ -263,13 +270,8 @@ class PlayerSpawnHandler
 		if (Class.CastTo(player,parent)) //special behavior
 		{
 			int count = player.GetInventory().AttachmentCount();
-			ItemBase attachment;
-			for (int i = 0; i < count; i++)
-			{
-				attachment = ItemBase.Cast(player.GetInventory().GetAttachmentFromIndex(i));
-				if (Class.CastTo(newItem,attachment.GetInventory().CreateInInventory(type)))
-					return newItem;
-			}
+			if (Class.CastTo(newItem,player.GetInventory().CreateInInventory(type)))
+				return newItem;
 			
 			Debug.Log("FAILED spawning item: " + type + ", it fits in no cargo or attachment on any worn item","n/a","n/a","CreateChildItem");
 			return null;

@@ -305,20 +305,25 @@ class TimerBase: Managed
 		m_timerQueue = NULL;
 	}
 
-	float GetTime() {
-			return m_time;
+	float GetTime()
+	{
+		return m_time;
 	}
 		
-	float GetDuration() {
-			return m_duration;
+	float GetDuration()
+	{
+		return m_duration;
 	}
 		
-	float GetRemaining() {
-			return m_duration - m_time;
+	float GetRemaining()
+	{
+		return m_duration - m_time;
 	}
 	
 	float GetRunTime()
+	{
 		return m_RunTime;
+	}
 		
 	protected void OnInit(int category)
 	{

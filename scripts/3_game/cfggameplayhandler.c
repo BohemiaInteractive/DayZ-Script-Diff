@@ -432,9 +432,9 @@ class CfgGameplayHandler
 		return m_Data.PlayerData.MovementData.allowStaminaAffectInertia;
 	}
 	//----------------------------------------------------------------------------------
-	static bool GetUsePlayerSpawnGearFile()
+	static TStringArray GetPlayerSpawnGearPresetFiles()
 	{
-		return m_Data.PlayerData.usePlayerSpawnGearFile;
+		return m_Data.PlayerData.spawnGearPresetFiles;
 	}
 	//----------------------------------------------------------------------------------
 }

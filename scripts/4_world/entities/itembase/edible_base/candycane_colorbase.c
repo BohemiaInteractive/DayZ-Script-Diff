@@ -7,8 +7,9 @@ class Candycane_Colorbase extends Edible_Base
 	override void SetActions()
 	{
 		super.SetActions();
-		
-		AddAction(ActionConsumeSingle);
+
+		AddAction(ActionEat);
+		AddAction(ActionForceFeed);
 	}
 };
 class Candycane_Green extends Candycane_Colorbase {};

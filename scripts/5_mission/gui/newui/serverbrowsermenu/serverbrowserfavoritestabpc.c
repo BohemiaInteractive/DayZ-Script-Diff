@@ -65,8 +65,8 @@ class ServerBrowserFavoritesTabPc extends ServerBrowserTabPc
 			
 			ServerBrowserEntry entry = GetServerEntryByIndex(index, offlineRow.m_Id);
 			entry.Show(true);
-			entry.FillInfo(offlineRow);
 			entry.SetIsOnline(false);
+			entry.FillInfo(offlineRow);
 			entry.UpdateEntry();
 			
 			index++;

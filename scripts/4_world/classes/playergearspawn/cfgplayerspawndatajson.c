@@ -10,7 +10,6 @@ class PlayerSpawnJsonDataBase : Managed
 
 class PlayerSpawnJsonData : PlayerSpawnJsonDataBase
 {
-	int version;
 	ref array<ref PlayerSpawnPreset> presets;
 }
 
@@ -69,11 +68,11 @@ class PlayerSpawnPresetSlotData : PlayerSpawnJsonDataBase
 		string tmp = slotName;
 		if (slotName == "shoulderL")
 		{
-			tmp = "Melee";
+			tmp = "Shoulder";
 		}
 		else if (slotName == "shoulderR")
 		{
-			tmp = "Shoulder";
+			tmp = "Melee";
 		}
 		
 		slotID = InventorySlots.GetSlotIdFromString(tmp);

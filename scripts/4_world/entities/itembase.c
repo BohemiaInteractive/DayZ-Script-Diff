@@ -79,7 +79,7 @@ class ItemBase extends InventoryItem
 	protected bool m_CanBeDigged;
 	protected bool m_IsResultOfSplit //! distinguish if item has been created as new or it came from splitting (server only flag)
 	
-	protected ref EffectSound			m_DeployLoopSoundEx;
+	protected EffectSound m_DeployLoopSoundEx;
 	
 	string	m_SoundAttType;
 	// items color variables
@@ -744,7 +744,7 @@ class ItemBase extends InventoryItem
 	{
 		#ifndef SERVER
 		if (m_DeployLoopSoundEx)
-			SEffectManager.DestroyEffect(m_DeployLoopSoundEx);
+			m_DeployLoopSoundEx.SoundStop();
 		#endif
 		
 		if (GetGame() && GetGame().GetPlayer() && (!GetGame().IsDedicatedServer()))
@@ -1193,6 +1193,14 @@ class ItemBase extends InventoryItem
 				m_CanPlayImpactSound = (liquidType == -1);// prevents further playing of the sound when the surface is a liquid type
 			}
 		}
+		
+		#ifdef SERVER
+		if (GetCompEM() && GetCompEM().IsPlugged())
+		{
+			if (GetCompEM().GetCordLength() < vector.Distance(GetPosition(), GetCompEM().GetEnergySource().GetPosition()))
+				GetCompEM().UnplugThis();
+		}
+		#endif
 	}
 	
 	void RefreshPhysics();

@@ -83,7 +83,7 @@ class ITEM_PlayerData : ITEM_DataBase
 	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
 	bool disablePersonalLight;
 	bool disable2dMap;
-	bool usePlayerSpawnGearFile = false;
+	ref TStringArray spawnGearPresetFiles;
 
 };
 

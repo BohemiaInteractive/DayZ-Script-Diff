@@ -86,8 +86,8 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 			offlineRow.m_Favorite = true;
 			
 			ServerBrowserEntry entry = GetServerEntryByIndex( index );
-			entry.FillInfo(offlineRow);
 			entry.SetIsOnline(false);
+			entry.FillInfo(offlineRow);
 			entry.UpdateEntry();
 			
 			m_EntryWidgets.Insert(favServerId, entry);

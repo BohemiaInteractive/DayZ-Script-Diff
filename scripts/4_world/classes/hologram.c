@@ -64,25 +64,28 @@ class Hologram
 
 	void Hologram(PlayerBase player, vector pos, ItemBase item)
 	{	
-		m_Player = player;
-		m_Parent = item;
-		m_Projection = NULL;
-		m_ProjectionTrigger = NULL;
-		m_UpdatePosition = true;
-		m_Rotation = "0 0 0";
-		m_ContactComponent = -1;
-		m_FromAdjusted = "0 0 0";
+		m_Player 		= player;
+		m_Parent 		= item;
+		m_Projection 	= null;
+
+		m_ProjectionTrigger = null;
+		m_UpdatePosition 	= true;
+		m_ContactComponent 	= -1;
+
+		m_Rotation 		= "0 0 0";
+		m_FromAdjusted 	= "0 0 0";
 		
 		// If the static names are empty, generate the needed names
 		// Refer to their definitions to see why these are required
 		if (m_WatchtowerIgnoreComponentNames.Count() == 0)
 		{
-			string baseStringBegin = Watchtower.BASE_VIEW_NAME;
-			string baseIgnoreStringEnd = Watchtower.BASE_WALL_NAME;
-			int floors = Watchtower.MAX_WATCHTOWER_FLOORS;
-			int walls = Watchtower.MAX_WATCHTOWER_WALLS;
+			string baseStringBegin 		= Watchtower.BASE_VIEW_NAME;
+			string baseIgnoreStringEnd 	= Watchtower.BASE_WALL_NAME;
+
+			int floors 	= Watchtower.MAX_WATCHTOWER_FLOORS;
+			int walls 	= Watchtower.MAX_WATCHTOWER_WALLS;
+
 			string compName;
-			
 			for (int i = 1; i < floors + 1; ++i)
 			{
 				compName = baseStringBegin + i.ToString();
@@ -93,7 +96,6 @@ class Hologram
 					m_WatchtowerBlockedComponentNames.Insert(compName);
 				else
 					m_WatchtowerIgnoreComponentNames.Insert(compName);
-
 			}
 		}
 
@@ -282,7 +284,7 @@ class Hologram
 		CheckPowerSource();
 		RefreshVisual();
 
-		m_Projection.OnHologramBeingPlaced( m_Player );
+		m_Projection.OnHologramBeingPlaced(m_Player);
 	}
 	
 	vector AlignProjectionOnTerrain( float timeslice )
@@ -1076,7 +1078,7 @@ class Hologram
 		return game.SurfaceIsSea( position[0], position[2] );
 	}
 
-	protected vector GetProjectionEntityPosition( PlayerBase player )
+	protected vector GetProjectionEntityPosition(PlayerBase player)
 	{
 		float minProjectionDistance;
 		float maxProjectionDistance; 
@@ -1489,12 +1491,10 @@ class Hologram
 	}
 
 	//overloaded function to accept array of strings
-	void SetSelectionToRefresh( array<string> selection )
+	void SetSelectionToRefresh(array<string> selection)
 	{
-		for ( int i = 0; i < selection.Count(); i++ )
-		{
-			m_SelectionsToRefresh.Insert( selection.Get(i) );
-		}
+		foreach (string s : selection)
+			m_SelectionsToRefresh.Insert(s);
 	}
 	
 	void RefreshVisual()

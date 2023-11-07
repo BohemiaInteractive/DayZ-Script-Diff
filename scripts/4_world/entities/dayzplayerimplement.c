@@ -542,37 +542,38 @@ class DayZPlayerImplement extends DayZPlayer
 				int type = m_DeathAnimType;
 				if (type == DayZPlayerConstants.DEATH_DEFAULT) 
 					type = GetTypeOfDeath(pCurrentCommandID);
-				
-				// Maybe move elsewhere? Couldn't find a more fitting place to do this but I'm sure there is one
-				// If player dies in driver seat, car shouldn't be simulated by the dead player anymore
-				if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_VEHICLE)
+
+				m_WasInVehicle = false;				
+				HumanCommandVehicle hcv = GetCommand_Vehicle();
+				if (hcv)
 				{
-					HumanCommandVehicle hcv = GetCommand_Vehicle();
-					Transport transport = hcv.GetTransport();
-					int crewPos = transport.CrewMemberIndex(this);
-
+					m_TransportCache = hcv.GetTransport();
 					m_WasInVehicle = !hcv.IsGettingIn() && !hcv.IsGettingOut();
-					
-					if (m_WasInVehicle)
-					{
-						transport.MarkCrewMemberDead(transport.CrewMemberIndex(this));
-						transport.CrewDeath(crewPos);
-					}
-					else
-					{
-						transport.CrewGetOut(crewPos);
-						
-						if (!m_PullPlayerOutOfVehicleKeepsInLocalSpace)
-						{
-							UnlinkFromLocalSpace();
-						}
+				}
 
-						DisableSimulation(false);
-
-						GetItemAccessor().HideItemInHands(false);
-						m_TransportCache = null;
+				if (IsUnconscious() || m_WasInVehicle)
+				{
+					if (m_TransportCache)
+					{
+						m_TransportCache.CrewDeath(m_TransportCache.CrewMemberIndex(this));
+						m_TransportCache.MarkCrewMemberDead(m_TransportCache.CrewMemberIndex(this));
 					}
 				}
+				else
+				{
+					if (m_TransportCache)
+					{
+						m_TransportCache.CrewGetOut(m_TransportCache.CrewMemberIndex(this));
+						m_TransportCache.MarkCrewMemberDead(m_TransportCache.CrewMemberIndex(this));
+					}
+					
+					if (!m_PullPlayerOutOfVehicleKeepsInLocalSpace)
+						UnlinkFromLocalSpace();
+				}
+				
+				DisableSimulation(false);
+				GetItemAccessor().HideItemInHands(false);
+				m_TransportCache = null;
 
 				DayZPlayerCommandDeathCallback callback;
 				Class.CastTo(callback, StartCommand_Death(type, m_DeathHitDir, DayZPlayerCommandDeathCallback));

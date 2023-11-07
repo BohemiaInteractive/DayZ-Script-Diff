@@ -13,8 +13,7 @@ class JsonFileLoader<Class T>
 			FileHandle handle = OpenFile(filename, FileMode.READ);
 			if (handle == 0)
 				return;
-			
-			
+
 			while (FGets(handle,  line_content) >= 0)
 			{
 				file_content += line_content;
@@ -23,10 +22,10 @@ class JsonFileLoader<Class T>
 			CloseFile(handle);
 			
 			if (!m_Serializer)
-				m_Serializer = new JsonSerializer;
+				m_Serializer = new JsonSerializer();
 			
 			if (!m_Serializer.ReadFromString(data, file_content, error))
-				Error(error);
+				ErrorEx(string.Format("Cannot load data from \"%1\":\n%2", filename, error));
 		}
 	}
 	
@@ -51,17 +50,17 @@ class JsonFileLoader<Class T>
 	{
 		string error;
 		if (!m_Serializer)
-			m_Serializer = new JsonSerializer;
+			m_Serializer = new JsonSerializer();
 		
 		if (!m_Serializer.ReadFromString(data, string_data, error))
-			Error(error);
+			ErrorEx(string.Format("Cannot load data %1", error));
 	}
 	
 	static string JsonMakeData(T data)
 	{
 		string string_data;
 		if (!m_Serializer)
-			m_Serializer = new JsonSerializer;
+			m_Serializer = new JsonSerializer();
 		
 		m_Serializer.WriteToString(data, true, string_data);
 		return string_data;

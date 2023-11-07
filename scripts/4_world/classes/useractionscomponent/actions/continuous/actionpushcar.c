@@ -6,13 +6,14 @@ class ActionPushCarDataReceiveData : ActionReciveData
 class ActionPushCarData : ActionData
 {
 	int m_PushDirection = -1;
-	int m_EndType = 0;
+	int m_EndType 		= 0;
 
 	float m_HorizontalDirectionRandom 	= 1.0;
 	float m_VerticalDirectionRandom 	= 1.0;
-	
+
 	vector m_Origin = "0 0 0";
-	
+
+	bool m_NeedUpdate;
 	CarScript m_Car;
 }
 
@@ -43,6 +44,8 @@ class CAContinuousRepeatPushCar : CAContinuousRepeat
 
 			return UA_CANCEL;
 		}
+		
+		return UA_FINISHED;
 	}
 }
 
@@ -99,9 +102,8 @@ class ActionPushCarCB : ActionContinuousBaseCB
 	{	
 		CarScript car = actionData.m_Car;
 		
-		//TODO: make the random input static/const and move it to the ActionPushCarCB scope
-		actionData.m_HorizontalDirectionRandom = Math.RandomFloat(-2.5, 2.5);
 		actionData.m_HorizontalDirectionRandom = Math.RandomFloat(1.0, 3.5);
+		actionData.m_VerticalDirectionRandom = Math.RandomFloat(-0.5, 0.5);
 		
 		float bodyMass = dBodyGetMass(car);
 		float invBodyMass = 1.0 / bodyMass;
@@ -109,11 +111,11 @@ class ActionPushCarCB : ActionContinuousBaseCB
 		
 		float easedProgress = Easing.EaseInOutSine(actionData.m_ActionComponent.GetProgress());
 		
-		vector impulse = car.GetDirection() * force * (float)actionData.m_PushDirection;
-		impulse = impulse * invBodyMass;
-		impulse[0] = impulse[0] * actionData.m_HorizontalDirectionRandom;
-		impulse[1] = impulse[1] * actionData.m_VerticalDirectionRandom;
-		impulse = impulse * easedProgress;
+		vector impulse 	= car.GetDirection() * force * (float)actionData.m_PushDirection;
+		impulse 		= impulse * invBodyMass;
+		impulse[0]	 	= impulse[0] * actionData.m_HorizontalDirectionRandom;
+		impulse[1] 		= impulse[1] * actionData.m_VerticalDirectionRandom;
+		impulse 		= impulse * easedProgress;
 		
 		actionData.m_Player.DepleteStamina(EStaminaModifiers.PUSH_CAR);
 
@@ -141,7 +143,7 @@ class ActionPushCar : ActionContinuousBase
 	override void CreateConditionComponents()
 	{
 		m_ConditionItem		= new CCINotPresent();
-		m_ConditionTarget	= new CCTNone();
+		m_ConditionTarget	= new CCTCursorNoRuinCheck(UAMaxDistances.DEFAULT);
 	}
 	
 	override bool HasAlternativeInterrupt()
@@ -159,8 +161,11 @@ class ActionPushCar : ActionContinuousBase
 	{
 		if (!player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_ERECT|DayZPlayerConstants.STANCEMASK_CROUCH))
 			return false;
+		
+		if (!player.GetSurfaceType())
+			return false;
 
-		if (!IsInReach(player, target, UAMaxDistances.DEFAULT))
+		if (!IsInReach(player, target, UAMaxDistances.SMALL))
 			return false;
 		
 		if (!player.CanConsumeStamina(EStaminaConsumers.PUSH))
@@ -169,10 +174,7 @@ class ActionPushCar : ActionContinuousBase
 		CarScript car = GetCar(target);
 		if (car)
 		{
-			if (car.WheelCountPresent() < car.WheelCount())
-				return false;
-
-			if (Math.AbsFloat(GetDirectionDot(target.GetObject(), player)) < 0.85)
+			if (Math.AbsFloat(GetDirectionDot(car, player)) < 0.85)
 				return false;
 
 			if (car.EngineIsOn() && car.GetGear() != CarGear.NEUTRAL)
@@ -187,19 +189,24 @@ class ActionPushCar : ActionContinuousBase
 	override void OnUpdate(ActionData action_data)
 	{
 		super.OnUpdate(action_data);
-		
-		ActionPushCarData data = ActionPushCarData.Cast(action_data);
-		
-		if (!data.m_Player.CanConsumeStamina(EStaminaConsumers.PUSH))
-		{
-			data.m_State = UA_CANCEL;
-			return;
-		}
 
-		if (vector.Distance(data.m_Target.GetObject().GetPosition(), data.m_Origin) > 0.5)
+		ActionPushCarData data = ActionPushCarData.Cast(action_data);		
+		if (data.m_NeedUpdate)
 		{
-			data.m_State = UA_FINISHED;
-			data.m_EndType = 0;
+			if (!data.m_Player.CanConsumeStamina(EStaminaConsumers.PUSH))
+			{
+				data.m_State 		= UA_CANCEL;
+				data.m_NeedUpdate 	= false;
+
+				return;
+			}
+	
+			if (vector.Distance(data.m_Car.GetPosition(), data.m_Origin) > 0.5)
+			{
+				data.m_State 		= UA_FINISHED;
+				data.m_EndType 		= 0;
+				data.m_NeedUpdate 	= false;
+			}
 		}
 	}
 	
@@ -207,9 +214,10 @@ class ActionPushCar : ActionContinuousBase
 	{
 		super.OnStart(action_data);
 		
-		ActionPushCarData data = ActionPushCarData.Cast(action_data);
-		data.m_Origin = data.m_Target.GetObject().GetPosition();
-		data.m_Car = GetCar(action_data.m_Target);
+		ActionPushCarData data 	= ActionPushCarData.Cast(action_data);
+		data.m_Car 				= GetCar(action_data.m_Target);
+		data.m_Origin 			= data.m_Car.GetPosition();
+		data.m_NeedUpdate 		= true;
 	}
 	
 	override void OnStartServer(ActionData action_data)
@@ -217,7 +225,6 @@ class ActionPushCar : ActionContinuousBase
 		super.OnStartServer(action_data);
 		
 		ActionPushCarData data = ActionPushCarData.Cast(action_data);
-		data.m_Origin = data.m_Target.GetObject().GetPosition();
 
 		if (data.m_Car)
 		{
@@ -237,7 +244,6 @@ class ActionPushCar : ActionContinuousBase
 		super.OnEndServer(action_data);
 		
 		ActionPushCarData data = ActionPushCarData.Cast(action_data);
-
 		if (data.m_Car)
 		{
 			data.m_Car.SetBrakesActivateWithoutDriver(true);
@@ -250,9 +256,10 @@ class ActionPushCar : ActionContinuousBase
 	{
 		super.OnEndInput(action_data);
 		
-		ActionPushCarData data = ActionPushCarData.Cast(action_data);
-		data.m_State = UA_CANCEL;
-		data.m_EndType = 1;
+		ActionPushCarData data 	= ActionPushCarData.Cast(action_data);
+		data.m_State 			= UA_CANCEL;
+		data.m_EndType 			= 1;
+		data.m_NeedUpdate 		= false;
 	}
 	
 	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)

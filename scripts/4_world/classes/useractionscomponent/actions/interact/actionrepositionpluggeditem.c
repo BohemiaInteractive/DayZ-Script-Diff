@@ -1,7 +1,5 @@
 class ActionRepositionPluggedItem : ActionInteractBase
 {
-	protected ItemBase m_SourceForReplug = null;
-
 	// Through this action players can reposition already placed electric devices without unplugging them from the power source.
 	void ActionRepositionPluggedItem()
 	{
@@ -18,6 +16,11 @@ class ActionRepositionPluggedItem : ActionInteractBase
 	}
 
 	override bool HasProgress()
+	{
+		return false;
+	}
+	
+	override bool CanBeUsedOnBack()
 	{
 		return false;
 	}
@@ -93,10 +96,7 @@ class ActionRepositionPluggedItem : ActionInteractBase
 		callback.InitActionComponent();
 		action_data.m_Callback = callback;
 	}
-	
-		
-	override bool CanBeUsedOnBack()
-	{
-		return false;
-	}
+
+	//! DEPRECATED
+	protected ItemBase m_SourceForReplug;
 }

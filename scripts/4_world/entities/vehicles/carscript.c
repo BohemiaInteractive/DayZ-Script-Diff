@@ -2604,7 +2604,7 @@ class CarScript extends Car
 		return GetVelocity(this).Length() * dBodyGetMass(this);
 	}
 	
-	static float GetPushForceCoefficientMultiplier()
+	float GetPushForceCoefficientMultiplier()
 	{
 		return 1.0;
 	}

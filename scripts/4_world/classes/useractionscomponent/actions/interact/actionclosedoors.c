@@ -47,7 +47,7 @@ class ActionCloseDoors: ActionInteractBase
 			int doorIndex = building.GetDoorIndex(action_data.m_Target.GetComponentIndex());
 			if (doorIndex != -1)
 			{
-				if (building.IsDoorOpen(doorIndex))
+				if (building.CanDoorBeClosed(doorIndex))
 				{
 					building.CloseDoor(doorIndex);
 				}

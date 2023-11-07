@@ -1323,8 +1323,8 @@ class Human extends Man
 	//! returns movement state (current command id, )
 	proto native 	void 	GetMovementState(HumanMovementState pState);
 
-	//! returns current command ID
-	// proto native 	int 	GetCurrentCommandID();
+	//! returns current command ID (see DayZPlayerConstants.COMMANDID_...)
+	proto native 	int 	GetCurrentCommandID();
 
 
 	//!----- MOVE -----

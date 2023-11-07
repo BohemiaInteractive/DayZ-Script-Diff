@@ -191,7 +191,9 @@ class SymptomManager
 	
 	SmptAnimMetaBase SpawnAnimMetaObject(int symptom_id)
 	{
-		return m_AvailableSymptoms.Get(symptom_id).SpawnAnimMetaObject();
+		SmptAnimMetaBase animMeta = m_AvailableSymptoms.Get(symptom_id).SpawnAnimMetaObject();
+		animMeta.m_StateType = symptom_id;
+		return animMeta;
 	}
 		
 	//! Exits a specific Symptom with a given UID
@@ -216,7 +218,9 @@ class SymptomManager
 	
 	void OnTick(float deltatime, int pCurrentCommandID, HumanMovementState movement_state)
 	{
-		m_CurrentCommandID = pCurrentCommandID;
+		// pCurrentCommandID might be the initial value, but the system itself requires
+		// current value, so retrieve the current value from player instead
+		m_CurrentCommandID = m_Player.GetCurrentCommandID();
 		if (m_ActiveSymptomIndexPrimary == -1)
 		{
 			m_ActiveSymptomIndexPrimary = FindFirstAvailableSymptomIndex();
@@ -238,8 +242,13 @@ class SymptomManager
 			//anim requested
 			if ( !m_AnimMeta.IsPlaying() )
 			{
-
-				if ( m_AnimMeta.PlayRequest() == EAnimPlayState.FAILED )
+				// not playing yet and not possible to play
+				SymptomBase symptom = m_AvailableSymptoms.Get( m_AnimMeta.m_StateType );
+				if ( symptom && !symptom.CanActivate() )
+				{
+					m_AnimMeta = null;
+				}
+				else if ( m_AnimMeta.PlayRequest() == EAnimPlayState.FAILED )
 				{
 					OnAnimationFinished(eAnimFinishType.FAILURE);
 				}

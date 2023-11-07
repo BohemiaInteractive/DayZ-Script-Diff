@@ -11,6 +11,7 @@ class SmptAnimMetaBase
 	PlayerBase m_Player;
 	int m_AnimID;
 	int m_SymptomType;
+	int m_StateType;
 	bool m_DestroyRequested;
 	bool m_Canceled;
 	

@@ -107,13 +107,11 @@ class CableReel extends ItemBase
 		};
 		
 		PlayerBase playerPB = PlayerBase.Cast(player);
-		foreach (string selection : selections)
-		{		
-			if (GetGame().IsMultiplayer() && GetGame().IsServer())
-				playerPB.GetHologramServer().SetSelectionToRefresh(selection);		
-			else
-				playerPB.GetHologramLocal().SetSelectionToRefresh(selection);
-		}
+		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			playerPB.GetHologramServer().SetSelectionToRefresh(selections);		
+		else
+			if (playerPB.GetHologramLocal())
+				playerPB.GetHologramLocal().SetSelectionToRefresh(selections);
 	}
 	
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )

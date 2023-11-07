@@ -27,6 +27,20 @@ class FirstAidKit : Container_Base
 
 class PlateCarrierPouches : Container_Base
 {
+	override bool CanPutInCargo(EntityAI parent)
+	{
+		if (!super.CanPutInCargo(parent))
+			return false;
+		
+		if (parent && parent.IsKindOf("AmmoBox"))
+			return false;
+		
+		if (parent && parent.IsKindOf("PlateCarrierPouches"))
+			return false;
+
+		return true;
+	}
+
 	override bool CanReceiveItemIntoCargo( EntityAI item )
 	{
 		if (!super.CanReceiveItemIntoCargo(item))
@@ -47,7 +61,8 @@ class PlateCarrierPouches : Container_Base
 		
 		return !item.GetInventory().GetCargo() || (item.GetInventory().GetCargo().GetItemCount() == 0 || item.IsContainer());
 	}
-};
+}
+
 class Refrigerator : WorldContainer_Base {};
 class RefrigeratorMinsk : WorldContainer_Base {};
 class SmallProtectorCase : Container_Base 

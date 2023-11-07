@@ -160,6 +160,8 @@ class DayZCreatureAI extends DayZCreature
 	
 	int m_EffectTriggerCount;//how many effect triggers is this AI inside of(overlapping triggers)
 	
+	protected DayZPlayer m_CinematicPlayer;
+	
 
 	void DayZCreatureAI()
 	{
@@ -369,26 +371,24 @@ class DayZCreatureAI extends DayZCreature
 	// CINEMATIC CONTROLLER
 	// ================
 	
-	DayZPlayer m_Cinematic_Player;
-	
-	void Cinematic_TakeControl(DayZPlayer player)
+	void CinematicTakeControl(DayZPlayer player)
 	{
-		m_Cinematic_Player = player;
+		m_CinematicPlayer = player;
 	}
 
-	bool Cinematic_CanJump()
+	bool CinematicCanJump()
 	{
 		return true;
 	}
 	
 	override bool ModCommandHandlerBefore(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
 	{
-		if (!m_Cinematic_Player)
+		if (!m_CinematicPlayer)
 		{
 			return super.ModCommandHandlerBefore(pDt, pCurrentCommandID, pCurrentCommandFinished);
 		}
 		
-		UAInterface input = m_Cinematic_Player.GetInputInterface();
+		UAInterface input = m_CinematicPlayer.GetInputInterface();
 			
 		DayZCreatureAIInputController controller;
 		GetGame().GameScript.CallFunction(this, "GetInputController", controller, 0);
@@ -501,7 +501,7 @@ class DayZCreatureAI extends DayZCreature
 		controller.OverrideHeading(true, heading * Math.DEG2RAD);
 		controller.OverrideAlertLevel(true, true, iAlert, fAlert);
 		
-		if (Cinematic_CanJump() && isJump)
+		if (CinematicCanJump() && isJump)
 		{
 			controller.OverrideJump(true, 101, 2.0);
 		}

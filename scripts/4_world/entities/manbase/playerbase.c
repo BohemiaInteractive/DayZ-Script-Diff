@@ -2172,6 +2172,7 @@ class PlayerBase extends ManBase
 		{
 			GetHologramServer().CheckPowerSource();
 			GetHologramServer().GetParentEntity().OnPlacementCancelled(this);
+			SetLocalProjectionPosition(vector.Zero);
 			
 			delete m_HologramServer;
 
@@ -2198,38 +2199,36 @@ class PlayerBase extends ManBase
 			if (entityInHands.GetCompEM().IsPlugged())
 				entityInHands.OnPlacementCancelled(this);
 		}
+		
+		SetLocalProjectionPosition(vector.Zero);
 
 		delete m_HologramLocal;
 	}
 	
 	void PlacingCompleteServer()
 	{
+		SetLocalProjectionPosition(vector.Zero);
 		delete m_HologramServer;	
 	}
 	
 	void PlacingCompleteLocal()
 	{
+		SetLocalProjectionPosition(vector.Zero);
 		delete m_HologramLocal;
 	}
 	
 	bool IsPlacingServer()
 	{
 		if (m_HologramServer)
-		{
 			return true;
-		}
-		else
-		{
-			return false;			
-		}
+
+		return false;			
 	}
 	
 	bool IsPlacingLocal()
 	{
 		if (m_HologramLocal)
-		{
 			return true;
-		}
 		
 		return false;			
 	}
@@ -2239,16 +2238,12 @@ class PlayerBase extends ManBase
 		if (enable != m_IsDrowning)
 		{
 			if (enable)
-			{
 				OnDrowningStart();
-			}
 			else
-			{
 				OnDrowningEnd();
-			}
 		}
+
 		m_IsDrowning = enable;
-		
 	}
 	
 	void OnDrowningStart()
@@ -3509,6 +3504,7 @@ class PlayerBase extends ManBase
 		{
 			// handle splint here
 		}
+
 		SetSynchDirty();
 	}
 
@@ -3595,6 +3591,8 @@ class PlayerBase extends ManBase
 				}
 			}
 		}
+
+		m_JumpClimb.CheckAndFinishJump();
 	}
 	
 	//Used to inflict shock when player is walking (only inflicted on Update timer)

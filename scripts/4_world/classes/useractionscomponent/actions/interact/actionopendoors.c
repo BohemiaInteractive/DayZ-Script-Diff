@@ -53,7 +53,7 @@ class ActionOpenDoors: ActionInteractBase
 			int doorIndex = building.GetDoorIndex(action_data.m_Target.GetComponentIndex());
 			if (doorIndex != -1)
 			{
-				if (!building.IsDoorOpen(doorIndex))
+				if (building.CanDoorBeOpened(doorIndex, CheckIfDoorIsLocked()))
 				{
 					building.OpenDoor(doorIndex);
 				}
