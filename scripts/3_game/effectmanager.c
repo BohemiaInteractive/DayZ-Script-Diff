@@ -268,8 +268,17 @@ class SEffectManager
 	{
 		if (effect)
 		{
-			// Functionality already happens in dtor of Effect to be safe
-			delete effect;
+			if (effect.CanDestroy())
+			{
+				// Functionality already happens in dtor of Effect to be safe
+				delete effect;
+			}
+			else
+			{
+				// Make it clean up itself when done
+				effect.SetAutodestroy(true);
+				effect.Stop();
+			}
 		}
 	}
 	

@@ -11,7 +11,7 @@ class HandStartReplacingItemElsewhereWithNewInHands extends HandStateBase
 		HandEventReplaceWithNewBase edr = HandEventReplaceWithNewBase.Cast(e);
 		if (edr)
 		{
-			hndDebugPrint("[hndfsm] HandStartReplacingItemElsewhereWithNewInHands about to execute lambda");
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandStartReplacingItemElsewhereWithNewInHands about to execute lambda");
 
 			HumanInventoryWithFSM inv = HumanInventoryWithFSM.Cast(player.GetInventory());
 			edr.m_Lambda.Execute(inv);

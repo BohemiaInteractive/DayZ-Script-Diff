@@ -55,7 +55,7 @@ class Construction
 		
 		if ( constrution_part )
 		{
-			bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " AddToConstructedParts part=" + constrution_part.GetPartName());
+			if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " AddToConstructedParts part=" + constrution_part.GetPartName());
 			constrution_part.SetBuiltState( true );
 		}
 	}
@@ -66,7 +66,7 @@ class Construction
 		
 		if ( constrution_part ) 
 		{
-			bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " RemoveFromConstructedParts part=" + constrution_part.GetPartName());
+			if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " RemoveFromConstructedParts part=" + constrution_part.GetPartName());
 			constrution_part.SetBuiltState( false );
 		}
 	}
@@ -74,7 +74,7 @@ class Construction
 	//BuildPart
 	void BuildPartServer( notnull Man player, string part_name, int action_id )
 	{
-		bsbDebugPrint("[bsb] Construction BuildPartServer | " + part_name);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction BuildPartServer | " + part_name);
 		//reset DamageZone health
 		string damage_zone;
 		if (DamageSystem.GetDamageZoneFromComponentName(GetParent(),part_name,damage_zone))
@@ -100,7 +100,7 @@ class Construction
 		string damage_zone;
 		DamageSystem.GetDamageZoneFromComponentName( GetParent(),part_name,damage_zone );
 		
-		bsbDebugPrint("[bsb] Construction DismantlePartServer | " + part_name);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction DismantlePartServer | " + part_name);
 		//receive materials
 		ReceiveMaterialsServer( player, part_name, damage_zone );
 			
@@ -120,7 +120,7 @@ class Construction
 	//DestroyPart
 	void DestroyPartServer( Man player, string part_name, int action_id, bool destroyed_by_connected_part = false )
 	{
-		bsbDebugPrint("[bsb] Construction DestroyPartServer | " + part_name);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction DestroyPartServer | " + part_name);
 		//destroy attached materials (if locked)
 		DestroyMaterialsServer( player, part_name );
 		
@@ -146,7 +146,7 @@ class Construction
 		{
 			for (int i = 0; i < parts.Count(); i++)
 			{
-				bsbDebugPrint("[bsb] Construction DestroyConnectedParts | " + parts.Get(i));
+				if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction DestroyConnectedParts | " + parts.Get(i));
 				if (!ExceptionCheck(parts.Get(i)))
 					DestroyPartServer(null,parts.Get(i),AT_DESTROY_PART,true);
 			}
@@ -172,7 +172,7 @@ class Construction
 	//update visual
 	void InitVisuals()
 	{
-		bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " InitVisuals");
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " InitVisuals");
 		for ( int i = 0; i < m_ConstructionParts.Count(); ++i )
 		{
 			string key = m_ConstructionParts.GetKey( i );
@@ -187,7 +187,7 @@ class Construction
 
 	void UpdateVisuals()
 	{
-		bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " UpdateVisuals");
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " UpdateVisuals");
 		for ( int i = 0; i < m_ConstructionParts.Count(); ++i )
 		{
 			string key = m_ConstructionParts.GetKey( i );
@@ -206,7 +206,7 @@ class Construction
 	//update physics (only)
 	void UpdatePhysics()
 	{
-		bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " UpdatePhysics m_ConstructionParts=" + m_ConstructionParts.Count());
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " UpdatePhysics m_ConstructionParts=" + m_ConstructionParts.Count());
 		for ( int i = 0; i < m_ConstructionParts.Count(); ++i )
 		{
 			string key = m_ConstructionParts.GetKey( i );
@@ -214,12 +214,12 @@ class Construction
 		
 			if ( value.IsBuilt() )
 			{
-				bsbDebugPrint("[bsb] GetType=" + m_Parent.GetType() + " i=" + i + " ADD");
+				if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] GetType=" + m_Parent.GetType() + " i=" + i + " ADD");
 				ShowConstructionPartPhysics( value.GetPartName() );
 			}
 			else
 			{
-				bsbDebugPrint("[bsb] GetType=" + m_Parent.GetType() + " i=" + i + " RM");
+				if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] GetType=" + m_Parent.GetType() + " i=" + i + " RM");
 				HideConstructionPartPhysics( value.GetPartName() );
 			}
 		}
@@ -227,7 +227,7 @@ class Construction
 	
 	void InitBaseState ()
 	{
-		bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " InitBaseState");
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_Parent) + " InitBaseState");
 		InitVisuals();
 	}
 	
@@ -261,7 +261,7 @@ class Construction
 					
 					m_ConstructionParts.Insert( part_name, new ConstructionPart( name, part_name, main_part_name, id, show_on_init, is_base, is_gate, GetRequiredParts(part_name,main_part_name) ) );
 					
-					bsbDebugPrint("[bsb] Construction name=" + name + " part_name=" + part_name + " show=" + show_on_init + " base=" + is_base + " gate=" + is_gate);
+					if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction name=" + name + " part_name=" + part_name + " show=" + show_on_init + " base=" + is_base + " gate=" + is_gate);
 				}
 			}
 		}
@@ -576,13 +576,13 @@ class Construction
 	//show/hide construction part
 	protected void ShowConstructionPart( string part_name )
 	{
-		bsbDebugPrint("[bsb] Construction ShowConstructionPart - " + part_name);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction ShowConstructionPart - " + part_name);
 		GetParent().SetAnimationPhase( part_name, 0 );
 	}
 	
 	protected void HideConstructionPart( string part_name )
 	{
-		bsbDebugPrint("[bsb] Construction HideConstructionPart - " + part_name);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction HideConstructionPart - " + part_name);
 		GetParent().SetAnimationPhase( part_name, 1 );
 	}
 	
@@ -774,7 +774,7 @@ class Construction
 					{
 						InventoryLocation inventory_location = new InventoryLocation;
 						attachment.GetInventory().GetCurrentInventoryLocation( inventory_location );
-						bsbDebugPrint("[bsb] " + Object.GetDebugName(GetParent()) + " DestroyMaterialsServer unlock slot=" + inventory_location.GetSlot());
+						if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + Object.GetDebugName(GetParent()) + " DestroyMaterialsServer unlock slot=" + inventory_location.GetSlot());
 						
 						GetParent().GetInventory().SetSlotLock( inventory_location.GetSlot() , false );
 						GetGame().ObjectDelete( attachment );		//delete object
@@ -825,7 +825,7 @@ class Construction
 							{
 								InventoryLocation inventory_location = new InventoryLocation;
 								attachment.GetInventory().GetCurrentInventoryLocation( inventory_location );
-								bsbDebugPrint("[bsb] " + Object.GetDebugName(GetParent()) + " DropNonUsableMaterials UNlocking slot=" + inventory_location.GetSlot());
+								if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + Object.GetDebugName(GetParent()) + " DropNonUsableMaterials UNlocking slot=" + inventory_location.GetSlot());
 								
 								//unlock slot
 								GetParent().GetInventory().SetSlotLock( inventory_location.GetSlot() , false );
@@ -935,7 +935,7 @@ class Construction
 					{
 						InventoryLocation inventory_location = new InventoryLocation;
 						attachment.GetInventory().GetCurrentInventoryLocation( inventory_location );
-						bsbDebugPrint("[bsb] " + Object.GetDebugName(GetParent()) + " SetLockOnAttachedMaterials lock=" + lock_slot +" slot=" + inventory_location.GetSlot());
+						if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + Object.GetDebugName(GetParent()) + " SetLockOnAttachedMaterials lock=" + lock_slot +" slot=" + inventory_location.GetSlot());
 						GetParent().GetInventory().SetSlotLock( inventory_location.GetSlot(), lock_slot );
 					}
 				}
@@ -1253,7 +1253,7 @@ class StaticConstructionMethods
 				{
 					InventoryLocation src = new InventoryLocation;
 					attachment.GetInventory().GetCurrentInventoryLocation( src );
-					bsbDebugPrint("[bsb] " + Object.GetDebugName( entity) + " DropNonUsableMaterials UNlocking slot=" + src.GetSlot() );
+					if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + Object.GetDebugName( entity) + " DropNonUsableMaterials UNlocking slot=" + src.GetSlot() );
 					entity.GetInventory().SetSlotLock( src.GetSlot() , false );
 					
 					//detach if base

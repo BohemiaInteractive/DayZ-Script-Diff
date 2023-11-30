@@ -40,6 +40,12 @@ class ActionContinuousBaseCB : ActionBaseCB
 #ifdef DEVELOPER
 			//Print("ActionInteractBase.c | OnAnimationEvent | OnAnimationEvent called");
 #endif
+			
+			if ( LogManager.IsActionLogEnable() )
+			{
+				Debug.ActionLog("Time stamp: " + m_ActionData.m_Player.GetSimulationTimeStamp() + " / " + pEventID, this.ToString() , "n/a", "OnAnimationEvent", m_ActionData.m_Player.ToString() );
+			}
+			
 			if ( !m_Interrupted && pEventID == UA_IN_START ) 
 			{
 				m_inLoop = true;

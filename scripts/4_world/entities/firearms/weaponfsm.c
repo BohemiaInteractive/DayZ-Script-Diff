@@ -38,8 +38,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 	
 	override protected ProcessEventResult ProcessLocalTransition(FSMTransition<WeaponStateBase, WeaponEventBase, WeaponActionBase, WeaponGuardBase> t, WeaponEventBase e)
 	{
-		fsmDebugPrint("[hfsm] (local) state=" + t.m_srcState.ToString() + "-------- event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
-
+		if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] (local) state=" + t.m_srcState.ToString() + "-------- event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
+		
 		if (t.m_action)
 			t.m_action.Action(e);	// 2) execute transition action (if any)
 
@@ -60,8 +60,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		}
 		else
 		{
-			fsmDebugPrint("[hfsm] terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
-
+			if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
+			
 			if (GetOwnerState())
 				GetOwnerState().OnSubMachineChanged(t.m_srcState, NULL);	// 5) notify owner state about change in submachine
 			ValidateAndRepair();
@@ -71,8 +71,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 	
 	override protected ProcessEventResult ProcessAbortTransition(FSMTransition<WeaponStateBase, WeaponEventBase, WeaponActionBase, WeaponGuardBase> t, WeaponEventBase e)
 	{
-		fsmDebugPrint("[hfsm] (local abort) state=" + t.m_srcState.ToString() + "-------- ABORT event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
-
+		if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] (local abort) state=" + t.m_srcState.ToString() + "-------- ABORT event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
+		
 		if (t.m_action)
 			t.m_action.Action(e);	// 2) execute transition action (if any)
 
@@ -89,7 +89,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 			}
 			else
 			{
-				fsmDebugPrint("[hfsm] abort & terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
+				if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] abort & terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
+
 				return ProcessEventResult.FSM_TERMINATED; // 4b) or terminate
 			}
 		}
@@ -103,11 +104,14 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 	
 	override WeaponStateBase ProcessAbortEvent (WeaponEventBase e, out ProcessEventResult result)
 	{
-		if (GetOwnerState())
-			fsmDebugPrint("[hfsm] SUB! " + GetOwnerState().Type().ToString() + "::ProcessAbortEvent(" + e.Type().ToString() + ")");
-		else
-			fsmDebugPrint("[hfsm] root::ProcessAbortEvent(" + e.Type().ToString() + ")");
-
+		if (LogManager.IsInventoryHFSMLogEnable())
+		{
+			if (GetOwnerState())
+				fsmDebugPrint("[hfsm] SUB! " + GetOwnerState().Type().ToString() + "::ProcessAbortEvent(" + e.Type().ToString() + ")");
+			else
+				fsmDebugPrint("[hfsm] root::ProcessAbortEvent(" + e.Type().ToString() + ")");
+		}
+		
 		// 1) look in submachine first (if any)
 		if (m_State && m_State.HasFSM())
 		{
@@ -119,20 +123,22 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 			{
 				case ProcessEventResult.FSM_OK:
 				{
-					fsmDebugPrint("[hfsm] event processed by sub machine=" + m_State.ToString());
+					if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] event processed by sub machine=" + m_State.ToString());
+
 					result = subfsm_res;		// 1.1) submachine accepted event
 					ValidateAndRepair();
 					return NULL;
 				}
 				case ProcessEventResult.FSM_ABORTED:
 				{
-					fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString());
+					if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString());
 					
 					m_State.OnAbort(e); // 1.2) submachine aborted, abort submachine owner (i.e. this)
 
 					if (GetOwnerState() == abort_dst.GetParentState())
 					{
-						fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString() + " & abort destination reached.");
+						if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString() + " & abort destination reached.");
+
 						m_State = abort_dst;
 						m_State.OnEntry(e);		// 1.3) submachine aborted, call onEntry on new state (cross-hierarchy transition)
 						result = ProcessEventResult.FSM_OK;
@@ -154,7 +160,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 				}
 				case ProcessEventResult.FSM_NO_TRANSITION:
 				{
-					fsmDebugPrint("[hfsm] aborted (but no transition) sub machine=" + m_State.ToString());
+					if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] aborted (but no transition) sub machine=" + m_State.ToString());
+
 					break; // submachine has no transition, look for transitions in local machine
 				}
 			}
@@ -164,7 +171,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		int i = FindFirstUnguardedTransition(e);
 		if (i == -1)
 		{
-			fsmDebugPrint("[hfsm] abort event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] abort event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+
 			result = ProcessEventResult.FSM_NO_TRANSITION;
 			ValidateAndRepair();
 			return NULL;
@@ -175,7 +183,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		i = FindFirstUnguardedTransition(e);
 		if (i == -1)
 		{
-			fsmDebugPrint("[hfsm] abort event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] abort event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+
 			result = ProcessEventResult.FSM_NO_TRANSITION;
 			ValidateAndRepair();
 			return NULL;
@@ -188,20 +197,22 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		{
 			case ProcessEventResult.FSM_OK:
 			{
-				//fsmDebugSpam("[hfsm] abort event processed by machine=" + m_State.ToString());
+				//if (LogManager.IsWeaponLogEnable()) fsmDebugSpam("[hfsm] abort event processed by machine=" + m_State.ToString());
 				ValidateAndRepair();
 				return NULL; // machine accepted event
 			}
 			case ProcessEventResult.FSM_ABORTED:
 			{
-				fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString() + " will fall-through to dst=" + t.m_dstState);
+				if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] aborted sub machine=" + m_State.ToString() + " will fall-through to dst=" + t.m_dstState);
+
 				ValidateAndRepair();
 				return t.m_dstState; // store destination state for parent(s)
 			}
 
 			case ProcessEventResult.FSM_TERMINATED:
 			{
-				fsmDebugPrint("[hfsm] aborted & terminated sub machine=" + m_State.ToString());
+				if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] aborted & terminated sub machine=" + m_State.ToString());
+				
 				break; // submachine has finished, look for local transitions from exited submachine
 			}
 			case ProcessEventResult.FSM_NO_TRANSITION:
@@ -214,11 +225,14 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 	
 	override ProcessEventResult ProcessEvent (WeaponEventBase e)
 	{
-		if (GetOwnerState())
-			fsmDebugPrint("[hfsm] SUB!::" + GetOwnerState().Type().ToString() + "::ProcessEvent(" + e.Type().ToString() + ")");
-		else
-			fsmDebugPrint("[hfsm] root::ProcessEvent(" + e.Type().ToString() + " =" + e.DumpToString());
-
+		if (LogManager.IsInventoryHFSMLogEnable())
+		{
+			if (GetOwnerState())
+				fsmDebugPrint("[hfsm] SUB!::" + GetOwnerState().Type().ToString() + "::ProcessEvent(" + e.Type().ToString() + ")");
+			else
+				fsmDebugPrint("[hfsm] root::ProcessEvent(" + e.Type().ToString() + " =" + e.DumpToString());
+		}
+		
 		// 1) completion transitions have priority (if any)
 		if (m_HasCompletions)
 			ProcessCompletionTransitions();
@@ -232,7 +246,7 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 			{
 				case ProcessEventResult.FSM_OK:
 				{
-					fsmDebugSpam("[hfsm] event processed by sub machine=" + m_State.ToString());
+					if (LogManager.IsWeaponLogEnable()) fsmDebugSpam("[hfsm] event processed by sub machine=" + m_State.ToString());
 					return subfsm_res; // submachine accepted event
 				}
 				case ProcessEventResult.FSM_TERMINATED:
@@ -250,7 +264,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		int i = FindFirstUnguardedTransition(e);
 		if (i == -1)
 		{
-			fsmDebugPrint("[hfsm] event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			
 			return ProcessEventResult.FSM_NO_TRANSITION;
 		}
 		
@@ -260,7 +275,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		i = FindFirstUnguardedTransition(e);
 		if (i == -1)
 		{
-			fsmDebugPrint("[hfsm] event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			if (LogManager.IsInventoryHFSMLogEnable()) fsmDebugPrint("[hfsm] event has no transition: src=" + m_State.ToString() + " e=" + e.Type().ToString());
+			
 			return ProcessEventResult.FSM_NO_TRANSITION;
 		}
 

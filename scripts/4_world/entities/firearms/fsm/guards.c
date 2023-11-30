@@ -66,7 +66,7 @@ class WeaponGuardJammed extends WeaponGuardBase
 	{
 		/*int mi = m_weapon.GetCurrentMuzzle();
 		if (m_weapon.IsChamberJammed(mi))*/
-		if(m_weapon.IsJammed())
+		if (m_weapon.IsJammed())
 		{
 			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " guard - jammed"); }
 			return true;

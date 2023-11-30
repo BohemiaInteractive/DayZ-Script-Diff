@@ -64,11 +64,11 @@ class BotGuardHasItemInHands extends HandGuardBase
 	{
 		if (m_Player.GetHumanInventory().GetEntityInHands())
 		{
-			hndDebugPrint("[botfsm] guard - has valid entity in hands");
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[botfsm] guard - has valid entity in hands");
 			return true;
 		}
 
-		hndDebugPrint("[botfsm] guard - no entity in hands");
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[botfsm] guard - no entity in hands");
 		return false;
 	}
 };

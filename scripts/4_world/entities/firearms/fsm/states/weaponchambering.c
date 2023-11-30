@@ -465,15 +465,15 @@ class WeaponChambering extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(),leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(),leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering, ok - ammo pile removed from left hand to previous location (LHand->inv) - abort"); }
 								done = true;
@@ -525,15 +525,15 @@ class WeaponChambering extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering, ok - ammo pile removed from left hand to previous location (LHand->inv) - exit"); }
 								done = true;
@@ -735,15 +735,15 @@ class ChamberMultiBullet extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " ChamberMultiBullet, ok - ammo pile removed from left hand to previous location (LHand->inv) - exit"); }
 								done = true;
@@ -794,15 +794,15 @@ class ChamberMultiBullet extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " ChamberMultiBullet, ok - ammo pile removed from left hand to previous location (LHand->inv) - abort"); }
 								done = true;
@@ -1047,11 +1047,11 @@ class WeaponMagnumChambering extends WeaponStateBase
 			{
 				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if ( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if ( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponMagnumChambering, ok - ammo pile removed from left hand to previous location (LHand->inv) - exit"); }
 								done = true;
@@ -1107,11 +1107,11 @@ class WeaponMagnumChambering extends WeaponStateBase
 			{
 				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if ( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if ( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponMagnumChambering, ok - ammo pile removed from left hand to previous location (LHand->inv) - abort"); }
 								done = true;

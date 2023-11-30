@@ -119,7 +119,7 @@ class HumanInventory : GameInventory
 	{
 		InventoryLocation cpy = new InventoryLocation();
 		cpy.Copy(src);
-		hndDebugPrint("[inv] OnEntityInHandsCreated src=" + InventoryLocation.DumpToStringNullSafe(cpy));
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] OnEntityInHandsCreated src=" + InventoryLocation.DumpToStringNullSafe(cpy));
 		ProcessHandEvent(new HandEventCreated(GetManOwner(), src));
 	}
 
@@ -127,7 +127,7 @@ class HumanInventory : GameInventory
 	{
 		InventoryLocation cpy = new InventoryLocation();
 		cpy.Copy(src);
-		hndDebugPrint("[inv] OnEntityInHandsDestroyed src=" + InventoryLocation.DumpToStringNullSafe(cpy));
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] OnEntityInHandsDestroyed src=" + InventoryLocation.DumpToStringNullSafe(cpy));
 		ProcessHandEvent(new HandEventDestroyed(GetManOwner(), cpy));
 	}
 
@@ -144,7 +144,7 @@ class HumanInventory : GameInventory
 			switch (src.GetType())
 			{
 				case InventoryLocationType.HANDS:
-					hndDebugPrint("[inv] HumanInventory::DropEntity(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::DropEntity(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 					HandEvent(mode, new HandEventDrop(GetManOwner(), src));
 					return true;
 
@@ -174,7 +174,7 @@ class HumanInventory : GameInventory
 			switch (src.GetType())
 			{
 				case InventoryLocationType.HANDS:
-					hndDebugPrint("[inv] HumanInventory::ThrowEntity item=" + item);
+					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::ThrowEntity item=" + item);
 					HandEventThrow throwEvent = new HandEventThrow(GetManOwner(), src);
 					throwEvent.SetForce(dir * force);
 					HandEvent(invMode, throwEvent);
@@ -194,7 +194,7 @@ class HumanInventory : GameInventory
 		if (src.GetType() == InventoryLocationType.HANDS)
 		{
 			Man man_src = Man.Cast(src.GetParent());
-			hndDebugPrint("[inv] HI::RedirectToHandEvent - source location == HANDS, player has to handle this");
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HI::RedirectToHandEvent - source location == HANDS, player has to handle this");
 			
 			EntityAI item = src.GetItem();
 			
@@ -223,7 +223,7 @@ class HumanInventory : GameInventory
 		
 		if (dst.GetType() == InventoryLocationType.HANDS)
 		{
-			hndDebugPrint("[inv] HI::RedirectToHandEvent - dst location == HANDS, player has to handle this");
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HI::RedirectToHandEvent - dst location == HANDS, player has to handle this");
 						
 			Man man_dst = Man.Cast(dst.GetParent());
 			man_dst.GetHumanInventory().HandEvent(mode, new HandEventTake(man_dst, src));
@@ -234,7 +234,7 @@ class HumanInventory : GameInventory
 
 	override bool TakeToDst(InventoryMode mode, notnull InventoryLocation src, notnull InventoryLocation dst)
 	{
-		hndDebugPrint("[inv] Take2Dst(" + typename.EnumToString(InventoryMode, mode) + ") src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] Take2Dst(" + typename.EnumToString(InventoryMode, mode) + ") src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 
 		if (GetManOwner().IsAlive() && RedirectToHandEvent(mode, src, dst))
 			return true;
@@ -253,7 +253,7 @@ class HumanInventory : GameInventory
 				if (RedirectToHandEvent(mode, src, dst))
 					return true;
 
-				hndDebugPrint("[inv] HumanInventory::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+				if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 				return super.TakeEntityToInventory(mode, flags, item);
 			}
 			else
@@ -276,7 +276,7 @@ class HumanInventory : GameInventory
 				case InventoryLocationType.HANDS:
 					if (GetInventoryOwner().IsAlive())
 					{
-						hndDebugPrint("[inv] HumanInventory::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
 						InventoryLocation dst = new InventoryLocation();
 						dst.SetCargo(GetInventoryOwner(), item, idx, row, col, item.GetInventory().GetFlipCargo());
 
@@ -305,7 +305,7 @@ class HumanInventory : GameInventory
 				case InventoryLocationType.HANDS:
 					if (GetInventoryOwner().IsAlive())
 					{
-						hndDebugPrint("[inv] HumanInventory::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
 						InventoryLocation dst = new InventoryLocation();
 						EntityAI src_entity = GetInventoryOwner();
 						dst.SetAttachment(src_entity, item, slot);
@@ -338,12 +338,12 @@ class HumanInventory : GameInventory
 					InventoryLocation fswap_dst2 = new InventoryLocation;
 					if ( SwappingToPreviousLocation(item1, item2, fswap_dst2) )
 					{
-						hndDebugPrint("[inv] HumanInventory::Swap HandEventForceSwap(" + typename.EnumToString(InventoryMode, mode) + ") IH=src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2));
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Swap HandEventForceSwap(" + typename.EnumToString(InventoryMode, mode) + ") IH=src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2));
 						HandEvent(mode, new HandEventForceSwap(GetManOwner(), src1, src2, dst1, fswap_dst2));
 					}
 					else
 					{
-						hndDebugPrint("[inv] HumanInventory::Swap HandEventSwap(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + "src2=" + InventoryLocation.DumpToStringNullSafe(src2));
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Swap HandEventSwap(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + "src2=" + InventoryLocation.DumpToStringNullSafe(src2));
 						HandEvent(mode, new HandEventSwap(GetManOwner(), src1, src2, dst1, dst2));
 					}
 					handled = true;
@@ -353,7 +353,7 @@ class HumanInventory : GameInventory
 			switch (src2.GetType())
 			{
 				case InventoryLocationType.HANDS:
-					hndDebugPrint("[inv] HumanInventory::Swap HandEventSwap2(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " IH=src2=" + InventoryLocation.DumpToStringNullSafe(src2));
+					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Swap HandEventSwap2(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " IH=src2=" + InventoryLocation.DumpToStringNullSafe(src2));
 					HandEvent(mode, new HandEventSwap(GetManOwner(), src2, src1, dst2, dst1));
 					handled = true;
 					break;
@@ -376,12 +376,12 @@ class HumanInventory : GameInventory
 		{
 			GameInventory manOwnerInventory = GetManOwner().GetInventory();
 			
-			hndDebugPrint("[inv] HumanInventory::FSwap(" + typename.EnumToString(InventoryMode, mode) + ") dst1=" + InventoryLocation.DumpToStringNullSafe(dst1)+ " dst2=" + InventoryLocation.DumpToStringNullSafe(item2_dst));
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::FSwap(" + typename.EnumToString(InventoryMode, mode) + ") dst1=" + InventoryLocation.DumpToStringNullSafe(dst1)+ " dst2=" + InventoryLocation.DumpToStringNullSafe(item2_dst));
 			bool handled = false;
 			switch (src1.GetType())
 			{
 				case InventoryLocationType.HANDS:
-					hndDebugPrint("[inv] HumanInventory::FSwap-HND@1(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " item2_dst=" + InventoryLocation.DumpToStringNullSafe(item2_dst));
+					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::FSwap-HND@1(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " item2_dst=" + InventoryLocation.DumpToStringNullSafe(item2_dst));
 					HandEventBase e = new HandEventForceSwap(GetManOwner(), src1, src2, dst1, item2_dst);
 					e.ReserveInventory();
 					HandEvent(mode, e);
@@ -397,12 +397,12 @@ class HumanInventory : GameInventory
 					InventoryLocation fswap_dst2 = new InventoryLocation;
 					if ( SwappingToPreviousLocation(item2, item1, fswap_dst2))
 					{
-						hndDebugPrint("[inv] HumanInventory::FSwap-PREV(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " fswap_dst2=" + InventoryLocation.DumpToStringNullSafe(fswap_dst2));
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::FSwap-PREV(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " fswap_dst2=" + InventoryLocation.DumpToStringNullSafe(fswap_dst2));
 						HandEvent(mode, new HandEventForceSwap(GetManOwner(), src1, src2, dst1, fswap_dst2));
 					}
 					else
 					{
-						hndDebugPrint("[inv] HumanInventory::FSwap-HND@2(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " item2_dst=" + InventoryLocation.DumpToStringNullSafe(item2_dst));
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::FSwap-HND@2(" + typename.EnumToString(InventoryMode, mode) + ") src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " item2_dst=" + InventoryLocation.DumpToStringNullSafe(item2_dst));
 						HandEvent(mode, new HandEventForceSwap(GetManOwner(), src1, src2, dst1, item2_dst));
 					}
 				
@@ -432,7 +432,7 @@ class HumanInventory : GameInventory
 				case InventoryLocationType.HANDS:
 					if (GetInventoryOwner().IsAlive())
 					{
-						hndDebugPrint("[inv] HumanInventory::LocalDestroy inv item=" + item);
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::LocalDestroy inv item=" + item);
 						HandEvent(InventoryMode.LOCAL, new HandEventDestroy(GetManOwner(), src));
 						return true;
 					}
@@ -478,12 +478,12 @@ class HumanInventory : GameInventory
 				case InventoryLocationType.HANDS:
 					if (GetInventoryOwner().IsAlive())
 					{
-						hndDebugPrint("[inv] HumanInventory::ReplaceItemInElsewhereWithNewinHandsImpl event=" + e);
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::ReplaceItemInElsewhereWithNewinHandsImpl event=" + e);
 						HandEvent(mode, e);
 						return true;
 					}
 
-					hndDebugPrint("[inv] HumanInventory::ReplaceItemInElsewhereWithNewinHandsImpl DEAD_owner=" + GetInventoryOwner().GetName() +"="+ GetInventoryOwner());
+					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::ReplaceItemInElsewhereWithNewinHandsImpl DEAD_owner=" + GetInventoryOwner().GetName() +"="+ GetInventoryOwner());
 					Error("HumanInventory::ReplaceItemInElsewhereWithNewinHandsImpl TODO"); // replace-with-new in corpse's hands, not implemented
 					return false;
 
@@ -508,12 +508,12 @@ class HumanInventory : GameInventory
 				case InventoryLocationType.HANDS:
 					if ((mode != InventoryMode.SERVER) && GetInventoryOwner().IsAlive())
 					{
-						hndDebugPrint("[inv] HumanInventory::ReplaceItemInHandsWithNewImpl event=" + e);
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::ReplaceItemInHandsWithNewImpl event=" + e);
 						HandEvent(mode, e);
 						return true;
 					}
 
-					hndDebugPrint("[inv] HumanInventory::ReplaceItemInHandsWithNewImpl DEAD_owner=" + GetInventoryOwner().GetName() +"="+ GetInventoryOwner());
+					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::ReplaceItemInHandsWithNewImpl DEAD_owner=" + GetInventoryOwner().GetName() +"="+ GetInventoryOwner());
 					HandEvent(mode, e);
 					return true;
 

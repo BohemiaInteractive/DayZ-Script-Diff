@@ -253,7 +253,7 @@ class HandGuardHasRoomForItem extends HandGuardBase
 					Debug.InventoryHFSMLog("GuardCondition result: false - no room at dst=" + InventoryLocation.DumpToStringNullSafe(e.GetDst()), "HandGuardHasRoomForItem" , "n/a", "GuardCondition", m_Player.ToString() );
 				}
 				#endif
-				//hndDebugPrint("[hndfsm] HandGuardHasRoomForItem - no room at dst=" + InventoryLocation.DumpToStringNullSafe(e.GetDst()));
+				//if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandGuardHasRoomForItem - no room at dst=" + InventoryLocation.DumpToStringNullSafe(e.GetDst()));
 				//Error("[hndfsm] HandGuardHasRoomForItem - no room at dst=" + InventoryLocation.DumpToStringNullSafe(e.GetDst()));
 				return false;
 			}
@@ -323,7 +323,7 @@ class HandGuardCanSwap extends HandGuardBase
 			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardCanSwap" , "n/a", "GuardCondition", m_Player.ToString() );
 		}
 		#endif
-		//hndDebugPrint("[hndfsm] HandGuardCanSwap guard - cannot swap");
+		//if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandGuardCanSwap guard - cannot swap");
 		return result;
 	}
 };

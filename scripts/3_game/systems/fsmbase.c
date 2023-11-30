@@ -78,7 +78,7 @@ class FSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Class
 	 **/
 	void Start (FSMEventBase initial_event = NULL)
 	{
-		fsmbDebugPrint("[fsm] " + this.ToString() + "::Start(" + initial_event.ToString() + "), init_state=" + m_initialState.ToString());
+		if (LogManager.IsInventoryHFSMLogEnable()) fsmbDebugPrint("[fsm] " + this.ToString() + "::Start(" + initial_event.ToString() + "), init_state=" + m_initialState.ToString());
 
 		m_state = m_initialState;
 		m_state.OnEntry(initial_event);
@@ -152,7 +152,7 @@ class FSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Class
 	 **/
 	protected ProcessEventResult ProcessLocalTransition (FSMTransition<FSMStateBase, FSMEventBase, FSMActionBase, FSMGuardBase> t, FSMEventBase e)
 	{
-		fsmbDebugPrint("[fsm] (local) state=" + t.m_srcState.ToString() + "-------- event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
+		if (LogManager.IsInventoryHFSMLogEnable()) fsmbDebugPrint("[fsm] (local) state=" + t.m_srcState.ToString() + "-------- event=" + e.ToString() + "[G=" + t.m_guard.ToString() +"]/A=" + t.m_action.ToString() + " --------|> dst=" + t.m_dstState.ToString());
 
 		m_state.OnExit(e);			// 1) call onExit on old state
 
@@ -168,7 +168,7 @@ class FSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Class
 		}
 		else
 		{
-			fsmbDebugPrint("[fsm] terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
+			if (LogManager.IsInventoryHFSMLogEnable()) fsmbDebugPrint("[fsm] terminating fsm: state=" + t.m_srcState.ToString() + " event=" + e.ToString());
 			return ProcessEventResult.FSM_TERMINATED; // 4b) or terminate
 		}
 	}

@@ -78,7 +78,7 @@ class HandFSM extends HFSMBase<HandStateBase, HandEventBase, HandActionBase, Han
 		/*int id = 0;
 		ctx.Read(id);
 		if (SyncStateFromID(id))
-			hndDebugPrint("[hndfsm] OnStoreLoad - loaded current state from id=" + id);
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] OnStoreLoad - loaded current state from id=" + id);
 		else
 			Print("[hndfsm] Warning! OnStoreLoad - cannot load curent hand state, id=" + id);*/
 		return true;
@@ -91,7 +91,7 @@ class HandFSM extends HFSMBase<HandStateBase, HandEventBase, HandActionBase, Han
 	{
 		/*int id = GetCurrentStateID();
 		ctx.Write(id);
-		hndDebugPrint("[hndfsm] OnStoreSave - saving current state=" + GetCurrentState() + " id=" + id);*/
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] OnStoreSave - saving current state=" + GetCurrentState() + " id=" + id);*/
 	}
 
 	/**@fn			NetSyncCurrentStateID
@@ -100,7 +100,7 @@ class HandFSM extends HFSMBase<HandStateBase, HandEventBase, HandActionBase, Han
 	void NetSyncCurrentStateID (int id)
 	{
 		/*if (SyncStateFromID(id))
-			hndDebugPrint("[hndfsm] NetSyncCurrentStateID - loaded current state from id=" + id);
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] NetSyncCurrentStateID - loaded current state from id=" + id);
 		else
 			Print("[hndfsm] NetSyncCurrentStateID called with null, ignoring request to set current fsm state.");*/
 	}

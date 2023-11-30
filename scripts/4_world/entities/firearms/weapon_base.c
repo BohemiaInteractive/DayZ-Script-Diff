@@ -315,7 +315,7 @@ class Weapon_Base extends Weapon
 	}
 	void ResetWeaponAnimState()
 	{
-		fsmDebugSpam("[wpnfsm] " + Object.GetDebugName(this) + " resetting anim state: " + typename.EnumToString(PistolAnimState, m_weaponAnimState) + " --> " + typename.EnumToString(PistolAnimState, -1));
+		if (LogManager.IsWeaponLogEnable()) fsmDebugSpam("[wpnfsm] " + Object.GetDebugName(this) + " resetting anim state: " + typename.EnumToString(PistolAnimState, m_weaponAnimState) + " --> " + typename.EnumToString(PistolAnimState, -1));
 		m_weaponAnimState = -1;
 	}
 	int GetWeaponAnimState() { return m_weaponAnimState; }

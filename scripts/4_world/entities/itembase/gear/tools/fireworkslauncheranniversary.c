@@ -97,9 +97,11 @@ class AnniversaryFireworksLauncherClientEventSecondary : AnniversaryFireworksLau
 //--------------------------------------------------------------------------------------
 class Anniversary_FireworksLauncher: FireworksLauncher
 {
+	int sequence = 0;
+	
 	override protected void SetupColorSequences()
 	{
-		m_ColorSequence.Insert("12345123451234512345123451234512345");
+		m_ColorSequence.Insert("1234512345123451234512345");
 	}
 	
 	override protected FireworksLauncherClientEventBase SpawnEvent()
@@ -122,6 +124,41 @@ class Anniversary_FireworksLauncher: FireworksLauncher
 	override bool DisableVicinityIcon()
 	{
 		return true;
+	}
+	
+	override protected int GetMaxShots()
+	{
+		return 25;
+	}
+	
+	override protected float GetFuseDelay()
+	{
+		return 1;
+	}
+	
+		//!Called periodically but only after the entity gets ignited
+	override protected void OnEventServer(int type)
+	{
+		m_Index++;
+		DamageSystem.ExplosionDamage(this, NULL, GetAmmoType(), GetPosition(), GetDamageType());
+		
+		if(m_Index > 16)
+		{
+			sequence++;
+			m_Index = 1;
+		}
+		
+		SetSynchDirty();
+		if (m_Index + (sequence*16)> GetMaxShots())
+		{
+			m_Index = GetMaxShots();
+			m_TimerEvent = null;
+			SetState(EFireworksState.FINISHED);
+		}
+		else
+		{
+			RestartEventTimer();
+		}
 	}
 	
 }

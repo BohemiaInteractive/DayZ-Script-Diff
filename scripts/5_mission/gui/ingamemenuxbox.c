@@ -415,6 +415,12 @@ class InGameMenuXbox extends UIScriptedMenu
 		}
 	}
 	
+	bool ShouldRestartBeVisible(Man player)
+	{
+		return player && player.IsUnconscious() && !CfgGameplayHandler.GetDisableRespawnInUnconsciousness();
+	}
+	
+	
 	void UpdateGUI()
 	{
 		Man player = GetGame().GetPlayer();
@@ -426,8 +432,7 @@ class InGameMenuXbox extends UIScriptedMenu
 		
 		if (m_PlayerAlive)
 		{
-			if (player)
-				m_RestartButton.Show(player.IsUnconscious() && !CfgGameplayHandler.GetDisableRespawnInUnconsciousness());
+			m_RestartButton.Show(ShouldRestartBeVisible(player));
 		}
 		else
 		{
@@ -765,7 +770,7 @@ class InGameMenuXbox extends UIScriptedMenu
 		Man player = GetGame().GetPlayer();
 		if (m_PlayerAlive)
 		{
-			if (player && player.IsUnconscious())
+			if (ShouldRestartBeVisible(player))
 				SetFocus(m_RestartButton);
 			else
 				SetFocus(m_ContinueButton);

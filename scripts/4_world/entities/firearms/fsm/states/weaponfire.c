@@ -97,7 +97,7 @@ class WeaponFire extends WeaponStartAction
 
 class WeaponFireWithEject extends WeaponFire
 {
-		override void OnEntry (WeaponEventBase e)
+	override void OnEntry (WeaponEventBase e)
 	{
 		m_dtAccumulator = 0;
 
@@ -134,7 +134,7 @@ class WeaponFireMultiMuzzle extends WeaponStartAction
 
 			int mi = m_weapon.GetCurrentMuzzle();
 			int b = m_weapon.GetCurrentModeBurstSize(mi);
-			if(b > 1 )
+			if (b > 1)
 			{
 				
 				for (int i = 0; i < b; i++)

@@ -1037,7 +1037,8 @@ class CGame
 	proto native void		GetPlayerIndentities( out array<PlayerIdentity> identities );
 	
 	proto native float		SurfaceY(float x, float z);
-	proto native float		SurfaceRoadY(float x, float z);
+	proto native float		SurfaceRoadY(float x, float z, RoadSurfaceDetection rsd = RoadSurfaceDetection.LEGACY);
+	proto native float		SurfaceRoadY3D(float x, float y, float z, RoadSurfaceDetection rsd);
 	proto void				SurfaceGetType(float x, float z, out string type);
 	proto void				SurfaceGetType3D(float x, float y, float z, out string type);
 	proto void				SurfaceUnderObject(notnull Object object, out string type, out int liquidType);

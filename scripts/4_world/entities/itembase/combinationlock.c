@@ -150,7 +150,7 @@ class CombinationLock extends ItemBase
 	// --- SYNCHRONIZATION
 	void Synchronize()
 	{
-		bsbDebugPrint("[bsb] CombinationLock.Synchronize " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] CombinationLock.Synchronize " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
 		if ( GetGame().IsServer() )
 		{
 			SetSynchDirty();
@@ -172,10 +172,10 @@ class CombinationLock extends ItemBase
 		UpdateVisuals();
 		
 		//update sound (client)
-		if(m_LockActionPerformed)
+		if (m_LockActionPerformed)
 			UpdateSound();
 		
-		bsbDebugPrint("[bsb] CombinationLock.OnVariablesSynchronized " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] CombinationLock.OnVariablesSynchronized " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
 	}
 	
 	void SetCombination( int combination )
@@ -271,7 +271,7 @@ class CombinationLock extends ItemBase
 	//Lock lock
 	void LockServer( EntityAI parent, bool ignore_combination = false )
 	{
-		bsbDebugPrint("[bsb] CombinationLock.LockServer " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] CombinationLock.LockServer " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
 		if ( IsLockAttached() )
 		{
 			if ( !ignore_combination )
@@ -298,7 +298,7 @@ class CombinationLock extends ItemBase
 	
 	void UnlockServer( EntityAI player, EntityAI parent )
 	{
-		bsbDebugPrint("[bsb] CombinationLock.UnlockServer " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] CombinationLock.UnlockServer " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
 		if ( IsLockAttached() )
 		{
 			Fence fence = Fence.Cast( parent );

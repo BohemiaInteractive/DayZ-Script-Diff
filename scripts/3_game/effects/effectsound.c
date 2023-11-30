@@ -46,6 +46,7 @@ class EffectSound : Effect
 	//@{
 	protected bool						m_SoundWaveStarting;
 	protected bool						m_SoundWaveStopping;
+	protected bool						m_SoundFadedOut;
 	
 	protected float						m_SoundFadeInDuration;
 	
@@ -66,6 +67,7 @@ class EffectSound : Effect
 		m_SoundWaveVolumeMax = 1;
 		m_SoundAutodestroy = false;
 		m_SoundWaveStopping = false;
+		m_SoundFadedOut = false;
 		m_SoundDoppler = -1;
 	}
 	
@@ -169,7 +171,7 @@ class EffectSound : Effect
 				{
 					SetCurrentLocalPosition(position, false);
 					m_SoundWaveObject = GetGame().GetSoundScene().Play3D( m_SoundObject, m_SoundObjectBuilder );
-					if( !m_SoundWaveObject )
+					if ( !m_SoundWaveObject )
 						return false;
 
 					// Wait for header to be loaded before asking for its length, else we block the main thread
@@ -221,6 +223,7 @@ class EffectSound : Effect
 			if ( m_SoundFadeOutDuration > 0 && !m_SoundWaveStopping )
 			{
 				m_SoundWaveStopping = true;
+				m_SoundFadedOut = false;
 				m_SoundWaveStarting = false;
 				m_SoundFadeOutStartTime = m_SoundWaveTime;
 			}
@@ -250,6 +253,8 @@ class EffectSound : Effect
 	{
 		m_IsPlaying					= false;
 		m_SoundWaveIsPlaying		= false;
+		m_SoundWaveStopping 		= false;
+		m_SoundFadedOut				= false;
 		m_SoundWaveVolume			= m_SoundWaveVolumeMax;
 		m_SoundWaveTime				= 0;
 		m_SoundFadeOutInitVolume	= 0;
@@ -497,6 +502,8 @@ class EffectSound : Effect
 					if ( m_SoundWaveObject )
 					{
 						m_SoundWaveObject.Stop();
+						m_SoundWaveStopping = false;
+						m_SoundFadedOut = true;
 					}
 				}
 			}
@@ -618,6 +625,11 @@ class EffectSound : Effect
 	bool IsSoundAutodestroy()
 	{
 		return m_SoundAutodestroy;
+	}
+	
+	override bool CanDestroy()
+	{
+		return m_SoundFadeOutDuration <= 0 || m_SoundFadedOut;
 	}
 	
 	//@}

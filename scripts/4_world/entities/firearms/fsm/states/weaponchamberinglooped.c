@@ -117,15 +117,15 @@ class LoopedChambering extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " LoopedChambering, ok - ammo pile removed from left hand to previous location (LHand->inv) - exit"); }
 								done = true;
@@ -176,15 +176,15 @@ class LoopedChambering extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " LoopedChambering, ok - ammo pile removed from left hand to previous location (LHand->inv) - abort"); }
 								done = true;
@@ -378,15 +378,15 @@ class LoopedChamberingEjectLast extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " LoopedChamberingEjectLast, ok - ammo pile removed from left hand to previous location (LHand->inv) - exit"); }
 								done = true;
@@ -395,12 +395,12 @@ class LoopedChamberingEjectLast extends WeaponStateBase
 					}
 				}
 				
-				if( !done)
+				if (!done)
 				{
 					InventoryLocation il = new InventoryLocation;
 					e.m_player.GetInventory().FindFreeLocationFor( m_srcMagazine, FindInventoryLocationType.CARGO, il );
 			
-					if(!il || !il.IsValid())
+					if (!il || !il.IsValid())
 					{
 						if (DayZPlayerUtils.HandleDropMagazine(e.m_player, m_srcMagazine))
 						{
@@ -437,15 +437,15 @@ class LoopedChamberingEjectLast extends WeaponStateBase
 			
 			InventoryLocation leftHandIl = new InventoryLocation;
 			m_srcMagazine.GetInventory().GetCurrentInventoryLocation(leftHandIl);
-			if(leftHandIl.IsValid())
+			if (leftHandIl.IsValid())
 			{
-				if(m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
+				if (m_srcMagazinePrevLocation && m_srcMagazinePrevLocation.IsValid())
 				{
-					if(vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ )
+					if (vector.DistanceSq(m_srcMagazinePrevLocation.GetPos(), leftHandIl.GetPos()) < WeaponManager.MAX_DROP_MAGAZINE_DISTANCE_SQ)
 					{
-						if( GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+						if (GameInventory.LocationCanMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 						{
-							if( GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation) )
+							if (GameInventory.LocationSyncMoveEntity(leftHandIl,m_srcMagazinePrevLocation))
 							{
 								if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " LoopedChamberingEjectLast, ok - ammo pile removed from left hand to previous location (LHand->inv) - abort"); }
 								done = true;
@@ -454,12 +454,12 @@ class LoopedChamberingEjectLast extends WeaponStateBase
 					}
 				}
 				
-				if( !done)
+				if (!done)
 				{
 					InventoryLocation il = new InventoryLocation;
 					e.m_player.GetInventory().FindFreeLocationFor( m_srcMagazine, FindInventoryLocationType.CARGO, il );
 			
-					if(!il || !il.IsValid())
+					if (!il || !il.IsValid())
 					{
 						if (DayZPlayerUtils.HandleDropMagazine(e.m_player, m_srcMagazine))
 						{

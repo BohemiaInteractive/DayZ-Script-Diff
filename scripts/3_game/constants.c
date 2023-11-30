@@ -37,6 +37,18 @@ enum ObjIntersect
 	None 	//!< ObjIntersectNone: No Geometry
 }
 
+enum RoadSurfaceDetection
+{
+	//! Find nearest surface under given point
+	UNDER,
+	//! Find nearest surface above given point
+	ABOVE,
+	//! Find nearest surface to given point
+	CLOSEST,
+	//! Legacy version, UNDER but without proxy support
+	LEGACY,
+}
+
 //! UserID of a parent widget usually matches this value, unless overriden in the 'InitWidgetSet' method
 enum EffectWidgetsTypes
 {

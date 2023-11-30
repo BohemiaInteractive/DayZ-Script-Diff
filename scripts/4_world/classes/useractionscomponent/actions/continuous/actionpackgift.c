@@ -38,9 +38,7 @@ class ActionPackGift: ActionContinuousBase
 		if ( !item_to_pack.IsTakeable() ) return false;
 		if ( item_to_pack.IsBeingPlaced() ) return false;
 		if ( BaseBuildingBase.Cast(item_to_pack) ) return false;
-
-		if ( !item_to_pack.CanPutInCargo(null) ) return false;	
-		
+		if ( !item_to_pack.CanPutInCargo(null) ) return false;
 		
 		EntityAI tgt_parent = EntityAI.Cast( target.GetParent() );
 		

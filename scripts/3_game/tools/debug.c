@@ -18,6 +18,8 @@ class Debug
 	static private const string	LOG_DEBUG_INV_MOVE			= "Inv Move";
 	static private const string	LOG_DEBUG_INV_RESERVATION	= "Inv Rrsv";
 	static private const string	LOG_DEBUG_INV_HFSM			= "HFSM";
+	static private const string	LOG_DEBUG_QUICKBAR			= "Quickbar";
+	static private const string	LOG_DEBUG_BASEBUILDING		= "Base Building";
 	static private const string	LOG_DEBUG_BLEEDING_CHANCES	= "Bleeding";
 	static private const string LOG_DEBUG_TRIGGER			= "Trigger";
 	static private const string LOG_DEBUG_PARTICLE			= "Particle";
@@ -159,6 +161,16 @@ class Debug
 	static void	InventoryHFSMLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
 		LogMessage(LOG_DEBUG_INV_HFSM, plugin, entity, author, label, message);
+	}
+	
+	static void	QuickbarLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
+	{
+		LogMessage(LOG_DEBUG_QUICKBAR, plugin, entity, author, label, message);
+	}	
+	
+	static void	BaseBuildingLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
+	{
+		LogMessage(LOG_DEBUG_BASEBUILDING, plugin, entity, author, label, message);
 	}
 	
 	static void	BleedingChancesLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
@@ -563,6 +575,9 @@ class LogManager
 	static bool m_DoInventoryMoveLog;
 	static bool m_DoInventoryReservationLog;
 	static bool m_DoInventoryHFSMLog;
+	static bool m_DoSyncLog;
+	static bool m_DoQuickbarLog;
+	static bool m_DoBaseBuildingLog;
 	static bool m_DoWeaponLog;
 	static bool m_DoWeatherLog;
 	static bool m_DoBleedingChanceLog;
@@ -580,6 +595,9 @@ class LogManager
 		m_DoInventoryMoveLog 		= IsCLIParam("doInvMoveLog");
 		m_DoInventoryReservationLog = IsCLIParam("doInvReservLog");
 		m_DoInventoryHFSMLog 		= IsCLIParam("doInvHFSMLog");
+		m_DoSyncLog					= IsCLIParam("doSyncLog");
+		m_DoQuickbarLog 			= IsCLIParam("doQuickbarLog");
+		m_DoBaseBuildingLog			= IsCLIParam("doBaseBuildingLog");
 		m_DoWeaponLog 				= IsCLIParam("doWeaponLog");
 		m_DoWeatherLog 				= IsCLIParam("doWeatherLog");
 	}
@@ -632,6 +650,36 @@ class LogManager
 	static void InventoryHFSMLogEnable(bool enable)
 	{
 		m_DoInventoryHFSMLog = enable;
+	}
+	
+	static bool IsSyncLogEnable()
+	{
+		return m_DoSyncLog;
+	}
+	
+	static void SyncLogEnable(bool enable)
+	{
+		m_DoSyncLog = enable;
+	}
+	
+	static bool IsQuickbarLogEnable()
+	{
+		return m_DoQuickbarLog;
+	}
+	
+	static void QuickbarLogEnable(bool enable)
+	{
+		m_DoQuickbarLog = enable;
+	}
+	
+	static bool IsBaseBuildingLogEnable()
+	{
+		return m_DoBaseBuildingLog;
+	}
+	
+	static void BaseBuildingLogEnable(bool enable)
+	{
+		m_DoBaseBuildingLog = enable;
 	}
 	
 	static bool IsSymptomLogEnable()

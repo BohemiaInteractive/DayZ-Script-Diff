@@ -40,7 +40,7 @@ class Cooking
 				
 		if (item_to_cook && item_to_cook.CanBeCooked())
 		{
-			//! enable cooking sound		
+			//! enable cooking SoundEvent
 			item_to_cook.MakeSoundsOnClient(true, pCookingMethod.param1);
 
 			//! update food
@@ -118,24 +118,21 @@ class Cooking
 		
 		//manage cooking equipment
 		Bottle_Base bottle_base = Bottle_Base.Cast(cooking_equipment);
-		if ( bottle_base )
+		if (bottle_base)
 		{
-			float cooking_equipment_temp = cooking_equipment.GetTemperature();
-			bool is_water_boiling;
+			float cookingEquipmentTemp = cooking_equipment.GetTemperature();
 			
 			//handle water boiling
-			if (cooking_equipment_temp >= LIQUID_BOILING_POINT)
+			if (cookingEquipmentTemp >= LIQUID_BOILING_POINT)
 			{
 				//remove agents
 				cooking_equipment.RemoveAllAgents();
 				
 				if (cooking_equipment.GetQuantity() > 0)
 				{
-					is_water_boiling = true;
-					
 					//vaporize liquid
 					cooking_equipment.AddQuantity(-LIQUID_VAPOR_QUANTITY);
-				};
+				}
 			}
 			
 			//handle audio visuals
@@ -286,7 +283,7 @@ class Cooking
 		// refresh audio
 		if (item_to_cook.GetInventory().IsAttachment())
 		{
-			item_to_cook.MakeSoundsOnClient(true);
+			item_to_cook.MakeSoundsOnClient(true, CookingMethodType.BAKING);
 			//add temperature
 			AddTemperatureToItem(item_to_cook, null, food_min_temp);
 		}

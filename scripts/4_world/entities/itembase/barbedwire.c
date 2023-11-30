@@ -73,7 +73,7 @@ class BarbedWire extends ItemBase
 	
 	void SetMountedState( bool is_mounted )
 	{
-		bsbDebugPrint("[bsb] " + GetDebugName(this) + " SetMountedState mounted=" + is_mounted);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + GetDebugName(this) + " SetMountedState mounted=" + is_mounted);
 		
 		//lock slot
 		m_IsMounted = is_mounted;

@@ -216,7 +216,7 @@ class Fence extends BaseBuildingBase
 		//write
 		ctx.Write( m_GateState );
 		ctx.Write( m_IsOpened );
-		bsbDebugPrint("[bsb] OnStoreSave - build=" + m_GateState + " opened=" + m_IsOpened);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] OnStoreSave - build=" + m_GateState + " opened=" + m_IsOpened);
 	}
 	
 	override bool OnStoreLoad( ParamsReadContext ctx, int version )
@@ -248,7 +248,7 @@ class Fence extends BaseBuildingBase
 			return false;
 		}
 		
-		bsbDebugPrint("[bsb] OnStoreLoad - build=" + m_GateState + " opened=" + m_IsOpened);
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] OnStoreLoad - build=" + m_GateState + " opened=" + m_IsOpened);
 		//---
 		
 		return true;
@@ -270,7 +270,7 @@ class Fence extends BaseBuildingBase
 		
 		UpdateVisuals();
 		
-		bsbDebugPrint("[bsb] AfterStoreLoad - build=" + gate_part.IsBuilt() + " opened=" + IsOpened());
+		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] AfterStoreLoad - build=" + gate_part.IsBuilt() + " opened=" + IsOpened());
 	}	
 	
 	override void OnVariablesSynchronized()

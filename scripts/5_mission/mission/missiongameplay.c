@@ -1350,13 +1350,8 @@ class MissionGameplay extends MissionBase
 			{
 				um.EnterScriptedMenu(MENU_MAP, null);
 				GetGame().GetMission().AddActiveInputExcludes({"map"});
+				GetGame().GetMission().AddActiveInputRestriction(EInputRestrictors.MAP);
 			}
-			else
-			{
-				GetGame().GetMission().AddActiveInputExcludes({"loopedactions"});
-			}
-
-			GetGame().GetMission().AddActiveInputRestriction(EInputRestrictors.MAP);
 		}
 	}
 	

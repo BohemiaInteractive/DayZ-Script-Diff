@@ -812,11 +812,16 @@ class Object extends IEntity
 		GetNetworkID( low, high );
 		return high.ToString() + low.ToString();
 	}
+
+	override string GetDebugName()
+	{
+		return GetDebugNameNative();
+	}
 	
 	static string GetDebugName(Object o)
 	{
 		if (o)
-			return o.GetType() + ":" + o.GetNetworkIDString();
+			return o.GetDebugName();
 		return "null";
 	}
 	

@@ -258,6 +258,15 @@ class Effect : Managed
 		return m_IsPendingDeletion;
 	}
 	
+	/**
+	\brief Get whether the Effect can be destroyed right now
+		\return \p bool Whether the Effect can be destroyed right now
+	*/
+	bool CanDestroy()
+	{
+		return true;
+	}
+	
 	//@}
 	
 	

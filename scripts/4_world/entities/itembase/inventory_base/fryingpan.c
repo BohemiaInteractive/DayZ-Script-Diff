@@ -53,6 +53,10 @@ class FryingPan extends Inventory_Base
 		
 		if ( parent && IsCargoException4x3( parent ) )
 			return false;
+		
+		//is 'parent' somewhere in cargo?
+		if (parent && parent.GetInventory().IsCargoInHiearchy())
+			return false;
 
 		return true;
 	}
@@ -61,10 +65,26 @@ class FryingPan extends Inventory_Base
 	{
 		if ( !super.CanReceiveItemIntoCargo( item ) )
 			return false;
-
+		
 		if ( IsCargoException4x3( item ) )
 			return false;
-
+		
+		//is 'this' somewhere in cargo?
+		if (GetInventory().IsCargoInHiearchy())
+			return false;
+		
+		//can 'this' be attached to the item (->assumed smaller size than item)?
+		int slotId;
+		for (int i = 0; i < GetInventory().GetSlotIdCount(); i++)
+		{
+			slotId = GetInventory().GetSlotId(i);
+			if (item.GetInventory().HasAttachmentSlot(slotId))
+			{
+				//Print("CanReceiveItemIntoCargo | item " + item + " matches in slot name: " + InventorySlots.GetSlotName(slotId) + " of " + this);
+				return false;
+			}
+		}
+		
 		return true;
 	}
 	
@@ -75,6 +95,18 @@ class FryingPan extends Inventory_Base
 
 		if ( IsCargoException4x3( item ) )
 			return false;
+		
+		//can 'this' be attached to the item (->assumed smaller size than item)?
+		int slotId;
+		for (int i = 0; i < GetInventory().GetSlotIdCount(); i++)
+		{
+			slotId = GetInventory().GetSlotId(i);
+			if (item.GetInventory().HasAttachmentSlot(slotId))
+			{
+				//Print("CanLoadItemIntoCargo | item " + item + " matches in slot name: " + InventorySlots.GetSlotName(slotId) + " of " + this);
+				return false;
+			}
+		}
 
 		return true;
 	}

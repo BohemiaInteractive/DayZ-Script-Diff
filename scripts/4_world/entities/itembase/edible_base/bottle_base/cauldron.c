@@ -58,6 +58,10 @@ class Cauldron extends Bottle_Base
 		if ( parent && IsCargoException4x3( parent ) )
 			return false;
 		
+		//is 'parent' somewhere in cargo?
+		if (parent && parent.GetInventory().IsCargoInHiearchy())
+			return false;
+		
 		return true;
 	}
 	
@@ -67,6 +71,10 @@ class Cauldron extends Bottle_Base
 			return false;
 
 		if ( IsCargoException4x3( item ) )
+			return false;
+		
+		//is 'this' somewhere in cargo?
+		if (GetInventory().IsCargoInHiearchy())
 			return false;
 
 		return true;

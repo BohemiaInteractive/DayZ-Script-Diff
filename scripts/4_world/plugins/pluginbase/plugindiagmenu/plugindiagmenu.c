@@ -404,6 +404,9 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				DiagMenu.RegisterBool(DiagMenuIDs.LOGS_ACTIONS, "", "Log Actions", DiagMenuIDs.LOGS_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.LOGS_WEAPONS, "", "Log Weapons", DiagMenuIDs.LOGS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.LOGS_SYNC, "", "Log Sync", DiagMenuIDs.LOGS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.LOGS_BASEBUILDING, "", "Log Base building", DiagMenuIDs.LOGS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.LOGS_QUICKBAR, "", "Log Quickbar", DiagMenuIDs.LOGS_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.LOGS_SYMPTOMS, "", "Log Symptoms", DiagMenuIDs.LOGS_MENU);
 				DiagMenu.RegisterMenu(DiagMenuIDs.LOGS_INVENTORY_MENU, "Inventory Logs", DiagMenuIDs.LOGS_MENU);
 				{
@@ -989,7 +992,23 @@ class PluginDiagMenu : PluginBase
 					LogManager.WeaponLogEnable(CachedObjectsParams.PARAM1_BOOL.param1);
 				break;
 			}
+	
+			//---------------------------------------------------------------
+			case ERPCs.DIAG_LOGS_SYNC:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+					LogManager.SyncLogEnable(CachedObjectsParams.PARAM1_BOOL.param1);
+				break;
+			}	
 			
+			//---------------------------------------------------------------
+			case ERPCs.DIAG_LOGS_BASEBUILDING:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+					LogManager.BaseBuildingLogEnable(CachedObjectsParams.PARAM1_BOOL.param1);
+				break;
+			}
+				
 			//---------------------------------------------------------------
 			case ERPCs.DIAG_LOGS_SYMPTOMS:
 			{
@@ -1021,6 +1040,14 @@ class PluginDiagMenu : PluginBase
 					LogManager.InventoryHFSMLogEnable(CachedObjectsParams.PARAM1_BOOL.param1);
 				break;
 			}
+
+			//---------------------------------------------------------------
+			case ERPCs.DIAG_LOGS_QUICKBAR:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+					LogManager.QuickbarLogEnable(CachedObjectsParams.PARAM1_BOOL.param1);
+				break;
+			}			
 			
 			//---------------------------------------------------------------
 			case ERPCs.DIAG_LOGS_BLEEDING_CHANCES:

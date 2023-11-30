@@ -34,7 +34,7 @@ class HandTakingAnimated_Show extends HandStartAction
 				//}
 				//else
 				//{
-				//	hndDebugPrint("[hndfsm] HandTakingAnimated_Show - not allowed");
+				//	if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandTakingAnimated_Show - not allowed");
 				//}
 			}
 			else

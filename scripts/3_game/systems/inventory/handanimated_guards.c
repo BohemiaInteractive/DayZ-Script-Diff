@@ -126,11 +126,11 @@ bool SelectAnimationOfTakeToHands(notnull Man player, notnull InventoryLocation 
 		animType = SlotToAnimType(player, src);
 		if (animType != -1)
 		{
-			hndDebugPrint("[hndfsm] SelectAnimationOfTakeToHands - selected animType=" + animType + " for item=" + src.GetItem());
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] SelectAnimationOfTakeToHands - selected animType=" + animType + " for item=" + src.GetItem());
 			return true;
 		}
 	}
-	hndDebugPrint("[hndfsm] SelectAnimationOfTakeToHands - no animation");
+	if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] SelectAnimationOfTakeToHands - no animation");
 	return false;
 }
 
@@ -144,11 +144,11 @@ bool SelectAnimationOfMoveFromHands(notnull Man player, notnull InventoryLocatio
 		animType = SlotToAnimType(player, dst);
 		if (animType != -1)
 		{
-			hndDebugPrint("[hndfsm] SelectAnimationOfMoveFromHands guard - selected animType=" + animType + " for item=" + src.GetItem());
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] SelectAnimationOfMoveFromHands guard - selected animType=" + animType + " for item=" + src.GetItem());
 			return true;
 		}
 	}
-	hndDebugPrint("[hndfsm] SelectAnimationOfMoveFromHands - no animation");
+	if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] SelectAnimationOfMoveFromHands - no animation");
 	return false;
 }
 
@@ -157,7 +157,7 @@ bool SelectAnimationOfForceSwapInHands(notnull Man player, notnull InventoryLoca
 	if (player.IsInTransport())
 		return false;
 	
-	hndDebugPrint("[hndfsm] SlotToAnimType - old_src=" + InventoryLocation.DumpToStringNullSafe(old_src) + " new_src=" + InventoryLocation.DumpToStringNullSafe(new_src) + " old_dst=" + InventoryLocation.DumpToStringNullSafe(old_dst) + " new_dst=" + InventoryLocation.DumpToStringNullSafe(new_dst));
+	if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] SlotToAnimType - old_src=" + InventoryLocation.DumpToStringNullSafe(old_src) + " new_src=" + InventoryLocation.DumpToStringNullSafe(new_src) + " old_dst=" + InventoryLocation.DumpToStringNullSafe(old_dst) + " new_dst=" + InventoryLocation.DumpToStringNullSafe(new_dst));
 
 	if (old_src.GetItem().GetHierarchyRootPlayer() == player || new_src.GetItem().GetHierarchyRootPlayer() == player)
 	{
@@ -167,7 +167,7 @@ bool SelectAnimationOfForceSwapInHands(notnull Man player, notnull InventoryLoca
 		//Print("animType2 = " + animType2);
 		if (animType1 != -1 && animType2 != -1)
 		{
-			hndDebugPrint("[hndfsm] SelectAnimationOfForceSwapInHands guard - selected animType1=" + animType1 + " animType2=" + animType2 + " for old_item=" + old_src.GetItem() + " for new_item=" + new_src.GetItem());
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] SelectAnimationOfForceSwapInHands guard - selected animType1=" + animType1 + " animType2=" + animType2 + " for old_item=" + old_src.GetItem() + " for new_item=" + new_src.GetItem());
 			return true;
 		}
 		/*else if (animType1 != -1 || animType2 != -1) //HACK
@@ -177,7 +177,7 @@ bool SelectAnimationOfForceSwapInHands(notnull Man player, notnull InventoryLoca
 			return false;
 		}*/
 	}
-	hndDebugPrint("[hndfsm] SelectAnimationOfForceSwapInHands - no animation");
+	if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] SelectAnimationOfForceSwapInHands - no animation");
 	return false;
 }
 
@@ -217,7 +217,7 @@ class HandSelectAnimationOfMoveFromHandsEvent extends HandGuardBase
 			{
 				if ( !GameInventory.LocationCanMoveEntity(src, e.GetDst()) )
 				{
-					hndDebugPrint("[hndfsm] HandSelectAnimationOfMoveFromHandsEvent - rejected");
+					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandSelectAnimationOfMoveFromHandsEvent - rejected");
 					return false;
 				}
 				
@@ -254,7 +254,7 @@ class HandSelectAnimationOfForceSwapInHandsEvent extends HandGuardBase
 		HandEventForceSwap es = HandEventForceSwap.Cast(e);
 		if (es)
 		{
-			hndDebugPrint("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent FSwap e=" + e.DumpToString());
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent FSwap e=" + e.DumpToString());
 			
 			if ( !es.m_Src2.IsValid() || !es.m_Src.IsValid() )
 			{

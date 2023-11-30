@@ -590,7 +590,7 @@ class EmoteManager
 			return false;
 		}
 		
-		actionDebugPrint("[emote] " + Object.GetDebugName(m_Player) + " play emote id=" + id + " IH=" + Object.GetDebugName(m_Player.GetItemInHands()));
+		if (LogManager.IsActionLogEnable()) actionDebugPrint("[emote] " + Object.GetDebugName(m_Player) + " play emote id=" + id + " IH=" + Object.GetDebugName(m_Player.GetItemInHands()));
 		
 		m_PreviousGestureID = m_CurrentGestureID;
 		m_CurrentGestureID = id;
@@ -1180,6 +1180,6 @@ class ChainedDropAndKillPlayerLambda : ReplaceItemWithNewLambdaBase
 		
 		m_Player.SetHealth(0);
 		
-		hndDebugPrint("[syncinv] player=" + Object.GetDebugName(m_Player) + " STS = " + m_Player.GetSimulationTimeStamp() + " ChainedDropAndKillPlayerLambda");
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[syncinv] player=" + Object.GetDebugName(m_Player) + " STS = " + m_Player.GetSimulationTimeStamp() + " ChainedDropAndKillPlayerLambda");
 	}
 }

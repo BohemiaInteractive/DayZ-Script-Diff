@@ -415,22 +415,20 @@ class GameInventory
 		return false;
 	}
 	
-	//! Returns true if item of his hiearchy parents are in cargo
+	//! Returns true if inventory owner or his hiearchy parents are in cargo
 	bool IsCargoInHiearchy()
 	{
 		InventoryLocation lcn = new InventoryLocation();
-		GetCurrentInventoryLocation(lcn);
-		EntityAI parent = lcn.GetParent();
-		
-		while (parent) //while with limit
+		EntityAI ent = GetInventoryOwner();
+		while (ent)
 		{
-			if (lcn.GetType() == InventoryLocationType.CARGO || lcn.GetType() == InventoryLocationType.PROXYCARGO)
+			if (ent.GetInventory().GetCurrentInventoryLocation(lcn) && lcn.IsValid())
 			{
-				return true;
+				if (lcn.GetType() == InventoryLocationType.CARGO || lcn.GetType() == InventoryLocationType.PROXYCARGO)
+					return true;
 			}
 			
-			parent.GetInventory().GetCurrentInventoryLocation(lcn);
-			parent = lcn.GetParent();
+			ent = ent.GetHierarchyParent();
 		}
 		
 		return false;
@@ -470,7 +468,7 @@ class GameInventory
 
 				src.ReadFromContext(ctx);
 				dst.ReadFromContext(ctx);
-				syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
+				if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 
 				if (!src.GetItem() || !dst.GetItem())
 				{
@@ -485,7 +483,7 @@ class GameInventory
 			case InventoryCommandType.HAND_EVENT:
 			{
 				HandEventBase e = HandEventBase.CreateHandEventFromContext(ctx);
-				syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " event=" + e.DumpToString());
+				if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " event=" + e.DumpToString());
 				
 				if (!e.GetSrcEntity())
 				{
@@ -510,7 +508,7 @@ class GameInventory
 		
 				if (src1.IsValid() && src2.IsValid() && dst1.IsValid() && dst2.IsValid())
 				{
-					syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand Swap src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand Swap src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 
 					LocationSwap(src1, src2, dst1, dst2);
 				}
@@ -834,7 +832,7 @@ class GameInventory
 				Man man = Man.Cast(src.GetParent());
 				if (man)
 				{
-					inventoryDebugPrint("Inventory::EEInit - Man=" + man + " item=" + this);
+					if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("Inventory::EEInit - Man=" + man + " item=" + this);
 					man.GetHumanInventory().OnEntityInHandsCreated(src);
 				}
 			}
@@ -994,7 +992,7 @@ class GameInventory
 	**/
 	bool TakeEntityToInventory(InventoryMode mode, FindInventoryLocationType flags, notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
@@ -1003,7 +1001,7 @@ class GameInventory
 			if (FindFreeLocationFor(item, flags, dst))
 				return TakeToDst(mode, src, dst);
 
-			inventoryDebugPrint("[inv] I::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " Warning - no room for item");
+			if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " Warning - no room for item");
 			return false;
 		}
 		Error("[inv] I::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " Error - src has no inventory location");
@@ -1013,7 +1011,7 @@ class GameInventory
 	/// helper that finds location first, then moves the entity into it
 	bool TakeEntityToTargetInventory(InventoryMode mode, notnull EntityAI target, FindInventoryLocationType flags, notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::Take2Target(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Target(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
@@ -1023,7 +1021,7 @@ class GameInventory
 			if (target.GetInventory().FindFreeLocationFor(item, flags, dst))
 				return TakeToDst(mode, src, dst);
 
-			inventoryDebugPrint("[inv] I::Take2Target(" + typename.EnumToString(InventoryMode, mode) + ") target=" + target + " item=" + item + " Warning - no room for item in target");
+			if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Target(" + typename.EnumToString(InventoryMode, mode) + ") target=" + target + " item=" + item + " Warning - no room for item in target");
 			return false;
 		}
 		Error("[inv] I::Take2Target(" + typename.EnumToString(InventoryMode, mode) + ") target=" + target + " item=" + item + " Error - src has no inventory location");
@@ -1062,14 +1060,14 @@ class GameInventory
 	 **/
 	bool TakeEntityToCargo(InventoryMode mode, notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 		return TakeEntityToInventory(mode, FindInventoryLocationType.CARGO, item);
 	}
 
 	/// Put item into into cargo of another entity
 	bool TakeEntityToTargetCargo(InventoryMode mode, notnull EntityAI target, notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::Take2TargetCgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + "to cargo of target=" + target);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2TargetCgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + "to cargo of target=" + target);
 		return TakeEntityToTargetInventory(mode, target, FindInventoryLocationType.CARGO, item);
 	}
 
@@ -1080,7 +1078,7 @@ class GameInventory
 	 **/
 	bool TakeEntityToCargoEx(InventoryMode mode, notnull EntityAI item, int idx, int row, int col)
 	{
-		inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
@@ -1096,7 +1094,7 @@ class GameInventory
 	/// Put item into into cargo on specific cargo location of another entity
 	bool TakeEntityToTargetCargoEx(InventoryMode mode, notnull CargoBase cargo, notnull EntityAI item, int row, int col)
 	{
-		inventoryDebugPrint("[inv] I::Take2TargetCgoEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + "to cargo of target=" + cargo.GetCargoOwner() + " row=" + row + " col=" + col);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2TargetCgoEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + "to cargo of target=" + cargo.GetCargoOwner() + " row=" + row + " col=" + col);
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
@@ -1111,14 +1109,14 @@ class GameInventory
 
 	bool TakeEntityAsAttachmentEx(InventoryMode mode, notnull EntityAI item, int slot)
 	{
-		inventoryDebugPrint("[inv] I::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
 		return TakeEntityAsTargetAttachmentEx(mode, GetInventoryOwner(), item, slot);
 	}
 
 	/// put item as attachment of target
 	bool TakeEntityAsTargetAttachmentEx(InventoryMode mode, notnull EntityAI target, notnull EntityAI item, int slot)
 	{
-		inventoryDebugPrint("[inv] I::Take2TargetAttEx(" + typename.EnumToString(InventoryMode, mode) + ") as ATT of target=" + target + " item=" + item + " slot=" + slot);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2TargetAttEx(" + typename.EnumToString(InventoryMode, mode) + ") as ATT of target=" + target + " item=" + item + " slot=" + slot);
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
@@ -1142,13 +1140,13 @@ class GameInventory
 
 	bool TakeEntityAsAttachment(InventoryMode mode, notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 		return TakeEntityToInventory(mode, FindInventoryLocationType.ATTACHMENT, item);
 	}
 
 	bool TakeEntityAsTargetAttachment(InventoryMode mode, notnull EntityAI target, notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 		return TakeEntityToTargetInventory(mode, target, FindInventoryLocationType.ATTACHMENT, item);
 	}
 
@@ -1229,7 +1227,7 @@ class GameInventory
 
 	bool DropEntity(InventoryMode mode, EntityAI owner, notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::Drop(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Drop(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
@@ -1256,7 +1254,7 @@ class GameInventory
 	
 	bool DropEntityWithTransform(InventoryMode mode, EntityAI owner, notnull EntityAI item, vector transform[4])
 	{
-		inventoryDebugPrint("[inv] I::Drop(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Drop(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
@@ -1291,7 +1289,7 @@ class GameInventory
 	
 	bool DropEntityInBounds(InventoryMode mode, EntityAI owner, notnull EntityAI item, vector halfExtents, float angle, float cosAngle, float sinAngle)
 	{
-		inventoryDebugPrint("[inv] I::Drop(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Drop(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
 		
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
@@ -1309,7 +1307,7 @@ class GameInventory
 
 	bool LocalDestroyEntity(notnull EntityAI item)
 	{
-		inventoryDebugPrint("[inv] I::LocalDestroyEntity inv item=" + item);
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::LocalDestroyEntity inv item=" + item);
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
@@ -1329,7 +1327,7 @@ class GameInventory
 		InventoryLocation src = new InventoryLocation();
 		if (lambda.m_OldItem.GetInventory().GetCurrentInventoryLocation(src))
 		{
-			inventoryDebugPrint("[inv] I::ReplaceItemWithNew executing lambda=" + lambda + "on old_item=" + lambda.m_OldItem);
+			if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::ReplaceItemWithNew executing lambda=" + lambda + "on old_item=" + lambda.m_OldItem);
 			lambda.Execute();
 			return true;
 		}

@@ -14,7 +14,7 @@ class DayZPlayerCommandDeathCallback : HumanCommandDeathCallback
 
 	override void 	OnSimulationEnd()
 	{
-		syncDebugPrint("DZPI::OnSimulationEnd - trying to drop item");
+		if (LogManager.IsSyncLogEnable()) syncDebugPrint("DZPI::OnSimulationEnd - trying to drop item");
 		
 		if (GetGame().IsServer())
 		{
@@ -1990,7 +1990,7 @@ class DayZPlayerImplement extends DayZPlayer
 
 	
 	//! 
-	override void  CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
+	override void CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
 	{
 		if (ModCommandHandlerBefore(pDt, pCurrentCommandID, pCurrentCommandFinished))
 		{

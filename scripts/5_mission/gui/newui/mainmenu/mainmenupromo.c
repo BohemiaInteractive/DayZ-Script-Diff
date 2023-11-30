@@ -14,7 +14,6 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	protected ImageWidget 	m_DlcPromotionImage;
 	protected TextWidget 	m_TitleTextDlc;
 	protected MultilineTextWidget 	m_DescriptionTextDlc;
-	protected VideoWidget 	m_VideoWidget;
 	protected ref ModInfo 	m_ThisModInfo;
 	protected ref JsonDataDLCInfo 	m_DlcInfo;
 	
@@ -55,8 +54,6 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		#ifdef PLATFORM_PS4
 			m_GamepadStoreImage = m_Root.FindAnyWidget("image_button_ps");
 		#endif
-		m_VideoWidget = VideoWidget.Cast(m_Root.FindAnyWidget("dlc_Video"));
-		m_VideoWidget.Show(false);
 		m_DlcPromotionImage = ImageWidget.Cast(m_Root.FindAnyWidget("dlc_ImageMain"));
 		m_DlcPromotionImage.Show(true);
 		m_BannerFrame = m_Root.FindAnyWidget("dlc_BannerFrame");
@@ -94,38 +91,6 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	{
 		m_ThisModInfo.GoToStore();
 		return super.OnClick(w,x,y,button);
-	}
-	
-	void LoadVideoFile()
-	{
-		if (m_VideoWidget.GetState() != VideoState.NONE)
-			return;
-		
-		string path = "video\\" + m_DlcInfo.VideoFileName;
-		
-		if (m_DlcInfo.VideoFileName != "")
-			m_VideoWidget.Load(path, true);
-	}
-	
-	void PerformPlayVideo()
-	{
-		LoadVideoFile();
-		m_VideoWidget.Play();
-	}
-	
-	void StartVideo()
-	{
-		PerformPlayVideo();
-	}
-	
-	void StopVideo()
-	{
-		m_VideoWidget.Stop();
-	}
-	
-	void KillVideo()
-	{
-		m_VideoWidget.Unload();
 	}
 	
 	protected void ColorFocussed(Widget w, int x, int y)

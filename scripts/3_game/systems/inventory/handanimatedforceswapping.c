@@ -74,7 +74,7 @@ class HandForceSwappingAnimated_Show extends HandStartAction
 			//}
 			//else
 			//{
-			//	hndDebugPrint("[hndfsm] HandForceSwapingAnimated_Show - not allowed");
+			//	if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandForceSwapingAnimated_Show - not allowed");
 			//}
 		}
 		else

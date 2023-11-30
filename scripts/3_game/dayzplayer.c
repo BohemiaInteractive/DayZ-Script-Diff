@@ -1102,6 +1102,13 @@ class DayZPlayer extends Human
 	
 	proto native DayZPlayerInstanceType 	GetInstanceType();
 
+	override string GetDebugName()
+	{
+		string res = super.GetDebugName();
+		res += ":" + typename.EnumToString(DayZPlayerInstanceType, GetInstanceType());
+		return res;
+	}
+
 	//! ---------------- heading model -------------------------
 	//! updated each tick
 	//! this can limit / extend player's heading (orientation) behaviour in game 

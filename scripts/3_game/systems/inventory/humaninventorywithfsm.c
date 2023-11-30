@@ -26,7 +26,7 @@ class HumanInventoryWithFSM : HumanInventory
 	override void Init ()
 	{
 		// setup state machine
-		hndDebugPrint("[hndfsm] Initializing Human Inventory FSM");
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] Initializing Human Inventory FSM");
 		
 		// basic states
 		CreateStableStates();
@@ -108,7 +108,7 @@ class HumanInventoryWithFSM : HumanInventory
 		}
 		else
 		{
-			//hndDebugPrint("FSM refused to process event (no transition): src=" + GetCurrentState().ToString() + " event=" + e.ToString());
+			//if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("FSM refused to process event (no transition): src=" + GetCurrentState().ToString() + " event=" + e.ToString());
 			return false;
 		}
 	}
@@ -120,12 +120,12 @@ class HumanInventoryWithFSM : HumanInventory
 		m_FSM.ProcessAbortEvent(e, aa);
 		if (aa == ProcessEventResult.FSM_OK)
 		{
-			hndDebugSpam("[hndfsm]  STS = " + GetManOwner().GetSimulationTimeStamp() + " Processed event e=" + e.ToString());
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugSpam("[hndfsm]  STS = " + GetManOwner().GetSimulationTimeStamp() + " Processed event e=" + e.ToString());
 			return true;
 		}
 		else
 		{
-			//hndDebugPrint("FSM refused to process event (no transition): src=" + GetCurrentState().ToString() + " event=" + e.ToString());
+			//if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("FSM refused to process event (no transition): src=" + GetCurrentState().ToString() + " event=" + e.ToString());
 			return false;
 		}
 	}

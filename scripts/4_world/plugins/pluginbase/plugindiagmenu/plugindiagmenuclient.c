@@ -198,8 +198,11 @@ class PluginDiagMenuClient : PluginDiagMenu
 		//---------------------------------------------------------------
 		DiagMenu.BindCallback(DiagMenuIDs.LOGS_ACTIONS, CBLogsActions);
 		DiagMenu.BindCallback(DiagMenuIDs.LOGS_WEAPONS, CBLogsWeapons);
+		DiagMenu.BindCallback(DiagMenuIDs.LOGS_SYNC, CBLogsSync);
+		DiagMenu.BindCallback(DiagMenuIDs.LOGS_BASEBUILDING, CBLogsBaseBuilding);
 		DiagMenu.BindCallback(DiagMenuIDs.LOGS_SYMPTOMS, CBLogsSymptoms);
 		DiagMenu.BindCallback(DiagMenuIDs.LOGS_BLEEDING_CHANCES, CBLogsBleedingChances);
+		DiagMenu.BindCallback(DiagMenuIDs.LOGS_QUICKBAR, CBLogsQuickbar);
 
 		//---------------------------------------------------------------
 		// LEVEL 3 - Script > Logs > InventoryLogs
@@ -1000,6 +1003,18 @@ class PluginDiagMenuClient : PluginDiagMenu
 	}
 	
 	//---------------------------------------------
+	static void CBLogsSync(bool enabled)
+	{
+		DiagToggleRPC(enabled, LogManager.IsSyncLogEnable(), ERPCs.DIAG_LOGS_SYNC);
+	}
+	
+	//---------------------------------------------
+	static void CBLogsBaseBuilding(bool enabled)
+	{
+		DiagToggleRPC(enabled, LogManager.IsBaseBuildingLogEnable(), ERPCs.DIAG_LOGS_BASEBUILDING);
+	}
+	
+	//---------------------------------------------
 	static void CBLogsSymptoms(bool enabled)
 	{
 		DiagToggleRPC(enabled, LogManager.IsSymptomLogEnable(), ERPCs.DIAG_LOGS_SYMPTOMS);
@@ -1022,6 +1037,12 @@ class PluginDiagMenuClient : PluginDiagMenu
 	{
 		DiagToggleRPC(enabled, LogManager.IsInventoryHFSMLogEnable(), ERPCs.DIAG_LOGS_INVENTORY_HFSM);
 	}
+
+	//---------------------------------------------
+	static void CBLogsQuickbar(bool enabled)
+	{
+		DiagToggleRPC(enabled, LogManager.IsQuickbarLogEnable(), ERPCs.DIAG_LOGS_QUICKBAR);
+	}	
 	
 	//---------------------------------------------
 	static void CBLogsBleedingChances(bool enabled)

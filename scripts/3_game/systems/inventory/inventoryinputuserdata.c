@@ -14,7 +14,7 @@ class InventoryInputUserData
 	{
 		if (GetGame().IsClient())
 		{
-			syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms sending cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms sending cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 			ScriptInputUserData ctx = new ScriptInputUserData;
 			SerializeMove(ctx, type, src, dst);
 			ctx.Send();
@@ -25,7 +25,7 @@ class InventoryInputUserData
 	{
 		if (GetGame().IsServer())
 		{
-			syncDebugPrint("[syncinv] server sending cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] server sending cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 			ScriptInputUserData ctx = new ScriptInputUserData;
 			SerializeMove(ctx, type, src, dst);
 			GameInventory.ServerLocationSyncMoveEntity(player, src.GetItem(), ctx);
@@ -49,7 +49,7 @@ class InventoryInputUserData
 	{
 		if (GetGame().IsClient())
 		{
-			syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms sending cmd=SWAP src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms sending cmd=SWAP src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 			ScriptInputUserData ctx = new ScriptInputUserData;
 			SerializeSwap(ctx, src1, src2, dst1, dst2, skippedSwap);
 			ctx.Send();
@@ -60,7 +60,7 @@ class InventoryInputUserData
 	{
 		if (GetGame().IsServer())
 		{
-			syncDebugPrint("[syncinv] server sending cmd=SWAP src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] server sending cmd=SWAP src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 			ScriptInputUserData ctx = new ScriptInputUserData;
 			SerializeSwap(ctx, src1, src2, dst1, dst2, skippedSwap);
 			GameInventory.ServerLocationSwap(src1, src2, dst1, dst2, ctx);
@@ -80,7 +80,7 @@ class InventoryInputUserData
 	{
 		if (GetGame().IsClient())
 		{
-			syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms SendInputUserDataHandEvent e=" + e.DumpToString());
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms SendInputUserDataHandEvent e=" + e.DumpToString());
 			ScriptInputUserData ctx = new ScriptInputUserData;
 			SerializeHandEvent(ctx, e);
 			ctx.Send();
@@ -96,7 +96,7 @@ class InventoryInputUserData
 				Error("[syncinv] SendServerHandEvent - called on server side event only, e=" + e.DumpToString());
 			if (player.IsAlive())
 				Error("[syncinv] SendServerHandEvent - called on living thing.. server hand command is only for dead people, e=" + e.DumpToString());
-			syncDebugPrint("[syncinv] SendServerHandEventViaInventoryCommand SendInputUserDataHandEvent e=" + e.DumpToString());
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] SendServerHandEventViaInventoryCommand SendInputUserDataHandEvent e=" + e.DumpToString());
 			ScriptInputUserData ctx = new ScriptInputUserData;
 			SerializeHandEvent(ctx, e);
 			GameInventory.ServerHandEvent(player, e.GetSrcEntity(), ctx);
@@ -115,7 +115,7 @@ class InventoryInputUserData
 	{
 		if (GetGame().IsClient())
 		{
-			syncDebugPrint("[syncinv] SendInputUserDataDestroy src=" + InventoryLocation.DumpToStringNullSafe(src));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] SendInputUserDataDestroy src=" + InventoryLocation.DumpToStringNullSafe(src));
 			ScriptInputUserData ctx = new ScriptInputUserData;
 			SerializeDestroy(ctx, src);
 			ctx.Send();

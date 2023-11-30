@@ -42,7 +42,7 @@ class ReplaceItemWithNewLambdaBase
 	 **/
 	protected bool PrepareLocations()
 	{
-		hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step A) Prepare inventory locations, old_item=" + m_OldItem);
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step A) Prepare inventory locations, old_item=" + m_OldItem);
 		m_OldLocation = new InventoryLocation;
 		if (m_OldItem.GetInventory().GetCurrentInventoryLocation(m_OldLocation)) // A.1) store old location
 		{
@@ -148,7 +148,7 @@ class ReplaceItemWithNewLambdaBase
 				break;
 			}
 			
-			hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step D) Created new new_item=" + new_item);
+			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step D) Created new new_item=" + new_item);
 			if (new_item)
 			{
 				return new_item;
@@ -162,7 +162,7 @@ class ReplaceItemWithNewLambdaBase
 				Math3D.MatrixIdentity4(mtx);
 				mtx[3] = m_OldItem.GetPosition();
 				backupLocation.SetGround(null, mtx);
-				hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step D) plan B - creating=" + m_NewItemType + " at bkp loc=" + backupLocation.DumpToString() + ", but failed");
+				if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step D) plan B - creating=" + m_NewItemType + " at bkp loc=" + backupLocation.DumpToString() + ", but failed");
 				new_item = GameInventory.LocationCreateLocalEntity(backupLocation, m_NewItemType,ECE_OBJECT_SWAP,RF_NONE); // create LOCAL new one on ground
 				if (!new_item)
 				{
@@ -184,7 +184,7 @@ class ReplaceItemWithNewLambdaBase
 	 **/
 	void CopyOldPropertiesToNew(notnull EntityAI old_item, EntityAI new_item)
 	{
-		hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step E) Copying props " + old_item + " --> " + new_item);
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step E) Copying props " + old_item + " --> " + new_item);
 	}
 
 	/**@fn		DeleteOldEntity
@@ -192,7 +192,7 @@ class ReplaceItemWithNewLambdaBase
 	 **/
 	protected void DeleteOldEntity()
 	{
-		hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step F) delete old item=" + m_OldItem);
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step F) delete old item=" + m_OldItem);
 		m_OldItem.DeleteSafe();
 	}
 	
@@ -203,7 +203,7 @@ class ReplaceItemWithNewLambdaBase
 	 **/
 	protected void CreateNetworkObjectInfo(EntityAI new_item)
 	{
-		hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step G) CreateNetworkObjectInfo =" + new_item);
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step G) CreateNetworkObjectInfo =" + new_item);
 		if (new_item)
 			GetGame().RemoteObjectTreeCreate(new_item); // G) this forces server to send CreateVehicle Message to client. This is needed for preserving the appearance of network operations on client (so that DeleteObject(old) arrives before CreateVehicle(new)). @NOTE: this does not delete the object on server, only it's network representation.
 	}
@@ -215,7 +215,7 @@ class ReplaceItemWithNewLambdaBase
 	 **/
 	protected void OnSuccess(EntityAI new_item)
 	{
-		hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step H) OnSuccess=" + new_item);
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] ReplaceItemWithNewLambdaBase Step H) OnSuccess=" + new_item);
 	}
 
 	/**@fn		OnAbort
@@ -231,7 +231,7 @@ class ReplaceItemWithNewLambdaBase
 	void Execute(HumanInventoryWithFSM fsm_to_notify = null)
 	{
 		int t = GetGame().GetTime();
-		hndDebugPrint("[syncinv] t=" + t + " lambda.Execute start ");
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[syncinv] t=" + t + " lambda.Execute start ");
 
 		// A) init
 		bool prepared = PrepareLocations();
@@ -292,7 +292,7 @@ class ReplaceItemWithNewLambdaBase
 		}
 		int te = GetGame().GetTime();
 		int dt = te - t;
-		hndDebugPrint("[syncinv] te=" + te + " lambda.Execute end, exec time=" + dt);
+		if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[syncinv] te=" + te + " lambda.Execute end, exec time=" + dt);
 	}
 
 	string DumpToString()

@@ -15,17 +15,20 @@ class ActionUnfoldMapCB : ActionBaseCB
 	
 	void ~ActionUnfoldMapCB()
 	{
-		if (!CfgGameplayHandler.GetUse3DMap())
+		if (GetGame() && GetGame().GetMission())
 		{
-			GetGame().GetMission().RemoveActiveInputExcludes({"map"}, false);
+			if (!CfgGameplayHandler.GetUse3DMap())
+			{
+				GetGame().GetMission().RemoveActiveInputExcludes({"map"}, false);
+			}
+			else
+			{
+				GetGame().GetMission().RemoveActiveInputExcludes({"loopedactions"}, false);
+			}
+			GetGame().GetMission().RemoveActiveInputRestriction(EInputRestrictors.MAP);
 		}
-		else
-		{
-			GetGame().GetMission().RemoveActiveInputExcludes({"loopedactions"}, false);
-		}
-		GetGame().GetMission().RemoveActiveInputRestriction(EInputRestrictors.MAP);
 		
-		if (!m_ActionData || !m_ActionData.m_Player )
+		if (!m_ActionData || !m_ActionData.m_Player)
 			return;
 		
 		ItemMap chernomap = ItemMap.Cast(m_ActionData.m_Player.GetItemInHands());
@@ -35,13 +38,13 @@ class ActionUnfoldMapCB : ActionBaseCB
 		}
 	}
 	
-	override void SetActionData(ActionData action_data )
+	override void SetActionData(ActionData action_data)
 	{
 		m_ActionData = action_data;
 		m_InitMovementState = m_ActionData.m_Player.m_MovementState.m_iStanceIdx;
 	}
 	
-	bool CancelCondition( bool pEnable )
+	bool CancelCondition()
 	{
 		return m_CancelCondition;
 	}
@@ -51,7 +54,7 @@ class ActionUnfoldMapCB : ActionBaseCB
 		if (!m_ActionData || !m_ActionData.m_Player)
 			return;
 				
-		if ( ( pOldState == STATE_LOOP_IN && pCurrentState == STATE_LOOP_LOOP ) && !m_HasReceivedEvent )
+		if ((pOldState == STATE_LOOP_IN && pCurrentState == STATE_LOOP_LOOP) && !m_HasReceivedEvent)
 		{
 			m_CancelCondition = true;
 		}
@@ -68,7 +71,7 @@ class ActionUnfoldMapCB : ActionBaseCB
 				m_HasReceivedEvent = true;
 				m_FinalMovementState = m_ActionData.m_Player.m_MovementState.m_iStanceIdx;
 				
-				if ( StateCheck() )
+				if (StateCheck())
 				{
 					PerformMapChange();
 					m_CancelCondition = false; 
@@ -83,12 +86,12 @@ class ActionUnfoldMapCB : ActionBaseCB
 	
 	override void OnFinish(bool pCanceled)	
 	{
-		if ( m_ActionData && m_ActionData.m_Player )
+		if (m_ActionData && m_ActionData.m_Player)
 		{
-			if ( m_ActionData && m_ActionData.m_ActionComponent )
+			if (m_ActionData && m_ActionData.m_ActionComponent)
 				m_ActionData.m_State = m_ActionData.m_ActionComponent.Interrupt(m_ActionData);
 			
-			if ( (!GetGame().IsDedicatedServer()) && GetGame().GetUIManager() && GetGame().GetUIManager().IsMenuOpen(MENU_MAP) )
+			if ((!GetGame().IsDedicatedServer()) && GetGame().GetUIManager() && GetGame().GetUIManager().IsMenuOpen(MENU_MAP))
 			{
 				GetGame().GetUIManager().FindMenu(MENU_MAP).Close();
 			}
@@ -115,45 +118,48 @@ class ActionUnfoldMapCB : ActionBaseCB
 		if (m_ActionData.m_Player.IsSwimming() || m_ActionData.m_Player.IsClimbing() || m_ActionData.m_Player.IsFalling() || m_ActionData.m_Player.IsClimbingLadder() || m_ActionData.m_Player.IsUnconscious() || m_ActionData.m_Player.IsRestrained())
 			return;
 		
-		if (m_CancelCondition)
-			return;
-		
 		ItemMap chernomap = ItemMap.Cast(m_ActionData.m_Player.GetItemInHands());
-		if (chernomap && !m_ActionData.m_Player.IsMapOpen() && !m_MapFolding)
+		if (chernomap)
 		{
-			chernomap.SetMapStateOpen(true, m_ActionData.m_Player);
+			if (!m_ActionData.m_Player.IsMapOpen() && !m_MapFolding)
+			{
+				if (m_CancelCondition) //do not open when cancelling in progress
+					return;
+				
+				chernomap.SetMapStateOpen(true, m_ActionData.m_Player);
+		
+				if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+				{
+					//chernomap.SyncMapMarkers();
+				}
 	
-			if (!GetGame().IsMultiplayer() || GetGame().IsServer())
-			{
-				//chernomap.SyncMapMarkers();
+				if (!GetGame().IsDedicatedServer())
+				{
+					UIManager 	m_UIManager;
+					UIScriptedMenu 	mapMenu;
+					m_UIManager = GetGame().GetUIManager();
+					m_UIManager.CloseAll();
+					if (!CfgGameplayHandler.GetUse3DMap())
+					{
+						mapMenu = m_UIManager.EnterScriptedMenu(MENU_MAP, null);
+						mapMenu.InitMapItem(chernomap);
+						mapMenu.LoadMapMarkers();
+						GetGame().GetMission().AddActiveInputExcludes({"map"});
+					}
+					else
+					{
+						GetGame().GetMission().AddActiveInputExcludes({"loopedactions"});
+					}
+	
+					GetGame().GetMission().AddActiveInputRestriction(EInputRestrictors.MAP);
+				}			
 			}
-
-			if (!GetGame().IsDedicatedServer())
+			else if (m_ActionData.m_Player.IsMapOpen())
 			{
-				UIManager 	m_UIManager;
-				UIScriptedMenu 	mapMenu;
-				m_UIManager = GetGame().GetUIManager();
-				m_UIManager.CloseAll();
-				if (!CfgGameplayHandler.GetUse3DMap())
-				{
-					mapMenu = m_UIManager.EnterScriptedMenu(MENU_MAP, null);
-					mapMenu.InitMapItem(chernomap);
-					mapMenu.LoadMapMarkers();
-					GetGame().GetMission().AddActiveInputExcludes({"map"});
-				}
-				else
-				{
-					GetGame().GetMission().AddActiveInputExcludes({"loopedactions"});
-				}
-
-				GetGame().GetMission().AddActiveInputRestriction(EInputRestrictors.MAP);
-			}			
-		}
-		else if (chernomap && m_ActionData.m_Player.IsMapOpen())
-		{
-			chernomap.SetMapStateOpen(false, m_ActionData.m_Player);
-			m_MapFolding = true;
-			m_ActionData.m_Player.SetMapOpen(false);
+				chernomap.SetMapStateOpen(false, m_ActionData.m_Player);
+				m_MapFolding = true;
+				m_ActionData.m_Player.SetMapOpen(false);
+			}
 		}
 	}
 	
@@ -205,7 +211,7 @@ class ActionUnfoldMap: ActionBase
 		OpenMap(action_data);
 	}
 	
-	override void OnStartServer( ActionData action_data )
+	override void OnStartServer(ActionData action_data)
 	{
 		OpenMap(action_data);
 		ItemMap chernomap = ItemMap.Cast(action_data.m_MainItem);
@@ -220,16 +226,19 @@ class ActionUnfoldMap: ActionBase
 	
 	override void Interrupt(ActionData action_data)
 	{
-		if ( action_data.m_Player.m_hac )
+		if (action_data.m_Player.m_hac)
 		{
 			action_data.m_Player.m_hac.m_MapFolding = true;
 			action_data.m_Player.m_hac.PerformMapChange();
+			action_data.m_Player.m_hac.Cancel();
 		}
-		
-		super.Interrupt(action_data);
+		else //should never get here, End called from the callback
+		{
+			End(action_data);
+		}
 	}
 	
-	void OpenMap( ActionData action_data )
+	void OpenMap(ActionData action_data)
 	{
 		if (!action_data.m_Player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE))
 		{
@@ -237,7 +246,7 @@ class ActionUnfoldMap: ActionBase
 		}
 		else
 		{
-			action_data.m_Player.m_hac = ActionUnfoldMapCB.Cast(action_data.m_Player.StartCommand_Action(DayZPlayerConstants.CMD_ACTIONFB_VIEWMAP,ActionUnfoldMapCB,GetStanceMask(action_data.m_Player)));
+			action_data.m_Player.m_hac = ActionUnfoldMapCB.Cast(action_data.m_Player.StartCommand_Action(DayZPlayerConstants.CMD_ACTIONFB_VIEWMAP,ActionUnfoldMapCB,DayZPlayerConstants.STANCEMASK_PRONE));
 		}
 		
 		// sets player for associated callback to use

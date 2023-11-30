@@ -298,16 +298,92 @@ class PortableGasStove extends ItemBase
 	override bool CanPutInCargo(EntityAI parent)
 	{
 		if (!super.CanPutInCargo(parent))
-		{
 			return false;
+		
+		if (GetCompEM().IsSwitchedOn())
+			return false;
+		
+		//can 'parent' be attached to 'this' (->assumed smaller size than 'this')?
+		if (parent)
+		{
+			int slotId;
+			for (int i = 0; i < GetInventory().GetAttachmentSlotsCount(); i++)
+			{
+				slotId = GetInventory().GetAttachmentSlotId(i);
+				if (parent.GetInventory().HasInventorySlot(slotId))
+				{
+					//Print("CanPutInCargo | parent " + parent + " matches in slot name: " + InventorySlots.GetSlotName(slotId) + " of " + this);
+					return false;
+				}
+			}
 		}
-
-		return !GetCompEM().IsSwitchedOn();
+		
+		return true;
 	}
-
+	
 	override bool CanRemoveFromCargo(EntityAI parent)
 	{
 		return true;
+	}
+	
+	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
+	{
+		InventoryLocation loc = new InventoryLocation();
+		EntityAI ent = this;
+		EntityAI parent;
+		while (ent)
+		{
+			if (ent.GetInventory().GetCurrentInventoryLocation(loc) && loc.IsValid())
+			{
+				if (loc.GetType() == InventoryLocationType.CARGO)
+				{
+					parent = ent.GetHierarchyParent();
+					if (parent && parent.GetInventory().HasInventorySlot(slotId))
+					{
+						//Print("CanReceiveAttachment | parent " + parent + " matches in slot name: " + InventorySlots.GetSlotName(slotId) + " of " + this);
+						return false;
+					}
+				}
+			}
+			
+			ent = ent.GetHierarchyParent();
+		}
+		
+		return super.CanReceiveAttachment(attachment, slotId);
+	}
+	
+	override bool CanLoadAttachment(EntityAI attachment)
+	{
+		int slotId;
+		for (int i = 0; i < attachment.GetInventory().GetSlotIdCount(); i++)
+		{
+			slotId = attachment.GetInventory().GetSlotId(i);
+			if (GetInventory().HasAttachmentSlot(slotId))
+			{
+				InventoryLocation loc = new InventoryLocation();
+				EntityAI ent = this;
+				EntityAI parent;
+				while (ent)
+				{
+					if (ent.GetInventory().GetCurrentInventoryLocation(loc) && loc.IsValid())
+					{
+						if (loc.GetType() == InventoryLocationType.CARGO)
+						{
+							parent = ent.GetHierarchyParent();
+							if (parent.GetInventory().HasInventorySlot(slotId))
+							{
+								//Print("CanLoadAttachment | parent " + parent + " matches in slot name: " + InventorySlots.GetSlotName(slotId) + " of " + this);
+								return false;
+							}
+						}
+					}
+					
+					ent = ent.GetHierarchyParent();
+				}
+			}
+		}
+		
+		return super.CanLoadAttachment(attachment);
 	}
 	
 	//hands

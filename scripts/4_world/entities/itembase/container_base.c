@@ -10,7 +10,19 @@ class Container_Base : ItemBase
 		if (!super.CanPutInCargo(parent))
 			return false;
 
-		if (parent && (parent == this || (this.GetType() == parent.GetType())))
+		if (parent && (parent == this || GetType() == parent.GetType() || parent.GetInventory().IsCargoInHiearchy()))
+			return false;
+		
+		return true;
+	}
+
+	override bool CanReceiveItemIntoCargo( EntityAI item )
+	{
+		if (!super.CanReceiveItemIntoCargo(item))
+			return false;
+		
+		//is 'this' somewhere in cargo?
+		if (GetInventory().IsCargoInHiearchy())
 			return false;
 		
 		return true;

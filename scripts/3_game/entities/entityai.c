@@ -3609,7 +3609,7 @@ class EntityAI extends Entity
 	protected bool CheckExclusionAccessPropagation(int occupiedSlot, int targetSlot, set<int> value, inout set<int> adjustedValue)
 	{
 		bool occupiedException = occupiedSlot == InventorySlots.HANDS || occupiedSlot == InventorySlots.SHOULDER || occupiedSlot == InventorySlots.MELEE || occupiedSlot == InventorySlots.LEFTHAND;
-		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE || targetSlot == InventorySlots.LEFTHAND;
+		bool targetException = targetSlot == InventorySlots.HANDS || targetSlot == InventorySlots.SHOULDER || targetSlot == InventorySlots.MELEE || targetSlot == InventorySlots.LEFTHAND || targetSlot == InventorySlots.INVALID;
 		
 		if (targetException)
 		{

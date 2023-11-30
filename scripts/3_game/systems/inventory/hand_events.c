@@ -82,7 +82,16 @@ class HandEventBase
 	int GetAnimationID () { return m_AnimationID; }
 	bool AcquireInventoryJunctureFromServer (notnull Man player) { return false; }
 	bool CheckRequest () { return true; }
-	bool CheckRequestEx (InventoryValidation validation) { return CheckRequest(); }
+	bool CheckRequestEx (InventoryValidation validation)
+	{
+		//! Do not check for action validity on remotes or when performing through juncture. 
+		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
+		//! Checking at this point is both wasteful and can result in a failure which leads to desync
+		if (validation.m_IsRemote || validation.m_IsJuncture)
+			return true;
+		
+		return CheckRequest();
+	}
 	bool CanPerformEvent () { return true; }
 	bool CanPerformEventEx (InventoryValidation validation) { return CanPerformEvent(); }
 	bool CheckRequestSrc () { return true; }
@@ -191,7 +200,7 @@ class HandEventTake extends HandEventBase
 		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
 			Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CheckRequestSrc", m_Player.ToString() );
-			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
 			return false; // stale packet
 		}
 		return true;
@@ -217,7 +226,7 @@ class HandEventTake extends HandEventBase
 				Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
 			}
 			#endif
-			//hndDebugPrint("[desync] HandleInputData man=" + Object.GetDebugName(m_Player) + " CANNOT perform ev=" + DumpToString());
+			//if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[desync] HandleInputData man=" + Object.GetDebugName(m_Player) + " CANNOT perform ev=" + DumpToString());
 			return false;
 		}
 		
@@ -261,7 +270,7 @@ class HandEventMoveTo extends HandEventBase
 	{
 		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
-			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
 			return false; // stale packet
 		}
 		return true;
@@ -550,12 +559,12 @@ class HandEventSwap extends HandEventBase
 	{
 		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
-			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
 			return false; // stale packet
 		}
 		if (false == GameInventory.CheckRequestSrc(m_Player, m_Src2, GameInventory.c_MaxItemDistanceRadius))
 		{
-			syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src2 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src2=" + InventoryLocation.DumpToStringNullSafe(m_Src2));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src2 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src2=" + InventoryLocation.DumpToStringNullSafe(m_Src2));
 			return false; // stale packet
 		}
 		return true;

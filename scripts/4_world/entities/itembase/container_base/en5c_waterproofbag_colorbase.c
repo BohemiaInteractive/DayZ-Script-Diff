@@ -5,12 +5,9 @@ class WaterproofBag_ColorBase : Container_Base
 		if (!super.CanPutInCargo(parent))
 			return false;
 		
-		if (parent && parent.IsKindOf("AmmoBox"))
+		if (parent && (parent.IsKindOf("AmmoBox") || parent.IsKindOf("WaterproofBag_ColorBase")))
 			return false;
 		
-		if (GetNumberOfItems() > 0 || parent.IsKindOf("WaterproofBag_ColorBase"))
-			return false;
-
 		return true;
 	}
 }

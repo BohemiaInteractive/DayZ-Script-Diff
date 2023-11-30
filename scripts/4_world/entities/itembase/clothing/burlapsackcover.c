@@ -47,7 +47,7 @@ class BurlapSackCover extends HeadGear_Base
 		if (!super.CanPutInCargo(parent))
 			return false;
 		
-		if (parent != this)
+		if (parent && parent != this)
 			return true;
 		
 		return false;

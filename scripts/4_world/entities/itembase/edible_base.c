@@ -31,6 +31,7 @@ class Edible_Base : ItemBase
 
 			m_SoundPlaying = "";
 			m_CookedByMethod = CookingMethodType.NONE;
+			RegisterNetSyncVariableInt("m_CookedByMethod", CookingMethodType.NONE, CookingMethodType.COUNT);
 			RegisterNetSyncVariableBool("m_MakeCookingSounds");
 		}
 	}
@@ -146,19 +147,29 @@ class Edible_Base : ItemBase
 
 	protected void RefreshAudio()
 	{
-		string sound_name = "";
+		string soundName = "";
+		
+		FoodStageType nextFoodState = GetNextFoodStageType(m_CookedByMethod);
 
-		switch (GetNextFoodStageType(m_CookedByMethod))
+		switch (GetFoodStageType())
 		{
+			case FoodStageType.RAW:
+				soundName = SOUND_BAKING_START;
+				if (nextFoodState == FoodStageType.BOILED)
+					soundName = "";
+				break;
 			case FoodStageType.BAKED:
-				sound_name = SOUND_BAKING_START;
+				soundName = SOUND_BAKING_DONE;
 				break;
 			case FoodStageType.BURNED:
-				sound_name = SOUND_BURNING_DONE;
+				soundName = SOUND_BURNING_DONE;
+				break;
+			default:
+				soundName = "";
 				break;
 		}
 
-		SoundCookingStart(sound_name);
+		SoundCookingStart(soundName);
 	}
 
 	protected void RemoveAudio()
@@ -771,6 +782,19 @@ class Edible_Base : ItemBase
 		}
 		return false;
 	}
+	
+	override string GetDebugText()
+	{
+		string debug_output;
+
+		debug_output = super.GetDebugText();
+		
+		debug_output+="m_CookedByMethod:"+m_CookedByMethod+"\n";
+		debug_output+="m_MakeCookingSounds:"+m_MakeCookingSounds+"\n";
+
+		return debug_output;
+	}
+
 	//================================================================
 	// GENERAL GETTERS
 	//================================================================

@@ -3081,16 +3081,10 @@ class PlayerBase extends ManBase
 	
 	void CloseMapEx(bool cancelled)
 	{
-		if (m_hac && !m_MapClosingSyncSent)
+		if (m_hac && !GetMapClosingSyncSent())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
-				int command_ID = DayZPlayerConstants.CMD_ACTIONINT_END;
-				if (cancelled)
-				{
-					command_ID = DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT;
-				}
-				
 				if (GetGame().IsMultiplayer() && GetGame().IsClient())
 				{
 					ActionManagerClient mngr_client;
@@ -3110,6 +3104,11 @@ class PlayerBase extends ManBase
 				}
 				else if (!GetGame().IsMultiplayer())
 				{
+					int command_ID = DayZPlayerConstants.CMD_ACTIONINT_END;
+					if (cancelled)
+					{
+						command_ID = DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT;
+					}
 					m_hac.InternalCommand(command_ID);
 				}
 				SetMapClosingSyncSet(true);
@@ -4444,7 +4443,7 @@ class PlayerBase extends ManBase
 		{
 			if (GetHumanInventory().CanRemoveEntityInHands())
 			{
-				syncDebugPrint("[QB] Stash - PredictiveMoveItemFromHandsToInventory HND=" + Object.GetDebugName(inHandEntity));
+				if (LogManager.IsSyncLogEnable()) syncDebugPrint("[QB] Stash - PredictiveMoveItemFromHandsToInventory HND=" + Object.GetDebugName(inHandEntity));
 				PredictiveMoveItemFromHandsToInventory();
 			}
 		}
@@ -4471,12 +4470,12 @@ class PlayerBase extends ManBase
 				
 				if (index < 0 && GameInventory.CanSwapEntitiesEx(quickBarEntity, inHandEntity))
 				{
-					syncDebugPrint("[QB] PredictiveSwapEntities QB=" + Object.GetDebugName(quickBarEntity) + " HND=" + Object.GetDebugName(inHandEntity));
+					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[QB] PredictiveSwapEntities QB=" + Object.GetDebugName(quickBarEntity) + " HND=" + Object.GetDebugName(inHandEntity));
 					PredictiveSwapEntities(quickBarEntity, inHandEntity);
 				}
 				else if (GameInventory.CanForceSwapEntitiesEx(quickBarEntity, handInventoryLocation, inHandEntity, inHandEntityFSwapDst))
 				{
-					syncDebugPrint("[QB] Swap - PredictiveForceSwapEntities HND=" + Object.GetDebugName(inHandEntity) +  " QB=" + Object.GetDebugName(quickBarEntity) + " fswap_dst=" + InventoryLocation.DumpToStringNullSafe(inHandEntityFSwapDst));
+					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[QB] Swap - PredictiveForceSwapEntities HND=" + Object.GetDebugName(inHandEntity) +  " QB=" + Object.GetDebugName(quickBarEntity) + " fswap_dst=" + InventoryLocation.DumpToStringNullSafe(inHandEntityFSwapDst));
 					PredictiveForceSwapEntities(quickBarEntity, inHandEntity, inHandEntityFSwapDst);
 				}
 			}
@@ -4487,7 +4486,7 @@ class PlayerBase extends ManBase
 				
 				if (GetInventory().CanAddEntityIntoHands(quickBarEntity))
 				{
-					syncDebugPrint("[QB] Stash - PredictiveTakeEntityToHands QB=" + Object.GetDebugName(quickBarEntity));
+					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[QB] Stash - PredictiveTakeEntityToHands QB=" + Object.GetDebugName(quickBarEntity));
 					PredictiveTakeEntityToHands(quickBarEntity);
 				}
 			}
@@ -4818,7 +4817,7 @@ class PlayerBase extends ManBase
 				case DayZPlayerInstanceType.INSTANCETYPE_REMOTE:
 					return true; // Might help mitigate "megabugged" (desync)
 				
-					syncDebugPrint("[syncinv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " NeedInventoryJunctureFromServer item=" + Object.GetDebugName(item) + " currPar=" + currParent + " newPar=" + newParent);
+					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " NeedInventoryJunctureFromServer item=" + Object.GetDebugName(item) + " currPar=" + currParent + " newPar=" + newParent);
 					
 					bool i_owned = GetHumanInventory().HasEntityInInventory(item);
 					
@@ -4831,7 +4830,7 @@ class PlayerBase extends ManBase
 						np_owned = GetHumanInventory().HasEntityInInventory(newParent);
 
 					bool all_owned = i_owned && cp_owned && (np_owned || (newParent == null));
-					syncDebugPrint("[syncinv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " NeedInventoryJunctureFromServer=" + !all_owned + " i_pwn=" + i_owned + " cp_pwn=" + cp_owned + " np_pwn=" + np_owned);
+					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " NeedInventoryJunctureFromServer=" + !all_owned + " i_pwn=" + i_owned + " cp_pwn=" + cp_owned + " np_pwn=" + np_owned);
 					
 					return !all_owned;
 				default:
@@ -9082,7 +9081,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplit(flags, item, this))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Inv(SPLIT) item=" + GetDebugName(item));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Inv(SPLIT) item=" + GetDebugName(item));
 			return true;
 		}
 		
@@ -9093,7 +9092,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplit(FindInventoryLocationType.CARGO, item, this))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Cgo(SPLIT) item=" +GetDebugName(item));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Cgo(SPLIT) item=" +GetDebugName(item));
 			return true;
 		}
 		
@@ -9104,7 +9103,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplit(FindInventoryLocationType.ATTACHMENT, item, this))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Att(SPLIT) item=" + GetDebugName(item));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Att(SPLIT) item=" + GetDebugName(item));
 			return true;
 		}
 		
@@ -9115,7 +9114,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplit(FindInventoryLocationType.HANDS, item, this))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Hands(SPLIT) item=" + GetDebugName(item));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Hands(SPLIT) item=" + GetDebugName(item));
 			return;
 		}
 		
@@ -9126,7 +9125,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplit(flags, item, target))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2TargetInv(SPLIT) item=" + GetDebugName(item));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2TargetInv(SPLIT) item=" + GetDebugName(item));
 			return true;
 		}
 		
@@ -9137,7 +9136,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplit(FindInventoryLocationType.CARGO, item, target))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2TargetCgo(SPLIT) item=" + GetDebugName(item));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2TargetCgo(SPLIT) item=" + GetDebugName(item));
 			return true;
 		}
 		
@@ -9148,7 +9147,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplit(FindInventoryLocationType.ATTACHMENT, item, target))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2TargetAtt(SPLIT) item=" + GetDebugName(item));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2TargetAtt(SPLIT) item=" + GetDebugName(item));
 			return true;
 		}
 		
@@ -9159,7 +9158,7 @@ class PlayerBase extends ManBase
 	{
 		if (CheckAndExecuteStackSplitToInventoryLocation(dst, dst.GetItem()))
 		{
-			syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Dst(SPLIT) item=" + GetDebugName(dst.GetItem()));
+			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS=" + GetSimulationTimeStamp() + " Take2Dst(SPLIT) item=" + GetDebugName(dst.GetItem()));
 			return true;
 		}
 		

@@ -43,35 +43,67 @@ class Pot extends Bottle_Base
 		return "pour_End_Water_Pot_SoundSet";
 	}
 	
-	override bool CanPutInCargo(EntityAI parent)
+	override bool CanPutInCargo( EntityAI parent )
 	{
-		if (!super.CanPutInCargo(parent))
+		if ( !super.CanPutInCargo( parent ) )
 			return false;
 		
-		if (parent && IsCargoException4x3(parent))
+		if ( parent && IsCargoException4x3( parent ) )
 			return false;
 		
-		return true;
-	}
-	
-	override bool CanReceiveItemIntoCargo(EntityAI item)
-	{
-		if (!super.CanReceiveItemIntoCargo(item))
-			return false;
-
-		if (IsCargoException4x3(item))
+		//is 'parent' somewhere in cargo?
+		if (parent && parent.GetInventory().IsCargoInHiearchy())
 			return false;
 
 		return true;
 	}
-	
-	override bool CanLoadItemIntoCargo(EntityAI item)
+
+	override bool CanReceiveItemIntoCargo( EntityAI item )
 	{
-		if (!super.CanLoadItemIntoCargo(item))
+		if ( !super.CanReceiveItemIntoCargo( item ) )
+			return false;
+		
+		if ( IsCargoException4x3( item ) )
+			return false;
+		
+		//is 'this' somewhere in cargo?
+		if (GetInventory().IsCargoInHiearchy())
+			return false;
+		
+		//can 'this' be attached to the item (->assumed smaller size than item)?
+		int slotId;
+		for (int i = 0; i < GetInventory().GetSlotIdCount(); i++)
+		{
+			slotId = GetInventory().GetSlotId(i);
+			if (item.GetInventory().HasAttachmentSlot(slotId))
+			{
+				//Print("CanReceiveItemIntoCargo | item " + item + " matches in slot name: " + InventorySlots.GetSlotName(slotId) + " of " + this);
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	override bool CanLoadItemIntoCargo( EntityAI item )
+	{
+		if ( !super.CanLoadItemIntoCargo( item ) )
 			return false;
 
-		if (IsCargoException4x3(item))
+		if ( IsCargoException4x3( item ) )
 			return false;
+		
+		//can 'this' be attached to the item (->assumed smaller size than item)?
+		int slotId;
+		for (int i = 0; i < GetInventory().GetSlotIdCount(); i++)
+		{
+			slotId = GetInventory().GetSlotId(i);
+			if (item.GetInventory().HasAttachmentSlot(slotId))
+			{
+				//Print("CanLoadItemIntoCargo | item " + item + " matches in slot name: " + InventorySlots.GetSlotName(slotId) + " of " + this);
+				return false;
+			}
+		}
 
 		return true;
 	}
