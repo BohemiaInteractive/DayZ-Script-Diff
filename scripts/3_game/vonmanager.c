@@ -141,24 +141,37 @@ class VONManagerImplementation : VONManagerBase
 		
 		if (newLevel > -1)
 		{
+			GetGame().SetVoiceLevel(newLevel);
+			UpdateVoiceIcon();
+		}
+	}
+	
+	private void UpdateVoiceIcon()
+	{
+		Mission mission = GetGame().GetMission();
+		int rangeLevel = GetGame().GetVoiceLevel();
+			
+		if (mission.IsVoNActive())
+		{
 			if (m_VoNToggled)
 			{
 				if (VONManager.IsVoiceThresholdMinimum())
 				{
-					ShowVoiceNotification(newLevel, false);
+					ShowVoiceNotification(rangeLevel, false);
 				}
 				else
 				{
-					ShowVoiceNotification(newLevel, true);
+					ShowVoiceNotification(rangeLevel, true);
 				}
 			}
 			else
 			{
-				ShowVoiceNotification(newLevel, !GetGame().GetMission().IsVoNActive());
+				ShowVoiceNotification(rangeLevel, false);
 			}
-			
-			// update general voice icon
-			GetGame().SetVoiceLevel(newLevel);
+		}
+		else
+		{
+			HideVoiceNotification();
 		}
 	}
 	
@@ -167,20 +180,7 @@ class VONManagerImplementation : VONManagerBase
 	*/
 	override void OnVOIPThresholdChanged()
 	{		
-		Mission mission = GetGame().GetMission();
-		
-		// voice activation mode
-		if (m_VoNToggled)
-		{
-			if (VONManager.IsVoiceThresholdMinimum())
-			{
-				ShowVoiceNotification(GetGame().GetVoiceLevel(), false);
-			}
-			else
-			{
-				HideVoiceNotification();
-			}
-		}
+		UpdateVoiceIcon();
 	}
 	
 	/**
@@ -229,30 +229,8 @@ class VONManagerImplementation : VONManagerBase
 				VONStateEventParams vonStateParams = VONStateEventParams.Cast( params );
 				mission.SetVoNActive(vonStateParams.param1);
 				m_VoNToggled = vonStateParams.param2;
-				int rangeLevel = GetGame().GetVoiceLevel();
 				
-				if (mission.IsVoNActive())
-				{
-					if (m_VoNToggled)
-					{
-						if (VONManager.IsVoiceThresholdMinimum())
-						{
-							ShowVoiceNotification(rangeLevel, false);
-						}
-						else
-						{
-							ShowVoiceNotification(rangeLevel, true);
-						}
-					}
-					else
-					{
-						ShowVoiceNotification(rangeLevel, false);
-					}
-				}
-				else
-				{
-					HideVoiceNotification();
-				}
+				UpdateVoiceIcon();
 				
 				m_OnVonStateEvent.Invoke();
 				break;
@@ -286,13 +264,7 @@ class VONManagerImplementation : VONManagerBase
 			
 			case MPSessionPlayerReadyEventTypeID:
 			{
-				if (m_VoNToggled)
-				{
-					if (VONManager.IsVoiceThresholdMinimum())
-					{
-						ShowVoiceNotification(GetGame().GetVoiceLevel(), false);
-					}
-				}
+				UpdateVoiceIcon();
 				break;
 			}	
 		}

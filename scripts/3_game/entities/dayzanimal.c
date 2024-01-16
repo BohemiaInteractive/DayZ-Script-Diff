@@ -782,11 +782,12 @@ class DayZAnimal extends DayZCreatureAI
 	{
 		super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
 		m_TransportHitRegistered = false;
-		
-		if( ammo.ToType().IsInherited(Nonlethal_Base) )
+
+		int transferShockToDamageCoef = g_Game.ConfigGetInt(string.Format("%1 %2 DamageApplied transferShockToDamage", CFG_AMMO, ammo));
+		if (transferShockToDamageCoef == 1)
 		{
 			//Print("DayZAnimal | EEHitBy | nonlethal hit");
-			AddHealth("","Health",-ConvertNonlethalDamage(damageResult.GetDamage(dmgZone,"Shock")));
+			AddHealth("", "Health", -ConvertNonlethalDamage(damageResult.GetDamage(dmgZone, "Shock"), damageType));
 		}
 		else
 		{
@@ -946,9 +947,16 @@ class DayZAnimal extends DayZCreatureAI
 		return GetSelectionPositionMS(pSelection);
 	}
 	
-	float ConvertNonlethalDamage(float damage)
+	override protected float ConvertNonlethalDamage(float damage, DamageType damageType)
 	{
-		float converted_dmg = damage * GameConstants.PROJECTILE_CONVERSION_ANIMALS;
-		return converted_dmg;
-	} 
+		switch (damageType)
+		{
+			case DamageType.CLOSE_COMBAT:
+				return damage * GameConstants.NL_DAMAGE_CLOSECOMBAT_CONVERSION_ANIMALS;
+			case DamageType.FIRE_ARM:
+				return damage * GameConstants.NL_DAMAGE_FIREARM_CONVERSION_ANIMALS;
+		}
+		
+		return super.ConvertNonlethalDamage(damage, damageType);
+	}
 }

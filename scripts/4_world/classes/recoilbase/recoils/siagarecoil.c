@@ -19,8 +19,8 @@ class SiagaRecoil: RecoilBase
 		
 		m_MouseOffsetRangeMin = 45;//in degrees min
 		m_MouseOffsetRangeMax = 130;//in degrees max
-		m_MouseOffsetDistance = 8.5;//how far should the mouse travel
-		m_MouseOffsetRelativeTime = 0.25;//[0..1] a time it takes to move the mouse the required distance relative to the reload time of the weapon(firing mode)
+		m_MouseOffsetDistance = 4.5;//how far should the mouse travel
+		m_MouseOffsetRelativeTime = 0.15;//[0..1] a time it takes to move the mouse the required distance relative to the reload time of the weapon(firing mode)
 	
 		m_CamOffsetDistance = 0.05; //0.0125;
 		m_CamOffsetRelativeTime = 0.5;

@@ -6,7 +6,13 @@ class JsonMissionLoaderData
 	{
 		JsonMissionLoaderData data;
 		
-		string path = CFG_FILE_MISSION_LIST;
+		string path;
+		string errorMessage;
+
+		if (GetCLIParam("missionLoaderPath", path) == false)
+		{
+			path = CFG_FILE_MISSION_LIST;
+		}
 		
 		if (!FileExist(path))
 		{
@@ -14,17 +20,20 @@ class JsonMissionLoaderData
 			
 			data = new JsonMissionLoaderData();
 			data.MissionPaths = {dzg.GetMissionFolderPath()};
-			JsonFileLoader<JsonMissionLoaderData>.JsonSaveFile(path, data);
+			if (!JsonFileLoader<JsonMissionLoaderData>.SaveFile(path, data, errorMessage))
+				ErrorEx(errorMessage);
 		}
 		else
 		{
-			JsonFileLoader<JsonMissionLoaderData>.JsonLoadFile( path, data );	
+			if (!JsonFileLoader<JsonMissionLoaderData>.LoadFile(path, data, errorMessage))
+				ErrorEx(errorMessage);
 		}
+
 		return data;
 	}
 }
 
-class MissionLoader extends UIScriptedMenu
+class MissionLoader : UIScriptedMenu
 {
 	
 	protected TextListboxWidget			m_WgtLstMsnList;

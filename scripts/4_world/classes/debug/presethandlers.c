@@ -44,7 +44,8 @@ class AntiHazard_Preset extends PresetSpawnBase
 		
 		if (mask)
 		{
-			mask.OnDebugSpawn();
+			auto debugParams = DebugSpawnParams.WithPlayer(player);
+			mask.OnDebugSpawnEx(debugParams);
 		}
 		
 	}
@@ -126,7 +127,10 @@ class Military_Light_Preset extends PresetSpawnBase
 	override void OnPresetSpawn(PlayerBase player)
 	{
 		EntityAI weapon = FindItem("AK101");
-		weapon.OnDebugSpawn();
+
+		auto debugParams = DebugSpawnParams.WithPlayer(player);
+		weapon.OnDebugSpawnEx(debugParams);
+
 		FindAndTakeToHandsFromInventory("AK101");
 	}
 }

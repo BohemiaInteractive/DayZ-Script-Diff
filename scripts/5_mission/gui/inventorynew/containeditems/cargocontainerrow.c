@@ -22,8 +22,12 @@ class CargoContainerRow: LayoutHolder
 		
 		for ( int i = 0; i < m_MaxColumns; i++ )
 		{
-			WidgetEventHandler.GetInstance().RegisterOnDropReceived( GetMainWidget().FindAnyWidget( "Icon" + i ),  this, "Column" + i );
-			WidgetEventHandler.GetInstance().RegisterOnDraggingOver( GetMainWidget().FindAnyWidget( "Icon" + i ),  this, "ColumnOnDraggingOver" + i );
+			Widget iconWidget = GetMainWidget().FindAnyWidget( "Icon" + i );
+			
+			iconWidget.SetUserID(i);
+			
+			WidgetEventHandler.GetInstance().RegisterOnDropReceived( iconWidget,  this, "DropReceived" );
+			WidgetEventHandler.GetInstance().RegisterOnDraggingOver( iconWidget,  this, "DraggingOver" );
 		}
 		
 		m_RootWidget.GetScript( m_Resizer1 );
@@ -165,6 +169,48 @@ class CargoContainerRow: LayoutHolder
 		m_Entity = entity;
 	}
 	
+	void DropReceived( Widget w, int x, int y, Widget receiver )
+	{
+		if ( m_Parent.m_Parent.IsInherited( ContainerWithCargo ) )
+		{
+			( ContainerWithCargo.Cast( m_Parent.m_Parent ) ).DropReceived( w, m_NumberRow, receiver.GetUserID() );
+		}
+		else if ( m_Parent.m_Parent.IsInherited( ContainerWithCargoAndAttachments ) )
+		{
+			( ContainerWithCargoAndAttachments.Cast( m_Parent.m_Parent ) ).DropReceived( w, m_NumberRow, receiver.GetUserID(), m_ParentContainer );
+		}
+		else if ( m_Parent.m_Parent.IsInherited( HandsContainer ) )
+		{
+			( HandsContainer.Cast( m_Parent.m_Parent ) ).DropReceived( w, m_NumberRow, receiver.GetUserID(), m_ParentContainer );
+		}
+		else if ( m_Parent.m_Parent.IsInherited( AttachmentCategoriesRow ) )
+		{
+			( AttachmentCategoriesRow.Cast( m_Parent.m_Parent ) ).DropReceived( w, m_NumberRow, receiver.GetUserID(), m_ParentContainer );
+		}
+	}
+	
+	void DraggingOver( Widget w, int x, int y, Widget receiver )
+	{
+		if ( m_Parent.m_Parent.IsInherited( ContainerWithCargo ) )
+		{
+			ContainerWithCargo.Cast( m_Parent.m_Parent ).DraggingOverGrid( w, m_NumberRow, receiver.GetUserID(), null );
+		}
+		else if ( m_Parent.m_Parent.IsInherited( ContainerWithCargoAndAttachments ) )
+		{
+			ContainerWithCargoAndAttachments.Cast( m_Parent.m_Parent ).DraggingOverGrid( w, m_NumberRow, receiver.GetUserID(), null, m_ParentContainer );
+		}
+		else if ( m_Parent.m_Parent.IsInherited( HandsContainer ) )
+		{
+			( HandsContainer.Cast( m_Parent.m_Parent ) ).DraggingOverGrid( w, m_NumberRow, receiver.GetUserID(), null, m_ParentContainer );
+		}
+		else if ( m_Parent.m_Parent.IsInherited( AttachmentCategoriesRow ) )
+		{
+			( AttachmentCategoriesRow.Cast( m_Parent.m_Parent ) ).DraggingOverGrid( w, m_NumberRow, receiver.GetUserID(), null, m_ParentContainer );
+		}
+	}
+	
+	//NOT used - obsolete (all ColumnOnDraggingOver and Column methods)
+	//!!----
 	void ColumnOnDraggingOver0( Widget w )
 	{
 		if( m_Parent.m_Parent.IsInherited( ContainerWithCargo ) )
@@ -564,6 +610,7 @@ class CargoContainerRow: LayoutHolder
 			( AttachmentCategoriesRow.Cast( m_Parent.m_Parent ) ).DropReceived( w, m_NumberRow, 9, m_ParentContainer );
 		}
 	}
+	//!!----
 	
 	override void OnShow()
 	{

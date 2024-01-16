@@ -1,4 +1,4 @@
-class SmokeSimulation : Entity
+class SmokeSimulation : Managed
 {
 	protected Particle 			m_ParMainSmoke;
 	int particle_id;

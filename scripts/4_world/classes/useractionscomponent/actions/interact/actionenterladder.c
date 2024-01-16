@@ -32,7 +32,7 @@ class ActionEnterLadder: ActionInteractBase
 		if(lod == NULL)
 			return false;
 
-		ref array<Selection> memSelection	= new array<Selection>();
+		array<Selection> memSelection	= new array<Selection>();
 		if(!lod.GetSelections(memSelection))
 			return false;
 

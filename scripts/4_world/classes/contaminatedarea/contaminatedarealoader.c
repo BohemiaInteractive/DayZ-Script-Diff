@@ -1,7 +1,7 @@
 // This will be used to parse and load contaminated area related data
 class EffectAreaLoader
 {
-	private static string m_Path = "$mission:cfgEffectArea.json";
+	private static string m_Path = "$mission:cfgeffectarea.json";
 	
 	static void CreateZones()
 	{
@@ -15,7 +15,7 @@ class EffectAreaLoader
 			
 			m_Path = "";
 			GetGame().GetWorldName( m_Path );
-			m_Path = string.Format("DZ/worlds/%1/ce/cfgEffectArea.json", m_Path );
+			m_Path = string.Format("dz/worlds/%1/ce/cfgeffectarea.json", m_Path );
 			
 			if ( !FileExist( m_Path ) )
 			{
@@ -97,9 +97,10 @@ class EffectAreaLoader
 	
 	static JsonDataContaminatedAreas GetData()
 	{
+		string errorMessage;
 		JsonDataContaminatedAreas data;
-
-		JsonFileLoader<JsonDataContaminatedAreas>.JsonLoadFile( m_Path, data );
+		if (!JsonFileLoader<JsonDataContaminatedAreas>.LoadFile(m_Path, data, errorMessage))
+			ErrorEx(errorMessage);
 		
 		return data;
 	}

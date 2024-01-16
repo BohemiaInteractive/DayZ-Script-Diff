@@ -353,15 +353,15 @@ class PlayerIdentityBase : Managed
 	proto int GetBandwidthAvg();
 	
 	//! nick (short) name of player
-	proto owned string GetName();
+	proto string GetName();
 	//! nick without any processing
-	proto owned string GetPlainName();
+	proto string GetPlainName();
 	//! full name of player
-	proto owned string GetFullName();
+	proto string GetFullName();
 	//! unique id of player (hashed steamID, database Xbox id...) can be used in database or logs
-	proto owned string GetId();
+	proto string GetId();
 	//! plaintext unique id of player (cannot be used in database or logs)
-	proto owned string GetPlainId();
+	proto string GetPlainId();
 	//! id of player in one session (is reused after player disconnects)
 	proto int GetPlayerId();
 	

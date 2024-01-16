@@ -622,6 +622,11 @@ enum DayZPlayerConstants
 	STANCEIDX_RAISEDERECT,
 	STANCEIDX_RAISEDCROUCH,
 	STANCEIDX_RAISEDPRONE,
+	/*
+	 STANCEIDX_ERECT + STANCEIDX_RAISED = STANCEIDX_RAISEDERECT
+	 STANCEIDX_RAISEDCROUCH - STANCEIDX_RAISED = STANCEIDX_CROUCH...
+	*/
+	STANCEIDX_RAISED,
 
 
 	//! stance masks 
@@ -788,7 +793,10 @@ enum DayZPlayerConstants
 	CMD_ACTIONMOD_EAT_PILL			    = 527,      // erc,cro
 	CMD_ACTIONMOD_EAT_TABLET			= 528,      // erc,cro
 	CMD_ACTIONMOD_HEATPACK			    = 529,      // erc,cro
-
+	CMD_ACTIONMOD_BLOODTEST 		    = 530,      // erc,cro
+	CMD_ACTIONMOD_BLOODTESTOTHER 		= 531,      // erc,cro
+	
+	
 	CMD_ACTIONMOD_DROPITEM_HANDS		= 900,		// erc, cro
 	CMD_ACTIONMOD_DROPITEM_INVENTORY	= 901,		// erc, cro
 	
@@ -863,6 +871,13 @@ enum DayZPlayerConstants
 	CMD_ACTIONFB_SET_ALARM				= 250,		// erc,cro			??not sure
 	CMD_ACTIONFB_SHOVEL_DIG		     	= 117,		// cro			    [end, end2]
 	CMD_ACTIONFB_VEHICLE_PUSH			= 118,		// erc
+	CMD_ACTIONFB_PATCHING_TIRE			= 119,		// cro              [end]
+	CMD_ACTIONFB_PATCHING_DUCTTAPE		= 120,		// cro              [end]
+	CMD_ACTIONFB_PATCHING_SEWING		= 121,		// cro              [end]
+	CMD_ACTIONFB_PATCHING_LEATHER_SEWING_KIT		= 122,		// cro              [end]
+	CMD_ACTIONFB_SPLITTING_FIREWOOD		= 123,		// cro              [end]
+	CMD_ACTIONFB_BREAKING_STICK		    = 124,		// cro              [end]
+	CMD_ACTIONFB_CLEANING_WEAPON	    = 125,		// cro              [end]
 	
 	// onetime 
 	CMD_ACTIONFB_PICKUP_HANDS			= 500,		// pne
@@ -894,6 +909,12 @@ enum DayZPlayerConstants
 	CMD_ACTIONFB_HEATPACK			    = 529,      // pne
 
 	CMD_ACTIONFB_DROPITEM_HANDS		= 900,			// pne, pne back
+	
+	    //! ---------------------------------------------------------
+    //! ---------------------- TRAILER --------------------------
+    //! ---------------------------------------------------------
+    CMD_TRAILER_MASK 	 				= 3006,
+	CMD_TRAILER_MASK_02 	 			= 3007,
 	
     
     //! ---------------------------------------------------------

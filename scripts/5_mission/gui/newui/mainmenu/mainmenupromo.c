@@ -14,6 +14,7 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	protected ImageWidget 	m_DlcPromotionImage;
 	protected TextWidget 	m_TitleTextDlc;
 	protected MultilineTextWidget 	m_DescriptionTextDlc;
+	protected VideoWidget 	m_VideoWidget;
 	protected ref ModInfo 	m_ThisModInfo;
 	protected ref JsonDataDLCInfo 	m_DlcInfo;
 	
@@ -48,15 +49,12 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	{
 		m_Background = m_Root;
 		m_StoreButton = m_Root.FindAnyWidget("dlc_openStore");
-		#ifdef PLATFORM_XBOX
-			m_GamepadStoreImage = m_Root.FindAnyWidget("image_button_xbox");
-		#endif
-		#ifdef PLATFORM_PS4
-			m_GamepadStoreImage = m_Root.FindAnyWidget("image_button_ps");
-		#endif
+		SetPlatformSpecifics();
+		m_VideoWidget = VideoWidget.Cast(m_Root.FindAnyWidget("dlc_Video"));
+		m_VideoWidget.Show(true);
 		m_DlcPromotionImage = ImageWidget.Cast(m_Root.FindAnyWidget("dlc_ImageMain"));
-		m_DlcPromotionImage.Show(true);
-		m_BannerFrame = m_Root.FindAnyWidget("dlc_BannerFrame");
+		m_DlcPromotionImage.Show(false);
+		m_BannerFrame = m_Root.FindAnyWidget("dlc_BannerFrameVideo");
 		m_BannerHandler = new BannerHandlerBase(m_BannerFrame);
 		m_TitleTextDlc = TextWidget.Cast(m_Root.FindAnyWidget("dlc_title"));
 		m_DescriptionTextDlc = MultilineTextWidget.Cast(m_Root.FindAnyWidget("dlc_Description"));
@@ -64,6 +62,7 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		m_ColorBackgroundOriginal = m_Background.GetColor();
 		
 		UpdateAllPromotionInfo();
+		StartVideo();
 	}
 	
 	void CreateRootWidget(Widget parent)
@@ -85,12 +84,54 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	void OnPanelVisibilityChanged()
 	{
 		UpdateAllPromotionInfo();
+		return;
+		
+		if (IsInfoPanelVisible())
+			StartVideo();
+		else
+			PauseVideo();
 	}
 	
+	//works on button only
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
 		m_ThisModInfo.GoToStore();
 		return super.OnClick(w,x,y,button);
+	}
+	
+	//! returns 'true' when video is loaded
+	bool LoadVideoFile()
+	{
+		if (m_VideoWidget.GetState() != VideoState.NONE)
+			return true;
+		
+		string path = "video\\" + m_DlcInfo.VideoFileName;
+		if (m_DlcInfo.VideoFileName != "")
+			return m_VideoWidget.Load(path, true);
+		
+		return false;
+	}
+	
+	void StartVideo()
+	{
+		if (LoadVideoFile())
+			m_VideoWidget.Play();
+	}
+	
+	void StopVideo()
+	{
+		m_VideoWidget.Stop();
+	}
+	
+	void PauseVideo()
+	{
+		m_VideoWidget.Pause();
+	}
+	
+	void UnloadVideo()
+	{
+		m_VideoWidget.Stop();
+		m_VideoWidget.Unload();
 	}
 	
 	protected void ColorFocussed(Widget w, int x, int y)
@@ -123,6 +164,18 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	protected void OnDLCChange()
 	{
 		UpdateOwnedStatus();
+	}
+	
+	protected void SetPlatformSpecifics()
+	{
+		TextWidget desc = TextWidget.Cast(m_StoreButton.FindAnyWidget("dlc_openStore_label"));
+		#ifdef PLATFORM_PS4
+			m_GamepadStoreImage = m_Root.FindAnyWidget("image_button_ps");
+			desc.SetText("#dlc_open_store_PS");
+		#else
+			m_GamepadStoreImage = m_Root.FindAnyWidget("image_button_xbox");
+			desc.SetText("#dlc_open_store");
+		#endif
 	}
 	
 	//updates on language change etc.

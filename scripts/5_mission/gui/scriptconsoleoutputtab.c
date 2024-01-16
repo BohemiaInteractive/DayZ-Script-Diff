@@ -4,7 +4,7 @@ class ScriptConsoleOutputTab : ScriptConsoleTabBase
 	protected ButtonWidget 		m_ClientLogClearButton;
 	protected CheckBoxWidget 	m_ClientLogScrollCheckbox;
 	
-	void ScriptConsoleOutputTab(Widget root, ScriptConsole console)
+	void ScriptConsoleOutputTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		m_ClientLogListbox = TextListboxWidget.Cast(root.FindAnyWidget("TextListbox"));
 		m_ClientLogClearButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonClear"));

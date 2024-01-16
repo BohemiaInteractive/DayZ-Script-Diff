@@ -17,9 +17,9 @@ class VSSRecoil: RecoilBase
 		m_HandsCurvePoints.Insert("0 0 0");
 		m_HandsOffsetRelativeTime = 0.25;	
 		
-		m_MouseOffsetRangeMin = 60;//in degrees min
-		m_MouseOffsetRangeMax = 100;//in degrees max
-		m_MouseOffsetDistance = 0.6;//how far should the mouse travel
+		m_MouseOffsetRangeMin = 65;//in degrees min
+		m_MouseOffsetRangeMax = 105;//in degrees max
+		m_MouseOffsetDistance = 0.7;//how far should the mouse travel
 		m_MouseOffsetRelativeTime = 0.25;//[0..1] a time it takes to move the mouse the required distance relative to the reload time of the weapon(firing mode)
 		
 		m_CamOffsetDistance = 0.0075;

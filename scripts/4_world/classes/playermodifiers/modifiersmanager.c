@@ -354,4 +354,18 @@ class ModifiersManager
 			}
 		}
 	}
+	
+	void ResetAll()
+	{
+		bool hasAreaExposureModifier 	= IsModifierActive(eModifiers.MDF_AREAEXPOSURE);
+		bool hasMaksModifier 			= IsModifierActive(eModifiers.MDF_MASK);
+
+		DeactivateAllModifiers();
+		
+		if (hasAreaExposureModifier)
+			ActivateModifier(eModifiers.MDF_AREAEXPOSURE);
+		
+		if (hasMaksModifier)
+			ActivateModifier(eModifiers.MDF_MASK);
+	}
 }

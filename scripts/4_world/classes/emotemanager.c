@@ -586,11 +586,10 @@ class EmoteManager
 		m_DeferredEmoteExecution = CALLBACK_CMD_INVALID;
 		
 		if (!CanPlayEmote(id))
-		{
 			return false;
-		}
 		
-		if (LogManager.IsActionLogEnable()) actionDebugPrint("[emote] " + Object.GetDebugName(m_Player) + " play emote id=" + id + " IH=" + Object.GetDebugName(m_Player.GetItemInHands()));
+		if (m_AdminLog)
+			m_AdminLog.LogPrint("[emote] " + Object.GetDebugName(m_Player) + " play emote id=" + id + " IH=" + Object.GetDebugName(m_Player.GetItemInHands()));
 		
 		m_PreviousGestureID = m_CurrentGestureID;
 		m_CurrentGestureID = id;
@@ -868,7 +867,7 @@ class EmoteManager
 			return false;
 		}
 		
-		if (!m_Player || (!IsEmotePlaying() && m_Player.GetCommand_Action() || m_Player.GetCommandModifier_Action()) || m_Player.GetThrowing().IsThrowingModeEnabled() || m_Player.IsItemsToDelete())
+		if (!m_Player || !m_Player.IsAlive() || (!IsEmotePlaying() && m_Player.GetCommand_Action() || m_Player.GetCommandModifier_Action()) || m_Player.GetThrowing().IsThrowingModeEnabled() || m_Player.IsItemsToDelete())
 		{	
 			return false;
 		}

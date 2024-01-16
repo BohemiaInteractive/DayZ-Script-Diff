@@ -583,6 +583,7 @@ class WeaponReplacingMagAndChamberNext extends WeaponStateBase
 			Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " DetachOldMagazine.LoadCurrentFSMState: cannot read m_oldMagazine for weapon=" + m_weapon);
 			return false;
 		}
+		m_newDst = new InventoryLocation;
 		
 		if (!m_newDst.ReadFromContext(ctx))
 		{

@@ -16,7 +16,7 @@ class DispatcherCaller extends Dispatcher
 		if ( ui_menu && ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
+			ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsoleEnfScriptTab));
 			if (tab)
 				tab.Add(p.param1);
 		}
@@ -27,10 +27,12 @@ class DispatcherCaller extends Dispatcher
 		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
 		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
-			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
-			if (tab)
-				tab.HistoryBack();
+			ScriptConsole scriptConsole = ScriptConsole.Cast( ui_menu );
+			ScriptConsoleEnfScriptTab handler = ScriptConsoleEnfScriptTab.Cast(scriptConsole.GetSelectedHandler());
+			if (handler)
+			{
+				handler.HistoryBack();
+			}
 		}
 	}
 	
@@ -39,28 +41,16 @@ class DispatcherCaller extends Dispatcher
 		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
 		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
-			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
-			if (tab)
-				tab.HistoryForward();
+			ScriptConsole scriptConsole = ScriptConsole.Cast( ui_menu );
+			ScriptConsoleEnfScriptTab handler = ScriptConsoleEnfScriptTab.Cast(scriptConsole.GetSelectedHandler());
+			if (handler)
+			{
+				handler.HistoryForward();
+			}
+
 		}
 	}
 
-	/*
-	private Param ScriptConsoleGetSelectedItem()
-	{
-		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
-		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
-		{
-			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			//ScriptConsoleEnfScriptTab tab = ScriptConsoleEnfScriptTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ENSCRIPT));
-			scripted_console.GetCurrentItemName();
-		}
-
-		return null;
-	}
-*/
-		
 	private void SceneEditorCommand(Param params)
 	{
 		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
@@ -90,12 +80,6 @@ class DispatcherCaller extends Dispatcher
 		case CALL_ID_SCR_CNSL_ADD_PRINT:
 			ScriptConsoleAddPrint(Param1<string>.Cast( params ));
 			break;
-		case CALL_ID_SCR_CNSL_HISTORY_BACK:
-			ScriptConsoleHistoryBack();
-			break;		
-		case CALL_ID_SCR_CNSL_HISTORY_NEXT:
-			ScriptConsoleHistoryForward();
-			break;
 		case CALL_ID_SCENE_EDITOR_COMMAND:
 			SceneEditorCommand( params );
 			break;
@@ -104,7 +88,14 @@ class DispatcherCaller extends Dispatcher
 			break;
 		case CALL_ID_SCR_CNSL_GETSELECTEDITEM:
 			return new Param1<string>(ScriptConsoleItemsTab.GetLastSelectedObject());
+		case CALL_ID_SCR_CNSL_HISTORY_BACK:
+			ScriptConsoleHistoryBack();
+			break;
+		case CALL_ID_SCR_CNSL_HISTORY_NEXT:
+			ScriptConsoleHistoryForward();
+			break;
 		}
+		
 		
 		return null;
 	}

@@ -1,10 +1,18 @@
 void fsmDebugPrint (string s)
 {
+#ifdef FSM_DEBUG
+	PrintToRPT("" + s); // comment/uncomment to hide/see debug logs
+#else
 	//Print("" + s); // comment/uncomment to hide/see debug logs
+#endif
 }
 void fsmDebugSpam (string s)
 {
-	//Print("" + s); // comment/uncomment to hide/see debug spam
+#ifdef FSM_DEBUG_SPAM
+	PrintToRPT("" + s); // comment/uncomment to hide/see debug logs
+#else
+	//Print("" + s); // comment/uncomment to hide/see debug logs
+#endif
 }
 
 

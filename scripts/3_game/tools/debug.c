@@ -135,79 +135,190 @@ class Debug
 	*/
 	static void	Log(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	ActionLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_ACTION, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_ACTION, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	SymptomLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_SYMPTOM, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_SYMPTOM, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	InventoryMoveLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_INV_MOVE, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_INV_MOVE, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	InventoryReservationLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_INV_RESERVATION, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_INV_RESERVATION, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	InventoryHFSMLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_INV_HFSM, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_INV_HFSM, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	QuickbarLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_QUICKBAR, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_QUICKBAR, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}	
 	
 	static void	BaseBuildingLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_BASEBUILDING, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_BASEBUILDING, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	BleedingChancesLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_BLEEDING_CHANCES, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_BLEEDING_CHANCES, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	TriggerLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_DEBUG_TRIGGER, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_DEBUG_TRIGGER, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	ParticleLog(string message = LOG_DEFAULT, Managed caller = null, string function = "", Managed entity = null)
 	{
-		LogMessage(LOG_DEBUG_PARTICLE, GetDebugName(caller), GetDebugName(entity), "", function, message);
+		string res = LogMessage(LOG_DEBUG_PARTICLE, GetDebugName(caller), GetDebugName(entity), "", function, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	TFLog(string message = LOG_DEFAULT, TestFramework caller = null, string function = "")
 	{
-		LogMessage(LOG_DEBUG_TF, GetDebugName(caller), "", "", function, message);
+		string res = LogMessage(LOG_DEBUG_TF, GetDebugName(caller), "", "", function, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	WeightLog(string message = LOG_DEFAULT, Managed caller = null, string function = "", Managed entity = null)
 	{
-		//LogMessage(LOG_DEBUG_WEIGHT, GetDebugName(caller), GetDebugName(entity), "", function, message);
+		/*
+		string res = LogMessage(LOG_DEBUG_WEIGHT, GetDebugName(caller), GetDebugName(entity), "", function, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
+		*/
 	}
 	
 	static void	MeleeLog(Entity entity, string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT)
 	{
 		string logMessage = string.Format("%1: %2", entity.GetSimulationTimeStamp(), message);
-		LogMessage(LOG_DEBUG_MELEE, plugin, GetDebugName(entity), author, label, logMessage);
+		string res = LogMessage(LOG_DEBUG_MELEE, plugin, GetDebugName(entity), author, label, logMessage);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	WeatherLog(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		if (LogManager.IsWeatherLogEnabled())
-			LogMessage(LOG_DEBUG_WEATHER, plugin, entity, author, label, message);
+		if (!LogManager.IsWeatherLogEnabled())
+		{
+			return;
+		}
+
+		string res = LogMessage(LOG_DEBUG_WEATHER, plugin, entity, author, label, message);
+
+		#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+		#endif
 	}
 	
 	/**
@@ -222,7 +333,14 @@ class Debug
 	*/
 	static void	LogInfo(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_INFO, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_INFO, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	/**
@@ -237,7 +355,14 @@ class Debug
 	*/
 	static void	LogWarning(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_WARNING, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_WARNING, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	/**
@@ -252,7 +377,14 @@ class Debug
 	*/
 	static void	LogError(string message = LOG_DEFAULT, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
-		LogMessage(LOG_ERROR, plugin, entity, author, label, message);
+		string res = LogMessage(LOG_ERROR, plugin, entity, author, label, message);
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	LogArrayInt(array<int> arr = NULL, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
@@ -260,27 +392,56 @@ class Debug
 		if (arr == null)
 			return;
 
+		string res;
+
 		for (int i = 0; i < arr.Count(); i++)
 		{
-			LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i).ToString());
+			res += LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i).ToString());
 		}
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	LogArrayString(array<string> arr = NULL, string plugin = LOG_DEFAULT, string author = LOG_DEFAULT, string label = LOG_DEFAULT, string entity = LOG_DEFAULT)
 	{
 		if (arr == null)
 			return;
+
+		string res;
 			
 		for (int i = 0; i < arr.Count(); i++)
 		{
-			LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i));
+			res += LogMessage(LOG_DEBUG, plugin, entity, author, label, arr.Get(i));
 		}
+
+#ifdef LOG_TO_RPT
+		if (res.Length() > 0)
+		{
+			PrintToRPT("" + res);
+		}
+#endif
 	}
 	
 	static void	ReceivedLogMessageFromServer(string message)
 	{
-		if (LogManager.IsLogsEnable())
-			SaveLog(message);
+		if (!LogManager.IsLogsEnable())
+		{
+			return;
+		}
+
+		SaveLog(message);
+
+#ifdef LOG_TO_RPT
+		if (message.Length() > 0)
+		{
+			PrintToRPT("" + message);
+		}
+#endif
 	}
 	
 	static void ClearScriptLogs()
@@ -476,10 +637,10 @@ class Debug
 	
 	static private bool				m_EnabledLogs; //! DEPRECATED
 		
-	static private void LogMessage(string level, string plugin, string entity, string author, string label, string message)
+	static private string LogMessage(string level, string plugin, string entity, string author, string label, string message)
 	{
 		if (GetGame() == null || !LogManager.IsLogsEnable())
-			return;
+			return string.Empty;
 		
 		bool is_server_log = ( GetGame().IsServer() && GetGame().IsMultiplayer() );
 		
@@ -509,6 +670,8 @@ class Debug
 		{
 			SaveLog(msg);
 		}
+
+		return msg;
 	}
 	
 	static private void	SaveLog(string log_message)
@@ -525,10 +688,11 @@ class Debug
 		FPrintln(fileHandle, log_message);
 		CloseFile(fileHandle);
 
+		#ifndef LOG_TO_RPT
 		#ifdef DIAG_DEVELOPER
 		Print(string.Format("%1", log_message));
 		#endif
-
+		#endif
 	}
 	
 	static void	ClearLogs()

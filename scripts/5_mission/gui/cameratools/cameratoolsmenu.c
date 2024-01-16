@@ -196,9 +196,11 @@ class CameraToolsMenu extends UIScriptedMenu
 		m_Cameras.Clear();
 		m_Events.Clear();
 		m_Actors.Clear();
-		
+
+		string errorMessage;
 		CTSaveStructure save_data = new CTSaveStructure();
-		JsonFileLoader<ref CTSaveStructure>.JsonLoadFile( g_Game.GetMissionFolderPath() + "/CameraTools/keyframe_data.json", save_data );
+		if (!JsonFileLoader<ref CTSaveStructure>.LoadFile(g_Game.GetMissionFolderPath() + "/CameraTools/keyframe_data.json", save_data, errorMessage))
+			ErrorEx(errorMessage);
 		
 		m_InterpTypeCombo.SetCurrentItem( save_data.m_InterpType );
 		m_InterpTypeSpeedCombo.SetCurrentItem( save_data.m_InterpSpeed );
@@ -219,7 +221,7 @@ class CameraToolsMenu extends UIScriptedMenu
 			m_Events.Insert( ev );
 		}
 		
-		foreach( Param5<vector, vector, string, ref array<string>, string> actor_t : save_data.m_Actors )
+		foreach ( Param5<vector, vector, string, ref array<string>, string> actor_t : save_data.m_Actors )
 		{
 			CTActor ac = new CTActor( m_Actors.Count(), actor_t.param1, actor_t.param2, actor_t.param3, actor_t.param4, actor_t.param5, this );
 			m_Actors.Insert( ac );
@@ -253,8 +255,10 @@ class CameraToolsMenu extends UIScriptedMenu
 			Param5<vector, vector, string, ref array<string>, string> ac = new Param5<vector, vector, string, ref array<string>, string>( actor_t.GetPosition(), actor_t.GetRotation(), actor_t.GetActorType(), actor_t.GetItems(), actor_t.GetHandsItem() );
 			save_data.m_Actors.Insert( ac );
 		}
-		
-		JsonFileLoader<ref CTSaveStructure>.JsonSaveFile( g_Game.GetMissionFolderPath() + "/CameraTools/keyframe_data.json", save_data );
+
+		string errorMessage;
+		if (!JsonFileLoader<ref CTSaveStructure>.SaveFile(g_Game.GetMissionFolderPath() + "/CameraTools/keyframe_data.json", save_data, errorMessage))
+			ErrorEx(errorMessage);
 	}
 	
 	float GetTotalTime( int index )

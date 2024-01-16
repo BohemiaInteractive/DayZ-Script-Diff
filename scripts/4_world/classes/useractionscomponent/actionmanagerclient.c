@@ -36,11 +36,13 @@ class ActionManagerClient: ActionManagerBase
 		m_SelectedActionInputToSrollIndex = 0;
 	}
 	
+	//pCurrentCommandID is command ID at time of call command handler, some called methods can change actual true value (need call m_Player.GetCurrentCommandID() for actual command ID)
 	override void Update(int pCurrentCommandID)
 	{
 		m_InventoryActionHandler.OnUpdate();
 		super.Update(pCurrentCommandID);
-		m_ActionPossible = ActionPossibilityCheck(pCurrentCommandID);
+		int currentCommandID = m_Player.GetCurrentCommandID();
+		m_ActionPossible = ActionPossibilityCheck(currentCommandID);
 		
 		if (m_PendingActionData) //SP only
 		{
@@ -69,8 +71,8 @@ class ActionManagerClient: ActionManagerBase
 					
 					m_CurrentActionData.m_Action.ClearInventoryReservationEx(m_CurrentActionData);
 					bool can_be_action_done = ((condition_mask & m_CurrentActionData.m_Action.m_ConditionMask) == condition_mask);
-					// check pCurrentCommandID before start or reject 
-					if (m_ActionPossible && can_be_action_done && pCurrentCommandID != DayZPlayerConstants.COMMANDID_SWIM)
+					// check currentCommandID before start or reject 
+					if (m_ActionPossible && can_be_action_done && currentCommandID != DayZPlayerConstants.COMMANDID_SWIM)
 					{
 						m_CurrentActionData.m_Action.InventoryReservation(m_CurrentActionData);
 						m_CurrentActionData.m_State = UA_START;
@@ -121,7 +123,7 @@ class ActionManagerClient: ActionManagerBase
 				{
 					m_Targets.Update();
 				}
-				FindContextualUserActions(pCurrentCommandID);	
+				FindContextualUserActions(currentCommandID);	
 			}
 		
 			InputsUpdate();
@@ -225,7 +227,7 @@ class ActionManagerClient: ActionManagerBase
 		
 		input = m_RegistredInputsMap.Get(ContinuousInteractActionInput);
 		if (input)
-		{;
+		{
 			m_OrderedStandartActionInputs.Insert(input);
 		}
 		

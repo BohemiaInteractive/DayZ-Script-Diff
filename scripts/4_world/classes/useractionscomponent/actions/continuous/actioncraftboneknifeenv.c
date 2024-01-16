@@ -52,4 +52,10 @@ class ActionCraftBoneKnifeEnv: ActionContinuousBase
 		MiscGameplayFunctions.TransferItemProperties(item_ingredient, knife);
 
 	}
+	
+	override string GetSoundCategory(ActionData action_data)
+	{
+		return "BoneKnife_stone";
+	}
+	
 };

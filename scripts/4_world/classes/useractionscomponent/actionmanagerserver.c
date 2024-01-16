@@ -201,10 +201,11 @@ class ActionManagerServer: ActionManagerBase
 		}
 	}
 	
-	
+	//pCurrentCommandID is command ID at time of call command handler, some called methods can change actual true value (need call m_Player.GetCurrentCommandID() for actual command ID)
 	override void Update(int pCurrentCommandID)
 	{
 		super.Update(pCurrentCommandID);
+		int currentCommandID = m_Player.GetCurrentCommandID();
 		
 		//Debug.Log("m_ActionWantEnd " + m_ActionInputWantEnd);
 		
@@ -285,10 +286,10 @@ class ActionManagerServer: ActionManagerBase
 					break;
 			
 				case UA_AM_ACCEPTED:
-					// check pCurrentCommandID before start or reject 
+					// check currentCommandID before start or reject 
 				
 					bool canActionPerform = m_CurrentActionData.m_Action.Can(m_Player, m_CurrentActionData.m_Target, m_CurrentActionData.m_MainItem);
-					if (canActionPerform && ActionPossibilityCheck(pCurrentCommandID))
+					if (canActionPerform && ActionPossibilityCheck(currentCommandID))
 					{
 						m_CurrentActionData.m_State = UA_START;
 						m_CurrentActionData.m_Action.Start(m_CurrentActionData);

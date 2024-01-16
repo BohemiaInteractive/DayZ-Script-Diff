@@ -105,6 +105,8 @@ class RaycastRVResult
 
 	int hierLevel; //!< which hierarchy level is the collision detected at, == 0 = objects in landscape, > 0 = proxy
 	int component; //!< index of component in corresponding geometry level
+	
+	SurfaceInfo surface; //!< surface material info handle
 
 	bool entry; //!< is false if begining point was TriggerInsider
 	bool exit;  //!< is false if end point was inside

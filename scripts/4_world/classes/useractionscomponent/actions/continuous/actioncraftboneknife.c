@@ -46,4 +46,9 @@ class ActionCraftBoneKnife: ActionContinuousBase
 		
 		MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem, knife);
 	}
+	
+	override string GetSoundCategory(ActionData action_data)
+	{
+		return "BoneKnife_craft";
+	}
 };

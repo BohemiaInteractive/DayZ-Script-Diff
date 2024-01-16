@@ -118,6 +118,17 @@ class LeftArea: Container
 		return cont_screen_pos - y + cont_screen_height;
 	}
 	
+	override void SetSameLevelNextActive()
+	{
+		m_VicinityContainer.SetSameLevelNextActive();
+		Refresh();
+	}
+	override void SetSameLevelPreviousActive()
+	{
+		m_VicinityContainer.SetSameLevelPreviousActive();
+		Refresh();
+	}
+	
 	override void ExpandCollapseContainer()
 	{
 		Container c = GetFocusedContainer();		

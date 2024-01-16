@@ -197,13 +197,8 @@ class MainMenu extends UIScriptedMenu
 			info = m_AllDlcsMap.Get(data.Name);
 			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(info, m_DlcFrame, data);
 			
-			if (data.Name == "Livonia DLC")
-			{
-				handler.ShowInfoPanel(true);
-				m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
-			}
-			else
-				handler.ShowInfoPanel(false);
+			handler.ShowInfoPanel(true);
+			m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
 			
 			m_DlcHandlers.Insert(handler);
 		}

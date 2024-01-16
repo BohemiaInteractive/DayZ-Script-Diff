@@ -24,6 +24,11 @@ class KitBase extends ItemBase
 		return true;
 	}
 	
+	override bool CanProxyObstruct()
+	{
+		return false;
+	}
+	
 	override void OnVariablesSynchronized()
 	{
 		super.OnVariablesSynchronized();

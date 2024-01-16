@@ -42,6 +42,13 @@ class HandEventBase
 	DayZPlayer m_Player;
 	ref InventoryLocation m_Src;
 
+	//! For action guards. Although we can guarantee the item will exist for remotes and juncture, 
+	//! we can't guarantee the conditions will be the same as when the action was first performed.
+	//! So therefore we only perform maximal checks on the Client and then Server but then do minimal 
+	//! checks on Juncture-Client and Juncture-Server and no checks on Remote-Client.
+	bool m_IsJuncture;
+	bool m_IsRemote;
+
 	void HandEventBase (Man p = null, InventoryLocation src = null) { Class.CastTo(m_Player, p); m_Src = src; }
 	HandEventID GetEventID () { return m_EventID; }
 
@@ -557,6 +564,8 @@ class HandEventSwap extends HandEventBase
 	
 	override bool CheckRequestSrc ()
 	{
+		//return false;
+
 		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
 			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));

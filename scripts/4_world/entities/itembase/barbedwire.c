@@ -450,5 +450,7 @@ class BarbedWire extends ItemBase
 
 		AddAction(ActionRestrainTarget);
 		AddAction(ActionRestrainSelf);
+		AddAction(ActionAttachToConstruction);
+		
 	}	
 }

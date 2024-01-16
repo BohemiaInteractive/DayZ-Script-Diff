@@ -157,12 +157,8 @@ class FlammableBase : ItemBase
 		
 		if (rag  &&  GetCompEM().GetEnergy() < GetCompEM().GetEnergyUsage() * GetCompEM().GetUpdateInterval() )
 		{
-			float wetness = rag.GetWet();
-			bool is_dry_enough = wetness <= 1-GetCompEM().GetWetnessExposure();
-			if (!is_dry_enough)
-			{
+			if (IsRagDryEnough(rag))
 				return false;
-			}
 		}
 		
 		if ( !GetCompEM().CanWork() )
@@ -181,6 +177,13 @@ class FlammableBase : ItemBase
 		}
 		
 		return true;
+	}
+	
+	bool IsRagDryEnough(ItemBase rag)
+	{
+		float wetness = rag.GetWet();
+		bool is_dry_enough = wetness <= 1-GetCompEM().GetWetnessExposure();
+		return is_dry_enough;
 	}
 	
 	void UpdateCheckForReceivingUpgrade()
@@ -880,6 +883,8 @@ class FlammableBase : ItemBase
 	override string GetDebugText()
 	{
 		string debug_output;
+
+		debug_output = super.GetDebugText();
 		
 		if( GetGame().IsDedicatedServer())
 		{
@@ -933,6 +938,7 @@ class Torch : FlammableBase
 		super.SetActions();
 		
 		AddAction(ActionUpgradeTorchFromGasPump);
+		AddAction(ActionRefuelTorch);
 	}
 	
 	// !Called on CHILD when it's attached to parent.

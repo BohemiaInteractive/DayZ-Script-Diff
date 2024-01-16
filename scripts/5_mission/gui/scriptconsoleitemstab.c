@@ -14,6 +14,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected static ref array<Shape>			m_DebugShapes = new array<Shape>;
 	protected static EntityAI 					m_PreviewEntity;
 	protected static float	 					m_ItemQuantity = 1;
+	protected static bool	 					m_WithPhysics = false;
 	
 	
 	protected ref array<Widget> 				m_CategoryButtonsWidgets = new array<Widget>;
@@ -65,6 +66,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected EditBoxWidget 			m_QuantityEditBox;
 	protected EditBoxWidget 			m_DamageEditBox;
 	protected EditBoxWidget 			m_BatchSpawnQuantity;
+	protected CheckBoxWidget			m_WithPhysicsCheckbox;
 	protected TextWidget 				m_ItemDamageLabel;
 	protected TextWidget 				m_ItemQuantityLabel;
 	protected TextWidget 				m_SelectedObjectText;
@@ -72,7 +74,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected ImageWidget				m_FilterOrderImage;
 	
 	
-	void ScriptConsoleItemsTab(Widget root, ScriptConsole console)
+	void ScriptConsoleItemsTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		m_Developer					= PluginDeveloper.Cast(GetPlugin(PluginDeveloper));
 		
@@ -106,6 +108,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		m_DamageEditBox = EditBoxWidget.Cast(root.FindAnyWidget("DamageValue"));
 		m_ItemDamageLabel = TextWidget.Cast(root.FindAnyWidget("DamageLabel"));
 		m_ItemQuantityLabel = TextWidget.Cast(root.FindAnyWidget("QuantityLabel"));
+		m_WithPhysicsCheckbox = CheckBoxWidget.Cast(root.FindAnyWidget("WithPhysicsCheckbox"));
 
 		m_SpawnInInvButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonSpawnInInv"));
 		m_SpawnGroundButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonSpawnInGround"));
@@ -163,6 +166,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		}
 		
 		m_ItemQuantity = m_QuantityEditBox.GetText().ToFloat();
+		m_WithPhysics = m_WithPhysicsCheckbox.IsChecked();
 	}
 
 	
@@ -175,6 +179,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		m_DrawDistanceWidget.SetText(DRAW_DISTANCE.ToString());
 		
 		m_QuantityEditBox.SetText(m_ItemQuantity.ToString());
+		m_WithPhysicsCheckbox.SetChecked(m_WithPhysics);
 		
 		if (m_ConfigDebugProfile)
 		{
@@ -213,7 +218,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		{
 			string widget_name = "ItemCategory" + counter;
 			
-			CheckBoxWidget btw = CheckBoxWidget.Cast(m_Root.FindAnyWidget(widget_name));
+			CheckBoxWidget btw = CheckBoxWidget.Cast(m_ParentRoot.FindAnyWidget(widget_name));
 			if (btw)
 			{
 				btw.SetText(name);
@@ -450,19 +455,26 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			{
 				m_DamageEditBox.Show(true);
 				m_QuantityEditBox.Show(true);
+				m_WithPhysicsCheckbox.Show(true);
+
 				float item_health= m_ConfigDebugProfile.GetItemHealth(GetCurrentPresetName(), GetCurrentItemIndex());
 				int item_quantity = m_ConfigDebugProfile.GetItemQuantity(GetCurrentPresetName(), GetCurrentItemIndex());
+				bool item_with_physics = m_ConfigDebugProfile.GetItemWithPhysics(GetCurrentPresetName(), GetCurrentItemIndex());
 
 				// damage
 				m_DamageEditBox.SetText(item_health.ToString());
 
 				// quantity
 				m_QuantityEditBox.SetText(item_quantity.ToString());
+
+				// with physics
+				m_WithPhysicsCheckbox.SetChecked(item_with_physics);
 			}
 			else
 			{
 				m_DamageEditBox.Show(false);
 				m_QuantityEditBox.Show(false);
+				m_WithPhysicsCheckbox.Show(false);
 				
 			}
 		}
@@ -575,22 +587,25 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			{
 				float health = -1;
 				int quantity = 1;
+				bool with_physics = false;
 				if (is_preset_fixed)
 				{
 					health = m_ConfigDebugProfileFixed.GetItemHealth(preset_name, i);
 					quantity = m_ConfigDebugProfileFixed.GetItemQuantity(preset_name, i);
+					with_physics = m_ConfigDebugProfileFixed.GetItemWithPhysics(preset_name, i);
 				}
 				else
 				{
 					health = m_ConfigDebugProfile.GetItemHealth(preset_name, i);
 					quantity = m_ConfigDebugProfile.GetItemQuantity(preset_name, i);
+					with_physics = m_ConfigDebugProfile.GetItemWithPhysics(preset_name, i);
 				}
 				if (location == InventoryLocationType.ATTACHMENT)
 					EntityAI ent = m_Developer.SpawnEntityInInventory(target, preset_array.Get(i), -1, quantity, false, preset_name);
 					//m_Developer.SpawnEntityAsAttachment(player, target, preset_array.Get(i), -1, quantity, false, preset_name);
 				else if (location == InventoryLocationType.GROUND)
 				{
-					m_Developer.SpawnEntityOnCursorDir(player, preset_array.Get(i), quantity, distance, health, false, preset_name);
+					m_Developer.SpawnEntityOnCursorDir(player, preset_array.Get(i), quantity, distance, health, false, preset_name, with_physics);
 				}
 			}
 			if (GetGame().IsMultiplayer())
@@ -1100,6 +1115,11 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			m_ConfigDebugProfile.SetItemHealth(GetCurrentPresetName(), GetCurrentItemIndex(), m_DamageEditBox.GetText().ToFloat());
 			return true;
 		}
+		else if (w == m_WithPhysicsCheckbox && (GetCurrentItemIndex() >= 0 || GetCurrentPresetName() != ""))
+		{
+			m_ConfigDebugProfile.SetItemWithPhysics(GetCurrentPresetName(), GetCurrentItemIndex(), m_WithPhysicsCheckbox.IsChecked());
+			return true;
+		}
 		else if (w == m_BatchSpawnQuantity)
 		{
 			m_ConfigDebugProfile.SetBatchSpawnQuantity(m_BatchSpawnQuantity.GetText().ToInt());
@@ -1247,6 +1267,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 					
 					float health = m_DamageEditBox.GetText().ToFloat() * MiscGameplayFunctions.GetTypeMaxGlobalHealth(m_SelectedObject);
 					float quantity = m_QuantityEditBox.GetText().ToFloat();
+					bool withPhysics = m_WithPhysicsCheckbox.IsChecked();
 
 					bool spawnOnCrossHair = DeveloperFreeCamera.IsFreeCameraEnabled() || w == m_SpawnOnCursor;
 
@@ -1255,7 +1276,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 					{
 						case m_SpawnGroundPatternGrid:
 						{
-							m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, quantity, distance, health, m_IsShiftDown);
+							m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, quantity, distance, health, m_IsShiftDown, "", withPhysics);
 							break;
 						}
 						
@@ -1281,11 +1302,11 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 						{
 							if (spawnOnCrossHair)
 							{
-								m_Developer.SpawnItemOnCrosshair(player, m_SelectedObject, health, quantity, 40, true, m_IsShiftDown );
+								m_Developer.SpawnItemOnCrosshair(player, m_SelectedObject, health, quantity, 40, true, m_IsShiftDown, withPhysics );
 							}
 							else
 							{
-								m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, quantity, distance, health, m_IsShiftDown);
+								m_Developer.SpawnEntityOnCursorDir(player, m_SelectedObject, quantity, distance, health, m_IsShiftDown, "", withPhysics);
 							}
 							break;
 						}
@@ -1376,7 +1397,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			int columns = m_RectSpawnColumn.GetText().ToInt();
 			float rowStep = m_RectSpawnRowStep.GetText().ToFloat();
 			float columnStep = m_RectSpawnColumnStep.GetText().ToFloat();
-			m_Developer.SpawnEntityOnGroundPatternGrid(player, m_SelectedObject,count, m_DamageEditBox.GetText().ToFloat(), 1, rows, columns, rowStep, columnStep, m_IsShiftDown);
+			m_Developer.SpawnEntityOnGroundPatternGrid(player, m_SelectedObject,count, m_DamageEditBox.GetText().ToFloat(), 1, rows, columns, rowStep, columnStep, m_IsShiftDown, m_WithPhysicsCheckbox.IsChecked());
 			return true;
 		}
 		else if (w == m_ListActions)

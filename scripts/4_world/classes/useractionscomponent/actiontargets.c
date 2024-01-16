@@ -422,6 +422,10 @@ class ActionTargets
 
 				if ( pTarget.IsTransport() )
 					return 0.25;
+				
+				//!basebuilding objects
+				if (pTarget.CanUseConstruction())
+					return 0.85;
 
 				if ( pTarget.IsWell() )
 					return 0.9;

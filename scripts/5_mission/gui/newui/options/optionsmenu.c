@@ -672,6 +672,11 @@ class OptionsMenu extends UIScriptedMenu
 	//Coloring functions (Until WidgetStyles are useful)
 	void ColorHighlight(Widget w)
 	{
+		if ((w.GetFlags() & WidgetFlags.IGNOREPOINTER) == WidgetFlags.IGNOREPOINTER)
+		{
+			return;
+		}
+
 		if (w.IsInherited(ButtonWidget))
 		{
 			ButtonWidget button = ButtonWidget.Cast(w);

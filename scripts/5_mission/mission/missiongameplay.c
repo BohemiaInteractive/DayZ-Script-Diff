@@ -73,7 +73,6 @@ class MissionGameplay extends MissionBase
 	void ~MissionGameplay()
 	{
 		DestroyInventory();
-		//GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateDebugMonitor);
 	#ifndef NO_GUI
 		if (g_Game.GetUIManager() && g_Game.GetUIManager().ScreenFadeVisible())
 		{
@@ -109,7 +108,7 @@ class MissionGameplay extends MissionBase
 		MapMarkerTypes.Init();
 		
 		m_UIManager = GetGame().GetUIManager();
-			
+		
 		m_Initialized				= true;
 
 		// init hud ui
@@ -1025,10 +1024,9 @@ class MissionGameplay extends MissionBase
 		{
 			m_ActiveInputExcludeGroups.Clear();
 		}
-			
-		RefreshExcludes();
-		// supress control for next frame
-		GetUApi().SupressNextFrame(bForceSupress);
+		
+		GetUApi().UpdateControls(); //it is meant to happen instantly, does not wait for update to process
+		GetUApi().SupressNextFrame(bForceSupress); // supress control for next frame
 	}
 	
 	//! returns if ANY exclude groups, restriction (or deprecated disable, if applicable) is active

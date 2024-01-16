@@ -4,31 +4,24 @@ class ObjectSpawnerHandler
 	//---------------------------------------------------------------------------------------
 	static void SpawnObjects()
 	{
-		//float profStart = GetGame().GetTime();
 		if (CfgGameplayHandler.GetObjectSpawnersArr() && CfgGameplayHandler.GetObjectSpawnersArr().Count() > 0)
 		{
 			TStringArray arr = CfgGameplayHandler.GetObjectSpawnersArr();
-			foreach (string spawner_json: arr)
+			foreach (string spawnerFilePath: arr)
 			{
-				string path = "$mission:"+spawner_json;
-				
-				if (FileExist( path ))
+				string path = "$mission:" + spawnerFilePath;
+
+				string errorMessage;
+				ObjectSpawnerJson spawner;
+				if (JsonFileLoader<ObjectSpawnerJson>.LoadFile(path, spawner, errorMessage))
 				{
-					//float profStartLoad = GetGame().GetTime();
-					ObjectSpawnerJson spawner;
-					JsonFileLoader<ObjectSpawnerJson>.JsonLoadFile( path, spawner );
-					
-					//float resultLoad = GetGame().GetTime() - profStartLoad;
-					//Print("LOAD took " + resultLoad);
-					foreach (ITEM_SpawnerObject o: spawner.Objects)
-					{
+					foreach (ITEM_SpawnerObject o : spawner.Objects)
 						SpawnObject(o);
-					}
 				}
+				else
+					ErrorEx(errorMessage);
 			}
 		}
-		//float result = GetGame().GetTime() - profStart;
-		//Print("OVERALL took " + result);
 	}
 	//---------------------------------------------------------------------------------------
 	static void SpawnObject(ITEM_SpawnerObject item)
@@ -55,7 +48,7 @@ class ObjectSpawnerHandler
 			}
 			
 			object = GetGame().CreateObjectEx(item.name, vector.ArrayToVec(item.pos), flags, RF_IGNORE);
-			if ( object )
+			if (object)
 			{
 				object.SetOrientation( vector.ArrayToVec(item.ypr));
 				if (item.scale != 1)
@@ -105,28 +98,31 @@ class ITEM_SpawnerObject
 class SpawnDataConverter
 {
 	static ref array<ref ITEM_SpawnerObject> Objects = new array<ref ITEM_SpawnerObject>;
-	static string m_Path = "$mission:MySpawnData.json";
+	static string m_Path = "$mission:myspawndata.json";
 	
 	static void SpawnObjects()
 	{
 		Objects.Clear();
 		SpawnInit();
-		ObjectSpawnerJson j = new ObjectSpawnerJson;
+		ObjectSpawnerJson j = new ObjectSpawnerJson();
 		j.Objects = Objects;
-		JsonFileLoader<ObjectSpawnerJson>.JsonSaveFile(m_Path, j );
+		
+		string errorMessage;
+		if (!JsonFileLoader<ObjectSpawnerJson>.SaveFile(m_Path, j, errorMessage))
+			ErrorEx(errorMessage);
 	}
 	
 	static void SpawnInit()
 	{
-		AddSpawnData( "Land_Wall_Gate_FenR", "8406.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000" );
-		AddSpawnData( "Land_Wall_Gate_FenR", "8410.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000" );
-		AddSpawnData( "Land_Wall_Gate_FenR", "8416.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000" );
-		AddSpawnData( "Land_Wall_Gate_FenR", "8422.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000" );
+		AddSpawnData("Land_Wall_Gate_FenR", "8406.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000");
+		AddSpawnData("Land_Wall_Gate_FenR", "8410.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000");
+		AddSpawnData("Land_Wall_Gate_FenR", "8416.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000");
+		AddSpawnData("Land_Wall_Gate_FenR", "8422.501953 107.736824 12782.338867", "0.000000 0.000000 0.000000");
 	}
 	
 	static void AddSpawnData(string objectName, vector position, vector orientation)
 	{
-		ITEM_SpawnerObject obj = new ITEM_SpawnerObject;
+		ITEM_SpawnerObject obj = new ITEM_SpawnerObject();
 		obj.name = objectName;
 		obj.pos[0] = position[0];
 		obj.pos[1] = position[1];
@@ -138,4 +134,4 @@ class SpawnDataConverter
 		
 		Objects.Insert(obj);		
 	}
-};
+}

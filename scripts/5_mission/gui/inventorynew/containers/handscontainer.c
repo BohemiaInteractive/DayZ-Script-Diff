@@ -184,41 +184,6 @@ class HandsContainer: Container
 		super.Insert( container, pos, immedUpdate );
 	}
 
-	void MouseClick2( Widget w, int x, int y, int button )
-	{
-		string name = w.GetName();
-		name.Replace( "PanelWidget", "Render" );
-		ItemPreviewWidget item_preview = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
-		
-		if( !item_preview )
-		{
-			return;
-		}
-		
-		EntityAI item = item_preview.GetItem();
-		InventoryItem itemAtPos = InventoryItem.Cast( item );
-		
-		if( itemAtPos )
-		{
-			if ( button == MouseState.MIDDLE )
-			{
-				InspectItem( itemAtPos );
-			}
-			#ifdef DIAG_DEVELOPER	
-			if ( GetDayZGame().IsLeftCtrlDown() && button == MouseState.RIGHT )
-			{
-				ShowActionMenu( itemAtPos );
-				return;
-			}
-			#endif
-		}
-	}
-		
-	void DraggingOverHeader2(Widget w, int x, int y, Widget receiver )
-	{
-		DraggingOverHeader(w, x, y, receiver );
-	}
-	
 	override bool TransferItem()
 	{
 		if (m_ActiveIndex == 0)
@@ -709,7 +674,7 @@ class HandsContainer: Container
 		{
 			Magazine swapmag1;
 			Magazine swapmag2;
-			if (Class.CastTo(swapmag1,  m_am_entity1 ) && Class.CastTo(swapmag2,  m_am_entity2 ) )
+			if (Class.CastTo(swapmag1,  m_am_entity1) && Class.CastTo(swapmag2,  m_am_entity2 ) )
 			{
 				if( m_player.GetWeaponManager().CanSwapMagazine( Weapon_Base.Cast( swapmag1.GetParent() ), Magazine.Cast( swapmag2 ) ) )
 				{
@@ -798,9 +763,9 @@ class HandsContainer: Container
 			cmenu.Add( "#inv_context_take_to_hands", this, "OnPerformCombination", new Param1<int>( InventoryCombinationFlags.TAKE_TO_HANDS ) );
 		}
 
-		if ( combinationFlags & InventoryCombinationFlags.COMBINE_QUANTITY )
+		if ( combinationFlags & InventoryCombinationFlags.COMBINE_QUANTITY2 )
 		{
-			cmenu.Add( "#inv_context_combine", this, "OnPerformCombination", new Param1<int>( InventoryCombinationFlags.COMBINE_QUANTITY ) );
+			cmenu.Add( "#inv_context_combine", this, "OnPerformCombination", new Param1<int>( InventoryCombinationFlags.COMBINE_QUANTITY2 ) );
 		}
 
 		int m_am_pos_x,  m_am_pos_y;
@@ -823,27 +788,27 @@ class HandsContainer: Container
 		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
 		EntityAI entity_in_hands = m_player.GetHumanInventory().GetEntityInHands();
 
-		if ( !entity1 || !entity2 ) return flags;
+		if (!entity1 || !entity2) return flags;
 
 		Magazine swapmag1;
 		Magazine swapmag2;
 		bool skipSwap = false;
 
-		if( Class.CastTo(swapmag1, entity1) && Class.CastTo(swapmag2, entity2) )
+		if (Class.CastTo(swapmag1, entity1) && Class.CastTo(swapmag2, entity2))
 		{
 			Weapon_Base parentWpn;
 
-			if(	Class.CastTo(parentWpn, swapmag1.GetHierarchyParent())	)
+			if (Class.CastTo(parentWpn, swapmag1.GetHierarchyParent()))
 			{
 				skipSwap = true;
-				if( m_player.GetWeaponManager().CanSwapMagazine(parentWpn,swapmag2) )
+				if (m_player.GetWeaponManager().CanSwapMagazine(parentWpn,swapmag2))
 					flags = flags | InventoryCombinationFlags.SWAP;
 			}
 
-			if(	Class.CastTo(parentWpn, swapmag2.GetHierarchyParent())	)
+			if (Class.CastTo(parentWpn, swapmag2.GetHierarchyParent()))
 			{
 				skipSwap = true;
-				if( m_player.GetWeaponManager().CanSwapMagazine(parentWpn,swapmag1) )
+				if (m_player.GetWeaponManager().CanSwapMagazine(parentWpn,swapmag1))
 					flags = flags | InventoryCombinationFlags.SWAP;
 
 			}
@@ -851,52 +816,52 @@ class HandsContainer: Container
 
 		if ( !skipSwap )
 		{
-			if ( entity1 == m_player.GetHumanInventory().GetEntityInHands() ) flags = flags | InventoryCombinationFlags.TAKE_TO_HANDS;
-			else if ( GameInventory.CanSwapEntitiesEx( entity1, entity2 ) )
+			if (entity1 == m_player.GetHumanInventory().GetEntityInHands() ) flags = flags | InventoryCombinationFlags.TAKE_TO_HANDS;
+			else if (GameInventory.CanSwapEntitiesEx( entity1, entity2 ))
 			{
-				if ( !entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ) )
+				if (!entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ))
 				{
 					flags = flags | InventoryCombinationFlags.SWAP;
 				}
 			}
 		}
 
-		if ( entity1.IsInherited( ItemBase) && entity2.IsInherited( ItemBase ) )
+		if (entity1.IsInherited( ItemBase) && entity2.IsInherited( ItemBase ))
 		{
 			ItemBase ent1 = ItemBase.Cast( entity1 );
-			if ( ent1.CanBeCombined( ItemBase.Cast( entity2 ) ) ) flags = flags | InventoryCombinationFlags.COMBINE_QUANTITY2;
+			if (ent1.CanBeCombined( ItemBase.Cast( entity2 ) )) flags = flags | InventoryCombinationFlags.COMBINE_QUANTITY2;
 		}
 
-		else if ( entity1.GetInventory().CanAddAttachment( entity2 ) )
+		else if (entity1.GetInventory().CanAddAttachment( entity2 ))
 		{
-			if ( !entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ) && !entity2.IsInherited( ZombieBase ) && !entity2.IsInherited( Car ) )
+			if (!entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ) && !entity2.IsInherited( ZombieBase ) && !entity2.IsInherited( Car ))
 			{
 				flags = flags | InventoryCombinationFlags.ADD_AS_ATTACHMENT;
 			}
 		}
-		if ( entity1.GetInventory().CanAddEntityInCargo( entity2, entity2.GetInventory().GetFlipCargo() ) ) flags = flags | InventoryCombinationFlags.ADD_AS_CARGO;
+		if (!entity1.GetInventory().HasEntityInInventory(entity2) && entity1.GetInventory().CanAddEntityInCargo( entity2, entity2.GetInventory().GetFlipCargo() )) flags = flags | InventoryCombinationFlags.ADD_AS_CARGO;
 
-		if( entity1 == m_player.GetHumanInventory().GetEntityInHands() || entity2 == m_player.GetHumanInventory().GetEntityInHands() )
+		if (entity1 == m_player.GetHumanInventory().GetEntityInHands() || entity2 == m_player.GetHumanInventory().GetEntityInHands())
 		{
 			ActionManagerClient amc;
 			Class.CastTo(amc, m_player.GetActionManager());
-			if( entity1 == m_player.GetHumanInventory().GetEntityInHands() )
+			if (entity1 == m_player.GetHumanInventory().GetEntityInHands())
 			{
-				if( amc.CanSetActionFromInventory( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ) ) )
+				if (amc.CanSetActionFromInventory( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ) ))
 				{
 					flags = flags | InventoryCombinationFlags.SET_ACTION;
 				}
 			}
 			else
 			{
-				if( amc.CanSetActionFromInventory( ItemBase.Cast( entity2 ), ItemBase.Cast( entity1 ) ) )
+				if (amc.CanSetActionFromInventory( ItemBase.Cast( entity2 ), ItemBase.Cast( entity1 ) ))
 				{
 					flags = flags | InventoryCombinationFlags.SET_ACTION;
 				}
 			}
 		}
 
-		if( GetRecipeCount( true, entity1, entity2 ) > 0 )
+		if (GetRecipeCount( true, entity1, entity2 ) > 0)
 		{
 			flags = flags | InventoryCombinationFlags.RECIPE_ANYWHERE;
 		}
@@ -1449,69 +1414,109 @@ class HandsContainer: Container
 		}
 	}
 
+	void MouseClick2(Widget w, int x, int y, int button)
+	{
+		string name = w.GetName();
+		name.Replace("PanelWidget", "Render");
+		ItemPreviewWidget itemPreview = ItemPreviewWidget.Cast(w.FindAnyWidget(name));
+		
+		if (itemPreview)
+		{
+			ItemBase selectedItem = ItemBase.Cast(itemPreview.GetItem());
+			
+			if (selectedItem)
+			{
+				switch (button)
+				{
+					case MouseState.RIGHT:
+						#ifdef DIAG_DEVELOPER
+						if (g_Game.IsLeftCtrlDown())
+							ShowActionMenu(selectedItem);
+						#endif
+
+						break;
+				
+					case MouseState.MIDDLE:
+						InspectItem(selectedItem);
+						break;
+					
+					case MouseState.LEFT:
+						PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+						if (g_Game.IsLeftCtrlDown())
+						{
+							if (controlledPlayer.CanDropEntity(selectedItem))
+							{
+								if (selectedItem.GetTargetQuantityMax() < selectedItem.GetQuantity())
+									selectedItem.SplitIntoStackMaxClient(null, -1);
+								else
+									controlledPlayer.PhysicalPredictiveDropItem(selectedItem);
+							}
+							else
+							{
+								bool draggable = !controlledPlayer.GetInventory().HasInventoryReservation(selectedItem, null ) && !controlledPlayer.GetInventory().IsInventoryLocked() && selectedItem.GetInventory().CanRemoveEntity() && !controlledPlayer.IsItemsToDelete();
+								ItemManager.GetInstance().SetWidgetDraggable(w, draggable);
+							}
+						}
+
+						break;
+				}
+			}
+		}
+	}
+		
 	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
+		if (button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
-			if( w == null )
-			{
-				return;
-			}
-			ItemPreviewWidget iw = ItemPreviewWidget.Cast( w.FindAnyWidget( "Render" ) );
-			if( !iw )
+			ItemPreviewWidget iw = ItemPreviewWidget.Cast(w.FindAnyWidget("Render"));
+			if (!iw)
 			{
 			  string name = w.GetName();
-			  name.Replace( "PanelWidget", "Render" );
-			  iw = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
+			  name.Replace("PanelWidget", "Render");
+			  iw = ItemPreviewWidget.Cast(w.FindAnyWidget(name));
 			}
-			if( !iw )
-			{
-			  iw = ItemPreviewWidget.Cast( w );
-			}
-			if( !iw.GetItem() )
-			{
-				return;
-			}
+
+			if (!iw)
+			  iw = ItemPreviewWidget.Cast(w);
 	
-			ItemBase item = ItemBase.Cast( iw.GetItem() );
-			
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-			EntityAI item_in_hands = player.GetHumanInventory().GetEntityInHands();
-			Weapon_Base wpn;
-			Magazine mag;
-			if( Class.CastTo(wpn, item_in_hands ) )
+			ItemBase item = ItemBase.Cast(iw.GetItem());
+			if (item)
 			{
-				return;
-			}
-	
-			if( !item.GetInventory().CanRemoveEntity() )
-				return;
-			
-			if( player.GetInventory().HasEntityInInventory( item ) && player.GetHumanInventory().CanAddEntityInHands( item ) )
-			{
-				player.PredictiveTakeEntityToHands( item );
-			}
-			else
-			{
-				if( player.GetInventory().CanAddEntityToInventory( item ) && player.GetHumanInventory().CanRemoveEntityInHands() )
+				PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+				EntityAI itemInHands = controlledPlayer.GetHumanInventory().GetEntityInHands();
+		
+				if (!item.GetInventory().CanRemoveEntity())
+					return;
+				
+				if (controlledPlayer.GetInventory().HasEntityInInventory(item) && controlledPlayer.GetHumanInventory().CanAddEntityInHands(item))
 				{
-					player.PredictiveTakeEntityToInventory( FindInventoryLocationType.ANY, item );
+					controlledPlayer.PredictiveTakeEntityToHands(item);
 				}
 				else
 				{
-					if( player.GetHumanInventory().CanAddEntityInHands( item ) )
+					if (controlledPlayer.GetInventory().CanAddEntityToInventory(item) && controlledPlayer.GetHumanInventory().CanRemoveEntityInHands())
 					{
-						player.PredictiveTakeEntityToHands( item );
+						controlledPlayer.PredictiveTakeEntityToInventory(FindInventoryLocationType.ANY, item);
+					}
+					else
+					{
+						if (controlledPlayer.GetHumanInventory().CanAddEntityInHands(item))
+							controlledPlayer.PredictiveTakeEntityToHands(item);
 					}
 				}
+		
+				HideOwnedTooltip();
+		
+				name = w.GetName();
+				name.Replace("PanelWidget", "Temperature");
+				w.FindAnyWidget(name).Show(false);
 			}
-	
-			HideOwnedTooltip();
-	
-			name = w.GetName();
-			name.Replace( "PanelWidget", "Temperature" );
-			w.FindAnyWidget( name ).Show( false );
 		}
+	}
+
+	void DraggingOverHeader2(Widget w, int x, int y, Widget receiver )
+	{
+		DraggingOverHeader(w, x, y, receiver );
 	}
 	
 	void ElectricityIcon()

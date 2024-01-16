@@ -11,13 +11,12 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 	protected ButtonWidget 						m_EnfScriptRun;
 	protected ButtonWidget 						m_EnfScriptClear;
 	protected TextListboxWidget 				m_ScriptOutputListbox;
-	protected bool 								m_ScriptServer;
 	protected bool 								m_AllowScriptOutput;
 	protected int 								m_RunColor;
 	
 	static ref TStringArray 					m_ScriptOutputHistory = new TStringArray();
 	
-	void ScriptConsoleEnfScriptTab(Widget root, ScriptConsole console, bool server)
+	void ScriptConsoleEnfScriptTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		m_Instance 							= this;
 		m_ModuleLocalEnscriptHistory 		= PluginLocalEnscriptHistory.Cast(GetPlugin(PluginLocalEnscriptHistory));
@@ -29,43 +28,24 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 		m_EnfScriptClear					= ButtonWidget.Cast(root.FindAnyWidget("ClearButton"));
 		m_ScriptOutputListbox 				= TextListboxWidget.Cast(root.FindAnyWidget("ScriptOutputListbox"));
 		m_RunColor 							= m_EnfScriptRun.GetColor();
-		
-		int index;
-		string text;
-		
-		if (!server)
-		{
-			//CLIENT
-			m_ScriptServer = false;
-			index = m_EnscriptConsoleHistory.Count() - m_EnscriptHistoryRow - 1;
-			if (m_EnscriptConsoleHistory.IsValidIndex(index))
-			{
-				text = m_EnscriptConsoleHistory.Get(index);
-				//Print("setting text client " + text);
-				m_EnfScriptEdit.SetText(text);
-			}
-			ReloadScriptOutput();
-		}
-		else
-		{
-			//SERVER
-			m_ScriptServer = true;
-			index = m_EnscriptConsoleHistoryServer.Count() - m_EnscriptHistoryRowServer - 1;
-			if (m_EnscriptConsoleHistoryServer.IsValidIndex(index))
-			{
-				text = m_EnscriptConsoleHistoryServer.Get(index);
-				//Print("setting text server " + text);
-				m_EnfScriptEdit.SetText(text);
-			}
-			ReloadScriptOutput();
-		}
 	}
-	
+
 	void ~ScriptConsoleEnfScriptTab()
 	{
 		m_Instance = null;
 	}
 	
+	override void OnSelected()
+	{
+		int index = m_EnscriptConsoleHistory.Count() - m_EnscriptHistoryRow - 1;
+		if (m_EnscriptConsoleHistory.IsValidIndex(index))
+		{
+			string text = m_EnscriptConsoleHistory.Get(index);
+			m_EnfScriptEdit.SetText(text);
+		}
+		ReloadScriptOutput();
+	}
+
 	static void PrintS(string message)
 	{
 		Print(message);
@@ -135,18 +115,13 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 	
 	void HistoryBack()
 	{
-		if (m_ConfigDebugProfile.GetTabSelected() == ScriptConsole.TAB_ENSCRIPT || m_ConfigDebugProfile.GetTabSelected() == ScriptConsole.TAB_ENSCRIPT_SERVER)
-		{
-			EnscriptHistoryBack();
-		}
+
+		EnscriptHistoryBack();
 	}
 
 	void HistoryForward()
 	{
-		if (m_ConfigDebugProfile.GetTabSelected() == ScriptConsole.TAB_ENSCRIPT || m_ConfigDebugProfile.GetTabSelected() == ScriptConsole.TAB_ENSCRIPT_SERVER)
-		{
-			EnscriptHistoryForward();
-		}
+		EnscriptHistoryForward();
 	}
 	
 	protected void RunEnscript()
@@ -199,29 +174,15 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 	protected void EnscriptHistoryBack()
 	{
 		int history_index;
-		
 		if (m_EnfScriptEdit)
 		{
-			if (!m_ScriptServer)//client
+			m_EnscriptHistoryRow++;
+			history_index = m_EnscriptConsoleHistory.Count() - m_EnscriptHistoryRow - 1;
+			if (history_index > -1)
 			{
-				m_EnscriptHistoryRow++;
-				history_index = m_EnscriptConsoleHistory.Count() - m_EnscriptHistoryRow - 1;
-				if (history_index > -1)
-				{
-					m_EnfScriptEdit.SetText(m_EnscriptConsoleHistory.Get(history_index));
-				}
-				else m_EnscriptHistoryRow--;
+				m_EnfScriptEdit.SetText(m_EnscriptConsoleHistory.Get(history_index));
 			}
-			else//server
-			{
-				m_EnscriptHistoryRowServer++;
-				history_index = m_EnscriptConsoleHistoryServer.Count() - m_EnscriptHistoryRowServer - 1;
-				if (history_index > -1)
-				{
-					m_EnfScriptEdit.SetText(m_EnscriptConsoleHistoryServer.Get(history_index));
-				}
-				else m_EnscriptHistoryRowServer--;
-			}
+			else m_EnscriptHistoryRow--;
 		}
 	}
 
@@ -231,28 +192,13 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 		if (m_EnfScriptEdit)
 		{
 			int history_index;
-			if (!m_ScriptServer)//client
+			m_EnscriptHistoryRow--;
+			history_index = m_EnscriptConsoleHistory.Count() - m_EnscriptHistoryRow - 1;
+			if (history_index < m_EnscriptConsoleHistory.Count())
 			{
-				m_EnscriptHistoryRow--;
-				history_index = m_EnscriptConsoleHistory.Count() - m_EnscriptHistoryRow - 1;
-				if (history_index < m_EnscriptConsoleHistory.Count())
-				{
-					m_EnfScriptEdit.SetText(m_EnscriptConsoleHistory.Get(history_index));
-				}
-				else m_EnscriptHistoryRow++;
-				
+				m_EnfScriptEdit.SetText(m_EnscriptConsoleHistory.Get(history_index));
 			}
-			else//server
-			{
-				m_EnscriptHistoryRowServer--;
-				history_index = m_EnscriptConsoleHistoryServer.Count() - m_EnscriptHistoryRowServer - 1;
-				if (history_index < m_EnscriptConsoleHistoryServer.Count())
-				{
-					m_EnfScriptEdit.SetText(m_EnscriptConsoleHistoryServer.Get(history_index));
-				}
-				else m_EnscriptHistoryRowServer++;
-			}
-			
+			else m_EnscriptHistoryRow++;
 		}
 	}
 	
@@ -279,10 +225,7 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 		super.OnClick(w,x,y,button);
 		if (w == m_EnfScriptRun)
 		{
-			if (m_ScriptServer)
-				RunEnscriptServer();
-			else
-				RunEnscript();
+			RunEnscript();
 			return true;
 		}
 		else if (w == m_EnfScriptClear)
@@ -301,5 +244,81 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 		return false;
 	}
 
+	
+	override void Show(bool show, ScriptConsoleTabBase selectedHandler)
+	{
+		if (!show && (selectedHandler.Type() == ScriptConsoleEnfScriptTab || selectedHandler.Type() == ScriptConsoleEnfScriptServerTab))
+		{
+			//do nothing
+		}
+		else
+		{
+			m_Root.Show(show);
+			m_Root.Enable(show);
+		}
+	}
 		
+}
+
+class ScriptConsoleEnfScriptServerTab : ScriptConsoleEnfScriptTab
+{
+	override void OnSelected()
+	{
+		int index = m_EnscriptConsoleHistoryServer.Count() - m_EnscriptHistoryRowServer - 1;
+		if (m_EnscriptConsoleHistoryServer.IsValidIndex(index))
+		{
+			string text = m_EnscriptConsoleHistoryServer.Get(index);
+			m_EnfScriptEdit.SetText(text);
+		}
+		ReloadScriptOutput();
+	}
+
+	override protected void EnscriptHistoryBack()
+	{
+		int history_index;
+		if (m_EnfScriptEdit)
+		{
+			m_EnscriptHistoryRowServer++;
+			history_index = m_EnscriptConsoleHistoryServer.Count() - m_EnscriptHistoryRowServer - 1;
+			if (history_index > -1)
+			{
+				m_EnfScriptEdit.SetText(m_EnscriptConsoleHistoryServer.Get(history_index));
+			}
+			else m_EnscriptHistoryRowServer--;
+		}
+	}
+
+	override protected void EnscriptHistoryForward()
+	{
+		if (m_EnfScriptEdit)
+		{
+			int history_index;
+
+			m_EnscriptHistoryRowServer--;
+			history_index = m_EnscriptConsoleHistoryServer.Count() - m_EnscriptHistoryRowServer - 1;
+			if (history_index < m_EnscriptConsoleHistoryServer.Count())
+			{
+				m_EnfScriptEdit.SetText(m_EnscriptConsoleHistoryServer.Get(history_index));
+			}
+			else m_EnscriptHistoryRowServer++;
+		}
+	}
+	
+	override bool OnClick(Widget w, int x, int y, int button)
+	{
+		if (w == m_EnfScriptRun)
+		{
+			RunEnscriptServer();
+			return true;
+		}
+		else if (w == m_EnfScriptClear)
+		{
+			m_ScriptOutputListbox.ClearItems();
+			m_ScriptOutputHistory.Clear();
+			return true;
+		}
+		
+		return false;
+	}
+	
 }

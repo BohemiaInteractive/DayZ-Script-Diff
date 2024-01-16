@@ -1,6 +1,6 @@
 class PlayerSpawnHandler
 {
-	private static bool m_Initialized = false;
+	private static bool m_Initialized;
 	static ref PlayerSpawnJsonData m_Data = new PlayerSpawnJsonData();
 	
 	static bool LoadData()
@@ -13,16 +13,18 @@ class PlayerSpawnHandler
 
 		foreach (string spawnPresetFile : spawnGearPresetFiles)
 		{
-			string path = "$mission:"+spawnPresetFile;
-			if (!FileExist(path))
-				ErrorEx(string.Format("File \"%1\" does not exist", path), ErrorExSeverity.WARNING);
-			else
+			PlayerSpawnPreset preset;
+			string path = "$mission:" + spawnPresetFile;
+
+			string errorMessage;
+			if (!JsonFileLoader<PlayerSpawnPreset>.LoadFile(path, preset, errorMessage))
 			{
-				PlayerSpawnPreset preset;
-				JsonFileLoader<PlayerSpawnPreset>.JsonLoadFile(path, preset);
-				if (preset != null)
-					m_Data.presets.Insert(preset);
+				ErrorEx(errorMessage);
+				return false;
 			}
+			
+			if (preset != null)
+				m_Data.presets.Insert(preset);
 		}
 
 		m_Initialized = m_Data.presets.Count() > 0;

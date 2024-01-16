@@ -273,9 +273,9 @@ class ControlsXbox extends UIScriptedMenu
 	{
 		array<ref JsonControlMappingInfo> control_mapping_info = new array<ref JsonControlMappingInfo>;
 		
-		string file_path =	"Xbox/PageDataControlIer.json";
+		string file_path =	"xbox/pagedatacontroller.json";
 		#ifdef PLATFORM_PS4
-		file_path =	"Ps4/PageDataControlIer.json";
+		file_path =	"ps4/pagedatacontroller.json";
 		#endif
 		FileHandle file_handle = OpenFile(file_path, FileMode.READ);
 		JsonSerializer js = new JsonSerializer();

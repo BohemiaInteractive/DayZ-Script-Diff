@@ -17,9 +17,9 @@ class FALRecoil: RecoilBase
 		m_HandsCurvePoints.Insert("0 0 0");
 		m_HandsOffsetRelativeTime = 1;
 		
-		m_MouseOffsetRangeMin = 50;//in degrees min
-		m_MouseOffsetRangeMax = 120;//in degrees max
-		m_MouseOffsetDistance = 1.8;//how far should the mouse travel
+		m_MouseOffsetRangeMin = 65;//in degrees min
+		m_MouseOffsetRangeMax = 145;//in degrees max
+		m_MouseOffsetDistance = 1.4;//how far should the mouse travel
 		m_MouseOffsetRelativeTime = 0.5;//[0..1] a time it takes to move the mouse the required distance relative to the reload time of the weapon(firing mode)
 	
 		m_CamOffsetDistance = 0.01;

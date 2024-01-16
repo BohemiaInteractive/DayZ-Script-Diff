@@ -168,7 +168,7 @@ class InGameMenu extends UIScriptedMenu
 		else if (w == m_RestartButton)
 		{
 			#ifdef DEVELOPER
-			if (GetGame().IsMultiplayer() || GetGame().GetPlayer().IsUnconscious())
+			if (GetGame().IsMultiplayer() || (GetGame().GetPlayer() && GetGame().GetPlayer().IsUnconscious()))
 				OnClick_Restart();
 			else
 			{

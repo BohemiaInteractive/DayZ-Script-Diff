@@ -22,7 +22,7 @@ class ScriptConsoleRenamePresetDialog extends UIScriptedMenu
 		if ( ui_menu != NULL )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-			ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ITEMS));
+			ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsoleItemsTab));
 			if (tab)
 			{
 				m_Editbox.SetText( tab.GetCurrentPresetName() );
@@ -44,7 +44,7 @@ class ScriptConsoleRenamePresetDialog extends UIScriptedMenu
 			if ( ui_menu != NULL )
 			{
 				ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
-				ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ITEMS));
+				ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsoleItemsTab));
 				if (tab)
 				{
 					tab.RenamePreset( m_Editbox.GetText() );

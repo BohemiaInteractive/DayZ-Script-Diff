@@ -343,29 +343,67 @@ class ZombieContainer: CollapsibleContainer
 	}
 
 	// mouse button UP or call from ExpandCollapseContainer
-	void ToggleContainer( Widget w )
+	void ToggleContainer(Widget w)
 	{
 		EntityAI item;
-		SlotsIcon slots_icon; 
+		SlotsIcon icon; 
 		ClosableContainer c;
-		w.GetUserData(slots_icon);
-		if (slots_icon)
-			item = slots_icon.GetEntity();
+		w.GetUserData(icon);
+		if (icon)
+			item = icon.GetEntity();
+
 		if (item)
-		{
-			c = ClosableContainer.Cast( m_ShowedItems.Get( item ) );
-		}
+			c = ClosableContainer.Cast(m_ShowedItems.Get(item));
 		else
-		{
-			c = ClosableContainer.Cast(slots_icon.GetContainer());
-		}
+			c = ClosableContainer.Cast(icon.GetContainer());
 		
 		
 		if (c)
-		{
 			c.Toggle();
-		}
+
 		RecomputeOpenedContainers();
+	}
+	
+	void MouseClick(Widget w, int x, int y, int button)
+	{
+		ItemBase selectedItem;
+		SlotsIcon icon; 
+		w.GetUserData(icon);
+		if (icon)
+			selectedItem = ItemBase.Cast(icon.GetEntity());
+
+		if (selectedItem)
+		{
+			switch (button)
+			{
+				case MouseState.RIGHT:
+					#ifdef DIAG_DEVELOPER
+					if (GetDayZGame().IsLeftCtrlDown())
+						ShowActionMenu(selectedItem);
+					#endif
+					break;
+
+				case MouseState.MIDDLE:
+					InspectItem(selectedItem);
+					break;
+
+				case MouseState.LEFT:
+					if (g_Game.IsLeftCtrlDown())
+					{
+						PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+						if (controlledPlayer.CanDropEntity(selectedItem))
+						{
+							if (selectedItem.GetTargetQuantityMax() < selectedItem.GetQuantity())
+								selectedItem.SplitIntoStackMaxClient(null, -1);
+							else
+								controlledPlayer.PhysicalPredictiveDropItem(selectedItem);
+	
+							ItemManager.GetInstance().SetWidgetDraggable(w, false);
+						}
+					}
+					break;
+			}
+		}
 	}
 	
 	SlotsIcon GetSlotsIcon( int row, int column )
@@ -380,7 +418,7 @@ class ZombieContainer: CollapsibleContainer
 		bool has_cargo = m_ZombieEntity.GetInventory().GetCargo() != null;
 		
 		string config_path_ghosts_slots = "CfgVehicles ZombieBase InventoryEquipment playerSlots";
-		ref array<string> player_ghosts_slots = new array<string>;
+		array<string> player_ghosts_slots = new array<string>();
 		GetGame().ConfigGetTextArray( config_path_ghosts_slots, player_ghosts_slots );
 		
 		for ( int i = 0; i < player_ghosts_slots.Count(); i++ )

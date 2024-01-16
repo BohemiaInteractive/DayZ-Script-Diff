@@ -662,11 +662,12 @@ class EmoteSuicide extends EmoteBase
 	
 	override bool EmoteCondition(int stancemask)
 	{
-		Weapon_Base weapon;
-		weapon = Weapon_Base.Cast(m_Player.GetItemInHands());
+		ItemBase itemInHands = m_Player.GetItemInHands();
 		
-		if (weapon)
-			return weapon.ConfigGetBool("isSuicideWeapon");
+		if (!itemInHands.CanBeUsedForSuicide())
+		{
+			return false;
+		}
 		
 		return super.EmoteCondition(stancemask);
 	}

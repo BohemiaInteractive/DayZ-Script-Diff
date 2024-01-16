@@ -98,7 +98,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_RainDurationTimeValue = m_RainDurationTimeSlider.GetCurrent() / 100 * DURATION_MAX;
 	}
 	
-	void ScriptConsoleWeatherTab(Widget root, ScriptConsole console)
+	void ScriptConsoleWeatherTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		// FOG
 		m_FogValueSetSlider = SliderWidget.Cast(root.FindAnyWidget("SliderFogValue"));

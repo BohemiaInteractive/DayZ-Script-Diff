@@ -80,6 +80,18 @@ enum EAttExclusions
 	SHAVING_EYEWEAR_ATT_0,
 }
 
+class DebugSpawnParams
+{
+	Man m_Player;
+
+	static DebugSpawnParams WithPlayer(Man player)
+	{
+		DebugSpawnParams params = new DebugSpawnParams();
+		params.m_Player = player;
+		return params;
+	}
+};
+
 class TSelectableActionInfoArrayEx extends array<ref Param> {}
 typedef Param3<int, int, string> TSelectableActionInfo;
 typedef Param4<int, int, string, int> TSelectableActionInfoWithColor;
@@ -342,6 +354,17 @@ class EntityAI extends Entity
 				}
 			}
 		}
+	}
+	
+	protected float ConvertNonlethalDamage(float damage, DamageType damageType)
+	{
+		return 0.0;
+	}
+	
+	//! DEPRECATED - for legacy purposes
+	float ConvertNonlethalDamage(float damage)
+	{
+		return 0.0;
 	}
 	
 	DamageZoneMap GetEntityDamageZoneMap()
@@ -636,10 +659,10 @@ class EntityAI extends Entity
 		}
 		else
 		{
-			if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
-				GetHierarchyRootPlayer().JunctureDeleteItem( this );
+			if (GetGame().IsServer() && GetGame().IsMultiplayer())
+				GetHierarchyRootPlayer().JunctureDeleteItem(this);
 			else
-				GetHierarchyRootPlayer().AddItemToDelete( this );
+				GetHierarchyRootPlayer().AddItemToDelete(this);
 		}
 	}
 	
@@ -681,7 +704,6 @@ class EntityAI extends Entity
 	{
 		if (IsPrepareToDelete())
 		{
-			OnBeforeTryDelete();
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TryDelete, DELETE_CHECK_DELAY, false);
 		}
 	}
@@ -693,13 +715,23 @@ class EntityAI extends Entity
 	
 	bool TryDelete()
 	{
+		if (!IsPrepareToDelete())
+		{
+			Debug.Log("TryDelete - not ready for deletion");
+			return false;
+		}
+
 		if (GetGame().HasInventoryJunctureItem(this))
 		{
+			Debug.Log("TryDelete - deferred call");
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TryDelete, DELETE_CHECK_DELAY, false);
 			return false;
 		}
-		
+
+		OnBeforeTryDelete();
+		Debug.Log("TryDelete - OnBeforeTryDelete end");
 		DeleteSafe();
+		Debug.Log("TryDelete - DeleteSafe end");
 
 		return true;
 	}
@@ -1871,6 +1903,20 @@ class EntityAI extends Entity
 		return true;
 	}
 
+	EntityAI SpawnInInventoryOrGroundPos(string object_name, GameInventory inv, vector pos)
+	{
+		if (inv)
+		{
+			EntityAI res = inv.CreateInInventory(object_name);
+			if (res)
+			{
+				return res;
+			}
+		}
+
+		return SpawnEntityOnGroundPos(object_name, pos);
+	}
+
 	/**
 	 **/
 	EntityAI SpawnEntityOnGroundPos(string object_name, vector pos)
@@ -2911,6 +2957,11 @@ class EntityAI extends Entity
 		
 		m_ElapsedSinceLastUpdate = currentTime - m_LastUpdatedTime; 
 		m_LastUpdatedTime = currentTime;
+	}
+
+	void OnDebugSpawnEx(DebugSpawnParams params)
+	{
+		OnDebugSpawn();
 	}
 	
 	void OnDebugSpawn() 

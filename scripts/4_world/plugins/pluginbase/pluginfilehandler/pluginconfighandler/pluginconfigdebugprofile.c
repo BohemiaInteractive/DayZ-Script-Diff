@@ -23,6 +23,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	protected const string SUB_PARAM_ITEM_NAME				= "name";
 	protected const string SUB_PARAM_ITEM_HEALTH			= "health";
 	protected const string SUB_PARAM_ITEM_QUANTITY			= "quantity";
+	protected const string SUB_PARAM_ITEM_WITH_PHYSICS		= "with_physics";
 	protected const string LOGS_ENABLED						= "logs_enabled";
 	protected const string CONFIG_CLASSES_FLAG				= "toggled_config_classes_flag";
 	protected const string ITEM_CATEGORY_FLAG				= "toggled_item_categories_flag";
@@ -1066,6 +1067,47 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 			{
 				CfgParamInt new_param = new CfgParamInt( SUB_PARAM_ITEM_QUANTITY );
 				new_param.SetValue( quantity );
+				item_params.Insert( new_param );
+			}
+		}
+
+		SaveConfigToFile();
+		
+		return true;
+	}
+	
+	bool GetItemWithPhysics( string preset_name, int item_index )
+	{
+		CfgParam param = GetItemParam( preset_name, item_index, SUB_PARAM_ITEM_WITH_PHYSICS );
+		
+		if ( param == NULL )
+		{
+			return false;
+		}
+		else
+		{
+			CfgParamBool param_bool = CfgParamBool.Cast( param );
+			return param_bool.GetValue();
+		}
+	}
+	
+	bool SetItemWithPhysics( string preset_name, int item_index, bool with_physics )
+	{
+		CfgParam param = GetItemParam( preset_name, item_index, SUB_PARAM_ITEM_WITH_PHYSICS );
+		
+		if ( param != NULL )
+		{
+			CfgParamBool param_bool = CfgParamBool.Cast( param );
+			param_bool.SetValue( with_physics );
+		}
+		else
+		{
+			array<ref CfgParam> item_params = GetItemParams( preset_name, item_index );
+			
+			if ( item_params != NULL )
+			{
+				CfgParamBool new_param = new CfgParamBool( SUB_PARAM_ITEM_WITH_PHYSICS );
+				new_param.SetValue( with_physics );
 				item_params.Insert( new_param );
 			}
 		}

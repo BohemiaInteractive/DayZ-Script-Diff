@@ -401,161 +401,139 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 		return ipw;
 	}
 
-	void MouseClick2( Widget w, int x, int y, int button )
+	void MouseClick2(Widget w, int x, int y, int button)
 	{
-		SlotsIcon slots_icon;
-		w.GetUserData(slots_icon);
+		SlotsIcon icon;
+		w.GetUserData(icon);
 		
-		EntityAI item = null;
-		if (slots_icon)
-			item = slots_icon.GetEntity();
+		ItemBase selectedItem;
+		if (icon)
+			selectedItem = ItemBase.Cast(icon.GetEntity());
 		
-		ItemBase itemAtPos = ItemBase.Cast( item );
-		
-		if ( item )
+		if (selectedItem)
 		{
-			bool reserved = false;
-		
-			reserved = slots_icon.IsReserved();
-		
-			if ( button == MouseState.RIGHT )
+			bool isReserved = icon.IsReserved();
+
+			switch (button)
 			{
-				#ifdef DIAG_DEVELOPER
-				if ( GetDayZGame().IsLeftCtrlDown() )
-					ShowActionMenu( InventoryItem.Cast(item) );
-				#endif
-				
-				if ( reserved )
-				{
-					EntityAI att_parent = slots_icon.GetSlotParent();
-					GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced( item );
-					att_parent.GetOnAttachmentReleaseLock().Invoke(item, slots_icon.GetSlotID());
-				}
-			}
-			else if ( button == MouseState.MIDDLE )
-			{
-				if ( !reserved )
-				{
-					InspectItem( itemAtPos );
-				}
-			} 
-			else if ( button == MouseState.LEFT )
-			{
-				if ( !reserved )
-				{
-					PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-					if ( g_Game.IsLeftCtrlDown() )
+				case MouseState.RIGHT:
+					#ifdef DIAG_DEVELOPER
+					if (GetDayZGame().IsLeftCtrlDown())
+						ShowActionMenu(selectedItem);
+					#endif
+					
+					if (isReserved)
 					{
-						if ( itemAtPos && itemAtPos.GetInventory().CanRemoveEntity() )
+						EntityAI attachmentParent = icon.GetSlotParent();
+						GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced(selectedItem);
+						attachmentParent.GetOnAttachmentReleaseLock().Invoke(selectedItem, icon.GetSlotID());
+					}
+
+					break;
+
+				case MouseState.MIDDLE:
+					if (!isReserved)
+						InspectItem(selectedItem);
+
+					break;
+
+				case MouseState.LEFT:
+					if (!isReserved)
+					{
+						PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+						if (g_Game.IsLeftCtrlDown())
 						{
-							if ( itemAtPos.GetTargetQuantityMax() < itemAtPos.GetQuantity() )
-								itemAtPos.SplitIntoStackMaxClient( player, -1 );
-							else
-								player.PredictiveTakeEntityToInventory( FindInventoryLocationType.ANY, itemAtPos );
+							if (controlledPlayer.CanDropEntity(selectedItem))
+							{
+								if (selectedItem.GetTargetQuantityMax() < selectedItem.GetQuantity())
+									selectedItem.SplitIntoStackMaxClient(null, -1);
+								else
+									controlledPlayer.PhysicalPredictiveDropItem(selectedItem);
+							}
+						}
+						else
+						{
+							bool draggable = !controlledPlayer.GetInventory().HasInventoryReservation(selectedItem, null ) && !controlledPlayer.GetInventory().IsInventoryLocked() && selectedItem.GetInventory().CanRemoveEntity() && !controlledPlayer.IsItemsToDelete();
+							ItemManager.GetInstance().SetWidgetDraggable(w, draggable);
 						}
 					}
-					else
-					{
-						bool draggable = !player.GetInventory().HasInventoryReservation( item, null ) && !player.GetInventory().IsInventoryLocked() && item.GetInventory().CanRemoveEntity() && !player.IsItemsToDelete();
-						ItemManager.GetInstance().SetWidgetDraggable( w, draggable );
-					}
-				}
+
+					break;
 			}
 		}
 	}
 	
-	/*void DraggingOverHeader2(Widget w, int x, int y, Widget receiver )
+	//! NOTE Used for mouse only
+	void DropReceived(Widget w, int x, int y, CargoContainer cargo)
 	{
-		DraggingOverHeader(w, x, y, receiver );
-	}*/
-
-	void DropReceived( Widget w, int x, int y, CargoContainer cargo )
-	{
-		EntityAI item = GetItemPreviewItem( w );
-		if ( !item )
-		{
+		EntityAI item = GetItemPreviewItem(w);
+		if (!item)
 			return;
-		}
 
-		int idx = 0;
+		#ifndef PLATFORM_CONSOLE
 		int c_x, c_y;
+		#endif
 		
-		EntityAI target_entity;
-		CargoBase target_cargo;
+		EntityAI targetEntity = m_Entity;
+		CargoBase targetCargo;
 		
-		if( cargo == m_CargoGrid )
+		if (cargo != m_CargoGrid)
 		{
-			target_entity	= m_Entity;
-			target_cargo 	= m_Entity.GetInventory().GetCargo();
+			targetEntity = m_AttachmentCargos.GetKeyByValue(cargo);
+		}
+		
+		if (targetEntity)
+		{
+			targetCargo = targetEntity.GetInventory().GetCargo();
 			#ifdef PLATFORM_CONSOLE
-			if( m_CargoGrid.HasItem( item ) )
-			{
+			if (m_CargoGrid && m_CargoGrid.HasItem(item))
 				return;
-			}
 			#endif
 		}
-		else
-		{
-			target_entity	= m_AttachmentCargos.GetKeyByValue( cargo );
-			if( target_entity )
-			{
-				target_cargo 	= target_entity.GetInventory().GetCargo();
-				#ifdef PLATFORM_CONSOLE
-				if( cargo.HasItem( item ) )
-				{
-					return;
-				}
-				#endif
-			}
-			else
-				return;
-		}
 		
-		if( target_cargo && target_entity )
-		{
-			c_x = target_cargo.GetHeight();
-			c_y = target_cargo.GetWidth();
-		}
-		else
+		if (!targetCargo || !targetEntity)
 			return;
 		
-		InventoryLocation dst = new InventoryLocation;
+		InventoryLocation dst = new InventoryLocation();
 		#ifdef PLATFORM_CONSOLE
 		x = 0;
-		y = target_cargo.GetItemCount();
-		target_entity.GetInventory().FindFreeLocationFor( item, FindInventoryLocationType.CARGO, dst );
+		y = targetCargo.GetItemCount();
+		targetEntity.GetInventory().FindFreeLocationFor(item, FindInventoryLocationType.CARGO, dst);
 		#else
-		dst.SetCargoAuto(target_cargo, item, x, y, item.GetInventory().GetFlipCargo());
+		c_x = targetCargo.GetHeight();
+		c_y = targetCargo.GetWidth();
+		
+		dst.SetCargoAuto(targetCargo, item, x, y, item.GetInventory().GetFlipCargo());
 		#endif
 		
-		InventoryLocation src = new InventoryLocation;
+		InventoryLocation src = new InventoryLocation();
 		item.GetInventory().GetCurrentInventoryLocation(src);
-		if(src.CompareLocationOnly(dst) && src.GetFlip() == dst.GetFlip())
+		if (src.CompareLocationOnly(dst) && src.GetFlip() == dst.GetFlip())
 			return;
 		
 		#ifdef PLATFORM_CONSOLE
-		if(dst.IsValid() && target_entity.GetInventory().LocationCanAddEntity(dst))
+		if (dst.IsValid() && targetEntity.GetInventory().LocationCanAddEntity(dst))
 		#else
-		if( c_x > x && c_y > y && target_entity.GetInventory().LocationCanAddEntity(dst))
+		if (c_x > x && c_y > y && targetEntity.GetInventory().LocationCanAddEntity(dst))
 		#endif
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 
-			SplitItemUtils.TakeOrSplitToInventoryLocation( player, dst );
+			SplitItemUtils.TakeOrSplitToInventoryLocation(player, dst);
 			
-			Icon icon = cargo.GetIcon( item );
-			
-			if( icon )
+			Icon icon = cargo.GetIcon(item);
+			if (icon)
 			{
-				if( w && w.FindAnyWidget("Cursor") )
-					w.FindAnyWidget("Cursor").SetColor( ColorManager.BASE_COLOR );
+				if (w && w.FindAnyWidget("Cursor"))
+					w.FindAnyWidget("Cursor").SetColor(ColorManager.BASE_COLOR);
+
 				icon.Refresh();
 				Refresh();
 			}
 		}
 		
 		ItemManager.GetInstance().HideDropzones();
-		ItemManager.GetInstance().SetIsDragging( false );
+		ItemManager.GetInstance().SetIsDragging(false);
 	}
 	
 	void TakeAsAttachment( Widget w, Widget receiver )

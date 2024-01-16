@@ -154,6 +154,21 @@ class Ammo_ImprovisedBolt_1 : Bolt_Base
 }
 
 class Ammo_ImprovisedBolt_2 : Bolt_Base {}
+class Ammo_CupidsBolt : Bolt_Base
+{
+	override void EEParentedTo(EntityAI parent)
+	{
+		Delete();
+	}
+	
+	override void EEParentedFrom(EntityAI parent);
+	
+	static void PlayOnHitParticle(vector position)
+	{
+		ParticleManager.GetInstance().PlayInWorld(ParticleList.BOLT_CUPID_HIT, position);
+	}
+}
+
 // 40mm
 
 class Ammo_40mm_Base: Ammunition_Base

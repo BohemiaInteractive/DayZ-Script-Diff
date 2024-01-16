@@ -1,13 +1,15 @@
 class DlcDataLoader
 {
-	protected static const string JSON_FILE_PATH = "Scripts/Data/DlcInfo.json";
+	protected static const string JSON_FILE_PATH = "scripts/data/dlcinfo.json";
 	
 	static JsonDataDLCList GetData()
 	{
-		ref JsonDataDLCList data;
-		JsonFileLoader<ref JsonDataDLCList>.JsonLoadFile( JSON_FILE_PATH, data );
+		JsonDataDLCList data;
+		
+		string errorMessage;
+		if (!JsonFileLoader<JsonDataDLCList>.LoadFile(JSON_FILE_PATH, data, errorMessage))
+			ErrorEx(errorMessage);
 		
 		return data;
 	}
-};
-
+}

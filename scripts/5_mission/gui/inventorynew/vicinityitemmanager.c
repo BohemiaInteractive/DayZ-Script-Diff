@@ -39,13 +39,25 @@ class VicinityItemManager
 	void AddVicinityItems(Object object)
 	{
 		EntityAI entity = EntityAI.Cast(object);
-		if (entity)
+		if (!entity)
 		{
-			if (m_VicinityItems.Find(entity) == INDEX_NOT_FOUND && GameInventory.CheckManipulatedObjectsDistances(entity, GetGame().GetPlayer(), VICINITY_CONE_REACH_DISTANCE + 1.0))
+			return;
+		}
+		
+		if (m_VicinityItems.Find(entity) != INDEX_NOT_FOUND)
+		{
+			return;
+		}
+		
+		if (GameInventory.CheckManipulatedObjectsDistances(entity, GetGame().GetPlayer(), VICINITY_CONE_REACH_DISTANCE + 1.0) == false)
+		{
+			if (!FreeDebugCamera.GetInstance() || FreeDebugCamera.GetInstance().IsActive() == false)
 			{
-				m_VicinityItems.Insert(entity);
+				return;
 			}
 		}
+		
+		m_VicinityItems.Insert(entity);
 	}
 
 	array<CargoBase> GetVicinityCargos()
@@ -114,6 +126,12 @@ class VicinityItemManager
 				{
 					entityPosition = zombie.GetBonePositionWS(zombie.GetBoneIndexByName("spine3"));
 				}
+			}
+			
+			//! If in free camera, allow viewing of inventory
+			if (FreeDebugCamera.GetInstance() && FreeDebugCamera.GetInstance().IsActive())
+			{
+				return false;
 			}
 			
 			vector entityDirection = player.GetPosition() - entityPosition;
@@ -204,6 +222,21 @@ class VicinityItemManager
 		vector playerHeadPositionFixed		= playerPosition;
 		playerHeadPositionFixed[1]			= playerPosition[1] + 1.6;
 		vector headingDirection 			= MiscGameplayFunctions.GetHeadingVector(player);		
+		
+		//! If in free camera, override the position that the inventory gets generated from
+		bool cameraActive = FreeDebugCamera.GetInstance() && FreeDebugCamera.GetInstance().IsActive();
+		if (cameraActive)
+		{
+			playerPosition = FreeDebugCamera.GetInstance().GetPosition();
+			playerHeadPositionFixed = playerPosition;
+			
+			float headingAngle = FreeDebugCamera.GetInstance().GetOrientation()[0] * Math.DEG2RAD;
+	
+			headingDirection[0] = Math.Cos(headingAngle);
+			headingDirection[1] = 0;
+			headingDirection[2] = Math.Sin(headingAngle);
+			headingDirection.Normalize();
+		}	
 		
 		if (m_VicinityItems)
 			m_VicinityItems.Clear();
@@ -328,7 +361,8 @@ class VicinityItemManager
 		array<Object> obstructingObjects = new array<Object>();
 		MiscGameplayFunctions.FilterObstructingObjects(allFoundObjects, obstructingObjects);
 		
-		if (obstructingObjects.Count() > 0)
+		//! If in free camera, don't worry about obstructed objects if there are any
+		if (obstructingObjects.Count() > 0 && !cameraActive)
 		{
 			if (filteredObjects.Count() > 10)
 			{

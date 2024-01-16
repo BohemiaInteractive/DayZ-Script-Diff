@@ -1324,6 +1324,9 @@ class Object extends IEntity
 	void PreAreaDamageActions();
 	
 	void SpawnDamageDealtEffect();
+	void OnReceivedHit(ImpactEffectsData hitData);
+
+	//! DEPRECATED
 	void OnPlayerRecievedHit();
 	
 	bool HasNetworkID()

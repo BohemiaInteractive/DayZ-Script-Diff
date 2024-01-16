@@ -53,14 +53,12 @@ class CAContinuousEmpty : CAContinuousBase
 		
 		if ( m_WringingClothes && action_data.m_MainItem.GetWet() >= action_data.m_MainItem.GetWetMax() )
 		{
-			//Print("SetEND_2");
 			return UA_FINISHED;
 		}
 		else
 		{
 			if ( m_SpentQuantity_total <= m_TargetUnits )
 			{
-				//Print("PROCESSING");
 				m_SpentQuantity += m_AdjustedQuantityEmptiedPerSecond * action_data.m_Player.GetDeltaT();
 				m_TimeElpased += action_data.m_Player.GetDeltaT();
 				
@@ -68,7 +66,6 @@ class CAContinuousEmpty : CAContinuousBase
 				{
 					CalcAndSetQuantity( action_data );
 					m_TimeElpased = 0;
-					//Setup(action_data);	//reset data after repeat
 				}
 				return UA_PROCESSING;
 			}

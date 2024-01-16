@@ -111,6 +111,17 @@ class RightArea: Container
 		return m_PlayerContainer.IsPlayerEquipmentActive();
 	}
 	
+	override void SetSameLevelNextActive()
+	{
+		m_PlayerContainer.SetSameLevelNextActive();
+		Refresh();
+	}
+	override void SetSameLevelPreviousActive()
+	{
+		m_PlayerContainer.SetSameLevelPreviousActive();
+		Refresh();
+	}
+	
 	override void ExpandCollapseContainer()
 	{
 		m_PlayerContainer.ExpandCollapseContainer();

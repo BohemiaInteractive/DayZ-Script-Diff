@@ -1,6 +1,6 @@
 void wpnPrint (string s)
 {
-#ifdef INV_DEBUG
+#ifdef WPN_DEBUG
 	PrintToRPT("" + s); // comment/uncomment to hide/see at least important info
 #else
 	//Print("" + s); // comment/uncomment to hide/see at least important info
@@ -8,7 +8,7 @@ void wpnPrint (string s)
 }
 void wpnDebugPrint (string s)
 {
-#ifdef INV_DEBUG
+#ifdef WPN_DEBUG
 	PrintToRPT("" + s); // comment/uncomment to hide/see debug logs
 #else
 	//Print("" + s); // comment/uncomment to hide/see debug logs
@@ -16,11 +16,19 @@ void wpnDebugPrint (string s)
 }
 void wpnDebugSpam (string s)
 {
-	//Print("" + s); // comment/uncomment to hide/see debug spam
+#ifdef WPN_DEBUG_SPAM
+	PrintToRPT("" + s); // comment/uncomment to hide/see debug logs
+#else
+	//Print("" + s); // comment/uncomment to hide/see debug logs
+#endif
 }
 void wpnDebugSpamALot (string s)
 {
-	//Print("" + s); // comment/uncomment to hide/see debug spam
+#ifdef WPN_DEBUG_SPAM_FREQ
+	PrintToRPT("" + s); // comment/uncomment to hide/see debug logs
+#else
+	//Print("" + s); // comment/uncomment to hide/see debug logs
+#endif
 }
 
 // @NOTE: to see output from FSM transitions, go to:

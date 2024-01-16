@@ -246,28 +246,28 @@ class PluginDeveloper extends PluginBase
 	// Client -> Server Spawning: Server Side
 	void OnRPCSpawnEntityOnCursorDir(PlayerBase player, ParamsReadContext ctx)
 	{
-		Param6<string, float, float, float, bool, string> p = new Param6<string, float, float, float, bool, string>("", 0, 0, 0, false, "");
+		Param7<string, float, float, float, bool, string, bool> p = new Param7<string, float, float, float, bool, string, bool>("", 0, 0, 0, false, "", false);
 		if ( ctx.Read(p) )
 		{
-			SpawnEntityOnCursorDir(player, p.param1, p.param2, p.param3, p.param4, p.param5, p.param6);
+			SpawnEntityOnCursorDir(player, p.param1, p.param2, p.param3, p.param4, p.param5, p.param6, p.param7);
 		}
 	}
 	
 	void OnRPCSpawnEntityOnGround(PlayerBase player, ParamsReadContext ctx)
 	{
-		Param5<string, float, float, vector, bool> p = new Param5<string, float, float, vector, bool>("", 0, 0, "0 0 0", false);
+		Param6<string, float, float, vector, bool, bool> p = new Param6<string, float, float, vector, bool, bool>("", 0, 0, "0 0 0", false, false);
 		if ( ctx.Read(p) )
 		{
-			SpawnEntityOnGroundPos(player, p.param1, p.param2,  p.param3,  p.param4, p.param5);
+			SpawnEntityOnGroundPos(player, p.param1, p.param2,  p.param3,  p.param4, p.param5, p.param6);
 		}
 	}
 	
 	void OnRPCSpawnEntityOnGroundPatternGrid(PlayerBase player, ParamsReadContext ctx)
 	{
-		auto p = new Param9<string,int, float, float, int, int, float, float, bool>("",0,0,0,0,0,0,0, false);
+		auto p = new Param10<string,int, float, float, int, int, float, float, bool, bool>("",0,0,0,0,0,0,0, false, false);
 		if ( ctx.Read(p) )
 		{
-			SpawnEntityOnGroundPatternGrid(player, p.param1, p.param2, p.param3, p.param4, p.param5, p.param6, p.param7, p.param8, p.param9);
+			SpawnEntityOnGroundPatternGrid(player, p.param1, p.param2, p.param3, p.param4, p.param5, p.param6, p.param7, p.param8, p.param9, p.param10);
 		}
 	}
 	void OnRPCSpawnEntity(PlayerBase player, ParamsReadContext ctx)
@@ -337,13 +337,17 @@ class PluginDeveloper extends PluginBase
 		{
 			player.m_PresetItems.Insert(entity);
 		}
+
 		if ( special )
-			entity.OnDebugSpawn();
+		{
+			auto debugParams = DebugSpawnParams.WithPlayer(player);
+			entity.OnDebugSpawnEx(debugParams);
+		}
 		#endif
 	}
 	
 	
-	void SpawnEntityOnGroundPatternGrid( PlayerBase player, string item_name, int count, float health, float quantity, int rows, int columns, float gapRow = 1, float gapColumn = 1, bool special= false)
+	void SpawnEntityOnGroundPatternGrid( PlayerBase player, string item_name, int count, float health, float quantity, int rows, int columns, float gapRow = 1, float gapColumn = 1, bool special= false, bool withPhysics = false)
 	{
 		if (!item_name)
 		{
@@ -370,6 +374,11 @@ class PluginDeveloper extends PluginBase
 					float hlth = health * MiscGameplayFunctions.GetTypeMaxGlobalHealth( item_name );
 					EntityAI ent = SpawnEntityOnGroundPos(player, item_name, hlth, quantity, placement, special );
 					ent.PlaceOnSurface();
+			
+					InventoryItem item;
+					if (Class.CastTo(item, ent) && withPhysics)
+						item.ThrowPhysically(null, "0 0 0");
+					
 					countLoop++;
 					if (countLoop == count)
 					{
@@ -382,12 +391,12 @@ class PluginDeveloper extends PluginBase
 		}
 		else
 		{
-			auto params = new Param9<string, int, float, float, int, int, float, float, bool>(item_name, count, health, quantity, rows, columns, gapRow, gapColumn, special);
+			auto params = new Param10<string, int, float, float, int, int, float, float, bool, bool>(item_name, count, health, quantity, rows, columns, gapRow, gapColumn, special, withPhysics);
 			player.RPCSingleParam(ERPCs.DEV_RPC_SPAWN_ITEM_ON_GROUND_PATTERN_GRID, params, true);
 		}
 	}
 	
-	void SpawnItemOnCrosshair(notnull PlayerBase player, string itemName, float health, float quantity, float maxDist = 100, bool allowFreeflight = false, bool special = false)
+	void SpawnItemOnCrosshair(notnull PlayerBase player, string itemName, float health, float quantity, float maxDist = 100, bool allowFreeflight = false, bool special = false, bool withPhysics = false)
 	{
 		vector from, to;
 		if (allowFreeflight && FreeDebugCamera.GetInstance().IsActive())
@@ -414,7 +423,7 @@ class PluginDeveloper extends PluginBase
 		// something is hit
 		if (hitPos != vector.Zero)
 		{
-			SpawnEntityOnGroundPos(player, itemName, health, quantity, hitPos, special);
+			SpawnEntityOnGroundPos(player, itemName, health, quantity, hitPos, special, withPhysics);
 		}
 	}
 	
@@ -426,7 +435,7 @@ class PluginDeveloper extends PluginBase
 	 * @param[in]	pos	\p	position where to spawn
 	 * @return	entity if ok, null otherwise
 	 **/
-	EntityAI SpawnEntityOnGroundPos( PlayerBase player, string item_name, float health, float quantity, vector pos, bool special = false)
+	EntityAI SpawnEntityOnGroundPos( PlayerBase player, string item_name, float health, float quantity, vector pos, bool special = false, bool withPhysics = false)
 	{
 		if ( GetGame().IsServer() )
 		{		
@@ -435,11 +444,16 @@ class PluginDeveloper extends PluginBase
 				SetupSpawnedEntity(player, entity, health, quantity, special);
 			else
 				OnSpawnErrorReport(item_name);
+			
+			InventoryItem item;
+			if (Class.CastTo(item, entity) && withPhysics)
+				item.ThrowPhysically(null, "0 0 0");
+			
 			return entity;
 		}
 		else
 		{		
-			Param5<string, float, float, vector, bool> params = new Param5<string, float, float, vector, bool>(item_name, health, quantity, pos, special);
+			Param6<string, float, float, vector, bool, bool> params = new Param6<string, float, float, vector, bool, bool>(item_name, health, quantity, pos, special, withPhysics);
 			player.RPCSingleParam(ERPCs.DEV_RPC_SPAWN_ITEM_ON_GROUND, params, true);
 		}
 		return NULL;
@@ -452,7 +466,7 @@ class PluginDeveloper extends PluginBase
 	 * @param[in]	distance	\p	distance of the item from player
 	 * @return	entity if ok, null otherwise
 	 **/
-	EntityAI SpawnEntityOnCursorDir( PlayerBase player, string item_name, float quantity, float distance, float health = -1, bool special = false, string presetName = "")
+	EntityAI SpawnEntityOnCursorDir( PlayerBase player, string item_name, float quantity, float distance, float health = -1, bool special = false, string presetName = "", bool withPhysics = false)
 	{
 
 		if ( GetGame().IsServer() )
@@ -470,12 +484,17 @@ class PluginDeveloper extends PluginBase
 			}
 			else
 				OnSpawnErrorReport( item_name );
+			
+			InventoryItem item;
+			if (Class.CastTo(item, entity) && withPhysics)
+				item.ThrowPhysically(null, "0 0 0");
+			
 			return entity;
 		}
 		else
 		{		
 			// Client -> Server Spawning: Client Side
-			Param6<string, float, float, float, bool, string> params = new Param6<string, float, float, float, bool, string>(item_name, quantity, distance, health, special, presetName);
+			Param7<string, float, float, float, bool, string, bool> params = new Param7<string, float, float, float, bool, string, bool>(item_name, quantity, distance, health, special, presetName, withPhysics);
 			player.RPCSingleParam(ERPCs.DEV_RPC_SPAWN_ITEM_ON_CURSOR, params, true);
 		}
 		return NULL;
@@ -511,7 +530,10 @@ class PluginDeveloper extends PluginBase
 					ItemBase i = ItemBase.Cast( eai );
 					SetupSpawnedItem(i, health, quantity);
 					if ( special )
-						eai.OnDebugSpawn();
+					{
+						auto debugParams = DebugSpawnParams.WithPlayer(null);
+						eai.OnDebugSpawnEx(debugParams);
+					}
 				}
 				return eai;
 			}
@@ -545,7 +567,9 @@ class PluginDeveloper extends PluginBase
 				if (GetGame().IsKindOf(item_name, "Transport"))
 				{
 					EntityAI car = SpawnEntityOnGroundPos(player, item_name, 1, quantity, player.GetPosition());
-					car.OnDebugSpawn();
+
+					auto debugParams = DebugSpawnParams.WithPlayer(player);
+					car.OnDebugSpawnEx(debugParams);
 					
 					if (GetGame().IsMultiplayer())
 					{
@@ -588,7 +612,10 @@ class PluginDeveloper extends PluginBase
 							ItemBase i = ItemBase.Cast( eai );
 							SetupSpawnedItem(i, health, quantity);
 							if ( special )
-								eai.OnDebugSpawn();
+							{
+								auto debugParams2 = DebugSpawnParams.WithPlayer(player);
+								eai.OnDebugSpawnEx(debugParams2);
+							}
 						}
 						return eai;
 					}

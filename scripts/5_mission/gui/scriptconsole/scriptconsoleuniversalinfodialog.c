@@ -32,7 +32,7 @@ class ScriptConsoleUniversalInfoDialog extends UIScriptedMenu
 			if (consoleMenu != null)
 			{
 				ScriptConsole scriptedConsole = ScriptConsole.Cast(consoleMenu);
-				ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scriptedConsole.GetTabHandler(ScriptConsole.TAB_ITEMS));
+				ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scriptedConsole.GetTabHandler(ScriptConsoleItemsTab));
 				if (tab)
 				{
 					Close();

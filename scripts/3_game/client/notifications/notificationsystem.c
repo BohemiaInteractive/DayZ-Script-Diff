@@ -71,7 +71,7 @@ class NotificationSystem
 	const int DEFAULT_TIME_DISPLAYED 	= 10;
 	const float NOTIFICATION_FADE_TIME 	= 3.0;
 
-	protected static const string JSON_FILE_PATH = "Scripts/Data/notifications.json";					
+	protected static const string JSON_FILE_PATH = "scripts/data/notifications.json";					
 	protected static const int MAX_NOTIFICATIONS = 5;
 
 	private static const float UPDATE_INTERVAL_THRESHOLD = 1.0;
@@ -82,7 +82,7 @@ class NotificationSystem
 	protected ref array<ref NotificationRuntimeData>			m_DeferredArray;
 	protected ref map<NotificationType, ref NotificationData>	m_DataArray;
 	
-	private static float m_TimeElapsed;
+	protected float m_TimeElapsed;
 	
 	ref ScriptInvoker m_OnNotificationAdded = new ScriptInvoker();
 	ref ScriptInvoker m_OnNotificationRemoved = new ScriptInvoker();
@@ -109,6 +109,7 @@ class NotificationSystem
 	void NotificationSystem()
 	{
 		m_TimeElapsed 	= 0.0;
+
 		m_TimeArray 	= new array<ref NotificationRuntimeData>();
 		m_DeferredArray = new array<ref NotificationRuntimeData>();
 	}
@@ -236,8 +237,8 @@ class NotificationSystem
 			if (g_Game.GetGameState() != DayZGameState.IN_GAME && g_Game.GetGameState() != DayZGameState.MAIN_MENU)
 				return;
 	
-			m_TimeElapsed += timeslice;
-			if (m_TimeElapsed >= UPDATE_INTERVAL_THRESHOLD)
+			m_Instance.m_TimeElapsed += timeslice;
+			if (m_Instance.m_TimeElapsed >= UPDATE_INTERVAL_THRESHOLD)
 			{
 				array<NotificationRuntimeData> expiredNotifications = new array<NotificationRuntimeData>();
 				foreach (NotificationRuntimeData visibleNotificationData : m_Instance.m_TimeArray)
@@ -263,7 +264,7 @@ class NotificationSystem
 					}
 				}
 	
-				m_TimeElapsed = 0;
+				m_Instance.m_TimeElapsed = 0;
 			}
 		}
 	}
@@ -280,7 +281,9 @@ class NotificationSystem
 	{
 		map<NotificationType, NotificationData> dataArray;
 		m_Instance.m_DataArray = new map<NotificationType, ref NotificationData>();
-		JsonFileLoader<map<NotificationType, NotificationData>>.JsonLoadFile(JSON_FILE_PATH, dataArray);
+		string errorMessage;
+		if (!JsonFileLoader<map<NotificationType, NotificationData>>.LoadFile(JSON_FILE_PATH, dataArray, errorMessage))
+			ErrorEx(errorMessage);
 		
 		m_Instance.m_DataArray.Copy(dataArray);
 		
@@ -310,7 +313,8 @@ class NotificationSystem
 				m_Instance.m_DataArray.Insert(notificationType2, notificationData);
 			}
 
-			JsonFileLoader<map<NotificationType, ref NotificationData>>.JsonSaveFile(JSON_FILE_PATH, m_Instance.m_DataArray);
+			if (!JsonFileLoader<map<NotificationType, ref NotificationData>>.SaveFile(JSON_FILE_PATH, m_Instance.m_DataArray, errorMessage))
+				ErrorEx(errorMessage);
 		}
 	}
 }

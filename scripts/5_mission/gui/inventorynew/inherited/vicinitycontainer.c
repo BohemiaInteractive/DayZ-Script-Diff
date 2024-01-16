@@ -375,6 +375,9 @@ class VicinityContainer: CollapsibleContainer
 			}
 		}
 		//////////
+		
+		bool accessInventory = PlayerBase.DEBUG_INVENTORY_ACCESS;
+		accessInventory |= FreeDebugCamera.GetInstance() && FreeDebugCamera.GetInstance().IsActive();
 
 
 		//ref map<EntityAI, ref Container> new_showed_items = new ref map<EntityAI, ref Container>;
@@ -439,9 +442,13 @@ class VicinityContainer: CollapsibleContainer
 						{
 							if ( entity.IsInherited( PlayerBase ) )
 							{
-								if ( !PlayerBase.DEBUG_INVENTORY_ACCESS && entity.IsAlive() && ( !PlayerBase.Cast( entity ).IsUnconscious() && !PlayerBase.Cast( entity ).IsRestrained() ) )
+								//! Allow view access of inventory if in free camera. Write access is elsewhere 
+								if (accessInventory == false)
 								{
-									continue;
+									if ( entity.IsAlive() && ( !PlayerBase.Cast( entity ).IsUnconscious() && !PlayerBase.Cast( entity ).IsRestrained() ) )
+									{
+										continue;
+									}
 								}
 								
 								PlayerContainer plyr_cnt = new PlayerContainer( m_Parent, false );
@@ -470,7 +477,8 @@ class VicinityContainer: CollapsibleContainer
 					{
 						if ( entity.IsInherited( PlayerBase ) )
 						{
-							if ( !PlayerBase.DEBUG_INVENTORY_ACCESS && entity.IsAlive() && ( !PlayerBase.Cast( entity ).IsUnconscious() && !PlayerBase.Cast( entity ).IsRestrained() ) )
+							//! Allow view access of inventory if in free camera. Write access is elsewhere
+							if ( !accessInventory && entity.IsAlive() && ( !PlayerBase.Cast( entity ).IsUnconscious() && !PlayerBase.Cast( entity ).IsRestrained() ) )
 							{
 								GetMainWidget().Update();
 								if ( con.IsActive() )

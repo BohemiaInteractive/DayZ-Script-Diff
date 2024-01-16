@@ -57,7 +57,7 @@ class MainMenuConsole extends UIScriptedMenu
 		}
 		
 		UpdateControlsElementVisibility();
-		LoadMods();		
+		LoadMods();
 		Refresh();
 		
 		if (GetGame().GetMission())
@@ -116,15 +116,17 @@ class MainMenuConsole extends UIScriptedMenu
 	{
 		if (!m_AllDlcsMap)
 			m_AllDlcsMap = new map<string,ref ModInfo>;
-		m_AllDlcsMap.Clear();		
 		
+		m_AllDlcsMap.Clear();
+		ModInfo info;
 		int count = modArray.Count();
-		for (int i = count - 1; i > -1; i--)
+		for (int i = count - 1; i >= 0; i--)
 		{
-			if (!modArray[i].GetIsDLC())
+			info = modArray[i];
+			if (!info.GetIsDLC())
 				modArray.Remove(i);
-			
-			m_AllDlcsMap.Set(modArray[i].GetName(),modArray[i]);
+			else
+				m_AllDlcsMap.Set(info.GetName(), info);
 		}
 	}
 	
@@ -132,6 +134,12 @@ class MainMenuConsole extends UIScriptedMenu
 	{
 		if (!m_DlcHandlers)
 			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>();
+		else
+		{
+			// TODO: Would be better to update the parts that need updating instead of full recreation
+			// Destroying and then reloading the same video is quite wasteful
+			m_DlcHandlers.Clear();
+		}
 		
 		m_DlcData = DlcDataLoader.GetData();
 		int count = m_DlcData.DLCs.Count();
@@ -144,13 +152,8 @@ class MainMenuConsole extends UIScriptedMenu
 			info = m_AllDlcsMap.Get(data.Name);
 			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(info, m_DlcFrame, data);
 			
-			if (data.Name == "Livonia DLC")
-			{
-				handler.ShowInfoPanel(true);
-				m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
-			}
-			else
-				handler.ShowInfoPanel(false);
+			handler.ShowInfoPanel(true);
+			m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
 			
 			m_DlcHandlers.Insert(handler);
 		}
@@ -259,7 +262,7 @@ class MainMenuConsole extends UIScriptedMenu
 			{
 				m_Mission.PlayMusic();
 			}
-		}
+		}		
 	}	
 	
 	override void OnShow()

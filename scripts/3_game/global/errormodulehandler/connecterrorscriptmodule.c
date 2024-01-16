@@ -50,6 +50,17 @@ class ConnectErrorScriptModule : ErrorHandlerModuleScript
 
 class ConnectErrorScriptModuleUI : UIScriptedMenu
 {
+	protected static void DisconnectSession(bool loadMpPrivilege)
+	{
+		g_Game.DisconnectSessionForce();
+		g_Game.DisconnectSessionScript();
+		
+		if (loadMpPrivilege)
+		{
+			OnlineServices.LoadMPPrivilege();
+		}
+	}
+	
 	override bool OnModalResult(Widget w, int x, int y, int code, int result)
 	{
 		super.OnModalResult(w, x, y, code, result);
@@ -62,13 +73,10 @@ class ConnectErrorScriptModuleUI : UIScriptedMenu
 					switch ( result )
 					{
 						case DBB_YES:
-							g_Game.DisconnectSessionForce();
-							g_Game.DisconnectSessionScript();
-							OnlineServices.LoadMPPrivilege();
+							g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(DisconnectSession, true);
 							break;
 						case DBB_CANCEL:
-							g_Game.DisconnectSessionForce();
-							g_Game.DisconnectSessionScript();
+							g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(DisconnectSession, false);
 							break;
 					
 						default:

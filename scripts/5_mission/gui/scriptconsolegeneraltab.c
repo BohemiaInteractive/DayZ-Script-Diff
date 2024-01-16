@@ -61,7 +61,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	protected TextListboxWidget 	m_HelpTextListboxWidget;
 	//-----------------------------------------------------------------------------------
 	
-	void ScriptConsoleGeneralTab(Widget root, ScriptConsole console)
+	void ScriptConsoleGeneralTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		m_MissionGameplay			= MissionGameplay.Cast(GetGame().GetMission());
 		
@@ -305,8 +305,8 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			return;
 		}
 
-		vector player_pos = GetGame().GetPlayer().GetPosition();
-		SetMapPos(player_pos);
+		vector playerPos = GetGame().GetPlayer().GetPosition();
+		SetMapPos(playerPos);
 	}
 
 	void UpdateTime(bool slider_used)
@@ -350,21 +350,21 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	{
 		int x,y;
 		GetMousePos(x,y);
-		vector mouse_pos, world_pos;
-		mouse_pos[0] = x;
-		mouse_pos[1] = y;
-		world_pos = m_DebugMapWidget.ScreenToMap(mouse_pos);
-		world_pos[1] = GetGame().SurfaceY(world_pos[0], world_pos[2]);
+		vector mousePos, worldPos;
+		mousePos[0] = x;
+		mousePos[1] = y;
+		worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
+		worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
 		
 		if (m_MouseCurPos)
 		{
-			m_MouseCurPos.SetText("Mouse: "+ MiscGameplayFunctions.TruncateToS(world_pos[0]) +", "+ MiscGameplayFunctions.TruncateToS(world_pos[1]) +", "+ MiscGameplayFunctions.TruncateToS(world_pos[2]));
+			m_MouseCurPos.SetText("Mouse: "+ MiscGameplayFunctions.TruncateToS(worldPos[0]) +", "+ MiscGameplayFunctions.TruncateToS(worldPos[1]) +", "+ MiscGameplayFunctions.TruncateToS(worldPos[2]));
 		}
 		if (m_PlayerMouseDiff && GetGame().GetPlayer())
 		{
-			vector player_pos = GetGame().GetPlayer().GetWorldPosition();
-			//player_pos[1] = 0;
-			float dst = (world_pos - player_pos).Length();
+			vector playerPos = GetGame().GetPlayer().GetWorldPosition();
+			//playerPos[1] = 0;
+			float dst = (worldPos - playerPos).Length();
 
 			m_PlayerMouseDiff.SetText("Distance: " + MiscGameplayFunctions.TruncateToS(dst));
 		}
@@ -391,15 +391,15 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			if (button == 0)
 			{
 				m_PlayerPosRefreshBlocked = true;
-				int mouse_x,mouse_y;
-				GetMousePos(mouse_x,mouse_y);
-				vector mouse_pos, world_pos;
-				mouse_pos[0] = mouse_x;
-				mouse_pos[1] = mouse_y;
-				world_pos = m_DebugMapWidget.ScreenToMap(mouse_pos);
-				world_pos[1] = GetGame().SurfaceY(world_pos[0], world_pos[2]);
+				int mouseX, mouseY;
+				GetMousePos(mouseX,mouseY);
+				vector mousePos, worldPos;
+				mousePos[0] = mouseX;
+				mousePos[1] = mouseY;
+				worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
+				worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
 				
-				SetMapPos(world_pos);
+				SetMapPos(worldPos);
 			}
 			else if (button == 1 && GetGame().GetPlayer())
 			{
@@ -729,9 +729,9 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		}
 		if (player)
 		{
-			vector player_pos = player.GetWorldPosition();
-			m_DebugMapWidget.AddUserMark(player_pos,"You", COLOR_RED,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
-			if (player_pos != GetMapPos())
+			vector playerPos = player.GetWorldPosition();
+			m_DebugMapWidget.AddUserMark(playerPos,"You", COLOR_RED,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+			if (playerPos != GetMapPos())
 				m_DebugMapWidget.AddUserMark(GetMapPos(),"Pos", COLOR_BLUE,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
 		}
 		UpdateMousePos();

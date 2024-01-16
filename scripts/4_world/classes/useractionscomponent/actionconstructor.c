@@ -175,6 +175,7 @@ class ActionConstructor
 		//actions.Insert(ActionFishing);
 		actions.Insert(ActionFillBottleBase);
 		actions.Insert(ActionUpgradeTorchFromGasPump);
+		actions.Insert(ActionRefuelTorch);
 		actions.Insert(ActionTuneFrequency);
 		actions.Insert(ActionTuneRadioStation);
 		actions.Insert(ActionIgniteFireplaceByAir);

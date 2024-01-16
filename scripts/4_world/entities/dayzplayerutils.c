@@ -275,19 +275,19 @@ class DayZPlayerUtils
 	static bool HandleDropCartridge(DayZPlayer player, float damage, string cartTypeName, string magTypeName)
 	{
 		vector pos = player.GetPosition();
-		EntityAI eai_gnd = player.SpawnEntityOnGroundPos(magTypeName, pos);
-		if (eai_gnd && eai_gnd.IsInherited(Magazine))
+		EntityAI entityGround = player.SpawnEntityOnGroundPos(magTypeName, pos);
+		if (entityGround && entityGround.IsInherited(Magazine))
 		{
-			Magazine mag_gnd;
-			if (Class.CastTo(mag_gnd, eai_gnd))
+			Magazine magazineGround;
+			if (Class.CastTo(magazineGround, entityGround))
 			{
-				mag_gnd.ServerSetAmmoCount(0);
-				if (mag_gnd.ServerStoreCartridge(damage, cartTypeName))
-				{
+				magazineGround.ServerSetAmmoCount(0);
+				magazineGround.SetHealth("", "", (1 - damage) * magazineGround.GetMaxHealth());
+				if (magazineGround.ServerStoreCartridge(damage, cartTypeName))
 					return true;
-				}
 			}
 		}
+
 		return false;
 	}
 
@@ -295,65 +295,61 @@ class DayZPlayerUtils
 	{
 		if (damage < 1.0)
 		{
-			// find suitable heap / mag
-			ref array<Magazine> mags = new array<Magazine>;
-			if (DayZPlayerUtils.FindMagazinesForAmmo(player, magTypeName, mags))
+			//! find suitable heap / mag
+			array<Magazine> magazines = new array<Magazine>();
+			if (DayZPlayerUtils.FindMagazinesForAmmo(player, magTypeName, magazines))
 			{	
-				int health_lvl = -1;	
-				float test_heatlh = 1 - damage;		
-				int sz = mags.Count();
-				for (int i = 0; i < sz; ++i)
+				int healthLevel = -1;
+				float testHeatlh = 1 - damage;
+				foreach (Magazine magazine : magazines)
 				{
-					Magazine mag_i = mags.Get(i);
-					 // add small amout for 
-					
-					if( health_lvl == -1)
+					if (healthLevel == -1)
 					{
-						if (mag_i.CanAddCartridges(1) /*&& Math.AbsFloat(1 - mag_i.GetHealthLevelValue(mag_i.GetHealthLevel()) - damage) < 0.01*/)
+						if (magazine.CanAddCartridges(1))
 						{
-							int num_health_lvl = mag_i.GetNumberOfHealthLevels();
-							for( int j = 1; j < num_health_lvl; j++)
+							int numberOfHealthLevels = magazine.GetNumberOfHealthLevels();
+							for (int i = 1; i < numberOfHealthLevels; i++)
 							{
-								if (mag_i.GetHealthLevelValue(j) < test_heatlh )
+								if (magazine.GetHealthLevelValue(i) < testHeatlh)
 								{
-									health_lvl = j - 1;
+									healthLevel = i - 1;
 									break;
 								}
 							}
 						}
 					}
 					
-					if( mag_i.GetHealthLevel() == health_lvl )
+					if (magazine.GetHealthLevel() == healthLevel)
 					{
-						if (mag_i.ServerStoreCartridge(damage, cartTypeName))
+						if (magazine.ServerStoreCartridge(damage, cartTypeName))
 							return true;
 					}
 				}
 			}
 				
-			// create a new one in inventory
-			InventoryLocation inv_loc = new InventoryLocation;
-			if (player.GetInventory().FindFirstFreeLocationForNewEntity(magTypeName, FindInventoryLocationType.ANY, inv_loc))
+			//! create a new one in inventory
+			InventoryLocation inventoryLocation = new InventoryLocation();
+			if (player.GetInventory().FindFirstFreeLocationForNewEntity(magTypeName, FindInventoryLocationType.ANY, inventoryLocation))
 			{
-				EntityAI eai_inv = SpawnEntity(magTypeName, inv_loc, ECE_IN_INVENTORY, RF_DEFAULT);
-				if (eai_inv && eai_inv.IsInherited(Magazine))
+				EntityAI entityInventory = SpawnEntity(magTypeName, inventoryLocation, ECE_IN_INVENTORY, RF_DEFAULT);
+				if (entityInventory && entityInventory.IsInherited(Magazine))
 				{
-					Magazine mag_inv;
-					if (Class.CastTo(mag_inv, eai_inv))
+					Magazine magazineInventory;
+					if (Class.CastTo(magazineInventory, entityInventory))
 					{
-						mag_inv.ServerSetAmmoCount(0);
-						mag_inv.SetHealth("", "", (1 - damage) * mag_inv.GetMaxHealth());
-						if (mag_inv.ServerStoreCartridge(damage, cartTypeName))
+						magazineInventory.ServerSetAmmoCount(0);
+						magazineInventory.SetHealth("", "", (1 - damage) * magazineInventory.GetMaxHealth());
+						if (magazineInventory.ServerStoreCartridge(damage, cartTypeName))
 							return true;
 					}
 				}
 			}
 		
-			// drop on ground
-			if ( CanDrop )
+			//! drop on ground
+			if (CanDrop)
 				return HandleDropCartridge(player, damage, cartTypeName, magTypeName);
-			
 		}
+
 		return false;
 	}
 	

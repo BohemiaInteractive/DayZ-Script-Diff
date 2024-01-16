@@ -27,7 +27,8 @@ class SyncEvents
 		{
 			case ESyncEvent.PlayerList:
 			{
-				ClientData.SyncEvent_OnRecievedPlayerList( data.m_ServerPlayerList );
+				ClientData.SyncEvent_PreprocessPlayerList(data.m_ServerPlayerList);
+				ClientData.SyncEvent_OnRecievedPlayerList(data.m_ServerPlayerList);
 				break;
 			}
 			case ESyncEvent.EntityKill:

@@ -38,11 +38,11 @@ class GetServersResultRow
 	int		m_HostPort; 			// PC is works
 	bool	m_Invisible;
 	bool	m_Official;
-	string	m_MapNameToRun; 		// PC not work alway 0
-	bool	m_Modded; 				// PC not work alway 0
-	int		m_ModeId; 				// PC not work alway 0
+	string	m_MapNameToRun; 		// PC not work always 0
+	bool	m_Modded; 				// PC not work always 0
+	int		m_ModeId; 				// identifies if third person is allowed on a CONSOLE server. On PC always 0
 	bool	m_AntiCheat;
-	int		m_RegionId; 			// PC not work alway 0
+	int		m_RegionId; 			// PC not work always 0
 	int		m_MinPlayers;
 	int		m_MaxPlayers; 			// PC - max players
 	int		m_FreeSlots; 			// PC - max players
@@ -240,7 +240,7 @@ class GetServersInput
 	string		m_Name;
 	string		m_GameType;
 	int			m_Platform; // 1 - PC, 2 - xbox, 3 - PSN
-	int			m_ModeId;
+	int			m_ModeId; // identifies if third person is allowed on a CONSOLE server. On PC always 0
 	int			m_Page;
 	string		m_GameVersion;
 	bool		m_Official;

@@ -2625,6 +2625,11 @@ class DayZGame extends CGame
 			}
 		}
 			
+		if (flags & DisconnectSessionFlags.ALWAYS_FORCE)
+		{
+			DisconnectSessionForce();
+		}
+		
 		if (GetGame().GetMission())
 		{
 			if (g_Game.GetGameState() != DayZGameState.MAIN_MENU)
@@ -2642,14 +2647,10 @@ class DayZGame extends CGame
 				GamepadCheck();
 			}
 		}
+		
 		else
 		{
 			MainMenuLaunch();
-		}
-		
-		if (flags & DisconnectSessionFlags.ALWAYS_FORCE)
-		{
-			DisconnectSessionForce();
 		}
 	}
 	
@@ -3419,13 +3420,9 @@ class DayZGame extends CGame
 		impactEffectsData.m_AmmoType		= ammoType;
 		impactEffectsData.m_IsWater			= isWater;
 
-		// if local player was hit
-		Object player = GetPlayer();
-		if (directHit && player && directHit == player)
+		if (directHit)
 		{
-			player.OnPlayerRecievedHit();
-			float shake_strength = Math.InverseLerp(0, 500, inSpeed.Length());
-			GetGame().GetPlayer().GetCurrentCamera().SpawnCameraShake(shake_strength);
+			directHit.OnReceivedHit(impactEffectsData);
 		}
 
 		ImpactMaterials.EvaluateImpactEffectEx(impactEffectsData);
@@ -3474,10 +3471,8 @@ class DayZGame extends CGame
 		impactEffectsData.m_AmmoType		= ammoType;
 		impactEffectsData.m_IsWater			= isWater;
 
-		// if local player was hit
-		Object player = GetPlayer();
-		if (directHit && player && directHit == player)
-			player.OnPlayerRecievedHit();
+		if (directHit)
+			directHit.OnReceivedHit(impactEffectsData);
 		
 		ImpactMaterials.EvaluateImpactEffectEx(impactEffectsData);
 		#endif

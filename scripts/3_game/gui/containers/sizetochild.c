@@ -24,7 +24,7 @@ class SizeToChild extends ScriptedWidgetEventHandler
 	
 	bool ResizeParentToChild()
 	{
-		return ResizeParentToChild( m_IgnoredBool, -1, false );
+		return ResizeParentToChild( m_IgnoredBool, -1, true );
 	}
 	
 	bool ResizeParentToChild( out bool changed_size, int limit = -1, bool immedUpdate = true )
@@ -40,7 +40,7 @@ class SizeToChild extends ScriptedWidgetEventHandler
 			bool changed	= false;
 			bool hit_limit	= false;
 			
-			if ( m_ResizeHorizontal && x != new_x )
+			if ( m_ResizeHorizontal && ( x > new_x + 0.01 || x < new_x - 0.01 ) )
 			{
 				new_x = x + m_HorizontalOffset;
 				changed = true;
@@ -48,7 +48,7 @@ class SizeToChild extends ScriptedWidgetEventHandler
 			else
 				new_x = o_x;
 			
-			if ( m_ResizeVertical && y != new_y )
+			if ( m_ResizeVertical && ( y > new_y + 0.01 || y < new_y - 0.01 ) )
 			{
 				new_y = y + m_VerticalOffset;
 				changed = true;

@@ -1392,7 +1392,7 @@ class Human extends Man
 	//!----- Death -----
 
 	//! starts command - death
-	proto native 	HumanCommandDeathCallback	StartCommand_Death(int pType, float pDirection, typename pCallbackClass);
+	proto native 	HumanCommandDeathCallback	StartCommand_Death(int pType, float pDirection, typename pCallbackClass, bool pKeepInLocalSpaceAfterLeave = false);
 
 	proto native 	HumanCommandDeathCallback	GetCommand_Death();
 

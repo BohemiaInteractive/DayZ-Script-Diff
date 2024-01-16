@@ -86,7 +86,6 @@ class PlayerBase extends ManBase
 	bool 							m_QuickBarHold;
 	bool							m_QuickBarFT = false;
 	Hud 							m_Hud;
-	protected float 				m_dT;
 	protected int 					m_RecipePick;
 	protected bool					m_IsHoldingBreath;
 	protected bool					m_IsInWater;
@@ -181,10 +180,6 @@ class PlayerBase extends ManBase
 	ref Bot							m_Bot;
 	#endif
 	
-	float GetDeltaT()
-	{
-		return m_dT;
-	}
 	//Temp QuickBar load	
 	ref array<ref Param2<EntityAI,int> >	m_aQuickBarLoad;
 	
@@ -1008,12 +1003,13 @@ class PlayerBase extends ManBase
 		if (m_ActionManager)
 			m_ActionManager.Interrupt();
 		
-		if (ammo.ToType().IsInherited(Nonlethal_Base))
+		int transferShockToDamageCoef = g_Game.ConfigGetInt(string.Format("%1 %2 DamageApplied transferShockToDamage", CFG_AMMO, ammo));
+		if (transferShockToDamageCoef == 1)
 		{
 			//Print("PlayerBase | EEHitBy | nonlethal hit");
-			AddHealth("","Health",-ConvertNonlethalDamage(damageResult.GetDamage(dmgZone,"Shock")));
+			AddHealth("", "Health", -ConvertNonlethalDamage(damageResult.GetDamage(dmgZone, "Shock"), damageType));
 			if (dmgZone != "Head")
-				AddHealth(dmgZone,"Health",-damageResult.GetDamage(dmgZone,"Shock")); //Also deal damage to zone health, no dmg reduction
+				AddHealth(dmgZone, "Health", -damageResult.GetDamage(dmgZone, "Shock")); //Also deal damage to zone health, no dmg reduction
 		}
 		
 		if (GetGame().IsServer())
@@ -1026,9 +1022,48 @@ class PlayerBase extends ManBase
 				}
 				GetModifiersManager().ActivateModifier(eModifiers.MDF_BROKEN_LEGS);
 			}
+			
+			if (ammo == "Bullet_CupidsBolt" && IsAlive())
+			{
+				DamageSystem.ResetAllZones(this);
+				m_ModifiersManager.ResetAll();
+				m_ModifiersManager.ActivateModifier(eModifiers.MDF_IMMUNITYBOOST);
+				
+				// bleeding sources
+				if (m_BleedingManagerServer)
+					m_BleedingManagerServer.RemoveAllSources();
+				
+				// Stats
+				if (GetPlayerStats())
+				{
+					int bloodType 		= GetStatBloodType().Get();
+					float energyValue 	= GetStatEnergy().Get();
+					float waterValue 	= GetStatWater().Get();
+					float heatBuffer	= GetStatHeatBuffer().Get();
+					float heatComfort	= GetStatHeatComfort().Get();
+
+					GetPlayerStats().ResetAllStats();
+
+					GetStatBloodType().Set(bloodType);
+					GetStatWater().Set(waterValue);
+					GetStatEnergy().Set(energyValue);
+					GetStatHeatBuffer().Set(heatBuffer);
+					GetStatHeatComfort().Set(heatComfort);
+				}
+	
+				// Agents
+				if (m_AgentPool)
+					m_AgentPool.RemoveAllAgents();
+				
+				if (m_StaminaHandler)
+					m_StaminaHandler.SetStamina(GameConstants.STAMINA_MAX);
+				
+				// uncon
+				if (IsUnconscious())
+					DayZPlayerSyncJunctures.SendPlayerUnconsciousness(this, false);
+			}
 		}
 		
-		//m_ShockHandler.SetShock(damageResult.GetDamage("", "Shock")); //TESTING
 		m_ShockHandler.CheckValue(true);
 		
 		//analytics
@@ -1054,19 +1089,34 @@ class PlayerBase extends ManBase
 		if (GetArrowManager())
 			GetArrowManager().ClearArrows();
 	}
-	
-	float ConvertNonlethalDamage(float damage)
+
+	override protected float ConvertNonlethalDamage(float damage, DamageType damageType)
 	{
-		float converted_dmg = damage * GameConstants.PROJECTILE_CONVERSION_PLAYERS;
-		return converted_dmg;
-	} 
+		return damage * GameConstants.NL_DAMAGE_FIREARM_CONVERSION_PLAYERS;
+	}
 	
 	/** Call only on client or single player PlayerBase
  	 *  (as GetGame().GetPlayer())
 	 */
+	override void OnReceivedHit(ImpactEffectsData hitData)
+	{
+		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
+		{
+			float shakeStrength = Math.InverseLerp(0, 500, hitData.m_InSpeed.Length());
+			GetCurrentCamera().SpawnCameraShake(shakeStrength);
+			OnPlayerRecievedHit();
+		}
+					
+		if (hitData.m_AmmoType == "Bullet_CupidsBolt")
+			Ammo_CupidsBolt.PlayOnHitParticle(hitData.m_Position);
+
+			//ParticleManager.GetInstance().PlayInWorld(ParticleList.BOLT_CUPID_HIT, hitData.m_Position);
+	}
+
+	// DEPRECATED by method above
 	override void OnPlayerRecievedHit()
 	{
-#ifndef NO_GUI
+		#ifndef NO_GUI
 		if (m_MeleeFightLogic.IsInBlock())
 		{
 			EffectSound sound = SEffectManager.PlaySoundOnObject("BlockingAttack_SoundSet", this);
@@ -1079,8 +1129,8 @@ class PlayerBase extends ManBase
 		CachedObjectsParams.PARAM2_FLOAT_FLOAT.param2 = 0.3;
 		SpawnDamageDealtEffect2(CachedObjectsParams.PARAM2_FLOAT_FLOAT);
 		
-		CloseMapEx(true);			
-#endif
+		CloseMapEx(true);		
+		#endif
 	}
 	
 	void OnPlayerReceiveFlashbangHitStart(bool visual)
@@ -1339,7 +1389,7 @@ class PlayerBase extends ManBase
 		
 		return m_UndergroundHandler;
 	}
-
+	
 	void KillUndergroundHandler()
 	{
 		m_UndergroundHandler = null;
@@ -1959,18 +2009,13 @@ class PlayerBase extends ManBase
 	{
 		if (IsTryingHoldBreath() && CanStartConsumingStamina(EStaminaConsumers.HOLD_BREATH))
 		{
-			DepleteStamina(EStaminaModifiers.HOLD_BREATH,dT);
 			if (!m_IsHoldingBreath)
 			{
 				OnHoldBreathStart();
 				m_IsHoldingBreath = true;
 			}
 		}
-		else if (IsTryingHoldBreath() && m_IsHoldingBreath && CanConsumeStamina(EStaminaConsumers.HOLD_BREATH))
-		{
-			DepleteStamina(EStaminaModifiers.HOLD_BREATH,dT);
-		}
-		else
+		else if (!IsTryingHoldBreath() || !CanConsumeStamina(EStaminaConsumers.HOLD_BREATH))
 		{
 			if (m_IsHoldingBreath) OnHoldBreathEnd();
 			m_IsHoldingBreath = false;
@@ -2780,7 +2825,6 @@ class PlayerBase extends ManBase
 		// lower implement 
 		super.CommandHandler(pDt,pCurrentCommandID,pCurrentCommandFinished);
 
-		m_dT = pDt;
 		HumanInputController hic = GetInputController();
 		
 		CheckZeroSoundEvent();
@@ -5085,7 +5129,7 @@ class PlayerBase extends ManBase
 	float GetImmunity()
 	{
 		float immunity;
-		if (	GetPlayerStats()) 
+		if (GetPlayerStats()) 
 		{
 			float max_health = GetMaxHealth("GlobalHealth", "Health") + 0.01;//addition to prevent divisioin by zero in case of some messup
 			float max_blood = GetMaxHealth("GlobalHealth", "Blood") + 0.01;//addition to prevent divisioin by zero in case of some messup
@@ -7370,10 +7414,7 @@ class PlayerBase extends ManBase
 	
 	void OnBleedingSourceRemovedEx(ItemBase item)
 	{
-		
-		
 		OnBleedingSourceRemoved();
-
 	}
 	
 	int GetBleedingSourceCount()
@@ -7387,29 +7428,14 @@ class PlayerBase extends ManBase
 		#ifdef DIAG_DEVELOPER
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			//server + single
-	
-			//clear stomach content
 			GetStomach().ClearContents();
+
+			DamageSystem.ResetAllZones(this);
+			GetModifiersManager().ResetAll();
 			
 			// bleeding sources
 			if (m_BleedingManagerServer)
 				m_BleedingManagerServer.RemoveAllSources();
-			
-			// Modifiers
-			bool hasAreaExposureModifier, hasMaksModifier;
-			if (GetModifiersManager())
-			{
-				hasAreaExposureModifier = GetModifiersManager().IsModifierActive(eModifiers.MDF_AREAEXPOSURE);
-				hasMaksModifier = GetModifiersManager().IsModifierActive(eModifiers.MDF_MASK);
-				GetModifiersManager().DeactivateAllModifiers();
-				
-				if (hasAreaExposureModifier)
-					GetModifiersManager().ActivateModifier(eModifiers.MDF_AREAEXPOSURE);
-				
-				if (hasMaksModifier)
-					GetModifiersManager().ActivateModifier(eModifiers.MDF_MASK);
-			}
 			
 			// Stats
 			if (GetPlayerStats())
@@ -7418,29 +7444,14 @@ class PlayerBase extends ManBase
 				GetPlayerStats().ResetAllStats();
 				GetStatBloodType().Set(bloodType);
 			}
-			
-			if (m_StaminaHandler)
-				m_StaminaHandler.SetStamina(GameConstants.STAMINA_MAX);
-			
+
 			// Agents
 			if (m_AgentPool)
 				m_AgentPool.RemoveAllAgents();
 			
-			// Damage System
-			DamageZoneMap zones = new DamageZoneMap();
-			DamageSystem.GetDamageZoneMap(this, zones);
-			SetHealth("", "Health", GetMaxHealth("","Health"));
-			SetHealth("", "Shock", GetMaxHealth("","Shock"));
-			SetHealth("", "Blood", GetMaxHealth("","Blood"));
+			if (m_StaminaHandler)
+				m_StaminaHandler.SetStamina(GameConstants.STAMINA_MAX);
 			
-			for (int i = 0; i < zones.Count(); i++)
-			{
-				string zone = zones.GetKey(i);
-				SetHealth(zone, "Health", GetMaxHealth(zone,"Health"));
-				SetHealth(zone, "Shock", GetMaxHealth(zone,"Shock"));
-				SetHealth(zone, "Blood", GetMaxHealth(zone,"Blood"));
-			}
-	
 			// uncon
 			if (IsUnconscious())
 				DayZPlayerSyncJunctures.SendPlayerUnconsciousness(this, false);
@@ -7451,7 +7462,6 @@ class PlayerBase extends ManBase
 				GetStatWater().Set(GetStatWater().GetMax());
 				GetStatEnergy().Set(GetStatEnergy().GetMax());
 			}
-	
 			
 			// fix up inventory
 			FixAllInventoryItems();
@@ -7464,10 +7474,7 @@ class PlayerBase extends ManBase
 				GetArrowManager().ClearArrows();
 
 		}
-		else
-		{
-			// multiplayer client only
-		}
+
 		// client + single + server
 		HumanCommandVehicle vehCmd = GetCommand_Vehicle();
 		if (vehCmd)

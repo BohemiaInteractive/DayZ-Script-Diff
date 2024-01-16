@@ -136,7 +136,7 @@ class StaminaModifier
 {
 	bool m_InUse = false;
 	int m_Type;
-	float m_MinValue, m_MaxValue, m_Cooldown, m_StartTime, m_Duration, m_ProgressTime, m_Tick;
+	float m_MinValue, m_MaxValue, m_Multiplier, m_Cooldown, m_StartTime, m_StartTimeAdjustment, m_Duration, m_ProgressTime, m_Tick;
 
 	void StaminaModifier(int type, float min, float max, float cooldown, float startTime = 0, float duration = 0)
 	{
@@ -144,7 +144,7 @@ class StaminaModifier
 		m_MinValue = min;
 		m_MaxValue = max;
 		m_Cooldown = cooldown;
-		m_StartTime = startTime;
+		m_StartTimeAdjustment = startTime;
 		m_Duration = duration;
 		m_Tick = 1;
 	}
@@ -156,12 +156,14 @@ class StaminaModifier
 	
 	float GetMaxValue() { return m_MaxValue; }
 	void SetMaxValue(float val) { m_MaxValue = val; }
-
+	
 	float GetCooldown() { return m_Cooldown; }
 	void SetCooldown(float val) { m_Cooldown = val; }
 	
-	float GetStartTime() { return m_StartTime; }
+	float GetStartTime() { return m_StartTime; } //Actual game time (progressive modifiers only)
 	void SetStartTime(float val) { m_StartTime = val; }
+	
+	float GetStartTimeAdjustment() {return m_StartTimeAdjustment;} //adjustment to current time (progressive modifiers only)
 	
 	float GetDuration() { return m_Duration; }
 	float GetDurationAdjusted() { return m_Duration / m_Tick; }
@@ -173,6 +175,21 @@ class StaminaModifier
 	void AddRunTime(float val) { m_ProgressTime += val; }
 	void SetRunTimeTick(float val) { m_Tick = val; }
 	void ResetRunTime() { m_ProgressTime = 0 }
+}
+
+class StaminaModifierExponential : StaminaModifier
+{
+	protected ref SMDataExponential m_SMDataEx;
+	
+	float GetBaseValue() { return m_SMDataEx.m_BaseValue; }
+	float GetExponent() { return m_SMDataEx.m_Exponent; }
+	float GetMultiplier() { return m_SMDataEx.m_Multiplier; }
+	override float GetCooldown() { return m_SMDataEx.m_Cooldown; }
+	override float GetStartTimeAdjustment() { return m_SMDataEx.m_StartTimeAdjustment; }
+	override float GetDuration() { return m_SMDataEx.m_Duration; }
+	override float GetDurationAdjusted() { return m_SMDataEx.m_Duration / m_Tick; }
+	
+	void SetData(SMDataExponential data) { m_SMDataEx = data; }
 }
 
 class StaminaModifiers
@@ -225,6 +242,14 @@ class StaminaModifiers
 		m_StaminaModifiers.Set(modifier, sm);
 	}
 	
+	//! register exponential modifier, extended parameters
+	void RegisterExponentialEx(EStaminaModifiers modifier, SMDataExponential data)
+	{
+		StaminaModifierExponential smex = new StaminaModifierExponential(EXPONENTIAL, data.m_BaseValue, data.m_Exponent, data.m_Cooldown, data.m_StartTimeAdjustment, data.m_Duration);
+		smex.SetData(data);
+		m_StaminaModifiers.Set(modifier, smex);
+	}
+	
 	StaminaModifier GetModifierData(EStaminaModifiers modifier)
 	{
 		return m_StaminaModifiers.Get(modifier);
@@ -270,9 +295,8 @@ class StaminaHandler
 	void StaminaHandler(PlayerBase player)
 	{
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
-		{
 			m_StaminaParams = new Param3<float,float,bool>(0,0, false);		
-		}
+
 		m_State 						= new HumanMovementState();
 		m_Player 						= player;
 		m_Stamina 						= CfgGameplayHandler.GetStaminaMax(); 
@@ -419,7 +443,7 @@ class StaminaHandler
 			// Calculates stamina gain/loss based on movement and load
 			m_Player.GetMovementState(m_State);
 
-			switch (pCurrentCommandID)
+			switch (m_State.m_CommandTypeId)
 			{
 				case DayZPlayerConstants.COMMANDID_MOVE:
 					StaminaProcessor_Move(m_State);
@@ -719,15 +743,14 @@ class StaminaHandler
 	{
 		m_StaminaModifiers = new StaminaModifiers();
 
-		m_StaminaModifiers.RegisterExponential(
+		SMDataHoldBreath data = new SMDataHoldBreath();
+		m_StaminaModifiers.RegisterExponentialEx(
 			EStaminaModifiers.HOLD_BREATH,
-			GameConstants.STAMINA_DRAIN_HOLD_BREATH_START * CfgGameplayHandler.GetHoldBreathStaminaModifier(),
-			GameConstants.STAMINA_DRAIN_HOLD_BREATH_EXPONENT * CfgGameplayHandler.GetHoldBreathStaminaModifier(), 0, GameConstants.STAMINA_DRAIN_HOLD_BREATH_DURATION,
+			data,
 		);
-		m_StaminaModifiers.RegisterExponential(
+		m_StaminaModifiers.RegisterExponentialEx(
 			EStaminaModifiers.PUSH_CAR,
-			GameConstants.STAMINA_DRAIN_HOLD_BREATH_START,
-			GameConstants.STAMINA_DRAIN_HOLD_BREATH_EXPONENT * CfgGameplayHandler.GetHoldBreathStaminaModifier(), 0, GameConstants.STAMINA_DRAIN_HOLD_BREATH_DURATION,
+			data,
 		);
 		m_StaminaModifiers.RegisterFixed(EStaminaModifiers.DROWN, 10);
 		m_StaminaModifiers.RegisterFixed(
@@ -946,7 +969,7 @@ class StaminaHandler
 		#endif
 		float val = 0.0;
 		float current_time = m_Player.GetSimulationTimeStamp();
-		float time;
+		float valueProgress;
 		StaminaModifier sm = m_StaminaModifiers.GetModifierData(modifier);
 
 		// select by modifier type and drain stamina
@@ -970,35 +993,45 @@ class StaminaHandler
 			case m_StaminaModifiers.LINEAR:
 				if (!sm.IsInUse())
 				{
-					sm.SetStartTime(current_time + ( (PlayerSwayConstants.SWAY_TIME_IN + PlayerSwayConstants.SWAY_TIME_STABLE) / dT ) );
+					sm.SetStartTime(current_time + sm.GetStartTimeAdjustment()/dT);
 					sm.SetRunTimeTick(dT);
 					sm.SetInUse(true);
 				}
-				time = Math.Clamp( ((current_time - sm.GetStartTime()) / sm.GetDurationAdjusted()), 0, 1 );
-				val = Math.Lerp(sm.GetMinValue(), sm.GetMaxValue(), time);
+				valueProgress = Math.Clamp((current_time - sm.GetStartTime())/sm.GetDurationAdjusted(), 0, 1 );
+				val = Math.Lerp(sm.GetMinValue(), sm.GetMaxValue(), valueProgress);
 				m_StaminaDepletion = m_StaminaDepletion + val;
 			
 				break;
 			
 			case m_StaminaModifiers.EXPONENTIAL:
-				if (!sm.IsInUse())
+				StaminaModifierExponential smex;
+				if (!Class.CastTo(smex,sm))
 				{
-					sm.SetStartTime(current_time + ( (PlayerSwayConstants.SWAY_TIME_IN + PlayerSwayConstants.SWAY_TIME_STABLE) / dT ) );
-					sm.SetRunTimeTick(dT);
-					sm.SetInUse(true);
+					ErrorEx("StaminaModifierExponential not found for modifier type: " + sm.GetType());
+					break;
 				}
-				time = Math.Clamp( ((current_time - sm.GetStartTime()) / sm.GetDurationAdjusted()), 0, 1 );
-				float exp;
-				if (sm.GetMinValue() < 1)
+				
+				if (!smex.IsInUse())
 				{
-					exp = 1 - Math.Lerp(0, sm.GetMaxValue(), time);
+					smex.SetStartTime(current_time + smex.GetStartTimeAdjustment()/dT);
+					smex.SetRunTimeTick(dT);
+					smex.SetInUse(true);
+				}
+				valueProgress = Math.Clamp((current_time - smex.GetStartTime())/smex.GetDurationAdjusted(), 0, 1 );
+				float exp;
+				if (Math.AbsFloat(smex.GetBaseValue()) < 1)
+				{
+					exp = 1 - Math.Lerp(0, smex.GetExponent(), valueProgress);
+					val = Math.Pow(smex.GetBaseValue(),exp);
 				}
 				else
 				{
-					exp = Math.Lerp(0, sm.GetMaxValue(), time);
+					exp = Math.Lerp(Math.Min(0, smex.GetExponent()), Math.Max(0, smex.GetExponent()), valueProgress);
+					val = Math.Pow(smex.GetBaseValue(),exp) + smex.GetBaseValue() - 1;
 				}
-				val = Math.Pow(sm.GetMinValue(),exp);
+				
 				m_StaminaDepletion = m_StaminaDepletion + val;
+				m_StaminaDepletion *= smex.GetMultiplier();
 			
 				break;
 		}
@@ -1016,4 +1049,4 @@ class StaminaHandler
 		m_StaminaDisabled = value;
 	}
 	#endif
-};
+}

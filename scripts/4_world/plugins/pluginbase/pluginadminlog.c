@@ -191,6 +191,15 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			string playerPrefix2;
 			m_HitMessage = GetHitMessage( damageResult, component, dmgZone, ammo );
 			PlayerBase playerSource;
+			
+			if ( source.IsPlayer() )// Fists
+				playerSource = PlayerBase.Cast( source );
+			else
+				playerSource = PlayerBase.Cast( source.GetHierarchyParent() );
+			
+			if (playerSource)
+				playerPrefix2 = GetPlayerPrefix( playerSource ,  playerSource.GetIdentity() );
+			
 			switch ( damageType )
 			{
 				case DamageType.CLOSE_COMBAT:	// Player melee, animals, infected 
@@ -201,19 +210,14 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 												
 						LogPrint( playerPrefix + " hit by " + m_DisplayName + m_HitMessage );	
 					}			
-					else if ( source.IsPlayer() )				// Fists
+					else if (source.IsPlayer())// Fists
 					{
-						playerSource = PlayerBase.Cast( source );
-						playerPrefix2 = GetPlayerPrefix( playerSource ,  playerSource.GetIdentity() );
-					
 						LogPrint( playerPrefix + " hit by " + playerPrefix2 + m_HitMessage );
 					}
-					else if ( source.IsMeleeWeapon() || source.IsWeapon())			// Melee weapons
+					else if ( playerSource && (source.IsMeleeWeapon() || source.IsWeapon()))			// Melee weapons
 					{				
-						m_ItemInHands = source.GetDisplayName();		
-						playerSource = PlayerBase.Cast( source.GetHierarchyParent() );
-						playerPrefix2 = GetPlayerPrefix( playerSource ,  playerSource.GetIdentity() );
-			
+						m_ItemInHands = source.GetDisplayName();
+							
 						LogPrint( playerPrefix + " hit by " + playerPrefix2 + m_HitMessage + " with " + m_ItemInHands );				
 					}
 					else
@@ -226,11 +230,9 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 				
 				case DamageType.FIRE_ARM:	// Player ranged
 				
-					if ( source.IsWeapon() )
+					if ( source.IsWeapon() && playerSource )
 					{
 						m_ItemInHands = source.GetDisplayName();				
-						playerSource = PlayerBase.Cast( source.GetHierarchyParent() );
-						playerPrefix2 = GetPlayerPrefix( playerSource ,  playerSource.GetIdentity() );
 						m_Distance = vector.Distance( player.GetPosition(), playerSource.GetPosition() );
 					
 						LogPrint( playerPrefix + " hit by " + playerPrefix2 + m_HitMessage + " with " + m_ItemInHands + " from " + m_Distance + " meters ");

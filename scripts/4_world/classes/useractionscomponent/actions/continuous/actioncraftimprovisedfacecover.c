@@ -51,4 +51,9 @@ class ActionCraftImprovisedFaceCover: ActionContinuousBase
 		
 		MiscGameplayFunctions.TransferItemProperties(item_ingredient, cover);
 	}
+	
+	override string GetSoundCategory(ActionData action_data)
+	{
+		return "ImprovisedCloth_craft";
+	}
 };

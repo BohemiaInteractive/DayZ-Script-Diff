@@ -220,70 +220,70 @@ class PlayerContainer: CollapsibleContainer
 	
 	void AddSlotsContainer( int row_count )
 	{
-		ref SlotsContainer s_cont = new SlotsContainer( m_PlayerAttachmentsContainer, m_Player );
-		s_cont.SetColumnCount( row_count );
-		m_PlayerAttachmentsContainer.Insert( s_cont );
+		SlotsContainer container = new SlotsContainer(m_PlayerAttachmentsContainer, m_Player);
+		container.SetColumnCount(row_count);
+		m_PlayerAttachmentsContainer.Insert(container);
 	}
 	
 	void MouseClick( Widget w, int x, int y, int button )
 	{
-		SlotsIcon slots_icon;
-		w.GetUserData(slots_icon);
+		SlotsIcon icon;
+		w.GetUserData(icon);
 		
-		EntityAI item;
-		bool reserved;
+		ItemBase selectedItem;
+		bool isReserved;
 		
-		if (slots_icon)
+		if (icon)
 		{
-			item = slots_icon.GetEntity();
-			reserved = slots_icon.IsReserved();
+			selectedItem = ItemBase.Cast(icon.GetEntity());
+			isReserved = icon.IsReserved();
 		
 		}
 
-		ItemBase itemAtPos = ItemBase.Cast( item );
-		
-		if ( item )
+		if (selectedItem)
 		{
-			if ( button == MouseState.RIGHT )
+			switch (button)
 			{
-				#ifdef DIAG_DEVELOPER
-				if ( GetDayZGame().IsLeftCtrlDown() )
-					ShowActionMenu( InventoryItem.Cast(item) );
-				#endif
-				
-				if ( reserved )
-				{
-					GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced( item );
-					m_Player.GetOnAttachmentReleaseLock().Invoke(item, slots_icon.GetSlotID());
-				}
-			}
-			else if ( button == MouseState.MIDDLE )
-			{
-				if ( !reserved )
-				{
-					InspectItem( itemAtPos );
-				}
-			} 
-			else if ( button == MouseState.LEFT )
-			{
-				if ( !reserved )
-				{
-					if ( g_Game.IsLeftCtrlDown() )
+				case MouseState.RIGHT:
+					#ifdef DIAG_DEVELOPER
+					if (GetDayZGame().IsLeftCtrlDown())
+						ShowActionMenu(selectedItem);
+					#endif
+					
+					if (isReserved)
 					{
-						if ( itemAtPos && itemAtPos.GetInventory().CanRemoveEntity() && m_Player.CanDropEntity(itemAtPos) )
+						GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced(selectedItem);
+						m_Player.GetOnAttachmentReleaseLock().Invoke(selectedItem, icon.GetSlotID());
+					}
+					break;
+
+				case MouseState.MIDDLE:
+					if (!isReserved)
+						InspectItem(selectedItem);
+
+					break;
+
+				case MouseState.LEFT:
+					if (!isReserved)
+					{
+						PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+						if (g_Game.IsLeftCtrlDown())
 						{
-							if ( itemAtPos.GetTargetQuantityMax() < itemAtPos.GetQuantity() )
-								itemAtPos.SplitIntoStackMaxClient( null, -1 );
-							else
-								m_Player.PhysicalPredictiveDropItem( itemAtPos );
+							if (controlledPlayer.CanDropEntity(selectedItem))
+							{
+								if (selectedItem.GetTargetQuantityMax() < selectedItem.GetQuantity())
+									selectedItem.SplitIntoStackMaxClient(null, -1);
+								else
+									controlledPlayer.PhysicalPredictiveDropItem(selectedItem);
+							}
+						}
+						else
+						{
+							bool draggable = !m_Player.GetInventory().HasInventoryReservation(selectedItem, null ) && !m_Player.GetInventory().IsInventoryLocked() && selectedItem.GetInventory().CanRemoveEntity() && !m_Player.IsItemsToDelete();
+							ItemManager.GetInstance().SetWidgetDraggable(w, draggable);
 						}
 					}
-					else
-					{
-						bool draggable = !m_Player.GetInventory().HasInventoryReservation( item, null ) && !m_Player.GetInventory().IsInventoryLocked() && item.GetInventory().CanRemoveEntity() && !m_Player.IsItemsToDelete();
-						ItemManager.GetInstance().SetWidgetDraggable( w, draggable );
-					}
-				}
+					break;
 			}
 		}
 	}
@@ -683,17 +683,18 @@ class PlayerContainer: CollapsibleContainer
 		return false;
 	}
 	
-	void SetPlayer( PlayerBase player )
+	void SetPlayer(PlayerBase player)
 	{
-		if( m_Player )
+		if (m_Player)
 		{
 			m_Player.GetOnItemAttached().Remove(ItemAttached);
 			m_Player.GetOnItemDetached().Remove(ItemDetached);
 			m_Player.GetOnAttachmentSetLock().Remove(OnAttachmentReservationSet);
 			m_Player.GetOnAttachmentReleaseLock().Remove(OnAttachmentReservationRelease);
 		}
+
 		m_Player = player;
-		if( m_Player )
+		if (m_Player)
 		{
 			m_Player.GetOnItemAttached().Insert(ItemAttached);
 			m_Player.GetOnItemDetached().Insert(ItemDetached);

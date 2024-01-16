@@ -319,6 +319,7 @@ class LoopedChamberingEjectLast extends WeaponStateBase
 
 		m_fsm.AddTransition(new WeaponTransition(m_endLoop, _fin_, NULL));
 		
+		m_fsm.AddTransition(new WeaponTransition(m_hideB,				__be_, m_eject));
 		m_fsm.AddTransition(new WeaponTransition(m_endLoop,				__be_, m_eject));
 		m_fsm.AddTransition(new WeaponTransition(m_eject,				__wc_, m_chamberFromInnerMag));
 		m_fsm.AddTransition(new WeaponTransition(m_chamberFromInnerMag,	_fin_, NULL));

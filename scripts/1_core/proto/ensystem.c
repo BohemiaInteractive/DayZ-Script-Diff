@@ -398,7 +398,7 @@ proto bool FileExist(string name);
 
 /**
 \brief Opens File
-	@param name of a file to open, (you can use filesystem prefixes ('$profile','$saves','$mission'). For accessing profile dir use '$profile', e.g. '$profile:myFileName.txt')
+	@param name of a file to open, (you can use filesystem prefixes ('$profile','$saves','$mission'). For accessing profile dir use '$profile', e.g. '$profile:myfilename.txt')
 	@param mode constants FileMode.WRITE, FileMode.READ or FileMode.APPEND flag can be used
 	\return file handle ID or 0 if fails
 	\n usage :

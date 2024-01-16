@@ -78,6 +78,19 @@ class DayZIntroSceneXbox: Managed
 		m_CharacterPos[1] = GetGame().SurfaceY(m_CharacterPos[0], m_CharacterPos[2]);
 		m_CharacterDir = (camera_position - m_CharacterPos);
 		
+		float overcast = 0.42;
+		float rain = 0.0;
+		float fog = 0.0;
+
+		m_Weather = g_Game.GetWeather();
+		m_Weather.GetOvercast().SetLimits(overcast, overcast);
+		m_Weather.GetRain().SetLimits(rain, rain);
+		m_Weather.GetFog().SetLimits(fog, fog);
+		
+		m_Weather.GetOvercast().Set(overcast, 0, 0);
+		m_Weather.GetRain().Set(rain, 0, 0);
+		m_Weather.GetFog().Set(fog, 0, 0);
+		
 		m_Character = new IntroSceneCharacter();
 		m_Character.LoadCharacterData(m_CharacterPos, m_CharacterDir);
 		

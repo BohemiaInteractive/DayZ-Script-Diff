@@ -6,27 +6,18 @@ class SyncPlayerList
 	{
 		if (GetGame().IsServer())
 		{
-			m_PlayerList = new array<ref SyncPlayer>;
+			m_PlayerList = new array<ref SyncPlayer>();
+			
+			array<PlayerIdentity> identities = new array<PlayerIdentity>();
+			GetGame().GetPlayerIndentities(identities);
 
-			array<Man> players = new array<Man>;
-			GetGame().GetWorld().GetPlayerList(players);
-
-			for (int i = 0; i < players.Count(); ++i)
+			foreach (auto identity : identities)
 			{
-				Man player = players[i];
-				PlayerIdentity p_identity = player.GetIdentity();
-
-				if (p_identity)
-				{
-					SyncPlayer sync_player = new SyncPlayer;
-					sync_player.m_UID = p_identity.GetPlainId();
-					sync_player.m_PlayerName = p_identity.GetPlainName();
-					m_PlayerList.Insert(sync_player);
-				}
-				else
-				{
-					DebugPrint.LogErrorAndTrace("No Identity in Server Player List");
-				}
+				SyncPlayer sync_player = new SyncPlayer;
+				sync_player.m_Identity = identity;
+				sync_player.m_UID = identity.GetPlainId();
+				sync_player.m_PlayerName = identity.GetPlainName();
+				m_PlayerList.Insert(sync_player);
 			}
 		}
 	}

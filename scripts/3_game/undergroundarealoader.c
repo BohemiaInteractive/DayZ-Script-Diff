@@ -53,24 +53,26 @@ class UndergroundAreaLoader
 	
 	static JsonUndergroundTriggers GetData()
 	{
-		if ( !FileExist( m_Path ) )
+		if (!FileExist(m_Path))
 		{
 			// We fallback to check in data and notify user file was not found in mission
 			PrintToRPT("[WARNING] :: [UndergroundAreaLoader GetData()] :: file not found in MISSION folder, your path is " + m_Path + " Attempting DATA folder");
 			
 			string worldName;
-			GetGame().GetWorldName( worldName );
-			m_Path = string.Format("DZ/worlds/%1/ce/cfgundergroundtriggers.json", worldName );
+			GetGame().GetWorldName(worldName);
+			m_Path = string.Format("dz/worlds/%1/ce/cfgundergroundtriggers.json", worldName);
 			
-			if ( !FileExist( m_Path ) )
+			if (!FileExist(m_Path))
 			{
 				PrintToRPT("[WARNING] :: [UndergroundAreaLoader GetData()] ::file not found in DATA folder, your path is " + m_Path);
 				return null; // Nothing could be read, just end here
 			}
 		}
-		
+
+		string errorMessage;
 		JsonUndergroundTriggers data;
-		JsonFileLoader<JsonUndergroundTriggers>.JsonLoadFile( m_Path, data );
+		if (!JsonFileLoader<JsonUndergroundTriggers>.LoadFile(m_Path, data, errorMessage))
+			ErrorEx(errorMessage);
 		
 		return data;
 	}

@@ -1,4 +1,4 @@
-class FlareSimulation : Entity
+class FlareSimulation : Managed
 {
 	protected Particle 			m_ParMainFire;
 	protected EffectSound 		m_BurningSound;

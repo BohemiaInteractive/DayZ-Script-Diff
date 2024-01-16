@@ -62,20 +62,21 @@ void ejectBulletAndStoreInMagazine(Weapon_Base weapon, int muzzleIndex, Magazine
 	string magazineTypeName = weapon.GetChamberedCartridgeMagazineTypeName(muzzleIndex);
 	if (weapon.EjectCartridge(muzzleIndex, damage, type))
 	{
-		if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ejected chambered cartridge"); }
+		if (LogManager.IsWeaponLogEnable())
+			wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ejected chambered cartridge");
 	}
 	else
 		Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot eject chambered cartridge!");
 
-	bool is_single_or_server = !GetGame().IsMultiplayer() || GetGame().IsServer();
-	if (is_single_or_server)
+	if (!GetGame().IsMultiplayer() || GetGame().IsServer())
 	{
-		if (mag == NULL)
+		if (mag == null)
 		{
-			// no magazine configured in parent state, looking in inventory
+			//! no magazine configured in parent state, looking in inventory
 			if (DayZPlayerUtils.HandleStoreCartridge(p, weapon, muzzleIndex, damage, type, magazineTypeName))
 			{
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ok - cartridge stored in magazine"); }
+				if (LogManager.IsWeaponLogEnable())
+					wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ok - cartridge stored in magazine");
 			}
 			else
 				Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot store cartridge!");
@@ -85,7 +86,8 @@ void ejectBulletAndStoreInMagazine(Weapon_Base weapon, int muzzleIndex, Magazine
 			if (mag.ServerStoreCartridge(damage, type))
 			{
 				mag.SetSynchDirty();
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ok - cartridge stored in user defined magazine"); }
+				if (LogManager.IsWeaponLogEnable())
+					wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ok - cartridge stored in user defined magazine");
 			}
 			else
 				Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot store cartridge in magazine");

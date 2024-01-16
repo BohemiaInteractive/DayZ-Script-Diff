@@ -339,6 +339,7 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_UNLIMITED_AMMO, "lalt+9", "Unlimited Ammo", DiagMenuIDs.WEAPON_MENU);
 				DiagMenu.RegisterItem(DiagMenuIDs.WEAPON_BURST_VERSION, "lctrl+0", "Burst Version", DiagMenuIDs.WEAPON_MENU, "Hold, Press");
 				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_CLAYMORE_DEBUG, "", "Claymore debugs", DiagMenuIDs.WEAPON_MENU);
+				DiagMenu.RegisterItem(DiagMenuIDs.WEAPON_LIFT_DEBUG, "", "Weapon Lift Debug", DiagMenuIDs.WEAPON_MENU, "false,true,extended");
 			}
 		
 			//---------------------------------------------------------------

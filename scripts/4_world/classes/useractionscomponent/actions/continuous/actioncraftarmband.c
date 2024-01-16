@@ -41,4 +41,9 @@ class ActionCraftArmband: ActionContinuousBase
 		
 		MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem, armband);
 	}
+	
+	override string GetSoundCategory(ActionData action_data)
+	{
+		return "ImprovisedCloth_craft";
+	}
 }

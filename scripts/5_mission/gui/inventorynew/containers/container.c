@@ -580,7 +580,7 @@ class Container extends LayoutHolder
 	
 	bool CanCombineEx(EntityAI focusedEntity)
 	{
-		if ( ItemManager.GetInstance().IsMicromanagmentMode() )
+		if (ItemManager.GetInstance().IsMicromanagmentMode())
 			return false;
 		
 		if (focusedEntity)
@@ -588,7 +588,7 @@ class Container extends LayoutHolder
 			EntityAI entityInHands = PlayerBase.Cast(GetGame().GetPlayer()).GetItemInHands();
 			if (focusedEntity != entityInHands)
 			{
-				return ( ItemManager.GetCombinationFlags( entityInHands, focusedEntity ) != 0 );
+				return (ItemManager.GetCombinationFlags(entityInHands, focusedEntity) != 0);
 			}
 		}
 		return false;
@@ -798,7 +798,7 @@ class Container extends LayoutHolder
 			GetHeader().SetActive(active);
 		}
 
-		if(m_MainWidget.FindAnyWidget("SelectedContainer"))
+		if (m_MainWidget.FindAnyWidget("SelectedContainer"))
 		{
 			m_MainWidget.FindAnyWidget("SelectedContainer").Show(active);
 		}
@@ -836,8 +836,12 @@ class Container extends LayoutHolder
 		{
 			for ( int j = 0; j < ITEMS_IN_ROW; j++ )
 			{
-				if( Get( i ) && Get( i ).GetMainWidget() && Get( i ).GetMainWidget().FindAnyWidget( "Cursor" + j ) )
-					Get( i ).GetMainWidget().FindAnyWidget( "Cursor" + j ).Show( false );
+				SlotsIcon icon;
+				if (Get(i) && Get(i).GetMainWidget())
+					Get( i ).GetMainWidget().GetUserData(icon);
+				
+				if (icon)
+					icon.GetCursorWidget().Show( false );
 			}
 		}
 	}
@@ -979,7 +983,38 @@ class Container extends LayoutHolder
 		{
 			active.SetNextLeftActive();
 		}
+	}
+	
+	void SetSameLevelNextActive()
+	{
+		Container active;
+		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+		active.SetActive(false);
 		
+		m_ActiveIndex++;
+		if (m_ActiveIndex > m_OpenedContainers.Count() - 1)
+		{
+			m_ActiveIndex = 0;
+		}
+		
+		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+		active.SetActive(true);
+	}
+	
+	void SetSameLevelPreviousActive()
+	{
+		Container active;
+		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+		active.SetActive(false);
+		
+		m_ActiveIndex--;
+		if (m_ActiveIndex < 0)
+		{
+			m_ActiveIndex = m_OpenedContainers.Count() - 1;
+		}
+		
+		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+		active.SetActive(true);
 	}
 	
 	void RecomputeOpenedContainers()

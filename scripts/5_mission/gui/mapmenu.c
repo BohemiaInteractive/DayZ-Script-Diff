@@ -10,12 +10,14 @@ class MapMenu extends UIScriptedMenu
 	protected bool 							m_IsOpenning;
 	
 	protected float							m_ToolScaleCellSizeCanvasWidth;
+	protected float							m_ToolsContainerPos0[2];
 
 	protected ref IngameHud					m_Hud ;
 	protected ref MapHandler 				m_MapMenuHandler;
 	protected ref MapWidget 				m_MapWidgetInstance;
 	protected ref SizeToChild				m_LegendResizer;
 
+	protected Widget 						m_MapToolsContainer;
 	protected ImageWidget 					m_Images;
 	protected Widget						m_GPSMarker;
 	protected ImageWidget					m_GPSMarkerArrow;
@@ -30,9 +32,19 @@ class MapMenu extends UIScriptedMenu
 	protected TextWidget					m_ToolsScaleCellSizeText;
 	protected CanvasWidget					m_ToolsScaleCellSizeCanvas;
 	protected ItemMap 						m_Map;
+	protected Widget 						m_ToolbarPanel;
 	//int 									m_MarkerCount;
 	
 	protected ref MapNavigationBehaviour	m_MapNavigationBehaviour;
+	
+	void ~MapMenu()
+	{
+		if (GetGame() && GetGame().GetMission())
+		{
+			GetGame().GetMission().GetOnInputPresetChanged().Remove(OnInputPresetChanged);
+			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
+		}
+	}
 	
 	override Widget Init()
 	{
@@ -48,8 +60,8 @@ class MapMenu extends UIScriptedMenu
 			m.AddUserMark("2670 4.7 1651", "Lala3", ARGB(255,0,0,255), "\\dz\\gear\\navigation\\data\\map_busstop_ca.paa");
 		}*/
 		
-		Widget mapToolsContainer = layoutRoot.FindAnyWidget("Map_Tools_Container");
-		mapToolsContainer.GetScript(m_LegendResizer);
+		m_MapToolsContainer = layoutRoot.FindAnyWidget("Map_Tools_Container");
+		m_MapToolsContainer.GetScript(m_LegendResizer);
 
 		m_MapWidgetInstance			= MapWidget.Cast(layoutRoot.FindAnyWidget("Map"));
 		m_GPSMarker					= layoutRoot.FindAnyWidget("GPSMarkerCircle");
@@ -65,6 +77,7 @@ class MapMenu extends UIScriptedMenu
 		m_ToolsScaleContourText		= TextWidget.Cast(layoutRoot.FindAnyWidget("Tools_Scale_Contour_Value"));
 		m_ToolsScaleCellSizeText	= TextWidget.Cast(layoutRoot.FindAnyWidget("Tools_Scale_CellSize_Value"));
 		m_ToolsScaleCellSizeCanvas	= CanvasWidget.Cast(layoutRoot.FindAnyWidget("Tools_Scale_CellSize_Canvas"));
+		m_ToolbarPanel				= layoutRoot.FindAnyWidget("toolbar_bg");
 		
 		float canvasHeight = 0;
 		m_ToolsScaleCellSizeCanvas.GetSize(m_ToolScaleCellSizeCanvasWidth, canvasHeight);
@@ -141,6 +154,14 @@ class MapMenu extends UIScriptedMenu
 			}
 		}
 		
+		float x,y;
+		m_MapToolsContainer.GetScreenPos(x,y);
+		m_ToolsContainerPos0[0] = x;
+		m_ToolsContainerPos0[1] = y;
+		
+		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+				
 		return layoutRoot;
 	}
 	
@@ -151,6 +172,14 @@ class MapMenu extends UIScriptedMenu
 		m_Map = ItemMap.Cast(item);
 		//m_Map.SyncMapMarkers();
 		//m_MarkerCount = m_Map.GetMarkerArray().Count();
+	}
+	
+	override void OnShow()
+	{
+		super.OnShow();
+		
+		UpdateControlsElements();
+		UpdateControlsElementVisibility();
 	}
 
 	override bool OnClick(Widget w, int x, int y, int button)
@@ -171,30 +200,21 @@ class MapMenu extends UIScriptedMenu
 	{
 		super.OnKeyPress(w, x, y, key);
 		
-		Print(key);
-		
 		return false;
 	}
-
-	//TODO if it does not work well enough, attach some ScriptedWidgetEventHandler to the MapWidget
-	/*override bool OnDoubleClick(Widget w, int x, int y, int button)
+	
+	protected void OnInputPresetChanged()
 	{
-		super.OnDoubleClick(w, x, y, button);
-		
-		MapWidget m = MapWidget.Cast(layoutRoot.FindAnyWidget("Map"));
-		if (w == m)
-		{
-			vector screen_to_map = m.ScreenToMap(Vector(x,y,0));
-			
-			AddMarker(w,screen_to_map,
-			
-			//m.AddUserMark(screen_to_map, "marker", ARGB(255,0,0,255), "\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
-						
-			return true;
-		}
-		
-		return false;
-	}*/
+		#ifdef PLATFORM_CONSOLE
+		UpdateControlsElements();
+		#endif
+	}
+
+	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
+	{
+		UpdateControlsElements();
+		UpdateControlsElementVisibility();
+	}
 
 	override void Update(float timeslice)
 	{
@@ -444,5 +464,40 @@ class MapMenu extends UIScriptedMenu
 			dist = num;
 			units = "cm";
 		}
+	}
+	
+	protected void UpdateControlsElements()
+	{
+		RichTextWidget toolbarText = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
+		string text = string.Empty;
+		
+		text += string.Format(" <image set=\"xbox_buttons\" name=\"LS\" scale=\"%1\" /> %2 ", InputUtils.ICON_SCALE_TOOLBAR, "#layout_map_navigate");
+		text += string.Format(" <image set=\"xbox_buttons\" name=\"RS\" scale=\"%1\" /> %2 ", InputUtils.ICON_SCALE_TOOLBAR, "#STR_Controls_Zoom");
+		text += string.Format(" %1", InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		
+		toolbarText.SetText(text);
+	}
+	
+	protected void UpdateControlsElementVisibility()
+	{
+		bool toolbarShow = false;
+		#ifdef PLATFORM_CONSOLE
+		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		#endif
+		
+		m_ToolbarPanel.Show(toolbarShow);
+		ShiftMapToolsContainer();
+	}
+	
+	protected void ShiftMapToolsContainer()
+	{
+		if (m_ToolbarPanel.IsVisible())
+		{
+			float sizeX,sizeY;
+			m_ToolbarPanel.GetScreenSize(sizeX,sizeY);
+			m_MapToolsContainer.SetScreenPos(m_ToolsContainerPos0[0],m_ToolsContainerPos0[1] - sizeY);
+		}
+		else
+			m_MapToolsContainer.SetScreenPos(m_ToolsContainerPos0[0],m_ToolsContainerPos0[1]);
 	}
 }

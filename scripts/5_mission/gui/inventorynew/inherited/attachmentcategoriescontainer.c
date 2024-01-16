@@ -229,23 +229,14 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 		return GetGame().ConfigGetInt( preview_path );;
 	}
 
-	void MouseClick( Widget w )
+	void MouseClick(Widget w)
 	{
-		SlotsIcon slots_icon;
-		w.GetUserData(slots_icon);
+		SlotsIcon icon;
+		w.GetUserData(icon);
 		
-		ClosableContainer c = ClosableContainer.Cast( slots_icon.GetContainer() );
-		if( c )
-		{
-			if( c.IsOpened() )
-			{
-				c.Close();
-			}
-			else
-			{
-				c.Open();
-			}
-		}
+		ClosableContainer c = ClosableContainer.Cast(icon.GetContainer());
+		if (c)
+			c.Toggle();
 	}
 	
 	override void ExpandCollapseContainer()

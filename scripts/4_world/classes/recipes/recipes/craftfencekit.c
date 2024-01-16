@@ -25,7 +25,7 @@ class CraftFenceKit extends RecipeBase
 		
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"Rope");//you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Rope","ShelterKit_craft");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing

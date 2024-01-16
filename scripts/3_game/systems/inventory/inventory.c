@@ -16,6 +16,8 @@ enum InventoryJunctureType
 	SWAP,			///< swapping from ground
 	//LOAD,			///< load mag from ground
 };
+
+//! NOTE: PREDICTIVE is not to be used at all in multiplayer
 enum InventoryMode
 {
 	PREDICTIVE,		///< 'Predictive' means that the operation uses Client-Side Prediction, i.e. the action runs the same code on both, client AND server

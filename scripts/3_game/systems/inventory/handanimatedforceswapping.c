@@ -69,6 +69,9 @@ class HandForceSwappingAnimated_Show extends HandStartAction
 			//dummy.Copy(m_Dst2);			
 			//if (GameInventory.CanForceSwapEntitiesEx(m_Src1.GetItem(), m_Dst1, m_Src2.GetItem(), dummy) && dummy == m_Dst2)
 			//{
+
+				//! TODO(kumarjac): THIS IS WHAT IS BEING CALLED FOR SOME REASON!!!!!
+
 				GameInventory.LocationSwap(m_Src1, m_Src2, m_Dst1, m_Dst2);
 				e.m_Player.OnItemInHandsChanged();
 			//}

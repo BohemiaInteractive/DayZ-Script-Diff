@@ -7,7 +7,7 @@ class BaseBuildingBase extends ItemBase
 
 	ref Construction 	m_Construction;
 	
-	bool 				m_HasBase = false;
+	bool 				m_HasBase;
 	//variables for synchronization of base building parts (2x31 is the current limit)
 	int 				m_SyncParts01;								//synchronization for already built parts (31 parts)
 	int 				m_SyncParts02;								//synchronization for already built parts (+31 parts)
@@ -54,15 +54,26 @@ class BaseBuildingBase extends ItemBase
 		if (ConfigIsExisting("hybridAttachments"))
 		{
 			m_HybridAttachments = new array<string>;
-			ConfigGetTextArray("hybridAttachments",m_HybridAttachments);
+			ConfigGetTextArray("hybridAttachments", m_HybridAttachments);
 		}
 		if (ConfigIsExisting("mountables"))
 		{
 			m_Mountables = new array<string>;
-			ConfigGetTextArray("mountables",m_Mountables);
+			ConfigGetTextArray("mountables", m_Mountables);
 		}
 		
 		ProcessInvulnerabilityCheck(GetInvulnerabilityTypeString());
+	}
+	
+	override void EEDelete(EntityAI parent)
+	{
+		super.EEDelete(parent);
+
+		foreach (AreaDamageManager areaDamage : m_DamageTriggers)
+		{
+			areaDamage.Destroy();
+		}
+		
 	}
 	
 	override string GetInvulnerabilityTypeString()
@@ -689,102 +700,90 @@ class BaseBuildingBase extends ItemBase
 
 	void UpdateVisuals()
 	{
-		//update attachments visuals
-		ref array<string> attachment_slots = new ref array<string>;
-		GetAttachmentSlots( this, attachment_slots );
-		for ( int i = 0; i < attachment_slots.Count(); i++ )
+		array<string> attachmentSlots = new array<string>;
+
+		GetAttachmentSlots(this, attachmentSlots);
+		foreach (string slotName : attachmentSlots)
 		{
-			string slot_name = attachment_slots.Get( i );
-			UpdateAttachmentVisuals( slot_name, IsAttachmentSlotLocked( slot_name ) );
+			UpdateAttachmentVisuals(slotName, IsAttachmentSlotLocked(slotName));
 		}
 		
 		//check base
-		if ( !HasBase() )
-		{
-			SetAnimationPhase( ANIMATION_DEPLOYED, 0 );
-		}
+		if (!HasBase())
+			SetAnimationPhase(ANIMATION_DEPLOYED, 0);
 		else
-		{
-			SetAnimationPhase( ANIMATION_DEPLOYED, 1 );
-		}
+			SetAnimationPhase(ANIMATION_DEPLOYED, 1);
 		
 		GetConstruction().UpdateVisuals();
 	}
 	
-	void UpdateAttachmentVisuals( string slot_name, bool is_locked )
+	void UpdateAttachmentVisuals(string slot_name, bool is_locked)
 	{
-		string slot_name_mounted = slot_name + "_Mounted";
-		EntityAI attachment = FindAttachmentBySlotName( slot_name );
+		string slotNameMounted = slot_name + "_Mounted";
+		EntityAI attachment = FindAttachmentBySlotName(slot_name);
 		
-		if ( attachment )
+		if (attachment)
 		{
-			//manage damage area trigger
-			if ( attachment.IsInherited( BarbedWire ) )
-			{
-				BarbedWire barbed_wire = BarbedWire.Cast( attachment );
-				if ( barbed_wire.IsMounted() )
-				{
-					CreateAreaDamage( slot_name_mounted );			//create damage trigger if barbed wire is mounted
-				}
-				else
-				{
-					DestroyAreaDamage( slot_name_mounted );			//destroy damage trigger if barbed wire is not mounted
-				}
-				//Print("attachment.IsInherited( BarbedWire ): " + slot_name_mounted);
-			}
+			BarbedWire barbedWire = BarbedWire.Cast(attachment);
+			if (barbedWire && barbedWire.IsMounted())
+				CreateAreaDamage(slotNameMounted);
+			else
+				DestroyAreaDamage(slotNameMounted);
 			
-			if ( is_locked )
+			if (is_locked)
 			{
-				SetAnimationPhase( slot_name_mounted, 0 );
-				SetAnimationPhase( slot_name, 1 );
+				SetAnimationPhase(slotNameMounted, 0);
+				SetAnimationPhase(slot_name, 1);
 			}
 			else
 			{
-				SetAnimationPhase( slot_name_mounted, 1 );
-				SetAnimationPhase( slot_name, 0 );
+				SetAnimationPhase(slotNameMounted, 1);
+				SetAnimationPhase(slot_name, 0);
 			}
 		}
 		else
 		{
-			SetAnimationPhase( slot_name_mounted, 1 );
-			SetAnimationPhase( slot_name, 1 );
+			SetAnimationPhase(slotNameMounted, 1);
+			SetAnimationPhase(slot_name, 1);
 			
-			//remove area damage trigger
-			DestroyAreaDamage( slot_name_mounted );			//try to destroy damage trigger if barbed wire is not present
-			//Print("DestroyAreaDamage(slot_name_mounted): " + slot_name_mounted);
+			DestroyAreaDamage(slotNameMounted);
 		}
 	}
 	
 	// avoid calling this function on frequent occasions, it's a massive performance hit
 	void UpdatePhysics()
 	{
-		//update attachments physics
-		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + GetDebugName(this) + " BaseBuildingBase::UpdatePhysics");
+		if (LogManager.IsBaseBuildingLogEnable())
+			bsbDebugPrint("[bsb] " + GetDebugName(this) + " BaseBuildingBase::UpdatePhysics");
 		
-		ref array<string> attachment_slots = new ref array<string>;
-		GetAttachmentSlots( this, attachment_slots );
-		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + GetDebugName(this) + " att_cnt=" + attachment_slots.Count());
-		for ( int i = 0; i < attachment_slots.Count(); i++ )
+		array<string> attachmentSlots = new array<string>;
+		GetAttachmentSlots(this, attachmentSlots);
+
+		if (LogManager.IsBaseBuildingLogEnable())
+			bsbDebugPrint("[bsb] " + GetDebugName(this) + " att_cnt=" + attachmentSlots.Count());
+
+		foreach (string slotName : attachmentSlots)
 		{
-			string slot_name = attachment_slots.Get( i );
-			UpdateAttachmentPhysics( slot_name, IsAttachmentSlotLocked( slot_name ) );
+			UpdateAttachmentPhysics(slotName, IsAttachmentSlotLocked(slotName));
 		}
 		
 		//check base
-		if ( !HasBase() )
+		if (!HasBase())
 		{
-			if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + GetDebugName(this) + ANIMATION_DEPLOYED + "  ADD");
-			AddProxyPhysics( ANIMATION_DEPLOYED );
+			if (LogManager.IsBaseBuildingLogEnable())
+				bsbDebugPrint("[bsb] " + GetDebugName(this) + ANIMATION_DEPLOYED + "  ADD");
+
+			AddProxyPhysics(ANIMATION_DEPLOYED);
 		}
 		else
 		{
-			if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + GetDebugName(this) + ANIMATION_DEPLOYED + " RM");
-			RemoveProxyPhysics( ANIMATION_DEPLOYED );
+			if (LogManager.IsBaseBuildingLogEnable())
+				bsbDebugPrint("[bsb] " + GetDebugName(this) + ANIMATION_DEPLOYED + " RM");
+
+			RemoveProxyPhysics(ANIMATION_DEPLOYED);
 		}
 		
 		GetConstruction().UpdatePhysics();
-		
-		//regenerate navmesh
 		UpdateNavmesh();
 	}
 	
@@ -989,6 +988,7 @@ class BaseBuildingBase extends ItemBase
 	{
 		ItemBase item = CreateConstructionKit();
 		DestroyConstruction();
+
 		return item;
 	}
 	
@@ -1001,10 +1001,8 @@ class BaseBuildingBase extends ItemBase
 			DestroyAreaDamage( slot_name );
 			
 			//create new area damage
-			AreaDamageLoopedDeferred_NoVehicle area_damage = new AreaDamageLoopedDeferred_NoVehicle( this );
-			area_damage.SetDamageComponentType(AreaDamageComponentTypes.HITZONE);
-			
-			//Print("BBB | area_damage: " + area_damage + " | slot_name: " + slot_name);
+			AreaDamageLoopedDeferred_NoVehicle areaDamage = new AreaDamageLoopedDeferred_NoVehicle( this );
+			areaDamage.SetDamageComponentType(AreaDamageComponentTypes.HITZONE);
 			
 			vector min_max[2];
 			if ( MemoryPointExists( slot_name + "_min" ) )
@@ -1029,16 +1027,16 @@ class BaseBuildingBase extends ItemBase
 			vector orientation = GetOrientation();;
 			CalcDamageAreaRotation( rotation_angle, center, orientation );
 			
-			area_damage.SetExtents( extents[0], extents[1] );
-			area_damage.SetAreaPosition( center );
-			area_damage.SetAreaOrientation( orientation );
-			area_damage.SetLoopInterval( 1.0 );
-			area_damage.SetDeferDuration( 0.2 );
-			area_damage.SetHitZones( { "Torso","LeftHand","LeftLeg","LeftFoot","RightHand","RightLeg","RightFoot" } );
-			area_damage.SetAmmoName( "BarbedWireHit" );
-			area_damage.Spawn();
+			areaDamage.SetExtents( extents[0], extents[1] );
+			areaDamage.SetAreaPosition( center );
+			areaDamage.SetAreaOrientation( orientation );
+			areaDamage.SetLoopInterval( 1.0 );
+			areaDamage.SetDeferDuration( 0.2 );
+			areaDamage.SetHitZones( { "Torso","LeftHand","LeftLeg","LeftFoot","RightHand","RightLeg","RightFoot" } );
+			areaDamage.SetAmmoName( "BarbedWireHit" );
+			areaDamage.Spawn();
 			
-			m_DamageTriggers.Insert( slot_name, area_damage );
+			m_DamageTriggers.Insert( slot_name, areaDamage );
 		}
 	}
 		
@@ -1064,15 +1062,14 @@ class BaseBuildingBase extends ItemBase
 		
 	void DestroyAreaDamage( string slot_name )
 	{
-		if ( GetGame() && GetGame().IsServer() )
+		if (GetGame() && GetGame().IsServer())
 		{
-			AreaDamageLoopedDeferred_NoVehicle area_damage;
-			if ( m_DamageTriggers.Find( slot_name, area_damage ) ) 
+			AreaDamageLoopedDeferred_NoVehicle areaDamage;
+			if (m_DamageTriggers.Find(slot_name, areaDamage))
 			{
-				if ( area_damage )
+				if (areaDamage)
 				{
-					//Print("DestroyAreaDamage: " + area_damage);
-					area_damage.Destroy();
+					areaDamage.Destroy();
 				}
 				
 				m_DamageTriggers.Remove( slot_name );
@@ -1226,9 +1223,17 @@ class BaseBuildingBase extends ItemBase
 
 void bsbDebugPrint (string s)
 {
+#ifdef BSB_DEBUG
+	PrintToRPT("" + s); // comment/uncomment to hide/see debug logs
+#else
 	//Print("" + s); // comment/uncomment to hide/see debug logs
+#endif
 }
 void bsbDebugSpam (string s)
 {
+#ifdef BSB_DEBUG_SPAM
+	PrintToRPT("" + s); // comment/uncomment to hide/see debug logs
+#else
 	//Print("" + s); // comment/uncomment to hide/see debug logs
+#endif
 }

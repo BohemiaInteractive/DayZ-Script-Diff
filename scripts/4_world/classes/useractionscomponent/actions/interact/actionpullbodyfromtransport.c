@@ -11,11 +11,6 @@ class ActionPullBodyFromTransport: ActionInteractBase
 		m_ConditionItem 	= new CCINone();
 		m_ConditionTarget 	= new CCTNone();
 	}
-
-	override typename GetInputType()
-	{
-		return ContinuousInteractActionInput;
-	}
 	
 	override bool HasProgress()
 	{

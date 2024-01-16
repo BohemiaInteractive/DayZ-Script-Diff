@@ -351,7 +351,7 @@ class TentBase extends ItemBase
 			HandleCamoNetAttachment(false);
 			//SetAnimationPhase("Camonet", 0);
 			
-			if (!IsKindOf ("MediumTent"))
+			if (!IsKindOf("MediumTent"))
 			{
 				AddProxyPhysics("camonet");
 			}	
@@ -429,7 +429,7 @@ class TentBase extends ItemBase
 	{
 		if (MemoryPointExists("invView2"))
 		{		
-			InventoryLocation il = new InventoryLocation;
+			InventoryLocation il = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation(il);
 			InventoryLocationType type = il.GetType();
 			
@@ -437,63 +437,25 @@ class TentBase extends ItemBase
 			{
 				switch (type)
 				{
-					case InventoryLocationType.CARGO:
-					{
-						return 0;
-					}
 					case InventoryLocationType.ATTACHMENT:
-					{
 						return 1;
-					}
-					case InventoryLocationType.HANDS:
-					{
-						return 0;
-					}
-					case InventoryLocationType.GROUND:
-					{
-						return 0;
-					}
-					case InventoryLocationType.PROXYCARGO:
-					{
-						return 0;
-					}
 					default:
-					{
 						return 0;
-					}
 				}
 			}
 			else
 			{
 				switch (type)
 				{
-					case InventoryLocationType.CARGO:
-					{
-						return 0;
-					}
 					case InventoryLocationType.ATTACHMENT:
-					{
-						return 1;
-					}
-					case InventoryLocationType.HANDS:
-					{
-						return 0;
-					}
 					case InventoryLocationType.GROUND:
-					{
 						return 1;
-					}
-					case InventoryLocationType.PROXYCARGO:
-					{
-						return 0;
-					}
 					default:
-					{
 						return 0;
-					}
 				}
 			}	
 		}
+
 		return 0;
 	}
 

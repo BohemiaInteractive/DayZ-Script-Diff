@@ -2,7 +2,7 @@ class ActionSewTargetCB : ActionContinuousBaseCB
 {
 	override void CreateActionComponent()
 	{
-		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.SEW_CUTS);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.SEW_CUTS);
 	}
 }
 
@@ -14,7 +14,6 @@ class ActionSewTarget : ActionBandageBase
 		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_INTERACT;
 		m_FullBody 			= true;
 		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
-		m_SpecialtyWeight 	= UASoftSkillsWeight.PRECISE_MEDIUM;
 
 		m_Text = "#sew_targets_cuts";
 	}
@@ -35,16 +34,12 @@ class ActionSewTarget : ActionBandageBase
 	}
 
 	override void OnFinishProgressServer(ActionData action_data)
-	{
-		PlayerBase target = PlayerBase.Cast(action_data.m_Target.GetObject());
-		
+	{		
 		if (CanReceiveAction(action_data.m_Target))
 		{
-			if (action_data.m_MainItem && target)
-			{
-				ApplyBandage(action_data.m_MainItem, target);
-				action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
-			}
+			PlayerBase player = PlayerBase.Cast(action_data.m_Target.GetObject());
+			if (action_data.m_MainItem && player)
+				ApplyBandage(action_data.m_MainItem, player);
 		}
 	}
 	
@@ -53,11 +48,11 @@ class ActionSewTarget : ActionBandageBase
 		if (player.GetBleedingManagerServer())
 			player.GetBleedingManagerServer().RemoveMostSignificantBleedingSourceEx(item);	
 		
-		PluginTransmissionAgents m_mta = PluginTransmissionAgents.Cast(GetPlugin(PluginTransmissionAgents));
-		m_mta.TransmitAgents(item, player, AGT_ITEM_TO_FLESH);
+		PluginTransmissionAgents transmissionAgents = PluginTransmissionAgents.Cast(GetPlugin(PluginTransmissionAgents));
+		transmissionAgents.TransmitAgents(item, player, AGT_ITEM_TO_FLESH);
 		
 		if (item.HasQuantity())
-			item.AddQuantity(-20,true);
+			item.AddQuantity(-20, true);
 		else
 			item.Delete();
 	}

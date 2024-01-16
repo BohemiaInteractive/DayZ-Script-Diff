@@ -21,7 +21,9 @@ class CargoContainer extends Container
 	protected Widget												m_CargoHeader;
 	protected Widget												m_CargoContainer;
 	protected Widget												m_ItemsContainer;
+#ifndef PLATFORM_CONSOLE
 	protected ref SizeToChild										m_Resizer1;
+#endif
 	protected ref SizeToChild										m_Resizer2;
 	protected ref Timer												m_ResizeTimer;
 	
@@ -36,9 +38,9 @@ class CargoContainer extends Container
 		m_CargoContainer		= m_RootWidget.FindAnyWidget( "grid_background" );
 		m_ItemsContainer		= m_RootWidget.FindAnyWidget( "grid_overlay" );
 		m_CargoHeader			= m_RootWidget.FindAnyWidget( "grid_container_header_spacer" );
-		
+#ifndef PLATFORM_CONSOLE
 		m_RootWidget.GetScript( m_Resizer1 );
-		
+#endif		
 		m_RootWidget.FindAnyWidget( "grid_container" ).GetScript( m_Resizer2 );
 		m_CargoHeader.Show( is_attachment );
 		m_FalseHeaderTextWidget = TextWidget.Cast(m_CargoHeader.FindAnyWidget( "TextWidget0" ));
@@ -351,12 +353,18 @@ class CargoContainer extends Container
 		#endif
 		
 		m_Resizer2.ResizeParentToChild();
+#ifndef PLATFORM_CONSOLE
 		m_Resizer1.ResizeParentToChild();
+#endif
 	}
 	
 	void UpdateSize()
 	{
+#ifndef PLATFORM_CONSOLE
 		m_Resizer1.ResizeParentToChild();
+#else
+		m_Resizer2.ResizeParentToChild();
+#endif
 	}
 	
 	float GetIconSize()
@@ -410,7 +418,6 @@ class CargoContainer extends Container
 	{
 		if ( m_Cargo == null )
 		{
-			Print("Attempted to get icon on cargo container, but cargo was null!");
 			return null;
 		}
 
@@ -498,7 +505,9 @@ class CargoContainer extends Container
 		}
 		
 		m_Resizer2.ResizeParentToChild();
+#ifndef PLATFORM_CONSOLE
 		m_Resizer1.ResizeParentToChild();
+#endif
 	}
 	
 	override void Refresh()

@@ -1155,6 +1155,8 @@ class PluginDayzPlayerDebug extends PluginBase
 		RegisterAnimation("EAT PILL", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_EAT_PILL, false);
 		RegisterAnimation("EAT TABLET", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_EAT_TABLET, false);
 		RegisterAnimation("HEATPACK", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_HEATPACK, false);
+		RegisterAnimation("BLOODTEST", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTEST, false);
+		RegisterAnimation("BLOODTESTOTHER", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTESTOTHER, false);
 		//! fullbody looping
 		RegisterAnimation("DRINK", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_DRINK, true, DayZPlayerConstants.STANCEMASK_PRONE);
 		RegisterAnimation("EAT", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_EAT, true, DayZPlayerConstants.STANCEMASK_PRONE);
@@ -1224,6 +1226,13 @@ class PluginDayzPlayerDebug extends PluginBase
 		RegisterAnimation("SET ALARM CLOCK", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_SET_ALARM, true, DayZPlayerConstants.STANCEMASK_PRONE);
 		RegisterAnimation("SHOVEL DIG", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_SHOVEL_DIG, true, DayZPlayerConstants.STANCEMASK_CROUCH);
 		RegisterAnimation("VEHICLE_PUSH", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_VEHICLE_PUSH, true, DayZPlayerConstants.STANCEMASK_ERECT);
+		RegisterAnimation("PATCHING_TIRE", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_PATCHING_TIRE, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("PATCHING_DUCTTAPE", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_PATCHING_DUCTTAPE, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("PATCHING_SEWING", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_PATCHING_SEWING, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("PATCHING_LEATHER_SEWING_KIT", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_PATCHING_LEATHER_SEWING_KIT, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("SPLITTING FIREWOOD", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("BREAKING STICK", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_BREAKING_STICK, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("CLEANING_WEAPON", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_CLEANING_WEAPON, true, DayZPlayerConstants.STANCEMASK_CROUCH);
 
 		//! one time
 		RegisterAnimation("PICK UP HANDS", TYPE_FB_ONETIME, DayZPlayerConstants.CMD_ACTIONFB_PICKUP_HANDS, true, DayZPlayerConstants.STANCEMASK_PRONE);
@@ -1327,6 +1336,9 @@ class PluginDayzPlayerDebug extends PluginBase
 		RegisterAnimation("SHAKE HEAD", TYPE_FB_GESTURE_ONETIME, DayZPlayerConstants.CMD_GESTUREFB_SHAKEHEAD, true, DayZPlayerConstants.STANCEMASK_PRONE);
 		RegisterAnimation("SHRUG", TYPE_FB_GESTURE_ONETIME, DayZPlayerConstants.CMD_GESTUREFB_SHRUG, true, DayZPlayerConstants.STANCEMASK_PRONE);
 		RegisterAnimation("SURRENDER", TYPE_FB_GESTURE_ONETIME, DayZPlayerConstants.CMD_GESTUREFB_SURRENDER, true, DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_PRONE);
+		RegisterAnimation("TRAILER MASK", TYPE_FB_GESTURE_ONETIME, DayZPlayerConstants.CMD_TRAILER_MASK, true, DayZPlayerConstants.STANCEMASK_ERECT);
+		RegisterAnimation("TRAILER MASK_02", TYPE_FB_GESTURE_ONETIME, DayZPlayerConstants.CMD_TRAILER_MASK_02, true, DayZPlayerConstants.STANCEMASK_ERECT);
+
 		//! ---------------------------------------------------------
 		//! ---------------------- SUICIDE --------------------------
 		//! ---------------------------------------------------------

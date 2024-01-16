@@ -163,27 +163,46 @@ class Crossbow_Base : Archery_Base
 		return 0.0;
 	}
 	
-	override void OnDebugSpawn()
+	override void OnDebugSpawnEx(DebugSpawnParams params)
 	{
 		//super.OnDebugSpawn();
+
+		
 
 		GetInventory().CreateInInventory( "ACOGOptic_6x" );
 		
 		EntityAI entity;
 
-		SpawnEntityOnGroundPos("Ammo_HuntingBolt", GetPosition());
-		SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_1", GetPosition());
-		SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_2", GetPosition());
+		GameInventory inv = null;
+		if (params.m_Player)
+		{
+			inv = params.m_Player.GetInventory();
+		}
+
+		SpawnInInventoryOrGroundPos("Ammo_HuntingBolt", inv, GetPosition());
+		SpawnInInventoryOrGroundPos("Ammo_ImprovisedBolt_1", inv, GetPosition());
+		SpawnInInventoryOrGroundPos("Ammo_ImprovisedBolt_2", inv, GetPosition());
 			
-		SpawnEntityOnGroundPos("ACOGOptic", GetPosition());
-		entity = SpawnEntityOnGroundPos("M68Optic", GetPosition());
+		SpawnInInventoryOrGroundPos("ACOGOptic", inv, GetPosition());
+		entity = SpawnInInventoryOrGroundPos("M68Optic", inv, GetPosition());
 		entity.GetInventory().CreateInInventory( "Battery9V" );
-		entity = SpawnEntityOnGroundPos("M4_T3NRDSOptic", GetPosition());
+		entity = SpawnInInventoryOrGroundPos("M4_T3NRDSOptic", inv, GetPosition());
 		entity.GetInventory().CreateInInventory( "Battery9V" );
-		entity = SpawnEntityOnGroundPos("ReflexOptic", GetPosition());
+		entity = SpawnInInventoryOrGroundPos("ReflexOptic", inv, GetPosition());
 		entity.GetInventory().CreateInInventory( "Battery9V" );
-		entity = SpawnEntityOnGroundPos("StarlightOptic", GetPosition());
+		entity = SpawnInInventoryOrGroundPos("StarlightOptic", inv, GetPosition());
 		entity.GetInventory().CreateInInventory( "Battery9V" );
+	}
+	
+	override bool CanBeUsedForSuicide()
+	{
+		float ammoDamage;
+		string ammoTypeName;
+		GetCartridgeInfo(GetCurrentMuzzle(), ammoDamage, ammoTypeName);
+		if (ammoTypeName == "Bullet_CupidsBolt")
+			return false;
+		
+		return super.CanBeUsedForSuicide();
 	}
 }
 

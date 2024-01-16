@@ -1,9 +1,9 @@
 class CfgGameplayHandler
 {
-	private static string m_Path = "$mission:cfgGameplay.json";
+	private static string m_Path = "$mission:cfggameplay.json";
 	private static ref array<ref ITEM_DataBase> m_Items = new array<ref ITEM_DataBase>();
 	
-	static ref CfgGameplayJson m_Data = new CfgGameplayJson;
+	static ref CfgGameplayJson m_Data = new CfgGameplayJson();
 	
 	//---------------------------------------------------------------------------------------
 	static void RegisterItem(ITEM_DataBase item)
@@ -13,13 +13,13 @@ class CfgGameplayHandler
 	//---------------------------------------------------------------------------------------
 	private static void ValidateItems()
 	{
-		foreach (ITEM_DataBase item:m_Items)
+		foreach (ITEM_DataBase item : m_Items)
 		{
 			if (!item.ValidateServer())
 			{
 				string itemName = item.Type().ToString();
 				itemName.Replace("ITEM_", "");
-				PrintToRPT("Validation failed during loading of 'cfgGameplay.json' for " + itemName);
+				PrintToRPT("Validation failed during loading of 'cfggameplay.json' for " + itemName);
 				item.InitServer();
 			}
 		}
@@ -43,23 +43,23 @@ class CfgGameplayHandler
 	//---------------------------------------------------------------------------------------
 	static bool LoadData()
 	{
-		if ( !FileExist( m_Path ) )
+		if (!FileExist(m_Path))
 		{
 			m_Path = "";
-			GetGame().GetWorldName( m_Path );
-			m_Path = string.Format("DZ/worlds/%1/ce/cfgGameplay.json", m_Path );
+			GetGame().GetWorldName(m_Path);
+			m_Path = string.Format("dz/worlds/%1/ce/cfggameplay.json", m_Path);
 		}
 
 		bool cfgGameplayFileEnabled = GetGame().ServerConfigGetInt( "enableCfgGameplayFile" );
 
-#ifdef DIAG_DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		if (!GetGame().IsDedicatedServer())
 		{
 			cfgGameplayFileEnabled = true;
 		}
-#endif
+		#endif
 		
-		if (!cfgGameplayFileEnabled || !FileExist( m_Path ))
+		if (!cfgGameplayFileEnabled || !FileExist(m_Path))
 		{
 			m_Data.InitServer();//legacy call
 			InitData();
@@ -67,7 +67,10 @@ class CfgGameplayHandler
 			return false;
 		}
 		
-		JsonFileLoader<CfgGameplayJson>.JsonLoadFile( m_Path, m_Data );//we are allowed to read the file, so we replace the default data with data from json
+		string errorMessage;
+		if (!JsonFileLoader<CfgGameplayJson>.LoadFile(m_Path, m_Data, errorMessage)) //! we are allowed to read the file, so we replace the default data with data from json
+			ErrorEx(errorMessage);
+
 		ValidateItems();
 		OnLoaded();
 		

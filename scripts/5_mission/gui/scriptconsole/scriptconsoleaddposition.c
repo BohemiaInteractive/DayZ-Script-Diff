@@ -35,7 +35,7 @@ class ScriptConsoleAddLocation extends UIScriptedMenu
 		{
 			string name = m_EditboxName.GetText();
 			ScriptConsole console = ScriptConsole.Cast(GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE));
-			ScriptConsoleGeneralTab tab = ScriptConsoleGeneralTab.Cast(console.GetTabHandler(ScriptConsole.TAB_GENERAL));
+			ScriptConsoleGeneralTab tab = ScriptConsoleGeneralTab.Cast(console.GetTabHandler(ScriptConsoleGeneralTab));
 			if (tab)
 			{
 				if (!tab.IsLocationNameAvailable(name) || name == "" || m_EditboxPos.GetText() == "")

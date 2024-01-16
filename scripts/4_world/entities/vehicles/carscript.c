@@ -552,11 +552,14 @@ class CarScript extends Car
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "Car Cooler", FadeColors.RED));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_FULL, "Full", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_EMPTY, "Empty", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANTL_INCREASE, "10% increase", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANTL_DECREASE, "10% decrease", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_INCREASE, "10% increase", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_DECREASE, "10% decrease", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
 		super.GetDebugActions(outputList);
+		
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
 	}
 	
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
@@ -600,11 +603,14 @@ class CarScript extends Car
 			case EActions.CAR_COOLANT_EMPTY:
 				LeakAll(CarFluid.COOLANT);
 				return true;
-			case EActions.CAR_COOLANTL_INCREASE:
+			case EActions.CAR_COOLANT_INCREASE:
 				Fill(CarFluid.COOLANT, GetFluidCapacity(CarFluid.COOLANT) * 0.1);
 				return true;
-			case EActions.CAR_COOLANTL_DECREASE:
+			case EActions.CAR_COOLANT_DECREASE:
 				Leak(CarFluid.COOLANT, GetFluidCapacity(CarFluid.COOLANT) * 0.1);
+				return true;
+			case EActions.DELETE:
+				Delete();
 				return true;
 		}
 	

@@ -315,6 +315,10 @@ class ParticleList
 	// Drowning bubbles
 	static const int DROWNING_BUBBLES				= RegisterParticle("breath_bubbles");
 	
+	//! Cupid's bolt
+	static const int BOLT_CUPID_TAIL				= RegisterParticle("cupid_bolt");
+	static const int BOLT_CUPID_HIT					= RegisterParticle("cupid_hit");
+	
 	static int RegisterParticle(string file_name)
 	{
 		return RegisterParticle(GetPathToParticles(), file_name);

@@ -174,10 +174,10 @@ class ActionPushCar : ActionContinuousBase
 		CarScript car = GetCar(target);
 		if (car)
 		{
-			if (Math.AbsFloat(GetDirectionDot(car, player)) < 0.85)
+			if (car.GetGear() != CarGear.NEUTRAL)
 				return false;
 
-			if (car.EngineIsOn() && car.GetGear() != CarGear.NEUTRAL)
+			if (Math.AbsFloat(GetDirectionDot(car, player)) < 0.85)
 				return false;
 
 			return true;
@@ -245,11 +245,7 @@ class ActionPushCar : ActionContinuousBase
 		
 		ActionPushCarData data = ActionPushCarData.Cast(action_data);
 		if (data.m_Car)
-		{
 			data.m_Car.SetBrakesActivateWithoutDriver(true);
-			data.m_Car.SetBrake(1.0);
-			data.m_Car.SetHandbrake(1.0);
-		}
 	}
 	
 	override void OnEndInput(ActionData action_data)

@@ -634,7 +634,7 @@ class GameConstants
 	const float	STAMINA_DRAIN_ROLL = 5; // in units (how much roll depletes stamina)
 	
 	const float STAMINA_DRAIN_HOLD_BREATH_DURATION = 5.0; //in seconds, time it takes to increase stamina drain from STAMINA_DRAIN_HOLD_BREATH_START to STAMINA_DRAIN_HOLD_BREATH_END
-	const float	STAMINA_DRAIN_HOLD_BREATH_EXPONENT = 4.0; //holding breath exponent
+	const float	STAMINA_DRAIN_HOLD_BREATH_EXPONENT = 3; //holding breath exponent
 	
 	const int 	STAMINA_GAIN_JOG_PER_SEC = 2; //in units (how much of stamina units is gained while jogging)
 	const int 	STAMINA_GAIN_WALK_PER_SEC = 4; //in units (how much of stamina units is gained while walking)
@@ -856,6 +856,14 @@ class GameConstants
 	const float PROJECTILE_CONVERSION_ANIMALS 	= 0.1;
 	const float PROJECTILE_CONVERSION_INFECTED 	= 0.44;
 	const float PROJECTILE_CONVERSION_PLAYERS 	= 0.1;
+	
+	const float NL_DAMAGE_FIREARM_CONVERSION_ANIMALS 	= PROJECTILE_CONVERSION_ANIMALS;
+	const float NL_DAMAGE_FIREARM_CONVERSION_INFECTED 	= PROJECTILE_CONVERSION_INFECTED;
+	const float NL_DAMAGE_FIREARM_CONVERSION_PLAYERS  	= PROJECTILE_CONVERSION_PLAYERS;
+	
+	const float NL_DAMAGE_CLOSECOMBAT_CONVERSION_ANIMALS 	= 0.16;
+	const float NL_DAMAGE_CLOSECOMBAT_CONVERSION_INFECTED 	= 0.16;
+	const float NL_DAMAGE_CLOSECOMBAT_CONVERSION_PLAYERS  	= 0;
 	
 	const float ROOF_CHECK_RAYCAST_DIST = 20.0;
 	

@@ -393,8 +393,11 @@ class Magazine : InventoryItemSuper
 	{
 		super.GetDebugActions(outputList);
 
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.PRINT_BULLETS, "Print Bullets", FadeColors.LIGHT_GREY));
+		if (GetAmmoCount() > 0)
+		{
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.LIGHT_GREY));
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.PRINT_BULLETS, "Print Bullets", FadeColors.LIGHT_GREY));
+		}
 	}
 	
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)

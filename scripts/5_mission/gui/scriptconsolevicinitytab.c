@@ -10,7 +10,7 @@ class ScriptConsoleVicinityTab : ScriptConsoleTabBase
 
 	protected ref ContextMenu		m_ContextMenu;
 	
-	void ScriptConsoleVicinityTab(Widget root, ScriptConsole console)
+	void ScriptConsoleVicinityTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		m_VicinityListbox = TextListboxWidget.Cast(root.FindAnyWidget("VicinityListbox"));
 		m_WatchItem = ButtonWidget.Cast(root.FindAnyWidget("WatchItemButton"));
@@ -25,6 +25,11 @@ class ScriptConsoleVicinityTab : ScriptConsoleTabBase
 		m_ContextMenu.Show(0, 0);
 		
 		RenderList();
+	}
+	
+	override void OnSelected()
+	{
+		UpdateSelected();
 	}
 	
 	void RenderList()

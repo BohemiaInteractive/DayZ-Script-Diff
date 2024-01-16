@@ -419,17 +419,19 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		
 		m_EntryWidgets.Clear();
 		
-#ifdef PLATFORM_CONSOLE
-		m_CurrentFilterInput = m_Filters.GetFilterOptionsConsoles();
-		m_CurrentFilterInput.m_SortOrder = m_SortOrder;
-		m_CurrentFilterInput.m_Page = GetCurrentPage();
-		#ifndef PLATFORM_WINDOWS
+		#ifndef PLATFORM_WINDOWS // XBOX OR PS
+			m_CurrentFilterInput = m_Filters.GetFilterOptionsConsoles();
+			m_CurrentFilterInput.m_Page = GetCurrentPage();
 			m_CurrentFilterInput.m_SortBy = GetSortOption();
+			m_CurrentFilterInput.m_SortOrder = m_SortOrder;
+		#else // PLATFORM_WINDOWS
+			m_CurrentFilterInput = m_Filters.GetFilterOptionsPC();
+			#ifdef PLATFORM_CONSOLE // PC client with -XBOX flag
+				m_CurrentFilterInput.m_Page = GetCurrentPage();
+			#else	
+				m_CurrentFilterInput.m_Page = 0;
+			#endif
 		#endif
-#else // PLATFORM_WINDOWS
-		m_CurrentFilterInput = m_Filters.GetFilterOptionsPC();
-		m_CurrentFilterInput.m_Page = 0;
-#endif
 
 		m_Loading = true;
 		switch ( m_TabType )

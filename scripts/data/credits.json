@@ -72,6 +72,7 @@
                         "Alberto Paparella",
                         "Arthur Joanin",
                         "Jan Tomášik",
+                        "Jana Unzeitigová",
                         "Marek Žilavý",
                         "Martin Palaugari",
                         "Martin Strnad",
@@ -155,6 +156,7 @@
                     "SectionLines": [
                         "Adrian Turcanu",
                         "Aleš Renner",
+                        "Aleš Stupka",
                         "Eduard Pribula",
 						"Elias Mittet Hernes",
 						"Floris Leysen",
@@ -556,6 +558,7 @@
                     "SectionName": "#brand_and_pr_management_team",
                     "SectionLines": [
                         "Jakub Vamberský",
+                        "Jitka Vysloužilová",
                         "Karolina Havelkova",
                         "Lynn Thun Zaw",
                         "Miguel Raimundo",
@@ -649,10 +652,31 @@
             ]
         },
         {
+            "DepartmentName": "Localization",
+            "Sections": [
+                {
+                    "SectionName": "",
+                    "SectionLines": [
+                    ]
+                }
+            ]
+        },
+                {
             "DepartmentName": "",
             "Sections": [
                 {
-                    "SectionName": "#localization_producer",
+                    "SectionName": "#localization_team",
+                    "SectionLines": [
+                    "Hiroya Ishida"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Localization – Context Heroes",
+            "Sections": [
+                {
+                    "SectionName": "#localization_manager",
                     "SectionLines": [
                         "Vojtěch Schubert"
                     ]
@@ -666,10 +690,10 @@
                     "SectionName": "#localization_team",
                     "SectionLines": [
                         "Andrea Luciano Damico",
-                        "Andrew Zhu (S&H Entertainment Localization)",
+                        "Andrew Zhu",
                         "Artemiy Mikheev",
-                        "Aya Pickard (Loekalization)",
-                        "Bartosz Klofik (Biuro tłumaczeń Locsmith)",
+                        "Aya Pickard",
+                        "Bartosz Klofik",
 						"Carmen Simio",
                         "Curri Barceló",
                         "David Livingstone",
@@ -679,13 +703,12 @@
                         "Felix Tappe",
                         "Fernando Moreiras",
                         "Goulven Le Goff",
-						"Hiroya Ishida",
                         "Igor Savenkov",
                         "Jiří Petrů",
 						"Joanna Kinga Král",
                         "Lincoln Hui",
 						"Liu Dasheng",
-                        "Loek van Kooten (Loekalization)",
+                        "Loek van Kooten",
                         "Mathilde Sperduto",
                         "Marco Piccinnu",
                         "Martin Kořenek",
@@ -693,14 +716,25 @@
                         "Ramón Méndez",
                         "Rafael Galhardi",
                         "Raphaël Rouby",
-                        "Rumi Tasaki (Loekalization)",
+                        "Rumi Tasaki",
                         "Sara Cascianelli",
                         "Scott Liang",
-                        "Sibel Wu (S&H Entertainment Localization)",
                         "Thiago Hilger",
                         "Tobiáš Zíka",
-                        "Vojtěch Schubert",
-						"William Wang (S&H Entertainment Localization)"
+                        "Vojtěch Schubert"
+                    ]
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Localization – S&H Entertainment",
+            "Sections": [
+                {
+                    "SectionName": "#localization_team",
+                    "SectionLines": [
+                        "Andrew Zhu",
+                        "Sibel Wu",
+                        "William Wang"
                     ]
                 }
             ]

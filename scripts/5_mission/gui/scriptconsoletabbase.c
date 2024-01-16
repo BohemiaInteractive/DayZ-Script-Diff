@@ -1,16 +1,73 @@
 class ScriptConsoleTabBase
 {
+	protected int m_Id;
+	protected bool m_IsSelected;
+	protected Widget m_ParentRoot;
 	protected Widget m_Root;
+	protected Widget m_Button;
 	protected ScriptConsole m_ScriptConsole;
+	protected ScriptConsoleTabBase m_Parent;//for subtabs
 	protected PluginConfigDebugProfile m_ConfigDebugProfile;
 	protected PluginConfigDebugProfileFixed m_ConfigDebugProfileFixed;
 	
-	void ScriptConsoleTabBase(Widget root, ScriptConsole console)
+	void ScriptConsoleTabBase(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		m_Button = button;
 		m_ScriptConsole = console;
 		m_Root = root;
+		if (parent)
+			m_ParentRoot = parent.GetRoot();
+		else
+			m_ParentRoot = console.layoutRoot;
 		m_ConfigDebugProfile = PluginConfigDebugProfile.Cast(GetPlugin(PluginConfigDebugProfile));
 		m_ConfigDebugProfileFixed	= PluginConfigDebugProfileFixed.Cast(GetPlugin(PluginConfigDebugProfileFixed));
+	}
+	
+	void Init(int id)
+	{
+		m_Id = id;
+	}
+	
+	int GetID()
+	{
+		return m_Id;
+	}
+	
+	Widget GetRoot()
+	{
+		return m_Root;
+	}
+	
+	bool IsSelected()
+	{
+		return m_IsSelected;
+	}
+	
+	void Select(bool select, ScriptConsoleTabBase selectedHandler)
+	{
+		m_IsSelected = select;
+		if (m_Root)
+		{
+			Show(select, selectedHandler);
+			ButtonWidget btn = ButtonWidget.Cast(m_Button);
+			if (btn)
+				btn.SetState(select);
+		}
+		if (select)
+			OnSelected();
+	}
+	
+	void OnSelected();
+	
+	void Show(bool show, ScriptConsoleTabBase selectedHandler)
+	{
+		m_Root.Show(show);
+		m_Root.Enable(show);
+	}
+	
+	Widget GetButton()
+	{
+		return m_Button;
 	}
 	
 	void Update(float timeslice);
@@ -22,6 +79,7 @@ class ScriptConsoleTabBase
 	bool OnDoubleClick(Widget w, int x, int y, int button);
 	void OnRPCEx(int rpc_type, ParamsReadContext ctx);
 	bool OnMouseButtonDown(Widget w, int x, int y, int button);
+	bool OnKeyPress(Widget w, int x, int y, int key);
 	
 	protected void AddItemToClipboard(TextListboxWidget text_listbox_widget)
 	{

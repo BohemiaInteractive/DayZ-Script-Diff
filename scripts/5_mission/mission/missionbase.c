@@ -44,6 +44,7 @@ class MissionBase extends MissionBaseWorld
 		
 		// There is a possibility different maps/servers may be using different effects
 		SEffectManager.Cleanup();
+		GetUApi().UpdateControls();
 	}
 
 	void ~MissionBase()
@@ -68,18 +69,24 @@ class MissionBase extends MissionBaseWorld
 		GetGame().GetWorldName(worldName);
 		worldName.ToLower();
 
-		switch ( worldName )
+		switch (worldName)
 		{
 			case "chernarusplus":
-				m_WorldData = new ChernarusPlusData;
+				m_WorldData = new ChernarusPlusData();
 				break;
 
 			case "enoch":
-				m_WorldData = new EnochData;
+				m_WorldData = new EnochData();
 				break;
+			
+			#ifdef PLATFORM_CONSOLE
+			case "mainmenuscenexbox":
+				m_WorldData = new MainMenuWorldData();
+				break
+			#endif
 
 			default:
-				m_WorldData = new ChernarusPlusData;
+				m_WorldData = new ChernarusPlusData();
 				break;
 		}
 	}

@@ -498,86 +498,6 @@ class AttachmentCategoriesRow: ClosableContainer
 		}
 	}
 	
-	void DoubleClick(Widget w, int x, int y, int button)
-	{
-		if( button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
-		{
-			if( w == null )
-			{
-				return;
-			}
-			ItemPreviewWidget iw = ItemPreviewWidget.Cast( w.FindAnyWidget( "Render" ) );
-			if( !iw )
-			{
-			  string name = w.GetName();
-			  name.Replace( "PanelWidget", "Render" );
-			  iw = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
-			}
-			if( !iw )
-			{
-			  iw = ItemPreviewWidget.Cast( w );
-			}
-			if( !iw.GetItem() )
-			{
-				return;
-			}
-			
-			SlotsIcon slots_icon;
-			w.GetUserData(slots_icon);
-			
-			if( slots_icon && m_Entity.GetInventory().GetSlotLock( iw.GetUserID() ) )
-			{
-				return;
-			}
-			
-			ItemBase item = ItemBase.Cast( iw.GetItem() );
-			
-			if( !item.GetInventory().CanRemoveEntity() )
-				return;
-			
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-			
-			if( player.GetInventory().HasEntityInInventory( item ) && player.GetHumanInventory().CanAddEntityInHands( item ) )
-			{
-				player.PredictiveTakeEntityToHands( item );
-			}
-			else
-			{
-				if(player.GetInventory().CanAddEntityToInventory( item ) && item.GetInventory().CanRemoveEntity())
-				{
-					if( item.GetTargetQuantityMax() < item.GetQuantity() )
-					{
-						item.SplitIntoStackMaxClient( player, -1 );
-					}
-					else
-					{
-						player.PredictiveTakeEntityToInventory( FindInventoryLocationType.ANY, item );
-					}
-				}
-				else
-				{
-					if( player.GetHumanInventory().CanAddEntityInHands( item ) )
-					{
-						if( item.GetTargetQuantityMax() < item.GetQuantity() )
-						{
-							item.SplitIntoStackMaxHandsClient( player );
-						}
-						else
-						{
-							player.PredictiveTakeEntityToHands( item );
-						}
-					}
-				}
-			}
-			
-			HideOwnedTooltip();
-			
-			name = w.GetName();
-			name.Replace( "PanelWidget", "Temperature" );
-			w.FindAnyWidget( name ).Show( false );
-		}
-	}
-	
 	bool DraggingOverGrid( Widget w,  int x, int y, Widget reciever, CargoContainer cargo )
 	{
 		if( w == null )
@@ -684,7 +604,7 @@ class AttachmentCategoriesRow: ClosableContainer
 			
 			if( icon )
 			{
-				icon.GetRootWidget().FindAnyWidget("Cursor").SetColor( ColorManager.BASE_COLOR );
+				icon.GetCursorWidget().SetColor( ColorManager.BASE_COLOR );
 				icon.RefreshPos( x, y );
 				icon.Refresh();
 				Refresh();
@@ -749,22 +669,26 @@ class AttachmentCategoriesRow: ClosableContainer
 		EntityAI item = m_Entity.GetInventory().FindAttachment( slot_id_ );
 		ContainerWithCargo cont;
 		
-		if( !m_Entity.CanDisplayAttachmentSlot( slot_id_ ) )
+		if (!m_Entity.CanDisplayAttachmentSlot(slot_id_))
 		{
 			icon.Clear();
 			icon.GetMainWidget().Show( false );
 		}
-		else if( !item )
+		else if (!item)
 		{
-			icon.Clear();
-			icon.GetMainWidget().Show( true );
-			cont = m_AttachmentCargos.Get(slot_id_);
-			if( cont )
+			if (icon.GetEntity())
 			{
-				m_AttachmentCargos.Remove(slot_id_);
-				this.Remove(cont);
-				( Container.Cast( cont.m_Parent ) ).Remove( cont );
+				icon.ClearRemainSelected();
+				
+				cont = m_AttachmentCargos.Get(slot_id_);
+				if (cont)
+				{
+					m_AttachmentCargos.Remove(slot_id_);
+					this.Remove(cont);
+					( Container.Cast( cont.m_Parent ) ).Remove( cont );
+				}
 			}
+			icon.GetMainWidget().Show(true);
 		}
 		else
 		{
@@ -777,7 +701,6 @@ class AttachmentCategoriesRow: ClosableContainer
 			{
 				icon.Refresh();
 			}
-			//icon.Refresh();
 			
 			cont = m_AttachmentCargos.Get(slot_id_);
 			if( cont && cont.GetEntity() != item)
@@ -799,9 +722,6 @@ class AttachmentCategoriesRow: ClosableContainer
 					
 					m_AttachmentCargos.Insert( slot_id_, cont );
 					icon.SetContainer(cont);
-					
-					//icon.GetRadialIconPanel().Show( true );
-					//icon.GetRadialIconPanel().Show( cont.IsDisplayable() );
 					
 					SetOpenForSlotIcon(cont.IsOpened(),icon);
 				}
@@ -853,113 +773,196 @@ class AttachmentCategoriesRow: ClosableContainer
 		}
 	}
 	
-	override bool OnMouseButtonDown(Widget w, int x, int y, int button)
+	void DoubleClick(Widget w, int x, int y, int button)
 	{
-		super.OnMouseButtonDown(w, x, y, button);
-		
-		SlotsIcon slots_icon;
-		w.GetUserData(slots_icon);
-		
-		Container c = Container.Cast( slots_icon.GetContainer() );
-		if ( c )
+		if (button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
-			if ( c.IsOpened() )
+			ItemPreviewWidget iw = ItemPreviewWidget.Cast(w.FindAnyWidget("Render"));
+			if (!iw)
 			{
-				c.Close();
+			  string name = w.GetName();
+			  name.Replace("PanelWidget", "Render");
+			  iw = ItemPreviewWidget.Cast(w.FindAnyWidget(name));
 			}
-			else
+			
+			if (!iw)
+			  iw = ItemPreviewWidget.Cast(w);
+			
+			SlotsIcon icon;
+			w.GetUserData(icon);
+			
+			if (icon && m_Entity.GetInventory().GetSlotLock(iw.GetUserID()))
+				return;
+			
+			if (icon.IsOutOfReach())
+				return;
+			
+			ItemBase item = ItemBase.Cast(iw.GetItem());
+			if (item)
 			{
-				c.Open();
+				if (!item.GetInventory().CanRemoveEntity())
+					return;
+				
+				PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+				if (controlledPlayer.GetInventory().HasEntityInInventory(item) && controlledPlayer.GetHumanInventory().CanAddEntityInHands(item))
+				{
+					controlledPlayer.PredictiveTakeEntityToHands(item);
+				}
+				else
+				{
+					if (controlledPlayer.GetInventory().CanAddEntityToInventory(item) && item.GetInventory().CanRemoveEntity())
+					{
+						if (item.GetTargetQuantityMax() < item.GetQuantity())
+							item.SplitIntoStackMaxClient(controlledPlayer, -1);
+						else
+							controlledPlayer.PredictiveTakeEntityToInventory(FindInventoryLocationType.ANY, item);
+					}
+					else
+					{
+						if (controlledPlayer.GetHumanInventory().CanAddEntityInHands(item))
+						{
+							if (item.GetTargetQuantityMax() < item.GetQuantity())
+								item.SplitIntoStackMaxHandsClient(controlledPlayer);
+							else
+								controlledPlayer.PredictiveTakeEntityToHands(item);
+						}
+					}
+				}
+				
+				HideOwnedTooltip();
+				
+				name = w.GetName();
+				name.Replace("PanelWidget", "Temperature");
+				w.FindAnyWidget(name).Show(false);
 			}
 		}
-		
-		#ifdef DIAG_DEVELOPER		
-		if ( GetDayZGame().IsLeftCtrlDown() && button == MouseState.RIGHT )
+	}
+	
+	void MouseClick(Widget w, int x, int y, int button)
+	{
+		ItemBase selectedItem;
+		SlotsIcon icon; 
+		w.GetUserData(icon);
+		if (icon)
+			selectedItem = ItemBase.Cast(icon.GetEntity());
+
+		if (selectedItem)
 		{
-			SlotsIcon user_data;
-			w.GetUserData(user_data);
-			if (user_data)
+			switch (button)
 			{
-				ShowActionMenu( user_data.GetItem() );
-				return true;
+				case MouseState.RIGHT:
+					#ifdef DIAG_DEVELOPER
+					if (g_Game.IsLeftCtrlDown())
+						ShowActionMenu(selectedItem);
+					#endif
+
+					break;
+			
+				case MouseState.MIDDLE:
+					InspectItem(selectedItem);
+					break;
+				
+				case MouseState.LEFT:
+					PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+					if (g_Game.IsLeftCtrlDown())
+					{
+						if (icon.IsOutOfReach())
+							return;
+
+						if (controlledPlayer.CanDropEntity(selectedItem))
+						{
+							if (selectedItem.GetTargetQuantityMax() < selectedItem.GetQuantity())
+								selectedItem.SplitIntoStackMaxClient(null, -1);
+							else
+								controlledPlayer.PhysicalPredictiveDropItem(selectedItem);
+						}
+						else
+						{
+							bool draggable = !controlledPlayer.GetInventory().HasInventoryReservation(selectedItem, null ) && !controlledPlayer.GetInventory().IsInventoryLocked() && selectedItem.GetInventory().CanRemoveEntity() && !controlledPlayer.IsItemsToDelete();
+							ItemManager.GetInstance().SetWidgetDraggable(w, draggable);
+						}
+					}
+					else
+					{
+						ClosableContainer c = ClosableContainer.Cast(icon.GetContainer());
+						if (c)
+							c.Toggle();
+					}
+
+					break;
 			}
 		}
-		#endif
-		return false;
 	}
 	
 	void Init(int attachments_categories_count, int i, string attachment_category, string config_path_attachment_categories, EntityAI entity, int parent_m_Body_count )
 	{
 		m_Entity = entity;
-		Header he = GetHeader();
+		Header header = GetHeader();
 		
 		m_CategoryIdentifier = attachment_category;
 		
-		ref array<string> player_ghosts_slots2 = new array<string>;
-		string category_name;
+		array<string> player_ghosts_slots2 = new array<string>();
+		string categoryName;
 		
 		m_RowConfigPath = config_path_attachment_categories + " " + attachment_category + " attachmentSlots";
 		string config_path_category_name = config_path_attachment_categories + " " + attachment_category + " name";
-		GetGame().ConfigGetTextArray( m_RowConfigPath, player_ghosts_slots2 );
-		GetGame().ConfigGetText( config_path_category_name, category_name );
-		he.SetName( category_name );
+		GetGame().ConfigGetTextArray(m_RowConfigPath, player_ghosts_slots2);
+		GetGame().ConfigGetText(config_path_category_name, categoryName);
+		header.SetName(categoryName);
 		
-		m_AttachmentsContainer.SetHeader(he);
+		m_AttachmentsContainer.SetHeader(header);
 		SetHeader(null);
 		
 		int count = player_ghosts_slots2.Count();
-		int last_row = count / ITEMS_IN_ROW;
-		SlotsContainer ic;
+		int lastRow = count / ITEMS_IN_ROW;
+		SlotsContainer slotsContainer;
 		
 		for ( int j = 0; j < count; j++ )
 		{
-			string slot_name = player_ghosts_slots2.Get(j);
-			string icon_name; //must be in format "set:<setname> image:<imagename>"
-			string path = "CfgSlots" + " Slot_" + slot_name;
+			string slotName = player_ghosts_slots2.Get(j);
+			string iconName; //must be in format "set:<setname> image:<imagename>"
+			string path = "CfgSlots" + " Slot_" + slotName;
 			
-			int slot_id	= InventorySlots.GetSlotIdFromString( slot_name );
+			int slotId	= InventorySlots.GetSlotIdFromString(slotName);
 				
-			GetGame().ConfigGetText( path + " ghostIcon", icon_name );
-			GetGame().ConfigGetText( path + " name", slot_name );
+			GetGame().ConfigGetText(path + " ghostIcon", iconName);
+			GetGame().ConfigGetText(path + " name", slotName);
 				
 			int row = j / ITEMS_IN_ROW;
 			int column = j % ITEMS_IN_ROW;
 			if (column == 0)
 			{
-				ic = new SlotsContainer(m_AttachmentsContainer, m_Entity);
-				ic.GetRootWidget().SetAlpha(0.7);
-				if (row == last_row)
-				{
-					ic.SetColumnCount( count % ITEMS_IN_ROW );
-				}
+				slotsContainer = new SlotsContainer(m_AttachmentsContainer, m_Entity);
+				slotsContainer.GetRootWidget().SetAlpha(0.7);
+				if (row == lastRow)
+					slotsContainer.SetColumnCount(count % ITEMS_IN_ROW);
 				else
-				{
-					ic.SetColumnCount( ITEMS_IN_ROW );
-				}
-				m_AttachmentsContainer.Insert(ic);
-				ic.GetRootWidget().SetSort( row );
+					slotsContainer.SetColumnCount(ITEMS_IN_ROW);
+
+				m_AttachmentsContainer.Insert(slotsContainer);
+				slotsContainer.GetRootWidget().SetSort(row);
 			} 
 				
-			SlotsIcon icon = ic.GetSlotIcon( column );
-			WidgetEventHandler.GetInstance().RegisterOnDropReceived( icon.GetMainWidget(),  this, "OnDropReceivedFromHeader" );
-			WidgetEventHandler.GetInstance().RegisterOnDropReceived( icon.GetGhostSlot(),  this, "OnDropReceivedFromHeader" );
-			WidgetEventHandler.GetInstance().RegisterOnDropReceived( icon.GetPanelWidget(),  this, "OnDropReceivedFromHeader" );
+			SlotsIcon icon = slotsContainer.GetSlotIcon(column);
+			WidgetEventHandler.GetInstance().RegisterOnDropReceived(icon.GetMainWidget(), this, "OnDropReceivedFromHeader");
+			WidgetEventHandler.GetInstance().RegisterOnDropReceived(icon.GetGhostSlot(), this, "OnDropReceivedFromHeader");
+			WidgetEventHandler.GetInstance().RegisterOnDropReceived(icon.GetPanelWidget(), this, "OnDropReceivedFromHeader");
 					
-			WidgetEventHandler.GetInstance().RegisterOnDraggingOver( icon.GetMainWidget(),  this, "DraggingOverHeader" );
-			WidgetEventHandler.GetInstance().RegisterOnDraggingOver( icon.GetGhostSlot(),  this, "DraggingOverHeader" );
-			WidgetEventHandler.GetInstance().RegisterOnDraggingOver( icon.GetPanelWidget(),  this, "DraggingOverHeader" );
+			WidgetEventHandler.GetInstance().RegisterOnDraggingOver(icon.GetMainWidget(), this, "DraggingOverHeader");
+			WidgetEventHandler.GetInstance().RegisterOnDraggingOver(icon.GetGhostSlot(), this, "DraggingOverHeader");
+			WidgetEventHandler.GetInstance().RegisterOnDraggingOver(icon.GetPanelWidget(), this, "DraggingOverHeader");
 					
-			WidgetEventHandler.GetInstance().RegisterOnDrop( icon.GetMainWidget(),  this, "OnIconDrop" );
-			WidgetEventHandler.GetInstance().RegisterOnDrop( icon.GetPanelWidget(),  this, "OnIconDrop" );
-					
-			WidgetEventHandler.GetInstance().RegisterOnMouseButtonDown( icon.GetPanelWidget(),  this, "OnMouseButtonDown" );
+			WidgetEventHandler.GetInstance().RegisterOnDrop(icon.GetMainWidget(), this, "OnIconDrop");
+			WidgetEventHandler.GetInstance().RegisterOnDrop(icon.GetPanelWidget(), this, "OnIconDrop");
+
+			WidgetEventHandler.GetInstance().RegisterOnDoubleClick(icon.GetPanelWidget(), this, "DoubleClick");
+			WidgetEventHandler.GetInstance().RegisterOnMouseButtonUp(icon.GetPanelWidget(), this, "MouseClick");
 			
-			icon.GetGhostSlot().LoadImageFile( 0,StaticGUIUtils.VerifyIconImageString(StaticGUIUtils.IMAGESETGROUP_INVENTORY,icon_name) );
+			icon.GetGhostSlot().LoadImageFile(0, StaticGUIUtils.VerifyIconImageString(StaticGUIUtils.IMAGESETGROUP_INVENTORY, iconName));
+			icon.SetSlotID(slotId);
+			icon.SetSlotDisplayName(InventorySlots.GetSlotDisplayName(slotId));
 			
-			icon.SetSlotID(slot_id);
-			icon.SetSlotDisplayName(InventorySlots.GetSlotDisplayName(slot_id));
-			
-			//RefreshSlot( row, column, slot_id, slot_name );
+			icon.Clear();
 		}
 		RefreshAllSlots();
 	}

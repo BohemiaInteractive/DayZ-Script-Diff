@@ -214,32 +214,33 @@ class Inventory: LayoutHolder
 	
 	protected void LoadPlayerAttachmentIndexes()
 	{
-		m_PlayerAttachmentsIndexes	= new map<string, int>;
+		int i;		
+		string data, errorMessage;
 		
-		string data;
-		string slot_name;
-		int i;
-		
+		m_PlayerAttachmentsIndexes = new map<string, int>();
+
 		if (GetGame().GetProfileString("INV_AttIndexes", data))
 		{
-			JsonFileLoader<map<string, int>>.JsonLoadData(data, m_PlayerAttachmentsIndexes);
+			if (!JsonFileLoader<map<string, int>>.LoadData(data, m_PlayerAttachmentsIndexes, errorMessage))
+				ErrorEx(errorMessage);
 		}
 		
-		string config_path_ghosts_slots = "CfgVehicles SurvivorBase InventoryEquipment playerSlots";
-		ref array<string> player_ghosts_slots = new array<string>;
-		GetGame().ConfigGetTextArray(config_path_ghosts_slots, player_ghosts_slots);
+		string configPathGhostSlots = "CfgVehicles SurvivorBase InventoryEquipment playerSlots";
+		array<string> playerGhostSlots = new array<string>();
+		GetGame().ConfigGetTextArray(configPathGhostSlots, playerGhostSlots);
 		
-		for (i = 0; i < player_ghosts_slots.Count(); i++)
+		foreach (string slotName : playerGhostSlots)
 		{
-			slot_name = player_ghosts_slots.Get(i);
-			slot_name.Replace("Slot_", "");
-			if (!m_PlayerAttachmentsIndexes.Contains(slot_name) && InventorySlots.GetSlotIdFromString(slot_name) != -1)
+			slotName.Replace("Slot_", "");
+			if (!m_PlayerAttachmentsIndexes.Contains(slotName) && InventorySlots.GetSlotIdFromString(slotName) != -1)
 			{
-				m_PlayerAttachmentsIndexes.Insert(slot_name, m_PlayerAttachmentsIndexes.Count());
+				m_PlayerAttachmentsIndexes.Insert(slotName, m_PlayerAttachmentsIndexes.Count());
 			}
 		}
 		
-		data = JsonFileLoader<map<string, int>>.JsonMakeData(m_PlayerAttachmentsIndexes);
+		if (!JsonFileLoader<map<string, int>>.MakeData(m_PlayerAttachmentsIndexes, data, errorMessage))
+			ErrorEx(errorMessage);
+
 		GetGame().SetProfileString("INV_AttIndexes", data);
 	}
 	
@@ -1477,17 +1478,39 @@ class Inventory: LayoutHolder
 	{
 		HideOwnedTooltip();
 		
-		if (m_LeftArea.IsActive())
+		if (direction == Direction.UP)
 		{
-			m_LeftArea.MoveGridCursor(direction);
+			if ( m_LeftArea.IsActive() )
+			{
+				m_LeftArea.SetSameLevelPreviousActive();
+			}
+			else if ( m_RightArea.IsActive() )
+			{
+				m_RightArea.SetSameLevelPreviousActive();
+			}
+			else if ( m_HandsArea.IsActive() )
+			{
+				m_HandsArea.SetSameLevelPreviousActive();
+			}
+			
+			UpdateConsoleToolbar();
 		}
-		else if (m_RightArea.IsActive())
+		else if (direction == Direction.DOWN)
 		{
-			m_RightArea.MoveGridCursor(direction);
-		}
-		else if (m_HandsArea.IsActive())
-		{
-			m_HandsArea.MoveGridCursor(direction);
+			if ( m_LeftArea.IsActive() )
+			{
+				m_LeftArea.SetSameLevelNextActive();
+			}
+			else if ( m_RightArea.IsActive() )
+			{
+				m_RightArea.SetSameLevelNextActive();
+			}
+			else if ( m_HandsArea.IsActive() )
+			{
+				m_HandsArea.SetSameLevelNextActive();
+			}
+			
+			UpdateConsoleToolbar();
 		}
 	}
 	

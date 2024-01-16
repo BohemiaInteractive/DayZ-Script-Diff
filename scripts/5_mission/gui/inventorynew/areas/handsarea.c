@@ -102,6 +102,19 @@ class HandsArea: Container
 		m_ShouldChangeSize = true;
 	}
 	
+	override void SetSameLevelNextActive()
+	{
+		super.SetSameLevelNextActive();
+		
+		Refresh();
+	}
+	override void SetSameLevelPreviousActive()
+	{
+		super.SetSameLevelPreviousActive();
+		
+		Refresh();
+	}
+	
 	void DraggingOverHandsPanel( Widget w, int x, int y, Widget receiver )
 	{
 		if ( w == NULL )

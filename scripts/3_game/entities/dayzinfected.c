@@ -137,12 +137,13 @@ class DayZInfected extends DayZCreatureAI
 	override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
 	{
 		super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
-		
-		if (ammo.ToType().IsInherited(Nonlethal_Base))
+
+		int transferShockToDamageCoef = g_Game.ConfigGetInt(string.Format("%1 %2 DamageApplied transferShockToDamage", CFG_AMMO, ammo));		
+		if (transferShockToDamageCoef == 1)
 		{
-			float dam = damageResult.GetDamage(dmgZone,"Shock");
-			HandleSpecialZoneDamage(dmgZone, dam);
-			AddHealth("", "Health", -ConvertNonlethalDamage(dam));
+			float damage = damageResult.GetDamage(dmgZone, "Shock");
+			HandleSpecialZoneDamage(dmgZone, damage);
+			AddHealth("", "Health", -ConvertNonlethalDamage(damage, damageType));
 		}
 		
 		if (!IsAlive())
@@ -174,10 +175,18 @@ class DayZInfected extends DayZCreatureAI
 			}
 		}
 	}
-	
-	float ConvertNonlethalDamage(float damage)
+
+	override protected float ConvertNonlethalDamage(float damage, DamageType damageType)
 	{
-		return damage * GameConstants.PROJECTILE_CONVERSION_INFECTED;
+		switch (damageType)
+		{
+			case DamageType.CLOSE_COMBAT:
+				return damage * GameConstants.NL_DAMAGE_CLOSECOMBAT_CONVERSION_INFECTED;
+			case DamageType.FIRE_ARM:
+				return damage * GameConstants.NL_DAMAGE_FIREARM_CONVERSION_INFECTED;
+		}
+		
+		return super.ConvertNonlethalDamage(damage, damageType);
 	}
 	
 	void HandleSpecialZoneDamage(string dmgZone, float damage)

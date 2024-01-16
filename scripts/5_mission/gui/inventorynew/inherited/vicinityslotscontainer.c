@@ -96,7 +96,7 @@ class VicinitySlotsContainer: Container
 				res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment( ent );
 				if(!res)
 				{
-					res = GetGame().GetPlayer().GetInventory().TakeEntityToInventory(InventoryMode.PREDICTIVE,FindInventoryLocationType.ATTACHMENT,ent);
+					res = GetGame().GetPlayer().GetInventory().TakeEntityToInventory(InventoryMode.JUNCTURE,FindInventoryLocationType.ATTACHMENT,ent);
 				}
 			}
 			return res;

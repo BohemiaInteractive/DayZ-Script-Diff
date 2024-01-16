@@ -1,10 +1,10 @@
 class TutorialsMenu extends UIScriptedMenu
 {
-	protected const string PATH_MOUSEKEY = "Scripts/data/PageDataTutorials.json";
-	protected const string PATH_X1_OLD = "Xbox/PageDataTutorials.json";
-	protected const string PATH_X1_NEW = "Xbox/PageDataTutorialsAlternate.json";
-	protected const string PATH_PS_OLD = "PS4/PageDataTutorials.json";
-	protected const string PATH_PS_NEW = "PS4/PageDataTutorialsAlternate.json";
+	protected const string PATH_MOUSEKEY 	= "scripts/data/pagedatatutorials.json";
+	protected const string PATH_X1_OLD 		= "xbox/pagedatatutorials.json";
+	protected const string PATH_X1_NEW 		= "xbox/pagedatatutorialsalternate.json";
+	protected const string PATH_PS_OLD 		= "ps4/pagedatatutorials.json";
+	protected const string PATH_PS_NEW 		= "ps4/pagedatatutorialsalternate.json";
 	
 	protected string 					m_BackButtonTextID;
 	

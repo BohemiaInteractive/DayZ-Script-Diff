@@ -147,6 +147,7 @@ class Mp133Shotgun_Base : Rifle_Base
 //----------------------------------------		
 		
 		m_fsm.AddTransition(new WeaponTransition( E,			__L__,	Chamber_E));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_fin_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_fin_,	L));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	L));
@@ -156,6 +157,7 @@ class Mp133Shotgun_Base : Rifle_Base
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_L,	_abt_,	L));
 		
 		m_fsm.AddTransition(new WeaponTransition( F,			__L__,	Chamber_F, NULL, new GuardNot(new WeaponGuardInnerMagazineFull(this))));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	L));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	L));

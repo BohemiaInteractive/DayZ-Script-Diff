@@ -7,7 +7,8 @@ class HandGuardBase
 {
 	/**@fn			GuardCondition
 	 * @brief		enable or disable transition based on condition
-	 * the guard is a boolean operation executed first and which can prevent the transition from firing by returning false
+	 * @note		Item is guaranteed to exist on remote client due to replication relationships
+	 * @note		The guard is a boolean operation executed first and which can prevent the transition from firing by returning false
 	 * @return		true if transition is allowed
 	 **/
 	bool GuardCondition(HandEventBase e) { return true; }
@@ -230,6 +231,7 @@ class HandGuardHasItemInHands extends HandGuardBase
 	}
 };
 
+//! TODO(kumarjac): This guard is unused but it has a fault and doesn't conform with maximimal/minimal checks on "Juncture"/"Remote"
 class HandGuardHasRoomForItem extends HandGuardBase
 {
 	protected Man m_Player;
@@ -294,7 +296,11 @@ class HandGuardCanMove extends HandGuardBase
 	{
 		HandEventMoveTo es = HandEventMoveTo.Cast(e);
 		
-		bool result = GameInventory.LocationCanMoveEntity(es.GetSrc(), es.GetDst());
+		bool result = e.m_IsJuncture || e.m_IsRemote;
+		if (result == false)
+		{
+			result = GameInventory.LocationCanMoveEntity(es.GetSrc(), es.GetDst());
+		}
 
 		#ifdef DEVELOPER
 		if ( LogManager.IsInventoryHFSMLogEnable() )
@@ -315,7 +321,12 @@ class HandGuardCanSwap extends HandGuardBase
 	override bool GuardCondition(HandEventBase e)
 	{
 		HandEventSwap es = HandEventSwap.Cast(e);
-		bool result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
+
+		bool result = e.m_IsJuncture || e.m_IsRemote;
+		if (result == false)
+		{
+			result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
+		}
 
 		#ifdef DEVELOPER
 		if ( LogManager.IsInventoryHFSMLogEnable() )
@@ -336,10 +347,17 @@ class HandGuardCanForceSwap extends HandGuardBase
 	override bool GuardCondition(HandEventBase e)
 	{
 		HandEventForceSwap es = HandEventForceSwap.Cast(e);
-		
-		bool result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
-		if (!result && es.m_Dst2)
-		 	result = GameInventory.CanForceSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Dst, es.m_Src2.GetItem(), es.m_Dst2);
+
+		bool result = e.m_IsJuncture || e.m_IsRemote;
+		if (result == false)
+		{
+			result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
+
+			if (result == false && es.m_Dst2)
+			{
+				result = GameInventory.CanForceSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Dst, es.m_Src2.GetItem(), es.m_Dst2);
+			}
+		}
 		
 		#ifdef DEVELOPER
 		if ( LogManager.IsInventoryHFSMLogEnable() )

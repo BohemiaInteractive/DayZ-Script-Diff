@@ -22,12 +22,12 @@ class Liquid
 		string property_value = "NULL_PROPERTY";
 		int cfg_item_count = g_Game.ConfigGetChildrenCount(cfg_classname);
 
-		for ( int i = 0; i < cfg_item_count; i++ )
+		for (int i = 0; i < cfg_item_count; i++)
 		{
 			string liquid_class_name;
 			GetGame().ConfigGetChildName(cfg_classname, i, liquid_class_name);
 			string liquid_full_path = string.Format("%1 %2",cfg_classname, liquid_class_name);
-			int config_liquid_type = GetGame().ConfigGetInt( string.Format("%1 type", liquid_full_path) );
+			int config_liquid_type = GetGame().ConfigGetInt(string.Format("%1 type", liquid_full_path));
 			m_AllLiquidsByType.Insert(config_liquid_type, SetUpNutritionalProfile(config_liquid_type, liquid_class_name));
 			m_AllLiquidsByName.Insert(liquid_class_name, SetUpNutritionalProfile(config_liquid_type, liquid_class_name));
 			
@@ -38,7 +38,8 @@ class Liquid
 	//---------------------------------------------------------------------------------------------------------
 	static void Transfer(ItemBase source_ent, ItemBase target_ent, float quantity = -1)
 	{
-		if ( !Liquid.CanTransfer(source_ent, target_ent) ) return;
+		if (!Liquid.CanTransfer(source_ent, target_ent))
+			return;
 		
 		ItemBase source = source_ent;
 		ItemBase target = target_ent;
@@ -69,7 +70,7 @@ class Liquid
 		//transfers exact ammount
 		else
 		{
-			quantity_to_transfer = Math.Clamp(quantity,0,available_capacity);
+			quantity_to_transfer = Math.Clamp(Math.Min(source_quantity,quantity),0,available_capacity);
 		}
 		
 		//target.AddQuantity(quantity_to_transfer);
@@ -86,7 +87,7 @@ class Liquid
 		if (!source_ent || !target_ent)
 			return false;
 		
-		if ( !source_ent.IsItemBase() || !target_ent.IsItemBase() )
+		if (!source_ent.IsItemBase() || !target_ent.IsItemBase())
 		{
 			//Debug.Log("One of the Items is not of ItemBase type", "LiquidTransfer");
 			return false;
@@ -102,20 +103,20 @@ class Liquid
 		
 		
 		float source_quantity = source_ent.GetQuantity();
-		if ( source_quantity <= 0 )
+		if (source_quantity <= 0)
 		{
 			//Debug.Log("source has no quantity", "LiquidTransfer");
 			return false;//if there is nothing to transfer
 		}
 		
 		int source_liquid_type 	= source_ent.GetLiquidType();	
-		if ( source_liquid_type < 1 ) 
+		if (source_liquid_type < 1) 
 		{
 			//Debug.Log("source has some quantity, but does not have a valid liquidType set, liquidType = "+ToString(source_liquid_type), "LiquidTransfer");
 			return false;//if source is not a container
 		}
 		
-		if ( !CanFillContainer(target_ent,source_liquid_type) )
+		if (!CanFillContainer(target_ent,source_liquid_type))
 		{
 			return false;
 		}
@@ -125,7 +126,7 @@ class Liquid
 	}
 	static void FillContainer(ItemBase container, int liquid_type, float amount)
 	{
-		if ( !CanFillContainer(container,liquid_type) )
+		if (!CanFillContainer(container,liquid_type))
 		{
 			return;
 		}
@@ -152,7 +153,7 @@ class Liquid
 		
 		bool is_container_full = container.IsFullQuantity();
 		
-		if ( is_container_full && !ignore_fullness_check)
+		if (is_container_full && !ignore_fullness_check)
 		{
 			//Debug.Log("container is full", "LiquidTransfer");
 			return false;
@@ -160,13 +161,13 @@ class Liquid
 		}
 		int container_mask = container.ConfigGetFloat("liquidContainerType");
 		
-		if ( container_mask == 0 )
+		if (container_mask == 0)
 		{
 			//Debug.Log("target is not a container", "LiquidTransfer");
 			return false;//if the target liquidContainerType is set to 0
 		}
 		
-		if ( (liquid_type & container_mask) == 0 )
+		if ((liquid_type & container_mask) == 0)
 		{
 			//Debug.Log("target liquidContainerType does not support this liquid type", "LiquidTransfer");
 			return false;
@@ -176,7 +177,7 @@ class Liquid
 		
 		int container_liquid_type 	= container.GetLiquidType();
 		
-		if ( container_quantity > 0 && container_liquid_type != liquid_type) 
+		if (container_quantity > 0 && container_liquid_type != liquid_type) 
 		{
 			//Debug.Log("target is not empty AND is of different liquid type than liquid_type added in", "LiquidTransfer");
 			return false;
@@ -190,14 +191,14 @@ class Liquid
 		string property_value = "NULL_PROPERTY";
 		int cfg_item_count = g_Game.ConfigGetChildrenCount(cfg_classname);
 
-		for ( int i = 0; i < cfg_item_count; i++ )
+		for (int i = 0; i < cfg_item_count; i++)
 		{
 			string liquid_class_name;
 			GetGame().ConfigGetChildName(cfg_classname, i, liquid_class_name);
 			string liquid_full_path = string.Format("%1 %2", cfg_classname, liquid_class_name);
-			int config_liquid_type = GetGame().ConfigGetInt(string.Format("%1 type", liquid_full_path) );
+			int config_liquid_type = GetGame().ConfigGetInt(string.Format("%1 type", liquid_full_path));
 			
-			if ( config_liquid_type == liquid_type )// found the specific class, now lets extract the values
+			if (config_liquid_type == liquid_type)// found the specific class, now lets extract the values
 			{
 				if (!is_nutrition_property) 
 				{
@@ -233,7 +234,7 @@ class Liquid
 		float toxicity = GetToxicity(liquid_type);
 		int agents = GetAgents(liquid_type);
 		float digest = GetDigestibility(liquid_type);
-		NutritionalProfile profile = new NutritionalProfile(energy, water_content, nutritional_index, volume, toxicity, agents, digest );
+		NutritionalProfile profile = new NutritionalProfile(energy, water_content, nutritional_index, volume, toxicity, agents, digest);
 		profile.MarkAsLiquid(liquid_type, liquid_class_name);
 		return profile;
 	}

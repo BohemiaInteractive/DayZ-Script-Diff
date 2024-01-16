@@ -6,10 +6,10 @@ class AUGRecoil: RecoilBase
 		vector point_2;
 		vector point_3;
 		vector point_4;
-		point_1[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,0.25,0.55); point_1[1] = 1.2; point_1[2] = 0;
-		point_2[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,-0.5,0.5); point_2[1] = 1.5; point_2[2] = 0;
-		point_3[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,-0.75,-1.25); point_3[1] = 1.1; point_3[2] = 0;
-		point_4[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,-0.5,-0.1); point_4[1] = 0.75; point_4[2] = 0;
+		point_1[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,0.25,0.5); point_1[1] = 1.2; point_1[2] = 0;
+		point_2[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,-0.4,0.35); point_2[1] = 1.5; point_2[2] = 0;
+		point_3[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,-0.65,-1.15); point_3[1] = 1.1; point_3[2] = 0;
+		point_4[0] = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSRecoil,-0.35,-0.15); point_4[1] = 0.75; point_4[2] = 0;
 		m_HandsCurvePoints.Insert(point_1);//forms a 2 dimensional spline(z is ignored)
 		m_HandsCurvePoints.Insert(point_2);
 		m_HandsCurvePoints.Insert(point_3);
@@ -17,10 +17,10 @@ class AUGRecoil: RecoilBase
 		m_HandsCurvePoints.Insert("0 0 0");
 		m_HandsOffsetRelativeTime = 1;
 		
-		m_MouseOffsetRangeMin = 80;//in degrees min
-		m_MouseOffsetRangeMax = 150;//in degrees max
-		m_MouseOffsetDistance = 0.9;//how far should the mouse travel
-		m_MouseOffsetRelativeTime = 0.15;//[0..1] a time it takes to move the mouse the required distance relative to the reload time of the weapon(firing mode)
+		m_MouseOffsetRangeMin = 75;//in degrees min
+		m_MouseOffsetRangeMax = 125;//in degrees max
+		m_MouseOffsetDistance = 1.05;//how far should the mouse travel
+		m_MouseOffsetRelativeTime = 0.1;//[0..1] a time it takes to move the mouse the required distance relative to the reload time of the weapon(firing mode)
 	
 		m_CamOffsetDistance = 0.01;
 		m_CamOffsetRelativeTime = 1;

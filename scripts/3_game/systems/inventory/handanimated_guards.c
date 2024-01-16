@@ -215,10 +215,17 @@ class HandSelectAnimationOfMoveFromHandsEvent extends HandGuardBase
 			InventoryLocation src = new InventoryLocation;
 			if (eai.GetInventory().GetCurrentInventoryLocation(src))
 			{
-				if ( !GameInventory.LocationCanMoveEntity(src, e.GetDst()) )
+				if (e.m_IsJuncture == false && e.m_IsRemote == false)
 				{
-					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandSelectAnimationOfMoveFromHandsEvent - rejected");
-					return false;
+					if (!GameInventory.LocationCanMoveEntity(src, e.GetDst()))
+					{
+						if (LogManager.IsInventoryHFSMLogEnable())
+						{
+							hndDebugPrint("[hndfsm] HandSelectAnimationOfMoveFromHandsEvent - rejected");
+						}
+						
+						return false;
+					}
 				}
 				
 				int animType = -1;
@@ -254,26 +261,34 @@ class HandSelectAnimationOfForceSwapInHandsEvent extends HandGuardBase
 		HandEventForceSwap es = HandEventForceSwap.Cast(e);
 		if (es)
 		{
-			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent FSwap e=" + e.DumpToString());
+			if (LogManager.IsInventoryHFSMLogEnable())
+			{
+				hndDebugPrint("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent FSwap e=" + e.DumpToString());
+			}
 			
-			if ( !es.m_Src2.IsValid() || !es.m_Src.IsValid() )
+			if (!es.m_Src2.IsValid() || !es.m_Src.IsValid())
 			{
 				Error("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent - invalid item source");
 				return false;
 			}
 			
-			bool allow = false;
-			if (GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem()))
-				allow = true; // allow if ordinary swap
-			else if (es.m_Dst2)
+			bool allow = e.m_IsJuncture || e.m_IsRemote;
+			if (allow == false)
 			{
-				if (!GameInventory.CanForceSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Dst, es.m_Src2.GetItem(), es.m_Dst2))
+				if (GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem()))
 				{
-					Error("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent - no room at dst=" + InventoryLocation.DumpToStringNullSafe(es.m_Dst2));
+					allow = true; // allow if ordinary swap
 				}
-				else
+				else if (es.m_Dst2)
 				{
-					allow = true;
+					if (GameInventory.CanForceSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Dst, es.m_Src2.GetItem(), es.m_Dst2) == false)
+					{
+						Error("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent - no room at dst=" + InventoryLocation.DumpToStringNullSafe(es.m_Dst2));
+					}
+					else
+					{
+						allow = true;
+					}
 				}
 			}
 			
@@ -289,10 +304,14 @@ class HandSelectAnimationOfForceSwapInHandsEvent extends HandGuardBase
 				}
 			}
 			else
+			{
 				Error("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent - m_HasRoomGuard.GuardCondition failed");
+			}
 		}
 		else
+		{
 			Error("[hndfsm] HandSelectAnimationOfForceSwapInHandsEvent - not a swap event");
+		}
 		return false;
 	}
 };

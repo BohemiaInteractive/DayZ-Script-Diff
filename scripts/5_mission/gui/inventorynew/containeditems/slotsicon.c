@@ -475,7 +475,7 @@ class SlotsIcon: LayoutHolder
 	{
 		if( m_Obj != obj )
 		{
-			Clear();
+			ClearRemainSelected();
 			m_Obj	= obj;
 			m_Item	= ItemBase.Cast( m_Obj );
 			m_Obj.GetOnItemFlipped().Insert( UpdateFlip );
@@ -519,7 +519,7 @@ class SlotsIcon: LayoutHolder
 		}
 	}
 	
-	void Clear()
+	void ClearRemainSelected()
 	{
 		if (m_IsDragged)
 		{
@@ -527,7 +527,7 @@ class SlotsIcon: LayoutHolder
 			Widget a = CancelWidgetDragging();
 			ItemManager.GetInstance().SetWidgetDraggable( a, false );
 		}
-		if( m_Obj )
+		if (m_Obj)
 		{
 			m_Obj.GetOnItemFlipped().Remove( UpdateFlip );
 			m_Obj.GetOnViewIndexChanged().Remove( SetItemPreview );
@@ -569,11 +569,6 @@ class SlotsIcon: LayoutHolder
 		}
 		
 		m_ColWidget.Show( false );
-#ifdef PLATFORM_CONSOLE	
-		m_SelectedPanel.Show( false );
-#endif
-		m_CursorWidget.Show( false );
-		m_EmptySelectedPanel.Show( false );
 		m_MountedWidget.Show( false );
 		m_OutOfReachWidget.Show( false );
 		m_ReservedWidget.Show( false );
@@ -585,6 +580,17 @@ class SlotsIcon: LayoutHolder
 			m_ColorWidget.Show( false );
 		
 		Refresh();
+	}
+	
+	void Clear()
+	{
+		#ifdef PLATFORM_CONSOLE	
+		m_SelectedPanel.Show(false);
+		#endif
+		m_CursorWidget.Show(false);
+		m_EmptySelectedPanel.Show(false);
+		
+		ClearRemainSelected();
 	}
 	
 	void CheckIsWeapon()

@@ -31,7 +31,7 @@ class ScriptConsoleNewPresetDialog extends UIScriptedMenu
 				ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
 				//scripted_console.NewPreset( m_Editbox.GetText());
 				
-				ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsole.TAB_ITEMS));
+				ScriptConsoleItemsTab tab = ScriptConsoleItemsTab.Cast(scripted_console.GetTabHandler(ScriptConsoleItemsTab));
 				if (tab)
 					tab.NewPreset( m_Editbox.GetText());
 			}

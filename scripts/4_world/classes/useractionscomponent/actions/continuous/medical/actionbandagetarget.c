@@ -2,12 +2,7 @@ class ActionBandageTargetCB : ActionContinuousBaseCB
 {
 	override void CreateActionComponent()
 	{
-		float effectivity = m_ActionData.m_MainItem.GetBandagingEffectivity();
-		float adjusted_time_spent;
-		if (effectivity > 0)
-			adjusted_time_spent = UATimeSpent.BANDAGE / effectivity;
-
-		m_ActionData.m_ActionComponent = new CAContinuousTime(adjusted_time_spent);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.BANDAGE);
 	}
 }
 
@@ -16,7 +11,6 @@ class ActionBandageTarget : ActionBandageBase
 	void ActionBandageTarget()
 	{
 		m_CallbackClass 	= ActionBandageTargetCB;
-		m_SpecialtyWeight 	= UASoftSkillsWeight.PRECISE_LOW;
 		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_BANDAGETARGET;
 		m_FullBody 			= true;
 		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
@@ -54,10 +48,7 @@ class ActionBandageTarget : ActionBandageBase
 		if (action_data.m_MainItem && target)
 		{
 			if (CanReceiveAction(action_data.m_Target))
-			{
 				ApplyBandage(action_data.m_MainItem, target);
-				action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
-			}
 		}
 	}
 	

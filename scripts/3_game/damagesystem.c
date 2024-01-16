@@ -135,6 +135,23 @@ class DamageSystem
 		component_name = Widget.TranslateString(component_name);
 		return component_name;
 	}
+	
+	static void ResetAllZones(EntityAI entity)
+	{
+		DamageZoneMap zonesMap = new DamageZoneMap();
+		DamageSystem.GetDamageZoneMap(entity, zonesMap);
+		array<string> zones = zonesMap.GetKeyArray();
+		entity.SetHealth("", "Health", entity.GetMaxHealth("","Health"));
+		entity.SetHealth("", "Shock", entity.GetMaxHealth("","Shock"));
+		entity.SetHealth("", "Blood", entity.GetMaxHealth("","Blood"));
+		
+		foreach (string zone : zones)
+		{
+			entity.SetHealth(zone, "Health", entity.GetMaxHealth(zone,"Health"));
+			entity.SetHealth(zone, "Shock", entity.GetMaxHealth(zone,"Shock"));
+			entity.SetHealth(zone, "Blood", entity.GetMaxHealth(zone,"Blood"));
+		}	
+	}
 }
 
 typedef map<string,ref array<string>> DamageZoneMap; //<zone_name,<components>>

@@ -24,7 +24,7 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 	protected PluginConfigViewer 	m_ModuleConfigViewer;
 	protected int					m_Row;
 	
-	void ScriptConsoleConfigTab(Widget root, ScriptConsole console)
+	void ScriptConsoleConfigTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		m_WgtClassesConfig 				= root.FindAnyWidget("ClassesPanel");
 		m_DumpParamButton				= ButtonWidget.Cast(root.FindAnyWidget("DumpParamButton"));

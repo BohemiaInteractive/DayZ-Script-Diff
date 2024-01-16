@@ -295,35 +295,41 @@ class ItemManager
 	void ShowSourceDropzone( EntityAI item )
 	{
 		EntityAI owner = item.GetHierarchyParent();
-		if( owner && owner != GetGame().GetPlayer() )
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		
+		if (item == player)
 		{
-			ShowSourceDropzone( owner );
+			GetRightDropzone().SetAlpha(1);
+		}
+		else if (owner && owner != player)
+		{
+			ShowSourceDropzone(owner);
 		}
 		else
 		{
 			InventoryLocation inv_loc_src = new InventoryLocation;
-			item.GetInventory().GetCurrentInventoryLocation( inv_loc_src );
+			item.GetInventory().GetCurrentInventoryLocation(inv_loc_src);
 			int loc_type = inv_loc_src.GetType();
 			HideDropzones();
-			if( loc_type == InventoryLocationType.GROUND )
+			if (loc_type == InventoryLocationType.GROUND)
 			{
-				GetLeftDropzone().SetAlpha( 1 );
+				GetLeftDropzone().SetAlpha(1);
 			}
-			else if( loc_type == InventoryLocationType.HANDS )
+			else if (loc_type == InventoryLocationType.HANDS)
 			{
-				GetCenterDropzone().SetAlpha( 1 );
+				GetCenterDropzone().SetAlpha(1);
 			}
 			else
 			{
-				GetRightDropzone().SetAlpha( 1 );
+				GetRightDropzone().SetAlpha(1);
 			}
 		}
 	}
 
 	Widget GetLeftDropzone()
 	{
-		if( !m_LeftDropzone )
-			m_LeftDropzone	= m_RootWidget.FindAnyWidget( "LeftPanel" ).FindAnyWidget( "DropzoneX" );
+		if (!m_LeftDropzone)
+			m_LeftDropzone	= m_RootWidget.FindAnyWidget("LeftPanel").FindAnyWidget("DropzoneX");
 		
 		return m_LeftDropzone;
 	}
@@ -331,14 +337,14 @@ class ItemManager
 	Widget GetRightDropzone()
 	{
 		if( !m_RightDropzone )
-			m_RightDropzone	= m_RootWidget.FindAnyWidget( "RightPanel" ).FindAnyWidget( "DropzoneX" );
+			m_RightDropzone	= m_RootWidget.FindAnyWidget("RightPanel").FindAnyWidget("DropzoneX");
 		return m_RightDropzone;
 	}
 	
 	Widget GetCenterDropzone()
 	{
 		if( !m_CenterDropzone )
-			m_CenterDropzone = m_RootWidget.FindAnyWidget( "HandsPanel" ).FindAnyWidget( "DropzoneX" );
+			m_CenterDropzone = m_RootWidget.FindAnyWidget("HandsPanel").FindAnyWidget("DropzoneX");
 		return m_CenterDropzone;
 	}
 	
@@ -714,73 +720,143 @@ class ItemManager
 		m_TooltipSlotWidget.Show( true );
 	}
 	
+	static int GetChosenCombinationFlag( EntityAI selectedEntity, EntityAI targetEntity, int relevantFlags, out InventoryLocation dst = null)
+	{
+		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		
+		if (!selectedEntity || !targetEntity)
+			return InventoryCombinationFlags.NONE;
+		
+		ItemBase selectedItem = ItemBase.Cast(selectedEntity);
+		ItemBase targetItem = ItemBase.Cast(targetEntity);
+		
+		//EntityAI itemInHands = m_player.GetHumanInventory().GetEntityInHands();
+		ActionManagerClient amc = ActionManagerClient.Cast(player.GetActionManager());
+		
+		if (relevantFlags & InventoryCombinationFlags.PERFORM_ACTION)
+		{
+			if (amc.CanPerformActionFromInventory(targetItem, selectedItem))
+				return InventoryCombinationFlags.PERFORM_ACTION;
+		}
+		
+		if (relevantFlags & InventoryCombinationFlags.SET_ACTION)
+		{
+			if (amc.CanSetActionFromInventory(targetItem, selectedItem))
+				return InventoryCombinationFlags.SET_ACTION;
+		}
+		
+		if (relevantFlags & InventoryCombinationFlags.COMBINE_QUANTITY2)
+		{
+			if (targetEntity.CanBeCombined(selectedEntity))
+			{ 
+				return InventoryCombinationFlags.COMBINE_QUANTITY2;
+			}
+		}
+		
+		if (relevantFlags & InventoryCombinationFlags.ADD_AS_ATTACHMENT)
+		{
+			if (targetEntity.GetInventory().CanAddAttachment(selectedEntity))
+			{
+				return InventoryCombinationFlags.ADD_AS_ATTACHMENT;
+			}
+		}
+		
+		if (relevantFlags & InventoryCombinationFlags.ADD_AS_CARGO)
+		{
+			if (!targetEntity.GetInventory().HasEntityInInventory(selectedEntity) && targetEntity.GetInventory().CanAddEntityInCargo( selectedEntity, selectedEntity.GetInventory().GetFlipCargo() ))
+			{
+				return InventoryCombinationFlags.ADD_AS_CARGO;
+			}
+		}
+		
+		if (relevantFlags & InventoryCombinationFlags.SWAP_MAGAZINE)
+		{
+			Magazine mag = Magazine.Cast(targetEntity);
+			Weapon_Base wpn = Weapon_Base.Cast(targetEntity.GetHierarchyParent());
+			if (wpn && mag)
+			{
+				if (player.GetWeaponManager().CanSwapMagazine(wpn,  Magazine.Cast(selectedEntity)))
+				{
+					return InventoryCombinationFlags.SWAP_MAGAZINE;
+				}
+			}
+		}
+		
+		if (relevantFlags & InventoryCombinationFlags.SWAP)
+		{
+			if (GameInventory.CanSwapEntitiesEx(selectedEntity, targetEntity))
+			{
+				return InventoryCombinationFlags.SWAP;
+			}
+		}
+		
+		if (relevantFlags & InventoryCombinationFlags.FSWAP)
+		{
+			if (GameInventory.CanForceSwapEntitiesEx(selectedEntity, null, targetEntity, dst))
+			{
+				return InventoryCombinationFlags.FSWAP;
+			}
+		}
+		
+		return InventoryCombinationFlags.NONE;
+	}
+	
 	static int GetCombinationFlags( EntityAI entity1, EntityAI entity2 )
 	{
 		int flags = 0;
 		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
 
-		if( !entity1 || !entity2 )
+		if (!entity1 || !entity2)
 			return flags;
 		
-		if( entity1.IsInherited( ItemBase ) && entity2.IsInherited( ItemBase ) )
+		if (entity1.IsInherited( ItemBase ) && entity2.IsInherited( ItemBase ))
 		{
 			ItemBase ent1 = ItemBase.Cast( entity1 );
-			if( ent1.CanBeCombined( ItemBase.Cast( entity2 ) ) ) flags = flags | InventoryCombinationFlags.COMBINE_QUANTITY2;
+			if (ent1.CanBeCombined( ItemBase.Cast( entity2 ) )) flags = flags | InventoryCombinationFlags.COMBINE_QUANTITY2;
 		}
 
-		Weapon_Base wpn;
-		Magazine mag;
-		if( Class.CastTo(wpn,  entity1 ) && Class.CastTo(mag,  entity2 ) )
+		if (entity1.GetInventory().CanAddAttachment( entity2 ))
 		{
-			
-		}
-		else if( entity1.GetInventory().CanAddAttachment( entity2 ) )
-		{
-			if( !entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ) && !entity2.IsInherited( ZombieBase ) && !entity2.IsInherited( Car ) )
+			if (!entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ) && !entity2.IsInherited( ZombieBase ) && !entity2.IsInherited( Car ))
 			{
 				flags = flags | InventoryCombinationFlags.ADD_AS_ATTACHMENT;
 			}
 		}
-		if( entity1.GetInventory().CanAddEntityInCargo( entity2, entity2.GetInventory().GetFlipCargo() ) ) flags = flags | InventoryCombinationFlags.ADD_AS_CARGO;
+		if (!entity1.GetInventory().HasEntityInInventory(entity2) && entity1.GetInventory().CanAddEntityInCargo( entity2, entity2.GetInventory().GetFlipCargo() )) flags = flags | InventoryCombinationFlags.ADD_AS_CARGO;
 
-		if( entity1 == m_player.GetHumanInventory().GetEntityInHands() || entity2 == m_player.GetHumanInventory().GetEntityInHands())
+		if (entity1 == m_player.GetHumanInventory().GetEntityInHands() || entity2 == m_player.GetHumanInventory().GetEntityInHands())
 		{
 			ActionManagerClient amc;
 			Class.CastTo(amc, m_player.GetActionManager());
-			if( entity1 == m_player.GetHumanInventory().GetEntityInHands() )
+			if (entity1 == m_player.GetHumanInventory().GetEntityInHands())
 			{
-				if( amc.CanPerformActionFromInventory( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ) ) )
+				if (amc.CanPerformActionFromInventory( ItemBase.Cast(entity1), ItemBase.Cast(entity2) ))
 				{
 					flags = flags | InventoryCombinationFlags.PERFORM_ACTION;
 				}
-				else if( amc.CanSetActionFromInventory( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ) ) )
+				else if (amc.CanSetActionFromInventory( ItemBase.Cast(entity1), ItemBase.Cast(entity2) ))
 				{
 					flags = flags | InventoryCombinationFlags.SET_ACTION;
 				}
 			}
 			else
 			{
-				if( amc.CanPerformActionFromInventory( ItemBase.Cast( entity2 ), ItemBase.Cast( entity1 ) ) )
+				if (amc.CanPerformActionFromInventory( ItemBase.Cast(entity2), ItemBase.Cast(entity1) ))
 				{
 					flags = flags | InventoryCombinationFlags.PERFORM_ACTION;
 				}
-				else if( amc.CanSetActionFromInventory( ItemBase.Cast( entity2 ), ItemBase.Cast( entity1 ) ) )
+				else if (amc.CanSetActionFromInventory( ItemBase.Cast(entity2), ItemBase.Cast(entity1) ))
 				{
 					flags = flags | InventoryCombinationFlags.SET_ACTION;
 				}
 			}
 		}
-
-		if( GetRecipeCount( true, entity1, entity2 ) > 0 )
-		{
-			flags = flags | InventoryCombinationFlags.RECIPE_ANYWHERE;
-		}
 		return flags;
 	}
 	
-	static int GetRecipeCount( bool recipe_anywhere, EntityAI entity1, EntityAI entity2 )
+	static int GetRecipeCount(bool recipe_anywhere, EntityAI entity1, EntityAI entity2)
 	{
-		PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast( GetPlugin( PluginRecipesManager ) );
+		PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast(GetPlugin( PluginRecipesManager ));
 		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), NULL, PlayerBase.Cast( GetGame().GetPlayer() ) );
 	}
 }

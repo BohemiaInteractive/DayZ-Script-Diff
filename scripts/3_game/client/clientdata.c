@@ -32,6 +32,22 @@ class ClientData
 			m_PlayerBaseList.RemoveItem( player );
 	}
 	
+	static void SyncEvent_PreprocessPlayerList(SyncPlayerList player_list)
+	{
+		foreach (auto sync_player : player_list.m_PlayerList)
+		{
+			PlayerIdentity identity = sync_player.m_Identity;
+			if (!identity)
+			{
+				ErrorEx("PlayerIdentity not synchronized before SyncPlayer", ErrorExSeverity.WARNING);
+				continue;
+			}
+
+			sync_player.m_UID = identity.GetPlainId();
+			sync_player.m_PlayerName = identity.GetPlainName();
+		}
+	}
+
 	static void SyncEvent_OnRecievedPlayerList( SyncPlayerList player_list )
 	{
 		if (m_PlayerList && m_PlayerList.m_PlayerList)

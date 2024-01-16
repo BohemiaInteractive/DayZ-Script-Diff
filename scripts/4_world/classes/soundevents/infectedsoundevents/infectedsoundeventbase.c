@@ -65,7 +65,7 @@ class InfectedSoundEventBase extends SoundEventBase
 		#ifdef DEVELOPER
 		Error(string.Format(error, "ERROR", m_Infected.ClassName(), m_SoundSetNameRoot, "Zombie_SoundSets.hpp"));
 		#else
-		PrintToRPT(string.Format(error, "WARNING", m_Infected.ClassName(), m_SoundSetNameRoot, "sounds/hpp/config.cpp"));
+		PrintToRPT("" + string.Format(error, "WARNING", m_Infected.ClassName(), m_SoundSetNameRoot, "sounds/hpp/config.cpp"));
 		#endif
 		return false;
 	}

@@ -93,6 +93,7 @@ class Rag extends ItemBase
 		AddAction(ActionCreateIndoorOven);
 		AddAction(ActionAttach);
 		AddAction(ActionDetach);
+		AddAction(ActionRefuelTorch);
 		
 		AddAction(ActionCraftImprovisedHandsCover);
 		AddAction(ActionCraftImprovisedHeadCover);

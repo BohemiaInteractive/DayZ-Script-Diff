@@ -21,6 +21,7 @@ class ZombieBase extends DayZInfected
 	protected float m_MovementSpeed = -1;
 	
 	protected vector m_DefaultHitPosition;
+	protected float m_DeltaTime;
 	
 	protected AbstractWave m_LastSoundVoiceAW;
 	protected ref InfectedSoundEventHandler	m_InfectedSoundEventHandler;
@@ -191,6 +192,8 @@ class ZombieBase extends DayZInfected
 
 	void CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
 	{
+		m_DeltaTime = pDt;
+		
 		//! for mods
 		if ( ModCommandHandlerBefore(pDt, pCurrentCommandID, pCurrentCommandFinished) )
 		{
@@ -841,14 +844,22 @@ class ZombieBase extends DayZInfected
 	bool m_DamageHitHeavy = false;
 	int m_DamageHitType = 0;
 	float m_ShockDamage = 0;
+	
+	const float HIT_INTERVAL_MIN = 0.3; 		// Minimum time in seconds before a COMMANDID_HIT to COMMANDID_HIT transition is allowed
+	float m_HitElapsedTime = HIT_INTERVAL_MIN;
 		
 	bool HandleDamageHit(int pCurrentCommandID)
 	{
 		if ( pCurrentCommandID == DayZInfectedConstants.COMMANDID_HIT )
 		{
-			m_DamageHitToProcess = false;
-			m_ShockDamage = 0;
-			return true;
+			// Throttle hit command up to a fixed rate
+			if ( m_HitElapsedTime < HIT_INTERVAL_MIN )
+			{
+				m_HitElapsedTime += m_DeltaTime;
+				m_DamageHitToProcess = false;
+				m_ShockDamage = 0;
+				return false;
+			}
 		}
 		
 		if ( m_DamageHitToProcess )
@@ -857,7 +868,10 @@ class ZombieBase extends DayZInfected
 			float stunChange = SHOCK_TO_STUN_MULTIPLIER * m_ShockDamage;
 			
 			if ( m_DamageHitHeavy || randNum <= stunChange || ( m_MindState == DayZInfectedConstants.MINDSTATE_CALM || m_MindState == DayZInfectedConstants.MINDSTATE_DISTURBED ) )
+			{
 				StartCommand_Hit(m_DamageHitHeavy, m_DamageHitType, m_DamageHitDirection);
+				m_HitElapsedTime = 0;
+			}
 			
 			m_DamageHitToProcess = false;
 			m_ShockDamage = 0;

@@ -97,6 +97,7 @@ class DayZPlayerCameras
 		RegisterTransitionTime(DAYZCAMERA_3RD_PRO_RAISED, DAYZCAMERA_3RD_CRO_RAISED, 0.7, false);
 		RegisterTransitionTime(DAYZCAMERA_3RD_PRO_RAISED, DAYZCAMERA_3RD_ERC, 0.9, false);
 		RegisterTransitionTime(DAYZCAMERA_3RD_PRO_RAISED, DAYZCAMERA_3RD_ERC_RAISED, 0.9, false);
+		RegisterTransitionTime(DAYZCAMERA_3RD_PRO_RAISED, DAYZCAMERA_3RD_ERC_RAISED_MELEE, 0.9, false);
 		
 		//! vehicle cameras
 		RegisterTransitionTime(DAYZCAMERA_3RD_VEHICLE, DAYZCAMERA_3RD_ERC, 0.7, false);

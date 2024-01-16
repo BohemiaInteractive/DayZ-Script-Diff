@@ -58,6 +58,7 @@ class ItemBase extends InventoryItem
 	//
 	float	m_HeatIsolation;
 	float 	m_ItemModelLength;
+	float	m_ItemAttachOffset; // Offset length for when the item is attached e.g. to weapon
 	int 	m_VarLiquidType;
 	int 	m_ItemBehaviour = -1; // -1 = not specified; 0 = heavy item; 1= onehanded item; 2 = twohanded item
 	int 	m_QuickBarBonus = 0;
@@ -232,6 +233,7 @@ class ItemBase extends InventoryItem
 		m_CanBeMovedOverride = false;
 		m_HeatIsolation = GetHeatIsolationInit();
 		m_ItemModelLength = GetItemModelLength();
+		m_ItemAttachOffset = GetItemAttachOffset();
 		m_CanBeDigged = ConfigGetBool("canBeDigged");
 		
 		ConfigGetIntArray("compatibleLocks", m_CompatibleLocks);
@@ -707,25 +709,6 @@ class ItemBase extends InventoryItem
 		
 		return m_LastRegisteredWeaponID;
 	}
-	
-	void PlayDeployLoopSoundEx()
-	{		
-		if (!GetGame().IsDedicatedServer() && !m_DeployLoopSoundEx)
-		{		
-			m_DeployLoopSoundEx = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
-			m_DeployLoopSoundEx.SetAutodestroy(true);
-		}
-	}
-	
-	void StopDeployLoopSoundEx()
-	{
-		if (!GetGame().IsDedicatedServer())
-		{	
-			m_DeployLoopSoundEx.SetSoundFadeOut(0.5);
-			m_DeployLoopSoundEx.SoundStop();
-		}
-	}
-	
 	
 	/**
 	\brief Re-sets DamageSystem changes
@@ -2340,7 +2323,8 @@ class ItemBase extends InventoryItem
 
 			else if (action_id == EActions.MAKE_SPECIAL)
 			{
-				OnDebugSpawn();
+				auto debugParams = DebugSpawnParams.WithPlayer(player);
+				OnDebugSpawnEx(debugParams);
 			}
 			
 			else if (action_id == EActions.DELETE)
@@ -3202,9 +3186,10 @@ class ItemBase extends InventoryItem
 		float min = GetQuantityMin();
 		float max = GetQuantityMax();
 		
-		bool on_min_value = value <= (min + 0.001); //workaround, items with "varQuantityDestroyOnMin = true;" get destroyed
+		if (value <= (min + 0.001))
+			value = min;
 		
-		if (on_min_value)
+		if (value == min)
 		{
 			if (destroy_config)
 			{
@@ -3690,6 +3675,15 @@ class ItemBase extends InventoryItem
 		if (ConfigIsExisting("itemModelLength"))
 		{
 			return ConfigGetFloat("itemModelLength");
+		}
+		return 0;
+	}
+	
+	float GetItemAttachOffset()
+	{
+		if (ConfigIsExisting("itemAttachOffset"))
+		{
+			return ConfigGetFloat("itemAttachOffset");
 		}
 		return 0;
 	}
@@ -4319,12 +4313,36 @@ class ItemBase extends InventoryItem
 		return m_IsDeploySound;
 	}
 	
+	void PlayDeployLoopSoundEx()
+	{		
+		if (!GetGame().IsDedicatedServer() && !m_DeployLoopSoundEx)
+		{		
+			m_DeployLoopSoundEx = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
+			if (m_DeployLoopSoundEx)
+				m_DeployLoopSoundEx.SetAutodestroy(true);
+			else
+				Debug.Log("dbgSounds | null m_DeployLoopSoundEx from sound set: " + GetLoopDeploySoundset());
+		}
+	}
+	
+	void StopDeployLoopSoundEx()
+	{
+		if (!GetGame().IsDedicatedServer())
+		{	
+			m_DeployLoopSoundEx.SetSoundFadeOut(0.5);
+			m_DeployLoopSoundEx.SoundStop();
+		}
+	}
+	
 	void PlayDeploySound()
 	{
 		if (!GetGame().IsDedicatedServer() && !m_SoundDeploy)
 		{
 			m_SoundDeploy = SEffectManager.PlaySound(GetDeploySoundset(), GetPosition());
-			m_SoundDeploy.SetAutodestroy(true);
+			if (m_SoundDeploy)
+				m_SoundDeploy.SetAutodestroy(true);
+			else
+				Debug.Log("dbgSounds | null m_SoundDeploy from sound set: " + GetDeploySoundset());
 		}
 	}
 	
@@ -4333,7 +4351,10 @@ class ItemBase extends InventoryItem
 		if (!GetGame().IsDedicatedServer() && !m_SoundDeployFinish)
 		{
 			m_SoundDeployFinish = SEffectManager.PlaySound(GetDeployFinishSoundset(), GetPosition());
-			m_SoundDeployFinish.SetAutodestroy(true);
+			if (m_SoundDeployFinish)
+				m_SoundDeployFinish.SetAutodestroy(true);
+			else
+				Debug.Log("dbgSounds | null m_SoundDeployFinish from sound set: " + GetDeployFinishSoundset());
 		}
 	}
 	
@@ -4342,7 +4363,10 @@ class ItemBase extends InventoryItem
 		if (!GetGame().IsDedicatedServer() && !m_SoundPlace)
 		{
 			m_SoundPlace = SEffectManager.PlaySound(GetPlaceSoundset(), GetPosition());
-			m_SoundPlace.SetAutodestroy(true);
+			if (m_SoundPlace)
+				m_SoundPlace.SetAutodestroy(true);
+			else
+				Debug.Log("dbgSounds | null m_SoundPlace from sound set: " + GetPlaceSoundset());
 		}
 	}
 	
@@ -4646,6 +4670,11 @@ class ItemBase extends InventoryItem
 		_itemBase = this;
 	}
 	#endif
+	
+	bool CanBeUsedForSuicide()
+	{
+		return true;
+	}
 }
 
 EntityAI SpawnItemOnLocation(string object_name, notnull InventoryLocation loc, bool full_quantity)

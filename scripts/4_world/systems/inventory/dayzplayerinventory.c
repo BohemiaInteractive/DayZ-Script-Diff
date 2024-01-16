@@ -938,6 +938,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 
 		HandEventBase e = HandEventBase.CreateHandEventFromContext(ctx);
 		e.ClearInventoryReservation();
+		
+		//! Pass partial information to guards so guards can do minimal checks if needed
+		//! The guards can't prevent event so it would be incorrect to pass full InventoryValidation struct.
+		//! We have to make sure guards don't inadvertantly produce different results in the FSM as that will create desync (two players attempting to put a rag into the same fireplace slot at the same time)
+		e.m_IsRemote = validation.m_IsRemote;
+		e.m_IsJuncture = validation.m_IsJuncture;
 
 		EntityAI itemSrc = e.GetSrcEntity();
 		EntityAI itemDst = e.GetSecondSrcEntity();
@@ -1103,7 +1109,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			}
 		}
 		
-		//! Is called twice unfortunately...
+		//! Is called twice unfortunately... but it works so won't change
 		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
 			CheckForRope(e.GetSrc(), e.GetDst());

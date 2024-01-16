@@ -487,14 +487,30 @@ class MissionServer extends MissionBase
 	
 	PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)
 	{
-		string characterType;
+		string characterType = GetGame().CreateRandomPlayer();
+		bool generateRandomEquip = false;
+		
+		// get login data for new character
+		if (ProcessLoginData(ctx) && (m_RespawnMode == GameConstants.RESPAWN_MODE_CUSTOM) && !GetGame().GetMenuDefaultCharacterData(false).IsRandomCharacterForced())
+		{
+			if (GetGame().ListAvailableCharacters().Find(GetGame().GetMenuDefaultCharacterData().GetCharacterType()) > -1)
+				characterType = GetGame().GetMenuDefaultCharacterData().GetCharacterType();
+		}
+		else
+		{
+			generateRandomEquip = true;
+		}
+		
 		if (PlayerSpawnHandler.IsInitialized())
 		{
 			PlayerSpawnPreset presetData = PlayerSpawnHandler.GetRandomCharacterPreset();
 			if (presetData && presetData.IsValid())
 			{
-				characterType = presetData.GetRandomCharacterType();
-				if (CreateCharacter(identity, pos, ctx, characterType) != null)
+				string presetCharType = presetData.GetRandomCharacterType();
+				if (presetCharType == string.Empty)
+					presetCharType = characterType;
+				presetCharType = presetData.GetRandomCharacterType();
+				if (CreateCharacter(identity, pos, ctx, presetCharType) != null)
 				{
 					PlayerSpawnHandler.ProcessEquipmentData(m_player,presetData);
 					return m_player;
@@ -510,22 +526,10 @@ class MissionServer extends MissionBase
 			}
 		}
 		
-		// get login data for new character
-		if (ProcessLoginData(ctx) && (m_RespawnMode == GameConstants.RESPAWN_MODE_CUSTOM) && !GetGame().GetMenuDefaultCharacterData(false).IsRandomCharacterForced())
-		{
-			if (GetGame().ListAvailableCharacters().Find(GetGame().GetMenuDefaultCharacterData().GetCharacterType()) > -1)
-				characterType = GetGame().GetMenuDefaultCharacterData().GetCharacterType();
-			else //random type
-				characterType = GetGame().CreateRandomPlayer();
-		}
-		else
-		{
-			characterType = GetGame().CreateRandomPlayer();
-			GetGame().GetMenuDefaultCharacterData().GenerateRandomEquip();
-		}
-		
 		if (CreateCharacter(identity, pos, ctx, characterType))
 		{
+			if (generateRandomEquip)
+				GetGame().GetMenuDefaultCharacterData().GenerateRandomEquip();
 			EquipCharacter(GetGame().GetMenuDefaultCharacterData());
 		}
 		

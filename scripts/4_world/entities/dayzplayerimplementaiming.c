@@ -76,9 +76,9 @@ class DayZPlayerImplementAiming
 		UpdateSwayState(eSwayStates.DEFAULT);
 	}
 
-	void SetRecoil( Weapon_Base weapon )
+	void SetRecoil(Weapon_Base weapon)
 	{
-		if( m_ProceduralRecoilEnabled )
+		if (m_ProceduralRecoilEnabled)
 		{
 			m_CurrentRecoil = weapon.SpawnRecoilObject();
 		}
@@ -86,14 +86,14 @@ class DayZPlayerImplementAiming
 	
 	void RequestKuruShake(float amount)
 	{
-		if(!m_KuruShake)
+		if (!m_KuruShake)
 			m_KuruShake = new KuruShake(m_PlayerPb, amount);
 	}
 	
 	void OnRaiseBegin(DayZPlayerImplement player)
 	{
 		Weapon_Base weapon = Weapon_Base.Cast(player.GetHumanInventory().GetEntityInHands());
-		if(weapon)
+		if (weapon)
 		{
 			m_SwayModifier = weapon.GetPropertyModifierObject().m_SwayModifiers;
 		}
@@ -176,7 +176,6 @@ class DayZPlayerImplementAiming
 		float kuru_offset_x;
 		float kuru_offset_y;
 		
-		//float player_stamina = m_PlayerPb.GetStaminaHandler().GetStaminaNormalized();
 		float player_stamina = m_PlayerPb.GetStaminaHandler().GetSyncedStaminaNormalized();
 		
 		#ifdef DEVELOPER
@@ -184,11 +183,11 @@ class DayZPlayerImplementAiming
 		#endif
 		
 		//negates stamina effect during hold breath
-		if ( m_PlayerPb.IsHoldingBreath() )
+		if (m_PlayerPb.IsHoldingBreath())
 		{
 			player_stamina = 1;
 		}
-		float speed = (((1.0 - player_stamina) * 3.0) + 1.0) * m_SwayModifier[2];
+		float speed = CalculateSpeedMultiplier(player_stamina);
 		m_TotalTime += pDt * speed;
 		
 		if (m_PlayerPb.IsHoldingBreath() && !m_HoldingBreathSet)
@@ -203,7 +202,7 @@ class DayZPlayerImplementAiming
 		float adjusted_sway_multiplier = CalculateSwayMultiplier();
 		m_LastSwayMultiplier = adjusted_sway_multiplier;
 		
-		m_SwayWeight = CalculateWeight(	stance_index, player_stamina, 0.5/*m_PlayerPb.m_CameraSwayModifier*/, m_PlayerPb.IsHoldingBreath() ) * adjusted_sway_multiplier;
+		m_SwayWeight = CalculateWeight(	stance_index, player_stamina, 0.5/*m_PlayerPb.m_CameraSwayModifier*/, m_PlayerPb.IsHoldingBreath()) * adjusted_sway_multiplier;
 
 		//! get sway
 		ApplyBreathingPattern(breathing_offset_x, breathing_offset_y, 3.0, m_TotalTime, m_SwayWeight);
@@ -216,12 +215,12 @@ class DayZPlayerImplementAiming
 		}
 
 		//! get recoil
-		if( m_CurrentRecoil )
+		if (m_CurrentRecoil)
 		{
 			m_CurrentRecoil.Update(pModel, recoil_offset_mouse_x, recoil_offset_mouse_y, recoil_offset_hands_x, recoil_offset_hands_y, pDt);
 		}
 		
-		if( m_KuruShake )
+		if (m_KuruShake)
 		{
 			m_KuruShake.Update(pDt, kuru_offset_x, kuru_offset_y);
 		}
@@ -250,12 +249,14 @@ class DayZPlayerImplementAiming
 		
 		//! clamp aim ranges 
 		if (stance_index == DayZPlayerConstants.STANCEIDX_RAISEDPRONE)
-		{			
+		{
 			float newVal = DayZPlayerUtils.LinearRangeClamp(pModel.m_fCurrentAimX, pModel.m_fCurrentAimY, m_AimXClampRanges);
 			pModel.m_fAimYHandsOffset += newVal - pModel.m_fCurrentAimY;
 		}
+		float absAimY = Math.AbsFloat(pModel.m_fCurrentAimY);
+		pModel.m_fAimYHandsOffset = Math.Clamp(pModel.m_fAimYHandsOffset,absAimY - 89.9,89.9 - absAimY); //'90' leads to rounding errors down the line
 		
-		if( m_PlayerDpi.IsInOptics() && m_KuruShake )
+		if (m_PlayerDpi.IsInOptics() && m_KuruShake)
 		{
 			//TODO - do not offset mouse
 		}
@@ -268,23 +269,28 @@ class DayZPlayerImplementAiming
 		DbgPrintAimingImplement("pModel.m_fAimYMouseShift: " + pModel.m_fAimYMouseShift);
 		#endif
 		
-		if ( m_PlayerPb.IsHoldingBreath() && !m_HoldingBreathSet)
+		if (m_PlayerPb.IsHoldingBreath() && !m_HoldingBreathSet)
 		{
 			m_HoldingBreathSet = true;
 			m_HorizontalNoiseXAxisOffset = noise_offset_x;
 			m_BreathingXAxisOffset = breathing_offset_x;
 			m_BreathingYAxisOffset = breathing_offset_y;
 		}
-		else if(!m_PlayerPb.IsHoldingBreath() && m_HoldingBreathSet)
+		else if (!m_PlayerPb.IsHoldingBreath() && m_HoldingBreathSet)
 		{
 			m_HoldingBreathSet = false;
 		}
 		
-		if(!m_PlayerPb.IsHoldingBreath() && m_LastSwayMultiplier == PlayerSwayConstants.SWAY_MULTIPLIER_DEFAULT && m_HorizontalNoiseXAxisOffset != 0)
+		if (!m_PlayerPb.IsHoldingBreath() && m_LastSwayMultiplier == PlayerSwayConstants.SWAY_MULTIPLIER_DEFAULT && m_HorizontalNoiseXAxisOffset != 0)
 		{
 			m_HorizontalNoiseXAxisOffset = 0;
 			m_BreathingXAxisOffset = 0;
 			m_BreathingYAxisOffset = 0;
+		}
+		
+		if (m_PlayerPb.IsHoldingBreath())
+		{
+			m_PlayerPb.DepleteStamina(EStaminaModifiers.HOLD_BREATH,pDt*speed);
 		}
 		#ifdef DEVELOPER
 		DbgPrintAimingImplement("----------------------------");
@@ -333,6 +339,11 @@ class DayZPlayerImplementAiming
 		return ret;
 	}
 	
+	float CalculateSpeedMultiplier(float stamina)
+	{
+		return (((1.0 - stamina) * 3.0) + 1.0) * m_SwayModifier[2]; // just 'm_SwayModifier[2]' for HoldBreath
+	}
+	
 	protected bool UpdateSwayState(int state)
 	{
 		if (state != m_SwayState)
@@ -365,7 +376,7 @@ class DayZPlayerImplementAiming
 		#endif
 		
 		x_axis = (Math.Sin(pTotalTime) * pAmplitude / 4) * weight;
-		y_axis = (Math.Sin((pTotalTime) * 0.8 + 0.6 ) * pAmplitude) * weight;
+		y_axis = (Math.Sin((pTotalTime) * 0.8 + 0.6) * pAmplitude) * weight;
 		#ifdef DEVELOPER 
 		DbgPrintAimingImplement("y_axis_midproduct: " + y_axis); 
 		#endif
@@ -375,7 +386,7 @@ class DayZPlayerImplementAiming
 
 	protected void ApplyHorizontalNoise(out float x_axis, out float y_axis, float smooth_time,float max_velocity_low, float max_velocity_high, float velocity_modifier,  float max_distance, float weight, float pDt)
 	{
-		if ( Math.AbsFloat(m_HorizontalTargetValue - m_HorizontalNoise) < 0.01)
+		if (Math.AbsFloat(m_HorizontalTargetValue - m_HorizontalNoise) < 0.01)
 		{
 			//acquire new target
 			m_MaxVelocity = m_PlayerPb.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSAimingModel, max_velocity_low, max_velocity_high);
@@ -385,7 +396,7 @@ class DayZPlayerImplementAiming
 			m_HorizontalNoiseVelocity[0] = 0;
 		}
 
-		m_HorizontalNoise = Math.SmoothCD( m_HorizontalNoise, m_HorizontalTargetValue, m_HorizontalNoiseVelocity, smooth_time, m_MaxVelocity * velocity_modifier, pDt);
+		m_HorizontalNoise = Math.SmoothCD(m_HorizontalNoise, m_HorizontalTargetValue, m_HorizontalNoiseVelocity, smooth_time, m_MaxVelocity * velocity_modifier, pDt);
 		x_axis = m_HorizontalNoise * weight;
 		float multiplier = Math.Lerp(PlayerSwayConstants.SWAY_MULTIPLIER_DEFAULT,0,m_LastSwayMultiplier); //TODO revise
 		x_axis += m_HorizontalNoiseXAxisOffset * multiplier;
@@ -413,8 +424,7 @@ class DayZPlayerImplementAiming
 			return PlayerSwayConstants.SWAY_ROLL;
 		}
 		float stance_modifier;
-		//float scale = SWAY_WEIGHT_SCALER;
-		switch ( stance_index )
+		switch (stance_index)
 		{
 			case DayZPlayerConstants.STANCEIDX_RAISEDERECT:
 				stance_modifier = 0.5;

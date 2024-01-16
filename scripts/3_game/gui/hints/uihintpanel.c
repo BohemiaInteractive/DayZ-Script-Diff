@@ -11,7 +11,7 @@ class UiHintPanel extends ScriptedWidgetEventHandler
 	// Const
 	protected int 			m_SlideShowDelay			= 25000;											// The speed of the slideshow 
 	protected string 				m_RootPath			= "Gui/layouts/new_ui/hints/in_game_hints.layout";	// Layout path 
-	protected const string 			m_DataPath			= "Scripts/data/hints.json";						// Json path
+	protected const string 			m_DataPath			= "scripts/data/hints.json";						// Json path
 	// Widgets
 	protected Widget 				m_RootFrame;
 	protected Widget 				m_SpacerFrame;
@@ -76,9 +76,7 @@ class UiHintPanel extends ScriptedWidgetEventHandler
 			StartSlideshow();			
 		}
 		else 
-		{
-			Print("ERROR: UiHintPanel - Could not create the hint panel. The data are missing!");
-		}
+			ErrorEx("Could not create the hint panel. The data are missing!");
 	}
 	
 	// ------------------------------------------------------
@@ -86,14 +84,16 @@ class UiHintPanel extends ScriptedWidgetEventHandler
 	// Load content data from json file 
 	protected void LoadContentList()
 	{
-		JsonFileLoader<array<ref HintPage>>.JsonLoadFile( m_DataPath, m_ContentList );
+		string errorMessage;
+		if (!JsonFileLoader<array<ref HintPage>>.LoadFile(m_DataPath, m_ContentList, errorMessage))
+			ErrorEx(errorMessage);
 	}	
 	
 	// Create and Build the layout 
 	protected void BuildLayout(Widget parent_widget)
 	{
 		// Create the layout
-		m_RootFrame = m_Game.GetWorkspace().CreateWidgets( m_RootPath, parent_widget );
+		m_RootFrame = m_Game.GetWorkspace().CreateWidgets(m_RootPath, parent_widget);
 		
 		if (m_RootFrame)
 		{
