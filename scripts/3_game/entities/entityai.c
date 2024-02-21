@@ -1361,6 +1361,11 @@ class EntityAI extends Entity
 		return true;
 	}
 	
+	bool CanBeFSwaped()
+	{
+		return true;
+	}
+	
 	bool CanCombineAttachment(notnull EntityAI e, int slot, bool stack_max_limit = false)
 	{
 		EntityAI att = GetInventory().FindAttachment(slot);

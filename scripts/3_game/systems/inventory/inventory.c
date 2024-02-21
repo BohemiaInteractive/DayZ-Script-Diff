@@ -656,6 +656,9 @@ class GameInventory
 		int slot;
 		InventoryLocation il = new InventoryLocation;
 		
+		if (!item1.CanBeFSwaped())
+			return false;
+
 		if ( item1_dst == null)
 		{
 			item2.GetInventory().GetCurrentInventoryLocation(il);

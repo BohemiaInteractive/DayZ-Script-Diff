@@ -120,7 +120,14 @@ class Attachments
 		
 		if (icon && !icon.IsOutOfReach())
 		{
-			ItemManager.GetInstance().SetSelectedItemEx(item, null, icon);
+			if (item && item.CanPutIntoHands(null))
+			{
+				ItemManager.GetInstance().SetSelectedItemEx(item, null, icon);
+			}
+			else
+			{
+				ItemManager.GetInstance().SetSelectedItemEx(null, null, icon);
+			}
 			return true;
 		}
 		return false;

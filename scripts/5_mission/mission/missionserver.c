@@ -509,7 +509,6 @@ class MissionServer extends MissionBase
 				string presetCharType = presetData.GetRandomCharacterType();
 				if (presetCharType == string.Empty)
 					presetCharType = characterType;
-				presetCharType = presetData.GetRandomCharacterType();
 				if (CreateCharacter(identity, pos, ctx, presetCharType) != null)
 				{
 					PlayerSpawnHandler.ProcessEquipmentData(m_player,presetData);
@@ -517,7 +516,7 @@ class MissionServer extends MissionBase
 				}
 				else
 				{
-					ErrorEx("Failed to create character from type: " + characterType + ", using default spawning method");
+					ErrorEx("Failed to create character from type: " + presetCharType + ", using default spawning method");
 				}
 			}
 			else

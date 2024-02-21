@@ -90,11 +90,6 @@ class PileOfWoodenPlanks extends ItemBase
 	
 	override bool CanPutIntoHands( EntityAI parent )
 	{
-		if( !super.CanPutIntoHands( parent ) )
-		{
-			return false;
-		}
-		
 		return false;
 	}
 	

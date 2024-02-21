@@ -1365,6 +1365,7 @@ class Inventory: LayoutHolder
 						
 						canBeManipulated = !player.GetInventory().HasInventoryReservation( focusedItem, null ) && !player.GetInventory().IsInventoryLocked() && !player.IsItemsToDelete();
 						m_NeedUpdateConsoleToolbar |= !canBeManipulated;
+						canBeManipulated = canBeManipulated && focusedItem.CanPutIntoHands(null);
 						canBeManipulated = canBeManipulated && focusedItem.GetInventory().CanRemoveEntity();
 						
 						EntityAI parent = il.GetParent();

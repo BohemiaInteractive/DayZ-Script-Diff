@@ -420,6 +420,17 @@ class Magazine : InventoryItemSuper
 		
 		return super.OnAction(action_id, player, ctx);
 	}
+	
+	override bool CanBeFSwaped()
+	{
+		Weapon_Base wpn = Weapon_Base.Cast(GetHierarchyParent());
+		if (wpn)
+		{
+			return false;
+		}
+		
+		return true;
+	}
 }
 
 class MagazineStorage : Magazine

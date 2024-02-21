@@ -94,28 +94,6 @@ class LogoutMenu extends UIScriptedMenu
 		return false;
 	}
 	
-	override bool OnKeyDown(Widget w, int x, int y, int key)
-	{
-		super.OnKeyDown(w, x, y, key);
-		
-		switch (key)
-		{
-			// TODO: just temporary until new inputs are done
-			case KeyCode.KC_W:
-			case KeyCode.KC_S:
-			case KeyCode.KC_A:
-			case KeyCode.KC_D:
-			case KeyCode.KC_UP:
-			case KeyCode.KC_DOWN:
-			case KeyCode.KC_LEFT:
-			case KeyCode.KC_RIGHT:
-			case KeyCode.KC_ESCAPE:
-				Cancel();
-		}
-		
-		return true;
-	}
-
 	override void Update(float timeslice)
 	{
 		if (GetUApi().GetInputByID(UAUIBack).LocalPress())

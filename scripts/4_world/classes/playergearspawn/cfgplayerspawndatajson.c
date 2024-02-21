@@ -26,8 +26,8 @@ class PlayerSpawnPreset : PlayerSpawnJsonDataBase
 		if (characterTypes && characterTypes.Count() > 0)
 			return characterTypes.GetRandomElement();
 		
-		Debug.Log("No characterTypes defined. Falling back to random character type","n/a","n/a","PlayerSpawnPreset");
-		return GetGame().CreateRandomPlayer();
+		Debug.Log("No characterTypes defined. Falling back to 'default' character type, or random, if undefined","n/a","n/a","PlayerSpawnPreset");
+		return string.Empty;
 	}
 	
 	override bool IsValid()

@@ -177,7 +177,7 @@ class SlotsContainer: Container
 		ItemBase item = ItemBase.Cast( GetFocusedItem() );
 		SlotsIcon icon = GetFocusedSlotsIcon();
 		
-		if( item && !item.IsLockedInSlot() && !icon.IsOutOfReach() && !icon.IsReserved() && item.IsTakeable())
+		if( item && !item.IsLockedInSlot() && !icon.IsOutOfReach() && !icon.IsReserved() && item.IsTakeable() && item.CanPutIntoHands(null))
 		{
 			ItemManager.GetInstance().SetSelectedItemEx(item, null, icon);
 			return true;

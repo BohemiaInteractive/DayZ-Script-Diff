@@ -852,10 +852,10 @@ class CargoContainer extends Container
 	override bool SelectItem()
 	{
 		Icon focused_item = GetFocusedIcon();
-		if( focused_item )
+		if (focused_item)
 		{
 			ItemBase item = ItemBase.Cast(focused_item.GetObject());
-			if (item && item.IsTakeable())
+			if (item && item.IsTakeable() && item.CanPutIntoHands(null))
 			{
 				ItemManager.GetInstance().SetSelectedItemEx(item, this, focused_item);
 				return true;

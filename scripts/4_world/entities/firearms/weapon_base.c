@@ -59,6 +59,7 @@ class Weapon_Base extends Weapon
 	protected int m_weaponHideBarrelIdx = -1; //index in simpleHiddenSelections cfg array
 	protected float m_DmgPerShot = 0; //default is set to zero, since C++ solution has been implemented. See 'damageBarrel' and 'barrelArmor' in configs.
 	protected float m_WeaponLength;
+	protected float m_WeaponLiftCheckVerticalOffset;
 	protected float m_ShoulderDistance;
 	protected vector m_LastLiftPosition;
 	ref array<int> m_bulletSelectionIndex = new array<int>;
@@ -106,6 +107,7 @@ class Weapon_Base extends Weapon
 		}
 		
 		InitWeaponLength();
+		InitWeaponLiftCheckVerticalOffset();
 		InitShoulderDistance();
 		InitDOFProperties(m_DOFProperties);
 		if (GetGame().IsServer())
@@ -1228,6 +1230,18 @@ class Weapon_Base extends Weapon
 		return false;
 	}
 	
+	//!gets weapon vertical offset from config for weaponlift raycast
+	bool InitWeaponLiftCheckVerticalOffset()
+	{
+		if (ConfigIsExisting("WeaponLiftCheckVerticalOffset"))
+		{
+			m_WeaponLiftCheckVerticalOffset = ConfigGetFloat("WeaponLiftCheckVerticalOffset");
+			return true;
+		}
+		m_WeaponLiftCheckVerticalOffset = 0.0; //no offset by default
+		return false;
+	}
+	
 	//!gets approximate weapon distance from shoulder from config
 	protected bool InitShoulderDistance()
 	{
@@ -1399,6 +1413,12 @@ class Weapon_Base extends Weapon
 			
 			stanceOffsetIndex -= DayZPlayerConstants.STANCEIDX_ERECT;
 			offset += stanceOffsets[stanceOffsetIndex];
+			
+			// if any additional height offset is defined, apply it
+			if (m_WeaponLiftCheckVerticalOffset != 0)
+			{
+				offset[1] = offset[1] + m_WeaponLiftCheckVerticalOffset;
+			}
 			
 			// 3. use the offset as the start position.
 			// it will not be perfect, but it should reflect

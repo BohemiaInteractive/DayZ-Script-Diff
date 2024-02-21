@@ -2,7 +2,13 @@ class ActionBandageTargetCB : ActionContinuousBaseCB
 {
 	override void CreateActionComponent()
 	{
-		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.BANDAGE);
+		float effectivity 		= m_ActionData.m_MainItem.GetBandagingEffectivity();
+		float adjustedTimeSpent = 0;
+
+		if (effectivity > 0)
+			adjustedTimeSpent = UATimeSpent.BANDAGE / effectivity;
+
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(adjustedTimeSpent);
 	}
 }
 
