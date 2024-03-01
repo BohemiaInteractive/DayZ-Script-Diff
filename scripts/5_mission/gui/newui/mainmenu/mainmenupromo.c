@@ -51,10 +51,10 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		m_StoreButton = m_Root.FindAnyWidget("dlc_openStore");
 		SetPlatformSpecifics();
 		m_VideoWidget = VideoWidget.Cast(m_Root.FindAnyWidget("dlc_Video"));
-		m_VideoWidget.Show(true);
+		m_VideoWidget.Show(false);
 		m_DlcPromotionImage = ImageWidget.Cast(m_Root.FindAnyWidget("dlc_ImageMain"));
-		m_DlcPromotionImage.Show(false);
-		m_BannerFrame = m_Root.FindAnyWidget("dlc_BannerFrameVideo");
+		m_DlcPromotionImage.Show(true);
+		m_BannerFrame = m_Root.FindAnyWidget("dlc_BannerFrame");//dlc_BannerFrame //dlc_BannerFrameVideo
 		m_BannerHandler = new BannerHandlerBase(m_BannerFrame);
 		m_TitleTextDlc = TextWidget.Cast(m_Root.FindAnyWidget("dlc_title"));
 		m_DescriptionTextDlc = MultilineTextWidget.Cast(m_Root.FindAnyWidget("dlc_Description"));
@@ -62,7 +62,7 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		m_ColorBackgroundOriginal = m_Background.GetColor();
 		
 		UpdateAllPromotionInfo();
-		StartVideo();
+		//StartVideo();
 	}
 	
 	void CreateRootWidget(Widget parent)
@@ -86,10 +86,10 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		UpdateAllPromotionInfo();
 		return;
 		
-		if (IsInfoPanelVisible())
+		/*if (IsInfoPanelVisible())
 			StartVideo();
 		else
-			PauseVideo();
+			PauseVideo();*/
 	}
 	
 	//works on button only
