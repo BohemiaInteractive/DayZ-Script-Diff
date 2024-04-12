@@ -420,7 +420,7 @@ class EmoteSurrender extends EmoteBase
 		else
 		{
 			if (m_Player.GetItemInHands())
-				m_Player.GetItemInHands().Delete();
+				m_Player.GetItemInHands().DeleteSafe();
 		}
 		
 		return true;

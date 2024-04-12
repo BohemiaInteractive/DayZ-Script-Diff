@@ -360,8 +360,10 @@ class ActionConstructor
 		actions.Insert(ActionCarHornLong);
 		actions.Insert(ActionPushCar);
 		
+		#ifdef DIAG_DEVELOPER 
 		//Instant action - debug
 		actions.Insert(ActionDebug);
+		#endif
 			
 		//Weapon
 		actions.Insert(FirearmActionAttachMagazine);

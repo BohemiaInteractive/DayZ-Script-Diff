@@ -3355,7 +3355,7 @@ class PlayerBase extends ManBase
 			if (m_LastCommandBeforeUnconscious != DayZPlayerConstants.COMMANDID_VEHICLE)
 			{
 				EntityAI entity_in_hands = GetHumanInventory().GetEntityInHands();
-				if (entity_in_hands && CanDropEntity(entity_in_hands) && !IsRestrained())
+				if (entity_in_hands && CanDropEntity(entity_in_hands) && !IsRestrained() && !IsSurrendered())
 				{
 					DropItem(ItemBase.Cast(entity_in_hands));
 				}
@@ -5210,14 +5210,7 @@ class PlayerBase extends ManBase
 	
 	bool IsEmotePlaying()
 	{
-		if (m_EmoteManager)
-		{
-			return m_EmoteManager.IsEmotePlaying();
-		}
-		else
-		{
-			return false;
-		}
+		return m_EmoteManager && m_EmoteManager.IsEmotePlaying();
 	}
 	
 	override bool IsIgnoredByConstruction()
@@ -7932,7 +7925,7 @@ class PlayerBase extends ManBase
 	
 	bool CanDeleteItems()
 	{
-		return !(IsEmotePlaying() || GetThrowing().IsThrowingAnimationPlaying() || GetDayZPlayerInventory().IsProcessing() || (GetActionManager() && GetActionManager().GetRunningAction()));
+		return !(GetThrowing().IsThrowingAnimationPlaying() || GetDayZPlayerInventory().IsProcessing() || (GetActionManager() && GetActionManager().GetRunningAction()));
 	}
 	
 	override void JunctureDeleteItem(EntityAI item)

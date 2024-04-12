@@ -229,8 +229,10 @@ class PluginItemDiagnostic extends PluginDeveloper
 
 	void OnSelectAction(EntityAI ent, int actionId)
 	{
+		#ifdef DIAG_DEVELOPER 
 		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 		player.GetActionManager().OnInstantAction(ActionDebug,new Param2<EntityAI,int>(ent,actionId));
+		#endif
 	}
 
 	void ReleaseFocus()

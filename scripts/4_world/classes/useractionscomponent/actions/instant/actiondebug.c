@@ -11,6 +11,7 @@ class ActionDebugData : ActionData
 	EntityAI	m_Entity;
 }
 
+#ifdef DIAG_DEVELOPER
 class ActionDebug : ActionInstantBase
 {	
 	override bool HasTarget()
@@ -108,3 +109,4 @@ class ActionDebug : ActionInstantBase
 	}
 	
 };
+#endif

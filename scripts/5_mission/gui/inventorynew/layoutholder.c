@@ -24,14 +24,18 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 	
 	void OnSelectAction(ItemBase item, int actionId)
 	{
+		#ifdef DIAG_DEVELOPER 
 		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
 		m_player.GetActionManager().OnInstantAction(ActionDebug,new Param2<ItemBase,int>(item,actionId));
+		#endif
 	}
 	
 	void OnSelectActionEx(EntityAI item, int actionId)
 	{
+		#ifdef DIAG_DEVELOPER 
 		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
 		m_player.GetActionManager().OnInstantAction(ActionDebug,new Param2<EntityAI,int>(item,actionId));
+		#endif
 	}
 	
 	void ShowActionMenu(InventoryItem item)

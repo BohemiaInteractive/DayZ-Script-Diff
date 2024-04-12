@@ -593,7 +593,7 @@ class ActionManagerClient: ActionManagerBase
 	
 	protected void ActionStart(ActionBase action, ActionTarget target, ItemBase item, Param extra_data = NULL)
 	{
-		if (!m_CurrentActionData && action) 
+		if (!m_CurrentActionData && action && ActionPossibilityCheck(m_Player.GetCurrentCommandID())) 
 		{
 			m_ActionWantEndRequest_Send = false;
 			m_ActionInputWantEnd_Send = false;
