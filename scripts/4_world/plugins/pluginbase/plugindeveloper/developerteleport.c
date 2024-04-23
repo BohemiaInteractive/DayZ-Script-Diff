@@ -81,17 +81,40 @@ class DeveloperTeleport
 			}
 		}
 	}
+
+	static Object GetPlayerRootForTeleporting(PlayerBase player)
+	{
+		Object playerRoot = player;
+		
+		HumanCommandVehicle hcv = player.GetCommand_Vehicle();
+		if (hcv)
+		{
+			playerRoot = hcv.GetTransport();
+		}
+
+		HumanCommandUnconscious hcu = player.GetCommand_Unconscious();
+		if (hcu)
+		{
+			Class.CastTo(playerRoot, player.GetParent());
+
+			if (playerRoot != player.GetTransportCache())
+			{
+				playerRoot = null;
+			}
+		}
+
+		if (playerRoot == null)
+		{
+			playerRoot = player;
+		}
+
+		return playerRoot;
+	}
 	
 	// Set Player Position (MP support)
 	static void SetPlayerPosition(PlayerBase player, vector position, bool breakSync = false)
 	{
-		Object object = player;
-		
-		HumanCommandVehicle vehCmd = player.GetCommand_Vehicle();
-		if (vehCmd)
-		{
-			object = vehCmd.GetTransport();
-		}
+		Object playerRoot = GetPlayerRootForTeleporting(player);
 		
 #ifdef DIAG_DEVELOPER
 		if (GetGame().IsMultiplayer() && breakSync)
@@ -100,19 +123,24 @@ class DeveloperTeleport
 			v[0] = Math.RandomFloat(-Math.PI, Math.PI);
 			v[1] = Math.RandomFloat(-Math.PI, Math.PI);
 			v[2] = Math.RandomFloat(-Math.PI, Math.PI);
-			dBodySetAngularVelocity(object, v);
-			SetVelocity(object, vector.Zero);
+			dBodySetAngularVelocity(playerRoot, v);
+			SetVelocity(playerRoot, vector.Zero);
 			
 			v[0] = Math.RandomFloat(-Math.PI, Math.PI);
 			v[1] = Math.RandomFloat(-Math.PI, Math.PI);
 			v[2] = Math.RandomFloat(-Math.PI, Math.PI);
-			object.SetOrientation(v  * Math.RAD2DEG);
+			playerRoot.SetOrientation(v  * Math.RAD2DEG);
 		}
 #endif
+
+		if (position[1] < GetGame().SurfaceGetSeaLevel())
+		{
+			position[1] = GetGame().SurfaceGetSeaLevel();
+		}
 		
 		if (GetGame().IsServer())
 		{
-			object.SetPosition(position);
+			playerRoot.SetPosition(position);
 		}
 		else
 		{
@@ -124,17 +152,11 @@ class DeveloperTeleport
 	// Set Player Direction (MP support)
 	static void SetPlayerDirection(PlayerBase player, vector direction)
 	{
+		Object playerRoot = GetPlayerRootForTeleporting(player);
+
 		if (GetGame().IsServer())
 		{
-			HumanCommandVehicle vehCmd = player.GetCommand_Vehicle();
-			if (vehCmd)
-			{
-				Transport transport = vehCmd.GetTransport();
-				if (transport)
-					transport.SetDirection(direction);
-			}
-			else
-				player.SetDirection(direction);
+			playerRoot.SetDirection(direction);
 		}
 		else
 		{

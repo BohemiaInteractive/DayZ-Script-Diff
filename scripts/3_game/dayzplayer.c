@@ -1107,6 +1107,38 @@ class SDayZPlayerAimingModel
 	private void ~SDayZPlayerAimingModel() {}
 }
 
+#ifdef FEATURE_NETWORK_RECONCILIATION
+
+class DayZPlayerOwnerState : AnimPhysOwnerState
+{
+	proto native void	SetHeading(float value);
+	proto native float	GetHeading();
+
+	proto native void	SetHeadingVelocity(float value);
+	proto native float	GetHeadingVelocity();
+
+	proto native void	SetHeadingVelocityAlign(float value);
+	proto native float	GetHeadingVelocityAlign();
+
+	proto native void	SetHeadingTargetAlignVelocity(vector value);
+	proto native void	GetHeadingTargetAlignVelocity(out vector value);
+
+};
+
+class DayZPlayerMove : AnimPhysMove
+{
+	proto native void	SetHeading(float value);
+	proto native float	GetHeading();
+
+	//! Appropriately calls 'SetParent' and 'SetParentTransform' with the correct data
+	proto native void	UpdateParent(DayZPlayer player);
+
+	//! For use within 'DayZPlayer.ReplayAdditiveMove' on the 'other' move to signal if the base move had its parent changed
+	proto native bool	WasParentUpdated();
+	
+};
+
+#endif
 
 // *************************************************************************************
 // ! DayZPlayer - mainly for logic and camera 

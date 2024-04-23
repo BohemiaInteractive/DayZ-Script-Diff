@@ -10,7 +10,7 @@ class Container_Base : ItemBase
 		if (!super.CanPutInCargo(parent))
 			return false;
 
-		if (parent && (parent == this || GetType() == parent.GetType() || parent.GetInventory().IsCargoInHiearchy()))
+		if (parent && (parent == this || GetType() == parent.GetType() || !parent.GetInventory().AreChildrenAccessible()))
 			return false;
 		
 		return true;
@@ -22,7 +22,7 @@ class Container_Base : ItemBase
 			return false;
 		
 		//is 'this' somewhere in cargo?
-		if (GetInventory().IsCargoInHiearchy())
+		if (!GetInventory().AreChildrenAccessible())
 			return false;
 		
 		return true;

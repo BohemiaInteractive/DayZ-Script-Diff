@@ -7,6 +7,12 @@ bool TryAcquireInventoryJunctureFromServer (notnull Man player, notnull Inventor
 		{
 			return JunctureRequestResult.JUNCTURE_DENIED;
 		}
+		
+		if (src.GetItem() && !src.GetItem().CanPutIntoHands(player))
+		{
+			return JunctureRequestResult.JUNCTURE_DENIED;
+		}
+		
 		bool test_dst_occupancy = true;
 		if (GetGame().AddInventoryJunctureEx(player, src.GetItem(), dst, test_dst_occupancy, GameInventory.c_InventoryReservationTimeoutMS))
 		{
@@ -47,6 +53,13 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 			{
 				return JunctureRequestResult.JUNCTURE_DENIED;
 			}
+			
+			
+			if (src1.GetItem() && !src1.GetItem().CanPutIntoHands(player))
+			{
+				return JunctureRequestResult.JUNCTURE_DENIED;
+			}
+			
 			if (!GetGame().AddInventoryJunctureEx(player, src1.GetItem(), dst1, false, GameInventory.c_InventoryReservationTimeoutMS))
 			{
 				/*#ifdef DEVELOPER
@@ -69,6 +82,12 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 				}
 				return JunctureRequestResult.JUNCTURE_DENIED;
 			}
+			
+			if (src2.GetItem() && !src2.GetItem().CanPutIntoHands(player))
+			{
+				return JunctureRequestResult.JUNCTURE_DENIED;
+			}
+			
 			if (!GetGame().AddInventoryJunctureEx(player, src2.GetItem(), dst2, false, GameInventory.c_InventoryReservationTimeoutMS))
 			{
 				//if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] item2 juncture request DENIED, player=" + Object.GetDebugName(player) + " STS = " + player.GetSimulationTimeStamp() + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));

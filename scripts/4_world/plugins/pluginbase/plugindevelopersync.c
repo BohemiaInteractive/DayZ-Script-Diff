@@ -7,6 +7,7 @@ enum PDS_SYSTEMS
 	STOMACH 			= 16,
 	MODS_DETAILED 		= 32,
 	TEMPERATURE 		= 64,
+	HEALTH 				= 128,
 }
 
 
@@ -35,6 +36,11 @@ class PluginDeveloperSync extends PluginBase
 	string 	m_PlayerModsDetailedSynced;
 	string 	m_EnvironmentDebugMessage;
 	ref array<ref SyncedValueAgent> m_PlayerAgentsSynced;
+	protected ref array<ref SyncedValue> m_TargetHealthSynced;
+	
+	protected bool m_IsTargetChanged;										// client update
+	protected ref map<PlayerBase, bool> 		m_HealthObserverMode;		// server tracking of player X health mode selection | true = target / false = self
+	protected ref map<PlayerBase, EntityAI> 	m_HealthObserverEntity;		// server tracking of player X health target 
 	
 	bool m_StatsUpdateStatus;
 	bool m_LevelsUpdateStatus;
@@ -50,6 +56,9 @@ class PluginDeveloperSync extends PluginBase
 		m_PlayerModsSynced 		= new array<ref SyncedValueModifier>;
 		m_PlayerAgentsSynced 	= new array<ref SyncedValueAgent>;
 		m_PlayerStomachSynced 	= new array<ref Param>;
+		m_TargetHealthSynced	= new array<ref SyncedValue>;
+		m_HealthObserverMode	= new map<PlayerBase,bool>;
+		m_HealthObserverEntity	= new map<PlayerBase,EntityAI>;
 		
 		m_StatsUpdateStatus 	= false;
 		m_LevelsUpdateStatus 	= false;
@@ -114,6 +123,11 @@ class PluginDeveloperSync extends PluginBase
 			case ERPCs.DEV_TEMP_UPDATE: 
 			{
 				SetSystemInBitmask(player, PDS_SYSTEMS.TEMPERATURE, enable);
+				break;	
+			}
+			case ERPCs.DEV_HEALTH_UPDATE: 
+			{
+				SetSystemInBitmask(player, PDS_SYSTEMS.HEALTH, enable);
 				break;	
 			}
 		}	
@@ -185,6 +199,10 @@ class PluginDeveloperSync extends PluginBase
 					if ((PDS_SYSTEMS.TEMPERATURE & bit_mask) )
 					{
 						SendRPCTemp( player );
+					}
+					if ((PDS_SYSTEMS.HEALTH & bit_mask) )
+					{
+						SendRPCHealth( player );
 					}
 				}
 			}
@@ -283,6 +301,11 @@ class PluginDeveloperSync extends PluginBase
 				EnableUpdate( GetRPCUpdateState( ctx ), ERPCs.DEV_STOMACH_UPDATE, player ); break;
 			}
 			
+			case ERPCs.DEV_HEALTH_UPDATE:
+			{
+				EnableUpdate( GetRPCUpdateState( ctx ), ERPCs.DEV_HEALTH_UPDATE, player ); break;
+			}
+			
 			case ERPCs.DEV_RPC_STATS_DATA:
 			{
 				OnRPCStats( ctx ); break;
@@ -354,6 +377,16 @@ class PluginDeveloperSync extends PluginBase
 			case ERPCs.DEV_TEMP_UPDATE:
 			{
 				OnRPCTemp(ctx, player);
+				break;
+			}
+			case ERPCs.DEV_RPC_HEALTH_DATA:
+			{
+				OnRPCHealth(ctx, player); break;
+			}
+			
+			case ERPCs.DEV_RPC_HEALTH_SET:
+			{
+				OnRPCHealthSet(ctx, player);
 				break;
 			}
 		}
@@ -485,6 +518,163 @@ class PluginDeveloperSync extends PluginBase
 			}	
 		}
 	
+	}
+	
+	//============================================
+	// HEALTH
+	//============================================	
+	ref array<ref SyncedValue> GetHealthZonesSynched()
+	{
+		return m_TargetHealthSynced;
+	}
+	
+	bool GetIsTargetChanged()
+	{
+		return m_IsTargetChanged;
+	}
+	
+	void SetTargetChanged(bool state)
+	{
+		m_IsTargetChanged = state;
+	}
+	
+	void SendRPCHealth(PlayerBase player)
+	{
+		//write and send values
+		if ( player )
+		{
+			array<ref Param> rpc_params = new array<ref Param>;
+			
+			EntityAI target;
+			if (m_HealthObserverMode.Get(player) == false)
+				target = player;
+			else 
+			{
+				PluginItemDiagnostic itemDiagPlugin = PluginItemDiagnostic.Cast(GetPlugin(PluginItemDiagnostic));	
+				target =  EntityAI.Cast(itemDiagPlugin.GetWatchedItem(player));
+			}
+			
+			if (target)
+			{
+				DamageZoneMap dmgZones = target.GetEntityDamageZoneMap();
+							
+				SetupZoneValues(rpc_params, dmgZones, target, "Health", 0);
+				if (target.IsPlayer())	// better way needs prog support
+				{
+					SetupZoneValues(rpc_params, dmgZones, target, "Shock", 1);
+					SetupZoneValues(rpc_params, dmgZones, target, "Blood", 2);
+				}
+			}
+			
+			bool targetChanged = false;
+			if (target != m_HealthObserverEntity.Get(player))
+			{
+				targetChanged = true;
+				m_HealthObserverEntity.Set(player, target);
+			}
+				
+			rpc_params.InsertAt( new Param2<int, bool>(rpc_params.Count(), targetChanged), 0);
+
+			GetDayZGame().RPC( player, ERPCs.DEV_RPC_HEALTH_DATA, rpc_params, true, player.GetIdentity() );
+		}
+	}
+	
+	void OnRPCHealth(ParamsReadContext ctx , PlayerBase player)
+	{
+		m_TargetHealthSynced.Clear();
+		
+		Param2<int, bool> paramsHeader = new Param2<int, bool>(0, false);
+		Param4<string, float, float, bool> p = new Param4<string, float, float, bool>("", 0, 0, false);
+		
+		int paramCount = 0;
+		if ( ctx.Read(paramsHeader) )
+		{
+			paramCount = paramsHeader.param1;
+			SetTargetChanged(paramsHeader.param2);
+		}
+		
+		for ( int i = 0; i < paramCount; i++ )
+		{
+			ctx.Read(p);
+			m_TargetHealthSynced.Insert( new SyncedValue( p.param1, p.param2, p.param4, p.param3 ) );
+		}
+	}
+	
+	void SetupZoneValues(inout array<ref Param> rpc_params, DamageZoneMap dmgZones, EntityAI target, string healthType, int typeID)
+	{
+		if (target.GetMaxHealth("", healthType) == 0)
+			return;
+		
+		//title entry
+		bool isTitleEntry = true;
+		rpc_params.Insert( new Param4<string, float, float, bool>( "", 0, typeID, isTitleEntry ) );
+		
+		// global entry
+		isTitleEntry = false;
+		float value = target.GetHealth("", healthType);
+		rpc_params.Insert( new Param4<string, float, float, bool>( "Global", value, typeID, isTitleEntry ) );
+		
+		//entries
+		int count = dmgZones.Count();
+		for (int i = 0; i < count; i++)
+		{
+			string zoneName = dmgZones.GetKey(i);		
+			if (target.GetMaxHealth(zoneName, healthType) == 0)	
+				continue;
+			
+			isTitleEntry = false;
+			value = target.GetHealth(zoneName, healthType);
+			rpc_params.Insert( new Param4<string, float, float, bool>( zoneName, value, typeID, isTitleEntry ) );
+		}
+	}
+	
+	// Used for client requesting health change or targeting mode (self/target) change
+	void OnRPCHealthSet( ParamsReadContext ctx , PlayerBase player)
+	{
+		Param3<int, string, string> p = new Param3<int, string, string>( 0, "", "" );
+		if ( !ctx.Read(p) )
+			return;
+					
+		int buttonID = p.param1;
+		string zoneName = p.param2;
+		string healthType = p.param3;
+		
+		if (buttonID > 3) // target change only
+		{
+			if (buttonID == 4)		// ButtonTarget
+				m_HealthObserverMode.Set(player, true);
+			else if (buttonID == 5)	// ButtonSelf
+				m_HealthObserverMode.Set(player, false);
+			
+			return;
+		}
+		
+		EntityAI target;
+		if (m_HealthObserverMode.Get(player) == false)
+			target = player;
+		else 
+		{
+			PluginItemDiagnostic itemDiagPlugin = PluginItemDiagnostic.Cast(GetPlugin(PluginItemDiagnostic));	
+			target =  EntityAI.Cast(itemDiagPlugin.GetWatchedItem(player));
+		}
+		
+		if (zoneName == "Global")
+			zoneName = "";
+		
+		float zoneMax = target.GetMaxHealth(zoneName, healthType);
+		float zoneCurrentHealth = target.GetHealth(zoneName, healthType);
+		float targetHealth;
+		
+		if (buttonID == 0)			// ButtonMin
+			targetHealth = 0;
+		else if  (buttonID == 1)	// ButtonMax
+			targetHealth = zoneMax;		
+		else if  (buttonID == 2)	// ButtonAdd
+			targetHealth = zoneCurrentHealth + zoneMax * 0.1;
+		else if  (buttonID == 3)	// ButtonSubtract
+			targetHealth = zoneCurrentHealth - zoneMax * 0.1;
+		
+		target.SetHealth(zoneName, healthType, targetHealth);
 	}
 
 	//============================================

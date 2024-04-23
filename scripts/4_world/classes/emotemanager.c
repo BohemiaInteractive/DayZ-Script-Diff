@@ -1013,12 +1013,14 @@ class EmoteManager
 			m_InventoryAccessLocked = state;
 		}
 		
-		//full emote locking (
+		//Movement lock in fullbody anims
+		if (state && m_Callback && m_Callback.m_IsFullbody)
+			m_controllsLocked = true;
+		else
+			m_controllsLocked = false;
+		
 		if (state == m_EmoteLockState)
-		{
-			//ErrorEx("emote lock state already set",ErrorExSeverity.INFO);
 			return;
-		}
 		
 		if (!m_HandInventoryLocation)
 		{
@@ -1033,9 +1035,6 @@ class EmoteManager
 			
 			if (m_Player.GetActionManager())
 				m_Player.GetActionManager().EnableActions(true);
-				
-			if (m_controllsLocked)
-				m_controllsLocked = false;
 		}
 		else
 		{
@@ -1044,10 +1043,6 @@ class EmoteManager
 				
 			if (m_Player.GetActionManager())
 				m_Player.GetActionManager().EnableActions(false);
-			
-			//Movement lock in fullbody anims
-			if (m_Callback && m_Callback.m_IsFullbody && !m_controllsLocked)
-				m_controllsLocked = true;
 		}
 		m_EmoteLockState = state;
 	}

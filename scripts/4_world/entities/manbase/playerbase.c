@@ -2972,6 +2972,10 @@ class PlayerBase extends ManBase
 						{
 							m_TransportCache = hcv.GetTransport();	
 						}
+						else
+						{
+							m_TransportCache = null;
+						}
 						
 						//! TODO: rework vehicle command Knockout back to force player prone after they have exited the vehicle
 						m_JumpClimb.CheckAndFinishJump();
@@ -3885,10 +3889,6 @@ class PlayerBase extends ManBase
 		if (itemOnHead && itemOnHead.GetCompEM())
 			itemOnHead.GetCompEM().SwitchOff();
 		
-		HumanCommandVehicle hcv = GetCommand_Vehicle();
-		if (hcv && hcv.GetVehicleSeat() == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-			OnVehicleSeatDriverEnter();
-		
 		GetGame().GetMission().AddActiveInputExcludes({"vehicledriving"});
 	}
 	
@@ -3898,9 +3898,6 @@ class PlayerBase extends ManBase
 			GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
 		
 		TryHideItemInHands(false, true);
-		
-		if (m_IsVehicleSeatDriver)
-			OnVehicleSeatDriverLeft();
 		
 		GetGame().GetMission().RemoveActiveInputExcludes({"vehicledriving"});
 	}	
@@ -4067,25 +4064,39 @@ class PlayerBase extends ManBase
 		
 	void OnVehicleSwitchSeat(int seatIndex)
 	{
-		if (seatIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-		{
-			OnVehicleSeatDriverEnter();
-		}
-		else
-		{
-			OnVehicleSeatDriverLeft();
-		}
 	}
 	
-	void OnVehicleSeatDriverEnter()
+	override void OnVehicleSeatDriverEnter()
 	{
 		m_IsVehicleSeatDriver = true;
 		if (m_Hud)
 			m_Hud.ShowVehicleInfo();
+		
+#ifdef FEATURE_NETWORK_RECONCILIATION
+		PlayerIdentity identity = GetIdentity();
+		if (identity)
+		{
+			Pawn pawn = Pawn.Cast(GetParent());
+
+			//! Hand off control to the vehicle - null is valid
+			identity.Possess(pawn);
+		}
+#endif
 	}
 	
-	void OnVehicleSeatDriverLeft()
+	override void OnVehicleSeatDriverLeft()
 	{
+#ifdef FEATURE_NETWORK_RECONCILIATION
+		PlayerIdentity identity = GetIdentity();
+
+		//! Don't possess the player if we are in the vehicle and unconscious, we are still the driver!
+		if (identity && !m_ShouldBeUnconscious)
+		{
+			//! And now we want to resume control of the player 
+			identity.Possess(this);
+		}
+#endif
+		
 		m_IsVehicleSeatDriver = false;
 		if (m_Hud)
 			m_Hud.HideVehicleInfo();
@@ -5828,11 +5839,19 @@ class PlayerBase extends ManBase
 		m_QuickBarBase.updateSlotsCount();
 		
 		m_WeaponManager.SortMagazineAfterLoad();
+		
+		PlayerIdentity identity = GetIdentity();
+		
+#ifdef FEATURE_NETWORK_RECONCILIATION
+		if (identity)
+		{
+			//! TODO(kumarjac): vhc: Check if it causes further issues with SelectPlayer while a player is leaving freecam
+			identity.Possess(this);
+		}
+#endif
 
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !GetGame().IsMultiplayer())
 		{
-			PlayerIdentity identity = GetIdentity();
-			
 			if (identity)
 			{
 				m_CachedPlayerID = identity.GetId();
@@ -7870,7 +7889,7 @@ class PlayerBase extends ManBase
 			case DayZPlayerSyncJunctures.SJ_GESTURE_REQUEST :
 				m_EmoteManager.OnSyncJuncture(pJunctureID, pCtx);
 				break;
-			case DayZPlayerSyncJunctures.SJ_WEAPON_LIFT:
+			case DayZPlayerSyncJunctures.SJ_WEAPON_LIFT: // Obsolete
 				SetLiftWeapon(pJunctureID, pCtx);
 				break;
 			case DayZPlayerSyncJunctures.SJ_ADS_RESET:
@@ -8036,53 +8055,52 @@ class PlayerBase extends ManBase
 		bool state;
 		ctx.Read(state);
 		
-		ScriptJunctureData pCtx = new ScriptJunctureData;
-		pCtx.Write(state);
 		
-		SendSyncJuncture(DayZPlayerSyncJunctures.SJ_WEAPON_LIFT, pCtx);
+		SetLiftWeapon(state);
 		
 		return true;
 	}
 	
-	void SetLiftWeapon(int pJunctureID, ParamsReadContext ctx)
+	void SetLiftWeapon(int pJunctureID, ParamsReadContext ctx) // Obsolete
 	{
 		bool state;
 		ctx.Read(state);
 		
-		m_ProcessLiftWeaponState = state;
-		m_ProcessLiftWeapon = true;
+		SetLiftWeapon(state);
 		
 		//Print("SetLiftWeapon | STS: " + GetSimulationTimeStamp());
+	}
+	
+	void SetLiftWeapon(bool state)
+	{
+		m_ProcessLiftWeaponState = state;
+		m_ProcessLiftWeapon = true;
 	}
 	
 	//! Client-side only
 	void SendLiftWeaponSync(bool state)
 	{
 		HumanCommandWeapons	hcw;
-		//SP version
-		if (!GetGame().IsMultiplayer())
-		{
-			m_LiftWeapon_player = state;
 		
-			hcw = GetCommandModifier_Weapons();
-			if (hcw)
-				hcw.LiftWeapon(state);
+		// Apply state immediately
+		m_LiftWeapon_player = state;
+		
+		hcw = GetCommandModifier_Weapons();
+		if (hcw)
+			hcw.LiftWeapon(state);
+		
+		GetWeaponManager().OnLiftWeapon();
+		
+		// Notify server to apply same state
+		if (GetGame().IsMultiplayer() && GetGame().IsClient())
+		{
+			ScriptInputUserData ctx = new ScriptInputUserData;
+			if (!ctx.CanStoreInputUserData())
+			{
+				// ctx not available??
+				return;
+			}
 			
-			GetWeaponManager().OnLiftWeapon();
-			
-			return;
-		}
-		
-		ScriptInputUserData ctx = new ScriptInputUserData;
-		
-		if (GetGame().IsMultiplayer() && GetGame().IsClient() && !ctx.CanStoreInputUserData())
-		{
-			//Print("ctx unavailable");
-			return;
-		}
-		else if (GetGame().IsMultiplayer() && GetGame().IsClient() && ctx.CanStoreInputUserData())
-		{
-			//Print("sending ECB cancel request");
 			ctx.Write(INPUT_UDT_WEAPON_LIFT_EVENT);
 			ctx.Write(state);
 			ctx.Send();

@@ -879,6 +879,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 				#endif
 
+				validation.m_Result = InventoryValidationResult.FAILED;
 				validation.m_Reason = InventoryValidationReason.JUNCTURE_DENIED;
 				return true;
 			}
@@ -1337,6 +1338,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 				#endif
 
+				validation.m_Result = InventoryValidationResult.FAILED;
 				validation.m_Reason = InventoryValidationReason.JUNCTURE_DENIED;
 				return true;
 			}

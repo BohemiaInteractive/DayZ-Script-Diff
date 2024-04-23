@@ -28,7 +28,7 @@ class RepairPlanks extends RecipeBase
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing
-		m_IngredientAddQuantity[0] = 0;// 0 = do nothing
+		m_IngredientAddQuantity[0] = -2;// 0 = do nothing
 		m_IngredientDestroy[0] = false;//true = destroy, false = do nothing
 		m_IngredientUseSoftSkills[0] = true;// set 'true' to allow modification of the values by softskills on this ingredient
 		
@@ -59,32 +59,10 @@ class RepairPlanks extends RecipeBase
 		//----------------------------------------------------------------------------------------------------------------------
 	}
 
-	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
-	{
-		ItemBase ingredient1 = ingredients[0];
-
-		if (ingredient1.Type() == WoodenPlank)
-		{
-			if (ingredient1.GetQuantity() >= 2)
-				return true;
-			
-			return false;
-		}
-		
-		return true;
-	}
-
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase ingredient1 = ingredients[0];
-		if (ingredients[0].Type() == WoodenPlank)
-		{
-			ingredient1.AddQuantity(-2);
-		}
-		
-		ItemBase ingredient2 = ingredients[1];
-		float mHealth = ingredient2.GetMaxHealth();
-		float percent = mHealth*0.2; //20% of the item's health
-		ingredient2.AddHealth(percent);
+		PluginRepairing moduleRepairing;
+		Class.CastTo(moduleRepairing, GetPlugin(PluginRepairing));
+		moduleRepairing.Repair(player,ingredients[0],ingredients[1],specialty_weight);
 	}
 };

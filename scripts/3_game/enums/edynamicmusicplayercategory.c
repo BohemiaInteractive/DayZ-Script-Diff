@@ -1,0 +1,9 @@
+enum EDynamicMusicPlayerCategory
+{
+	NONE = -1,
+	MENU = 0,
+	TIME,
+	LOCATION_STATIC,
+	LOCATION_STATIC_PRIORITY,
+	LOCATION_DYNAMIC,
+}

@@ -18,6 +18,7 @@ enum EClientKicked
 	
 	NOT_WHITELISTED,	// Player is not whitelisted
 	NO_IDENTITY,		// No identity received while creating identity
+	NO_INPUT_INTERFACE, // No input interface exists for the player 
 	INVALID_UID,		// UID was incorrect while creating identity
 	BANK_COUNT,			// Amount of banks was changed
 	ADMIN_KICK,			// Kicked by admin
@@ -51,6 +52,8 @@ enum EClientKicked
 	RECONNECT_INFO,				// No info for reconnecting character
 	RECONNECT_IDENTITY,			// No identity for reconnecting character
 	RECONNECT_CHAR,				// No character for reconnecting character
+	ALREADY_ON_ANOTHER_SERVER,	// Player is trying to join a server while already being on one
+	BIOS_ERROR,					// Something went wrong while communicating with the BIOS
 	
 	// RespawnMachine Kicks (0x0050)
 	INIT_RESPAWN_IDENTITY = 80,	// No identity when initializing respawn
@@ -205,6 +208,7 @@ class ClientKickedModule : ErrorHandlerModuleScript
 
 		InsertDialogueErrorProperties(EClientKicked.NOT_WHITELISTED,					"#multi_server_not_whitelisted_message");
 		InsertDialogueErrorProperties(EClientKicked.NO_IDENTITY,						"#STR_no_identity");
+		InsertDialogueErrorProperties(EClientKicked.NO_INPUT_INTERFACE,					"#STR_no_input_interface");
 		InsertDialogueErrorProperties(EClientKicked.INVALID_UID,						"#STR_invalid_UID");
 		InsertSplitDialogueErrorProperties(EClientKicked.BANK_COUNT,					"#STR_bank_count" + VERIFY, "#STR_bank_count");
 		InsertDialogueErrorProperties(EClientKicked.ADMIN_KICK,							"#STR_admin_kick");
@@ -238,6 +242,8 @@ class ClientKickedModule : ErrorHandlerModuleScript
 		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.RECONNECT_INFO,					"#STR_reconnect_info", LOGIN_PREFIX);
 		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.RECONNECT_IDENTITY,				"#STR_reconnect_identity", LOGIN_PREFIX);
 		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.RECONNECT_CHAR,					"#STR_reconnect_char", LOGIN_PREFIX);
+		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.ALREADY_ON_ANOTHER_SERVER,		"#STR_already_on_another_server", LOGIN_PREFIX);
+		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.BIOS_ERROR,						"#STR_BIOS_BIOSError", LOGIN_PREFIX);
 
 		// RespawnMachine Kicks			
 		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.INIT_RESPAWN_IDENTITY,			"#STR_init_respawn_identity", RESPAWN_PREFIX);

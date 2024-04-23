@@ -9,6 +9,7 @@ void DayZPlayerTypeCreate(DayZPlayerType pType)
 
 void DayZPlayerTypeInitMovement(DayZPlayerType pType)
 {
+	DayZPlayerTypeRegisterItems(pType);
 	DayZPlayerTypeUtils.DayZPlayerTypeInitMovement(pType);
 }
 
@@ -437,6 +438,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("PP19_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_PP19.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/bizon.anm", "dz/anims/anm/player/reloads/Bizon/w_bizon_states.anm");
 		pType.AddItemInHandsProfileIK("SSG82_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_ssg82.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/ssg82.anm", "dz/anims/anm/player/reloads/SSG82/w_SSG82_states.anm");
 		pType.AddItemInHandsProfileIK("M14_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_m14.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/M14_ik.anm","dz/anims/anm/player/reloads/M14/w_M14_states.anm");
+		pType.AddItemInHandsProfileIK("SV98_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_SV98.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/SV98.anm","dz/anims/anm/player/reloads/SV98/w_SV98_states.anm");
 
 		//! Shotguns
 		pType.AddItemInHandsProfileIK("Izh18Shotgun_Base",		"dz/anims/workspaces/player/player_main/weapons/player_main_izh18_Spartan.asi",	fireArmsItemBehaviour,	"dz/anims/anm/player/ik/weapons/izh18_Spartan.anm", "dz/anims/anm/player/reloads/IZH18Spartan/w_izh18Spartan_states.anm");
@@ -614,6 +616,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("Mag_SSG82_5rnd",						"dz/anims/workspaces/player/player_main/props/player_main_STANAG_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_ssg82.anm");
 		pType.AddItemInHandsProfileIK("Mag_M14_10Rnd",						"dz/anims/workspaces/player/player_main/props/player_main_STANAG_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_svd.anm");
 		pType.AddItemInHandsProfileIK("Mag_M14_20Rnd",						"dz/anims/workspaces/player/player_main/props/player_main_STANAG_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_svd.anm");
+		pType.AddItemInHandsProfileIK("Mag_SV98_10Rnd",						"dz/anims/workspaces/player/player_main/props/player_main_STANAG_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_svd.anm");
 		
 		//! muzzle
 		pType.AddItemInHandsProfileIK("AK_Bayonet",							"dz/anims/workspaces/player/player_main/weapons/player_main_1h_knife.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/gear/bayonet_ak.anm");

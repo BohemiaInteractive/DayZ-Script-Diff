@@ -166,6 +166,20 @@ class GesturesMenu extends UIScriptedMenu
 		//GetGame().GetMission().RemoveActiveInputExcludes({"radialmenu"},false);
 	}
 	
+	static bool CanOpenMenu()
+	{
+		if (!instance)
+		{
+			PlayerBase player;;
+			HumanInputController hic;
+			if (Class.CastTo(player,GetGame().GetPlayer()) && Class.CastTo(hic,player.GetInputController()) && hic.WeaponADS())
+				return false;
+			else
+				return true;
+		}
+		return false;
+	}
+	
 	protected void OnInputPresetChanged()
 	{
 		#ifdef PLATFORM_CONSOLE

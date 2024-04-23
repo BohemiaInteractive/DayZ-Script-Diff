@@ -399,7 +399,10 @@ class DayZProfilesOptions
 	private ref map<EDayZProfilesOptions, ref DayZProfilesOptionBool> m_DayZProfilesOptionsBool;
 	private ref map<EDayZProfilesOptions, ref DayZProfilesOptionInt> m_DayZProfilesOptionsInt;
 	private ref map<EDayZProfilesOptions, ref DayZProfilesOptionFloat> m_DayZProfilesOptionsFloat;
-	private DayZGame m_Game
+	
+	static ref ScriptInvoker m_OnIntOptionChanged 	= new ScriptInvoker();
+	static ref ScriptInvoker m_OnBoolOptionChanged 	= new ScriptInvoker();
+	static ref ScriptInvoker m_OnFloatOptionChanged = new ScriptInvoker();
 	
 	void DayZProfilesOptions()
 	{
@@ -513,6 +516,8 @@ class DayZProfilesOptions
 			po.param2 = value;
 			GetGame().SetProfileString(po.param1, value.ToString());
 			GetGame().SaveProfile();
+			
+			m_OnBoolOptionChanged.Invoke(po.param1, value);
 		}	
 	}
 
@@ -530,6 +535,8 @@ class DayZProfilesOptions
 			po.param2 = value;
 			GetGame().SetProfileString(po.param1, value.ToString());
 			GetGame().SaveProfile();
+			
+			m_OnIntOptionChanged.Invoke(option, value);
 		}	
 	}
 	
@@ -542,6 +549,8 @@ class DayZProfilesOptions
 			po.param2 = value;
 			GetGame().SetProfileString(po.param1, value.ToString());
 			GetGame().SaveProfile();
+			
+			m_OnFloatOptionChanged.Invoke(po.param1, value);
 		}	
 	}
 
@@ -635,6 +644,7 @@ class DayZProfilesOptions
 	//!
 	//! DEPRECATED
 	private ref map<EDayZProfilesOptions, ref DayZProfilesOption> m_DayZProfilesOptions;
+	private DayZGame m_Game;
 }
 
 enum DayZGameState
@@ -1125,6 +1135,8 @@ class DayZGame extends CGame
 		m_DayZProfileOptions.RegisterProfileOptionBool(EDayZProfilesOptions.CONNECTIVITY_INFO, SHOW_CONNECTIVITYINFO, true);
 		
 		m_DayZProfileOptions.RegisterProfileOptionFloat(EDayZProfilesOptions.HUD_BRIGHTNESS, HUD_BRIGHTNESS, 0.0);
+		
+		m_DayZProfileOptions.RegisterProfileOptionInt(EDayZProfilesOptions.AMBIENT_MUSIC_MODE, OPTIONS_SOUND_AMBIENT_SOUND_MODE, 0);
 	}
 	
 	void ResetProfileOptions()
@@ -1728,7 +1740,7 @@ class DayZGame extends CGame
 	}
 	
 	#ifdef DIAG_DEVELOPER
-	private void DrawPerformaceStats(float pingAct, float pingAvg)
+	private void DrawPerformanceStats(float pingAct, float pingAvg, float throttleInput, float throttleOutput)
 	{
 		DbgUI.Begin("Performance Stats", 10, 520);
 		DbgUI.Text("pingAct:" + pingAct );
@@ -1754,6 +1766,10 @@ class DayZGame extends CGame
 			DbgUI.ColoredText(color, "serverFPS:" + m_ServerFpsStatsParams.param1.ToString() );
 			DbgUI.PlotLive("serverFPS history:", 300,150, m_ServerFpsStatsParams.param1, 6000, 100 );
 		}
+		DbgUI.Text("throttleInput:" + throttleInput);
+		DbgUI.PlotLive("throttleInput history:", 300,100, throttleInput, 2000, 50 );
+		DbgUI.Text("throttleOutput:" + throttleOutput);
+		DbgUI.PlotLive("throttleOutput history:", 300,100, throttleOutput, 2000, 50 );
 		DbgUI.End();
 	}
 	#endif
@@ -2859,9 +2875,12 @@ class DayZGame extends CGame
 			{
 				int pingAct = playerIdentity.GetPingAct();
 				int pingAvg = playerIdentity.GetPingAvg();
+
+				float throttleInput = playerIdentity.GetInputThrottle();
+				float throttleOutput = playerIdentity.GetOutputThrottle();
+				
+				DrawPerformanceStats(pingAct, pingAvg, throttleInput, throttleOutput);
 			}
-			
-			DrawPerformaceStats(pingAct, pingAvg);
 		}
 		#endif
 		#endif

@@ -19,6 +19,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	protected const string VERSION_VIS						= "console_version_visible";
 	protected const string MERGE_TYPE						= "category_merge_type";
 	protected const string TEMP_VIS							= "console_temperature_visible";
+	protected const string HEALTH_VIS						= "console_health_visible";
 	protected const string SUB_PARAM_ITEM					= "item";
 	protected const string SUB_PARAM_ITEM_NAME				= "name";
 	protected const string SUB_PARAM_ITEM_HEALTH			= "health";
@@ -306,6 +307,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		m_DefaultValues.Insert(VERSION_VIS,				GetNewCfgParamBool(true) );
 		m_DefaultValues.Insert(CONFIG_CLASSES_FLAG,		GetNewCfgParamInt(15) );
 		m_DefaultValues.Insert(TEMP_VIS,				GetNewCfgParamBool(false) );
+		m_DefaultValues.Insert(HEALTH_VIS,				GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(MERGE_TYPE,				GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(ITEM_PREVIEW,			GetNewCfgParamBool(true) );
 		m_DefaultValues.Insert(BATCH_RECT,				GetNewCfgParamArray(GetDefaultBatchRectParams()) );
@@ -699,6 +701,19 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	void SetTempVisible( bool is_visible )
 	{
 		SetBool( TEMP_VIS, is_visible );
+	}
+	
+	//========================================
+	// HealthVisible
+	//========================================	
+	bool GetHealthVisible()
+	{
+		return GetBool( HEALTH_VIS );
+	}
+
+	void SetHealthVisible( bool is_visible )
+	{
+		SetBool( HEALTH_VIS, is_visible );
 	}
 	
 	//========================================

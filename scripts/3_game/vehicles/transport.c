@@ -1,7 +1,12 @@
 /*!
 	Base native class of all vehicles in game.
 */
+#ifdef FEATURE_NETWORK_RECONCILIATION
+//! Uses NetworkMoveStrategy.NONE
+class Transport extends Pawn
+#else
 class Transport extends EntityAI
+#endif
 {
 	ref TIntArray m_SingleUseActions;
 	ref TIntArray m_ContinuousActions;

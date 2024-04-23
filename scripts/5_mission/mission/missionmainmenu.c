@@ -4,7 +4,7 @@ class MissionMainMenu extends MissionBase
 	private CreditsMenu m_CreditsMenu;
 	private ref DayZIntroScenePC m_IntroScenePC;
 	private ref DayZIntroSceneXbox m_IntroSceneXbox;
-	private AbstractWave m_MenuMusic;
+
 	bool m_NoCutscene;
 
 	override void OnInit()
@@ -79,17 +79,12 @@ class MissionMainMenu extends MissionBase
 
 	override void OnMissionStart()
 	{
-		if (m_mainmenu)
-		{
-			//m_mainmenu.FadeIn(2.0);	//Fade in method is currently commented in MainMenu class
-		}
 		g_Game.GetUIManager().ShowUICursor(true);
-		g_Game.SetMissionState( DayZGame.MISSION_STATE_MAINMENU );
+		g_Game.SetMissionState(DayZGame.MISSION_STATE_MAINMENU);
+		m_DynamicMusicPlayer.SetCategory(EDynamicMusicPlayerCategory.MENU, true);
 		
-		//Print("*** MissionMainMenu.OnMissionStart()");
 		g_Game.LoadingHide(true);
 		ProgressAsync.DestroyAllPendingProgresses();
-		PlayMusic();
 	}
 	
 	override void OnMissionFinish()
@@ -145,31 +140,6 @@ class MissionMainMenu extends MissionBase
 		}
 	}
 	
-	void PlayMusic()
-	{
-		if ( !m_MenuMusic )
-		{
-			SoundParams soundParams			= new SoundParams( "Music_Menu_SoundSet" );
-			SoundObjectBuilder soundBuilder	= new SoundObjectBuilder( soundParams );
-			SoundObject soundObject			= soundBuilder.BuildSoundObject();
-			soundObject.SetKind( WaveKind.WAVEMUSIC );
-			m_MenuMusic = GetGame().GetSoundScene().Play2D(soundObject, soundBuilder);
-			m_MenuMusic.Loop( true );
-			m_MenuMusic.Play();
-		}
-	}
-	
-	void StopMusic()
-	{
-		if ( m_MenuMusic )
-			m_MenuMusic.Stop();
-	}
-	
-	AbstractWave GetMenuMusic()
-	{
-		return m_MenuMusic;
-	}
-	
 	int SortedInsert( array<int> list, int number )
 	{
 		int find_number = number;
@@ -215,5 +185,35 @@ class MissionMainMenu extends MissionBase
 		}
 		
 		return target_index;
+	}
+
+	//!	
+	//! DEPRECATED
+	//!
+	private AbstractWave m_MenuMusic;
+
+	void PlayMusic()
+	{
+		if ( !m_MenuMusic )
+		{
+			SoundParams soundParams			= new SoundParams( "Music_Menu_SoundSet" );
+			SoundObjectBuilder soundBuilder	= new SoundObjectBuilder( soundParams );
+			SoundObject soundObject			= soundBuilder.BuildSoundObject();
+			soundObject.SetKind( WaveKind.WAVEMUSIC );
+			m_MenuMusic = GetGame().GetSoundScene().Play2D(soundObject, soundBuilder);
+			m_MenuMusic.Loop( true );
+			m_MenuMusic.Play();
+		}
+	}
+	
+	void StopMusic()
+	{
+		if ( m_MenuMusic )
+			m_MenuMusic.Stop();
+	}
+	
+	AbstractWave GetMenuMusic()
+	{
+		return m_MenuMusic;
 	}
 }

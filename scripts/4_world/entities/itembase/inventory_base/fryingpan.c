@@ -55,7 +55,7 @@ class FryingPan extends Inventory_Base
 			return false;
 		
 		//is 'parent' somewhere in cargo?
-		if (parent && parent.GetInventory().IsCargoInHiearchy())
+		if (parent && !parent.GetInventory().AreChildrenAccessible())
 			return false;
 
 		return true;
@@ -70,7 +70,7 @@ class FryingPan extends Inventory_Base
 			return false;
 		
 		//is 'this' somewhere in cargo?
-		if (GetInventory().IsCargoInHiearchy())
+		if (!GetInventory().AreChildrenAccessible())
 			return false;
 		
 		//can 'this' be attached to the item (->assumed smaller size than item)?

@@ -69,6 +69,44 @@ class DeathEffectTimer extends Timer
 	}
 };
 
+#ifdef FEATURE_NETWORK_RECONCILIATION
+
+class DayZPlayerImplementOwnerState : DayZPlayerOwnerState
+{
+	float m_fLastHeadingDiff;
+
+	protected override event void Write(PawnStateWriter ctx)
+	{
+		super.Write(ctx);
+
+		ctx.Write(m_fLastHeadingDiff);
+	}
+	
+	protected override event void Read(PawnStateReader ctx)
+	{
+		super.Read(ctx);
+
+		ctx.Read(m_fLastHeadingDiff);
+	}
+};
+
+class DayZPlayerImplementMove : DayZPlayerMove
+{
+	protected override event void Write(PawnMoveWriter ctx, PawnMove prev)
+	{
+		super.Write(ctx, prev);
+
+	}
+	
+	protected override event void Read(PawnMoveReader ctx, PawnMove prev)
+	{
+		super.Read(ctx, prev);
+
+	}
+};
+
+#endif
+
 class DayZPlayerImplement extends DayZPlayer
 {
 	static const int DEAD_SCREEN_DELAY = 1000; 			//! DEPRECATED
@@ -177,6 +215,39 @@ class DayZPlayerImplement extends DayZPlayer
 		
 		RegisterNetSyncVariableBoolSignal("m_TriggerPullPlayerOutOfVehicleSynch");
 	}
+
+#ifdef FEATURE_NETWORK_RECONCILIATION
+	protected override event typename GetOwnerStateType()
+	{
+		return DayZPlayerImplementOwnerState;
+	}
+	
+	protected override event typename GetMoveType()
+	{
+		return DayZPlayerImplementMove;
+	}
+
+	protected override event void ObtainState(/*inout*/ PawnOwnerState pState)
+	{
+		super.ObtainState(pState);
+
+		DayZPlayerImplementOwnerState state = DayZPlayerImplementOwnerState.Cast(pState);
+
+		state.m_fLastHeadingDiff = m_fLastHeadingDiff;
+	}
+
+	protected override event void RewindState(PawnOwnerState pState, /*inout*/ PawnMove pMove, inout NetworkRewindType pRewindType)
+	{
+		super.RewindState(pState, pMove, pRewindType);
+
+		DayZPlayerImplementOwnerState state = DayZPlayerImplementOwnerState.Cast(pState);
+
+		if (pRewindType != NetworkRewindType.ADDITIVE)
+		{
+			m_fLastHeadingDiff = state.m_fLastHeadingDiff;
+		}
+	}
+#endif
 
 	DayZPlayerImplementAiming GetAimingModel()
 	{
@@ -435,6 +506,12 @@ class DayZPlayerImplement extends DayZPlayer
 	int m_DeathAnimType = -2;
 	float m_DeathHitDir = 0;
 	bool m_DeathJuctureSent = false;
+	
+	//! Get the transport that was cached when entering unconsciousness
+	Transport GetTransportCache()
+	{
+		return m_TransportCache;
+	}
 	
 	override string GetDebugText()
 	{
@@ -1408,7 +1485,7 @@ class DayZPlayerImplement extends DayZPlayer
 	//! 
 	float 	m_fLastHeadingDiff = 0;
 
-	//!
+	//! is replayed after correction when 'NetworkRewindType.REPLAY' is used
 	override bool	HeadingModel(float pDt, SDayZPlayerHeadingModel pModel)
 	{
 		if (!IsAlive())

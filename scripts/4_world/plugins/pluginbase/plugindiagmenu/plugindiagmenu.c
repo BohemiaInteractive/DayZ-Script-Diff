@@ -481,6 +481,7 @@ class PluginDiagMenu : PluginBase
 				// LEVEL 2 - Script > Script Sounds
 				//---------------------------------------------------------------
 				DiagMenu.RegisterBool(DiagMenuIDs.SOUNDS_ITEM_IMPACT_SOUNDS, "", "Item impact sounds", DiagMenuIDs.SOUNDS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.SOUNDS_DYNAMIC_MUSIC_PLAYER_STATS, "", "Dynamic Music Player stats", DiagMenuIDs.SOUNDS_MENU);
 			}
 			
 			//---------------------------------------------------------------
@@ -509,6 +510,7 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.FEATURE_TIME_ACCEL_UG_RESERVOIR, "", "Underground Reservoir", DiagMenuIDs.FEATURE_TIME_ACCEL_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.FEATURE_TIME_ACCEL_ENERGY_CONSUME, "", "Energy Consumption", DiagMenuIDs.FEATURE_TIME_ACCEL_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.FEATURE_TIME_ACCEL_FOOD_DECAY, "", "Decay", DiagMenuIDs.FEATURE_TIME_ACCEL_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.FEATURE_TIME_ACCEL_DYNAMIC_MUSIC_PLAYER, "", "Dynamic Music Player", DiagMenuIDs.FEATURE_TIME_ACCEL_MENU);
 			}
 		}
 	}

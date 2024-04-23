@@ -11,6 +11,9 @@ class MissionBase extends MissionBaseWorld
 	ref array<PlayerBase> m_DummyPlayers = new array<PlayerBase>;
 
 	autoptr ObjectSnapCallback m_InventoryDropCallback;
+	
+	protected ref DynamicMusicPlayer m_DynamicMusicPlayer;
+	protected ref DynamicMusicPlayerRegistry m_DynamicMusicPlayerRegistry;
 
 	void MissionBase()
 	{
@@ -18,26 +21,26 @@ class MissionBase extends MissionBaseWorld
 		
 		PluginManagerInit();
 
-		m_WidgetEventHandler = new WidgetEventHandler;
+		m_WidgetEventHandler = new WidgetEventHandler();
 
-		m_InventoryDropCallback = new EntityPlacementCallback;
-		
-		//Debug.DestroyAllShapes();
+		m_InventoryDropCallback = new EntityPlacementCallback();
 
 		//TODO clea up after Gamescom
 		m_ModuleServerInfo = PluginAdditionalInfo.Cast( GetPlugin(PluginAdditionalInfo) );
 		//
 		SoundSetMap.Init();
-
-		if (GetGame().IsServer())
-		{
-			InitialiseWorldData();
-		}
-		else
-		{
-			GetDayZGame().GetAnalyticsClient().RegisterEvents();
-			m_WorldLighting	= new WorldLighting;
-		}
+		
+		InitialiseWorldData();
+		
+		#ifndef SERVER
+		GetDayZGame().GetAnalyticsClient().RegisterEvents();
+		m_WorldLighting	= new WorldLighting();
+		
+		m_DynamicMusicPlayer = new DynamicMusicPlayer(m_DynamicMusicPlayerRegistry);
+			#ifdef DIAG_DEVELOPER
+			GetOnTimeChanged().Insert(m_DynamicMusicPlayer.SetTimeOfDate);
+			#endif
+		#endif
 		
 		GetOnInputDeviceConnected().Insert(UpdateInputDevicesAvailability);
 		GetOnInputDeviceDisconnected().Insert(UpdateInputDevicesAvailability);
@@ -63,30 +66,43 @@ class MissionBase extends MissionBaseWorld
 		return m_InventoryDropCallback;
 	}
 	
+	override void OnUpdate(float timeslice)
+	{
+		super.OnUpdate(timeslice);
+		
+		#ifndef SERVER
+		m_DynamicMusicPlayer.OnUpdate(timeslice);
+		#endif
+	}
+	
 	void InitialiseWorldData()
 	{
 		string worldName = "empty";
 		GetGame().GetWorldName(worldName);
 		worldName.ToLower();
-
+		
 		switch (worldName)
 		{
 			case "chernarusplus":
 				m_WorldData = new ChernarusPlusData();
+				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistryChernarus();
 				break;
 
 			case "enoch":
 				m_WorldData = new EnochData();
+				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistryEnoch();
 				break;
 			
 			#ifdef PLATFORM_CONSOLE
 			case "mainmenuscenexbox":
 				m_WorldData = new MainMenuWorldData();
+				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistry();
 				break
 			#endif
 
 			default:
 				m_WorldData = new ChernarusPlusData();
+				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistry();
 				break;
 		}
 	}
@@ -99,6 +115,11 @@ class MissionBase extends MissionBaseWorld
 	override WorldData GetWorldData()
 	{
 		return m_WorldData;
+	}
+	
+	override DynamicMusicPlayer GetDynamicMusicPlayer()
+	{
+		return m_DynamicMusicPlayer;
 	}
 	
 	override UIScriptedMenu CreateScriptedMenu(int id)

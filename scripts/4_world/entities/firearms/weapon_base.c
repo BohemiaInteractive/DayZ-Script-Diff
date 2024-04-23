@@ -1452,7 +1452,7 @@ class Weapon_Base extends Weapon
 		end = weaponEnd + ((0.1 * distance) * direction);
 		
 		// Prepare raycast params and perform the cast in fire geo
-		RaycastRVParams rayParm = new RaycastRVParams(start, end, player, 0.04);
+		RaycastRVParams rayParm = new RaycastRVParams(start, end, player, 0.02);
 		rayParm.flags = CollisionFlags.ALLOBJECTS;
 		rayParm.type = ObjIntersect.Fire;
 		

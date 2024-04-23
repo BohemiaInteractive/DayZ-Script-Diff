@@ -45,6 +45,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	protected CheckBoxWidget		m_HudDCharDebug;
 	protected CheckBoxWidget		m_HudDFreeCamCross;
 	protected CheckBoxWidget		m_HudDVersion;
+	protected CheckBoxWidget		m_HudDHealth;
 	
 	protected CheckBoxWidget		m_ShowOthers;
 	
@@ -93,6 +94,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_HudDFreeCamCross	= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_FreeCamCross"));
 		m_HudDTemperature	= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Temp"));
 		m_HudDVersion		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Version"));
+		m_HudDHealth		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Health"));
 		
 		m_LocationAddButton	= ButtonWidget.Cast(root.FindAnyWidget("AddButton"));
 		//m_LocationAddButton.SetHandler(ToolTipEventHandler.GetInstance());
@@ -140,6 +142,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_HudDFreeCamCross.SetChecked(m_ConfigDebugProfile.GetFreeCameraCrosshairVisible());
 		m_HudDVersion.SetChecked(m_ConfigDebugProfile.GetVersionVisible());
 		m_HudDTemperature.SetChecked(m_ConfigDebugProfile.GetTempVisible());
+		m_HudDHealth.SetChecked(m_ConfigDebugProfile.GetHealthVisible());
 		
 
 		m_LogsEnabled.SetChecked(m_ConfigDebugProfile.GetLogsEnabled());
@@ -338,6 +341,8 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		
 		RefreshDateWidgets(year, month, day, hour, minute);
 		GetGame().GetWorld().SetDate(year, month, day, hour, minute);
+		
+		g_Game.GetMission().GetOnTimeChanged().Invoke();
 
 		if (GetGame().GetPlayer())
 		{
@@ -603,6 +608,18 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			if (m_ConfigDebugProfile)
 			{
 				m_ConfigDebugProfile.SetTempVisible(m_HudDTemperature.IsChecked());
+			}
+
+			// Refresh UI by new settings
+			m_MissionGameplay.GetHudDebug().RefreshByLocalProfile();
+
+			return true;
+		}
+		else if (w == m_HudDHealth)
+		{
+			if (m_ConfigDebugProfile)
+			{
+				m_ConfigDebugProfile.SetHealthVisible(m_HudDHealth.IsChecked());
 			}
 
 			// Refresh UI by new settings

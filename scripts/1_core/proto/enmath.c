@@ -699,6 +699,14 @@ class Math
 		}
 		return res;
 	}
-};
+	
+	static vector CenterOfRectangle(vector min, vector max)
+	{
+		float x = (min[0] + max[0]) * 0.5;
+		float z = (min[2] + max[2]) * 0.5;
+		
+		return Vector(x, 0.0, z);
+	}
+}
 
 //@}

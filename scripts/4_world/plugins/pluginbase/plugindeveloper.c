@@ -54,59 +54,58 @@ class PluginDeveloper extends PluginBase
 	
 	void OnRPC(PlayerBase player, int rpc_type, ParamsReadContext ctx)
 	{
-	#ifdef DIAG_DEVELOPER
+		#ifdef DIAG_DEVELOPER
 		switch (rpc_type)
 		{
 			case ERPCs.DEV_RPC_SPAWN_ITEM_ON_GROUND:
-			{
-				OnRPCSpawnEntityOnGround(player, ctx); break;
-			}
+				OnRPCSpawnEntityOnGround(player, ctx);
+				break;
+
 			case ERPCs.DEV_RPC_SPAWN_ITEM_ON_GROUND_PATTERN_GRID:
-			{
-				OnRPCSpawnEntityOnGroundPatternGrid(player, ctx); break;
-			}
+				OnRPCSpawnEntityOnGroundPatternGrid(player, ctx);
+				break;
+
 			case ERPCs.DEV_RPC_SPAWN_ITEM_ON_CURSOR:
-			{
-				OnRPCSpawnEntityOnCursorDir(player, ctx); break;
-			}
+				OnRPCSpawnEntityOnCursorDir(player, ctx);
+				break;
+
 			case ERPCs.DEV_RPC_SPAWN_ITEM_IN_INVENTORY:
-			{
-				OnRPCSpawnEntity(player, ctx); break;
-			}
+				OnRPCSpawnEntity(player, ctx);
+				break;
+
 			case ERPCs.DEV_RPC_CLEAR_INV:
-			{
-				OnRPCClearInventory(player); break;
-			}
+				OnRPCClearInventory(player);
+				break;
+
 			case ERPCs.DEV_RPC_SEND_SERVER_LOG:
-			{
-				OnRPCServerLogRecieved( ctx ); break;
-			}
+				OnRPCServerLogRecieved(ctx);
+				break;
+
 			case ERPCs.RPC_SYNC_SCENE_OBJECT:
-			{
-				OnRPCSyncSceneObject( ctx ); break;
-			}
+				OnRPCSyncSceneObject(ctx);
+				break;
+
 			case ERPCs.DEV_RPC_PLUGIN_DZCREATURE_DEBUG:
-			{
-				OnRPCPluginDayzCreatureDebug(player, rpc_type, ctx); break;
-			}
+				OnRPCPluginDayzCreatureDebug(player, rpc_type, ctx);
+				break;
+
 			case ERPCs.DEV_RPC_SPAWN_PRESET:
-			{
 				string presetName;
 				EntityAI target;
 				
 				ctx.Read(presetName);
 				ctx.Read(target);
 				
-				HandlePresetSpawn(player,presetName, target); break;
-			}			
+				HandlePresetSpawn(player,presetName, target);
+				break;
+
 			case ERPCs.DEV_RPC_SET_TIME:
-			{
-				HandleSetTime(player,ctx); break;
-			}
+				HandleSetTime(player,ctx);
+				break;
 		}
 		
 		DeveloperTeleport.OnRPC(player, rpc_type, ctx);		
-	#endif
+		#endif
 	}
 	
 	// Public API
@@ -167,32 +166,17 @@ class PluginDeveloper extends PluginBase
 	void HandleSetTime(PlayerBase player, ParamsReadContext ctx)
 	{
 		#ifdef DEVELOPER
-		
 		Param5<int,int,int,int,int> p5 = new Param5<int,int,int,int,int>(0,0,0,0,0);
-
-		if ( ctx.Read( p5 ) )
+		if (ctx.Read(p5))
 		{	
-			//float time01 = p5.param4 / 100;
-			//int time_minutes = Math.Lerp(0, 24*60, time01 );
-			
 			int year = p5.param1;
 			int month = p5.param2;
 			int day = p5.param3;
 			int hour = p5.param4;
 			int minute = p5.param5;
-			
-			
 	
 			GetGame().GetWorld().SetDate(year,month, day, hour, minute);
-			/*
-			Debug.Log("year:" + year);
-			Debug.Log("month:" + month);
-			Debug.Log("day:" + day);
-			Debug.Log("hour:" + hour);
-			Debug.Log("minute:" + minute);
-			*/
-		}
-		
+		}		
 		#endif
 	}
 		

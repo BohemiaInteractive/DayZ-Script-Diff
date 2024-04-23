@@ -49,7 +49,7 @@ enum EBiosError
 	//! 22 - [PS] Mandatory update exist and is ready to install.
 	UPDATE_REQUIRED_AND_DOWNLOADED,
 	
-	//! 23 - Resource is unreachable or unavailable, can be 404 or no internet connection (etc.)
+	//! 23 - Resource is unreachable or unavailable, can be 404 or no internet connection (etc.) - general communication error.
 	COMUNICATION_ERROR,
 
 	//! 24 - Any other error. Can be returned from any call.
@@ -57,6 +57,14 @@ enum EBiosError
 	
 	//! 25 - Extended error. Script not properly linked with engine. May be removed in future.
 	BAD_SCRIPT,
+	
+	
+	//! 26 - Connection has timed out.
+	COMMUNICATION_TIMED_OUT,
+	//! 27 - Connection was reset.
+	COMMUNICATION_RESET,
+	//! 28 - Connection was aborted.
+	COMMUNICATION_ABORTED
 };
 
 class BIOSErrorModule : ErrorHandlerModuleScript
@@ -105,6 +113,10 @@ class BIOSErrorModule : ErrorHandlerModuleScript
 
 		InsertBIOSError(EBiosError.UNKNOWN								, "#server_browser_error_unknown");
 		InsertBIOSError(EBiosError.BAD_SCRIPT							, "#STR_BIOS_LinkageError");
+		
+		InsertBIOSError(EBiosError.COMMUNICATION_TIMED_OUT				, "#STR_BIOS_CommTimeOutError");
+		InsertBIOSError(EBiosError.COMMUNICATION_RESET					, "#STR_BIOS_CommResetError");
+		InsertBIOSError(EBiosError.COMMUNICATION_ABORTED				, "#STR_BIOS_CommAbortError");
 	}
 	
 	void InsertBIOSError(int code, string message)

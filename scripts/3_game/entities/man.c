@@ -1,4 +1,15 @@
+#ifdef FEATURE_NETWORK_RECONCILIATION
+class Person extends Pawn
+{
+	//! ??? 
+};
+#endif
+
+#ifdef FEATURE_NETWORK_RECONCILIATION
+class Man extends Person
+#else
 class Man extends EntityAI
+#endif
 {
 	//! Returns player's input interface
 	proto native UAInterface GetInputInterface();

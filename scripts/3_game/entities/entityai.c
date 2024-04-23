@@ -653,7 +653,7 @@ class EntityAI extends Entity
 	// delete synchronized between server and client
 	void DeleteSafe()
 	{
-		if (GetHierarchyRootPlayer() == null)
+		if (GetHierarchyRootPlayer() == null || (GetHierarchyRootPlayer() && !GetHierarchyRootPlayer().IsAlive()))
 		{
 			Delete();
 		}

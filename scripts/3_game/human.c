@@ -1162,6 +1162,14 @@ class HumanMovementState
 	}
 }
 
+enum HumanRelativeHeadingMode
+{
+	//! From the last value that was set
+	CURRENT,
+
+	//! Actual input value
+	INPUT,
+};
 
 /**
 *\brief HumanCommandScript fully scriptable command
@@ -1189,6 +1197,15 @@ class HumanCommandScript
 	//! this terminates human command script and shows CommandHandler(  ... pCurrentCommandFinished == true );
 	proto native void 	SetFlagFinished(bool pFinished);
 
+#ifdef FEATURE_NETWORK_RECONCILIATION
+	//! Default is MINIMAL. It is reset to MINIMAL at the start of 'PreAnimUpdate'
+	proto native void	OverrideCorrectionType(AnimPhysCorrectionType correctionType);
+#endif
+
+	//! sets character rotation (heading) (PreAnim/PrePhys only!)
+	proto native 	void 	SetHeading(float yawAngle, float filterDt = -1, float maxYawSpeed = FLT_MAX);
+	proto native 	void 	AddHeadingRelativeTo(HumanRelativeHeadingMode mode, float yawAngle, float filterDt = -1, float maxYawSpeed = FLT_MAX);
+
 
 	//---------------------------------------------------------------
 	// PreAnim Update 
@@ -1204,8 +1221,10 @@ class HumanCommandScript
 	proto native 	void	PreAnim_SetInt(int pVar, int pInt);
 	proto native 	void	PreAnim_SetBool(int pVar, bool pBool);
 
-	//! sets character rotation (heading)
-	proto native 	void 	PreAnim_SetFilteredHeading(float pYawAngle, float pFilterDt, float pMaxYawSpeed);
+	void PreAnim_SetFilteredHeading(float pYawAngle, float pFilterDt, float pMaxYawSpeed)
+	{
+		SetHeading(pYawAngle, pFilterDt, pMaxYawSpeed);
+	}
 
 	//---------------------------------------------------------------
 	// PrePhys Update 
@@ -1263,8 +1282,9 @@ enum HumanMoveCommandID
 // *************************************************************************************
 class Human extends Man
 {
+	//! world space - local space - heading space
 
-	//! gets human transform in World Space
+	//! gets human transform in local space
 	proto native	void 		GetTransformWS(out vector pTm[4]);
 	
 	//! makes test if there's enough space for character's collider assuming that character can be pushed away from obstacle - usable for checking if character is in some tight space
@@ -1277,6 +1297,25 @@ class Human extends Man
 	// link/unlink to/from local space
 	proto native	void		LinkToLocalSpaceOf(notnull IEntity child, vector pLocalSpaceMatrix[4]);
 	proto native	void		UnlinkFromLocalSpace();
+
+	//---------------------------------------------------------
+	// heading component
+
+	//! smoothly move the player to the target position - do not handle replay, performed internally
+	proto native	void		AlignPositionWS(vector position);
+
+	//! adds the translation to the current position and then calls AlignPositionWS - do not handle replay, performed internally
+	proto native	void		AlignTranslationWS(vector translation);
+
+	//! adds the translation to the current position in heading space and then calls AlignPositionWS - do not handle replay, performed internally
+	proto native	void		AlignTranslationLS(vector translation);
+
+	//! smoothly move the player to face the target direction - do not handle replay, performed internally
+	proto native	void		AlignDirectionWS(vector direction);
+
+	//! callback before the transform is finalized, after PrePhys, called before alignment is applied 
+	//! - important to ensure state is saved as this function gets replayed on correction
+	void OnPhysMove(float dt, vector transform[4]) {}
 
 	//---------------------------------------------------------
 	// bone transforms 
@@ -1563,4 +1602,10 @@ class Human extends Man
 	bool	CanRoll();
 	void	OnRollStart(bool isToTheRight);
 	void	OnRollFinish();
+
+	//--------------------------------------------------------
+	// vehicle API
+	
+	void	OnVehicleSeatDriverEnter();
+	void	OnVehicleSeatDriverLeft();
 }

@@ -1017,16 +1017,18 @@ class WeaponManager
 	
 	Magazine GetPreparedMagazine()
 	{
+		Magazine mag;
 		for (int i = 0; i < m_SuitableMagazines.Count(); i++)
 		{
-			if(!m_SuitableMagazines.Get(i) || m_SuitableMagazines.Get(i).IsRuined() )
+			mag = m_SuitableMagazines[i];
+			if (!mag || mag.IsRuined() || (mag.GetHierarchyParent() && !mag.GetHierarchyParent().GetInventory().AreChildrenAccessible()))
 			{
 				m_SuitableMagazines.Remove(i);
 				i--;
 				continue;
 			}
-			if (m_SuitableMagazines.Get(i).GetAmmoCount() > 0)
-				return m_SuitableMagazines.Get(i);
+			if (mag.GetAmmoCount() > 0)
+				return mag;
 		}
 		
 		return null;
@@ -1034,13 +1036,16 @@ class WeaponManager
 	
 	Magazine GetNextPreparedMagazine( out int startIdx )
 	{
-		for (int i = startIdx; i < m_SuitableMagazines.Count(); i++)
+		int count = m_SuitableMagazines.Count();
+		Magazine mag;
+		for (int i = startIdx; i < count; i++)
 		{
-			if (m_SuitableMagazines.Get(i).GetAmmoCount() > 0)
+			mag = m_SuitableMagazines[i];
+			if (mag && mag.GetAmmoCount() > 0 && (!mag.GetHierarchyParent() || mag.GetHierarchyParent().GetInventory().AreChildrenAccessible()))
 			{
 				startIdx = i;
 				return m_SuitableMagazines.Get(i);
-			}				
+			}
 		}
 		return null;
 	}

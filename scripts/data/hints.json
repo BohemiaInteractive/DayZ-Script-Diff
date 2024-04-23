@@ -165,11 +165,6 @@
 		"m_Description": "#str_hint_heavyduty1"
 	},
 	{
-		"m_Headline": "#str_hint_traveller0",
-		"m_ImagePath": "",
-		"m_Description": "#str_hint_traveller1"
-	},
-	{
 		"m_Headline": "#str_hint_bequietorloud0",
 		"m_ImagePath": "",
 		"m_Description": "#str_hint_bequietorloud1"

@@ -65,11 +65,8 @@ class ActionSwitchSeats: ActionBase
 				{
 					//pTransportPositionIndex, int pVehicleSeat
 					vehCommand.SwitchSeat( nextSeat, seat );
-					if ( !GetGame().IsDedicatedServer() )
-					{
-
-						action_data.m_Player.OnVehicleSwitchSeat( nextSeat );
-					}
+					
+					action_data.m_Player.OnVehicleSwitchSeat( nextSeat );
 				}
 			}
 		}

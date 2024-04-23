@@ -177,8 +177,8 @@ class MissionGameplay extends MissionBase
 		GetUIManager().ShowUICursor(false);
 #endif
 
-		g_Game.SetMissionState( DayZGame.MISSION_STATE_GAME );
-		
+		g_Game.SetMissionState(DayZGame.MISSION_STATE_GAME);
+		m_DynamicMusicPlayer.SetCategory(EDynamicMusicPlayerCategory.TIME, true);
 	}
 	
 	void InitInventory()
@@ -411,10 +411,10 @@ class MissionGameplay extends MissionBase
 			//open gestures menu
 			if ( !playerPB.IsRaised() && (playerPB.GetActionManager().ActionPossibilityCheck(playerPB.m_MovementState.m_CommandTypeId) || playerPB.IsEmotePlaying()) && !playerPB.GetCommand_Vehicle() )
 			{
-				if ( !GetUIManager().IsMenuOpen( MENU_GESTURES ) )
+				if (GesturesMenu.CanOpenMenu() && !GetUIManager().IsMenuOpen(MENU_GESTURES))
 				{
 					GesturesMenu.OpenMenu();
-					m_Hud.ShowHudUI( false );
+					m_Hud.ShowHudUI(false);
 				}
 			}
 		}

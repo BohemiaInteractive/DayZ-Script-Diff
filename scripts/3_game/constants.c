@@ -562,6 +562,8 @@ const string SHOW_CROSSHAIR 	= "show_crosshair";
 const string SHOW_SERVERINFO 	= "show_serverinfo";
 /** @}*/
 
+const string OPTIONS_SOUND_AMBIENT_SOUND_MODE = "ambient_sound_mode";
+
 /**
  * \defgroup LockConstants Controls locks
  * \desc Constants for toggling of alternate 

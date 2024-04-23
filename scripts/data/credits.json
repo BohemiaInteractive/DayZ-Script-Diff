@@ -1,6 +1,6 @@
 {
     "Departments": [
-        {
+                {
             "DepartmentName": "",
             "Sections": [
                 {
@@ -13,13 +13,13 @@
                 }
             ]
         },
-		{
+        {
             "DepartmentName": "",
             "Sections": [
                 {
                     "SectionName": "#executive_producer",
                     "SectionLines": [
-						"Julien Vida"
+                        "Julien Vida"
                     ]
                 }
             ]
@@ -31,8 +31,9 @@
                     "SectionName": "#production",
                     "SectionLines": [
                         "Dan Olthen",
+                        "Filippo Franco",
                         "Tim Pulsmeier",
-						"Ľuboš Kubiš",
+                        "Ľuboš Kubiš",
                         "Roman Múdry"
                     ]
                 }
@@ -57,7 +58,7 @@
                 {
                     "SectionName": "#lead_designer",
                     "SectionLines": [
-					    "Tomáš Pulkrábek",
+                        "Tomáš Pulkrábek",
                         "Peter Nespešný"
                     ]
                 }
@@ -158,8 +159,8 @@
                         "Aleš Renner",
                         "Aleš Stupka",
                         "Eduard Pribula",
-						"Elias Mittet Hernes",
-						"Floris Leysen",
+                        "Elias Mittet Hernes",
+                        "Floris Leysen",
                         "František Bidlo",
                         "Jacob Kumar",
                         "Jakub Horyna",
@@ -174,9 +175,9 @@
                         "Matúš Štefánik",
                         "Mojmír Svoboda",
                         "Ondrej Ritomský",
-						"Patrik Kalabus",
+                        "Patrik Kalabus",
                         "Peter Uličiansky",
-						"Peter Ševčík",
+                        "Peter Ševčík",
                         "Petr Soviš",
                         "Rastislav Tisovčík",
                         "Tomáš Vajda",
@@ -278,7 +279,7 @@
                         "Rastislav Hlavatý",
                         "Roman Straponček",
                         "Théo Escamez",
-						"Yogesh Batra"
+                        "Yogesh Batra"
                     ]
                 }
             ]
@@ -313,7 +314,8 @@
                     "SectionName": "#audio_lead",
                     "SectionLines": [
                         "Jan Dušek",
-						"Tomáš Bayer"
+                        "Jan Knot",
+                        "Tomáš Bayer"
                     ]
                 }
             ]
@@ -326,12 +328,14 @@
                     "SectionLines": [
                         "Andrej Novosad",
                         "Andrej Sinkević",
+                        "Artem Horun",
+                        "Bartłomiej Bieliński",
                         "Filip Čenžák",
                         "Kryštof Havel",
                         "Marek Lacena",
                         "Miguel Salas",
                         "Veronika Dubská",
-						"Zuzana Čapandová"
+                        "Zuzana Čapandová"
                     ]
                 }
             ]
@@ -344,7 +348,7 @@
                     "SectionLines": [
                         "David Komínek",
                         "Martin Vitouš",
-						"Pavel Fitz",
+                        "Pavel Fitz",
                         "Petr Vnenk"
                     ]
                 }
@@ -368,7 +372,7 @@
                     "SectionName": "#quality_assurance_specialists",
                     "SectionLines": [
                         "Daniel Fialka",
-						"Dominik Novák",
+                        "Dominik Novák",
                         "Erik Vrškový",
                         "Jan Jirák",
                         "Ketrin Bitomská",
@@ -405,7 +409,7 @@
                         "Martin Cmar",
                         "Martin Krošlák",
                         "Michal Varnuška",
-						"Michal Žák",
+                        "Michal Žák",
                         "Miroslav Horváth",
                         "Peter Čimo",
                         "Vincent Mahnke"
@@ -531,7 +535,7 @@
                     "SectionName": "#bohemia_interactive_development_teams",
                     "SectionLines": [
                         "Contact Team",
-						"Livonia Terrain Team"
+                        "Livonia Terrain Team"
                     ]
                 }
             ]
@@ -560,7 +564,7 @@
                         "Jakub Vamberský",
                         "Jitka Vysloužilová",
                         "Karolina Havelkova",
-                        "Lynn Thun Zaw",
+                        "Htun Lynn Zaw",
                         "Miguel Raimundo",
                         "Michael Christensen",
                         "Zuzana Cinková"
@@ -652,7 +656,7 @@
             ]
         },
         {
-            "DepartmentName": "Localization",
+            "DepartmentName": "#localization",
             "Sections": [
                 {
                     "SectionName": "",
@@ -673,7 +677,7 @@
             ]
         },
         {
-            "DepartmentName": "Localization – Context Heroes",
+            "DepartmentName": "#localization Context Heroes",
             "Sections": [
                 {
                     "SectionName": "#localization_manager",
@@ -727,7 +731,7 @@
             ]
         },
         {
-            "DepartmentName": "Localization – S&H Entertainment",
+            "DepartmentName": "#localization S&H Entertainment",
             "Sections": [
                 {
                     "SectionName": "#localization_team",
@@ -967,6 +971,7 @@
                         "Jiří Kunt",
                         "Jiří Lemberger",
                         "Jiří Raška",
+                        "Josef Břečka",
                         "Josef Plachý",
                         "Juraj Šimon",
                         "Kateřina Adams",

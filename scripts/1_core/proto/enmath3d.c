@@ -108,6 +108,17 @@ class Math3D
 	proto static bool IntersectRayCylinder(vector rayStart, vector rayEnd, vector center, float radius, float height);
 	
 	/**
+	\brief Tests whether ray is intersecting plane.
+		\param rayStart \p vector Start of ray
+		\param rayEnd \p vector End of ray
+		\param planeNormal \p vector Normal of the plane
+		\param planeDist \p float Length of the plane
+		\param intersection \p vector Intersection point of the plane, only valid when return is 3
+		\return \p int 1 when behind, 2 when in front and 3 when intersecting the plane
+	*/
+	proto static int IntersectRayPlane(vector rayStart, vector rayEnd, vector planeNormal, float planeDist, out vector intersection);
+	
+	/**
 	\brief Creates rotation matrix from angles
 		\param ang \p vector which contains angles
 		\param[out] mat \p vector created rotation matrix
@@ -205,6 +216,18 @@ class Math3D
 		@endcode
 	*/
 	proto static void MatrixInvMultiply3(vector mat0[3], vector mat1[3], out vector res[3]);
+
+	/**
+	\brief Inverses a matrix
+	    \param[it] mat \p matrix which should be inversed
+	*/
+	proto static void MatrixInverse4(vector mat[4]);
+	
+	/**
+	\brief Inverses a matrix
+	    \param[it] mat \p matrix which should be inversed
+	*/
+	proto static void MatrixInverse3(vector mat[3]);
 
 	/**
 	\brief Orthogonalizes matrix

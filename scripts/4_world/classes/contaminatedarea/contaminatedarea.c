@@ -62,12 +62,17 @@ class ContaminatedArea_Static : ContaminatedArea_Base
 	{
 		super.InitZoneClient();
 		
+		g_Game.GetMission().GetDynamicMusicPlayer().RegisterDynamicLocation(this, DynamicMusicLocationTypes.CONTAMINATED_ZONE, m_Radius);
+		
 		// We spawn VFX on client
 		PlaceParticles( GetWorldPosition(), m_Radius, m_InnerRings, m_InnerSpacing, m_OuterRingToggle, m_OuterSpacing, m_OuterRingOffset, m_ParticleID );
 	}
 	
-	override void EEDelete( EntityAI parent )
+	override void EEDelete(EntityAI parent)
 	{
-		super.EEDelete( parent );
+		super.EEDelete(parent);
+		
+		if (!g_Game.IsServer())
+			g_Game.GetMission().GetDynamicMusicPlayer().UnregisterDynamicLocation(this);
 	}
 }

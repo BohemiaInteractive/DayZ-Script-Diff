@@ -212,7 +212,9 @@ class PlayerSpawnHandler
 			}
 			else
 			{
-				Debug.Log("FAILED spawning item: " + cct.itemType + " of parent: " + parent,"n/a","n/a","SpawnComplexChildrenItems");
+				Weapon_Base wep;
+				if (!Class.CastTo(wep,parent) || !IsWeaponAndMagazineType(parent,cct.itemType) || !wep.HasInternalMagazine(-1))
+					Debug.Log("FAILED spawning item: " + cct.itemType + " of parent: " + parent,"n/a","n/a","SpawnComplexChildrenItems");
 			}
 		}
 		
@@ -247,7 +249,9 @@ class PlayerSpawnHandler
 			}
 			else
 			{
-				Debug.Log("FAILED spawning item type: " + itemType + " to parent: " + parent,"n/a","n/a","SpawnSimpleChildrenItems");
+				Weapon_Base wep;
+				if (!Class.CastTo(wep,parent) || !IsWeaponAndMagazineType(parent,itemType) || !wep.HasInternalMagazine(-1))
+					Debug.Log("FAILED spawning item type: " + itemType + " to parent: " + parent,"n/a","n/a","SpawnSimpleChildrenItems");
 			}
 		}
 		return true;
@@ -271,7 +275,6 @@ class PlayerSpawnHandler
 		ItemBase newItem;
 		if (Class.CastTo(player,parent)) //special behavior
 		{
-			int count = player.GetInventory().AttachmentCount();
 			if (Class.CastTo(newItem,player.GetInventory().CreateInInventory(type)))
 				return newItem;
 			
@@ -283,8 +286,18 @@ class PlayerSpawnHandler
 		if (GetGame().ConfigIsExisting(CFG_MAGAZINESPATH + " " + type) && parent.IsWeapon())
 		{
 			Weapon_Base wep
-			if (Class.CastTo(wep,parent))
-				return wep.SpawnAttachedMagazine(type);
+			if (Class.CastTo(wep,parent) && wep.SpawnAmmo(type) && !wep.HasInternalMagazine(-1)) //assuming weps with internal magazine don't attach external magazines
+			{
+				Magazine mag;
+				int muzzleCount = wep.GetMuzzleCount();
+				for (int i = 0; i < muzzleCount; i++)
+				{
+					if (Class.CastTo(mag,wep.GetMagazine(i)) && mag.GetType() == type)
+						return mag;
+				}
+			}
+			
+			return null;
 		}
 		
 		return parent.GetInventory().CreateInInventory(type);
@@ -326,5 +339,11 @@ class PlayerSpawnHandler
 				quantityAbsolute++;
 			item.SetQuantity(quantityAbsolute);
 		}
+	}
+	
+	//! Used for exceptions in the system
+	private static bool IsWeaponAndMagazineType(EntityAI parent, string type)
+	{
+		return (GetGame().ConfigIsExisting(CFG_MAGAZINESPATH + " " + type) && parent.IsWeapon());
 	}
 }

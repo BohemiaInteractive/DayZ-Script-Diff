@@ -351,6 +351,11 @@ class PlayerIdentityBase : Managed
 	proto int GetBandwidthMax();
 	//! bandwidth estimation (in kbps)
 	proto int GetBandwidthAvg();
+
+	//! Throttling performed on output bandwidth since last update (percentage [0,1])
+	proto float GetOutputThrottle();
+	//! Throttling performed on input bandwidth since last update(percentage [0,1]) (unknown value on Server)
+	proto float GetInputThrottle();
 	
 	//! nick (short) name of player
 	proto string GetName();
@@ -367,6 +372,11 @@ class PlayerIdentityBase : Managed
 	
 	//! get player
 	proto Man GetPlayer();
+	
+#ifdef FEATURE_NETWORK_RECONCILIATION
+	//! Possess a pawn
+	proto native void Possess(Pawn pawn);
+#endif
 
 	//! This is a C++ managed class, so script has no business managing the lifetime
 	private void PlayerIdentityBase();
@@ -678,6 +688,7 @@ class Mission
 	protected ref ScriptInvoker m_OnInputDeviceConnected = new ScriptInvoker();
 	protected ref ScriptInvoker m_OnInputDeviceDisconnected = new ScriptInvoker();
 	protected ref ScriptInvoker m_OnModMenuVisibilityChanged = new ScriptInvoker();
+	protected ref ScriptInvoker m_OnTimeChanged = new ScriptInvoker();
 
 	private void ~Mission();
 	
@@ -703,34 +714,39 @@ class Mission
 	
 	Hud GetHud()
 	{ 
-		return NULL;
+		return null;
 	}
 
 	ObjectSnapCallback GetInventoryDropCallback()
 	{
-		return NULL;
+		return null;
 	}
 	
 	bool IsPlayerDisconnecting(Man player);
 	
-	UIScriptedMenu	CreateScriptedMenu(int id) 
+	UIScriptedMenu CreateScriptedMenu(int id) 
 	{ 
-		return NULL;
+		return null;
 	}
 	
-	UIScriptedWindow	CreateScriptedWindow(int id) 
+	UIScriptedWindow CreateScriptedWindow(int id) 
 	{ 
-		return NULL;
+		return null;
 	}
 	
 	WorldData GetWorldData()
 	{
-		return NULL;
+		return null;
 	}
 	
 	WorldLighting GetWorldLighting()
 	{
-		return NULL;
+		return null;
+	}
+	
+	DynamicMusicPlayer GetDynamicMusicPlayer()
+	{
+		return null;
 	}
 	
 	bool IsPaused() 
@@ -799,8 +815,8 @@ class Mission
 		return false;
 	}
 	
-	UIScriptedMenu GetNoteMenu() {};
-	void SetNoteMenu(UIScriptedMenu menu) {};
+	UIScriptedMenu GetNoteMenu();
+	void SetNoteMenu(UIScriptedMenu menu);
 	void SetPlayerRespawning(bool state);
 	void OnPlayerRespawned(Man player);
 	bool IsPlayerRespawning();
@@ -813,27 +829,23 @@ class Mission
 		return -1;
 	}
 	//! server-side
-	void SyncRespawnModeInfo(PlayerIdentity identity) {};
+	void SyncRespawnModeInfo(PlayerIdentity identity);
 	
 	ImageWidget GetMicrophoneIcon()
 	{
 		return null;
 	}
 	
-	WidgetFadeTimer GetMicWidgetFadeTimer() {}				
+	WidgetFadeTimer GetMicWidgetFadeTimer();
+	GameplayEffectWidgets_base GetEffectWidgets();
 	
-	GameplayEffectWidgets_base GetEffectWidgets() {}
-	
-	map<int,ImageWidget> GetVoiceLevelWidgets() {}
-	
-	map<int,ref WidgetFadeTimer> GetVoiceLevelTimers() {}
+	map<int,ImageWidget> GetVoiceLevelWidgets();
+	map<int,ref WidgetFadeTimer> GetVoiceLevelTimers();
 	
 	ScriptInvoker GetOnInputDeviceChanged()
 	{
 		if (!m_OnInputDeviceChanged)
-		{
-			m_OnInputDeviceChanged = new ScriptInvoker;
-		}
+			m_OnInputDeviceChanged = new ScriptInvoker();
 
 		return m_OnInputDeviceChanged;
 	}
@@ -841,9 +853,7 @@ class Mission
 	ScriptInvoker GetOnInputPresetChanged()
 	{
 		if (!m_OnInputPresetChanged)
-		{
-			m_OnInputPresetChanged = new ScriptInvoker;
-		}
+			m_OnInputPresetChanged = new ScriptInvoker();
 
 		return m_OnInputPresetChanged;
 	}
@@ -851,9 +861,7 @@ class Mission
 	ScriptInvoker GetOnInputDeviceConnected()
 	{
 		if (!m_OnInputDeviceConnected)
-		{
-			m_OnInputDeviceConnected = new ScriptInvoker;
-		}
+			m_OnInputDeviceConnected = new ScriptInvoker();
 
 		return m_OnInputDeviceConnected;
 	}
@@ -861,9 +869,7 @@ class Mission
 	ScriptInvoker GetOnInputDeviceDisconnected()
 	{
 		if (!m_OnInputDeviceDisconnected)
-		{
-			m_OnInputDeviceDisconnected = new ScriptInvoker;
-		}
+			m_OnInputDeviceDisconnected = new ScriptInvoker();
 
 		return m_OnInputDeviceDisconnected;
 	}
@@ -871,22 +877,32 @@ class Mission
 	ScriptInvoker GetOnModMenuVisibilityChanged()
 	{
 		if (!m_OnModMenuVisibilityChanged)
-		{
-			m_OnModMenuVisibilityChanged = new ScriptInvoker;
-		}
+			m_OnModMenuVisibilityChanged = new ScriptInvoker();
 
 		return m_OnModMenuVisibilityChanged;
+	}
+	
+	
+	ScriptInvoker GetOnTimeChanged()
+	{
+		if (!m_OnTimeChanged)
+			m_OnTimeChanged = new ScriptInvoker();
+
+		return m_OnTimeChanged;
 	}
 
 #ifdef FEATURE_CURSOR
 	int m_TimeStamp = 0;
-	int GetTimeStamp() { return m_TimeStamp; }
+	int GetTimeStamp()
+	{
+		return m_TimeStamp;
+	}
 #endif
 	
 #ifdef DEVELOPER
 	bool m_SuppressNextFrame = true;
-	void SetInputSuppression(bool state) {}
-	bool GetInputSuppression() {}
+	void SetInputSuppression(bool state);
+	bool GetInputSuppression();
 #endif
 };
 
@@ -1257,7 +1273,7 @@ enum OptionAccessType
 	AT_OPTIONS_CONTROLLER_RS_YAXIS,
 	AT_OPTIONS_CONTROLLER_RS_XAXIS_AIM_MOD,
 	AT_OPTIONS_CONTROLLER_RS_YAXIS_AIM_MOD,
-	AT_OPTIONS_VON_INPUT_MODE
+	AT_OPTIONS_VON_INPUT_MODE,
 };
 
 //! Used for script-based game options. For anything C++ based, you would most likely use "Option Access Type" above
@@ -1272,7 +1288,8 @@ enum OptionIDsScript
 	OPTION_SERVER_INFO,
 	OPTION_BLEEDINGINDICATION,
 	OPTION_CONNECTIVITY_INFO,
-	OPTION_HUD_BRIGHTNESS
+	OPTION_HUD_BRIGHTNESS,
+	OPTION_AMBIENT_MUSIC_MODE
 };
 
 // -------------------------------------------------------------------------

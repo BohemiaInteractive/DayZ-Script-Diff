@@ -1078,7 +1078,7 @@ class ItemBase extends InventoryItem
 			if (new_player == old_player)
 			{
 				
-				if (oldLoc.GetParent() && !(oldLoc.GetParent() != new_player && oldLoc.GetType() == InventoryLocationType.ATTACHMENT) && new_player.GetHumanInventory().LocationGetEntity(oldLoc) == NULL)
+				if (oldLoc.GetParent() && new_player.GetHumanInventory().LocationGetEntity(oldLoc) == NULL)
 				{
 					if (oldLoc.GetType() == InventoryLocationType.CARGO)
 					{
@@ -1250,6 +1250,20 @@ class ItemBase extends InventoryItem
 				{
 					ItemBase itemEnter = ItemBase.Cast(subItemsEnter.Get(j));
 					itemEnter.OnInventoryEnter(ownerPlayerNew);
+				}
+			}
+		}
+		else if (ownerPlayerNew != null)
+		{
+			PlayerBase nplayer;
+			if (PlayerBase.CastTo(nplayer, ownerPlayerNew))
+			{
+				array<EntityAI> subItemsUpdate = new array<EntityAI>;
+				GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER,subItemsUpdate);
+				for (int k = 0; k < subItemsUpdate.Count(); k++)
+				{
+					ItemBase itemUpdate = ItemBase.Cast(subItemsUpdate.Get(k));
+					itemUpdate.UpdateQuickbarShortcutVisibility(nplayer);
 				}
 			}
 		}
@@ -3778,6 +3792,12 @@ class ItemBase extends InventoryItem
 		return m_VarLiquidType;
 	}
 
+	//! To be called on moving item within character's inventory; 'player' should never be null
+	void UpdateQuickbarShortcutVisibility(PlayerBase player)
+	{
+		player.SetEnableQuickBarEntityShortcut(this,!GetHierarchyParent() || GetHierarchyParent().GetInventory().AreChildrenAccessible());
+	}
+	
 	// -------------------------------------------------------------------------
 	//! Event called on item when it is placed in the player(Man) inventory, passes the owner as a parameter
 	void OnInventoryEnter(Man player)
@@ -3787,7 +3807,7 @@ class ItemBase extends InventoryItem
 		{
 			m_CanPlayImpactSound = true;
 			//nplayer.OnItemInventoryEnter(this);
-			nplayer.SetEnableQuickBarEntityShortcut(this,true);	
+			nplayer.SetEnableQuickBarEntityShortcut(this,!GetHierarchyParent() || GetHierarchyParent().GetInventory().AreChildrenAccessible());	
 		}
 	}
 	
@@ -4068,7 +4088,20 @@ class ItemBase extends InventoryItem
 				return false;
 		}
 		
+		InventoryLocation loc = new InventoryLocation();
+		attachment.GetInventory().GetCurrentInventoryLocation(loc);
+		if (loc && loc.IsValid() && !GetInventory().AreChildrenAccessible())
+			return false;
+		
 		return super.CanReceiveAttachment(attachment, slotId);
+	}
+	
+	override bool CanReleaseAttachment(EntityAI attachment)
+	{
+		if (!super.CanReleaseAttachment(attachment))
+			return false;
+		
+		return GetInventory().AreChildrenAccessible();
 	}
 	
 	/*override bool CanLoadAttachment(EntityAI attachment)

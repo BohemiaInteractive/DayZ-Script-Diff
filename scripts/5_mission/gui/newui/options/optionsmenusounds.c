@@ -22,6 +22,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	protected ref OptionSelectorLevelMarker	m_VOIPThresholdSelector;
 	protected ref OptionSelectorSlider		m_MusicSelector;
 	protected ref OptionSelectorMultistate	m_InputModeSelector;
+	protected ref OptionSelectorMultistate	m_AmbientMusicSelector;
 	
 	protected ref Timer 					m_AudioLevelTimer;
 	protected GameOptions					m_Options;
@@ -54,7 +55,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		m_MissionGameplay		= MissionGameplay.Cast(GetGame().GetMission());
 		m_VonManager 			= VONManager.GetInstance();
 		m_AudioLevelTimer = new Timer();
-		m_AudioLevelTimer.Run(0.1, this, "UpdateAudioLevel", NULL, true); 
+		m_AudioLevelTimer.Run(0.1, this, "UpdateAudioLevel", null, true); 
 		
 		m_Root.FindAnyWidget( "master_setting_option" ).SetUserID(OptionAccessType.AT_OPTIONS_MASTER_VOLUME);
 		m_Root.FindAnyWidget( "effects_setting_option" ).SetUserID(OptionAccessType.AT_OPTIONS_EFFECTS_SLIDER);
@@ -62,10 +63,18 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		m_Root.FindAnyWidget( "voip_output_setting_option" ).SetUserID(OptionAccessType.AT_OPTIONS_VON_SLIDER);
 		m_Root.FindAnyWidget( "voip_threshold_setting_option" ).SetUserID(OptionAccessType.AT_OPTIONS_VON_THRESHOLD_SLIDER);
 		m_Root.FindAnyWidget( "voip_selection_setting_option" ).SetUserID(OptionAccessType.AT_OPTIONS_VON_INPUT_MODE);
+		m_Root.FindAnyWidget( "ambient_music_mode_option" ).SetUserID(OptionIDsScript.OPTION_AMBIENT_MUSIC_MODE);
 		
 		FillTextMap();
 		
-		array<string> inputModeValues = { "#STR_Controls_PushToTalk", "#STR_USRACT_UAVOICEOVERNETTOGGLE" };
+		array<string> inputModeValues = {
+			"#STR_Controls_PushToTalk",
+			"#STR_USRACT_UAVOICEOVERNETTOGGLE",
+		};
+		array<string> ambientMusicModeValues = {
+			"#STR_Ambient_Music_Enabled",
+			"#STR_Ambient_Music_Menu_Only",
+		};
 		
 		m_MasterSelector			= new OptionSelectorSlider(m_Root.FindAnyWidget("master_setting_option" ), m_MasterOption.ReadValue(), this, false, m_MasterOption.GetMin(), m_MasterOption.GetMax());
 		m_EffectsSelector			= new OptionSelectorSlider(m_Root.FindAnyWidget("effects_setting_option" ), m_EffectsOption.ReadValue(), this, false, m_EffectsOption.GetMin(), m_EffectsOption.GetMax());
@@ -73,12 +82,14 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		m_VOIPThresholdSelector  	= new OptionSelectorLevelMarker(m_Root.FindAnyWidget("voip_threshold_setting_option" ), m_VOIPThresholdOption.ReadValue(), this, false, m_VOIPThresholdOption.GetMin(), m_VOIPThresholdOption.GetMax());
 		m_MusicSelector				= new OptionSelectorSlider(m_Root.FindAnyWidget("music_setting_option" ), m_MusicOption.ReadValue(), this, false, m_MusicOption.GetMin(), m_MusicOption.GetMax());
 		m_InputModeSelector			= new OptionSelectorMultistate(m_Root.FindAnyWidget("voip_selection_setting_option" ), m_InputModeOption.GetIndex(), this, false, inputModeValues);
+		m_AmbientMusicSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("ambient_music_mode_option" ), g_Game.GetProfileOptionInt(EDayZProfilesOptions.AMBIENT_MUSIC_MODE), this, false, ambientMusicModeValues);
 		
 		m_MasterSelector.m_OptionChanged.Insert(UpdateMaster);
 		m_EffectsSelector.m_OptionChanged.Insert(UpdateEffects);
 		m_VOIPSelector.m_OptionChanged.Insert(UpdateVOIP);
 		m_VOIPThresholdSelector.m_OptionChanged.Insert(UpdateVOIPThreshold);
 		m_MusicSelector.m_OptionChanged.Insert(UpdateMusic);
+		m_AmbientMusicSelector.m_OptionChanged.Insert(UpdateAmbientSoundModeOption);
 		m_InputModeSelector.m_OptionChanged.Insert(UpdateInputMode);
 		
 		if (m_MissionGameplay)
@@ -253,12 +264,14 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	
 	bool IsChanged()
 	{
-		return false;
+		bool universal = (m_AmbientMusicSelector.GetValue() != g_Game.GetProfileOptionInt(EDayZProfilesOptions.AMBIENT_MUSIC_MODE));
+		
+		return universal;
 	}
 	
 	void Apply()
 	{
-		
+		g_Game.SetProfileOptionInt(EDayZProfilesOptions.AMBIENT_MUSIC_MODE, m_AmbientMusicSelector.GetValue());
 	}
 	
 	void Revert()
@@ -287,6 +300,9 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		{
 			m_InputModeSelector.SetValue(m_InputModeOption.GetIndex(), false);
 		}
+		
+		if (m_AmbientMusicSelector)
+			m_AmbientMusicSelector.SetValue(g_Game.GetProfileOptionInt(EDayZProfilesOptions.AMBIENT_MUSIC_MODE), false);
 	}
 	
 	void SetToDefaults()
@@ -316,6 +332,9 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 			m_InputModeOption.SetIndex(m_InputModeOption.GetDefaultIndex());
 			m_InputModeSelector.SetValue( m_InputModeOption.GetIndex(), false );
 		}
+		
+		if (m_AmbientMusicSelector)
+			m_AmbientMusicSelector.SetValue(g_Game.GetProfileOptionDefaultInt(EDayZProfilesOptions.AMBIENT_MUSIC_MODE), false);
 	}
 	
 	void ReloadOptions()
@@ -375,6 +394,11 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		m_Menu.OnChanged();
 	}
 	
+	void UpdateAmbientSoundModeOption(int value)
+	{
+		m_Menu.OnChanged();
+	}
+	
 	void UpdateInputMode(int newIndex)
 	{
 		m_InputModeOption.SetIndex(newIndex);
@@ -394,6 +418,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_MASTER_VOLUME, new Param2<string, string>("#STR_sound_tab_master_tip_header", "#STR_sound_tab_master_tip"));
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_EFFECTS_SLIDER, new Param2<string, string>("#STR_sound_tab_effects_tip_header", "#STR_sound_tab_effects_tip"));
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_MUSIC_SLIDER, new Param2<string, string>("#STR_sound_tab_music_tip_header", "#STR_sound_tab_music_tip"));
+		m_TextMap.Insert(OptionIDsScript.OPTION_AMBIENT_MUSIC_MODE, new Param2<string, string>("#STR_sound_tab_ambient_mode_tip_header", "#STR_sound_tab_ambient_mode_tip"));
 
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_VON_SLIDER, new Param2<string, string>("#STR_sound_tab_voice_output_tip_header", "#STR_sound_tab_voice_output_tip"));
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_VON_THRESHOLD_SLIDER, new Param2<string, string>("#STR_sound_tab_voice_threshold_tip_header", "#STR_sound_tab_voice_threshold_tip"));

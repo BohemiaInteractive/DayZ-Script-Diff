@@ -2385,6 +2385,11 @@ class CarScript extends Car
 		return 2.0;
 	}
 	
+	override bool CanPutIntoHands(EntityAI parent)
+	{
+		return false;
+	}
+	
 	void InitializeActions()
 	{
 		m_InputActionMap = m_CarTypeActionsMap.Get( this.Type() );
