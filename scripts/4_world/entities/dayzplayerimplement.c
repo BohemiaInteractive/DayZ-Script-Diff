@@ -558,6 +558,21 @@ class DayZPlayerImplement extends DayZPlayer
 
 		transport.CrewGetOut(crewIdx);
 		TriggerPullPlayerOutOfVehicleImpl();
+
+		if (crewIdx == DayZPlayerConstants.VEHICLESEAT_DRIVER)
+		{
+			//! we don't want the vehicle to be haunted, re-possess the dead player so other players can use the vehicle
+						
+#ifdef FEATURE_NETWORK_RECONCILIATION
+			PlayerIdentity identity = GetIdentity();
+
+			if (identity)
+			{
+				//! And now we want to resume control of the player 
+				identity.Possess(this);
+			}
+#endif
+		}
 		
 		SetSynchDirty();
 	}
@@ -631,24 +646,44 @@ class DayZPlayerImplement extends DayZPlayer
 					m_WasInVehicle = !hcv.IsGettingIn() && !hcv.IsGettingOut();
 				}
 
-				bool keepInLocalSpace = false;
-				if (IsUnconscious() || m_WasInVehicle)
+				int seatIndex = -1;
+				if (m_TransportCache)
 				{
-					if (m_TransportCache)
-					{
-						m_TransportCache.CrewDeath(m_TransportCache.CrewMemberIndex(this));
-						m_TransportCache.MarkCrewMemberDead(m_TransportCache.CrewMemberIndex(this));
-					}
+					seatIndex = m_TransportCache.CrewMemberIndex(this);
 				}
-				else
+
+				//! player looks to be dead now, not unconscious
+				m_ShouldBeUnconscious = false;
+
+				bool keepInLocalSpace = m_PullPlayerOutOfVehicleKeepsInLocalSpace;
+				if (m_TransportCache)
 				{
-					if (m_TransportCache)
+					if (IsUnconscious() || m_WasInVehicle)
 					{
-						m_TransportCache.CrewGetOut(m_TransportCache.CrewMemberIndex(this));
-						m_TransportCache.MarkCrewMemberDead(m_TransportCache.CrewMemberIndex(this));
+						keepInLocalSpace = true;
+						m_TransportCache.CrewDeath(seatIndex);
 					}
+					else
+					{
+						m_TransportCache.CrewGetOut(seatIndex);
+					}
+
+					m_TransportCache.MarkCrewMemberDead(seatIndex);
 					
-					keepInLocalSpace = m_PullPlayerOutOfVehicleKeepsInLocalSpace;
+					if (seatIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
+					{
+						//! we don't want the vehicle to be haunted, re-possess the dead player so other players can use the vehicle
+						
+#ifdef FEATURE_NETWORK_RECONCILIATION
+						PlayerIdentity identity = GetIdentity();
+
+						if (identity)
+						{
+							//! And now we want to resume control of the player 
+							identity.Possess(this);
+						}
+#endif
+					}
 				}
 				
 				DisableSimulation(false);

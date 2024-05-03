@@ -194,7 +194,7 @@ class DynamicMusicPlayer
 		}
 		else
 		{
-			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU && m_RequestedPlaybackMode == 0)
+			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU)
 			{
 				//! caching of locations based on distance from player (<= LOCATION_DISTANCE_MAX)
 				if (m_TickLocationCacheUpdateElapsed >= TICK_LOCATION_CACHE_UPDATE_SECONDS)
@@ -295,13 +295,16 @@ class DynamicMusicPlayer
 	
 	protected void DetermineTrackByCategory(EDynamicMusicPlayerCategory category)
 	{
+		if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU && m_RequestedPlaybackMode == 1)
+			return;
+
 		if (IsPlaybackActive())
 			return;
 		
 		switch (category)
 		{
 			case EDynamicMusicPlayerCategory.MENU:
-				if (SetSelectedTrackFromCategory(category, m_DynamicMusicPlayerRegistry.m_TracksMenu))
+				if (SetSelectedTrackFromCategory(category, m_DynamicMusicPlayerRegistry.m_TracksMenu, DynamicMusicPlayerTrackHistoryLookupType.BUFFER))
 					break;
 			
 				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DetermineTrackByCategory, 5000, false, category);
@@ -352,6 +355,7 @@ class DynamicMusicPlayer
 			if (value == 1 && m_CategorySelected != EDynamicMusicPlayerCategory.MENU)
 			{
 				StopTrack();
+				ResetWaitingQueue();
 			}
 		}
 	}
@@ -481,6 +485,16 @@ class DynamicMusicPlayer
 	{
 		if (m_SoundPlaying)
 			m_SoundPlaying.Stop();
+	}
+	
+	private void ResetWaitingQueue()
+	{		
+		if (m_WaitingForPlayback)
+		{
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(PlayTrack);
+			m_WaitingForPlayback = false;
+			m_CurrentTrack = null;
+		}
 	}
 	
 	private void FadeoutTrack(float fadeoutSeconds)
@@ -622,6 +636,10 @@ class DynamicMusicPlayer
 					return index;
 
 				case DynamicMusicPlayerTrackHistoryLookupType.BUFFER:
+					// fallback - num of track is smaller than actual history size;
+					if (count <= TRACKS_BUFFER_HISTORY_SIZE)
+						return index;
+
 					if (m_LastPlayedTrackBufferPerCategory[category].GetValues().Find(index) == INDEX_NOT_FOUND)
 						return index;
 				
@@ -733,7 +751,7 @@ class DynamicMusicPlayer
 	private void DisplayDebugStats(bool enabled)
 	{
 		int windowPosX = 10;
-		int windowPosY = 50;
+		int windowPosY = 200;
 
 		DbgUI.Begin("DMP - Overall stats", windowPosX, windowPosY);
 		if (enabled)

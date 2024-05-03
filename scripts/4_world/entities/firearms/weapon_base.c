@@ -62,6 +62,7 @@ class Weapon_Base extends Weapon
 	protected float m_WeaponLiftCheckVerticalOffset;
 	protected float m_ShoulderDistance;
 	protected vector m_LastLiftPosition;
+	protected int m_LastLiftHit;
 	ref array<int> m_bulletSelectionIndex = new array<int>;
 	ref array<float> m_DOFProperties;
 	ref array<float> m_ChanceToJam = new array<float>;
@@ -1265,15 +1266,11 @@ class Weapon_Base extends Weapon
 	{
 		int idx;
 		float distance;
-		float hit_fraction; //junk
+		float hit_fraction;
 		vector start, end;
 		vector direction;
-		vector usti_hlavne_position;
-		vector trigger_axis_position;
-		vector hit_pos, hit_normal; //junk
-		Object obj;
-		ItemBase attachment;
-		HumanMovementState movementState = new HumanMovementState();
+		vector hit_pos, hit_normal;
+		Object obj;		
 		
 		bool wasLift = m_LiftWeapon;
 		vector lastLiftPosition = m_LastLiftPosition;
@@ -1290,6 +1287,7 @@ class Weapon_Base extends Weapon
 		}
 		
 		// weapon not raised
+		HumanMovementState movementState = new HumanMovementState();
 		player.GetMovementState(movementState);
 		if (!movementState.IsRaised())
 			return false;
@@ -1300,8 +1298,6 @@ class Weapon_Base extends Weapon
 			return false;
 		}
 		
-		usti_hlavne_position = GetSelectionPositionLS( "Usti hlavne" ); 	// Usti hlavne
-		trigger_axis_position = GetSelectionPositionLS("trigger_axis");
 		
 		// If possible use aiming angles instead as these will work consistently
 		// and independently of any cameras, etc. 
@@ -1426,9 +1422,7 @@ class Weapon_Base extends Weapon
 			start = offset.Multiply4(resTM);
 		}
 		
-		//! snippet below measures distance from "RightHandIndex1" bone for lifting calibration
-		/*usti_hlavne_position = ModelToWorld(usti_hlavne_position);
-		distance = vector.Distance(start,usti_hlavne_position);*/
+		
 		distance = m_WeaponLength + GetEffectiveAttachmentLength();
 		
 		vector weaponStart = start + (m_ShoulderDistance * direction);
@@ -1456,7 +1450,9 @@ class Weapon_Base extends Weapon
 		rayParm.flags = CollisionFlags.ALLOBJECTS;
 		rayParm.type = ObjIntersect.Fire;
 		
+		#ifdef DIAG_DEVELOPER
 		DbgUI.BeginCleanupScope();
+		#endif
 		array<ref RaycastRVResult> results = {};
 		if (!DayZPhysics.RaycastRVProxy(rayParm, results) || results.Count() == 0)
 		{
@@ -1511,8 +1507,9 @@ class Weapon_Base extends Weapon
 				hit_fraction = 0;
 			}
 		}
-		
+		#ifdef DIAG_DEVELOPER
 		DbgUI.EndCleanupScope();
+		#endif
 		
 		// Draw diagnostics: Script -> Weapon -> Weapon Lift
 		#ifdef DIAG_DEVELOPER
@@ -1541,6 +1538,9 @@ class Weapon_Base extends Weapon
 		// Sq. distance of weapon movement required to trigger lift (out)
 		const float outThreshold = 0.003;
 		const float noIsctOutThreshold = 0.01;
+		// Max num of ticks with no hit for which hysteresis will persist
+		// value chosen by iteration, should be approx 0.333s 
+		const int maxNumMissedTicks = 10;
 		
 		// Min angle in degrees change from last lift to stop lifting
 		// Base threshold of 0.75 degrees + 0.6 degrees per meter of weapon length
@@ -1564,6 +1564,7 @@ class Weapon_Base extends Weapon
 			}
 			
 			m_LastLiftPosition = hit_pos;
+			m_LastLiftHit = player.GetSimulationTimeStamp();
 		}
 		else
 		{
@@ -1591,6 +1592,14 @@ class Weapon_Base extends Weapon
 				{
 					float d3 = vector.Dot( lastLiftPosition - weaponEnd, (start-end).Normalized() );
 					if (d3 < -noIsctOutThreshold)
+					{
+						wantsLift = false;
+						m_LastLiftPosition = vector.Zero;
+					}
+					
+					// fallback in case offending object disappears or moves
+					int timeSinceHit = player.GetSimulationTimeStamp() - m_LastLiftHit;
+					if (timeSinceHit > maxNumMissedTicks)
 					{
 						wantsLift = false;
 						m_LastLiftPosition = vector.Zero;

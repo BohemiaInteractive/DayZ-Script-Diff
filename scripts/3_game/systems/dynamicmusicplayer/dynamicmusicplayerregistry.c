@@ -22,11 +22,8 @@ class DynamicMusicPlayerRegistry
 		RegisterCategorySettings();
 
 		RegisterTracksMenu();
-		//RegisterTracksTime();
-		m_TracksTime = new array<ref DynamicMusicTrackData>();
-		//RegisterTracksLocationStatic();
-		m_TracksLocationStatic = new array<ref DynamicMusicTrackData>();
-		m_TracksLocationStaticPrioritized = new array<ref DynamicMusicTrackData>();
+		RegisterTracksTime();
+		RegisterTracksLocationStatic();
 		//RegisterTracksLocationDynamic();
 		m_TracksLocationDynamic = new array<ref DynamicMusicTrackData>();
 	}
@@ -66,8 +63,8 @@ class DynamicMusicPlayerRegistry
 	private void RegisterTimeSettings()
 	{
 		DynamicMusicPlayerSettings settings = new DynamicMusicPlayerSettings();
-		settings.m_MinWaitTimeSeconds = 600.0; //10 min
-		settings.m_MaxWaitTimeSeconds = 900.0; //15 min
+		settings.m_MinWaitTimeSeconds = 480.0; //480 = 8 min
+		settings.m_MaxWaitTimeSeconds = 720.0; //720 = 12 min
 		
 		m_SettingsByCategory[EDynamicMusicPlayerCategory.TIME] = settings;
 	}
@@ -75,8 +72,8 @@ class DynamicMusicPlayerRegistry
 	private void RegisterLocationStaticSettings()
 	{
 		DynamicMusicPlayerSettings settings = new DynamicMusicPlayerSettings();
-		settings.m_MinWaitTimeSeconds = 600.0; //10 min
-		settings.m_MaxWaitTimeSeconds = 900.0; //15 min
+		settings.m_MinWaitTimeSeconds = 480.0; //480 = 8 min
+		settings.m_MaxWaitTimeSeconds = 720.0; //720 = 12 min
 
 		m_SettingsByCategory[EDynamicMusicPlayerCategory.LOCATION_STATIC] = settings;
 		
@@ -101,9 +98,9 @@ class DynamicMusicPlayerRegistry
 	{
 		m_TracksMenu = new array<ref DynamicMusicTrackData>();
 
-		//RegisterTrackMenu("Music_Menu_1_SoundSet", true); 
-		RegisterTrackMenu("Music_Menu_SoundSet");
-		//RegisterTrackMenu("Music_Menu_2_SoundSet");
+		RegisterTrackMenu("Music_Menu_SoundSet", true); 
+		RegisterTrackMenu("Music_Menu_2_SoundSet");
+		RegisterTrackMenu("Music_Menu_3_SoundSet");
 		//RegisterTrackMenu("Music_Menu_3_SoundSet");
 	}
 //____________________________________________Day Time setup___________________________________________
@@ -119,21 +116,17 @@ class DynamicMusicPlayerRegistry
 		RegisterTrackTime("Music_time_based_new_day_4_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackTime("Music_time_based_new_day_5_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackTime("Music_time_based_new_day_6_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackTime("Music_time_based_new_day_7_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		//NIGHT
 		RegisterTrackTime("Music_time_night_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
 		RegisterTrackTime("Music_time_based_new_night_2_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackTime("Music_time_based_new_night_3_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
 		//DAWN
 		RegisterTrackTime("Music_time_dawn_SoundSet", DynamicMusicPlayerTimeOfDay.DAWN);
-		RegisterTrackTime("Music_time_based_new_dawn_2_SoundSet", DynamicMusicPlayerTimeOfDay.DAWN);
+		RegisterTrackTime("Music_time_dawn_2_SoundSet", DynamicMusicPlayerTimeOfDay.DAWN);
 		//DUSK
 		RegisterTrackTime("Music_time_dusk_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
-		RegisterTrackTime("Music_time_based_new_dusk_2_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
-		RegisterTrackTime("Music_time_based_new_dusk_3_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
-		RegisterTrackTime("Music_time_based_new_dusk_4_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
+		RegisterTrackTime("Music_time_dusk_4_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
 		//UNSORTED
-		RegisterTrackTime("Music_time_based_new_6_SoundSet", DynamicMusicPlayerTimeOfDay.ANY);
+		//RegisterTrackTime("Music_time_based_new_6_SoundSet", DynamicMusicPlayerTimeOfDay.ANY);
 	}
 
 	protected void RegisterTracksLocationStatic()

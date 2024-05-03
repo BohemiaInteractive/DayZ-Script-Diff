@@ -28,16 +28,18 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 			{"1258.536011 442.738800 13465.949219", "1915.419189 424.005707 14172.190430"},
 		};
 		
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_day1_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.DAY, true);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_day2_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.DAY, true);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_night_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.NIGHT, true);
+		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_day1_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.DAY, true);
+		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_day2_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.DAY, true);
+		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_night_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.NIGHT, true);
 
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_day1_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.DAY, true);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_day2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.DAY, true);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night1_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
+		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_day2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.DAY, true);
+		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night1_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
+		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
 
 		//____________________________________________ChernarusPlus CITIES ___________________________________________
+		
+		
 		array<ref TVectorArray> cityChernohorsk;
 		cityChernohorsk = {
 			{"5531.164551 60.421795 2400.743408", "5955.600586 70.326355 2722.855225"},
@@ -103,6 +105,8 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 			{"10402.891602 7.446366 1960.392090", "10664.541016 5.829778 2200.995361"},
 		};
 
+		
+		/*
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.NIGHT);
@@ -142,9 +146,11 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.NIGHT);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.NIGHT);
+		*/
 		
 //____________________________________________ChernarusPlus Industrial zones Novodmytrovsk___________________________________________
 
+		/*
 		RegisterTrackLocationStaticMultiRectangle(
 			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
 			{
@@ -476,6 +482,8 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 			},
 			DynamicMusicPlayerTimeOfDay.NIGHT,
 		);
+		*/
+		
 
 //____________________________________________ Coast ___________________________________________
 		

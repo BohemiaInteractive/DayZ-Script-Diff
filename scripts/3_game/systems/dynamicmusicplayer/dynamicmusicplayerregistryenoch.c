@@ -49,6 +49,7 @@ class DynamicMusicPlayerRegistryEnoch : DynamicMusicPlayerRegistry
 			{"11185.399414 183.049896 9302.782227", "11662.526367 193.876877 9836.079102"},
 		};		
 
+		/*
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityTopolin, DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityTopolin, DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityTopolin, DynamicMusicPlayerTimeOfDay.NIGHT);
@@ -63,9 +64,11 @@ class DynamicMusicPlayerRegistryEnoch : DynamicMusicPlayerRegistry
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityNadbor, DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityNadbor, DynamicMusicPlayerTimeOfDay.NIGHT);
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityNadbor, DynamicMusicPlayerTimeOfDay.NIGHT);
+		*/
 		
 //____________________________________________enoch Industrial zones Kamienialom Maksymilian ___________________________________________
 
+		/*
 		RegisterTrackLocationStaticMultiRectangle(
 			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
 			{
@@ -305,5 +308,6 @@ class DynamicMusicPlayerRegistryEnoch : DynamicMusicPlayerRegistry
 			},
 			DynamicMusicPlayerTimeOfDay.NIGHT,
 		);
+		*/
 	}
 }
