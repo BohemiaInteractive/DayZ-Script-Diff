@@ -171,6 +171,9 @@ class DynamicMusicPlayer
 	
 	void OnUpdate(float timeslice)
 	{
+		if (m_DynamicMusicPlayerRegistry == null)
+			return;
+
 		m_TickTimeOfDateElapsed 				+= timeslice;
 		m_TickLocationCacheUpdateElapsed		+= timeslice;
 		m_TickLocationUpdateElapsed 			+= timeslice;
@@ -264,6 +267,9 @@ class DynamicMusicPlayer
 
 	void SetCategory(EDynamicMusicPlayerCategory category, bool forced)
 	{
+		if (m_DynamicMusicPlayerRegistry == null)
+			return;
+
 		m_CategorySelected = category;
 		
 		OnCategorySet(category, forced);

@@ -170,7 +170,7 @@ class GesturesMenu extends UIScriptedMenu
 	{
 		if (!instance)
 		{
-			PlayerBase player;;
+			PlayerBase player;
 			HumanInputController hic;
 			if (Class.CastTo(player,GetGame().GetPlayer()) && Class.CastTo(hic,player.GetInputController()) && hic.WeaponADS())
 				return false;

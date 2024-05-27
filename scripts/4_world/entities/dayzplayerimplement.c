@@ -1766,7 +1766,7 @@ class DayZPlayerImplement extends DayZPlayer
 			exitSights = true;
 		}
 		
-		if (m_ResetADS || !hia.IsItemInHandsWeapon())
+		if (m_ResetADS || (!hia.IsItemInHandsWeapon() && hic.WeaponADS()))
 		{
 			hic.ResetADS();
 			m_ResetADS = false;

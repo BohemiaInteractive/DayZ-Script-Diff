@@ -909,6 +909,7 @@ class GameConstants
 	 * \desc Constants for inventory
 	 */
 	const int INVENTORY_ENTITY_DROP_OVERLAP_DEPTH = 2; // How deep should it go looking for a free spot to drop an entity
+	const int INVENTORY_MAX_REACHABLE_DEPTH_ATT = 2; //ContainerWithCargoAndAttachments::AttachmentAddedEx creates 'Attachments' and 'CargoContainer' objects at depth 3 (nature of the architecture)
 	
 	//----------------------------------------------------------
 	//							AI

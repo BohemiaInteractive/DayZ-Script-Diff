@@ -1487,6 +1487,33 @@ class EntityAI extends Entity
 		return true;
 	}
 	
+	bool AreChildrenAccessible()
+	{
+		InventoryLocation lcn = new InventoryLocation();
+		EntityAI ent = this;
+		int attachmentDepth = 0;
+		while (ent)
+		{
+			if (ent.GetInventory().GetCurrentInventoryLocation(lcn) && lcn.IsValid())
+			{
+				if (lcn.GetType() == InventoryLocationType.CARGO || lcn.GetType() == InventoryLocationType.PROXYCARGO)
+				{
+					return false;
+				}
+				
+				//hands treated as regular attachment here
+				if (lcn.GetType() == InventoryLocationType.ATTACHMENT || lcn.GetType() == InventoryLocationType.HANDS)
+				{
+					attachmentDepth++;
+				}
+			}
+			
+			ent = ent.GetHierarchyParent();
+		}
+		
+		return attachmentDepth <= GameConstants.INVENTORY_MAX_REACHABLE_DEPTH_ATT;
+	}
+	
 	bool IsBeingPlaced()
 	{
 		return false;

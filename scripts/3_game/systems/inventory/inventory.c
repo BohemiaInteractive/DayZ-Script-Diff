@@ -436,32 +436,18 @@ class GameInventory
 		return false;
 	}
 	
-	//! Returns true if item is considered reachable within inventory (currently !IsCargoInHiearchy only)
+	//! Returns true if item is considered reachable within inventory
 	bool AreChildrenAccessible()
 	{
-		InventoryLocation lcn = new InventoryLocation();
 		EntityAI ent = GetInventoryOwner();
-		int attachmentDepth = 0;
-		while (ent)
-		{
-			if (ent.GetInventory().GetCurrentInventoryLocation(lcn) && lcn.IsValid())
-			{
-				if (lcn.GetType() == InventoryLocationType.CARGO || lcn.GetType() == InventoryLocationType.PROXYCARGO)
-				{
-					return false;
-				}
-				
-				//hands treated as regular attachment here
-				if (lcn.GetType() == InventoryLocationType.ATTACHMENT || lcn.GetType() == InventoryLocationType.HANDS)
-				{
-					attachmentDepth++;
-				}
-			}
-			
-			ent = ent.GetHierarchyParent();
-		}
+		if (ent)
+			return ent.AreChildrenAccessible();
 		
-		return attachmentDepth <3; //ContainerWithCargoAndAttachments::AttachmentAddedEx creates 'Attachments' and 'CargoContainer' objects at this depth (nature of the architecture)
+		#ifdef DEVELOPER
+		ErrorEx("no inventory owner found!");
+		#endif
+		
+		return true; //just in case inventoy without owner exists somewhere (shouldn't!)
 	}
 	
 	//! Returns true if the item is currently attached and outputs attachment slot id and name

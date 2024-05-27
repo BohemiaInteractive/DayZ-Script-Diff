@@ -24,8 +24,7 @@ class DynamicMusicPlayerRegistry
 		RegisterTracksMenu();
 		RegisterTracksTime();
 		RegisterTracksLocationStatic();
-		//RegisterTracksLocationDynamic();
-		m_TracksLocationDynamic = new array<ref DynamicMusicTrackData>();
+		RegisterTracksLocationDynamic();
 	}
 	
 	//! --------------------------------------------------------------------------------
@@ -112,19 +111,19 @@ class DynamicMusicPlayerRegistry
 		//DAY
 		RegisterTrackTime("Music_time_day_1_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackTime("Music_time_day_2_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackTime("Music_time_based_new_day_3_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackTime("Music_time_based_new_day_4_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackTime("Music_time_based_new_day_5_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackTime("Music_time_based_new_day_6_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
+		RegisterTrackTime("Music_time_day_3_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
+		RegisterTrackTime("Music_time_day_4_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
+		RegisterTrackTime("Music_time_day_5_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
+		RegisterTrackTime("Music_time_day_6_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		//NIGHT
-		RegisterTrackTime("Music_time_night_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackTime("Music_time_based_new_night_2_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
+		RegisterTrackTime("Music_time_night_1_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
+		RegisterTrackTime("Music_time_night_2_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
 		//DAWN
-		RegisterTrackTime("Music_time_dawn_SoundSet", DynamicMusicPlayerTimeOfDay.DAWN);
+		RegisterTrackTime("Music_time_dawn_1_SoundSet", DynamicMusicPlayerTimeOfDay.DAWN);
 		RegisterTrackTime("Music_time_dawn_2_SoundSet", DynamicMusicPlayerTimeOfDay.DAWN);
 		//DUSK
-		RegisterTrackTime("Music_time_dusk_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
-		RegisterTrackTime("Music_time_dusk_4_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
+		RegisterTrackTime("Music_time_dusk_1_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
+		RegisterTrackTime("Music_time_dusk_2_SoundSet", DynamicMusicPlayerTimeOfDay.DUSK);
 		//UNSORTED
 		//RegisterTrackTime("Music_time_based_new_6_SoundSet", DynamicMusicPlayerTimeOfDay.ANY);
 	}

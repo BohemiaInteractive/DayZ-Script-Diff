@@ -32,7 +32,7 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_day2_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.DAY, true);
 		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_night_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.NIGHT, true);
 
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_day1_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.DAY, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.ANY, true);
 		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_day2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.DAY, true);
 		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night1_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
 		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
@@ -488,7 +488,7 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 //____________________________________________ Coast ___________________________________________
 		
 		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_coast_edit_1_SoundSet",
+			"Music_loc_coast_SoundSet",
 			{
 				{"14479.316406 0.205862 13284.150391", "14915.232422 50.594284 13482.948242"},
 				{"14915.232422 50.594284 13482.948242", "15195.464844 11.634924 13724.858398"},
@@ -496,26 +496,26 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 				{"12719.478516 18.769157 8456.476563", "12982.782227 0.244197 9286.715820"},
 				{"13360.052734 15.667940 4366.248047", "13576.785156 -1.456465 5987.672363"},
 			},
-			DynamicMusicPlayerTimeOfDay.DAY,
+			DynamicMusicPlayerTimeOfDay.ANY,
 		);
 
 		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_coast_edit_1_SoundSet",
+			"Music_loc_coast_SoundSet",
 			{
 				{"12846.285156 4.942527 3677.016113", "13750.902344 2.102134 4208.992188"},
 				{"8210.556641 -7.580429 2349.267822", "8594.726563 28.589079 2847.871338"},
-				{"8480.291992 -53.893250 1986.895752", "9335.819336 56.478188 2335.644775"},
+				{"8480.291992 -1.893250 1986.895752", "9335.819336 56.478188 2335.644775"},//
 				{"4718.038086 -9.668183 1929.492188", "5822.236816 8.946076 2202.721191"},
 				{"3749.452148 1.088811 2194.605957", "4241.458984 6.000000 2389.696777"},
 				{"2299.152588 -6.205252 1592.642212", "3265.470947 11.660863 2304.694580"},
 				{"977.166687 5.160747 1850.284424", "1563.582642 15.414894 2440.919434"},
 				{"36.032646 -3.334796 1394.060669", "550.728577 6.195624 1748.442993"},
 			},
-			DynamicMusicPlayerTimeOfDay.DAY,
+			DynamicMusicPlayerTimeOfDay.ANY,
 		);
 		
 		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_coast_edit_1_SoundSet",
+			"Music_loc_coast_SoundSet",
 			{
 				{"14479.316406 0.205862 13284.150391", "14915.232422 50.594284 13482.948242"},
 				{"14915.232422 50.594284 13482.948242", "15195.464844 11.634924 13724.858398"},
@@ -523,22 +523,22 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 				{"12719.478516 18.769157 8456.476563", "12982.782227 0.244197 9286.715820"},
 				{"13360.052734 15.667940 4366.248047", "13576.785156 -1.456465 5987.672363"},		
 			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
+			DynamicMusicPlayerTimeOfDay.ANY,
 		);
 
 		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_coast_edit_1_SoundSet",
+			"Music_loc_coast_SoundSet",
 			{
 				{"12846.285156 4.942527 3677.016113", "13750.902344 2.102134 4208.992188"},
 				{"8210.556641 -7.580429 2349.267822", "8594.726563 28.589079 2847.871338"},
-				{"8480.291992 -53.893250 1986.895752", "9335.819336 56.478188 2335.644775"},
+				{"8480.291992 -1.893250 1986.895752", "9335.819336 56.478188 2335.644775"},//
 				{"44718.038086 -9.668183 1929.492188", "5822.236816 8.946076 2202.721191"},
 				{"3749.452148 1.088811 2194.605957", "4241.458984 6.000000 2389.696777"},
 				{"2299.152588 -6.205252 1592.642212", "3265.470947 11.660863 2304.694580"},
 				{"977.166687 5.160747 1850.284424", "1563.582642 15.414894 2440.919434"},
 				{"36.032646 -3.334796 1394.060669", "550.728577 6.195624 1748.442993"},
 			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
+			DynamicMusicPlayerTimeOfDay.ANY,
 		);
 	}
 

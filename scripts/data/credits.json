@@ -340,6 +340,17 @@
                 }
             ]
         },
+                {
+            "DepartmentName": "",
+            "Sections": [
+                {
+                    "SectionName": "Composer",
+                    "SectionLines": [
+                        "Filip Míšek"
+                    ]
+                }
+            ]
+        },
         {
             "DepartmentName": "",
             "Sections": [

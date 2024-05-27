@@ -18,15 +18,12 @@ class DynamicMusicPlayerRegistryEnoch : DynamicMusicPlayerRegistry
 		
 		array<ref TVectorArray> militaryDambog;
 		militaryDambog = {
-			{"7251.812500 287.418854 2541.844238", "7389.284668 320.115479 2979.039795"},
-			{"7402.536621 294.709839 2506.142334", "7531.667969 289.916229 2597.169434"},
-			{"7571.889648 289.450012 2556.947266", "7730.658203 302.170502 2766.522217"},
+			{"591.944336 534.083801 1127.866089", "740.260620 531.480774 1233.501831"},
 		};
 
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_sila_day_SoundSet", militarySila, DynamicMusicPlayerTimeOfDay.DAY, true);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_sila_night_SoundSet", militarySila, DynamicMusicPlayerTimeOfDay.NIGHT, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_sila_SoundSet", militarySila, DynamicMusicPlayerTimeOfDay.ANY, true);
 
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_dambog_facility_SoundSet", militaryDambog, DynamicMusicPlayerTimeOfDay.ANY, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_dambog_SoundSet", militaryDambog, DynamicMusicPlayerTimeOfDay.ANY, true);
 
 		array<ref TVectorArray> cityTopolin;
 		cityTopolin = {
@@ -41,13 +38,8 @@ class DynamicMusicPlayerRegistryEnoch : DynamicMusicPlayerRegistry
 		
 		array<ref TVectorArray> cityNadbor;
 		cityNadbor = {
-			{"11185.399414 183.049896 9302.782227", "11662.526367 193.876877 9836.079102"},
+			{"5774.619629 409.945709 3949.304932", "6338.670898 345.722473 4409.583984"},
 		};
-
-		array<ref TVectorArray> locationKamienialomMaksymilian;
-		locationKamienialomMaksymilian = {
-			{"11185.399414 183.049896 9302.782227", "11662.526367 193.876877 9836.079102"},
-		};		
 
 		/*
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityTopolin, DynamicMusicPlayerTimeOfDay.DAY);

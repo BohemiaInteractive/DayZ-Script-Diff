@@ -3,7 +3,6 @@
 enum EDLCId
 {
 	DLC_UNKNOWN,
-	DLC_BLISS,
 };
 
 //! ContentDLC is for query installed DLC (only as entitlement keys, not content)

@@ -114,16 +114,6 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	{
 		switch (dlcId)
 		{
-			case EDLCId.DLC_BLISS:
-			{
-				array<ServerBrowserEntry> serverEntries = m_EntryWidgets.GetValueArray();
-				foreach (ServerBrowserEntry entry : serverEntries)
-				{
-					entry.RefreshDLCIcon();
-				}
-				break;
-			}
-			
 			default:
 				break;
 		}
