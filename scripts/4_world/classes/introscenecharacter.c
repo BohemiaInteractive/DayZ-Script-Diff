@@ -247,6 +247,13 @@ class IntroSceneCharacter extends Managed
 		port = m_CharacterDta.GetLastServerPort(characterID);
 		m_CharacterDta.GetLastServerName(characterID,name);
 	}
+	
+	void GetLastPlayedServerEx(int characterID, out string address, out string name, out int port, out int steamQueryPort)
+	{
+		steamQueryPort = m_CharacterDta.GetLastSteamQueryPort(characterID);
+		GetLastPlayedServer(characterID, address, name, port);
+	}
+	
 	//==============================================
 	// CreateNewCharacter
 	//==============================================

@@ -7,7 +7,7 @@ class ActionInteractBaseCB : ActionBaseCB
 
 	override void OnAnimationEvent(int pEventID)	
 	{	
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable() )
 		{
 			if (m_ActionData)
@@ -23,7 +23,7 @@ class ActionInteractBaseCB : ActionBaseCB
 	
 	override void InitActionComponent()
 	{
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable() )
 		{
 			Debug.ActionLog("n/a", m_ActionData.m_Action.ToString() , "n/a", "InitActionComponent", m_ActionData.m_Player.ToString() );

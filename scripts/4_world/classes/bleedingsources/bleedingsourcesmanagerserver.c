@@ -172,7 +172,7 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 			float roll = Math.RandomFloat01();
 			createBleedingSource = bleedingChance != 0 && bleedingChance >= roll;
 			
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if (LogManager.IsBleedingChancesLogEnable())
 			{	
 				Debug.BleedingChancesLog(roll.ToString(), "BleedingSourcesManagerServer" , "n/a", "bleeding random roll:");
@@ -194,7 +194,7 @@ class BleedingSourcesManagerServer extends BleedingSourcesManagerBase
 		
 		if (createBleedingSource)
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if (LogManager.IsBleedingChancesLogEnable())
 			{	
 				Debug.BleedingChancesLog("true", "BleedingSourcesManagerServer" , "n/a", "Attempting to create bleeding source");

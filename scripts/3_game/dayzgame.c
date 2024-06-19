@@ -1362,7 +1362,7 @@ class DayZGame extends CGame
 	// ------------------------------------------------------------
 	void ReloadMission()
 	{
-	#ifdef DEVELOPER
+	#ifdef ENABLE_LOGGING
 		Print("Reloading mission module!");
 		CreateMission(m_MissionPath);
 	#endif
@@ -2076,6 +2076,7 @@ class DayZGame extends CGame
 	
 	protected string			m_ConnectAddress;
 	protected int				m_ConnectPort;
+	protected int				m_ConnectSteamQueryPort;
 	protected string			m_ConnectPassword;
 	
 	protected const int			MAX_VISITED = 50;
@@ -2594,8 +2595,13 @@ class DayZGame extends CGame
 			if (m_ConnectAddress == addr && m_ConnectPort == port)
 				return;
 		}
+		
+		string connectAddress = m_ConnectAddress;
+		
+		if (m_ConnectSteamQueryPort)
+			connectAddress = string.Format("%1:%2:%3", m_ConnectAddress, m_ConnectPort, m_ConnectSteamQueryPort);
 
-		if (Connect(GetUIManager().GetMenu(), m_ConnectAddress, m_ConnectPort, m_ConnectPassword) != 0)
+		if (Connect(GetUIManager().GetMenu(), connectAddress, m_ConnectPort, m_ConnectPassword) != 0)
 			DisconnectSessionScript(true);
 	}
 	
@@ -2677,6 +2683,12 @@ class DayZGame extends CGame
 		m_ConnectPassword	= password;
 		m_ConnectFromJoin	= false;
 		OnlineServices.LoadMPPrivilege();
+	}
+	
+	void ConnectFromServerBrowserEx(string ip, int port, int steamQueryPort, string password = "")
+	{
+		m_ConnectSteamQueryPort = steamQueryPort;
+		ConnectFromServerBrowser(ip, port, password);
 	}
 	
 	void ConnectFromJoin(string ip, int port)

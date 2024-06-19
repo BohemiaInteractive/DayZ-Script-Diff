@@ -102,7 +102,9 @@ class PlayerBase extends ManBase
 	int 							m_ShockSimplified;
 	float							m_CurrentShock; //Used to synchronize shock between server and client
 	bool							m_IsRestrained;
+	bool							m_IsRestrainedLocal;
 	bool 							m_IsRestrainStarted;
+	bool 							m_IsRestrainStartedLocal;
 	bool 							m_IsRestrainPrelocked;
 	bool							m_ImmunityBoosted;
 	bool							m_AreHandsLocked; //Currently only used to block quickbar usage after canceling placement
@@ -1781,6 +1783,28 @@ class PlayerBase extends ManBase
 		return m_IsRestrained;
 	}
 	
+	void OnRestrainStartedChangeClient()
+	{
+		if (m_IsRestrainStarted)
+		{
+			if (GetGame().GetUIManager().IsMenuOpen(MENU_RADIAL_QUICKBAR))
+				GetGame().GetUIManager().FindMenu(MENU_RADIAL_QUICKBAR).Close();
+			if (GetGame().GetUIManager().IsMenuOpen(MENU_INVENTORY))
+				GetGame().GetMission().HideInventory();
+		}
+	}
+	
+	void OnRestrainChangeClient()
+	{
+		if (m_IsRestrained)
+		{
+			if (GetGame().GetUIManager().IsMenuOpen(MENU_RADIAL_QUICKBAR))
+				GetGame().GetUIManager().FindMenu(MENU_RADIAL_QUICKBAR).Close();
+			if (GetGame().GetUIManager().IsMenuOpen(MENU_INVENTORY))
+				GetGame().GetMission().HideInventory();
+		}
+	}
+	
 	override bool IsInventoryVisible()
 	{
 		return true;
@@ -1790,7 +1814,7 @@ class PlayerBase extends ManBase
 	{
 		if (IsControlledPlayer())
 		{
-			return !IsRestrained() && !IsRestrainPrelocked();
+			return !IsRestrained() && !IsRestrainPrelocked() && !IsRestrainStarted();
 		}
 		return true;
 	}
@@ -4224,7 +4248,7 @@ class PlayerBase extends ManBase
 					drawCheckerboard.ShowWidgets(DiagMenu.GetBool(DiagMenuIDs.MISC_DRAW_CHECKERBOARD));
 				}
 			}
-
+			
 			if (m_PresenceNotifier)
 			{
 				m_PresenceNotifier.EnableDebug(DiagMenu.GetBool(DiagMenuIDs.MISC_PRESENCE_NOTIFIER_DBG));
@@ -5776,6 +5800,19 @@ class PlayerBase extends ManBase
 			{
 				raib.OnVariableSynchronized();
 			}
+		}
+		
+		//restrain events
+		if (m_IsRestrainedLocal != m_IsRestrained)
+		{
+			m_IsRestrainedLocal = m_IsRestrained;
+			OnRestrainChangeClient();
+		}
+		
+		if (m_IsRestrainStartedLocal != m_IsRestrainStarted)
+		{
+			m_IsRestrainStartedLocal = m_IsRestrainStarted;
+			OnRestrainStartedChangeClient();
 		}	
 	}
 	

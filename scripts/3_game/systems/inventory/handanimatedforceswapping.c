@@ -20,7 +20,7 @@ class HandAnimatedMoveToDst_W4T_Basic extends HandStateBase
 				}
 				else
 				{
-					#ifdef DEVELOPER
+					#ifdef ENABLE_LOGGING
 					if ( LogManager.IsInventoryHFSMLogEnable() )
 					{	
 						Debug.InventoryHFSMLog("[hndfsm] HandAnimatedMoveToDst_W4T_Basic - not allowed");

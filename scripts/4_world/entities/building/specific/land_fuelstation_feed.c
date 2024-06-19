@@ -33,3 +33,5 @@ class Land_FuelStation_Feed extends FuelStation
 		return !IsRuined();
 	}
 };
+
+class Land_FuelStation_Feed_Enoch : Land_FuelStation_Feed {};

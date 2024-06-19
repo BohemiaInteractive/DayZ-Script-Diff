@@ -568,16 +568,17 @@ class MainMenu extends UIScriptedMenu
 		string ip = "";
 		string name = "";
 		int port = 0;
+		int steamQueryPort = 0;
 			 
 		if (!m_ScenePC.GetIntroCharacter().IsDefaultCharacter())
 		{
 			int charID = m_ScenePC.GetIntroCharacter().GetCharacterID();
-			m_ScenePC.GetIntroCharacter().GetLastPlayedServer(charID,ip,name,port);
+			m_ScenePC.GetIntroCharacter().GetLastPlayedServerEx(charID, ip, name, port, steamQueryPort);
 		}
 		
 		if (ip.Length() > 0)
 		{
-			g_Game.ConnectFromServerBrowser(ip, port, "");
+			g_Game.ConnectFromServerBrowserEx(ip, port, steamQueryPort, "");
 		}
 		else
 		{

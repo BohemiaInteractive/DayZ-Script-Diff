@@ -295,7 +295,7 @@ class AnimatedActionBase : ActionBase
 	{
 		if ( state == UA_ERROR || !action_data.m_Callback || !action_data.m_Player || !action_data.m_ActionComponent ) //jtomasik - tohle mozna muze byt v CancelCondtion metodu callbacku?
 		{
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 			if ( LogManager.IsActionLogEnable() )
 			{
 				Debug.ActionLog("ABRUPT CANCEL, CONDITIONS NOT MET", this.ToString() , "n/a", "Do", action_data.m_Player.ToString() );

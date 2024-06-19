@@ -77,7 +77,7 @@ class BleedChanceData : Managed
 		float valueHigher = Math.Max(bleedThreshold,armor) * BLOOD_HITPOINTS_UNIVERSAL;
 		float valueLower = Math.Min(bleedThreshold,armor) * BLOOD_HITPOINTS_UNIVERSAL;
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if (LogManager.IsBleedingChancesLogEnable())
 		{	
 			Debug.BleedingChancesLog(armor.ToString(), "BleedChanceData" , "n/a", "armor:");
@@ -90,7 +90,7 @@ class BleedChanceData : Managed
 		{
 			bleedChance = 1.0;
 			
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if (LogManager.IsBleedingChancesLogEnable())
 			{	
 				Debug.BleedingChancesLog(bleedChance.ToString(), "BleedChanceData" , "n/a", "Unhandleed values, default bleeding chance used:");
@@ -119,7 +119,7 @@ class BleedChanceData : Managed
 			bleedChance = valueHigher * chanceMaxActual / 10000;
 		}
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if (LogManager.IsBleedingChancesLogEnable())
 		{	
 			Debug.BleedingChancesLog(bleedChance.ToString(), "BleedChanceData" , "n/a", "bleeding chance:");

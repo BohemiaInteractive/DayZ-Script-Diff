@@ -34,9 +34,34 @@
 #define NO_GUI_INGAME
 
 /*!
+	\note Enabled via '-doScriptLogs=1' in launch parameters
+*/
+#define ENABLE_LOGGING
+
+/*!
+	\note Enabled via '-logToFile=1' in launch parameters. Default '1' on internal and '0' on retail
+*/
+#define LOG_TO_FILE
+
+/*!
+	\note Enabled via '-logToScript=1' in launch parameters. Default '1' on internal and '0' on retail
+*/
+#define LOG_TO_SCRIPT
+
+/*!
+	\note Enabled via '-logToRpt=1' in launch parameters. Default '0' on internal and '0' on retail
+*/
+#define LOG_TO_RPT
+
+/*!
 	\note Work in progress feature flag to prevent cursor from being hijacked by the game. Original intention was only DEVELOPER_DIAG but the fix later introduced problems in retail.
 */
 #define FEATURE_CURSOR
+
+/*!
+	\note Work in progress feature flag for the new reconciliation for players.
+*/
+#define FEATURE_NETWORK_RECONCILIATION
 
 
 

@@ -917,6 +917,7 @@ class MenuData: Managed
 	
 	proto void 			GetLastServerAddress(int index, out string address);
 	proto native int 	GetLastServerPort(int index);
+	proto native int 	GetLastSteamQueryPort(int index);
 	proto void 			GetLastServerName(int index, out string address);
 	
 	proto void 			RequestSetDefaultCharacterData();

@@ -66,12 +66,19 @@ class ActionRestrainSelf: ActionContinuousBase
 	
 		return true;
 	}
+	
+	override void OnStartServer(ActionData action_data)
+	{
+		super.OnStartServer(action_data);
+		
+		action_data.m_Player.SetRestrainStarted(true);
+	}
 
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
 		PlayerBase player = PlayerBase.Cast( action_data.m_Player );
 		EntityAI item_in_hands = action_data.m_MainItem;
-		if( item_in_hands )
+		if (item_in_hands)
 		{
 			//action_data.m_Player.RemoveQuickBarEntityShortcut(item_in_hands);
 			string new_item_name = MiscGameplayFunctions.ObtainRestrainItemTargetClassname(item_in_hands);
@@ -82,5 +89,12 @@ class ActionRestrainSelf: ActionContinuousBase
 	override void OnFinishProgressClient( ActionData action_data )
 	{	
 		//action_data.m_Player.RemoveQuickBarEntityShortcut(action_data.m_MainItem);
+	}
+	
+	override void OnEndServer(ActionData action_data)
+	{
+		super.OnEndServer(action_data);
+		
+		action_data.m_Player.SetRestrainStarted(false);
 	}
 };

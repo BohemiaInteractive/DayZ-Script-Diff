@@ -554,6 +554,11 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		return m_ServerData.m_HostPort;
 	}
 	
+	int GetSteamQueryPort()
+	{
+		return m_ServerData.m_SteamQueryPort;
+	}
+	
 	string GetServerID()
 	{
 		return m_ServerData.m_Id;

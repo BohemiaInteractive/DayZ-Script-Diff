@@ -227,7 +227,7 @@ class HandEventTake extends HandEventBase
 		
 		if (!GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
@@ -292,7 +292,7 @@ class HandEventMoveTo extends HandEventBase
 	{
 		if (false == GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
@@ -334,7 +334,7 @@ class HandEventRemove extends HandEventBase
 	{
 		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("Check src - failed, src = " + InventoryLocation.DumpToStringNullSafe(GetSrc()), typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CheckRequestSrc", m_Player.ToString() );
@@ -354,7 +354,7 @@ class HandEventRemove extends HandEventBase
 	{
 		if (false == GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
@@ -583,7 +583,7 @@ class HandEventSwap extends HandEventBase
 	{
 		if (!GameInventory.CheckSwapItemsRequest(m_Player, m_Src, m_Src2, m_Dst, m_Dst2, GameInventory.c_MaxItemDistanceRadius))
 		{	
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("CheckSwapItemsRequest - failed", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CheckRequest", m_Player.ToString() );
@@ -592,7 +592,7 @@ class HandEventSwap extends HandEventBase
 		}
   		else if (!m_Player.GetHumanInventory().CanAddSwappedEntity(m_Src, m_Src2, m_Dst, m_Dst2))
 		{	
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("CanAddSwappedEntity - failed", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CheckRequest", m_Player.ToString() );
@@ -610,7 +610,7 @@ class HandEventSwap extends HandEventBase
 		if (GameInventory.CanForceSwapEntitiesEx(GetSrc().GetItem(), m_Dst, m_Src2.GetItem(), m_Dst2))
 			return true;
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
@@ -667,7 +667,7 @@ class HandEventForceSwap extends HandEventSwap
 		if (GetSrcEntity() && inHands && m_Dst && m_Dst.IsValid())
 		{
 			test1 = GameInventory.CheckSwapItemsRequest(m_Player, m_Src, m_Src2, m_Dst, m_Dst2, GameInventory.c_MaxItemDistanceRadius);
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{
 				if (!test1)	
@@ -681,7 +681,7 @@ class HandEventForceSwap extends HandEventSwap
 	override bool CanPerformEvent ()
 	{
 		bool test2 = GameInventory.CanForceSwapEntitiesEx(m_Src.GetItem(), m_Dst, m_Src2.GetItem(), m_Dst2); // null here means 'do not search for dst2' (already have valid one from constructor)
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{
 			if (!test2)	

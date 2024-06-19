@@ -43,7 +43,7 @@ class HandAnimatedMoveToDst_W4T extends HandStartAction
 				}
 				else
 				{
-					#ifdef DEVELOPER
+					#ifdef ENABLE_LOGGING
 					if ( LogManager.IsInventoryHFSMLogEnable() )
 					{	
 						Debug.InventoryHFSMLog("[hndfsm] HandAnimatedMoveToDst_W4T - not allowed");

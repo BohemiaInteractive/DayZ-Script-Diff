@@ -33,32 +33,6 @@ class DynamicMusicPlayerSettings
 	float m_PreviousTrackFadeoutSeconds = 30;
 }
 
-class DynamicMusicPlayerTimeOfDay
-{
-	static int ANY		= -1;
-	static int NIGHT 	= 0;
-	static int DAY 		= 1;
-	static int DUSK		= 2;
-	static int DAWN		= 3;
-	
-	static string ToString(int value)
-	{
-		switch (value)
-		{
-			case NIGHT:
-				return "NIGHT";
-			case DAY:
-				return "DAY";
-			case DUSK:
-				return "DUSK";
-			case DAWN:
-				return "DAWN";
-		}
-		
-		return "ANYTIME";
-	}
-}
-
 class DynamicMusicTrackData
 {
 	bool m_HasPriority		= false;
@@ -660,26 +634,11 @@ class DynamicMusicPlayer
 	{
 		if (g_Game.GetMission())
 		{
-			int year, month, day, hour, minute;
-			GetGame().GetWorld().GetDate(year, month, day, hour, minute);
-
-			float sunriseTimeStart = g_Game.GetMission().GetWorldData().GetApproxSunriseTime(month);
-			float sunsetTimeStart = g_Game.GetMission().GetWorldData().GetApproxSunsetTime(month);
-			if (hour >= sunriseTimeStart && hour < (sunriseTimeStart + 2))
-			{
-				m_ActualTimeOfDay = DynamicMusicPlayerTimeOfDay.DAWN;
-				return;
-			}
-			
-			if (hour >= sunsetTimeStart && hour < (sunsetTimeStart + 2))
-			{
-				m_ActualTimeOfDay = DynamicMusicPlayerTimeOfDay.DUSK;
-				return;
-			}
-			
+			m_ActualTimeOfDay = g_Game.GetMission().GetWorldData().GetDaytime();
+			return;
 		}
 		
-		m_ActualTimeOfDay = g_Game.GetWorld().GetSunOrMoon();
+		m_ActualTimeOfDay = DynamicMusicPlayerTimeOfDay.DAY;
 	}
 	
 	protected float GetWaitTimeForCategory(EDynamicMusicPlayerCategory category)
@@ -928,3 +887,7 @@ class DynamicMusicPlayer
 	}
 	#endif
 }
+
+
+//! for backward compatibility
+class DynamicMusicPlayerTimeOfDay : WorldDataDaytime {}

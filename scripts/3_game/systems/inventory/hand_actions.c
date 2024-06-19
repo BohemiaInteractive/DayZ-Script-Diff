@@ -16,7 +16,7 @@ class HandActionCreated extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionCreated", e.m_Player.ToString() );
@@ -31,7 +31,7 @@ class HandActionTake extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionTake", e.m_Player.ToString() );
@@ -47,7 +47,7 @@ class HandActionDrop extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionDrop", e.m_Player.ToString() );
@@ -63,7 +63,7 @@ class HandActionThrow extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionThrow", e.m_Player.ToString() );
@@ -91,7 +91,7 @@ class HandActionMoveTo extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionMoveTo", e.m_Player.ToString() );
@@ -113,7 +113,7 @@ class HandActionDestroy extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionDestroy", e.m_Player.ToString() );
@@ -129,7 +129,7 @@ class HandActionDestroyed extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionDestroyed", e.m_Player.ToString() );
@@ -143,7 +143,7 @@ class HandActionDestroyAndReplaceWithNew extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionDestroyAndReplaceWithNew", e.m_Player.ToString() );
@@ -181,7 +181,7 @@ class HandActionReplaced extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionReplaced", e.m_Player.ToString() );
@@ -197,7 +197,7 @@ class HandActionSwap extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionSwap", e.m_Player.ToString() );
@@ -218,7 +218,7 @@ class HandActionForceSwap extends HandActionBase
 {
 	override void Action (HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "HandActionForceSwap", e.m_Player.ToString() );

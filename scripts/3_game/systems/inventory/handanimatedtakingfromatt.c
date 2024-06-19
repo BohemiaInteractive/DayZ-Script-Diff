@@ -20,7 +20,7 @@ class HandTakingAnimated_Show extends HandStartAction
 		{
 			if (m_Src.IsValid())
 			{
-				#ifdef DEVELOPER
+				#ifdef ENABLE_LOGGING
 				if ( LogManager.IsInventoryHFSMLogEnable() )
 				{	
 					Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "OnEntry", e.m_Player.ToString() );
@@ -108,7 +108,7 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 
 	override void OnAbort(HandEventBase e)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("Action - STS = " + e.m_Player.GetSimulationTimeStamp(), e.ToString() , "n/a", "OnAbort", e.m_Player.ToString() );

@@ -109,6 +109,21 @@ class RockBase : Object
 	class Static_rock_stone9_moss: RockBase{};
 	class Static_rock_stone10: RockBase{};
 	class Static_rock_stone10_moss: RockBase{};
+	
+	//Moved from Bliss folder
+	class Static_rock_wallh4: RockBase {};
+	class Static_rock_wallh5: RockBase {};
+	class Static_rock_wallh6: RockBase {};
+	class Static_stone10: RockBase {};
+	class Static_stone10_moss: RockBase {};
+	class Static_stone6: RockBase {};
+	class Static_stone6_moss: RockBase {};
+	class Static_stone7: RockBase {};
+	class Static_stone7_moss: RockBase {};
+	class Static_stone8: RockBase {};
+	class Static_stone8_moss: RockBase {};
+	class Static_stone9: RockBase {};
+	class Static_stone9_moss: RockBase {};
 // 	currently unused rocks
 /*
 	

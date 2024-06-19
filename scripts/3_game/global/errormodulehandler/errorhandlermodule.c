@@ -13,7 +13,7 @@ class ErrorHandlerModule
 	//! Event that gets triggered when an error of the owned category is thrown.
 	protected void OnErrorThrown(int errorCode, owned string additionalInfo = "")
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		Print(ErrorModuleHandler.GetErrorHex(errorCode));
 		#endif
 	}

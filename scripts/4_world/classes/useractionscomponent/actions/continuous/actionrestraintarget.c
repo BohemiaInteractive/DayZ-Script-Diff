@@ -133,14 +133,11 @@ class ActionRestrainTarget: ActionContinuousBase
 			string new_item_name = MiscGameplayFunctions.ObtainRestrainItemTargetClassname(item_in_hands_source);
 			if (item_in_hands_target)
 			{
-				Print("Restraining player with item in hands, first drop & then restrain");
-	
 				ChainedDropAndRestrainLambda lambda2 = new ChainedDropAndRestrainLambda(item_in_hands_target, item_in_hands_target.GetType(), target_player, false, source_player);
 				MiscGameplayFunctions.TurnItemInHandsIntoItemEx(target_player, lambda2);
 			}
 			else
 			{
-				Print("Restraining player with empty hands");
 				RestrainTargetPlayerLambda lambda = new RestrainTargetPlayerLambda(item_in_hands_source, new_item_name, target_player);
 				source_player.LocalReplaceItemInHandsWithNewElsewhere(lambda);
 			}

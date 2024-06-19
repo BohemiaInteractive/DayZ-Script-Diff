@@ -98,7 +98,7 @@ class HumanInventoryWithFSM : HumanInventory
 		//SyncRemote(e);
 		if (m_FSM.ProcessEvent(e) == ProcessEventResult.FSM_OK)
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{
 				Debug.InventoryHFSMLog("STS = " + GetManOwner().GetSimulationTimeStamp() , e.ToString(), "ProcessHandEvent", e.m_Player.ToString() );

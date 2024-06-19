@@ -310,12 +310,12 @@ class InventoryLocation
 				
 				if (!item)
 				{
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 #ifdef SERVER
 					Debug.Log(string.Format("Item=%1 does not exist on server!", Object.GetDebugName(item)), "GROUND" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
-					break; // parent or item is not in bubble
+					break; // parent or item is possibly not spawned in bubble yet
 				}
 
 				SetGroundEx(item, pos, dir);
@@ -333,12 +333,12 @@ class InventoryLocation
 				
 				if (!parent || !item)
 				{
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 #ifdef SERVER
 					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "ATTACHMENT" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
-					break; // parent or item is not in bubble
+					break; // parent or item is possibly not spawned in bubble yet
 				}
 
 				SetAttachment(parent, item, slot);
@@ -361,12 +361,12 @@ class InventoryLocation
 				
 				if (!parent || !item)
 				{
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 #ifdef SERVER
 					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "CARGO" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
-					break; // parent or item is not in bubble
+					break; // parent or item is possibly not spawned in bubble yet
 				}
 
 				SetCargo(parent, item, idx, row, col, flp);
@@ -381,12 +381,12 @@ class InventoryLocation
 				
 				if (!parent || !item)
 				{
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 #ifdef SERVER
 					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "HANDS" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
-					break; // parent or item is not in bubble
+					break; // parent or item is possibly not spawned in bubble yet
 				}
 
 				SetHands(parent, item);
@@ -409,12 +409,12 @@ class InventoryLocation
 				
 				if (!parent || !item)
 				{
-#ifdef DIAG_DEVELOPER
+#ifdef ENABLE_LOGGING
 #ifdef SERVER
 					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "PROXYCARGO" , "n/a", "ReadFromContext", this.ToString() );
 #endif
 #endif
-					break; // parent or item is not in bubble
+					break; // parent or item is possibly not spawned in bubble yet
 				}
 
 				SetProxyCargo(parent, item, idx, row, col, flp);

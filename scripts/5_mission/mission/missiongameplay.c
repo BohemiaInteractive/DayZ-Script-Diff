@@ -354,9 +354,13 @@ class MissionGameplay extends MissionBase
 			if (GetGame().GetUIManager().IsMenuOpen(MENU_RADIAL_QUICKBAR))
 			{
 				RadialQuickbarMenu.CloseMenu();
-				RadialQuickbarMenu.SetItemToAssign( NULL );
-				AddActiveInputExcludes({"inventory"});
-				AddActiveInputRestriction(EInputRestrictors.INVENTORY);
+				RadialQuickbarMenu.SetItemToAssign(NULL);
+				
+				if (GetGame().GetUIManager().IsMenuOpen(MENU_INVENTORY))
+				{
+					AddActiveInputExcludes({"inventory"});
+					AddActiveInputRestriction(EInputRestrictors.INVENTORY);
+				}
 			}
 		}
 		

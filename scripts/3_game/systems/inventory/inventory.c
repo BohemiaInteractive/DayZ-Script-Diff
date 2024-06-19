@@ -720,7 +720,7 @@ class GameInventory
 			return true;
 		
 		bool ret_val = AddInventoryReservation(item, dst, timeout_ms);
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			DayZPlayer player = GetGame().GetPlayer();
@@ -743,7 +743,7 @@ class GameInventory
 			return true;
 		
 		bool ret_val = ExtendInventoryReservation(item,dst,timeout_ms);
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			DayZPlayer player = GetGame().GetPlayer();
@@ -766,7 +766,7 @@ class GameInventory
 			return true;
 		
 		bool ret_val = ClearInventoryReservation(item,dst);
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			DayZPlayer player = GetGame().GetPlayer();

@@ -48,6 +48,25 @@ class WorldData
 		else
 			return ( ( ( monthday - 8 ) * ( m_Sunset_Jan - m_Sunset_Jul ) ) / ( 13 - 8 ) ) + m_Sunset_Jul;
 	}
+	
+	int GetDaytime()
+	{
+		int year, month, day, hour, minute;
+		GetGame().GetWorld().GetDate(year, month, day, hour, minute);
+
+		float sunriseTimeStart = g_Game.GetMission().GetWorldData().GetApproxSunriseTime(month);
+		float sunsetTimeStart = g_Game.GetMission().GetWorldData().GetApproxSunsetTime(month);
+
+		if (hour >= sunriseTimeStart && hour < (sunriseTimeStart + 2))
+			return WorldDataDaytime.DAWN;
+		else if (hour >= (sunriseTimeStart + 2) && hour < sunsetTimeStart)
+			return WorldDataDaytime.DAY;
+		else if (hour >= sunsetTimeStart && hour < (sunsetTimeStart + 2))
+			return WorldDataDaytime.DUSK;
+			
+		return WorldDataDaytime.NIGHT;
+	}
+
 	protected float CalcBaseEnvironmentTemperature( float monthday, float daytime )
 	{
 		float approxSunrise = GetApproxSunriseTime( monthday );
@@ -149,3 +168,29 @@ class WorldData
 		}
 	}
 };
+
+class WorldDataDaytime
+{
+	static int ANY		= -1;
+	static int NIGHT 	= 0;
+	static int DAY 		= 1;
+	static int DUSK		= 2;
+	static int DAWN		= 3;
+	
+	static string ToString(int value)
+	{
+		switch (value)
+		{
+			case NIGHT:
+				return "NIGHT";
+			case DAY:
+				return "DAY";
+			case DUSK:
+				return "DUSK";
+			case DAWN:
+				return "DAWN";
+		}
+		
+		return "ANYTIME";
+	}
+}

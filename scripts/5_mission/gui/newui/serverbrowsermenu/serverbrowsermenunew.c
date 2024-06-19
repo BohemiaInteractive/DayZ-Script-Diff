@@ -583,7 +583,8 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			
 			string ip = m_SelectedServer.GetIP();
 			int port = m_SelectedServer.GetPort();
-			g_Game.ConnectFromServerBrowser(ip, port, "");
+			int steamQueryPort = m_SelectedServer.GetSteamQueryPort();
+			g_Game.ConnectFromServerBrowserEx(ip, port, steamQueryPort, "");
 		}
 	}
 	

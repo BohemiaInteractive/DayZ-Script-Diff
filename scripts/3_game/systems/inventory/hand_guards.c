@@ -26,7 +26,7 @@ class HandGuardAnd extends HandGuardBase
 	{
 		bool result = m_arg0.GuardCondition(e) && m_arg1.GuardCondition(e);
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - " + m_arg0.Type() + " && " + m_arg1.Type(), "HandGuardAnd" , "n/a", "GuardCondition", e.m_Player.ToString() );
@@ -47,7 +47,7 @@ class HandGuardNot extends HandGuardBase
 	{
 		bool result = !m_arg0.GuardCondition(e);
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - " + m_arg0.Type(), "HandGuardNot" , "n/a", "GuardCondition", e.m_Player.ToString() );
@@ -68,7 +68,7 @@ class HandGuardOr extends HandGuardBase
 	{
 		bool result = m_arg0.GuardCondition(e) || m_arg1.GuardCondition(e);
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - " + m_arg0.Type() + " || " + m_arg1.Type(), "HandGuardOr" , "n/a", "GuardCondition", e.m_Player.ToString() );
@@ -88,7 +88,7 @@ class HandGuardHasItemInEvent extends HandGuardBase
 		EntityAI eai = e.GetSrcEntity();
 		if (eai != NULL /* && CanTakeInHands*/)
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("GuardCondition result: true - " + eai, "HandGuardHasItemInEvent" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -97,7 +97,7 @@ class HandGuardHasItemInEvent extends HandGuardBase
 			return true;
 		}
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: false - " + eai, "HandGuardHasItemInEvent" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -123,7 +123,7 @@ class HandGuardHasWeaponInEvent extends HandGuardHasItemInEvent
 				result = true;
 			}
 		}
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result,"HandGuardHasWeaponInEvent", "n/a", "GuardCondition", e.m_Player.ToString() );
@@ -146,7 +146,7 @@ class HandGuardIsSameItemInHands extends HandGuardBase
 			result = true;
 		}
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - srcItem = " + e.GetSrcEntity() + " hnd= " + m_Player.GetHumanInventory().GetEntityInHands(), "HandGuardIsSameItemInHands" , "n/a", "GuardCondition", e.m_Player.ToString() );
@@ -168,7 +168,7 @@ class HandGuardHasDestroyedItemInHands extends HandGuardBase
 		{
 			if (e.GetSrcEntity() == hnd)
 			{
-				#ifdef DEVELOPER
+				#ifdef ENABLE_LOGGING
 				if ( LogManager.IsInventoryHFSMLogEnable() )
 				{	
 					Debug.InventoryHFSMLog("GuardCondition result: true - has same entity in hands " + hnd, "HandGuardHasDestroyedItemInHands" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -179,7 +179,7 @@ class HandGuardHasDestroyedItemInHands extends HandGuardBase
 
 			if (hnd == null)
 			{
-				#ifdef DEVELOPER
+				#ifdef ENABLE_LOGGING
 				if ( LogManager.IsInventoryHFSMLogEnable() )
 				{	
 					Debug.InventoryHFSMLog("GuardCondition result: true - hands already empty", "HandGuardHasDestroyedItemInHands" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -190,7 +190,7 @@ class HandGuardHasDestroyedItemInHands extends HandGuardBase
 		}
 		else
 		{
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("GuardCondition result: true - hands already empty and item destroyed", "HandGuardHasDestroyedItemInHands" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -198,7 +198,7 @@ class HandGuardHasDestroyedItemInHands extends HandGuardBase
 			#endif
 			return true;
 		}
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: false -  destroyed entity not in hands", "HandGuardHasDestroyedItemInHands" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -221,7 +221,7 @@ class HandGuardHasItemInHands extends HandGuardBase
 			result = true;
 		}
 
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - " + m_Player.GetHumanInventory().GetEntityInHands(), "HandGuardHasItemInHands" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -249,7 +249,7 @@ class HandGuardHasRoomForItem extends HandGuardBase
 
 			if (!GameInventory.LocationTestAddEntity(e.GetDst(), false, true, true, true, true, false))
 			{
-				#ifdef DEVELOPER
+				#ifdef ENABLE_LOGGING
 				if ( LogManager.IsInventoryHFSMLogEnable() )
 				{	
 					Debug.InventoryHFSMLog("GuardCondition result: false - no room at dst=" + InventoryLocation.DumpToStringNullSafe(e.GetDst()), "HandGuardHasRoomForItem" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -267,7 +267,7 @@ class HandGuardHasRoomForItem extends HandGuardBase
 					m_Player.GetHumanInventory().AddInventoryReservationEx(e.GetDst().GetItem(), e.GetDst(), GameInventory.c_InventoryReservationTimeoutShortMS);
 			}
 			
-			#ifdef DEVELOPER
+			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
 			{	
 				Debug.InventoryHFSMLog("GuardCondition result: true", "HandGuardHasRoomForItem" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -276,7 +276,7 @@ class HandGuardHasRoomForItem extends HandGuardBase
 			return true;
 		}
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: false - e.m_Dst is null", "HandGuardHasRoomForItem" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -302,7 +302,7 @@ class HandGuardCanMove extends HandGuardBase
 			result = GameInventory.LocationCanMoveEntity(es.GetSrc(), es.GetDst());
 		}
 
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardCanMove" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -328,7 +328,7 @@ class HandGuardCanSwap extends HandGuardBase
 			result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
 		}
 
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardCanSwap" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -359,7 +359,7 @@ class HandGuardCanForceSwap extends HandGuardBase
 			}
 		}
 		
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardCanForceSwap" , "n/a", "GuardCondition", m_Player.ToString() );
@@ -391,7 +391,7 @@ class HandGuardInstantForceSwap extends HandGuardBase
 			}
 		}
 
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if (LogManager.IsInventoryHFSMLogEnable())
 		{	
 			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardInstantForceSwap" , "n/a", "GuardCondition", m_Player.ToString() );

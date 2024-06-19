@@ -719,7 +719,7 @@ class CGame
 	bool	AddInventoryJunctureEx(Man player, notnull EntityAI item, InventoryLocation dst, bool test_dst_occupancy, int timeout_ms)
 	{
 		bool result = AddInventoryJuncture(player, item, dst, test_dst_occupancy, timeout_ms/*10000000*/);
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			Debug.InventoryReservationLog("STS = " + player.GetSimulationTimeStamp() + " result: " + result + " item:" + item + " dst: " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "AddInventoryJuncture",player.ToString() );	
@@ -739,7 +739,7 @@ class CGame
 	
 	bool	ClearJunctureEx(Man player, notnull EntityAI item)
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			Debug.InventoryReservationLog("STS = " + player.GetSimulationTimeStamp()+ " item:" + item, "n/a" , "n/a", "ClearJuncture",player.ToString() );	

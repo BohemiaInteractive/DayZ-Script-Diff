@@ -34,7 +34,7 @@ bool TryAcquireInventoryJunctureFromServer (notnull Man player, notnull Inventor
 
 bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull InventoryLocation src1, notnull InventoryLocation src2, notnull InventoryLocation dst1, notnull InventoryLocation dst2)
 {
-	#ifdef DEVELOPER
+	#ifdef ENABLE_LOGGING
 	if ( LogManager.IsInventoryReservationLogEnable() )
 	{
 		Debug.InventoryReservationLog("STS = " + player.GetSimulationTimeStamp() + " src1:" + src1.DumpToString() + " dst1: " + dst1.DumpToString()+ " src2:" + src2.DumpToString() + " dst2: " + dst2.DumpToString(), "InventoryJuncture" , "n/a", "TryAcquireTwoInventoryJuncturesFromServer",player.ToString() );	
@@ -62,7 +62,7 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 			
 			if (!GetGame().AddInventoryJunctureEx(player, src1.GetItem(), dst1, false, GameInventory.c_InventoryReservationTimeoutMS))
 			{
-				/*#ifdef DEVELOPER
+				/*#ifdef ENABLE_LOGGING
 				if ( LogManager.IsInventoryReservationLogEnable() )
 				{
 					Debug.InventoryMoveLog("", "SWAP" , "n/a", "TryAcquireTwoInventoryJuncturesFromServer", player.ToString() );
@@ -104,7 +104,7 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 	}
 	else
 	{
-		#ifdef DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
 			Debug.InventoryMoveLog("Remote - skipped", "SWAP" , "n/a", "ProcessInputData", player.ToString() );
