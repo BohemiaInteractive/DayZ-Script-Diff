@@ -704,39 +704,41 @@
                 {
                     "SectionName": "#localization_team",
                     "SectionLines": [
-                        "Andrea Luciano Damico",
-                        "Andrew Zhu",
-                        "Artemiy Mikheev",
-                        "Aya Pickard",
-                        "Bartosz Klofik",
-						"Carmen Simio",
                         "Curri Barceló",
-                        "David Livingstone",
-                        "Dmitry Kornyukhov",
-						"Doris Liang",
-						"Eliška Boudová",
-                        "Felix Tappe",
-                        "Fernando Moreiras",
-                        "Goulven Le Goff",
-                        "Igor Savenkov",
-                        "Jiří Petrů",
-						"Joanna Kinga Král",
-                        "Lincoln Hui",
-						"Liu Dasheng",
-                        "Loek van Kooten",
-                        "Mathilde Sperduto",
-                        "Marco Piccinnu",
-                        "Martin Kořenek",
-                        "Paolo Panena",
-                        "Ramón Méndez",
-                        "Rafael Galhardi",
-                        "Raphaël Rouby",
-                        "Rumi Tasaki",
+                        "Eliška Boudová",
+                        "Sergiy Butkov",
                         "Sara Cascianelli",
-                        "Scott Liang",
+                        "Andrea Luciano Damico",
+                        "Liu Dasheng",
+                        "Rafael Galhardi",
                         "Thiago Hilger",
+                        "Lincoln Hui",
+                        "Bartosz Klofik",
+                        "Dmitry Kornyukhov",
+                        "Joanna Kinga Král",
+                        "Martin Kořenek",
+                        "Goulven Le Goff",
+                        "Doris Liang",
+                        "Scott Liang",
+                        "David Livingstone",
+                        "Ramón Méndez",
+                        "Artemiy Mikheev",
+                        "Fernando Moreiras",
+                        "Paolo Panena",
+                        "Jiří Petrů",
+                        "Marco Piccinnu",
+                        "Aya Pickard",
+                        "Raphaël Rouby",
+                        "Igor Savenkov",
+                        "Vojtěch Schubert",
+                        "Carmen Simio",
+                        "Mathilde Sperduto",
+                        "Felix Tappe",
+                        "Rumi Tasaki",
+                        "Loek van Kooten",
                         "Tobiáš Zíka",
-                        "Vojtěch Schubert"
+                        "Aleksandra Zrebiec"
+
                     ]
                 }
             ]
@@ -747,9 +749,9 @@
                 {
                     "SectionName": "#localization_team",
                     "SectionLines": [
-                        "Andrew Zhu",
+                        "William Wang",
                         "Sibel Wu",
-                        "William Wang"
+                        "Andrew Zhu"
                     ]
                 }
             ]
@@ -1194,6 +1196,12 @@
                     "SectionName": "Data compression by oberhumer.com",
                     "SectionLines": [
                         ""
+                    ]
+                },
+                {
+                    "SectionName": "Payday Masks",
+                    "SectionLines": [
+                        "Copyright (c) 2024 Starbreeze AB (publ)"
                     ]
                 },
                 {

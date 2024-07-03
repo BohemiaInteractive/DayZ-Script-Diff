@@ -1271,9 +1271,10 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("DirtBikeHelmet_Visor",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_visor.anm");
 		pType.AddItemInHandsProfileIK("DirtBikeHelmet_Mouthguard",		"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dirtbike_mouthguard.anm");
 		pType.AddItemInHandsProfileIK("NioshFaceMask",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/nioshface_mask.anm");
-		pType.AddItemInHandsProfileIK("DallasMask",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm");
-		pType.AddItemInHandsProfileIK("HoxtonMask",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm");
-		pType.AddItemInHandsProfileIK("WolfMask",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm");
+		pType.AddItemInHandsProfileIK("PaydayMask_Dallas",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm");
+		pType.AddItemInHandsProfileIK("PaydayMask_Hoxton",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm");
+		pType.AddItemInHandsProfileIK("PaydayMask_Wolf",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm");
+		pType.AddItemInHandsProfileIK("PaydayMask_Chains",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/dallas_mask.anm");
 		pType.AddItemInHandsProfileIK("AviatorGlasses",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/aviators_glasses.anm");
 		pType.AddItemInHandsProfileIK("ThinFramesGlasses",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/aviators_glasses.anm");
 		pType.AddItemInHandsProfileIK("ThickFramesGlasses",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/aviators_glasses.anm");
