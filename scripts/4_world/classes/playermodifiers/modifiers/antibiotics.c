@@ -1,16 +1,18 @@
-class AntibioticsMdfr: ModifierBase
+class AntibioticsMdfr : ModifierBase
 {
+	const int ANTIBIOTICS_LIFETIME 		= 300;
+	const float ANTIBIOTICS_STRENGTH 	= 1;
+
 	float m_RegenTime;
-	const int ANTIBIOTICS_LIFETIME = 300;
-	const float ANTIBIOTICS_STRENGTH = 1;
 	
 	override void Init()
 	{
-		m_TrackActivatedTime = true;
-		m_IsPersistent = true;
+		m_TrackActivatedTime 	= true;
+		m_IsPersistent 			= true;
 		m_ID 					= eModifiers.MDF_ANTIBIOTICS;
 		m_TickIntervalInactive 	= DEFAULT_TICK_TIME_INACTIVE;
 		m_TickIntervalActive 	= 3;
+
 		m_RegenTime = ANTIBIOTICS_LIFETIME;
 		
 		DisableActivateCheck();
@@ -31,48 +33,35 @@ class AntibioticsMdfr: ModifierBase
 		return (ANTIBIOTICS_LIFETIME - GetAttachedTime()).ToString();
 	}
 
-	
 	override string GetDebugTextSimple()
 	{
-	return (ANTIBIOTICS_LIFETIME - GetAttachedTime()).ToString();
+		return (ANTIBIOTICS_LIFETIME - GetAttachedTime()).ToString();
 	}
 	
 	override void OnActivate(PlayerBase player)
 	{
 		player.IncreaseHealingsCount();
-		player.IncreaseAntibioticsCount();
-		/*
-		if ( player.GetNotifiersManager() )
-			player.GetNotifiersManager().ActivateByType(eNotifiers.NTF_PILLS);
-		*/
+		player.AddMedicalDrugsInUse(EMedicalDrugsType.ANTIBIOTICS);
 	}
 	
 	override void OnDeactivate(PlayerBase player)
 	{
 		player.DecreaseHealingsCount();
-		player.DecreaseAntibioticsCount();
-		/*
-		if ( player.GetNotifiersManager() )
-			player.GetNotifiersManager().DeactivateByType(eNotifiers.NTF_PILLS);
-		*/
+		player.RemoveMedicalDrugsInUse(EMedicalDrugsType.ANTIBIOTICS);
 	}
 	
 	override bool DeactivateCondition(PlayerBase player)
 	{
-		float attached_time = GetAttachedTime();
+		float attachedTime = GetAttachedTime();
 		
-		if ( attached_time >= m_RegenTime )
-		{
+		if (attachedTime >= m_RegenTime)
 			return true;
-		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	override void OnTick(PlayerBase player, float deltaT)
 	{
-		player.AntibioticsAttack( ANTIBIOTICS_STRENGTH * deltaT );
+		player.m_AgentPool.DrugsAttack(EMedicalDrugsType.ANTIBIOTICS, ANTIBIOTICS_STRENGTH * deltaT);
 	}
-};
+}

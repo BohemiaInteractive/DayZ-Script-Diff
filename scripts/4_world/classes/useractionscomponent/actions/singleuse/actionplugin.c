@@ -50,11 +50,21 @@ class ActionPlugIn: ActionSingleUseBase
 			
 			action_data.m_MainItem.GetCompEM().PlugThisInto(targetIB);
 		
-			if (!action_data.m_Player.IsPlacingServer())
+			if (!g_Game.IsDedicatedServer())
 			{
-				action_data.m_Player.PlacingStartServer(action_data.m_MainItem);
-
-				Process(action_data);
+				if (!action_data.m_Player.IsPlacingLocal())
+				{
+					action_data.m_Player.PlacingStartLocal(action_data.m_MainItem);
+					Process(action_data);
+				}
+			}
+			else
+			{
+				if (!action_data.m_Player.IsPlacingServer())
+				{
+					action_data.m_Player.PlacingStartServer(action_data.m_MainItem);
+					Process(action_data);
+				}
 			}
 		}
 	}
@@ -69,7 +79,7 @@ class ActionPlugIn: ActionSingleUseBase
 	override void OnExecuteClient(ActionData action_data)
 	{	
 		if (!action_data.m_Player.IsPlacingLocal())
-			action_data.m_Player.TogglePlacingLocal();
+			action_data.m_Player.PlacingStartLocal(action_data.m_MainItem);
 		else
 			Process(action_data);
 	}

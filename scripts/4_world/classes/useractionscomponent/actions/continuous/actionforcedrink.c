@@ -22,7 +22,7 @@ class ActionForceDrink: ActionForceConsume
 		m_ConditionTarget = new CCTMan(UAMaxDistances.DEFAULT);
 		m_ConditionItem = new CCINonRuined;
 	}
-	
+		
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		if (!super.ActionCondition( player, target, item))
@@ -36,6 +36,11 @@ class ActionForceDrink: ActionForceConsume
 			return false;
 	}
 	
+	override protected void PlaySound(PlayerBase player)
+	{
+		if (player)
+			player.RequestSoundEventEx(EPlayerSoundEventID.FORCE_DRINK);
+	}
 };
 	
 	

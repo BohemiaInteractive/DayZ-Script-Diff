@@ -41,19 +41,23 @@ class ActionCloseFence: ActionInteractBase
 
 	override void OnStartServer( ActionData action_data )
 	{
+		super.OnStartServer(action_data);
+		
 		Fence fence = Fence.Cast( action_data.m_Target.GetObject() );
 		fence.CloseFence();
 	}
 	
 	override void OnEndServer( ActionData action_data )
 	{
+		super.OnEndServer(action_data);
+		
 		m_NoisePar = new NoiseParams();
 		m_NoisePar.LoadFromPath("CfgVehicles SurvivorBase NoiseActionDefault");
 		NoiseSystem noise = GetGame().GetNoiseSystem();
 		if ( noise )
 		{
 			if ( action_data.m_Player )
-				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar);
+				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
 		}
 	}
 }

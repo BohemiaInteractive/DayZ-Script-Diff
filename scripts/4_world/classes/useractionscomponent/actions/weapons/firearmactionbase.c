@@ -67,4 +67,35 @@ class FirearmActionBase : ActionBase
 	{
 		return -1;
 	}
+	
+	override bool AddActionJuncture(ActionData action_data)
+	{
+		bool accepted;
+		accepted = super.AddActionJuncture(action_data);
+		
+		Weapon_Base wpn = Weapon_Base.Cast(action_data.m_MainItem);
+		
+				
+		if (wpn)
+		{
+			Magazine mag = wpn.GetMagazine(wpn.GetCurrentMuzzle());
+			
+			if (mag)
+			{
+				InventoryLocation magIl = new InventoryLocation();
+				mag.GetInventory().GetCurrentInventoryLocation(magIl);
+			
+				if (!GetGame().AddInventoryJunctureEx(action_data.m_Player, mag, magIl, true, 10000))
+				{
+						accepted = false;
+						ClearActionJuncture(action_data);
+				}
+				else
+				{
+					action_data.m_ReservedInventoryLocations.Insert(magIl);
+				}
+			}
+		}
+		return accepted;
+	}
 }

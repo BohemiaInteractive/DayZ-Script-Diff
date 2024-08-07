@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionCheckPulse: ActionInteractBase
 {
 	const int TARGET_IRREGULAR_PULSE_BIT = 1 << 31;
@@ -96,6 +97,8 @@ class ActionCheckPulse: ActionInteractBase
 	
 	override void OnEndServer( ActionData action_data )
 	{
+		super.OnEndServer(action_data);
+		
 		/*
 		PlayerBase target_player = PlayerBase.Cast(action_data.m_Target.GetObject());
 		PlayerBase player = action_data.m_Player;

@@ -1,16 +1,53 @@
+//extendable!
+class LiquidInfo
+{
+	string m_LiquidClassName;
+	string m_LiquidDisplayName;
+	int m_LiquidType;
+	float m_TemperatureLiquidFreezeThreshold = float.LOWEST;
+	float m_TemperatureLiquidThawThreshold = float.LOWEST;
+	float m_TemperatureLiquidBoilThreshold = Cooking.LIQUID_BOILING_POINT;
+	float m_Flammability;
+	
+	ref NutritionalProfile m_NutriProfile;
+	
+	void LiquidInfo(string className, NutritionalProfile profile)
+	{
+		m_NutriProfile = profile;
+		Init(className);
+	}
+	
+	protected void Init(string className)
+	{
+		string path = "cfgLiquidDefinitions " + className;
+		m_LiquidClassName = className;
+		GetGame().ConfigGetTextRaw(string.Format("%1 displayName", path), m_LiquidDisplayName);
+		GetGame().FormatRawConfigStringKeys(m_LiquidDisplayName);
+		m_LiquidType = GetGame().ConfigGetInt(string.Format("%1 type", path));
+		if (GetGame().ConfigIsExisting(string.Format("%1 liquidFreezeThreshold", path)))
+			m_TemperatureLiquidFreezeThreshold = GetGame().ConfigGetFloat(string.Format("%1 liquidFreezeThreshold", path));
+		if (GetGame().ConfigIsExisting(string.Format("%1 liquidThawThreshold", path)))
+			m_TemperatureLiquidThawThreshold = GetGame().ConfigGetFloat(string.Format("%1 liquidThawThreshold", path));
+		if (GetGame().ConfigIsExisting(string.Format("%1 liquidBoilingThreshold", path)))
+			m_TemperatureLiquidBoilThreshold = GetGame().ConfigGetFloat(string.Format("%1 liquidBoilingThreshold", path));
+		m_Flammability = GetGame().ConfigGetFloat(string.Format("%1 flammability", path));
+	}
+}
+
 class Liquid
 {
-	static ref map<int, ref NutritionalProfile> m_AllLiquidsByType = new map<int, ref NutritionalProfile>;
-	static ref map<string, ref NutritionalProfile> m_AllLiquidsByName = new map<string, ref NutritionalProfile>;
-	
+	static ref map<int, ref NutritionalProfile> m_AllLiquidsByType = new map<int, ref NutritionalProfile>; //DEPRECATED!
+	static ref map<string, ref NutritionalProfile> m_AllLiquidsByName = new map<string, ref NutritionalProfile>; //DEPRECATED!
+	static ref map<int, ref LiquidInfo> m_LiquidInfosByType = new map<int, ref LiquidInfo>;
+	static ref map<string, ref LiquidInfo> m_LiquidInfosByName = new map<string, ref LiquidInfo>;
 	static bool m_Init = InitAllLiquids();
 	
 	static string GetLiquidClassname(int liquid_type)
 	{
-		NutritionalProfile liquid = m_AllLiquidsByType.Get(liquid_type);
-		if (liquid)
+		LiquidInfo info = m_LiquidInfosByType.Get(liquid_type);
+		if (info)
 		{
-			return liquid.GetLiquidClassname();
+			return info.m_LiquidClassName;
 		}
 		
 		return "";
@@ -28,9 +65,15 @@ class Liquid
 			GetGame().ConfigGetChildName(cfg_classname, i, liquid_class_name);
 			string liquid_full_path = string.Format("%1 %2",cfg_classname, liquid_class_name);
 			int config_liquid_type = GetGame().ConfigGetInt(string.Format("%1 type", liquid_full_path));
-			m_AllLiquidsByType.Insert(config_liquid_type, SetUpNutritionalProfile(config_liquid_type, liquid_class_name));
-			m_AllLiquidsByName.Insert(liquid_class_name, SetUpNutritionalProfile(config_liquid_type, liquid_class_name));
 			
+			NutritionalProfile profile = SetUpNutritionalProfile(config_liquid_type, liquid_class_name);
+			LiquidInfo info = new LiquidInfo(liquid_class_name, profile);
+			m_LiquidInfosByType.Insert(config_liquid_type, info);
+			m_LiquidInfosByName.Insert(liquid_class_name, info);
+			
+			//legacy stuff
+			m_AllLiquidsByType.Insert(config_liquid_type, profile);
+			m_AllLiquidsByName.Insert(liquid_class_name, profile);
 		}
 		return true;
 	}
@@ -41,26 +84,12 @@ class Liquid
 		if (!Liquid.CanTransfer(source_ent, target_ent))
 			return;
 		
-		ItemBase source = source_ent;
-		ItemBase target = target_ent;
+		float source_quantity 	= source_ent.GetQuantity();
+		float target_quantity 	= target_ent.GetQuantity();
+		float targetCfgWeight 	= target_ent.m_ConfigWeight;
+		int source_liquid_type 	= source_ent.GetLiquidType();
 		
-//		Debug.Log("Transfer, source:"+source.ToString()+" target: "+target.ToString(), "LiquidTransfer");
-		
-		float source_quantity 	= source.GetQuantity();
-		float target_quantity 	= target.GetQuantity();
-		int source_liquid_type 	= source.GetLiquidType();
-		int target_liquid_type 	= target.GetLiquidType();
-		int target_mask 		= target_ent.ConfigGetFloat("liquidContainerType");
-		int source_mask 		= source_ent.ConfigGetFloat("liquidContainerType");
-		
-		float available_capacity = target.GetQuantityMax() - target_quantity;
-		
-//		Debug.Log("target_mask ="+target_mask.ToString(), "LiquidTransfer");
-//		Debug.Log("source_mask ="+source_mask.ToString(), "LiquidTransfer");
-//		Debug.Log("source_liquid_type ="+source_liquid_type.ToString(), "LiquidTransfer");
-//		Debug.Log("target_liquid_type ="+target_liquid_type.ToString(), "LiquidTransfer");
-		
-		//target.GetBloodType(source_liquid_type);//override target liquidType
+		float available_capacity = target_ent.GetQuantityMax() - target_quantity;
 		float quantity_to_transfer;
 		//transfers all
 		if (quantity == -1)
@@ -73,11 +102,13 @@ class Liquid
 			quantity_to_transfer = Math.Clamp(Math.Min(source_quantity,quantity),0,available_capacity);
 		}
 		
-		//target.AddQuantity(quantity_to_transfer);
 		PluginTransmissionAgents m_mta = PluginTransmissionAgents.Cast(GetPlugin(PluginTransmissionAgents));
 		m_mta.TransmitAgents(source_ent, target_ent, AGT_TRANSFER_COPY);
 		
-		source.AddQuantity(-quantity_to_transfer);
+		source_ent.AddQuantity(-quantity_to_transfer);
+		
+		float retultTemp = (source_ent.GetTemperature() * quantity_to_transfer + target_ent.GetTemperature() * (targetCfgWeight + target_quantity)) / (targetCfgWeight + target_quantity + quantity_to_transfer);
+		target_ent.SetTemperature(retultTemp);
 		
 		Liquid.FillContainer(target_ent,source_liquid_type,quantity_to_transfer);
 	}
@@ -87,20 +118,12 @@ class Liquid
 		if (!source_ent || !target_ent)
 			return false;
 		
-		if (!source_ent.IsItemBase() || !target_ent.IsItemBase())
-		{
-			//Debug.Log("One of the Items is not of ItemBase type", "LiquidTransfer");
-			return false;
-		}
-
 		Barrel_ColorBase barrelTarget = Barrel_ColorBase.Cast(target_ent);
 		Barrel_ColorBase barrelSource = Barrel_ColorBase.Cast(source_ent);
 		if ((barrelTarget && !barrelTarget.IsOpen()) || (barrelSource && !barrelSource.IsOpen()))
 		{
 			return false;
 		}
-		
-		
 		
 		float source_quantity = source_ent.GetQuantity();
 		if (source_quantity <= 0)
@@ -121,9 +144,9 @@ class Liquid
 			return false;
 		}
 		
-		
 		return true;
 	}
+	
 	static void FillContainer(ItemBase container, int liquid_type, float amount)
 	{
 		if (!CanFillContainer(container,liquid_type))
@@ -132,18 +155,63 @@ class Liquid
 		}
 		//filling
 		container.SetLiquidType(liquid_type);
-		container.AddQuantity(amount); 
-		
+		container.AddQuantity(amount);
 	}
 
-	static void FillContainerEnviro(ItemBase container, int liquid_type, float amount, bool inject_agents = false)
+	static void FillContainerEnviro(ItemBase container, int liquid_type, float amount, bool inject_agents = true)
 	{
-		FillContainer(container,liquid_type,amount);
+		float containerCfgWeight = container.m_ConfigWeight;
+		float retultTemp = (GetLiquidTypeEnviroTemperature(liquid_type) * amount + container.GetTemperature() * (containerCfgWeight + container.GetQuantity())) / (container.GetQuantity() + containerCfgWeight + amount);
+		container.SetTemperature(retultTemp);
+		AffectContainerOnFill(container,liquid_type,amount);
+		
+		FillContainer(container, TranslateLiquidType(liquid_type), amount);
+		
 		if (inject_agents)
 		{
 			PluginTransmissionAgents plugin = PluginTransmissionAgents.Cast(GetPlugin(PluginTransmissionAgents));
-			plugin.TransmitAgents(NULL, container, AGT_WATER_POND, amount);
+			int agtSource;
+			switch (liquid_type)
+			{
+				case LIQUID_FRESHWATER:
+				case LIQUID_RIVERWATER:
+				case LIQUID_STILLWATER:
+					agtSource = AGT_WATER_POND;
+					break;
+				case LIQUID_SNOW:
+					agtSource = AGT_SNOW;
+					break;
+				case LIQUID_HOTWATER:
+					agtSource = AGT_WATER_HOT_SPRING;
+					break;
+				default:
+					agtSource = AGT_NONE;
+					break;
+			}
+			
+			plugin.TransmitAgents(NULL, container, agtSource, amount);
 		}
+	}
+	
+	static void AffectContainerOnFill(ItemBase container, int liquid_type, float amount)
+	{
+		container.AffectLiquidContainerOnFill(liquid_type,amount);
+	}
+	
+	static bool IsLiquidDrinkWater(int liquidType)
+	{
+		if (liquidType & (LIQUID_GROUP_DRINKWATER))
+			return true;
+		return false;
+	}
+	
+	//! Translates 'administrative' liquid types into liquid types with valid config class
+	static int TranslateLiquidType(int liquidType)
+	{
+		if (IsLiquidDrinkWater(liquidType))
+			return LIQUID_WATER;
+		else
+			return liquidType;
 	}
 	
 	static bool CanFillContainer(ItemBase container, int liquid_type, bool ignore_fullness_check = false)
@@ -159,7 +227,7 @@ class Liquid
 			return false;
 			
 		}
-		int container_mask = container.ConfigGetFloat("liquidContainerType");
+		int container_mask = container.GetLiquidContainerMask();
 		
 		if (container_mask == 0)
 		{
@@ -183,6 +251,18 @@ class Liquid
 			return false;
 		}
 		return true;
+	}
+	
+	//! Gets liquid temperature from the enviroment
+	/*!
+		\param[in] liquidType Type of liquid.
+	*/
+	static float GetLiquidTypeEnviroTemperature(int liquidType)
+	{
+		float ret = GetGame().GetMission().GetWorldData().GetLiquidTypeEnviroTemperature(liquidType);
+		//ret = Math.Max(ret,GetLiquidFreezeThreshold(liquidType));
+		
+		return ret;
 	}
 	
 	private static string GetLiquidConfigProperty(int liquid_type, string property_name, bool is_nutrition_property = false)
@@ -217,23 +297,31 @@ class Liquid
 	
 	static NutritionalProfile GetNutritionalProfileByType(int liquid_type)
 	{
-		return m_AllLiquidsByType.Get(liquid_type);
+		LiquidInfo info = m_LiquidInfosByType.Get(liquid_type);
+		if (info && info.m_NutriProfile)
+			return info.m_NutriProfile;
+		
+		return null;
 	}
 	
 	static NutritionalProfile GetNutritionalProfileByName(string class_name)
 	{
-		return m_AllLiquidsByName.Get(class_name);
+		LiquidInfo info = m_LiquidInfosByName.Get(class_name);
+		if (info && info.m_NutriProfile)
+			return info.m_NutriProfile;
+		
+		return null;
 	}
 	
 	static NutritionalProfile SetUpNutritionalProfile(int liquid_type, string liquid_class_name)
 	{
-		float energy = GetEnergy(liquid_type);
-		float nutritional_index = GetNutritionalIndex(liquid_type);
-		float volume = GetFullness(liquid_type);
-		float water_content = GetWaterContent(liquid_type);
-		float toxicity = GetToxicity(liquid_type);
-		int agents = GetAgents(liquid_type);
-		float digest = GetDigestibility(liquid_type);
+		float energy = Liquid.GetLiquidConfigProperty(liquid_type, "energy", true).ToFloat();
+		float nutritional_index = Liquid.GetLiquidConfigProperty(liquid_type, "nutritionalIndex", true).ToFloat();
+		float volume = Liquid.GetLiquidConfigProperty(liquid_type, "fullnessIndex", true).ToFloat();
+		float water_content = Liquid.GetLiquidConfigProperty(liquid_type, "water", true).ToFloat();
+		float toxicity = Liquid.GetLiquidConfigProperty(liquid_type, "toxicity", true).ToFloat();
+		int agents = Liquid.GetLiquidConfigProperty(liquid_type, "agents", true).ToInt();
+		float digest = Liquid.GetLiquidConfigProperty(liquid_type, "digestibility", true).ToFloat();
 		NutritionalProfile profile = new NutritionalProfile(energy, water_content, nutritional_index, volume, toxicity, agents, digest);
 		profile.MarkAsLiquid(liquid_type, liquid_class_name);
 		return profile;
@@ -241,47 +329,69 @@ class Liquid
 	
 	static int GetAgents(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "agents", true).ToInt();
+		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetAgents();
 	}
 	
 	static float GetToxicity(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "toxicity", true).ToFloat();
+		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetToxicity();
 	}
 	
 	static float GetWaterContent(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "water", true).ToFloat();
+		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetWaterContent();
 	}
 	
 	static float GetEnergy(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "energy", true).ToFloat();
+		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetEnergy();
 	}
 	
 	static float GetNutritionalIndex(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "nutritionalIndex", true).ToFloat();
+		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetNutritionalIndex();
 	}
 	
-	static string GetName(int liquid_type)
+	static string GetDisplayName(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "name");
+		return m_LiquidInfosByType.Get(liquid_type).m_LiquidDisplayName;
 	}
 	
 	static float GetFlammability(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "flammability").ToFloat();
+		return m_LiquidInfosByType.Get(liquid_type).m_Flammability;
 	}
 	
 	static float GetFullness(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "fullnessIndex", true).ToFloat();
+		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetFullnessIndex();
 	}
 	
 	static float GetDigestibility(int liquid_type)
 	{
-		return Liquid.GetLiquidConfigProperty(liquid_type, "digestibility", true).ToFloat();
+		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetDigestibility();
 	}
 	
+	static float GetFreezeThreshold(int liquid_type)
+	{
+		return m_LiquidInfosByType.Get(liquid_type).m_TemperatureLiquidFreezeThreshold;
+	}
+	
+	static float GetThawThreshold(int liquid_type)
+	{
+		return m_LiquidInfosByType.Get(liquid_type).m_TemperatureLiquidThawThreshold;
+	}
+	
+	static float GetBoilThreshold(int liquid_type)
+	{
+		return m_LiquidInfosByType.Get(liquid_type).m_TemperatureLiquidBoilThreshold;
+	}
+	
+///////////////////////////
+//deprecated methods below
+///////////////////////////
+	static string GetName(int liquid_type)
+	{
+		return Liquid.GetLiquidConfigProperty(liquid_type, "name");
+	}
 };

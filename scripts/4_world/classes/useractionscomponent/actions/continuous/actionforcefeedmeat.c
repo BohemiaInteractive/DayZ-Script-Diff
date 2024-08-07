@@ -6,6 +6,7 @@ class ActionForceFeedMeatCB : ActionContinuousBaseCB
 	}
 };
 
+//!DEPRECATED
 class ActionForceFeedMeat: ActionForceConsume
 {
 	void ActionForceFeedMeat()

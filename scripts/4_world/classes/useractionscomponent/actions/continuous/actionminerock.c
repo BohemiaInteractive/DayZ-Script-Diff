@@ -40,11 +40,6 @@ class ActionMineRock: ActionMineBase
 		return false;
 	}
 	
-	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
-	}
-	
 	override string GetSoundCategory(ActionData action_data)
     {
 		ItemBase item = action_data.m_MainItem;

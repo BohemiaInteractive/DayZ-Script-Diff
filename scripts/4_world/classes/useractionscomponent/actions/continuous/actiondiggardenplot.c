@@ -27,7 +27,7 @@ class ActionDigGardenPlot: ActionDeployObject
 		if (!GetGame().IsDedicatedServer())
 		{
 			//Action not allowed if player has broken legs
-			if (player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
+			if (player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS || player.GetInColdArea())
 				return false;
 			
 			if (player.IsPlacingLocal())
@@ -121,6 +121,7 @@ class ActionDigGardenPlot: ActionDeployObject
 		{						
 			m_GardenPlot = GardenPlot.Cast(action_data.m_Player.GetHologramLocal().PlaceEntity(entity_for_placing));
 			m_GardenPlot.SetOrientation(orientation);
+			action_data.m_Player.PlacingCompleteServer();
 			action_data.m_Player.PlacingCompleteLocal();
 			
 			m_GardenPlot.OnPlacementComplete(action_data.m_Player);
@@ -128,11 +129,10 @@ class ActionDigGardenPlot: ActionDeployObject
 		
 		GetGame().ClearJuncture(action_data.m_Player, entity_for_placing);
 		action_data.m_MainItem.SetIsBeingPlaced(false);
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 		poActionData.m_AlreadyPlaced = true;
 		action_data.m_MainItem.SoundSynchRemoteReset();
 		
-		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 10);
+		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 10);
 		
 	}
 };

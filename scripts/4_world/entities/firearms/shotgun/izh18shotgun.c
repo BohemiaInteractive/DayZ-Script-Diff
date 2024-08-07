@@ -19,7 +19,5 @@ class Izh18Shotgun_Base extends RifleSingleShot_Base
 		super.OnDebugSpawn();
 
 	    SpawnEntityOnGroundPos("Ammo_12gaPellets", GetPosition());
-	    SpawnEntityOnGroundPos("Ammo_12gaSlug", GetPosition());
-	    SpawnEntityOnGroundPos("Ammo_12gaRubberSlug", GetPosition());
 	}
 };

@@ -74,6 +74,15 @@ enum CarAutomaticGearboxMode
 };
 
 
+//!	Enumerated car wheel water state. (native, do not change or extend)
+enum CarWheelWaterState
+{
+	ON_LAND,		//!< if the wheel is on or above land 
+	IN_WATER,		//!< if the wheel is partially within some water plane
+	UNDER_WATER		//!< if the wheel is under a water plane
+};
+
+
 
 //!	Base native class for all motorized wheeled vehicles.
 class Car extends Transport
@@ -137,11 +146,6 @@ class Car extends Transport
 		return shape;
 	}
 	
-	override int GetHideIconMask()
-	{
-		return EInventoryIconVisibility.HIDE_VICINITY;
-	}
-
 //-----------------------------------------------------------------------------
 // controls
 
@@ -239,7 +243,7 @@ class Car extends Transport
 
 	/*!
 		Is called every time when the specified vehicle's fluid level
-		changes eg. when car is consuming fuel.
+		changes eg. when vehicle is consuming fuel.
 
 		\param[in] fluid fluid identifier, \see CarFluid
 		\param[in] newValue new fluid level
@@ -330,6 +334,54 @@ class Car extends Transport
 
 	//! Returns true if any of the wheels are locked in terms of its movement.
 	proto native bool WheelIsAnyLocked();
+	/*!
+		Returns the raw angular velocity of the wheel, unstable value
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native float WheelGetAngularVelocity( int wheelIdx );
+	/*!
+		Returns true if given wheel is making any contact
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native bool WheelHasContact( int wheelIdx );
+	/*!
+		Returns the position of contact in world space, only valid if there was an actual contact
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native vector WheelGetContactPosition( int wheelIdx );
+	/*!
+		Returns the normal of contact in world space, only valid if there was an actual contact
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native vector WheelGetContactNormal( int wheelIdx );
+	/*!
+		Returns the direction pointing forwards that the wheel is facing
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native vector WheelGetDirection( int wheelIdx );
+	/*!
+		Returns the surface that the wheel is nearby
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native SurfaceInfo WheelGetSurface( int wheelIdx );
+	/*!
+		Returns the state that the wheel is in with water
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native CarWheelWaterState WheelGetWaterState( int wheelIdx );
+	/*!
+		Returns the entity attached that represents the wheel
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/
+	proto native EntityAI WheelGetEntity( int wheelIdx );
 	/*!
 		Returns true if given wheel is locked in terms of its movement.
 

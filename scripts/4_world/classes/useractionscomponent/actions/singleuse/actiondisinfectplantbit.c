@@ -55,7 +55,5 @@ class ActionDisinfectPlantBit: ActionSingleUseBase
 			Param1<float> nacdata = Param1<float>.Cast( action_data.m_ActionComponent.GetACData() );
 			SendMessageToClient(action_data.m_Player, plant.StopInfestation( nacdata.param1 ));
 		}
-		
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

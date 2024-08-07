@@ -124,27 +124,20 @@ class ActionManagerServer: ActionManagerBase
 
 		if (LogManager.IsActionLogEnable())
 		{
-			Debug.ActionLog("Item = " + item + ", " + target.DumpToString(), pickedAction.ToString() , "n/a", "DeliveredAction", m_Player.ToString());
+			if (target)
+			{
+				Debug.ActionLog("Item = " + item + ", " + target.DumpToString(), pickedAction.ToString() , "n/a", "DeliveredAction", m_Player.ToString());
+			}
+			else
+			{
+				Debug.ActionLog("Item = " + item + ", NULL", pickedAction.ToString() , "n/a", "DeliveredAction", m_Player.ToString());
+			}
 		}
 
 		if (!m_Player.GetCommandModifier_Action() && !m_Player.GetCommand_Action() && !m_Player.IsSprinting() && pickedAction && pickedAction.Can(m_Player,target,item)) 
 		{
-			accepted = true;
-			if (pickedAction.HasTarget())
-			{
-				EntityAI targetEntity;
-				if (EntityAI.CastTo(targetEntity,target.GetObject()))
-				{
-					if (!AdvancedCommunication.Cast(targetEntity) && !Building.Cast(targetEntity) && pickedAction.IsLockTargetOnUse())
-					{
-						//Lock target
-						if (!GetGame().AddActionJuncture(m_Player, targetEntity, 10000))
-						{
-							accepted = false;
-						}
-					}
-				}
-			}
+			if (pickedAction.AddActionJuncture(m_CurrentActionData))
+				accepted = true;
 		}
 		
 		if (accepted)
@@ -188,14 +181,7 @@ class ActionManagerServer: ActionManagerBase
 		//Debug.Log("Action ended - hard, STS = " + m_Player.GetSimulationTimeStamp());
 		if (m_CurrentActionData)
 		{
-			if ( m_CurrentActionData.m_Target )
-			{
-				EntityAI targetEntity;
-				if (targetEntity.CastTo(targetEntity, m_CurrentActionData.m_Target.GetObject()) && !Building.Cast(targetEntity))
-				{
-					GetGame().ClearJuncture(m_CurrentActionData.m_Player, targetEntity);
-				}
-			}
+			m_CurrentActionData.m_Action.ClearActionJuncture(m_CurrentActionData);
 
 			super.OnActionEnd();
 		}
@@ -260,23 +246,6 @@ class ActionManagerServer: ActionManagerBase
 			if (m_CurrentActionData.m_State != UA_AM_PENDING && m_CurrentActionData.m_State != UA_AM_REJECTED && m_CurrentActionData.m_State != UA_AM_ACCEPTED)
 			{
 				m_CurrentActionData.m_Action.OnUpdateServer(m_CurrentActionData);
-				
-				if (m_CurrentActionData.m_RefreshJunctureTimer > 0)
-				{
-					m_CurrentActionData.m_RefreshJunctureTimer--;
-				}
-				else
-				{
-					m_CurrentActionData.m_RefreshJunctureTimer = m_CurrentActionData.m_Action.GetRefreshReservationTimerValue();
-					if (m_CurrentActionData.m_Target)
-					{
-						EntityAI targetEntity;
-						if ( targetEntity.CastTo(targetEntity, m_CurrentActionData.m_Target.GetObject()) && !Building.Cast(targetEntity) )
-						{
-							GetGame().ExtendActionJuncture(m_CurrentActionData.m_Player, targetEntity, 10000);
-						}
-					}
-				}
 			}
 			
 			//Debug.Log("m_CurrentActionData.m_State: " + m_CurrentActionData.m_State +" m_ActionWantEnd: " + m_ActionWantEndRequest );
@@ -288,7 +257,8 @@ class ActionManagerServer: ActionManagerBase
 				case UA_AM_ACCEPTED:
 					// check currentCommandID before start or reject 
 				
-					bool canActionPerform = m_CurrentActionData.m_Action.Can(m_Player, m_CurrentActionData.m_Target, m_CurrentActionData.m_MainItem);
+					int condition_mask = ActionBase.ComputeConditionMask(m_Player, m_CurrentActionData.m_Target, m_CurrentActionData.m_MainItem);
+					bool canActionPerform = ((condition_mask & m_CurrentActionData.m_Action.m_ConditionMask) == condition_mask);
 					if (canActionPerform && ActionPossibilityCheck(currentCommandID))
 					{
 						m_CurrentActionData.m_State = UA_START;

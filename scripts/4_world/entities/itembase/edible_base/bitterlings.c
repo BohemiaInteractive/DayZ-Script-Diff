@@ -20,6 +20,11 @@ class Bitterlings extends Edible_Base
 		return true;
 	}
 	
+	override bool UseConfigInitTemperature()
+	{
+		return true;
+	}	
+	
 	override void SetActions()
 	{
 		super.SetActions();

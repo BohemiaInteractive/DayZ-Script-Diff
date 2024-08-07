@@ -11,8 +11,8 @@ class PresenceNotifierNoiseEvent
 	
 	void PresenceNotifierNoiseEvent(float pValue, float pLength)
 	{
-		m_Value = pValue;
-		m_TimerLength = pLength;
+		m_Value 		= pValue;
+		m_TimerLength 	= pLength;
 	}
 
 	float GetTimerLength()
@@ -30,14 +30,15 @@ class PresenceNotifierNoiseEvents
 {
 	protected int m_Value;
 
-	protected static ref map<EPresenceNotifierNoiseEventType, ref PresenceNotifierNoiseEvent> 	m_PresenceNotifierNotifierEvents;
+	protected static ref map<EPresenceNotifierNoiseEventType, ref PresenceNotifierNoiseEvent> m_PresenceNotifierNotifierEvents;
 	protected ref Timer	m_CooldownTimer;
 	
 	void PresenceNotifierNoiseEvents()
 	{
-		m_Value = 0;
+		m_Value 		= 0;
 		m_CooldownTimer = new Timer(CALL_CATEGORY_SYSTEM);
-		m_PresenceNotifierNotifierEvents = new ref map<EPresenceNotifierNoiseEventType, ref PresenceNotifierNoiseEvent>;
+		
+		m_PresenceNotifierNotifierEvents = new ref map<EPresenceNotifierNoiseEventType, ref PresenceNotifierNoiseEvent>();
 	}
 
 	void RegisterEvent(EPresenceNotifierNoiseEventType pEventType, int pValue, float pLength)
@@ -48,14 +49,10 @@ class PresenceNotifierNoiseEvents
 	
 	void ProcessEvent(EPresenceNotifierNoiseEventType pEventType)
 	{
-		PresenceNotifierNoiseEvent pnne;
-		
-		pnne = m_PresenceNotifierNotifierEvents.Get(pEventType);
+		PresenceNotifierNoiseEvent pnne = m_PresenceNotifierNotifierEvents.Get(pEventType);
 		
 		if (m_CooldownTimer.IsRunning())
-		{
 			m_CooldownTimer.Stop();
-		}
 
 		m_Value = pnne.GetValue();		
 		m_CooldownTimer.Run(pnne.GetTimerLength(), this, "ResetEvent", null);
@@ -73,15 +70,16 @@ class PresenceNotifierNoiseEvents
 }
 
 
-class PluginPresenceNotifier extends PluginBase
+class PluginPresenceNotifier : PluginBase
 {
 	//! dbgUI settings
 	const int windowPosX = 0;
 	const int windowPosY = 10;
+
 	const int mainPanelSizeX = 200;
 	const int mainPanelSizeY = 1;
+
 	const int margin = 10;
-	
 	
 	//! noise limits
 	const int NOISE_LEVEL_MIN			= 0;
@@ -101,7 +99,8 @@ class PluginPresenceNotifier extends PluginBase
 	
 	//! --------------------------------------
 	
-	protected PlayerBase 		m_pPlayer;
+	protected PlayerBase m_pPlayer;
+	protected Weather m_Weather;
 	
 	protected ref PresenceNotifierNoiseEvents m_PresenceNotifierNoiseEvents;
 
@@ -111,12 +110,11 @@ class PluginPresenceNotifier extends PluginBase
 		m_PresenceNotifierNoiseEvents.RegisterEvent(EPresenceNotifierNoiseEventType.LAND_LIGHT, LAND_NOISE_LVL1, 0.25);
 		m_PresenceNotifierNoiseEvents.RegisterEvent(EPresenceNotifierNoiseEventType.LAND_HEAVY, LAND_NOISE_LVL2, 0.25);
 	}
-	
-	void ~PluginPresenceNotifier() {}
-	
+
 	void Init(PlayerBase player)
 	{
 		m_pPlayer = player;
+		m_Weather = GetGame().GetWeather();
 	}
 
 	void EnableDebug(bool pEnabled)
@@ -150,6 +148,11 @@ class PluginPresenceNotifier extends PluginBase
 			DbgUI.Text("Speed:  " + NoiseAIEvaluate.GetNoiseMultiplierByPlayerSpeed(m_pPlayer));
 			DbgUI.Text("Boots: " + NoiseAIEvaluate.GetNoiseMultiplierByShoes(m_pPlayer));
 			DbgUI.Text("Surface: " + NoiseAIEvaluate.GetNoiseMultiplierBySurface(m_pPlayer) + " [ cfg: " + m_pPlayer.GetSurfaceNoise() + "]");
+			DbgUI.Spacer(10);
+			
+			DbgUI.Panel("-- Noise reductions", mainPanelSizeX, 2);
+			DbgUI.Text("Noise reductions: ");
+			DbgUI.Text("Weather: " + NoiseAIEvaluate.GetNoiseReduction(m_Weather));
 			DbgUI.Spacer(10);
 
 			DbgUI.Panel("-- Result", mainPanelSizeX, 2);
@@ -216,9 +219,10 @@ class PluginPresenceNotifier extends PluginBase
 	protected int ProcessNoiseComponents()
 	{
 		float noise = 0;
+		float reduction = 0;
 		if (m_pPlayer)
 		{
-			noise = NoiseAIEvaluate.GetNoiseMultiplier(m_pPlayer);
+			noise = NoiseAIEvaluate.GetNoiseMultiplier(m_pPlayer) * NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather());
 			noise = Math.Round(noise * NOISE_LEVEL_MAX);
 		}
 		
@@ -237,13 +241,13 @@ class PluginPresenceNotifier extends PluginBase
 		{
 			case DayZPlayerConstants.MOVEMENTIDX_RUN:
 				speedCoef = 0.66;
-			break;
+				break;
 			case DayZPlayerConstants.MOVEMENTIDX_WALK:
 				speedCoef = 0.33;
-			break;
+				break;
 			case DayZPlayerConstants.MOVEMENTIDX_IDLE:
 				speedCoef = 0;
-			break;
+				break;
 		}
 		
 		return speedCoef;
@@ -260,12 +264,12 @@ class PluginPresenceNotifier extends PluginBase
 			case DayZPlayerConstants.STANCEIDX_CROUCH:
 			case DayZPlayerConstants.STANCEIDX_RAISEDCROUCH:
 				stanceCoef = 0.33;
-			break;
+				break;
 				
 			case DayZPlayerConstants.STANCEIDX_PRONE:
 			case DayZPlayerConstants.STANCEIDX_RAISEDPRONE:
 				stanceCoef = 0.11;
-			break;
+				break;
 		}
 		
 		return stanceCoef;

@@ -1150,7 +1150,7 @@ class Inventory: LayoutHolder
 			}
 		}
 		
-		UpdateSpecialtyMeter();
+		m_SpecializationPanel.Show(false);
 		
 		#ifdef PLATFORM_CONSOLE
 			ResetFocusedContainers();

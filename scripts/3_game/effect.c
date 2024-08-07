@@ -74,6 +74,8 @@ class Effect : Managed
 			ErrorEx("Created Effect on server.", ErrorExSeverity.WARNING);
 		}
 		
+		m_IsPlaying = false;
+		
 		InitEffect();
 	}
 	

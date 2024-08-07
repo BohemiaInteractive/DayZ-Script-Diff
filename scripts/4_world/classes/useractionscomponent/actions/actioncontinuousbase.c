@@ -88,8 +88,29 @@ class ActionContinuousBaseCB : ActionBaseCB
 		m_SoundObject = m_ActionData.m_Action.PlayActionSound(m_ActionData.m_Player);
 	}
 	
+	//TODO: consider this for general use
+	/*override void EndActionComponent()
+	{
+		ActionContinuousBase action = ActionContinuousBase.Cast(m_ActionData.m_Action);
+		
+		if (m_ActionData.m_State != UA_FINISHED)
+			m_Canceled = true;
+		
+		if (m_ActionData.m_State == UA_FINISHED || m_ActionData.m_State == UA_CANCEL)
+		{
+			if (action.UseAlternativeInterrupt(m_ActionData))
+				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
+			else
+				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
+		}
+		else
+		{
+			SetCommand(DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT);
+		}
+	}*/
+	
 	override void EndActionComponent()
-	{		
+	{
 		// TODO for second type animation SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
 		if ( m_ActionData.m_State == UA_FINISHED )
 		{
@@ -117,7 +138,7 @@ class ActionContinuousBaseCB : ActionBaseCB
 			return;
 		}
 		m_ActionData.m_State = UA_FINISHED;
-	}	
+	}
 	
 	void UserEndsAction()
 	{
@@ -125,7 +146,7 @@ class ActionContinuousBaseCB : ActionBaseCB
 		{
 			m_ActionData.m_State = m_ActionData.m_ActionComponent.Cancel(m_ActionData);
 		}
-		EndActionComponent();
+		//EndActionComponent(); //already handled in 'AnimatedActionBase::Do' on cancel
 	}
 };
 
@@ -159,6 +180,33 @@ class ActionContinuousBase : AnimatedActionBase
 	bool HasAlternativeInterrupt()
 	{
 		return false;
+	}
+	
+	bool UseAlternativeInterrupt(ActionData action_data)
+	{
+		return false;
+	}
+	
+	// lock default camera while performing the action
+	bool IsCameraLockOnPerform()
+	{
+		return true;
+	}
+	
+	// camera up/down angle when performing a fullbody action
+	// values beetwen 0 and -90 (looking at ground) / 0 and 90 (looking above)
+	Vector2 GetCameraUDAngle()
+	{
+		Vector2 udAngle = new Vector2(-45, 45);
+		return udAngle;
+	}
+	
+	// camera (heading) left/right angle when performing a fullbody action
+	// values beetwen 0 and -180 (left restriction) / 0 and 180 (right restriction)
+	Vector2 GetCameraLRAngle()
+	{
+		Vector2 lrAngle = new Vector2(-70, 70);
+		return lrAngle;
 	}
 
 	override typename GetInputType()

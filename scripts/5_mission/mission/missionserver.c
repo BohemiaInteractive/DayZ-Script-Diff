@@ -53,7 +53,6 @@ class MissionServer extends MissionBase
 	
 	PlayerBase m_player;
 	MissionBase m_mission;
-	PluginAdditionalInfo m_moduleDefaultCharacter;
 	
 	void MissionServer()
 	{
@@ -768,5 +767,8 @@ class MissionServer extends MissionBase
 	{
 		return m_RainProcHandler;
 	}
+	
+	//! DEPRECATED
+	PluginAdditionalInfo m_moduleDefaultCharacter;
 }
 

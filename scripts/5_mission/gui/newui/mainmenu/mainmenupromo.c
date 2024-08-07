@@ -179,7 +179,7 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	}
 	
 	//updates on language change etc.
-	protected void UpdateAllPromotionInfo()
+	void UpdateAllPromotionInfo()
 	{
 		UpdateDlcData();
 		UpdateOwnedStatus();

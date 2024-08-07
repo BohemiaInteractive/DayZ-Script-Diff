@@ -28,6 +28,8 @@ class CraftSplint extends RecipeBase
 		InsertIngredient(0,"BandageDressing");//you can insert multiple ingredients this way
 		InsertIngredient(0,"Rag");//you can insert multiple ingredients this way
 		InsertIngredient(0,"DuctTape");//you can insert multiple ingredients this way
+		InsertIngredient(0,"Shemag_ColorBase");//you can insert multiple ingredients this way
+
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing
@@ -91,26 +93,18 @@ class CraftSplint extends RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		Debug.Log("Recipe Do method called","recipes");
-		
 		ItemBase ingredient1 = ingredients[0];
 		
 		if (ingredients[0].Type() == Rag)
-		{
-			//Print("Are we getting here?");
 			ingredient1.AddQuantity(-4);
-		}
 		
 		if (ingredients[0].Type() == BandageDressing)
-		{
-			//Print("We also get here then");
 			ingredient1.AddQuantity(-ingredient1.GetQuantityMax());
-		}
 		
 		if (ingredients[0].Type() == DuctTape)
-		{
-			//Print("We also get here then");
 			ingredient1.AddQuantity(-ingredient1.GetQuantityMax()/2);
-		}
+
+		if (ingredients[0].IsInherited(Shemag_ColorBase))
+			ingredient1.DeleteSafe();
 	}
-};
+}

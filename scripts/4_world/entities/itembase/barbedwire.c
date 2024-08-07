@@ -12,7 +12,6 @@ class BarbedWire extends ItemBase
 	const static string 		m_SoundsCollision[SOUNDS_COLLISION_COUNT]	= {"barbedFenceCollision1", "barbedFenceCollision2", "barbedFenceCollision3", "barbedFenceCollision4"};
 	const static string 		m_SoundsShock[SOUNDS_SHOCK_COUNT] 			= {"electricFenceShock1", "electricFenceShock2", "electricFenceShock3", "electricFenceShock4"};
 	const static string 		m_SoundBuzzLoop 							= "electricFenceBuzzLoop1";
-	ref protected EffectSound 	m_DeployLoopSound;
 	
 	SoundOnVehicle m_BuzzSoundLoop;
 	
@@ -40,12 +39,7 @@ class BarbedWire extends ItemBase
 		RegisterNetSyncVariableBool( "m_IsDeploySound" );
 		RegisterNetSyncVariableBool( "m_IsMounted" );
 	}
-	
-	void ~BarbedWire()
-	{
-		SEffectManager.DestroyEffect( m_DeployLoopSound );
-	}
-	
+
 	override void EEInit()
 	{
 		super.EEInit();
@@ -137,37 +131,7 @@ class BarbedWire extends ItemBase
 		{
 			PlayDeploySound();
 		}
-		
-		if ( CanPlayDeployLoopSound() )
-		{
-			PlayDeployLoopSound();
-		}
-					
-		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
-		{
-			StopDeployLoopSound();
-		}
 	}	
-
-	void PlayDeployLoopSound()
-	{		
-		if ( !GetGame().IsDedicatedServer() )
-		{		
-			if ( !m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying() )
-			{
-				m_DeployLoopSound = SEffectManager.PlaySound( GetLoopDeploySoundset(), GetPosition() );
-			}
-		}
-	}
-	
-	void StopDeployLoopSound()
-	{
-		if ( !GetGame().IsDedicatedServer() )
-		{	
-			m_DeployLoopSound.SetSoundFadeOut(0.5);
-			m_DeployLoopSound.SoundStop();
-		}
-	}
 	
 	// --- EVENTS
 	override void OnStoreSave( ParamsWriteContext ctx )
@@ -452,5 +416,11 @@ class BarbedWire extends ItemBase
 		AddAction(ActionRestrainSelf);
 		AddAction(ActionAttachToConstruction);
 		
-	}	
+	}
+	
+	//!DEPRECATED
+	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
+	
+	void PlayDeployLoopSound(); //!DEPRECATED
+	void StopDeployLoopSound(); //!DEPRECATED
 }

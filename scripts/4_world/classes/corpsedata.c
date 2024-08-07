@@ -8,6 +8,9 @@ class CorpseData
 	int 		m_iMaxLifetime;
 	int 		m_iCorpseState;
 	int 		m_iTriesToGetLifetime;
+	
+	float 		m_LifetimeAdjusted = float.MIN;
+	float 		m_LastLifetime = float.MIN;
 	PlayerBase 	m_Player;
 	
 	void CorpseData(notnull PlayerBase player,int time_of_death)
@@ -16,22 +19,13 @@ class CorpseData
 		m_iLastUpdateTime = time_of_death;
 		m_iTimeOfDeath = time_of_death;
 		m_iMaxLifetime = -1;
-		//m_iMaxLifetime = player.GetLifetime(); //player.GetEconomyProfile().GetLifetime();
 		m_iCorpseState = PlayerConstants.CORPSE_STATE_FRESH;
 		m_Player = player;
 		m_iTriesToGetLifetime = 0;
-		
-		/*Print("CorpseData init value | player.GetLifetime(): " + player.GetLifetime() );
-		Print("CorpseData init value | player.GetEconomyProfile().GetLifetime(): " + player.GetEconomyProfile().GetLifetime() );
-		Print("---------------------");*/
 	}
 	
 	void UpdateCorpseState(bool force_check = false)
 	{
-		/*Print("CorpseData update value | player.GetLifetime(): " + m_Player.GetLifetime() );
-		Print("CorpseData update value | player.GetEconomyProfile().GetLifetime(): " + m_Player.GetEconomyProfile().GetLifetime() );
-		Print("---------------------");*/
-		
 		if (m_iMaxLifetime <= 0 )
 		{
 			if ( m_iCorpseState == PlayerConstants.CORPSE_STATE_DECAYED && !force_check )
@@ -58,29 +52,40 @@ class CorpseData
 			}
 		}
 		
-		int ioriginal_state = m_iCorpseState;
-		float fremaining_lifetime = m_Player.GetLifetime();
-		float fdecay_percentage = fremaining_lifetime/m_iMaxLifetime;
+		if (m_LifetimeAdjusted == float.MIN)
+			m_LifetimeAdjusted = m_iMaxLifetime;
+		
+		if (m_LastLifetime == float.MIN)
+			m_LastLifetime = m_iMaxLifetime;
+		
+		float lifetime = m_Player.GetLifetime();
+		
+		if (!CanProgressDecay())
+		{
+			m_LastLifetime = lifetime;
+			return;
+		}
+		
+		int corpseStateOld = m_iCorpseState;
+		float delta = lifetime - m_LastLifetime;
 		
 		#ifdef DIAG_DEVELOPER
-		float timeAccel = 1;
 		if (FeatureTimeAccel.GetFeatureTimeAccelEnabled(ETimeAccelCategories.FOOD_DECAY))
 		{
+			float timeAccel = 1;
 			timeAccel = FeatureTimeAccel.GetFeatureTimeAccelValue();
-			float percetElapsed = 1-fdecay_percentage;
-			fdecay_percentage = Math.Clamp(1 - percetElapsed * timeAccel,0,1);
+			delta *= timeAccel;
 		}
 		#endif
 		
-		//int current_time = GetGame().GetTime();
-		//float fdecay_percentage_by_game_time = 1 - ((current_time - m_iTimeOfDeath) / 1000 )/m_iMaxLifetime;
-		//Print("fdecay_percentage_by_game_time - " + fdecay_percentage_by_game_time);
+		m_LifetimeAdjusted += delta;
+		float corpseFreshness = m_LifetimeAdjusted/m_iMaxLifetime;
 		
-		if (fdecay_percentage > PlayerConstants.CORPSE_THRESHOLD_MEDIUM)
+		if (corpseFreshness > PlayerConstants.CORPSE_THRESHOLD_MEDIUM)
 		{
 			m_iCorpseState = PlayerConstants.CORPSE_STATE_FRESH;
 		}
-		else if (fdecay_percentage <= PlayerConstants.CORPSE_THRESHOLD_MEDIUM && fdecay_percentage > PlayerConstants.CORPSE_THRESHOLD_DECAYED)
+		else if (corpseFreshness <= PlayerConstants.CORPSE_THRESHOLD_MEDIUM && corpseFreshness > PlayerConstants.CORPSE_THRESHOLD_DECAYED)
 		{
 			m_iCorpseState = PlayerConstants.CORPSE_STATE_MEDIUM;
 		}
@@ -90,14 +95,17 @@ class CorpseData
 			m_bUpdate = false;
 		}
 		
-		if (ioriginal_state != m_iCorpseState)
+		if (corpseStateOld != m_iCorpseState)
 		{
 			m_Player.m_CorpseState = m_iCorpseState;
 			m_Player.SetSynchDirty();
-/*
-			Print("Corpse Syncing | player - " + m_Player);
-			Print("Corpse Syncing | state - " + m_iCorpseState);
-*/
 		}
+		
+		m_LastLifetime = lifetime;
+	}
+	
+	protected bool CanProgressDecay()
+	{
+		return !m_Player.GetIsFrozen();
 	}
 }

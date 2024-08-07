@@ -58,6 +58,8 @@ class ActionCarDoors: ActionInteractBase
 
 	override void OnStartServer(ActionData action_data)
 	{
+		super.OnStartServer(action_data);
+		
 		PlayerBase player = action_data.m_Player;
 		
 		float phase;
@@ -92,6 +94,8 @@ class ActionCarDoors: ActionInteractBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
+		super.OnEndServer(action_data);
+		
 		CarScript car;
 		PlayerBase player = action_data.m_Player;
 		if (player && player.GetCommand_Vehicle())

@@ -22,3 +22,7 @@ class PlateCarrierVest: Vest_Base
 		}
 	}
 };
+class PlateCarrierVest_Black extends PlateCarrierVest {};
+class PlateCarrierVest_Camo extends PlateCarrierVest {};
+class PlateCarrierVest_Green extends PlateCarrierVest {};
+class PlateCarrierVest_Winter extends PlateCarrierVest {};

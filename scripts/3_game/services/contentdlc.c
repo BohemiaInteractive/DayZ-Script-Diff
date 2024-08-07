@@ -3,6 +3,7 @@
 enum EDLCId
 {
 	DLC_UNKNOWN,
+	DLC_FROSTLINE,
 };
 
 //! ContentDLC is for query installed DLC (only as entitlement keys, not content)

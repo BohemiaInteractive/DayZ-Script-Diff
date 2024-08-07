@@ -31,6 +31,8 @@ class ActionCollectBloodSelf: ActionContinuousBase
 
 	override void OnEndServer( ActionData action_data )
 	{
+		super.OnEndServer(action_data);
+		
 		Param1<float> nacdata;
 		Class.CastTo(nacdata,  action_data.m_ActionComponent.GetACData() );
 		float delta = 0;

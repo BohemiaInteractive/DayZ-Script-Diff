@@ -9,6 +9,15 @@ class ActionEmptyBottleBaseCB : ActionContinuousBaseCB
 			EmptiedQuantity = bottle.GetLiquidEmptyRate() * bottle.GetLiquidThroughputCoef();
 		m_ActionData.m_ActionComponent = new CAContinuousEmpty(EmptiedQuantity);
 	}
+	
+	override void EndActionComponent()
+	{
+		ActionContinuousBase action = ActionContinuousBase.Cast(m_ActionData.m_Action);
+		if (action.UseAlternativeInterrupt(m_ActionData))
+			SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
+		else
+			SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
+	}
 };
 
 class ActionEmptyBottleBase: ActionContinuousBase
@@ -26,7 +35,7 @@ class ActionEmptyBottleBase: ActionContinuousBase
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINotRuinedAndEmpty;
+		m_ConditionItem = new CCINonRuined;
 		m_ConditionTarget = new CCTNone;
 	}
 
@@ -34,26 +43,28 @@ class ActionEmptyBottleBase: ActionContinuousBase
 	{
 		return false;
 	}
+	
+	override bool HasAlternativeInterrupt()
+	{
+		return true;
+	}
+	
+	override bool UseAlternativeInterrupt(ActionData action_data)
+	{
+		return HasAlternativeInterrupt() && (action_data.m_ActionComponent.GetProgress() >= 1);
+	}
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
 			return true;
 		
-		if (item.IsLiquidPresent())
-		{
-			return true;
-		}
-		return false;
+		return item.IsLiquidPresent() && item.GetQuantity() > item.GetQuantityMin() && !item.GetIsFrozen();
 	}
 	
 	override bool ActionConditionContinue( ActionData action_data )
 	{
-		if (action_data.m_MainItem.GetQuantity() > action_data.m_MainItem.GetQuantityMin())
-		{
-			return true;
-		}
-		return false;
+		return true;
 	}
 	
 	override void OnStartAnimationLoop( ActionData action_data )
@@ -69,6 +80,8 @@ class ActionEmptyBottleBase: ActionContinuousBase
 	override void OnEndServer( ActionData action_data )
 	{
 		SendRPC(action_data,false);
+		
+		super.OnEndServer(action_data);
 	}
 
 	protected void SendRPC(ActionData actionData, bool enable)

@@ -116,6 +116,27 @@ class GardenPlot extends GardenBase
 		
 		return GetGame().IsSurfaceFertile(surface_type);
 	}
+	
+	override bool IsTakeable()
+	{
+		return false;
+	}
+	
+	override bool CanPutInCargo( EntityAI parent )
+	{
+		return false;
+	}
+	
+	override bool CanRemoveFromCargo( EntityAI parent )
+	{
+		return false;
+	}
+
+	//hands
+	override bool CanPutIntoHands( EntityAI parent )
+	{
+		return false;
+	}
 }
 
 //class GardenPlotOutside : GardenPlot {}

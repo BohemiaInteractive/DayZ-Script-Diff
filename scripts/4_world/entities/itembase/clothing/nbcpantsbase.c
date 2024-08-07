@@ -7,3 +7,4 @@ class NBCPantsBase extends Pants_Base
 	}
 };
 class NBCPantsGray extends NBCPantsBase {};
+class NBCPantsWhite extends NBCPantsBase {};

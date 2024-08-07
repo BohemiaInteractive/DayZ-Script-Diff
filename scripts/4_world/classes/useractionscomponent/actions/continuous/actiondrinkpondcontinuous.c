@@ -30,17 +30,22 @@ class ActionDrinkPondContinuous: ActionContinuousBase
 		return ContinuousInteractActionInput;
 	}
 	
+	override bool CanBeUsedInFreelook()
+	{
+		return false;
+	}
+	
 	override void CreateConditionComponents()  
 	{
 		m_ConditionItem 	= new CCINone();
-		m_ConditionTarget 	= new CCTWaterSurface(UAMaxDistances.DEFAULT, ALLOWED_WATER_SURFACES);
+		m_ConditionTarget 	= new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, LIQUID_GROUP_DRINKWATER - LIQUID_SNOW - LIQUID_HOTWATER);
 	}
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{	
 		if (item && item.IsHeavyBehaviour())
 			return false;
-
+		
 		return player.CanEatAndDrink();
 	}
 
@@ -60,7 +65,21 @@ class ActionDrinkPondContinuous: ActionContinuousBase
 	{
 		Param1<float> nacdata = Param1<float>.Cast(action_data.m_ActionComponent.GetACData());
 		float amount = UAQuantityConsumed.DRINK;
-		action_data.m_Player.Consume(null, amount, EConsumeType.ENVIRO_POND);
+		
+		EConsumeType consumeType;
+		int liquidSource = GetLiquidSource(action_data.m_Target);
+		switch (liquidSource)
+		{
+			case LIQUID_CLEANWATER:
+				consumeType = EConsumeType.ENVIRO_WELL;
+				break;
+		
+			default:
+				consumeType = EConsumeType.ENVIRO_POND;
+				break;
+		}
+		
+		action_data.m_Player.Consume(null, amount, consumeType);
 	}
 
 	override void OnEndAnimationLoopServer(ActionData action_data)
@@ -98,5 +117,18 @@ class ActionDrinkPondContinuous: ActionContinuousBase
 		}
 
 		return true;
+	}
+	
+	protected int GetLiquidSource(ActionTarget target)
+	{
+		vector hitPosition = target.GetCursorHitPos();
+		string surfaceType;
+		int liquidSource;
+		
+		g_Game.SurfaceGetType3D(hitPosition[0], hitPosition[1], hitPosition[2], surfaceType);
+		string path = "CfgSurfaces " + surfaceType + " liquidType";
+		liquidSource = GetGame().ConfigGetInt(path);
+		
+		return liquidSource;
 	}
 }

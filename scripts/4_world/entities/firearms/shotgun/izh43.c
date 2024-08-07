@@ -14,8 +14,6 @@ class Izh43Shotgun_Base : DoubleBarrel_Base
 		if ( Class.CastTo(entity, this) )
 		{
 			entity.SpawnEntityOnGroundPos("Ammo_12gaPellets", entity.GetPosition());
-			entity.SpawnEntityOnGroundPos("Ammo_12gaSlug", entity.GetPosition());
-			entity.SpawnEntityOnGroundPos("Ammo_12gaRubberSlug", entity.GetPosition());
 		}
 	}
 };

@@ -234,6 +234,8 @@ class Construction
 	//update construction parts
 	protected void UpdateConstructionParts()
 	{
+		m_ConstructionParts.Clear();
+		
 		string construction_path = "cfgVehicles" + " " + GetParent().GetType() + " " + "Construction";
 		
 		if ( GetGame().ConfigIsExisting( construction_path ) )

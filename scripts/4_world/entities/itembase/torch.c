@@ -58,14 +58,15 @@ class FlammableBase : ItemBase
 		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
- 			m_UTSSettings 					= new UniversalTemperatureSourceSettings();
-			m_UTSSettings.m_Updateable		= true;
-			m_UTSSettings.m_UpdateInterval	= 1;
-			m_UTSSettings.m_TemperatureMin	= 0;
-			m_UTSSettings.m_TemperatureMax	= 300;
-			m_UTSSettings.m_RangeFull		= 0.5;
-			m_UTSSettings.m_RangeMax		= 1;
-			m_UTSSettings.m_TemperatureCap	= 5;
+ 			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
+			m_UTSSettings.m_Updateable			= true;
+			m_UTSSettings.m_UpdateInterval		= 1;
+			m_UTSSettings.m_TemperatureMin		= 0;
+			m_UTSSettings.m_TemperatureMax		= 300;
+			m_UTSSettings.m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
+			m_UTSSettings.m_TemperatureCap		= 5;
+			m_UTSSettings.m_RangeFull			= 0.5;
+			m_UTSSettings.m_RangeMax			= 1;
 			
 			m_UTSLConstant					= new UniversalTemperatureSourceLambdaConstant();
 			m_UTSource						= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLConstant);
@@ -154,9 +155,9 @@ class FlammableBase : ItemBase
 			return false;
 		
 		ItemBase rag = GetRag();
-		
+				
 		if (rag  &&  GetCompEM().GetEnergy() < GetCompEM().GetEnergyUsage() * GetCompEM().GetUpdateInterval() )
-		{
+		{			
 			if (IsRagDryEnough(rag))
 				return false;
 		}
@@ -762,9 +763,11 @@ class FlammableBase : ItemBase
 	override void OnAttachmentQuantityChangedEx(ItemBase item, float delta)
 	{
 		super.OnAttachmentQuantityChangedEx(item, delta);
-		if (delta > 0)
-		{
-			GetCompEM().AddEnergy(m_BurnTimePerRagEx * delta);
+		if (delta != 0)
+		{			
+			if (delta > 0 || !GetCompEM().IsWorking())	// dont adjust energy when rag burns out
+				GetCompEM().AddEnergy(m_BurnTimePerRagEx * delta);
+			
 			CalculateQuantity();
 			UpdateCheckForReceivingUpgrade();
 		}

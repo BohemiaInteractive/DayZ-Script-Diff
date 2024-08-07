@@ -75,9 +75,6 @@ class ActionBuildOven: ActionContinuousBase
 			
 			// extend lifetime
 			fireplace_target.SetLifetimeMax( FireplaceBase.LIFETIME_FIREPLACE_STONE_OVEN );
-
-			//add specialty to soft skills
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
 	}
 }

@@ -178,7 +178,6 @@ class MissionGameplay extends MissionBase
 #endif
 
 		g_Game.SetMissionState(DayZGame.MISSION_STATE_GAME);
-		m_DynamicMusicPlayer.SetCategory(EDynamicMusicPlayerCategory.TIME, true);
 	}
 	
 	void InitInventory()
@@ -562,17 +561,7 @@ class MissionGameplay extends MissionBase
 		if (player)
 		{
 			int life_state = player.GetPlayerState();
-			
-			// life state changed
-			if (m_LifeState != life_state)
-			{
-				m_LifeState = life_state;
-				
-				if (m_LifeState != EPlayerStates.ALIVE && !player.IsUnconscious())
-				{
-					CloseAllMenus();
-				}
-			}
+			m_LifeState = life_state;
 		}
 		
 		if (menu && !menu.UseKeyboard() && menu.UseMouse())

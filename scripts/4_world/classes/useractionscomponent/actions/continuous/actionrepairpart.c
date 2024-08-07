@@ -111,8 +111,6 @@ class ActionRepairPart: ActionDismantlePart
 		
 		//add damage to tool
 		action_data.m_MainItem.DecreaseHealth( UADamageApplied.REPAIR, false );
-		
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	protected override void SetBuildingAnimation( ItemBase item )

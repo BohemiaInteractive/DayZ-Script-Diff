@@ -33,9 +33,4 @@ class ActionMineBush : ActionMineBase
 		Object targetObject = target.GetObject();
 		return targetObject.IsBush() && targetObject.IsCuttable();
 	}
-
-	override void OnFinishProgressServer( ActionData action_data )
-	{
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
-	}
 };

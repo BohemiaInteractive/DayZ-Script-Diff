@@ -1,6 +1,6 @@
 enum FoodStageType
 {
-	NONE		= 0,			//food stage not define
+	NONE		= 0,			//food stage not defined
 	RAW			= 1,			//default
 	BAKED		= 2,
 	BOILED		= 3,
@@ -21,15 +21,17 @@ enum eCookingPropertyIndices
 
 class FoodStage
 {
-	protected FoodStageType m_FoodStageTypeClientLast;
-	protected FoodStageType m_FoodStageType;
 	protected Edible_Base m_FoodItem;
-	
 	protected int m_SelectionIndex;				//visual properties
 	protected int m_TextureIndex;
 	protected int m_MaterialIndex;
 	
+	//synced variables
+	protected FoodStageType m_FoodStageType;
 	protected float m_CookingTime;
+	
+	//mirror variables (local, as needed)
+	protected FoodStageType m_FoodStageTypeClientLast;
 	
 	// Lookup and search values
 	// STRINGs are mostly used for CONFIG searches
@@ -41,6 +43,9 @@ class FoodStage
 	static const int 	NUTRITION_PROPERTIES_HASH 	= 	NUTRITION_PROPERTIES.Hash();
 	static const int 	COOKING_PROPERTIES_HASH 	= 	COOKING_PROPERTIES.Hash();
 	
+	static const int 	TRANSITION_FOODSTAGE_IDX 		= 0;
+	static const int 	TRANSITION_COOKINGMETHOD_IDX 	= 1;
+	
 	// The following will be filled in constructor
 	private static int 	m_StageRawHash 		= 0;
 	private static int 	m_StageBakedHash 	= 0;
@@ -50,24 +55,22 @@ class FoodStage
 	private static int 	m_StageRottenHash 	= 0;
 	
 	// Cache food stage data for each Edible_Base
-	// Used to get information for specific Edible_Base
-	static ref map<int, ref map<int, ref map<int, ref array<float>>>> m_EdibleBasePropertiesMap;
-	// Used to store food stage transitions for every Edible_Base
-	static ref map<int, ref map<int, ref map<int, ref array<int>>>> m_EdibleBaseTransitionsMap;
+	// Used to get information for specific Edible_Base, information from 'class FoodStages'
+	static ref map<int, ref map<int, ref map<int, ref array<float>>>> m_EdibleBasePropertiesMap; //<foodTypeHash,<FoodStageNameHash,<stagePropertiesIdx,<visual_properties,nutrition_properties,cooking_properties>>>>
+	// Used to store food stage transitions for every Edible_Base, information from 'class FoodStageTransitions'
+	static ref map<int, ref map<int, ref map<int, ref array<int>>>> m_EdibleBaseTransitionsMap; //<<foodTypeHash,<FoodStageNameHash,<transitionClassHash('ToBaked' etc.),<transition_to,cooking_method>>>>
 	// Used to store the Hashed key of all possible food transitions ( including modded ones )
 	static ref array<int> m_FoodStageTransitionKeys;
 	
 	//constructor
 	void FoodStage( Edible_Base food_item )
 	{
-		//default
-		m_FoodStageType = FoodStageType.RAW;
+		m_FoodStageType = FoodStageType.NONE;
+		m_FoodStageTypeClientLast = FoodStageType.NONE;
 		m_FoodItem = food_item;
 		
 		//reset cooking time
 		m_CookingTime = 0;
-		
-		m_FoodStageTypeClientLast = m_FoodStageType;
 		
 		// We fill all FoodStageHash values
 		if ( m_StageRawHash == 0 )
@@ -89,7 +92,8 @@ class FoodStage
 		// Get all config data relative to food stage transitions
 		SetupFoodStageTransitionMapping();
 		
-		ChangeFoodStage( m_FoodStageType );
+		//set default food type
+		ChangeFoodStage(FoodStageType.RAW);
 	}
 	
 	void SetupFoodStageMapping()
@@ -169,7 +173,7 @@ class FoodStage
 					GetGame().ConfigGetChildName( config_path, j, classCheck );
 					
 					string transition_path = string.Format("%1 %2", config_path, classCheck );
-					if ( GetGame().ConfigIsExisting( transition_path ) )
+					if ( GetGame().ConfigIsExisting( transition_path ) ) //TODO: we already know that from 'ConfigGetChildName', redundant?
 					{
 						int transitionClassHash = classCheck.Hash();
 						stageTransition.Insert( GetGame().ConfigGetInt( string.Format("%1 transition_to", transition_path) ) );
@@ -199,7 +203,11 @@ class FoodStage
 	
 	void SetFoodStageType( FoodStageType food_stage_type )
 	{
+		FoodStageType stageOld = m_FoodStageType;
 		m_FoodStageType = food_stage_type;
+		OnFoodStageChange(stageOld,food_stage_type);
+		
+		GetFoodItem().Synchronize();
 	}
 	
 	//Selection index
@@ -432,7 +440,7 @@ class FoodStage
 	}
 	
 	//returns possible food stage type according to given cooking method
-	FoodStageType GetNextFoodStageType( CookingMethodType cooking_method )
+	FoodStageType GetNextFoodStageType(CookingMethodType cooking_method)
 	{
 		array<int> food_transition = new array<int>;
 		
@@ -443,70 +451,105 @@ class FoodStage
 		foodStagesMap.Find( GetFoodStageNameHash( GetFoodStageType() ), foodTransitionsMap );
 		
 		// We go through the key array, checking every possible transition
-		for ( int i = 0; i < m_FoodStageTransitionKeys.Count(); ++i )
+		int count = m_FoodStageTransitionKeys.Count();
+		for (int i = 0; i < count; ++i) //TODO: foodTransitionsMap should contain same info (keys) as m_FoodStageTransitionKeys. Just iterate through those instead?
 		{
 			// We test if a given transition is setup on this item
-			foodTransitionsMap.Find(m_FoodStageTransitionKeys.Get( i ), food_transition);
-			if ( food_transition )
+			foodTransitionsMap.Find(m_FoodStageTransitionKeys[i], food_transition);
+			if (food_transition)
 			{
 				// We now check if the given transition class is relevant
-				if ( food_transition.Get( 1 ) == cooking_method )
+				if (food_transition[TRANSITION_COOKINGMETHOD_IDX] == cooking_method)
 				{
-					return food_transition.Get( 0 );
+					return food_transition[TRANSITION_FOODSTAGE_IDX];
 				}
 			}
 		}
 		
-		return FoodStageType.BURNED; //If the item cannot transition out of current state, burn it
+		return FoodStageType.BURNED; //If the item cannot transition out of current state, burn it //TODO: return 'NONE' and substitute BURNED from that, where appropriate
 	}
 	
-	void ChangeFoodStage( FoodStageType new_stage_type )
+	bool CanTransitionToFoodStageType(FoodStageType type)
 	{
-		map<int, ref map<int, ref array<float>>>foodStagesMap = new map<int, ref map<int, ref array<float>>>;
-		map<int, ref array<float>> stagePropertiesMap = new map<int, ref array<float>>;
+		array<int> food_transition = new array<int>;
 		
-		//merge stages
-		//food stage type
-		SetFoodStageType( new_stage_type );
+		map<int, ref map<int, ref array<int>>> foodStagesMap = new map<int, ref map<int, ref array<int>>>;
+		map<int, ref array<int>> foodTransitionsMap = new map<int, ref array<int>>;
 		
-		array<float> visual_properties = new array<float>;
+		m_EdibleBaseTransitionsMap.Find(GetFoodItem().GetType().Hash(), foodStagesMap);
+		foodStagesMap.Find(GetFoodStageNameHash(GetFoodStageType()), foodTransitionsMap);
 		
-		m_EdibleBasePropertiesMap.Find( GetFoodItem().GetType().Hash(), foodStagesMap );
-		foodStagesMap.Find( GetFoodStageNameHash( GetFoodStageType() ), stagePropertiesMap );
-		stagePropertiesMap.Find( VISUAL_PROPERTIES_HASH, visual_properties );
-		
-		if ( visual_properties.Count() > 0 )
+		// We go through the key array, checking every possible transition
+		int count = m_FoodStageTransitionKeys.Count();
+		for (int i = 0; i < count; ++i) //TODO: foodTransitionsMap should contain same info (keys) as m_FoodStageTransitionKeys. Just iterate through those instead?
 		{
-			//selection index
-			int index = visual_properties.Get( 0 );
-			if ( index >= 0 )
+			// We test if a given transition is setup on this item
+			foodTransitionsMap.Find(m_FoodStageTransitionKeys[i], food_transition);
+			if (food_transition )
 			{
-				SetSelectionIndex( index );
+				// We now check if the given transition class is relevant
+				if (food_transition[0] == type)
+				{
+					return true;
+				}
 			}
-			//texture index
-			index = visual_properties.Get( 1 );
-			if ( index >= 0 )
-			{
-				SetTextureIndex( index );
-			}
-			//material index
-			index = visual_properties.Get( 2 );
-			if ( index >= 0 )
-			{
-				SetMaterialIndex( index );
-			}	
 		}
 		
-		//refresh visual
-		GetFoodItem().Synchronize();
-	}	
-
-	void UpdateVisuals()
+		return false;
+	}
+	
+	void ChangeFoodStage(FoodStageType new_stage_type)
 	{
-		//if item has food stages
-		if ( GetFoodItem().HasFoodStage() ) 
+		SetFoodStageType(new_stage_type);
+	}
+	
+	void OnFoodStageChange(FoodStageType stageOld, FoodStageType stageNew)
+	{
+		//init value setting, not a change
+		if (stageOld == FoodStageType.NONE)
+			return ;
+		
+		//not a change
+		if (stageOld == stageNew)
+			return ;
+		
+		m_FoodItem.OnFoodStageChange(stageOld,stageNew);
+	}
+
+	void UpdateVisualsEx(bool forced = false)
+	{
+		if (forced || m_FoodStageTypeClientLast != m_FoodStageType)
 		{
 			Edible_Base food_item = GetFoodItem();
+			map<int, ref map<int, ref array<float>>>foodStagesMap = new map<int, ref map<int, ref array<float>>>;
+			map<int, ref array<float>> stagePropertiesMap = new map<int, ref array<float>>;
+			array<float> visual_properties = new array<float>;
+			
+			m_EdibleBasePropertiesMap.Find(food_item.GetType().Hash(), foodStagesMap);
+			foodStagesMap.Find(GetFoodStageNameHash( GetFoodStageType() ), stagePropertiesMap);
+			stagePropertiesMap.Find(VISUAL_PROPERTIES_HASH, visual_properties);
+			
+			if (visual_properties.Count() > 0)
+			{
+				//selection index
+				int index = visual_properties.Get( 0 );
+				if ( index >= 0 ) //leaves last valid idx otherwise
+				{
+					SetSelectionIndex( index );
+				}
+				//texture index
+				index = visual_properties.Get( 1 );
+				if ( index >= 0 ) //leaves last valid idx otherwise
+				{
+					SetTextureIndex( index );
+				}
+				//material index
+				index = visual_properties.Get( 2 );
+				if ( index >= 0 ) //leaves last valid idx otherwise
+				{
+					SetMaterialIndex( index );
+				}	
+			}
 			
 			array<string> config_selections	= food_item.GetHiddenSelections();
 			array<string> config_textures	= food_item.GetHiddenSelectionsTextures();
@@ -514,21 +557,21 @@ class FoodStage
 			
 			//selection index
 			int selection_index;
-			if ( GetSelectionIndex() >= 0 && config_selections.Count() > GetSelectionIndex() )
+			if ( GetSelectionIndex() >= 0 && config_selections.Count() > GetSelectionIndex() ) //USES the last valid idx
 			{
 				selection_index = GetSelectionIndex();
 			}
 			
 			//texture index
 			int texture_index;
-			if ( GetTextureIndex() >= 0 && config_textures.Count() > GetTextureIndex() )
+			if ( GetTextureIndex() >= 0 && config_textures.Count() > GetTextureIndex() ) //USES the last valid idx
 			{
 				texture_index = GetTextureIndex();
 			}
-	
+			
 			//material index
 			int material_index;
-			if ( GetMaterialIndex() >= 0 && config_materials.Count() > GetMaterialIndex() )
+			if ( GetMaterialIndex() >= 0 && config_materials.Count() > GetMaterialIndex() ) //USES the last valid idx
 			{
 				material_index = GetMaterialIndex();
 			}
@@ -541,19 +584,16 @@ class FoodStage
 					food_item.SetAnimationPhase( config_selections.Get( i ), 1 );
 				}
 			}
-	
-			//Debug	
-			//Print( "item = " + food_item.GetType() + " selection index = " + GetSelectionIndex().ToString() + " texture index = " + GetTextureIndex().ToString() );
-		
+			
 			//show selection
 			food_item.SetAnimationPhase( config_selections.Get( selection_index ), 0 );
 			//set texture
 			food_item.SetObjectTexture( selection_index, config_textures.Get( texture_index ) );
 			//set materials
 			food_item.SetObjectMaterial( selection_index, config_materials.Get( material_index ) );
+			
+			m_FoodStageTypeClientLast = m_FoodStageType;
 		}
-				
-		m_FoodStageTypeClientLast = m_FoodStageType;
 	}
 
 	//Food States
@@ -679,5 +719,13 @@ class FoodStage
 		}
 		
 		return true;
+	}
+	
+	//////////////////////////////////////////
+	//DEPRECATED
+	//////////////////////////////////////////
+	void UpdateVisuals()
+	{
+		UpdateVisualsEx();
 	}
 }

@@ -39,7 +39,5 @@ class ActionFoldObject: ActionInteractBase
 		{
 			hesco.Fold();
 		}
-		
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

@@ -1,4 +1,4 @@
-class WoundInfectionMdfr: ModifierBase
+class WoundInfectionMdfr : ModifierBase
 {
 	static const int AGENT_THRESHOLD_ACTIVATE = 100;
 	static const int AGENT_THRESHOLD_DEACTIVATE = 20;
@@ -7,11 +7,9 @@ class WoundInfectionMdfr: ModifierBase
 	{
 		Error("[ERROR] :: WoundInfectionMdfr is deprecated.");
 	}
-};
+}
 
-
-
-class WoundInfectStage1Mdfr: ModifierBase
+class WoundInfectStage1Mdfr : ModifierBase
 {
 	static const int AGENT_THRESHOLD_ACTIVATE = 1;
 	static const int AGENT_THRESHOLD_DEACTIVATE = 250;
@@ -39,20 +37,15 @@ class WoundInfectStage1Mdfr: ModifierBase
 	
 	override protected bool ActivateCondition(PlayerBase player)
 	{
-		if( player.GetSingleAgentCount(eAgents.WOUND_AGENT) >= AGENT_THRESHOLD_ACTIVATE && !player.GetModifiersManager().IsModifierActive(eModifiers.MDF_WOUND_INFECTION2)) 
-		{
-			return true;
-		}
-		else 
-		{
-			return false;
-		}
+		return (player.GetSingleAgentCount(eAgents.WOUND_AGENT) >= AGENT_THRESHOLD_ACTIVATE && !player.GetModifiersManager().IsModifierActive(eModifiers.MDF_WOUND_INFECTION2));
 	}
 
 	override protected void OnActivate(PlayerBase player)
 	{
 		player.IncreaseDiseaseCount();
-		m_NextEvent = Math.RandomFloatInclusive( PAIN_EVENT_INTERVAL_MIN, PAIN_EVENT_INTERVAL_MAX );
+		player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_PAIN_LIGHT);
+
+		m_NextEvent = Math.RandomFloatInclusive(PAIN_EVENT_INTERVAL_MIN, PAIN_EVENT_INTERVAL_MAX);
 	}
 
 	override protected void OnDeactivate(PlayerBase player)
@@ -67,16 +60,13 @@ class WoundInfectStage1Mdfr: ModifierBase
 
 	override protected void OnTick(PlayerBase player, float deltaT)
 	{
-		
 		m_Time += deltaT;
 		
-		if ( m_Time >= m_NextEvent )
+		if (m_Time >= m_NextEvent)
 		{
 			player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_PAIN_LIGHT);
 			m_Time = 0;
-			m_NextEvent = Math.RandomFloatInclusive( PAIN_EVENT_INTERVAL_MIN, PAIN_EVENT_INTERVAL_MAX );
+			m_NextEvent = Math.RandomFloatInclusive(PAIN_EVENT_INTERVAL_MIN, PAIN_EVENT_INTERVAL_MAX);
 		}
-		
-
 	}
-};
+}

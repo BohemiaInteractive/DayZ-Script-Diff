@@ -20,6 +20,22 @@ class WolfSteakMeat extends Edible_Base
 		return true;
 	}
 	
+	override void HandleFoodStageChangeAgents(FoodStageType stageOld, FoodStageType stageNew)
+	{
+		switch (stageNew)
+		{
+			case FoodStageType.BAKED:
+			case FoodStageType.BOILED:
+			case FoodStageType.DRIED:
+				RemoveAllAgentsExcept(eAgents.SALMONELLA|eAgents.BRAIN|eAgents.HEAVYMETAL);
+			break;
+			
+			case FoodStageType.BURNED:
+				RemoveAllAgentsExcept(eAgents.SALMONELLA|eAgents.HEAVYMETAL);
+			break;
+		}
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();

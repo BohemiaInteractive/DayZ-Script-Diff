@@ -19,6 +19,11 @@ class ActionOpenDoors: ActionInteractBase
 	{
 		return true;
 	}
+	
+	protected bool CreatesNoise()
+	{
+		return true;
+	}
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
@@ -47,6 +52,8 @@ class ActionOpenDoors: ActionInteractBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
+		super.OnStartServer(action_data);
+		
 		Building building;
 		if (Class.CastTo(building, action_data.m_Target.GetObject()))
 		{
@@ -63,14 +70,21 @@ class ActionOpenDoors: ActionInteractBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
+		super.OnEndServer(action_data);
+		
 		m_NoisePar = new NoiseParams();
 		m_NoisePar.LoadFromPath("CfgVehicles SurvivorBase NoiseActionDefault");
 		NoiseSystem noise = GetGame().GetNoiseSystem();
-		if (noise)
+		if (noise && CreatesNoise())
 		{
 			if (action_data.m_Player)
-				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar);
+				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
 		}
+	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
 	}
 }
 
@@ -81,9 +95,8 @@ class ActionLockedDoors : ActionOpenDoors
 		return false;
 	}
 	
-	override void OnEndServer(ActionData action_data)
+	override protected bool CreatesNoise()
 	{
-		//! Original action didn't add any noise to the NoiseSystem
-		//super.OnEndServer(action_data);
+		return false;
 	}
 };

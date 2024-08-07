@@ -42,6 +42,7 @@ class CameraToolsMenu extends UIScriptedMenu
 	protected ButtonWidget														m_Stop;
 	protected ButtonWidget														m_Save;
 	protected ButtonWidget														m_Load;
+	protected ButtonWidget														m_Reset;
 	
 	protected ButtonWidget														m_AddKeyframe;
 	protected ButtonWidget														m_SaveKeyframe;
@@ -58,37 +59,40 @@ class CameraToolsMenu extends UIScriptedMenu
 	protected EditBoxWidget 													m_CameraEditbox;
 	protected TextWidget 														m_CameraValues;
 	
+	protected string m_CameraToolsDataPath;
+	
 	void CameraToolsMenu()
 	{
-		m_Cameras	= new array<ref CTKeyframe>;
-		m_Events	= new array<ref CTEvent>;
-		m_Actors	= new array<ref CTActor>;
+		m_CameraToolsDataPath = "$profile:/CameraTools";
+		m_Cameras	= new array<ref CTKeyframe>();
+		m_Events	= new array<ref CTEvent>();
+		m_Actors	= new array<ref CTActor>();
 		
-		m_Camera1	= Camera.Cast( GetGame().CreateObject( "staticcamera", GetGame().GetPlayer().GetPosition(), true ) );
-		m_Camera2	= Camera.Cast( GetGame().CreateObject( "staticcamera", GetGame().GetPlayer().GetPosition(), true ) );
+		m_Camera1	= Camera.Cast(GetGame().CreateObject("staticcamera", GetGame().GetPlayer().GetPosition(), true));
+		m_Camera2	= Camera.Cast(GetGame().CreateObject("staticcamera", GetGame().GetPlayer().GetPosition(), true));
 		
 		m_Instance	= this;
 	}
 	
 	void ~CameraToolsMenu()
 	{
-		m_Camera1.SetActive( false );
-		m_Camera2.SetActive( false );
+		SaveData();
+
+		m_Camera1.SetActive(false);
+		m_Camera2.SetActive(false);
 		
-		//GetGame().ObjectDelete( m_Camera1 );
-		//GetGame().ObjectDelete( m_Camera2 );
+		DeveloperFreeCamera.DisableFreeCamera(PlayerBase.Cast(GetGame().GetPlayer()), false);
 		
-		DeveloperFreeCamera.DisableFreeCamera( PlayerBase.Cast( GetGame().GetPlayer() ), false );
-		
-		MissionGameplay ms	= MissionGameplay.Cast( GetGame().GetMission() );
+		MissionGameplay ms = MissionGameplay.Cast(GetGame().GetMission());
 		if (ms)
-			ms.GetHud().Show( true );
+			ms.GetHud().Show(true);
 	}
 	
 	override void OnShow()
 	{
 		super.OnShow();
-		if ( !m_IsPlaying )
+
+		if (!m_IsPlaying)
 		{
 			GetGame().GetMission().AddActiveInputExcludes({"menu"});
 		}
@@ -97,7 +101,8 @@ class CameraToolsMenu extends UIScriptedMenu
 	override void OnHide()
 	{
 		super.OnHide();
-		if ( !m_IsPlaying && GetGame() && GetGame().GetMission() && GetGame().GetUIManager())
+
+		if (!m_IsPlaying && GetGame() && GetGame().GetMission() && GetGame().GetUIManager())
 		{
 			GetGame().GetUIManager().ShowUICursor(false);
 			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
@@ -106,19 +111,19 @@ class CameraToolsMenu extends UIScriptedMenu
 	
 	void SelectKeyframe( CTKeyframe kf )
 	{
-		if ( m_SelectedKeyframe )
+		if (m_SelectedKeyframe)
 			m_SelectedKeyframe.Unselect();
 		
 		m_SelectedKeyframe = kf;
 		m_SelectedKeyframe.Select();
 	}
 	
-	void SelectEvent( CTEvent ev )
+	void SelectEvent(CTEvent ev)
 	{
 		m_SelectedEvent = ev;
 	}
 	
-	void SelectActor( CTActor ac )
+	void SelectActor(CTActor ac)
 	{
 		m_SelectedActor = ac;
 	}
@@ -146,6 +151,7 @@ class CameraToolsMenu extends UIScriptedMenu
 		m_Stop					= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "stop" ) );
 		m_Save					= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "save" ) );
 		m_Load					= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "load" ) );
+		m_Reset					= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "reset" ) );
 		
 		m_SaveKeyframe			= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "save_keyframe" ) );
 		m_DeleteKeyframe		= ButtonWidget.Cast( layoutRoot.FindAnyWidget( "delete_keyframe" ) );
@@ -164,6 +170,9 @@ class CameraToolsMenu extends UIScriptedMenu
 		DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( GetGame().GetPlayer() ) );
 		
 		m_BlurEditWidget.SetText( "0.0" );
+		
+		LoadData();
+
 		return layoutRoot;
 	}
 	
@@ -190,75 +199,123 @@ class CameraToolsMenu extends UIScriptedMenu
 	
 	void LoadData()
 	{
-		if ( !FileExist( g_Game.GetMissionFolderPath() + "/CameraTools" ) )
-			MakeDirectory( g_Game.GetMissionFolderPath() + "/CameraTools" );
+		if (!FileExist(m_CameraToolsDataPath))
+			MakeDirectory(m_CameraToolsDataPath);
 		
 		m_Cameras.Clear();
 		m_Events.Clear();
 		m_Actors.Clear();
 
 		string errorMessage;
-		CTSaveStructure save_data = new CTSaveStructure();
-		if (!JsonFileLoader<ref CTSaveStructure>.LoadFile(g_Game.GetMissionFolderPath() + "/CameraTools/keyframe_data.json", save_data, errorMessage))
-			ErrorEx(errorMessage);
+		CTSaveStructure saveData = new CTSaveStructure();
+		if (!JsonFileLoader<ref CTSaveStructure>.LoadFile(m_CameraToolsDataPath + "/keyframe_data.json", saveData, errorMessage))
+			SaveData();
 		
-		m_InterpTypeCombo.SetCurrentItem( save_data.m_InterpType );
-		m_InterpTypeSpeedCombo.SetCurrentItem( save_data.m_InterpSpeed );
-		SetBlurValue( save_data.m_BlurValue );
+		m_InterpTypeCombo.SetCurrentItem(saveData.m_InterpType);
+		m_InterpTypeSpeedCombo.SetCurrentItem(saveData.m_InterpSpeed);
+		SetBlurValue(saveData.m_BlurValue);
 		
-		foreach ( Param6<vector, vector, float, float, float, int> transform : save_data.m_Cameras )
+		foreach (Param6<vector, vector, float, float, float, int> transform : saveData.m_Cameras)
 		{
-			CTKeyframe kf = new CTKeyframe( m_Cameras.Count(), transform.param1, transform.param2, transform.param3, transform.param4, transform.param5, transform.param6, GetTotalTime( m_Cameras.Count() ), m_KeyframeContent, this );
-			kf.SetInterpTime( transform.param3 );
-			m_Cameras.Insert( kf );
+			CTKeyframe keyFrame = new CTKeyframe(
+				m_Cameras.Count(),
+				transform.param1,
+				transform.param2,
+				transform.param3,
+				transform.param4,
+				transform.param5,
+				transform.param6,
+				GetTotalTime(m_Cameras.Count()),
+				m_KeyframeContent,
+				this,
+			);
+
+			keyFrame.SetInterpTime(transform.param3);
+			m_Cameras.Insert(keyFrame);
 		}
 		
-		foreach ( Param4<int, int, float, bool> event_t : save_data.m_Events )
+		foreach (Param4<int, int, float, bool> eventEntry : saveData.m_Events)
 		{
-			CTEvent ev = new CTEvent( m_Events.Count(), event_t.param1, m_EventContent, event_t.param4, this );
-			ev.SetEventType( event_t.param2 );
-			ev.SetEventTime( event_t.param3 );
-			m_Events.Insert( ev );
+			CTEvent ev = new CTEvent(
+				m_Events.Count(),
+				eventEntry.param1,
+				m_EventContent,
+				eventEntry.param4,
+				this,
+			);
+
+			ev.SetEventType(eventEntry.param2);
+			ev.SetEventTime(eventEntry.param3);
+			m_Events.Insert(ev);
 		}
 		
-		foreach ( Param5<vector, vector, string, ref array<string>, string> actor_t : save_data.m_Actors )
+		foreach (Param5<vector, vector, string, ref array<string>, string> actorEntry : saveData.m_Actors)
 		{
-			CTActor ac = new CTActor( m_Actors.Count(), actor_t.param1, actor_t.param2, actor_t.param3, actor_t.param4, actor_t.param5, this );
-			m_Actors.Insert( ac );
+			CTActor ac = new CTActor(m_Actors.Count(), actorEntry.param1, actorEntry.param2, actorEntry.param3, actorEntry.param4, actorEntry.param5, this);
+			m_Actors.Insert(ac);
 		}
 	}
 	
 	void SaveData()
 	{
-		if ( !FileExist( g_Game.GetMissionFolderPath() + "/CameraTools" ) )
-			MakeDirectory( g_Game.GetMissionFolderPath() + "/CameraTools" );
+		if (!FileExist(m_CameraToolsDataPath))
+			MakeDirectory(m_CameraToolsDataPath);
 		
-		CTSaveStructure save_data		= new CTSaveStructure();
-		save_data.m_InterpType			= m_InterpTypeCombo.GetCurrentItem();
-		save_data.m_InterpSpeed			= m_InterpTypeSpeedCombo.GetCurrentItem();
-		save_data.m_BlurValue			= GetBlurValue();
+		CTSaveStructure saveData		= new CTSaveStructure();
+		saveData.m_InterpType			= m_InterpTypeCombo.GetCurrentItem();
+		saveData.m_InterpSpeed			= m_InterpTypeSpeedCombo.GetCurrentItem();
+		saveData.m_BlurValue			= GetBlurValue();
 		
-		foreach ( CTKeyframe keyframe : m_Cameras )
+		foreach (CTKeyframe keyframe : m_Cameras)
 		{
-			Param6<vector, vector, float, float, float, int> transform = new Param6<vector, vector, float, float, float, int>( keyframe.GetPosition(), keyframe.GetOrientation(), keyframe.GetInterpTime(), keyframe.GetFOV(), keyframe.GetDOF(), keyframe.GetPin() );
-			save_data.m_Cameras.Insert( transform );
+			Param6<vector, vector, float, float, float, int> transform = new Param6<vector, vector, float, float, float, int>(
+				keyframe.GetPosition(),
+				keyframe.GetOrientation(),
+				keyframe.GetInterpTime(),
+				keyframe.GetFOV(),
+				keyframe.GetDOF(),
+				keyframe.GetPin(),
+			);
+			saveData.m_Cameras.Insert(transform);
 		}
 		
-		foreach ( CTEvent event_t : m_Events )
+		foreach (CTEvent eventEntry : m_Events)
 		{
-			Param4<int, int, float, bool> ev = new Param4<int, int, float, bool>( event_t.GetEventActor(), event_t.GetEventType(), event_t.GetEventTime(), event_t.GetEventWalk() );
-			save_data.m_Events.Insert( ev );
+			Param4<int, int, float, bool> ev = new Param4<int, int, float, bool>(
+				eventEntry.GetEventActor(),
+				eventEntry.GetEventType(),
+				eventEntry.GetEventTime(),
+				eventEntry.GetEventWalk(),
+			);
+			saveData.m_Events.Insert(ev);
 		}
 		
-		foreach ( CTActor actor_t : m_Actors )
+		foreach (CTActor actorEntry : m_Actors)
 		{
-			Param5<vector, vector, string, ref array<string>, string> ac = new Param5<vector, vector, string, ref array<string>, string>( actor_t.GetPosition(), actor_t.GetRotation(), actor_t.GetActorType(), actor_t.GetItems(), actor_t.GetHandsItem() );
-			save_data.m_Actors.Insert( ac );
+			Param5<vector, vector, string, ref array<string>, string> ac = new Param5<vector, vector, string, ref array<string>, string>(
+				actorEntry.GetPosition(),
+				actorEntry.GetRotation(),
+				actorEntry.GetActorType(),
+				actorEntry.GetItems(),
+				actorEntry.GetHandsItem(),
+			);
+			saveData.m_Actors.Insert(ac);
 		}
 
 		string errorMessage;
-		if (!JsonFileLoader<ref CTSaveStructure>.SaveFile(g_Game.GetMissionFolderPath() + "/CameraTools/keyframe_data.json", save_data, errorMessage))
+		if (!JsonFileLoader<ref CTSaveStructure>.SaveFile(m_CameraToolsDataPath + "/keyframe_data.json", saveData, errorMessage))
 			ErrorEx(errorMessage);
+	}
+	
+	void ResetAll()
+	{
+		CTSaveStructure saveData = new CTSaveStructure();
+
+		string errorMessage;
+		if (!JsonFileLoader<ref CTSaveStructure>.SaveFile(m_CameraToolsDataPath + "/keyframe_data.json", saveData, errorMessage))
+			ErrorEx(errorMessage);
+		
+		LoadData();
 	}
 	
 	float GetTotalTime( int index )
@@ -409,7 +466,7 @@ class CameraToolsMenu extends UIScriptedMenu
 			
 			DeveloperFreeCamera.DisableFreeCamera( PlayerBase.Cast( GetGame().GetPlayer() ), false );
 			
-			int time					= SetCameraData( GetCameraLine( 0 ), GetCameraLine( 1 ) );
+			float time					= SetCameraData( GetCameraLine( 0 ), GetCameraLine( 1 ) );
 			
 			if ( GetCameraLine( 0 ).param6 > -1 )
 			{
@@ -575,7 +632,7 @@ class CameraToolsMenu extends UIScriptedMenu
 			
 			if ( Camera.GetCurrentCamera().GetPosition() == m_NextCamPosition || ( m_FollowingTimeFinished != -1 && m_Time >= m_FollowingTimeFinished ) )
 			{
-				int time;
+				float time;
 				if ( GetCameraLine( m_NextCameraIndex - 1 ).param6 > -1 )
 				{
 					m_NextCameraIndex--;
@@ -813,6 +870,11 @@ class CameraToolsMenu extends UIScriptedMenu
 			else if ( w == m_Load )
 			{
 				LoadData();
+				return true;
+			}
+			else if (w == m_Reset)
+			{
+				ResetAll();
 				return true;
 			}
 			else if ( w == m_AddActor )

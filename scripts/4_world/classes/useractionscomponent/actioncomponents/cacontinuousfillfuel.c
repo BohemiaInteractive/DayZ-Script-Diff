@@ -23,8 +23,6 @@ class CAContinuousFillFuel : CAContinuousBase
 	{
 		m_Player = action_data.m_Player;
 		
-		Car car = Car.Cast(action_data.m_Target.GetObject());
-		
 		m_TimeElpased = 0;
 		m_SpentQuantity = 0;
 		
@@ -36,13 +34,27 @@ class CAContinuousFillFuel : CAContinuousBase
 		{
 			m_SpentUnits.param1 = 0;
 		}
+			
+		Transport vehicle = Transport.Cast(action_data.m_Target.GetObject());
+		m_QuantityUsedPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(),vehicle.GetLiquidThroughputCoef());
 		
-		m_QuantityUsedPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(),car.GetLiquidThroughputCoef());
+		Car car = Car.Cast(vehicle);
+		Boat boat = Boat.Cast(vehicle);
 		
-		float fuelCapacity = car.GetFluidCapacity( CarFluid.FUEL );
-		float currentFuel = car.GetFluidFraction( CarFluid.FUEL );
-		currentFuel = currentFuel * fuelCapacity;
+		float fuelCapacity, currentFuel;
+		if (car)
+		{
+			fuelCapacity = car.GetFluidCapacity( CarFluid.FUEL );
+			currentFuel = car.GetFluidFraction( CarFluid.FUEL );
+		}
+		else if (boat)
+		{
+			fuelCapacity = boat.GetFluidCapacity( BoatFluid.FUEL );
+			currentFuel = boat.GetFluidFraction( BoatFluid.FUEL );
+		}
 
+		
+		currentFuel = currentFuel * fuelCapacity;
 		m_EmptySpace = (fuelCapacity - currentFuel) * 1000;
 		m_ItemQuantity = action_data.m_MainItem.GetQuantity();
 
@@ -53,9 +65,7 @@ class CAContinuousFillFuel : CAContinuousBase
 
 	//---------------------------------------------------------------------------
 	override int Execute( ActionData action_data  )
-	{
-		Car car = Car.Cast(action_data.m_Target.GetObject());
-		
+	{		
 		if ( !action_data.m_Player )
 		{
 			return UA_ERROR;
@@ -69,7 +79,7 @@ class CAContinuousFillFuel : CAContinuousBase
 		{
 			if ( m_SpentQuantity_total < m_ItemQuantity )
 			{
-				m_AdjustedQuantityUsedPerSecond = action_data.m_Player.GetSoftSkillsManager().SubtractSpecialtyBonus( m_QuantityUsedPerSecond, m_Action.GetSpecialtyWeight(), true);
+				m_AdjustedQuantityUsedPerSecond = m_QuantityUsedPerSecond;//removed softskills 
 				m_SpentQuantity += m_AdjustedQuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
 				m_TimeElpased += action_data.m_Player.GetDeltaT();
 				
@@ -100,7 +110,7 @@ class CAContinuousFillFuel : CAContinuousBase
 		}
 		
 		CalcAndSetQuantity( action_data );
-		return UA_INTERRUPT;
+		return UA_CANCEL;
 	}	
 	
 	//---------------------------------------------------------------------------
@@ -127,9 +137,19 @@ class CAContinuousFillFuel : CAContinuousBase
 		
 		if ( GetGame().IsServer() )
 		{
-			Car car = Car.Cast(action_data.m_Target.GetObject());	
-			action_data.m_MainItem.AddQuantity( -m_SpentQuantity );
-			car.Fill( CarFluid.FUEL, (m_SpentQuantity * 0.001) );
+			Car car = Car.Cast(action_data.m_Target.GetObject());
+			Boat boat = Boat.Cast(action_data.m_Target.GetObject());	
+			
+			if (car)
+			{
+				action_data.m_MainItem.AddQuantity( -m_SpentQuantity );
+				car.Fill( CarFluid.FUEL, (m_SpentQuantity * 0.001) );
+			}	
+			else if (boat)
+			{
+				action_data.m_MainItem.AddQuantity( -m_SpentQuantity );
+				boat.Fill( BoatFluid.FUEL, (m_SpentQuantity * 0.001) );
+			}
 		}
 		
 		m_SpentQuantity = 0;

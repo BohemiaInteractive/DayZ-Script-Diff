@@ -143,37 +143,60 @@ class HudDebugWinHealth : HudDebugWinBase
 		int buttonID;
 		
 		if (w.GetName() == "ButtonMin")
+		{
 			buttonID = 0;
-		else if  (w.GetName() == "ButtonMax")
+			RunRPC(clickedEntry, buttonID);
+			return true;
+		}
+		else if (w.GetName() == "ButtonMax")
+		{
 			buttonID = 1;
-		else if  (w.GetName() == "ButtonAdd")
+			RunRPC(clickedEntry, buttonID);
+			return true;
+		}
+		else if (w.GetName() == "ButtonAdd")
+		{
 			buttonID = 2;
-		else if  (w.GetName() == "ButtonSubtract")
+			RunRPC(clickedEntry, buttonID);
+			return true;
+		}
+		else if (w.GetName() == "ButtonSubtract")
+		{
 			buttonID = 3;
+			RunRPC(clickedEntry, buttonID);
+			return true;
+		}
 		else if (w == m_ButtonTarget)
 		{
 			#ifdef DEVELOPER
 			buttonID = 4;
 			HandleTargetState(false);
+			RunRPC(clickedEntry, buttonID);
+			return true;
 			#endif
 		}
 		else if (w == m_ButtonSelf)
 		{
 			buttonID = 5;
 			HandleTargetState(true);
+			RunRPC(clickedEntry, buttonID);
+			return true;
 		}
 		
+		return false;
+	}
+	
+	void RunRPC(HudDebugWinHealthEntry entry, int buttonID)
+	{
 		Param3<int , string, string> params;
-		if (clickedEntry)
-			params = new Param3<int , string, string>( buttonID, clickedEntry.m_Zone, clickedEntry.m_HealthMode);
+		if (entry)
+			params = new Param3<int , string, string>( buttonID, entry.m_Zone, entry.m_HealthMode);
 		else 
 			params = new Param3<int , string, string>( buttonID, "", "");
 		
 		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 		if ( player )
 			player.RPCSingleParam( ERPCs.DEV_RPC_HEALTH_SET, params, true );
-
-		return true;
 	}
 	
 	// Self/target button visuals | true = self, false = target

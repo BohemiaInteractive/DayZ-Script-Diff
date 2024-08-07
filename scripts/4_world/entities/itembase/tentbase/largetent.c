@@ -152,11 +152,4 @@ class LargeTent extends TentBase
 	{
 		return "largetent_deploy_SoundSet";
 	}
-	
-	override void SetActions()
-	{
-		super.SetActions();
-		
-		//AddAction(ActionRepackTent);
-	}
 };

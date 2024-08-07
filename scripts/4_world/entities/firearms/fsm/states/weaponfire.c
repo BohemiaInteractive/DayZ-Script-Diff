@@ -319,6 +319,12 @@ class WeaponFireAndChamber extends WeaponFire
 		super.OnEntry(e);
 		if (e)
 		{
+			if (GetGame().IsServer())
+			{
+				PlayerBase playerOwner;
+				Class.CastTo(playerOwner, m_weapon.GetHierarchyParent());
+				m_weapon.AddJunctureToAttachedMagazine(playerOwner, 100);
+			}
 			if (!m_weapon.IsJammed())
 			{
 				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " ejected fired out casing"); }
@@ -330,6 +336,18 @@ class WeaponFireAndChamber extends WeaponFire
 				pushToChamberFromAttachedMagazine(m_weapon, mi);
 			}
 		}
+	}
+	
+	override void OnExit (WeaponEventBase e)
+	{
+		super.OnExit(e);
+		if (GetGame().IsServer())
+		{
+			PlayerBase playerOwner;
+			Class.CastTo(playerOwner, m_weapon.GetHierarchyParent());
+			m_weapon.ClearJunctureToAttachedMagazine(playerOwner);
+		}
+		
 	}
 };
 

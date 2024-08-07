@@ -19,6 +19,7 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 {
 	static const float 	CONST_UD_MIN	= -85.0;		//!< down limit
 	static const float 	CONST_UD_MAX	= 85.0;			//!< up limit
+	const float UP_ANGLE_CAP 			= 10;			// max up angle, doesnt require gamecode sync
 
 	static const float 	CONST_LR_MIN	= -160.0;		//!< down limit
 	static const float 	CONST_LR_MAX	= 160.0;		//!< up limit
@@ -62,7 +63,7 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 			m_fUpDownAngleAdd		= addAngles[0];
 			m_fLeftRightAngleAdd	= addAngles[1];
 		}
-		
+				
 		m_LagOffsetPosition = vector.Zero;
 		m_fLagOffsetVelocityX[0] = 0;
 		m_fLagOffsetVelocityY[0] = 0;
@@ -95,15 +96,16 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 				
 		//! create LS lag from vehicle velocities	
 		vector posDiffLS = vector.Zero;
-		vector rotDiffLS =  vector.Zero;
+		vector rotDiffLS = m_Transport.GetOrientation() * Math.DEG2RAD;
+		rotDiffLS[2] = 0;
 
 		if ( vehicle )
 		{
 			vector posDiffWS = GetVelocity(vehicle) * CONST_LINEAR_VELOCITY_STRENGTH;
-			posDiffLS = posDiffWS.InvMultiply3(playerTransformWS);
+			posDiffLS = posDiffLS + posDiffWS.InvMultiply3(playerTransformWS);
 
 			vector rotDiffWS = dBodyGetAngularVelocity(vehicle) * Math.RAD2DEG * CONST_ANGULAR_VELOCITY_STRENGTH;
-			rotDiffLS = rotDiffWS.InvMultiply3(playerTransformWS);
+			rotDiffLS = rotDiffLS;// + rotDiffWS.InvMultiply3(playerTransformWS);
 		}		
 			
 		//! smooth it!
@@ -111,26 +113,41 @@ class DayZPlayerCamera3rdPersonVehicle extends DayZPlayerCameraBase
 		m_LagOffsetPosition[1] = Math.SmoothCD(m_LagOffsetPosition[1], posDiffLS[1], m_fLagOffsetVelocityY, 0.3, 1000, pDt);
 		m_LagOffsetPosition[2] = Math.SmoothCD(m_LagOffsetPosition[2], posDiffLS[2], m_fLagOffsetVelocityZ, 0.3, 1000, pDt);
 
-		m_LagOffsetOrientation[0] = Math.SmoothCD(m_LagOffsetOrientation[0], rotDiffLS[1], m_fLagOffsetVelocityYaw, 0.3, 1000, pDt);
-		m_LagOffsetOrientation[1] = Math.SmoothCD(m_LagOffsetOrientation[1], rotDiffLS[2], m_fLagOffsetVelocityPitch, 0.3, 1000, pDt);
-		m_LagOffsetOrientation[2] = Math.SmoothCD(m_LagOffsetOrientation[2], rotDiffLS[0], m_fLagOffsetVelocityRoll, 0.3, 1000, pDt);
+		
+		m_LagOffsetOrientation[0] = Math.SmoothCDPI2PI(m_LagOffsetOrientation[0], rotDiffLS[0], m_fLagOffsetVelocityYaw, 0.3 / CONST_ANGULAR_LAG_PITCH_STRENGTH, 1000, pDt);
+		m_LagOffsetOrientation[1] = Math.SmoothCDPI2PI(m_LagOffsetOrientation[1], rotDiffLS[1], m_fLagOffsetVelocityPitch, 0.3, 1000, pDt);
+		m_LagOffsetOrientation[2] = Math.SmoothCDPI2PI(m_LagOffsetOrientation[2], rotDiffLS[2], m_fLagOffsetVelocityRoll, 0.3, 1000, pDt);
 		
 		//! setup orientation
 		vector rot;
-		rot[0] = CONST_ANGULAR_LAG_YAW_STRENGTH		* m_LagOffsetOrientation[0];
-		rot[1] = CONST_ANGULAR_LAG_PITCH_STRENGTH	* m_LagOffsetOrientation[1];
-		rot[2] = CONST_ANGULAR_LAG_ROLL_STRENGTH	* m_LagOffsetOrientation[2];
+		rot[0] = m_LagOffsetOrientation[0] * Math.RAD2DEG;
+		rot[1] = m_LagOffsetOrientation[1] * Math.RAD2DEG;
+		rot[2] = m_LagOffsetOrientation[2] * Math.RAD2DEG;
+		
+		float distance = m_fDistance;
 	
-		Math3D.YawPitchRollMatrix(GetCurrentOrientation() + rot, pOutResult.m_CameraTM);
+		if (m_CurrentCameraPitch > UP_ANGLE_CAP)	// restrict moving camera below surface level
+		{
+			vector clamped = GetCurrentOrientation() + rot;
+			clamped[1] = UP_ANGLE_CAP;
+			Math3D.YawPitchRollMatrix(clamped, pOutResult.m_CameraTM);
+			
+			distance = m_fDistance - (2 * Math.InverseLerp(UP_ANGLE_CAP, CONST_UD_MAX, m_CurrentCameraPitch));
+			
+		}
+		else
+			Math3D.YawPitchRollMatrix(GetCurrentOrientation() + rot, pOutResult.m_CameraTM);
 
 		//! setup position		
 		pOutResult.m_CameraTM[3] = cameraPosition - m_LagOffsetPosition;
 		
 		//! setup rest
-		pOutResult.m_fDistance 			= m_fDistance;
+		pOutResult.m_fDistance 			= distance;
 		pOutResult.m_fUseHeading 		= 0.0;
 		pOutResult.m_fInsideCamera 		= 0.0;
 		pOutResult.m_fIgnoreParentRoll 	= 1.0;
+		pOutResult.m_fIgnoreParentPitch = 1.0;
+		pOutResult.m_fIgnoreParentYaw 	= 1.0;
 		pOutResult.m_bUpdateEveryFrame 	= GetGame().IsPhysicsExtrapolationEnabled();
 		
 		StdFovUpdate(pDt, pOutResult);

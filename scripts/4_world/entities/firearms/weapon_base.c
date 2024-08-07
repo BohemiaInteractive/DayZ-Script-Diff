@@ -41,6 +41,8 @@ class Weapon_Base extends Weapon
 	const int SAMF_DEFAULT = WeaponWithAmmoFlags.CHAMBER | WeaponWithAmmoFlags.MAX_CAPACITY_MAG;
 	//! Random bullet quantity + maybe chambered round
 	const int SAMF_RNG = WeaponWithAmmoFlags.CHAMBER_RNG | WeaponWithAmmoFlags.QUANTITY_RNG;
+	//! Validation on client side delay to have time properly synchronize attachments needed for check
+	const float VALIDATE_DELAY = 5.0;
 	
 	protected const float DEFAULT_DAMAGE_ON_SHOT = 0.05;
 	protected ref array<ref AbilityRecord> m_abilities = new array<ref AbilityRecord>;		/// weapon abilities
@@ -69,7 +71,7 @@ class Weapon_Base extends Weapon
 	protected float m_ChanceToJamSync = 0;
 	protected ref PropertyModifiers m_PropertyModifierObject;
 	protected PhxInteractionLayers hit_mask = PhxInteractionLayers.CHARACTER | PhxInteractionLayers.BUILDING | PhxInteractionLayers.DOOR | PhxInteractionLayers.VEHICLE | PhxInteractionLayers.ROADWAY | PhxInteractionLayers.TERRAIN | PhxInteractionLayers.ITEM_SMALL | PhxInteractionLayers.ITEM_LARGE | PhxInteractionLayers.FENCE | PhxInteractionLayers.AI;
-
+	protected ref Timer m_DelayedValidationTimer;
 	void Weapon_Base()
 	{
 		//m_DmgPerShot		= ConfigGetFloat("damagePerShot");
@@ -79,6 +81,10 @@ class Weapon_Base extends Weapon
 		m_ButtstockAttachmentIdx = -1;
 		m_BurstCount = 0;
 		m_DOFProperties = new array<float>;
+		if (GetGame().IsClient())
+		{
+			m_DelayedValidationTimer = new Timer();
+		}
 		
 		if ( ConfigIsExisting("simpleHiddenSelections") )
 		{
@@ -1035,6 +1041,19 @@ class Weapon_Base extends Weapon
 		ResetBurstCount();
 	}
 	
+	void DelayedValidateAndRepair()
+	{
+		if (m_DelayedValidationTimer)
+		{
+			m_DelayedValidationTimer.Run(VALIDATE_DELAY , this, "ValidateAndRepair");
+		}
+		else
+		{
+			Error("[wpn] Weapon_Base::DelayedValidateAndRepair m_DelayedValidationTimer not initialized.");
+			ValidateAndRepair();
+		}
+	}
+	
 	void ValidateAndRepair()
 	{
 		if ( m_fsm )
@@ -1308,6 +1327,13 @@ class Weapon_Base extends Weapon
 				hcw.GetBaseAimingAngleLR() + player.GetOrientation()[0],
 				hcw.GetBaseAimingAngleUD(),
 				0.0);
+			
+			float xAimHandsOffset = hcw.GetAimingHandsOffsetLR();
+			float yAimHandsOffset = hcw.GetAimingHandsOffsetUD();
+			
+			yawPitchRoll[0] = yawPitchRoll[0] + xAimHandsOffset;
+			yawPitchRoll[1] = Math.Clamp( yawPitchRoll[1] + yAimHandsOffset, DayZPlayerCamera1stPerson.CONST_UD_MIN, DayZPlayerCamera1stPerson.CONST_UD_MAX );
+			
 			direction = yawPitchRoll.AnglesToVector();
 		}
 		else // Fallback to previously implemented logic
@@ -1356,7 +1382,7 @@ class Weapon_Base extends Weapon
 			player.GetMovementState(hms);
 			float leanAngle = hms.m_fLeaning * 35;
 			vector rotTM[3];
-			Math3D.YawPitchRollMatrix( Vector(0, 0, leanAngle), rotTM );
+			Math3D.YawPitchRollMatrix( Vector(xAimHandsOffset , yAimHandsOffset, leanAngle), rotTM );
 			Math3D.MatrixMultiply3(resTM, rotTM, resTM);
 			
 			// Draw relative TM diagnostic
@@ -1415,6 +1441,9 @@ class Weapon_Base extends Weapon
 			{
 				offset[1] = offset[1] + m_WeaponLiftCheckVerticalOffset;
 			}
+			
+			// 
+			offset = offset.InvMultiply3(rotTM);
 			
 			// 3. use the offset as the start position.
 			// it will not be perfect, but it should reflect
@@ -1846,6 +1875,27 @@ class Weapon_Base extends Weapon
 	override void OnDebugSpawn()
 	{
 		SpawnAmmo("", SAMF_DEFAULT);
+	}
+	
+	bool AddJunctureToAttachedMagazine(PlayerBase player, int timeoutMS)
+	{
+		Magazine mag = GetMagazine(GetCurrentMuzzle());
+		InventoryLocation il = new InventoryLocation();
+		if (mag)
+		{
+			return GetGame().AddInventoryJunctureEx(player, mag, il, false, timeoutMS);
+		}
+		
+		return true;
+	}
+	
+	void ClearJunctureToAttachedMagazine(PlayerBase player)
+	{
+		Magazine mag = GetMagazine(GetCurrentMuzzle());
+		if (mag)
+		{
+			GetGame().ClearJuncture(player, mag);
+		}
 	}
 };
 

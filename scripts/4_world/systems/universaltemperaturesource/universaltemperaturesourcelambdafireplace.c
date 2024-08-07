@@ -45,15 +45,15 @@ class UniversalTemperatureSourceLambdaFireplace : UniversalTemperatureSourceLamb
 
 	override void Execute(UniversalTemperatureSourceSettings pSettings, UniversalTemperatureSourceResult resultValues)
 	{
-		resultValues.m_Temperature = m_Temperature;
+//		resultValues.m_Temperature = m_Temperature;
 		//Debug.Log(string.Format("Execute: temperature: %1", resultValues.m_Temperature), "UTS Fireplace");
 		
 		if (pSettings.m_AffectStat)
 		{
 			//! set temperature to the item stat
-			pSettings.m_Parent.SetTemperature(m_Temperature);
+			pSettings.m_Parent.SetTemperatureDirect(m_Temperature);
 		}
 		
-		DryItemsInVicinity(pSettings);
+		super.Execute(pSettings, resultValues);
 	}
 }

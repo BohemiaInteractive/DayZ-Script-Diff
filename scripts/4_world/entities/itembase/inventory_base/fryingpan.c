@@ -1,4 +1,4 @@
-class FryingPan extends Inventory_Base
+class FryingPan : Inventory_Base
 {
 	// Cooking data
 	protected CookingMethodType 		m_CookingMethod;
@@ -44,6 +44,11 @@ class FryingPan extends Inventory_Base
 	override bool CanHaveTemperature()
 	{
 		return true;
+	}
+	
+	override float GetQuantityNormalizedScripted()
+	{
+		return 1.0;
 	}
 
 	override bool CanPutInCargo( EntityAI parent )

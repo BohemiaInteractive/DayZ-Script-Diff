@@ -58,8 +58,11 @@ class ActionTakeItemToHands: ActionInteractBase
 	override void OnExecute(ActionData action_data)
 	{
 		if (GetGame().IsDedicatedServer())
+		{
+			ClearActionJuncture(action_data);
 			return;
-	
+		}
+			
 		ItemBase ntarget = ItemBase.Cast(action_data.m_Target.GetObject());
 		ClearInventoryReservationEx(action_data);
 		
@@ -174,57 +177,50 @@ class ActionSwapItemToHands: ActionTakeItemToHands
 			m_Executable = true;
 	}
 	
-	override void OnExecuteServer(ActionData action_data)
+	override void OnExecute(ActionData action_data)
 	{
 		if (!m_Executable)
 			return;
 		
-		if (GetGame().IsMultiplayer())
-			return;
-		
-		PerformSwap(action_data);
-	}
-	
-	override void OnExecuteClient( ActionData action_data )
-	{
-		if (!m_Executable)
-			return;
-		
-		PerformSwap(action_data);
-	}
-	
-	override void OnEndServer( ActionData action_data )
-	{
-		if (m_Executable)
+		if (GetGame().IsDedicatedServer())
 		{
-			m_Executable = false;
-			return;
-		}
-		
-		if (GetGame().IsMultiplayer())
-			return;
-		
-		PerformSwap(action_data);
-	}
-	
-	override void OnEndClient( ActionData action_data )
-	{
-		if (m_Executable)
-		{
-			m_Executable = false;
+			ClearActionJuncture(action_data);
 			return;
 		}
 		
 		PerformSwap(action_data);
 	}
 	
+	override void OnEnd(ActionData action_data)
+	{
+		super.OnEnd(action_data);
+	
+		if (m_Executable)
+		{
+			m_Executable = false;
+			return;
+		}
+		
+		if (GetGame().IsDedicatedServer())
+		{
+			ClearActionJuncture(action_data);
+			return;
+		}
+		
+		PerformSwap(action_data);
+	}
+		
 	void PerformSwap( ActionData action_data )
 	{
+		ClearInventoryReservationEx(action_data);
+		
 		EntityAI ntarget = EntityAI.Cast(action_data.m_Target.GetObject());
 		if (action_data.m_Player)
 		{
 			InventoryMode invMode = InventoryMode.PREDICTIVE;
-			if (action_data.m_Player.NeedInventoryJunctureFromServer(ntarget, ntarget.GetHierarchyParent(), action_data.m_Player))
+			if (!GetGame().IsMultiplayer())
+				invMode = InventoryMode.LOCAL;
+			else if (action_data.m_Player.NeedInventoryJunctureFromServer(ntarget, ntarget.GetHierarchyParent(), action_data.m_Player))
 				invMode = InventoryMode.JUNCTURE;
 			
 			action_data.m_Player.TakeEntityToHandsImpl(invMode, ntarget);

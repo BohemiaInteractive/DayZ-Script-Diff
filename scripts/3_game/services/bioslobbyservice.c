@@ -12,7 +12,8 @@ enum ESortType
 	PING
 	FAVORITE,
 	PASSWORDED,
-	QUEUE
+	QUEUE,
+	MAP
 };
 
 enum ESortOrder
@@ -20,6 +21,119 @@ enum ESortOrder
 	ASCENDING,		
 	DESCENDING,
 };
+
+class ServerBrowserHelperFunctions
+{
+	protected static const string CHERNARUS_MAP_IMAGE = ""; // placeholder image path
+	protected static const string LIVONIA_MAP_IMAGE = ""; // placeholder image path
+	protected static const string SAKHAL_MAP_IMAGE = ""; // placeholder image path
+	protected static const string LOWERCASE_ALPHABET = "abcdefghijklmnopqrstuvwxyz"; // used for temporary hotfix
+	
+	// Returns internal map name (mission world name) depending on given map display name.
+	static string GetInternalMapName(string mapName)
+	{
+		string internalMapName;
+		string publicMapName = mapName;
+		publicMapName.ToLower();
+		
+		switch (publicMapName)
+		{
+			case "chernarus":
+			{
+				internalMapName = "chernarusplus";
+				break;
+			}
+			case "livonia":
+			{
+				internalMapName = "enoch";
+				break;
+			}
+			case "sakhal":
+			{
+				internalMapName = "sakhal";
+				break;
+			}
+		}
+		
+		return internalMapName;
+	}
+	
+	// Returns map display name depending on given internal map name (mission world name).
+	static string GetMapDisplayName(string mapName)
+	{
+		string publicMapName = mapName;
+		string internalMapName = mapName;
+		bool internalMap = false;
+		internalMapName.ToLower();
+
+		switch (internalMapName)
+		{
+			case "enoch":
+			{
+				publicMapName = "Livonia";
+				internalMap = true;
+				break;
+			}
+			case "chernarusplus":
+			{
+				publicMapName = "Chernarus";
+				internalMap = true;
+				break;
+			}
+			case "sakhal":
+			{
+				publicMapName = "Sakhal";
+				internalMap = true;
+				break;
+			}
+		}
+		
+		// publicMapName should never be a empty string but just in case we check before altering the string
+		// also only alters the first character if the given map name is not a offical map
+		if (!internalMap && publicMapName != "")
+		{
+			string fc = publicMapName[0];
+			if (fc != "")
+			{
+				if (LOWERCASE_ALPHABET.IndexOf(fc) > -1) // temporariy fix for VME until fixed internaly
+				{
+					fc.ToUpper();
+				}
+
+				publicMapName[0] = fc;
+			}
+		}
+
+		return publicMapName;
+	}
+	
+	// Returns map image texture path depending on given internal map name (mission world name).
+	static string GetServerMapImagePath(string mapName)
+	{
+		string image;
+		mapName.ToLower();
+		switch (mapName)
+		{
+			case "enoch":
+			{
+				image = LIVONIA_MAP_IMAGE;
+				break;
+			}
+			case "chernarusplus":
+			{
+				image = CHERNARUS_MAP_IMAGE;
+				break;
+			}
+			case "sakhal":
+			{
+				image = SAKHAL_MAP_IMAGE;
+				break;
+			}
+		}
+		
+		return image;
+	}
+}
 
 class GetServerModListResult
 {
@@ -38,8 +152,8 @@ class GetServersResultRow
 	int		m_HostPort; 			// PC is works
 	bool	m_Invisible;
 	bool	m_Official;
-	string	m_MapNameToRun; 		// PC not work always 0
-	bool	m_Modded; 				// PC not work always 0
+	string	m_MapNameToRun; 		// map that server is running: "enoch" for Livonia, "chernarusplus" for Chernarus, "sakhal" for Sakhal
+	bool	m_Modded; 				// specifies whether a PC server uses mods
 	int		m_ModeId; 				// identifies if third person is allowed on a CONSOLE server. On PC always 0
 	bool	m_AntiCheat;
 	int		m_RegionId; 			// PC not work always 0
@@ -114,6 +228,13 @@ class GetServersResultRow
 			{
 				return m_Name;
 			}
+			
+			case ESortType.MAP:
+			{
+				// m_MapNameToRun should never be a empty string but just in case we check before getting the map display name
+				if (m_MapNameToRun != "")
+					return ServerBrowserHelperFunctions.GetMapDisplayName(m_MapNameToRun);
+			}
 		}
 		
 		return "";
@@ -153,10 +274,10 @@ class GetServersResultRow
 	int CompareTo(GetServersResultRow other, ESortType sortType)
 	{	
 		// string comparison
-		if (sortType == ESortType.HOST)
+		if (sortType == ESortType.HOST || sortType == ESortType.MAP)
 		{
-			string val1 = this.GetValueStr(ESortType.HOST);
-			string val2 = other.GetValueStr(ESortType.HOST);
+			string val1 = this.GetValueStr(sortType);
+			string val2 = other.GetValueStr(sortType);
 			
 			if (val1 == val2)
 				return 0;

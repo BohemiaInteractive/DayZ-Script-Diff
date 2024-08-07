@@ -44,18 +44,6 @@ class CraftTannedLeather extends RecipeBase
 		m_IngredientUseSoftSkills[1] = false;	// set 'true' to allow modification of the values by softskills on this ingredient
 		
 		//----------------------------------------------------------------------------------------------------------------------
-		
-		//result1
-		AddResult("TannedLeather");				//add results here
-
-		m_ResultSetFullQuantity[0] = false;		//true = set full quantity, false = do nothing
-		m_ResultSetQuantity[0] = -1; 			//-1 = do nothing
-		m_ResultSetHealth[0] = -1;				//-1 = do nothing
-		m_ResultInheritsHealth[0] = -2;			// (value) == -1 means do nothing; a (value) >= 0 means this result will inherit health from ingredient number (value);(value) == -2 means this result will inherit health from all ingredients averaged(result_health = combined_health_of_ingredients / number_of_ingredients)
-		m_ResultInheritsColor[0] = -1;			// (value) == -1 means do nothing; a (value) >= 0 means this result classname will be a composite of the name provided in AddResult method and config value "color" of ingredient (value)
-		m_ResultToInventory[0] = -2;			//(value) == -2 spawn result on the ground;(value) == -1 place anywhere in the players inventory, (value) >= 0 means switch position with ingredient number(value)
-		m_ResultUseSoftSkills[0] = false;		// set 'true' to allow modification of the values by softskills on this result
-		m_ResultReplacesIngredient[0] = -1;		// value == -1 means do nothing; a value >= 0 means this result will transfer item propertiesvariables, attachments etc.. from an ingredient value
 	}
 	
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
@@ -67,8 +55,8 @@ class CraftTannedLeather extends RecipeBase
 		
 		//Evaluate the amount of Lime required to craft leather from Pelt (percentage based)
 		float yieldQuantity =  ingredient1.ConfigGetFloat("leatherYield");
-		float qtyModifier = (4 - ingredient1.GetHealthLevel(""))/4; // Normalize the health level so Pristine is 1 and Ruined is 0
-		yieldQuantity = yieldQuantity * qtyModifier;
+		float qtyModifier = (4 - ingredient1.GetHealthLevel(""))/4; // Normalize the health level so Pristine is 1 and Ruined is 0. Necessary like this on CLIENT
+		yieldQuantity = Math.Clamp(yieldQuantity * qtyModifier,1,float.MAX);
 
 		float m_NeededQuantity = (ingredient2.GetQuantityMax() * m_PercentageUsed) * yieldQuantity; 
 		if( ingredient1.ConfigGetFloat("leatherYield") >= 0 && ingredient2.GetQuantity() >= m_NeededQuantity)
@@ -87,29 +75,19 @@ class CraftTannedLeather extends RecipeBase
 	{
 		Debug.Log("Craft Tanned Leather","recipes");
 		
-		ItemBase result;
-		Class.CastTo(result, results.Get(0));
 		ItemBase ingredient1 = ingredients[0];
 		
 		//Set tanned leather output quantity
-		int quantity = ingredient1.ConfigGetFloat("leatherYield");
-		float qtyModifier = (4 - ingredient1.GetHealthLevel(""))/4; // Normalize the health level so Pristine is 1 and Ruined is 0
-		quantity = quantity * qtyModifier;
-
-		result.SetQuantity(quantity);
+		int yieldQuantity = ingredient1.ConfigGetFloat("leatherYield");
+		float qtyModifier = ingredient1.GetHealth01("","Health");
+		yieldQuantity = Math.Clamp(yieldQuantity * qtyModifier,1,float.MAX);
 		
 		//Use X% of GardenLime for each tanned leather item crafted
 		ItemBase gardenLime = ingredients[1];
-		float usedLime = (gardenLime.GetQuantityMax() * m_PercentageUsed) * quantity;
+		float usedLime = (gardenLime.GetQuantityMax() * m_PercentageUsed) * yieldQuantity;
 		gardenLime.SetQuantity(gardenLime.GetQuantity() - usedLime);
-
-		result.SetHealthMax("","");
 		
-		//Split stack if returned quantity over Max stack
-		if (quantity > result.GetQuantityMax())
-		{
-			//Allow spawn of a second stack of tanned leather
-			MiscGameplayFunctions.CreateItemBasePiles("TannedLeather", player.GetPosition(), (quantity - 8), result.GetMaxHealth() ,false);
-		}
+		//Create output piles
+		MiscGameplayFunctions.CreateItemBasePiles("TannedLeather", player.GetPosition(), yieldQuantity, float.MAX);
 	}
 }

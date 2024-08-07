@@ -462,6 +462,13 @@ class BaseBuildingBase extends ItemBase
 		SynchronizeBaseState();
 	}
 	
+	override void OnCreatePhysics()
+	{
+		super.OnCreatePhysics();
+		ConstructionInit();
+		SetPartsAfterStoreLoad();
+	}
+	
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
 		if (m_FixDamageSystemInit)
@@ -920,6 +927,11 @@ class BaseBuildingBase extends ItemBase
 		return true;
 	}
 	
+	override bool IsTakeable()
+	{
+		return false;
+	}
+	
 	//this into/outo parent.Cargo
 	override bool CanPutInCargo( EntityAI parent )
 	{
@@ -1155,8 +1167,6 @@ class BaseBuildingBase extends ItemBase
 		super.SetActions();
 		
 		AddAction(ActionDetachFromTarget);
-		//AddAction(ActionTakeHybridAttachment);
-		//AddAction(ActionTakeHybridAttachmentToHands);
 		RemoveAction(ActionTakeItem);
 		RemoveAction(ActionTakeItemToHands);
 	}

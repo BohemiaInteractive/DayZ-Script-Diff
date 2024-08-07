@@ -25,7 +25,6 @@ class FireplaceBase extends ItemBase
 	protected bool m_HasAshes						= false;
 	protected bool m_IsOven							= false;
 	protected bool m_HasStoneCircle 				= false;
-	protected bool m_RoofAbove 						= false;
 	protected bool m_NoIgnite 						= false;
 	protected int m_OvenAttachmentsLockState 		= -1;
 	protected FireplaceFireState m_FireState	 	= FireplaceFireState.NO_FIRE;
@@ -33,58 +32,48 @@ class FireplaceBase extends ItemBase
 	protected vector m_HalfExtents;
 	
 	//Fireplace params
-	protected float m_TemperatureLossMP				= 1.0;		//! determines how fast will the fireplace loose its temperature when cooling (lower is better)
 	protected float m_FuelBurnRateMP				= 1.0;		//! determines how fast will the fuel item burn before spending (lower is better)
 	
 	//cooking
 	protected ref Cooking m_CookingProcess;
 	
-	//
+	//temperature simulation constants
 	const float PARAM_SMALL_FIRE_TEMPERATURE 		= 150;		//! maximum fireplace temperature of a small fire (degree Celsius)
 	const float PARAM_NORMAL_FIRE_TEMPERATURE 		= 1000;		//! maximum fireplace temperature of a normal fire (degree Celsius)
+	const float PARAM_OUTDOOR_FIRE_TEMPERATURE		= 500;		//! maximum fireplace temperature of an outdoor fire (degree Celsius)
 	const float PARAM_MIN_FIRE_TEMPERATURE 			= 30;		//! minimum fireplace temperature under which the fireplace is inactive (degree Celsius)
-	const float	PARAM_TEMPERATURE_INCREASE 			= 3;		//! how much will temperature increase when fireplace is burning (degree Celsius per second)
-	const float	PARAM_TEMPERATURE_DECREASE 			= 3;		//! how much will temperature decrease when fireplace is cooling (degree Celsius per second)
+	const float	PARAM_TEMPERATURE_INCREASE 			= 10;		//! how much will temperature increase when fireplace is burning (degree Celsius per second)
+	const float	PARAM_TEMPERATURE_DECREASE 			= 10;		//! how much will temperature decrease when fireplace is cooling (degree Celsius per second)
 	const float	PARAM_MAX_WET_TO_IGNITE 			= 0.2;		//! maximum wetness value when the fireplace can be ignited
 	const float PARAM_MIN_TEMP_TO_REIGNITE 			= 30;		//! minimum fireplace temperature under which the fireplace can be reignited using air only (degree Celsius)
 	const float	PARAM_IGNITE_RAIN_THRESHOLD 		= 0.1;		//! maximum rain value when the fireplace can be ignited
 	const float	PARAM_BURN_WET_THRESHOLD 			= 0.40;		//! maximum wetness value when the fireplace is able to burn
-	const float	PARAM_WET_INCREASE_COEF 			= 0.02;		//! value for calculating of  wetness that fireplace gain when raining
 	const float	PARAM_WET_HEATING_DECREASE_COEF 	= 0.01;		//! value for calculating wetness loss during heating process
 	const float	PARAM_WET_COOLING_DECREASE_COEF 	= 0.002;	//! value for calculating wetness loss during cooling process
 	const float	PARAM_FIRE_CONSUM_RATE_AMOUNT		= 0.5;		//! base value of fire consumption rate (how many base energy will be spent on each update)
 	const float	PARAM_BURN_DAMAGE_COEF				= 5.0;		//! value for calculating damage on items located in fireplace cargo
-	const float	PARAM_ITEM_HEAT_TEMP_INCREASE_COEF	= 10;		//! value for calculating temperature increase on each heat update interval (degree Celsius)
-	const float	PARAM_ITEM_HEAT_MIN_TEMP			= 40;		//! minimum temperature for items that can be heated in fireplace cargo or as attachments (degree Celsius)
-	const float PARAM_MAX_ITEM_HEAT_TEMP_INCREASE	= 200;		//! maximum value of temperature of items in fireplace when heating (degree Celsius)
 	const float PARAM_FULL_HEAT_RADIUS 				= 2.0;		//! radius in which objects are fully heated by fire
 	const float PARAM_HEAT_RADIUS 					= 4.0;		//! radius in which objects are heated by fire
-	const float PARAM_HEAT_THROUGH_AIR_COEF			= 0.1;		//! DEPRECATED value for calculation of heat transfered from fireplace through air to player (environment)
-	const float PARAM_MAX_TRANSFERED_TEMPERATURE	= 25;		//! maximum value for temperature that will be transfered to player (environment)
-	//! 
+	const float PARAM_MAX_TRANSFERED_TEMPERATURE	= 20;		//! maximum value for temperature that will be transfered to player (environment)
+	
+	//staging constants
 	const int 	MIN_STONES_TO_BUILD_CIRCLE			= 8;		//! minimum amount of stones for circle
 	const int 	MIN_STONES_TO_BUILD_OVEN			= 16;		//! minimum amount of stones for oven
 	const int 	MAX_TEMPERATURE_TO_DISMANTLE_OVEN	= 40;		//! maximum temperature for dismantling oven
 	const float	MIN_CEILING_HEIGHT 					= 5;		//! min height of ceiling for fire to be ignited
-	//
-	const float TEMPERATURE_LOSS_MP_DEFAULT			= 1.0;
-	const float TEMPERATURE_LOSS_MP_STONES			= 0.90;		//10% boost
-	const float TEMPERATURE_LOSS_MP_OVEN			= 0.75;		//25% boost
-
+	
+	//fuel constants
 	const float FUEL_BURN_RATE_DEFAULT				= 1.0;
 	const float FUEL_BURN_RATE_STONES				= 0.92;
 	const float FUEL_BURN_RATE_OVEN					= 0.85;
 	
 	//! cooking
 	const float PARAM_COOKING_TEMP_THRESHOLD		= 100;		//! temperature threshold for starting coooking process (degree Celsius)
-	const float PARAM_COOKING_EQUIP_MAX_TEMP		= 250;		//! maximum temperature of attached cooking equipment (degree Celsius)
-	const float PARAM_COOKING_EQUIP_TEMP_INCREASE	= 10;		//! how much will temperature increase when attached on burning fireplace (degree Celsius)
-	//! 
+	//! timer constants
 	const int 	TIMER_HEATING_UPDATE_INTERVAL 		= 3;		//! update interval duration of heating process (seconds)
-	const int 	TIMER_COOLING_UPDATE_INTERVAL 		= 2;		//! update interval duration of cooling process (seconds)
+	const int 	TIMER_COOLING_UPDATE_INTERVAL 		= 3;		//! update interval duration of cooling process (seconds)
 	//! direct cooking slots
 	const int   DIRECT_COOKING_SLOT_COUNT			= 3;
-	const float	DIRECT_COOKING_SPEED				= 1.5;		// per second
 	const int   SMOKING_SLOT_COUNT					= 4;
 	const float SMOKING_SPEED 						= 1;		// per second
 
@@ -93,6 +82,11 @@ class FireplaceBase extends ItemBase
 	const int   LIFETIME_FIREPLACE_STONE_OVEN		= 604800;
 	
 	const float IGNITE_WIND_THRESHOLD				= 0.8; 		//fireplace can not be ignited above this multiple of max wind
+	
+	protected const float RAIN_EFFECT_LIMIT 		= 0.4;		//! rain level that triggers fireplace to start soaking
+	protected const float SNOWFALL_EFFECT_LIMIT 	= 1.3;		//! snowfall level that triggers fireplace to start soaking
+	protected const float RAIN_WETNESS_INCREASE 	= 0.02;		//! value for calculating of  wetness that fireplace gain when raining
+	protected const float SNOWFALL_WETNESS_INCREASE	= 0.01;		//! value for calculating of  wetness that fireplace gain when raining
 
 	//Timers
 	protected ref Timer m_HeatingTimer;
@@ -225,6 +219,14 @@ class FireplaceBase extends ItemBase
 	protected ref UniversalTemperatureSourceSettings m_UTSSettings;
 	protected ref UniversalTemperatureSourceLambdaFireplace m_UTSLFireplace;
 	
+	// surface wetness on heat modification
+	protected const float WET_SURFACE_INCREMENT		= 0.06;		//! size of wetness increment (per FP heating tick) added to overall FP wetness when ignited on wet surface
+	protected float m_SurfaceUnderWetnessModifier
+	
+	protected bool m_ThawnSurfaceUnderSupport;
+	protected ref UnderObjectDecalSpawnSettings m_UnderObjectDecalSpawnSettings;
+	protected ref UnderObjectDecalSpawnComponent m_UnderObjectDecalSpawnComponent;
+	
 	//================================================================
 	// INIT / STORE LOAD-SAVE
 	//================================================================
@@ -246,32 +248,48 @@ class FireplaceBase extends ItemBase
 			m_FireConsumableTypes.Insert(ATTACHMENT_EYEMASK_COLORBASE,	new FireConsumableType(ATTACHMENT_EYEMASK_COLORBASE, 	10, 	true,	"EyeMask_ColorBase"));
 			
 			//define fuel types
-			m_FireConsumableTypes.Insert(ATTACHMENT_STICKS, 		new FireConsumableType( ATTACHMENT_STICKS, 		40, 	false,	"WoodenStick"));
-			m_FireConsumableTypes.Insert(ATTACHMENT_FIREWOOD, 		new FireConsumableType( ATTACHMENT_FIREWOOD, 	100, 	false,	"Firewood"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_STICKS, 		new FireConsumableType(ATTACHMENT_STICKS, 		40, 	false,	"WoodenStick"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_FIREWOOD, 		new FireConsumableType(ATTACHMENT_FIREWOOD, 	100, 	false,	"Firewood"));
 		}
 
 		//calculate total energy
 		CalcAndSetTotalEnergy();
 		
 		//define fuel / kindling items (fire consumables)
-		m_FireConsumables = new ref map<ItemBase, ref FireConsumable>;
+		m_FireConsumables = new map<ItemBase, ref FireConsumable>();
 		
 		//default burning parameters
-		SetTemperatureLossMP( TEMPERATURE_LOSS_MP_DEFAULT );
-		SetFuelBurnRateMP( FUEL_BURN_RATE_DEFAULT );
+		SetFuelBurnRateMP(FUEL_BURN_RATE_DEFAULT);
 		
 		//synchronized variables
-		RegisterNetSyncVariableBool( "m_IsBurning" );
-		RegisterNetSyncVariableBool( "m_HasAshes" );
-		RegisterNetSyncVariableBool( "m_IsOven" );
-		RegisterNetSyncVariableBool( "m_HasStoneCircle" );
-		RegisterNetSyncVariableBool( "m_RoofAbove" );
-		RegisterNetSyncVariableInt( "m_FireState", FireplaceFireState.NO_FIRE, FireplaceFireState.COUNT );
-		RegisterNetSyncVariableBool( "m_IsSoundSynchRemote" );
-		RegisterNetSyncVariableBool( "m_IsPlaceSound" );
-		RegisterNetSyncVariableBool( "m_NoIgnite" );
+		RegisterNetSyncVariableBool("m_IsBurning");
+		RegisterNetSyncVariableBool("m_HasAshes");
+		RegisterNetSyncVariableBool("m_IsOven");
+		RegisterNetSyncVariableBool("m_HasStoneCircle");
+		RegisterNetSyncVariableBool("m_RoofAbove");
+		RegisterNetSyncVariableInt("m_FireState", FireplaceFireState.NO_FIRE, FireplaceFireState.COUNT);
+		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
+		RegisterNetSyncVariableBool("m_IsPlaceSound");
+		RegisterNetSyncVariableBool("m_NoIgnite");
 		
 		m_HalfExtents = vector.Zero;
+
+		m_SurfaceUnderWetnessModifier = 0.0;
+		
+		m_UTSSettings 						= new UniversalTemperatureSourceSettings();
+		m_UTSSettings.m_AffectStat			= true;
+		m_UTSSettings.m_ManualUpdate		= true;
+		m_UTSSettings.m_TemperatureMin		= 0;
+		m_UTSSettings.m_TemperatureMax		= PARAM_NORMAL_FIRE_TEMPERATURE;
+		m_UTSSettings.m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
+		m_UTSSettings.m_TemperatureCap		= PARAM_MAX_TRANSFERED_TEMPERATURE;
+		m_UTSSettings.m_RangeFull			= PARAM_FULL_HEAT_RADIUS;
+		m_UTSSettings.m_RangeMax			= PARAM_HEAT_RADIUS;
+		
+		m_UnderObjectDecalSpawnSettings		= new UnderObjectDecalSpawnSettings();
+		m_UnderObjectDecalSpawnSettings.m_RandomizeRotation = true;
+		m_UnderObjectDecalSpawnSettings.m_PositionOffset = "0 0.05 0";
+		m_UnderObjectDecalSpawnSettings.m_ScaleMax = 1.0;
 	}
 	
 	protected void ~FireplaceBase()
@@ -279,8 +297,12 @@ class FireplaceBase extends ItemBase
 		DestroyAreaDamage();
 
 		if (GetLightEntity())
-		{
 			GetLightEntity().FadeOut();
+		
+		if (m_ThawnSurfaceUnderSupport && m_UnderObjectDecalSpawnComponent)
+		{
+			m_UnderObjectDecalSpawnComponent.RemoveDecal();
+			m_UnderObjectDecalSpawnComponent = null;
 		}
 	}
 
@@ -290,24 +312,19 @@ class FireplaceBase extends ItemBase
 
 		//refresh visual on init
 		RefreshFireplaceVisuals();
+		if (m_CookingProcess == null)
+			m_CookingProcess = new Cooking();
 		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
- 			m_UTSSettings 					= new UniversalTemperatureSourceSettings();
-			m_UTSSettings.m_AffectStat		= true;
-			m_UTSSettings.m_ManualUpdate	= true;
-			m_UTSSettings.m_TemperatureMin	= 0;
-			m_UTSSettings.m_TemperatureMax	= PARAM_NORMAL_FIRE_TEMPERATURE;
-			m_UTSSettings.m_TemperatureCap	= PARAM_MAX_TRANSFERED_TEMPERATURE;
-			m_UTSSettings.m_RangeFull		= PARAM_FULL_HEAT_RADIUS;
-			m_UTSSettings.m_RangeMax		= PARAM_HEAT_RADIUS;
-			
-			m_UTSLFireplace = new UniversalTemperatureSourceLambdaFireplace();
-			m_UTSLFireplace.SetSmallFireplaceTemperatureMax(PARAM_SMALL_FIRE_TEMPERATURE);
-			m_UTSLFireplace.SetNormalFireplaceTemperatureMax(PARAM_NORMAL_FIRE_TEMPERATURE);
-
-			m_UTSource = new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLFireplace);
-		}		
+			InitializeTemperatureSources();
+		}
+		
+		if (m_ThawnSurfaceUnderSupport && !m_UnderObjectDecalSpawnComponent)
+		{
+			m_UnderObjectDecalSpawnComponent = new UnderObjectDecalSpawnComponent(m_UnderObjectDecalSpawnSettings, this);
+			m_UnderObjectDecalSpawnComponent.SpawnDecal();
+		}
 	}
 	
 	override void EEItemAttached(EntityAI item, string slot_name)
@@ -331,6 +348,30 @@ class FireplaceBase extends ItemBase
 		
 		//refresh physics after location change (with delay)
 		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplacePhysics);
+		
+		InventoryLocation loc = new InventoryLocation();
+		GetInventory().GetCurrentInventoryLocation(loc);
+		if (loc.GetType() == InventoryLocationType.GROUND)
+		{
+			if (IsOpen() && !IsOven())
+				CheckForRoofLimited(0); //roof check when moved to ground
+		
+			if (m_ThawnSurfaceUnderSupport && !m_UnderObjectDecalSpawnComponent)
+			{
+				m_UnderObjectDecalSpawnComponent = new UnderObjectDecalSpawnComponent(m_UnderObjectDecalSpawnSettings, this);
+				m_UnderObjectDecalSpawnComponent.SpawnDecal();
+			}
+		}
+		else
+		{
+			if (m_ThawnSurfaceUnderSupport && m_UnderObjectDecalSpawnComponent)
+			{
+				m_UnderObjectDecalSpawnComponent.RemoveDecal();
+				m_UnderObjectDecalSpawnComponent = null;
+			}
+		}
+		
+		m_SurfaceUnderWetnessModifier = GetSurfaceWetnessOnHeatModifier(this);
 	}
 	
 	override void OnAttachmentRuined(EntityAI attachment)
@@ -382,52 +423,49 @@ class FireplaceBase extends ItemBase
 	}	
 		
 	//on store save/load
-	override void OnStoreSave( ParamsWriteContext ctx )
+	override void OnStoreSave(ParamsWriteContext ctx)
 	{   
 		super.OnStoreSave(ctx);
 
 		//Save ashes state
-		ctx.Write( m_HasAshes );
+		ctx.Write(m_HasAshes);
 		
-		//Save temperature loss MP
-		ctx.Write( m_TemperatureLossMP );
-
 		//Save fuel burn rate MP
-		ctx.Write( m_FuelBurnRateMP );
+		ctx.Write(m_FuelBurnRateMP);
 		
 		//Save burning state
-		ctx.Write( m_IsBurning );
+		ctx.Write(m_IsBurning);
 	}
 	
-	override bool OnStoreLoad( ParamsReadContext ctx, int version )
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
-		if ( !super.OnStoreLoad(ctx, version) )
+		if (!super.OnStoreLoad(ctx, version))
 			return false;
 
 		//--- Fireplace data ---
 		//Load ashes state
-		if ( !ctx.Read( m_HasAshes ) )
+		if (!ctx.Read(m_HasAshes))
 		{
 			m_HasAshes = false;			//set default
 			return false;
 		}
 		
 		//Load temperature loss MP
-		if ( !ctx.Read( m_TemperatureLossMP ) )
+		if (version < 139 && !ctx.Read(m_TemperatureLossMP))
 		{
 			m_TemperatureLossMP = 1.0;	//set default
 			return false;
 		}
 		
 		//Load fuel burn rate MP
-		if ( !ctx.Read( m_FuelBurnRateMP ) )
+		if (!ctx.Read(m_FuelBurnRateMP))
 		{
 			m_FuelBurnRateMP = 1.0;		//set default
 			return false;
 		}
 		
 		//Load burning state, if true start fire
-		if ( !ctx.Read( m_IsBurning ) )
+		if (!ctx.Read(m_IsBurning))
 		{
 			m_IsBurning = false;		//set default
 			return false;
@@ -444,7 +482,7 @@ class FireplaceBase extends ItemBase
 		Synchronize();
 		
 		//start fire
-		if (IsBurning() )
+		if (IsBurning())
 		{
 			if (GetGame() && GetGame().IsServer()) 
 			{
@@ -458,14 +496,14 @@ class FireplaceBase extends ItemBase
 	//================================================================	
 	void Synchronize()
 	{
-		if ( GetGame() && GetGame().IsServer() )
+		if (GetGame() && GetGame().IsServer())
 		{
 			SetSynchDirty();
 			
-			if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
+			if (GetGame().IsMultiplayer() && GetGame().IsServer())
 			{
 				//Refresh visuals (on server)
-				GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( RefreshFireplaceVisuals );
+				GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplaceVisuals);
 			}
 		}
 	}
@@ -493,6 +531,9 @@ class FireplaceBase extends ItemBase
 				DestroyAreaDamage();
 			}
 		}
+		
+		if (m_ThawnSurfaceUnderSupport && m_UnderObjectDecalSpawnComponent)
+			m_UnderObjectDecalSpawnComponent.UpdateSize(Math.InverseLerp(0.0, GetTemperatureMax() * 0.6, GetTemperature()));
 	}
 	
 	//================================================================
@@ -536,6 +577,20 @@ class FireplaceBase extends ItemBase
 		return true;
 	}
 	
+	override bool IsSelfAdjustingTemperature()
+	{
+		return m_IsBurning || (m_CoolingTimer && m_CoolingTimer.IsRunning())); //FireplaceFireState.NO_FIRE?
+	}
+	
+	protected void InitializeTemperatureSources()
+	{
+		m_UTSLFireplace = new UniversalTemperatureSourceLambdaFireplace();
+		m_UTSLFireplace.SetSmallFireplaceTemperatureMax(PARAM_SMALL_FIRE_TEMPERATURE);
+		m_UTSLFireplace.SetNormalFireplaceTemperatureMax(PARAM_NORMAL_FIRE_TEMPERATURE);
+
+		m_UTSource = new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLFireplace);
+	}
+	
 	//cooking equipment
 	ItemBase GetCookingEquipment()
 	{
@@ -567,7 +622,7 @@ class FireplaceBase extends ItemBase
 	{
 		for (int i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++)
 		{
-			if ( m_DirectCookingSlots[i] )
+			if (m_DirectCookingSlots[i])
 			{
 				return true;
 			}
@@ -579,7 +634,7 @@ class FireplaceBase extends ItemBase
 	{
 		for (int i = 0; i < SMOKING_SLOT_COUNT; i++)
 		{
-			if ( m_SmokingSlots[i] )
+			if (m_SmokingSlots[i])
 			{
 				return true;
 			}
@@ -618,7 +673,7 @@ class FireplaceBase extends ItemBase
 		
 		// Light
 		#ifndef SERVER
-		if (IsBurning() ) 
+		if (IsBurning()) 
 		{
 			//turn light on
 			if (!GetLightEntity())
@@ -675,17 +730,14 @@ class FireplaceBase extends ItemBase
 		if (IsBarrelWithHoles() || IsFireplaceIndoor() || IsIndoorOven() || IsOven())
 		{
 			SetFuelBurnRateMP(FUEL_BURN_RATE_OVEN);
-			SetTemperatureLossMP(TEMPERATURE_LOSS_MP_OVEN);
 		}
 		else if (HasStoneCircle())
 		{
 			SetFuelBurnRateMP(FUEL_BURN_RATE_STONES);
-			SetTemperatureLossMP(TEMPERATURE_LOSS_MP_STONES);
 		}
 		else
 		{
 			SetFuelBurnRateMP(FUEL_BURN_RATE_DEFAULT);
-			SetTemperatureLossMP(TEMPERATURE_LOSS_MP_DEFAULT);
 		}
 		
 		// Oven attachments
@@ -708,46 +760,50 @@ class FireplaceBase extends ItemBase
 		
 		//VISUAL STATES
 		//Fuel state
-		if ( GetGame().IsServer() ) // SetAnimationPhase should ideally be called on server only..
+		if (GetGame().IsServer())
 		{
 			// Sticks state
-			if ( IsItemTypeAttached( ATTACHMENT_STICKS ) )
-				SetAnimationPhase( ANIMATION_STICKS, 0 );
+			if (IsItemTypeAttached(ATTACHMENT_STICKS))
+				SetAnimationPhase(ANIMATION_STICKS, 0);
 			else
-				SetAnimationPhase( ANIMATION_STICKS, 1 );
+				SetAnimationPhase(ANIMATION_STICKS, 1);
 			
 			// Firewood state
-			if ( IsItemTypeAttached( ATTACHMENT_FIREWOOD ) )
+			if (IsItemTypeAttached(ATTACHMENT_FIREWOOD))
 			{
-				if ( IsBurning() && HasAshes() )
+				if (IsBurning() && HasAshes())
 				{
-					SetAnimationPhase( ANIMATION_BURNT_WOOD, 0 ); // Because this might not be set under certain circumstances
-					SetAnimationPhase( ANIMATION_WOOD, 1 );
+					SetAnimationPhase(ANIMATION_BURNT_WOOD, 0); // Because this might not be set under certain circumstances
+					SetAnimationPhase(ANIMATION_WOOD, 1);
 				}
-				
-				if ( IsWet() || !IsBurning() )
+				else if (IsWet() || !IsBurning())
 				{
-					SetAnimationPhase( ANIMATION_BURNT_WOOD, 1 );
-					SetAnimationPhase( ANIMATION_WOOD, 0 );
+					SetAnimationPhase(ANIMATION_BURNT_WOOD, 1);
+					SetAnimationPhase(ANIMATION_WOOD, 0);
+				}
+				else
+				{
+					SetAnimationPhase(ANIMATION_BURNT_WOOD, 1);
+					SetAnimationPhase(ANIMATION_WOOD, 0);
 				}
 			}
 			else
 			{
-				SetAnimationPhase( ANIMATION_WOOD, 1 );
-				SetAnimationPhase( ANIMATION_BURNT_WOOD, 1 );		
+				SetAnimationPhase(ANIMATION_WOOD, 1);
+				SetAnimationPhase(ANIMATION_BURNT_WOOD, 1);
 			}	
 				
 			// Kindling state
-			if ( GetKindlingCount() != 0 )
-				SetAnimationPhase( ANIMATION_KINDLING, 0 );
+			if (GetKindlingCount() != 0)
+				SetAnimationPhase(ANIMATION_KINDLING, 0);
 			else
-				SetAnimationPhase( ANIMATION_KINDLING, 1 );
+				SetAnimationPhase(ANIMATION_KINDLING, 1);
 	
 			// Ashes state
-			if ( HasAshes() )
-				SetAnimationPhase( ANIMATION_ASHES, 0 );
+			if (HasAshes())
+				SetAnimationPhase(ANIMATION_ASHES, 0);
 			else
-				SetAnimationPhase( ANIMATION_ASHES, 1 );
+				SetAnimationPhase(ANIMATION_ASHES, 1);
 
 			// Stone variations
 			if (HasStones())
@@ -780,25 +836,26 @@ class FireplaceBase extends ItemBase
 		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplacePhysics);
 	}
 
+	//! DEPRECATED
 	protected void SetBurntFirewood()
 	{
-		if ( GetGame().IsServer() && IsInAnimPhase( ANIMATION_WOOD ) )
+		if (GetGame().IsServer() && IsInAnimPhase(ANIMATION_WOOD))
 		{
-			SetAnimationPhase( ANIMATION_WOOD, 1 );
-			SetAnimationPhase( ANIMATION_BURNT_WOOD, 0 );				
+			SetAnimationPhase(ANIMATION_WOOD, 1);
+			SetAnimationPhase(ANIMATION_BURNT_WOOD, 0);
 		}	
 	}
 	
 	//Refresh fireplace object physics
 	void RefreshFireplacePhysics();
 	
-	protected void RefreshFireParticlesAndSounds( bool force_refresh )
+	protected void RefreshFireParticlesAndSounds(bool force_refresh)
 	{
 		FireplaceFireState fire_state = GetFireState();
 		
-		if ( m_LastFireState != fire_state || force_refresh )
+		if (m_LastFireState != fire_state || force_refresh)
 		{
-			switch ( fire_state )
+			switch (fire_state)
 			{
 				case FireplaceFireState.START_FIRE:
 				{
@@ -817,7 +874,7 @@ class FireplaceBase extends ItemBase
 					
 					ParticleSmallFireStart();
 					
-					if ( CanShowSmoke() ) 
+					if (CanShowSmoke()) 
 						ParticleSmallSmokeStart();
 					else
 						ParticleSmallSmokeStop();
@@ -842,7 +899,7 @@ class FireplaceBase extends ItemBase
 					
 					ParticleNormalFireStart();
 					
-					if ( CanShowSmoke() ) 
+					if (CanShowSmoke()) 
 						ParticleNormalSmokeStart();
 					else
 						ParticleNormalSmokeStop();
@@ -907,7 +964,7 @@ class FireplaceBase extends ItemBase
 					
 					ParticleSteamExtinguishingStop();
 					
-					if ( CanShowSmoke() ) 
+					if (CanShowSmoke()) 
 						ParticleSteamEndStart();
 					else
 						ParticleSteamEndStop();
@@ -966,28 +1023,28 @@ class FireplaceBase extends ItemBase
 	protected void StopAllParticlesAndSounds()
 	{
 		// go through all fireplace particles
-		if ( m_ParticleFireStart )
-			StopParticle( m_ParticleFireStart );
-		if ( m_ParticleSmallFire )
-			StopParticle( m_ParticleSmallFire );
-		if ( m_ParticleNormalFire )
-			StopParticle( m_ParticleNormalFire );
-		if ( m_ParticleSmallSmoke )
-			StopParticle( m_ParticleSmallSmoke );
-		if ( m_ParticleNormalSmoke )
-			StopParticle( m_ParticleNormalSmoke );
-		if ( m_ParticleFireEnd )
-			StopParticle( m_ParticleFireEnd );
-		if ( m_ParticleSteamEnd )
-			StopParticle( m_ParticleSteamEnd );
-		if ( m_ParticleSteamExtinguishing )
-			StopParticle( m_ParticleSteamExtinguishing );
+		if (m_ParticleFireStart)
+			StopParticle(m_ParticleFireStart);
+		if (m_ParticleSmallFire)
+			StopParticle(m_ParticleSmallFire);
+		if (m_ParticleNormalFire)
+			StopParticle(m_ParticleNormalFire);
+		if (m_ParticleSmallSmoke)
+			StopParticle(m_ParticleSmallSmoke);
+		if (m_ParticleNormalSmoke)
+			StopParticle(m_ParticleNormalSmoke);
+		if (m_ParticleFireEnd)
+			StopParticle(m_ParticleFireEnd);
+		if (m_ParticleSteamEnd)
+			StopParticle(m_ParticleSteamEnd);
+		if (m_ParticleSteamExtinguishing)
+			StopParticle(m_ParticleSteamExtinguishing);
 
 		// go through all fireplace sounds
-		if ( m_SoundFireLoop )
-			StopSoundSet( m_SoundFireLoop );
-		if ( m_SoundFire )
-			StopSoundSet( m_SoundFire );
+		if (m_SoundFireLoop)
+			StopSoundSet(m_SoundFireLoop);
+		if (m_SoundFire)
+			StopSoundSet(m_SoundFire);
 	}
 
 	bool CanShowSmoke()
@@ -1006,25 +1063,25 @@ class FireplaceBase extends ItemBase
 			//Start fire
 			if (temperature <= PARAM_MIN_FIRE_TEMPERATURE)
 			{
-				if ( GetFireState() != FireplaceFireState.START_FIRE )
+				if (GetFireState() != FireplaceFireState.START_FIRE)
 				{
-					SetFireState( FireplaceFireState.START_FIRE );
+					SetFireState(FireplaceFireState.START_FIRE);
 				}
 			}
 			//Small fire
 			else if (temperature <= PARAM_SMALL_FIRE_TEMPERATURE)
 			{
-				if ( GetFireState() != FireplaceFireState.SMALL_FIRE )
+				if (GetFireState() != FireplaceFireState.SMALL_FIRE)
 				{
-					SetFireState( FireplaceFireState.SMALL_FIRE );
+					SetFireState(FireplaceFireState.SMALL_FIRE);
 				}
 			}
 			//Normal fire
 			else if (temperature > PARAM_SMALL_FIRE_TEMPERATURE)
 			{
-				if ( GetFireState() != FireplaceFireState.NORMAL_FIRE )
+				if (GetFireState() != FireplaceFireState.NORMAL_FIRE)
 				{
-					SetFireState( FireplaceFireState.NORMAL_FIRE );
+					SetFireState(FireplaceFireState.NORMAL_FIRE);
 				}
 			}			
 		}
@@ -1034,17 +1091,17 @@ class FireplaceBase extends ItemBase
 	// PARTICLES & SOUNDS
 	//================================================================
 	//returns true if particle started, false if not
-	protected bool PlayParticle( out Particle particle, int particle_type, vector pos, bool worldpos = false )
+	protected bool PlayParticle(out Particle particle, int particle_type, vector pos, bool worldpos = false)
 	{
-		if ( !particle && GetGame() && ( !GetGame().IsDedicatedServer() ) )
+		if (!particle && GetGame() && (!GetGame().IsDedicatedServer()))
 		{
-			if ( !worldpos )
+			if (!worldpos)
 			{
-				particle = ParticleManager.GetInstance().PlayOnObject( particle_type, this, pos );
+				particle = ParticleManager.GetInstance().PlayOnObject(particle_type, this, pos);
 			}
 			else
 			{
-				particle = ParticleManager.GetInstance().PlayInWorld( particle_type, pos );
+				particle = ParticleManager.GetInstance().PlayInWorld(particle_type, pos);
 			}
 			
 			return true;
@@ -1054,9 +1111,9 @@ class FireplaceBase extends ItemBase
 	}
 	
 	//returns true if particle stopped, false if not
-	protected bool StopParticle( out Particle particle )
+	protected bool StopParticle(out Particle particle)
 	{
-		if ( particle && GetGame() && ( !GetGame().IsDedicatedServer() ) )
+		if (particle && GetGame() && (!GetGame().IsDedicatedServer()))
 		{
 			particle.Stop();
 			particle = NULL;
@@ -1070,143 +1127,143 @@ class FireplaceBase extends ItemBase
 	//start fire
 	protected void ParticleFireStartStart()
 	{
-		if ( IsOven() )
+		if (IsOven())
 		{
-			PlayParticle( m_ParticleFireStart, PARTICLE_OVEN_FIRE_START, GetFireEffectPosition() );
+			PlayParticle(m_ParticleFireStart, PARTICLE_OVEN_FIRE_START, GetFireEffectPosition());
 		}
 		else
 		{
-			PlayParticle( m_ParticleFireStart, PARTICLE_FIRE_START, GetFireEffectPosition() );
+			PlayParticle(m_ParticleFireStart, PARTICLE_FIRE_START, GetFireEffectPosition());
 		}
 	}
 	
 	protected void ParticleFireStartStop()
 	{
-		StopParticle( m_ParticleFireStart );
+		StopParticle(m_ParticleFireStart);
 	}
 	
 	//small fire
 	protected void ParticleSmallFireStart()
 	{
-		if ( IsOven() )
+		if (IsOven())
 		{
-			PlayParticle( m_ParticleSmallFire, PARTICLE_OVEN_FIRE, GetFireEffectPosition() );
+			PlayParticle(m_ParticleSmallFire, PARTICLE_OVEN_FIRE, GetFireEffectPosition());
 		}
 		else
 		{
-			PlayParticle( m_ParticleSmallFire, PARTICLE_SMALL_FIRE, GetFireEffectPosition() );	
+			PlayParticle(m_ParticleSmallFire, PARTICLE_SMALL_FIRE, GetFireEffectPosition());	
 		}
 	}
 	
 	protected void ParticleSmallFireStop()
 	{
-		StopParticle( m_ParticleSmallFire );
+		StopParticle(m_ParticleSmallFire);
 	}	
 	
 	//normal fire
 	protected void ParticleNormalFireStart()
 	{
-		if ( IsOven() )
+		if (IsOven())
 		{
-			PlayParticle( m_ParticleNormalFire, PARTICLE_OVEN_FIRE, GetFireEffectPosition() );
+			PlayParticle(m_ParticleNormalFire, PARTICLE_OVEN_FIRE, GetFireEffectPosition());
 		}
 		else
 		{
-			PlayParticle( m_ParticleNormalFire, PARTICLE_NORMAL_FIRE, GetFireEffectPosition() );
+			PlayParticle(m_ParticleNormalFire, PARTICLE_NORMAL_FIRE, GetFireEffectPosition());
 		}
 	}
 	
 	protected void ParticleNormalFireStop()
 	{
-		StopParticle( m_ParticleNormalFire );
+		StopParticle(m_ParticleNormalFire);
 	}
 	
 	//small smoke
 	protected void ParticleSmallSmokeStart()
 	{
-		PlayParticle( m_ParticleSmallSmoke, PARTICLE_SMALL_SMOKE, GetSmokeEffectPosition() );
+		PlayParticle(m_ParticleSmallSmoke, PARTICLE_SMALL_SMOKE, GetSmokeEffectPosition());
 				
 		//calculate air resistance
 		float actual_height;
-		if ( GetCeilingHeight( actual_height ) )
+		if (GetCeilingHeight(actual_height))
 		{
-			float air_resistance = GetAirResistanceForSmokeParticles( actual_height );
+			float air_resistance = GetAirResistanceForSmokeParticles(actual_height);
 			
 			//alter smoke height
-			m_ParticleSmallSmoke.SetParameter( -1, EmitorParam.AIR_RESISTANCE, air_resistance );
+			m_ParticleSmallSmoke.SetParameter(-1, EmitorParam.AIR_RESISTANCE, air_resistance);
 		}
 					
-		if ( IsRoofAbove() )
+		if (IsRoofAbove() || !IsOpen() || IsOven())
 		{
-			m_ParticleSmallSmoke.SetParameter( -1, EmitorParam.WIND, false );
+			m_ParticleSmallSmoke.SetParameter(-1, EmitorParam.WIND, false);
 		}
 	}
 	
 	protected void ParticleSmallSmokeStop()
 	{
-		StopParticle( m_ParticleSmallSmoke );
+		StopParticle(m_ParticleSmallSmoke);
 	}
 	
 	//normal smoke
 	protected void ParticleNormalSmokeStart()
 	{
-		PlayParticle( m_ParticleNormalSmoke, PARTICLE_NORMAL_SMOKE, GetSmokeEffectPosition() );
+		PlayParticle(m_ParticleNormalSmoke, PARTICLE_NORMAL_SMOKE, GetSmokeEffectPosition());
 		
 		//calculate air resistance
 		float actual_height;
-		if ( GetCeilingHeight( actual_height ) )
+		if (GetCeilingHeight(actual_height))
 		{		
-			float air_resistance = GetAirResistanceForSmokeParticles( actual_height );
+			float air_resistance = GetAirResistanceForSmokeParticles(actual_height);
 			
 			//alter smoke height
-			m_ParticleNormalSmoke.SetParameter( -1, EmitorParam.AIR_RESISTANCE, air_resistance );
+			m_ParticleNormalSmoke.SetParameter(-1, EmitorParam.AIR_RESISTANCE, air_resistance);
 		}
 		
-		if ( IsRoofAbove() )
+		if (IsRoofAbove() || !IsOpen() || IsOven())
 		{
-			m_ParticleNormalSmoke.SetParameter( -1, EmitorParam.WIND, false );
+			m_ParticleNormalSmoke.SetParameter(-1, EmitorParam.WIND, false);
 		}
 	}
 	
 	protected void ParticleNormalSmokeStop()
 	{
-		StopParticle( m_ParticleNormalSmoke );
+		StopParticle(m_ParticleNormalSmoke);
 	}
 	
 	//fire end
 	protected void ParticleFireEndStart()
 	{
-		if ( IsOven() )
+		if (IsOven())
 		{
-			PlayParticle( m_ParticleFireEnd, PARTICLE_OVEN_FIRE_END, GetFireEffectPosition() );
+			PlayParticle(m_ParticleFireEnd, PARTICLE_OVEN_FIRE_END, GetFireEffectPosition());
 		}
 		else
 		{
-			PlayParticle( m_ParticleFireEnd, PARTICLE_FIRE_END, GetFireEffectPosition() );
+			PlayParticle(m_ParticleFireEnd, PARTICLE_FIRE_END, GetFireEffectPosition());
 		}
 	}
 	
 	protected void ParticleFireEndStop()
 	{
-		StopParticle( m_ParticleFireEnd );
+		StopParticle(m_ParticleFireEnd);
 	}
 	
 	protected void ParticleFireWindyNoIgniteStart()
 	{
-		if ( IsOven() )
+		if (IsOven())
 		{
-			PlayParticle( m_ParticleFireEnd, PARTICLE_OVEN_FIRE_END, GetFireEffectPosition() );
+			PlayParticle(m_ParticleFireEnd, PARTICLE_OVEN_FIRE_END, GetFireEffectPosition());
 		}
 		else
 		{
-			PlayParticle( m_ParticleFireEnd, PARTICLE_NO_IGNITE_WIND, GetFireEffectPosition() );
+			PlayParticle(m_ParticleFireEnd, PARTICLE_NO_IGNITE_WIND, GetFireEffectPosition());
 		}
 	}
 	
 	//steam extinguishing
 	protected void ParticleSteamExtinguishingStart()
 	{
-		PlayParticle( m_ParticleSteamExtinguishing, PARTICLE_STEAM_EXTINGUISHING, GetFireEffectPosition() );
+		PlayParticle(m_ParticleSteamExtinguishing, PARTICLE_STEAM_EXTINGUISHING, GetFireEffectPosition());
 	}
 	
 	protected void ParticleSteamExtinguishingStop()
@@ -1217,25 +1274,25 @@ class FireplaceBase extends ItemBase
 	//steam end
 	protected void ParticleSteamEndStart()
 	{
-		PlayParticle( m_ParticleSteamEnd, PARTICLE_STEAM_END, GetFireEffectPosition() );
+		PlayParticle(m_ParticleSteamEnd, PARTICLE_STEAM_END, GetFireEffectPosition());
 	}
 	
 	protected void ParticleSteamEndStop()
 	{
-		StopParticle( m_ParticleSteamEnd );
+		StopParticle(m_ParticleSteamEnd);
 	}
 	
 	protected void ParticleWetNoIgniteStart()
 	{
-		PlayParticle( m_ParticleSteamEnd, PARTICLE_STEAM_END, GetFireEffectPosition() );
+		PlayParticle(m_ParticleSteamEnd, PARTICLE_STEAM_END, GetFireEffectPosition());
 	}
 	
 	protected void ParticleWetNoIgniteStop()
 	{
-		StopParticle( m_ParticleSteamEnd );
+		StopParticle(m_ParticleSteamEnd);
 	}
 
-	bool GetCeilingHeight( out float actual_height )
+	bool GetCeilingHeight(out float actual_height)
 	{
 		vector from = this.GetPosition();
 		vector to = this.GetPosition();
@@ -1245,19 +1302,19 @@ class FireplaceBase extends ItemBase
 		vector contactDir;
 		int contactComponent;
 		
-		bool hit = DayZPhysics.RaycastRV( from, to, contactPos, contactDir, contactComponent, NULL, NULL, this );
-		actual_height = vector.Distance( from, contactPos ) + 1.0;
+		bool hit = DayZPhysics.RaycastRV(from, to, contactPos, contactDir, contactComponent, NULL, NULL, this);
+		actual_height = vector.Distance(from, contactPos) + 1.0;
 		
 		return hit;
 	}
 	
-	float GetAirResistanceForSmokeParticles( float actual_height )
+	float GetAirResistanceForSmokeParticles(float actual_height)
 	{
 		float air_res;
-		actual_height = Math.Clamp( actual_height, 0, 36 );
+		actual_height = Math.Clamp(actual_height, 0, 36);
 		
-		air_res = ( 6 - actual_height ) * 0.33;
-		air_res = Math.Clamp( air_res, 0, 2 );
+		air_res = (6 - actual_height) * 0.33;
+		air_res = Math.Clamp(air_res, 0, 2);
 		
 		return air_res;
 	}
@@ -1266,12 +1323,12 @@ class FireplaceBase extends ItemBase
 	//Get local fire and smoke effect position
 	protected vector GetFireEffectPosition()
 	{
-		return Vector( 0, 0.05, 0 );
+		return Vector(0, 0.05, 0);
 	}
 	
 	protected vector GetSmokeEffectPosition()
 	{
-		return Vector( 0, 0.05, 0 );
+		return Vector(0, 0.05, 0);
 	}
 
 	//================================================================
@@ -1281,43 +1338,43 @@ class FireplaceBase extends ItemBase
 	//Start
 	protected void SoundFireLightStart()
 	{
-		PlaySoundSetLoop( m_SoundFireLoop, SOUND_FIRE_LIGHT, 1.0, 1.0 );
+		PlaySoundSetLoop(m_SoundFireLoop, SOUND_FIRE_LIGHT, 1.0, 1.0);
 	}
 	
 	protected void SoundFireHeavyStart()
 	{
-		PlaySoundSetLoop( m_SoundFireLoop, SOUND_FIRE_HEAVY, 1.0, 2.0 );
+		PlaySoundSetLoop(m_SoundFireLoop, SOUND_FIRE_HEAVY, 1.0, 2.0);
 	}
 
 	protected void SoundFireNoFireStart()
 	{
-		PlaySoundSetLoop( m_SoundFireLoop, SOUND_FIRE_NO_FIRE, 2.0, 2.0 );
+		PlaySoundSetLoop(m_SoundFireLoop, SOUND_FIRE_NO_FIRE, 2.0, 2.0);
 	}
 	
 	protected void SoundFireExtinguishedStart()
 	{
-		PlaySoundSet( m_SoundFire, SOUND_FIRE_EXTINGUISHED, 0.1, 0.1 );
+		PlaySoundSet(m_SoundFire, SOUND_FIRE_EXTINGUISHED, 0.1, 0.1);
 	}	
 	
 	protected void SoundFireWetNoIgniteStart()
 	{
-		PlaySoundSet( m_SoundFire, SOUND_FIRE_EXTINGUISHED, 0.1, 0.1 );
+		PlaySoundSet(m_SoundFire, SOUND_FIRE_EXTINGUISHED, 0.1, 0.1);
 	}	
 
 	protected void SoundFireExtinguishingStart()
 	{
-		PlaySoundSetLoop( m_SoundFireLoop, SOUND_FIRE_EXTINGUISHING, 1.0, 0.5 );
+		PlaySoundSetLoop(m_SoundFireLoop, SOUND_FIRE_EXTINGUISHING, 1.0, 0.5);
 	}
 	
 	protected void SoundFireWindyNoIgniteStart()
 	{
-		PlaySoundSet( m_SoundFire, "ExtinguishByWind_SoundSet", 0, 0 );
+		PlaySoundSet(m_SoundFire, "ExtinguishByWind_SoundSet", 0, 0);
 	}	
 	
 	//Stop
 	protected void SoundFireStop()
 	{
-		StopSoundSet( m_SoundFireLoop );
+		StopSoundSet(m_SoundFireLoop);
 	}
 	
 	//================================================================
@@ -1362,7 +1419,7 @@ class FireplaceBase extends ItemBase
 		CalcAndSetQuantity();
 	}
 	
-	protected FireConsumable GetFireConsumableByItem( ItemBase item )
+	protected FireConsumable GetFireConsumableByItem(ItemBase item)
 	{
 		return m_FireConsumables.Get(item);
 	}
@@ -1409,7 +1466,7 @@ class FireplaceBase extends ItemBase
 	}
 
 	//Spend item that is used as consumable for fire (fuel, kindling)
-	//if 'amount == 0', the whole quantity will be consumed (quantity -= 1 )
+	//if 'amount == 0', the whole quantity will be consumed (quantity -= 1)
 	//debug
 	//int m_debug_fire_consume_time = 0;
 	protected void SpendFireConsumable(float amount)
@@ -1584,11 +1641,6 @@ class FireplaceBase extends ItemBase
 	protected void SetAshesState(bool has_ashes)
 	{
 		m_HasAshes = has_ashes;
-
-		if (m_HasAshes)
-		{
-			SetBurntFirewood();
-		}
 	}
 
 	//Is in oven state
@@ -1618,39 +1670,28 @@ class FireplaceBase extends ItemBase
 		return 0;
 	}
 
-	void SetOvenState( bool is_oven )
+	void SetOvenState(bool is_oven)
 	{
-		if ( m_IsOven != is_oven )
+		if (m_IsOven != is_oven)
 		{
 			m_IsOven = is_oven;
-			m_RoofAbove = is_oven;
 			
-			GetInventory().SetSlotLock( InventorySlots.GetSlotIdFromString("Stones") , is_oven);
+			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString("Stones") , is_oven);
 			
 			Synchronize();
 		}
 	}
-	void SetStoneCircleState( bool has_stonecircle )
+	
+	void SetStoneCircleState(bool has_stonecircle)
 	{
-		if ( m_HasStoneCircle != has_stonecircle )
+		if (m_HasStoneCircle != has_stonecircle)
 		{
 			m_HasStoneCircle = has_stonecircle;
 			
-			GetInventory().SetSlotLock( InventorySlots.GetSlotIdFromString("Stones") , has_stonecircle);
+			GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString("Stones") , has_stonecircle);
 			
 			Synchronize();
 		}
-	}
-	
-	//Temperature loss MP
-	protected float GetTemperatureLossMP()
-	{
-		return m_TemperatureLossMP;
-	}	
-	
-	protected void SetTemperatureLossMP( float value )
-	{
-		m_TemperatureLossMP = value;
 	}
 	
 	//Fuel burn rate MP
@@ -1659,7 +1700,7 @@ class FireplaceBase extends ItemBase
 		return m_FuelBurnRateMP;
 	}	
 	
-	protected void SetFuelBurnRateMP( float value )
+	protected void SetFuelBurnRateMP(float value)
 	{
 		m_FuelBurnRateMP = value;
 	}
@@ -1671,9 +1712,9 @@ class FireplaceBase extends ItemBase
 	}
 
 	//Sets fire state
-	protected void SetFireState( FireplaceFireState state )
+	protected void SetFireState(FireplaceFireState state)
 	{
-		if ( m_FireState != state )
+		if (m_FireState != state)
 		{
 			m_FireState = state;
 			
@@ -1683,7 +1724,7 @@ class FireplaceBase extends ItemBase
 		
 	void SetExtinguishingState()
 	{
-		SetFireState( FireplaceFireState.EXTINGUISHING_FIRE );
+		SetFireState(FireplaceFireState.EXTINGUISHING_FIRE);
 	}
 
 	//================================================================
@@ -1703,13 +1744,12 @@ class FireplaceBase extends ItemBase
 			m_CoolingTimer = null;
 		}
 		
-		//set under roof flag (was fire ignited under roof?)
-		if (MiscGameplayFunctions.IsUnderRoof(this))
-			m_RoofAbove = true;
-		
 		//start fire
 		if (!IsBurning() || force_start)
 		{
+			//roof check
+			CheckForRoofLimited(0);
+			
 			SetItemToConsume();
 			SetBurningState(true);
 			m_UTSource.SetActive(true);
@@ -1732,12 +1772,12 @@ class FireplaceBase extends ItemBase
 		//visual
 		SetObjectMaterial(0, MATERIAL_FIREPLACE_GLOW);
 		
-		if (IsWindy() && !IsRoofAbove() && !IsOven() && !IsBarrelWithHoles())
+		if (IsWindy() && !IsRoofAbove() && IsOpen() && !IsOven() && !IsBarrelWithHoles())
 		{
 			StopFire();
 			return;
 		}
-		
+
 		if (GetWet() > PARAM_BURN_WET_THRESHOLD)
 		{
 			StopFire(FireplaceFireState.EXTINGUISHED_FIRE);
@@ -1750,7 +1790,8 @@ class FireplaceBase extends ItemBase
 		
 		m_HeatingTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
 		m_HeatingTimer.Run(TIMER_HEATING_UPDATE_INTERVAL, this, "Heating", null, true);
-		
+		m_CookingProcess.SetCookingUpdateTime(TIMER_HEATING_UPDATE_INTERVAL);
+
 		//Setup the noise parameters on fire start
 		m_NoisePar = new NoiseParams();
 		if (IsRoofAbove() || IsOven() || IsFireplaceIndoor()) //If we have a roof, we are probably inside
@@ -1762,8 +1803,11 @@ class FireplaceBase extends ItemBase
 	//Do heating
 	protected void Heating()
 	{
-		float temperature = GetTemperature();
-		float temperature_modifier = 0;
+		float temperature;
+		float temperatureModifier = 0;
+		
+		if (IsOpen() && !IsOven())
+			CheckForRoofLimited(1000 * TIMER_HEATING_UPDATE_INTERVAL * 5);
 		
 		//check burning conditions
 		if (GetWet() > PARAM_BURN_WET_THRESHOLD)
@@ -1776,7 +1820,7 @@ class FireplaceBase extends ItemBase
 			if (m_FireConsumables.Count() == 0)
 			{
 				StopFire();
-				return; 				
+				return;
 			}
 		}
 		
@@ -1784,30 +1828,40 @@ class FireplaceBase extends ItemBase
 		float amount = PARAM_FIRE_CONSUM_RATE_AMOUNT * GetFuelBurnRateMP() * TIMER_HEATING_UPDATE_INTERVAL;
 		SpendFireConsumable(amount);
 		
-		//set wetness if raining and alter temperature modifier (which will lower temperature increase because of rain)
+		//set wetness and alter temperature modifier (which will lower temperature increase because of soaking)
 		float rain = GetGame().GetWeather().GetRain().GetActual();
-		if (rain >= PARAM_BURN_WET_THRESHOLD && !IsRoofAbove())
-		{
-			//set wet to fireplace
-			AddWetnessToFireplace(PARAM_WET_INCREASE_COEF * rain);
-			
-			//set temperature modifier
-			temperature_modifier = PARAM_TEMPERATURE_INCREASE * rain;
-		}
+		float combinedWindAndSnowfall = MiscGameplayFunctions.GetCombinedSnowfallWindValue();
+
+		if ((rain >= RAIN_EFFECT_LIMIT || combinedWindAndSnowfall >= SNOWFALL_EFFECT_LIMIT) && !IsRoofAbove() && IsOpen() && !IsOven())
+ 		{
+			if (rain > combinedWindAndSnowfall)
+			{
+				AddWetnessToFireplace(RAIN_WETNESS_INCREASE * rain);
+				temperatureModifier = PARAM_TEMPERATURE_DECREASE * rain;
+			}
+ 			else
+			{
+				AddWetnessToFireplace(SNOWFALL_WETNESS_INCREASE * combinedWindAndSnowfall);
+				temperatureModifier = PARAM_TEMPERATURE_DECREASE * combinedWindAndSnowfall;
+			}
+ 		}
 		//subtract wetness when heating and not raining above
 		else
 		{
 			AddWetnessToFireplace(-PARAM_WET_HEATING_DECREASE_COEF);
 		}
+		
+		if (m_SurfaceUnderWetnessModifier > 0.0)
+			AddWetnessToFireplace(m_SurfaceUnderWetnessModifier * WET_SURFACE_INCREMENT);
 
 		// temperature via UniversalTemperatureSource
 		m_UTSLFireplace.SetFuelCount(GetFuelCount());
-		temperature = GetTemperature() + (PARAM_TEMPERATURE_INCREASE * TIMER_HEATING_UPDATE_INTERVAL) - temperature_modifier;
+		temperature = GetTemperature() + (PARAM_TEMPERATURE_INCREASE * TIMER_HEATING_UPDATE_INTERVAL) - temperatureModifier;
 		m_UTSLFireplace.SetCurrentTemperature(temperature);
 		m_UTSource.Update(m_UTSSettings, m_UTSLFireplace);
 		
 		//check fire state
-		if ( GetFireState() != FireplaceFireState.EXTINGUISHING_FIRE )
+		if (GetFireState() != FireplaceFireState.EXTINGUISHING_FIRE)
 		{
 			RefreshFireState();
 		}
@@ -1818,72 +1872,43 @@ class FireplaceBase extends ItemBase
 		//manage cooking equipment (this applies only for case of cooking pot on a tripod)
 		if (HasCookingStand() && m_CookingEquipment)
 		{
-			float cook_equip_temp = m_CookingEquipment.GetTemperature();
-			
-			if ( cook_equip_temp >= PARAM_COOKING_TEMP_THRESHOLD )
-			{
-				//start cooking
-				CookWithEquipment();
-			}
-			
-			//DEBUG
-			/*
-			PlayerBase player = ( PlayerBase ) GetGame().GetPlayer();
-			string s_message = "cooking equipment temp = " + ftoa(cook_equip_temp) + " | PARAM_COOKING_TEMP_THRESHOLD = " + ftoa(PARAM_COOKING_TEMP_THRESHOLD);
-			if (player != NULL) {player.MessageAction (s_message);}
-			Print ( s_message );
-			*/
-			//set temperature to cooking equipment
-			cook_equip_temp = cook_equip_temp + PARAM_COOKING_EQUIP_TEMP_INCREASE;
-			if ( temperature <= PARAM_SMALL_FIRE_TEMPERATURE )
-			{
-				cook_equip_temp = Math.Clamp ( cook_equip_temp, PARAM_ITEM_HEAT_MIN_TEMP, PARAM_SMALL_FIRE_TEMPERATURE );
-			}
-			else
-			{
-				cook_equip_temp = Math.Clamp ( cook_equip_temp, PARAM_ITEM_HEAT_MIN_TEMP, PARAM_COOKING_EQUIP_MAX_TEMP );
-			}
-
-			m_CookingEquipment.SetTemperature( cook_equip_temp );
+			CookWithEquipment();
 		}
 
-		float cook_item_temp;
+		float cookingItemTemperature;
 		int i;
 		// manage cooking on direct cooking slots
-		if ( DirectCookingSlotsInUse() )
+		if (DirectCookingSlotsInUse())
 		{
-			for ( i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++ )
+			for (i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++)
 			{
-				if ( m_DirectCookingSlots[i] )
+				if (m_DirectCookingSlots[i])
 				{
-					cook_item_temp = m_DirectCookingSlots[i].GetTemperature();
-					if ( cook_item_temp >= PARAM_COOKING_TEMP_THRESHOLD )
-					{
-						CookOnDirectSlot( m_DirectCookingSlots[i], cook_item_temp, temperature );
-					}
+					cookingItemTemperature = m_DirectCookingSlots[i].GetTemperature();
+					CookOnDirectSlot(m_DirectCookingSlots[i], cookingItemTemperature, temperature);
 				}
 			}
 		}
 
 		// manage smoking slots
-		if ( SmokingSlotsInUse() )
+		if (SmokingSlotsInUse())
 		{
-			for ( i = 0; i < SMOKING_SLOT_COUNT; i++ )
+			for (i = 0; i < SMOKING_SLOT_COUNT; i++)
 			{
-				if ( m_SmokingSlots[i] )
+				if (m_SmokingSlots[i])
 				{
-					SmokeOnSmokingSlot( m_SmokingSlots[i], cook_item_temp, temperature );
+					SmokeOnSmokingSlot(m_SmokingSlots[i], cookingItemTemperature, temperature);
 				}
 			}
 		}
 		
 		//Make noise for AI, only at night
-		if ( GetGame().GetWorld().IsNight() && m_CanNoise )
+		if (GetGame().GetWorld().IsNight() && m_CanNoise)
 		{
 			NoiseSystem noise = GetGame().GetNoiseSystem();
-			if ( noise && m_NoisePar )
+			if (noise && m_NoisePar)
 			{
-				noise.AddNoisePos( this, GetPosition(), m_NoisePar);
+				noise.AddNoisePos(this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
 			}
 			m_CanNoise = false;
 		}
@@ -1897,8 +1922,12 @@ class FireplaceBase extends ItemBase
 	// 1. start cooling
 	// 2. cooling
 	// 3. stop cooling
-	void StopFire( FireplaceFireState fire_state = FireplaceFireState.END_FIRE )
+	void StopFire(FireplaceFireState fire_state = FireplaceFireState.END_FIRE)
 	{
+		//roof check
+		if (IsBurning())
+			CheckForRoofLimited(0);
+		
 		StopHeating();
 		SpendFireConsumable(0);
 		SetBurningState(false);
@@ -1935,38 +1964,48 @@ class FireplaceBase extends ItemBase
 		//Start cooling
 		m_CoolingTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
 		m_CoolingTimer.Run(TIMER_COOLING_UPDATE_INTERVAL, this, "Cooling", null, true);
+		m_CookingProcess.SetCookingUpdateTime(TIMER_COOLING_UPDATE_INTERVAL);
 	}
 
 	protected void Cooling()
 	{
 		float wetness = GetWet();
 		float temperature = GetTemperature();
-		float temperature_modifier = 0;
+		float temperatureModifier = 0;
+		
+		if (IsOpen() && !IsOven())
+			CheckForRoofLimited(1000 * TIMER_HEATING_UPDATE_INTERVAL * 5);
 		
 		if (!IsBurning() && temperature >= 10)
 		{
-			//check wetness
-			//set wetness if raining and alter temperature modifier (which will lower temperature increase because of rain)
+			//set wetness and alter temperature modifier (which will lower temperature increase because of soaking)
 			float rain = GetGame().GetWeather().GetRain().GetActual();
-			if (IsRainingAbove() && !IsRoofAbove())
-			{
-				//set wet to fireplace
-				AddWetnessToFireplace(PARAM_WET_INCREASE_COEF * rain);
-
-				//set temperature modifier
-				temperature_modifier = temperature_modifier + ( PARAM_TEMPERATURE_DECREASE * rain );
-			}
+			float combinedWindAndSnowfall = MiscGameplayFunctions.GetCombinedSnowfallWindValue();
+	
+			if ((rain >= RAIN_EFFECT_LIMIT || combinedWindAndSnowfall >= SNOWFALL_EFFECT_LIMIT) && !IsRoofAbove() && IsOpen() && !IsOven())
+	 		{
+				if (rain > combinedWindAndSnowfall)
+				{
+					AddWetnessToFireplace(RAIN_WETNESS_INCREASE * rain);
+					temperatureModifier = PARAM_TEMPERATURE_DECREASE * rain;
+				}
+	 			else
+				{
+					AddWetnessToFireplace(SNOWFALL_WETNESS_INCREASE * combinedWindAndSnowfall);
+					temperatureModifier = PARAM_TEMPERATURE_DECREASE * combinedWindAndSnowfall;
+				}
+	 		}
 			else //subtract wetness
 			{
 				AddWetnessToFireplace(-PARAM_WET_COOLING_DECREASE_COEF);
 			}
 			
 			//calculate already obtained wetness (e.g. extinguished by water)
-			temperature_modifier = temperature_modifier + ( PARAM_TEMPERATURE_DECREASE * wetness );
+			temperatureModifier = temperatureModifier + (PARAM_TEMPERATURE_DECREASE * wetness);
 
 			// temperature via UniversalTemperatureSource
 			m_UTSLFireplace.SetFuelCount(GetFuelCount());
-			temperature = GetTemperature() - (PARAM_TEMPERATURE_DECREASE * TIMER_COOLING_UPDATE_INTERVAL) - temperature_modifier;
+			temperature = GetTemperature() - (PARAM_TEMPERATURE_DECREASE * TIMER_COOLING_UPDATE_INTERVAL) - temperatureModifier;
 			m_UTSLFireplace.SetCurrentTemperature(temperature);
 			m_UTSource.Update(m_UTSSettings, m_UTSLFireplace);
 			
@@ -1974,51 +2013,39 @@ class FireplaceBase extends ItemBase
 			BurnItemsInFireplace();
 			
 			//cook with equipment if temperature of equipment is still high
-			if ( m_CookingEquipment )
+			if (m_CookingEquipment)
 			{
-				float cook_equip_temp = m_CookingEquipment.GetTemperature();
+				float cookEquipTemp = m_CookingEquipment.GetTemperature();
 				
-				if ( cook_equip_temp >= PARAM_COOKING_TEMP_THRESHOLD )
+				if (cookEquipTemp >= PARAM_COOKING_TEMP_THRESHOLD)
 				{
 					//cook
 					CookWithEquipment();
 				}
 			}
 
-			float cook_item_temp;
+			float cookingItemTemperature;
 			int i;
 
 			// manage cooking on direct cooking slots
-			if ( DirectCookingSlotsInUse() )
+			if (DirectCookingSlotsInUse())
 			{
-				for ( i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++ )
+				for (i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++)
 				{
-					if ( m_DirectCookingSlots[i] )
-					{
-						cook_item_temp = m_DirectCookingSlots[i].GetTemperature();
-						if ( cook_item_temp >= PARAM_COOKING_TEMP_THRESHOLD )
-						{
-							CookOnDirectSlot( m_DirectCookingSlots[i], cook_item_temp, temperature );
-						}
-					}
+					if (m_DirectCookingSlots[i])
+						CookOnDirectSlot(m_DirectCookingSlots[i], cookingItemTemperature, temperature);
 				}
 			}
 
 			// manage smoking slots
-			if ( SmokingSlotsInUse() )
+			if (SmokingSlotsInUse())
 			{
-				for ( i = 0; i < SMOKING_SLOT_COUNT; i++ )
+				for (i = 0; i < SMOKING_SLOT_COUNT; i++)
 				{
-					if ( m_SmokingSlots[i] )
-					{
-						SmokeOnSmokingSlot( m_SmokingSlots[i], cook_item_temp, temperature );
-					}
+					if (m_SmokingSlots[i])
+						SmokeOnSmokingSlot(m_SmokingSlots[i], cookingItemTemperature, temperature);
 				}
 			}
-
-			//Debug
-			//PlayerBase player = ( PlayerBase ) GetGame().GetPlayer();
-			//if (player != NULL) {player.MessageAction ( temperature.ToString() );}
 		}
 		else
 		{
@@ -2048,27 +2075,27 @@ class FireplaceBase extends ItemBase
 		if (GetCookingEquipment())
 		{
 			Bottle_Base cooking_pot = Bottle_Base.Cast(GetCookingEquipment());
-			if ( cooking_pot )
+			if (cooking_pot)
 				cooking_pot.RemoveAudioVisualsOnClient();
 		}
 
 		if (DirectCookingSlotsInUse())
 		{
-			for ( int i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++ )
+			for (int i = 0; i < DIRECT_COOKING_SLOT_COUNT; i++)
 			{
-				if ( m_DirectCookingSlots[i] )
+				if (m_DirectCookingSlots[i])
 				{
-					Bottle_Base cookingpot = Bottle_Base.Cast( m_DirectCookingSlots[i] );
-					if ( cookingpot )
+					Bottle_Base cookingpot = Bottle_Base.Cast(m_DirectCookingSlots[i]);
+					if (cookingpot)
 						cookingpot.RemoveAudioVisualsOnClient();
 
-					FryingPan fryingpan = FryingPan.Cast( m_DirectCookingSlots[i] );
-					if ( fryingpan )
+					FryingPan fryingpan = FryingPan.Cast(m_DirectCookingSlots[i]);
+					if (fryingpan)
 						fryingpan.RemoveAudioVisualsOnClient();
 
-					Edible_Base itsfood = Edible_Base.Cast( m_DirectCookingSlots[i] );
-					if ( itsfood )
-						itsfood.MakeSoundsOnClient( false );
+					Edible_Base itsfood = Edible_Base.Cast(m_DirectCookingSlots[i]);
+					if (itsfood)
+						itsfood.MakeSoundsOnClient(false);
 				}
 			}
 		}
@@ -2080,9 +2107,7 @@ class FireplaceBase extends ItemBase
 	protected void CookWithEquipment()
 	{
 		if (m_CookingProcess == null)
-		{
 			m_CookingProcess = new Cooking();
-		}
 
 		m_CookingProcess.CookWithEquipment(m_CookingEquipment);
 	}
@@ -2090,9 +2115,7 @@ class FireplaceBase extends ItemBase
 	Cooking GetCookingProcess()
 	{
 		if (m_CookingProcess == null)
-		{
 			m_CookingProcess = new Cooking();
-		}
 		
 		return m_CookingProcess;
 	}
@@ -2100,44 +2123,20 @@ class FireplaceBase extends ItemBase
 	protected void CookOnDirectSlot(ItemBase slot_item, float temp_equip, float temp_ext)
 	{
 		if (m_CookingProcess == null)
-		{
 			m_CookingProcess = new Cooking();
-		}
 		
 		m_CookingProcess.CookWithEquipment(slot_item);
-		
-		switch (slot_item.Type())
-		{
-		case ATTACHMENT_CAULDRON:
-		case ATTACHMENT_COOKING_POT:
-		case ATTACHMENT_FRYING_PAN:
-			float cookEquipTemp = temp_equip + PARAM_COOKING_EQUIP_TEMP_INCREASE;
-			if ( temp_ext <= PARAM_SMALL_FIRE_TEMPERATURE )
-			{
-				cookEquipTemp = Math.Clamp(cookEquipTemp, PARAM_ITEM_HEAT_MIN_TEMP, PARAM_SMALL_FIRE_TEMPERATURE);
-			}
-			else
-			{
-				cookEquipTemp = Math.Clamp(cookEquipTemp, PARAM_ITEM_HEAT_MIN_TEMP, PARAM_COOKING_EQUIP_MAX_TEMP);
-			}
-			slot_item.SetTemperature(cookEquipTemp);
-		break;
-		}
 	}
 	
-	protected void SmokeOnSmokingSlot( ItemBase slot_item, float temp_equip, float temp_ext )
+	protected void SmokeOnSmokingSlot(ItemBase slot_item, float temp_equip, float temp_ext)
 	{
-		if ( m_CookingProcess == NULL )
-		{
+		if (m_CookingProcess == NULL)
 			m_CookingProcess = new Cooking();
-		}
 		
 		// smoking slots accept only individual meat/fruit/veg items
-		Edible_Base ingr = Edible_Base.Cast( slot_item );
-		if ( ingr )
-		{
-			m_CookingProcess.SmokeItem( ingr, FireplaceBase.TIMER_HEATING_UPDATE_INTERVAL * FireplaceBase.SMOKING_SPEED );
-		}
+		Edible_Base ingr = Edible_Base.Cast(slot_item);
+		if (ingr)
+			m_CookingProcess.SmokeItem(ingr, FireplaceBase.TIMER_HEATING_UPDATE_INTERVAL * FireplaceBase.SMOKING_SPEED);
 	}
 	
 	//================================================================
@@ -2152,16 +2151,11 @@ class FireplaceBase extends ItemBase
 		{
 			ItemBase item = ItemBase.Cast(cargo.GetItem(i));
 			
-			//set damage
-			AddDamageToItemByFireEx(item, false, false);
-
-			if (item.GetHealth("", "Health") <= 0 && !item.IsKindOf("Grenade_Base"))
-			{
-				item.Delete();
-			}
-			
 			//add temperature
 			AddTemperatureToItemByFire(item);
+			
+			//set damage
+			AddDamageToItemByFireEx(item, false, false);
 			
 			//remove wetness
 			AddWetnessToItem(item, -PARAM_WET_HEATING_DECREASE_COEF);
@@ -2172,25 +2166,35 @@ class FireplaceBase extends ItemBase
 		{
 			ItemBase attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(j));
 			
-			//set damage
-			AddDamageToItemByFireEx(attachment, false, true);
-			
 			//add temperature
 			AddTemperatureToItemByFire(attachment);
+			
+			//set damage
+			AddDamageToItemByFireEx(attachment, false, true);
 		
 			//remove wetness
 			AddWetnessToItem(attachment, -PARAM_WET_HEATING_DECREASE_COEF);
 		}
 	}
 
-	//add temperature to item by fire
+	//moves temperature of the item to the fire temperature (can cool down item!)
 	protected void AddTemperatureToItemByFire(ItemBase item)
 	{
-		if (item.GetTemperatureMax() >= PARAM_ITEM_HEAT_MIN_TEMP)
+		if (item.CanHaveTemperature())
 		{
-			float temperature = item.GetTemperature() + PARAM_ITEM_HEAT_TEMP_INCREASE_COEF;
-			temperature = Math.Clamp(temperature, PARAM_ITEM_HEAT_MIN_TEMP, PARAM_MAX_ITEM_HEAT_TEMP_INCREASE);
-			item.SetTemperature(temperature);
+			float fireplaceTemp = GetTemperature();
+			float itemTemp = item.GetTemperature();
+			float heatPermCoef = item.GetHeatPermeabilityCoef();
+			float tempCoef;
+			
+			if (m_HeatingTimer && m_HeatingTimer.IsRunning())
+				tempCoef = GameConstants.TEMP_COEF_FIREPLACE_HEATING;
+			else if (m_CoolingTimer && m_CoolingTimer.IsRunning())
+				tempCoef = GameConstants.TEMP_COEF_FIREPLACE_COOLING;
+			else
+				return;
+			
+			item.SetTemperatureEx(new TemperatureDataInterpolated(fireplaceTemp,ETemperatureAccessTypes.ACCESS_FIREPLACE,TIMER_COOLING_UPDATE_INTERVAL,tempCoef,heatPermCoef));
 		}
 	}
 
@@ -2201,80 +2205,58 @@ class FireplaceBase extends ItemBase
 	protected void AddDamageToItemByFireEx(ItemBase item, bool can_be_ruined, bool pAttachment)
 	{
 		if (!item)
-		{
-			return;		
-		}
-
-		if (GetTemperature() <= PARAM_ITEM_HEAT_MIN_TEMP)
-		{
 			return;
-		}
-
-		//! fireplace cargo only
+		
+		//! fireplace cargo only (recursive)
 		if (!pAttachment)
 		{
 			//! cargo item attachments
 			GameInventory itemInventory = item.GetInventory();
 			if (itemInventory)
 			{
-				for (int i = 0; i < itemInventory.AttachmentCount(); ++i)
+				array<EntityAI> entities = new array<EntityAI>();
+				itemInventory.EnumerateInventory(InventoryTraversalType.INORDER, entities);
+				foreach (EntityAI ent : entities)
 				{
-					itemInventory.GetAttachmentFromIndex(i).AddHealth("", "", -PARAM_BURN_DAMAGE_COEF);
+					if (ent != this)
+					{
+						ent.DecreaseHealth(PARAM_BURN_DAMAGE_COEF,!ent.IsKindOf("Grenade_Base"));
+					}
 				}
 			}
-
-			item.AddHealth("", "", -PARAM_BURN_DAMAGE_COEF);
 		}
-		else
+		else //direct attachments
 		{
 			float timerCoef = 1.0;
 			if (m_HeatingTimer && m_HeatingTimer.IsRunning())
-			{
 				timerCoef = TIMER_HEATING_UPDATE_INTERVAL;
-			}
 			else if (m_CoolingTimer && m_CoolingTimer.IsRunning())
-			{
-				timerCoef = TIMER_COOLING_UPDATE_INTERVAL;		
-			}
+				timerCoef = TIMER_COOLING_UPDATE_INTERVAL;
 
 			switch (item.Type())
 			{
-			case ATTACHMENT_TRIPOD:
-			case ATTACHMENT_COOKINGSTAND:
-			case ATTACHMENT_COOKING_POT:
-			case ATTACHMENT_CAULDRON:
-			case ATTACHMENT_FRYING_PAN:
-				item.DecreaseHealth(GameConstants.FIRE_ATTACHMENT_DAMAGE_PER_SECOND * timerCoef, false);
-			break;
+				case ATTACHMENT_TRIPOD:
+				case ATTACHMENT_COOKINGSTAND:
+				case ATTACHMENT_COOKING_POT:
+				case ATTACHMENT_CAULDRON:
+				case ATTACHMENT_FRYING_PAN:
+					item.DecreaseHealth(GameConstants.FIRE_ATTACHMENT_DAMAGE_PER_SECOND * timerCoef, false);
+				break;
 			}
 	
 			//! fuel & kindling		
 			if (IsFuel(item) || IsKindling(item))
 			{
 				if (item.GetHealthLevel() < GameConstants.STATE_BADLY_DAMAGED)
-				{
 					item.DecreaseHealth(PARAM_BURN_DAMAGE_COEF, false);
-				}
 			}
 			
 			//! cookable
 			if (item.CanBeCooked() && item.GetHealthLevel() >= GameConstants.STATE_BADLY_DAMAGED)
 			{
-				Edible_Base edible_item = Edible_Base.Cast( item );
+				Edible_Base edible_item = Edible_Base.Cast(item);
 				edible_item.ChangeFoodStage(FoodStageType.BURNED);
 			}
-		}
-	}
-	
-	// DEPRECATED
-	protected void AddDamageToItemByFire(ItemBase item, bool can_be_ruined)
-	{
-		item.DecreaseHealth( PARAM_BURN_DAMAGE_COEF, false );
-
-		if ( item.CanBeCooked() & item.GetHealthLevel() >= GameConstants.STATE_BADLY_DAMAGED )
-		{
-			Edible_Base edible_item = Edible_Base.Cast( item );
-			edible_item.ChangeFoodStage( FoodStageType.BURNED );
 		}
 	}
 	
@@ -2300,8 +2282,8 @@ class FireplaceBase extends ItemBase
 		if (amount > 0)
 		{
 			float temperature = GetTemperature();
-			temperature = temperature * ( 1 - ( wetness * 0.5 ) );
-			temperature = Math.Clamp( temperature, PARAM_MIN_FIRE_TEMPERATURE, PARAM_NORMAL_FIRE_TEMPERATURE );
+			temperature = temperature * (1 - (wetness * 0.5));
+			temperature = Math.Clamp(temperature, PARAM_MIN_FIRE_TEMPERATURE, PARAM_NORMAL_FIRE_TEMPERATURE);
 			// temperature via UniversalTemperatureSource
 			m_UTSLFireplace.SetFuelCount(GetFuelCount());
 			m_UTSLFireplace.SetCurrentTemperature(temperature);
@@ -2318,19 +2300,19 @@ class FireplaceBase extends ItemBase
 		DestroyAreaDamage();
 		
 		//create new area damage
-		m_AreaDamage = new AreaDamageLoopedDeferred( this );
+		m_AreaDamage = new AreaDamageLoopedDeferred(this);
 		m_AreaDamage.SetDamageComponentType(AreaDamageComponentTypes.HITZONE);
 		m_AreaDamage.SetExtents("-0.30 0 -0.30", "0.30 0.75 0.30");
-		m_AreaDamage.SetLoopInterval( 0.5 );
-		m_AreaDamage.SetDeferDuration( 0.5 );
-		m_AreaDamage.SetHitZones( { "Head","Torso","LeftHand","LeftLeg","LeftFoot","RightHand","RightLeg","RightFoot" } );
-		m_AreaDamage.SetAmmoName( "FireDamage" );
+		m_AreaDamage.SetLoopInterval(0.5);
+		m_AreaDamage.SetDeferDuration(0.5);
+		m_AreaDamage.SetHitZones({ "Head","Torso","LeftHand","LeftLeg","LeftFoot","RightHand","RightLeg","RightFoot" });
+		m_AreaDamage.SetAmmoName("FireDamage");
 		m_AreaDamage.Spawn();
 	}
 	
 	void DestroyAreaDamage()
 	{
-		if ( m_AreaDamage ) 
+		if (m_AreaDamage) 
 		{
 			m_AreaDamage.Destroy();
 		}
@@ -2361,7 +2343,7 @@ class FireplaceBase extends ItemBase
 		float wind_speed = GetGame().GetWeather().GetWindSpeed();
 		float wind_speed_threshold = GetGame().GetWeather().GetWindMaximumSpeed() * FireplaceBase.IGNITE_WIND_THRESHOLD;
 
-		return ( wind_speed >= wind_speed_threshold );
+		return (wind_speed >= wind_speed_threshold);
 	}
 	
 	bool GetIgniteFailure()
@@ -2369,26 +2351,20 @@ class FireplaceBase extends ItemBase
 		return m_NoIgnite;
 	}
 	
-	void SetIgniteFailure( bool failure )
+	void SetIgniteFailure(bool failure)
 	{
 		m_NoIgnite = failure;
 	}
 
 	//Check if the fireplace is too wet to be ignited
-	static bool IsEntityWet( notnull EntityAI entity_ai )
+	static bool IsEntityWet(notnull EntityAI entity_ai)
 	{
-		return ( entity_ai.GetWet() >= FireplaceBase.PARAM_MAX_WET_TO_IGNITE );
+		return (entity_ai.GetWet() >= FireplaceBase.PARAM_MAX_WET_TO_IGNITE);
 	}
 	
 	bool IsWet()
 	{
-		return FireplaceBase.IsEntityWet( this );
-	}
-
-	//Check if there is any roof above fireplace
-	bool IsRoofAbove()
-	{
-		return m_RoofAbove;
+		return FireplaceBase.IsEntityWet(this);
 	}
 	
 	//check if fireplace is opened
@@ -2400,18 +2376,18 @@ class FireplaceBase extends ItemBase
 	//Check if there is enough space for smoke
 	bool IsCeilingHighEnoughForSmoke()
 	{
-		return !MiscGameplayFunctions.IsUnderRoof( this, FireplaceBase.MIN_CEILING_HEIGHT );
+		return !MiscGameplayFunctions.IsUnderRoof(this, FireplaceBase.MIN_CEILING_HEIGHT);
 	}
 
 	//Check if it's raining and there is only sky above fireplace
-	static bool IsRainingAboveEntity( notnull EntityAI entity_ai )
+	static bool IsRainingAboveEntity(notnull EntityAI entity_ai)
 	{
-		return ( GetGame() && ( GetGame().GetWeather().GetRain().GetActual() >= FireplaceBase.PARAM_IGNITE_RAIN_THRESHOLD ) );
+		return (GetGame() && (GetGame().GetWeather().GetRain().GetActual() >= FireplaceBase.PARAM_IGNITE_RAIN_THRESHOLD));
 	}
 	
 	bool IsRainingAbove()
 	{
-		return FireplaceBase.IsRainingAboveEntity( this );
+		return FireplaceBase.IsRainingAboveEntity(this);
 	}
 
 	//Check there is water surface bellow fireplace
@@ -2432,6 +2408,16 @@ class FireplaceBase extends ItemBase
 		
 		return false;
 	}
+	
+	protected float GetSurfaceWetnessOnHeatModifier(notnull EntityAI entity)
+	{
+		string surfaceType
+		int liquidType;
+		g_Game.SurfaceUnderObjectCorrectedLiquid(entity, surfaceType, liquidType);
+		
+		return Surface.GetParamFloat(surfaceType, "wetnessOnHeatModifier");
+	}
+
 	bool IsOnWaterSurface()
 	{
 		return FireplaceBase.IsEntityOnWaterSurface(this);
@@ -2447,19 +2433,19 @@ class FireplaceBase extends ItemBase
 	}
 	bool IsOnInteriorSurface()
 	{
-		return FireplaceBase.IsEntityOnInteriorSurface( this );
+		return FireplaceBase.IsEntityOnInteriorSurface(this);
 	}
 	
 	//Checks if has not additional items in it
 	override bool IsEmpty()
 	{
-		return ( GetInventory().GetCargo().GetItemCount() == 0 && GetInventory().AttachmentCount() == 0 );
+		return (GetInventory().GetCargo().GetItemCount() == 0 && GetInventory().AttachmentCount() == 0);
 	}
 	
 	//Checks if it has no items in cargo
 	bool IsCargoEmpty()
 	{
-		return ( GetInventory().GetCargo().GetItemCount() == 0 );
+		return (GetInventory().GetCargo().GetItemCount() == 0);
 	}
 	
 	bool HasCookingStand()
@@ -2468,7 +2454,7 @@ class FireplaceBase extends ItemBase
 	}
 	
 	//Check if object is in animation phase
-	bool IsInAnimPhase( string anim_phase )
+	bool IsInAnimPhase(string anim_phase)
 	{
 		return GetAnimationPhase(anim_phase) == 0;
 	}
@@ -2523,17 +2509,17 @@ class FireplaceBase extends ItemBase
 	//Action condition for dismantling oven
 	bool CanDismantleOven()
 	{
-		return ( IsOven() && !IsBurning() && !DirectCookingSlotsInUse() && !SmokingSlotsInUse() && GetTemperature() <= MAX_TEMPERATURE_TO_DISMANTLE_OVEN );
+		return (IsOven() && !IsBurning() && !DirectCookingSlotsInUse() && !SmokingSlotsInUse() && GetTemperature() <= MAX_TEMPERATURE_TO_DISMANTLE_OVEN);
 	}
 	//Action condition for dismantling stone circle
 	bool CanDismantleStoneCircle()
 	{
-		return ( HasStoneCircle() && !IsOven() && !IsBurning() );
+		return (HasStoneCircle() && !IsOven() && !IsBurning());
 	}
 	
 	bool CanCookOnStick()
 	{
-		return ( GetTemperature() >= PARAM_COOKING_TEMP_THRESHOLD );
+		return (GetTemperature() >= PARAM_COOKING_TEMP_THRESHOLD);
 	}
 	
 	//Can extinguish fire
@@ -2547,7 +2533,7 @@ class FireplaceBase extends ItemBase
 		return m_Light;
 	}
 	
-	void SetLightEntity( FireplaceLight light )
+	void SetLightEntity(FireplaceLight light)
 	{
 		m_Light = light;
 	}
@@ -2556,18 +2542,18 @@ class FireplaceBase extends ItemBase
 	// ADVANCED PLACEMENT
 	//================================================================
 	
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
-		super.OnPlacementComplete( player, position, orientation );
+		super.OnPlacementComplete(player, position, orientation);
 		
-		if ( GetGame().IsServer() )
+		if (GetGame().IsServer())
 		{
 			//remove grass
-			Object cc_object = GetGame().CreateObjectEx( OBJECT_CLUTTER_CUTTER , position, ECE_PLACE_ON_SURFACE );
-			cc_object.SetOrientation( orientation );
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( GetGame().ObjectDelete, 1000, false, cc_object );
+			Object cc_object = GetGame().CreateObjectEx(OBJECT_CLUTTER_CUTTER , position, ECE_PLACE_ON_SURFACE);
+			cc_object.SetOrientation(orientation);
+			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(GetGame().ObjectDelete, 1000, false, cc_object);
 			
-			SetIsPlaceSound( true );
+			SetIsPlaceSound(true);
 		}
 	}
 	
@@ -2582,7 +2568,7 @@ class FireplaceBase extends ItemBase
 	// calculates and sets total energy based on possible (fuel/kinidling) item attachments
 	protected void CalcAndSetTotalEnergy()
 	{
-		if ( GetGame() && GetGame().IsServer() )
+		if (GetGame() && GetGame().IsServer())
 		{
 			m_TotalEnergy = 0;
 			
@@ -2601,7 +2587,7 @@ class FireplaceBase extends ItemBase
 				}			
 				
 				//debug
-				//Print( fireConsumableType.GetItemType().ToString() + " quantityMax = " + quantityMax.ToString() + " [" + (quantity_max*fire_consumable_type.GetEnergy()).ToString()  + "] | stack_max = " + stack_max.ToString() + " [" + (stack_max*fire_consumable_type.GetEnergy()).ToString() + "]" );
+				//Print(fireConsumableType.GetItemType().ToString() + " quantityMax = " + quantityMax.ToString() + " [" + (quantity_max*fire_consumable_type.GetEnergy()).ToString()  + "] | stack_max = " + stack_max.ToString() + " [" + (stack_max*fire_consumable_type.GetEnergy()).ToString() + "]");
 				
 				if (stackMax > 0)
 				{
@@ -2614,7 +2600,7 @@ class FireplaceBase extends ItemBase
 			}
 			
 			//debug
-			//Print( "Total energy = " + m_TotalEnergy.ToString() );
+			//Print("Total energy = " + m_TotalEnergy.ToString());
 		}
 	}
 	
@@ -2631,12 +2617,12 @@ class FireplaceBase extends ItemBase
 				if (quantity > 0)
 				{
 					remainingEnergy += ((quantity - 1) * fireConsumable.GetEnergy()) + fireConsumable.GetRemainingEnergy();
-					//Print( fireConsumable.GetItem().GetType() + " remaining energy = " + ( ( ( quantity - 1 ) * fire_consumable.GetEnergy() ) + fire_consumable.GetRemainingEnergy() ).ToString() );
+					//Print(fireConsumable.GetItem().GetType() + " remaining energy = " + (((quantity - 1) * fire_consumable.GetEnergy()) + fire_consumable.GetRemainingEnergy()).ToString());
 				}
 				else
 				{
 					remainingEnergy += fireConsumable.GetRemainingEnergy();
-					//Print( fireConsumable.GetItem().GetType() + " remaining energy = " + ( fireConsumable.GetRemainingEnergy().ToString() ) );
+					//Print(fireConsumable.GetItem().GetType() + " remaining energy = " + (fireConsumable.GetRemainingEnergy().ToString()));
 				}
 			}
 			
@@ -2672,24 +2658,24 @@ class FireplaceBase extends ItemBase
 		string path_cooking_equipment = string.Format("%1 %2 GUIInventoryAttachmentsProps CookingEquipment attachmentSlots", CFG_VEHICLESPATH, GetType());
 		//string path_direct_cooking = "" + CFG_VEHICLESPATH + " " + GetType() + " GUIInventoryAttachmentsProps DirectCooking attachmentSlots";
 		string path_direct_cooking = string.Format("%1 %2 GUIInventoryAttachmentsProps DirectCooking attachmentSlots", CFG_VEHICLESPATH, GetType());
-		if ( GetGame().ConfigIsExisting(path_cooking_equipment) && GetGame().ConfigIsExisting(path_direct_cooking) )
+		if (GetGame().ConfigIsExisting(path_cooking_equipment) && GetGame().ConfigIsExisting(path_direct_cooking))
 		{
 			array<string> arr_cooking_equipment = new array<string>;
 			array<string> arr_direct_cooking = new array<string>;
 			GetGame().ConfigGetTextArray(path_cooking_equipment,arr_cooking_equipment);
 			GetGame().ConfigGetTextArray(path_direct_cooking,arr_direct_cooking);
-			for ( int i = 0; i < arr_cooking_equipment.Count(); i++ )
+			for (int i = 0; i < arr_cooking_equipment.Count(); i++)
 			{
-				if ( lock != GetInventory().GetSlotLock(InventorySlots.GetSlotIdFromString(arr_cooking_equipment[i])) )
+				if (lock != GetInventory().GetSlotLock(InventorySlots.GetSlotIdFromString(arr_cooking_equipment[i])))
 				{
 					GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(arr_cooking_equipment[i]),lock);
 					//Print("attachment lock: " + arr_cooking_equipment[i] + " " + lock);
 				}
 			}
 			
-			for ( i = 0; i < arr_direct_cooking.Count(); i++ )
+			for (i = 0; i < arr_direct_cooking.Count(); i++)
 			{
-				if ( lock == GetInventory().GetSlotLock(InventorySlots.GetSlotIdFromString(arr_direct_cooking[i])) )
+				if (lock == GetInventory().GetSlotLock(InventorySlots.GetSlotIdFromString(arr_direct_cooking[i])))
 				{
 					GetInventory().SetSlotLock(InventorySlots.GetSlotIdFromString(arr_direct_cooking[i]),!lock);
 					//Print("attachment lock: " + arr_direct_cooking[i] + " " + !lock);
@@ -2703,9 +2689,9 @@ class FireplaceBase extends ItemBase
 		return true;
 	}
 	
-	override void OnRPC( PlayerIdentity sender, int rpc_type, ParamsReadContext ctx ) 
+	override void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx) 
 	{
-		super.OnRPC( sender, rpc_type, ctx );
+		super.OnRPC(sender, rpc_type, ctx);
 		
 		ref Param1<bool> p = new Param1<bool>(false);
 				
@@ -2714,11 +2700,11 @@ class FireplaceBase extends ItemBase
 			bool failure = p.param1;
 		}
 		
-		switch ( rpc_type )
+		switch (rpc_type)
 		{
 			case FirePlaceFailure.WIND:
 			
-				if ( failure )
+				if (failure)
 				{
 					ParticleFireWindyNoIgniteStart();
 					SoundFireStop();
@@ -2729,7 +2715,7 @@ class FireplaceBase extends ItemBase
 			
 			case FirePlaceFailure.WET:
 				
-				if ( failure )
+				if (failure)
 				{
 					ParticleWetNoIgniteStart();
 					SoundFireStop();
@@ -2739,7 +2725,6 @@ class FireplaceBase extends ItemBase
 			break;
 		}
 	}
-	
 	
 	//================================================================
 	// DEBUG
@@ -2789,5 +2774,42 @@ class FireplaceBase extends ItemBase
 		return false;
 	}
 	
+	///////////////////////////
+	//DEPRECATED STUFF BELOW//
+	/////////////////////////
+	const float	PARAM_ITEM_HEAT_MIN_TEMP			= 40;//!DEPRECATED
+	const float	PARAM_ITEM_HEAT_TEMP_INCREASE_COEF	= 10;		//! value for calculating temperature increase on each heat update interval (degree Celsius)
+	const float	PARAM_ITEM_HEAT_TEMP_HEATING_COEF	= 1.0;		//! multiplies temperature change on heating
+	const float PARAM_MAX_ITEM_HEAT_TEMP_INCREASE	= 200;		//! maximum value of temperature of items in fireplace when heating (degree Celsius)
+	const float PARAM_HEAT_THROUGH_AIR_COEF			= 0.1;		//! DEPRECATED value for calculation of heat transfered from fireplace through air to player (environment)
+	const float TEMPERATURE_LOSS_MP_DEFAULT			= 1.0;
+	const float TEMPERATURE_LOSS_MP_STONES			= 0.90;		//10% boost
+	const float TEMPERATURE_LOSS_MP_OVEN			= 0.75;		//25% boost
+	const float PARAM_COOKING_EQUIP_MAX_TEMP		= 250;		//! maximum temperature of attached cooking equipment (degree Celsius)
+	const float PARAM_COOKING_EQUIP_TEMP_INCREASE	= 10;		//! how much will temperature increase when attached on burning fireplace (degree Celsius)
+	const float	DIRECT_COOKING_SPEED				= 1.5;		// per second
+	const float	PARAM_WET_INCREASE_COEF 			= 0.02;		//! value for calculating of  wetness that fireplace gain when raining
 	
+	protected float m_TemperatureLossMP				= 1.0;//! determines how fast will the fireplace loose its temperature when cooling (lower is better)
+	
+	//Temperature loss MP
+	protected float GetTemperatureLossMP()
+	{
+		return m_TemperatureLossMP;
+	}	
+	
+	protected void SetTemperatureLossMP(float value)
+	{
+		m_TemperatureLossMP = value;
+	}
+	
+	// DEPRECATED
+	protected void AddDamageToItemByFire(ItemBase item, bool can_be_ruined)
+	{
+		AddDamageToItemByFireEx(item,can_be_ruined,false);
+	}
+	
+	/////////////////////////
+	//////////////////////////
+	///////////////////////////
 }

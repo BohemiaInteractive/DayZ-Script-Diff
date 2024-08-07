@@ -468,58 +468,47 @@ class ItemManager
 			return Colors.COLOR_RUINED;	
 	}
 
+	// still used by SlotsIcon calls, different architecture!
 	void SetTemperature(EntityAI item, Widget item_w)
 	{
-		if ( item_w )
+		if (item_w)
 		{
-			if ( true/*show_temperature */ )
+			bool colorSet = false;
+			string name = item_w.GetName();
+			name.Replace("Render", "Temperature");
+			Widget temperature_widget = item_w.GetParent().FindAnyWidget(name);
+			if (item && item.IsInherited(ItemBase) && item.CanHaveTemperature())
 			{
-				if ( item && item.IsInherited( ItemBase ) )
+				ObjectTemperatureState temperatureState = ObjectTemperatureState.GetStateData(item.GetTemperature());
+				if (temperatureState && temperatureState.m_State != EObjectTemperatureState.NEUTRAL)
 				{
-					int color = ColorManager.GetInstance().GetItemColor( ItemBase.Cast( item ) ); // !!!!!
-					if ( color )
-					{
-						string name = item_w.GetName();
-						name.Replace("Render", "Temperature");
-						Widget temperature_widget = item_w.GetParent().FindAnyWidget( name );
-						if ( color != -1 )
-						{
-							temperature_widget.Show( true );
-							temperature_widget.SetColor( color );
-						}
-						else
-						{
-							temperature_widget.Show( false );
-						}
-
-						temperature_widget.SetAlpha( 0.3 );
-					}
+					colorSet = true;
+					temperature_widget.SetColor(temperatureState.m_Color);
+					temperature_widget.SetAlpha(0.3);
 				}
 			}
+			temperature_widget.Show(colorSet);
 		}
 	}
 
 	void SetIconTemperature(EntityAI item, Widget item_w)
 	{
-		if ( item_w )
+		if (item_w)
 		{
-			if ( item && item.IsInherited( ItemBase ) )
+			bool colorSet = false;
+			Widget temperatureColorWidget = item_w.FindAnyWidget("Temperature");
+			
+			if (item && item.IsInherited(ItemBase) && item.CanHaveTemperature())
 			{
-				int color = ColorManager.GetInstance().GetItemColor( ItemBase.Cast( item ) );
-
-				if ( color )
+				ObjectTemperatureState temperatureState = ObjectTemperatureState.GetStateData(item.GetTemperature());
+				if (temperatureState && temperatureState.m_State != EObjectTemperatureState.NEUTRAL)
 				{
-					Widget color_widget = item_w.FindAnyWidget( "Color" );
-					if( color != -1 )
-					{
-						color_widget.SetColor( color );
-					}
-					else
-					{
-						color_widget.SetColor( ColorManager.BASE_COLOR );
-					}
+					colorSet = true;
+					temperatureColorWidget.SetColor(temperatureState.m_Color);
+					temperatureColorWidget.SetAlpha(0.3);
 				}
 			}
+			temperatureColorWidget.Show(colorSet);
 		}
 	}
 

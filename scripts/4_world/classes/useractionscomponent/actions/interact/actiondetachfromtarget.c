@@ -94,15 +94,15 @@ class ActionDetachFromTarget: ActionInteractBase
 		return null;
 	}
 	
-	override void OnExecuteClient( ActionData action_data )
+	override void OnExecute(ActionData action_data)
 	{
+		if (GetGame().IsDedicatedServer())
+		{
+			ClearActionJuncture(action_data);
+			return;
+		}
+		
 		Process(action_data);
-	}
-	
-	override void OnExecuteServer( ActionData action_data )
-	{
-		if(!GetGame().IsMultiplayer())
-			Process(action_data);
 	}
 
 	void Process( ActionData action_data )

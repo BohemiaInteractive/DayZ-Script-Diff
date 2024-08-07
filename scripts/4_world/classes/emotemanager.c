@@ -295,8 +295,10 @@ class EmoteManager
 			m_ItemToBeCreated = false;
 		}
 		
-		int gestureSlot = DetermineGestureIndex();
-		
+		int gestureSlot = 0;
+		#ifndef SERVER
+			gestureSlot = DetermineGestureIndex();
+		#endif
 		//deferred emote cancel
 		if (m_InstantCancelEmote) //'hard' cancel
 		{
@@ -747,7 +749,8 @@ class EmoteManager
 			PlayerIdentity identity = m_Player.GetIdentity();
 			if (identity)
 			{
-				GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(GetGame().AdminLog, "Player '" + identity.GetName() + "' (id=" + identity.GetId() + ") committed suicide.");
+				if (m_AdminLog)
+					m_AdminLog.Suicide(m_Player);
 			}
 		}
 	}

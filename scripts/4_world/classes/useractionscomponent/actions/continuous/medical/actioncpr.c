@@ -32,6 +32,8 @@ class ActionCPR: ActionContinuousBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
+		super.OnStartServer(action_data);
+		
 		action_data.m_Player.TryHideItemInHands(true);
 	}
 	
@@ -57,7 +59,6 @@ class ActionCPR: ActionContinuousBase
 	{
 		PlayerBase other_player = PlayerBase.Cast(action_data.m_Target.GetObject());
 		other_player.GiveShock(5);
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override void OnExecuteServer(ActionData action_data)
@@ -67,6 +68,8 @@ class ActionCPR: ActionContinuousBase
 	
 	override void OnEndServer( ActionData action_data )
 	{
+		super.OnEndServer(action_data);
+		
 		if ( action_data.m_Player ) action_data.m_Player.TryHideItemInHands(false);
 	}
 	

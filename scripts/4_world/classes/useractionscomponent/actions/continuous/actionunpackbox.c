@@ -62,8 +62,6 @@ class ActionUnpackBox: ActionContinuousBase
 				
 				UnboxLambda lambda = new UnboxLambda(action_data.m_MainItem, itemType, action_data.m_Player, itemCount);
 				action_data.m_Player.ServerReplaceItemInHandsWithNew(lambda);
-				
-				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 			}
 		}
 	}

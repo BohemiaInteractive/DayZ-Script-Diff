@@ -27,6 +27,24 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		ProcessInvulnerabilityCheck(GetInvulnerabilityTypeString());
 		
 		m_LightDistance = 50;
+		
+		//! universal temperature sources overrides
+		m_UTSSettings.m_TemperatureMax			= PARAM_OUTDOOR_FIRE_TEMPERATURE;
+		m_UTSSettings.m_TemperatureItemCap 		= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
+		m_UTSSettings.m_TemperatureCap			= 20;
+		
+		m_UnderObjectDecalSpawnSettings.m_ScaleMax = 0.44;
+		
+		m_ThawnSurfaceUnderSupport = true;
+	}
+	
+	override protected void InitializeTemperatureSources()
+	{
+		m_UTSLFireplace = new UniversalTemperatureSourceLambdaFireplace();
+		m_UTSLFireplace.SetSmallFireplaceTemperatureMax(PARAM_SMALL_FIRE_TEMPERATURE);
+		m_UTSLFireplace.SetNormalFireplaceTemperatureMax(PARAM_OUTDOOR_FIRE_TEMPERATURE);
+
+		m_UTSource = new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLFireplace);
 	}
 	
 	override bool CanCookOnStick()
@@ -63,7 +81,7 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		return "disableContainerDamage";
 	}
 	
-	override void OnWasAttached( EntityAI parent, int slot_id)
+	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
 		super.OnWasAttached(parent, slot_id);
 		
@@ -77,31 +95,31 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		Close();
 	}
 	
-	override bool CanDetachAttachment( EntityAI parent )
+	override bool CanDetachAttachment(EntityAI parent)
 	{
 		return GetNumberOfItems() == 0;
 	}
 	
 	
-	override void OnStoreSave( ParamsWriteContext ctx )
+	override void OnStoreSave(ParamsWriteContext ctx)
 	{   
-		super.OnStoreSave( ctx );
+		super.OnStoreSave(ctx);
 		
-		ctx.Write( m_Openable.IsOpened() );
+		ctx.Write(m_Openable.IsOpened());
 	}
 	
-	override bool OnStoreLoad( ParamsReadContext ctx, int version )
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
-		if ( !super.OnStoreLoad( ctx, version ) )
+		if (!super.OnStoreLoad(ctx, version))
 			return false;
 		
 		bool opened;
-		if ( version >= 110 && !ctx.Read( opened ) )
+		if (version >= 110 && !ctx.Read(opened))
 		{
 			return false;
 		}
 		
-		if ( opened )
+		if (opened)
 		{
 			OpenLoad();
 		}
@@ -117,54 +135,53 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	{
 		return true;
 	}
-
+	
 	override void OnVariablesSynchronized()
 	{
 		super.OnVariablesSynchronized();
-		
-		if ( !IsBeingPlaced() )
+
+		if (!IsBeingPlaced())
 		{
 			//Refresh particles and sounds
-			RefreshFireParticlesAndSounds( false );
+			RefreshFireParticlesAndSounds(false);
 			
 			//sound sync
-			if ( IsSoundSynchRemote() && !IsBeingPlaced() && m_Initialized )
+			if (IsSoundSynchRemote() && !IsBeingPlaced() && m_Initialized)
 			{
-				if ( IsOpen() )
+				if (IsOpen())
 				{
 					SoundBarrelOpenPlay();
 				}
 				
-				if ( !IsOpen() )
+				if (!IsOpen())
 				{
 					SoundBarrelClosePlay();
 				}
 			}
-			
 		}
-
+		
 		UpdateVisualState();
 	}
 	
 	//ATTACHMENTS
-	override bool CanReceiveAttachment( EntityAI attachment, int slotId )
+	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
 	{
-		ItemBase item = ItemBase.Cast( attachment );
+		ItemBase item = ItemBase.Cast(attachment);
 		
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED || GetHierarchyRootPlayer() != null )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED || GetHierarchyRootPlayer() != null)
 			return false;
 
 		//direct cooking slots
-		if ( !IsOpen() )
+		if (!IsOpen())
 		{
-			if ( ( item.Type() == ATTACHMENT_CAULDRON ) || ( item.Type() == ATTACHMENT_COOKING_POT ) || ( item.Type() == ATTACHMENT_FRYING_PAN ) || ( item.IsKindOf( "Edible_Base" ) ) )
+			if ((item.Type() == ATTACHMENT_CAULDRON) || (item.Type() == ATTACHMENT_COOKING_POT) || (item.Type() == ATTACHMENT_FRYING_PAN) || (item.IsKindOf("Edible_Base")))
 			{
 				return super.CanReceiveAttachment(attachment, slotId);
 			}
 		}
 		else
 		{
-			if ( IsKindling( item ) || IsFuel( item ) )
+			if (IsKindling(item) || IsFuel(item))
 			{
 				return super.CanReceiveAttachment(attachment, slotId);
 			}
@@ -173,11 +190,11 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		return false;
 	}
 	
-	override bool CanLoadAttachment( EntityAI attachment )
+	override bool CanLoadAttachment(EntityAI attachment)
 	{
-		ItemBase item = ItemBase.Cast( attachment );
+		ItemBase item = ItemBase.Cast(attachment);
 		
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 
 		return super.CanLoadAttachment(attachment);
@@ -229,19 +246,6 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		break;
 		}
 		
-		// reset cooking time (to prevent the cooking exploit)
-		if (GetGame().IsServer() && edible_base_attached)
-		{
-			Edible_Base edBase = Edible_Base.Cast(item_base);
-			if (edBase)
-			{
-				if (edBase.GetFoodStage())
-				{
-					edBase.SetCookingTime(0);
-				}
-			}
-		}
-
 		RefreshFireplaceVisuals();
 	}
 	
@@ -306,49 +310,49 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	
 	//CONDITIONS
 	//this into/outo parent.Cargo
-	override bool CanPutInCargo( EntityAI parent )
+	override bool CanPutInCargo(EntityAI parent)
 	{
-		if ( !super.CanPutInCargo( parent ) )
+		if (!super.CanPutInCargo(parent))
 			return false;
 
-		if ( IsBurning() || !IsCargoEmpty() || DirectCookingSlotsInUse() || IsOpen() )
+		if (IsBurning() || !IsCargoEmpty() || DirectCookingSlotsInUse() || IsOpen())
 			return false;
 		
 		return true;
 	}
 
-	override bool CanRemoveFromCargo( EntityAI parent )
+	override bool CanRemoveFromCargo(EntityAI parent)
 	{
 		return true;
 	}
 
 	//cargo item into/outo this.Cargo
-	override bool CanReceiveItemIntoCargo( EntityAI item )
+	override bool CanReceiveItemIntoCargo(EntityAI item)
 	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 
 		if (!IsOpen())
 			return false;
 
-		return super.CanReceiveItemIntoCargo( item );
+		return super.CanReceiveItemIntoCargo(item);
 	}
 	
-	override bool CanLoadItemIntoCargo( EntityAI item )
+	override bool CanLoadItemIntoCargo(EntityAI item)
 	{
-		if (!super.CanLoadItemIntoCargo( item ))
+		if (!super.CanLoadItemIntoCargo(item))
 			return false;
 		
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
+		if (GetHealthLevel() == GameConstants.STATE_RUINED)
 			return false;
 
-		if ( GetHierarchyParent() )
+		if (GetHierarchyParent())
 			return false;
 
 		return true;
 	}
 
-	override bool CanReleaseCargo( EntityAI cargo )
+	override bool CanReleaseCargo(EntityAI cargo)
 	{
 		return IsOpen();
 	}
@@ -366,7 +370,7 @@ class BarrelHoles_ColorBase extends FireplaceBase
 			return false;
 		}
 		
-		if ( !GetInventory().IsAttachment() && IsOpen() )
+		if (!GetInventory().IsAttachment() && IsOpen())
 		{
 			return false;
 		}
@@ -378,7 +382,7 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	override bool CanDisplayCargo()
 	{
 		//super
-		if( !super.CanDisplayCargo() )
+		if (!super.CanDisplayCargo())
 		{
 			return false;
 		}
@@ -387,16 +391,16 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		return IsOpen();
 	}
 
-	override bool CanDisplayAttachmentCategory( string category_name )
+	override bool CanDisplayAttachmentCategory(string category_name)
 	{
 		//super
-		if( !super.CanDisplayAttachmentCategory( category_name ) )
+		if (!super.CanDisplayAttachmentCategory(category_name))
 		{
 			return false;
 		}
 		//
 		
-		if ( ( category_name == "CookingEquipment" ) || ( category_name == "Smoking" ) )
+		if ((category_name == "CookingEquipment") || (category_name == "Smoking"))
 		{
 			return !IsOpen();
 		}			
@@ -414,8 +418,6 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	{
 		m_Openable.Open();
 		
-		m_RoofAbove = false;
-		
 		SoundSynchRemote();
 		SetTakeable(false);
 		UpdateVisualState();
@@ -424,7 +426,6 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	void OpenLoad()
 	{
 		m_Openable.Open();
-		m_RoofAbove = false;
 		
 		SetSynchDirty();
 		SetTakeable(false);
@@ -434,7 +435,6 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	override void Close()
 	{
 		m_Openable.Close();
-		m_RoofAbove = true;
 		
 		SoundSynchRemote();
 		SetTakeable(true);
@@ -444,7 +444,6 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	void CloseLoad()
 	{
 		m_Openable.Close();
-		m_RoofAbove = true;
 		
 		SetSynchDirty();
 		SetTakeable(true);
@@ -458,22 +457,22 @@ class BarrelHoles_ColorBase extends FireplaceBase
 	
 	protected void UpdateVisualState()
 	{
-		if ( IsOpen() )
+		if (IsOpen())
 		{
-			SetAnimationPhase( ANIMATION_OPENED, 0 );
-			SetAnimationPhase( ANIMATION_CLOSED, 1 );
+			SetAnimationPhase(ANIMATION_OPENED, 0);
+			SetAnimationPhase(ANIMATION_CLOSED, 1);
 		}
 		else
 		{
-			SetAnimationPhase( ANIMATION_OPENED, 1 );
-			SetAnimationPhase( ANIMATION_CLOSED, 0 );
+			SetAnimationPhase(ANIMATION_OPENED, 1);
+			SetAnimationPhase(ANIMATION_CLOSED, 0);
 		}
 	}
 	
 	//Can extinguish fire
 	override bool CanExtinguishFire()
 	{
-		if ( IsOpen() && IsBurning() )
+		if (IsOpen() && IsBurning())
 		{
 			return true;
 		}
@@ -493,9 +492,9 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		return true;
 	}
 	
-	override bool CanBeIgnitedBy( EntityAI igniter = NULL )
+	override bool CanBeIgnitedBy(EntityAI igniter = NULL)
 	{
-		if ( HasAnyKindling() && !IsBurning() && IsOpen() && !GetHierarchyParent() )
+		if (HasAnyKindling() && !IsBurning() && IsOpen() && !GetHierarchyParent())
 		{
 			return true;
 		}
@@ -503,9 +502,9 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		return false;
 	}
 	
-	override bool CanIgniteItem( EntityAI ignite_target = NULL )
+	override bool CanIgniteItem(EntityAI ignite_target = NULL)
 	{
-		if ( IsBurning() && IsOpen() )
+		if (IsBurning() && IsOpen())
 		{
 			return true;
 		}
@@ -518,16 +517,16 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		return IsBurning();
 	}
 	
-	override void OnIgnitedTarget( EntityAI ignited_item )
+	override void OnIgnitedTarget(EntityAI ignited_item)
 	{
 	}
 	
-	override void OnIgnitedThis( EntityAI fire_source )
+	override void OnIgnitedThis(EntityAI fire_source)
 	{	
 		//remove grass
-		Object cc_object = GetGame().CreateObjectEx( OBJECT_CLUTTER_CUTTER , GetPosition(), ECE_PLACE_ON_SURFACE );
-		cc_object.SetOrientation ( GetOrientation() );
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( DestroyClutterCutter, 0.2, false, cc_object );
+		Object cc_object = GetGame().CreateObjectEx(OBJECT_CLUTTER_CUTTER , GetPosition(), ECE_PLACE_ON_SURFACE);
+		cc_object.SetOrientation (GetOrientation());
+		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(DestroyClutterCutter, 0.2, false, cc_object);
 		
 		//start fire
 		StartFire(); 
@@ -535,31 +534,31 @@ class BarrelHoles_ColorBase extends FireplaceBase
 
 	void SoundBarrelOpenPlay()
 	{
-		EffectSound sound =	SEffectManager.PlaySound( "barrel_open_SoundSet", GetPosition() );
-		sound.SetAutodestroy( true );
+		EffectSound sound =	SEffectManager.PlaySound("barrel_open_SoundSet", GetPosition());
+		sound.SetAutodestroy(true);
 	}
 	
 	void SoundBarrelClosePlay()
 	{
-		EffectSound sound =	SEffectManager.PlaySound( "barrel_close_SoundSet", GetPosition() );
-		sound.SetAutodestroy( true );
+		EffectSound sound =	SEffectManager.PlaySound("barrel_close_SoundSet", GetPosition());
+		sound.SetAutodestroy(true);
 	}
 	
-	void DestroyClutterCutter( Object clutter_cutter )
+	void DestroyClutterCutter(Object clutter_cutter)
 	{
-		GetGame().ObjectDelete( clutter_cutter );
+		GetGame().ObjectDelete(clutter_cutter);
 	}	
 	
-	override bool IsThisIgnitionSuccessful( EntityAI item_source = NULL )
+	override bool IsThisIgnitionSuccessful(EntityAI item_source = NULL)
 	{
 		//check kindling
-		if ( !HasAnyKindling() && IsOpen() )
+		if (!HasAnyKindling() && IsOpen())
 		{
 			return false;
 		}
 		
 		//check surface
-		if ( IsOnWaterSurface() )
+		if (IsOnWaterSurface())
 		{
 			return false;
 		}

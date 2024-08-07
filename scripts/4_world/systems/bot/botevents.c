@@ -21,3 +21,14 @@ class BotEventEndFail : BotEventBase { };
 class BotEventEndTimeout : BotEventBase { };
 class BotEventOnItemInHandsChanged : BotEventBase { };
 
+class BotEventStartDebug : BotEventBase
+{
+	int m_Id;
+
+	void BotEventStartDebug(PlayerBase p = NULL, EntityAI e = NULL, int id = 0)
+	{
+		m_Id = id;
+	}
+	
+	override string DumpToString () { return "id: " + m_Id; }
+};

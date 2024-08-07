@@ -23,7 +23,11 @@ class SEffectManager
 	//! Static invoker for the SEffectManager.Event_OnFrameUpdate called form MissionGameplay.OnUpdate
 	static ref ScriptInvoker Event_OnFrameUpdate;
 	
+	protected static ref map<int, EffecterBase> m_EffectersMap;
+	//! Static array of IDs that were previously used, but freed up by unregistering Effecters
+	protected static ref array<int> m_FreeEffecterIDs;
 	
+	protected static int m_HighestFreeEffecterID = 1;
 	
 	/** \name Generic playback
  		Methods for playing Effect
@@ -337,6 +341,24 @@ class SEffectManager
 		return id;
 	}
 	
+	protected static int GetFreeEffecterID()
+	{
+		int return_id;
+		
+		if (m_FreeEffecterIDs.Count() > 0)
+		{
+			return_id = m_FreeEffecterIDs.Get(0);
+			m_FreeEffecterIDs.Remove(0);
+		}
+		else
+		{
+			return_id = m_HighestFreeEffecterID;
+			++m_HighestFreeEffecterID;
+		}
+		
+		return return_id;		
+	}
+	
 	/**
 	\brief Unregisters Effect in SEffectManager
 		\note Will automatically occur on stop when the Effect is AutoDestroy
@@ -483,6 +505,12 @@ class SEffectManager
 		m_IsInitialized = true;
 	}
 	
+	static void InitServer()
+	{
+		m_EffectersMap = new map<int, EffecterBase>;
+		m_FreeEffecterIDs = new array<int>;
+	}
+	
 	/**
 	\brief Cleanup method to properly clean up the static data
 		\note Will be called when MissionBase is destroyed
@@ -524,12 +552,18 @@ class SEffectManager
 			#endif
 		}
 		
+		foreach (int i, EffecterBase effecter : m_EffectersMap)
+		{
+			effecter.Delete();
+		}
+		
 		#ifdef DEVELOPER
 		Print("--- SEffectManager Cleanup dump - End --------------------------");
 		#endif
 		
 		// Now we can clear it
 		m_EffectsMap.Clear();
+		m_EffectersMap.Clear();
 		
 		// Reset the state
 		m_HighestFreeEffectID = 1;		
@@ -538,4 +572,299 @@ class SEffectManager
 	}
 	
 	//@}
+	
+	//! returns unique effecter ID
+	static int CreateParticleServer(vector pos, EffecterParameters parameters)
+	{
+		EffecterBase eff;
+		eff = EffecterBase.Cast(GetGame().CreateObjectEx(parameters.m_EffecterType, pos, ECE_PLACE_ON_SURFACE));
+		
+		if (eff)
+		{
+			int id = GetFreeEffecterID();
+			m_EffectersMap.Insert(id, eff);
+		}
+		
+		eff.Init(id, parameters);
+		return id;
+	}
+	
+	//! allows re-initializing existing effecter with new parameters (extept m_EffecterType, obviously)
+	static void ReinitParticleServer(int effecterID, EffecterParameters parameters)
+	{
+		EffecterBase eff = m_EffectersMap.Get(effecterID);
+		if (eff)
+		{
+			eff.Init(effecterID,parameters);
+		}
+	}
+	
+	static void ReactivateParticleServer(int effecterID)
+	{
+		EffecterBase eff = m_EffectersMap.Get(effecterID);
+		if (eff)
+		{
+			eff.Reactivate();
+		}
+	}
+	
+	static void StartParticleServer(int effecterID)
+	{
+		EffecterBase eff = m_EffectersMap.Get(effecterID);
+		if (eff)
+		{
+			eff.Start();
+		}
+		
+	}
+	
+	static void StopParticleServer(int effecterID)
+	{
+		EffecterBase eff = m_EffectersMap.Get(effecterID);
+		if (eff)
+		{
+			eff.Stop();
+		}	
+	}
+	
+	static void DestroyEffecterParticleServer(int effecterID)
+	{
+		EffecterBase eff = m_EffectersMap.Get(effecterID);
+		if (eff)
+		{
+			m_EffectersMap.Remove(effecterID);
+			eff.DeleteSafe();
+		}
+	}
+	
+	static void OnUpdate(float timeslice)
+	{
+		if (m_EffectersMap)
+		{
+			foreach (int i, EffecterBase effecter : m_EffectersMap)
+			{
+				effecter.DecreaseLifespan(timeslice);
+			}
+		}
+	}
+}
+
+enum EffecterCommands
+{
+	NONE = -1,
+	START,
+	STOP,
+	REACTIVATE0,
+	REACTIVATE1
+}
+	
+class EffecterParameters
+{		
+	string m_EffecterType;
+	float m_Lifespan;
+	void EffecterParameters(string type, float lifespan)
+	{
+		m_EffecterType = type;
+		m_Lifespan = lifespan;
+	}
+}
+
+class ParticleEffecterParameters : EffecterParameters
+{
+	int m_ParticleID;
+	void ParticleEffecterParameters(string type, float lifespan, int particleID)
+	{
+		m_ParticleID = particleID;
+	}
+}
+
+
+class EffecterBase : EntityAI
+{
+	const float NOT_DEFINED_LIFESPAN = -1;
+	protected float m_Lifespan;
+	protected int m_ID;
+	protected int m_Command = EffecterCommands.NONE;
+	protected int m_CommandSync = EffecterCommands.NONE;
+	
+	void EffecterBase()
+	{
+		RegisterNetSyncVariableInt("m_CommandSync");
+	}
+	
+	void Init(int id, EffecterParameters parameters)
+	{
+		m_ID = id;
+		SetLifespan(parameters.m_Lifespan);
+	}
+	
+	void DecreaseLifespan(float timeSlice)
+	{
+		if (m_Lifespan == NOT_DEFINED_LIFESPAN)
+			return;
+		
+		m_Lifespan -= timeSlice;
+		if (m_Lifespan < 0)
+		{
+			SEffectManager.DestroyEffecterParticleServer(m_ID);
+		}
+	}
+	
+	void SetLifespan(float lifespan)
+	{
+		m_Lifespan = lifespan;
+	}
+	
+	void Start()
+	{
+		m_CommandSync = EffecterCommands.START;
+		Process();
+	}
+	
+	void Stop()
+	{
+		m_CommandSync = EffecterCommands.STOP;
+		Process();
+	}
+	
+	void Reactivate()
+	{
+		if (m_CommandSync == EffecterCommands.REACTIVATE0)
+		{
+			m_CommandSync = EffecterCommands.REACTIVATE1;
+		}
+		else
+		{
+			m_CommandSync = EffecterCommands.REACTIVATE0;
+		}
+		Process();
+	}
+	
+	void Process()
+	{
+		if (GetGame().IsMultiplayer())
+		{
+			SetSynchDirty();
+		}
+		else
+		{
+			OnVariablesSynchronized();
+		}
+	}
+}
+
+class ParticleEffecter : EffecterBase
+{
+	protected int m_ParticleEffectID = -1;
+	protected int m_ParticleEffectIDSync = -1;
+	protected ref EffectParticleGeneral m_Effect = null;
+	//protected int m_EffectID = -1;
+
+	void ParticleEffecter(int lifespan)
+	{
+		RegisterNetSyncVariableInt("m_ParticleEffectIDSync");
+	}
+
+	override void Init(int id, EffecterParameters parameters)
+	{
+		super.Init(id, parameters);
+		
+		ParticleEffecterParameters par = ParticleEffecterParameters.Cast(parameters);
+		SetParticle(par.m_ParticleID);
+	}
+	
+	void SetParticle(int particleID)
+	{
+		m_ParticleEffectIDSync = particleID;
+		Process();	
+	}
+
+	override void OnVariablesSynchronized()
+	{	
+		if (m_ParticleEffectIDSync != m_ParticleEffectID)
+		{
+			if (m_Effect)
+			{
+				m_Effect.SetParticle(m_ParticleEffectIDSync);
+			}
+			else
+			{
+				m_Effect = new EffectParticleGeneral();
+				m_Effect.SetParticle(m_ParticleEffectIDSync);
+				SEffectManager.PlayInWorld(m_Effect, GetWorldPosition());
+			}
+			m_ParticleEffectID = m_ParticleEffectIDSync;
+		}
+		
+		if (m_CommandSync != m_Command)
+		{	
+			switch (m_CommandSync)
+			{
+				case EffecterCommands.START:
+					if (m_Effect && !m_Effect.IsPlaying())
+					{
+						m_Effect.SetParticle(m_ParticleEffectID);
+						m_Effect.Start();
+					}
+					break;
+			
+				case EffecterCommands.STOP:
+					if (m_Effect && m_Effect.IsPlaying())
+					{
+						m_Effect.Stop();
+					}
+					break;
+			
+				case EffecterCommands.REACTIVATE0:
+				case EffecterCommands.REACTIVATE1:
+					if (m_Effect)
+					{
+						m_Effect.SetParticle(m_ParticleEffectID);
+					}
+					if (!m_Effect.IsPlaying())
+					{
+						m_Effect.Start();
+					}
+					break;
+			
+				default:
+					break;
+			}
+			
+			m_Command = m_CommandSync;
+		}
+	}
+	
+	void ~ParticleEffecter()
+	{
+		SEffectManager.DestroyEffect(m_Effect);
+	}
+}
+
+class EffectParticleGeneral : EffectParticle
+{
+	int m_LastParticleID;
+	void EffectParticleGeneral()
+	{
+	}
+	
+	void SetParticle( int particleID )
+	{
+		bool was_playing = IsPlaying();
+	
+		Stop();
+		
+		SetParticleID(particleID);
+		
+		if (was_playing)
+		{
+			Start();
+		}
+	}
+	
+	override void SetParticleID( int id )
+	{
+		super.SetParticleID(id);
+		m_LastParticleID = id;
+	}
 }

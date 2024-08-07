@@ -1,15 +1,5 @@
-class Cauldron extends Bottle_Base
+class Cauldron : Bottle_Base
 {
-	void Cauldron()
-	{
-
-	}
-	
-	void ~Cauldron()
-	{
-
-	}
-	
 	override bool IsContainer()
 	{
 		return true;
@@ -52,10 +42,10 @@ class Cauldron extends Bottle_Base
 	
 	override bool CanPutInCargo( EntityAI parent )
 	{
-		if ( !super.CanPutInCargo( parent ) )
+		if (!super.CanPutInCargo(parent))
 			return false;
 		
-		if ( parent && IsCargoException4x3( parent ) )
+		if ( parent && IsCargoException4x3(parent))
 			return false;
 		
 		//is 'parent' somewhere in cargo?
@@ -67,10 +57,10 @@ class Cauldron extends Bottle_Base
 	
 	override bool CanReceiveItemIntoCargo(EntityAI item)
 	{
-		if ( !super.CanReceiveItemIntoCargo( item ) )
+		if (!super.CanReceiveItemIntoCargo(item))
 			return false;
 
-		if ( IsCargoException4x3( item ) )
+		if (IsCargoException4x3(item))
 			return false;
 		
 		//is 'this' somewhere in cargo?
@@ -82,10 +72,10 @@ class Cauldron extends Bottle_Base
 	
 	override bool CanLoadItemIntoCargo(EntityAI item)
 	{
-		if ( !super.CanLoadItemIntoCargo( item ) )
+		if ( !super.CanLoadItemIntoCargo(item))
 			return false;
 
-		if ( IsCargoException4x3( item ) )
+		if ( IsCargoException4x3(item))
 			return false;
 
 		return true;
@@ -99,6 +89,11 @@ class Cauldron extends Bottle_Base
 	override bool CanHaveWetness()
 	{
 		return true;
+	}
+	
+	override float GetQuantityNormalizedScripted()
+	{
+		return 1.0;
 	}
 	
 	override void SetActions()

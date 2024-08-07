@@ -14,4 +14,9 @@ class FuelStation extends BuildingSuper
 	{
 		return LIQUID_THROUGHPUT_FUELSTATION;
 	}
+	
+	override int GetLiquidSourceType()
+	{
+		return LIQUID_GASOLINE;
+	}
 }

@@ -1,23 +1,65 @@
+class FishingActionReceiveData : ActionReciveData
+{
+	bool m_IsSurfaceSea;
+} 
+
 class FishingActionData : ActionData
 {
+	bool 	m_IsSurfaceSea;
+	int 	m_FishingResult = -1; //use for hashed name?
+	bool 	m_IsSignalActive = false;
+	
+	int 	m_SplashUniqueID = -1;
+	
+	ref CatchingContextFishingRodAction m_ContextData;
+	
+	void RollNextResultChance()
+	{
+		CAContinuousRepeatFishing component;
+		Class.CastTo(component,m_ActionComponent);
+		
+		m_IsSignalActive = false; //redundant?
+		if (m_ContextData.RollCatch())
+		{
+			RandomizeSignalValues();
+		}
+		else
+		{
+			component.SetNewSignalData(-1,-1);
+		}
+	}
+	
+	//signal methods
+	protected void RandomizeSignalValues()
+	{
+		CAContinuousRepeatFishing component;
+		Class.CastTo(component,m_ActionComponent);
+		
+		component.SetNewSignalData(m_ContextData.RandomizeSignalStartTime(),m_ContextData.RandomizeSignalDuration());
+	}
+	
+	void AnimateRod(float phase, bool instant = false)
+	{
+		FishingRod_Base_New rod = FishingRod_Base_New.Cast(m_MainItem);
+		rod.AnimateFishingRodEx(phase,instant);
+	}
+	
+	//------------------------------------------------------------------
+	//DEPRECATED
+	//------------------------------------------------------------------
 	const float FISHING_SUCCESS 		= 0.2;
 	const float FISHING_BAIT_LOSS 		= 0.02;
 	const float FISHING_HOOK_LOSS 		= 0.015;
 	const float FISHING_DAMAGE 			= 1.5;
 	const float FISHING_GARBAGE_CHANCE 	= 0.2;
-	
-	bool 		m_IsSurfaceSea;
 	bool 		m_IsBaitAnEmptyHook;
-	int 		m_FishingResult = -1;
 	float 		m_RodQualityModifier = 0;
 	ItemBase 	m_Bait;
-	
 	void InitBait(ItemBase item)
 	{
 		m_Bait = item;
 		m_IsBaitAnEmptyHook = !m_Bait.ConfigIsExisting("hookType");
 	}
-	
 	bool IsBaitEmptyHook()
 	{
 		return m_IsBaitAnEmptyHook;
@@ -27,156 +69,123 @@ class FishingActionData : ActionData
 class ActionFishingNewCB : ActionContinuousBaseCB
 {
 	FishingActionData 	m_ActionDataFishing;
-	ref array<string> 	m_JunkTypes = {
-		"Wellies_Black",
-		"Wellies_Brown",
-		"Wellies_Green",
-		"Wellies_Grey",
-		"Pot"
-	};
 	
 	override void CreateActionComponent()
 	{
 		EnableStateChangeCallback();
-		m_ActionData.m_ActionComponent = new CAContinuousRepeatFishing(3.0);
+		float cycleTime = UAFishingConstants.CYCLE_LENGTH_BASE; //redundant?
+		if (Class.CastTo(m_ActionDataFishing,m_ActionData))
+		{
+			cycleTime = m_ActionDataFishing.m_ContextData.GetActionCycleTime();
+		}
+		m_ActionData.m_ActionComponent = new CAContinuousRepeatFishing(cycleTime);
+	}
+	
+	override void InitActionComponent()
+	{
+		super.InitActionComponent();
+		
+		RegisterAnimationEvent("ParticleSplash", UAFishingConstants.EVENT_SPLASH_SIGNAL);
+		RegisterAnimationEvent("EventFishPlacement", UAFishingConstants.EVENT_ANIMATE_ROD_CLOSE);
 	}
 	
 	override void EndActionComponent()
 	{
-		m_ActionDataFishing = FishingActionData.Cast(m_ActionData);
-		
-		if (!m_ActionDataFishing)
-		{
-			super.EndActionComponent();
-			return;
-		}
+		bool animateRod = false;
+		if (m_ActionDataFishing.m_State == UA_CANCEL)
+			m_Canceled = true;
 		
 		if (m_ActionDataFishing.m_State == UA_FINISHED)
 		{
 			if (m_ActionDataFishing.m_FishingResult == 1)
-				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
-			else if (m_ActionDataFishing.m_FishingResult == 0)
-				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
-		}
-		else if (m_ActionDataFishing.m_State == UA_CANCEL)
-		{
-			ActionContinuousBase action = ActionContinuousBase.Cast(m_ActionDataFishing.m_Action);
-			if (action.HasAlternativeInterrupt())
 			{
-				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
+				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
 			}
 			else
 			{
-				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
+				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
+				animateRod = true;
 			}
-
-			m_Canceled = true;
-			return;
 		}
 		else
 		{
-			if (m_ActionDataFishing.m_FishingResult == 1)
-				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
-			else if (m_ActionDataFishing.m_FishingResult == 0)
-				SetCommand(DayZPlayerConstants.CMD_ACTIONINT_FINISH);
+			SetCommand(DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT);
+			animateRod = true;
 		}
-
-		m_ActionDataFishing.m_State = UA_FINISHED;
+		
+		animateRod |= m_Canceled;
+		if (animateRod)
+		{
+			m_ActionDataFishing.AnimateRod(false,m_Canceled);
+		}
+		
+		DestroySplashEffectSynced();
 	}
 	
-	void HandleFishingResultSuccess()
+	override void OnAnimationEvent(int pEventID)
 	{
-		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+		super.OnAnimationEvent(pEventID);
+		
+		switch (pEventID)
 		{
-			ItemBase fish;
-
-			if (!m_ActionDataFishing.m_Bait)
-				m_ActionDataFishing.InitBait(ItemBase.Cast(m_ActionDataFishing.m_MainItem.FindAttachmentBySlotName("Hook")));
+			case UAFishingConstants.EVENT_SPLASH_SIGNAL: 
+				PlaySplashEffectSynced();
+			break;
 			
-			if (!m_ActionDataFishing.IsBaitEmptyHook())
-			{
-				m_ActionDataFishing.m_Bait.AddHealth(-m_ActionDataFishing.FISHING_DAMAGE);
-				MiscGameplayFunctions.TurnItemIntoItem(m_ActionDataFishing.m_Bait,m_ActionDataFishing.m_Bait.ConfigGetString("hookType"),m_ActionDataFishing.m_Player);
-			}
-			else
-			{
-				m_ActionDataFishing.m_Bait.AddHealth(-m_ActionDataFishing.FISHING_DAMAGE);
-			}
-			
-			float rnd = Math.RandomFloatInclusive(0.0, 1.0);
-			if (rnd > m_ActionDataFishing.FISHING_GARBAGE_CHANCE)
-			{
-				if (m_ActionDataFishing.m_IsSurfaceSea)
-					fish = ItemBase.Cast(GetGame().CreateObjectEx("Mackerel",m_ActionDataFishing.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
-				else
-					fish = ItemBase.Cast(GetGame().CreateObjectEx("Carp",m_ActionDataFishing.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
-			}
-			else
-			{
-				if ( !m_ActionDataFishing.m_IsSurfaceSea )
-				{
-					string junkType = m_JunkTypes.Get(Math.RandomInt(0, m_JunkTypes.Count()));
-					fish = ItemBase.Cast(GetGame().CreateObjectEx(junkType, m_ActionDataFishing.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
-					fish.SetHealth("", "Health", fish.GetMaxHealth("", "Health") * 0.1);
-				}
-			}
-			
-			if (fish)
-			{
-				//Print("---Caught something: " + fish + "---");
-				fish.SetWet(0.3);
-				if (fish.HasQuantity())
-				{
-					float coef = Math.RandomFloatInclusive(0.5, 1.0);
-					float item_quantity = fish.GetQuantityMax() * coef;
-					item_quantity = Math.Round(item_quantity);
-					fish.SetQuantity( item_quantity );
-					fish.InsertAgent(eAgents.CHOLERA);
-				}
-			}
-			
-			m_ActionDataFishing.m_MainItem.AddHealth(-m_ActionDataFishing.FISHING_DAMAGE);
-		}
-	}
-	
-	void HandleFishingResultFailure()
-	{
-		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
-		{
-			if (!m_ActionDataFishing.m_Bait)
-				m_ActionDataFishing.InitBait(ItemBase.Cast(m_ActionDataFishing.m_MainItem.FindAttachmentBySlotName("Hook")));
-			
-			if (Math.RandomFloatInclusive(0.0,1.0) > m_ActionDataFishing.FISHING_HOOK_LOSS) //loss of worm only
-			{
-				if (!m_ActionDataFishing.IsBaitEmptyHook())
-				{
-					m_ActionDataFishing.m_Bait.AddHealth(-m_ActionDataFishing.FISHING_DAMAGE);
-					MiscGameplayFunctions.TurnItemIntoItem(m_ActionDataFishing.m_Bait,m_ActionDataFishing.m_Bait.ConfigGetString("hookType"),m_ActionDataFishing.m_Player);
-				}
-			}
-			else //loss of the entire hook
-			{
-				m_ActionDataFishing.m_Bait.Delete();
-			}
-			
-			m_ActionDataFishing.m_MainItem.AddHealth(-m_ActionDataFishing.FISHING_DAMAGE);
+			case UAFishingConstants.EVENT_ANIMATE_ROD_CLOSE:
+				m_ActionDataFishing.AnimateRod(false,false);
+			break;
 		}
 	}
 	
 	override void OnStateChange(int pOldState, int pCurrentState)
 	{
-		if (pCurrentState == STATE_NONE && m_ActionDataFishing)
+		super.OnStateChange(pOldState,pCurrentState);
+		
+		if (pOldState == STATE_NONE && pCurrentState == STATE_LOOP_IN)
 		{
-			if (m_ActionDataFishing.m_FishingResult == 1 && pOldState == STATE_LOOP_END)
+			m_ActionDataFishing.AnimateRod(true);
+			SetAligning(m_ActionDataFishing.m_Player.GetPosition(),vector.Direction(m_ActionDataFishing.m_Player.GetPosition(), m_ActionDataFishing.m_Target.GetCursorHitPos()));
+		}
+	}
+	
+	void ToggleFishBiting()
+	{
+		if (GetState() == STATE_LOOP_LOOP || GetState() == STATE_LOOP_LOOP2)
+			SetCommand(DayZPlayerConstants.CMD_ACTIONINT_ACTIONLOOP);
+	}
+	
+	void PlaySplashEffectSynced()
+	{
+		if (GetGame().IsServer())
+		{
+			int particleId = m_ActionDataFishing.m_ContextData.GetResultParticleId();
+			if (m_ActionDataFishing.m_SplashUniqueID < 0)
 			{
-				HandleFishingResultSuccess();
+				m_ActionDataFishing.m_SplashUniqueID = SEffectManager.CreateParticleServer(m_ActionDataFishing.m_Target.GetCursorHitPos(), new ParticleEffecterParameters("ParticleEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, particleId));
 			}
-			else if (m_ActionDataFishing.m_FishingResult == 0 && pOldState == STATE_LOOP_END2)
+			else
 			{
-				HandleFishingResultFailure();
+				SEffectManager.ReinitParticleServer(m_ActionDataFishing.m_SplashUniqueID, new ParticleEffecterParameters("ParticleEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, particleId)); //reinit here, since particleId might differ
+				SEffectManager.ReactivateParticleServer(m_ActionDataFishing.m_SplashUniqueID); //TODO: re-evaluate, variable sync could cause issues here...store last 'particleId' and compare, reinit on change only?
 			}
 		}
 	}
+	
+	//! Destroys the effecter, but lets the rest of the particle play out
+	void DestroySplashEffectSynced()
+	{
+		if (GetGame().IsServer() && m_ActionDataFishing.m_SplashUniqueID >= 0)
+		{
+			SEffectManager.DestroyEffecterParticleServer(m_ActionDataFishing.m_SplashUniqueID);
+			m_ActionDataFishing.m_SplashUniqueID = -1;
+		}
+	}
+	
+	//DEPRECATED
+	ref array<string> 	m_JunkTypes = {};
+	void HandleFishingResultSuccess();
+	void HandleFishingResultFailure();
 };
 
 class ActionFishingNew: ActionContinuousBase
@@ -196,7 +205,7 @@ class ActionFishingNew: ActionContinuousBase
 	override void CreateConditionComponents()  
 	{
 		m_ConditionItem 	= new CCINonRuined();
-		m_ConditionTarget 	= new CCTWaterSurface(UAMaxDistances.BASEBUILDING, ALLOWED_WATER_SURFACES);
+		m_ConditionTarget 	= new CCTWaterSurfaceEx(30, LIQUID_SALTWATER|LIQUID_FRESHWATER);
 	}
 	
 	override bool HasTarget()
@@ -209,18 +218,17 @@ class ActionFishingNew: ActionContinuousBase
 		return true;
 	}
 	
+	override bool CanBeUsedInFreelook()
+	{
+		return false;
+	}
+	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		ItemBase bait;		
-		FishingRod_Base_New rod = FishingRod_Base_New.Cast(item);
+		ItemBase hook;
+		hook = ItemBase.Cast(item.FindAttachmentBySlotName("Hook"));
 		
-		if (rod)
-			bait = ItemBase.Cast(rod.FindAttachmentBySlotName("Hook"));
-		
-		if (bait && !bait.IsRuined())
-			return true;
-		
-		return false;
+		return hook && !hook.IsRuined() && !hook.IsPendingDeletion();
 	}
 	
 	override ActionData CreateActionData()
@@ -233,123 +241,205 @@ class ActionFishingNew: ActionContinuousBase
 	{
 		if (super.SetupAction(player, target, item, action_data, extra_data))
 		{
-			vector cursorPosition = action_data.m_Target.GetCursorHitPos();
-			if (cursorPosition == vector.Zero)
-				cursorPosition = player.GetPosition();
-
-			if (GetGame().SurfaceIsSea(cursorPosition[0], cursorPosition[2]))
+			FishingActionData data;
+			if (Class.CastTo(data,action_data))
 			{
-				FishingActionData.Cast(action_data).m_IsSurfaceSea = true;
+				ComposeLocalContextData(data);
+				return true;
 			}
-
-			FishingRod_Base_New rod = FishingRod_Base_New.Cast(action_data.m_MainItem);
-			if (rod)
-			{
-				FishingActionData.Cast(action_data).m_RodQualityModifier = rod.GetFishingEffectivityBonus();
-				FishingActionData.Cast(action_data).InitBait(ItemBase.Cast(action_data.m_MainItem.FindAttachmentBySlotName("Hook")));
-			}
-			return true;
 		}
 		return false;
 	}
 	
-	override void OnFinishProgressServer( ActionData action_data )
+	protected void ComposeLocalContextData(FishingActionData data)
 	{
-		action_data.m_Callback.InternalCommand(DayZPlayerConstants.CMD_ACTIONINT_ACTION);
-		FishingActionData.Cast(action_data).m_FishingResult = EvaluateFishingResult(action_data);
-	}
-	
-	override void OnFinishProgressClient( ActionData action_data )
-	{
-		action_data.m_Callback.InternalCommand(DayZPlayerConstants.CMD_ACTIONINT_ACTION);
-		FishingActionData.Cast(action_data).m_FishingResult = EvaluateFishingResult(action_data);
-	}
-	
-	override void OnStartClient( ActionData action_data )
-	{
-		FishingRod_Base_New rod = FishingRod_Base_New.Cast(action_data.m_MainItem);
-		rod.AnimateFishingRod(true);
-	}
-	override void OnStartServer( ActionData action_data )
-	{
-		FishingRod_Base_New rod = FishingRod_Base_New.Cast(action_data.m_MainItem);
-		rod.AnimateFishingRod(true);
-	}
-	
-	override void OnEndClient( ActionData action_data )
-	{
-		FishingRod_Base_New rod = FishingRod_Base_New.Cast(action_data.m_MainItem);
-		rod.AnimateFishingRod(false);
-	}
-	override void OnEndServer( ActionData action_data )
-	{
-		FishingRod_Base_New rod = FishingRod_Base_New.Cast(action_data.m_MainItem);
-		rod.AnimateFishingRod(false);
+		#ifndef SERVER
+		data.m_IsSurfaceSea = CheckForSea(data); //already synced from client by this point
+		#endif
+		Param2<EntityAI,bool> par = new Param2<EntityAI,bool>(data.m_MainItem,data.m_IsSurfaceSea);
+		data.m_ContextData = new CatchingContextFishingRodAction(par);
+		
+		data.m_ContextData.GenerateResult(); //call only once
+		
+		#ifdef DEVELOPER
+		data.m_ContextData.SetResultChanceOverride(data.m_Player.IsQuickFishing(),1.0); //active override sets chance to 100% for the action duration
+		#endif
 	}
 	
 	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
 	{
 		super.WriteToContext(ctx, action_data);
-		
-		if (HasTarget())
+		FishingActionData data
+		if (Class.CastTo(data,action_data))
 		{
-			ctx.Write(action_data.m_Target.GetCursorHitPos());
+			ctx.Write(data.m_IsSurfaceSea);
 		}
 	}
 	
-	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data)
-	{		
+	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
+	{
+		if (!action_recive_data)
+		{
+			action_recive_data = new FishingActionReceiveData;
+		}
+		
 		super.ReadFromContext(ctx, action_recive_data);
 		
-		if (HasTarget())
+		FishingActionReceiveData receiveDataFishing;
+		if (Class.CastTo(receiveDataFishing,action_recive_data))
 		{
-			vector cursor_position;
-			if (!ctx.Read(cursor_position))
+			if (!ctx.Read(receiveDataFishing.m_IsSurfaceSea))
 				return false;
-
-			action_recive_data.m_Target.SetCursorHitPos(cursor_position);
+			
+			return true;
 		}
-		return true;
+		
+		return false;
 	}
 	
+	override void HandleReciveData(ActionReciveData action_recive_data, ActionData action_data)
+	{
+		super.HandleReciveData(action_recive_data, action_data);
+		
+		FishingActionReceiveData receiveDataFishing = FishingActionReceiveData.Cast(action_recive_data);
+		FishingActionData fishingData = FishingActionData.Cast(action_data);
+		
+		fishingData.m_IsSurfaceSea = receiveDataFishing.m_IsSurfaceSea;
+	}
+	
+	override protected void CreateAndSetupActionCallback(ActionData action_data)
+	{
+		super.CreateAndSetupActionCallback(action_data);
+		
+		FishingActionData data;
+		if (Class.CastTo(data,action_data))
+		{
+			data.RollNextResultChance(); //performed here so that component exists
+		}
+	}
+	
+	protected bool CheckForSea(ActionData action_data)
+	{
+		bool ret = false;
+		vector cursorPosition = action_data.m_Target.GetCursorHitPos();
+		
+		if (GetGame().SurfaceIsSea(cursorPosition[0], cursorPosition[2]))
+		{
+			ret = true;
+		}
+		
+		return ret;
+	}
+	
+	//------------------------------------------------------
+	
+	override void OnFinishProgress(ActionData action_data)
+	{
+		super.OnFinishProgress(action_data);
+		
+		FishingActionData data;
+		if (Class.CastTo(data,action_data))
+		{
+			data.RollNextResultChance();
+		}
+	}
+	
+	override void OnEndInput(ActionData action_data)
+	{
+		ActionContinuousBaseCB callback;
+		if (Class.CastTo(callback, action_data.m_Callback))
+		{
+			switch (callback.GetState())
+			{
+				case HumanCommandActionCallback.STATE_LOOP_ACTION:
+				case HumanCommandActionCallback.STATE_LOOP_LOOP:
+				case HumanCommandActionCallback.STATE_LOOP_LOOP2: //?
+					FishingActionData data;
+					if (Class.CastTo(data,action_data))
+					{
+						data.m_FishingResult = EvaluateFishingResult(action_data);
+						if (data.m_FishingResult != -1)
+							data.m_State = UA_FINISHED;
+					}
+					break;
+				
+				default:
+					super.OnEndInput(action_data);
+					callback.EndActionComponent(); //TODO: think about putting this everywhere; interrupts HumanCommandActionCallback.STATE_LOOP_IN neatly
+					break;
+			}
+		}
+	}
+	
+	override void OnEnd(ActionData action_data)
+	{
+		super.OnEnd(action_data);
+		
+		FishingActionData fad;
+		if (Class.CastTo(fad,action_data))
+			fad.AnimateRod(false,true); //just in case
+	}
+	
+	//! Player input reaction evaluation
 	int EvaluateFishingResult(ActionData action_data)
 	{
-		if (action_data.m_Player.IsQuickFishing())
-			return 1;
-		
-		FishingActionData fad = FishingActionData.Cast(action_data);
-		float rnd = fad.m_Player.GetRandomGeneratorSyncManager().GetRandom01(RandomGeneratorSyncUsage.RGSGeneric);
-		float daytimeModifier = 1;
-		float hookModifier = 1;
-		float chance;
-		
-		daytimeModifier = GetGame().GetDayTime();
-		if ((daytimeModifier > 18 && daytimeModifier < 22) || (daytimeModifier > 5 && daytimeModifier < 9))
+		FishingActionData fad;
+		if (Class.CastTo(fad,action_data))
 		{
-			daytimeModifier = 1;
-		}
-		else
-		{
-			daytimeModifier = 0.5;
+			//legacy stuff
+			ActionFishingNewCB legacyCB = ActionFishingNewCB.Cast(fad.m_Callback);
+			if (fad.m_IsSignalActive)//catch
+			{
+				fad.m_ContextData.OnBeforeSpawnSignalHit();
+				
+				if (!GetGame().IsMultiplayer() || GetGame().IsDedicatedServer())
+					TrySpawnCatch(fad);
+				
+				fad.m_ContextData.OnAfterSpawnSignalHit();
+				if (legacyCB)
+					legacyCB.HandleFishingResultSuccess();
+				
+				EntityAI hookCheck = action_data.m_MainItem.FindAttachmentBySlotName("Hook");
+				return hookCheck != null && !hookCheck.IsPendingDeletion(); //success animation only if hook loss didn't prevent catch (local)
+			}
+			else//fail
+			{
+				fad.m_ContextData.OnSignalMiss();
+				if (legacyCB)
+					legacyCB.HandleFishingResultFailure();
+				
+				return false;
+			}
 		}
 		
-		//fishing with an empty hook
-		if (fad.IsBaitEmptyHook())
-		{
-			hookModifier = 0.05;
-		}
-		
-		chance = 1 - (((fad.FISHING_SUCCESS * daytimeModifier) + fad.m_RodQualityModifier)) * hookModifier;
-		
-		if (rnd > chance)
-		{
-			return 1;
-		}
-		else if (rnd < fad.FISHING_BAIT_LOSS && !fad.IsBaitEmptyHook()) // restricts the loss of an empty hook (low chance is enough)
-		{
-			return 0;
-		}
-
 		return -1;
+	}
+	
+	//------------------------------------------------------
+	void OnSignalStart(FishingActionData action_data)
+	{
+		action_data.m_IsSignalActive = true;
+		ActionFishingNewCB fishingCB;
+		if (Class.CastTo(fishingCB,action_data.m_Callback))
+			fishingCB.ToggleFishBiting();
+	}
+	
+	void OnSignalEnd(FishingActionData action_data)
+	{
+		action_data.m_IsSignalActive = false;
+		ActionFishingNewCB fishingCB;
+		if (Class.CastTo(fishingCB,action_data.m_Callback))
+			fishingCB.ToggleFishBiting();
+		
+		action_data.m_ContextData.OnSignalPass();
+	}
+	
+	protected EntityAI TrySpawnCatch(FishingActionData action_data)
+	{
+		vector spawnPos = vector.Direction(action_data.m_Player.GetPosition(),action_data.m_Target.GetCursorHitPos()); //direction first
+		spawnPos = MiscGameplayFunctions.GetRandomizedPositionVerified(action_data.m_Player.GetPosition(),action_data.m_Player.GetPosition() + spawnPos * 0.1,0.15,action_data.m_Player);
+		
+		int idx;
+		return action_data.m_ContextData.SpawnAndSetupCatch(idx,spawnPos);
 	}
 }

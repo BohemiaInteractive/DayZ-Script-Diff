@@ -517,9 +517,13 @@ class Container extends LayoutHolder
 		{
 			InventoryLocation il = new InventoryLocation;
 			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-			found = player.GetInventory().FindFreeLocationFor(focusedEntity,FindInventoryLocationType.ATTACHMENT,il);
+			found = player.GetInventory().FindFreeLocationFor(focusedEntity,FindInventoryLocationType.ATTACHMENT, il);
 			
-			if (!found)
+			if (found && il.GetParent().GetInventory().FindAttachment(il.GetSlot()))
+			{
+				found = false;
+			}
+			else if (!found)
 			{
 				for (int i = 0; i < focusedEntity.GetInventory().GetSlotIdCount(); i++)
 				{				
@@ -527,7 +531,7 @@ class Container extends LayoutHolder
 					EntityAI slot_item = player.GetInventory().FindAttachment( slot_id );
 					if (slot_item && player.GetInventory().CanSwapEntitiesEx( focusedEntity, slot_item ))
 					{
-						found = true; 
+						found = true;
 						break;
 					}
 					

@@ -10,4 +10,5 @@ enum eAgents
 	CHEMICAL_POISON	= 32;
 	WOUND_AGENT		= 64;
 	NERVE_AGENT		= 128;
+	HEAVYMETAL		= 256;
 }

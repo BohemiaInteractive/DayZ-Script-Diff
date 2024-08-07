@@ -72,6 +72,11 @@ class DayZCreature extends EntityAI
 		return true;
 	}	
 	
+	override bool DisableVicinityIcon()
+	{
+		return true;
+	}
+	
 	override void AddArrow(Object arrow, int componentIndex, vector closeBonePosWS, vector closeBoneRotWS)
 	{
 		CachedObjectsArrays.ARRAY_STRING.Clear();
@@ -286,7 +291,7 @@ class DayZCreatureAI extends DayZCreature
 		if(GetGame().IsServer())
 		{
 			if(sound_event.m_NoiseParams != NULL)
-				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams);
+				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, GetGame().GetWeather().GetNoiseReductionByWeather());
 		}
 	}
 
@@ -307,7 +312,7 @@ class DayZCreatureAI extends DayZCreature
 		if(GetGame().IsServer())
 		{
 			if(sound_event.m_NoiseParams != NULL)
-				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams);
+				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, GetGame().GetWeather().GetNoiseReductionByWeather());
 		}
 	}
 

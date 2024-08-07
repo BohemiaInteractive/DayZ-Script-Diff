@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionPlugIntoFence: ActionSingleUseBase
 {
 	void ActionPlugIntoFence()

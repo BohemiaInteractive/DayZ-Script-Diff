@@ -173,20 +173,34 @@ class HandEventBase
 	
 	bool ReserveInventory()
 	{
-		InventoryLocation dst = GetDst();
-		if( dst && !m_Player.GetHumanInventory().AddInventoryReservationEx(dst.GetItem(), dst, GameInventory.c_InventoryReservationTimeoutShortMS) )
+		InventoryLocation il = GetDst();
+		if (!il)
 		{
-			return false;
+			il = GetSrc();
 		}
-		return true;
+			
+		if (il && !m_Player.GetHumanInventory().HasInventoryReservation(il.GetItem(),il))
+		{
+			if (m_Player.GetHumanInventory().AddInventoryReservationEx(il.GetItem(), il, GameInventory.c_InventoryReservationTimeoutShortMS))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 	
 	void ClearInventoryReservation()
 	{
-		InventoryLocation dst = GetDst();
-		if(dst)
+		InventoryLocation il = GetDst();
+		if (il)
 		{
-			m_Player.GetHumanInventory().ClearInventoryReservationEx(dst.GetItem(), dst);
+			il = GetSrc();
+		}
+		
+		if (il)
+		{
+			m_Player.GetHumanInventory().ClearInventoryReservationEx(il.GetItem(), il);
 		}
 	}
 };
@@ -637,16 +651,21 @@ class HandEventSwap extends HandEventBase
 	
 	override bool ReserveInventory()
 	{
-		if( !m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst.GetItem(), m_Dst, GameInventory.c_InventoryReservationTimeoutShortMS) )
+		if (!m_Player.GetHumanInventory().HasInventoryReservation(m_Dst.GetItem(), m_Dst) && !m_Player.GetHumanInventory().HasInventoryReservation(m_Dst2.GetItem(), m_Dst2))
 		{
-			return false;
+			if (m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst.GetItem(), m_Dst, GameInventory.c_InventoryReservationTimeoutShortMS))
+			{
+				if (m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst2.GetItem(), m_Dst2, GameInventory.c_InventoryReservationTimeoutShortMS))
+				{
+					return true;
+				}
+				else
+				{
+					m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
+				}
+			}
 		}
-		if( !m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst2.GetItem(), m_Dst2, GameInventory.c_InventoryReservationTimeoutShortMS) )
-		{
-			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
-			return false;
-		}
-		return true;
+		return false;
 	}
 	
 	override void ClearInventoryReservation()

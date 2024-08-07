@@ -9,6 +9,9 @@ const int SERVER_BROWSER_PAGE_SIZE = 5;
 class ServerBrowserMenuNew extends UIScriptedMenu
 {
 	protected Widget				m_Play;
+	protected TextWidget			m_PlayButtonLabel;
+	protected TextWidget			m_OpenStoreButtonLabel;
+	
 	protected Widget				m_Back;
 	protected Widget				m_CustomizeCharacter;
 	protected TextWidget			m_PlayerName;
@@ -41,6 +44,8 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		layoutRoot.FindAnyWidget("Tabber").GetScript(m_Tabber);
 		
 		m_Play					= layoutRoot.FindAnyWidget("play");
+		m_PlayButtonLabel		= TextWidget.Cast(m_Play.FindAnyWidget("play_label"));
+		m_OpenStoreButtonLabel	= TextWidget.Cast(m_Play.FindAnyWidget("open_store_label"));
 		m_Back					= layoutRoot.FindAnyWidget("back_button");
 		m_CustomizeCharacter	= layoutRoot.FindAnyWidget("customize_character");
 		m_PlayerName			= TextWidget.Cast(layoutRoot.FindAnyWidget("character_name_text"));
@@ -64,6 +69,12 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			layoutRoot.FindAnyWidget("MouseAndKeyboardWarning").Show(true);
 			layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
 		}
+
+		RichTextWidget playPanelBack = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
+		playPanelBack.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_NORMAL));
+
+		RichTextWidget playPanelPlay = RichTextWidget.Cast(layoutRoot.FindAnyWidget("PlayIcon0"));
+		playPanelPlay.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_NORMAL));
 		#else
 		version = "#main_menu_version" + " " + version;
 		#endif
@@ -125,6 +136,8 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			UpdateControlsElements();
 			layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
 			layoutRoot.FindAnyWidget("ConsoleControls").Show(true);
+			layoutRoot.FindAnyWidget("PlayIcon0").Show(false);
+			layoutRoot.FindAnyWidget("BackIcon0").Show(false);
 			#endif
 		break;
 
@@ -134,6 +147,8 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			{
 				layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
 				layoutRoot.FindAnyWidget("ConsoleControls").Show(false);
+				layoutRoot.FindAnyWidget("PlayIcon0").Show(true);
+				layoutRoot.FindAnyWidget("BackIcon0").Show(true);
 			}
 			#endif
 		break;
@@ -278,6 +293,16 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		}
 	}
 	
+	void UpdateYButtonLabel(string text)
+	{
+		TextWidget yText = TextWidget.Cast(layoutRoot.FindAnyWidget("ResetText"));
+		if (yText)
+		{
+			yText.SetText(text);
+			yText.Update();
+		}
+	}
+	
 	void ShowAButton(bool show)
 	{
 		RichTextWidget aIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ConnectIcon"));
@@ -291,28 +316,98 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		if (aText)
 		{
 			aText.Show(show);
+		}	
+	}
+	
+	void UpdateAButtonLabel(string text)
+	{
+		TextWidget aText = TextWidget.Cast(layoutRoot.FindAnyWidget("ConnectText"));
+		if (aText)
+		{
+			aText.SetText(text);
+			aText.Update();
 		}
-				
+	}
+	
+	void UpdateXButtonLabel(string text)
+	{
+		TextWidget xText = TextWidget.Cast(layoutRoot.FindAnyWidget("RefreshText"));
+		if (xText)
+		{
+			xText.SetText(text);
+			xText.Update();
+		}
+	}
+	
+	void ShowThumbRButton(bool show)
+	{
+		RichTextWidget trIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("SwitchIcon"));
+		TextWidget trText = TextWidget.Cast(layoutRoot.FindAnyWidget("SwitchText"));
+		
+		if (trIcon)
+		{
+			trIcon.Show(show);
+		}
+		
+		if (trText)
+		{
+			trText.Show(show);
+		}
+	}
+	
+	void UpdateThumbRButtonLabel(string text)
+	{
+		TextWidget trText = TextWidget.Cast(layoutRoot.FindAnyWidget("SwitchText"));
+		if (trText)
+		{
+			trText.SetText(text);
+			trText.Update();
+		}
 	}
 	
 	void FilterFocus(bool focus)
 	{
-		#ifdef PLATFORM_CONSOLE
-		TextWidget con_text = TextWidget.Cast(layoutRoot.FindAnyWidget("ConnectText"));
-		TextWidget ref_text = TextWidget.Cast(layoutRoot.FindAnyWidget("RefreshText"));
-		TextWidget res_text = TextWidget.Cast(layoutRoot.FindAnyWidget("ResetText"));
-		
+	#ifdef PLATFORM_CONSOLE
 		if (focus)
 		{
-			con_text.SetText("#dialog_change");
-			ref_text.SetText("#server_browser_menu_refresh");
-			res_text.SetText("#server_browser_menu_reset_filters");
-		
-			con_text.Update();
-			ref_text.Update();
-			res_text.Update();
+			ShowThumbRButton(false);
+			string aButtonLabel;
+			if (GetServersLoadingTab() == TabType.FAVORITE)
+			{
+			#ifdef PLATFORM_PS4
+				aButtonLabel = "#ps4_ingame_menu_select";
+			#else
+				aButtonLabel = "#layout_xbox_ingame_menu_select";
+			#endif
+			}
+			else
+			{
+				aButtonLabel = "#dialog_change";
+			}
+
+			UpdateAButtonLabel(aButtonLabel);
+			UpdateXButtonLabel("#server_browser_menu_refresh");
+			UpdateYButtonLabel("#server_details_header");
 		}
+	#endif
+	}
+
+	void DetailsFocus(bool focus)
+	{
+	#ifdef PLATFORM_CONSOLE
+		if (focus)
+		{
+			ShowThumbRButton(false);
+			UpdateYButtonLabel("#STR_server_browser_tab_root_details_show_server_filters");
+			string aButtonLabel;
+		#ifdef PLATFORM_PS4
+			aButtonLabel = "#ps4_ingame_menu_select";
+		#else
+			aButtonLabel = "#layout_xbox_ingame_menu_select";
 		#endif
+			UpdateAButtonLabel(aButtonLabel);
+		}
+	#endif
 	}
 	
 	void BackButtonFocus()
@@ -322,29 +417,24 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 
 	void ServerListFocus(bool focus, bool favorite)
 	{
-		#ifdef PLATFORM_CONSOLE
-		TextWidget con_text = TextWidget.Cast(layoutRoot.FindAnyWidget("ConnectText"));
-		TextWidget ref_text = TextWidget.Cast(layoutRoot.FindAnyWidget("RefreshText"));
-		TextWidget res_text = TextWidget.Cast(layoutRoot.FindAnyWidget("ResetText"));
-		
+	#ifdef PLATFORM_CONSOLE		
 		if (focus)
-		{			
-			con_text.SetText("#server_browser_menu_connect");
-			
-			float x, y;
-			res_text.GetSize(x, y);
+		{
+			UpdateAButtonLabel("#server_browser_menu_connect");
+
+			string trText;
 			if (favorite)
 			{
-				res_text.SetText("#server_browser_menu_unfavorite");
+				trText = "#server_browser_menu_unfavorite";
 			}
 			else
 			{
-				res_text.SetText("#server_browser_menu_favorite");
+				trText = "#server_browser_menu_favorite";
 			}
-			con_text.Update();
-			res_text.Update();
+			
+			UpdateThumbRButtonLabel(trText);
 		}
-		#endif
+	#endif
 	}
 	
 	override bool OnFocus(Widget w, int x, int y)
@@ -401,6 +491,11 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	{
 		if (!GetGame().GetUIManager().IsDialogVisible() && !GetDayZGame().IsConnecting())
 		{
+			if (GetUApi().GetInputByID(UAUIThumbRight).LocalPress())
+			{
+				GetSelectedTab().PressThumbRight();
+			}
+			
 			if (GetUApi().GetInputByID(UAUITabLeft).LocalPress())
 			{
 				m_Tabber.PreviousTab();
@@ -537,12 +632,10 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	{
 		GetGame().SetProfileStringList("SB_Favorites", m_Favorites);
 		GetGame().SaveProfile();
-		
 	}
 	
 	void SelectServer(ServerBrowserEntry server)
 	{
-	
 		if (m_SelectedServer)
 		{
 			m_SelectedServer.Deselect();						
@@ -550,22 +643,25 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 				
 		m_SelectedServer = server;
 		
-#ifdef PLATFORM_CONSOLE
-		// disable CONNECT button if server is offline
-		RichTextWidget aButton = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ConnectIcon"));
-		TextWidget connectText = TextWidget.Cast(layoutRoot.FindAnyWidget("ConnectText"));
-		
-		aButton.Show(server.IsOnline());
-		connectText.Show(server.IsOnline());
-#endif
+		string mapNM = m_SelectedServer.GetMapToRun();
+		if (!g_Game.VerifyWorldOwnership(mapNM))
+		{
+			m_PlayButtonLabel.Show(false);
+			m_OpenStoreButtonLabel.Show(true);
+		}
+		else 
+		{
+			m_PlayButtonLabel.Show(true);
+			m_OpenStoreButtonLabel.Show(false);
+		}
 	}
 	
 	void Connect(ServerBrowserEntry server)
 	{
 		SelectServer(server);
-#ifdef PLATFORM_CONSOLE
+		#ifdef PLATFORM_CONSOLE
 		SaveFavoriteServersConsoles();
-#endif
+		#endif
 		Play();
 	}
 	
@@ -574,8 +670,17 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		if (m_SelectedServer)
 		{
 			string mapNM = m_SelectedServer.GetMapToRun();
+			
 			if (!g_Game.VerifyWorldOwnership(mapNM))
-			{
+			{				
+				/*JsonDataDLCList data = DlcDataLoader.GetData();
+				foreach (JsonDataDLCInfo dlcInfo : data.DLCs)
+				{
+					// fetch mod info
+					// if server runs this dlcInfo && !info.GetIsOwned()
+					//info.GoToStore();
+				}*/
+		
 				GetGame().GetUIManager().ShowDialog("#server_browser_connect_label", "#mod_detail_info_warning", 232, DBT_OK, DBB_NONE, DMT_INFO, GetGame().GetUIManager().GetMenu());
 				g_Game.GoBuyWorldDLC(mapNM);
 				return;
@@ -594,11 +699,13 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		EnterScriptedMenu(MENU_CHARACTER);
 	}
 	
+	// Unused?!
 	void NextCharacter()
 	{
 		
 	}
 	
+	// Unused?!
 	void PreviousCharacter()
 	{
 		
@@ -630,6 +737,10 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	
 	void OnTabSwitch()
 	{
+	#ifdef PLATFORM_CONSOLE
+		ShowThumbRButton(false);
+	#endif
+		
 		LoadFavoriteServers();
 		SetServersLoadingTab(TabType.NONE);
 		
@@ -639,6 +750,18 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		}
 		
 		GetSelectedTab().Focus();
+		
+	#ifdef PLATFORM_CONSOLE
+		UpdateControlsElements();
+		if (GetSelectedTab().GetTabType() != TabType.FAVORITE)
+		{
+			ShowYButton(true);
+		}
+		else
+		{
+			ShowYButton(false);
+		}
+	#endif			
 	}
 	
 	void OnLoadServerModsAsync(GetServerModListResult result_list)
@@ -727,7 +850,7 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		TextWidget label	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
 		TextWidget text		= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text"));
 		TextWidget text2	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text_1"));
-				
+
 		if (label)
 		{
 			label.SetColor(color);
@@ -750,9 +873,11 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		RichTextWidget toolbar_b = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
 		RichTextWidget toolbar_x = RichTextWidget.Cast(layoutRoot.FindAnyWidget("RefreshIcon"));
 		RichTextWidget toolbar_y = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ResetIcon"));
+		RichTextWidget toolbar_tr = RichTextWidget.Cast(layoutRoot.FindAnyWidget("SwitchIcon"));
 		toolbar_a.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		toolbar_b.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		toolbar_x.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		toolbar_y.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		toolbar_tr.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIThumbRight", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 	}
 }

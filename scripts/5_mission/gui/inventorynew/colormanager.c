@@ -47,14 +47,15 @@ class ColorManager
 		}
 	}
 	
+	//TODO: revise this mess
 	int GetItemColor( ItemBase item )
 	{
 		int color = -1;
 		ItemBase dragged_item = ItemBase.Cast( ItemManager.GetInstance().GetDraggedItem() );
 		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 		
-		if ( dragged_item )
-			return 0;
+		if ( item == dragged_item )
+			return color;
 		
 		// if item icon is main icon (view, viewgrid )
 		if ( item.GetHierarchyParent() && item.GetHierarchyParent() != player )
@@ -67,7 +68,7 @@ class ColorManager
 			float temperature = item.GetTemperature();
 			if ( temperature )
 			{
-				color = GetTemperatureColor( temperature );
+				color = ObjectTemperatureState.GetStateData(temperature).m_Color;
 			}
 		}
 		return color;

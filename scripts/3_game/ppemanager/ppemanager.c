@@ -131,6 +131,8 @@ class PPEManager extends Managed
 		RegisterPPEClass(new PPEEyeAccomodationNative());
 		RegisterPPEClass(new PPEDOF());
 		RegisterPPEClass(new PPELightIntensityParamsNative());
+		RegisterPPEClass(new PPEDistort());
+		RegisterPPEClass(new PPEGhost());
 	}
 	
 	//! Registeres material class and creates data structure within

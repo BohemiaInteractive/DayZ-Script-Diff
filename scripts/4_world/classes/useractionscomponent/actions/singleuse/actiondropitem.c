@@ -72,14 +72,18 @@ class ActionDropItem : ActionSingleUseBase
 		if (action_data.m_Player.IsPlacingServer())
 			action_data.m_Player.PlacingCancelServer();
 
-		if (!GetGame().IsMultiplayer()) 
+		if (!GetGame().IsMultiplayer())
+		{
+			ClearInventoryReservationEx(action_data);
 			PhysicalDropItem(action_data);
+		}
 	}
 	
 	override void OnExecuteClient(ActionData action_data)
 	{
 		super.OnExecuteClient(action_data);
 
+		ClearInventoryReservationEx(action_data);
 		PhysicalDropItem(action_data);
 	}
 	

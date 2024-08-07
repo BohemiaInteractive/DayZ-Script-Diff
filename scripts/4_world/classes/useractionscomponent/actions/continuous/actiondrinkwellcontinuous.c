@@ -28,6 +28,11 @@ class ActionDrinkWellContinuous: ActionContinuousBase
 		return ContinuousInteractActionInput;
 	}
 	
+	override bool CanBeUsedInFreelook()
+	{
+		return false;
+	}
+	
 	override void CreateConditionComponents()  
 	{
 		m_ConditionItem 	= new CCINone();
@@ -78,5 +83,10 @@ class ActionDrinkWellContinuous: ActionContinuousBase
 		{
 			action_data.m_Player.InsertAgent(eAgents.CHOLERA, 1);
 		}
+	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
 	}
 }

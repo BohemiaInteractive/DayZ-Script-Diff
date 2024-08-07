@@ -7,3 +7,4 @@ class NBCJacketBase extends Top_Base
 	}
 };
 class NBCJacketGray extends NBCJacketBase {};
+class NBCJacketWhite extends NBCJacketBase {};

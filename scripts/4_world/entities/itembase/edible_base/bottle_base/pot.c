@@ -1,4 +1,4 @@
-class Pot extends Bottle_Base
+class Pot : Bottle_Base
 {
 	void Pot();
 	void ~Pot();
@@ -116,6 +116,11 @@ class Pot extends Bottle_Base
 	override bool CanHaveWetness()
 	{
 		return true;
+	}
+	
+	override float GetQuantityNormalizedScripted()
+	{
+		return 1.0;
 	}
 	
 	override void SetActions()

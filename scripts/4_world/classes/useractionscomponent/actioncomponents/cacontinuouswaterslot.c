@@ -77,8 +77,10 @@ class CAContinuousWaterSlot : CAContinuousQuantity
 			if ( m_Slot && m_SpentQuantity < m_ItemQuantity )
 			{
 				m_SpentQuantity += m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
-				float water = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_SpentQuantity, m_Action.GetSpecialtyWeight(), true );
-				m_Slot.GiveWater( water );
+				if (m_SpentQuantity > m_ItemQuantity)	// dont transfer more water than the source's quantity
+					m_SpentQuantity = m_ItemQuantity;
+				
+				m_Slot.GiveWater( m_SpentQuantity );
 				
 				m_SpentQuantityTotal += m_SpentQuantity;
 				CalcAndSetQuantity( action_data );

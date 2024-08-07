@@ -32,7 +32,7 @@ class ActionCreateGreenhouseGardenPlot: ActionContinuousBase
 		if ( !target ) 
 			return false;
 		
-		if ( player.IsPlacingLocal() )
+		if ( player.IsPlacingLocal() || player.GetInColdArea() )
 			return false;
 
 		Object target_object = target.GetObject();
@@ -104,5 +104,10 @@ class ActionCreateGreenhouseGardenPlot: ActionContinuousBase
 			
 			m_GardenPlot.SetOrientation( orientation );
 		}
+	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
 	}
 }

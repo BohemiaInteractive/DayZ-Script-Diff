@@ -3,6 +3,8 @@ class UniversalTemperatureSourceSettings
 	float m_UpdateInterval		= 1.0;			//! how often the Update is ticking
 	float m_TemperatureMin		= 0;			//! min temperature you can get from the TemperatureSource
 	float m_TemperatureMax		= 100;			//! max temperature you can get from the TemperatureSource
+	float m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE; //! max temperature 'non-IsSelfAdjustingTemperature' entity in vicinity will get per update (cap);
+	float m_TemperatureItemCoef = GameConstants.TEMP_COEF_UTS; //! used to determine speed of temperature change, and some temperature subsystems
 	float m_TemperatureCap		= float.MAX;	//! temperature cap that will limit the return value from GetTemperature method
 	float m_RangeFull			= 1;			//! range where the full temperature is given to receiver
 	float m_RangeMax			= 2;			//! maximum range where the receiver can get some temperature
@@ -10,6 +12,7 @@ class UniversalTemperatureSourceSettings
 	bool m_Updateable 			= false;		//! if the Update is running periodically
 	bool m_ManualUpdate  		= false;		//! update is called manually (ex. own tick of parent entity)
 	bool m_AffectStat			= false;		//! if the temperature generated is also set as Temperature Stat on Item itself
+	bool m_IsWorldOverriden		= true;			//! if the stats can be overriden by coefficient/variables from WorldData (currently TemperatureCap only)
 
 	vector m_Position			= vector.Zero;
 	EntityAI m_Parent			= null;			//! parent Entity of the UTS
@@ -18,7 +21,6 @@ class UniversalTemperatureSourceSettings
 class UniversalTemperatureSourceResult
 {
 	float m_Temperature = 0;
-	// ?? what else
 }
 
 //! original Timer deletes m_params which is unwanted
@@ -88,6 +90,9 @@ class UniversalTemperatureSource
 			m_Timer.Run(m_Settings.m_UpdateInterval, this, "Update", params, m_Settings.m_Updateable);
 			SetActive(false);
 		}
+		
+		if (m_Settings.m_IsWorldOverriden)
+			m_Settings.m_TemperatureCap += g_Game.GetMission().GetWorldData().GetUniversalTemperatureSourceCapModifier();
 	}
 	
 	vector GetPosition()
@@ -107,21 +112,19 @@ class UniversalTemperatureSource
 	
 	float GetTemperature()
 	{
-		if (m_Settings.m_TemperatureCap != float.MAX)
-		{
-			return Math.Min(m_Settings.m_TemperatureCap, GetTemperatureRaw());
-		}
-		
 		return GetTemperatureRaw();
+	}
+	
+	float GetTemperatureCap()
+	{
+		return m_Settings.m_TemperatureCap;
 	}
 	
 	float GetTemperatureRaw()
 	{
 		if (m_ResultValues)
-		{
 			return m_ResultValues.m_Temperature;
-		}
-		
+
 		return 0;
 	}
 	
@@ -135,9 +138,24 @@ class UniversalTemperatureSource
 		return m_Settings.m_TemperatureMax;
 	}
 	
+	float GetTemperatureItemCap()
+	{
+		return m_Settings.m_TemperatureItemCap;
+	}
+	
+	float GetTemperatureItemCoef()
+	{
+		return m_Settings.m_TemperatureItemCoef;
+	}
+	
 	EntityAI GetParent()
 	{
 		return m_Settings.m_Parent;
+	}
+	
+	UniversalTemperatureSourceLambdaBase GetLambda()
+	{
+		return m_Lambda;
 	}
 	
 	bool IsActive()
@@ -152,6 +170,11 @@ class UniversalTemperatureSource
 	
 	void SetActive(bool pActive)
 	{
+		if (pActive)
+			m_Lambda.OnUTSActivate();
+		else
+			m_Lambda.OnUTSDeactivate();
+		
 		if (m_Settings.m_ManualUpdate)
 		{
 			m_Active = pActive;
@@ -188,7 +211,9 @@ class UniversalTemperatureSource
 		if (lambda)
 		{
 			settings.m_Position = settings.m_Parent.GetUniversalTemperatureSourcePosition();
+			lambda.OnBeforeExecute();
 			lambda.Execute(settings, m_ResultValues);
+			lambda.OnAfterExecute();
 		}
 
 	}

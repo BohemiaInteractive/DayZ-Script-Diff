@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionTakeFireplaceFromBarrel: ActionInteractBase
 {
 	void ActionTakeFireplaceFromBarrel()

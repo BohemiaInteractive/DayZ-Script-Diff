@@ -22,6 +22,7 @@ enum PostProcessPrioritiesCamera
 	PPP_GAUSS_FILTER,
 	PPP_MEDIAN, //unused?
 	//PPP_SSR
+	PPP_DISTORT,
 };
 
 enum PPERequesterCategory

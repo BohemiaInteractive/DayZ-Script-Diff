@@ -48,7 +48,6 @@ class ActionShave: ActionContinuousBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
 		action_data.m_Player.ShavePlayer();
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override void OnFinishProgressClient( ActionData action_data )

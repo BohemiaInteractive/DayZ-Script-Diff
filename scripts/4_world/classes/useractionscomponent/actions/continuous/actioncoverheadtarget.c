@@ -45,8 +45,6 @@ class ActionCoverHeadTarget: ActionContinuousBase
 		{
 			CoverHeadOfTargetPlayerLambda lambda = new CoverHeadOfTargetPlayerLambda(action_data.m_MainItem, "BurlapSackCover", ntarget);
 			action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere(lambda);
-
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
 	}
 	

@@ -108,8 +108,11 @@ class ActionTakeArrowToHands: ActionInteractBase
 	
 	override void OnExecute(ActionData action_data)
 	{
-		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+		if (GetGame().IsDedicatedServer())
+		{
+			ClearActionJuncture(action_data);
 			return;
+		}
 	
 		InventoryLocation il = action_data.m_ReservedInventoryLocations.Get(0);
 		

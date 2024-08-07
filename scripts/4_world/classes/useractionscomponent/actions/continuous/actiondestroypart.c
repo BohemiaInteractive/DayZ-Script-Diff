@@ -80,8 +80,6 @@ class ActionDestroyPart: ActionContinuousBase
 			//add damage to tool
 			action_data.m_MainItem.DecreaseHealth( UADamageApplied.DESTROY, false );
 		}
-
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	protected bool DestroyCondition( PlayerBase player, ActionTarget target, ItemBase item, bool camera_check )

@@ -137,24 +137,16 @@ class Slot
 		
 		if (m_WaterQuantity < 0)
 			m_WaterQuantity = 0;
-		
-		if ( !NeedsWater() )
-		{
-			if ( !GetPlant() )
-			{
-				if ( GetSeed() )
-				{
-					GetGarden().CreatePlant(this);
-				}
 				
-				// if there is no seed then do not create plant. Plant will be created when the seed is inserted into watered slot.
-			}
-		}
+		if (!g_Game.IsServer())
+			return;
+		
+		if (!GetPlant() && GetSeed() && !NeedsWater()) // if there is no seed then do not create plant. Plant will be created when the seed is inserted into watered slot.
+			GetGarden().CreatePlant(this);
 		
 		if ( needed_water != NeedsWater() )
 		{
 			SetWateredState( eWateredState.WET );
-			GetGarden().UpdateSlotTexture( GetSlotIndex() );
 			if ( m_Garden.GetSlotWateredState() != m_Garden.GetMaxWaterStateVal() )
 				m_Garden.SlotWaterStateUpdate( this );
 		}

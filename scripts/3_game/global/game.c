@@ -2,7 +2,7 @@
  *  Game Class provide most "world" or global engine API functions.
  */
 
-static int GAME_STORAGE_VERSION = 135;
+static int GAME_STORAGE_VERSION = 140;
 
 class CGame
 {
@@ -56,6 +56,14 @@ class CGame
 			SEffectManager.Init();
 			AmmoEffects.Init();
 			VONManager.Init();
+			if (!IsMultiplayer())
+			{
+				SEffectManager.InitServer();
+			}
+		}
+		else
+		{
+			SEffectManager.InitServer();
 		}
 	}
 	
@@ -700,6 +708,10 @@ class CGame
 	//! returns true if player can access item's cargo/attachments (check only distance)
 	proto native bool		IsObjectAccesible(EntityAI item, Man player);
 
+#ifdef DIAG_DEVELOPER
+	proto native void	ReloadShape(Object obj);
+#endif
+
 	// input
 	proto native Input	GetInput();
 
@@ -1039,8 +1051,10 @@ class CGame
 	proto native float		SurfaceY(float x, float z);
 	proto native float		SurfaceRoadY(float x, float z, RoadSurfaceDetection rsd = RoadSurfaceDetection.LEGACY);
 	proto native float		SurfaceRoadY3D(float x, float y, float z, RoadSurfaceDetection rsd);
-	proto void				SurfaceGetType(float x, float z, out string type);
-	proto void				SurfaceGetType3D(float x, float y, float z, out string type);
+	//! Returns: Y position the surface was found
+	proto float				SurfaceGetType(float x, float z, out string type);
+	//! Y input: Maximum Y to trace down from; Returns: Y position the surface was found
+	proto float				SurfaceGetType3D(float x, float y, float z, out string type);
 	proto void				SurfaceUnderObject(notnull Object object, out string type, out int liquidType);
 	proto void				SurfaceUnderObjectEx(notnull Object object, out string type, out string impact, out int liquidType);
 	proto void				SurfaceUnderObjectByBone(notnull Object object, int boneType, out string type, out int liquidType);
@@ -1096,10 +1110,42 @@ class CGame
 		return ConfigGetInt("CfgSurfaces " + surface + " isDigable");
 	}
 	
+	bool GetSurfaceDigPile(string surface, out string result)
+	{
+		return ConfigGetText("CfgSurfaces " + surface + " digPile", result);
+	}
+	
 	//! Checks if the surface is fertile
 	bool IsSurfaceFertile(string surface)
 	{
 		return ConfigGetInt("CfgSurfaces " + surface + " isFertile");
+	}
+	
+	int CorrectLiquidType(int liquidType)
+	{
+		if (liquidType == -1)
+			return LIQUID_NONE;
+		
+		if (liquidType == 0)
+			return LIQUID_SALTWATER;
+		
+		return liquidType;
+	}
+	
+	void SurfaceUnderObjectCorrectedLiquid(notnull Object object, out string type, out int liquidType)
+	{
+		SurfaceUnderObject(object, type, liquidType);
+		liquidType = CorrectLiquidType(liquidType);
+	}
+	void SurfaceUnderObjectExCorrectedLiquid(notnull Object object, out string type, out string impact, out int liquidType)
+	{
+		SurfaceUnderObjectEx(object, type, impact, liquidType);
+		liquidType = CorrectLiquidType(liquidType);
+	}
+	void SurfaceUnderObjectByBoneCorrectedLiquid(notnull Object object, int boneType, out string type, out int liquidType)
+	{
+		SurfaceUnderObjectByBone(object, boneType, type, liquidType);
+		liquidType = CorrectLiquidType(liquidType);
 	}
 	
 	void UpdatePathgraphRegionByObject(Object object)

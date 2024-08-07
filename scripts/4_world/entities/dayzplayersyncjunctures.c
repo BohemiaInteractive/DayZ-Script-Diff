@@ -31,7 +31,7 @@ class DayZPlayerSyncJunctures
 	static const int SJ_ADS_RESET						= 25;
 	static const int SJ_INVENTORY_FAILURE				= 26;
 	#ifdef DEVELOPER
-	static const int SJ_DEBUG_GET_IN_CAR				= 200;
+	static const int SJ_DEBUG_GET_IN_VEHICLE			= 200;
 	#endif
 	
 	
@@ -41,17 +41,18 @@ class DayZPlayerSyncJunctures
 	//!Get in Car
 	//! 
 
-	static void SendGetInCar(DayZPlayer pPlayer, EntityAI car)
+	static void SendGetInVehicle(DayZPlayer pPlayer, EntityAI vehicle)
 	{
-		ScriptJunctureData ctx = new ScriptJunctureData;
-		ctx.Write(car);
-		pPlayer.SendSyncJuncture(SJ_DEBUG_GET_IN_CAR, ctx);
+		ScriptJunctureData ctx = new ScriptJunctureData();
+		ctx.Write(vehicle);
+		pPlayer.SendSyncJuncture(SJ_DEBUG_GET_IN_VEHICLE, ctx);
 	}
 	
-	static bool ReadGetInCarParams(ParamsReadContext pCtx, out EntityAI car)
+	static bool ReadGetInVehicleParams(ParamsReadContext pCtx, out EntityAI vehicle)
 	{
-		if (!pCtx.Read(car))
+		if (!pCtx.Read(vehicle))
 			return false;
+
 		return true;
 	}
 	#endif

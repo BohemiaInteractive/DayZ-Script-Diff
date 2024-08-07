@@ -60,10 +60,6 @@ class BatteryCharger extends ItemBase
 				
 				if ( battery.GetCompEM().GetEnergy() < battery_capacity )
 				{
-					// Heat up the items so players know they are working.
-					this.SetTemperature(60); 
-					battery.SetTemperature(60);
-					
 					float charger_health = GetHealth("", "");
 					float energy_add = m_ChargeEnergyPerSecond * ( consumed_energy / GetCompEM().GetEnergyUsage() );
 					

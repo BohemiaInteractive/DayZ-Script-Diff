@@ -1,31 +1,30 @@
 enum EPSstatsFlags
 {
-	EMPTY,
-};
+	EMPTY	= 0,
+	SYNCED	= 1,
+}
 
 class PlayerStats
 {
 	ref array<ref PlayerStatBase> m_PlayerStats;
 	ref array<ref StatDebugObject> m_PlayerStatsDebug;
-	
-	//ref PlayerStatsPCO_current m_PCO = new PlayerStatsPCO_current();
-	ref PCOHandlerStats m_PCOhandler = new PCOHandlerStats();
+
+	ref PCOHandlerStats m_PCOhandler;
 	
 	ref Timer m_SyncTimer;
 	Man m_Player;
 	bool m_AllowLogs;
 	string m_System = "Stats"; //debuging tag
 	
-	//int m_SystemVersion = 101;
-	
 	void PlayerStats(Man player)
 	{
 		Init(player);
+		m_PCOhandler = new PCOHandlerStats(player);
 	}
 
 	void Init(Man player)
 	{
-		m_Player 		= player;
+		m_Player = player;
 	}
 
 	PlayerStatsPCO_Base GetPCO(int version = -1 )
@@ -51,13 +50,7 @@ class PlayerStats
 			return null;
 		}
 	}
-	
-/*
-	array<ref PlayerStatBase> Get()
-	{
-		return m_PlayerStats;
-	}
-*/
+
 	void SetAllowLogs(bool enable)
 	{
 		m_AllowLogs = enable;
@@ -137,5 +130,15 @@ class PlayerStats
 	void ResetAllStats()
 	{
 		GetPCO().ResetAllStats();
+	}
+	
+	void OnRPC(ParamsReadContext ctx)
+	{
+		GetPCO().OnRPC(ctx);
+	}
+	
+	void OnAfterStoreLoad()
+	{
+		GetPCO().OnAfterStoreLoad();
 	}
 }

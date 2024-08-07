@@ -8,7 +8,7 @@ class CCTSurface : CCTBase
 	}
 	
 	override bool Can( PlayerBase player, ActionTarget target )
-	{	
+	{
 		if( !target || (target && target.GetObject()) )
 			return false;
 		

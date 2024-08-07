@@ -2,6 +2,45 @@
 	Base native class of all vehicles in game.
 */
 #ifdef FEATURE_NETWORK_RECONCILIATION
+
+class TransportOwnerState : PawnOwnerState
+{
+	proto native void	SetWorldTransform(vector transform[4]);
+	proto native void	GetWorldTransform(out vector transform[4]);
+
+	proto native void	SetLinearVelocity(vector value);
+	proto native void	GetLinearVelocity(out vector value);
+
+	proto native void	SetAngularVelocity(vector value);
+	proto native void	GetAngularVelocity(out vector value);
+
+#ifdef DIAG_DEVELOPER
+	override event void	GetTransform(inout vector transform[4])
+	{
+		GetWorldTransform(transform);
+	}
+#endif
+};
+
+class TransportMove : PawnMove
+{
+	proto native void	SetWorldTransform(vector transform[4]);
+	proto native void	GetWorldTransform(out vector transform[4]);
+
+	proto native void	SetLinearVelocity(vector value);
+	proto native void	GetLinearVelocity(out vector value);
+
+	proto native void	SetAngularVelocity(vector value);
+	proto native void	GetAngularVelocity(out vector value);
+	
+#ifdef DIAG_DEVELOPER
+	override event void	GetTransform(inout vector transform[4])
+	{
+		GetWorldTransform(transform);
+	}
+#endif
+};
+
 //! Uses NetworkMoveStrategy.NONE
 class Transport extends Pawn
 #else
@@ -11,9 +50,25 @@ class Transport extends EntityAI
 	ref TIntArray m_SingleUseActions;
 	ref TIntArray m_ContinuousActions;
 	ref TIntArray m_InteractActions;
+	
+	protected bool m_EngineZoneReceivedHit;
+	protected vector m_fuelPos;
 
 	void Transport()
 	{
+		RegisterNetSyncVariableBool("m_EngineZoneReceivedHit");
+		
+		if ( MemoryPointExists("refill") )
+			m_fuelPos = GetMemoryPointPos("refill");
+		else
+			m_fuelPos = "0 0 0";
+	}
+	
+	override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
+	{
+		super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
+
+		SetEngineZoneReceivedHit(dmgZone == "Engine");
 	}
 
 	override int GetMeleeTargetType()
@@ -21,10 +76,20 @@ class Transport extends EntityAI
 		return EMeleeTargetType.NONALIGNABLE;
 	}
 
+	//!
+	protected override event typename GetOwnerStateType()
+	{
+		return TransportOwnerState;
+	}
+
+	//!
+	protected override event typename GetMoveType()
+	{
+		return TransportMove;
+	}
 
 	//! Synchronizes car's state in case the simulation is not running.
 	proto native void Synchronize();
-
 
 	//! Returns crew capacity of this vehicle.
 	proto native int CrewSize();
@@ -40,6 +105,10 @@ class Transport extends EntityAI
 	//! Returns crew member based on position index.
 	//! Null can be returned if no Human is present on the given position.
 	proto native Human CrewMember( int posIdx );
+
+	//! Returns the driver
+	//! Null can be returned if no Human is present.
+	proto native Human CrewDriver();
 
 	//! Reads entry point and direction into vehicle on given position in model space.
 	proto void CrewEntry( int posIdx, out vector pos, out vector dir );
@@ -80,6 +149,41 @@ class Transport extends EntityAI
 	override bool ShowZonesHealth()
 	{
 		return true;
+	}
+
+	override int GetHideIconMask()
+	{
+		return EInventoryIconVisibility.HIDE_VICINITY;
+	}
+	
+	float GetMomentum()
+	{
+		return GetVelocity(this).Length() * dBodyGetMass(this);
+	}
+	
+	bool IsVitalSparkPlug()
+	{
+		return true;
+	}
+	
+	string GetVehicleType()
+	{
+		return "VehicleTypeUndefined";
+	}
+	
+	string GetActionCompNameFuel()
+	{
+		return "refill";
+	}
+	
+	float GetActionDistanceFuel()
+	{
+		return 1.5;
+	}
+	
+	vector GetRefillPointPosWS()
+	{
+		return ModelToWorld( m_fuelPos );
 	}
 	
 	bool IsAnyCrewPresent()
@@ -220,7 +324,18 @@ class Transport extends EntityAI
 		// CanBeSkinned means it is a dead entity which should not block the door
 		return ( ( e && (e.IsZombie() || e.IsHologram()) ) || o.CanBeSkinned() || o.IsBush() || o.IsTree() );
 	}
-
+	
+	void SetEngineZoneReceivedHit(bool pState)
+	{
+		m_EngineZoneReceivedHit = pState;
+		SetSynchDirty();
+	}
+	
+	bool HasEngineZoneReceivedHit()
+	{
+		return m_EngineZoneReceivedHit;
+	}
+	
 	bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight, inout vector extents, out vector transform[4] )
 	{
 		GetTransform(transform);
@@ -299,3 +414,17 @@ class Transport extends EntityAI
 		return shape;
 	}
 };
+
+class VehicleContactData
+{
+	vector m_LocalPos;
+	IEntity m_Other;
+	float m_Impulse;
+	
+	void SetData(vector localPos, IEntity other, float impulse)
+	{
+		m_LocalPos	= localPos;
+		m_Other		= other;
+		m_Impulse	= impulse;
+	}
+}

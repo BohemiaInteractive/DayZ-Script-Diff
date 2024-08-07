@@ -4,14 +4,11 @@ class Iceaxe: Inventory_Base
 	{
 		super.SetActions();
 		
-		AddAction(ActionBuryAshes);
-		AddAction(ActionDigGardenPlot);
-		AddAction(ActionDismantleGardenPlot);
-		//AddAction(ActionMineRock1H);
+		AddAction(ActionMineRock1H);
 		AddAction(ActionDigWorms);
-		AddAction(ActionDismantlePart);
-		AddAction(ActionBuildPart);
 		AddAction(ActionSkinning);
-		AddAction(ActionCreateGreenhouseGardenPlot);
+		AddAction(ActionMineBush);
+		AddAction(ActionMineTreeBark);
+		AddAction(ActionUnrestrainTarget);
 	}
 };

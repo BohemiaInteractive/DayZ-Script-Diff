@@ -500,7 +500,6 @@ class RifleBoltLock_Base extends Rifle_Base
 	{
 		super.SetActions();
 		AddAction(FirearmActionDetachMagazine);
-		//AddAction(ActionAdvancedDetachMagazine);
 	}
 };
 

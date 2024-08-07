@@ -4,7 +4,9 @@ class IodineTincture : Edible_Base
 	override void InitItemVariables()
 	{
 		super.InitItemVariables();
-		can_this_be_combined = true;
+
+		can_this_be_combined 	= true;
+		m_VarLiquidType 		= GetLiquidTypeInit();
 	}
 	
 	override void SetActions()
@@ -12,7 +14,7 @@ class IodineTincture : Edible_Base
 		super.SetActions();
 		
 		AddAction(ActionDisinfectTarget);
-		AddAction(ActionDisinfectSelf);;
+		AddAction(ActionDisinfectSelf);
 		AddAction(ActionWashHandsItemContinuous);
 	}
 	

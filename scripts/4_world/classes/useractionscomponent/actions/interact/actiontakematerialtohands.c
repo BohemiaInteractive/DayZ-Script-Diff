@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionTakeMaterialToHands: ActionInteractBase
 {
 	void ActionTakeMaterialToHands()
@@ -72,8 +73,14 @@ class ActionTakeMaterialToHands: ActionInteractBase
 		return true;
 	}
 	
-	override void OnExecuteClient( ActionData action_data )
+	override void OnExecute( ActionData action_data )
 	{
+		if (GetGame().IsDedicatedServer())
+		{
+			ClearActionJuncture(action_data);
+			return;
+		}
+		
 		OnExecuteImpl(action_data);
 	}
 	
@@ -96,14 +103,6 @@ class ActionTakeMaterialToHands: ActionInteractBase
 				item_target.SplitIntoStackMaxHandsClient( action_data.m_Player );
 			}
 		}
-	}
-	
-	override void OnExecuteServer( ActionData action_data )
-	{
-		if (GetGame().IsMultiplayer())
-			return; // multiplayer handled on client side via OnExecuteClient
-		else
-			OnExecuteImpl(action_data); // single player
 	}
 	
 	override void CreateAndSetupActionCallback( ActionData action_data )

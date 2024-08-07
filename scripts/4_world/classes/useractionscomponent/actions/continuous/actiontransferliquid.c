@@ -21,6 +21,7 @@ class ActionTransferLiquidCB : ActionContinuousBaseCB
 	}
 };
 
+//!DEPRECATED
 class ActionTransferLiquid: ActionContinuousBase
 {
 	void ActionTransferLiquid()
@@ -99,13 +100,10 @@ class ActionTransferLiquid: ActionContinuousBase
 	
 	override void OnStartServer( ActionData action_data )
 	{
+		super.OnStartServer(action_data);
+		
 		if (!GetGame().IsMultiplayer())
 			TransferLiquidActionData.Cast(action_data).m_Tendency = action_data.m_Player.GetLiquidTendencyDrain();
-	}
-	
-	override void OnFinishProgressServer( ActionData action_data )
-	{
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override ActionData CreateActionData()
