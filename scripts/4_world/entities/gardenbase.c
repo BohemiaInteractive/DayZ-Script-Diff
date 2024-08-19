@@ -476,6 +476,10 @@ class GardenBase extends ItemBase //BuildingSuper
 						slot.SetFertilityState(eFertlityState.FERTILIZED);
 						// Set relevant bit
 						m_SlotFertilityState |= slot.GetFertilityState() << slot.GetSlotIndex();
+						
+						//TODO Boris: Add soft skill 2.0
+						//PluginExperience module_exp = GetPlugin(PluginExperience);
+						//slot.m_HarvestingEfficiency = module_exp.GetExpParamNumber(player, PluginExperience.EXP_FARMER_FERTILIZATION, "efficiency");
 					}
 				}
 			}
@@ -530,6 +534,7 @@ class GardenBase extends ItemBase //BuildingSuper
 
 	void UpdateSlotTexture( int slot_index )
 	{
+		// TO DO: Fix DAYZ-30633 here!
 		Slot slot = m_Slots.Get( slot_index );
 		
 		// Show / Hide selections according to DIGGED or COVERED states.

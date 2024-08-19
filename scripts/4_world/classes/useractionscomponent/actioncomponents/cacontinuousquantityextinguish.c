@@ -34,6 +34,14 @@ class CAContinuousQuantityExtinguish : CAContinuousQuantityRepeat
 		}
 	}
 	
+	override int Interrupt(ActionData action_data)
+	{				
+		if (GetGame().IsServer())
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty(UASoftSkillsWeight.ROUGH_MEDIUM);
+		
+		return super.Interrupt(action_data);
+	}
+	
 	void MultiplyQuantityUsed(float coef)
 	{
 		m_QuantityUsedPerSecond *= coef;

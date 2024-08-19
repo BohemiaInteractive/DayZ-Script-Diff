@@ -34,6 +34,8 @@ class ActionGiveSalineTarget: ActionContinuousBase
 		
 		ntarget.GetModifiersManager().ActivateModifier(eModifiers.MDF_SALINE);
 		
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		
 		action_data.m_MainItem.Delete();
 	}
 };

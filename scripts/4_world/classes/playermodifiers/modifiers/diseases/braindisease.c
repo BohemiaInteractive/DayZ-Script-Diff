@@ -1,9 +1,10 @@
-class BrainDiseaseMdfr : ModifierBase
+class BrainDiseaseMdfr: ModifierBase
 {
 	static const int AGENT_THRESHOLD_ACTIVATE = 2000;
 	static const int AGENT_THRESHOLD_DEACTIVATE = 0;
 	const int SHAKE_INTERVAL_MIN = 1;
 	const int SHAKE_INTERVAL_MAX = 4;
+	//const float SHAKE_INTERVAL_DEVIATION = 1;
 	
 	float m_Time;
 	float m_ShakeTime;
@@ -23,13 +24,19 @@ class BrainDiseaseMdfr : ModifierBase
 	
 	override protected bool ActivateCondition(PlayerBase player)
 	{
-		return (player.GetSingleAgentCount(eAgents.BRAIN) >= AGENT_THRESHOLD_ACTIVATE);
+		if(player.GetSingleAgentCount(eAgents.BRAIN) >= AGENT_THRESHOLD_ACTIVATE) 
+		{
+			return true;
+		}
+		else 
+		{
+			return false;
+		}
 	}
 
 	override protected void OnActivate(PlayerBase player)
 	{
 		player.IncreaseDiseaseCount();
-		player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_LAUGHTER);
 	}
 
 	override protected void OnDeactivate(PlayerBase player)
@@ -39,23 +46,32 @@ class BrainDiseaseMdfr : ModifierBase
 
 	override protected bool DeactivateCondition(PlayerBase player)
 	{
-		return (player.GetSingleAgentCount(eAgents.BRAIN) <= AGENT_THRESHOLD_DEACTIVATE);
+		if(player.GetSingleAgentCount(eAgents.BRAIN) <= AGENT_THRESHOLD_DEACTIVATE) 
+		{
+			return true;
+		}
+		else 
+		{
+			return false;
+		}
 	}
 
 	override protected void OnTick(PlayerBase player, float deltaT)
 	{
 		m_Time += deltaT;
-		float brainAgents = player.GetSingleAgentCountNormalized(eAgents.BRAIN) / 8.0;
-		float chanceOfLaughter = Math.RandomFloat01();
+		float brain_agents = player.GetSingleAgentCountNormalized(eAgents.BRAIN) / 8.0;
+		float chance_of_laughter = Math.RandomFloat01();
 
-		if (chanceOfLaughter < brainAgents)
-			player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_LAUGHTER);
-		
-		if (m_Time >= m_ShakeTime)
+		if( chance_of_laughter < brain_agents )
 		{
-			DayZPlayerSyncJunctures.SendKuruRequest(player, brainAgents);
+			player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_LAUGHTER);
+		}
+		
+		if( m_Time >= m_ShakeTime )
+		{
+			DayZPlayerSyncJunctures.SendKuruRequest(player, brain_agents);
 			m_ShakeTime = m_Time + Math.RandomFloat(SHAKE_INTERVAL_MIN, SHAKE_INTERVAL_MAX);
 		}
 		
 	}
-}
+};

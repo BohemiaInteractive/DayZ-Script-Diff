@@ -1,4 +1,3 @@
-//! DEPRECATED
 class PluginAdditionalInfo extends PluginLocalProfile 
 {
 	override string GetFileName()

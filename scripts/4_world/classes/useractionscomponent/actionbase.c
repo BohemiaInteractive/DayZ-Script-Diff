@@ -10,19 +10,11 @@ enum ActionConditionMask
 	ACM_THROWING		= 64,
 	ACM_LEANING			= 128,
 	ACM_BROKEN_LEGS		= 256,
-	ACM_IN_FREELOOK		= 512,
 }
 class ActionReciveData
 {
 	ItemBase							m_MainItem;
 	ref ActionTarget					m_Target;
-}
-
-class ActionOverrideData : Managed
-{
-	int m_CommandUID = -1;
-	int m_CommandUIDProne = -1;
-	int m_StanceMask = -1;
 }
 
 class ActionData
@@ -40,7 +32,7 @@ class ActionData
 	ref ActionTarget					m_Target;
 	PlayerBase							m_Player;
 	int 								m_PossibleStanceMask;
-	ref array<ref InventoryLocation>	m_ReservedInventoryLocations; //used also for juncture
+	ref array<ref InventoryLocation>	m_ReservedInventoryLocations;
 	int									m_RefreshReservationTimer;
 	int									m_RefreshJunctureTimer;
 	bool								m_WasExecuted;
@@ -147,9 +139,6 @@ class ActionBase : ActionBase_Basic
 		{
 			m_ConditionMask |= ActionConditionMask.ACM_BROKEN_LEGS;
 		}
-		
-		if (CanBeUsedInFreelook())
-			m_ConditionMask |= ActionConditionMask.ACM_IN_FREELOOK;
 	}
 	
 	bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL )
@@ -324,11 +313,6 @@ class ActionBase : ActionBase_Basic
 		return false;
 	}
 	
-	bool CanTargetBeInVehicle()
-	{
-		return false;
-	}
-	
 	bool CanBeUsedOnBack()
 	{
 		return false;
@@ -364,11 +348,6 @@ class ActionBase : ActionBase_Basic
 		return true;
 	}
 	
-	bool CanBeUsedInFreelook()
-	{
-		return true;
-	}
-	
 	//! Is an action directly related to deployment/advanced placing
 	bool IsDeploymentAction()
 	{
@@ -384,15 +363,6 @@ class ActionBase : ActionBase_Basic
 	{
 		return true;
 	}
-	
-	/**
-	Action will display the content of ActionBase::GetTargetName next to action action name (ActionTargetsCursor::GetActionDesc).
-	\returns true if allowed; otherwise false
-	*/
-	bool DisplayTargetInActionText()
-	{
-		return false;
-	}
 
 	protected bool ActionConditionContinue( ActionData action_data ) //condition for action
 	{
@@ -403,20 +373,9 @@ class ActionBase : ActionBase_Basic
 	{
 		return true;
 	}
-
-	/**
-	Used to set the name of action target displayed in UI in case ActionBase::DisplayTargetInActionText is true.
-	\param player reference to player running action
-	\param target actual target reference
-	\returns name of the target
-	*/	
-	string GetTargetName(PlayerBase player, ActionTarget target)
-	{
-		return string.Empty;
-	}
 	
 	void ApplyModifiers(ActionData action_data);
-
+	
 	int GetRefreshReservationTimerValue()
 	{
 		return m_RefreshReservationTimerValue;
@@ -577,11 +536,6 @@ class ActionBase : ActionBase_Basic
 	// Core methods don't override unless you know what you are doing
 	//----------------------------------------------------------------------------------------------		
 	// COMMANDS -----------------------------------------------------------------------		
-	protected int GetStanceMaskEx(PlayerBase player, ActionTarget target, ItemBase item)
-	{
-		return GetStanceMask(player);
-	}
-	
 	protected int GetStanceMask(PlayerBase player)
 	{
 		if ( HasProneException() )
@@ -594,11 +548,6 @@ class ActionBase : ActionBase_Basic
 				return DayZPlayerConstants.STANCEMASK_PRONE;
 		}
 		return m_StanceMask;
-	}
-	
-	protected bool IsFullBodyEx(PlayerBase player, ActionTarget target, ItemBase item)
-	{
-		return IsFullBody(player);
 	}
 	
 	bool IsFullBody(PlayerBase player)
@@ -694,7 +643,7 @@ class ActionBase : ActionBase_Basic
 		if (target_player)
 		{
 			result = !target_player.IsJumpInProgress();
-			result = result && !(target_player.GetCommand_Ladder() || (target_player.GetCommand_Vehicle() && !CanTargetBeInVehicle()) || target_player.GetCommand_Swim());
+			result = result && !(target_player.GetCommand_Ladder() || target_player.GetCommand_Vehicle() || target_player.GetCommand_Swim());
 		}
 		
 		return result;
@@ -747,44 +696,41 @@ class ActionBase : ActionBase_Basic
 		{
 			mask |= ActionConditionMask.ACM_BROKEN_LEGS;
 		}
-
-		if (player.GetInputController() && player.GetInputController().CameraIsFreeLook())
-			mask |= ActionConditionMask.ACM_IN_FREELOOK;
 		
 		return mask;
 	}
 
 	bool Can( PlayerBase player, ActionTarget target, ItemBase item, int condition_mask )
 	{
-		if (( (condition_mask & m_ConditionMask) != condition_mask ) || ( !IsFullBodyEx(player, target, item) && !player.IsPlayerInStance(GetStanceMaskEx(player, target, item)) ) || player.IsRolling())
+		if ( ( (condition_mask & m_ConditionMask) != condition_mask ) || ( !IsFullBody(player) && !player.IsPlayerInStance(GetStanceMask(player)) ) || player.IsRolling() )
 			return false;
 		
-		if (HasTarget())
+		if ( HasTarget() )
 		{
-			if (!FirearmActionBase.Cast(this))
+			if(!FirearmActionBase.Cast(this))
 			{
 				EntityAI entity = EntityAI.Cast(target.GetObject());
-				if (entity && !target.GetObject().IsMan())
+				if ( entity && !target.GetObject().IsMan() )
 				{
 					Man man = entity.GetHierarchyRootPlayer();
-					if (man && man != player)
+					if ( man && man != player )
 						return false;
 				}
 			}
 			
-			if (m_ConditionTarget && !m_ConditionTarget.Can(player, target))
+			if ( m_ConditionTarget && !m_ConditionTarget.Can(player, target))
 				return false;
 		}
 		
-		if (m_ConditionItem && !m_ConditionItem.Can(player, item))
+		if ( m_ConditionItem && !m_ConditionItem.Can(player, item))
 			return false;
 		
-		if (!ActionCondition(player, target, item))
+		if ( !ActionCondition(player, target, item) )
 			return false;
 		
-		if (IsFullBodyEx(player, target, item))
+		if ( IsFullBody(player) )
 		{
-			int stanceIdx = DayZPlayerUtils.ConvertStanceMaskToStanceIdx(GetStanceMaskEx(player, target, item));
+			int stanceIdx = DayZPlayerUtils.ConvertStanceMaskToStanceIdx(GetStanceMask(player));
 			if (stanceIdx != -1 && !DayZPlayerUtils.PlayerCanChangeStance(player, stanceIdx ))
 				return false;
 		}
@@ -852,10 +798,6 @@ class ActionBase : ActionBase_Basic
 			m_VariantManager = new ActionVariantManager(this.Type());
 		return m_VariantManager;
 	}
-	
-	// Called when item changes location during performed action
-	void OnItemLocationChanged(ItemBase item)
-	{}
 	
 	// call only on client side for lock inventory before action
 	// return if has successfuly reserved inventory
@@ -943,74 +885,6 @@ class ActionBase : ActionBase_Basic
 				il = action_data.m_ReservedInventoryLocations.Get(i);
 				EntityAI entity = il.GetItem();
 				action_data.m_Player.GetInventory().ExtendInventoryReservationEx(il.GetItem() , il, 10000);
-			}
-		}
-	}
-	
-	bool AddActionJuncture(ActionData action_data)
-	{
-		bool accepted = true;
-		if (HasTarget())
-		{
-			EntityAI targetEntity;
-			if (EntityAI.CastTo(targetEntity,action_data.m_Target.GetObject()))
-			{
-				if (IsLockTargetOnUse())
-				{
-					InventoryLocation targetIl = new InventoryLocation();
-					targetEntity.GetInventory().GetCurrentInventoryLocation(targetIl);
-					
-					//Lock target
-					if (!GetGame().AddInventoryJunctureEx(action_data.m_Player, targetEntity, targetIl, true, 10000))
-					{
-						accepted = false;
-					}
-					else
-					{
-						action_data.m_ReservedInventoryLocations.Insert(targetIl);
-					}
-				}
-			}
-		}
-		
-		return accepted;
-	}
-
-	void ClearActionJuncture(ActionData action_data)
-	{
-		if (action_data.m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
-		{
-			if (action_data.m_ReservedInventoryLocations)
-			{
-				InventoryLocation il;
-				for ( int i = 0; i < action_data.m_ReservedInventoryLocations.Count(); i++)
-				{
-					il = action_data.m_ReservedInventoryLocations.Get(i);
-					EntityAI entity = il.GetItem();
-					if (entity)
-					{
-						GetGame().ClearJuncture(action_data.m_Player, entity);
-					}
-				}
-	
-				action_data.m_ReservedInventoryLocations.Clear();
-			}
-		}
-	}
-	
-	void RefreshActionJuncture(ActionData action_data)
-	{
-		if (action_data.m_ReservedInventoryLocations)
-		{
-			InventoryLocation il;
-			for (int i = 0; i < action_data.m_ReservedInventoryLocations.Count(); i++)
-			{
-				il = action_data.m_ReservedInventoryLocations.Get(i);
-				EntityAI entity = il.GetItem();
-				if (entity)
-				{
-					GetGame().ExtendActionJuncture(action_data.m_Player, entity, 10000);
-				}
 			}
 		}
 	}
@@ -1138,17 +1012,7 @@ class ActionBase : ActionBase_Basic
 	}
 	
 	void OnUpdateServer(ActionData action_data)
-	{
-		if (action_data.m_RefreshJunctureTimer > 0)
-		{
-			action_data.m_RefreshJunctureTimer--;
-		}
-		else
-		{
-			action_data.m_RefreshJunctureTimer = m_RefreshReservationTimerValue;
-			RefreshActionJuncture(action_data);
-		}
-	}
+	{}
 	
 	void OnStart(ActionData action_data)
 	{

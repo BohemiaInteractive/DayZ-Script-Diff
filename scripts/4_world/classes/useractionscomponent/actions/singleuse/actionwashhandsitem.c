@@ -37,9 +37,7 @@ class ActionWashHandsItem: ActionSingleUseBase
 
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
-		if (action_data.m_State != UA_CANCEL)
+		if (action_data.m_State != UA_INTERRUPT)
 		{
 			PluginLifespan module_lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
 			module_lifespan.UpdateBloodyHandsVisibility( action_data.m_Player, false );

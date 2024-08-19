@@ -7,7 +7,7 @@ class TunaCan_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !(GetAgents() & eAgents.FOOD_POISON);
+		return !(GetAgents() & eAgents.FOOD_POISON);
 	}
 	
 	override void SetActions()

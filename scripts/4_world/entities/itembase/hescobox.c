@@ -6,6 +6,7 @@ class HescoBox extends Inventory_Base
 	static const int PERCENTUAL_DAMAGE = 1;
 	
 	ref Timer 						m_Timer;
+	ref protected EffectSound 		m_DeployLoopSound;
 
 	protected int m_State;
 	
@@ -19,6 +20,11 @@ class HescoBox extends Inventory_Base
 		RegisterNetSyncVariableBool("m_IsDeploySound");
 	}
 	
+	void ~HescoBox()
+	{
+		SEffectManager.DestroyEffect( m_DeployLoopSound );
+	}
+
 	override bool HasProxyParts()
 	{
 		return true;
@@ -48,6 +54,16 @@ class HescoBox extends Inventory_Base
 		if ( IsDeploySound() )
 		{
 			PlayDeploySound();
+		}
+				
+		if ( CanPlayDeployLoopSound() )
+		{
+			PlayDeployLoopSound();
+		}
+					
+		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
+		{
+			StopDeployLoopSound();
 		}
 	}
 	
@@ -245,7 +261,27 @@ class HescoBox extends Inventory_Base
 	{
 		return "hescobox_deploy_SoundSet";
 	}
-		
+	
+	void PlayDeployLoopSound()
+	{		
+		if ( !GetGame().IsDedicatedServer() )
+		{		
+			if ( !m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying() )
+			{
+				m_DeployLoopSound = SEffectManager.PlaySound( GetLoopDeploySoundset(), GetPosition() );
+			}
+		}
+	}
+	
+	void StopDeployLoopSound()
+	{
+		if ( !GetGame().IsDedicatedServer() )
+		{	
+			m_DeployLoopSound.SetSoundFadeOut(0.5);
+			m_DeployLoopSound.SoundStop();
+		}
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -254,10 +290,4 @@ class HescoBox extends Inventory_Base
 		AddAction(ActionFoldObject);
 		AddAction(ActionDeployObject);
 	}
-	
-	//!DEPRECATED
-	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
-	
-	void PlayDeployLoopSound(); //!DEPRECATED
-	void StopDeployLoopSound(); //!DEPRECATED
 }

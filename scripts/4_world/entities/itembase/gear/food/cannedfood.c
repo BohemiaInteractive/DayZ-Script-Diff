@@ -3,6 +3,7 @@ class DogFoodCan : Edible_Base
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("DogFoodCan_Opened");
 	}
 		
@@ -17,11 +18,6 @@ class DogFoodCan : Edible_Base
 	{
 		return false;
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }
 
 class DogFoodCan_Opened: Edible_Base
@@ -33,7 +29,7 @@ class DogFoodCan_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+		return !( GetAgents() & eAgents.FOOD_POISON );
 	}
 	
 	override void SetActions()
@@ -49,17 +45,13 @@ class CatFoodCan: DogFoodCan
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("CatFoodCan_Opened");
 	}
 	
 	override bool IsOpen()
 	{
 		return false;
-	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
 	}
 }
 
@@ -73,6 +65,7 @@ class PorkCan : Edible_Base
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("PorkCan_Opened");
 	}
 		
@@ -87,11 +80,6 @@ class PorkCan : Edible_Base
 	{
 		return false;
 	}
-
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }
 
 class PorkCan_Opened: Edible_Base
@@ -103,7 +91,7 @@ class PorkCan_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+		return !( GetAgents() & eAgents.FOOD_POISON );
 	}
 	
 	override void SetActions()
@@ -120,6 +108,7 @@ class Lunchmeat : Edible_Base
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("Lunchmeat_Opened");
 	}
 		
@@ -134,11 +123,6 @@ class Lunchmeat : Edible_Base
 	{
 		return false;
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }
 
 class Lunchmeat_Opened: Edible_Base
@@ -150,56 +134,7 @@ class Lunchmeat_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
-	}
-	
-	override void SetActions()
-	{
-		super.SetActions();
-		
-		AddAction(ActionForceFeedSmall);
-		AddAction(ActionEatSmallCan);
-	}
-};
-
-
-
-//-------------CrabCan-----------------------------------------------
-class CrabCan : Edible_Base
-{
-	override void Open()
-	{
-		ReplaceEdibleWithNew("CrabCan_Opened");
-	}
-		
-	override void SetActions()
-	{
-		super.SetActions();
-		
-		AddAction(ActionOpen);
-	}
-	
-	override bool IsOpen()
-	{
-		return false;
-	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
-}
-
-class CrabCan_Opened: Edible_Base
-{
-	override bool CanDecay()
-	{
-		return true;
-	}
-	
-	override bool CanProcessDecay()
-	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+		return !( GetAgents() & eAgents.FOOD_POISON );
 	}
 	
 	override void SetActions()
@@ -216,17 +151,13 @@ class UnknownFoodCan : Edible_Base
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("UnknownFoodCan_Opened");
 	}
 	
 	override bool IsOpen()
 	{
 		return false;
-	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
 	}
 }
 
@@ -244,7 +175,7 @@ class UnknownFoodCan_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+		return !( GetAgents() & eAgents.FOOD_POISON );
 	}
 	
 	override void SetActions()
@@ -266,6 +197,7 @@ class Pajka : Edible_Base
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("Pajka_Opened");
 	}
 		
@@ -280,11 +212,6 @@ class Pajka : Edible_Base
 	{
 		return false;
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }
 
 class Pajka_Opened: Edible_Base
@@ -296,7 +223,7 @@ class Pajka_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+		return !( GetAgents() & eAgents.FOOD_POISON );
 	}
 	
 	override void SetActions()
@@ -318,6 +245,7 @@ class Pate : Edible_Base
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("Pate_Opened");
 	}
 		
@@ -332,11 +260,6 @@ class Pate : Edible_Base
 	{
 		return false;
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }
 
 class Pate_Opened: Edible_Base
@@ -348,7 +271,7 @@ class Pate_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+		return !( GetAgents() & eAgents.FOOD_POISON );
 	}
 	
 	override void SetActions()
@@ -370,6 +293,7 @@ class BrisketSpread : Edible_Base
 {
 	override void Open()
 	{
+		//super.Open();
 		ReplaceEdibleWithNew("BrisketSpread_Opened");
 	}
 		
@@ -384,11 +308,6 @@ class BrisketSpread : Edible_Base
 	{
 		return false;
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }
 
 class BrisketSpread_Opened: Edible_Base
@@ -400,7 +319,7 @@ class BrisketSpread_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+		return !( GetAgents() & eAgents.FOOD_POISON );
 	}
 	
 	override void SetActions()

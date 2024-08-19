@@ -7,9 +7,6 @@ class ActionDigWormsCB : ActionContinuousBaseCB
 		if (m_ActionData.m_MainItem.KindOf("Knife"))
 			time_spent = time_spent * 1.2;
 		
-		if (m_ActionData.m_Player.GetInColdArea())
-			time_spent *= GameConstants.COLD_AREA_DIG_WORMS_MODIF;
-		
 		m_ActionData.m_ActionComponent = new CAContinuousTime(time_spent);
 	}
 };
@@ -19,9 +16,9 @@ class ActionDigWorms: ActionContinuousBase
 	void ActionDigWorms()
 	{
 		m_CallbackClass = ActionDigWormsCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_DIGGIN_WORMS;
+		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_DIGMANIPULATE;
 		m_FullBody = true;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
+		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_MEDIUM;
 		m_Text = "#dig_up_worms";
 	}
@@ -53,6 +50,21 @@ class ActionDigWorms: ActionContinuousBase
 		return IsPlayerOnGround(action_data.m_Player);
 	}
 	
+	override bool SetupAction( PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL )
+	{	
+		if (super.SetupAction(player, target, item, action_data, extra_data))
+		{
+			if (item)
+			{
+				SetDiggingAnimation(item);
+			}
+			
+			return true;
+		}
+		
+		return false;
+	}
+
 	override bool HasTarget()
 	{
 		return true;
@@ -61,15 +73,26 @@ class ActionDigWorms: ActionContinuousBase
 	override void OnFinishProgressServer(ActionData action_data)
 	{	
 		ItemBase worms;
-		int count = action_data.m_MainItem.GetOnDigWormsAmount();
-		for (int i = 0; i < count; i++)
-		{
-			Class.CastTo(worms,  GetGame().CreateObjectEx("Worm", action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
-		}
-		
-		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 4);
+		Class.CastTo(worms,  GetGame().CreateObjectEx("Worm", action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+		worms.SetQuantity(10,false);
+		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 4);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 	}
-		
+	
+	void SetDiggingAnimation( ItemBase item )
+	{
+		if (item.KindOf("Knife"))
+		{
+			m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_DEPLOY_1HD;
+			m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
+		}
+		else
+		{
+			m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_DIGMANIPULATE;
+			m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
+		}
+	}
+	
 	bool IsTargetFertile(ActionTarget target)
 	{
 		if (target)
@@ -97,8 +120,4 @@ class ActionDigWorms: ActionContinuousBase
 		
 		return heightDiff <= 0.4; // Player is considered on ground
 	}
-	
-	//! DEPRECATED - See ItemBase.OverrideActionAnimation() to override commands for items
-	void SetDiggignAnimation(ItemBase item);
-	
 };

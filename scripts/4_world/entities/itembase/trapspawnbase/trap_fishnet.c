@@ -1,23 +1,29 @@
 class Trap_FishNet extends TrapSpawnBase
 {
-	override void InitTrapValues()
+	void Trap_FishNet()
 	{
-		super.InitTrapValues();
+		m_DefectRate = 15; 			//Added damage after trap activation
 		
-		m_DefectRate = 2.5; 			//Added damage after trap activation
-		
-		m_InitWaitTimeMin 						= 120;
-		m_InitWaitTimeMax 						= 180;
-		m_UpdateWaitTime 						= 30;
-		m_SpawnUpdateWaitTime 					= 30;
-		m_MaxActiveTime 						= 1200;
+		m_InitWaitTime = Math.RandomFloat(900,1500);
+		m_UpdateWaitTime = 30;
 		m_IsFoldable = true;
 		
 		m_MinimalDistanceFromPlayersToCatch 	= 15;
+		
+		m_BaitCatchProb 						= 85;
+		m_NoBaitCatchProb						= 15;
 
 		m_AnimationPhaseSet 					= "inventory";
 		m_AnimationPhaseTriggered 				= "placing";
 		m_AnimationPhaseUsed 					= "triggered";
+		
+		m_WaterSurfaceForSetup = true;
+
+		m_CatchesPond = new multiMap<string, float>;
+		m_CatchesPond.Insert("Carp",1);
+		
+		m_CatchesSea = new multiMap<string, float>;
+		m_CatchesSea.Insert("Mackerel",1);
 	}
 	
 	override void OnVariablesSynchronized()
@@ -30,13 +36,55 @@ class Trap_FishNet extends TrapSpawnBase
 		}
 	}
 	
-	override void InitCatchingComponent()
+	//========================================================
+	//======================= CATCHING =======================
+	//========================================================
+	
+	override void SpawnCatch()
 	{
-		if (!m_CatchingContext)
+		super.SpawnCatch();
+		
+		if ( m_CanCatch )
 		{
-			int updateCount = m_MaxActiveTime/m_UpdateWaitTime;
-			Param2<EntityAI,int> par = new Param2<EntityAI,int>(this,updateCount);
-			m_CatchingContext = new CatchingContextTrapFishLarge(par);
+			multiMap<string, float>	catches;
+			vector pos = GetPosition();
+			
+			ItemBase catch;
+			// Select catch type depending on water type ( FRESH VS SALT )
+			if ( GetGame().SurfaceIsSea( pos[0], pos[2] ) ) 
+			{
+				catches = m_CatchesSea;
+			}
+			else if ( GetGame().SurfaceIsPond( pos[0], pos[2] ) ) 
+			{
+				catches = m_CatchesPond;
+			}
+
+			if ( catches && catches.Count() > 0 )
+			{
+				// select random object from catches
+				int count = catches.Count() - 1;
+				int randomCatchIndex = Math.RandomInt( 0, count );
+			
+				if ( Math.RandomFloat(0, 100) < m_FinalCatchProb )
+				{
+					catch = ItemBase.Cast( GetGame().CreateObjectEx( catches.GetKeyByIndex(randomCatchIndex), m_PreyPos, ECE_NONE ) );
+					
+					// Set the quantity of caught prey
+					if ( catch )
+						CatchSetQuant( catch );
+				}
+				
+				// We change the trap state and visuals
+				SetUsed();
+				
+				// We remove the bait from this trap
+				if ( m_Bait )
+					m_Bait.Delete();
+			}
+			
+			// Deal damage to trap
+			AddDefect();
 		}
 	}
 	

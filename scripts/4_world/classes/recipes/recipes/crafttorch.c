@@ -1,12 +1,11 @@
-class CraftTorch : RecipeBase
+class CraftTorch extends RecipeBase
 {	
 	override void Init()
 	{
 		m_Name = "#STR_CraftTorch0";
-
-		m_IsInstaRecipe 	= false;//should this recipe be performed instantly without animation
-		m_AnimationLength 	= 0.5;//animation length in relative time units
-		m_Specialty 		= 0.02;// value > 0 for roughness, value < 0 for precision
+		m_IsInstaRecipe = false;//should this recipe be performed instantly without animation
+		m_AnimationLength = 0.5;//animation length in relative time units
+		m_Specialty = 0.02;// value > 0 for roughness, value < 0 for precision
 		
 		
 		//conditions
@@ -64,29 +63,27 @@ class CraftTorch : RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
+		Debug.Log("Recipe Do method called","recipes");
+		
 		ItemBase rag = ingredients[0];
 		rag.SetCleanness(0);
 		Torch torch = Torch.Cast(results[0]);
-		
-		int quantity = rag.GetQuantity();
-		
 		if (torch)
 		{
 			torch.SetTorchDecraftResult(ingredients[1].GetType());
 			
-			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
 			{
 				player.ServerTakeEntityToTargetAttachment(torch, rag);
 			}
-			else if (!GetGame().IsMultiplayer())
+			else if ( !GetGame().IsMultiplayer() )
 			{
 				int slotID = InventorySlots.GetSlotIdFromString("Rags");
-				player.PredictiveTakeEntityToTargetAttachmentEx(torch, rag, slotID);
+				player.PredictiveTakeEntityToTargetAttachmentEx(torch, rag,slotID);
 	
 			}
-
 			torch.StandUp();
-			torch.CraftingInit(quantity); // original rag is set for delete at this point so quantity from it cant be used
+			torch.CraftingInit(rag.GetQuantity());
 		}
 	}
-}
+};

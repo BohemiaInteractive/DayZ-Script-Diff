@@ -25,13 +25,12 @@ class ActionInjectSelf: ActionSingleUseBase
 		if (action_data.m_MainItem)
 		{
 			ApplyModifiers(action_data);
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
 	}
 	
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		if (action_data.m_WasExecuted && action_data.m_MainItem )
 		{
 			action_data.m_MainItem.Delete();

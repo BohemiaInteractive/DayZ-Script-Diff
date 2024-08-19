@@ -1,4 +1,4 @@
-class Land_Radio_PanelBig : StaticTransmitter
+class Land_Radio_PanelBig extends StaticTransmitter
 {
 	override bool DisableVicinityIcon()
 	{
@@ -6,24 +6,28 @@ class Land_Radio_PanelBig : StaticTransmitter
 	}
 	
 	// --- SYSTEM EVENTS
-	override void OnStoreSave(ParamsWriteContext ctx)
+	override void OnStoreSave( ParamsWriteContext ctx )
 	{   
-		super.OnStoreSave(ctx);
+		super.OnStoreSave( ctx );
 		
 		//store tuned frequency
-		ctx.Write(GetTunedFrequencyIndex());
+		ctx.Write( GetTunedFrequencyIndex() );
 	}
 	
-	override bool OnStoreLoad(ParamsReadContext ctx, int version)
+	override bool OnStoreLoad( ParamsReadContext ctx, int version )
 	{
-		if (!super.OnStoreLoad(ctx, version))
+		if ( !super.OnStoreLoad( ctx, version ) )
 			return false;
 
-		int tunedFrequencyIndex;
-		if (!ctx.Read(tunedFrequencyIndex))
-			tunedFrequencyIndex = 0;
-
-		SetFrequencyByIndex(tunedFrequencyIndex);
+		//--- Panel Radio data ---
+		//load and set tuned frequency
+		int tuned_frequency_idx;
+		if ( !ctx.Read( tuned_frequency_idx ) )
+		{
+			tuned_frequency_idx = 0;		//set default
+		}
+		SetFrequencyByIndex( tuned_frequency_idx );
+		//---
 		
 		return true;
 	}	
@@ -34,24 +38,33 @@ class Land_Radio_PanelBig : StaticTransmitter
 		return true;
 	}
 	
-	void SetNextFrequency(PlayerBase player = null)
+	void SetNextFrequency( PlayerBase player = NULL )
 	{
 		SetNextChannel();
+		
+		/*
+		if ( player )
+		{
+			DisplayRadioInfo( GetTunedFrequency().ToString(), player );
+		}
+		*/
 	}
 
 	//--- POWER EVENTS
 	override void OnSwitchOn()
 	{
-		if (!GetCompEM().CanWork())
+		if ( !GetCompEM().CanWork() )
+		{
 			GetCompEM().SwitchOff();
+		}
 	}	
 	
 	override void OnWorkStart()
 	{
-		//turn on broadcasting
-		EnableBroadcast(true);
-		EnableReceive(false);
-		SwitchOn(true);
+		//turn on broadcasting/receiving
+		EnableBroadcast ( true );
+		EnableReceive ( true );
+		SwitchOn ( true );
 	}
 
 	override void OnWorkStop()
@@ -59,9 +72,10 @@ class Land_Radio_PanelBig : StaticTransmitter
 		//auto switch off (EM)
 		GetCompEM().SwitchOff();
 		
-		//turn off broadcasting
-		EnableBroadcast(false);
-		SwitchOn(false);		
+		//turn off broadcasting/receiving
+		EnableBroadcast ( false );
+		EnableReceive ( false );	
+		SwitchOn ( false );		
 	}
 	
 	override void SetActions()

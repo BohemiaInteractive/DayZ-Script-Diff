@@ -438,12 +438,8 @@ class DayZPlayerUtils
 		}
 		else// if (waterLevel[1] >= swimData.m_fToErectLevel)
 		{
-			float waterLevelToSwim = swimData.m_fWaterLevelIn;
-			if (PlayerBase.Cast(pPlayer).IsClimbingLadder())
-				waterLevelToSwim += 0.2;
-			
 			//! if total water depth >= 1.5m && character is 1.5m in water 
-			if (waterLevel[0] >= swimData.m_fWaterLevelIn && waterLevel[1] >= waterLevelToSwim)
+			if (waterLevel[0] >= swimData.m_fWaterLevelIn && waterLevel[1] >= swimData.m_fWaterLevelIn)
 			{
 				return EWaterLevels.LEVEL_SWIM_START;
 			}

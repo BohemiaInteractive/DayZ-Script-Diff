@@ -309,21 +309,10 @@ class CombinationLock extends ItemBase
 			fence.GetInventory().SetSlotLock( inventory_location.GetSlot(), false );			
 	
 			//drop entity from attachment slot
-			if (GetGame().IsMultiplayer())
-			{
-				if (player)
-					player.ServerDropEntity(this);
-				else
-					parent.GetInventory().DropEntity(InventoryMode.SERVER, parent, this);
-			}
-			else 
-			{
-				if (player)
-					player.LocalDropEntity(this);
-				else
-					parent.GetInventory().DropEntity(InventoryMode.LOCAL, parent, this);
-			}
-				
+			if (player)
+				player.ServerDropEntity( this );
+			else
+				parent.GetInventory().DropEntity(InventoryMode.SERVER, parent, this);
 			SetPosition( fence.GetKitSpawnPosition() );
 			PlaceOnSurface();
 			

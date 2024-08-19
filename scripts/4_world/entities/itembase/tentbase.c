@@ -34,6 +34,7 @@ class TentBase extends ItemBase
 	protected ref array<string> m_ShowAnimationsWhenPitched;
 	protected ref array<string> m_ShowAnimationsWhenPacked;
 	protected Object			m_ClutterCutter;
+	ref protected EffectSound 	m_DeployLoopSound;
 	protected CamoNet 			m_CamoNet;
 	protected vector m_HalfExtents; // The Y value contains a heightoffset and not the halfextent !!!
 	
@@ -62,6 +63,8 @@ class TentBase extends ItemBase
 		{
 			DestroyClutterCutter();
 		}
+		
+		SEffectManager.DestroyEffect(m_DeployLoopSound);
 	}
 	
 	override string GetInvulnerabilityTypeString()
@@ -199,7 +202,17 @@ class TentBase extends ItemBase
 				}
 			}
 		}
-				
+		
+		if (CanPlayDeployLoopSound())
+		{
+			PlayDeployLoopSound();
+		}
+		
+		if (m_DeployLoopSound && !CanPlayDeployLoopSound())
+		{
+			StopDeployLoopSound();
+		}
+		
 		if (m_State != m_StateLocal)
 		{
 			if (m_State == PACKED)
@@ -837,6 +850,26 @@ class TentBase extends ItemBase
 		}
 	}
 	
+	void PlayDeployLoopSound()
+	{		
+		if (!GetGame().IsDedicatedServer())
+		{		
+			if (!m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying())
+			{
+				m_DeployLoopSound = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
+			}
+		}
+	}
+	
+	void StopDeployLoopSound()
+	{
+		if (!GetGame().IsDedicatedServer())
+		{	
+			m_DeployLoopSound.SetSoundFadeOut(0.5);
+			m_DeployLoopSound.SoundStop();
+		}
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -970,10 +1003,4 @@ class TentBase extends ItemBase
 		m_IsBeingPacked = isBeingPacked;
 		SetSynchDirty();
 	}
-	
-	//!DEPRECATED
-	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
-	
-	void PlayDeployLoopSound(); //!DEPRECATED
-	void StopDeployLoopSound(); //!DEPRECATED
 };

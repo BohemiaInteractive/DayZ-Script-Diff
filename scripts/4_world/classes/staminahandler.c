@@ -4,8 +4,6 @@ enum EStaminaMultiplierTypes
 	FATIGUE,
 	EPINEPHRINE,
 	DROWNING,
-	VOMIT_EXHAUSTION,
-	DISEASE_PNEUMONIA
 }
 
 
@@ -297,7 +295,7 @@ class StaminaHandler
 	void StaminaHandler(PlayerBase player)
 	{
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
-			m_StaminaParams = new Param3<float,float,bool>(0, 0, false);		
+			m_StaminaParams = new Param3<float,float,bool>(0,0, false);		
 
 		m_State 						= new HumanMovementState();
 		m_Player 						= player;
@@ -334,15 +332,11 @@ class StaminaHandler
 		m_RegisteredDepletionModifiers.Insert(EStaminaMultiplierTypes.MASK, MaskMdfr.STAMINA_DEPLETION_MODIFIER);
 		m_RegisteredDepletionModifiers.Insert(EStaminaMultiplierTypes.FATIGUE, FatigueMdfr.STAMINA_DEPLETION_MULTIPLIER);
 		m_RegisteredDepletionModifiers.Insert(EStaminaMultiplierTypes.EPINEPHRINE, EpinephrineMdfr.STAMINA_DEPLETION_MULTIPLIER);
-		m_RegisteredDepletionModifiers.Insert(EStaminaMultiplierTypes.VOMIT_EXHAUSTION, VomitSymptom.STAMINA_DEPLETION_MULTIPLIER);
-		m_RegisteredDepletionModifiers.Insert(EStaminaMultiplierTypes.DISEASE_PNEUMONIA, PneumoniaMdfr.STAMINA_DEPLETION_MULTIPLIER);
 		
 		//----------------- recovery --------------------
 		m_RegisteredRecoveryModifiers.Insert(EStaminaMultiplierTypes.MASK, MaskMdfr.STAMINA_RECOVERY_MODIFIER);
 		m_RegisteredRecoveryModifiers.Insert(EStaminaMultiplierTypes.FATIGUE, FatigueMdfr.STAMINA_RECOVERY_MULTIPLIER);
 		m_RegisteredRecoveryModifiers.Insert(EStaminaMultiplierTypes.DROWNING, DrowningMdfr.STAMINA_RECOVERY_MULTIPLIER);
-		m_RegisteredRecoveryModifiers.Insert(EStaminaMultiplierTypes.VOMIT_EXHAUSTION, VomitSymptom.STAMINA_RECOVERY_MULTIPLIER);
-		m_RegisteredRecoveryModifiers.Insert(EStaminaMultiplierTypes.DISEASE_PNEUMONIA, PneumoniaMdfr.STAMINA_RECOVERY_MULTIPLIER);
 		
 	}
 	

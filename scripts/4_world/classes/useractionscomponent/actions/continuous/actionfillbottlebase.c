@@ -7,13 +7,9 @@ class ActionFillBottleBaseCB : ActionContinuousBaseCB
 	{
 		m_liquid_type = ActionFillBottleBase.Cast(m_ActionData.m_Action).GetLiquidType(m_ActionData.m_Player, m_ActionData.m_Target, m_ActionData.m_MainItem);
 		
-		if (m_liquid_type == LIQUID_GASOLINE)
+		if (m_ActionData.m_Target.GetObject() && m_ActionData.m_Target.GetObject().IsFuelStation())
 		{
 			m_BaseFillQuantity = UAQuantityConsumed.FUEL;
-		}
-		else if (m_liquid_type == LIQUID_SNOW)
-		{
-			m_BaseFillQuantity = UAQuantityConsumed.FILL_SNOW;
 		}
 		else
 		{
@@ -26,8 +22,7 @@ class ActionFillBottleBaseCB : ActionContinuousBaseCB
 class ActionFillBottleBase: ActionContinuousBase
 {
 	private const float WATER_DEPTH = 0.5;
-	private const string ALLOWED_WATER_SURFACES = string.Format("%1|%2|%3", UAWaterType.FRESH, UAWaterType.STILL, UAWaterType.SNOW);
-	protected int m_AllowedLiquidMask;
+	private const string ALLOWED_WATER_SURFACES = string.Format("%1|%2", UAWaterType.FRESH, UAWaterType.STILL);
 	
 	void ActionFillBottleBase()
 	{
@@ -37,9 +32,6 @@ class ActionFillBottleBase: ActionContinuousBase
 		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
 		m_SpecialtyWeight 	= UASoftSkillsWeight.PRECISE_LOW;
 		m_Text				= "#fill";
-		
-		m_AllowedLiquidMask = LIQUID_GROUP_DRINKWATER | LIQUID_GASOLINE;
-		m_AllowedLiquidMask &= ~LIQUID_SNOW;
 	}
 	
 	override void CreateConditionComponents()  
@@ -50,82 +42,67 @@ class ActionFillBottleBase: ActionContinuousBase
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
+		if (item.IsFullQuantity())
+			return false;
+
 		Object targetObject = target.GetObject();
 		if (targetObject)
 		{
+			Land_FuelStation_Feed fuelstation = Land_FuelStation_Feed.Cast(targetObject);
+			if (fuelstation)
+			{
+				if (!fuelstation.HasFuelToGive())
+					return false;
+			}
 			if (vector.DistanceSq(player.GetPosition(), targetObject.GetPosition()) > UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT)
 				return false;
+			
+			if (targetObject.GetWaterSourceObjectType() != EWaterSourceObjectType.NONE || targetObject.GetWaterSourceObjectType() == EWaterSourceObjectType.THROUGH || targetObject.IsFuelStation())
+			{
+				return GetLiquidType(player, target, item) != -1;
+			}
 		}
-		else
-		{
-			CCTWaterSurfaceEx waterCheck = new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, m_AllowedLiquidMask);
-			if (!waterCheck.Can(player, target))
-				return false;
-		}
-		
-		int liquidType = GetLiquidType(player, target, item);
-		
-		if (item.GetQuantity() > item.GetQuantityMin())
-			liquidType = Liquid.TranslateLiquidType(liquidType);
-		
-		return liquidType != LIQUID_NONE && Liquid.CanFillContainer(item,liquidType);
+
+		CCTWaterSurface waterCheck = new CCTWaterSurface(UAMaxDistances.DEFAULT, ALLOWED_WATER_SURFACES);
+		if (waterCheck.Can(player, target))
+			return GetLiquidType(player, target, item) != -1;
+
+		return false;
 	}
 	
 	override bool ActionConditionContinue(ActionData action_data)
 	{
 		return action_data.m_MainItem.GetQuantity() < action_data.m_MainItem.GetQuantityMax();
 	}
+	
+	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
+	{	
+		SetupStance(player);
+	
+		if (super.SetupAction(player, target, item, action_data, extra_data))
+		{
+			if (action_data.m_Target.GetObject())
+				m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_FILLBOTTLEWELL;
+			
+			return true;
+		}
 
-	override protected int GetStanceMask(PlayerBase player)
-	{
-		vector water_info = HumanCommandSwim.WaterLevelCheck(player, player.GetPosition());
-		if (water_info[1] > WATER_DEPTH)
-		{
-			return DayZPlayerConstants.STANCEMASK_ERECT;
-		}
-		else
-		{
-			return DayZPlayerConstants.STANCEMASK_CROUCH;
-		}
+		return false;
 	}
 	
-	override protected int GetActionCommandEx(ActionData actionData)
-	{
-		int commandUID = DayZPlayerConstants.CMD_ACTIONFB_FILLBOTTLEPOND;
-		if (actionData.m_Target.GetObject())
-		{
-			commandUID = DayZPlayerConstants.CMD_ACTIONFB_FILLBOTTLEWELL;
-		}
-		
-		return commandUID;
-	}
-		
 	int GetLiquidType(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		int liquidType = LIQUID_NONE;
-		if ( target.GetObject() )
+		if (target.GetObject() && target.GetObject().IsFuelStation())
 		{
-			liquidType = target.GetObject().GetLiquidSourceType();
+			if (Liquid.CanFillContainer(item, LIQUID_GASOLINE))
+				return LIQUID_GASOLINE;
 		}
-		else
+		else if ((!target.GetObject() || target.GetObject().IsWell() || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.THROUGH) && Liquid.CanFillContainer(item, LIQUID_WATER))
 		{
-			string surfaceType;
-			vector hit_pos = target.GetCursorHitPos();
-			GetGame().SurfaceGetType3D(hit_pos[0], hit_pos[1], hit_pos[2], surfaceType);
-			if (surfaceType == "")
-			{
-				if ( hit_pos[1] <= g_Game.SurfaceGetSeaLevel() + 0.001 )
-				{
-					liquidType = LIQUID_SALTWATER;
-				}
-			}
-			else
-			{
-				liquidType = Surface.GetSurfaceData(surfaceType).GetLiquidType();
-			}
+			return LIQUID_WATER;
 		}
 		
-		return liquidType & m_AllowedLiquidMask;
+		return -1;
 	}
 	
 	void SetupStance(PlayerBase player)
@@ -141,12 +118,4 @@ class ActionFillBottleBase: ActionContinuousBase
 			m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
 		}
 	}
-	
-	override bool IsLockTargetOnUse()
-	{
-		return false;
-	}
-	
-	// deprecated
-	private const int ALLOWED_LIQUID;
 }

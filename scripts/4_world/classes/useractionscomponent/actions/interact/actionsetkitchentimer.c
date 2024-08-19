@@ -46,8 +46,6 @@ class ActionSetKitchenTimer: ActionContinuousBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		float progress = action_data.m_Callback.GetActionComponentProgress();
 		KitchenTimer clock = KitchenTimer.Cast(action_data.m_MainItem);
 		clock.SetAlarmTimeServer(progress);

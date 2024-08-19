@@ -161,7 +161,7 @@ class PluginDeveloperSync extends PluginBase
 	{
 		if ( !GetDayZGame().IsMultiplayer() || GetDayZGame().IsServer() )
 		{
-			for ( int i = 0; i < m_RegisteredPlayers.Count(); ++i )
+			for ( int i = 0; i < m_RegisteredPlayers.Count(); i++ )
 			{
 				PlayerBase player = m_RegisteredPlayers.GetKey( i );
 				if ( !player || !player.IsAlive() )
@@ -559,8 +559,11 @@ class PluginDeveloperSync extends PluginBase
 				DamageZoneMap dmgZones = target.GetEntityDamageZoneMap();
 							
 				SetupZoneValues(rpc_params, dmgZones, target, "Health", 0);
-				SetupZoneValues(rpc_params, dmgZones, target, "Shock", 1);
-				SetupZoneValues(rpc_params, dmgZones, target, "Blood", 2);
+				if (target.IsPlayer())	// better way needs prog support
+				{
+					SetupZoneValues(rpc_params, dmgZones, target, "Shock", 1);
+					SetupZoneValues(rpc_params, dmgZones, target, "Blood", 2);
+				}
 			}
 			
 			bool targetChanged = false;
@@ -599,7 +602,8 @@ class PluginDeveloperSync extends PluginBase
 	
 	void SetupZoneValues(inout array<ref Param> rpc_params, DamageZoneMap dmgZones, EntityAI target, string healthType, int typeID)
 	{
-		array<string> outHealthTypes = new array<string>;
+		if (target.GetMaxHealth("", healthType) == 0)
+			return;
 		
 		//title entry
 		bool isTitleEntry = true;
@@ -607,28 +611,14 @@ class PluginDeveloperSync extends PluginBase
 		
 		// global entry
 		isTitleEntry = false;
-		float value;
-		target.GetAdditionalHealthTypes("", outHealthTypes);
-		if (healthType == "Health" || outHealthTypes.Find(healthType) != -1) // zone might not have additional health type
-		{
-			value = target.GetHealth("", healthType);
-			rpc_params.Insert( new Param4<string, float, float, bool>( "Global", value, typeID, isTitleEntry ) );
-		}
-				
+		float value = target.GetHealth("", healthType);
+		rpc_params.Insert( new Param4<string, float, float, bool>( "Global", value, typeID, isTitleEntry ) );
+		
 		//entries
 		int count = dmgZones.Count();
 		for (int i = 0; i < count; i++)
 		{
-			string zoneName = dmgZones.GetKey(i);
-			outHealthTypes.Clear();
-			target.GetAdditionalHealthTypes(zoneName, outHealthTypes);
-			
-			if (healthType != "Health")
-			{
-				if (outHealthTypes.Find(healthType) == -1)
-					continue;
-			}
-				
+			string zoneName = dmgZones.GetKey(i);		
 			if (target.GetMaxHealth(zoneName, healthType) == 0)	
 				continue;
 			
@@ -949,24 +939,26 @@ class PluginDeveloperSync extends PluginBase
 	}
 
 	//Display player modifiers
-	void OnRPCAgents(ParamsReadContext ctx)
+	void OnRPCAgents( ParamsReadContext ctx )
 	{
 		//clear values
 		m_PlayerAgentsSynced.Clear();
 		
-		Param4<string, string, int, float> p4 = new Param4<string, string, int, float>("", "" , 0, 0.0);
+		Param3<string, string, int> p3 = new Param3<string, string, int>( "", "" ,0 );
 		Param1<int> p1 = new Param1<int>(0);
 		
 		//get param count
-		int paramCount = 0;
-		if (ctx.Read(p1))
-			paramCount = p1.param1;
+		int param_count = 0;
+		if ( ctx.Read(p1) )
+		{
+			param_count = p1.param1;
+		}
 		
 		//read values and set 
-		for (int i = 0; i < paramCount; i++)
+		for ( int i = 0; i < param_count; i++ )
 		{
-			ctx.Read(p4);
-			m_PlayerAgentsSynced.Insert(new SyncedValueAgent(p4.param1, p4.param2, p4.param3, p4.param4));
+			ctx.Read(p3);
+			m_PlayerAgentsSynced.Insert( new SyncedValueAgent( p3.param1, p3.param2, p3.param3 ) );
 		}
 	}
 	
@@ -1005,21 +997,46 @@ class PluginDeveloperSync extends PluginBase
 			//invidividual stomach items
 			for ( int i = 0; i < param_count; i++ )
 			{
-				Param5<int,int,int,float,float> p5 = new Param5<int,int,int,float,float>(0,0,0,0,0);
-				ctx.Read(p5);
-				m_PlayerStomachSynced.Insert(p5);
+				Param4<int,int,int,float> p4 = new Param4<int,int,int,float>(0,0,0,0);
+				ctx.Read(p4);
+				m_PlayerStomachSynced.Insert(p4);
 			}
 			//volume
 			Param1<float> p1b = new Param1<float>(0);
 			ctx.Read(p1b);
 			m_PlayerStomachSynced.Insert(p1b);
-			//temperature
-			Param1<float> paramTemp = new Param1<float>(0);
-			ctx.Read(paramTemp);
-			m_PlayerStomachSynced.Insert(paramTemp);
 		}
 	}
 
+	//Update data on local
+	/*
+	void UpdateAgentsLocal()
+	{
+		PlayerBase player = PlayerBase.Cast( GetDayZGame().GetPlayer() );
+		
+		if ( player )
+		{
+			//clear values
+			m_PlayerAgentsSynced.Clear();
+			
+			//get agent pool data
+			array<ref Param> agent_pool = new array<ref Param>;
+			player.m_AgentPool.GetDebugObject( agent_pool );
+			
+			//get agents count 
+			Param1<int> p1 = Param1<int>.Cast( agent_pool.Get( 0 ) );
+			int agents_count = p1.param1;
+			
+			//set synced data
+			for ( int i = 0; i < agents_count; i++ ) 
+			{
+				string name = Param2<string,string>.Cast(agent_pool.Get(i+1)).param1;
+				string count = Param2<string,string>.Cast(agent_pool.Get(i+1)).param2;
+				m_PlayerAgentsSynced.Insert( new SyncedValueAgent( name, count, false ) );
+			}
+		}
+	}
+	*/
 	//================================================================
 	// FOCUS
 	//================================================================ 

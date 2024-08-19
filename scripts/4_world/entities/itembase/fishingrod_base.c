@@ -11,19 +11,9 @@ class FishingRod_Base_New : ItemBase
 		AddAction(ActionFishingNew);
 	}
 	
-	override bool GetActionWidgetOverride(out typename name)
+	float GetFishingEffectivityBonus()
 	{
-		PlayerBase owner;
-		if (Class.CastTo(owner,GetHierarchyRootPlayer()))
-		{
-			ActionFishingNew action;
-			if (Class.CastTo(action,owner.GetActionManager().GetRunningAction()) && owner.GetActionManager().GetActionState() == UA_PROCESSING)
-			{
-				name = ActionDummyContinuousRelease;
-				return true;
-			}
-		}
-		return false;
+		return 0.0;
 	}
 	
 	override bool IsOpen()
@@ -31,39 +21,15 @@ class FishingRod_Base_New : ItemBase
 		return false;
 	}
 	
-	void AnimateFishingRodEx(float phase, bool instant = false)
-	{
-		if (instant)
-			SetAnimationPhaseNow("AnimateRod",phase);
-		else
-			SetAnimationPhase("AnimateRod",phase);
-	}
+	void AnimateFishingRod(bool state) {}	
 	
 	override void OnDebugSpawn()
 	{
-		ItemBase hook;
+		GetInventory().CreateAttachment("Bait");
 		for (int i = 0; i < 6; ++i)
 		{
-			if (Class.CastTo(hook,GetGame().CreateObjectEx("Hook", GetPosition(), ECE_PLACE_ON_SURFACE)))
-				hook.GetInventory().CreateAttachment("Worm");
+			GetGame().CreateObjectEx("Bait", GetPosition(), ECE_PLACE_ON_SURFACE);
 		}
-		
-		if (Class.CastTo(hook,GetInventory().CreateAttachment("Hook")))
-			hook.GetInventory().CreateAttachment("Worm");
-	}
-	
-	///////////////////////////////////////////////////
-	
-	//! DEPRECATED, used to dictate catch chance
-	float GetFishingEffectivityBonus()
-	{
-		return 0.0;
-	}
-	
-	//! DEPRECATED
-	void AnimateFishingRod(bool state)
-	{
-		AnimateFishingRodEx(state);
 	}
 }
 
@@ -376,6 +342,7 @@ class FishingRod_Base : ItemBase
 		super.SetActions();
 		
 		//AddAction(ActionToggleFishing);
+		//AddAction(ActionFishing);
 		//AddAction(ActionFishingNew);
 	}
 	

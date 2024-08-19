@@ -87,7 +87,7 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 		}
 		else
 		{
-			m_PlayerName = "\"" + player.GetCachedName() + "\"";
+			m_PlayerName = player.GetCachedName();
 			m_Pid = player.GetCachedID();
 		}
 		
@@ -156,12 +156,9 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 		}
 		else if (source.IsWeapon() || source.IsMeleeWeapon())  // player
 		{			
-			if (ExplosivesBase.Cast(source))
-			{
-				LogPrint( playerPrefix + " killed by " + source.GetDisplayName() );
-			}
-			else if (source.IsMeleeWeapon())
-			{			
+			
+			if (source.IsMeleeWeapon())
+			{	
 				LogPrint( playerPrefix + " killed by " + playerPrefix2 + " with " + source.GetDisplayName() );	
 			}
 			else
@@ -207,11 +204,8 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			{
 				case DamageType.CLOSE_COMBAT:	// Player melee, animals, infected 
 				
-					if (source.IsZombie() || source.IsAnimal())  // Infected & Animals
+					if ( m_HitFilter != 1 && ( source.IsZombie() || source.IsAnimal() ) )  // Infected & Animals
 					{
-						if (m_HitFilter == 1)
-							break;
-					
 						m_DisplayName = source.GetDisplayName();
 												
 						LogPrint( playerPrefix + " hit by " + m_DisplayName + m_HitMessage );	

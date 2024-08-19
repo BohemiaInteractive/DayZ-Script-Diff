@@ -111,12 +111,6 @@ class SymptomBase
 	{
 		return m_SyncToClient;		
 	}
-	
-	//! This symptom is synchronized to remotes in a form id within symptom manager
-	bool IsSyncToRemotes()
-	{
-		return false;
-	}
 
 	void GetPersistentParams(array<Param> params)
 	{

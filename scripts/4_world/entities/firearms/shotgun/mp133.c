@@ -237,6 +237,8 @@ class Mp133Shotgun_Base : Rifle_Base
 		if ( Class.CastTo(entity, this) )
 		{
 			entity.SpawnEntityOnGroundPos("Ammo_12gaPellets", entity.GetPosition());
+			entity.SpawnEntityOnGroundPos("Ammo_12gaSlug", entity.GetPosition());
+			entity.SpawnEntityOnGroundPos("Ammo_12gaRubberSlug", entity.GetPosition());
 		}
 	}
 };

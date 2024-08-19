@@ -44,7 +44,9 @@ class Mosin_Bayonet extends Inventory_Base
 	{
 		super.SetActions();
 		
+		AddAction(ActionBurnSewTarget);
 		AddAction(ActionUnrestrainTarget);
+		AddAction(ActionBurnSewSelf);
 		AddAction(ActionDigWorms);
 	}
 }

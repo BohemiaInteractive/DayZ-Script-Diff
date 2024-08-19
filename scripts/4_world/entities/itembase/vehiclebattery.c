@@ -44,7 +44,7 @@ class VehicleBattery : ItemBase
 			{
 				return true;
 			}
-			else if (poweredDevice && poweredDevice.IsOn())
+			else if (poweredDevice)
 			{
 				return false;
 			}

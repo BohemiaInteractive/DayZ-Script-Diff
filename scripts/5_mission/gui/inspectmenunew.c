@@ -155,12 +155,7 @@ class InspectMenuNew extends UIScriptedMenu
 		if ( !item.IsInherited( ZombieBase ) && !item.IsInherited( Car ) )
 		{
 			InventoryItem iItem = InventoryItem.Cast( item );
-			string tooltip = iItem.GetTooltip();
-			if (iItem.IsMeleeFinisher())
-				tooltip = tooltip + "\n" + "#inv_inspect_stealth_tooltip";
-			
-			WidgetTrySetText(root_widget, "ItemDescWidget", tooltip);
-			
+			WidgetTrySetText(root_widget, "ItemDescWidget", iItem.GetTooltip());
 		}
 	
 		WidgetTrySetText(root_widget, "ItemNameWidget", item.GetDisplayName());
@@ -266,7 +261,7 @@ class InspectMenuNew extends UIScriptedMenu
 					break;
 				}
 					
-				case LIQUID_FRESHWATER:
+				case LIQUID_RIVERWATER:
 				{
 					WidgetTrySetText(root_widget, "ItemLiquidTypeWidget", "#inv_inspect_river_water", Colors.COLOR_LIQUID);
 					break;
@@ -323,23 +318,31 @@ class InspectMenuNew extends UIScriptedMenu
 	
 	//--------------------------------------------------------------------------
 	static void UpdateItemInfoTemperature(Widget root_widget, EntityAI item)
-	{		
+	{
 		if ( item.IsInherited( ZombieBase ) || item.IsInherited( Car ) ) return;
-		
 		float temperature;
-		ObjectTemperatureState temperatureState;
-		ItemBase item_base = ItemBase.Cast(item);
-		
-		if (item_base && item.CanHaveTemperature())
+		ItemBase item_base = ItemBase.Cast( item );
+		if( item_base )
 		{
 			temperature = item_base.GetTemperature();
-			temperatureState = ObjectTemperatureState.GetStateData(temperature);
 		}
 		
-		if (!temperatureState || temperatureState.m_State == EObjectTemperatureState.NEUTRAL)
-			WidgetTrySetText(root_widget, "ItemTemperatureWidget", "");
+		if( temperature > 30 )
+		{
+			if ( temperature > 100 )
+			{
+				temperature = 100 * Math.Floor( temperature / 100.0 );
+			}
+			else
+			{
+				temperature = 10 * Math.Floor( temperature / 10.0 );
+			}
+			WidgetTrySetText(root_widget, "ItemTemperatureWidget",  "#inv_inspect_about " + temperature.ToString() +  " " + "#inv_inspect_celsius", GetTemperatureColor( temperature ) );
+		}	
 		else
-			WidgetTrySetText(root_widget, "ItemTemperatureWidget", temperatureState.m_LocalizedName, temperatureState.m_Color);
+		{
+			WidgetTrySetText(root_widget, "ItemTemperatureWidget", "");
+		}
 	}
 	
 	//--------------------------------------------------------------------------
@@ -354,11 +357,7 @@ class InspectMenuNew extends UIScriptedMenu
 			wetness = item_IB.GetWet();
 		}
 
-		if (item.GetIsFrozen())
-		{
-			WidgetTrySetText(root_widget, "ItemWetnessWidget", "#inv_inspect_frozen", Colors.COLOR_FROZEN);
-		}
-		else if ( wetness < GameConstants.STATE_DAMP )
+		if( wetness < GameConstants.STATE_DAMP )
 		{
 			WidgetTrySetText(root_widget, "ItemWetnessWidget", "");
 		}
@@ -454,7 +453,7 @@ class InspectMenuNew extends UIScriptedMenu
 					float heatIsolation = MiscGameplayFunctions.GetCurrentItemHeatIsolation( item_base );
 					if ( heatIsolation <= GameConstants.HEATISO_THRESHOLD_BAD )
 					{
-						WidgetTrySetText( root_widget, "ItemQuantityWidget", "#inv_inspect_iso_worst", GetTemperatureColor( 10 ) );
+						WidgetTrySetText( root_widget, "ItemQuantityWidget", "#inv_inspect_iso_bad", GetTemperatureColor( 10 ) );
 					}
 					else if ( ( heatIsolation > GameConstants.HEATISO_THRESHOLD_BAD ) && ( heatIsolation <= GameConstants.HEATISO_THRESHOLD_LOW ) )
 					{
@@ -524,9 +523,9 @@ class InspectMenuNew extends UIScriptedMenu
 	static void UpdateItemInfoFoodStage(Widget root_widget, EntityAI item)
 	{
 		Edible_Base food_item = Edible_Base.Cast( item );
-		if ( food_item && food_item.GetFoodStage() )
+		if ( food_item && food_item.HasFoodStage() )
 		{
-			FoodStage food_stage = food_item.GetFoodStage();
+			ref FoodStage food_stage = food_item.GetFoodStage();
 			FoodStageType food_stage_type = food_stage.GetFoodStageType();
 					
 			switch( food_stage_type )

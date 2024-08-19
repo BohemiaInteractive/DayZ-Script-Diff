@@ -16,22 +16,6 @@ class AnimalBase extends DayZAnimal
 	{
 		return false;
 	}
-	
-	override bool IsSelfAdjustingTemperature()
-	{
-		return IsAlive();
-	}
-	
-	override void DeathUpdate()
-	{
-		EntityAI dead_entity = EntityAI.Cast( GetGame().CreateObjectEx( GetDeadItemName(), GetPosition(), ECE_OBJECT_SWAP, RF_ORIGINAL ) );
-		dead_entity.SetOrientation(GetOrientation());
-		MiscGameplayFunctions.TransferItemProperties(this,dead_entity,true,true,true,true);
-		if (!KeepHealthOnReplace())
-			dead_entity.SetHealthMax("","Health");
-		
-		DeleteSafe();
-	}
 }
 
 class Animal_BosTaurus extends AnimalBase
@@ -204,31 +188,6 @@ class Animal_CervusElaphus extends AnimalBase
 	}
 }
 class Animal_CervusElaphusF extends Animal_CervusElaphus {}
-
-class Animal_RangiferTarandus extends AnimalBase
-{
-	override void RegisterHitComponentsForAI()
-	{
-		m_DefaultHitComponent = "Zone_Chest";
-		m_DefaultHitPositionComponent = "Pelvis";
-		
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Head", 2);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Neck", 65);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Chest", 50);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Legs", 70);
-	}
-	
-	override string CaptureSound()
-	{
-		return "DeerBleat_SoundSet";
-	}
-	
-	override string ReleaseSound()
-	{
-		return "DeerRoar_SoundSet";
-	}
-}
-class Animal_RangiferTarandusF extends Animal_RangiferTarandus {}
 
 class Animal_GallusGallusDomesticus extends AnimalBase
 {
@@ -410,93 +369,5 @@ class Animal_UrsusArctos extends AnimalBase
 	override string ReleaseSound()
 	{
 		return "BearRoarShort_SoundSet";
-	}
-}
-
-class Animal_LepusEuropaeus extends AnimalBase
-{
-	override void RegisterHitComponentsForAI()
-	{
-		m_DefaultHitComponent = "Spine";
-		m_DefaultHitPositionComponent = "Spine";
-		
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Head", 20);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "LFLeg2", 5);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "RFLeg2", 5);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Chest", 70);
-	}
-	
-	override string CaptureSound()
-	{
-		return "HenScream_SoundSet";
-	}
-	
-	override string ReleaseSound()
-	{
-		return "HenCluck_X_SoundSet";
-	}
-	
-	override bool ReplaceOnDeath()
-	{
-		return true;
-	}
-	
-	override bool CanBeSkinned()
-	{
-		return false;
-	}
-	
-	override string GetDeadItemName()
-	{
-		return "DeadRabbit";
-	}
-	
-	override bool KeepHealthOnReplace()
-	{
-		return false;
-	}
-}
-
-class Animal_VulpesVulpes extends AnimalBase
-{
-	override void RegisterHitComponentsForAI()
-	{
-		m_DefaultHitComponent = "Spine";
-		m_DefaultHitPositionComponent = "Spine";
-		
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Head", 20);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "LFLeg2", 5);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "RFLeg2", 5);
-		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Chest", 70);
-	}
-	
-	override string CaptureSound()
-	{
-		return "HenScream_SoundSet";
-	}
-	
-	override string ReleaseSound()
-	{
-		return "HenCluck_X_SoundSet";
-	}
-	
-	override bool ReplaceOnDeath()
-	{
-		return true;
-	}
-	
-	override bool CanBeSkinned()
-	{
-		return false;
-	}
-	
-	override string GetDeadItemName()
-	{
-		return "DeadFox";
-	}
-	
-	override bool KeepHealthOnReplace()
-	{
-		return false;
 	}
 }

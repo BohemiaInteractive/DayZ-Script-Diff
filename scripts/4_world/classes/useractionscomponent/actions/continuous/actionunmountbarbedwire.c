@@ -6,8 +6,11 @@ class ActionUnmountBarbedWireCB : ActionContinuousBaseCB
 	}
 };
 
-class ActionUnmountBarbedWire: ActionMountBarbedWire
+class ActionUnmountBarbedWire: ActionContinuousBase
 {
+	float m_DamageAmount;
+	string m_SlotName;
+	
 	void ActionUnmountBarbedWire()
 	{
 		m_CallbackClass = ActionUnmountBarbedWireCB;
@@ -15,65 +18,64 @@ class ActionUnmountBarbedWire: ActionMountBarbedWire
 		m_FullBody = true;
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
 		
+		m_DamageAmount = 2;
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
 		m_Text = "#unmount_barbed_wire";
 	}
 	
-	override void CreateConditionComponents()
+	override void CreateConditionComponents()  
 	{
 		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNonRuined(UAMaxDistances.BASEBUILDING);
+		m_ConditionTarget = new CCTNonRuined( UAMaxDistances.BASEBUILDING );
 	}
 
-	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
+	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{	
-		BaseBuildingBase base_building = BaseBuildingBase.Cast(target.GetObject());
-		if (base_building && base_building.CanUseConstruction() && base_building.CanUseConstructionBuild())
+		Object targetObject = target.GetObject();
+		
+		if ( targetObject && targetObject.CanUseConstruction() )
 		{
+			BaseBuildingBase base_building = BaseBuildingBase.Cast( targetObject );
 			if (!base_building.IsPlayerInside(player,""))
 				return false;
 			
-			BarbedWire barbed_wire = GetBarbedWire(target);
-			return (barbed_wire && barbed_wire.IsMounted());
+			string selection = targetObject.GetActionComponentName( target.GetComponentIndex() );
+			
+			if ( selection.Length() > 0 )
+			{
+				int delimiter_index = selection.IndexOfFrom( 0, "_mounted" );
+				if ( delimiter_index > -1 )
+				{
+					selection = selection.Substring( 0, delimiter_index );
+					
+					BarbedWire barbed_wire = BarbedWire.Cast( base_building.FindAttachmentBySlotName( selection ) );
+					if ( barbed_wire && barbed_wire.IsMounted() )
+					{
+						m_SlotName = selection;
+						
+						return true;
+					}					
+				}
+			}			
 		}
 		
 		return false;
 	}
-	
-	override void OnFinishProgressServer(ActionData action_data)
-	{
-		BarbedWireActionData actionDataBW = BarbedWireActionData.Cast(action_data);
-		BaseBuildingBase base_building = BaseBuildingBase.Cast(actionDataBW.m_Target.GetObject());
+		
+	override void OnFinishProgressServer( ActionData action_data )
+	{	
+		BaseBuildingBase base_building = BaseBuildingBase.Cast( action_data.m_Target.GetObject() );
+		BarbedWire barbed_wire = BarbedWire.Cast( base_building.FindAttachmentBySlotName( m_SlotName ) );
 		
 		//unmount and refresh parent
-		BarbedWire wire = BarbedWire.Cast(base_building.FindAttachmentBySlotName(actionDataBW.m_SlotName));
-		wire.SetMountedState(false);
-	}
-
-	override string GetZoneSelection(ActionTarget target)
-	{
-		BaseBuildingBase base_building = BaseBuildingBase.Cast(target.GetObject());
-		string selection = base_building.GetActionComponentName(target.GetComponentIndex());
+		barbed_wire.SetMountedState( false );
 		
-		if (selection.Length() > 0)
-		{
-			int delimiter_index = selection.IndexOfFrom(0, "_mounted");
-			if (delimiter_index > -1)
-			{
-				selection = selection.Substring(0, delimiter_index);
-			}
-			/*else if (!selection.Contains("_barbedwire_") && selection.Contains("_wall_"))
-			{
-				selection.Insert(selection.Length(),"_barbedwire_1");
-			}*/
-		}
-		//Print(selection);
-		return selection;
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
-	override string GetAdminLogMessage(ActionData action_data)
+	override string GetAdminLogMessage( ActionData action_data )
 	{
-		string message = string.Format("Player %1 Unmounted BarbedWire from %2", action_data.m_Player, action_data.m_Target.GetObject().ClassName());
+		string message = string.Format("Player %1 Unmounted BarbedWire from %2", action_data.m_Player, action_data.m_Target.GetObject().ClassName() );
 		return message;
 	}
 }

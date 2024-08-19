@@ -6,7 +6,6 @@ class ActionWashHandsWellOneCB : ActionInteractLoopBaseCB
 	}
 }
 
-//!DEPRECATED
 class ActionWashHandsWellOne extends ActionInteractLoopBase
 {
 	void ActionWashHandsWellOne()
@@ -32,8 +31,6 @@ class ActionWashHandsWellOne extends ActionInteractLoopBase
 
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		if (action_data.m_State == UA_FINISHED)
 		{
 			PluginLifespan moduleLifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));

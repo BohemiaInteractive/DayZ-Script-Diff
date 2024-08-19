@@ -26,8 +26,6 @@ class ActionCollectBloodTarget: ActionContinuousBase
 	
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
 		
 		if ( !ntarget )
@@ -70,6 +68,7 @@ class ActionCollectBloodTargetLambda : ReplaceItemWithNewLambda
 			ItemBase.Cast( old_item ).TransferModifiers( m_Target );
 			MiscGameplayFunctions.TransferItemProperties( old_item_IB, new_item_IB, true, false, true );
 			ItemBase.Cast( new_item ).SetLiquidType( m_Target.GetStatBloodType().Get() );
+			m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 			
 			maxQuantity = ItemBase.Cast( new_item ).GetQuantityMax();
 			quantitySet = m_percentFilled * maxQuantity;

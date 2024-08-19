@@ -10,6 +10,7 @@ class PortableGasStove extends ItemBase
 	
 	//cooking
 	protected const float PARAM_COOKING_TEMP_THRESHOLD			= 100;		//temperature threshold for starting coooking process (degree Celsius)
+	protected const float PARAM_COOKING_EQUIP_TEMP_INCREASE		= 10;		//how much will temperature increase when attached on burning fireplace (degree Celsius)
 	protected const float PARAM_COOKING_EQUIP_MAX_TEMP			= 250;		//maximum temperature of attached cooking equipment (degree Celsius)
 	protected const float PARAM_COOKING_TIME_INC_COEF			= 0.5;		//cooking time increase coeficient, can be used when balancing how fast a food can be cooked
 	
@@ -63,23 +64,18 @@ class PortableGasStove extends ItemBase
 	{		
 		super.EEInit();
 		
-		if (m_CookingProcess == null)
-			m_CookingProcess = new Cooking();
-		m_CookingProcess.SetCookingUpdateTime(GetCompEM().GetUpdateInterval());
-		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
- 			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
-			m_UTSSettings.m_ManualUpdate		= true;
-			m_UTSSettings.m_TemperatureMin		= 0;
-			m_UTSSettings.m_TemperatureMax		= 600;
-			m_UTSSettings.m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
-			m_UTSSettings.m_TemperatureCap		= 5;
-			m_UTSSettings.m_RangeFull			= 1;
-			m_UTSSettings.m_RangeMax			= 2;
+ 			m_UTSSettings 					= new UniversalTemperatureSourceSettings();
+			m_UTSSettings.m_ManualUpdate	= true;
+			m_UTSSettings.m_TemperatureMin	= 0;
+			m_UTSSettings.m_TemperatureMax	= 1000;
+			m_UTSSettings.m_RangeFull		= 1;
+			m_UTSSettings.m_RangeMax		= 2;
+			m_UTSSettings.m_TemperatureCap	= 10;
 			
-			m_UTSLConst							= new UniversalTemperatureSourceLambdaConstant();
-			m_UTSource							= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLConst);
+			m_UTSLConst						= new UniversalTemperatureSourceLambdaConstant();
+			m_UTSource						= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLConst);
 		}		
 	}
 	
@@ -191,23 +187,23 @@ class PortableGasStove extends ItemBase
 		}
 
 		//manage cooking equipment
-		ItemBase item = ItemBase.Cast(GetCookingEquipment());
-		if (item && item.CanHaveTemperature())
+		if (GetCookingEquipment())
 		{
 			if (GetGame() && GetGame().IsServer())
 			{
-				float cook_equip_temp = item.GetTemperature();
-				float target = PARAM_COOKING_EQUIP_MAX_TEMP; //makes sense here, since gas stove does not heat itself, and we need some target
-				float diff = target - cook_equip_temp;
-				float heatPermCoef = item.GetHeatPermeabilityCoef();
+				float cook_equip_temp = GetCookingEquipment().GetTemperature();
 				
-				//heat only, no self-coolig like FireplaceBase
-				if (diff > 0)
-					item.SetTemperatureEx(new TemperatureDataInterpolated(target,ETemperatureAccessTypes.ACCESS_FIREPLACE,GetCompEM().GetUpdateInterval(),GameConstants.TEMP_COEF_GAS_STOVE,heatPermCoef));
+				//start cooking
+				if (cook_equip_temp >= PARAM_COOKING_TEMP_THRESHOLD)
+				{
+					m_TimeFactor = consumed_energy;
+					CookWithEquipment();
+				}				
 				
-				m_TimeFactor = consumed_energy;
-				CookWithEquipment(); //heat children
-				
+				//set temperature to cooking equipment
+				cook_equip_temp = cook_equip_temp + (PARAM_COOKING_EQUIP_TEMP_INCREASE * consumed_energy);
+				cook_equip_temp = Math.Clamp(cook_equip_temp, 0, PARAM_COOKING_EQUIP_MAX_TEMP);
+				GetCookingEquipment().SetTemperature(cook_equip_temp);
 				//! damaging of cookware
 				GetCookingEquipment().DecreaseHealth(GameConstants.FIRE_ATTACHMENT_DAMAGE_PER_SECOND * GetCompEM().GetUpdateInterval(), false);
 			}
@@ -217,7 +213,9 @@ class PortableGasStove extends ItemBase
 	void CookWithEquipment()
 	{
 		if (m_CookingProcess == null)
+		{
 			m_CookingProcess = new Cooking();
+		}
 		
 		m_CookingProcess.CookWithEquipment(GetCookingEquipment(), PARAM_COOKING_TIME_INC_COEF * m_TimeFactor);
 	}
@@ -296,11 +294,6 @@ class PortableGasStove extends ItemBase
 	//================================================================
 	// CONDITIONS
 	//================================================================
-	override bool IsSelfAdjustingTemperature() //prevents CE temperature updates in vicinity, does not really have its own temperature
-	{
-		return GetCompEM().IsWorking();
-	}
-	
 	//this into/outo parent.Cargo
 	override bool CanPutInCargo(EntityAI parent)
 	{
@@ -439,12 +432,4 @@ class PortableGasStove extends ItemBase
 			SpawnEntityOnGroundPos("WaterBottle", entity.GetPosition() + Vector(0.2, 0, 0));
 		}
 	}
-	
-	///////////////////////////
-	//DEPRECATED STUFF BELOW//
-	/////////////////////////
-	protected const float PARAM_COOKING_EQUIP_TEMP_INCREASE		= 10;		//how much will temperature increase when attached on burning fireplace (degree Celsius)
-	/////////////////////////
-	//////////////////////////
-	///////////////////////////
 }

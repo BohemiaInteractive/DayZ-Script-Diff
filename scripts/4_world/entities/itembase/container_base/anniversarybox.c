@@ -28,6 +28,11 @@ class AnniversaryBox extends Container_Base
 		#endif
 	}	
 	
+	override bool IsContainer()
+	{
+		return true;
+	}
+	
 	override bool IsTakeable()
 	{
 		return false;

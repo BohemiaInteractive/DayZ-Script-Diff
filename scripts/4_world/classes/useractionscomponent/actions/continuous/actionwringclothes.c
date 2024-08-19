@@ -77,6 +77,8 @@ class ActionWringClothes: ActionContinuousBase
 		
 		//Print(wet_change);
 		action_data.m_MainItem.SetWet(wet_change);
+		
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 
 	/*override void OnEndServer( ActionData action_data )

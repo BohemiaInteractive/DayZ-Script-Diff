@@ -2,6 +2,7 @@ class MissionBase extends MissionBaseWorld
 {
 	PluginDeveloper 		m_ModuleDeveloper;
 	PluginKeyBinding		m_ModuleKeyBinding
+	PluginAdditionalInfo	m_ModuleServerInfo;
 	
 	ref WidgetEventHandler 	m_WidgetEventHandler;
 	ref WorldData			m_WorldData;
@@ -16,8 +17,6 @@ class MissionBase extends MissionBaseWorld
 
 	void MissionBase()
 	{
-		
-		Surface.Init();
 		SetDispatcher(new DispatcherCaller);
 		
 		PluginManagerInit();
@@ -25,6 +24,10 @@ class MissionBase extends MissionBaseWorld
 		m_WidgetEventHandler = new WidgetEventHandler();
 
 		m_InventoryDropCallback = new EntityPlacementCallback();
+
+		//TODO clea up after Gamescom
+		m_ModuleServerInfo = PluginAdditionalInfo.Cast( GetPlugin(PluginAdditionalInfo) );
+		//
 		SoundSetMap.Init();
 		
 		InitialiseWorldData();
@@ -72,13 +75,6 @@ class MissionBase extends MissionBaseWorld
 		#endif
 	}
 	
-	override void OnEvent(EventType eventTypeId, Param params)
-	{
-		super.OnEvent(eventTypeId, params);
-		
-		m_DynamicMusicPlayer.OnGameEvent(eventTypeId, params);
-	}
-	
 	void InitialiseWorldData()
 	{
 		string worldName = "empty";
@@ -95,11 +91,6 @@ class MissionBase extends MissionBaseWorld
 			case "enoch":
 				m_WorldData = new EnochData();
 				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistryEnoch();
-				break;
-
-			case "sakhal":
-				m_WorldData = new SakhalData();
-				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistrySakhal();
 				break;
 			
 			#ifdef PLATFORM_CONSOLE
@@ -434,7 +425,7 @@ class MissionBase extends MissionBaseWorld
 		m_DummyPlayers.Insert(PlayerBase.Cast( player ));
 	}
 
-	#ifdef DIAG_DEVELOPER
+#ifdef DIAG_DEVELOPER
 	void UpdateInputDeviceDiag()
 	{
 		DisplayInputDebug(DiagMenu.GetBool(DiagMenuIDs.MISC_INPUT_DEVICE_DISCONNECT_DBG));
@@ -455,10 +446,7 @@ class MissionBase extends MissionBaseWorld
 		DbgUI.End();
 		DbgUI.EndCleanupScope();
 	}
-	#endif
-	
-	//! DEPRECATED
-	PluginAdditionalInfo	m_ModuleServerInfo;
+#endif
 }
 
 class MissionDummy extends MissionBase

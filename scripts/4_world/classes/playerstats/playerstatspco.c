@@ -1,14 +1,12 @@
+
+
 class PCOHandlerStats
 {
 	ref map<int, ref PlayerStatsPCO_Base> m_PCOs = new map<int, ref PlayerStatsPCO_Base>;
-	int m_HighestVersion;;
-
-	protected Man m_Player;
+	int m_HighestVersion;
 	
-	void PCOHandlerStats(Man player)
+	void PCOHandlerStats()
 	{
-		m_Player = player;
-
 		RegisterPCO(new PlayerStatsPCO_v100);
 		RegisterPCO(new PlayerStatsPCO_v101);
 		RegisterPCO(new PlayerStatsPCO_current);
@@ -18,31 +16,32 @@ class PCOHandlerStats
 	{
 		int version = pco.GetVersion();
 		
-		if (version > m_HighestVersion)
+		if( version > m_HighestVersion )
+		{
 			m_HighestVersion = version;
-
-		pco.SetPlayer(m_Player);
-		pco.Init();
+		}
+		
 		m_PCOs.Insert(version, pco);
 	}
 	
 	PlayerStatsPCO_Base GetPCO(int version = -1)
 	{
-		if (version == -1)//no version set - fetch the highest version
+		//PlayerStatsPCO_Base pco;
+
+		if(version == -1)//no version set - fetch the highest version
 		{
 			return m_PCOs.Get(m_HighestVersion);
 		}
-		else if (!m_PCOs.Contains(version))//version set - version not present, fetch the closest lower version
+		else if( !m_PCOs.Contains(version))//version set - version not present, fetch the closest lower version
 		{
-			for (int i = version; i > 100; --i)
+			for(int i = version; i > 100; i--)
 			{
-				if (m_PCOs.Contains(i))
+				if(m_PCOs.Contains(i))
 				{
 					//Print("fetching PCO version:"+ i);
 					return m_PCOs.Get(i);	
 				}
 			}
-
 			return null;
 		}
 		else//version set - version present, fetch it
@@ -56,19 +55,13 @@ class PCOHandlerStats
 
 class PlayerStatsPCO_Base
 {
-	protected Man m_Player;
-
 	void PlayerStatsPCO_Base()
 	{
+		Init();
 	}
 	
 	void Init();
-
-	void SetPlayer(Man player)
-	{
-		m_Player = player;
-	}
-
+	
 	int GetVersion()
 	{
 		return -1;
@@ -84,24 +77,26 @@ class PlayerStatsPCO_Base
 	void RegisterStat(int id, PlayerStatBase stat)
 	{
 		m_PlayerStats.InsertAt(stat, id);
-		stat.SetPlayer(m_Player);
-		stat.Init(id);
+		stat.Init(id/*, this*/);
 	}
 	
-	void OnStoreSave(ParamsWriteContext ctx)
+	void OnStoreSave ( ParamsWriteContext ctx )
 	{
-		foreach (PlayerStatBase playerStat : m_PlayerStats)
-			playerStat.OnStoreSave(ctx);
-	}
-	
-	bool OnStoreLoad(ParamsReadContext ctx)
-	{
-		foreach (PlayerStatBase playerStat : m_PlayerStats)
+		for ( int i = 0; i < m_PlayerStats.Count(); i++ )
 		{
-			if (!playerStat.OnStoreLoad(ctx))
-				return false;
+			m_PlayerStats.Get(i).OnStoreSave(ctx);
 		}
-
+	}
+	
+	bool OnStoreLoad ( ParamsReadContext ctx )
+	{
+		for ( int i = 0; i < m_PlayerStats.Count(); i++ )
+		{
+			if(!m_PlayerStats.Get(i).OnStoreLoad(ctx))
+			{
+				return false;
+			}
+		}
 		return true;
 	}
 	
@@ -114,18 +109,6 @@ class PlayerStatsPCO_Base
 	{
 		m_PlayerStats.Clear();
 		Init();
-	}
-	
-	void OnRPC(ParamsReadContext ctx)
-	{
-		foreach (PlayerStatBase playerStat : m_PlayerStats)
-			playerStat.OnRPC(ctx);
-	}
-	
-	void OnAfterStoreLoad()
-	{
-		foreach (PlayerStatBase playerStat : m_PlayerStats)
-			playerStat.OnAfterStoreLoad();	
 	}
 }
 
@@ -266,10 +249,10 @@ class PlayerStatsPCO_v106 extends PlayerStatsPCO_Base
 
 enum EPlayerStats_v115
 {
-	HEATCOMFORT = 0,
-	TREMOR = 1,
-	WET = 2,
-	ENERGY = 3,
+	HEATCOMFORT,
+	TREMOR,
+	WET,
+	ENERGY,
 	WATER,
 	DIET,
 	STAMINA,
@@ -298,12 +281,13 @@ class PlayerStatsPCO_v115 extends PlayerStatsPCO_Base
 		RegisterStat(EPlayerStats_v115.SPECIALTY,  		new PlayerStat<float>	(-1,	1,								0,								"Specialty",		EPSstatsFlags.EMPTY) );
 		RegisterStat(EPlayerStats_v115.BLOODTYPE,  		new PlayerStat<int>		(0,		128,							BloodTypes.GenerateBloodType(),	"BloodType",		EPSstatsFlags.EMPTY) );
 		RegisterStat(EPlayerStats_v115.TOXICITY,  		new PlayerStat<float>	(0,		100,							0,								"Toxicity",			EPSstatsFlags.EMPTY) );
-		RegisterStat(EPlayerStats_v115.HEATBUFFER,  	new PlayerStat<float>	(-30,	30,								0,								"HeatBuffer",		EPSstatsFlags.SYNCED) );
+		RegisterStat(EPlayerStats_v115.HEATBUFFER,  	new PlayerStat<float>	(-30,	30,								0,								"HeatBuffer",		EPSstatsFlags.EMPTY) );
 	}
 };
 
+
 //---------------------------------------------------------------
-//------------------------- version current ---------------------
+//------------------------- version current -------------------------
 //---------------------------------------------------------------
 
 enum EPlayerStats_current: EPlayerStats_v115

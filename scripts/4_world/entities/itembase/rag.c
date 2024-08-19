@@ -31,15 +31,6 @@ class Rag extends ItemBase
 		return true;
 	}
 	
-	override bool CanBeSplit()
-	{
-		Torch torchParent = Torch.Cast(GetHierarchyParent());
-		if (torchParent && torchParent.GetCompEM() && torchParent.GetCompEM().IsWorking())
-			return false;
-		
-		return super.CanBeSplit();
-	}
-	
 	//================================================================
 	// IGNITION ACTION
 	//================================================================

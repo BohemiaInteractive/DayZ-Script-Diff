@@ -57,8 +57,6 @@ class Man extends EntityAI
 	}
 
 	bool IsUnconscious();
-	//! uncon command might be still in progress but state already changed (for simple checks only - eg.: UI)
-	bool IsUnconsciousStateOnly();
 
 	int GetPlayerState()
 	{
@@ -852,11 +850,6 @@ class Man extends EntityAI
 	} 
 
 	override bool CanBeSkinned()
-	{
-		return true;
-	}
-	
-	override bool DisableVicinityIcon()
 	{
 		return true;
 	}

@@ -840,6 +840,9 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 				//We don't inflict bleeding to hands when kicking
 				if (m_HitType != EMeleeHitType.KICK)
 				{
+					//If no gloves, inflict hand damage and bleeding
+					//m_Player.DecreaseHealth("hands", "", 10); IN CASE WE WANT TO DO STUFF WITH HAND HEALTH
+					
 					//Random bleeding source
 					randNum = Math.RandomIntInclusive(1, 15);
 					switch (randNum)
@@ -893,6 +896,18 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		}
 	}
 	
+	//! DEPRECATED
+	int GetFinisherType(InventoryItem weapon, EntityAI target)
+	{
+		return -1;
+	}
+	
+	//! DEPRECATED
+	bool IsHitTypeFinisher(int type)
+	{
+		return false;
+	}
+	
 	//! Picks a specific finisher animation. Not used for mounted bayonet stabs
 	int DetermineFinisherAnimation(int finisher_type)
 	{
@@ -930,29 +945,19 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 
 		return ret;
 	}
-
-	protected bool IsShortDistance(EntityAI pTarget, float pDistanceSq)
-	{
-		return pTarget && vector.DistanceSq(m_Player.GetPosition(), m_MeleeCombat.GetHitPos()) <= pDistanceSq || vector.DistanceSq(m_Player.GetBonePositionWS(m_Player.GetBoneIndexByName("Head")), m_MeleeCombat.GetHitPos()) <= pDistanceSq)
-	}
-
-	//!
+	
 	//! DEPRECATED
-	protected DayZPlayerImplement					m_DZPlayer;
-	protected bool 									m_IsFinisher;
-	
-	int GetFinisherType(InventoryItem weapon, EntityAI target)
-	{
-		return -1;
-	}
-	
-	bool IsHitTypeFinisher(int type)
-	{
-		return false;
-	}
-	
 	int DetermineSpecificFinisherType(ItemBase weapon, int component)
 	{
 		return -1;
 	}
+	
+	protected bool IsShortDistance(EntityAI pTarget, float pDistanceSq)
+	{
+		return pTarget && vector.DistanceSq(m_Player.GetPosition(), m_MeleeCombat.GetHitPos()) <= pDistanceSq || vector.DistanceSq(m_Player.GetBonePositionWS(m_Player.GetBoneIndexByName("Head")), m_MeleeCombat.GetHitPos()) <= pDistanceSq)
+	}
+	
+	//! DEPRECATED
+	protected DayZPlayerImplement					m_DZPlayer;
+	protected bool 									m_IsFinisher;
 }

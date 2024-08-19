@@ -82,8 +82,6 @@ class ActionCraftBolts: ActionContinuousBase
 
 	override void OnStartServer(ActionData action_data)
 	{
-		super.OnStartServer(action_data);
-		
 		m_IsKnifeInHands = IsCuttingType(action_data.m_MainItem);
 		m_ResultEntity = null;
 	}

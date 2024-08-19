@@ -65,16 +65,18 @@ class ActionDigInStash: ActionContinuousBase
 				entityToCheck = player;
 			
 			// here we check if a stash is nearby and block digging a new one in close proximity
-			array<Object> excludedObjects = new array<Object>();
+			array<Object> excludedObjects = new array<Object>;
 			excludedObjects.Insert(targetIB);
-			array<Object> nearbyObjects = new array<Object>();
+			array<Object> nearbyObjects = new array<Object>;
 			// For now we exclude an area of 2 X 2 X 2 meters
 			if (GetGame().IsBoxColliding(entityToCheck.GetPosition(), entityToCheck.GetOrientation(), "2 2 2", excludedObjects, nearbyObjects))
 			{
-				foreach (Object nearbyObject : nearbyObjects)
+				for (int i = 0; i < nearbyObjects.Count(); i++)
 				{
-					if (nearbyObject.IsInherited(UndergroundStash))
+					if (nearbyObjects[i].IsInherited(UndergroundStash))
+					{
 						return false;
+					}
 				}
 			}
 			
@@ -144,35 +146,13 @@ class ActionDigInStash: ActionContinuousBase
 			return;
 		}
 		
-		EntityAI entityToCheck = targetEntity;
-		if (targetEntity.GetInventory().IsInCargo())
-			entityToCheck = action_data.m_Player;
-		
-		int liquidType;
-		string surfaceType;
-		GetGame().SurfaceUnderObject(entityToCheck, surfaceType, liquidType);
-		string undergroundStashType;
-		
-		GetGame().GetSurfaceDigPile(surfaceType, undergroundStashType);
-		
-		if (undergroundStashType == "")
-			undergroundStashType =  "UndergroundStash";
-		
-		UndergroundStash stash = UndergroundStash.Cast(GetGame().CreateObjectEx(undergroundStashType, targetEntity.GetPosition(), ECE_PLACE_ON_SURFACE));  
+		UndergroundStash stash = UndergroundStash.Cast(GetGame().CreateObjectEx("UndergroundStash", targetEntity.GetPosition(), ECE_PLACE_ON_SURFACE));  
 		if (stash)
 		{
 			stash.PlaceOnGround();
 			if (GameInventory.LocationCanRemoveEntity(targetIL))
 			{
-				ClearActionJuncture(action_data);
-				
-				if (!GetGame().IsMultiplayer())
-				{
-					ClearInventoryReservationEx(action_data);
-					action_data.m_Player.LocalTakeEntityToTargetCargo(stash, targetEntity);
-				}
-				else 
-					action_data.m_Player.ServerTakeEntityToTargetCargo(stash, targetEntity);
+				action_data.m_Player.ServerTakeEntityToTargetCargo(stash, targetEntity);
 			}
 			else
 			{
@@ -185,9 +165,10 @@ class ActionDigInStash: ActionContinuousBase
 		}
 		
 		//Apply tool damage
-		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 10);
+		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 10);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 	}
-		
+	
 	override string GetAdminLogMessage(ActionData action_data)
 	{
 		return string.Format("Player %1 Dug in %2 at position %3", action_data.m_Player, action_data.m_Target.GetObject(), action_data.m_Target.GetObject().GetPosition());

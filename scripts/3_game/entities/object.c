@@ -652,11 +652,6 @@ class Object extends IEntity
 		return EWaterSourceObjectType.NONE;
 	}
 	
-	int GetLiquidSourceType()
-	{
-		return LIQUID_NONE;
-	}
-	
 	//! Returns if this entity is Well (extends Building)
 	//! DEPRECATED by GetWaterSourceObjectType
 	bool IsWell()
@@ -1041,14 +1036,6 @@ class Object extends IEntity
 	@param healthType if empty string, sets state of main health
 	*/
 	proto native void   DecreaseHealth(string zoneName, string healthType, float value);
-	
-	/**
-  \brief List of additional health types in given zone
-	@param zoneName if empty string, global will be used
-	@param outHealthType List of the types found (does not clear the existing content)
-	@returns false on any error (uninitialized system, bad zone name)
-	*/
-	proto native bool 	GetAdditionalHealthTypes(string zoneName, TStringArray outHealthTypes);
 	
 	/**
   \brief Decreases health with the option of auto-deleting the object if its ruined.

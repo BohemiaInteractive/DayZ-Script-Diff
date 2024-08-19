@@ -972,7 +972,6 @@ class DayZGame extends CGame
 	private const int MIN_ARTY_SOUND_RANGE = 300; // The distance under which sound is no longer heard
 	
 	static ref NoiseParams m_NoiseParams = new NoiseParams();
-	static ref TemperatureAccessManager m_TAManager = new TemperatureAccessManager();
 	#ifdef DEVELOPER
 	static bool m_IsPreviewSpawn;//! we set this to 'true' when spawning item through Script Console only for item preview purposes
 	#endif
@@ -1124,7 +1123,6 @@ class DayZGame extends CGame
 	{
 		m_DayZProfileOptions.RegisterProfileOptionBool(EDayZProfilesOptions.CROSSHAIR, SHOW_CROSSHAIR);
 		m_DayZProfileOptions.RegisterProfileOptionBool(EDayZProfilesOptions.HUD, SHOW_HUD);
-		m_DayZProfileOptions.RegisterProfileOptionBool(EDayZProfilesOptions.HUD_VEHICLE, SHOW_HUD_VEHICLE);
 		m_DayZProfileOptions.RegisterProfileOptionBool(EDayZProfilesOptions.QUICKBAR, SHOW_QUICKBAR);
 		m_DayZProfileOptions.RegisterProfileOptionBool(EDayZProfilesOptions.SERVER_MESSAGES, SYSTEM_CHAT_MSG);
 		m_DayZProfileOptions.RegisterProfileOptionBool(EDayZProfilesOptions.USERS_CHAT, DIRECT_CHAT_MSG);
@@ -1744,7 +1742,7 @@ class DayZGame extends CGame
 	#ifdef DIAG_DEVELOPER
 	private void DrawPerformanceStats(float pingAct, float pingAvg, float throttleInput, float throttleOutput)
 	{
-		DbgUI.Begin("Performance Stats", 720, 10);
+		DbgUI.Begin("Performance Stats", 10, 520);
 		DbgUI.Text("pingAct:" + pingAct );
 		int color = COLOR_WHITE;
 		if ( pingAvg >= GetWorld().GetPingCriticalThreshold())
@@ -1755,7 +1753,7 @@ class DayZGame extends CGame
 		DbgUI.ColoredText(color, "pingAvg:" + pingAvg);
 		DbgUI.Text("Ping Warning Threshold:" + GetWorld().GetPingWarningThreshold());
 		DbgUI.Text("Ping Critical Threshold:" + GetWorld().GetPingCriticalThreshold());
-		DbgUI.PlotLive("pingAvg history:", 300, 125, pingAvg, 100, 100 );
+		DbgUI.PlotLive("pingAvg history:", 300,150, pingAvg, 2000, 100 );
 		DbgUI.Text("Server Fps Warning Threshold:" + GetWorld().GetServerFpsWarningThreshold());
 		DbgUI.Text("Server Fps Critical Threshold:" + GetWorld().GetServerFpsCriticalThreshold());
 		if (m_ServerFpsStatsParams)// SERVER FPS
@@ -1765,32 +1763,13 @@ class DayZGame extends CGame
 				color = COLOR_RED;
 			else if ( m_ServerFpsStatsParams.param1 <= GetWorld().GetServerFpsWarningThreshold())
 				color = COLOR_YELLOW;
-
 			DbgUI.ColoredText(color, "serverFPS:" + m_ServerFpsStatsParams.param1.ToString() );
-			DbgUI.PlotLive("serverFPS history:", 300, 125, m_ServerFpsStatsParams.param1, 100, 100 );
-
-			color = COLOR_WHITE;
-			DbgUI.ColoredText(COLOR_WHITE, "serverFrameTime:" + m_ServerFpsStatsParams.param2.ToString() );
-			DbgUI.PlotLive("serverFrameTime history:", 300, 75, m_ServerFpsStatsParams.param2, 100, 100 );
-
-			color = COLOR_WHITE;
-			if (m_ServerFpsStatsParams.param3 > 0)
-				color = COLOR_RED;
-
-			DbgUI.ColoredText(color, "physStepsSkippedServer:" + m_ServerFpsStatsParams.param3.ToString() );
-			DbgUI.PlotLive("physStepsSkippedServer history:", 300, 75, m_ServerFpsStatsParams.param3, 100, 100 );
-
-			color = COLOR_WHITE;
-			if (m_ServerFpsStatsParams.param4 > 0)
-				color = COLOR_RED;
-			DbgUI.ColoredText(color, "physStepsSkippedClient:" + m_ServerFpsStatsParams.param4.ToString() );
-			DbgUI.PlotLive("physStepsSkippedClient history:", 300, 75, m_ServerFpsStatsParams.param4, 100, 100 );
+			DbgUI.PlotLive("serverFPS history:", 300,150, m_ServerFpsStatsParams.param1, 6000, 100 );
 		}
-
 		DbgUI.Text("throttleInput:" + throttleInput);
-		DbgUI.PlotLive("throttleInput history:", 300, 75, throttleInput, 100, 50 );
+		DbgUI.PlotLive("throttleInput history:", 300,100, throttleInput, 2000, 50 );
 		DbgUI.Text("throttleOutput:" + throttleOutput);
-		DbgUI.PlotLive("throttleOutput history:", 300, 75, throttleOutput, 100, 50 );
+		DbgUI.PlotLive("throttleOutput history:", 300,100, throttleOutput, 2000, 50 );
 		DbgUI.End();
 	}
 	#endif
@@ -2865,17 +2844,7 @@ class DayZGame extends CGame
 		if (doSim && mission)
 		{
 			mission.OnUpdate(timeslice);
-			
-			// update local weather effects
-			if ( IsClient() || !IsMultiplayer() )
-			{
-				WorldData worldData = mission.GetWorldData();
-				if ( worldData )
-					worldData.UpdateWeatherEffects( GetWeather(), timeslice );
-			}
 		}
-		
-		SEffectManager.OnUpdate(timeslice);
 	
 		// queues and timers update
 		GetCallQueue(CALL_CATEGORY_SYSTEM).Tick(timeslice);
@@ -3202,8 +3171,6 @@ class DayZGame extends CGame
 						if (data.m_RainValue >= 0)
 							GetGame().GetWeather().GetRain().Set(data.m_RainValue, data.m_RainInterpolation, data.m_RainDuration);
 						
-						if (data.m_SnowfallValue >= 0)
-							GetGame().GetWeather().GetSnowfall().Set(data.m_SnowfallValue, data.m_SnowfallInterpolation, data.m_SnowfallDuration);
 					}
 					else
 					{
@@ -3349,11 +3316,7 @@ class DayZGame extends CGame
 			//NoiseParams npar = new NoiseParams();
 			m_NoiseParams.LoadFromPath(string.Format("cfgAmmo %1 NoiseExplosion", ammoType));
 			
-			float multiplier = hitInfo.GetSurfaceNoiseMultiplier();
-			if (multiplier == 0)
-				multiplier = 1;
-			
-			GetNoiseSystem().AddNoiseTarget(pos, 21, m_NoiseParams, multiplier * GetGame().GetWeather().GetNoiseReductionByWeather());
+			GetNoiseSystem().AddNoiseTarget(pos, 21, m_NoiseParams, hitInfo.GetSurfaceNoiseMultiplier());
 		}
 	}
 	
@@ -3516,10 +3479,7 @@ class DayZGame extends CGame
 			
 			float surfaceCoef = SurfaceGetNoiseMultiplier(directHit, pos, componentIndex);
 			float coefAdjusted = surfaceCoef * inSpeed.Length() / ConfigGetFloat("cfgAmmo " + ammoType + " initSpeed");
-			if (coefAdjusted == 0)
-				coefAdjusted = 1;
-			
-			GetNoiseSystem().AddNoiseTarget(pos, 10, m_NoiseParams, coefAdjusted * GetGame().GetWeather().GetNoiseReductionByWeather()); // Leave a ping for 5 seconds
+			GetNoiseSystem().AddNoiseTarget(pos, 10, m_NoiseParams, coefAdjusted); // Leave a ping for 5 seconds
 		}
 	}
 	
@@ -3554,10 +3514,7 @@ class DayZGame extends CGame
 			m_NoiseParams.LoadFromPath("cfgAmmo " + ammoType + " NoiseHit");
 			
 			float surfaceCoef = SurfaceGetNoiseMultiplier(directHit, pos, componentIndex);
-			if (surfaceCoef == 0)
-				surfaceCoef = 1;
-			
-			GetNoiseSystem().AddNoisePos(EntityAI.Cast(source), pos, m_NoiseParams, surfaceCoef * GetGame().GetWeather().GetNoiseReductionByWeather());
+			GetNoiseSystem().AddNoisePos(EntityAI.Cast(source), pos, m_NoiseParams, surfaceCoef);
 		}
 	}
 	

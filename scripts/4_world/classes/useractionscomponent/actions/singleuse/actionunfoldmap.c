@@ -213,8 +213,6 @@ class ActionUnfoldMap: ActionBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
-		super.OnStartServer(action_data);
-		
 		OpenMap(action_data);
 		ItemMap chernomap = ItemMap.Cast(action_data.m_MainItem);
 		chernomap.SyncMapMarkers();

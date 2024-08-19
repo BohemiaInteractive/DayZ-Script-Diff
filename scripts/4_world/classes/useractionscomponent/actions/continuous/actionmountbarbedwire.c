@@ -1,13 +1,3 @@
-class BarbedWireActionReceiveData : ActionReciveData
-{
-	string m_SlotName;
-}
-
-class BarbedWireActionData : ActionData
-{
-	string m_SlotName;
-}
-
 class ActionMountBarbedWireCB : ActionContinuousBaseCB
 {
 	override void CreateActionComponent()
@@ -18,8 +8,8 @@ class ActionMountBarbedWireCB : ActionContinuousBaseCB
 
 class ActionMountBarbedWire: ActionContinuousBase
 {
-	float m_DamageAmount; //DEPRECATED
-	string m_SlotName; //DEPRECATED
+	float m_DamageAmount;
+	string m_SlotName;
 	
 	void ActionMountBarbedWire()
 	{
@@ -28,96 +18,49 @@ class ActionMountBarbedWire: ActionContinuousBase
 		m_FullBody = true;
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
 		
+		m_DamageAmount = 2;
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
 		m_Text = "#mount";
 	}
 	
-	override void CreateConditionComponents()
+	override void CreateConditionComponents()  
 	{
 		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNonRuined(UAMaxDistances.BASEBUILDING);
+		m_ConditionTarget = new CCTNonRuined( UAMaxDistances.BASEBUILDING );
 	}
-	
-	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
-	{
-		BaseBuildingBase base_building = BaseBuildingBase.Cast(target.GetObject());
-		if (base_building && base_building.CanUseConstruction() && base_building.CanUseConstructionBuild())
-		{
-			if (!base_building.IsPlayerInside(player,""))
-				return false;
-			
-			BarbedWire barbed_wire = GetBarbedWire(target);
-			return (barbed_wire && !barbed_wire.IsMounted() && !barbed_wire.IsRuined());
-		}
-		
-		return false;
-	}
-	
-	override ActionData CreateActionData()
-	{
-		BarbedWireActionData action_data = new BarbedWireActionData();
-		return action_data;
-	}
-	
-	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = null)
-	{
-		if (super.SetupAction(player, target, item, action_data, extra_data))
-		{
-			#ifndef SERVER
-			BarbedWireActionData actionDataBW = BarbedWireActionData.Cast(action_data);
-			actionDataBW.m_SlotName = GetZoneSelection(target);
-			#endif
-			
-			return true;
-		}
-		
-		return false;
-	}
-	
-	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
-	{
-		super.WriteToContext(ctx, action_data);
-		BarbedWireActionData actionDataBW
-		
-		if (Class.CastTo(actionDataBW,action_data))
-		{
-			ctx.Write(actionDataBW.m_SlotName);
-		}
-	}
-	
-	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
-	{
-		if (!action_recive_data)
-		{
-			action_recive_data = new BarbedWireActionReceiveData;
-		}
-		super.ReadFromContext(ctx, action_recive_data);
-		BarbedWireActionReceiveData receiveDataBW = BarbedWireActionReceiveData.Cast(action_recive_data);
-		
-		string slotName;
-		if (!ctx.Read(slotName))
-			return false;
-		receiveDataBW.m_SlotName = slotName;
-		
-		return true;
-	}
-	
-	override void HandleReciveData(ActionReciveData action_recive_data, ActionData action_data)
-	{
-		super.HandleReciveData(action_recive_data, action_data);
-		
-		BarbedWireActionReceiveData receiveDataBW = BarbedWireActionReceiveData.Cast(action_recive_data);
-		BarbedWireActionData.Cast(action_data).m_SlotName = receiveDataBW.m_SlotName;
-	}
-	
-	override void OnFinishProgressServer(ActionData action_data)
+
+	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{	
-		BarbedWireActionData actionDataBW = BarbedWireActionData.Cast(action_data);
-		BaseBuildingBase base_building = BaseBuildingBase.Cast(actionDataBW.m_Target.GetObject());
+		Object targetObject = target.GetObject();
+		
+		if ( targetObject && targetObject.CanUseConstruction() && targetObject.CanUseConstructionBuild() )
+		{
+			BaseBuildingBase base_building = BaseBuildingBase.Cast( targetObject );
+			
+			string selection = targetObject.GetActionComponentName( target.GetComponentIndex() );
+			
+			if ( selection.Length() > 0 )
+			{
+				BarbedWire barbed_wire = BarbedWire.Cast( base_building.FindAttachmentBySlotName( selection ) );
+				if ( barbed_wire && !barbed_wire.IsMounted() && !barbed_wire.IsRuined() )
+				{
+					m_SlotName = selection;
+					
+					return true;
+				}
+			}			
+		}
+		
+		return false;
+	}
+		
+	override void OnFinishProgressServer( ActionData action_data )
+	{	
+		BaseBuildingBase base_building = BaseBuildingBase.Cast( action_data.m_Target.GetObject() );
+		BarbedWire barbed_wire = BarbedWire.Cast( base_building.FindAttachmentBySlotName( m_SlotName ) );
 		
 		//mount and refresh parent
-		BarbedWire wire = BarbedWire.Cast(base_building.FindAttachmentBySlotName(actionDataBW.m_SlotName));
-		wire.SetMountedState(true);
+		barbed_wire.SetMountedState( true );
 		
 		//solution for DamageSystem's case sensitivity
 		string zone = "invalid";
@@ -132,37 +75,21 @@ class ActionMountBarbedWire: ActionContinuousBase
 			test = tmp;
 			test.ToLower();
 			
-			if (test == actionDataBW.m_SlotName)
+			if (test == m_SlotName)
 			{
 				zone = tmp;
 				break;
 			}
 		}
 		
-		base_building.SetHealth01(zone,"Health",wire.GetHealth01("","Health")); //attachment slot names and damagezone names must match
-	}
-	
-	BarbedWire GetBarbedWire(ActionTarget target)
-	{
-		BaseBuildingBase base_building = BaseBuildingBase.Cast(target.GetObject());
-		BarbedWire wire;
-		if (Class.CastTo(wire,base_building.FindAttachmentBySlotName(GetZoneSelection(target))))
-		{
-			return wire;
-		}
+		base_building.SetHealth01(zone,"Health",barbed_wire.GetHealth01("","Health")); //attachment slot names and damagezone names must match
 		
-		return null;
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
-	string GetZoneSelection(ActionTarget target)
+	override string GetAdminLogMessage( ActionData action_data )
 	{
-		BaseBuildingBase base_building = BaseBuildingBase.Cast(target.GetObject());
-		return base_building.GetActionComponentName(target.GetComponentIndex());
-	}
-	
-	override string GetAdminLogMessage(ActionData action_data)
-	{
-		string message = string.Format("Player %1 Mounted BarbedWire on %2", action_data.m_Player, action_data.m_Target.GetObject().ClassName());
+		string message = string.Format("Player %1 Mounted BarbedWire on %2", action_data.m_Player, action_data.m_Target.GetObject().ClassName() );
 		return message;
 	}
 }

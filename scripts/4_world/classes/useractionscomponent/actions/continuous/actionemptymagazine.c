@@ -140,7 +140,7 @@ class ActionEmptyMagazine: ActionContinuousBase
 			}
 			else
 			{				
-				if ( emActionData.m_magazinePile.GetAmmoMax() > emActionData.m_magazinePile.GetAmmoCount() && emActionData.m_magazinePile.GetType() == magazineTypeName && (vector.DistanceSq(action_data.m_Player.GetPosition(), emActionData.m_magazinePile.GetPosition()) < (UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT) ) )
+				if ( emActionData.m_magazinePile.GetAmmoMax() > emActionData.m_magazinePile.GetAmmoCount() && (vector.DistanceSq(action_data.m_Player.GetPosition(), emActionData.m_magazinePile.GetPosition()) < (UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT) ) )
 				{
 					emActionData.m_magazinePile.ServerStoreCartridge(dmg,ammoType);
 				}

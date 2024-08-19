@@ -40,38 +40,32 @@ class ActionFillFuel: ActionContinuousBase
 		if ( item.GetLiquidType() != LIQUID_GASOLINE )
 			return false;
 
-		if (target.GetObject().IsDamageDestroyed())
+		Car car = Car.Cast( target.GetObject() );
+		if ( !car )
 			return false;
 		
-		Car car = Car.Cast(target.GetObject());
-		Boat boat = Boat.Cast(target.GetObject());
-		if (car)
+		if (car.IsDamageDestroyed())
 		{
-			if (car.GetFluidFraction( CarFluid.FUEL ) >= 0.98)
-				return false;
+			return false;
 		}
-		else if (boat)
-		{
-			if ( boat.GetFluidFraction( BoatFluid.FUEL ) >= 0.98 )
-				return false;
-		}
-		else 
+		
+		if ( car.GetFluidFraction( CarFluid.FUEL ) >= 0.98 )
 			return false;
 
 		array<string> selections = new array<string>;
 		target.GetObject().GetActionComponentNameList(target.GetComponentIndex(), selections);
 
-		Transport vehicle = Transport.Cast(target.GetObject());
+		CarScript carS = CarScript.Cast(car);
 		
-		if ( vehicle )
+		if ( carS )
 		{
 			for (int s = 0; s < selections.Count(); s++)
 			{
-				if ( selections[s] == vehicle.GetActionCompNameFuel() )
+				if ( selections[s] == carS.GetActionCompNameFuel() )
 				{
-					float dist = vector.DistanceSq( vehicle.GetRefillPointPosWS(), player.GetPosition() );
+					float dist = vector.DistanceSq( carS.GetRefillPointPosWS(), player.GetPosition() );
 
-					if ( dist < vehicle.GetActionDistanceFuel() * vehicle.GetActionDistanceFuel() )
+					if ( dist < carS.GetActionDistanceFuel() * carS.GetActionDistanceFuel() )
 						return true;
 				}
 			}

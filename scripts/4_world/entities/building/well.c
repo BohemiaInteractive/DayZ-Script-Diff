@@ -20,11 +20,6 @@ class Well extends BuildingSuper
 		return LIQUID_THROUGHPUT_WELL;
 	}
 	
-	override int GetLiquidSourceType()
-	{
-		return LIQUID_CLEANWATER;
-	}
-	
 	override void SetActions()
 	{
 		super.SetActions();

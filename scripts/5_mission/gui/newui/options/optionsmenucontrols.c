@@ -51,8 +51,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	protected ref NumericOptionsAccess		m_ControllerRS_AimMod_VSensitivityOption;
 	protected ref NumericOptionsAccess		m_ControllerRS_AimMod_HSensitivityOption;
 	protected ref NumericOptionsAccess		m_ControllerRS_AimMod_CurvatureOption;
-	protected ref NumericOptionsAccess		m_ControllerLS_DeadZoneOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_DeadZoneOption;
 	
 	// gamepad/controller selectors
 	protected ref OptionSelectorSlider		m_ControllerLS_VSensitivitySelector;
@@ -65,9 +63,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	protected ref OptionSelectorSlider		m_ControllerRS_AimMod_VSensitivitySelector;
 	protected ref OptionSelectorSlider		m_ControllerRS_AimMod_HSensitivitySelector;
 	protected ref OptionSelectorSlider		m_ControllerRS_AimMod_CurvatureSelector;
-	protected ref OptionSelectorSlider		m_ControllerLS_DeadZoneSelector;
-	protected ref OptionSelectorSlider		m_ControllerRS_DeadZoneSelector;	
-	
+		
 	protected ref map<int, ref Param2<string, string>> m_TextMap;
 	
 	static const float SLIDER_STEP = 0.025;
@@ -139,9 +135,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			Widget controllerRS_AimMod_VSensitivitySettingOption =  m_Root.FindAnyWidget("controller_rs_aimmod_vsensitivity_setting_option");
 			Widget controllerRS_AimMod_HSensitivitySettingOption =  m_Root.FindAnyWidget("controller_rs_aimmod_hsensitivity_setting_option");
 			Widget controllerRS_AimMod_CurvatureSettingOption =  m_Root.FindAnyWidget("controller_rs_aimmod_curvature_setting_option");
-			Widget controllerLS_DeadZoneOption =  m_Root.FindAnyWidget("controller_ls_deadzone_setting_option");
-			Widget controllerRS_DeadZoneOption =  m_Root.FindAnyWidget("controller_rs_deadzone_setting_option");
-		
+			
 			keyboardSettingOption.SetUserID( OptionAccessType.AT_OPTIONS_MOUSE_AND_KEYBOARD );
 			aimHelperSettingOption.SetUserID( OptionAccessType.AT_OPTIONS_AIM_HELPER );
 		
@@ -155,8 +149,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			controllerRS_AimMod_VSensitivitySettingOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_YAXIS_AIM_MOD );
 			controllerRS_AimMod_HSensitivitySettingOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_XAXIS_AIM_MOD );
 			controllerRS_AimMod_CurvatureSettingOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_CURVATURE_AIM_MOD );
-			controllerLS_DeadZoneOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_LS_DEADZONE );
-			controllerRS_DeadZoneOption.SetUserID( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_DEADZONE );
 		
 			m_KeyboardSelector = new OptionSelectorMultistate( keyboardSettingOption, m_KeyboardOption.GetIndex(), this, !m_MaKOptionAvailable, opt );
 			m_AimHelperSelector = new OptionSelectorMultistate( aimHelperSettingOption, m_AimHelperOption.GetIndex(), this, false, opt );
@@ -180,10 +172,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			m_ControllerRS_AimMod_HSensitivitySelector.SetStep(SLIDER_STEP);
 			m_ControllerRS_AimMod_CurvatureSelector = new OptionSelectorSlider( controllerRS_AimMod_CurvatureSettingOption, m_ControllerRS_AimMod_CurvatureOption.ReadValue(), this, false, m_ControllerRS_AimMod_CurvatureOption.GetMin(), m_ControllerRS_AimMod_CurvatureOption.GetMax() );
 			m_ControllerRS_AimMod_CurvatureSelector.SetStep(SLIDER_STEP);
-			m_ControllerLS_DeadZoneSelector = new OptionSelectorSlider( controllerLS_DeadZoneOption, m_ControllerLS_DeadZoneOption.ReadValue(), this, false, m_ControllerLS_DeadZoneOption.GetMin(), m_ControllerLS_DeadZoneOption.GetMax() );
-			m_ControllerLS_DeadZoneSelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_DeadZoneSelector = new OptionSelectorSlider( controllerRS_DeadZoneOption, m_ControllerRS_DeadZoneOption.ReadValue(), this, false, m_ControllerRS_DeadZoneOption.GetMin(), m_ControllerRS_DeadZoneOption.GetMax() );
-			m_ControllerRS_DeadZoneSelector.SetStep(SLIDER_STEP);
 		
 			m_KeyboardSelector.m_OptionChanged.Insert( UpdateKeyboard );
 			m_AimHelperSelector.m_OptionChanged.Insert( UpdateAimHelper );
@@ -198,8 +186,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			m_ControllerRS_AimMod_VSensitivitySelector.m_OptionChanged.Insert( UpdateControllerRS_AimMod_VSensitivity );
 			m_ControllerRS_AimMod_HSensitivitySelector.m_OptionChanged.Insert( UpdateControllerRS_AimMod_HSensitivity );
 			m_ControllerRS_AimMod_CurvatureSelector.m_OptionChanged.Insert( UpdateControllerRS_AimMod_Curvature );
-			m_ControllerLS_DeadZoneSelector.m_OptionChanged.Insert( UpdateControllerLS_Deadzone );
-			m_ControllerRS_DeadZoneSelector.m_OptionChanged.Insert( UpdateControllerRS_Deadzone );
 		
 			ShowConsoleSensitivityOptions(m_KeyboardOption.GetIndex());
 		
@@ -431,10 +417,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 				m_ControllerRS_AimMod_HSensitivitySelector.SetValue( m_ControllerRS_AimMod_HSensitivityOption.ReadValue(), true );
 			if( m_ControllerRS_AimMod_CurvatureSelector )
 				m_ControllerRS_AimMod_CurvatureSelector.SetValue( m_ControllerRS_AimMod_CurvatureOption.ReadValue(), true );
-			if( m_ControllerLS_DeadZoneSelector )
-				m_ControllerLS_DeadZoneSelector.SetValue( m_ControllerLS_DeadZoneOption.ReadValue(), true );
-			if( m_ControllerRS_DeadZoneSelector )
-				m_ControllerRS_DeadZoneSelector.SetValue( m_ControllerRS_DeadZoneOption.ReadValue(), true );
 		#endif		
 	}
 	
@@ -477,11 +459,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 				m_ControllerRS_AimMod_HSensitivitySelector.SetValue( m_ControllerRS_AimMod_HSensitivityOption.GetDefault(), true );
 			if( m_ControllerRS_AimMod_CurvatureSelector )
 				m_ControllerRS_AimMod_CurvatureSelector.SetValue( m_ControllerRS_AimMod_CurvatureOption.GetDefault(), true );
-			if( m_ControllerLS_DeadZoneSelector )
-				m_ControllerLS_DeadZoneSelector.SetValue( m_ControllerLS_DeadZoneOption.GetDefault(), true );
-			if( m_ControllerRS_DeadZoneSelector )
-				m_ControllerRS_DeadZoneSelector.SetValue( m_ControllerRS_DeadZoneOption.GetDefault(), true );
-
+		
 			Focus();
 		#endif
 		
@@ -552,18 +530,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	void UpdateControllerRS_Curvature( float value )
 	{
 		m_ControllerRS_CurvatureOption.WriteValue( value );
-		m_Menu.OnChanged();
-	}
-
-	void UpdateControllerLS_Deadzone( float value )
-	{
-		m_ControllerLS_DeadZoneOption.WriteValue( value );
-		m_Menu.OnChanged();
-	}
-		
-	void UpdateControllerRS_Deadzone( float value )
-	{
-		m_ControllerRS_DeadZoneOption.WriteValue( value );
 		m_Menu.OnChanged();
 	}
 
@@ -650,8 +616,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			m_ControllerRS_AimMod_VSensitivityOption	= NumericOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_YAXIS_AIM_MOD ) );
 			m_ControllerRS_AimMod_HSensitivityOption	= NumericOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_XAXIS_AIM_MOD ) );
 			m_ControllerRS_AimMod_CurvatureOption		= NumericOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_CURVATURE_AIM_MOD ) );
-		    m_ControllerLS_DeadZoneOption				= NumericOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_CONTROLLER_LS_DEADZONE ) );
-		    m_ControllerRS_DeadZoneOption				= NumericOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_DEADZONE ) );
 		#endif
 				
 		Revert();
@@ -688,8 +652,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_YAXIS_AIM_MOD, new Param2<string, string>( "#STR_Aiming_V_Sensitivity_tip_header", "#STR_Aiming_V_Sensitivity_tip" ) );
 			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_XAXIS_AIM_MOD, new Param2<string, string>( "#STR_Aiming_H_Sensitivity_tip_header", "#STR_Aiming_H_Sensitivity_tip" ) );
 			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_CURVATURE_AIM_MOD, new Param2<string, string>( "#STR_Aiming_Curvature_tip_header", "#STR_Camera_Curvature_tip" ) );
-			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_CONTROLLER_LS_DEADZONE, new Param2<string, string>( "#STR_Aiming_L_Deadzone_tip_header", "#STR_Aiming_L_Deadzone_tip" ) );
-			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_CONTROLLER_RS_DEADZONE, new Param2<string, string>( "#STR_Aiming_R_Deadzone_tip_header", "#STR_Aiming_R_Deadzone_tip" ) );
 		#endif
 	}
 	

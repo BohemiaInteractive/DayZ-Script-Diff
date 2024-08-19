@@ -100,7 +100,8 @@ class ActionDigOutStash: ActionContinuousBase
 		}
 
 		//Apply tool damage
-		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 10);
+		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 10);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 	}
 	
 	override string GetAdminLogMessage(ActionData action_data)

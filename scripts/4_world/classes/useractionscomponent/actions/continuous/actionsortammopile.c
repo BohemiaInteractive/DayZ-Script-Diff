@@ -6,7 +6,6 @@ class ActionSortAmmoPileCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionSortAmmoPile: ActionContinuousBase
 {
 	void ActionSortAmmoPile()

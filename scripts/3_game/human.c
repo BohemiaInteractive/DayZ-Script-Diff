@@ -1017,12 +1017,6 @@ class HumanCommandWeapons
 
 	//! command for lifting weapon near obstacled (works only when weapon is raised)
 	proto native	void		LiftWeapon(bool pState);
-	
-	//! returns aiming hands up/down (y) offset angle
-	proto native	float		GetAimingHandsOffsetUD();
-	
-	//! returns aiming hands left/right (x) offset angle
-	proto native	float		GetAimingHandsOffsetLR();
 
 	//!
 	void 	RegisterDefaultEvents()

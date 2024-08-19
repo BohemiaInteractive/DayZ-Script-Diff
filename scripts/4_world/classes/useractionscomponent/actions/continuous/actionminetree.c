@@ -1,7 +1,6 @@
 class MineActionData : ActionData
 {
 	EHarvestType m_HarvestType = EHarvestType.NORMAL;
-	int m_EffecterID = -1;
 }
 
 class ActionMineTreeCB : ActionContinuousBaseCB
@@ -23,11 +22,6 @@ class ActionMineBase : ActionContinuousBase
 		MineActionData data = new MineActionData;
 		data.m_HarvestType = m_HarvestType;
 		return data;
-	}
-	
-	override bool CanBeUsedInFreelook()
-	{
-		return false;
 	}
 	
 	override void OnActionInfoUpdate( PlayerBase player, ActionTarget target, ItemBase item )
@@ -100,23 +94,8 @@ class ActionMineTree : ActionMineBase
 		return ActionConditionContinue(action_data);
 	}
 	
-	/*override void OnFinishProgressServer(ActionData action_data)
+	override void OnFinishProgressServer( ActionData action_data )
 	{
-		MineActionData mad = MineActionData.Cast(action_data);
-		if (mad.m_EffecterID == -1)
-		{
-			mad.m_EffecterID = SEffectManager.CreateParticleServer(action_data.m_Target.GetObject().GetPosition(), new TreeEffecterParameters("TreeEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, 0.1));
-		}
-		else
-		{
-			SEffectManager.ReactivateParticleServer(mad.m_EffecterID);
-		}
-	}*/
-	
-	override void OnEndServer(ActionData action_data)
-	{
-		super.OnEndServer(action_data);
-		MineActionData mad = MineActionData.Cast(action_data);
-		SEffectManager.DestroyEffecterParticleServer(mad.m_EffecterID);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

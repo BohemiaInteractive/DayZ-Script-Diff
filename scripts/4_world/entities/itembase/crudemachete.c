@@ -18,9 +18,11 @@ class CrudeMachete extends ToolBase
 	{
 		super.SetActions();
 		AddAction(ActionUnrestrainTarget);
+		AddAction(ActionBurnSewTarget);
 		AddAction(ActionSkinning);
 		AddAction(ActionMineBush);
 		AddAction(ActionMineTreeBark);
+		AddAction(ActionBurnSewSelf);
 		AddAction(ActionDigWorms);
 		AddAction(ActionCraftBolts);
 	}

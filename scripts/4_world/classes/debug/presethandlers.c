@@ -18,6 +18,7 @@ class Farmer_Preset extends PresetSpawnBase
 */
 
 //---------------------------------------------
+
 class FreshSpawn_Preset extends PresetSpawnBase
 {
 	override void OnPresetSpawn(PlayerBase player)
@@ -25,40 +26,15 @@ class FreshSpawn_Preset extends PresetSpawnBase
 		FindAndTakeToHandsFromInventory("Plum");
 	}
 }
-
 //---------------------------------------------
+
 class Farmer_Preset extends PresetSpawnBase
 {
 	override void OnPresetSpawn(PlayerBase player)
 	{
-		EntityAI mask = FindItem("AirborneMask");
+
 	}
 }
-
-//---------------------------------------------
-class Fisherman_Preset extends PresetSpawnBase
-{
-	override void OnPresetSpawn(PlayerBase player)
-	{
-		EntityAI entAI;
-
-		entAI = FindItem("FishingRod");
-		player.SetQuickBarEntityShortcut(entAI,0);
-
-		entAI = FindItem("ImprovisedFishingRod");
-		player.SetQuickBarEntityShortcut(entAI,1);
-
-		entAI = FindItem("Rag");
-		player.SetQuickBarEntityShortcut(entAI,2);
-
-		entAI = FindItem("FieldShovel");
-		player.SetQuickBarEntityShortcut(entAI,3);
-		
-		entAI = FindItem("HuntingKnife");
-		player.SetQuickBarEntityShortcut(entAI,4);
-	}
-}
-
 //---------------------------------------------
 class AntiHazard_Preset extends PresetSpawnBase
 {
@@ -71,10 +47,11 @@ class AntiHazard_Preset extends PresetSpawnBase
 			auto debugParams = DebugSpawnParams.WithPlayer(player);
 			mask.OnDebugSpawnEx(debugParams);
 		}
+		
 	}
 }
-
 //---------------------------------------------
+
 class Update117_Preset extends PresetSpawnBase
 {	
 	vector randompos;
@@ -99,6 +76,7 @@ class Update117_Preset extends PresetSpawnBase
 }
 
 //---------------------------------------------
+
 class Update118_Preset extends PresetSpawnBase
 {	
 	vector randompos;
@@ -121,8 +99,8 @@ class Update118_Preset extends PresetSpawnBase
 		}
 	}
 }
-
 //---------------------------------------------
+
 class BBMaterials_Preset extends PresetSpawnBase
 {	
 	vector randompos;
@@ -141,8 +119,9 @@ class BBMaterials_Preset extends PresetSpawnBase
 		}
 	}
 }
-
 //---------------------------------------------
+
+
 class Military_Light_Preset extends PresetSpawnBase
 {
 	override void OnPresetSpawn(PlayerBase player)

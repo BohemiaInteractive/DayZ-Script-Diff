@@ -6,7 +6,6 @@ class ActionBurnSewTargetCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionBurnSewTarget: ActionContinuousBase
 {	
 	void ActionBurnSewTarget()
@@ -45,6 +44,9 @@ class ActionBurnSewTarget: ActionContinuousBase
 			}
 			//OlD_SHOCK//ntarget.GetStatShock().Add(1000);
 			action_data.m_MainItem.DecreaseHealth ( "", "", 5 );
+	
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+	
 		}
 	}
 };

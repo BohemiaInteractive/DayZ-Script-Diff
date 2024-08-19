@@ -1,7 +1,7 @@
 class InviteMenu extends UIScriptedMenu
 {	
 	private TextWidget m_LogoutTimeText;
-	private MultilineTextWidget m_DescriptionText;
+	private TextWidget m_DescriptionText;
 	private ButtonWidget m_bCancel;
 	private ButtonWidget m_bCancelConsole;
 	private int m_iTime;
@@ -42,11 +42,8 @@ class InviteMenu extends UIScriptedMenu
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_invite_dialog.layout");
 		
 		m_LogoutTimeText 	= TextWidget.Cast(layoutRoot.FindAnyWidget("txtLogoutTime"));
-		m_DescriptionText 	= MultilineTextWidget.Cast(layoutRoot.FindAnyWidget("txtDescription"));
+		m_DescriptionText 	= TextWidget.Cast(layoutRoot.FindAnyWidget("txtDescription"));
 		m_bCancel 			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("bCancel"));
-		
-		m_DescriptionText.SetText("#layout_logout_dialog_note_invite");
-		m_DescriptionText.Update();
 		
 		// player should sit down if possible
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());

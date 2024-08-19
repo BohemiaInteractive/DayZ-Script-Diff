@@ -2,7 +2,6 @@ class WorldLighting
 {
 	string lighting_default = "dz\\data\\lighting\\lighting_default.txt";
 	string lighting_darknight = "dz\\data\\lighting\\lighting_darknight.txt";
-	string lighting_sakhal = "DZ\\worlds\\sakhal\\data\\lighting\\lighting_sakhal.txt";
 	
 	void WorldLighting() {}
 	void ~WorldLighting() {}
@@ -18,10 +17,6 @@ class WorldLighting
 				
 			case 1:
 				GetGame().GetWorld().LoadNewLightingCfg( lighting_darknight );
-				break;
-				
-			case 2:
-				GetGame().GetWorld().LoadNewLightingCfg( lighting_sakhal );
 				break;
 		}
 	}

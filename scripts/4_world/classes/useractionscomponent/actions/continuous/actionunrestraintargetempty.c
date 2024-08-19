@@ -44,15 +44,11 @@ class ActionUnrestrainTargetHands: ActionContinuousBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
-		super.OnStartServer(action_data);
-		
 		action_data.m_Player.TryHideItemInHands(true);
 	}
 
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		action_data.m_Player.TryHideItemInHands(false);
 	}
 	

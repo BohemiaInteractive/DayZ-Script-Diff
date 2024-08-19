@@ -265,80 +265,66 @@ class MiscGameplayFunctions
 		return first + insert + second;
 	}
 	
-	//! will transform variables, agents and other local scripted properties as well as any relevant non-scripted properties like health
+	//! will transform item' variables, agents and other local scripted properties as well as any relevant non-scripted properties like health
 	static void TransferItemProperties(EntityAI source, notnull EntityAI target, bool transfer_agents = true, bool transfer_variables = true, bool transfer_health = true, bool exclude_quantity = false)
 	{
 		ItemBase target_ib = ItemBase.Cast(target);
+		ItemBase source_ib = ItemBase.Cast(source);
 		
-		if (transfer_agents && target_ib)
-			target_ib.TransferAgents(source.GetAgents());
+		if( transfer_agents ) target_ib.TransferAgents( source.GetAgents() );
 		
-		if (transfer_variables)
-			MiscGameplayFunctions.TransferEntityVariables(source, target, exclude_quantity);
-		
+		if( transfer_variables )
+		{
+			MiscGameplayFunctions.TransferItemVariables(source_ib, target_ib, exclude_quantity);
+		}
+
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (transfer_health)
-			{
-				TransferEntityHealth(source,target,{"Health"});
-			}
+			if( transfer_health )
+				target_ib.SetHealth01("", "", source.GetHealth01("",""));
 		}
 	}
 
-	static void TransferEntityVariables(EntityAI source, EntityAI target, bool exclude_quantity = false)
+	static void TransferItemVariables(ItemBase source, ItemBase target, bool exclude_quantity = false)
 	{
-		if (exclude_quantity)
+		target.TransferVariablesFloat( source.GetVariablesFloat() );
+		//target.TransferVariablesString( source.GetVariablesString() );
+		if ( exclude_quantity )
 		{
-			int maskOriginal = source.m_VariablesMask;
-			source.RemoveItemVariable(VARIABLE_QUANTITY);
-			target.TransferVariablesFloat(source.GetVariablesFloat());
-			source.m_VariablesMask = maskOriginal;
+			target.RemoveItemVariable(VARIABLE_QUANTITY);
 		}
-		else
-		{
-			target.TransferVariablesFloat(source.GetVariablesFloat());
-		}
-		
-		if (source.IsMagazine() && target.IsMagazine())
+		else if ( source.IsMagazine() && target.IsMagazine() )
 		{
 			Magazine source_mag = Magazine.Cast(source);
 			Magazine target_mag = Magazine.Cast(target);
 			
-			target_mag.ServerSetAmmoCount(source_mag.GetAmmoCount());
+			target_mag.ServerSetAmmoCount( source_mag.GetAmmoCount() );
 		}
 		
-		if (source.IsWeapon() && target.IsWeapon())
+		if ( source.IsWeapon() && target.IsWeapon() )
 		{
 			Weapon_Base source_wpn = Weapon_Base.Cast(source);
 			Weapon_Base target_wpn = Weapon_Base.Cast(target);
 			
 			target_wpn.CopyWeaponStateFrom(source_wpn);
 		}
-		
-		if (source.HasEnergyManager() && target.HasEnergyManager())
+		else if ( source.HasEnergyManager() && target.HasEnergyManager() )
 		{
 			ComponentEnergyManager ems = source.GetCompEM();
 			ComponentEnergyManager emt = target.GetCompEM();
 			
 			emt.SetEnergy(ems.GetEnergy());
-			
+
 			if (ems.IsSwitchedOn())
 				emt.SwitchOn();
 		}
-		
-		Edible_Base source_edb = Edible_Base.Cast(source);
-		Edible_Base target_edb = Edible_Base.Cast(target);
-		if (Class.CastTo(source_edb,source) && Class.CastTo(target_edb,target))
+		else if ( source.CanDecay() && target.CanDecay() )
 		{
-			if (source_edb.CanDecay() && target_edb.CanDecay())
-				target_edb.TransferFoodStage(source_edb);
+			Edible_Base source_edb = Edible_Base.Cast(source);
+			Edible_Base target_edb = Edible_Base.Cast(target);
+			
+			target_edb.TransferFoodStage(source_edb);
 		}
-	}
-	
-	//! DEPRECATED
-	static void TransferItemVariables(ItemBase source, ItemBase target, bool exclude_quantity = false)
-	{
-		TransferEntityVariables(source,target,exclude_quantity);
 	}
 
 	static TransferInventoryResult TransferInventory( EntityAI sourceItem, EntityAI targetItem, PlayerBase player)
@@ -381,39 +367,6 @@ class MiscGameplayFunctions
 			}
 		}
 		return result;
-	}
-	
-	static void TransferEntityHealth(EntityAI source, EntityAI target, array<string> healthTypes = null, bool transferZoneDamage = true)
-	{
-		array<string> HPTypes = new array<string>;
-		if (!healthTypes || healthTypes.Count() == 0)
-			HPTypes.Insert("Health");
-		else
-			HPTypes.Copy(healthTypes);
-		
-		if (transferZoneDamage)
-		{
-			TStringArray zonesSrc = new TStringArray;
-			TStringArray zonesTgt = new TStringArray;
-			source.GetDamageZones(zonesSrc);
-			target.GetDamageZones(zonesTgt);
-			
-			foreach (string zone : zonesSrc)
-			{
-				if (zonesTgt.Find(zone) == -1)
-					continue;
-				
-				foreach (string health : HPTypes)
-				{
-					target.SetHealth01(zone,health,source.GetHealth01(zone,health));
-				}
-			}
-		}
-		
-		foreach (string gHealth : HPTypes)
-		{
-			target.SetHealth01("",gHealth,source.GetHealth01("",gHealth)); //global health last
-		}
 	}
 	
 	static void UnlimitedAmmoDebugCheck(Weapon_Base weapon)
@@ -916,7 +869,7 @@ class MiscGameplayFunctions
 	
 	static bool IsUnderRoof(EntityAI entity, float height = GameConstants.ROOF_CHECK_RAYCAST_DIST) 
 	{
-		return IsUnderRoofEx(entity, height, ObjIntersectIFire);
+		return IsUnderRoofEx(entity, height, ObjIntersectView);
 	}
 	
 	static bool IsUnderRoofEx(EntityAI entity, float height = GameConstants.ROOF_CHECK_RAYCAST_DIST, int geometry = ObjIntersectView) 
@@ -928,9 +881,23 @@ class MiscGameplayFunctions
 
 		vector contact_pos;
 		vector contact_dir;
+
 		int contact_component;
+		//set<Object> hit_object = new set<Object>;
+		bool boo = DayZPhysics.RaycastRV( from, to, contact_pos, contact_dir, contact_component, /*hit_object*/NULL, NULL, entity, false, false, geometry,0.25 );
 		
-		return DayZPhysics.RaycastRV(from, to, contact_pos, contact_dir, contact_component, NULL, NULL, entity, false, false, geometry,0.25);
+		/*if (boo)
+		{
+			Debug.DrawSphere(from , 0.8,Colors.YELLOW, ShapeFlags.ONCE);
+			Debug.DrawSphere(to , 0.8,Colors.RED, ShapeFlags.ONCE);
+		}
+		else
+		{
+			Debug.DrawSphere(from , 0.8,Colors.GREEN, ShapeFlags.ONCE);
+			Debug.DrawSphere(to , 0.8,Colors.RED, ShapeFlags.ONCE);
+		}*/
+		
+		return boo;
 	}
 
 	// cooking equipment effects (get position for steam particle)
@@ -973,30 +940,6 @@ class MiscGameplayFunctions
 		particle_pos[1] = particle_pos[1] + steam_offset;
 		
 		return particle_pos;
-	}
-	
-	static vector GetRandomizedPosition(vector targetPos, float radius)
-	{
-		int angle = Math.RandomIntInclusive(1,360);
-		float usedRadius = Math.RandomFloat01() * radius;
-		vector randomPos = Vector(targetPos[0] + (Math.Cos(angle) * usedRadius), targetPos[1], targetPos[2] + (Math.Sin(angle) * usedRadius));
-		
-		return randomPos;
-	}
-	
-	static vector GetRandomizedPositionVerified(vector startPos, vector targetPos, float radius, Object ignore = null)
-	{
-		vector ret = GetRandomizedPosition(targetPos,radius);
-		RaycastRVParams params = new RaycastRVParams(startPos,ret,ignore);
-		params.type = ObjIntersectIFire;
-		array<ref RaycastRVResult> results = new array<ref RaycastRVResult>;
-		array<Object> excluded = new array<Object>;
-		if (DayZPhysics.RaycastRVProxy(params,results,excluded))
-		{
-			ret = results[0].pos;
-			ret[1] = targetPos[1];
-		}
-		return ret;
 	}
 	
 	static void DropAllItemsInInventoryInBounds(ItemBase ib, vector halfExtents)
@@ -1144,7 +1087,7 @@ class MiscGameplayFunctions
 		}
 		else if ( itemWetness >= GameConstants.STATE_DRENCHED )
 		{
-			return GameConstants.ENVIRO_ISOLATION_WETFACTOR_DRENCHED;
+			wetFactor = GameConstants.ENVIRO_ISOLATION_WETFACTOR_DRENCHED;
 		}
 		
 		//! health factor selection
@@ -1468,26 +1411,6 @@ class MiscGameplayFunctions
 		return false;
 	}
 
-	//Inflict damage to item based on environmental temperature and surface type
-	static void DealEvinronmentAdjustedDmg(ItemBase item, PlayerBase player, float baseDamage)
-	{
-		string surfaceType;
-		int liquidType;
-		float adjustedDamage;
-		
-		GetGame().SurfaceUnderObject(player, surfaceType, liquidType);
-		float modifierSurface = Surface.GetParamFloat(surfaceType, "toolDamage"); // toolDamage
-		if (modifierSurface == 0)
-			modifierSurface = 1;
-		
-		if (player.GetInColdArea())
-			adjustedDamage = baseDamage * (modifierSurface + GetGame().GetMission().GetWorldData().GetColdAreaToolDamageModifier();
-		else 
-			adjustedDamage = baseDamage * modifierSurface;
-			
-		DealAbsoluteDmg(item, adjustedDamage);
-	}
-	
 	//Inflict absolute damage to item (used on tools when completing actions)
 	static void DealAbsoluteDmg(ItemBase item, float dmg)
 	{
@@ -1605,6 +1528,7 @@ class MiscGameplayFunctions
 		}
 	}
 	
+	
 	static vector GetClosestSafePos(vector to_pos, notnull array<ref array<float>> positions)
 	{
 		vector closest_pos = to_pos;
@@ -1633,7 +1557,7 @@ class MiscGameplayFunctions
 			NoiseSystem noise = GetGame().GetNoiseSystem();
 			if (noise)
 			{
-				noise.AddNoiseTarget(position, lifeTime, noiseParams, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+				noise.AddNoiseTarget(position, lifeTime, noiseParams);
 			}
 		}
 	}
@@ -1751,17 +1675,7 @@ class MiscGameplayFunctions
 			if (parent.GetLiquidType() != 0 && parent.GetQuantityNormalized() > liquidQuantityThresholdPercentage)
 				item.SetWetMax();
 		}
-	}
-
-	static float GetCombinedSnowfallWindValue()
-	{
-		float windMax;
-		g_Game.GetWeather().GetWindMagnitude().GetLimits(null, windMax);
-		float snowfall = g_Game.GetWeather().GetSnowfall().GetActual();
-		float value = snowfall + g_Game.GetWeather().GetWindMagnitude().GetActual() / windMax;
-		
-		return value;
-	}
+	}	
 }
 
 class DestroyItemInCorpsesHandsAndCreateNewOnGndLambda : ReplaceAndDestroyLambda

@@ -1,3 +1,13 @@
+/*class TakeArrowActionReciveData : ActionReciveData
+{
+	EntityAI m_Arrow;
+}
+
+class TakeArrowActionData : ActionData
+{
+	EntityAI m_Arrow;
+}*/
+
 class ActionTakeArrow: ActionTakeItem
 {
 	void ActionTakeArrow()
@@ -88,16 +98,51 @@ class ActionTakeArrow: ActionTakeItem
 		
 		return success;
 	}
-
 	
-	override void OnExecute(ActionData action_data)
+	/*override ActionData CreateActionData()
 	{
-		if (GetGame().IsDedicatedServer())
+		ActionData action_data = new TakeArrowActionData;
+		return action_data;
+	}
+	
+	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
+	{
+		super.WriteToContext(ctx, action_data);
+		TakeArrowActionData ad = TakeArrowActionData.Cast(action_data);
+		ctx.Write(ad.m_Arrow);
+	}
+	
+	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
+	{
+		if (!action_recive_data)
 		{
-			ClearActionJuncture(action_data);
-			return;
+			action_recive_data = new TakeArrowActionReciveData;
 		}
 		
+		if (!super.ReadFromContext( ctx, action_recive_data ))
+			return false;
+		
+		TakeArrowActionReciveData recive_data_ta = TakeArrowActionReciveData.Cast( action_recive_data );
+
+		if (!ctx.Read(recive_data_ta.m_Arrow))
+			return false;
+		
+		return true;
+	}
+	
+	override void HandleReciveData(ActionReciveData action_recive_data, ActionData action_data)
+	{
+		super.HandleReciveData(action_recive_data, action_data);
+		
+		TakeArrowActionReciveData recive_data_ta = TakeArrowActionReciveData.Cast(action_recive_data);
+		TakeArrowActionData action_data_ta = TakeArrowActionData.Cast(action_data);
+		
+		action_data_ta.m_Arrow = recive_data_ta.m_Arrow;
+	}*/
+	
+	override void OnExecuteClient(ActionData action_data)
+	{
+
 		InventoryLocation il = action_data.m_ReservedInventoryLocations.Get(0);
 		
 		ItemBase arrow = ItemBase.Cast(il.GetItem());
@@ -114,5 +159,58 @@ class ActionTakeArrow: ActionTakeItem
 		{
 			arrow.SplitIntoStackMaxToInventoryLocationClient( il );
 		}
+	}
+	
+	/*override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = null)
+	{	
+		if (super.SetupAction(player, target, item, action_data, extra_data))
+		{
+			#ifndef SERVER
+			TakeArrowActionData action_data_ta = TakeArrowActionData.Cast(action_data);
+			InventoryLocation il = action_data_ta.m_ReservedInventoryLocations.Get(0);
+			action_data_ta.m_Arrow = il.GetItem();
+			#endif
+
+			return true;
+		}
+
+		return false;
+	}*/
+	
+	/*override void OnStartServer(ActionData action_data)
+	{
+		TakeArrowActionData action_data_ta = TakeArrowActionData.Cast(action_data);
+		action_data.m_Target.GetObject().RemoveChild(action_data_ta.m_Arrow);
+	}*/
+	
+	override void OnExecuteServer(ActionData action_data)
+	{
+		//TakeArrowActionData action_data_ta = TakeArrowActionData.Cast(action_data);
+		//action_data.m_Target.GetObject().RemoveChild(action_data_ta.m_Arrow);
+		
+		if (GetGame().IsMultiplayer())
+			return;
+
+		InventoryLocation il = action_data.m_ReservedInventoryLocations.Get(0);
+		ItemBase arrow = ItemBase.Cast(il.GetItem());
+		InventoryLocation arrowInventoryLocation = new InventoryLocation;
+		arrow.GetInventory().GetCurrentInventoryLocation(arrowInventoryLocation);
+		
+		EntityAI targetEntity = EntityAI.Cast(action_data.m_Target.GetObject());
+		if (targetEntity)
+		{
+			targetEntity.RemoveChild(arrow);
+		}
+		
+		//float ammoMax = arrow.GetAmmoMax();
+		
+		//if ( stackable == 0 || ammoMax >= arrow.GetAmmoCount() )
+		//{
+			action_data.m_Player.PredictiveTakeToDst(arrowInventoryLocation, il);
+		/*}
+		else
+		{
+			arrow.SplitIntoStackMaxToInventoryLocationClient( il );
+		}*/
 	}
 }

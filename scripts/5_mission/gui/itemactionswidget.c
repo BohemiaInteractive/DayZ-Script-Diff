@@ -21,7 +21,6 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 	protected ref WidgetFadeTimer		m_FadeTimer;
 	protected bool						m_Faded;
 	protected bool 						m_Hidden;
-	protected bool 						m_ItemFrozen;
 
 	protected Widget					m_Root;
 	protected Widget 					m_ItemLeft;
@@ -47,7 +46,6 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		
 		m_Hud					= GetHud();
 		m_Hidden 				= true;
-		m_ItemFrozen 			= false;
 		
 		m_UseActionWrapper 		= GetUApi().GetInputByID(UAAction).GetPersistentWrapper();
 		
@@ -131,7 +129,6 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 
 	protected void BuildCursor()
 	{
-		m_ItemFrozen 			= false;
 		int health 				= -1;
 		int quantityType 		= 0;
 		int quantityMin			= -1;
@@ -140,7 +137,6 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 
 		// item health
 		health = GetItemHealth();
-		m_ItemFrozen = GetItemFrozen();
 		SetItemHealth(health, "ia_item", "ia_item_health_mark", m_HealthEnabled);
 		
 		// quantity
@@ -289,11 +285,6 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		return string.Empty;
 	}
 	
-	protected bool GetItemFrozen()
-	{
-		return m_EntityInHands && m_EntityInHands.GetIsFrozen();
-	}
-	
 	protected int GetItemHealth()
 	{
 		if (m_EntityInHands)
@@ -368,51 +359,42 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 		{
 			ImageWidget healthMark;
 			Class.CastTo(healthMark, widget.FindAnyWidget(healthWidget));
-			
-			if (m_ItemFrozen && health != GameConstants.STATE_RUINED)
+
+			switch (health)
 			{
-				healthMark.SetColor(Colors.COLOR_FROZEN);
-				healthMark.SetAlpha(0.5);
-				healthMark.GetParent().Show(true);
-			}
-			else
-			{
-				switch (health)
-				{
-					case -1 :
-						healthMark.GetParent().Show(false);
-						break;
-					case GameConstants.STATE_PRISTINE :
-						healthMark.SetColor(Colors.COLOR_PRISTINE);
-						healthMark.SetAlpha(0.5);
-						healthMark.GetParent().Show(true);
-						break;
-					case GameConstants.STATE_WORN :
-						healthMark.SetColor(Colors.COLOR_WORN);
-						healthMark.SetAlpha(0.5);
-						healthMark.GetParent().Show(true);
-						break;
-					case GameConstants.STATE_DAMAGED :
-						healthMark.SetColor(Colors.COLOR_DAMAGED);
-						healthMark.SetAlpha(0.5);
-						healthMark.GetParent().Show(true);
-						break;
-					case GameConstants.STATE_BADLY_DAMAGED:
-						healthMark.SetColor(Colors.COLOR_BADLY_DAMAGED);
-						healthMark.SetAlpha(0.5);
-						healthMark.GetParent().Show(true);
-						break;
-					case GameConstants.STATE_RUINED :
-						healthMark.SetColor(Colors.COLOR_RUINED);
-						healthMark.SetAlpha(0.5);
-						healthMark.GetParent().Show(true);
-						break;
-					default :
-						healthMark.SetColor(0x00FFFFFF);
-						healthMark.SetAlpha(0.5);
-						healthMark.GetParent().Show(true);
-						break;			
-				}
+				case -1 :
+					healthMark.GetParent().Show(false);
+					break;
+				case GameConstants.STATE_PRISTINE :
+					healthMark.SetColor(Colors.COLOR_PRISTINE);
+					healthMark.SetAlpha(0.5);
+					healthMark.GetParent().Show(true);
+					break;
+				case GameConstants.STATE_WORN :
+					healthMark.SetColor(Colors.COLOR_WORN);
+					healthMark.SetAlpha(0.5);
+					healthMark.GetParent().Show(true);
+					break;
+				case GameConstants.STATE_DAMAGED :
+					healthMark.SetColor(Colors.COLOR_DAMAGED);
+					healthMark.SetAlpha(0.5);
+					healthMark.GetParent().Show(true);
+					break;
+				case GameConstants.STATE_BADLY_DAMAGED:
+					healthMark.SetColor(Colors.COLOR_BADLY_DAMAGED);
+					healthMark.SetAlpha(0.5);
+					healthMark.GetParent().Show(true);
+					break;
+				case GameConstants.STATE_RUINED :
+					healthMark.SetColor(Colors.COLOR_RUINED);
+					healthMark.SetAlpha(0.5);
+					healthMark.GetParent().Show(true);
+					break;
+				default :
+					healthMark.SetColor(0x00FFFFFF);
+					healthMark.SetAlpha(0.5);
+					healthMark.GetParent().Show(true);
+					break;			
 			}
 			
 			widget.Show(true);

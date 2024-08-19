@@ -61,15 +61,22 @@ class ActionDetach: ActionInteractBase
 
 		return false;
 	}
-	
-	override void OnExecute( ActionData action_data )
+
+	override void OnExecuteServer( ActionData action_data )
 	{
-		if (GetGame().IsDedicatedServer())
-		{
-			ClearActionJuncture(action_data);
+		if ( GetGame().IsMultiplayer() )
 			return;
-		}
-		
+
+		ActionManagerClient am = ActionManagerClient.Cast(action_data.m_Player.GetActionManager());
+		am.UnlockInventory(action_data);
+
+		EntityAI ntarget = EntityAI.Cast(action_data.m_Target.GetObject());
+		action_data.m_Player.PredictiveTakeEntityToHands(ntarget);
+
+	}
+	
+	override void OnExecuteClient( ActionData action_data )
+	{
 		ActionManagerClient am = ActionManagerClient.Cast(action_data.m_Player.GetActionManager());
 		am.UnlockInventory(action_data);
 

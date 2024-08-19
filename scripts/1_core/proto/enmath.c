@@ -455,7 +455,7 @@ class Math
 	proto static float WrapFloat(float f, float min, float max);
 	
 	/**
-	\brief Returns wrap number to specified interval, inclusive [min, max]
+	\brief Returns wrap number to specified interval [min, max]
 		\param f \p float Value
 		\param min \p float Minimum
 		\param max \p float Maximum
@@ -482,12 +482,12 @@ class Math
 	proto static float WrapFloat0X(float f, float max);
 	
 	/**
-	\brief Returns wrap number to specified interval, inclusive [0, max]
+	\brief Returns wrap number to specified interval [0, max]
 		\param f \p float Value
 		\param max \p float Maximum
 		\return \p float - number in specified interval [0, max]
 		@code
-			Print( Math.WrapFloat0XInclusive(9.0, 9.0) );
+			Print( Math.WrapFloat0X(9.0, 9.0) );
 
 			>> 9.0
 		@endcode
@@ -677,33 +677,6 @@ class Math
 
 	proto static float SmoothCD(float val, float target, inout float velocity[], float smoothTime, float maxVelocity, float dt);
 	
-	static float SmoothCDPI2PI(float val, float target, inout float velocity[], float smoothTime, float maxVelocity, float dt)
-	{
-		float diff = target - val;
-		if (diff < -Math.PI)
-		{
-			target += Math.PI2;
-		}
-		else if (diff > Math.PI)
-		{
-			target -= Math.PI2;
-		}
-		
-		float retVal = SmoothCD(val, target, velocity, smoothTime, maxVelocity, dt);
-		
-		while (retVal > Math.PI)
-		{
-			retVal -= Math.PI2;
-		}
-		
-		while (retVal < -Math.PI)
-		{
-			retVal += Math.PI2;
-		}
-		
-		return retVal;
-	}
-	
 	//! occurences values above '12' will cause Factorial to overflow int.
 	static float Poisson(float mean, int occurences)
 	{
@@ -715,7 +688,7 @@ class Math
 	{
 		if (val > 12)
 		{
-			ErrorEx("Values above '12' cause int overflow! Returning '1'",ErrorExSeverity.INFO);
+			ErrorEx("Values above '12' cause int overflow! Returning '1'");
 			return 1;
 		}
 		

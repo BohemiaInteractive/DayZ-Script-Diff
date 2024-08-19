@@ -36,8 +36,8 @@ class Icon: LayoutHolder
 	protected Widget				m_ItemSizePanel;
 	protected TextWidget			m_ItemSizeWidget;
 	
-	protected ref array<ImageWidget>	m_AmmoIcons;
-	protected ImageWidget				m_AmmoTypeIcon;
+	protected ref array<ImageWidget>m_AmmoIcons;
+	protected ImageWidget			m_AmmoTypeIcon;
 
 	void Icon( LayoutHolder parent, bool hands_icon = false )
 	{
@@ -196,16 +196,14 @@ class Icon: LayoutHolder
 				}
 				else if (entityInHands && entityRootParent == controlledPlayer)
 				{
-					InventoryLocation targetItemLocation = new InventoryLocation();
-					InventoryLocation handsItemLocation = new InventoryLocation();
-					entityInHands.GetInventory().GetCurrentInventoryLocation(handsItemLocation);
+					InventoryLocation inventoryLocation = new InventoryLocation();
 					int index = controlledPlayer.GetHumanInventory().FindUserReservedLocationIndex(entityInHands);
 					if (index >= 0)
-						controlledPlayer.GetHumanInventory().GetUserReservedLocation(index, targetItemLocation);
+						controlledPlayer.GetHumanInventory().GetUserReservedLocation(index, inventoryLocation);
 					
-					if (controlledPlayer.GetInventory().CanForceSwapEntitiesEx(targetEntity, targetItemLocation, entityInHands, handsItemLocation))
+					if (controlledPlayer.GetInventory().CanForceSwapEntitiesEx(targetEntity, null, entityInHands, inventoryLocation))
 					{
-						controlledPlayer.PredictiveForceSwapEntities(targetEntity, entityInHands, targetItemLocation);
+						controlledPlayer.PredictiveForceSwapEntities(targetEntity, entityInHands, inventoryLocation);
 					}
 					else if (controlledPlayer.GetInventory().CanSwapEntitiesEx(targetEntity, entityInHands ))
 					{
@@ -213,9 +211,9 @@ class Icon: LayoutHolder
 					}
 					else
 					{
-						controlledPlayer.GetInventory().FindFreeLocationFor(targetEntity, FindInventoryLocationType.ANY, targetItemLocation);
-						if (targetItemLocation.IsValid() && controlledPlayer.GetInventory().LocationCanAddEntity(targetItemLocation))
-							SplitItemUtils.TakeOrSplitToInventoryLocation(controlledPlayer, targetItemLocation);
+						controlledPlayer.GetInventory().FindFreeLocationFor(targetEntity, FindInventoryLocationType.ANY, inventoryLocation);
+						if (inventoryLocation.IsValid() && controlledPlayer.GetInventory().LocationCanAddEntity(inventoryLocation))
+							SplitItemUtils.TakeOrSplitToInventoryLocation(controlledPlayer, inventoryLocation);
 					}
 				}
 				else
@@ -519,7 +517,20 @@ class Icon: LayoutHolder
 		switch (combinationFlag)
 		{
 			case InventoryCombinationFlags.ADD_AS_ATTACHMENT:
-				return player.PredictiveTakeEntityToTargetAttachment(targetEntity, selectedEntity);
+				float stackable = targetEntity.GetTargetQuantityMax(-1);
+		
+				if (stackable == 0 || stackable >= targetEntity.GetQuantity())
+				{
+					return player.PredictiveTakeEntityToTargetAttachment(targetEntity, selectedEntity);
+				}
+				else
+				{
+					InventoryLocation il = new InventoryLocation();
+					targetEntity.GetInventory().FindFreeLocationFor(selectedEntity, FindInventoryLocationType.ATTACHMENT, il);
+					ItemBase.Cast(selectedEntity).SplitIntoStackMaxToInventoryLocationClient(il);
+					return true;
+				}
+				break;
 			case InventoryCombinationFlags.ADD_AS_CARGO:
 				SplitItemUtils.TakeOrSplitToInventory(player, targetEntity, selectedEntity);
 				return true;
@@ -827,18 +838,18 @@ class Icon: LayoutHolder
 			{
 				GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced(m_Item);
 			}
-			else if (m_Item)
+			else
 			{
-				#ifdef DIAG_DEVELOPER
-				if (GetDayZGame().IsLeftCtrlDown())
-					ShowActionMenu(m_Item);
-				else
-				#endif
+				if (m_Item && m_Item.IsItemBase())
 				{
 					m_Item.OnRightClick();
 					
 					if (m_HasQuantity)
 						SetQuantity();
+					#ifdef DIAG_DEVELOPER
+					if (GetDayZGame().IsLeftCtrlDown())
+						ShowActionMenu(m_Item);
+					#endif
 				}
 			}
 				
@@ -1011,7 +1022,7 @@ class Icon: LayoutHolder
 		if (index>=0)
 		{
 			player.GetHumanInventory().GetUserReservedLocation(index, ilDst);
-
+		
 			if (GameInventory.CanForceSwapEntitiesEx( selectedEntity, ilSrc, targetEntity, ilDst ))
 			{
 				if (m_HandsIcon && !player.GetInventory().HasInventoryReservation(itemInHands, null) && !player.IsItemsToDelete())
@@ -1099,8 +1110,6 @@ class Icon: LayoutHolder
 			FullScreen();
 		}
 		
-		m_ColorWidget.Show(false);
-		
 		m_CursorWidget.SetColor( ARGBF( 1, 1, 1, 1 ) );
 		m_CursorWidget.Show( false );
 
@@ -1125,7 +1134,7 @@ class Icon: LayoutHolder
 			SetSize(ww, hh);
 		
 		SetSize();
-		
+
 		if (!m_HandsIcon)
 		{
 			Refresh();
@@ -1134,8 +1143,8 @@ class Icon: LayoutHolder
 		{
 			m_ItemPreview.SetForceFlipEnable(false);
 			m_ColorWidget.SetColor(ColorManager.BASE_COLOR);
+			m_ColorWidget.SetAlpha(0.1);
 		}
-		m_ColorWidget.Show(m_HandsIcon);
 		
 		m_CursorWidget.Show(true);
 	}
@@ -1278,13 +1287,70 @@ class Icon: LayoutHolder
 					ammoIcon = m_AmmoIcons.Get(i);
 					ammoIcon.Show(false);
 				}
+			/*	int bullet_count = 0;
+				int fireout_count = 0;
+				
+				for ( i = 0; i < wpn.GetMuzzleCount(); i++ )
+				{
+					if (wpn.IsChamberFull(i))
+					{
+						if (wpn.IsChamberFiredOut(i))
+						{
+							fireout_count++;
+						}
+						else
+						{
+							bullet_count++;
+						}
+					}
+				}
+				
+				int j;
+				i = 0;
+				for ( j= 0; j < bullet_count; j++ )
+				{
+					if ( i > m_AmmoIcons.Count() )
+					{
+						//add plus ammo
+						break;
+					}
+					
+					ammoIcon = m_AmmoIcons.Get(i);
+					ammoIcon.Show( true );
+					ammoIcon.SetImage( 0 );
+					i++;
+				}
+				
+				for ( j= 0; j < fireout_count; j++ )
+				{
+					if ( i > m_AmmoIcons.Count() )
+					{
+						//add plus ammo
+						break;
+					}
+					
+					ammoIcon = m_AmmoIcons.Get(i);
+					ammoIcon.Show( true );
+					ammoIcon.SetImage( 1 );
+					i++;
+				}
+				
+				for (j = i; j < m_AmmoIcons.Count(); j++)
+				{
+					ammoIcon = m_AmmoIcons.Get(j);
+					ammoIcon.Show(false);
+				}*/
 			}
 			else
 			{
+				//TODO MW - add more conplex logic
 				for (i = 0; i < wpn.GetMuzzleCount(); i++)
 				{
-					if (i > m_AmmoIcons.Count())
+					if ( i > m_AmmoIcons.Count() )
+					{
+						//add plus ammo
 						break;
+					}
 					
 					ammoIcon = m_AmmoIcons.Get(i);
 					
@@ -1302,8 +1368,8 @@ class Icon: LayoutHolder
 						}
 						else
 						{
-							ammoIcon.Show(true);
-							ammoIcon.SetImage(0);
+							ammoIcon.Show( true );
+							ammoIcon.SetImage( 0 );
 						}
 					}
 					else
@@ -1488,7 +1554,6 @@ class Icon: LayoutHolder
 		CheckHasQuantityEx(refresh);
 		m_RootWidget.FindAnyWidget("Reserved").Show(false, refresh);
 		
-		m_ColorWidget.Show(false);
 		if (refresh)
 			Refresh();
 	}
@@ -1503,19 +1568,19 @@ class Icon: LayoutHolder
 		Weapon_Base wpn = Weapon_Base.Cast(m_Obj);
 		if (wpn)
 		{
-			m_AmmoIcons = new array<ImageWidget>();
+			m_AmmoIcons = new array<ImageWidget>;
 			m_IsWeapon = true;
 			float posX = 0.0;
-			float width = 0.0, height = 0.0;
+			float widht = 0.0, height = 0.0; 
 			for (int i = 0; i < wpn.GetMuzzleCount(); i++)
 			{
 				if (i == 1)
 				{
-					m_AmmoIcons[0].GetSize(width, height);
+					m_AmmoIcons[0].GetSize(widht,height);
 				}
-				posX += width;
+				posX += widht;
 				
-				Widget ammoIcon = Widget.Cast(GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory_new/ammo_icon.layout", GetMainWidget()));
+				Widget ammoIcon = Widget.Cast(GetGame().GetWorkspace().CreateWidgets( "gui/layouts/inventory_new/ammo_icon.layout", GetMainWidget() ));
 				ammoIcon.SetPos(posX, 0.0, false);
 				
 				ImageWidget ammoIconImg = ImageWidget.Cast(ammoIcon.GetChildren());				
@@ -1523,8 +1588,8 @@ class Icon: LayoutHolder
 				AmmoData data = Magazine.GetAmmoData(wpn.GetChamberAmmoTypeName(i));
 				if (data)
 				{
-					CartridgeType cartridgeType = data.m_CartridgeType;
-					switch (cartridgeType)
+					CartridgeType c_type = data.m_CartridgeType;
+					switch (c_type)
 					{
 						case CartridgeType.Pistol:
 						{
@@ -1612,7 +1677,7 @@ class Icon: LayoutHolder
 	{
 		if (m_Item)
 		{
-			m_HasTemperature = m_Item.CanHaveTemperature();
+			m_HasTemperature = (m_Item.GetTemperatureMax() != 0 && m_Item.GetTemperatureMin() != 0);
 		}
 	}
 	

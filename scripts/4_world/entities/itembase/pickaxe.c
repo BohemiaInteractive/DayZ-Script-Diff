@@ -9,7 +9,7 @@ class Pickaxe extends ItemBase
 	{
 		super.SetActions();
 
-		AddAction(ActionTogglePlaceObjectDigging);
+		AddAction(ActionTogglePlaceObject);
 		AddAction(ActionDigGardenPlot);
 		AddAction(ActionDismantleGardenPlot);
 		AddAction(ActionUnrestrainTarget);
@@ -23,15 +23,5 @@ class Pickaxe extends ItemBase
 		AddAction(ActionDigOutStash);
 		AddAction(ActionDigInStash);
 		AddAction(ActionCreateGreenhouseGardenPlot);
-	}
-	
-	override void SetActionAnimOverrides()
-	{
-		OverrideActionAnimation(ActionDigWorms, DayZPlayerConstants.CMD_ACTIONFB_DIGGIN_WORMS, DayZPlayerConstants.STANCEMASK_ERECT);
-	}
-	
-	override int GetOnDigWormsAmount()
-	{
-		return 3;
 	}
 }	

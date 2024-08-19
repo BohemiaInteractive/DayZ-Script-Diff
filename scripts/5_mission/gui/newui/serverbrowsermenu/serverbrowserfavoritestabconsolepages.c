@@ -1,21 +1,12 @@
 class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
-{
+{	
 	protected override void Construct(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
 		super.Construct(parent, menu, type);
 		
 		// disabling filter section
-		m_ResetFilters.Show(false);
 		m_Root.FindAnyWidget("filters_content").Show(false);
-		m_Root.FindAnyWidget("show_details_button").Show(false);
-		m_Root.FindAnyWidget("spacer").Show(false);
-		m_Root.FindAnyWidget("spacer1").Show(false);
-		m_Root.FindAnyWidget("spacer5").Show(false);
-		m_RefreshList.Show(m_MouseKeyboardControlled);
-		
-		SwitchToDetails(false);
-					
-		m_Menu.ShowYButton(false);
+		m_Root.FindAnyWidget("reset_filter_button").Show(false);
 	}
 	
 	override void OnLoadServersAsyncFinished()
@@ -26,7 +17,7 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 		super.OnLoadServersAsyncFinished();
 	}
 	
-	protected override void LoadEntries(int cur_page_index , GetServersResultRowArray page_entries)
+	protected override void LoadEntries( int cur_page_index , GetServersResultRowArray page_entries )
 	{
 		if (cur_page_index == 1)
 		{
@@ -45,7 +36,7 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 		
 		// m_PagesCount for FAVORITES tab is determined by total number of favorited servers
 		TStringArray favIds = m_Menu.GetFavoritedServerIds();
-		m_PagesCount = Math.Ceil((float)favIds.Count() / SERVER_BROWSER_PAGE_SIZE);
+		m_PagesCount = Math.Ceil((float)favIds.Count() /  SERVER_BROWSER_PAGE_SIZE);
 		
 		// offlineFavIds will always have same order, even across pages,
 		// to ensure we display only fav servers that HAVEN'T been displayed yet
@@ -128,19 +119,19 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 		
 		return super.PassFilter(result);
 	}
-
-	override void PressThumbRight()
+	
+	override void PressY()
 	{
-		switch (m_SelectedPanel)
+		switch ( m_SelectedPanel )
 		{
 			// filters are disabled for console FAVORITES tab, so do nothing
 			case SelectedPanel.FILTERS:
-			{
+			{	
 				break;
 			}
 			default:
 			{
-				super.PressThumbRight();
+				super.PressY();
 				break;
 			}
 		}
@@ -158,7 +149,13 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 	override void SetFocusFilters()
 	{
 		super.SetFocusFilters();
-
+			
+		m_Menu.ShowYButton(false);
+		m_Menu.ShowAButton(false);
+		
+		// focus on the back button instead of filter section
+		m_Menu.BackButtonFocus();
+		
 		UpdatePageButtons();
 	}
 }

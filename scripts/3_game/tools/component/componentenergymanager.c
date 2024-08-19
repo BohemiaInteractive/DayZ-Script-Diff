@@ -1303,7 +1303,7 @@ class ComponentEnergyManager : Component
 	//! Energy manager: Returns the device to which the given plug selection belongs to
 	EntityAI GetPlugOwner(string plug_selection_name)
 	{
-		if ( m_DeviceByPlugSelection && m_DeviceByPlugSelection.Contains(plug_selection_name) )
+		if ( m_DeviceByPlugSelection.Contains(plug_selection_name) )
 		{
 			return m_DeviceByPlugSelection.Get(plug_selection_name);
 		}

@@ -54,9 +54,6 @@ class EffectAreaLoader
 				params.m_ParamVertLayers = data.VerticalLayers;
 				params.m_ParamVerticalOffset = data.VerticalOffset;
 				string particleName = data.ParticleName;
-				params.m_ParamEffectInterval = data.EffectInterval;
-				params.m_ParamEffectDuration = data.EffectDuration;
-				params.m_ParamEffectModifier = data.EffectModifier;
 				
 				// Local level area data ( Player particles and PPE )
 				JsonDataPlayerData playerData = effectAreaData.Areas.Get( i ).PlayerData;

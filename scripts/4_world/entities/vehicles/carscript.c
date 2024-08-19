@@ -195,6 +195,8 @@ class CarScript extends Car
 	protected vector m_enginePtcPos;
 	protected vector m_coolantPtcPos;
 	
+	protected vector m_fuelPos;
+
 	protected vector m_enginePos;
 	protected vector m_frontPos;
 	protected vector m_backPos;
@@ -241,8 +243,6 @@ class CarScript extends Car
 	protected bool m_EngineDestroyed;
 	
 	protected int m_CarHornState;
-	protected int m_CarEngineSoundState;
-	protected int m_CarEngineLastSoundState;
 	
 	CarLightBase 		m_Headlight;
 	CarRearLightBase 	m_RearLight;
@@ -267,12 +267,13 @@ class CarScript extends Car
 	static const int SELECTION_ID_TAIL_LIGHT_R 		= 7;
 	static const int SELECTION_ID_DASHBOARD_LIGHT 	= 8;
 	
+	protected bool m_EngineBeforeStart;
+	protected bool m_EngineStartDoOnce;
+
+	protected bool m_EngineZoneReceivedHit;
+	
 	protected ref set<int> m_UnconsciousCrewMemberIndices;
 	protected ref set<int> m_DeadCrewMemberIndices;
-	
-	protected ref array<ref EffWheelSmoke> m_WheelSmokeFx;
-	protected ref array<int> m_WheelSmokePtcFx;
-								
 	
 	#ifdef DEVELOPER 
 	private const int DEBUG_MESSAGE_CLEAN_TIME_SECONDS = 10;
@@ -287,7 +288,6 @@ class CarScript extends Car
 #endif
 
 		SetEventMask(EntityEvent.POSTSIMULATE);
-		SetEventMask(EntityEvent.POSTFRAME);
 		
 		m_ContactCache = new CarContactCache;
 		
@@ -309,7 +309,6 @@ class CarScript extends Car
 		m_PlayCrashSoundHeavy = false;
 		
 		m_CarHornState = ECarHornState.OFF;
-		m_CarEngineSoundState = CarEngineSoundState.NONE;
 		
 		m_UnconsciousCrewMemberIndices 	= new set<int>();
 		m_DeadCrewMemberIndices 		= new set<int>();
@@ -317,10 +316,10 @@ class CarScript extends Car
 		RegisterNetSyncVariableBool("m_HeadlightsOn");
 		RegisterNetSyncVariableBool("m_BrakesArePressed");
 		RegisterNetSyncVariableBool("m_ForceUpdateLights");
+		RegisterNetSyncVariableBool("m_EngineZoneReceivedHit");
 		RegisterNetSyncVariableBoolSignal("m_PlayCrashSoundLight");
 		RegisterNetSyncVariableBoolSignal("m_PlayCrashSoundHeavy");
 		RegisterNetSyncVariableInt("m_CarHornState", ECarHornState.OFF, ECarHornState.LONG);
-		RegisterNetSyncVariableInt("m_CarEngineSoundState", CarEngineSoundState.NONE, CarEngineSoundState.STOP_NO_FUEL);
 		
 		if ( MemoryPointExists("ptcExhaust_end") )
 		{
@@ -346,12 +345,17 @@ class CarScript extends Car
 		if ( MemoryPointExists("ptcEnginePos") )
 			m_enginePtcPos = GetMemoryPointPos("ptcEnginePos");
 		else
-			m_enginePtcPos = "0 0 0";
+			m_enginePtcPos = "0 0 0";		
 
 		if ( MemoryPointExists("ptcCoolantPos") )
 			m_coolantPtcPos = GetMemoryPointPos("ptcCoolantPos");
 		else
 			m_coolantPtcPos = "0 0 0";
+
+		if ( MemoryPointExists("refill") )
+			m_fuelPos = GetMemoryPointPos("refill");
+		else
+			m_fuelPos = "0 0 0";
 		
 		if ( MemoryPointExists("drown_engine") )
 			m_DrownEnginePos = GetMemoryPointPos("drown_engine");
@@ -392,18 +396,6 @@ class CarScript extends Car
 			m_side_2_2Pos = GetMemoryPointPos("dmgZone_fender_2_2");
 		else
 			m_side_2_2Pos = "0 0 0";
-		
-		if (!GetGame().IsDedicatedServer())
-		{
-			m_WheelSmokeFx = new array<ref EffWheelSmoke>;
-			m_WheelSmokeFx.Resize(WheelCount());
-			m_WheelSmokePtcFx = new array<int>;
-			m_WheelSmokePtcFx.Resize(WheelCount());
-			for (int i = 0; i < m_WheelSmokePtcFx.Count(); i++)
-			{
-				m_WheelSmokePtcFx.Set(i, -1);
-			}
-		}
 	}
 	
 	override void EEInit()
@@ -446,10 +438,6 @@ class CarScript extends Car
 	}
 	#endif
 	
-	override string GetVehicleType()
-	{
-		return "VehicleTypeCar";
-	}
 	
 	vector GetEnginePosWS()
 	{
@@ -461,6 +449,11 @@ class CarScript extends Car
 		return ModelToWorld( m_coolantPtcPos );
 	}
 
+	vector GetRefillPointPosWS()
+	{
+		return ModelToWorld( m_fuelPos );
+	}
+	
 	vector GetEnginePointPosWS()
 	{	
 		return ModelToWorld( m_enginePos );
@@ -502,6 +495,8 @@ class CarScript extends Car
 
 		ForceUpdateLightsStart();
 		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(ForceUpdateLightsEnd, 100, false);
+
+		SetEngineZoneReceivedHit(dmgZone == "Engine");
 	}
 
 	override void EEDelete(EntityAI parent)
@@ -520,18 +515,6 @@ class CarScript extends Car
 	
 	void CleanupEffects()
 	{
-		for (int i = 0; i < m_WheelSmokeFx.Count(); i++ )
-		{
-			Effect ps = m_WheelSmokeFx.Get(i);
-			if (ps)
-			{
-				SEffectManager.DestroyEffect(ps);
-			}
-		}
-		
-		m_WheelSmokeFx.Clear();
-		m_WheelSmokePtcFx.Clear();
-		
 		SEffectManager.DestroyEffect(m_coolantFx);
 		SEffectManager.DestroyEffect(m_exhaustFx);
 		SEffectManager.DestroyEffect(m_engineFx);
@@ -648,9 +631,6 @@ class CarScript extends Car
 		}
 		
 		HandleCarHornSound(m_CarHornState);
-		
-		if (m_CarEngineSoundState != m_CarEngineLastSoundState)
-			HandleEngineSound(m_CarEngineSoundState);
 		
 		UpdateLights();
 	}
@@ -979,7 +959,7 @@ class CarScript extends Car
 						}
 					}
 				}
-
+				
 				//FX only on Client and in Single
 				if (!GetGame().IsDedicatedServer())
 				{
@@ -1031,81 +1011,7 @@ class CarScript extends Car
 					}
 				}
 			}
-			
 		}
-			
-		//FX only on Client and in Single
-		if ( false && !GetGame().IsDedicatedServer() )
-		{
-			float carSpeed = GetVelocity(this).Length();
-			for (int i = 0; i < WheelCount(); i++)
-			{
-				EffWheelSmoke eff = m_WheelSmokeFx.Get(i);
-				int ptrEff = m_WheelSmokePtcFx.Get(i);
-				bool haveParticle = false;
-	
-				if (WheelHasContact(i))
-				{
-					CarWheel wheel = CarWheel.Cast(WheelGetEntity(i));
-					float wheelSpeed = WheelGetAngularVelocity(i) * wheel.GetRadius();
-					
-					vector wheelPos = WheelGetContactPosition(i);
-					vector wheelVel = dBodyGetVelocityAt(this, wheelPos);
-
-					vector transform[3];
-					transform[2] = WheelGetDirection(i);
-					transform[1] = vector.Up;
-					transform[0] = transform[2] * transform[1];
-
-					wheelVel = wheelVel.InvMultiply3(transform);
-
-					float bodySpeed = wheelVel[2];
-					
-					bool applyEffect = false;
-					if ((wheelSpeed > 0 && bodySpeed > 0) || (wheelSpeed < 0 && bodySpeed < 0))
-					{
-						applyEffect = Math.AbsFloat(wheelSpeed) > Math.AbsFloat(bodySpeed) + EffWheelSmoke.WHEEL_SMOKE_THRESHOLD;
-					}
-					else
-					{
-						applyEffect = Math.AbsFloat(wheelSpeed) > EffWheelSmoke.WHEEL_SMOKE_THRESHOLD;
-					}
-					
-					if (applyEffect)
-					{
-						haveParticle = true;
-						
-						string surface;
-						GetGame().SurfaceGetType(wheelPos[0], wheelPos[2], surface);
-						wheelPos = WorldToModel(wheelPos);
-	
-						if (!SEffectManager.IsEffectExist(ptrEff))
-						{
-							eff = new EffWheelSmoke();
-							eff.SetSurface(surface);
-							ptrEff = SEffectManager.PlayOnObject(eff, this, wheelPos, "0 1 -1");
-							eff.SetCurrentLocalPosition(wheelPos);
-							m_WheelSmokeFx.Set(i, eff);
-							m_WheelSmokePtcFx.Set(i, ptrEff);
-						}
-						else
-						{
-							if (!eff.IsPlaying())
-								eff.Start();
-							eff.SetSurface(surface);
-							eff.SetCurrentLocalPosition(wheelPos);
-						}
-					}
-				}
-					
-				if (!haveParticle)
-				{
-					if (eff && eff.IsPlaying())
-						eff.Stop();
-				}
-			}
-		}
-		//}
 	}
 	
 	void OnBrakesPressed()
@@ -1116,81 +1022,6 @@ class CarScript extends Car
 	void OnBrakesReleased()
 	{
 		UpdateLights();
-	}
-	
-	// Server side event for jump out processing 
-	void OnVehicleJumpOutServer(GetOutTransportActionData gotActionData)
-	{
-		PlayerBase player = gotActionData.m_Player;
-			
-		array<ClothingBase> equippedClothes = new array<ClothingBase>;
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("LEGS")));
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("BACK")));
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("VEST")));
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("HeadGear")));
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("Mask")));
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("BODY")));
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("FEET")));
-		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("GLOVES")));
-
-		// -----------------------------------------------
-		float shockTaken = (gotActionData.m_Speed * gotActionData.m_Speed) / ActionGetOutTransport.DMG_FACTOR;
-		
-		//Lower shock taken if player uses a helmet
-		ItemBase headGear = ClothingBase.Cast(player.GetItemOnHead());
-		HelmetBase helmet;
-		if (Class.CastTo(helmet, headGear))
-			shockTaken *= 0.5;
-
-		// -----------------------------------------------
-		
-		int randNum; //value used for probability evaluation
-		randNum = Math.RandomInt(0, 100);
-		if (gotActionData.m_Speed < ActionGetOutTransport.LOW_SPEED_VALUE)
-		{
-			if (randNum < 20)
-				player.GiveShock(-shockTaken); //To inflict shock, a negative value must be passed
-
-			randNum = Math.RandomIntInclusive(0, PlayerBase.m_BleedingSourcesLow.Count() - 1);
-			
-			player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesLow[randNum]);
-		}
-		else if (gotActionData.m_Speed >= ActionGetOutTransport.LOW_SPEED_VALUE && gotActionData.m_Speed < ActionGetOutTransport.HIGH_SPEED_VALUE)
-		{
-			if (randNum < 50)
-				player.GiveShock(-shockTaken);
-
-			randNum = Math.RandomInt(0, PlayerBase.m_BleedingSourcesUp.Count() - 1);
-			
-			player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesUp[randNum]);
-		}
-		else if (gotActionData.m_Speed >= ActionGetOutTransport.HIGH_SPEED_VALUE)
-		{
-			if (!headGear)
-				player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection("Head");
-
-			if (randNum < 75)
-				player.GiveShock(-shockTaken);
-		}
-		
-		float dmgTaken = (gotActionData.m_Speed * gotActionData.m_Speed) / ActionGetOutTransport.SHOCK_FACTOR;
-		
-		//Damage all currently equipped clothes
-		foreach (ClothingBase cloth : equippedClothes)
-		{
-			//If no item is equipped on slot, slot is ignored
-			if (cloth == null)
-				continue;
-
-			cloth.DecreaseHealth(dmgTaken, false);
-		}
-		
-		vector posMS = gotActionData.m_Player.WorldToModel(gotActionData.m_Player.GetPosition());
-		gotActionData.m_Player.DamageAllLegs(dmgTaken); //Additionnal leg specific damage dealing
-		
-		float healthCoef = Math.InverseLerp(ActionGetOutTransport.HEALTH_LOW_SPEED_VALUE, ActionGetOutTransport.HEALTH_HIGH_SPEED_VALUE, gotActionData.m_Speed);
-		healthCoef = Math.Clamp(healthCoef, 0.0, 1.0);
-		gotActionData.m_Player.ProcessDirectDamage(DamageType.CUSTOM, gotActionData.m_Player, "", "FallDamageHealth", posMS, healthCoef);
 	}
 	
 	override void OnUpdate( float dt )
@@ -1395,15 +1226,6 @@ class CarScript extends Car
 			#endif
 			
 			ProcessDirectDamage(DT_CUSTOM, null, zoneName, "EnviroDmg", "0 0 0", dmg, pddfFlags);
-			
-			//if (data[0].impulse > TRESHOLD)
-			//{
-			/*	Object targetEntity = Object.Cast(data[0].other);
-				if (targetEntity && targetEntity.IsTree())
-				{
-					SEffectManager.CreateParticleServer(targetEntity.GetPosition(), new TreeEffecterParameters("TreeEffecter", 1.0, 0.1));
-				}*/
-			//}
 		}
 		
 		UpdateHeadlightState();
@@ -1565,8 +1387,6 @@ class CarScript extends Car
 		EffectSound sound = null;
 		WaveKind waveKind = WaveKind.WAVEEFFECT;
 
-		m_CarEngineLastSoundState = state;
-
 		switch (state)
 		{
 			case CarEngineSoundState.STARTING:
@@ -1631,9 +1451,6 @@ class CarScript extends Car
 			
 				SetEngineStarted(false);
 				break;
-			
-			default: 
-				break;
 		}
 		#endif
 	}
@@ -1695,9 +1512,9 @@ class CarScript extends Car
 
 	/*!
 		Gets called everytime when the specified vehicle's fluid
-		changes its current value eg. when vehicle is consuming fuel.
+		changes its current value eg. when car is consuming fuel.
 
-		This callback is called on server.
+		This callback is called on both server and client.
 	*/
 	override void OnFluidChanged(CarFluid fluid, float newValue, float oldValue)
 	{
@@ -1720,7 +1537,7 @@ class CarScript extends Car
 			break;
 		}
 	}
-	
+
 	/*!
 		Gets called everytime the game wants to start the engine.
 		This callback is called on server only.
@@ -1731,9 +1548,15 @@ class CarScript extends Car
 	{
 		EntityAI item = null;
 		
+		if (m_EngineStartDoOnce)
+		{
+			m_EngineStartDoOnce = false;
+			return m_EngineBeforeStart;
+		}
+		
 		if (GetFluidFraction(CarFluid.FUEL) <= 0)
 		{
-			SetCarEngineSoundState(CarEngineSoundState.START_NO_FUEL);
+			HandleEngineSound(CarEngineSoundState.START_NO_FUEL);
 			return false;
 		}
 		
@@ -1742,7 +1565,8 @@ class CarScript extends Car
 			item = GetBattery();
 			if (!item || (item && (item.IsRuined() || item.GetCompEM().GetEnergy() < m_BatteryEnergyStartMin)))
 			{
-				SetCarEngineSoundState(CarEngineSoundState.START_NO_BATTERY);
+				m_EngineStartDoOnce = true;
+				HandleEngineSound(CarEngineSoundState.START_NO_BATTERY);
 				return false;
 			}
 		}
@@ -1752,7 +1576,8 @@ class CarScript extends Car
 			item = FindAttachmentBySlotName("SparkPlug");
 			if (!item || (item && item.IsRuined()))
 			{
-				SetCarEngineSoundState(CarEngineSoundState.START_NO_SPARKPLUG);
+				m_EngineStartDoOnce = true;
+				HandleEngineSound(CarEngineSoundState.START_NO_SPARKPLUG);
 				return false;
 			}
 		}
@@ -1762,12 +1587,17 @@ class CarScript extends Car
 			item = FindAttachmentBySlotName("GlowPlug");
 			if (!item || (item && item.IsRuined()))
 			{
-				SetCarEngineSoundState(CarEngineSoundState.START_NO_SPARKPLUG);
+				m_EngineStartDoOnce = true;
+				HandleEngineSound(CarEngineSoundState.START_NO_SPARKPLUG);
 				return false;
 			}
 		}
 		
-		SetCarEngineSoundState(CarEngineSoundState.STARTING);
+		if (!m_EngineBeforeStart)
+		{
+			m_EngineBeforeStart = true;
+			HandleEngineSound(CarEngineSoundState.STARTING);
+		}
 
 		return true;
 	}
@@ -1790,6 +1620,8 @@ class CarScript extends Car
 		UpdateLights();
 		
 		HandleEngineSound(CarEngineSoundState.START_OK);
+		
+		m_EngineBeforeStart = false;
 	}
 
 	//! Gets called everytime the engine stops.
@@ -1798,8 +1630,9 @@ class CarScript extends Car
 		UpdateLights();
 		
 		HandleEngineSound(CarEngineSoundState.STOP_OK);
-		
 		SetEngineZoneReceivedHit(false);
+		
+		m_EngineBeforeStart = false;
 	}
 
 	/*!
@@ -2437,7 +2270,12 @@ class CarScript extends Car
 	{
 		return true;
 	}
-		
+	
+	bool IsVitalSparkPlug()
+	{
+		return true;
+	}
+	
 	bool IsVitalGlowPlug()
 	{
 		return true;
@@ -2515,6 +2353,16 @@ class CarScript extends Car
 	float GetActionDistanceCoolant()
 	{
 		return 2.0;
+	}
+
+	string GetActionCompNameFuel()
+	{
+		return "refill";
+	}
+
+	float GetActionDistanceFuel()
+	{
+		return 1.5;
 	}
 	
 	string GetActionCompNameOil()
@@ -2670,11 +2518,6 @@ class CarScript extends Car
 		Fill( CarFluid.FUEL, amount );
 	}
 	
-	/*override void EOnPostFrame(IEntity other, int extra)
-	{
-		//Prepared for fix particle simulation when player is not in vehicle
-	}*/
-	
 	void ForceUpdateLightsStart()
 	{
 		if (!m_ForceUpdateLights)
@@ -2734,12 +2577,7 @@ class CarScript extends Car
 		}
 	}
 	
-	// Only used for sound states which happen before engine start
-	void SetCarEngineSoundState(CarEngineSoundState pState)
-	{
-		m_CarEngineSoundState = pState;
-		SetSynchDirty();
-	}
+
 	
 	protected void GenerateCarHornAINoise(int pState)
 	{
@@ -2751,8 +2589,6 @@ class CarScript extends Car
 				if (pState == ECarHornState.LONG)
 					noiseMultiplier = 2.0;
 
-				noiseMultiplier *= NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather());
-				
 				m_NoiseSystem.AddNoiseTarget(GetPosition(), 5, m_NoisePar, noiseMultiplier);
 			}
 		}
@@ -2761,6 +2597,22 @@ class CarScript extends Car
 	override vector GetDefaultHitPosition()
 	{
 		return vector.Zero;
+	}
+
+	void SetEngineZoneReceivedHit(bool pState)
+	{
+		m_EngineZoneReceivedHit = pState;
+		SetSynchDirty();
+	}
+	
+	bool HasEngineZoneReceivedHit()
+	{
+		return m_EngineZoneReceivedHit;
+	}
+	
+	float GetMomentum()
+	{
+		return GetVelocity(this).Length() * dBodyGetMass(this);
 	}
 	
 	float GetPushForceCoefficientMultiplier()

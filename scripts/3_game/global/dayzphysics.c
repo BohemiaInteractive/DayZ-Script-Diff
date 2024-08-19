@@ -217,7 +217,7 @@ class DayZPhysics
 
 	proto static bool	EntityOverlapBullet(vector transform[4], IEntity entity, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
 
-	proto static bool	EntityOverlapSingleBullet(vector transform[4], IEntity entity, IEntity other, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
+	proto static bool	EntityOverlapSingleBullet(vector transform[4], IEntity entity, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
 	
 	proto static bool	SphereOverlapBullet(vector position, float radius, PhxInteractionLayers layerMask, notnull CollisionOverlapCallback callback);
 	

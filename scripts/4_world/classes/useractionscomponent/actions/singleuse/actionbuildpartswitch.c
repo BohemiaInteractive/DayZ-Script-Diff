@@ -1,4 +1,4 @@
-//!DEPRECATED
+// deprecated
 class ActionBuildPartSwitch: ActionSingleUseBase
 {
 	void ActionBuildPartSwitch()

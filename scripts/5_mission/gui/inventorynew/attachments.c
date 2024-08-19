@@ -11,7 +11,6 @@ class Attachments
 	protected ref array<int>					m_AttachmentIDOrdered;
 	
 	protected int m_RowIndex;
-	protected int m_AttachmentSlotID = -1;
 
 	void Attachments( Container parent, EntityAI entity )
 	{
@@ -606,15 +605,5 @@ class Attachments
 	TextWidget GetFalseHeaderTextWidget()
 	{
 		return m_AttachmentsContainer.GetFalseHeaderTextWidget();
-	}
-	
-	void SetAttachmentSlotID(int slotID)
-	{
-		m_AttachmentSlotID = slotID;
-	}
-	
-	int GetAttachmentSlotID()
-	{
-		return m_AttachmentSlotID;
 	}
 }

@@ -128,7 +128,7 @@ class ActionSawPlanks: ActionContinuousBase
 		
 		string item_type = item.GetType();
 		
-		item.DecreaseHealth("", "", UADamageApplied.SAW_PLANKS);
+		item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( UADamageApplied.SAW_PLANKS, GetSpecialtyWeight() ));
 		/*switch(item_type)
 		{
 			case "WoodAxe": 
@@ -162,5 +162,7 @@ class ActionSawPlanks: ActionContinuousBase
 				item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( UADamageApplied.SAW_PLANKS, GetSpecialtyWeight() ));
 			break;
 		}*/
+		
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

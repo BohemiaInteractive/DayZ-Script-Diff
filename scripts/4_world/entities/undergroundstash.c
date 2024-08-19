@@ -56,7 +56,3 @@ class UndergroundStash extends ItemBase
 		return false;
 	}
 }
-
-class UndergroundStashSnow extends UndergroundStash
-{
-}

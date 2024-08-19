@@ -240,6 +240,8 @@ class ActionBuildShelter: ActionContinuousBase
 			//build
 			construction.BuildPartServer( action_data.m_Player, part_name, AT_BUILD_PART );
 		}
+		
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override void OnFinishProgressClient( ActionData action_data )

@@ -65,9 +65,4 @@ class ActionTurnValve : ActionContinuousBase
 
 		super.OnEnd(action_data);		
 	}
-	
-	override bool IsLockTargetOnUse()
-	{
-		return false;
-	}
 }

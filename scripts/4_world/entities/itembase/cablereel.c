@@ -2,10 +2,10 @@ class CableReel extends ItemBase
 {
 	bool m_ForceIntoHands;
 
-	static const string SEL_CORD_FOLDED		= "cord_folded";
-	static const string SEL_CORD_PLUGGED 	= "cord_plugged";
+	static const string SEL_CORD_FOLDED 			= "cord_folded";
+	static const string SEL_CORD_PLUGGED 			= "cord_plugged";
 	
-	void CableReel()
+	void CableReel () 
 	{
 		m_ForceIntoHands = false;
 		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
@@ -17,40 +17,43 @@ class CableReel extends ItemBase
 		return true;
 	}
 	
-	void ForceIntoHandsNow(PlayerBase player)
+	void ForceIntoHandsNow( PlayerBase player ) 
 	{
 		m_ForceIntoHands = true;
 		player.LocalTakeEntityToHands(this); // Local, because ForceIntoHandsNow is executed on both, Client and Server
 		m_ForceIntoHands = false;
 	}
 	
-	override bool CanPutInCargo(EntityAI parent)
+	override bool CanPutInCargo( EntityAI parent )
 	{
-		if (!super.CanPutInCargo(parent))
-			return false;
-
-		EntityAI owner = GetHierarchyParent();
-		if (owner && owner.IsKindOf("Fence"))
+		if ( !super.CanPutInCargo(parent) ) {return false;}
+		EntityAI owner_EAI = GetHierarchyParent();
+		if ( owner_EAI  &&  owner_EAI.IsKindOf("Fence"))
+		{
 			return true;
+		}
 		
-		bool allowIntoInventory = !GetCompEM().IsPlugged();
-		return allowIntoInventory;
+		bool allow_into_inv = !GetCompEM().IsPlugged();
+		return allow_into_inv;
 	}
 
-	override bool CanPutIntoHands(EntityAI player) 
+	override bool CanPutIntoHands ( EntityAI player ) 
 	{
-		if (!super.CanPutIntoHands(parent))
+		if ( !super.CanPutIntoHands( parent ) )
+		{
 			return false;
-
-		if (m_ForceIntoHands)
+		}
+		if ( m_ForceIntoHands )
 		{
 			return true;
 		}
 		else
 		{
-			EntityAI owner = GetHierarchyParent();
-			if (owner && owner.IsKindOf("Fence"))
+			EntityAI owner_EAI = GetHierarchyParent();
+			if ( owner_EAI  &&  owner_EAI.IsKindOf("Fence"))
+			{
 				return true;
+			}
 		}
 		
 		return true;
@@ -61,17 +64,21 @@ class CableReel extends ItemBase
 	{
 		super.OnInventoryEnter(player);
 		
-		PlayerBase playerPB = PlayerBase.Cast(player);
-		if (playerPB.GetItemInHands() == this && GetCompEM().IsPlugged())
+		PlayerBase player_PB;
+		Class.CastTo(player_PB, player);
+		if (player_PB.GetItemInHands() == this && GetCompEM().IsPlugged())
+		{
+			//player_PB.TogglePlacingLocal();
 			return;
+		}
 		
 		GetCompEM().UnplugAllDevices();		
 		
-		if (!playerPB.IsPlacingLocal())
+		if (!player_PB.IsPlacingLocal())
 			GetCompEM().UnplugThis();
 	}
 	
-	override bool CanRemoveFromHands(EntityAI player)
+	override bool CanRemoveFromHands( EntityAI player ) 
 	{
 		return true;
 	}
@@ -80,8 +87,10 @@ class CableReel extends ItemBase
 	{
 		super.OnVariablesSynchronized();
 						
-		if (IsPlaceSound())
+		if ( IsPlaceSound() )
+		{
 			PlayPlaceSound();
+		}
 	}
 	
 	//================================================================
@@ -101,14 +110,15 @@ class CableReel extends ItemBase
 		if (GetGame().IsMultiplayer() && GetGame().IsServer())
 			playerPB.GetHologramServer().SetSelectionToRefresh(selections);		
 		else
-			playerPB.GetHologramLocal().SetSelectionToRefresh(selections);
+			if (playerPB.GetHologramLocal())
+				playerPB.GetHologramLocal().SetSelectionToRefresh(selections);
 	}
 	
-	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
+	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
-		super.OnPlacementComplete(player, position, orientation);
+		super.OnPlacementComplete( player, position, orientation );
 		
-		SetIsPlaceSound(true);
+		SetIsPlaceSound( true );
 	}
 	
 	override string GetPlaceSoundset()
@@ -119,7 +129,6 @@ class CableReel extends ItemBase
 	override void SetActions()
 	{
 		super.SetActions();
-
 		RemoveAction(ActionTakeItemToHands);
 		
 		AddAction(ActionPlugIn);

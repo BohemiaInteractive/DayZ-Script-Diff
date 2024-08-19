@@ -237,6 +237,7 @@ class DynamicMusicPlayer
 		}
 		#endif
 	}
+	
 
 	void SetCategory(EDynamicMusicPlayerCategory category, bool forced)
 	{
@@ -265,15 +266,6 @@ class DynamicMusicPlayer
 	void UnregisterDynamicLocation(notnull Entity caller)
 	{
 		m_LocationsDynamic.Remove(caller.GetID());
-	}
-	
-	void OnGameEvent(EventType eventTypeId, Param params)
-	{
-		if (eventTypeId == MPSessionPlayerReadyEventTypeID)
-		{
-			SetTimeOfDate();
-			SetCategory(EDynamicMusicPlayerCategory.TIME, false);
-		}
 	}
 	
 	protected bool IsPriotitizedCategorySelected()
@@ -513,7 +505,7 @@ class DynamicMusicPlayer
 	private bool PlayerInsideOfLocationFilter(ref array<ref DynamicMusicTrackData> locations)
 	{
 		m_TracksLocationMatchedPlayerInside.Clear();
-		
+
 		if (locations.Count() > 0)
 		{
 			foreach (DynamicMusicTrackData track : locations)
@@ -645,7 +637,7 @@ class DynamicMusicPlayer
 			m_ActualTimeOfDay = g_Game.GetMission().GetWorldData().GetDaytime();
 			return;
 		}
-
+		
 		m_ActualTimeOfDay = DynamicMusicPlayerTimeOfDay.DAY;
 	}
 	

@@ -175,7 +175,7 @@ class InventoryItem extends EntityAI
 			return surfaceImpact;
 		}
 		string surface;
-		GetGame().SurfaceUnderObjectExCorrectedLiquid(this, surface, surfaceImpact, liquid);
+		GetGame().SurfaceUnderObjectEx(this, surface, surfaceImpact, liquid);
 
 		return surfaceImpact;
 	}

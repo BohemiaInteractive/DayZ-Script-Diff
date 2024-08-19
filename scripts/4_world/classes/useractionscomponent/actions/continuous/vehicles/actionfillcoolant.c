@@ -43,7 +43,7 @@ class ActionFillCoolant: ActionContinuousBase
 		if( item.GetQuantity() <= 0 )
 			return false;
 
-		if( item.GetLiquidType() != LIQUID_WATER )
+		if( item.GetLiquidType() != LIQUID_WATER && item.GetLiquidType() != LIQUID_RIVERWATER )
 			return false;
 
 		Car car = Car.Cast( target.GetParent() );

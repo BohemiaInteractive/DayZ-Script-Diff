@@ -40,7 +40,7 @@ class CAContinuousFill : CAContinuousBase
 		
 		m_ItemQuantity = action_data.m_MainItem.GetQuantity();
 		m_TargetUnits = action_data.m_MainItem.GetQuantityMax() - action_data.m_MainItem.GetQuantity();	
-		m_AdjustedQuantityFilledPerSecond = m_QuantityFilledPerSecond;//removed softskills 
+		m_AdjustedQuantityFilledPerSecond = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_QuantityFilledPerSecond, m_Action.GetSpecialtyWeight(), true );
 	}
 	
 	override int Execute( ActionData action_data )
@@ -89,6 +89,16 @@ class CAContinuousFill : CAContinuousBase
 		return UA_CANCEL;
 	}
 	
+	override int Interrupt( ActionData action_data )
+	{				
+		if ( GetGame().IsServer() )
+		{
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( UASoftSkillsWeight.PRECISE_LOW );
+		}
+		
+		return super.Interrupt( action_data );
+	}
+	
 	override float GetProgress()
 	{	
 		return m_SpentQuantity_total/m_TargetUnits;
@@ -105,8 +115,12 @@ class CAContinuousFill : CAContinuousBase
 				m_SpentUnits.param1 = m_SpentQuantity;
 				SetACData(m_SpentUnits);
 			}
+			
+			bool injectAgents = true;
+			if (action_data.m_Target.GetObject() && (action_data.m_Target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || action_data.m_Target.GetObject().IsWell()))
+				injectAgents = false;
 
-			Liquid.FillContainerEnviro(action_data.m_MainItem, m_liquid_type, m_SpentQuantity);
+			Liquid.FillContainerEnviro(action_data.m_MainItem, m_liquid_type, m_SpentQuantity, injectAgents);
 		}
 
 		m_SpentQuantity = 0;

@@ -28,8 +28,6 @@ class ActionZoomIn: ActionSingleUseBase
 
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		ItemOptics optic;
 		if( Class.CastTo(optic, action_data.m_MainItem) )
 		{

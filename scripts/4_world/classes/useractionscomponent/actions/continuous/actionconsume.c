@@ -17,14 +17,6 @@ class ActionConsume: ActionContinuousBase
 		m_Text = "#eat";	
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
-	{	
-		if (!super.ActionCondition(player, target, item))
-			return false;
-		
-		return !item.GetIsFrozen() && player.CanEatAndDrink();
-	}
-	
 	override bool HasProneException()
 	{
 		return true;
@@ -43,8 +35,6 @@ class ActionConsume: ActionContinuousBase
 	
 	override void OnEndServer(ActionData action_data)
 	{	
-		super.OnEndServer(action_data);
-		
 		ItemBase item = action_data.m_MainItem;
 		
 		if (item && item.GetQuantity() <= 0.01)

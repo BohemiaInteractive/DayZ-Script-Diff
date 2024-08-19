@@ -14,22 +14,6 @@ class Fireplace extends FireplaceBase
 		PARTICLE_STEAM_END		= ParticleList.CAMP_STEAM_2END;
 		
 		SetEventMask( EntityEvent.CONTACT | EntityEvent.TOUCH );
-
-		//! universal temperature sources overrides
-		m_UTSSettings.m_TemperatureMax		= PARAM_OUTDOOR_FIRE_TEMPERATURE;
-		m_UTSSettings.m_TemperatureItemCap	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
-		m_UTSSettings.m_TemperatureCap		= 20;
-		
-		m_ThawnSurfaceUnderSupport = true;
-	}
-	
-	override protected void InitializeTemperatureSources()
-	{
-		m_UTSLFireplace = new UniversalTemperatureSourceLambdaFireplace();
-		m_UTSLFireplace.SetSmallFireplaceTemperatureMax(PARAM_SMALL_FIRE_TEMPERATURE);
-		m_UTSLFireplace.SetNormalFireplaceTemperatureMax(PARAM_OUTDOOR_FIRE_TEMPERATURE);
-
-		m_UTSource = new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLFireplace);
 	}
 	
 	override bool IsBaseFireplace()
@@ -262,6 +246,19 @@ class Fireplace extends FireplaceBase
 		break;
 		}
 		
+		// reset cooking time (to prevent the cooking exploit)
+		if (GetGame().IsServer() && edible_base_attached)
+		{
+			Edible_Base edBase = Edible_Base.Cast(item_base);
+			if (edBase)
+			{
+				if (edBase.GetFoodStage())
+				{
+					edBase.SetCookingTime(0);
+				}
+			}
+		}
+		
 		//TODO
 		//add SetViewIndex when attaching various attachments
 		
@@ -463,7 +460,7 @@ class Fireplace extends FireplaceBase
 	
 	override float HeightStartCheckOverride()
 	{
-		return 0.5;
+		return 0.32;
 	}
 	
 	//particles
@@ -666,8 +663,7 @@ class Fireplace extends FireplaceBase
 
 		// check if the fireplace isnt below a roof
 		//  excluding this check whein oven stage
-		CheckForRoofLimited(0);
-		if ( !IsOven() && !IsRoofAbove() )
+		if ( !IsOven() && !MiscGameplayFunctions.IsUnderRoof( this ) )
 		{
 			// if not, check if there is strong rain or wind
 			if ( IsRainingAbove() )
@@ -729,25 +725,24 @@ class Fireplace extends FireplaceBase
 	
 	static bool CanIgniteEntityAsFireplace(notnull EntityAI entity)
 	{
+		//check ceiling (enough space for smoke)
+		if (MiscGameplayFunctions.IsUnderRoof(entity, FireplaceBase.MIN_CEILING_HEIGHT) && IsEntityOnInteriorSurface(entity))
+		{
+			return false;
+		}
+		
 		//check surface
 		if (FireplaceBase.IsEntityOnWaterSurface(entity))
 		{
 			return false;
 		}
-		
-		entity.CheckForRoofLimited(); //TODO: limit more severely? Should update at least once during UATimeSpent.FIREPLACE_IGNITE 
-		if (!entity.IsRoofAbove())
+
+		if (!MiscGameplayFunctions.IsUnderRoof(entity))
 			return !FireplaceBase.IsRainingAboveEntity(entity);
-		
-		//check ceiling (enough space for smoke)
-		if (IsEntityOnInteriorSurface(entity) && MiscGameplayFunctions.IsUnderRoof(entity, FireplaceBase.MIN_CEILING_HEIGHT))
-		{
-			return false;
-		}
-		
-		return true;
+
+		return true;	
 	}
-	
+
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================

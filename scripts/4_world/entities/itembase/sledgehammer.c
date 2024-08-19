@@ -8,5 +8,6 @@ class SledgeHammer extends Inventory_Base
 		AddAction(ActionMineRock);
 		AddAction(ActionDismantlePart);
 		AddAction(ActionBuildPart);
+		//AddAction(ActionDestroyPart);
 	}
 }

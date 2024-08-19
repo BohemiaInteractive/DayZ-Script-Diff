@@ -1,4 +1,4 @@
-//!DEPRECATED
+
 class ActionTakeHybridAttachment: ActionInteractBase
 {
 	string m_ItemName = "";
@@ -84,13 +84,10 @@ class ActionTakeHybridAttachment: ActionInteractBase
 		return success;
 	}
 	
-	override void OnExecute( ActionData action_data )
+	override void OnExecuteServer( ActionData action_data )
 	{
-		if (GetGame().IsDedicatedServer())
-		{
-			ClearActionJuncture(action_data);
+		if (GetGame().IsMultiplayer())
 			return;
-		}
 		
 		//Debug.Log("[Action DEBUG] Start time stamp: " + action_data.m_Player.GetSimulationTimeStamp());
 		EntityAI tgt_entity = EntityAI.Cast( action_data.m_Target.GetObject() );
@@ -117,5 +114,33 @@ class ActionTakeHybridAttachment: ActionInteractBase
 			}
 		}
 		//action_data.m_Player.PredictiveTakeToDst(targetInventoryLocation, il);
+	}
+	
+	override void OnExecuteClient( ActionData action_data )
+	{
+		//Debug.Log("[Action DEBUG] Start time stamp: " + action_data.m_Player.GetSimulationTimeStamp());
+		EntityAI tgt_entity = EntityAI.Cast( action_data.m_Target.GetObject() );
+		string component_name = tgt_entity.GetActionComponentName( action_data.m_Target.GetComponentIndex() );
+		ItemBase attachment;
+		
+		if ( tgt_entity && ItemBase.CastTo(attachment, tgt_entity.FindAttachmentBySlotName(component_name)) )
+		{
+			InventoryLocation il = action_data.m_ReservedInventoryLocations.Get(0);
+			InventoryLocation targetInventoryLocation = new InventoryLocation;
+			attachment.GetInventory().GetCurrentInventoryLocation(targetInventoryLocation);
+			ClearInventoryReservationEx(action_data);
+			//SplitItemUtils.TakeOrSplitToInventoryLocation( action_data.m_Player, il );
+			//action_data.m_Player.PredictiveTakeToDst(targetInventoryLocation, il);
+			float stackable = attachment.GetTargetQuantityMax(il.GetSlot());
+			
+			if( stackable == 0 || stackable >= attachment.GetQuantity() )
+			{
+				action_data.m_Player.PredictiveTakeToDst(targetInventoryLocation, il);
+			}
+			else
+			{
+				attachment.SplitIntoStackMaxToInventoryLocationClient( il );
+			}
+		}
 	}
 };

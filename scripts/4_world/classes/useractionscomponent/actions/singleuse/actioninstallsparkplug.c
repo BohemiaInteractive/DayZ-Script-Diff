@@ -3,7 +3,6 @@
 */
 
 
-//!DEPRECATED
 class ActionInsertSparkplug: ActionSingleUseBase
 {
 	void ActionInsertSparkplug()

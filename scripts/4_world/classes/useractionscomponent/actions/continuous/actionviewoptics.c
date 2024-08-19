@@ -19,11 +19,6 @@ class ActionViewOptics : ActionContinuousBase
 		return true;
 	}
 	
-	override bool IsCameraLockOnPerform()
-	{
-		return false;
-	}
-	
 	override bool HasProgress()
 	{
 		return false;
@@ -100,8 +95,6 @@ class ActionViewOptics : ActionContinuousBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		ItemOptics optic;
 		if (Class.CastTo(optic, action_data.m_MainItem) && optic.IsInOptics())
 		{

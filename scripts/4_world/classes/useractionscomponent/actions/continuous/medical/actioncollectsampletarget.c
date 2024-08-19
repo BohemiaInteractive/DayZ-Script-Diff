@@ -26,8 +26,6 @@ class ActionCollectSampleTarget : ActionContinuousBase
 
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
 		Param1<float> nacdata;
 		Class.CastTo(nacdata,  action_data.m_ActionComponent.GetACData() );

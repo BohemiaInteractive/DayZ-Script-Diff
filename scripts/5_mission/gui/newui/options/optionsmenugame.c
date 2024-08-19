@@ -26,7 +26,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	protected ref OptionSelectorMultistate	m_ShowHUDSelector;
 	protected ref OptionSelectorMultistate	m_ShowCrosshairSelector;
 	protected ref OptionSelectorMultistate	m_ShowQuickbarSelector;
-	protected ref OptionSelectorMultistate	m_ShowHUDVehicleSelector;
 	protected ref OptionSelectorMultistate	m_ShowGameSelector;
 	protected ref OptionSelectorMultistate	m_ShowAdminSelector;
 	protected ref OptionSelectorMultistate	m_ShowPlayerSelector;
@@ -60,7 +59,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		
 		m_Root.FindAnyWidget("fov_setting_option").SetUserID(OptionAccessType.AT_OPTIONS_FIELD_OF_VIEW);
 		m_Root.FindAnyWidget("hud_setting_option").SetUserID(OptionIDsScript.OPTION_HUD);
-		m_Root.FindAnyWidget("hud_vehicle_setting_option").SetUserID(OptionIDsScript.OPTION_HUD_VEHICLE);
 		m_Root.FindAnyWidget("hud_brightness_setting_option").SetUserID(OptionIDsScript.OPTION_HUD_BRIGHTNESS);
 		m_Root.FindAnyWidget("crosshair_setting_option").SetUserID(OptionIDsScript.OPTION_CROSSHAIR);
 		m_Root.FindAnyWidget("game_setting_option").SetUserID(OptionIDsScript.OPTION_GAME_MESSAGES);
@@ -104,7 +102,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		m_BleedingIndication		= new OptionSelectorMultistate(m_Root.FindAnyWidget("bleeding_indication_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION), this, false, opt);
 		m_ConnectivityInfo			= new OptionSelectorMultistate(m_Root.FindAnyWidget("connectivity_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.CONNECTIVITY_INFO), this, false, opt);
 		m_ShowQuickbarSelector		= new OptionSelectorMultistate(m_Root.FindAnyWidget("quickbar_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.QUICKBAR), this, false, opt);
-		m_ShowHUDVehicleSelector	= new OptionSelectorMultistate(m_Root.FindAnyWidget("hud_vehicle_setting_option"), g_Game.GetProfileOptionBool(EDayZProfilesOptions.HUD_VEHICLE), this, false, opt);
 		
 		m_LanguageSelector.m_OptionChanged.Insert(UpdateLanguageOption);
 		m_FOVSelector.m_OptionChanged.Insert(UpdateFOVOption);
@@ -117,7 +114,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		m_BleedingIndication.m_OptionChanged.Insert(UpdateBleedingIndication);
 		m_ConnectivityInfo.m_OptionChanged.Insert(UpdateConnectivityInfo);
 		m_ShowQuickbarSelector.m_OptionChanged.Insert(UpdateQuickbarOption);
-		m_ShowHUDVehicleSelector.m_OptionChanged.Insert(UpdateHUDVehicleOption);
 		
 		#ifdef PLATFORM_CONSOLE
 		m_BrightnessOption		= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_BRIGHT_SLIDER));
@@ -174,7 +170,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	{
 		bool universal = (m_ShowHUDSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.HUD) || m_ShowCrosshairSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.CROSSHAIR));
 		universal = universal || m_HUDBrightnessSelector.GetValue() != g_Game.GetProfileOptionFloat(EDayZProfilesOptions.HUD_BRIGHTNESS);
-		universal = universal || m_ShowHUDVehicleSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.HUD_VEHICLE);
 		universal = universal || (m_ShowGameSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.GAME_MESSAGES) || m_ShowAdminSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.ADMIN_MESSAGES));
 		universal = universal || m_ShowPlayerSelector.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.PLAYER_MESSAGES);
 		universal = universal || m_BleedingIndication.GetValue() != g_Game.GetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION);
@@ -196,7 +191,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		
 		g_Game.SetProfileOptionBool(EDayZProfilesOptions.HUD, m_ShowHUDSelector.GetValue());
 		g_Game.SetProfileOptionBool(EDayZProfilesOptions.CROSSHAIR, m_ShowCrosshairSelector.GetValue());
-		g_Game.SetProfileOptionBool(EDayZProfilesOptions.HUD_VEHICLE, m_ShowHUDVehicleSelector.GetValue());
 		g_Game.SetProfileOptionBool(EDayZProfilesOptions.GAME_MESSAGES, m_ShowGameSelector.GetValue());
 		g_Game.SetProfileOptionBool(EDayZProfilesOptions.ADMIN_MESSAGES, m_ShowAdminSelector.GetValue());
 		g_Game.SetProfileOptionBool(EDayZProfilesOptions.PLAYER_MESSAGES, m_ShowPlayerSelector.GetValue());
@@ -215,7 +209,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 			hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 			#endif
 			hud.ShowHud(m_ShowHUDSelector.GetValue());
-			hud.SetVehicleHudDisabled(!m_ShowHUDVehicleSelector.GetValue());
 		}
 		
 		bool bleedingIndicationOld = g_Game.GetProfileOptionBool(EDayZProfilesOptions.BLEEDINGINDICATION);
@@ -270,10 +263,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 
 		if (m_ShowCrosshairSelector)
 			m_ShowCrosshairSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.CROSSHAIR), false);
-		
-		if (m_ShowHUDVehicleSelector)
-			m_ShowHUDVehicleSelector.SetValue(g_Game.GetProfileOptionBool(EDayZProfilesOptions.HUD_VEHICLE), false);
-		
 		if (m_FOVOption)
 		{
 			m_FOVSelector.SetValue(m_FOVOption.ReadValue(), false);
@@ -322,10 +311,7 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 
 		if (m_ShowCrosshairSelector)
 			m_ShowCrosshairSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.CROSSHAIR), false);
-		
-		if (m_ShowHUDVehicleSelector)
-			m_ShowHUDVehicleSelector.SetValue(g_Game.GetProfileOptionDefaultBool(EDayZProfilesOptions.HUD_VEHICLE), false);
-		
+
 		if (m_FOVOption)
 		{
 			m_FOVOption.WriteValue(m_FOVOption.GetDefault());
@@ -446,11 +432,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 	}
 	
 	protected void UpdateQuickbarOption(int new_index)
-	{
-		m_Menu.OnChanged();
-	}
-	
-	protected void UpdateHUDVehicleOption(int new_index)
 	{
 		m_Menu.OnChanged();
 	}
@@ -586,7 +567,6 @@ class OptionsMenuGame extends ScriptedWidgetEventHandler
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_LANGUAGE, new Param2<string, string>("#options_game_select_language", "#options_game_select_language_desc"));
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_FIELD_OF_VIEW, new Param2<string, string>("#options_game_field_of_view", "#options_game_field_of_view_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_HUD, new Param2<string, string>("#options_game_show_HUD", "#options_game_show_HUD_desc"));
-		m_TextMap.Insert(OptionIDsScript.OPTION_HUD_VEHICLE, new Param2<string, string>("#options_game_show_HUD_vehicle", "#options_game_show_HUD_vehicle_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_HUD_BRIGHTNESS, new Param2<string, string>("#options_game_hud_brightness", "#options_game_hud_brightness_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_CROSSHAIR, new Param2<string, string>("#options_game_show_crosshair", "#options_game_show_crosshair_desc"));
 		m_TextMap.Insert(OptionIDsScript.OPTION_QUICKBAR, new Param2<string, string>("#options_game_show_quickbar",	"#options_game_show_quickbar_desc"));

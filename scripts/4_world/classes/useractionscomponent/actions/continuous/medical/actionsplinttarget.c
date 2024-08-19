@@ -36,9 +36,13 @@ class ActionSplintTarget: ActionContinuousBase
 			{
 				MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem,new_item,true,false,true);
 				action_data.m_MainItem.Delete();
+				action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 			}
 			
 			ntarget.SetBrokenLegs(eBrokenLegs.BROKEN_LEGS_SPLINT);
+			//action_data.m_MainItem.Delete();
+	
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
 	}
 	

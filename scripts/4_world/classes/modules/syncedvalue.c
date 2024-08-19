@@ -106,14 +106,12 @@ class SyncedValueAgent
 	string m_Name;
 	string m_Value;
 	int m_ID;
-	float m_TemporaryResistanceTime;
 	
-	void SyncedValueAgent(string name, string value, int id, float temporaryResistance)
+	void SyncedValueAgent( string name, string value, int id )
 	{
 		m_Name = name;
 		m_Value = value;
 		m_ID = id;
-		m_TemporaryResistanceTime = temporaryResistance;
 	}
 	
 	string GetName()
@@ -129,10 +127,5 @@ class SyncedValueAgent
 	int GetID()
 	{
 		return m_ID;
-	}
-	
-	float GetTemporaryResistanceTime()
-	{
-		return m_TemporaryResistanceTime;
 	}
 }

@@ -84,6 +84,12 @@ class ActionSkinning: ActionContinuousBase
 		
 		PluginLifespan moduleLifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
 		moduleLifespan.UpdateBloodyHandsVisibility(action_data.m_Player, true);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
+	}
+	
+	vector GetRandomPos(vector body_pos)
+	{
+		return body_pos + Vector(Math.RandomFloat01() - 0.5, 0, Math.RandomFloat01() - 0.5);
 	}
 	
 	// Spawns an organ defined in the given config
@@ -91,14 +97,15 @@ class ActionSkinning: ActionContinuousBase
 	{
 		// Create item from config
 		ItemBase added_item;
-		vector posHead;
-		MiscGameplayFunctions.GetHeadBonePos(player,posHead);
-		vector posRandom = MiscGameplayFunctions.GetRandomizedPositionVerified(posHead,body_pos,UAItemsSpreadRadius.NARROW,player);
-		Class.CastTo(added_item,  GetGame().CreateObjectEx(item_to_spawn, posRandom, ECE_PLACE_ON_SURFACE));
+		vector pos_rnd = GetRandomPos(body_pos);
+		Class.CastTo(added_item,  GetGame().CreateObjectEx(item_to_spawn, pos_rnd, ECE_PLACE_ON_SURFACE));
 		
 		// Check if skinning is configured for this body
 		if (!added_item)
 			return null;
+		
+		// Set randomized position
+		added_item.PlaceOnSurface();
 		
 		// Set item's quantity from config, if it's defined there.
 		float item_quantity = 0;
@@ -108,11 +115,13 @@ class ActionSkinning: ActionContinuousBase
 		GetGame().ConfigGetFloatArray(cfg_skinning_organ_class + "quantityMinMax", quant_min_max);
 		GetGame().ConfigGetFloatArray(cfg_skinning_organ_class + "quantityMinMaxCoef", quant_min_max_coef);
 		
+		
 		// Read config for quantity value
 		if (quant_min_max.Count() > 0)
 		{
 			float soft_skill_manipulated_value = (quant_min_max.Get(0)+ quant_min_max.Get(1)) / 2;
-			item_quantity = Math.RandomFloat(soft_skill_manipulated_value, quant_min_max.Get(1));
+			float min_quantity = player.GetSoftSkillsManager().AddSpecialtyBonus(soft_skill_manipulated_value, this.GetSpecialtyWeight());
+			item_quantity = Math.RandomFloat(min_quantity, quant_min_max.Get(1));
 		}
 		
 		if (quant_min_max_coef.Count() > 0)
@@ -253,12 +262,6 @@ class ActionSkinning: ActionContinuousBase
 		string cfg_animal_class_path = "cfgVehicles " + body.GetType() + " " + "Skinning ";
 		vector bodyPosition = body.GetPosition();
 		
-		if (!g_Game.ConfigIsExisting(cfg_animal_class_path))
-		{
-			Debug.Log("Failed to find class 'Skinning' in the config of: " + body.GetType());
-			return;
-		}
-		
 		// Getting item type from the config
 		int child_count = g_Game.ConfigGetChildrenCount(cfg_animal_class_path);
 		
@@ -314,14 +317,7 @@ class ActionSkinning: ActionContinuousBase
 						
 						if (spawn_result)
 							spawn_result.SetHealth01("","", avgDmgZones);
-					}
-					
-					// inherit temperature
-					if (body.CanHaveTemperature() && spawn_result.CanHaveTemperature())
-					{
-						spawn_result.SetTemperatureDirect(body.GetTemperature());
-						spawn_result.SetFrozen(body.GetIsFrozen());
-					}
+					}	
 					
 					// handle fat/guts from human bodies
 					if ((item_to_spawn == "Lard") || (item_to_spawn == "Guts"))
@@ -334,11 +330,5 @@ class ActionSkinning: ActionContinuousBase
 				}
 			}
 		}
-	}
-	
-	//DEPRECATED
-	vector GetRandomPos(vector body_pos)
-	{
-		return body_pos + Vector(Math.RandomFloat01() - 0.5, 0, Math.RandomFloat01() - 0.5);
 	}
 }

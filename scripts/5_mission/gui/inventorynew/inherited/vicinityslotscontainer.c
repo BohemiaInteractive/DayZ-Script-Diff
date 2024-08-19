@@ -250,7 +250,6 @@ class VicinitySlotsContainer: Container
 	void ShowItemsInContainers( array<EntityAI> items )
 	{
 		EntityAI item;
-		EntityAI selectedItem = ItemManager.GetInstance().GetSelectedItem();
 		SlotsIcon icon;
 		int x;
 		int visible_items_count = 0;
@@ -280,20 +279,14 @@ class VicinitySlotsContainer: Container
 			icon.GetMainWidget().Show( true );
 			icon.GetPanelWidget().SetUserID( item.GetID() );
 			
-			#ifdef PLATFORM_CONSOLE
-			if (selectedItem == item)
-			{
-				icon.GetMicromanagedPanel().Show(true);
-			}
-			else
-			{
-				icon.GetMicromanagedPanel().Show(false);
-			}
-			#endif
-			
 			if ( m_ShowedItems.Find( item ) != x )
 				icon.Init( item );
 			icon.UpdateInterval();
+			
+			if ( !ItemManager.GetInstance().IsDragging() )
+			{
+				ItemManager.GetInstance().SetTemperature( item, icon.GetRender() );
+			}
 			
 			bool draggable = ItemManager.GetInstance().EvaluateContainerDragabilityDefault(item);
 			if ( !draggable && GetDragWidget() == icon.GetPanelWidget() )
@@ -513,35 +506,35 @@ class VicinitySlotsContainer: Container
 		ItemPreviewWidget item_preview = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
 		EntityAI item = item_preview.GetItem();
 		InventoryItem itemAtPos = InventoryItem.Cast( item );
+		Container conta;
 		
 		#ifdef DIAG_DEVELOPER
-		if (itemAtPos && GetDayZGame().IsLeftCtrlDown() && button == MouseState.RIGHT)
+		if ( ItemBase.Cast(item) )
 		{
-			ShowActionMenu(itemAtPos);
+			if ( GetDayZGame().IsLeftCtrlDown() && button == MouseState.RIGHT )
+				ShowActionMenu( ItemBase.Cast(item) );
 		}
-		else if (m_Parent)
-		#else
-		if (m_Parent)
 		#endif
+		
+		if( m_Parent )
 		{
 			ref map<int, ref Container> showed_items = ( VicinityContainer.Cast( m_Parent ) ).m_ShowedItemsIDs;
 			
-			if ( item && showed_items )
+			if( item && showed_items )
 			{
-				if (button == MouseState.LEFT)
+				conta = showed_items.Get( item.GetID() );
+				
+				( VicinityContainer.Cast( m_Parent ) ).ToggleContainer( w, item );
+				if ( button == MouseState.RIGHT )
 				{
-					VicinityContainer.Cast(m_Parent).ToggleContainer(w, item);
-				}
-				if (button == MouseState.RIGHT)
-				{
-					if (itemAtPos)
+					if ( itemAtPos )
 					{
 						itemAtPos.OnRightClick();
 					}
 				}
-				else if (button == MouseState.MIDDLE)
+				else if ( button == MouseState.MIDDLE )
 				{
-					InspectItem(itemAtPos);
+					InspectItem( itemAtPos );
 					return;
 				}
 			}

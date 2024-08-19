@@ -25,7 +25,7 @@ class CAContinuousCraft : CAContinuousTime
 				m_AdjustedTimeToComplete = 0;
 			}
 			float specialty_weight = module_recipes_manager.GetRecipeSpecialty( action_data_wc.m_RecipeID );
-			m_AdjustedTimeToComplete = m_AdjustedTimeToComplete;//removed softskills 
+			m_AdjustedTimeToComplete = action_data.m_Player.GetSoftSkillsManager().AdjustCraftingTime( m_AdjustedTimeToComplete, specialty_weight );
 			
 			//PrintString("ttc:" + m_AdjustedTimeToComplete.ToString());
 		}

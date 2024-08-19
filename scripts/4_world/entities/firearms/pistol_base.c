@@ -626,6 +626,7 @@ class Pistol_Base extends Weapon_Base
 	{
 		super.SetActions();
 		AddAction(FirearmActionDetachMagazine);
+		//AddAction(ActionAdvancedDetachMagazine);
 	}
 };
 

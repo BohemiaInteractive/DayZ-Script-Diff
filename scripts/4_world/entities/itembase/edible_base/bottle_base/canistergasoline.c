@@ -1,5 +1,18 @@
-class CanisterGasoline : Bottle_Base
+class CanisterGasoline extends Bottle_Base
 {
+	void CanisterGasoline()
+	{
+	}
+	
+	void ~CanisterGasoline()
+	{
+	}
+	
+	override bool IsContainer()
+	{
+		return true;
+	}
+	
 	override string GetPouringSoundset()
 	{
 		return "emptyVessle_CanisterGasoline_SoundSet";
@@ -42,11 +55,11 @@ class CanisterGasoline : Bottle_Base
 	
 	override bool CanPutInCargo( EntityAI parent )
 	{
-		if (!super.CanPutInCargo(parent))
+		if( !super.CanPutInCargo(parent) ) {return false;}	
+		if ( parent && (parent.IsKindOf("CanisterGasoline"))/* && !(parent.IsKindOf("Container_Base"))*/)
+		{
 			return false;
-
-		if (parent && (parent.IsKindOf("CanisterGasoline")))
-			return false;
+		}
 		
 		return true;
 	}
@@ -54,10 +67,5 @@ class CanisterGasoline : Bottle_Base
 	override bool IsOpen()
 	{
 		return true;
-	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
 	}
 }

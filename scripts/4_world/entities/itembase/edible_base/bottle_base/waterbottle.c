@@ -1,6 +1,19 @@
 class WaterBottle extends Bottle_Base
 {
-	static const float DAMAGE_OVERHEAT_PER_S = 1;
+	void WaterBottle()
+	{
+
+	}
+	
+	void ~WaterBottle()
+	{
+		
+	}
+	
+	override bool IsContainer()
+	{
+		return true;
+	}
 	
 	override string GetPouringSoundset()
 	{
@@ -57,42 +70,10 @@ class WaterBottle extends Bottle_Base
 	{
 		super.EEOnCECreate();
 
-		WorldData data = GetGame().GetMission().GetWorldData();
-		if (data)
+		int rand = Math.RandomInt(0, 10);
+		if (rand > 5)
 		{
-			float chance = data.GetAgentSpawnChance(eAgents.CHOLERA);
-			int rand = Math.RandomFloat(0, 100);
-			
-			if (rand < chance)
-				InsertAgent(eAgents.CHOLERA, 1);
+			InsertAgent(eAgents.CHOLERA, 1);
 		}
-	}
-	
-	override void OnDebugSpawn()
-	{
-		super.OnDebugSpawn();
-		
-		InsertAgent(eAgents.CHOLERA, 1);
-	}
-	
-	override void AffectLiquidContainerOnFill(int liquid_type, float amount)
-	{
-		if (liquid_type == LIQUID_HOTWATER)
-		{
-			float damageVal = GetMaxHealth("","Health") / GetQuantityMax();
-			DecreaseHealth(amount * damageVal,false);
-		}
-	}
-	
-	//! disregards liquid boil threshold if filled
-	override float GetItemOverheatThreshold()
-	{
-		return GetTemperatureMax();
-	}
-	
-	override void OnItemOverheat(float deltaTime)
-	{
-		float damageVal = deltaTime * DAMAGE_OVERHEAT_PER_S;
-		DecreaseHealth(damageVal,false);
 	}
 }

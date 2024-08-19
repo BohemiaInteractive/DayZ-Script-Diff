@@ -1,18 +1,19 @@
-enum eModifiersTickType
+enum eModifiersTickType//bitmask
 {
 	TICK 					= 1,
 	ACTIVATE_CHECK 			= 2,
 	DEACTIVATE_CHECK 		= 4,
 }
 
+
 class ModifierBase
 {
 	int					m_ID = 0;
-	ModifiersManager 	m_Manager; //! the manager instance
+	ModifiersManager 	m_Manager;//the manager instance
 	string 				m_System = "Modifiers";
-	float 				m_ActivatedTime; //! overall time this modifier was active
-	bool				m_TrackActivatedTime; //!should this modifier track overall time it was active ?
-	bool				m_IsPersistent; //! is this modifier saved to the DB ?
+	float 				m_ActivatedTime;//overall time this modifier was active
+	bool				m_TrackActivatedTime;//should this modifier track overall time it was active ?
+	bool				m_IsPersistent;//is this modifier saved to the DB ?
 	PlayerBase			m_Player;
 	float				m_TickIntervalInactive = 5;
 	float				m_TickIntervalActive = 3;
@@ -25,8 +26,8 @@ class ModifierBase
 	float				m_LastTickedInactive;
 	bool				m_IsLocked = false;
 	EActivationType		m_ActivationType;
-	eModifierSyncIDs	m_SyncID; //! max 32 synced modifiers supported, 0 == no sync
-	PluginPlayerStatus	m_ModulePlayerStatus;
+	eModifierSyncIDs	m_SyncID;//max 32 synced modifiers supported, 0 == no sync
+	PluginPlayerStatus 		m_ModulePlayerStatus;
 
 	void ModifierBase()
 	{
@@ -40,7 +41,7 @@ class ModifierBase
 		Init();
 	}
 	
-	void Init();
+	void Init(){}
 
 
 	PlayerBase GetPlayer()
@@ -86,38 +87,41 @@ class ModifierBase
 
 	void Tick(float delta_time)
 	{
-		if (!m_IsActive && m_ShouldBeActive)
-			Activate();
 
-		if (m_IsActive)
+		if( !m_IsActive && m_ShouldBeActive )
+		{
+			Activate();
+		}
+
+		if( m_IsActive )
 		{
 			m_AccumulatedTimeActive += delta_time;
-			if (m_AccumulatedTimeActive > m_TickIntervalActive)
+			if( m_AccumulatedTimeActive > m_TickIntervalActive )
 			{
-				if (m_TickType & eModifiersTickType.DEACTIVATE_CHECK && DeactivateCondition(m_Player) && !IsLocked())
+				if( m_TickType & eModifiersTickType.DEACTIVATE_CHECK && DeactivateCondition(m_Player) && !IsLocked() )
 				{
 					Deactivate();
 				}
-				else
+				else//if(m_TickType & eModifiersTickType.TICK)
 				{
 					m_ActivatedTime += m_AccumulatedTimeActive;
 					OnTick(m_Player, m_AccumulatedTimeActive);
 				}
-
 				m_AccumulatedTimeActive = 0;
 			}
 		}
-		else if (m_TickType & eModifiersTickType.ACTIVATE_CHECK)
+		else if(m_TickType & eModifiersTickType.ACTIVATE_CHECK)
 		{
 			m_AccumulatedTimeInactive += delta_time;
-			if (m_AccumulatedTimeInactive > m_TickIntervalInactive)
+			if( m_AccumulatedTimeInactive > m_TickIntervalInactive )
 			{
-				if (ActivateCondition(m_Player))
+				if( ActivateCondition(m_Player) )
 				{
-					if (!IsLocked()) 
+					if( !IsLocked() ) 
+					{
 						ActivateRequest(EActivationType.TRIGGER_EVENT_ON_ACTIVATION);
+					}
 				}
-
 				m_AccumulatedTimeInactive = 0;
 			}
 		}
@@ -160,12 +164,10 @@ class ModifierBase
 	
 	string GetName()
 	{
-		string name 	= ClassName();
-		int indexStart 	= name.Length() - 4;
-		int indexEnd 	= name.Length();
-
-		name = name.SubstringInverted(name, indexStart, indexEnd);
-
+		string name = ClassName();
+		int index_start = name.Length() - 4;
+		int index_end = name.Length();
+		name = name.SubstringInverted(name, index_start, index_end);
 		return name;
 	}
 
@@ -180,20 +182,28 @@ class ModifierBase
 	}
 
 	//! is called when an inactive modifier gets activated during gameplay, is NOT called on activation upon player server connection(see OnReconnect)
-	void OnActivate(PlayerBase player);
+	void OnActivate(PlayerBase player)
+	{
+
+	}
+	
 	//! is called when a modifier is being re-activated upon player server connection, use to activate systems which are not persistent and need to run alongside active modifiers
-	void OnReconnect(PlayerBase player);
-	void OnDeactivate(PlayerBase player);
+	void OnReconnect(PlayerBase player)
+	{
+
+	}
+
+	void OnDeactivate(PlayerBase player)
+	{
+
+	}
 	
 	void Activate()
 	{
 		m_IsActive = true;
 		m_Player.m_SyncedModifiers = (m_Player.m_SyncedModifiers | m_SyncID);
-		if (m_ActivationType == EActivationType.TRIGGER_EVENT_ON_ACTIVATION)
-			OnActivate(m_Player);
-		else if (m_ActivationType == EActivationType.TRIGGER_EVENT_ON_CONNECT)
-			OnReconnect(m_Player);
-
+		if( m_ActivationType == EActivationType.TRIGGER_EVENT_ON_ACTIVATION ) OnActivate(m_Player);
+		else if(m_ActivationType == EActivationType.TRIGGER_EVENT_ON_CONNECT ) OnReconnect(m_Player);
 		m_Player.SetSynchDirty();
 	}
 	
@@ -205,19 +215,24 @@ class ModifierBase
 
 	void Deactivate(bool trigger = true)
 	{
-		if (!m_IsActive)
+		if(!m_IsActive)
 			return;
-
 		m_Player.m_SyncedModifiers = (m_Player.m_SyncedModifiers & ~m_SyncID);
 		m_ShouldBeActive = false;
 		m_IsActive = false;
 		m_ActivatedTime = 0;
-		if (trigger) 
+		if(trigger) 
 			OnDeactivate(m_Player);
 	}
 
 
-	void OnStoreSave(ParamsWriteContext ctx);
+	void OnStoreSave( ParamsWriteContext ctx )
+	{
+	}
 
-	private void OnTick(PlayerBase player, float deltaT);
+
+	private void OnTick(PlayerBase player, float deltaT)
+	{
+		
+	}
 }

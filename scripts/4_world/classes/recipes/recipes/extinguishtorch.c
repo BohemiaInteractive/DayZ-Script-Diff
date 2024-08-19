@@ -39,8 +39,7 @@ class ExtinguishTorch extends RecipeBase
 		InsertIngredient(1,"DisinfectantAlcohol");//you can insert multiple ingredients this way
 		InsertIngredient(1,"Canteen");//you can insert multiple ingredients this way
 		InsertIngredient(1,"WaterBottle");//you can insert multiple ingredients this way
-		InsertIngredient(1,"FilteringBottle");//you can insert multiple ingredients this way
-		InsertIngredient(1,"GlassBottle");//you can insert multiple ingredients this way
+		InsertIngredient(1,"Vodka");//you can insert multiple ingredients this way
 		InsertIngredient(1,"WaterPouch_ColorBase");//you can insert multiple ingredients this way
 		InsertIngredient(1,"Barrel_ColorBase");//you can insert multiple ingredients this way
 		
@@ -70,7 +69,7 @@ class ExtinguishTorch extends RecipeBase
 		ItemBase container;
 		Class.CastTo(container, ingredients[1]);
 		
-		if ( container.GetLiquidType() & (GROUP_LIQUID_BLOOD | LIQUID_WATER | LIQUID_BEER) )
+		if ( container.GetLiquidType() & (GROUP_LIQUID_BLOOD | LIQUID_WATER | LIQUID_RIVERWATER | LIQUID_BEER) )
 		{
 			return target.IsIgnited();
 		}

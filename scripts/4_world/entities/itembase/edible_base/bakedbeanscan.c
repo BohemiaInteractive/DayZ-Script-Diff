@@ -4,9 +4,4 @@ class BakedBeansCan : Edible_Base
 	{
 		ReplaceEdibleWithNew("BakedBeansCan_Opened");
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }

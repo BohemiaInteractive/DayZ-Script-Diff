@@ -4,14 +4,13 @@ class ActionPlaceObjectCB : ActiondeployObjectCB
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_PLACE);
 	}
-}
+};
 
-class ActionPlaceObject : ActionDeployObject
+class ActionPlaceObject: ActionDeployObject
 {		
 	void ActionPlaceObject()
 	{
 		m_CallbackClass	= ActionPlaceObjectCB;
-
 		m_Text = "#place_object";
 	}
 
@@ -19,4 +18,9 @@ class ActionPlaceObject : ActionDeployObject
 	{
 		return false;
 	}
-}
+	
+	override void MoveEntityToFinalPositionSinglePlayer(ActionData action_data, InventoryLocation source, InventoryLocation destination)
+	{
+		action_data.m_Player.GetDayZPlayerInventory().RedirectToHandEvent(InventoryMode.LOCAL, source, destination);
+	}
+};

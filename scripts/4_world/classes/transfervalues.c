@@ -107,6 +107,30 @@ class TransferValues extends Managed
 		}
 	}
 	
+	/*void CheckBlood()
+	{
+		float blood_current = m_Player.GetHealth("","Blood");
+		//float blood_normalized = blood_current / m_BloodMaxValue;
+		float blood_normalized = Math.InverseLerp(BLOOD_THRESHOLD_LOW, m_BloodMaxValue, blood_current);
+		blood_normalized = Math.Clamp(blood_normalized,0,1);
+		float difference_normalized = blood_normalized - m_LastBloodUpdate;
+		float diff_abs = Math.AbsFloat(difference_normalized);
+		m_CumulatedBloodDiff += diff_abs;
+		
+		//Print("DbgBlood | CheckBlood | m_CumulatedBloodDiff: " + m_CumulatedBloodDiff);
+		if( m_CumulatedBloodDiff > ( SENSITIVTY_PERCENTAGE /100 ) )
+		{
+			SendValue(TYPE_BLOOD, blood_normalized);
+			m_LastBloodUpdate = blood_normalized;
+			//Print("DbgBlood | CheckBlood | Sending blood: " + blood_normalized);
+			m_CumulatedBloodDiff = 0;
+		}
+		else
+		{
+			//Print("DbgBlood | CheckBlood | unsent values blood: " + blood_normalized);
+		}
+	}*/
+	
 	void CheckBlood()
 	{
 		float blood_current = m_Player.GetHealth("","Blood");
@@ -138,6 +162,7 @@ class TransferValues extends Managed
 		float blood_current = m_Player.GetHealth("","Blood");
 		float blood_normalized = Math.InverseLerp(BLOOD_THRESHOLD_LOW, m_BloodMaxValue, blood_current);
 		blood_normalized = Math.Clamp(blood_normalized,0,1);
+		//Print("DbgBlood | SendInitValues | blood_normalized: " + blood_normalized);
 		SendValue(TYPE_BLOOD, blood_normalized);
 		m_LastBloodUpdate = blood_normalized;
 	}

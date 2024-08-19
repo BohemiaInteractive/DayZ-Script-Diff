@@ -1,4 +1,3 @@
-//!DEPRECATED
 class ActionTakeMaterialToHandsSwitch: ActionSingleUseBase
 {
 	void ActionTakeMaterialToHandsSwitch()

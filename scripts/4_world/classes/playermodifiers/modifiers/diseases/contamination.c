@@ -29,11 +29,31 @@ class ContaminationStage1Mdfr: ModifierBase
 
 	override protected void OnActivate(PlayerBase player)
 	{
-		player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_COUGH);	
+		//player.IncreaseDiseaseCount();
+		m_NextEvent = Math.RandomFloatInclusive( EVENT_1_INTERVAL_MIN, EVENT_1_INTERVAL_MAX );
+	}
+
+	override protected void OnDeactivate(PlayerBase player)
+	{
+		//player.DecreaseDiseaseCount();
 	}
 
 	override protected bool DeactivateCondition(PlayerBase player)
 	{
 		return !ActivateCondition(player);
 	}
-}
+
+	override protected void OnTick(PlayerBase player, float deltaT)
+	{
+		/*
+		m_Time += deltaT;
+		
+		if ( m_Time >= m_NextEvent )
+		{
+			player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_COUGH);
+			m_Time = 0;
+			m_NextEvent = Math.RandomFloatInclusive( EVENT_1_INTERVAL_MIN, EVENT_1_INTERVAL_MAX );
+		}
+		*/
+	}
+};

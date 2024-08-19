@@ -37,8 +37,6 @@ class ActionCloseBarrelHoles: ActionInteractBase
 	
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		Object target_object = action_data.m_Target.GetObject();
 		BarrelHoles_ColorBase ntarget = BarrelHoles_ColorBase.Cast( target_object );
 		if( ntarget )

@@ -71,6 +71,10 @@ class ActionLoadMagazine: ActionContinuousBase
 
 			trg.SetSynchDirty();
 			itm.SetSynchDirty();
+			//manipulationDamage
+			//if(trg.GetAmmoCount() > 0 )
+				//trg.SetSynchDirty();
+			//itm.SetSynchDirty();
 		}
 	}
 };

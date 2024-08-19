@@ -57,11 +57,6 @@ class ActionBuildPart: ActionContinuousBase
 		return false;
 	}
 	
-	override bool CanBeUsedInFreelook()
-	{
-		return false;
-	}
-	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		if (player.IsPlacingLocal() || player.IsPlacingServer())
@@ -126,6 +121,7 @@ class ActionBuildPart: ActionContinuousBase
 			construction.BuildPartServer(action_data.m_Player, part_name, AT_BUILD_PART);
 			//add damage to tool
 			action_data.m_MainItem.DecreaseHealth(UADamageApplied.BUILD, false);
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 		}
 	}
 	

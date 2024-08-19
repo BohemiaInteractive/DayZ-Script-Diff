@@ -12,11 +12,6 @@ class EffectTrigger : CylinderTrigger
 	EffectArea 				m_EffectArea;
 	int						m_EffectsPriority;
 	
-	#ifdef DIAG_DEVELOPER
-	Shape m_DbgShape;
-	bool m_DebugShapeActive;
-	#endif
-	
 	void EffectTrigger()
 	{
 		RegisterNetSyncVariableInt("m_AroundPartId");
@@ -196,37 +191,4 @@ class EffectTrigger : CylinderTrigger
 	// Used to apply the desired effect to all entities present in one trigger of the specified type
 	// NOTE : This is really not optimal, if you want to add new trigger types, you will have to test for them...
 	static void TriggerEffect( EntityAI insider, typename triggerType ) {}
-		
-	#ifdef DIAG_DEVELOPER	
-	// overriden so it doesnt refresh the shape every call while keeping the insider coloring functional
-	override void DebugDmgTrigger( vector pos, vector orientation, vector min, vector max, float radius, string dmgType, array<ref TriggerInsider> insiders)
-	{
-		bool enableDebug = DiagMenu.GetBool(DiagMenuIDs.TRIGGER_DEBUG);
-		if (enableDebug)
-		{
-			if (GetGame().IsMultiplayer() && GetGame().IsServer())
-				return;
-					
-			if (!m_DebugShapeActive)
-			{
-				m_DbgShape = DrawDebugShape(pos, min, max, radius, COLOR_GREEN_A);
-				m_DebugShapeActive = true;
-			}
-
-			if (GetGame().IsMultiplayer() || GetGame().IsServer())
-				m_dbgInsiders = insiders;
-		
-			if (m_dbgInsiders.Count() > 0)
-				m_DbgShape.SetColor(COLOR_YELLOW_A);		
-			else 
-				m_DbgShape.SetColor(COLOR_GREEN_A);
-		}
-		else if (m_DebugShapeActive)
-		{
-			CleanupDebugShapes(dbgTargets);
-			m_DebugShapeActive = false;
-		}
-	}
-	#endif
-	
 }

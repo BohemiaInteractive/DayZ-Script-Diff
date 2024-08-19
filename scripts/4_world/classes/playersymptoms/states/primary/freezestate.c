@@ -39,7 +39,7 @@ class FreezeSymptom extends SymptomBase
 		player.GetMovementState(hms);
 		ItemBase item = m_Player.GetItemInHands();
 
-		if (!(item && item.IsHeavyBehaviour()) && !m_Player.IsSurrendered() && m_Manager.GetCurrentCommandID() == DayZPlayerConstants.COMMANDID_MOVE && hms.m_iMovement == DayZPlayerConstants.MOVEMENTIDX_IDLE && !player.IsRestrained() && !player.IsInProne())
+		if (!(item && item.IsHeavyBehaviour()) && !m_Player.IsSurrendered() && m_Manager.GetCurrentCommandID() == DayZPlayerConstants.COMMANDID_MOVE && hms.m_iMovement == DayZPlayerConstants.MOVEMENTIDX_IDLE && !player.IsRestrained() )
 		{
 			PlayAnimationADD(2);
 		}

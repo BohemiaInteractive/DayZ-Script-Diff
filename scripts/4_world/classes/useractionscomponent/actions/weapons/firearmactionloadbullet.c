@@ -46,7 +46,6 @@ class FirearmActionLoadBullet : FirearmActionBase
 			if (arrowManager)
 			{
 				mag = Magazine.Cast(arrowManager.AcquireFirstArrow(false));
-				mag.SetPosition(action_data.m_Player.GetPosition());
 			}
 		}
 		else

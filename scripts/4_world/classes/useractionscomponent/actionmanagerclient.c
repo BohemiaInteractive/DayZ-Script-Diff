@@ -7,7 +7,7 @@ class ActionManagerClient: ActionManagerBase
 	//Last send AcknowledgmentID (client can send more requests before recive ackfor first action)
 	protected int 								m_LastAcknowledgmentID;
 	protected bool								m_ActionPossible;
-	protected ref array<ref InventoryLocation>	m_ReservedInventoryLocations; // obsolete
+	protected ref array<ref InventoryLocation>	m_ReservedInventoryLocations;
 	protected ref InventoryActionHandler		m_InventoryActionHandler;
 	protected ref InventoryLocation				m_HandInventoryLocationTest;
 	protected ref TTypeNameActionInputMap		m_RegistredInputsMap;
@@ -27,7 +27,7 @@ class ActionManagerClient: ActionManagerBase
 		m_HandInventoryLocationTest.SetHands(player,null);
 		m_LastAcknowledgmentID = 1;
 		m_Targets	= new ActionTargets(player);
-		//m_ReservedInventoryLocations = new array<ref InventoryLocation>;
+		m_ReservedInventoryLocations = new array<ref InventoryLocation>;
 		m_InventoryActionHandler = new InventoryActionHandler(player);
 
 		m_ActionWantEndRequest_Send = false;
@@ -72,7 +72,7 @@ class ActionManagerClient: ActionManagerBase
 					m_CurrentActionData.m_Action.ClearInventoryReservationEx(m_CurrentActionData);
 					bool can_be_action_done = ((condition_mask & m_CurrentActionData.m_Action.m_ConditionMask) == condition_mask);
 					// check currentCommandID before start or reject 
-					if (m_ActionPossible && can_be_action_done)
+					if (m_ActionPossible && can_be_action_done && currentCommandID != DayZPlayerConstants.COMMANDID_SWIM)
 					{
 						m_CurrentActionData.m_Action.InventoryReservation(m_CurrentActionData);
 						m_CurrentActionData.m_State = UA_START;

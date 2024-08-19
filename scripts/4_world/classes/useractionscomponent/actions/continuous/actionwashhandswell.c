@@ -39,10 +39,5 @@ class ActionWashHandsWell: ActionContinuousBase
 		PluginLifespan moduleLifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
 		moduleLifespan.UpdateBloodyHandsVisibility(action_data.m_Player, false);
 	}
-	
-	override bool IsLockTargetOnUse()
-	{
-		return false;
-	}
 
 }

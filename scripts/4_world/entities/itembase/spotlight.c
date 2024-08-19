@@ -37,6 +37,7 @@ class Spotlight extends ItemBase
 	
 	protected EffectSound 	m_SoundTurnOn;
 	protected EffectSound 	m_SoundTurnOff;
+	protected EffectSound 	m_DeployLoopSound;
 
 	//Spotlight, folded and unfolded
 	void Spotlight()
@@ -47,7 +48,13 @@ class Spotlight extends ItemBase
 		RegisterNetSyncVariableBool("m_IsDeploySound");
 		RegisterNetSyncVariableBool("m_IsFolded");
 	}
-		
+	
+	void ~Spotlight()
+	{
+		if (m_DeployLoopSound)
+			SEffectManager.DestroyEffect(m_DeployLoopSound);
+	}
+	
 	override bool IsElectricAppliance()
 	{
 		return true;
@@ -245,6 +252,16 @@ class Spotlight extends ItemBase
 		{
 			PlayDeploySound();
 		}
+		
+		if (CanPlayDeployLoopSound())
+		{
+			PlayDeployLoopSound();
+		}
+		
+		if (m_DeployLoopSound && !CanPlayDeployLoopSound())
+		{
+			StopDeployLoopSound();
+		}
 	}
 
 	void Fold(bool keep_connected = false)
@@ -389,7 +406,25 @@ class Spotlight extends ItemBase
 	{
 		return "spotlight_deploy_SoundSet";
 	}
-		
+	
+	void PlayDeployLoopSound()
+	{		
+		if (!GetGame().IsDedicatedServer() && !m_DeployLoopSound)
+		{		
+			m_DeployLoopSound = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
+			m_DeployLoopSound.SetAutodestroy(true);
+		}
+	}
+	
+	void StopDeployLoopSound()
+	{
+		if (!GetGame().IsDedicatedServer())
+		{	
+			m_DeployLoopSound.SetSoundFadeOut(0.5);
+			m_DeployLoopSound.SoundStop();
+		}
+	}
+	
 	override int GetViewIndex()
 	{
 		if (MemoryPointExists("invView2") && !m_IsFolded)
@@ -416,10 +451,4 @@ class Spotlight extends ItemBase
 		AddAction(ActionDeployObject);
 		AddAction(ActionTakeItemToHands);
 	}
-	
-	//!DEPRECATED
-	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
-	
-	void PlayDeployLoopSound(); //!DEPRECATED
-	void StopDeployLoopSound(); //!DEPRECATED
 }

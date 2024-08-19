@@ -41,7 +41,7 @@ class CAContinuousEmpty : CAContinuousBase
 			m_TargetUnits = action_data.m_MainItem.GetQuantity();
 		}
 		
-		m_AdjustedQuantityEmptiedPerSecond = m_QuantityEmptiedPerSecond;//removed softskills 
+		m_AdjustedQuantityEmptiedPerSecond = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_QuantityEmptiedPerSecond, m_Action.GetSpecialtyWeight(), true );
 	}
 	
 	override int Execute( ActionData action_data  )
@@ -107,8 +107,7 @@ class CAContinuousEmpty : CAContinuousBase
 				SetACData(m_SpentUnits);
 			}
 			
-			if (action_data.m_MainItem.GetQuantity() > 0.0)
-				action_data.m_MainItem.AddQuantity(-m_SpentQuantity);
+			action_data.m_MainItem.AddQuantity(-m_SpentQuantity);
 		}	
 		m_SpentQuantity = 0;
 	}

@@ -181,8 +181,7 @@ class OptionsMenu extends UIScriptedMenu
 	
 	void Apply()
 	{
-		if (m_ControlsTab.IsChanged())
-			m_ControlsTab.Apply();
+		m_ControlsTab.Apply();
 	
 		if (m_SoundsTab.IsChanged())
 			m_SoundsTab.Apply();

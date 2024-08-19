@@ -39,7 +39,6 @@ class ActionRepackTentCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionRepackTent: ActionContinuousBase
 {
 	EntityAI m_RepackedEntity;
@@ -103,8 +102,6 @@ class ActionRepackTent: ActionContinuousBase
 	
 	override void OnStartServer( ActionData action_data )
 	{
-		super.OnStartServer(action_data);
-		
 		m_RepackedEntity = null;
 		m_IsFinished = false;
 	}
@@ -119,8 +116,6 @@ class ActionRepackTent: ActionContinuousBase
 	
 	override void OnEndServer( ActionData action_data )
 	{		
-		super.OnEndServer(action_data);
-		
 		if ( m_IsFinished )
 		{
 			if ( action_data.m_MainItem.IsInherited( TentBase ) ) 

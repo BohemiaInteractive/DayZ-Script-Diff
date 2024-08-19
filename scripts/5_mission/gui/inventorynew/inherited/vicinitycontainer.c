@@ -319,17 +319,7 @@ class VicinityContainer: CollapsibleContainer
 		
 		//GetItemsShowableInInventory
 		array<EntityAI> showable_items = new array<EntityAI>;
-		bool isUsedMicromanagment = false;
-		EntityAI selectesItem = ItemManager.GetInstance().GetSelectedItem();
 		int m_OldShowedItemIconsCount = m_ShowedItemIcons.Count();
-
-		if (selectesItem && ItemManager.GetInstance().IsMicromanagmentMode())
-		{
-			if (m_ShowedItemIcons.Find(selectesItem) != -1)
-			{
-				isUsedMicromanagment = true;
-			}
-		}
 		m_ShowedItemIcons.Clear();
 		
 		GameInventory game_inventory = player.GetInventory();
@@ -342,24 +332,18 @@ class VicinityContainer: CollapsibleContainer
 			BaseBuildingBase base_building = BaseBuildingBase.Cast(eai);
 			if (base_building && !base_building.IsPlayerInside(player,""))
 				continue;
-			
-			if (eai.IsInventoryVisible())
+
+			if ( eai.IsInventoryVisible() )
 			{
-				showable_items.Insert(eai);
-				
-				if (!eai.DisableVicinityIcon())
+				showable_items.Insert( eai );
+
+				if ( !eai.IsInherited( DayZInfected ) && !eai.IsInherited( PlayerBase ) && !eai.IsInherited( AnimalBase ) && !eai.DisableVicinityIcon() )
 				{
-					m_ShowedItemIcons.Insert(eai);
+					m_ShowedItemIcons.Insert( eai );
 				}
 			}
 		}
 		
-		if (isUsedMicromanagment && m_ShowedItemIcons.Find(selectesItem) == -1 )
-		{
-			//ItemManager.GetInstance().SetItemMicromanagmentMode(false);
-			ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
-			isUsedMicromanagment = false;
-		}
 		
 		//MW HOTFIX - old containers must be removed before new one are added (part of initialize are refreshed whole structure - need proper fix to avoid it)
 		ref map<EntityAI, ref Container> new_showed_items = new ref map<EntityAI, ref Container>;
@@ -379,11 +363,6 @@ class VicinityContainer: CollapsibleContainer
 			con = m_ShowedItems.GetElement( i );
 			if ( !new_showed_items.Contains( ent ) )
 			{
-				if ( selectesItem && selectesItem.GetHierarchyRoot() == ent)
-				{
-					//ItemManager.GetInstance().SetItemMicromanagmentMode(false);
-					ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
-				}
 				GetMainWidget().Update();
 				if ( con.IsActive() )
 					need_update_focus = true;

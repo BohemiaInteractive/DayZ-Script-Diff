@@ -24,7 +24,7 @@ class CAContinuousFillPowerGenerator : CAContinuousFill
 		
 		m_ItemQuantity = action_data.m_MainItem.GetQuantity();
 		m_TargetUnits = pg.GetCompEM().GetEnergyMax() - pg.GetCompEM().GetEnergy();
-		m_AdjustedQuantityFilledPerSecond = m_QuantityFilledPerSecond;//removed softskills 
+		m_AdjustedQuantityFilledPerSecond = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_QuantityFilledPerSecond, m_Action.GetSpecialtyWeight(), true );
 	}
 	
 	override int Execute( ActionData action_data )

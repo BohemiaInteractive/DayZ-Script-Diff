@@ -26,7 +26,6 @@ class ActionReadPaperCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionReadPaper: ActionContinuousBase
 {
 	void ActionReadPaper()

@@ -9,7 +9,7 @@ class Heatpack : ItemBase
 	{
 		if (GetGame().IsServer())
 		{
-			SetTemperatureDirect(80);
+			SetTemperature(60);
 		}
 	}
 	
@@ -17,7 +17,7 @@ class Heatpack : ItemBase
 	{
 		if (GetGame().IsServer())
 		{
-			SetTemperatureDirect(80);
+			SetTemperature(60);
 		}
 	}
 	
@@ -35,14 +35,4 @@ class Heatpack : ItemBase
 		
 		AddAction(ActionTurnOnHeatpack);
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
-	
-	override bool IsSelfAdjustingTemperature()
-	{
-		return GetCompEM().IsWorking();
-	}
-}
+};

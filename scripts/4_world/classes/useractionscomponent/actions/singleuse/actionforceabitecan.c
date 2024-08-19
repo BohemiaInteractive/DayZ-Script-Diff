@@ -1,4 +1,3 @@
-//!DEPRECATED
 class ActionForceABiteCan: ActionForceABite
 {
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )

@@ -24,7 +24,9 @@ class DeCraftGhillieAttachment extends RecipeBase
 		
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"GhillieAtt_ColorBase");//you can insert multiple ingredients this way
+		InsertIngredient(0,"GhillieAtt_Tan");//you can insert multiple ingredients this way
+		InsertIngredient(0,"GhillieAtt_Woodland");//you can insert multiple ingredients this way
+		InsertIngredient(0,"GhillieAtt_Mossy");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing

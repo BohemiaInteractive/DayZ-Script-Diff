@@ -88,7 +88,7 @@ class EffectParticle : Effect
 	{
 		if (!GetParticle())
 		{
-			//ErrorEx(string.Format("No Particle started playing, stopping EffectParticle: %1", GetDebugName()), ErrorExSeverity.WARNING);
+			ErrorEx(string.Format("No Particle started playing, stopping EffectParticle: %1", GetDebugName()), ErrorExSeverity.WARNING);
 			Stop();
 		}
 	}

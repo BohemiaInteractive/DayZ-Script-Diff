@@ -1,13 +1,11 @@
 class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 {
 	static int 		m_ObjectsScope = 2;
-	static protected vector 	m_LastEditPos = vector.Zero;
-	static protected vector 	m_LastEditDir = vector.Zero;
 	
 	protected static float 	DEBUG_MAP_ZOOM = 1;
 	protected static bool 	SHOW_OTHERS = 0;
 	
-	protected const string 		NUMERIC_LETTERS = "0123456789.-";
+	protected const string  	DEFAULT_POS_XYZ = "<1,2,3>";
 	protected vector 			m_MapPos;
 	protected bool 				m_PlayerPosRefreshBlocked;
 
@@ -20,10 +18,10 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	protected ref Timer 			m_LateInit = new Timer();
 	
 	protected bool 					m_UpdatePlayerPositions;
-	protected bool 					m_InitialOpen = true;
 	
 	//-------------------------------- WIDGETS ---------------------------------------
-	protected EditBoxWidget 		m_TeleportHeading;
+	protected EditBoxWidget 		m_TeleportX;
+	protected EditBoxWidget 		m_TeleportY;
 	protected EditBoxWidget 		m_TeleportXYZ;
 	protected EditBoxWidget 		m_DateYear;
 	protected EditBoxWidget 		m_DateMonth;
@@ -55,15 +53,13 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	protected MapWidget 			m_DebugMapWidget;
 	
 	protected TextWidget	 		m_PlayerCurPos;
-	protected TextWidget	 		m_PlayerCurDir;
 	protected TextWidget	 		m_MouseCurPos;
 	protected TextWidget	 		m_PlayerMouseDiff;
 
 	protected TextListboxWidget 	m_DiagToggleTextListbox;
-	protected TextListboxWidget		m_PositionsListbox;
+	protected TextListboxWidget	m_PositionsListbox;
 	protected TextListboxWidget 	m_DiagDrawmodeTextListbox;
 	protected TextListboxWidget 	m_HelpTextListboxWidget;
-	
 	//-----------------------------------------------------------------------------------
 	
 	void ScriptConsoleGeneralTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
@@ -82,10 +78,10 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_TeleportButton	= ButtonWidget.Cast(root.FindAnyWidget("ButtonTeleport"));
 		m_ButtonCopyPos		= ButtonWidget.Cast(root.FindAnyWidget("Button_CopyPos"));
 
-		m_TeleportHeading	= EditBoxWidget.Cast(root.FindAnyWidget("TeleportHeading"));
+		m_TeleportX			= EditBoxWidget.Cast(root.FindAnyWidget("TeleportX"));
+		m_TeleportY			= EditBoxWidget.Cast(root.FindAnyWidget("TeleportY"));
 		m_TeleportXYZ		= EditBoxWidget.Cast(root.FindAnyWidget("TeleportXYZ"));
 		m_PlayerCurPos		= TextWidget.Cast(root.FindAnyWidget("PlayerPosLabel"));
-		m_PlayerCurDir		= TextWidget.Cast(root.FindAnyWidget("PlayerDirLabel"));
 		m_PlayerMouseDiff	= TextWidget.Cast(root.FindAnyWidget("PlayerMouseDiff"));
 		m_MouseCurPos		= TextWidget.Cast(root.FindAnyWidget("MousePosLabel"));
 		m_LogsEnabled		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_LogsEnabled"));
@@ -173,10 +169,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			m_DebugMapWidget.SetScale(DEBUG_MAP_ZOOM);
 			m_DebugMapWidget.SetMapPos(GetGame().GetPlayer().GetWorldPosition());
 		}
-		if (m_LastEditPos != vector.Zero)
-			m_TeleportXYZ.SetText(m_LastEditPos.ToString(true));
-		if (m_LastEditDir != vector.Zero)
-			m_TeleportHeading.SetText(m_LastEditDir.ToString(true));
+		m_TeleportXYZ.SetText(DEFAULT_POS_XYZ);
 		
 		m_LateInit.Run(0.05, this, "LateInit", null, false);
 		
@@ -240,129 +233,6 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_Developer.Teleport(player, position);
 	}
 	
-	void ProcessTeleportText(PlayerBase player)
-	{
-		bool doTeleport, doSetDir;
-		vector pos, dir;
-		string text = m_TeleportXYZ.GetText();
-		string textDir = m_TeleportHeading.GetText();
-
-		array<float> numbersPos = TextToNumbersArray(text);
-		if (numbersPos.Count() != 0)
-		{
-			if (numbersPos.Count() == 1)
-			{
-				pos = vector.Zero;
-			}
-			else if (numbersPos.Count() == 2)
-			{
-				pos = Vector(numbersPos[0], GetGame().SurfaceY(numbersPos[0], numbersPos[1]), numbersPos[1]);
-			}
-			else if (numbersPos.Count() <= 5)
-			{
-				pos = Vector(numbersPos[0], numbersPos[1], numbersPos[2]);
-			}
-			else if (numbersPos.Count() > 5)
-			{
-				pos = Vector(numbersPos[0], numbersPos[1], numbersPos[2]);
-				dir = Vector(numbersPos[3], numbersPos[4], numbersPos[5]);
-
-				Teleport(player, pos);
-				m_LastEditPos = pos;
-				m_TeleportXYZ.SetText(m_LastEditPos.ToString());
-				
-				m_Developer.SetDirection(player, dir);
-				m_LastEditDir = dir;
-				m_TeleportHeading.SetText(m_LastEditDir.ToString());
-				
-				return;
-			}
-				
-			doTeleport = true;
-		}
-		else 
-			m_LastEditPos = vector.Zero;
-		
-		array<float> numbersDir = TextToNumbersArray(textDir);
-		if (numbersDir.Count() != 0)
-		{
-			if (numbersDir.Count() == 1)
-			{
-				dir = vector.Zero;
-			}
-			else if (numbersDir.Count() == 2)
-			{
-				dir = Vector(numbersDir[0], 0, numbersDir[1]);
-			}
-			else if (numbersDir.Count() <= 5)
-			{
-				dir = Vector(numbersDir[0], numbersDir[1], numbersDir[2]);
-			}
-			else if (numbersDir.Count() > 5)
-			{
-				pos = Vector(numbersDir[0], numbersDir[1], numbersDir[2]);
-				dir = Vector(numbersDir[3], numbersDir[4], numbersDir[5]);
-
-				Teleport(player, pos);
-				m_LastEditPos = pos;
-				m_TeleportXYZ.SetText(m_LastEditPos.ToString());
-				
-				m_Developer.SetDirection(player, dir);
-				m_LastEditDir = dir;
-				m_TeleportHeading.SetText(m_LastEditDir.ToString());
-				
-				return;
-			}
-			
-			doSetDir = true;
-		}
-		else 
-			m_LastEditDir = vector.Zero;
-		
-		if (doTeleport)
-		{
-			Teleport(player, pos);
-			m_LastEditPos = pos;
-		}
-		
-		if (doSetDir)
-		{
-			m_Developer.SetDirection(player, dir);
-			m_LastEditDir = dir;
-		}
-	}
-	
-	array<float> TextToNumbersArray(string text)
-	{
-		array<float> numbers = new array<float>();
-		int length = text.Length();
-		int numberStart = -1;
-		int numberLen;
-		
-		for (int i = 0; i < length; i++)	// find numbers and move them to array
-		{
-			string letter = text.Get(i);
-			
-			if (numberStart == -1 && NUMERIC_LETTERS.Contains(letter) && letter != ".")	// search for number
-				numberStart = i; 
-			
-			if (numberStart != -1 && (!NUMERIC_LETTERS.Contains(letter) || (letter == "-" && numberStart != i)))	// search for number end
-			{
-				numberLen = i - numberStart;
-				numbers.Insert(text.Substring(numberStart, numberLen).ToFloat());
-				numberStart = -1;
-			}
-			else if (numberStart != -1 && (i + 1 == length))	// last letter
-			{
-				numberLen = i - numberStart + 1;
-				numbers.Insert(text.Substring(numberStart, numberLen).ToFloat());
-				numberStart = -1;
-			}
-		}
-		
-		return numbers;
-	}
-	
 	void RefreshLocations()
 	{
 		m_PositionsListbox.ClearItems();
@@ -380,6 +250,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			m_PositionsListbox.AddItem(name,dta,0);
 		}
 	}
+
 	
 	string GetCurrentLocationName()
 	{
@@ -399,7 +270,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		else 
 			return vector.Zero;
 	}
-		
+	
 	void GetCurrentPositionData(out LocationParams data)
 	{
 		if (m_PositionsListbox.GetSelectedRow() != -1)
@@ -439,9 +310,6 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 
 		vector playerPos = GetGame().GetPlayer().GetPosition();
 		SetMapPos(playerPos);
-		
-		vector playerDir = GetGame().GetPlayer().GetDirection();
-		SetDir(playerDir);
 	}
 
 	void UpdateTime(bool slider_used)
@@ -511,12 +379,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	void SetMapPos(vector pos)
 	{
 		m_MapPos = pos;
-		m_PlayerCurPos.SetText("Position: "+  MiscGameplayFunctions.TruncateToS(pos[0]) +", "+ MiscGameplayFunctions.TruncateToS(pos[1]) +", "+ MiscGameplayFunctions.TruncateToS(pos[2]));
-	}
-	
-	void SetDir(vector dir)
-	{
-		m_PlayerCurDir.SetText("Direction: "+  MiscGameplayFunctions.TruncateToS(dir[0]) +", "+ MiscGameplayFunctions.TruncateToS(dir[1]) +", "+ MiscGameplayFunctions.TruncateToS(dir[2]));
+		m_PlayerCurPos.SetText("Pos: "+  MiscGameplayFunctions.TruncateToS(pos[0]) +", "+ MiscGameplayFunctions.TruncateToS(pos[1]) +", "+ MiscGameplayFunctions.TruncateToS(pos[2]));
 	}
 	
 	vector GetMapPos()
@@ -584,7 +447,6 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			UpdateTime(w == m_TimeSlider);
 			return true;
 		}
-		
 		return false;
 	}
 	
@@ -593,13 +455,9 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		super.OnItemSelected(w, x, y, row, column, oldRow, oldColumn);
 		if (w == m_PositionsListbox)
 		{
-			if (m_InitialOpen)
-			{
-				m_InitialOpen = false;
-				return true;
-			}
-			
 			vector position = GetCurrentLocationPos();
+			m_TeleportX.SetText(position[0].ToString());
+			m_TeleportY.SetText(position[2].ToString());
 			m_TeleportXYZ.SetText(position.ToString());
 			if (IsCurrentPositionValid())
 			{
@@ -634,12 +492,6 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			return true;
 		}
 		
-		if (w == m_TeleportHeading)
-		{
-			EditBoxWidget.Cast(w).SetText("");
-			return true;
-		}
-		
 		if (w == m_TeleportXYZ)
 		{
 			EditBoxWidget.Cast(w).SetText("");
@@ -662,6 +514,9 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			
 			vector position = GetCurrentLocationPos();
 			
+			m_TeleportX.SetText(position[0].ToString());
+			m_TeleportY.SetText(position[2].ToString());
+			
 			if (IsCurrentPositionValid())
 			{
 				m_ConfigDebugProfile.SetSpawnLocIndex(GetCurrentPositionIndex());
@@ -671,19 +526,21 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		}
 		else if (w == m_TeleportButton)
 		{
-			ProcessTeleportText(player);
+			float pos_x = m_TeleportX.GetText().ToFloat();
+			float pos_z = m_TeleportY.GetText().ToFloat();
+			float pos_y = GetGame().SurfaceY(pos_x, pos_z);
+			vector v = Vector(pos_x, pos_y, pos_z);
+			if (m_TeleportXYZ.GetText() != "" && m_TeleportXYZ.GetText() != DEFAULT_POS_XYZ)
+			{
+				string pos = m_TeleportXYZ.GetText();
+				v = pos.BeautifiedToVector();
+			}
+			Teleport(player, v);
 			return true;
 		}
 		else if (w == m_ButtonCopyPos)
 		{
-			if (m_IsShiftDown)
-			{
-				GetGame().CopyToClipboard(GetMapPos().ToString(false));	
-				return true;
-			}
-			
-			
-			GetGame().CopyToClipboard(GetMapPos().ToString() + " " + GetGame().GetPlayer().GetDirection().ToString());
+			GetGame().CopyToClipboard(GetMapPos().ToString());
 			return true;
 		}
 		else if (w == m_LogsEnabled)

@@ -6,7 +6,6 @@ class ActionWashHandsWaterOneCB : ActionInteractLoopBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionWashHandsWaterOne extends ActionInteractLoopBase
 {
 	void ActionWashHandsWaterOne()
@@ -21,7 +20,7 @@ class ActionWashHandsWaterOne extends ActionInteractLoopBase
 	override void CreateConditionComponents()  
 	{		
 		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, LIQUID_GROUP_WATER);
+		m_ConditionTarget = new CCTWaterSurface(UAMaxDistances.DEFAULT, UAWaterType.ALL);
 	}
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
@@ -32,8 +31,6 @@ class ActionWashHandsWaterOne extends ActionInteractLoopBase
 
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		if (action_data.m_State == UA_FINISHED)
 		{
 			PluginLifespan module_lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );

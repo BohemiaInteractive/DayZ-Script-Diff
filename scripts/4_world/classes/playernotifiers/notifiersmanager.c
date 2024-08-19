@@ -63,7 +63,7 @@ class NotifiersManager
 	
 	void RegisterItself(int notifier_id, NotifierBase modifier)
 	{
-		if (notifier_id >= MAX_COUNT)
+		if(notifier_id >= MAX_COUNT)
 			Error("out of bounds for notifier id: " + notifier_id);
 		else
 			m_NotifiersStatic[notifier_id] = modifier;
@@ -79,7 +79,7 @@ class NotifiersManager
 		return m_VirtualHud;
 	}
 	
-	NotifierBase FindNotifier(int type)
+	NotifierBase FindNotifier( int type )
 	{
 		return m_NotifiersStatic[type];
 	}
@@ -96,20 +96,21 @@ class NotifiersManager
 
 	void OnScheduledTick()
 	{
-		if (!GetPlayer().IsPlayerSelected())
-			return;
+		if( !GetPlayer().IsPlayerSelected() ) return;
 		
 		TickNotifiers();
 	}
 
 	void TickNotifiers()
 	{
-		int currentTime = GetGame().GetTime();
+		int current_time = GetGame().GetTime();
 
-		foreach (NotifierBase notifier: m_Notifiers)
+		foreach(NotifierBase notifier: m_Notifiers)
 		{
-			if (notifier.IsActive() && notifier.IsTimeToTick(currentTime))
-				notifier.OnTick(currentTime);
+			if ( notifier.IsActive() && notifier.IsTimeToTick(current_time) )
+			{
+				notifier.OnTick(current_time);
+			}
 		}		
 
 	}

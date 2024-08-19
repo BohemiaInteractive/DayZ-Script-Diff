@@ -201,8 +201,7 @@ class TerritoryFlag extends BaseBuildingBase
 			SetSynchDirty();
 			
 			//update on refresher activation / last update on refresher deactivation
-			if (GetCEApi())
-				GetCEApi().RadiusLifetimeReset(GetPosition(),GameConstants.REFRESHER_RADIUS);
+			GetCEApi().RadiusLifetimeReset(GetPosition(),GameConstants.REFRESHER_RADIUS); //TODO spammable!!!
 		}
 	}
 	
@@ -274,21 +273,6 @@ class TerritoryFlag extends BaseBuildingBase
 	}
 
 	//--- ATTACHMENT & CONDITIONS
-	override void EEItemDetached( EntityAI item, string slot_name )
-	{
-		super.EEItemDetached( item, slot_name );
-		
-		if (GetGame().IsServer())	// reset totem state is flag is decrafted  while raised
-		{
-			float state = GetAnimationPhase("flag_mast");
-			if (state < 1)
-			{
-				AnimateFlag(1);	
-				SetRefreshTimer01(0);
-			}
-		}
-	}
-	
 	override bool CanReceiveAttachment( EntityAI attachment, int slotId ) //TODO
 	{
 		if ( !super.CanReceiveAttachment(attachment, slotId) )

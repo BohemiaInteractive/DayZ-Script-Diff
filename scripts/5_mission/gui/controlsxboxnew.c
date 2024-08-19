@@ -80,12 +80,10 @@ class ControlsXboxNew extends UIScriptedMenu
 	
 	void UpdateTabContent(int tab_index)
 	{
-		Print("UpdateTabContent - 1");		
 		Widget w;
 		//hide old
 		if (m_CurrentTabIdx != -1)
 		{
-			Print("UpdateTabContent - 2");
 			m_VariantWidget.Show(false);
 			while (m_VariantWidget.GetParent())
 			{
@@ -93,7 +91,6 @@ class ControlsXboxNew extends UIScriptedMenu
 				m_VariantWidget.Show(false);
 			}
 		}
-		
 		//show new
 		w = FindChildByID(m_CategoryStructure[tab_index],InputUtils.GetConsolePresetID());
 		w.Show(true);
@@ -146,12 +143,248 @@ class ControlsXboxNew extends UIScriptedMenu
 				if (FilterByVisible(items_raw,items_filtered) > 0) //if there are any button-relevant items..
 				{
 					button_mapping.Insert(enum_value,items_filtered);
+					
+					//dump it!
+/*
+					for (int dump = 0; dump < items_filtered.Count(); dump++)
+					{
+						Print("key: " + i + " | name: " + items_filtered[dump].GetName());
+					}
+					Print("-");
+*/
 				}
 			}
 			m_AreasLR.Insert(side_idx,button_mapping);
 			
 			wid_side = wid_side.GetSibling();
 		}
+		
+		//dump it 2: the dumpening!
+/*
+		int count_2 = m_AreasLR.Count();
+		for (int z = 0; z < m_AreasLR.Count(); z++)
+		{
+			Print("---------");
+			Print("Area: " + z);
+			TButtonPairingInfo tmp_info = m_AreasLR.GetElement(z);
+			int count_1 = tmp_info.Count();
+			for (int zz = 0; zz < tmp_info.Count(); zz++)
+			{
+				for (int zzz = 0; zzz < tmp_info.GetElement(zz).Count(); zzz++)
+				{
+					Print("key: " + tmp_info.GetKey(zz) + " | name: " + tmp_info.GetElement(zz).Get(zzz).GetName());
+				}
+			}
+		}
+		
+		Print("------------------------");
+*/
+		/*
+		map<string, ref array<int>> button_marker_groups_unflitred = new map<string, ref array<int>>;
+		map<string, ref array<int>> button_marker_groups = new map<string, ref array<int>>;
+		
+		float text_widget_pos_x, text_widget_pos_y;
+		float text_widget_width, text_widget_height;
+		float dot_pos_x, dot_pos_y;
+		float dot_width, dot_height;
+		float draw_pos_x, draw_pos_y;
+		
+		m_CanvasWidget.Clear();
+		
+		for (int i = 0; i < m_TabScript.GetTabCount(); i++)
+		{
+			tab_array.Insert(new array<ref JsonControlMappingInfo>);
+			for (int j = 0; j < 20; j++)
+			{
+				tab_array[i].Insert(null);
+			}
+		}
+		
+		// insert json info to array by index, so it is sorted
+		for (i = 0; i < control_mapping_info.Count(); i++)
+		{
+			JsonControlMappingInfo info = control_mapping_info.Get(i);
+			tab_array[info.m_TabID][info.m_TextWidgetID] = info;
+		}
+		
+		// create group of buttons which are connected together with line
+		for (int l = 0; l < control_mapping_info.Count(); l++)
+		{
+			JsonControlMappingInfo info1 = control_mapping_info[l];
+			string button_name = info1.m_ButtonName;
+			int text_widget_id = info1.m_TextWidgetID;
+			if (info1.m_TabID != index)
+			{
+				continue;
+			}
+			if (!button_marker_groups_unflitred.Contains(button_name))
+			{
+				button_marker_groups_unflitred.Insert(button_name, new ref array<int>);
+				button_marker_groups_unflitred.Get(button_name).Insert(text_widget_id);
+			}
+			else
+			{
+				button_marker_groups_unflitred.Get(button_name).Insert(text_widget_id);
+			}
+		}
+		
+		// we want groups which are bigger than 1
+		for (l = 0; l < button_marker_groups_unflitred.Count(); l++)
+		{
+			if (button_marker_groups_unflitred.GetElement(l).Count() > 1)
+			{
+				string key = button_marker_groups_unflitred.GetKey(l);
+				button_marker_groups.Insert(button_marker_groups_unflitred.GetKey(l), button_marker_groups_unflitred.Get(key));
+			}
+		}
+
+		Widget panel_widget;
+		Widget button_marker_widget;
+		
+		for (l = 0; l < tab_array[index].Count(); l++)
+		{
+			panel_widget = layoutRoot.FindAnyWidget("PanelWidget" + l);
+			if (tab_array[index][l] != null)
+			{
+				TextWidget text_widget = TextWidget.Cast(panel_widget.FindAnyWidget("TextWidget" + l));
+
+				string key_prefix;
+				#ifdef PLATFORM_XBOX
+				key_prefix = "xb_button_marker_";
+				#else
+				#ifdef PLATFORM_PS4
+				key_prefix = "ps_button_marker_";
+				#endif
+				#endif
+
+				button_marker_widget = layoutRoot.FindAnyWidget(key_prefix + tab_array[index][l].m_ButtonName);
+				text_widget.SetText(tab_array[index][l].m_InfoText);
+				panel_widget.Show(true);
+				button_marker_widget.Show(true);
+				panel_widget.Update();
+				if (!button_marker_groups.Contains(tab_array[index][l].m_ButtonName))
+				{
+					panel_widget.GetScreenPos(text_widget_pos_x, text_widget_pos_y);
+					panel_widget.GetScreenSize(text_widget_width,text_widget_height);
+					
+					button_marker_widget.GetScreenPos(dot_pos_x, dot_pos_y);
+					button_marker_widget.GetScreenSize(dot_width, dot_height);
+					
+					draw_pos_y = text_widget_pos_y + text_widget_height / 2;
+					if (l < 10)
+					{
+						draw_pos_x = text_widget_pos_x + text_widget_width - 1;
+					}
+					else
+					{
+						draw_pos_x = text_widget_pos_x;
+					}
+					m_CanvasWidget.DrawLine(draw_pos_x, draw_pos_y, dot_pos_x+dot_width/2, draw_pos_y, 2, ARGBF(0.6, 1, 1, 1));
+					m_CanvasWidget.DrawLine(dot_pos_x+dot_width/2, draw_pos_y, dot_pos_x+dot_width/2, dot_pos_y+dot_height/2, 2, ARGBF(0.6, 1, 1, 1));	
+				}
+			}
+			else
+			{
+				panel_widget.Show(false);
+			}
+			panel_widget.Update();
+		}
+		
+		// draw connecting lines 
+		for (l = 0; l <  button_marker_groups.Count(); l++)
+		{
+			text_widget_pos_x = 0;
+			text_widget_pos_y = 0;
+			text_widget_width = 0;
+			text_widget_height = 0;
+			float group_point_x = 0, group_point_y = 0;
+			float first_x = 0, first_y = 0;
+			
+			ref array<int> element = button_marker_groups.GetElement(l);
+			string key_name = button_marker_groups.GetKey(l);
+			#ifdef PLATFORM_XBOX
+			key_prefix = "xb_button_marker_";
+			#else
+			#ifdef PLATFORM_PS4
+			key_prefix = "ps_button_marker_";
+			#endif
+			#endif
+			button_marker_widget = layoutRoot.FindAnyWidget(key_prefix + key_name);
+			
+			for (int g = 0; g < element.Count(); g++)
+			{
+				panel_widget = layoutRoot.FindAnyWidget("PanelWidget" + element[g]);
+				
+				panel_widget.GetScreenPos(text_widget_pos_x, text_widget_pos_y);
+				panel_widget.GetScreenSize(text_widget_width, text_widget_height);
+				
+				if (g == 0)
+				{
+					if (element[0] < 10)
+					{
+						first_x = text_widget_pos_x + text_widget_width +50;
+					}
+					else
+					{
+						first_x = text_widget_pos_x - 50;
+					}
+
+					first_y = text_widget_pos_y + text_widget_height/2;
+				}
+
+				group_point_x += text_widget_pos_x;
+				group_point_y += text_widget_pos_y;
+				if (element[0] < 10)
+				{
+					m_CanvasWidget.DrawLine(text_widget_pos_x + text_widget_width - 1, text_widget_pos_y + text_widget_height/2, text_widget_pos_x + text_widget_width +50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+				}
+				else
+				{
+					m_CanvasWidget.DrawLine(text_widget_pos_x, text_widget_pos_y + text_widget_height/2, text_widget_pos_x - 50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+				}
+			}
+			if (element[0] < 10)
+			{
+				group_point_x = group_point_x/element.Count() + text_widget_width + 50;
+			}
+			else
+			{
+				group_point_x = group_point_x/element.Count() - 50;
+			}
+
+			if (element.Count() % 2 == 0)
+			{
+				group_point_y = ((text_widget_pos_y + text_widget_height/2) - first_y) / 2 + first_y;
+			}
+			else
+			{
+				float text_widget_pos_x_center, text_widget_pos_y_center;
+				float text_widget_width_center, text_widget_height_center;
+				
+				panel_widget = layoutRoot.FindAnyWidget("PanelWidget" + element[1]);
+				
+				panel_widget.GetScreenPos(text_widget_pos_x_center, text_widget_pos_y_center);
+				panel_widget.GetScreenSize(text_widget_width_center, text_widget_height_center);
+				
+				group_point_y = text_widget_pos_y_center + text_widget_height_center / 2;
+			}
+			
+			button_marker_widget.GetScreenPos(dot_pos_x, dot_pos_y);
+			button_marker_widget.GetScreenSize(dot_width, dot_height);
+			
+			m_CanvasWidget.DrawLine(group_point_x, group_point_y, dot_pos_x+dot_width/2, group_point_y, 2, ARGBF(0.6, 1, 1, 1));
+			m_CanvasWidget.DrawLine(dot_pos_x+dot_width/2, group_point_y, dot_pos_x+dot_width/2, dot_pos_y, 2, ARGBF(0.6, 1, 1, 1));
+			
+			if (element[0] < 10)
+			{
+				m_CanvasWidget.DrawLine(first_x, first_y, text_widget_pos_x + text_widget_width +50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+			}
+			else
+			{
+				m_CanvasWidget.DrawLine(first_x, first_y, text_widget_pos_x - 50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+			}
+		}
+		*/
 	}
 	
 	//============================================
@@ -282,6 +515,7 @@ class ControlsXboxNew extends UIScriptedMenu
 		if (GetUApi().GetInputByID(UASwitchPreset).LocalPress())
 		{
 			PerformSwitchPreset();
+			UpdateTabContent(m_CurrentTabIdx);
 			m_TabScript.RefreshTab();
 		}
 	}
@@ -331,7 +565,6 @@ class ControlsXboxNew extends UIScriptedMenu
 	
 	protected void PerformSwitchPreset()
 	{
-		Print("PerformSwitchPreset - 1");
 		int index;
 		string preset_text;
 		UAInputAPI inputAPI = GetUApi();

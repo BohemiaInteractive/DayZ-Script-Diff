@@ -73,21 +73,3 @@ class BotGuardHasItemInHands extends HandGuardBase
 	}
 };
 
-
-class BotGuardDebugEventMatches extends BotGuardBase
-{
-	protected ref BotEventStartDebug m_Event;
-
-	void BotGuardDebugEventMatches(BotEventStartDebug e = NULL) { m_Event = e; }
-
-	override bool GuardCondition(BotEventBase e)
-	{
-		BotEventStartDebug other;
-		if (!Class.CastTo(other, e))
-		{
-			return false;
-		}
-
-		return other.m_Id == m_Event.m_Id;
-	}
-};

@@ -157,10 +157,6 @@ class ZmbM_SkaterYoung_LT_Base extends ZombieMaleBase
 {
 };
 
-class ZmbM_Gamedev_Base extends ZombieMaleBase
-{
-};
-
 class ZmbM_Soldier_Base extends ZombieMaleBase
 {
 	override bool IsZombieMilitary()
@@ -206,19 +202,6 @@ class ZmbM_NBC_Yellow extends ZombieMaleBase
 };
 
 class ZmbM_NBC_Grey extends ZombieMaleBase
-{
-	override bool ResistContaminatedEffect()
-	{
-		return true;
-	}
-	
-	override bool IsZombieMilitary()
-	{
-		return true;
-	}
-};
-
-class ZmbM_NBC_White extends ZombieMaleBase
 {
 	override bool ResistContaminatedEffect()
 	{

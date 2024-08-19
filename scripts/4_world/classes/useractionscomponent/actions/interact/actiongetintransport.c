@@ -104,8 +104,6 @@ class ActionGetInTransport: ActionBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
-		super.OnStartServer(action_data);
-		
 		CarScript car = CarScript.Cast(action_data.m_Target.GetObject());
 		if (car)
 		{
@@ -120,6 +118,7 @@ class ActionGetInTransport: ActionBase
 	
 	override void OnUpdate(ActionData action_data)
 	{
+
 		if (action_data.m_State == UA_START)
 		{
 			if (!action_data.m_Player.GetCommand_Vehicle() || !action_data.m_Player.GetCommand_Vehicle().IsGettingIn())
@@ -144,8 +143,6 @@ class ActionGetInTransport: ActionBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		if (action_data.m_Player.GetInventory())
 		{
 			action_data.m_Player.GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
@@ -156,27 +153,5 @@ class ActionGetInTransport: ActionBase
 		{
 			car.ForceUpdateLightsEnd();
 		}
-	}
-	
-	override bool AddActionJuncture(ActionData action_data)
-	{
-		Transport trans = Transport.Cast(action_data.m_Target.GetObject());
-		bool accepted = false;
-		int nextSeat = trans.CrewPositionIndex( action_data.m_Target.GetComponentIndex() );
-		Transport transport = Transport.Cast(action_data.m_Target.GetObject());
-		InventoryLocation il = new InventoryLocation;
-		if (transport)
-		{
-			il.SetVehicle(transport, action_data.m_Player, nextSeat);
-		
-			//Lock target
-			if (GetGame().AddInventoryJuncture(action_data.m_Player, action_data.m_Player, il, true, 10000))
-			{
-				accepted = true;
-				action_data.m_ReservedInventoryLocations.Insert(il);
-			}
-		}
-		
-		return accepted;
 	}
 };

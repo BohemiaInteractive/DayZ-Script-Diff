@@ -56,9 +56,4 @@ class ActionSewTarget : ActionBandageBase
 		else
 			item.Delete();
 	}
-	
-	override bool CanTargetBeInVehicle()
-	{
-		return true;
-	}
 }

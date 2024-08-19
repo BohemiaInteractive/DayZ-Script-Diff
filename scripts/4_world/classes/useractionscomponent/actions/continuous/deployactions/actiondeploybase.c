@@ -20,8 +20,6 @@ class ActionDeployBase : ActionContinuousBase
 {
 	protected const float POSITION_OFFSET = 0.5; // The forward offset at which the item will be placed (if not using hologram)
 	
-	protected ref array<ItemBase> m_MovedItems;
-	
 	void ActionDeployBase()
 	{
 		m_CallbackClass		= ActiondeployObjectCB;
@@ -50,15 +48,7 @@ class ActionDeployBase : ActionContinuousBase
 	override ActionData CreateActionData()
 	{
 		PlaceObjectActionData action_data = new PlaceObjectActionData();
-		m_MovedItems = new array<ItemBase>();
-		
 		return action_data;
-	}
-	
-	override Vector2 GetCameraUDAngle()
-	{
-		Vector2 udAngle = new Vector2(-80, -20);
-		return udAngle;
 	}
 	
 	override void OnFinishProgressServer(ActionData action_data)
@@ -97,46 +87,16 @@ class ActionDeployBase : ActionContinuousBase
 			orientation = action_data.m_Player.GetOrientation();
 			position 	= position + (action_data.m_Player.GetDirection() * POSITION_OFFSET);
 		}
+
+		action_data.m_Player.PlacingCompleteServer();
+		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation);
 		
 		MoveEntityToFinalPosition(action_data, position, orientation);			
 		GetGame().ClearJunctureEx(action_data.m_Player, entity_for_placing);
 		action_data.m_MainItem.SetIsBeingPlaced(false);
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 		poActionData.m_AlreadyPlaced = true;
 		action_data.m_MainItem.SoundSynchRemoteReset();
-		
-		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation);
-		action_data.m_Player.PlacingCompleteServer();
-		
-		m_MovedItems.Clear();
-	}
-	
-	override void OnItemLocationChanged(ItemBase item)
-	{
-		super.OnItemLocationChanged(item);
-		
-		if (!GetGame().IsDedicatedServer())
-		{
-			if (m_MovedItems)
-				m_MovedItems.Insert(item);
-		}
-	}
-	
-	override void OnUpdate(ActionData action_data)
-	{
-		super.OnUpdate(action_data);
-		
-		foreach (ItemBase item : m_MovedItems)
-		{
-			if (item == action_data.m_MainItem)
-			{
-				InventoryLocation loc = new InventoryLocation();
-				item.GetInventory().GetCurrentInventoryLocation(loc);
-				if (loc && loc.GetType() == InventoryLocationType.GROUND)	// if main item is placed on ground during deploy, re-reserve it
-					InventoryReservation(action_data);
-			}
-		}
-		
-		m_MovedItems.Clear();
 	}
 	
 	void DropDuringPlacing(PlayerBase player)
@@ -179,9 +139,6 @@ class ActionDeployBase : ActionContinuousBase
 	
 	void MoveEntityToFinalPositionSinglePlayer(ActionData action_data, InventoryLocation source, InventoryLocation destination)
 	{
-		if (HasProgress())
-			action_data.m_Player.GetInventory().TakeToDst(InventoryMode.LOCAL, source, destination); // from ground to target position
-		else 
-			action_data.m_Player.GetDayZPlayerInventory().RedirectToHandEvent(InventoryMode.LOCAL, source, destination); // placing directly from inventory
+		action_data.m_Player.GetInventory().TakeToDst(InventoryMode.LOCAL, source, destination);
 	}
 }

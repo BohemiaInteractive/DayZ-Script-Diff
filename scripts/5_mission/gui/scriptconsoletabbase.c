@@ -2,7 +2,6 @@ class ScriptConsoleTabBase
 {
 	protected int m_Id;
 	protected bool m_IsSelected;
-	protected bool m_IsShiftDown;
 	protected Widget m_ParentRoot;
 	protected Widget m_Root;
 	protected Widget m_Button;
@@ -71,10 +70,7 @@ class ScriptConsoleTabBase
 		return m_Button;
 	}
 	
-	void Update(float timeslice)
-	{
-		m_IsShiftDown = KeyState(KeyCode.KC_LSHIFT) || KeyState(KeyCode.KC_RSHIFT);
-	}
+	void Update(float timeslice);
 
 	bool OnChange(Widget w, int x, int y, bool finished);
 	bool OnClick(Widget w, int x, int y, int button);

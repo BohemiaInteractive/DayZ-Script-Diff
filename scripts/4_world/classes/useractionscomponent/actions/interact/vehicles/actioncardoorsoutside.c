@@ -65,8 +65,6 @@ class ActionCarDoorsOutside: ActionInteractBase
 	
 	override void OnStartServer( ActionData action_data )
 	{
-		super.OnStartServer(action_data);
-		
 		float phase;
 			
 		if (m_IsOpening)
@@ -108,8 +106,6 @@ class ActionCarDoorsOutside: ActionInteractBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		CarScript car = CarScript.Cast(action_data.m_Target.GetParent());
 		if (car)
 		{

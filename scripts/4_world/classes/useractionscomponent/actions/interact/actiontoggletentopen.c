@@ -76,8 +76,6 @@ class ActionToggleTentOpen: ActionInteractBase
 	
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		Object target_object = action_data.m_Target.GetObject();
 		TentBase ntarget = TentBase.Cast( target_object );
 		if( ntarget )

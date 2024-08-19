@@ -54,11 +54,6 @@ enum eModifiers
 	MDF_MASK,
 	MDF_FLIES,
 	MDF_DROWNING,
-	MDF_HEAVYMETAL1,
-	MDF_HEAVYMETAL2,
-	MDF_HEAVYMETAL3,
-	MDF_PNEUMONIA,
-	MDF_CHELATION,
 	// ---------------only count bellow
 	COUNT,
 }

@@ -1,33 +1,25 @@
 class GetOutTransportActionData : ActionData
 {
-	Transport m_Vehicle;
-	float m_Speed;
-	float m_JumpingOutThreshold;
-	bool m_WasJumpingOut 	= false;
-	
-	// obsolete
 	Car m_Car;
-	float m_CarSpeed;
 	vector m_StartLocation;
-	float m_DmgTaken; 
-	float m_ShockTaken;
+	float m_CarSpeed;
+	bool m_WasJumpingOut 	= false;
+	float m_DmgTaken 		= 0.0; 			// Damage taken by the player when jumping out of vehicle
+	float m_ShockTaken 		= 0.0; 			// Shock inflicted to the player when jumping out of vehicle
 }
 
 class ActionGetOutTransport : ActionBase
 {
-	//For the two following values -> The HIGHER the value, the LOWER the output
-	const int DMG_FACTOR = 60; 				//value used to translate impact strength into actual damage (impact strength -> velocity squared)
-	const int SHOCK_FACTOR = 15; 			//Value used to translate impact strength into actual shock
+	//For the two following variables -> The HIGHER the value, the LOWER the output
+	int m_DmgFactor = 60; 				//value used to translate impact strength into actual damage (impact strength -> velocity squared)
+	int m_ShockFactor = 15; 			//Value used to translate impact strength into actual shock
 
 	//Variables used to determine the different speed levels for bleeding checks
 	const int LOW_SPEED_VALUE 			= 20;
 	const int HIGH_SPEED_VALUE			= 30;
 	
-	protected const float CAR_JUMPOUT_THRESHOLD 	= 8.0;	// speed in km/h at which leaving the vehicle is considered a jump out
-	protected const float BOAT_JUMPOUT_THRESHOLD 	= 1.0;
-	
-	const int HEALTH_LOW_SPEED_VALUE 	= 30;
-	const int HEALTH_HIGH_SPEED_VALUE 	= 70;
+	private const int HEALTH_LOW_SPEED_VALUE 	= 30;
+	private const int HEALTH_HIGH_SPEED_VALUE 	= 70;
 	
 	void ActionGetOutTransport()
 	{
@@ -74,24 +66,15 @@ class ActionGetOutTransport : ActionBase
 		return false;
 	}
 
-	void ProcessGetOutTransportActionData(Transport veh, GetOutTransportActionData got_action_data)
+	void ProcessGetOutActionData(Car car, GetOutTransportActionData got_action_data)
 	{
-		float speed;
-		if (Car.Cast(veh))
-		{
-			got_action_data.m_JumpingOutThreshold = CAR_JUMPOUT_THRESHOLD;
-			speed = Car.Cast(veh).GetSpeedometerAbsolute();
-		}
-		else if (Boat.Cast(veh))
-		{
-			got_action_data.m_JumpingOutThreshold = BOAT_JUMPOUT_THRESHOLD;
-			vector velocity = dBodyGetVelocityAt(veh, veh.GetPosition());
-			speed = velocity.Normalize();
-		}
-
-		got_action_data.m_Speed = speed;
-		got_action_data.m_WasJumpingOut = speed > got_action_data.m_JumpingOutThreshold;
-		got_action_data.m_Vehicle = veh;
+		got_action_data.m_StartLocation = got_action_data.m_Player.GetPosition();
+		got_action_data.m_Car = car;
+		float carSpeed = car.GetSpeedometerAbsolute();
+		got_action_data.m_CarSpeed = carSpeed;
+		got_action_data.m_DmgTaken = (carSpeed * carSpeed) / m_DmgFactor; //When using multiplications, wrong value is returned
+		got_action_data.m_ShockTaken = (carSpeed * carSpeed) / m_ShockFactor;
+		got_action_data.m_WasJumpingOut = carSpeed > 8.0;
 	}
 
 	override void OnStart(ActionData action_data)
@@ -105,14 +88,17 @@ class ActionGetOutTransport : ActionBase
 			if (trans)
 			{
 				GetOutTransportActionData gotActionData = GetOutTransportActionData.Cast(action_data);
-				ProcessGetOutTransportActionData(trans, gotActionData);
+
+				Car car;
+				if (Class.CastTo(car, trans))
+					ProcessGetOutActionData(car, gotActionData);
 
 				if (!gotActionData.m_WasJumpingOut)
 					vehCommand.GetOutVehicle();
 				else
 					vehCommand.JumpOutVehicle();
 				
-				if (Car.Cast(trans))
+				if (car)
 					GetDayZGame().GetBacklit().OnLeaveCar();
 
 				if (action_data.m_Player.GetInventory())
@@ -123,8 +109,6 @@ class ActionGetOutTransport : ActionBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
-		super.OnStartServer(action_data);
-		
 		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
 		if (vehCommand)
 		{
@@ -172,39 +156,94 @@ class ActionGetOutTransport : ActionBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		GetOutTransportActionData gotActionData = GetOutTransportActionData.Cast(action_data);
 		
 		if (gotActionData.m_WasJumpingOut)
 		{
-			gotActionData.m_Player.OnJumpOutVehicleFinish(gotActionData.m_Speed);
+			float carSpeed = gotActionData.m_CarSpeed;
+			gotActionData.m_Player.OnJumpOutVehicleFinish(carSpeed);
 			
 			ApplyJumpOutDmg(action_data);
+			
+			vector posMS = gotActionData.m_Player.WorldToModel(gotActionData.m_Player.GetPosition());
+			gotActionData.m_Player.DamageAllLegs(gotActionData.m_DmgTaken); //Additionnal leg specific damage dealing
+
+			float healthCoef = Math.InverseLerp(HEALTH_LOW_SPEED_VALUE, HEALTH_HIGH_SPEED_VALUE, carSpeed);
+			healthCoef = Math.Clamp(healthCoef, 0.0, 1.0);
+			gotActionData.m_Player.ProcessDirectDamage(DamageType.CUSTOM, gotActionData.m_Player, "", "FallDamageHealth", posMS, healthCoef);
 		}
 
-		CarScript car = CarScript.Cast(gotActionData.m_Vehicle);
-		if (car)
-			car.ForceUpdateLightsEnd();
+		if (gotActionData.m_Car)
+		{
+			CarScript car;
+			if (Class.CastTo(car, gotActionData.m_Car))
+				car.ForceUpdateLightsEnd();
+		}
 	}
 	
 	//Manage all jumping out of vehicle damage logic
 	void ApplyJumpOutDmg(ActionData action_data)
-	{		
+	{
 		GetOutTransportActionData gotActionData = GetOutTransportActionData.Cast(action_data);
+		PlayerBase player = gotActionData.m_Player;
 		
-		CarScript car;
-		if (Class.CastTo(car, gotActionData.m_Vehicle))
-			car.OnVehicleJumpOutServer(gotActionData);
+		array<ClothingBase> equippedClothes = new array<ClothingBase>;
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("LEGS")));
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("BACK")));
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("VEST")));
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("HeadGear")));
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("Mask")));
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("BODY")));
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("FEET")));
+		equippedClothes.Insert(ClothingBase.Cast(player.GetItemOnSlot("GLOVES")));
+
+		// -----------------------------------------------
+
+		//Lower shock taken if player uses a helmet
+		ItemBase headGear = ClothingBase.Cast(player.GetItemOnHead());
+		HelmetBase helmet;
+		if (Class.CastTo(helmet, headGear))
+			gotActionData.m_ShockTaken *= 0.5;
+
+		// -----------------------------------------------
 		
-		BoatScript boat;
-		if (Class.CastTo(boat, gotActionData.m_Vehicle))
-			boat.OnVehicleJumpOutServer(gotActionData);
+		int randNum; //value used for probability evaluation
+		randNum = Math.RandomInt(0, 100);
+		if (gotActionData.m_CarSpeed < LOW_SPEED_VALUE)
+		{
+			if (randNum < 20)
+				player.GiveShock(-gotActionData.m_ShockTaken); //To inflict shock, a negative value must be passed
+
+			randNum = Math.RandomIntInclusive(0, PlayerBase.m_BleedingSourcesLow.Count() - 1);
+			
+			player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesLow[randNum]);
+		}
+		else if (gotActionData.m_CarSpeed >= LOW_SPEED_VALUE && gotActionData.m_CarSpeed < HIGH_SPEED_VALUE)
+		{
+			if (randNum < 50)
+				player.GiveShock(-gotActionData.m_ShockTaken);
+
+			randNum = Math.RandomInt(0, PlayerBase.m_BleedingSourcesUp.Count() - 1);
+			
+			player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesUp[randNum]);
+		}
+		else if (gotActionData.m_CarSpeed >= HIGH_SPEED_VALUE)
+		{
+			if (!headGear)
+				player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection("Head");
+
+			if (randNum < 75)
+				player.GiveShock(-gotActionData.m_ShockTaken);
+		}
+		
+		//Damage all currently equipped clothes
+		foreach (ClothingBase cloth : equippedClothes)
+		{
+			//If no item is equipped on slot, slot is ignored
+			if (cloth == null)
+				continue;
+
+			cloth.DecreaseHealth(gotActionData.m_DmgTaken, false);
+		}
 	}
-	
-	// deprecated
-	int m_DmgFactor;
-	int m_ShockFactor;
-	
-	void ProcessGetOutActionData(Car car, GetOutTransportActionData got_action_data);
 }

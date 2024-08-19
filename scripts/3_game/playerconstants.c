@@ -77,13 +77,13 @@ class PlayerConstants
 	static const float METABOLIC_SPEED_WATER_SPRINT		= 0.6;		//water loss per second
 	//--------------------------------------------------------
 	
-	static const float	THRESHOLD_HEAT_COMFORT_PLUS_WARNING		= 0.15;	//yellow zone
-	static const float	THRESHOLD_HEAT_COMFORT_PLUS_CRITICAL 	= 0.45;	//red zone
-	static const float	THRESHOLD_HEAT_COMFORT_PLUS_EMPTY		= 0.75;	//flashing red zone
+	static const float	THRESHOLD_HEAT_COMFORT_PLUS_WARNING		= 0.2;	//missing comment
+	static const float	THRESHOLD_HEAT_COMFORT_PLUS_CRITICAL 	= 0.5;	//missing comment
+	static const float	THRESHOLD_HEAT_COMFORT_PLUS_EMPTY		= 0.9;	//missing comment
 
-	static const float	THRESHOLD_HEAT_COMFORT_MINUS_WARNING	= -0.15;	//light blue zone
-	static const float	THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL	= -0.45;	//dark blue zone
-	static const float	THRESHOLD_HEAT_COMFORT_MINUS_EMPTY		= -0.75;	//flashing dark blue zone
+	static const float	THRESHOLD_HEAT_COMFORT_MINUS_WARNING	= -0.3;	//missing comment
+	static const float	THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL	= -0.5;	//missing comment
+	static const float	THRESHOLD_HEAT_COMFORT_MINUS_EMPTY		= -0.9;	//missing comment
 
 	//--------------------------------------------------------
 	static const int BLOOD_THRESHOLD_FATAL 					= 2500;	//fatal blood level
@@ -120,10 +120,10 @@ class PlayerConstants
 	static const float ENERGY_LOSS_HC_MINUS_LOW				= 0.2;
 	static const float ENERGY_LOSS_HC_MINUS_HIGH			= 0.45;
 	
-	static const float HEALTH_LOSS_HC_PLUS_LOW				= 0.02;
+	static const float HEALTH_LOSS_HC_PLUS_LOW				= 0.05;
 	static const float HEALTH_LOSS_HC_PLUS_HIGH				= 0.15;		
 	
-	static const float HEALTH_LOSS_HC_MINUS_LOW				= 0.02;
+	static const float HEALTH_LOSS_HC_MINUS_LOW				= 0.05;
 	static const float HEALTH_LOSS_HC_MINUS_HIGH 			= 0.15;	
 	
 	static const float WATER_LOSS_FEVER						= 0.2;
@@ -131,9 +131,6 @@ class PlayerConstants
 	//--------------------------------------------------------
 	static const float LOW_ENERGY_DAMAGE_PER_SEC			= 0.05;	//health loss per second while low on energy
 	static const float LOW_WATER_DAMAGE_PER_SEC				= 0.05;	//health loss per second while low on water
-	
-	static const float CONSUMPTION_DAMAGE_PER_BITE 			= 2.0;
-	static const float CONSUMPTION_DAMAGE_TEMP_THRESHOLD	= 70.0; //Celsius
 	
 	static const float HEALTH_REGEN_MIN						= 0.005;	//health regen rate at BLOOD_THRESHOLD_FATAL blood level
 	static const float HEALTH_REGEN_MAX						= 0.03;		//health regen rate at MAXIMUM blood level
@@ -174,7 +171,7 @@ class PlayerConstants
 	static const float BREATH_VAPOUR_THRESHOLD_LOW 			= 7.0; 		//missing comment
 	//----------------------------------------------------------
 	static const float IMMUNITY_THRESHOLD_LEVEL_HIGH = 0.95;
-	static const float IMMUNITY_THRESHOLD_LEVEL_NORMAL = 0.72;
+	static const float IMMUNITY_THRESHOLD_LEVEL_NORMAL = 0.65;
 	static const float IMMUNITY_THRESHOLD_LEVEL_LOW = 0.35;
 	static const float IMMUNITY_THRESHOLD_LEVEL_CRITICAL = 0.15;
 	//----------------------------------------------------------

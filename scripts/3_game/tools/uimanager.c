@@ -11,8 +11,6 @@ class UIManager
 
 	proto native Widget GetWidgetUnderCursor();
 	proto native bool IsDialogVisible();
-	//! Returns true for a single frame whenever a dialog is hidden.
-	proto native bool IsDialogHiding();
 	proto native bool IsModalVisible();
 	proto native void CloseSpecificDialog(int id);
 	proto native void CloseDialog();

@@ -49,7 +49,7 @@ class CAContinuousQuantityRepeat : CAContinuousBase
 		{
 			if ( m_SpentQuantity < m_ItemQuantity )
 			{
-				m_AdjustedQuantityUsedPerSecond = m_QuantityUsedPerSecond;//removed softskills 	
+				m_AdjustedQuantityUsedPerSecond = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_QuantityUsedPerSecond, m_Action.GetSpecialtyWeight(), true);		
 				m_SpentQuantity += m_AdjustedQuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
 				m_TimeElpased += action_data.m_Player.GetDeltaT();
 				
@@ -76,7 +76,10 @@ class CAContinuousQuantityRepeat : CAContinuousBase
 		{
 			return UA_ERROR;
 		}
-		
+		if (GetProgress() > 0)
+		{
+			CalcAndSetQuantity( action_data );
+		}
 		return UA_CANCEL;
 	}	
 	

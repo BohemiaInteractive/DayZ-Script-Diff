@@ -80,6 +80,7 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 			if ( m_SpentQuantity <= m_ItemQuantity )
 			{
 				m_SpentQuantity += m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
+				float val = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_SpentQuantity, m_Action.GetSpecialtyWeight(), true );
 				GardenBase garden_base;
 				Class.CastTo(garden_base,  action_data.m_Target.GetObject() );
 				//string selection = garden_base.GetActionComponentName(action_data.m_Target.GetComponentIndex());
@@ -91,7 +92,7 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 					action_data.m_MainItem.AddQuantity( -m_SpentQuantity );		
 				}
 				
-				garden_base.Fertilize( action_data.m_Player, action_data.m_MainItem, m_SpentQuantity, m_Selection );
+				garden_base.Fertilize( action_data.m_Player, action_data.m_MainItem, val, m_Selection );
 
 				return UA_PROCESSING;
 			}

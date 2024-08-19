@@ -18,11 +18,6 @@ class DebugAgentData
 	{
 		return m_ID;
 	}
-	
-	float GetTemporaryResistance()
-	{
-		
-	}
 }
 
 
@@ -31,8 +26,6 @@ class HudDebugWinCharAgents extends HudDebugWinBase
 	protected Widget m_WgtAgents;
 	protected ref array<ref Widget>	 m_AgentWidgets = new array<ref Widget>;
 	protected ref map<Widget, ref DebugAgentData>		m_AgentWidgetData = new map<Widget, ref DebugAgentData>;
-	
-	private AutoHeightSpacer WgtModifiersContentPanelScript;
 	//============================================
 	// HudDebugWinCharAgents
 	//============================================
@@ -43,8 +36,6 @@ class HudDebugWinCharAgents extends HudDebugWinBase
 		m_WgtAgents = m_WgtRoot.FindAnyWidget( "AgentList" );
 		
 		//FitWindowByContent( m_WgtAgents );
-
-		m_WgtAgents.GetScript(WgtModifiersContentPanelScript);
 	}
 
 	void ~HudDebugWinCharAgents()
@@ -132,38 +123,47 @@ class HudDebugWinCharAgents extends HudDebugWinBase
 		{
 			for ( int i = 0; i < developer_sync.m_PlayerAgentsSynced.Count(); i++ )
 			{
-				SyncedValueAgent syncedValue = SyncedValueAgent.Cast(developer_sync.m_PlayerAgentsSynced.Get(i));
-				AddAgent(
-					syncedValue.GetName(),
-					syncedValue.GetValue(),
-					syncedValue.GetID(),
-					syncedValue.GetTemporaryResistanceTime(),
-				);
+				AddAgent( developer_sync.m_PlayerAgentsSynced.Get( i ).GetName(), developer_sync.m_PlayerAgentsSynced.Get( i ).GetValue(), developer_sync.m_PlayerAgentsSynced.Get( i ).GetID() );
 			}
 		}
+		
+		//fit to screen
+		//FitWindow();
 	}
 	
+	/*
+	void AddAgent( string title, string value )
+	{
+		int index = m_WgtAgents.AddItem( title, NULL, 0 );
+		m_WgtAgents.SetItem( index, value, NULL, 1 );
+	}
+	*/
 	bool OnClick( Widget w, int x, int y, int button )
 	{	
+		//Button activate
 		DebugAgentData data;
-		if (w.GetName() == "ButtonAgentActivate")
+		if ( w.GetName() == "ButtonAgentActivate" )
 		{
-			data = m_AgentWidgetData.Get(w);
+			data = m_AgentWidgetData.Get( w );
 			DebugGrowAgentsRequest(data.GetID(), true);
+			//Print("activate" + data.GetID().ToString());
 			return true;
 		}
-		else if (w.GetName() == "ButtonAgentDeactivate")
+		//Button deactivate
+		else if ( w.GetName() == "ButtonAgentDeactivate" )
 		{
-			data = m_AgentWidgetData.Get(w);
+			data = m_AgentWidgetData.Get( w );
 			DebugGrowAgentsRequest(data.GetID(), false);
+			//Print("deactivate" + data.GetID().ToString());
 			return true;
 		}
-		else if (w.GetName() == "ResetAgents")
+		else if ( w.GetName() == "ResetAgents" )
 		{
 			DebugRemoveAgentsRequest();
 			return true;
 		}
-
+		
+		
 		return false;
 	}
 	
@@ -186,40 +186,40 @@ class HudDebugWinCharAgents extends HudDebugWinBase
 		man.RPCSingleParam(ERPCs.DEV_RPC_AGENT_RESET, p1, true, man.GetIdentity());
 	}
 				
-	void AddAgent(string title, string value, int id, float temporaryResistance)
+	void AddAgent( string title, string value, int id )
 	{
-		Widget widget = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug_agent.layout", m_WgtAgents);
+		Widget widget = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_agent.layout", m_WgtAgents );
 		ButtonWidget btn = ButtonWidget.Cast( widget.FindAnyWidget( "TextAgentName" ) );
-		TextWidget countWidget = TextWidget.Cast(widget.FindAnyWidget("TextWidgetAgentCount"));
-		TextWidget tempResistanceWidget = TextWidget.Cast(widget.FindAnyWidget("TextWidgetAgentTempResistanceTime"));
-		Widget activateButton = widget.FindAnyWidget("ButtonAgentActivate");
-		Widget deactivateButton = widget.FindAnyWidget("ButtonAgentDeactivate");
-
-		countWidget.SetText(value);	
-		btn.SetText(title);
-		if (temporaryResistance > 0.0)
-			tempResistanceWidget.SetText(string.Format("(R-%1s)", Math.Round(temporaryResistance).ToString()));
-		else
-			tempResistanceWidget.SetText("");
-			
-		DebugAgentData data = new DebugAgentData("", id);
-		m_AgentWidgets.Insert(widget);
+		
+	
+		DebugAgentData data = new DebugAgentData( "", id );
 		m_AgentWidgetData.Insert(btn, data);
-		m_AgentWidgetData.Insert(activateButton, data);		
-		m_AgentWidgetData.Insert(countWidget, data);
-		m_AgentWidgetData.Insert(tempResistanceWidget, data);
-		m_AgentWidgetData.Insert(deactivateButton, data);
-
-		WgtModifiersContentPanelScript.Update();
+		
+		Widget activate_button = widget.FindAnyWidget( "ButtonAgentActivate" );
+		m_AgentWidgetData.Insert( activate_button, data );
+		
+		TextWidget count_widget = TextWidget.Cast(widget.FindAnyWidget( "TextWidgetAgentCount" ));
+		m_AgentWidgetData.Insert( count_widget, data );
+		count_widget.SetText(value);
+		
+		//Deactivate button
+		Widget deactivate_button = widget.FindAnyWidget( "ButtonAgentDeactivate" );
+		m_AgentWidgetData.Insert( deactivate_button, data );
+		
+		btn.SetText(title);
+		m_AgentWidgets.Insert(widget);
+		
+		AutoHeightSpacer WgtModifiersContent_panel_script;
+		m_WgtAgents.GetScript( WgtModifiersContent_panel_script );
+		WgtModifiersContent_panel_script.Update();
 	}
 
 	void ClearAgents()
 	{
 		m_AgentWidgetData.Clear();
-
-		for (int i = 0; i < m_AgentWidgets.Count(); i++)
+		for ( int i = 0; i < m_AgentWidgets.Count(); i++ )
 		{
-			delete m_AgentWidgets.Get(i);
+			delete m_AgentWidgets.Get( i );
 		}
 		
 		m_AgentWidgets.Clear();

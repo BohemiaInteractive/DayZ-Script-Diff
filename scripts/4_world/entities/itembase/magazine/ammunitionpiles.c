@@ -23,7 +23,14 @@ class Ammunition_Base: Magazine_Base
 			return ammoWeight;
 		}
 	}
+	
+	override void SetActions()
+	{
+		super.SetActions();
 		
+		AddAction(ActionSortAmmoPile);
+	}
+	
 	override bool IsAmmoPile()
 	{
 		return true;

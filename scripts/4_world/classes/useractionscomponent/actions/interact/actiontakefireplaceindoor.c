@@ -1,4 +1,3 @@
-//!DEPRECATED
 class ActionTakeFireplaceIndoor: ActionInteractBase
 {
 	string m_NewItemTypeName = "Fireplace";

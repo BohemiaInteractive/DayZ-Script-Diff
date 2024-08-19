@@ -143,4 +143,18 @@ class AttachmentCategoriesSlotsContainer: Container
 		GetGame().ConfigGetText(icon_path, icon_name);
 		return icon_name;
 	}
+	
+	/*override void Refresh()
+	{
+		super.Refresh();
+		Print("DbgTest | Refresh");
+		
+		CollapsibleContainer cont = CollapsibleContainer.Cast(m_Parent);
+		if (cont)
+		{
+			bool b1 = m_ItemsCont.VerifySlotsIconVisibility();
+			Print("DbgTest | Refresh | b1: " + b1);
+			cont.SetCollapsibleHeaderArrowState(!b1);
+		}
+	}*/
 }

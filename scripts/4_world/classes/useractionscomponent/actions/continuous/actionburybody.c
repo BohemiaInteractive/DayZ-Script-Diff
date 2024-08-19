@@ -64,6 +64,8 @@ class ActionBuryBody: ActionContinuousBase
 		Object targetObject = action_data.m_Target.GetObject();
 		g_Game.ObjectDelete(targetObject);
 
-		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 4);
+		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 4);
+
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 	}
 };

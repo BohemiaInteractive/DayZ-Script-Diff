@@ -137,7 +137,7 @@ class AlarmClock_ColorBase: ClockBase
 			}
 			else if ( m_NoiseSystem )
 			{
-				m_NoiseSystem.AddNoiseTarget( GetPosition(), UPDATE_TICK_RATE, m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+				m_NoiseSystem.AddNoiseTarget( GetPosition(), UPDATE_TICK_RATE, m_NoisePar);
 			}
 		}
 	}

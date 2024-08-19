@@ -1,4 +1,4 @@
-//!DEPRECATED
+// deprecated
 class ActionHandsPartSwitch: ActionSingleUseBase
 {
 	void ActionHandsPartSwitch()

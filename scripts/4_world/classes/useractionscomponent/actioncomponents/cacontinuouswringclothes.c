@@ -40,7 +40,7 @@ class CAContinuousWringClothes : CAContinuousQuantityRepeat
 		{
 			if ( m_SpentQuantityTotal < m_InitItemQuantity )
 			{
-				m_AdjustedQuantityUsedPerSecond = m_QuantityUsedPerSecond;
+				m_AdjustedQuantityUsedPerSecond = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_QuantityUsedPerSecond, m_Action.GetSpecialtyWeight(), true);
 				m_SpentQuantity += m_AdjustedQuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
 				m_TimeElpased += action_data.m_Player.GetDeltaT();
 

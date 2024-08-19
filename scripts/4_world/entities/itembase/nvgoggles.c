@@ -144,9 +144,6 @@ class NVGoggles extends PoweredOptic_Base
 	
 	void RotateGoggles(bool state)
 	{
-		if (!m_Strap && !state)	// disable non default rotation while not strapped
-			return;
-		
 		//if ( GetAnimationPhase("rotate") != state ) //useless?
 			SetAnimationPhase("rotate",!state);
 		m_IsLowered = !state;

@@ -454,5 +454,6 @@ class BoltActionRifle_ExternalMagazine_Base : BoltActionRifle_Base
 	{
 		super.SetActions();
 		AddAction(FirearmActionDetachMagazine);
+		//AddAction(ActionAdvancedDetachMagazine);
 	}
 }

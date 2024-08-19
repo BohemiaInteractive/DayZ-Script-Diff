@@ -30,6 +30,6 @@ class ActionDeployHuntingTrap : ActionDeployBase
 	
 	override void MoveEntityToFinalPosition(ActionData action_data, vector position, vector orientation)
 	{
-	
+		ClearInventoryReservationEx(action_data);
 	}
 }

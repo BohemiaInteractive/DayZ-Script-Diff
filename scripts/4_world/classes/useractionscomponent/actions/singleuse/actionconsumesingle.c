@@ -54,8 +54,6 @@ class ActionConsumeSingle: ActionSingleUseBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		if (action_data.m_MainItem && (action_data.m_MainItem.GetQuantity() <= 0))
 			action_data.m_MainItem.SetQuantity(0);
 		

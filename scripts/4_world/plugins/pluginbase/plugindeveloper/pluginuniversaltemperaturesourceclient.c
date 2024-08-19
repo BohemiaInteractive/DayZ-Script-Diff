@@ -63,11 +63,6 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 				fullRangeColor = COLOR_GREEN_A;
 				maxRangeColor = COLOR_BLUE_A;
 			}
-			else if (temp == 0)
-			{
-				fullRangeColor = 0x1fefefef;
-				maxRangeColor = 0x1fefefef;				
-			}
 
 			Debug.DrawCylinder(sphPos, fullRange, fullRange, fullRangeColor, ShapeFlags.ONCE|ShapeFlags.TRANSP);
 			Debug.DrawCylinder(sphPos, maxRange, maxRange, maxRangeColor, ShapeFlags.ONCE|ShapeFlags.TRANSP);
@@ -102,7 +97,9 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 		{
 			//! next temp source is too far (not cleaned on server, like in Environment, client need to know about all sources in MAXRANGE)
 			if (vector.DistanceSq(m_Player.GetPosition(), utsd.GetValue(0).ToVector()) > Math.SqrFloat(utsd.GetValue(2).ToFloat()))
+			{
 				continue;
+			}
 
 			utsTemperatures.Insert(CalcTemperatureFromTemperatureSource(utsd));
 		}
@@ -130,7 +127,7 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 		//! heat transfer through air to player (env temperature)
 		if (distance > utsd.GetValue(1).ToFloat())
 		{
-			float distFactor = Math.InverseLerp(utsd.GetValue(2).ToFloat(), utsd.GetValue(1).ToFloat(), distance);
+			float distFactor = 1 - (distance / utsd.GetValue(2).ToFloat());
 			distFactor = Math.Max(distFactor, 0.0); //! dist factor minimum should be at 0
 			temperature = utsd.GetValue(3).ToFloat() * distFactor;
 		}

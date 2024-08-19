@@ -8,8 +8,6 @@ class ActionUnlockDoorsCB : ActionContinuousBaseCB
 
 class ActionUnlockDoors: ActionContinuousBase
 {
-	const float APPLIED_DMG = 6;
-	
 	void ActionUnlockDoors()
 	{
 		m_CallbackClass = ActionLockDoorsCB;
@@ -62,12 +60,13 @@ class ActionUnlockDoors: ActionContinuousBase
 		UnlockDoor(action_data.m_Target);
 		
 		//Damage the Lockpick
-		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, APPLIED_DMG);
+		//float dmg = action_data.m_MainItem.GetMaxHealth() * 0.04; //Multiply max health by 'x' amount depending on number of usages wanted (0.04 = 25)
 		
-	}
-	
-	override bool IsLockTargetOnUse()
-	{
-		return false;
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		
+		float skillLevel = action_data.m_Player.GetSoftSkillsManager().GetSpecialtyLevel();	
+		float appliedDamage = 5 + 2*skillLevel; 
+		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, appliedDamage);
+		
 	}
 };

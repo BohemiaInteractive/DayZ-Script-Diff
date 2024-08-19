@@ -34,7 +34,6 @@ class ActionWritePaperCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionWritePaper: ActionContinuousBase
 {
 	const float TARGET_DISTANCE = 2;
@@ -77,8 +76,6 @@ class ActionWritePaper: ActionContinuousBase
 	
 	override void OnStartServer( ActionData action_data )
 	{
-		super.OnStartServer(action_data);
-		
 		if (action_data.m_Target.GetObject().ConfigIsExisting("writingColor"))
 		{
 			action_data.m_MainItem.GetWrittenNoteData().InitNoteInfo(ItemBase.Cast(action_data.m_Target.GetObject()),action_data.m_MainItem);

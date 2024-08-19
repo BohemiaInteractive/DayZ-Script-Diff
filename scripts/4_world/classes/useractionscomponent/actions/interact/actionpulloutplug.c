@@ -6,33 +6,15 @@ class ActionPullOutPlug : ActionInteractBase
 
 		m_Text = "#pull_out_plug";
 	}
-	
-	override bool DisplayTargetInActionText()
-	{
-		return true;
-	}
-	
-	override string GetTargetName(PlayerBase player, ActionTarget target)
-	{
-		ItemBase targetItem = ItemBase.Cast(target.GetObject());
-		if (targetItem && targetItem.HasEnergyManager())
-		{
-			string selection = targetItem.GetActionComponentName(target.GetComponentIndex());
 
-			if (targetItem.GetCompEM() && targetItem.GetCompEM().GetPlugOwner(selection))
-				return targetItem.GetCompEM().GetPlugOwner(selection).GetDisplayName();
-		}
-		
-		return super.GetTargetName(player, target);
-	}
-
-	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
+	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
 		
 		if (targetEntity.HasEnergyManager())
 		{
 			string selection = targetEntity.GetActionComponentName(target.GetComponentIndex());
+			
 			
 			if (GetGame().IsServer())
 				return targetEntity.GetCompEM().GetPlugOwner(selection) != null;

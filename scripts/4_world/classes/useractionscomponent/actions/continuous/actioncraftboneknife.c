@@ -1,7 +1,8 @@
 class ActionCraftBoneKnifeCB : ActionContinuousBaseCB
 {	
 	override void CreateActionComponent()
-	{	
+	{
+		//float adjusted_time = m_ActionData.m_Player.GetSoftSkillsManager().AdjustCraftingTime(TIME_TO_CRAFT_KNIFE,UASoftSkillsWeight.ROUGH_HIGH);	
 		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_CRAFT);
 	}
 };

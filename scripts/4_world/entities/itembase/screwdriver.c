@@ -19,7 +19,9 @@ class Screwdriver extends ToolBase
 	{
 		super.SetActions();
 		
+		AddAction(ActionBurnSewTarget);
 		AddAction(ActionUnrestrainTarget);
+		AddAction(ActionBurnSewSelf);
 		AddAction(ActionMineTreeBark);
 		AddAction(ActionSkinning);
 		AddAction(ActionLockAttachment);

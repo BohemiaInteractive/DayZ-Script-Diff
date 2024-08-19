@@ -355,16 +355,12 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 	
 	override void OnStartServer( ActionData action_data )
 	{
-		super.OnStartServer(action_data);
-		
 		AdvDetachMagActionData action_data_dm = AdvDetachMagActionData.Cast(action_data);
 		GetGame().AddInventoryJunctureEx(action_data.m_Player, EntityAI.Cast(action_data.m_Target.GetObject()),action_data_dm.m_ilMagazine, true, 10000);
 	}
 	
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		GetGame().ClearJuncture(action_data.m_Player, EntityAI.Cast(action_data.m_Target.GetObject()));
 	}
 }

@@ -1,11 +1,17 @@
 class KitBase extends ItemBase
 {
+	ref protected EffectSound 		m_DeployLoopSound;
 	protected bool 					m_DeployedRegularly;
 
 	void KitBase()
 	{
 		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
 		RegisterNetSyncVariableBool("m_IsDeploySound");
+	}
+
+	void ~KitBase()
+	{
+		SEffectManager.DestroyEffect( m_DeployLoopSound );
 	}
 
 	override bool IsBasebuildingKit()
@@ -32,6 +38,16 @@ class KitBase extends ItemBase
 			PlayDeploySound();
 		}
 				
+		if ( CanPlayDeployLoopSound() )
+		{
+			PlayDeployLoopSound();
+		}
+					
+		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
+		{
+			StopDeployLoopSound();
+		}
+		
 		if ( m_DeployedRegularly && IsSoundSynchRemote() )
 		{
 			PlayDeployFinishSound();
@@ -140,7 +156,27 @@ class KitBase extends ItemBase
 		AddProxyPhysics( "Inventory" );
 		RemoveProxyPhysics( "Placing" );		
 	}
-		
+	
+	void PlayDeployLoopSound()
+	{		
+		if ( !GetGame().IsDedicatedServer() )
+		{		
+			if ( !m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying() )
+			{
+				m_DeployLoopSound = SEffectManager.PlaySound( GetLoopDeploySoundset(), GetPosition() );
+			}
+		}
+	}
+	
+	void StopDeployLoopSound()
+	{
+		if ( !GetGame().IsDedicatedServer() )
+		{	
+			m_DeployLoopSound.SetSoundFadeOut(0.5);
+			m_DeployLoopSound.SoundStop();
+		}
+	}
+	
 	void AssembleKit()
 	{
 		if (!IsHologram())
@@ -178,10 +214,4 @@ class KitBase extends ItemBase
 		AddAction(ActionTogglePlaceObject);
 		AddAction(ActionDeployObject);
 	}
-	
-	//!DEPRECATED
-	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
-	
-	void PlayDeployLoopSound(); //!DEPRECATED
-	void StopDeployLoopSound(); //!DEPRECATED
 }

@@ -103,14 +103,16 @@ class CAContinuousDisinfectPlant : CAContinuousQuantity
 		{
 			if ( m_SpentQuantity < m_ItemQuantity  &&  m_SpentQuantity < m_PlantNeededSpraying )
 			{
-				m_SpentQuantity += m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT();	
+				m_SpentQuantity += m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
+				float transfered_spray = action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( m_SpentQuantity, m_Action.GetSpecialtyWeight(), true );
+				
 				m_SpentQuantityTotal += m_SpentQuantity;
 				
 				if ( m_Action ) 
 				{
 					/*PlantBase plant;
 					Class.CastTo(plant,  targetObject );*/
-					m_Plant.SprayPlant(m_SpentQuantity);
+					m_Plant.SprayPlant(transfered_spray);
 					//m_Action.SendMessageToClient(action_data.m_Player, plant.StopInfestation( transfered_spray ));
 				}
 				

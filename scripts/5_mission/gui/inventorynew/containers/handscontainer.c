@@ -1137,7 +1137,7 @@ class HandsContainer: Container
 		EntityAI target_att_entity = m_Entity;
 		Weapon_Base wpn;
 		Magazine mag;
-		if( Class.CastTo(wpn,  target_att_entity ) && Class.CastTo(mag,  item ) )
+		if( Class.CastTo(wpn,  m_Entity ) && Class.CastTo(mag,  item ) )
 		{
 			if( player.GetWeaponManager().CanAttachMagazine( wpn, mag ) )
 			{
@@ -1172,7 +1172,7 @@ class HandsContainer: Container
 			}
 			else if( stack_max != 0 && stack_max < item_base.GetQuantity() )
 			{
-				item_base.SplitIntoStackMaxClient( slot_owner, slot_id );
+				item_base.SplitIntoStackMaxClient( m_Entity, slot_id );
 			}
 		}
 		else if( slot_owner && slot_owner.GetInventory().CanAddAttachment( item ) )
@@ -1183,27 +1183,27 @@ class HandsContainer: Container
 			}
 			else if( stack_max != 0 && stack_max < item_base.GetQuantity() )
 			{
-				item_base.SplitIntoStackMaxClient( slot_owner, -1 );
+				item_base.SplitIntoStackMaxClient( m_Entity, -1 );
 			}
 		}
-		else if( target_att_entity.GetInventory().CanAddAttachment( item ) )
+		else if( m_Entity.GetInventory().CanAddAttachment( item ) )
 		{
 			if( stack_max == 0 || stack_max >= item_base.GetQuantity() )
 			{
-				player.PredictiveTakeEntityToTargetAttachment(target_att_entity, item);
+				player.PredictiveTakeEntityToTargetAttachment(m_Entity, item);
 			}
 			else if( stack_max != 0 && stack_max < item_base.GetQuantity() )
 			{
-				item_base.SplitIntoStackMaxClient( target_att_entity, -1 );
+				item_base.SplitIntoStackMaxClient( m_Entity, -1 );
 			}
 		}
-		else if( ( target_att_entity.GetInventory().CanAddEntityInCargo( item, item.GetInventory().GetFlipCargo() ) && ( !player.GetInventory().HasEntityInInventory( item ) || !m_Entity.GetInventory().HasEntityInCargo( item )) ) || player.GetHumanInventory().HasEntityInHands( item ) )
+		else if( ( m_Entity.GetInventory().CanAddEntityInCargo( item, item.GetInventory().GetFlipCargo() ) && ( !player.GetInventory().HasEntityInInventory( item ) || !m_Entity.GetInventory().HasEntityInCargo( item )) ) || player.GetHumanInventory().HasEntityInHands( item ) )
 		{
-			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( GetGame().GetPlayer() ), target_att_entity, item );
+			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_Entity, item );
 		}
-		/*else if( !player.GetInventory().HasEntityInInventory( item ) || !target_att_entity.GetInventory().HasEntityInCargo( item ) )
+		/*else if( !player.GetInventory().HasEntityInInventory( item ) || !m_Entity.GetInventory().HasEntityInCargo( item ) )
 		{
-			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( GetGame().GetPlayer() ), target_att_entity, item );
+			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_Entity, item );
 		}*/
 		
 		ItemManager.GetInstance().HideDropzones();

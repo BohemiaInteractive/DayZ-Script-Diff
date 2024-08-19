@@ -36,8 +36,6 @@ class ActionOpenBarrel: ActionInteractBase
 	
 	override void OnEndServer( ActionData action_data )
 	{
-		super.OnEndServer(action_data);
-		
 		Object target_object = action_data.m_Target.GetObject();
 		Barrel_ColorBase ntarget = Barrel_ColorBase.Cast( target_object );
 		if( ntarget )

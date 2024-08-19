@@ -1,16 +1,14 @@
-class PainKillersMdfr : ModifierBase
+class PainKillersMdfr: ModifierBase
 {
 	const int LIFETIME = 240;
 	const int ACTIVATION_DELAY = 15;
-
 	override void Init()
 	{
-		m_TrackActivatedTime 	= true;
-		m_IsPersistent 			= true;
+		m_TrackActivatedTime = true;
+		m_IsPersistent = true;
 		m_ID 					= eModifiers.MDF_PAINKILLERS;
 		m_TickIntervalInactive 	= DEFAULT_TICK_TIME_INACTIVE;
 		m_TickIntervalActive 	= 1;
-
 		DisableActivateCheck();
 	}
 
@@ -29,13 +27,16 @@ class PainKillersMdfr : ModifierBase
 		return (LIFETIME - GetAttachedTime()).ToString();
 	}
 
+	
 	override void OnActivate(PlayerBase player)
 	{
 		if (player.GetBrokenLegs() != eBrokenLegs.NO_BROKEN_LEGS)
 			player.m_ShockHandler.SetMultiplier(0.5);//was 0.75 //Switch the shock multiplier NEED A CONST
-
 		player.IncreaseHealingsCount();
-
+		/*
+		if( player.GetNotifiersManager() ) 
+			player.GetNotifiersManager().ActivateByType(eNotifiers.NTF_PILLS);
+		*/
 		m_Player.m_InjuryHandler.m_ForceInjuryAnimMask = m_Player.m_InjuryHandler.m_ForceInjuryAnimMask | eInjuryOverrides.PAIN_KILLERS_LVL0;
 	}
 	
@@ -43,9 +44,11 @@ class PainKillersMdfr : ModifierBase
 	{
 		if (player.GetBrokenLegs() != eBrokenLegs.NO_BROKEN_LEGS)
 			player.m_ShockHandler.SetMultiplier(1); //Reset the shock multiplier when modifier stops
-
 		player.DecreaseHealingsCount();
-
+		/*
+		if( player.GetNotifiersManager() ) 
+			player.GetNotifiersManager().DeactivateByType(eNotifiers.NTF_PILLS);
+		*/
 		m_Player.m_InjuryHandler.m_ForceInjuryAnimMask = m_Player.m_InjuryHandler.m_ForceInjuryAnimMask & ~eInjuryOverrides.PAIN_KILLERS_LVL0;
 		m_Player.m_InjuryHandler.m_ForceInjuryAnimMask = m_Player.m_InjuryHandler.m_ForceInjuryAnimMask & ~eInjuryOverrides.PAIN_KILLERS_LVL1;
 	}
@@ -54,17 +57,21 @@ class PainKillersMdfr : ModifierBase
 	{
 		float attached_time = GetAttachedTime();
 		
-		if (attached_time >= LIFETIME)
+		if( attached_time >= LIFETIME )
+		{
 			return true;
-
-		return false;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	override void OnTick(PlayerBase player, float deltaT)
 	{
-		if (GetAttachedTime() > ACTIVATION_DELAY)
+		if(GetAttachedTime() > ACTIVATION_DELAY)
 		{
 			m_Player.m_InjuryHandler.m_ForceInjuryAnimMask = m_Player.m_InjuryHandler.m_ForceInjuryAnimMask | eInjuryOverrides.PAIN_KILLERS_LVL1;
 		}
 	}
-}
+};

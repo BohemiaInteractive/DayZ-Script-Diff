@@ -54,6 +54,8 @@ class ActionIgniteFireplaceByAir: ActionContinuousBase
 
 		//start fire
 		fireplace_target.StartFire();
+		
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	bool SkipKindlingCheck()

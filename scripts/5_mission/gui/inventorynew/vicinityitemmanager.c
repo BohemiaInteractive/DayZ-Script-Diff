@@ -170,8 +170,6 @@ class VicinityItemManager
 		ItemBase item;
 		if (!Class.CastTo(item, object_in_radius))
 			return true;
-		if (!item.IsTakeable())
-			return true;
 		
 		return false;
 	}
@@ -197,8 +195,6 @@ class VicinityItemManager
 
 		ItemBase item;
 		if (!Class.CastTo(item, object_in_cone) && !object_in_cone.IsTransport() && !PASBroadcaster.Cast(object_in_cone))
-			return true;
-		if (item && !item.IsTakeable())
 			return true;
 
 		return false;

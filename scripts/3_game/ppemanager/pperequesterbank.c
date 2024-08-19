@@ -41,8 +41,6 @@ class PPERequesterBank extends Managed
 	static const int REQ_PAINBLUR				= RegisterRequester(PPERequester_PainBlur);
 	static const int REQ_UNDERGROUND			= RegisterRequester(PPERUndergroundAcco);
 	static const int REQ_DROWNING				= RegisterRequester(PPERequester_Drowning);
-	//static const int REQ_HMP_LVL3				= RegisterRequester(PPERequester_HeavyMetalPoisoning_3);
-	static const int REQ_HMP_GHOST				= RegisterRequester(PPERequester_HMPGhosts);
 	
 	private static ref PPERequesterRegistrations 	m_Registrations; //more registrations to be placed here
 	

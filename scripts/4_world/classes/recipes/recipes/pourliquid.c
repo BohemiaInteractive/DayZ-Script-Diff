@@ -28,8 +28,7 @@ class PourLiquid extends RecipeBase
 		InsertIngredient(0,"CanisterGasoline");//you can insert multiple ingredients this way
 		InsertIngredient(0,"Canteen");//you can insert multiple ingredients this way
 		InsertIngredient(0,"WaterBottle");//you can insert multiple ingredients this way
-		InsertIngredient(0,"FilteringBottle");//you can insert multiple ingredients this way
-		InsertIngredient(0,"GlassBottle");//you can insert multiple ingredients this way
+		InsertIngredient(0,"Vodka");//you can insert multiple ingredients this way
 		InsertIngredient(0,"WaterPouch_ColorBase");//you can insert multiple ingredients this way
 		InsertIngredient(0,"Barrel_ColorBase");//you can insert multiple ingredients this way
 		
@@ -44,8 +43,7 @@ class PourLiquid extends RecipeBase
 		InsertIngredient(1,"CanisterGasoline");//you can insert multiple ingredients this way
 		InsertIngredient(1,"Canteen");//you can insert multiple ingredients this way
 		InsertIngredient(1,"WaterBottle");//you can insert multiple ingredients this way
-		InsertIngredient(1,"FilteringBottle");//you can insert multiple ingredients this way
-		InsertIngredient(1,"GlassBottle");//you can insert multiple ingredients this way
+		InsertIngredient(1,"Vodka");//you can insert multiple ingredients this way
 		InsertIngredient(1,"WaterPouch_ColorBase");//you can insert multiple ingredients this way
 		InsertIngredient(1,"Barrel_ColorBase");//you can insert multiple ingredients this way
 		

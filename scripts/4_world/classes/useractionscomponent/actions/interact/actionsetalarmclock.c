@@ -49,8 +49,6 @@ class ActionSetAlarmClock: ActionContinuousBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		float progress = action_data.m_Callback.GetActionComponentProgress();
 		AlarmClock_ColorBase clock = AlarmClock_ColorBase.Cast(action_data.m_MainItem);
 		clock.SetAlarmTimeServer(progress);

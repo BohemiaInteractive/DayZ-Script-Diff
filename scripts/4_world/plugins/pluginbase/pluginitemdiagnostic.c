@@ -587,44 +587,6 @@ class PluginItemDiagnostic extends PluginDeveloper
 		properties.Insert(temperature);
 		number_of_items++;
 		//-----------------------------
-		Param2<string, float> frozen = new Param2<string, float>("frozen", item.GetIsFrozen() );
-		properties.Insert(frozen);
-		number_of_items++;
-		//-----------------------------
-		Param2<string, float> FTProgress = new Param2<string, float>("F/T pgs", item.GetFreezeThawProgress() );
-		properties.Insert(FTProgress);
-		number_of_items++;
-		//-----------------------------
-	#ifdef DEVELOPER
-		Param2<string, float> FTChangeTime = new Param2<string, float>("LastChangeTime", item.m_LastFTChangeTime );
-		properties.Insert(FTChangeTime);
-		number_of_items++;
-		//-----------------------------
-		Param2<string, float> FTRemainingTime = new Param2<string, float>("FTTimeRemaining", item.m_PresumedTimeRemaining );
-		properties.Insert(FTRemainingTime);
-		number_of_items++;
-	#endif
-		//-----------------------------
-		Param2<string, float> OverheatPgs = new Param2<string, float>("Overheat pgs", item.GetItemOverheatProgress() );
-		properties.Insert(OverheatPgs);
-		number_of_items++;
-		//-----------------------------
-		Edible_Base food;
-		if (Class.CastTo(food,item) && food.GetFoodStage() != null)
-		{
-			Param2<string, float> CookingTime = new Param2<string, float>("CookingTime", food.GetCookingTime() );
-			properties.Insert(CookingTime);
-			number_of_items++;
-			//-----------------------------
-			Param2<string, float> DecayTime = new Param2<string, float>("DecayTime (remaining)", food.GetDecayTimer() );
-			properties.Insert(DecayTime);
-			number_of_items++;
-			//-----------------------------
-			Param2<string, float> DecayDelta = new Param2<string, float>("DecayDelta (last)", food.GetDecayDelta() );
-			properties.Insert(DecayDelta);
-			number_of_items++;
-		}
-		//-----------------------------
 		Param2<string, float> energy = new Param2<string, float>("energy", item.GetEnergy() );
 		properties.Insert(energy);
 		number_of_items++;
@@ -641,7 +603,7 @@ class PluginItemDiagnostic extends PluginDeveloper
 		properties.Insert(health);
 		number_of_items++;
 		//-----------------------------
-		/*int r,g,b,a;
+		int r,g,b,a;
 		item.GetColor(r,g,b,a);
 		Param2<string, float> p2r = new Param2<string, float>("R",r);
 		properties.Insert(p2r);
@@ -654,7 +616,7 @@ class PluginItemDiagnostic extends PluginDeveloper
 		number_of_items++;
 		Param2<string, float> p2a = new Param2<string, float>("A",a);
 		properties.Insert(p2a);
-		number_of_items++;*/
+		number_of_items++;
 		//-----------------------------
 		if(!client)
 		{

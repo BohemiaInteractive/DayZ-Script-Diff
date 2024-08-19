@@ -34,7 +34,7 @@ class CABase
 	int Interrupt( ActionData action_data )
 	{
 		Cancel( action_data );
-		return UA_CANCEL;
+		return UA_INTERRUPT;
 	}
 		
 	void SetACData(Param units) //overload this method if you want to send more than one parameter out of the action component

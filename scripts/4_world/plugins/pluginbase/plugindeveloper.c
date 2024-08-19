@@ -22,12 +22,6 @@ class PluginDeveloper extends PluginBase
 		DeveloperTeleport.SetPlayerPosition(player, position);
 	}
 	
-	//! Set player direction
-	void SetDirection(PlayerBase player, vector direction)
-	{
-		DeveloperTeleport.SetPlayerDirection(player, direction);
-	}
-	
 	//! Enable / Disable Free camera (Fly mod)
 	void ToggleFreeCameraBackPos()
 	{
@@ -538,9 +532,9 @@ class PluginDeveloper extends PluginBase
 	
 	EntityAI SpawnEntityInPlayerInventory(PlayerBase player, string item_name, float health, float quantity, bool special = false, string presetName = "", FindInventoryLocationType locationType = FindInventoryLocationType.ANY)
 	{
-		if (player)
+		if ( player )
 		{
-			if (GetGame().IsServer())
+			if ( GetGame().IsServer() )
 			{
 				if (locationType == FindInventoryLocationType.HANDS && player.GetItemInHands())
 				{
@@ -548,9 +542,7 @@ class PluginDeveloper extends PluginBase
 						player.DropItem(player.GetItemInHands());
 					else
 						player.ServerDropEntity(player.GetItemInHands());
-
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnEntityInPlayerInventory, 500, false, player, item_name, health, quantity, special, presetName, locationType);
-
+					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnEntityInPlayerInventory,100, false, player, item_name, health, quantity, special, presetName, locationType);
 					return null;
 				}
 			
@@ -558,20 +550,21 @@ class PluginDeveloper extends PluginBase
 				#ifdef DEVELOPER
 				if (GetGame().IsKindOf(item_name, "Transport"))
 				{
-					EntityAI vehicle = SpawnEntityOnGroundPos(player, item_name, 1, quantity, player.GetPosition());
+					EntityAI car = SpawnEntityOnGroundPos(player, item_name, 1, quantity, player.GetPosition());
+
 					auto debugParams = DebugSpawnParams.WithPlayer(player);
-					vehicle.OnDebugSpawnEx(debugParams);
+					car.OnDebugSpawnEx(debugParams);
 					
 					if (GetGame().IsMultiplayer())
 					{
-						DayZPlayerSyncJunctures.SendGetInVehicle(player, vehicle);
+						DayZPlayerSyncJunctures.SendGetInCar(player, car);
 					}
 					else
 					{
-						player.SetGetInVehicleDebug(vehicle);
+						player.SetGetInVehicleDebug(car);
 					}
 
-					return vehicle;
+					return car;
 				}
 				#endif
 

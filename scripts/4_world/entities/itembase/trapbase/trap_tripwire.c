@@ -356,8 +356,6 @@ class TripwireTrap : TrapBase
 			m_TriggerOrientation		= orientation;
 			m_ResultOfAdvancedPlacing	= true;
 		}
-		
-		super.OnPlacementComplete(player, position, orientation);
 	}
 	
 	override void OnPlacementCancelled(Man player)

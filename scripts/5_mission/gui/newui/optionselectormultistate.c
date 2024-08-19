@@ -25,13 +25,6 @@ class OptionSelectorMultistate extends OptionSelector
 		m_SelectedOption.SetText(m_Options.Get(m_SelectedOptionIndex));
 	}
 	
-	static OptionSelectorMultistate NewFromAccess(Widget parent, ListOptionsAccess optionAccess, ScriptedWidgetEventHandler parent_c, bool disabled)
-	{
-		array<string> items = {};
-		optionAccess.GetAllItemsText(items);
-		return new OptionSelectorMultistate(parent, optionAccess.GetIndex(), parent_c, disabled, items);
-	}
-	
 	void LoadNewValues(notnull array<string> options, int current_index)
 	{
 		m_Options = options;

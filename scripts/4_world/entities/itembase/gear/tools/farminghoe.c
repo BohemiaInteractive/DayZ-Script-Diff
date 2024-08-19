@@ -8,9 +8,9 @@ class FarmingHoe: ItemBase
 	override void SetActions()
 	{
 		super.SetActions();
-				
+		
 		AddAction(ActionClapBearTrapWithThisItem);
-		AddAction(ActionTogglePlaceObjectDigging);
+		AddAction(ActionTogglePlaceObject);
 		AddAction(ActionDigGardenPlot);
 		AddAction(ActionDismantleGardenPlot);
 		AddAction(ActionDismantlePart);
@@ -22,15 +22,5 @@ class FarmingHoe: ItemBase
 		AddAction(ActionFillObject);
 		AddAction(ActionDigWorms);
 		AddAction(ActionCreateGreenhouseGardenPlot);
-	}
-	
-	override void SetActionAnimOverrides()
-	{
-		OverrideActionAnimation(ActionDigWorms, DayZPlayerConstants.CMD_ACTIONFB_DIGGIN_WORMS, DayZPlayerConstants.STANCEMASK_ERECT);
-	}
-	
-	override int GetOnDigWormsAmount()
-	{
-		return 3;
 	}
 };

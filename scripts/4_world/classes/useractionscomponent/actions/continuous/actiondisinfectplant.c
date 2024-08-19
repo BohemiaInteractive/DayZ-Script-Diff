@@ -63,5 +63,38 @@ class ActionDisinfectPlant: ActionContinuousBase
 			}
 		}
 		return false;
+		/*PlantBase plant;
+		if ( Class.CastTo(plant,  target.GetObject() ) && !item.IsDamageDestroyed() )
+		{			
+			if ( plant.IsGrowing()  &&  plant.NeedsSpraying() )
+			{	
+				if ( item.GetQuantity() > 0 )
+				{
+					return true;
+				}
+			}
+		}
+		
+		return false;*/
+	}
+	
+	override void OnFinishProgressServer( ActionData action_data)
+	{
+		Object targetObject = action_data.m_Target.GetObject();
+		Param1<float> nacdata = Param1<float>.Cast( action_data.m_ActionComponent.GetACData() );
+		if (nacdata)
+		{
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		}
+	}
+	
+	override void OnFinishProgressClient( ActionData action_data)
+	{
+		Object targetObject = action_data.m_Target.GetObject();
+		Param1<float> nacdata = Param1<float>.Cast( action_data.m_ActionComponent.GetACData() );
+		if (nacdata)
+		{
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		}
 	}
 };

@@ -197,7 +197,7 @@ class AnimatedActionBase : ActionBase
 			}
 		}
 	}
-		
+	
 	override bool ActionConditionContinue( ActionData action_data ) //condition for action
 	{
 		return ActionCondition(action_data.m_Player,action_data.m_Target,action_data.m_MainItem);
@@ -208,25 +208,8 @@ class AnimatedActionBase : ActionBase
 		return true;
 	}
 	
-	override protected int GetStanceMaskEx(PlayerBase player, ActionTarget target, ItemBase item)
-	{
-		int stanceOverride = GetStanceMaskOverride(item);
-		if (stanceOverride != -1)
-			return stanceOverride;
-		
-		return GetStanceMask(player));
-	}
-	
-	protected int GetActionCommandEx(ActionData actionData)
-	{
-		int commandOverride = GetCommandOverride(actionData);
-		if (commandOverride != -1)
-			return commandOverride;
-			
-		return GetActionCommand(actionData.m_Player);
-	}
-	
-	protected int GetActionCommand(PlayerBase player)
+	//TODO MW - add comment 
+	protected int GetActionCommand( PlayerBase player )
 	{
 		if ( HasProneException() )
 		{
@@ -236,43 +219,6 @@ class AnimatedActionBase : ActionBase
 				return m_CommandUIDProne;
 		}
 		return m_CommandUID;
-	}
-	
-	protected int GetCommandOverride(ActionData actionData)
-	{
-		if (!actionData.m_MainItem)
-			return -1;
-		
-		TActionAnimOverrideMap overrideMap = ItemBase.m_ItemActionOverrides.Get(this.Type());
-		if (!overrideMap)
-			return -1;
-		
-		ActionOverrideData overrideData = overrideMap.Get(actionData.m_MainItem.Type());
-		if (overrideData)
-		{
-			if ( HasProneException() && actionData.m_Player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE) )
-				return overrideData.m_CommandUIDProne;
-			else 
-				return overrideData.m_CommandUID;
-		}
-				
-		return -1;
-	}
-	
-	protected int GetStanceMaskOverride(ItemBase item)
-	{
-		if (item)
-		{
-			TActionAnimOverrideMap overrideMap = ItemBase.m_ItemActionOverrides.Get(this.Type());
-			if (overrideMap)
-			{
-				ActionOverrideData overrideData = overrideMap.Get(item.Type());
-				if (overrideData && overrideData.m_StanceMask != -1)
-					return overrideData.m_StanceMask;
-			}
-		}
-		
-		return -1;
 	}
 	
 	protected typename GetCallbackClassTypename()
@@ -291,14 +237,14 @@ class AnimatedActionBase : ActionBase
 	{
 		//Print("ActionBase.c | CreateAndSetupActionCallback | DBG ACTION CALLBACK CREATION CALLED");
 		ActionBaseCB callback;
-		if (  IsFullBodyEx(action_data.m_Player, action_data.m_Target, action_data.m_MainItem) )
+		if (  IsFullBody(action_data.m_Player) )
 		{
-			Class.CastTo(callback, action_data.m_Player.StartCommand_Action(GetActionCommandEx(action_data),GetCallbackClassTypename(),GetStanceMaskEx(action_data.m_Player, action_data.m_Target, action_data.m_MainItem)));	
+			Class.CastTo(callback, action_data.m_Player.StartCommand_Action(GetActionCommand(action_data.m_Player),GetCallbackClassTypename(),GetStanceMask(action_data.m_Player)));	
 			//Print("ActionBase.c | CreateAndSetupActionCallback |  DBG command starter");		
 		}
 		else
 		{
-			Class.CastTo(callback, action_data.m_Player.AddCommandModifier_Action(GetActionCommandEx(action_data),GetCallbackClassTypename()));
+			Class.CastTo(callback, action_data.m_Player.AddCommandModifier_Action(GetActionCommand(action_data.m_Player),GetCallbackClassTypename()));
 			//Print("ActionBase.c | CreateAndSetupActionCallback |  DBG command modif starter: "+callback.ToString()+"   id:"+GetActionCommand().ToString());
 			
 		}
@@ -450,20 +396,6 @@ class AnimatedActionBase : ActionBase
 			}
 			action_data.m_Callback.Interrupt();
 		}
-	}
-	
-	override void OnStartServer(ActionData action_data)
-	{
-		super.OnStartServer(action_data);
-		
-		if (!IsInstant())
-			action_data.m_Player.SetPerformedActionID(GetID());
-	}
-	
-	override void OnEndServer(ActionData action_data)
-	{
-		action_data.m_Player.SetPerformedActionID(-1);
-		super.OnEndServer(action_data);
 	}
 	
 	override float GetProgress( ActionData action_data )

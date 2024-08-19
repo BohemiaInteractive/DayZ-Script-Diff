@@ -3,21 +3,11 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 	protected bool 				m_PlayerPosRefreshBlocked;
 	protected static float 		DEBUG_MAP_ZOOM = 1;
 	protected vector 			m_MapPos;
-	protected static int 		m_SelectedID;
-	protected static string 	m_SelectedSoundEventType;
-	protected static string 	m_SelectedAttachments;
-	
-	protected ButtonWidget 		m_SetETSoundButton;
-	protected ButtonWidget 		m_SetETSoundWeaponButton;
-	protected ButtonWidget 		m_SetETSoundAttachmentButton;
-	protected ButtonWidget 		m_SetETSoundVoiceButton;
-	protected ButtonWidget 		m_PlaySoundEventButton;
 	protected ButtonWidget 		m_CopySoundset;
 	protected ButtonWidget 		m_PlaySoundset;
 	protected ButtonWidget 		m_PlaySoundsetLooped;
 	protected ButtonWidget 		m_StopSoundset;
 
-	protected EditBoxWidget 		m_SoundEventIDBox;
 	protected EditBoxWidget 		m_SoundFilter;
 	protected TextListboxWidget 	m_SoundsTextListbox;
 	
@@ -29,42 +19,18 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 	protected TextWidget	 		m_MouseCurPos;
 	protected TextWidget	 		m_MapHeadingWidget;
 	
-	protected ImageWidget			m_BBackgroundSound;
-	protected ImageWidget			m_BBackgroundSoundWeapon;
-	protected ImageWidget			m_BBackgroundSoundAttachment;
-	protected ImageWidget			m_BBackgroundSoundVoice;
-	protected ImageWidget			m_SelectedBackground;
-	
-	protected CheckBoxWidget		m_CheckBoxShoulderAtt;
-	protected CheckBoxWidget		m_CheckBoxBodyAtt;
-	protected CheckBoxWidget		m_CheckBoxBackAtt;
-	
 	void ScriptConsoleSoundsTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
 		m_MouseCurPos		= TextWidget.Cast(root.FindAnyWidget("MapSoundsPos"));
 		m_MapDistWidget		= TextWidget.Cast(root.FindAnyWidget("MapSoundsDistance"));
 		m_MapHeadingWidget	= TextWidget.Cast(root.FindAnyWidget("MapHeadingSounds"));
 		
-		m_SetETSoundButton				= ButtonWidget.Cast(root.FindAnyWidget("ETSoundButton"));
-		m_SetETSoundWeaponButton		= ButtonWidget.Cast(root.FindAnyWidget("ETSoundWeaponButton"));
-		m_SetETSoundAttachmentButton	= ButtonWidget.Cast(root.FindAnyWidget("ETSoundAttachmentButton"));
-		m_SetETSoundVoiceButton			= ButtonWidget.Cast(root.FindAnyWidget("ETSoundVoiceButton"));
-		m_PlaySoundEventButton			= ButtonWidget.Cast(root.FindAnyWidget("ETSoundPlayButton"));
-		m_SoundEventIDBox 				= EditBoxWidget.Cast(root.FindAnyWidget("SoundIDEditBox"));
-		m_CheckBoxShoulderAtt			= CheckBoxWidget.Cast(root.FindAnyWidget("CheckBoxShoulderAtt"));
-		m_CheckBoxBodyAtt				= CheckBoxWidget.Cast(root.FindAnyWidget("CheckBoxBodyAtt"));
-		m_CheckBoxBackAtt				= CheckBoxWidget.Cast(root.FindAnyWidget("CheckBoxBackAtt"));
-		m_BBackgroundSound				= ImageWidget.Cast(root.FindAnyWidget("SoundEventType"));
-		m_BBackgroundSoundWeapon		= ImageWidget.Cast(root.FindAnyWidget("SoundEventType0"));
-		m_BBackgroundSoundAttachment	= ImageWidget.Cast(root.FindAnyWidget("SoundEventType1"));
-		m_BBackgroundSoundVoice			= ImageWidget.Cast(root.FindAnyWidget("SoundEventType2"));
-		
 		m_CopySoundset		= ButtonWidget.Cast(root.FindAnyWidget("SoundsetCopy"));
 		m_PlaySoundset		= ButtonWidget.Cast(root.FindAnyWidget("PlaySoundset"));
 		m_PlaySoundsetLooped = ButtonWidget.Cast(root.FindAnyWidget("PlaySoundsetLooped"));
 		m_StopSoundset 		= ButtonWidget.Cast(root.FindAnyWidget("StopSoundset"));
 		m_DebugMapWidget = MapWidget.Cast(root.FindAnyWidget("MapSounds"));
-
+		
 		m_SoundFilter = EditBoxWidget.Cast(root.FindAnyWidget("SoundsFilter"));
 		m_SoundsTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("SoundsList"));
 		
@@ -79,27 +45,6 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 			m_DebugMapWidget.SetMapPos(GetGame().GetPlayer().GetWorldPosition());
 			SetMapPos(GetGame().GetPlayer().GetWorldPosition());
 		}
-		
-		// reopen update
-		m_SoundEventIDBox.SetText(m_SelectedID.ToString());
-		
-		if (m_SelectedSoundEventType == "Sound")
-			OnClick(m_SetETSoundButton,0,0,0);
-		else if (m_SelectedSoundEventType == "SoundWeapon")
-			OnClick(m_SetETSoundWeaponButton,0,0,0);
-		else if (m_SelectedSoundEventType == "SoundAttachment")
-			OnClick(m_SetETSoundAttachmentButton,0,0,0);
-		else if (m_SelectedSoundEventType == "SoundVoice")
-			OnClick(m_SetETSoundVoiceButton,0,0,0);
-		
-		string lastSelection = m_SelectedAttachments;
-		if (lastSelection.Contains("shoulder"))
-			m_CheckBoxShoulderAtt.SetChecked(true);
-		if (lastSelection.Contains("body"))
-			m_CheckBoxBodyAtt.SetChecked(true);
-		if (lastSelection.Contains("back"))
-			m_CheckBoxBackAtt.SetChecked(true);
-		
 	}
 	
 	void ~ScriptConsoleSoundsTab(Widget root)
@@ -296,43 +241,6 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		return m_MapPos;
 	}
 	
-	protected void PlaySoundEvent()
-	{
-		m_SelectedID = m_SoundEventIDBox.GetText().ToInt();
-		if (m_SelectedID == 0)
-			return;
-		
-		DayZPlayerImplement player = DayZPlayerImplement.Cast(GetGame().GetPlayer());
-		
-		if (m_SelectedSoundEventType == "SoundAttachment")
-			player.OnSoundEvent(m_SelectedSoundEventType, m_SelectedAttachments, m_SelectedID);
-		else 
-			player.OnSoundEvent(m_SelectedSoundEventType, string.Empty, m_SoundEventIDBox.GetText().ToInt());
-	}
-	
-	protected void UpdateAttachmentSelection()
-	{
-		string attachments = string.Empty;
-		if (m_CheckBoxShoulderAtt.IsChecked())
-			attachments += "shoulder,";
-		if (m_CheckBoxBodyAtt.IsChecked())
-			attachments += "body,";
-		if (m_CheckBoxBackAtt.IsChecked())
-			attachments += "back";
-		
-		m_SelectedAttachments = attachments;
-	}
-	
-	protected void UpdateSelectedColor(ImageWidget buttonBackground)
-	{
-		if (m_SelectedBackground)
-			m_SelectedBackground.SetColor(0xFF141414);
-		
-		buttonBackground.SetColor(COLOR_RED);
-		
-		m_SelectedBackground = buttonBackground;
-	}
-	
 	override bool OnMouseButtonDown(Widget w, int x, int y, int button)
 	{
 		super.OnMouseButtonDown(w,x,y,button);
@@ -396,56 +304,10 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 			ChangeFilterSound();
 			return true;
 		}
-		else if (w == m_SetETSoundButton)
-		{
-			m_SelectedSoundEventType = "Sound";
-			UpdateSelectedColor(m_BBackgroundSound);
-			return true;
-		}
-		else if (w == m_SetETSoundWeaponButton)
-		{
-			m_SelectedSoundEventType = "SoundWeapon";
-			UpdateSelectedColor(m_BBackgroundSoundWeapon);
-			return true;
-		}
-		else if (w == m_SetETSoundAttachmentButton)
-		{
-			m_SelectedSoundEventType = "SoundAttachment";
-			UpdateSelectedColor(m_BBackgroundSoundAttachment);
-			return true;
-		}
-		else if (w == m_SetETSoundVoiceButton)
-		{
-			m_SelectedSoundEventType = "SoundVoice";
-			UpdateSelectedColor(m_BBackgroundSoundVoice);
-			return true;
-		}
-		else if (w == m_PlaySoundEventButton)
-		{
-			PlaySoundEvent();
-			return true;
-		}
-		else if (w == m_CheckBoxShoulderAtt || w == m_CheckBoxBodyAtt || w == m_CheckBoxBackAtt)
-		{
-			UpdateAttachmentSelection();
-			return true;
-		}
-
-		return false;
-	}
-	
-	override bool OnDoubleClick(Widget w, int x, int y, int button)
-	{
-		super.OnDoubleClick(w, x, y, button);
-				
-		if (w == m_SoundEventIDBox || w == m_SoundFilter)
-		{
-			EditBoxWidget.Cast(w).SetText("");
-			return true;
-		}
 		
 		return false;
 	}
+	
 
 	protected TStringArray GetSoundClasses()
 	{

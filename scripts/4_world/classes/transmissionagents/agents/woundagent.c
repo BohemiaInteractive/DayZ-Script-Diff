@@ -1,4 +1,4 @@
-class WoundAgent : AgentBase
+class WoundAgent extends AgentBase
 {
 	static const float RESISTANCE_STAGE_1 = 1;
 	static const float RESISTANCE_STAGE_2 = 0.5;
@@ -17,22 +17,17 @@ class WoundAgent : AgentBase
 	
 	override float GetAntibioticsResistanceEx(PlayerBase player)
 	{
-		if (player.GetModifiersManager().IsModifierActive(eModifiers.MDF_WOUND_INFECTION1))
+		if(player.GetModifiersManager().IsModifierActive(eModifiers.MDF_WOUND_INFECTION1))
 			return RESISTANCE_STAGE_1;
 		else
 			return RESISTANCE_STAGE_2;
 	}
 	
-	override bool GrowDuringMedicalDrugsAttack(EMedicalDrugsType drugType, PlayerBase player)
+	override bool GrowDuringAntibioticsAttack(PlayerBase player)
 	{
-		if (drugType == EMedicalDrugsType.ANTIBIOTICS)
-		{
-			if (player.GetModifiersManager().IsModifierActive(eModifiers.MDF_WOUND_INFECTION1))
-				return true;
-			else
-				return false;
-		}
-		
-		return super.GrowDuringMedicalDrugsAttack(drugType, player);
+		if(player.GetModifiersManager().IsModifierActive(eModifiers.MDF_WOUND_INFECTION1))
+			return true;
+		else
+			return false;
 	}
 }

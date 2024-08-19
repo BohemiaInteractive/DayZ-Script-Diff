@@ -85,21 +85,12 @@ class PeelPotato extends RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase ingredient = ingredients[0];
+		ItemBase item_ingredient = ingredients[0];
+		float quantityMultiplier = item_ingredient.GetHealth01("",""); 
 		
-		for (int i=0; i < results.Count(); i++)
-		{
-			ItemBase item_result;
-			Class.CastTo(item_result, results.Get(i));
-			
-			MiscGameplayFunctions.TransferItemProperties(ingredient, item_result);
-			
-			float quantityMultiplier = ingredient.GetHealth01("",""); 
-			item_result.SetQuantityNormalized(quantityMultiplier);
-			
-			//temperature check
-			if (!ingredient.CanHaveTemperature())
-				item_result.SetTemperatureDirect(GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE);
-		}
+		ItemBase item_result = results[0];
+		item_result.SetQuantityNormalized(quantityMultiplier);
+		
+		Debug.Log("Recipe Do method called","recipes");
 	}
 };

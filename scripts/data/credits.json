@@ -32,10 +32,9 @@
                     "SectionLines": [
                         "Dan Olthen",
                         "Filippo Franco",
+                        "Tim Pulsmeier",
                         "Ľuboš Kubiš",
-                        "Martin Kuchař",
-                        "Roman Múdry",
-                        "Tim Pulsmeier"
+                        "Roman Múdry"
                     ]
                 }
             ]
@@ -106,14 +105,13 @@
                         "Boris Vacula",
                         "Daniel Dička",
                         "David Soška",
-                        "Jakub Palkovič",
                         "Kamil Komínek",
+                        "Jakub Palkovič",
                         "Ľuboš Kováč",
                         "Martin Strapko",
                         "Martin Weiser",
                         "Peter Jánošík",
                         "Pierre Rencurel",
-                        "Stephan Moser",
                         "Vratislav Jindřich"
                     ]
                 }
@@ -128,14 +126,11 @@
                         "Arseniy Smirnov",
                         "Florian Pelloux",
                         "Ivan Buchta",
-                        "Kasy Hucková",
                         "Mark Gill",
                         "Martin Hochman",
                         "Martin Pezlar",
-                        "Michael Docherty",
                         "Petr Sedláček",
-                        "Radim Vitek",
-                        "Suvi Lankila"
+                        "Radim Vitek"
                     ]
                 }
             ]
@@ -185,7 +180,6 @@
                         "Peter Ševčík",
                         "Petr Soviš",
                         "Rastislav Tisovčík",
-                        "Tomas Grünwald",
                         "Tomáš Vajda",
                         "Vlad Mihai Baderca",
                         "Volodymyr Syvochka",
@@ -225,10 +219,8 @@
                     "SectionLines": [
                         "Art Shiryaev",
                         "Boris Joanovič",
-                        "Bruno Luccas",
                         "Darko Miladinovikj",
                         "Jakub Mirola",
-                        "Jamie Foster",
                         "Jan Kudrnáč",
                         "Kristýna Duhárová",
                         "Marcin Pindara",
@@ -248,7 +240,6 @@
                         "Peter Švaral",
                         "Roman Gašperík",
                         "Sebastian Davies",
-                        "Vaclav Rod",
                         "Vadim Spiridonov",
                         "Vladimír Holík",
                         "Zdeněk Vespalec"
@@ -285,10 +276,8 @@
                         "Michal Panda",
                         "Miloš Černý",
                         "Peter Skala",
-                        "Rafael Onzi",
                         "Rastislav Hlavatý",
                         "Roman Straponček",
-                        "Sandeep Kumar",
                         "Théo Escamez",
                         "Yogesh Batra"
                     ]
@@ -355,7 +344,7 @@
             "DepartmentName": "",
             "Sections": [
                 {
-                    "SectionName": "#composer",
+                    "SectionName": "Composer",
                     "SectionLines": [
                         "Filip Míšek"
                     ]
@@ -371,8 +360,7 @@
                         "David Komínek",
                         "Martin Vitouš",
                         "Pavel Fitz",
-                        "Petr Vnenk",
-                        "Robert Kuchárek"
+                        "Petr Vnenk"
                     ]
                 }
             ]
@@ -461,22 +449,17 @@
                         "Chaluemch Khuenkhiew",
                         "Chanunsit Tanapuriyothin",
                         "Jaratpong Sukavinya",
-                        "Jiranun Promjuntha",
                         "Jutamas Petsri",
                         "Karan Kumar",
                         "Keadtisak Khwagosom",
                         "Khathawut Lasuwan",
                         "Khomsan Suphom",
                         "Krit Nawaritloha",
-                        "Natapon Tanee",
                         "Nattavut Mantanakul",
-                        "Nawa Montrelerdrasme",
                         "Nawin Sapchinda",
                         "Pajaree Rodsomboon",
                         "Pantira Pengwaha",
                         "Panuwitpong Pariyawathee",
-                        "Patcha Wiset",
-                        "Phipatphong Maruek",
                         "Pianpat Ronruangrit",
                         "Pooriwat Waikula",
                         "Prasittichai Daengma",
@@ -484,7 +467,6 @@
                         "Sontat Chaisiripant",
                         "Suppachai Inmuean",
                         "Tanate Wilawankamon",
-                        "Tanya Mantanakul",
                         "Tatiya Junsong",
                         "Yosaphon Issarasenanaayudthaya"
                     ]
@@ -498,9 +480,7 @@
                     "SectionName": "#additional_programmers",
                     "SectionLines": [
                         "František Novák",
-                        "Lukáš Bábíček",
                         "Martin Stanjek",
-                        "Pavel Guglava",
                         "Richard Biely",
                         "Tomáš Nezval"
                     ]
@@ -744,7 +724,6 @@
                         "Ramón Méndez",
                         "Artemiy Mikheev",
                         "Fernando Moreiras",
-                        "Toyofumi Morita",
                         "Paolo Panena",
                         "Jiří Petrů",
                         "Marco Piccinnu",
@@ -754,7 +733,6 @@
                         "Vojtěch Schubert",
                         "Carmen Simio",
                         "Mathilde Sperduto",
-                        "Suzu Suzunomiya",
                         "Felix Tappe",
                         "Rumi Tasaki",
                         "Loek van Kooten",
@@ -879,7 +857,6 @@
 						"Martin Pivon",
                         "Martin Suriak",
                         "Matěj Müller",
-                        "Matěj Potůček",
 						"Matouš Hrdlicka",
                         "Matyáš Soviš",
                         "Max Hejtmánek",
@@ -1125,8 +1102,8 @@
                         "Karel Taufman",
                         "Lloyd XXX",
                         "Lukáš Miláček",
-                        "Mario Enriquez",
                         "Patrik Kollár",
+                        "Pavel Guglava",
                         "Pawel Smolewski",
                         "Peter Gonda",
                         "Peter Rjapoš",

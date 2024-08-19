@@ -6,7 +6,6 @@ class ActionStripCarrierVestCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionStripCarrierVest: ActionContinuousBase
 {	
 	void ActionStripCarrierVest()

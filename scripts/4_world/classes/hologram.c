@@ -14,9 +14,6 @@ class Hologram
 	protected const string SUFFIX_MATERIAL_DEPLOYABLE 	= "_deployable.rvmat";
 	protected const string SUFFIX_MATERIAL_UNDEPLOYABLE = "_undeployable.rvmat";
 	protected const string SUFFIX_MATERIAL_POWERED 		= "_powered.rvmat";
-	
-	protected const vector PLACEMENT_RC_START_OFFSET = "0 1 0";
-	protected const vector PLACEMENT_RC_END_OFFSET = "0 -2 0";
 
 	protected ItemBase 			m_Parent;
 	protected EntityAI 			m_Projection;
@@ -593,19 +590,17 @@ class Hologram
 		if (CfgGameplayHandler.GetDisableIsBaseViableCheck())
 			return true;
 		
-		
-		
-		vector from_left_close = m_Projection.CoordToParent(GetLeftCloseProjectionVector()) + PLACEMENT_RC_START_OFFSET;
-		vector to_left_close_down = from_left_close + PLACEMENT_RC_END_OFFSET;
+		vector from_left_close = m_Projection.CoordToParent(GetLeftCloseProjectionVector());
+		vector to_left_close_down = from_left_close + "0 -1 0";
 
-		vector from_right_close = m_Projection.CoordToParent(GetRightCloseProjectionVector()) + PLACEMENT_RC_START_OFFSET;
-		vector to_right_close_down = from_right_close + PLACEMENT_RC_END_OFFSET;
+		vector from_right_close = m_Projection.CoordToParent(GetRightCloseProjectionVector());
+		vector to_right_close_down = from_right_close + "0 -1 0";
 
-		vector from_left_far = m_Projection.CoordToParent(GetLeftFarProjectionVector() + PLACEMENT_RC_START_OFFSET);
-		vector to_left_far_down = from_left_far + PLACEMENT_RC_END_OFFSET;
+		vector from_left_far = m_Projection.CoordToParent(GetLeftFarProjectionVector());
+		vector to_left_far_down = from_left_far + "0 -1 0";
 
-		vector from_right_far = m_Projection.CoordToParent(GetRightFarProjectionVector()) + PLACEMENT_RC_START_OFFSET;
-		vector to_right_far_down = from_right_far + PLACEMENT_RC_END_OFFSET;
+		vector from_right_far = m_Projection.CoordToParent(GetRightFarProjectionVector());
+		vector to_right_far_down = from_right_far + "0 -1 0";
 		
 		vector contact_pos_left_close;
 		vector contact_pos_right_close;
@@ -627,7 +622,7 @@ class Hologram
 		Object obj_right_close;
 		Object obj_left_far;
 		Object obj_right_far;
-						
+
 		//Not sure what the intention here was before, but it boiled down to a very bloated version of what you see here right now
 		DayZPhysics.RaycastRV(from_left_close, to_left_close_down, contact_pos_left_close, contact_dir_left_close, contact_component_left_close, results_left_close, null, m_Projection, false, false, ObjIntersectFire);
 		if (results_left_close.Count() > 0)
@@ -849,9 +844,9 @@ class Hologram
 		// Fast check middle of object
 		string type;
 		int liquid;
-		g_Game.SurfaceUnderObjectCorrectedLiquid(m_Projection, type, liquid);
+		g_Game.SurfaceUnderObject(m_Projection, type, liquid);
 		
-		if (liquid & (LIQUID_GROUP_WATER - LIQUID_SNOW))
+		if (liquid == LIQUID_WATER)
 		{
 			#ifdef DIAG_DEVELOPER
 			DebugText("IsUnderwater: ", false, true, " | Surface under object is water");
@@ -1105,6 +1100,15 @@ class Hologram
 		}
 		
 		vector from = GetGame().GetCurrentCameraPosition();
+		//adjusts raycast origin to player head approx. level (limits results behind the character)
+		if ( DayZPlayerCamera3rdPerson.Cast(player.GetCurrentCamera()) )
+		{
+			vector head_pos;
+			MiscGameplayFunctions.GetHeadBonePos(player,head_pos);
+			float dist = vector.Distance(head_pos,from);
+			from = from + GetGame().GetCurrentCameraDirection() * dist;
+		}
+		
 		vector to = from + (GetGame().GetCurrentCameraDirection() * (maxProjectionDistance + cameraToPlayerDistance));
 		vector contactPosition;
 		set<Object> hitObjects = new set<Object>();

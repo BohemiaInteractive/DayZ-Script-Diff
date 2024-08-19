@@ -94,8 +94,13 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	override void Update()
 	{
 		super.Update();
+		//Print("panel:" + m_WgtPanel);
+		//Print("Update()");
 		
-		if (!m_Populated)
+		//refresh notifiers
+		
+		
+		if(!m_Populated)
 			SetupValues();
 		
 		UpdateValues();
@@ -103,21 +108,19 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	
 	void SetupValues()
 	{
-		PluginDeveloperSync developerSync = PluginDeveloperSync.Cast(GetPlugin(PluginDeveloperSync));
+		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
 		
 		//clear window
 		//ClearValues();
 			
-		if ( developerSync.m_PlayerStatsSynced.Count() > 0 )
+		if ( developer_sync.m_PlayerStatsSynced.Count() > 0 )
 		{
-			foreach (SyncedValue syncedValue : developerSync.m_PlayerStatsSynced)
+			//set
+			for ( int i = 0; i < developer_sync.m_PlayerStatsSynced.Count(); i++ )
 			{
-				string name = syncedValue.GetName();
-				string value = syncedValue.GetValue().ToString();
-				
-				AddValue(name, value);
+				AddValue( developer_sync.m_PlayerStatsSynced.Get( i ).GetName(), developer_sync.m_PlayerStatsSynced.Get( i ).GetValue().ToString() );
 			}
-
+					//fit to screen
 			FitWindow();
 			m_Populated = true;
 		}
@@ -126,44 +129,51 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	
 	void UpdateValues()
 	{
-		PluginDeveloperSync developerSync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
-		if ( developerSync.m_PlayerStatsSynced.Count() > 0 )
+		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
+		if ( developer_sync.m_PlayerStatsSynced.Count() > 0 )
 		{
-			foreach (int i, SyncedValue syncedValue : developerSync.m_PlayerStatsSynced)
+			for ( int i = 0; i < developer_sync.m_PlayerStatsSynced.Count(); i++ )
 			{
-				string statName 		= syncedValue.GetName();
-				float valueNormalized 	= syncedValue.GetValueNorm();
-				float value 			= syncedValue.GetValue();
+				string stat_name = developer_sync.m_PlayerStatsSynced.Get( i ).GetName();
+				float val_norm = developer_sync.m_PlayerStatsSynced.Get( i ).GetValueNorm();
+				float value = developer_sync.m_PlayerStatsSynced.Get( i ).GetValue();
 				
-				if ( statName == "BloodType" )
+				if( stat_name == "BloodType" )
 				{
 					string type, name;
 					bool positive;
 					
 					name = value.ToString();
-					name += "("+BloodTypes.GetBloodTypeName(Math.Round(value), type, positive)+")";
+					name += "("+BloodTypes.GetBloodTypeName( Math.Round(value), type, positive)+")";
 					m_StatValues.Get(i).SetText(name);
 				}
 				else
 				{
-					if (statName == "HeatBuffer")
-					{
-						float heatBufferNormalized = Math.Round(Math.Lerp(-1, 1, valueNormalized) * 1000) * 0.001;
-						m_StatValues.Get(i).SetText(string.Format("%1 (%2)", heatBufferNormalized.ToString(), value.ToString()));
-					}
-					else
-						m_StatValues.Get(i).SetText(value.ToString());
+					m_StatValues.Get(i).SetText(value.ToString());
 					
 				}
-
-				if (!m_ChangingSlider)
-					m_SliderWidgets.GetKeyByValue(statName).SetCurrent(valueNormalized * 100);
+				if(!m_ChangingSlider)
+					m_SliderWidgets.GetKeyByValue(stat_name).SetCurrent(val_norm * 100);
+				/*
+				EditBoxWidget w;
+				w.
+				AddValue( developer_sync.m_PlayerStatsSynced.Get( i ).GetName(), developer_sync.m_PlayerStatsSynced.Get( i ).GetValue().ToString() );
+				*/
 			}
 		}
 		
 	}
 	
-	void AddValue(string title, string value)
+	/*
+	
+	void AddValue( string title, string value )
+	{
+		int index = m_WgtValues.AddItem( title, NULL, 0 );
+		m_WgtValues.SetItem( index, value, NULL, 1 );
+	}	
+	*/
+	
+	void AddValue( string title, string value )
 	{
 		Widget widget = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_stat.layout", m_WgtPanel );
 		
@@ -180,6 +190,10 @@ class HudDebugWinCharStats extends HudDebugWinBase
 		SliderWidget sw = SliderWidget.Cast(widget.FindAnyWidget("StatSlider"));
 		m_SliderWidgets.Insert(sw,title );
 		
+		
+		//int index = m_WgtValues.AddItem( title, NULL, 0 );
+		//m_WgtValues.SetItem( index, value, NULL, 1 );
+		
 		AutoHeightSpacer WgtModifiersContent_panel_script;
 		m_WgtPanel.GetScript( WgtModifiersContent_panel_script );
 		WgtModifiersContent_panel_script.Update();
@@ -188,6 +202,7 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	void ClearValues()
 	{
 		m_StatWidgets.Clear();
+		//m_WgtValues.ClearItems();
 	}
 
 	void FitWindow()
@@ -204,7 +219,6 @@ class HudDebugWinCharStats extends HudDebugWinBase
 			ResetStats();
 			return true;
 		}
-
 		return false;
 	}
 	

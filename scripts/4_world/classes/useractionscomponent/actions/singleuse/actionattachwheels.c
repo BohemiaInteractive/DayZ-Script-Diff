@@ -1,4 +1,4 @@
-//!DEPRECATED
+// TODO: REMOVE -> Attach action handle it
 class ActionAttachWheels: ActionAttach
 {
 	int m_wheel_hub;

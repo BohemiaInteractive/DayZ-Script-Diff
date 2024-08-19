@@ -6,7 +6,6 @@ class ActionUseRangefinderCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionUseRangefinder : ActionContinuousBase
 {
 	void ActionUseRangefinder()
@@ -36,5 +35,16 @@ class ActionUseRangefinder : ActionContinuousBase
 	override bool ActionCondition ( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		return item.GetCompEM().CanWork() && Rangefinder.Cast( item ).IsInOptics();
+	}
+	
+	override void OnFinishProgressServer( ActionData action_data )
+	{
+		/*if (action_data.m_Player)
+		{
+			string message = Rangefinder.Cast( action_data.m_MainItem ).DoMeasurement(action_data.m_Player);
+			SendMessageToClient(action_data.m_Player,message);
+		}*/
+		
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 }

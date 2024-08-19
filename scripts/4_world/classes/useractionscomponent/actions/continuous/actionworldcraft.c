@@ -59,7 +59,7 @@ class ActionWorldCraft: ActionContinuousBase
 		Class.CastTo(module_recipes_manager,  GetPlugin(PluginRecipesManager) );
 		m_Text = module_recipes_manager.GetRecipeName( player.GetCraftingManager().GetRecipeID(m_VariantID) ); 
 	}
-	
+		
 	override string GetText()
 	{
 		PlayerBase player;
@@ -107,20 +107,17 @@ class ActionWorldCraft: ActionContinuousBase
 	{
 		if (super.SetupAction(player, target, item, action_data, extra_data ))
 		{
-			WorldCraftActionData action_data_wc = WorldCraftActionData.Cast(action_data);
-			
-			if (!GetGame().IsDedicatedServer())	// server synchs the recipe id through HandleReceiveData before this
+			if (!GetGame().IsDedicatedServer())
+			{
+				WorldCraftActionData action_data_wc;
+				Class.CastTo(action_data_wc, action_data);
 				action_data_wc.m_RecipeID = player.GetCraftingManager().GetRecipeID(m_VariantID);
-
-			PluginRecipesManager moduleRecipesManager;
-			Class.CastTo(moduleRecipesManager, GetPlugin(PluginRecipesManager));
-			m_CommandUID = moduleRecipesManager.GetAnimationCommandUID(action_data_wc.m_RecipeID);
-			
+			}
 			return true;
 		}
 		return false;
 	}
-		
+	
 	override void Start( ActionData action_data ) //Setup on start of action
 	{
 		super.Start(action_data);
@@ -130,8 +127,6 @@ class ActionWorldCraft: ActionContinuousBase
 	override void OnEndServer( ActionData action_data )
 	{
 		if ( action_data.m_Player ) action_data.m_Player.TryHideItemInHands(false);
-		
-		super.OnEndServer(action_data);
 	}
 	
 	override void OnEndClient( ActionData action_data )
@@ -139,25 +134,32 @@ class ActionWorldCraft: ActionContinuousBase
 		if ( action_data.m_Player ) action_data.m_Player.TryHideItemInHands(false);
 	}
 	
-	override void OnFinishProgressServer(ActionData action_data)
+	override void OnFinishProgressServer( ActionData action_data )
 	{
+		/*if (!GetGame().IsMultiplayer())
+		{
+			ActionManagerClient am = ActionManagerClient.Cast(action_data.m_Player.GetActionManager());
+			am.UnlockInventory(action_data);
+		}*/
+		
 		WorldCraftActionData action_data_wc;
 		PluginRecipesManager module_recipes_manager;
 		ItemBase item2;
 		
 		Class.CastTo(action_data_wc, action_data);
-		Class.CastTo(module_recipes_manager, GetPlugin(PluginRecipesManager));
-		Class.CastTo(item2, action_data.m_Target.GetObject());
+		Class.CastTo(module_recipes_manager,  GetPlugin(PluginRecipesManager) );
+		Class.CastTo(item2,  action_data.m_Target.GetObject() );
 		
-		if (action_data.m_MainItem && item2)
+		if( action_data.m_MainItem && item2 )
 		{
-			ClearActionJuncture(action_data);
-			module_recipes_manager.PerformRecipeServer(action_data_wc.m_RecipeID, action_data.m_MainItem, item2, action_data.m_Player);
+			module_recipes_manager.PerformRecipeServer( action_data_wc.m_RecipeID, action_data.m_MainItem, item2, action_data.m_Player );
 		}
 	}
 	
 	override void OnFinishProgressClient( ActionData action_data )
 	{
+		/*ActionManagerClient am = ActionManagerClient.Cast(action_data.m_Player.GetActionManager());
+		am.UnlockInventory(action_data);*/
 	}
 	
 	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)

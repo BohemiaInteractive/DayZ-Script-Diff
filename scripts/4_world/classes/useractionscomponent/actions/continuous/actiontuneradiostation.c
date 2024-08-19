@@ -52,5 +52,6 @@ class ActionTuneRadioStation: ActionContinuousBase
 	{	
 		Radio radio = Radio.Cast( action_data.m_MainItem );
 		radio.TuneNextStation();
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 }

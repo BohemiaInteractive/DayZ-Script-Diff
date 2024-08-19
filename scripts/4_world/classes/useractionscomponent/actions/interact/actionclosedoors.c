@@ -41,8 +41,6 @@ class ActionCloseDoors: ActionInteractBase
 
 	override void OnStartServer(ActionData action_data)
 	{
-		super.OnStartServer(action_data);
-		
 		Building building;
 		if (Class.CastTo(building, action_data.m_Target.GetObject()))
 		{
@@ -53,26 +51,20 @@ class ActionCloseDoors: ActionInteractBase
 				{
 					building.CloseDoor(doorIndex);
 				}
+				
 			}
 		}
 	}
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
 		m_NoisePar = new NoiseParams();
 		m_NoisePar.LoadFromPath("CfgVehicles SurvivorBase NoiseActionDefault");
 		NoiseSystem noise = GetGame().GetNoiseSystem();
 		if (noise)
 		{
 			if (action_data.m_Player)
-				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar);
 		}
-	}
-	
-	override bool IsLockTargetOnUse()
-	{
-		return false;
 	}
 }

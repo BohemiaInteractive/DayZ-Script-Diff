@@ -32,11 +32,13 @@ class ActionPlaceFireplaceIntoBarrel: ActionSingleUseBase
 	}
 	
 	override void OnExecuteServer( ActionData action_data )
-	{	
+	{
+		ClearInventoryReservationEx(action_data);
 		FireplaceBase fireplace_in_hands = FireplaceBase.Cast( action_data.m_MainItem );
 		BarrelHoles_ColorBase fireplace_barrel = BarrelHoles_ColorBase.Cast( action_data.m_Target.GetObject() );
-		
 		auto lambda = new MoveEquipToExistingItemAndDestroyOldRootLambda(fireplace_in_hands, "", action_data.m_Player, fireplace_barrel);
 		action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere(lambda);
+
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 }

@@ -1,22 +1,31 @@
 class Trap_RabbitSnare extends TrapSpawnBase
 {
-	override void InitTrapValues()
+	void Trap_RabbitSnare()
 	{
-		super.InitTrapValues();
+		m_DefectRate = 15; 			//Added damage after trap activation
 		
-		m_DefectRate = 2.5; 			//Added damage after trap activation
-		
-		m_InitWaitTimeMin 						= 120;
-		m_InitWaitTimeMax 						= 180;
+		m_InitWaitTime 							= Math.RandomInt(60, 900);
 		m_UpdateWaitTime 						= 30;
-		m_SpawnUpdateWaitTime 					= 30;
-		m_MaxActiveTime 						= 1200;
 		m_IsFoldable 							= true;
-		m_MinimalDistanceFromPlayersToCatch 	= 15;
+		m_IsUsable 								= true;
+		m_MinimalDistanceFromPlayersToCatch 	= 10;
 		
+		m_BaitCatchProb 						= 85;
+		m_NoBaitCatchProb						= 15;
+
 		m_AnimationPhaseSet 					= "inventory";
 		m_AnimationPhaseTriggered 				= "placing";
 		m_AnimationPhaseUsed 					= "triggered";
+
+		m_WaterSurfaceForSetup = false;
+		
+		m_CatchesGroundAnimal = new multiMap<string, float>;
+		m_CatchesGroundAnimal.Insert("DeadRooster", 1);
+		m_CatchesGroundAnimal.Insert("DeadChicken_White", 1);
+		m_CatchesGroundAnimal.Insert("DeadChicken_Spotted", 1);
+		m_CatchesGroundAnimal.Insert("DeadChicken_Brown", 1);
+		// ALWAYS keep rabbit last as that is how it gets the rabbit in case of rabbit specific bait
+		m_CatchesGroundAnimal.Insert("DeadRabbit", 1);
 	}
 	
 	override bool CanBePlaced(Man player, vector position)
@@ -68,13 +77,73 @@ class Trap_RabbitSnare extends TrapSpawnBase
 		}
 	}
 	
-	override void InitCatchingComponent()
+	override void SpawnCatch()
 	{
-		if (!m_CatchingContext)
+		super.SpawnCatch();
+		
+		if ( m_CanCatch )
 		{
-			int updateCount = m_MaxActiveTime/m_UpdateWaitTime;
-			Param2<EntityAI,int> par = new Param2<EntityAI,int>(this,updateCount);
-			m_CatchingContext = new CatchingContextTrapLandSnare(par);
+			multiMap<string, float>	catches;
+			
+			// We read the relevant catch map
+			ItemBase catch;
+			catches = m_CatchesGroundAnimal;
+
+			// The catch map contains data
+			if ( catches && catches.Count() > 0 )
+			{
+				// select random object from catches
+				int count = catches.Count() - 1;
+				int randomCatchIndex = Math.RandomInt( 0, count );
+			
+				if ( Math.RandomFloat(0, 100) < m_FinalCatchProb )
+				{
+					if ( m_Bait )
+					{
+						if ( m_Bait.IsInherited( Worm ) )
+						{
+							// We can only catch chicken, so exclude the rabbit
+							randomCatchIndex = Math.RandomInt( 0, count - 1 );
+							catch = ItemBase.Cast( GetGame().CreateObjectEx( catches.GetKeyByIndex( randomCatchIndex ), m_PreyPos, ECE_PLACE_ON_SURFACE ) );
+						}
+						else	
+						{
+							// Get the last index, which is the rabbit
+							randomCatchIndex = count;
+							catch = ItemBase.Cast( GetGame().CreateObjectEx( catches.GetKeyByIndex( randomCatchIndex ), m_PreyPos, ECE_PLACE_ON_SURFACE ) );
+						}
+					}
+					else
+					{
+						// No bait, 50 / 50 rabbit
+						randomCatchIndex = Math.RandomIntInclusive( 0, 1 );
+						if ( randomCatchIndex == 0 )
+						{
+							randomCatchIndex = Math.RandomInt( 0, count - 1 );
+							catch = ItemBase.Cast( GetGame().CreateObjectEx( catches.GetKeyByIndex( randomCatchIndex ), m_PreyPos, ECE_PLACE_ON_SURFACE ) );
+						}
+						else
+						{
+							randomCatchIndex = count;
+							catch = ItemBase.Cast( GetGame().CreateObjectEx( catches.GetKeyByIndex( randomCatchIndex ), m_PreyPos, ECE_PLACE_ON_SURFACE ) );
+						}
+					}
+					
+					// We set quantity of prey
+					if ( catch )
+						CatchSetQuant( catch );
+				}
+				
+				// We update the state
+				SetUsed();
+				
+				// We remove the bait from this trap
+				if ( m_Bait )
+					m_Bait.Delete();
+			}
+			
+			// We damage the trap
+			AddDefect();
 		}
 	}
 	

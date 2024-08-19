@@ -41,6 +41,11 @@ class ActionPourLiquid: ActionContinuousBase
 		return false;
 	}
 	
+	override void OnFinishProgressServer( ActionData action_data )
+	{
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+	}
+	
 	override void OnStartAnimationLoop( ActionData action_data )
 	{
 		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )

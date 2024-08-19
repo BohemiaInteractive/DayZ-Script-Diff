@@ -28,9 +28,6 @@ class JsonDataAreaData : Managed
 	int VerticalLayers;
 	int VerticalOffset;
 	string ParticleName; 
-	int EffectInterval;
-	int EffectDuration;
-	bool EffectModifier;
 };
 
 class JsonDataPlayerData : Managed

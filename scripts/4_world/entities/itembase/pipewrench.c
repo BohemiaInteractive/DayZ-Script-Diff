@@ -4,6 +4,7 @@ class PipeWrench extends Inventory_Base
 	{
 		super.SetActions();
 		//AddAction(ActionDismantlePart);
+		//AddAction(ActionRepairCarEngine);
 		AddAction(ActionMineRock);
 	}
 }

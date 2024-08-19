@@ -28,12 +28,4 @@ class SurfaceInfo
 	
 	proto string GetSoundEnv();
 	proto string GetImpact();
-	
-	//! See 'LiquidTypes' in 'constants.c'
-	proto int GetLiquidType();
-
-	//! See 'ParticleList', if config entry not set, value is 'ParticleList.NONE', 
-	//! if config entry is set but doesn't exist, value is 'ParticleList.INVALID'
-	proto int GetStepParticleId();
-	proto int GetWheelParticleId();
 };

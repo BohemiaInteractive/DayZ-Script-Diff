@@ -4,6 +4,7 @@ class ActionCraftImprovisedLegsCoverCB : ActionContinuousBaseCB
 	
 	override void CreateActionComponent()
 	{
+		//float adjusted_time = m_ActionData.m_Player.GetSoftSkillsManager().AdjustCraftingTime(TIME_TO_CRAFT_CLOTHES,UASoftSkillsWeight.ROUGH_HIGH);	
 		m_ActionData.m_ActionComponent = new CAContinuousTime(TIME_TO_CRAFT_CLOTHES);
 	}
 };

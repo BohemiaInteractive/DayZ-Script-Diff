@@ -1,19 +1,16 @@
 class PlayerStatBase
-{	
-	protected Man m_Player;
-
+{
 	int	m_Type;
 	void 	OnStoreSave( ParamsWriteContext ctx );
 	bool 	OnStoreLoad( ParamsReadContext ctx);
 	void 	OnRPC(ParamsReadContext ctx);
-	void 	OnAfterStoreLoad();
 	float 	Get();
 	string 	GetLabel();
 	void 	SetByFloat(float value);
 	void 	SetByFloatEx(float value, string system = "" );
 	bool	IsSynced();
 	array<PlayerStatRecord> GetRecords();
-	void 	Init(int id);
+	void 	Init(int id/*, PlayerStats manager*/);
 	void 	SerializeValue(array<ref StatDebugObject> objects, int flags);
 	float 	GetNormalized();
 	float 	GetMax();
@@ -22,25 +19,21 @@ class PlayerStatBase
 	{
 		return m_Type;
 	}
-
-	void SetPlayer(Man player)
-	{
-		m_Player = player;
-	}
-}
+};
 
 class PlayerStat<Class T> extends PlayerStatBase
 {
 	protected T 		m_MinValue;
 	protected T 		m_MaxValue;
 	protected T 		m_Value;
-	protected T 		m_ValueLastSynced;
 	protected string 	m_ValueLabel;
 	protected int		m_Flags;
 	
 	ref array<PlayerStatRecord> m_Records;
-
-	void PlayerStat(T min, T max, T init, string label, int flags)
+	PlayerStats 		m_Manager;
+	
+	
+	void PlayerStat(T min, T max,T init, string label, int flags)
 	{
 		m_MinValue 		= min;
 		m_MaxValue 		= max;
@@ -51,40 +44,33 @@ class PlayerStat<Class T> extends PlayerStatBase
 		m_Records = new array<PlayerStatRecord>;
 	}
 		
-	override void Init(int id)
+	override void Init(int id/*, PlayerStats manager*/)
 	{
 		m_Type = id;
+		//m_Manager = manager;	
 	}
 	
 	override void SerializeValue(array<ref StatDebugObject> objects, int flags)
 	{
-		objects.Insert(new StatDebugObject(GetLabel(), Get(), eRemoteStatType.PLAYER_STATS));
+		objects.Insert( new StatDebugObject(GetLabel(), Get(), eRemoteStatType.PLAYER_STATS) );
 	}
 	
-	override bool IsSynced()
+	PlayerStats GetManager()
 	{
-		return m_Flags & EPSstatsFlags.SYNCED == EPSstatsFlags.SYNCED;
-	}
+		return m_Manager;
+	}	
 	
-	override void OnRPC(ParamsReadContext ctx)
+	void Set( T value, string system = "" )
 	{
-		if (IsSynced())
-		{			
-			Param2<int, T> data;
-			if (ctx.Read(data))
-			{
-				int type 	= data.param1;
-				T value 	= data.param2;
-
-				if (m_Type == type)
-					Set(value);
-			}
+		/*
+		Print("setting stat: " + this.GetLabel() + "| value:" +value.ToString());
+		
+		if( this.GetLabel() == "Toxicity" )
+		{
+			DebugPrint.LogAndTrace("stack");
 		}
-	}
-	
-	void Set(T value, string system = "")
-	{
-		if (value > m_MaxValue)
+		*/
+		if ( value > m_MaxValue )
 		{
 			m_Value = m_MaxValue;
 		}
@@ -96,39 +82,27 @@ class PlayerStat<Class T> extends PlayerStatBase
 		{
 			m_Value = value;
 		}
-		
-		m_Value = Math.Round(m_Value * 100) * 0.01;
-		
-		#ifdef SERVER
-		if (IsSynced())
-		{
-			if (m_ValueLastSynced != m_Value)
-			{
-				//! limits the sync for bigger changes of float stats
-				if (T == float && Math.AbsFloat(m_ValueLastSynced - m_Value) < 0.05)
-					return;
-				
-				Param2<int, T> data = new Param2<int, T>(-1, 0);
-				data.param1 = m_Type;
-				data.param2 = m_Value;
-				m_Player.RPCSingleParam(ERPCs.RPC_PLAYER_STAT, data, true, m_Player.GetIdentity());
-				m_ValueLastSynced = m_Value;
-			}
-		}
-		#endif
+		//if( GetManager().GetAllowLogs() ) CreateRecord(value, system);
 	}
 	
-	void SetByFloat(float value, string system = "")
+	void SetByFloat(float value, string system = "" )
 	{
 		T f = value;
-		Set(f, system);
+		Set(f,system);
+		
 	}
-
-	override void SetByFloatEx(float value, string system = "")
+	override void SetByFloatEx(float value, string system = "" )
 	{
 		SetByFloat(value, system);
 	}
-
+	/*
+	void SetByParam(Param param, string system = "" )
+	{
+		Class.CastTo(p1, param);
+		T v = p1.param1;
+		Set(v, system);
+	}
+	*/
 	void Add( T value, string system = "" )
 	{
 		Set(m_Value+value, system);
@@ -169,15 +143,20 @@ class PlayerStat<Class T> extends PlayerStatBase
 		m_Records.Insert( new PlayerStatRecord(value, GetGame().GetTime(), system ) );
 	}
 	
-	override void OnStoreSave(ParamsWriteContext ctx)
+	override void OnStoreSave( ParamsWriteContext ctx )
 	{   
+		//ctx.Write(m_ValueLabel);
+		//PrintString("saving " + GetLabel()+" value:" +m_Value);
 		ctx.Write(m_Value);
 	}
 
 	override bool OnStoreLoad( ParamsReadContext ctx)
 	{
+		//string name;
+		
+		//ctx.Read(name);
 		T value;
-		if (ctx.Read(value))
+		if(ctx.Read(value))
 		{
 			m_Value = value;
 		}
@@ -185,21 +164,7 @@ class PlayerStat<Class T> extends PlayerStatBase
 		{
 			return false;
 		}
-
+		//PrintString("loading " + GetLabel()+" value:" +m_Value);
 		return true;
-	}
-	
-	override void OnAfterStoreLoad()
-	{
-		// forces the sync
-		Set(Get());
-	}
-	
-	//! DEPRECATED
-	PlayerStats 		m_Manager;
-	
-	PlayerStats GetManager()
-	{
-		return m_Manager;
 	}
 }

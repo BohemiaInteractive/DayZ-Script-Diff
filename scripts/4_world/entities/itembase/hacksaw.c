@@ -8,6 +8,8 @@ class Hacksaw extends ToolBase
 		AddAction(ActionMineBush);
 		AddAction(ActionSawPlanks);
 		AddAction(ActionDismantlePart);
+		//AddAction(ActionDestroyCombinationLock);
+		//AddAction(ActionDestroyPart);
 		AddAction(ActionSkinning);
 		AddAction(ActionMineTreeBark);
 	}

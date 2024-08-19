@@ -103,7 +103,6 @@ class EntityAI extends Entity
 	bool 								m_PreparedToDelete = false;
 	bool 								m_RefresherViable = false;
 	bool								m_WeightDirty = 1;
-	protected bool 						m_RoofAbove = false;
 	private ref map<int,ref set<int>>	m_AttachmentExclusionSlotMap; //own masks for different slots <slot,mask>. Kept on instance to better respond to various state changes
 	private ref set<int>				m_AttachmentExclusionMaskGlobal; //additional mask values and simple item values. Independent of slot-specific behavior!
 	private ref set<int> 				m_AttachmentExclusionMaskChildren; //additional mask values and simple item values
@@ -113,7 +112,7 @@ class EntityAI extends Entity
 	ref KillerData 						m_KillerData;
 	private ref HiddenSelectionsData	m_HiddenSelectionsData;
 	
-	const int DEAD_REPLACE_DELAY		= 250;
+	const int DEAD_REPLACE_DELAY		= 2000;
 	const int DELETE_CHECK_DELAY		= 100;
 	
 	ref array<EntityAI> 			m_AttachmentsWithCargo;
@@ -127,9 +126,8 @@ class EntityAI extends Entity
 	float							m_WeightEx;
 	float 							m_ConfigWeight = ConfigGetInt("weight");
 	protected bool 					m_CanDisplayWeight;
-	private float 					m_LastUpdatedTime; //CE update time
-	protected float					m_ElapsedSinceLastUpdate; //CE update time
-	protected float 				m_PreviousRoofTestTime = 0;
+	private float 					m_LastUpdatedTime;
+	protected float					m_ElapsedSinceLastUpdate;
 	
 	protected UTemperatureSource m_UniversalTemperatureSource;
 	
@@ -137,33 +135,6 @@ class EntityAI extends Entity
 	bool m_Initialized = false;
 	bool m_TransportHitRegistered = false;
 	vector m_TransportHitVelocity;
-	
-	// ============================================
-	// Variable Manipulation System
-	// ============================================
-	int		m_VariablesMask;//this holds information about which vars have been changed from their default values
-	
-	// Temperature
-	float m_VarTemperature;
-	float m_VarTemperatureInit;
-	float m_VarTemperatureMin;
-	float m_VarTemperatureMax;
-	float m_VarTemperatureFreezeThreshold;
-	float m_VarTemperatureThawThreshold;
-	float m_VarTemperatureFreezeTime;
-	float m_VarTemperatureThawTime;
-	float m_VarTemperatureOverheatTime;
-	float m_VarHeatPermeabilityCoef;
-	
-	protected ref TemperatureAccessComponent m_TAC;
-	
-	protected bool 		m_IsFrozen;
-	protected bool 		m_IsFrozenLocal;
-	protected float 	m_FreezeThawProgress;
-	
-	protected float 	m_OverheatProgress;
-	
-	//---------------------------------------------
 	
 	//Called on item attached to this item (EntityAI item, string slot, EntityAI parent)
 	protected ref ScriptInvoker		m_OnItemAttached;
@@ -191,11 +162,6 @@ class EntityAI extends Entity
 	protected ref ScriptInvoker		m_OnHitByInvoker;	
 	//Called when this entity is killed
 	protected ref ScriptInvoker		m_OnKilledInvoker;
-	
-	#ifdef DEVELOPER
-	float m_LastFTChangeTime;;
-	float m_PresumedTimeRemaining;
-	#endif
 	
 	void EntityAI()
 	{
@@ -229,7 +195,6 @@ class EntityAI extends Entity
 		
 		InitDamageZoneMapping();
 		InitDamageZoneDisplayNameMapping();
-		InitItemVariables();
 		
 		m_HiddenSelectionsData = new HiddenSelectionsData( GetType() );
 		
@@ -239,47 +204,6 @@ class EntityAI extends Entity
 	void ~EntityAI()
 	{
 		
-	}
-	
-	void InitItemVariables()
-	{
-		m_VarTemperatureInit = ConfigGetFloat("varTemperatureInit");
-		m_VarTemperatureMin = ConfigGetFloat("varTemperatureMin");
-		m_VarTemperatureMax = ConfigGetFloat("varTemperatureMax");
-		
-		if (ConfigIsExisting("varTemperatureFreezePoint"))
-			m_VarTemperatureFreezeThreshold = ConfigGetFloat("varTemperatureFreezePoint");
-		else
-			m_VarTemperatureFreezeThreshold = float.LOWEST;
-		
-		if (ConfigIsExisting("varTemperatureThawPoint"))
-			m_VarTemperatureThawThreshold = ConfigGetFloat("varTemperatureThawPoint");
-		else
-			m_VarTemperatureThawThreshold = float.LOWEST;
-		
-		m_VarTemperatureFreezeTime = Math.Clamp(ConfigGetFloat("varTemperatureFreezeTime"),1,float.MAX);
-		m_VarTemperatureThawTime = Math.Clamp(ConfigGetFloat("varTemperatureThawTime"),1,float.MAX);
-		if (ConfigIsExisting("varTemperatureOverheatTime"))
-			m_VarTemperatureOverheatTime = ConfigGetFloat("varTemperatureOverheatTime");
-		else
-			m_VarTemperatureOverheatTime = -1;
-		
-		if (ConfigIsExisting("varHeatPermeabilityCoef"))
-			m_VarHeatPermeabilityCoef = ConfigGetFloat("varHeatPermeabilityCoef");
-		else
-			m_VarHeatPermeabilityCoef = 1;
-		
-		if (CanHaveTemperature())
-		{
-			RegisterNetSyncVariableFloat("m_VarTemperature", GetTemperatureMin(),GetTemperatureMax());
-			RegisterNetSyncVariableBool("m_IsFrozen");
-			
-			if (GetGame().IsServer())
-				m_TAC = new TemperatureAccessComponent(this);
-			
-			if (!GetGame().IsMultiplayer() || GetGame().IsClient())
-				m_FreezeThawProgress = -1;
-		}
 	}
 	
 	void DeferredInit()
@@ -651,20 +575,6 @@ class EntityAI extends Entity
 	{
 		return m_AttachmentsWithAttachments;
 	}
-	
-	//is there any roof above
-	bool IsRoofAbove()
-	{
-		return m_RoofAbove;
-	}
-	
-	void SetRoofAbove(bool state)
-	{
-		m_RoofAbove = state;
-	}
-	
-	//! Roof check for entity, limited by time (anti-spam solution)
-	void CheckForRoofLimited(float timeTresholdMS = 3000);
 
 	int GetAgents() { return 0; }
 	void RemoveAgent(int agent_id);
@@ -881,9 +791,6 @@ class EntityAI extends Entity
 		}
 		
 		MaxLifetimeRefreshCalc();
-		
-		if (CanHaveTemperature() && GetGame().IsServer())
-			InitTemperature();
 	}
 	
 	//! Called right before object deleting
@@ -956,7 +863,7 @@ class EntityAI extends Entity
 	}
 	void EEInventoryOut (Man oldParentMan, EntityAI diz, EntityAI newParent)
 	{
-		m_LastUpdatedTime = GetGame().GetTickTime();
+		m_LastUpdatedTime = 0.0;
 		
 		if (GetInventory() && newParent == null)
 		{
@@ -1024,11 +931,11 @@ class EntityAI extends Entity
 	{
 		if (m_OnKilledInvoker)
 			m_OnKilledInvoker.Invoke(this, killer);
-
-		GetGame().GetAnalyticsServer().OnEntityKilled(killer, this);
+		//analytics
+		GetGame().GetAnalyticsServer().OnEntityKilled( killer, this );
 		
-		if (ReplaceOnDeath())
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeathUpdate, DEAD_REPLACE_DELAY, false);
+		if( ReplaceOnDeath() )
+			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( DeathUpdate, DEAD_REPLACE_DELAY, false);
 	}
 	
 	bool ReplaceOnDeath()
@@ -1050,14 +957,16 @@ class EntityAI extends Entity
 	{
 		EntityAI dead_entity = EntityAI.Cast( GetGame().CreateObjectEx( GetDeadItemName(), GetPosition(), ECE_OBJECT_SWAP, RF_ORIGINAL ) );
 		dead_entity.SetOrientation(GetOrientation());
-		if (KeepHealthOnReplace())
+		if ( KeepHealthOnReplace() )
 			dead_entity.SetHealth(GetHealth());
-
-		DeleteSafe();
+		this.Delete();
 	}
 	
 	//! Called when some attachment of this parent is ruined. Called on server and client side.
-	void OnAttachmentRuined(EntityAI attachment);
+	void OnAttachmentRuined(EntityAI attachment)
+	{
+		// ...
+	}
 	
 	void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
 	{
@@ -1470,15 +1379,9 @@ class EntityAI extends Entity
 		return false;
 	}
 	
-	void CombineItemsEx(EntityAI entity2, bool use_stack_max = false );
-	
-	void SplitIntoStackMaxEx(EntityAI destination_entity, int slot_id);
-	
 	void CombineItemsClient(EntityAI entity2, bool use_stack_max = false )
 	{}
 	
-	void SplitIntoStackMaxClient(EntityAI destination_entity, int slot_id);
-		
 	/**@fn		CanReceiveItemIntoCargo
 	 * @brief	calls this->CanReceiveItemIntoCargo(item)
 	 * @return	true if action allowed
@@ -2132,29 +2035,13 @@ class EntityAI extends Entity
 		return EWetnessLevel.DRENCHED;
 	}
 	//----------------------------------------------------------------
-	bool HasQuantity()
-	{
-		return false;
-	}
-	
-	bool SetQuantity(float value, bool destroy_config = true, bool destroy_forced = false, bool allow_client = false, bool clamp_to_stack_max = true);
 	
 	float GetQuantity()
 	{
 		return 0;
 	}
 	
-	float GetQuantityNormalized()
-	{
-		return 0;
-	}
-	
 	int GetQuantityMax()
-	{
-		return 0;
-	}
-	
-	int GetQuantityMin()
 	{
 		return 0;
 	}
@@ -2172,498 +2059,29 @@ class EntityAI extends Entity
 	}
 
 	//----------------------------------------------------------------
-	
-	bool UseConfigInitTemperature()
-	{
-		return (IsMan() || IsAnimal() || IsZombie()) && IsAlive() || IsCorpse();
-	}
-	
-	protected void InitTemperature()
-	{
-		EntityAI rootParent = GetHierarchyRoot();
-		bool isParentAliveOrganism = false;
-		if (rootParent && rootParent != this)
-			isParentAliveOrganism = (rootParent.IsMan() || rootParent.IsAnimal() || rootParent.IsZombie()) && rootParent.IsAlive();
-		
-		if (UseConfigInitTemperature())
-		{
-			SetTemperatureDirect(m_VarTemperatureInit);
-		}
-		else if (isParentAliveOrganism) //living player's inventory etc.
-		{
-			SetTemperatureDirect(rootParent.GetTemperature());
-		}
-		else
-		{
-			SetTemperatureDirect(g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this));
-		}
-		
-		SetFrozen(GetTemperature() < GetTemperatureFreezeThreshold());
-	}
-	
-	void SetTemperatureDirect(float value, bool allow_client = false)
-	{
-		if (!IsServerCheck(allow_client)) 
-			return;
-		
-		float min = GetTemperatureMin();
-		float max = GetTemperatureMax();
-		float previousValue = m_VarTemperature;
-		m_VarTemperature = Math.Clamp(value, min, max);
-		
-		if (previousValue != m_VarTemperature)
-			SetVariableMask(VARIABLE_TEMPERATURE);
-	}
-	
-	//! not really deprecated, but missing context info from TemperatureData. Default values used instead.
-	void SetTemperature(float value, bool allow_client = false)
-	{
-		/*#ifdef DEVELOPER
-		ErrorEx("Obsolete 'SetTemperature' called! Metadata will be extrapolated from base values.");
-		#endif*/
-		
-		if (!IsServerCheck(allow_client)) 
-			return;
-		
-		SetTemperatureEx(new TemperatureData(value));
-	}
-	
-	void AddTemperature(float value)
-	{
-		SetTemperature(value + GetTemperature());
-	}
-	
-	////////////////////////////////////////////
-	//! sets temperature, handles base overheating and freezing state progression logics
-	void SetTemperatureEx(TemperatureData data)
-	{
-		#ifdef DEVELOPER
-		m_LastFTChangeTime = -1;
-		m_PresumedTimeRemaining = -1;
-		#endif
-		
-		if (!CanHaveTemperature())
-		{
-			Debug.Log("SetTemperatureEx | entity " + this + " does not have temperature range defined!");
-			return;
-		}
-		
-		if (!m_TAC.TryAccessSource(data))
-			return;
-		
-		if (!IsServerCheck(false)) 
-			return;
-		
-		InterpolateTempData(TemperatureDataInterpolated.Cast(data));
-		float target = Math.Clamp(data.m_AdjustedTarget, GetTemperatureMin(), GetTemperatureMax());
-		float delta;
-		//overheating
-		if (CanItemOverheat())
-		{
-			if (GetTemperature() > GetItemOverheatThreshold())
-				delta = data.m_AdjustedTarget - GetTemperature();
-			else
-				delta = data.m_AdjustedTarget - GetItemOverheatThreshold();
-			
-			HandleItemOverheating(delta,data);
-		}
-		
-		//freezing, can obstruct temperature change
-		if (CanFreeze())
-		{
-			if (!m_IsFrozen)
-			{
-				delta = target - GetTemperatureFreezeThreshold();
-				if (target < GetTemperatureFreezeThreshold())
-				{
-					//first crossing the threshold
-					if (m_VarTemperature >= GetTemperatureFreezeThreshold()) //going DOWN or STAYING AT THRESHOLD, FREEZING;
-					{
-						SetTemperatureDirect(GetTemperatureFreezeThreshold());
-					}
-					else //going UP, still FREEZING
-					{
-						SetTemperatureDirect(target);
-					}
-					HandleFreezingProgression(delta,data);
-				}
-				else
-				{
-					SetTemperatureDirect(target);
-					if (target > GetTemperatureFreezeThreshold())
-						HandleFreezingProgression(delta,data);
-				}
-			}
-			else
-			{
-				delta = target - GetTemperatureThawThreshold();
-				if (target > GetTemperatureThawThreshold())
-				{
-					//first crossing the threshold
-					if (m_VarTemperature <= GetTemperatureThawThreshold()) //going UP, THAWING
-					{
-						SetTemperatureDirect(GetTemperatureThawThreshold());
-					}
-					else //going DOWN, still THAWING
-					{
-						SetTemperatureDirect(target);
-					}
-					HandleFreezingProgression(delta,data);
-				}
-				else
-				{
-					SetTemperatureDirect(target);
-					if (target < GetTemperatureThawThreshold())
-						HandleFreezingProgression(delta,data);
-				}
-			}
-		}
-		else //!CanFreeze
-		{
-			SetTemperatureDirect(target);
-		}
-	}
-	
-	//! refreshes access without setting temperature, keeps the source locked in
-	void RefreshTemperatureAccess(TemperatureData data)
-	{
-		if (!CanHaveTemperature())
-		{
-			Debug.Log("RefreshTemperatureAccess | entity " + this + " does not have temperature range defined!");
-			return;
-		}
-		
-		m_TAC.TryAccessSource(data);
-	}
-	
-	void InterpolateTempData(TemperatureDataInterpolated data)
-	{
-		if (data)
-			data.InterpolateTemperatureDelta(GetTemperature());
-	}
-	////////////////////////////////////////////
-	
-	//! presumably for debug purposes?
-	void SetTemperatureMax()
-	{
-		SetTemperatureDirect(GetTemperatureMax());
-		SetFrozen(GetTemperature() < GetTemperatureFreezeThreshold());
-	}
-	
+
+	void SetTemperature(float value, bool allow_client = false) {};
+	void AddTemperature(float value) {};
+	void SetTemperatureMax() {};
+
 	float GetTemperature()
 	{
-		return m_VarTemperature;
+		return 0;
 	}
 	
 	float GetTemperatureInit()
 	{
-		return m_VarTemperatureInit;
+		return 0;
 	}
 	
 	float GetTemperatureMin()
 	{
-		return m_VarTemperatureMin;
+		return 0;
 	}
 
 	float GetTemperatureMax()
 	{
-		return m_VarTemperatureMax;
-	}
-	
-	/**
-	\brief Returns temperature change speed multiplier for this item and all its children (multiplicative interaction)
-	\note Values > 1 accelerate, values in <0,1) interval decelerate. Values < 0 should not be used here, but I'm not your mom.
-	*/
-	float GetHeatPermeabilityCoef()
-	{
-		return m_VarHeatPermeabilityCoef;
-	}
-	
-	float GetTemperatureFreezeThreshold()
-	{
-		return m_VarTemperatureFreezeThreshold;
-	}
-	
-	float GetTemperatureThawThreshold()
-	{
-		return m_VarTemperatureThawThreshold;
-	}
-	
-	float GetTemperatureFreezeTime()
-	{
-		return m_VarTemperatureFreezeTime;
-	}
-	
-	float GetTemperatureThawTime()
-	{
-		return m_VarTemperatureThawTime;
-	}
-	
-	//! on server only
-	float GetFreezeThawProgress()
-	{
-		return m_FreezeThawProgress;
-	}
-	
-	//! 0->1 when freezing, 1->0 when thawing
-	protected void SetFreezeThawProgress(float val)
-	{
-		m_FreezeThawProgress = val;
-	}
-	
-	bool CanFreeze()
-	{
-		return CanHaveTemperature() && GetTemperatureFreezeThreshold() > GetTemperatureMin() && GetTemperatureThawThreshold() < GetTemperatureMax();
-	}
-	
-	bool GetIsFrozen()
-	{
-		return m_IsFrozen;
-	}
-	
-	void SetFrozen(bool frozen)
-	{
-		if (!CanFreeze() && frozen)
-			return;
-		
-		bool previous = m_IsFrozen;
-		m_IsFrozen = frozen;
-		SetFreezeThawProgress(frozen);
-		
-		if (previous != frozen)
-		{
-			SetSynchDirty();
-			OnFreezeStateChangeServer();
-		}
-	}
-	
-	void HandleFreezingProgression(float deltaHeat, TemperatureData data)
-	{
-		if (!CanFreeze())
-			return;
-		
-		float progressVal = m_FreezeThawProgress;
-		float progressDelta = 1;
-		
-		if (deltaHeat > 0)
-			progressDelta = -1;
-		
-		if (data.m_UpdateTimeInfo == -1)
-			progressDelta = (-deltaHeat / GameConstants.TEMPERATURE_RATE_AVERAGE_ABS) * GameConstants.TEMPERATURE_FREEZETHAW_LEGACY_COEF; //reverse-calculate the progress if actual time is not available
-		else
-			progressDelta *= data.m_UpdateTimeInfo;
-		
-		if (progressDelta == 0)
-			return;
-		
-		float changeTimeDefault;
-		float changeTimeMin;
-		float changeTime;
-		
-		if (!m_IsFrozen)
-		{
-			changeTimeDefault = GetTemperatureFreezeTime();
-			changeTimeMin = GameConstants.TEMPERATURE_TIME_FREEZE_MIN;
-		}
-		else
-		{
-			changeTimeDefault = GetTemperatureThawTime();
-			changeTimeMin = GameConstants.TEMPERATURE_TIME_THAW_MIN;
-		}
-		
-		float coef = data.m_UpdateTimeCoef;
-		if (deltaHeat < 0) //use cooling coef when freezing (mostly just to make sure)
-			coef = GameConstants.TEMP_COEF_COOLING_GLOBAL;
-		
-		if (coef != 0)
-			changeTimeDefault *= 1/coef;
-		
-		changeTime = Math.Lerp(Math.Max(changeTimeDefault,changeTimeMin),changeTimeMin,data.m_InterpolatedFraction);
-		progressVal = progressVal + progressDelta / changeTime;
-		
-		float remnantTemp = 0;
-		if (!m_IsFrozen && progressVal >= 1)
-		{
-			SetFrozen(true);
-			if (progressVal > 1.0)
-			{
-				if (data.m_UpdateTimeInfo == -1)
-					remnantTemp = (progressVal - 1) * changeTime * GameConstants.TEMPERATURE_RATE_AVERAGE_ABS * -1;
-				else
-					remnantTemp = (((progressVal - 1) * changeTime) / progressDelta) * deltaHeat;
-			}
-		}
-		else if (m_IsFrozen && progressVal <= 0)
-		{
-			SetFrozen(false);
-			if (progressVal < 0.0)
-			{
-				if (data.m_UpdateTimeInfo == -1)
-					remnantTemp = -progressVal * changeTime * GameConstants.TEMPERATURE_RATE_AVERAGE_ABS;
-				else
-					remnantTemp = ((-progressVal * changeTime) / progressDelta) * deltaHeat;
-			}
-		}
-		else
-		{
-			SetFreezeThawProgress(Math.Clamp(progressVal,0,1));
-		}
-		
-		if (remnantTemp >= GameConstants.TEMPERATURE_SENSITIVITY_THRESHOLD)//discards tiny values
-			SetTemperatureDirect(GetTemperature() + remnantTemp);
-		
-		#ifdef DEVELOPER
-		if (progressVal > 0 && progressVal < 1)
-		{
-			m_LastFTChangeTime = changeTime;
-			if (!m_IsFrozen)
-				m_PresumedTimeRemaining = (1 - progressVal) * changeTime;
-			else
-				m_PresumedTimeRemaining = progressVal * changeTime;
-		}
-		#endif
-	}
-	
-	void OnFreezeStateChangeClient();
-	void OnFreezeStateChangeServer();
-	
-	//----------------------------------------------------------------
-	//! Overheat time CAN be 0, GameConstants.TEMPERATURE_TIME_OVERHEAT_MIN is ignored if so
-	bool CanItemOverheat()
-	{
-		return GetItemOverheatTime() >= 0;
-	}
-	
-	//! if undefined, max temperature used as default
-	float GetItemOverheatThreshold()
-	{
-		return GetTemperatureMax();
-	}
-	
-	//! any configured value >= 0 will simulate overheating
-	float GetItemOverheatTime()
-	{
-		return m_VarTemperatureOverheatTime;
-	}
-	
-	bool IsItemOverheated()
-	{
-		return m_OverheatProgress >= 1;
-	}
-	
-	float GetItemOverheatProgress()
-	{
-		return m_OverheatProgress;
-	}
-	
-	void SetItemOverheatProgress(float val, float deltaTime = 0)
-	{
-		float previous = m_OverheatProgress;
-		m_OverheatProgress = Math.Clamp(val,0,1);
-		
-		if (m_OverheatProgress >= 1)
-		{
-			if (previous < 1)
-				OnItemOverheatStart();
-			
-			OnItemOverheat(deltaTime);
-		}
-		else if (previous >= 1)
-		{
-			OnItemOverheatEnd();
-		}
-	}
-	
-	//! override to implement desired overheat behavior on entity
-	void OnItemOverheatStart();
-	void OnItemOverheat(float deltaTime); //! note, that the deltaTime could be reverse-calculated and not totally accurate
-	void OnItemOverheatEnd();
-	
-	void HandleItemOverheating(float deltaHeat, TemperatureData data)
-	{
-		float deltaTime = 1;
-		float progressVal = m_OverheatProgress;
-		
-		if (deltaHeat < 0)
-			deltaTime = -1;
-		
-		if (data.m_UpdateTimeInfo == -1)
-			deltaTime = deltaHeat / GameConstants.TEMPERATURE_RATE_AVERAGE_ABS; //reverse-calculate the progress if actual time is not available
-		else
-			deltaTime *= data.m_UpdateTimeInfo;
-		
-		if (GetItemOverheatTime() > 0)
-		{
-			float changeTime = Math.Lerp(Math.Max(GameConstants.TEMPERATURE_TIME_OVERHEAT_MIN,GetItemOverheatTime()),GameConstants.TEMPERATURE_TIME_OVERHEAT_MIN,Math.Clamp(data.m_InterpolatedFraction,0,1));
-			progressVal += deltaTime / changeTime;
-		}
-		else
-		{
-			if (deltaHeat < 0)
-				progressVal = 0;
-			else if (deltaHeat > 0)
-				progressVal = 1;
-		}
-		
-		SetItemOverheatProgress(Math.Clamp(progressVal,0,1),deltaTime);
-	}
-	//----------------------------------------------------------------
-	
-	void SetLiquidType(int value, bool allow_client = false);
-	int GetLiquidType()
-	{
 		return 0;
-	}
-	
-	//----------------------------------------------------------------
-	void SetColor(int r, int g, int b, int a);
-	void GetColor(out int r,out int g,out int b,out int a)
-	{
-		r = -1;
-		g = -1;
-		b = -1;
-		a = -1;
-	}
-	
-	//----------------------------------------------------------------
-	
-	void SetStoreLoad(bool value);
-	bool IsStoreLoad()
-	{
-		return false;
-	}
-	
-	void SetStoreLoadedQuantity(float value);
-	float GetStoreLoadedQuantity()
-	{
-		return 0.0;
-	}
-	
-	//----------------------------------------------------------------
-	
-	void SetCleanness(int value, bool allow_client = false);
-	int GetCleanness()
-	{
-		return 0;
-	}
-	
-	//----------------------------------------------------------------
-	
-	bool IsServerCheck(bool allow_client)
-	{
-		if (g_Game.IsServer())
-			return true;
-		
-		if (allow_client)
-			return true;
-
-		if (GetGame().IsClient() && GetGame().IsMultiplayer()) 
-		{
-			Error("Attempting to change variable client side, variables are supposed to be changed on server only !!");
-			return false;
-		}
-
-		return true;
 	}
 	
 	//----------------------------------------------------------------
@@ -2838,9 +2256,6 @@ class EntityAI extends Entity
 			ctx.Write( b3 ); // Save energy source block 3
 			ctx.Write( b4 ); // Save energy source block 4
 		}
-		
-		// variable management system
-		SaveVariables(ctx);
 	}
 	
 	/**
@@ -2870,6 +2285,7 @@ class EntityAI extends Entity
 	bool OnStoreLoad (ParamsReadContext ctx, int version)
 	{
 		// Restoring of energy related states
+		
 		if ( m_EM )
 		{
 			// Load energy amount
@@ -2935,14 +2351,6 @@ class EntityAI extends Entity
 				m_EM.SwitchOn();
 			}
 		}
-		
-		if (version >= 140)
-		{
-			// variable management system
-			if (!LoadVariables(ctx, version))
-				return false;
-		}
-		
 		return true;
 	}
 
@@ -2995,164 +2403,8 @@ class EntityAI extends Entity
 				m_EM.StartUpdates();
 			}
 		}
-		
-		if (m_IsFrozen != m_IsFrozenLocal && !GetGame().IsDedicatedServer())
-		{
-			m_IsFrozenLocal = m_IsFrozen;
-			OnFreezeStateChangeClient();
-		}
 	}
-	
-	//-----------------------------
-	// VARIABLE MANIPULATION SYSTEM
-	//-----------------------------
-	//!'true' if this variable has ever been changed from default
-	bool IsVariableSet(int variable)
-	{
-		return (variable & m_VariablesMask);
-	}
-	
-	void SetVariableMask(int variable)
-	{
-		m_VariablesMask = variable | m_VariablesMask; 
-		if (GetGame().IsServer()) 
-		{
-			SetSynchDirty();
-		}
-	}
-	
-	//!Removes variable from variable mask, making it appear as though the variable has never been changed from default
-	void RemoveItemVariable(int variable)
-	{
-		m_VariablesMask = ~variable & m_VariablesMask;
-	}
-	
-	void TransferVariablesFloat(array<float> float_vars)
-	{
-		DeSerializeNumericalVars(float_vars);
-	}
-		
-	array<float> GetVariablesFloat()
-	{
-		CachedObjectsArrays.ARRAY_FLOAT.Clear();
-		SerializeNumericalVars(CachedObjectsArrays.ARRAY_FLOAT);
-		return CachedObjectsArrays.ARRAY_FLOAT;
-	}
-	
-	void SaveVariables(ParamsWriteContext ctx)
-	{
-		//first set the flags
-		int varFlags = 0;
-		
-		if (m_VariablesMask)
-			varFlags = ItemVariableFlags.FLOAT;
-		
-		ctx.Write(varFlags);
-		//-------------------
-		//now serialize the variables
-		
-		//floats
-		if (m_VariablesMask)
-			WriteVarsToCTX(ctx);
-	}
-	
-	//----------------------------------------------------------------
-	bool LoadVariables(ParamsReadContext ctx, int version = -1)
-	{
-		int varFlags;
-		
-		//read the flags
-		if (!ctx.Read(varFlags))
-		{
-			return false;
-		}
-		
-		//--------------
-		if (varFlags & ItemVariableFlags.FLOAT)
-		{
-			if (!ReadVarsFromCTX(ctx, version))
-				return false;
-		}
-		return true;
-	}
-	
-	//! Writes to storage CTX
-	void WriteVarsToCTX(ParamsWriteContext ctx)
-	{
-		ctx.Write(m_VariablesMask);
-		
-		//--------------------------------------------
-		if (IsVariableSet(VARIABLE_TEMPERATURE))
-		{
-			ctx.Write(GetTemperature());
-			ctx.Write((int)GetIsFrozen());
-		}
-	}
-	
-	//! Reads from storage CTX
-	bool ReadVarsFromCTX(ParamsReadContext ctx, int version = -1)//with ID optimization
-	{
-		if (version < 140)
-			return true;
-		
-		int intValue;
-		float value;			
-		
-		if (!ctx.Read(intValue))
-			return false;
-		
-		m_VariablesMask = intValue; //necessary for higher implement overrides. Hope it does not bork some init somewhere.
-		
-		//--------------------------------------------
-		if (m_VariablesMask & VARIABLE_TEMPERATURE)
-		{
-			if (!ctx.Read(value))
-				return false;
-			SetTemperatureDirect(value);
-			
-			if (!ctx.Read(intValue))
-				return false;
-			SetFrozen(intValue);
-		}
-		
-		return true;
-	}
-	
-	void SerializeNumericalVars(array<float> floats_out)
-	{
-		// the order of serialization must be the same as the order of de-serialization
-		floats_out.Insert(m_VariablesMask);
-		
-		//--------------------------------------------
-		if (IsVariableSet(VARIABLE_TEMPERATURE))
-		{
-			floats_out.Insert(m_VarTemperature);
-			floats_out.Insert((float)GetIsFrozen());
-		}
-	}
-	
-	void DeSerializeNumericalVars(array<float> floats)
-	{
-		// the order of serialization must be the same as the order of de-serialization
-		int index = 0;
-		int mask = Math.Round(floats.Get(index));
-		
-		index++;
-		//--------------------------------------------
-		if (mask & VARIABLE_TEMPERATURE)
-		{
-			float temperature = floats.Get(index);
-			SetTemperatureDirect(temperature);
-			floats.RemoveOrdered(index);
-			
-			bool frozen = Math.Round(floats.Get(index));
-			SetFrozen(frozen);
-			floats.RemoveOrdered(index);
-		}
-	}
-	
-	//----------------------------------------------------------------
-	
+
 	proto native void SetAITargetCallbacks(AbstractAITargetCallbacks callbacks);
 
 	override void EOnFrame(IEntity other, float timeSlice)
@@ -3717,17 +2969,6 @@ class EntityAI extends Entity
 	string ChangeIntoOnAttach(string slot) {}
 	string ChangeIntoOnDetach() {}
 	
-	//! returns true used on selected items that have a temperature effect and can processes temperature changes
-	bool CanHaveTemperature()
-	{
-		return GetTemperatureMin() < GetTemperatureMax();
-	}
-	
-	bool IsSelfAdjustingTemperature()
-	{
-		return false;
-	}
-	
 	/**
 	\brief Central economy calls this function whenever going over all the entities 
 	@code
@@ -3748,34 +2989,8 @@ class EntityAI extends Entity
 		
 		m_ElapsedSinceLastUpdate = currentTime - m_LastUpdatedTime; 
 		m_LastUpdatedTime = currentTime;
-		
-		ProcessVariables();
 	}
-	
-	void ProcessVariables()
-	{
-		//currently only temperature on EntityAI
-		if (g_Game.IsWorldWetTempUpdateEnabled())
-		{
-			if (CanHaveTemperature() && !IsSelfAdjustingTemperature() && !GetHierarchyRoot().IsSelfAdjustingTemperature())
-			{
-				float target = g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);
-				if (GetTemperature() != target)
-				{
-					float heatPermCoef = 1.0;
-					EntityAI ent = this;
-					while (ent)
-					{
-						heatPermCoef *= ent.GetHeatPermeabilityCoef();
-						ent = ent.GetHierarchyParent();
-					}
-					
-					SetTemperatureEx(new TemperatureDataInterpolated(target,ETemperatureAccessTypes.ACCESS_WORLD,m_ElapsedSinceLastUpdate,GameConstants.TEMP_COEF_WORLD,heatPermCoef));
-				}
-			}
-		}
-	}
-	
+
 	void OnDebugSpawnEx(DebugSpawnParams params)
 	{
 		OnDebugSpawn();
@@ -3958,7 +3173,6 @@ class EntityAI extends Entity
 			m_TransportHitRegistered = true; 
 			m_TransportHitVelocity = GetVelocity(transport);
 			Car car;
-			Boat boat;
 			float damage;
 			vector impulse;
 			
@@ -3982,16 +3196,6 @@ class EntityAI extends Entity
 					impulse[1] = 40 * 1.5;
 					dBodyApplyImpulse(this, impulse);
 				}
-			}
-			else if (Boat.CastTo(boat, transport))
-			{
-				if (m_TransportHitVelocity.Normalize() > 5)	// 5 m/s
-				{
-					damage = m_TransportHitVelocity.Length() * 0.5;
-					ProcessDirectDamage(DT_CUSTOM, transport, "", "TransportHit", "0 0 0", damage);
-				}
-				else
-					m_TransportHitRegistered = false;
 			}			
 			else //old solution just in case if somebody use it
 			{

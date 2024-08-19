@@ -55,24 +55,7 @@ class ActionStartEngine : ActionContinuousBase
 
 		return false;
 	}
-	
-	override void OnEndServer(ActionData action_data)
-	{
-		super.OnEndServer(action_data);
-		
-		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
-		if (!vehCommand)
-			return;
-				
-		Transport trans = vehCommand.GetTransport();
-		if (!trans)
-			return;
-		
-		CarScript car;
-		if (Class.CastTo(car, trans))
-			car.SetCarEngineSoundState(CarEngineSoundState.NONE);
-	}
-	
+
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
@@ -106,7 +89,7 @@ class ActionStartEngine : ActionContinuousBase
 			}
 		}
 	}
-		
+	
 	override bool CanBeUsedInVehicle()
 	{
 		return true;

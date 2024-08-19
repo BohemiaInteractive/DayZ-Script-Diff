@@ -41,12 +41,4 @@ class SimpleMovingAverage<Class T>
 
         return m_Sum / m_Size;
     }
-
-	/**
-	\brief Returns all the samples stored in the buffer
-	*/	
-	array<T> GetSamples()
-	{
-		return m_Samples;
-	}
 }

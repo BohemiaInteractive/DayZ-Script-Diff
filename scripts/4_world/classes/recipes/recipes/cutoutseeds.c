@@ -53,7 +53,7 @@ class CutOutSeeds extends RecipeBase
 		resultQty *= seedMultiplier * maxQuantity;
 		
 		resultQty = Math.Ceil(resultQty);
-	
+		
 		result.SetQuantity(resultQty);
 		
 		Debug.Log("Recipe Do method called","recipes");

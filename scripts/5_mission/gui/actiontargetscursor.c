@@ -80,7 +80,6 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	protected bool							m_QuantityEnabled;	
 	protected bool							m_FixedOnPosition;
 	protected bool 							m_Hidden;
-	protected bool 							m_TargetItemFrozen;
 
 	protected Widget						m_Root;
 	protected Widget						m_Container;
@@ -104,7 +103,6 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		
 		m_CachedObject 			= new ATCCachedObject;
 		m_Hidden 				= false;
-		m_TargetItemFrozen 		= false;
 		m_DisplayInteractTarget	= null;
 		
 		m_Hud					= GetHud();
@@ -195,7 +193,6 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 
 	protected void PrepareCursorContent()
 	{
-		m_TargetItemFrozen = false;
 		int health = -1;
 		int cargoCount = 0;
 		int q_type = 0;
@@ -203,9 +200,8 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		float q_cur = -1.0;
 		
 		//! item health
-		m_TargetItemFrozen = GetItemFrozen();
 		health = GetItemHealth();
-		SetItemHealth(health, "item", "item_health_mark", m_HealthEnabled);
+		SetItemHealth(health, "item", "item_health_mark", m_HealthEnabled);	
 		//! quantity
 		GetItemQuantity(q_type, q_cur, q_min, q_max);
 		//! cargo in item
@@ -762,14 +758,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	{
 		string desc = "";
 		if (action && action.GetText())
-		{
 			desc = action.GetText();
-		
-			if (desc && action.DisplayTargetInActionText())
-				string extraDescription = action.GetTargetName(m_Player, m_Target);
-				if (extraDescription)
-					desc = string.Format("%1 (%2)", desc, extraDescription);
-		}
 
 		return desc;
 	}
@@ -871,12 +860,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 			//Return specific part health, even if display name is from parent
 			if (!tgObject.IsAlive())
 			{
-				EntityAI ent;
-				if (m_TargetItemFrozen && Class.CastTo(ent,tgObject) && (ent.IsAnimal() || ent.IsMan() || ent.IsZombie()))
-					health = -2; //frozen interaction later
-				else
-					health = tgObject.GetHealthLevel();
-				
+				health = tgObject.GetHealthLevel();
 				return health;
 			}
 			
@@ -931,33 +915,6 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		}
 		
 		return health;
-	}
-	
-	protected bool GetItemFrozen()
-	{
-		Object tgObject = m_DisplayInteractTarget;
-		if (!tgObject && m_Target)
-			tgObject = m_Target.GetObject();
-		
-		if (tgObject)
-		{
-			Object tgParent = m_Target.GetParent();
-			EntityAI targetEntity;
-			
-			if (tgParent && (tgParent.IsItemBase() || tgParent.IsTransport()))
-			{
-				targetEntity = EntityAI.Cast(tgParent);
-			}
-			
-			if (tgObject.IsItemBase() || tgObject.IsTransport())
-			{
-				targetEntity = EntityAI.Cast(tgObject);
-			}
-			
-			return (targetEntity && targetEntity.GetIsFrozen());
-		}
-		
-		return false; 
 	}
 
 	protected void GetItemQuantity(out int q_type, out float q_cur, out int q_min, out int q_max)
@@ -1048,7 +1005,8 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		{
 			ImageWidget healthMark;
 			Class.CastTo(healthMark, widget.FindAnyWidget(healthWidget));
-			
+			int color = 0x00FFFFFF;
+
 			if (health == -1)
 			{
 				healthMark.GetParent().Show(false);
@@ -1056,13 +1014,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 				return;
 			}
 			
-			int color = 0x00FFFFFF;
-			if (m_TargetItemFrozen && (health != GameConstants.STATE_RUINED || health == -2))
-				color = Colors.COLOR_FROZEN;
-			else
-				color = ItemManager.GetItemHealthColor(health);
-			
-			healthMark.SetColor(color);
+			healthMark.SetColor(ItemManager.GetItemHealthColor(health));
 			healthMark.SetAlpha(0.5);
 			healthMark.GetParent().Show(true);
 		}

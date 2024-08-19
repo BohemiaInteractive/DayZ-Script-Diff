@@ -83,6 +83,9 @@ class ActionDismantleOven: ActionContinuousBase
 			{
 				fireplace_target.SetLifetimeMax( 10800 );
 			}
+			
+			//add specialty to soft skills
+			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
 	}
 }

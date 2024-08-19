@@ -67,12 +67,13 @@ class ActionGiveBloodSelf: ActionContinuousBase
 			lambda.SetTransferParams(true, true, true);
 			MiscGameplayFunctions.TurnItemIntoItemEx(action_data.m_Player, lambda);
 		}
+		
+		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override void OnEndServer(ActionData action_data)
 	{
-		super.OnEndServer(action_data);
-		
+
 		ActionGiveBloodData action_data_b = ActionGiveBloodData.Cast( action_data );
 		float blood_obtained = action_data_b.m_BloodAmount - action_data_b.m_MainItem.GetQuantity();
 		

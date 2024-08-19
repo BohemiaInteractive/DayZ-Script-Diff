@@ -207,7 +207,7 @@ class Roadflare : ItemBase
 				NoiseSystem noise = GetGame().GetNoiseSystem();
 				if ( noise )
 				{
-					noise.AddNoisePos( this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()) );
+					noise.AddNoisePos( this, GetPosition(), m_NoisePar );
 				}
 			}*/
 		}
@@ -254,7 +254,7 @@ class Roadflare : ItemBase
 					NoiseSystem noise = GetGame().GetNoiseSystem();
 					if ( noise )
 					{
-						noise.AddNoisePos( this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+						noise.AddNoisePos( this, GetPosition(), m_NoisePar);
 					}
 				}*/
 				

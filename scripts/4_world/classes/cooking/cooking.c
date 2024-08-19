@@ -16,7 +16,7 @@ class Cooking
 
 	static const float COOKING_FOOD_TIME_INC_VALUE 					= 2;	//! time increase when cooking a food
 	static const float COOKING_LARD_DECREASE_COEF 					= 25;	//! how many units from quantity of lard are remove at each stage
-	static const float COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE 	= 25;	//! how many units from quantity of item are removed at each FoodStage change when support material is NOT used
+	static const float COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE 	= 25;	//! how many units from quantity of item are removed at each stage when support material is NOT used
 	static const float COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_LARD 	= 0;	//! NOT USED.
 
 	static const float DEFAULT_COOKING_TEMPERATURE 					= 150;	//default temperature for cooking (e.g. cooking on stick)
@@ -31,22 +31,18 @@ class Cooking
 	typename COOKING_EQUIPMENT_CAULDRON					= Cauldron;
 	typename COOKING_INGREDIENT_LARD 					= Lard;
 	
-	protected float m_UpdateTime = 1; //set by the item/system using cooking
-	
-	void SetCookingUpdateTime(float val)
-	{
-		m_UpdateTime = val;
-	}
-	
 	void ProcessItemToCook(notnull ItemBase pItem, ItemBase cookingEquip, Param2<CookingMethodType, float> pCookingMethod, out Param2<bool, bool> pStateFlags)
 	{
 		Edible_Base item_to_cook = Edible_Base.Cast(pItem);
 		
 		//! state flags are in order: is_done, is_burned
 		pStateFlags = new Param2<bool, bool>(false, false);
-		
+				
 		if (item_to_cook && item_to_cook.CanBeCooked())
 		{
+			//! enable cooking SoundEvent
+			item_to_cook.MakeSoundsOnClient(true, pCookingMethod.param1);
+
 			//! update food
 			UpdateCookingState(item_to_cook, pCookingMethod.param1, cookingEquip, pCookingMethod.param2);
 			
@@ -66,31 +62,13 @@ class Cooking
 				pStateFlags.param2 = true;
 			}
 		}
-		else
+		else   
 		{
-			//add temperature to item
-			if (pItem != cookingEquip) //already handled by the fireplace directly!
-				AddTemperatureToItem(pItem, null, 0);
+			//damage item
+			pItem.DecreaseHealth("", "", PARAM_BURN_DAMAGE_COEF * 100);
 			
-			//damage item that can actually overheat?
-			if (pItem.CanItemOverheat())
-			{
-				if (pItem.IsItemOverheated())
-				{
-					if (pItem.HasQuantity() && pItem.GetQuantityNormalized() > 0)
-					{
-						pItem.AddQuantity(-LIQUID_VAPOR_QUANTITY,!pItem.IsLiquidContainer()); //TODO: use other constant here, or calculate from qtyMax..
-					}
-					else
-					{
-						pItem.DecreaseHealth(PARAM_BURN_DAMAGE_COEF * 100);
-					}
-				}
-			}
-			else
-			{
-				pItem.DecreaseHealth(PARAM_BURN_DAMAGE_COEF * 100); //pItem.IsKindOf("Grenade_Base")
-			}
+			//add temperature to item
+			AddTemperatureToItem(pItem, null, 0);
 		}
 	}
 
@@ -142,24 +120,25 @@ class Cooking
 		Bottle_Base bottle_base = Bottle_Base.Cast(cooking_equipment);
 		if (bottle_base)
 		{
-			float cookingEquipmentTemp = bottle_base.GetTemperature();
-			int liquidType = bottle_base.GetLiquidType();
+			float cookingEquipmentTemp = cooking_equipment.GetTemperature();
 			
 			//handle water boiling
-			if (liquidType != LIQUID_NONE && cookingEquipmentTemp >= Liquid.GetBoilThreshold(liquidType))
+			if (cookingEquipmentTemp >= LIQUID_BOILING_POINT)
 			{
 				//remove agents
-				bottle_base.RemoveAllAgentsExcept(eAgents.HEAVYMETAL);
+				cooking_equipment.RemoveAllAgents();
 				
-				//vaporize liquid
-				if (bottle_base.IsItemOverheated())
-					bottle_base.AddQuantity(-LIQUID_VAPOR_QUANTITY);
+				if (cooking_equipment.GetQuantity() > 0)
+				{
+					//vaporize liquid
+					cooking_equipment.AddQuantity(-LIQUID_VAPOR_QUANTITY);
+				}
 			}
 			
 			//handle audio visuals
 			bottle_base.RefreshAudioVisualsOnClient(cookingMethodWithTime.param1, stateFlags.param1, is_empty, stateFlags.param2);
 		}
-		
+
 		FryingPan frying_pan = FryingPan.Cast(cooking_equipment);
 		if (frying_pan && !bottle_base)
 		{
@@ -191,9 +170,10 @@ class Cooking
 		//{min_temperature, time_to_cook, max_temperature (optional)}
 		//get next stage name - if next stage is not defined, next stage name will be empty "" and no cooking properties (food_min_temp, food_time_to_cook, food_max_temp) will be set
 		FoodStageType new_stage_type = item_to_cook.GetNextFoodStageType(cooking_method);
-		
+
 		float food_min_temp 	= 0;
 		float food_time_to_cook = 0;
+		float food_max_temp		= -1;
 		
 		//Set next stage cooking properties if next stage possible
 		if (item_to_cook.CanChangeToNewStage(cooking_method)) // new_stage_type != NONE
@@ -201,69 +181,71 @@ class Cooking
 			array<float> next_stage_cooking_properties = new array<float>();
 			next_stage_cooking_properties = FoodStage.GetAllCookingPropertiesForStage(new_stage_type, null, item_to_cook.GetType());
 			
-			food_min_temp = next_stage_cooking_properties.Get(eCookingPropertyIndices.MIN_TEMP); //checked after temperature is changed
+			food_min_temp = next_stage_cooking_properties.Get(eCookingPropertyIndices.MIN_TEMP);
 			food_time_to_cook = next_stage_cooking_properties.Get(eCookingPropertyIndices.COOK_TIME);
+			// The last element is optional and might not exist
+			if (next_stage_cooking_properties.Count() > 2)
+			{
+				food_max_temp = next_stage_cooking_properties.Get(eCookingPropertyIndices.MAX_TEMP);
+			}
 		}
 		
 		//add temperature
 		AddTemperatureToItem(item_to_cook, cooking_equipment, food_min_temp);
 		
-		//decrease qty of burned items (or cookable items that can't be burned)
-		if (item_to_cook.IsItemOverheated())
-			DecreaseCookedItemQuantity(item_to_cook,COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE);
-		
 		//add cooking time if the food can be cooked by this method
 		if (food_min_temp > 0 && food_temperature >= food_min_temp)
 		{
-			//! enable cooking SoundEvent
-			item_to_cook.MakeSoundsOnClient(true,cooking_method);
-			
 			float new_cooking_time = item_to_cook.GetCookingTime() + COOKING_FOOD_TIME_INC_VALUE * cooking_time_coef;
 			item_to_cook.SetCookingTime(new_cooking_time);
 			
 			//progress to next stage
 			if (item_to_cook.GetCookingTime() >= food_time_to_cook)
 			{
-				//! Change food stage to new, IF DIFFERENT
-				if (item_to_cook.GetFoodStageType() != new_stage_type)
+				//if max temp is defined check next food stage
+				if (food_max_temp >= 0)
 				{
-					item_to_cook.ChangeFoodStage(new_stage_type);
-					
-					if (cooking_equipment && cooking_equipment != item_to_cook)
+					if (food_temperature > food_max_temp && item_to_cook.GetFoodStageType() != FoodStageType.BURNED)
 					{
-						if (cooking_method == CookingMethodType.BAKING)
-						{
-							ItemBase lard = GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment);
-							if (lard)
-							{
-								//decrease lard quantity
-								float lardQuantity = lard.GetQuantity() - COOKING_LARD_DECREASE_COEF;
-								lardQuantity = Math.Clamp(lardQuantity, 0, lard.GetQuantityMax());
-								lard.SetQuantity(lardQuantity);
-							}
-							else
-							{
-								//! any foodstage without lard
-								DecreaseCookedItemQuantity(item_to_cook, COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE);
-							}
-						}
-					}
-					else
-					{
-						//! any foodstage without lard 
-						DecreaseCookedItemQuantity(item_to_cook, COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE);
+						new_stage_type = FoodStageType.BURNED;
 					}
 				}
 				
-				//reset cooking time
-				item_to_cook.ResetCookingTime();
+				//! Change food stage
+				item_to_cook.ChangeFoodStage(new_stage_type);
+				//! Remove all modifiers
+				item_to_cook.RemoveAllAgentsExcept(eAgents.BRAIN);
 				
+				if (cooking_equipment)
+				{
+					if (cooking_method == CookingMethodType.BAKING)
+					{
+						ItemBase lard = GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment);
+						if (lard)
+						{
+							//decrease lard quantity
+							float lardQuantity = lard.GetQuantity() - COOKING_LARD_DECREASE_COEF;
+							lardQuantity = Math.Clamp(lardQuantity, 0, lard.GetQuantityMax());
+							lard.SetQuantity(lardQuantity);
+						}
+						else
+						{
+							//! any foodstage without lard
+							DecreaseCookedItemQuantity(item_to_cook, COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE);
+						}
+					}
+				}
+				else
+				{
+					//! any foodstage without lard 
+					DecreaseCookedItemQuantity(item_to_cook, COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE);
+				}
+				
+				//reset cooking time
+				item_to_cook.SetCookingTime(0);
+
 				return 1;
 			}
-		}
-		else
-		{
-			item_to_cook.MakeSoundsOnClient(false);
 		}
 		
 		return 0;
@@ -280,9 +262,10 @@ class Cooking
 		FoodStageType new_stage_type = item_to_cook.GetNextFoodStageType( CookingMethodType.BAKING );
 		float food_min_temp = 0;
 		float food_time_to_cook = 0;
+		float food_max_temp = -1;
 		bool is_done = false;	// baked
 		bool is_burned = false;	// burned
-		
+
 		//Set next stage cooking properties if next stage possible
 		if ( item_to_cook.CanChangeToNewStage( CookingMethodType.BAKING ) )
 		{
@@ -291,41 +274,48 @@ class Cooking
 			
 			food_min_temp = next_stage_cooking_properties.Get( eCookingPropertyIndices.MIN_TEMP );
 			food_time_to_cook = next_stage_cooking_properties.Get( eCookingPropertyIndices.COOK_TIME );
+			// The last element is optional and might not exist
+			if ( next_stage_cooking_properties.Count() > 2 )
+				food_max_temp = next_stage_cooking_properties.Get( eCookingPropertyIndices.MAX_TEMP );
 		}
 		
+		
+		// refresh audio
 		if (item_to_cook.GetInventory().IsAttachment())
 		{
+			item_to_cook.MakeSoundsOnClient(true, CookingMethodType.BAKING);
 			//add temperature
 			AddTemperatureToItem(item_to_cook, null, food_min_temp);
 		}
 		
 		//add cooking time if the food can be cooked by this method
-		if (food_min_temp > 0 && food_temperature >= food_min_temp)
+		if ( food_min_temp > 0 && food_temperature >= food_min_temp )
 		{
-			//refresh audio
-			item_to_cook.MakeSoundsOnClient(true, CookingMethodType.BAKING);
-			
 			float new_cooking_time = item_to_cook.GetCookingTime() + cook_time_inc;
 			item_to_cook.SetCookingTime( new_cooking_time );
 			
 			//progress to next stage
-			if (item_to_cook.GetCookingTime() >= food_time_to_cook)
+			if ( item_to_cook.GetCookingTime() >= food_time_to_cook )
 			{
-				//! Change food stage to new, IF DIFFERENT
-				if (item_to_cook.GetFoodStageType() != new_stage_type)
+				//if max temp is defined check next food stage
+				if ( food_max_temp >= 0 )
 				{
-					item_to_cook.ChangeFoodStage(new_stage_type);
-					
-					DecreaseCookedItemQuantity(item_to_cook, COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE);
+					if ( food_temperature > food_max_temp && item_to_cook.GetFoodStageType() != FoodStageType.BURNED )
+					{
+						new_stage_type = FoodStageType.BURNED;
+					}
 				}
+				
+				//change food stage
+				item_to_cook.ChangeFoodStage( new_stage_type );
+				item_to_cook.RemoveAllAgentsExcept(eAgents.BRAIN);
+				
+				DecreaseCookedItemQuantity(item_to_cook, COOKING_FOOD_QUANTITY_DECREASE_AMOUNT_NONE);
+
 				//reset cooking time
-				item_to_cook.ResetCookingTime();
+				item_to_cook.SetCookingTime( 0 );
 				return 1;
 			}
-		}
-		else
-		{
-			item_to_cook.MakeSoundsOnClient(false);
 		}
 		
 		return 0;
@@ -337,33 +327,29 @@ class Cooking
 		{
 			float new_cook_time = item_to_cook.GetCookingTime() + cook_time_inc;
 			float drying_cook_time = FoodStage.GetCookingPropertyFromIndex(eCookingPropertyIndices.COOK_TIME, FoodStageType.DRIED, null, item_to_cook.GetType());
-			float drying_cook_temp = FoodStage.GetCookingPropertyFromIndex(eCookingPropertyIndices.MIN_TEMP, FoodStageType.DRIED, null, item_to_cook.GetType());
-			float itemTemp = item_to_cook.GetTemperature();
-			
-			if (itemTemp >= drying_cook_temp)
+
+			switch (item_to_cook.GetFoodStageType())
 			{
-				switch (item_to_cook.GetFoodStageType())
+			case FoodStageType.RAW:
+				item_to_cook.SetCookingTime(new_cook_time);
+
+				if (item_to_cook.GetCookingTime() >= drying_cook_time)
 				{
-					case FoodStageType.RAW:
-						item_to_cook.SetCookingTime(new_cook_time);
-						
-						if (item_to_cook.GetCookingTime() >= drying_cook_time)
-						{
-							item_to_cook.ChangeFoodStage(FoodStageType.DRIED);
-							item_to_cook.ResetCookingTime();
-						}
-					break;
-					
-					default:
-						item_to_cook.SetCookingTime(new_cook_time);
-						
-						if (item_to_cook.GetCookingTime() >= drying_cook_time)
-						{
-							item_to_cook.ChangeFoodStage(FoodStageType.BURNED);
-							item_to_cook.ResetCookingTime();
-						}
-					break;
+					item_to_cook.ChangeFoodStage(FoodStageType.DRIED);
+					item_to_cook.RemoveAllAgentsExcept(eAgents.BRAIN);
+					item_to_cook.SetCookingTime(0);
 				}
+			break;
+			default:
+				item_to_cook.SetCookingTime(new_cook_time);
+
+				if (item_to_cook.GetCookingTime() >= drying_cook_time)
+				{
+					item_to_cook.ChangeFoodStage(FoodStageType.BURNED);
+					item_to_cook.RemoveAllAgents();
+					item_to_cook.SetCookingTime(0);
+				}
+			break;
 			}
 		}
 	}
@@ -373,15 +359,18 @@ class Cooking
 		Edible_Base edible;
 		if (pItem)
 		{
-			CargoBase cargo = pItem.GetInventory().GetCargo();
-			if (cargo) // cookware
+			if (pItem.GetInventory()) // cookware
 			{
-				for (int i = 0; i < cargo.GetItemCount(); i++)
+				CargoBase cargo = pItem.GetInventory().GetCargo();
+				if (cargo)
 				{
-					edible = Edible_Base.Cast(cargo.GetItem(i));
-					if (edible)
+					for (int i = 0; i < cargo.GetItemCount(); i++)
 					{
-						edible.MakeSoundsOnClient(false);
+						edible = Edible_Base.Cast(cargo.GetItem(i));
+						if (edible)
+						{
+							edible.MakeSoundsOnClient(false);
+						}
 					}
 				}
 			}
@@ -516,35 +505,28 @@ class Cooking
 	//add temperature to item
 	protected void AddTemperatureToItem( ItemBase cooked_item, ItemBase cooking_equipment, float min_temperature )
 	{
-		if (!GetGame().IsServer())
-			return;
-		
-		if (cooked_item == cooking_equipment) //solves direct cooking double heating
-			return;
-		
-		if (cooked_item.CanHaveTemperature())
+		if ( cooked_item.GetTemperatureMax() >= FireplaceBase.PARAM_ITEM_HEAT_MIN_TEMP )
 		{
-			float itemTemp = cooked_item.GetTemperature();
-			//set target temperature
-			float targetTemp = DEFAULT_COOKING_TEMPERATURE;	//default for direct attachments (direct cooking slots, smoking...)
-			if (cooking_equipment)
-				targetTemp = cooking_equipment.GetTemperature();
+			float item_temperature = cooked_item.GetTemperature();
 			
-			//adjust temperature
-			if (targetTemp != itemTemp)
+			//set actual cooking temperature
+			float actual_cooking_temp = DEFAULT_COOKING_TEMPERATURE;	//default
+			if ( cooking_equipment )
 			{
-				float heatPermCoef = 1.0;
-				if (cooking_equipment)
-					heatPermCoef = cooking_equipment.GetHeatPermeabilityCoef();
-				heatPermCoef *= cooked_item.GetHeatPermeabilityCoef();
-				float tempCoef;
+				actual_cooking_temp = cooking_equipment.GetTemperature();
+			}
+			
+			//add temperature
+			if ( actual_cooking_temp > item_temperature )
+			{
+				item_temperature = actual_cooking_temp * 0.5;
+				item_temperature = Math.Clamp( item_temperature, min_temperature, FOOD_MAX_COOKING_TEMPERATURE );
 				
-				if (itemTemp < min_temperature && targetTemp > itemTemp) //heating 'catch-up' only
-					tempCoef = GameConstants.TEMP_COEF_COOKING_CATCHUP;
-				else
-					tempCoef = GameConstants.TEMP_COEF_COOKING_DEFAULT;
-				
-				cooked_item.SetTemperatureEx(new TemperatureDataInterpolated(targetTemp,ETemperatureAccessTypes.ACCESS_COOKING,m_UpdateTime,tempCoef,heatPermCoef));
+				//set new temperature
+				if ( GetGame() && GetGame().IsServer() )
+				{
+					cooked_item.SetTemperature( item_temperature );
+				}
 			}
 		}
 	}

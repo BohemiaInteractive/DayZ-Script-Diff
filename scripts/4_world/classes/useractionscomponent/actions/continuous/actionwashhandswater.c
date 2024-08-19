@@ -16,16 +16,11 @@ class ActionWashHandsWater : ActionContinuousBase
 		m_StanceMask	= DayZPlayerConstants.STANCEMASK_CROUCH;
 		m_Text 			= "#wash_hands";
 	}
-	
-	override typename GetInputType()
-	{
-		return ContinuousInteractActionInput;
-	}
 
 	override void CreateConditionComponents()
 	{		
 		m_ConditionItem		= new CCINone();
-		m_ConditionTarget 	= new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, LIQUID_GROUP_WATER);
+		m_ConditionTarget 	= new CCTWaterSurface(UAMaxDistances.DEFAULT, UAWaterType.ALL);
 	}
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)

@@ -9,7 +9,7 @@ class BoxCerealCrunchin extends Edible_Base
 		super.SetActions();
 		
 		AddAction(ActionForceFeed);
-		AddAction(ActionEatCereal);
+		AddAction(ActionEat);
 	}
 }
 

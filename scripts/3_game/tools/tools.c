@@ -989,32 +989,32 @@ class multiMap<Class K, Class V>
 // at last one template definition should be here, for template initialization in this script module
 typedef map<string, string> TStringMap;
 
-int GetTemperatureColor(int temperature)
+int GetTemperatureColor( int temperature )
 {
-	int alpha 	= 255;
-	int red 	= 153;
-	int green 	= 153;
-	int blue 	= 153;
-	
-	if (temperature < GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT)
+	int alpha = 255;
+	int red = 153;
+	int green = 153;
+	int blue = 153;
+	if ( temperature < 20 )
 	{
 		temperature = temperature - 20;
 		temperature = Math.Clamp( temperature, -50, 50);
 		temperature = Math.AbsInt(temperature);
 
-		red = Math.Clamp ( red - ((red/50 )*temperature), 0, 255);
-		green = Math.Clamp ( green - ((green/50 )*temperature), 0, 255);
-		blue = Math.Clamp ( blue+((blue/50)*temperature), 0, 255);
+		red = Math.Clamp ( red - ((red/50 )*temperature), 0, 255 );
+		green = Math.Clamp ( green - ((green/50 )*temperature), 0, 255 );
+		blue = Math.Clamp ( blue+((blue/50)*temperature), 0, 255 );
 	}
-	else if (temperature > GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT)
+	else if ( temperature > 20 )
 	{
-		temperature = Math.Clamp(temperature, -100, 100);
-		blue 	= Math.Clamp (blue - ((blue / 100) * temperature), 0, 255);
-		green 	= Math.Clamp (green - ((green / 100) * temperature), 0, 255);
-		red 	= Math.Clamp (red + ((red / 100) * temperature), 0, 255);
+		temperature = Math.Clamp( temperature, -100, 100);
+		blue = Math.Clamp ( blue - ((blue/100 )*temperature), 0, 255 );
+		green = Math.Clamp ( green - ((green/100 )*temperature), 0, 255 );
+		red = Math.Clamp ( red+((red/100)*temperature), 0, 255 );
 	}
 
-	return ARGB(alpha, red, green, blue);
+	int color = ARGB( alpha, red, green, blue );
+	return color;
 }
 
 //! Return value from profile variable, if variable with given name is not present, default value is returned

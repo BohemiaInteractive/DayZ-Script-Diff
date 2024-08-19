@@ -6,7 +6,6 @@ class ActionPlaceOnGroundCB : ActionContinuousBaseCB
 	}
 };
 
-//!DEPRECATED
 class ActionPlaceOnGround: ActionContinuousBase
 {
 	void ActionPlaceOnGround()

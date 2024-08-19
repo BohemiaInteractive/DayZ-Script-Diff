@@ -141,17 +141,8 @@ class VONManagerImplementation : VONManagerBase
 		
 		if (newLevel > -1)
 		{
-			CGame game = GetGame();
-			game.SetVoiceLevel(newLevel);
-			if (game.GetMission().IsVoNActive()) // icon is already visible, just update the range
-			{
-				UpdateVoiceIcon();
-			}
-			else // Show the icon and let it fade out
-			{
-				int level = GetGame().GetVoiceLevel();
-				ShowVoiceNotification(level, true);
-			}
+			GetGame().SetVoiceLevel(newLevel);
+			UpdateVoiceIcon();
 		}
 	}
 	

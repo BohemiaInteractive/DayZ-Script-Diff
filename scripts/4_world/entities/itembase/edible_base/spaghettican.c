@@ -9,9 +9,4 @@ class SpaghettiCan : Edible_Base
 	{
 		return false;
 	}
-	
-	override float GetQuantityNormalizedScripted()
-	{
-		return 1.0;
-	}
 }
