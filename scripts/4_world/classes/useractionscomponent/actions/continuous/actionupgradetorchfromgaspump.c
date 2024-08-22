@@ -48,4 +48,9 @@ class ActionUpgradeTorchFromGasPump: ActionContinuousBase
 			torch.Upgrade(null);
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

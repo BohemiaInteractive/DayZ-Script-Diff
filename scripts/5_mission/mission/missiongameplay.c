@@ -15,6 +15,7 @@ class MissionGameplay extends MissionBase
 	ref HudDebug					m_HudDebug;
 	ref LogoutMenu					m_Logout;
 	ref DebugMonitor				m_DebugMonitor;
+	ref Watermark					m_Watermark;
 	
 	protected ref ScriptInvoker 		m_OnConnectivityChanged;
 	
@@ -160,6 +161,13 @@ class MissionGameplay extends MissionBase
 			m_HudDebug.Init( GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug.layout") );				
 			PluginConfigDebugProfile.GetInstance().SetLogsEnabled(LogManager.IsLogsEnable());
 		}		
+		#endif
+		
+		// temporary hud watermark
+		#ifndef DIAG_DEVELOPER
+		#ifdef BUILD_EXPERIMENTAL
+		m_Watermark = new Watermark(m_HudRootWidget);
+		#endif
 		#endif
 	}
 	

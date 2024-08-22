@@ -34,9 +34,16 @@ class AnimPhysOwnerState : PawnOwnerState
 	proto native void	SetRotation(float value[4]);
 	proto native void	GetRotation(out float value[4]);
 
-	//! If parent doesn't exist for the owner then the correction is dropped
+	//! If parent entity doesn't exist for the owner then the correction is dropped
 	proto native void	SetParent(Object value);
 	proto native Object	GetParent();
+
+	//! If linked entity doesn't exist for the owner then the correction is dropped
+	proto native void	SetLinked(Object value);
+	proto native Object	GetLinked();
+
+	proto native bool	IsLinked();
+	proto native bool	IsParented();
 
 	proto native void	SetSpeed(vector value);
 	proto native void	GetSpeed(out vector value);
@@ -88,11 +95,17 @@ class AnimPhysMove : PawnMove
 	proto native void	GetRotation(out float value[4]);
 
 	proto native void	SetParent(Object value);
+	proto native void	SetLinked(Object value);
+	
+	proto native Object	GetParentOrLinked();
 	proto native Object	GetParent();
 
 	proto native bool	HasParent();
 
-	//! Parent entity could've been deleted, store the necessary values so we have something to work with
+	proto native bool	IsParented();
+	proto native bool	IsLinked();
+
+	//! Parent (or linked) entity could've been deleted, store the necessary values so we have something to work with
 	proto native void	SetParentTransform(vector transform[4]);
 	proto native void	GetParentTransform(out vector transform[4]);
 

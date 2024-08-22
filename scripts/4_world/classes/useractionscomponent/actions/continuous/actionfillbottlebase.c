@@ -121,7 +121,7 @@ class ActionFillBottleBase: ActionContinuousBase
 			}
 			else
 			{
-				liquidType = Surface.GetSurfaceData(surfaceType).GetLiquidType();
+				liquidType = SurfaceInfo.GetByName(surfaceType).GetLiquidType();
 			}
 		}
 		

@@ -154,24 +154,22 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	 		else
 	 		{
 				PlayerBase player = PlayerBase.Cast(m_pPlayer);
-				if (player && player.GetActionManager())	// handle locking of camera U/D angle movement when performing an action and not in freelook
-				{
-					ActionContinuousBase action = ActionContinuousBase.Cast(player.GetActionManager().GetRunningAction());
-					if (action && action.IsFullBody(player) && action.IsCameraLockOnPerform())
-					{				
-						float pitch = pAngle + pAngleAdd; 
-						Vector2 targetVal = action.GetCameraUDAngle();
-						if (pitch < (targetVal.y + 1) && pitch > (targetVal.x - 1)) // stop smoothing once within sufficiently small difference
-						{
-							pMin = targetVal.x;
-							pMax = targetVal.y;
-						}
-						else // smooth camera to locked angle, avoiding snap from the angle we started the action to the limit
-						{
-							float vel[1] = m_fUDAngleVel;
-							pMin = Math.SmoothCD(pitch, targetVal.x, vel, 0.2, 1000, pDt);
-							pMax = Math.SmoothCD(pitch, targetVal.y, vel, 0.2, 1000, pDt);
-						}
+				if (player)	// handle locking of camera U/D angle movement when performing an action and not in freelook
+				{		
+					float pitch = pAngle + pAngleAdd; 
+					float downLimit, upLimit, leftLimit, rightLimit;
+					player.GetLookLimits(downLimit, upLimit, leftLimit, rightLimit);
+					
+					if (pitch < (upLimit + 1) && pitch > (downLimit - 1)) // stop smoothing once within sufficiently small difference
+					{
+						pMin = downLimit;
+						pMax = upLimit;
+					}
+					else // smooth camera to locked angle, avoiding snap from the angle we started the action to the limit
+					{
+						float vel[1] = m_fUDAngleVel;
+						pMin = Math.SmoothCD(pitch, downLimit, vel, 0.2, 1000, pDt);
+						pMax = Math.SmoothCD(pitch, upLimit, vel, 0.2, 1000, pDt);
 					}
 				}
 				

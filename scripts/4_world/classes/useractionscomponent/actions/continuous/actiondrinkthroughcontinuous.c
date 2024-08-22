@@ -16,4 +16,9 @@ class ActionDrinkThroughContinuous: ActionDrinkPondContinuous
 		
 		return target.GetObject() && target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.THROUGH;
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 }

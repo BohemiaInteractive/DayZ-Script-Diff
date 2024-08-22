@@ -18,7 +18,7 @@ enum FirePlaceFailure
 	WET				= 1,	
 }
 
-class FireplaceBase extends ItemBase
+class FireplaceBase : ItemBase
 {
 	//State params
 	protected bool m_IsBurning 						= false;   

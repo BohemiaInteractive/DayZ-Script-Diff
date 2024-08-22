@@ -976,41 +976,7 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 			}
 		}
 	}
-		
-	override void SetSameLevelNextActive()
-	{
-		if (GetAttachmentCargos())
-		{
-			for (int i = 0; i < GetAttachmentCargos().Count(); i++)
-			{
-				Entity entA = GetAttachmentCargos().GetKey(i);
-				Print(entA);
-				CargoContainer cc = GetAttachmentCargos().GetElement(i);
-				Print(cc);
-				if (cc && cc.IsActive())
-					Print(ToString() + "::SetSameLevelNextActive - CASE 1 - ContainerWithCargoAndAttachments - Attachment Cargo Active=" + cc);
-			}
-		}
-		
-		if (GetAttachmentAttachmentsContainers())
-		{
-			for (int j = 0; j < GetAttachmentAttachmentsContainers().Count(); j++)
-			{
-				Entity entB = GetAttachmentAttachmentsContainers().GetKey(j);
-				Print(entB);
-				AttachmentsWrapper aw = GetAttachmentAttachmentsContainers().GetElement(j);
-				Print(aw);
-				if (aw && aw.IsActive())
-					Print(ToString() + "::SetSameLevelNextActive - CASE 1 - ContainerWithCargoAndAttachments - Attachment Attachments Container Active=" + aw);
-			}
-		}
-		
-		if (GetCargo() && GetCargo().IsActive())
-		{
-			Print(ToString() + "::SetSameLevelNextActive - CASE 1 - ContainerWithCargoAndAttachments - Cargo Active=" + GetCargo());
-		}
-	}
-	
+
 	CargoContainer GetCargo()
 	{
 		return m_CargoGrid;

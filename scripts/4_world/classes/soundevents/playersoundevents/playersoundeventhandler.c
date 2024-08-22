@@ -14,6 +14,7 @@ enum EPlayerSoundEventID
 	SYMPTOM_COUGH,
 	SYMPTOM_LAUGHTER,
 	SYMPTOM_SNEEZE,
+	SYMPTOM_GASP,
 	JUMP,
 	MELEE_ATTACK_LIGHT,
 	MELEE_ATTACK_HEAVY
@@ -72,6 +73,7 @@ class PlayerSoundEventHandler extends SoundEventHandler
 		RegisterState(new SneezeSoundEvent());
 		RegisterState(new LaugherSoundEvent());
 		RegisterState(new CoughSoundEvent());
+		RegisterState(new GaspSoundEvent());
 		RegisterState(new JumpSoundEvent());
 		RegisterState(new MeleeAttackLightEvent());
 		RegisterState(new MeleeAttackHeavyEvent());
@@ -90,7 +92,6 @@ class PlayerSoundEventHandler extends SoundEventHandler
 		RegisterState(new ThirstSoundEvent());
 		RegisterState(new ForceFeedSoundEvent());
 		RegisterState(new ForceDrinkSoundEvent());
-
 
 	}
 	

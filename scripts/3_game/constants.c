@@ -622,7 +622,7 @@ const float PROJECTED_CURSOR_DISTANCE = 5;//how long is the raycast from the wea
  */
 
 const float DEBUG_QUICK_UNRESTRAIN_TIME = 1.0;
-const float MELEE_ITEM_DAMAGE = 1.0;
+const float MELEE_ITEM_DAMAGE = 0.35;
 
 const int HAIR_SELECTION_COUNT = 45;
 /**
@@ -977,6 +977,8 @@ class GameConstants
 	const int REFRESHER_FREQUENCY_DEFAULT 			= 3600 * 24 * 5;	//frequency of lifetime refreshes/refresher time decreases - 5 days 
 	const float REFRESHER_RADIUS 					= 60; 				//meters
 	// lifetime of refresher itself is in db (3600 * 24 * 7 = 604800 )
+	
+	const float SALMONELLA_RETENTION_PREDATOR = 0.6; //60% chance cooked predator meat will retain salmonella
 	
 	/**
 	 * \defgroup FoodDecayConstants Food decay constants

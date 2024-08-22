@@ -55,10 +55,10 @@ class PneumoniaMdfr : ModifierBase
 	override protected void OnTick(PlayerBase player, float deltaT)
 	{
 		float heavyBreathChance = player.GetSingleAgentCountNormalized(eAgents.INFLUENZA);
-
+		
 		if ( Math.RandomFloat01() < heavyBreathChance / Math.RandomInt(5,30) )
 		{
-			player.RequestSoundEventEx(EPlayerSoundEventID.EXHAUSTED_BREATH, true, EPlayerSoundEventParam.HIGHEST_PRIORITY);
+			player.RequestSoundEventEx(EPlayerSoundEventID.SYMPTOM_GASP, true, EPlayerSoundEventParam.HIGHEST_PRIORITY);
 		}
 	}
 };

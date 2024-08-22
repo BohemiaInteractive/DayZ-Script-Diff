@@ -976,4 +976,9 @@ class CargoContainer extends Container
 	{
 		return m_AttachmentSlotID;
 	}
+	
+	int GetIconsCount()
+	{
+		return m_Icons.Count();
+	}
 }

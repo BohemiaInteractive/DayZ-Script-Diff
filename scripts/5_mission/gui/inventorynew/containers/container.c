@@ -991,34 +991,211 @@ class Container extends LayoutHolder
 	
 	void SetSameLevelNextActive()
 	{
+		Icon icon;
 		Container active;
 		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-		active.SetActive(false);
-		
-		m_ActiveIndex++;
-		if (m_ActiveIndex > m_OpenedContainers.Count() - 1)
+		if (ClosableContainer.Cast(active) && active.m_OpenedContainers.Count()) // Check if current active container has any opened nested containers and go through them
 		{
-			m_ActiveIndex = 0;
+			active.SetNextActive();
+
+			ContainerWithCargoAndAttachments cwcaa;
+			if (Class.CastTo(cwcaa, active))
+			{
+				if (cwcaa.GetAttachmentCargos())
+				{
+					bool foundActive;
+					for (int i = 0; i < cwcaa.GetAttachmentCargos().Count(); i++)
+					{
+						Entity entA = cwcaa.GetAttachmentCargos().GetKey(i);
+						CargoContainer cc = cwcaa.GetAttachmentCargos().GetElement(i);
+						if (cc && cc.IsActive())
+						{
+							icon = cc.GetIcon(0);
+							if (icon && !icon.IsActive())
+							{
+								cwcaa.SetActive(false);
+							}
+						}
+					}
+				}
+				
+				if (cwcaa.GetAttachmentAttachmentsContainers())
+				{
+					for (int j = 0; j < cwcaa.GetAttachmentAttachmentsContainers().Count(); j++)
+					{
+						Entity entB = cwcaa.GetAttachmentAttachmentsContainers().GetKey(j);
+						AttachmentsWrapper aw = cwcaa.GetAttachmentAttachmentsContainers().GetElement(j);
+						if (aw && aw.IsActive())
+						{
+							aw.SetFirstActive();
+						}
+					}
+				}
+				
+				if (cwcaa && cwcaa.GetCargo() && cwcaa.GetCargo().IsActive())
+				{
+					icon = cwcaa.GetCargo().GetIcon(0);
+					if (icon && !icon.IsActive())
+					{
+						cwcaa.SetActive(false);
+					}
+				}
+			}
+			
+			ContainerWithCargo cwc;
+			if (Class.CastTo(cwc, active) && cwc.GetCargo())
+			{
+				icon = cwc.GetCargo().GetIcon(0);
+				if (icon && !icon.IsActive())
+				{
+					cwc.SetActive(false);
+				}
+			}
+		}
+		else
+		{
+			active.SetActive(false);
+
+			m_ActiveIndex++;
+			if (m_ActiveIndex > m_OpenedContainers.Count() - 1)
+			{
+				m_ActiveIndex = 0;
+			}
+			
+			active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+			active.SetActive(true);
 		}
 		
-		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-		active.SetActive(true);
+		if (!active || !active.IsActive())
+		{
+			if (!IsLastContainerFocused())
+			{
+				m_ActiveIndex++;
+				Container next = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+				
+				ContainerWithCargo cwcn;
+				if (Class.CastTo(cwcn, next) && cwcn.GetCargo())
+				{				
+					icon = cwcn.GetCargo().GetIcon(0);
+					if (icon && icon.IsActive())
+					{
+						SetActive(false);
+					}
+					else
+					{
+						cwcn.SetFirstActive();
+					}
+				}
+				else
+				{
+					next.SetActive(true);
+				}
+			}
+			else
+			{
+				SetActive(false);
+				SetFirstActive();
+			}
+		}
 	}
-	
+		
 	void SetSameLevelPreviousActive()
 	{
+		Icon icon;
 		Container active;
-		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-		active.SetActive(false);
-		
-		m_ActiveIndex--;
-		if (m_ActiveIndex < 0)
+		ContainerWithCargoAndAttachments cwcaa;
+		ContainerWithCargo cwc;
+		int i;
+
+		if (m_OpenedContainers.Count())
 		{
-			m_ActiveIndex = m_OpenedContainers.Count() - 1;
+			active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
 		}
 		
-		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-		active.SetActive(true);
+		if (active && active.IsActive())
+		{
+			if (Class.CastTo(cwcaa, active))
+			{
+				if (cwcaa.GetAttachmentCargos())
+				{
+					for (i = 0; i < cwcaa.GetAttachmentCargos().Count(); i++)
+					{
+						Entity entA = cwcaa.GetAttachmentCargos().GetKey(i);
+						CargoContainer cc = cwcaa.GetAttachmentCargos().GetElement(i);
+						if (cc && cc.IsActive())
+						{
+							icon = cc.GetIcon(cc.GetIconsCount() - 1);
+							if (icon && !icon.IsActive())
+							{
+								cc.SetActive(false);
+							}
+						}
+					}
+				}			
+				
+				if (cwcaa && cwcaa.GetCargo() && cwcaa.GetCargo().IsActive())
+				{
+					cwcaa.SetFirstActive();
+				}
+				else
+				{
+					active.SetPreviousActive();
+				}
+			}
+			else
+			{
+				if (Class.CastTo(cwc, active))
+				{
+					if (cwc && cwc.GetCargo() && cwc.GetCargo().IsActive())
+					{
+						active.SetActive(false);
+					}
+				}
+				else
+				{
+					active.SetActive(false);
+
+					m_ActiveIndex--;
+					if (m_ActiveIndex < 0)
+					{
+						m_ActiveIndex = m_OpenedContainers.Count() - 1;
+					}
+					
+					active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+					active.SetLastActive();
+				}
+			}
+		}
+		
+		if (!active || !active.IsActive())
+		{
+			Container prev;
+			if (!IsFirstContainerFocused())
+			{
+				m_ActiveIndex--;
+				prev = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+				if (Class.CastTo(cwc, prev))
+				{
+					if (cwc && cwc.GetCargo() && cwc.GetCargo().IsActive())
+					{
+						prev.SetActive(false);
+					}
+					else
+					{			
+						prev.SetLastActive();
+					}
+				}
+				else
+				{
+					prev.SetLastActive();
+				}
+			} 
+			else
+			{
+				SetActive(false);
+				SetLastActive();
+			}			
+		}
 	}
 	
 	void RecomputeOpenedContainers()

@@ -97,9 +97,12 @@ class Boat_01_ColorBase : BoatScript
 	override bool CanReleaseAttachment( EntityAI attachment )
 	{
 		if (!super.CanReleaseAttachment(attachment))
-		{
 			return false;
-		}
+		
+		string attType = attachment.GetType();
+		
+		if (EngineIsOn() && attType == "SparkPlug")
+			return false;
 
 		return true;
 	}
@@ -131,13 +134,13 @@ class Boat_01_ColorBase : BoatScript
 	{
 		return true;
 	}
-
+/*
 	override void OnDamageDestroyed(int oldLevel)
 	{
 		SetAnimationPhase("ShowDamage",1);
 		SetAnimationPhase("HideDamage",0);
 	}
-
+*/
 	override void OnDebugSpawn()
 	{
 		float amount = GetFluidCapacity(BoatFluid.FUEL);

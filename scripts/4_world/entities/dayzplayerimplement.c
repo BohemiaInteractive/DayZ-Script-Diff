@@ -3173,10 +3173,10 @@ class DayZPlayerImplement extends DayZPlayer
 				m_LastSurfaceUnderHash = surface.Hash();
 			
 			if (state.m_iMovement == DayZPlayerConstants.MOVEMENTIDX_SPRINT)
-			{			
+			{
 				int stepParticleID = Surface.GetStepsParticleID(surface);
 			
-				if (stepParticleID != -1)
+				if (stepParticleID > 0)
 				{
 					ParticleManager.GetInstance().PlayInWorld(stepParticleID, GetPosition());
 				}
@@ -3209,9 +3209,6 @@ class DayZPlayerImplement extends DayZPlayer
 					
 					if (objectClass.Contains("BushSoft") || objectClass.Contains("BushHard"))
 					{
-						if (state.m_iMovement > DayZPlayerConstants.MOVEMENTIDX_WALK)
-							MiscEffects.PlayVegetationCollideParticles(colObject);
-						
 						for (int j = 0; j < type.GetVegetationSounds().Count(); ++j)
 						{
 							VegetationSound vegetationSound = type.GetVegetationSounds().Get(j);

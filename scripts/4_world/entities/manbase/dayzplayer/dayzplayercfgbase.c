@@ -903,7 +903,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("Paper",								"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/paper.anm");
 		pType.AddItemInHandsProfileIK("DuctTape",							"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/duct_tape.anm");
 		pType.AddItemInHandsProfileIK("Bandana_ColorBase",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/BandanaFH_ground.anm");
-		pType.AddItemInHandsProfileIK("Shemag_ColorBase",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/BandanaFH_ground.anm");
+		pType.AddItemInHandsProfileIK("Shemag_ColorBase",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/clothing/Shemag_Hybrid.anm");
 		pType.AddItemInHandsProfileIK("Rag",								"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/Rags.anm");
 		pType.AddItemInHandsProfileIK("BurlapStrip",						"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 			"dz/anims/anm/player/ik/gear/burlap_strips.anm");
 		pType.AddItemInHandsProfileIK("SmallStone",							"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/SmallStone.anm");

@@ -1,3 +1,14 @@
+//!	Boat's sound controller list. (native, do not change or extend)
+enum BoatSoundCtrl
+{
+	// simulation
+	ENGINE, //!< indicates if engine is ON
+	SPEED,  //!< speed of the boat in km/h
+
+	// miscellaneous
+	PLAYER //!< indicates if driver is controlled by player
+};
+
 //!	Type of vehicle's fluid. (native, do not change or extend)
 enum BoatFluid
 {
@@ -123,7 +134,7 @@ class Boat extends Transport
 	proto native void Fill(BoatFluid fluid, float amount);
 
 	/*!
-		Called every simulation step before inputs are applied.
+		Called every physics simulation step before inputs are applied.
 	*/
 	void OnInput(float dt) {}
 
@@ -165,5 +176,19 @@ class Boat extends Transport
 		\param[in] oldValue previous fluid level before change
 	*/
 	void OnFluidChanged(BoatFluid fluid, float newValue, float oldValue) {}
+
+	/*!
+		Is called every sound simulation step.
+		In this callback, user can modify behaviour of sound controllers.
+
+		\param[in] ctrl sound controller identifier, \see BoatSoundCtrl
+		\param[in] oldValue already computed value by the game code
+		\return new value of the specified sound controller.
+	*/
+	float OnSound(BoatSoundCtrl ctrl, float oldValue)
+	{
+		// just use the computed value by the game code
+		return oldValue;
+	}
 	
 };

@@ -65,8 +65,6 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
 		{
-			layoutRoot.FindAnyWidget("play_panel_root").Show(true);
-			layoutRoot.FindAnyWidget("MouseAndKeyboardWarning").Show(true);
 			layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
 		}
 

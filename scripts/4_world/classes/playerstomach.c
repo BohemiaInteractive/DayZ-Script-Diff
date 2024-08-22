@@ -350,7 +350,7 @@ class PlayerStomach
 		float amountByAgent = 0.0;
 		foreach (StomachItem item : m_StomachContents)
 		{
-			if (item.m_Agents == agent)
+			if ((item.m_Agents & agent) == agent)
 				amountByAgent += item.m_Amount;
 		}
 		

@@ -8,9 +8,6 @@ class ActionEatSnowContinuousCB : ActionContinuousBaseCB
 
 class ActionEatSnowContinuous: ActionContinuousBase
 {
-	private const float WATER_EAT_PER_SEC = 10;
-	//protected const string ALLOWED_SURFACES = string.Format("%1|%2", UAWaterType.FRESH, UAWaterType.STILL);
-	
 	void ActionEatSnowContinuous()
 	{
 		m_CallbackClass 	= ActionEatSnowContinuousCB;

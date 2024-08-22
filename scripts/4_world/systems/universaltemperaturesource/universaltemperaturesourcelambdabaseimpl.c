@@ -7,8 +7,9 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 		foreach (Object nearestObject : nearestObjects)
 		{
 			ItemBase nearestItem = ItemBase.Cast(nearestObject);
+
 			//! heat transfer to items (not in player possession)
-			if (nearestItem && nearestItem.HasWetness() && nearestItem != pSettings.m_Parent && !nearestItem.IsInherited(Man))
+			if (nearestItem && nearestItem.HasWetness() && nearestItem != pSettings.m_Parent && !nearestItem.IsInherited(Man) && !nearestItem.IsUniversalTemperatureSource())
 			{
 				distanceToTemperatureSource = vector.Distance(nearestItem.GetPosition(), position);
 				distanceToTemperatureSource = Math.Max(distanceToTemperatureSource, 0.1);	//min distance cannot be 0 (division by zero)

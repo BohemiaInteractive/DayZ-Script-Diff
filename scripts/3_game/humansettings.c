@@ -94,4 +94,7 @@ class SHumanCommandClimbSettings
 
 	float		m_fClimbOverMaxWidth;
 	float		m_fClimbOverMinHeight;
+	
+	//! absolute distance for backwards check if necessary
+	float		m_fBackwardsCheckDist;
 };

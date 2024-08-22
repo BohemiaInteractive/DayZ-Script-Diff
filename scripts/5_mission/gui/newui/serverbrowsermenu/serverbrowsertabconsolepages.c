@@ -139,6 +139,8 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 			m_RefreshList.Show(false);
 			m_Root.FindAnyWidget("spacer2").Show(false);
 			m_Root.FindAnyWidget("spacer5").Show(false);
+			m_Menu.GetLayoutRoot().FindAnyWidget("play_panel_root").Show(false);
+			m_Menu.GetLayoutRoot().FindAnyWidget("MouseAndKeyboardWarning").Show(false);
 			m_MouseKeyboardControlled = false;
 		break;
 
@@ -156,6 +158,8 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 				m_Root.FindAnyWidget("spacer").Show(!isFavoriteTab);
 				m_Root.FindAnyWidget("spacer2").Show(true);
 				m_Root.FindAnyWidget("spacer5").Show(!isFavoriteTab);
+				m_Menu.GetLayoutRoot().FindAnyWidget("play_panel_root").Show(true);
+				m_Menu.GetLayoutRoot().FindAnyWidget("MouseAndKeyboardWarning").Show(true);
 				m_MouseKeyboardControlled = true;
 			}
 		break;

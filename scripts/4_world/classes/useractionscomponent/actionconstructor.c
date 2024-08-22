@@ -195,6 +195,7 @@ class ActionConstructor
 		actions.Insert(ActionUnlockDoors);
 		actions.Insert(ActionUnpackBox);
 		actions.Insert(ActionWashHandsWater);
+		actions.Insert(ActionWashHandsSnow);
 		actions.Insert(ActionWashHandsWell);
 		actions.Insert(ActionDrinkCan);
 		actions.Insert(ActionBuildOven);
@@ -257,7 +258,6 @@ class ActionConstructor
 		actions.Insert(ActionTurnOffPowerGenerator);
 		actions.Insert(ActionTurnOnSpotlight);
 		actions.Insert(ActionTurnOffSpotlight);
-		actions.Insert(ActionITest);
 		actions.Insert(ActionRemoveSeed);
 		actions.Insert(ActionRemovePlant);
 		actions.Insert(ActionHarvestCrops);
@@ -308,7 +308,7 @@ class ActionConstructor
 		actions.Insert(ActionDetachFromTarget_SpecificSlotsCategory_WoodenCrate);
 		actions.Insert(ActionTakeArrow);
 		actions.Insert(ActionTakeArrowToHands);
-		actions.Insert(ActionOperatePanel);
+		actions.Insert(ActionOperatePanelPowerStation);
 		
 		//vehicle actions
 		actions.Insert(ActionSwitchLights);

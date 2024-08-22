@@ -3985,6 +3985,13 @@ class EntityAI extends Entity
 			}
 			else if (Boat.CastTo(boat, transport))
 			{
+				Human player = Human.Cast(this);
+				if (player && player.PhysicsGetLinkedEntity() == boat)	// standing on boat
+				{
+					m_TransportHitRegistered = false;
+					return;
+				} 
+					
 				if (m_TransportHitVelocity.Normalize() > 5)	// 5 m/s
 				{
 					damage = m_TransportHitVelocity.Length() * 0.5;

@@ -751,6 +751,11 @@ class EffecterBase : EntityAI
 			OnVariablesSynchronized();
 		}
 	}
+	
+	override int GetHideIconMask()
+	{
+		return EInventoryIconVisibility.HIDE_VICINITY;
+	}
 }
 
 class ParticleEffecter : EffecterBase

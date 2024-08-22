@@ -150,7 +150,7 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		{
 			if (m_ThisModInfo.GetIsOwned())
 			{
-				m_BannerHandler.SetBannerColor(Colors.COLOR_LIVONIA_EMERALD_GREEN);
+				m_BannerHandler.SetBannerColor(Colors.COLOR_FROSTLINE_MOUNTAIN_BLUE);
 				m_BannerHandler.SetBannerText(TEXT_OWNED);
 			}
 			else

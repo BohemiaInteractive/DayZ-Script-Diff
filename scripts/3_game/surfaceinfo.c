@@ -9,6 +9,17 @@ class SurfaceInfo
 	private void SurfaceInfo() {};
 	private void ~SurfaceInfo() {};
 	
+	//! Warning: O(n) time complexity where n is the total number of loaded surfaces
+	//! Note: Will load the surface if not loaded
+	//! Warning: If the surface name is invalid, it will still create a SurfaceInfo
+	proto static SurfaceInfo GetByName(string name);
+	
+	//! Warning: O(n) time complexity where n is the total number of loaded surfaces
+	//! Note: Will load the surface if not loaded
+	//! Warning: If the surface name is invalid, it will still create a SurfaceInfo
+	//! 'CfgSurfaces' can be pathed by having the name prefixed with '#', so 'GetByFile("#cp_grass")' will return same as 'GetByName("cp_grass")'
+	proto static SurfaceInfo GetByFile(string name);
+
 	proto string GetName();
 	proto string GetEntryName();
 	proto string GetSurfaceType();

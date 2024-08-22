@@ -39,6 +39,14 @@ class SneezeSoundEvent extends SymptomSoundEventBase
 	}
 }
 
+class GaspSoundEvent extends SymptomSoundEventBase
+{
+	void GaspSoundEvent()
+	{
+		m_ID = EPlayerSoundEventID.SYMPTOM_GASP;
+		m_SoundVoiceAnimEventClassID = 904;
+	}
+}
 
 class FatigueSoundEvent extends SymptomSoundEventBase
 {

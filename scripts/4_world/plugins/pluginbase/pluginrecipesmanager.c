@@ -311,9 +311,11 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 		//player.RequestCraftingDisable();
 		
 	}
-	
+
 	void GenerateHumanReadableRecipeList()
 	{
+		set<string> testset = new set<string>;
+		
 		FileHandle file = OpenFile("$profile:RecipeDump.txt", FileMode.WRITE);
 		if ( file == 0 )
 		{
@@ -336,11 +338,21 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 			for (int x = 0; x < recipes.Count(); x++)
 			{
 				int recipe_id = recipes.Get(x);
-				string recipe_name = GetRecipeName(recipe_id);
+				string recipe_name = Widget.TranslateString(GetRecipeName(recipe_id));
+				testset.Insert(recipe_name);
+				
 				line += "," +recipe_name;
 			}
 			FPrintln(file, line);
+			
 		}
+		
+		// generate localized list of recipe names
+		foreach ( string st : testset)
+		{
+			FPrintln(file, st);
+		}
+		
 		CloseFile(file);
 	}
 	

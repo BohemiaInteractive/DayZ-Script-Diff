@@ -69,32 +69,6 @@ class ChernarusPlusData extends WorldData
 		}
 	} 
 	
-	override void InitYieldBank()
-	{
-		super.InitYieldBank();
-		
-		//fishies
-		m_YieldBank.RegisterYieldItem(new YieldItemCarp(15));
-		m_YieldBank.RegisterYieldItem(new YieldItemMackerel(15));
-		m_YieldBank.RegisterYieldItem(new YieldItemSardines(15));
-		m_YieldBank.RegisterYieldItem(new YieldItemBitterlings(15));
-		
-		//fishy junk
-		m_YieldBank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Brown"));
-		m_YieldBank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Grey"));
-		m_YieldBank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Green"));
-		m_YieldBank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Black"));
-		m_YieldBank.RegisterYieldItem(new YieldItemJunkEmpty(1,"Pot"));
-		
-		//non-fishies
-		m_YieldBank.RegisterYieldItem(new YieldItemDeadRabbit(4));
-		m_YieldBank.RegisterYieldItem(new YieldItemDeadRooster(1));
-		m_YieldBank.RegisterYieldItem(new YieldItemDeadChicken_White(1));
-		m_YieldBank.RegisterYieldItem(new YieldItemDeadChicken_Spotted(1));
-		m_YieldBank.RegisterYieldItem(new YieldItemDeadChicken_Brown(1));
-		m_YieldBank.RegisterYieldItem(new YieldItemDeadFox(2));
-	}
-	
 	override void SetupWeatherSettings()
 	{
 		super.SetupWeatherSettings();

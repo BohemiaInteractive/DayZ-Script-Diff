@@ -1290,9 +1290,15 @@ class DayZPlayer extends Human
 	
 	//! sets look limits for a player
 	proto native 	void SetLookLimits(float pDown, float pUp, float pLeft, float pRight);
+	
+	//! returns look limits for a player
+	proto		 	void GetLookLimits(out float pDown, out float pUp, out float pLeft, out float pRight);
 
 	//! sets aim limits for a player
 	proto native 	void SetAimLimits(float pDown, float pUp, float pLeft, float pRight);
+	
+	//! returns aim limits for a player
+	proto			void GetAimLimits(out float pDown, out float pUp, out float pLeft, out float pRight);
 	
 	//! sets aim lower limit for a player
 	proto native 	void SetVerticalMinimumAimLimit(float value);

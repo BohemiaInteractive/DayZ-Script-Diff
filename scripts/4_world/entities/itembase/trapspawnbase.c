@@ -582,6 +582,9 @@ class TrapSpawnBase extends ItemBase
 	
 	protected void PlayCatchEffectsServer()
 	{
+		if (m_YieldItemIdx == -1)
+			return 
+		
 		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
 		
 		PlayCatchNoise(yItem);
@@ -590,6 +593,9 @@ class TrapSpawnBase extends ItemBase
 	
 	protected void PlayCatchEffectsClient()
 	{
+		if (m_YieldItemIdx == -1)
+			return 
+		
 		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
 		PlayCatchSound(yItem);
 	}
@@ -621,11 +627,11 @@ class TrapSpawnBase extends ItemBase
 		
 		if (m_CatchParticleEffecterId < 0)
 		{
-			m_CatchParticleEffecterId = SEffectManager.CreateParticleServer(m_PreyPos, new ParticleEffecterParameters("ParticleEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, particleId));
+			m_CatchParticleEffecterId = SEffectManager.CreateParticleServer(m_PreyPos, new ParticleEffecterParameters("ParticleEffecter", 5, particleId));
 		}
 		else
 		{
-			SEffectManager.ReinitParticleServer(m_CatchParticleEffecterId, new ParticleEffecterParameters("ParticleEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, particleId)); //reinit here, since particleId might differ
+			SEffectManager.ReinitParticleServer(m_CatchParticleEffecterId, new ParticleEffecterParameters("ParticleEffecter", 5, particleId)); //reinit here, since particleId might differ
 			SEffectManager.ReactivateParticleServer(m_CatchParticleEffecterId); //TODO: re-evaluate, variable sync could cause issues here...store last 'particleId' and compare, reinit on change only?
 		}
 	}
@@ -657,6 +663,12 @@ class TrapSpawnBase extends ItemBase
 				{
 					SetInactive();
 				}
+			}
+			
+			if (m_YieldItemIdx != -1) //resets sound effect idx
+			{
+				m_YieldItemIdx = -1;
+				SetSynchDirty();
 			}
 		}
 	}

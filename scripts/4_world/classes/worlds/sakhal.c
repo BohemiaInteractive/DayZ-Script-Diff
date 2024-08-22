@@ -93,6 +93,8 @@ class SakhalData : WorldData
 	{
 		super.InitYieldBank();
 		
+		m_YieldBank.ClearAllRegisteredItems();
+		
 		//fishies
 		m_YieldBank.RegisterYieldItem(new YieldItemWalleyePollock(24));
 		m_YieldBank.RegisterYieldItem(new YieldItemSteelheadTrout(12));
@@ -649,7 +651,7 @@ class SakhalData : WorldData
 	protected override void CalculateVolFog(float lerpValue, float windMagnitude, float changeTime)// in sakhal volfog supports snowfall effect
 	{				
 		float maxVolFogDistanceDensity = Math.Lerp( 0, 0.35, lerpValue );
-		float minVolFogDistanceDensity = Math.Lerp(0.001, 0.02, m_Weather.GetOvercast().GetActual());
+		float minVolFogDistanceDensity = Math.Lerp(0.001, 0.01, m_Weather.GetOvercast().GetActual());
 		
 		if (minVolFogDistanceDensity > maxVolFogDistanceDensity)
 			maxVolFogDistanceDensity = minVolFogDistanceDensity;

@@ -8,7 +8,7 @@ class ActionLockDoorsCB : ActionContinuousBaseCB
 
 class ActionLockDoors: ActionContinuousBase
 {
-	const float APPLIED_DMG = 6;
+	protected const float APPLIED_DMG = 6;
 	
 	void ActionLockDoors()
 	{

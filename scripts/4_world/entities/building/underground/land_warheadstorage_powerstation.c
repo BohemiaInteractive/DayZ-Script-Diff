@@ -5,18 +5,38 @@ class Land_WarheadStorage_PowerStation : House
 	protected int m_LeverStatesBits;
 	protected PowerGeneratorStatic m_PowerGenerator;
 	protected bool m_IsPowerGeneratorRunning;
+	protected bool m_PlaySparksSound;
 	
-	protected const string LEVERS_POS_MEMPOINT 		= "levers";
+	protected const string LEVERS_POS_MEMPOINT 		= "leverdown_axis";
 	protected const string GENERATOR_POS_MEMPOINT 	= "generator_pos";
 	
 	protected const string SWITCH_UP_SOUND 		= "Power_Station_Switch_Up_SoundSet";
 	protected const string SWITCH_DOWN_SOUND 	= "Power_Station_Switch_Down_SoundSet";
 	protected const string SPARKLES_SOUND	 	= "Power_Station_generator_overpowered_SoundSet";
 		
+	void Land_WarheadStorage_PowerStation()
+	{
+		RegisterNetSyncVariableBoolSignal("m_PlaySparksSound");
+	}
+	
 	override void DeferredInit()
 	{
 		if (GetGame().IsServer())
 			LinkPowerGeneratorServer();
+	}
+	
+	override void OnVariablesSynchronized()
+	{
+		super.OnVariablesSynchronized();
+				
+		if (m_PlaySparksSound)
+		{
+			EffectSound sound;
+			sound =	SEffectManager.PlaySoundCachedParams(SPARKLES_SOUND, GetPowerGeneratorSpawnPos());
+			sound.SetAutodestroy(true);
+			
+			m_PlaySparksSound = false;
+		}
 	}
 	
 	vector GetPowerGeneratorSpawnPos()
@@ -73,26 +93,18 @@ class Land_WarheadStorage_PowerStation : House
 			else
 				animPhase = 1;			
 		}
-		
+
 		SetAnimationPhase(leverName, animPhase);
 	}
 	
-	void PlayLeverSound(int index, int state = -1)
+	void PlayLeverSound(string leverName, int state)
 	{
-		string leverName = GetLeverComponentNameByLeverIndex(index);
 		EffectSound sound;
 
 		if (state == 0)
 			PlaySoundSetAtMemoryPoint(sound, SWITCH_DOWN_SOUND, LEVERS_POS_MEMPOINT, false, 0, 0);
 		else if (state == 1)
 			PlaySoundSetAtMemoryPoint(sound, SWITCH_UP_SOUND, LEVERS_POS_MEMPOINT, false, 0, 0);
-		else 
-		{
-			if (GetAnimationPhase(leverName) > 0)
-				PlaySoundSetAtMemoryPoint(sound, SWITCH_DOWN_SOUND, LEVERS_POS_MEMPOINT, false, 0, 0);
-			else
-				PlaySoundSetAtMemoryPoint(sound, SWITCH_UP_SOUND, LEVERS_POS_MEMPOINT, false, 0, 0);	
-		}
 		
 		sound.SetAutodestroy(true);
 	}
@@ -153,8 +165,11 @@ class Land_WarheadStorage_PowerStation : House
 			//doors are being opened/closed only when we are opening/closing a single door, or when none of the doors are supposed to be open
 			//so here, we only force all levers to OFF, and that in turn will make the doors to be closed later on
 			
-			//EffectSound soundSparkles;
-			//PlaySoundSetAtMemoryPoint(soundSparkles, SPARKLES_SOUND, GENERATOR_POS_MEMPOINT, false, 0, 0); //will not work - server only method, to be moved
+			if (leversActivatedCount > 1)
+			{
+				m_PlaySparksSound = true;
+				SetSynchDirty();
+			}
 			
 			TurnAllLeversOff();
 		}
@@ -166,15 +181,19 @@ class Land_WarheadStorage_PowerStation : House
 	
 	protected void TurnAllLeversOff()
 	{
-		AnimateLever(1,0);
-		AnimateLever(2,0);
-		AnimateLever(3,0);
-		AnimateLever(4,0);
+		string leverName;
+		
+		for (int i = 1; i < 5; i++)
+		{
+			leverName = GetLeverComponentNameByLeverIndex(i);
+			if (GetAnimationPhase(leverName) > 0)
+				AnimateLever(i, 0);
+		}
 	}
 	
 	
 	// 1 through 4
-	protected string GetLeverComponentNameByLeverIndex(int leverIndex)
+	string GetLeverComponentNameByLeverIndex(int leverIndex)
 	{
 		switch (leverIndex)
 		{
@@ -188,6 +207,23 @@ class Land_WarheadStorage_PowerStation : House
 				return "lever4";
 		}
 		return "lever1";
+	}
+	
+	int GetLeverIndexByComponentName(string name)
+	{
+		name.ToLower();
+		switch (name)
+		{
+			case "storagedoor1":
+				return 1;
+			case "storagedoor2":
+				return 2;
+			case "storagedoor3":
+				return 3;
+			case "storagedoor4":
+				return 4;
+		}
+		return 0;
 	}
 	
 	
@@ -204,10 +240,10 @@ class Land_WarheadStorage_PowerStation : House
 	
 	void OnGeneratorStart()
 	{
-		m_IsPowerGeneratorRunning = true;
-		
 		if (GetGame().IsServer())
 		{
+			m_IsPowerGeneratorRunning = true;
+			
 			Land_WarheadStorage_Main closestBunker = GetClosestBunker();
 	
 			if (closestBunker)
@@ -217,12 +253,12 @@ class Land_WarheadStorage_PowerStation : House
 	
 	void OnGeneratorStop()
 	{
-		m_IsPowerGeneratorRunning = false;
-		
-		TurnAllLeversOff();
-		
 		if (GetGame().IsServer())
 		{
+			m_IsPowerGeneratorRunning = false;
+			
+			TurnAllLeversOff();
+			
 			Land_WarheadStorage_Main closestBunker = GetClosestBunker();
 			
 			if (closestBunker)
@@ -232,8 +268,17 @@ class Land_WarheadStorage_PowerStation : House
 	
 	override void OnAnimationPhaseStarted(string animSource, float phase)
 	{
+		#ifndef SERVER
+		if (animSource.Contains("lever"))
+		{
+			if (phase > 0)
+				PlayLeverSound(animSource, 0);
+			else 
+				PlayLeverSound(animSource, 1);
+		}
+		#endif
 	}
-	
+		
 	//--------------------------------------------------------------------------------------------------
 	//-------------------------------------- Remote bunker get/set -------------------------------------
 	//--------------------------------------------------------------------------------------------------

@@ -16,8 +16,6 @@ class MissionBase extends MissionBaseWorld
 
 	void MissionBase()
 	{
-		
-		Surface.Init();
 		SetDispatcher(new DispatcherCaller);
 		
 		PluginManagerInit();
@@ -27,6 +25,7 @@ class MissionBase extends MissionBaseWorld
 		m_InventoryDropCallback = new EntityPlacementCallback();
 		SoundSetMap.Init();
 		
+		GetDayZGame().GetYieldDataInitInvoker().Insert(InitWorldYieldDataDefaults);
 		InitialiseWorldData();
 		
 		#ifndef SERVER
@@ -49,6 +48,8 @@ class MissionBase extends MissionBaseWorld
 
 	void ~MissionBase()
 	{
+		GetDayZGame().GetYieldDataInitInvoker().Remove(InitWorldYieldDataDefaults);
+		
 		PluginManagerDelete();
 		
 		if ( GetGame().IsClient() )
@@ -113,6 +114,35 @@ class MissionBase extends MissionBaseWorld
 				m_WorldData = new ChernarusPlusData();
 				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistry();
 				break;
+		}
+	}
+	
+	//! Used to initialize defaults to WorldData base class from 4_World module. For proper init of your custom world, use 'InitYieldBank' method in the inherited world data
+	void InitWorldYieldDataDefaults(CatchYieldBank bank)
+	{
+		//catch yield data beyond 3_Game level, defaults used for ChernarusPlusData
+		if (bank)
+		{
+			//fishies
+			bank.RegisterYieldItem(new YieldItemCarp(15));
+			bank.RegisterYieldItem(new YieldItemMackerel(15));
+			bank.RegisterYieldItem(new YieldItemSardines(15));
+			bank.RegisterYieldItem(new YieldItemBitterlings(15));
+			
+			//fishy junk
+			bank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Brown"));
+			bank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Grey"));
+			bank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Green"));
+			bank.RegisterYieldItem(new YieldItemJunk(1,"Wellies_Black"));
+			bank.RegisterYieldItem(new YieldItemJunkEmpty(1,"Pot"));
+			
+			//non-fishies
+			bank.RegisterYieldItem(new YieldItemDeadRabbit(4));
+			bank.RegisterYieldItem(new YieldItemDeadRooster(1));
+			bank.RegisterYieldItem(new YieldItemDeadChicken_White(1));
+			bank.RegisterYieldItem(new YieldItemDeadChicken_Spotted(1));
+			bank.RegisterYieldItem(new YieldItemDeadChicken_Brown(1));
+			bank.RegisterYieldItem(new YieldItemDeadFox(2));
 		}
 	}
 

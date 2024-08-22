@@ -487,4 +487,9 @@ class ContainerWithCargo extends ClosableContainer
 			}
 		}
 	}
+	
+	CargoContainer GetCargo()
+	{
+		return m_CargoGrid;
+	}
 }

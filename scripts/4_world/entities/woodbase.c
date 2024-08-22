@@ -261,7 +261,7 @@ class TreeEffecterParameters : EffecterParameters
 
 class TreeEffecter : EffecterBase
 {
-	ref array<WoodBase> m_plants;
+	ref array<WoodBase> m_Plants;
 	protected ref array<EffectParticleGeneral> m_Effects = null;
 	private float m_Radius = -1;
 	private float m_RadiusSync = -1;
@@ -270,7 +270,7 @@ class TreeEffecter : EffecterBase
 	{
 		if (!GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			m_plants = new array<WoodBase>; 
+			m_Plants = new array<WoodBase>; 
 			m_Effects = new array<EffectParticleGeneral>;
 		}
 		
@@ -304,7 +304,7 @@ class TreeEffecter : EffecterBase
 			}
 			
 			m_Effects.Clear();
-			m_plants.Clear();
+			m_Plants.Clear();
 		
 			GetGame().GetObjectsAtPosition(GetWorldPosition(), m_RadiusSync, objects, proxies);
 
@@ -349,7 +349,7 @@ class TreeEffecter : EffecterBase
 						m_Effects.Insert(newEffect);
 					}
 					
-					m_plants.Insert(plant);
+					m_Plants.Insert(plant);
 				}
 			}
 		}

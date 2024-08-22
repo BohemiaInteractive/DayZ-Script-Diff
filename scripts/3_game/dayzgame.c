@@ -912,6 +912,7 @@ class DayZGame extends CGame
 	private ref ScriptInvoker m_updateQueue[CALL_CATEGORY_COUNT];
 	private ref ScriptInvoker m_postUpdateQueue[CALL_CATEGORY_COUNT];
 	private ref DragQueue m_dragQueue;
+	private ref ScriptInvoker m_YieldDataInitInvoker;
 	private ref DayZProfilesOptions m_DayZProfileOptions;
 	private bool m_early_access_dialog_accepted;
 	private UIScriptedMenu m_keyboard_handler;
@@ -1188,6 +1189,14 @@ class DayZGame extends CGame
 	override ScriptInvoker GetPostUpdateQueue(int call_category)
 	{
 		return m_postUpdateQueue[call_category];
+	}
+	
+	ScriptInvoker GetYieldDataInitInvoker()
+	{
+		if (!m_YieldDataInitInvoker)
+			m_YieldDataInitInvoker = new ScriptInvoker();
+
+		return m_YieldDataInitInvoker;
 	}
 	
 	override TimerQueue GetTimerQueue(int call_category)

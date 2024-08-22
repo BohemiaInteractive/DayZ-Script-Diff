@@ -27,6 +27,19 @@ class CatchYieldBank
 		m_AllYieldsMap.Set(data.GetType().Hash(),data);
 	}
 	
+	void UnregisterYieldItem(string yieldType)
+	{
+		int hashedName = yieldType.Hash();
+		if (m_AllYieldsMap.Contains(hashedName))
+			m_AllYieldsMap.Remove(hashedName);
+	}
+	
+	//! nucular option
+	void ClearAllRegisteredItems()
+	{
+		m_AllYieldsMap.Clear();
+	}
+	
 	YieldItemBase GetYieldItemByIdx(int idx)
 	{
 		return m_AllYieldsMap.Get(m_OrderedHashes[idx]);

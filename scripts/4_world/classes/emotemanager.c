@@ -1,7 +1,7 @@
 class EmoteCB : HumanCommandActionCallback
 {
 	bool 			m_IsFullbody;
-	int 			m_callbackID;
+	int 			m_callbackID; //Animation cmd ID
 	PlayerBase 		m_player;
 	EmoteManager 	m_Manager;
 	
@@ -39,17 +39,8 @@ class EmoteCB : HumanCommandActionCallback
 			break;
 			
 			case UA_ANIM_EVENT :
-				if (GetGame().IsServer())
-				{
-					if (m_player.GetItemInHands() && SurrenderDummyItem.Cast(m_player.GetItemInHands()))
-						m_player.GetItemInHands().DeleteSafe(); //Note, this keeps item 'alive' until it is released by all the systems (inventory swapping etc.)
-					
-					if (m_player.GetItemInHands())
-					{
-						m_player.PhysicalPredictiveDropItem(m_player.GetItemInHands());
-					}
-				}
-				m_Manager.m_ItemToBeCreated = true;
+				if (m_callbackID == DayZPlayerConstants.CMD_GESTUREFB_SURRENDERIN)
+					m_Manager.m_ItemToBeCreated = true;
 			break;
 			
 			case EmoteConstants.EMOTE_SUICIDE_BLEED :
@@ -985,6 +976,8 @@ class EmoteManager
 			
 			if (m_Player.GetItemInHands() && GetGame().IsClient())
 			{
+				if (m_Player.GetInventory().HasInventoryReservation(null, m_HandInventoryLocation))
+					m_Player.GetInventory().ClearInventoryReservationEx(null, m_HandInventoryLocation);
 				m_Player.PhysicalPredictiveDropItem(m_Player.GetItemInHands());
 			}
 			

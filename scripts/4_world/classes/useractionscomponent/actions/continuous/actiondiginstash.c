@@ -161,11 +161,16 @@ class ActionDigInStash: ActionContinuousBase
 		UndergroundStash stash = UndergroundStash.Cast(GetGame().CreateObjectEx(undergroundStashType, targetEntity.GetPosition(), ECE_PLACE_ON_SURFACE));  
 		if (stash)
 		{
+			ClearActionJuncture(action_data);
 			stash.PlaceOnGround();
+			InventoryLocation ilj = new InventoryLocation;
+			stash.GetInventory().GetCurrentInventoryLocation(ilj);
+		
 			if (GameInventory.LocationCanRemoveEntity(targetIL))
 			{
-				ClearActionJuncture(action_data);
-				
+				GetGame().AddInventoryJunctureEx(action_data.m_Player, targetEntity, ilj, true, 10000);
+				GetGame().ClearJunctureEx(action_data.m_Player, targetEntity);
+			
 				if (!GetGame().IsMultiplayer())
 				{
 					ClearInventoryReservationEx(action_data);

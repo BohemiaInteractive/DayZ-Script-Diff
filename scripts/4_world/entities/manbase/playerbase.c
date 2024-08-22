@@ -1553,12 +1553,13 @@ class PlayerBase extends ManBase
 		
 		AddAction(ActionUngagSelf, InputActionMap);
 		AddAction(ActionWashHandsWater, InputActionMap);
+		AddAction(ActionWashHandsSnow, InputActionMap);
 		AddAction(ActionGetOutTransport, InputActionMap);
 		
 		AddAction(ActionUnrestrainTargetHands, InputActionMap);
 		AddAction(ActionTakeArrow, InputActionMap);
 		AddAction(ActionTakeArrowToHands, InputActionMap);
-		AddAction(ActionOperatePanel, InputActionMap);
+		AddAction(ActionOperatePanelPowerStation, InputActionMap);
 	}
 	
 	void SetActions() // Backwards compatibility, not recommended to use
@@ -4355,24 +4356,17 @@ class PlayerBase extends ManBase
 		return val;
 	}
 	
-	//! DEPRECATED
-	bool HasStaminaRemaining()
-	{
-		if (!GetStaminaHandler())
-			return false;
-		
-		return GetStaminaHandler().GetStamina() > 0;
-	}
-	
 	override bool CanClimb(int climbType, SHumanCommandClimbResult climbRes)
 	{
 		if (GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
-		{
 			return false;
-		}
 			
 		if (climbType == 1 && !CanConsumeStamina(EStaminaConsumers.VAULT))
-			return false;
+			return false;		
+		
+		//! vault from water allowed
+		if (IsSwimming())
+			return true;
 		
 		if (climbType == 2 && (!CanConsumeStamina(EStaminaConsumers.CLIMB) || GetBrokenLegs() != eBrokenLegs.NO_BROKEN_LEGS))
 			return false;
@@ -9371,6 +9365,14 @@ class PlayerBase extends ManBase
 	void DecreaseAntibioticsCount()
 	{
 		RemoveMedicalDrugsInUse(EMedicalDrugsType.ANTIBIOTICS);
+	}
+
+	bool HasStaminaRemaining()
+	{
+		if (!GetStaminaHandler())
+			return false;
+		
+		return GetStaminaHandler().GetStamina() > 0;
 	}
 }
 

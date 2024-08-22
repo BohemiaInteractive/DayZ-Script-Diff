@@ -60,6 +60,10 @@ class Colors
 	const int COLOR_LIVONIA_DARK_GREEN 		= 0xff1c2118;
 	const int COLOR_LIVONIA_BLACK_GREEN 	= 0xff0b100a;
 	const int COLOR_LIVONIA_OLIVE 			= 0xff8e8045;
+	
+	const int COLOR_FROSTLINE_LIGHT_BLUE = 0xff90b2bf;
+	const int COLOR_FROSTLINE_MOUNTAIN_BLUE = 0xff365d6e;
+	const int COLOR_FROSTLINE_DARK_BLUE = 0xff0d1c21;
 }
 
 class FadeColors

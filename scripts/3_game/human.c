@@ -1290,17 +1290,23 @@ class Human extends Man
 {
 	//! world space - local space - heading space
 
-	//! gets human transform in local space
+	//! gets human transform in local space (old)
 	proto native	void 		GetTransformWS(out vector pTm[4]);
+	
+	//! gets human transform in world space (doesn't include enf hierarchy)
+	proto native	void 		PhysicsGetTransformWS(out vector pTm[4]);
+	
+	//! gets human transform in local space
+	proto native	void 		PhysicsGetTransformLS(out vector pTm[4]);
 	
 	//! makes test if there's enough space for character's collider assuming that character can be pushed away from obstacle - usable for checking if character is in some tight space
 	proto native	bool		CheckFreeSpace(vector localDir, float distance, bool useHeading, vector posOffset = vector.Zero, float xzScale = 1.0);
 
 	//! makes test if character can physically move in given direction - length of dir means distance, returns distance fraction
 	proto			float		CollisionMoveTest(vector dir, vector offset, float xzScale, IEntity ignoreEntity, out IEntity hitEntity, out vector hitPosition, out vector hitNormal);
-
+	
 	//---------------------------------------------------------
-	// link/unlink to/from local space
+	// link/unlink to/from local space (simple)
 	proto native	void		LinkToLocalSpaceOf(notnull IEntity child, vector pLocalSpaceMatrix[4]);
 	proto native	void		UnlinkFromLocalSpace();
 
@@ -1338,6 +1344,16 @@ class Human extends Man
 		
 	//! returns true if physics controller is falling 
 	proto native 	bool		PhysicsIsFalling(bool pValidate);
+	
+	//! entity below us
+	proto native 	IEntity		PhysicsGetFloorEntity();
+	
+	//! entity we are linked to (not valid when IEntity.GetParent() returns some entity)
+	proto native 	IEntity		PhysicsGetLinkedEntity();
+	
+	//! if the entity we are on was moving faster than it's defined config 'animPhysDetachSpeed' value
+	//! It is the result of the previous keyframe after physics move has been performed
+	proto native	bool		PhysicsWasSlidingOffLinkedEntity();
 
 	//! outs pVelocity - linear velocity of PHYSICS CONTROLLER 
 	proto native 	void 		PhysicsGetVelocity(out vector pVelocity);

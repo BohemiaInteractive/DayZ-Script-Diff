@@ -197,7 +197,7 @@ class ActionContinuousBase : AnimatedActionBase
 	// values beetwen 0 and -90 (looking at ground) / 0 and 90 (looking above)
 	Vector2 GetCameraUDAngle()
 	{
-		Vector2 udAngle = new Vector2(-45, 45);
+		Vector2 udAngle = new Vector2(-70, 45);
 		return udAngle;
 	}
 	

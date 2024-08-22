@@ -293,8 +293,11 @@ class WorldData
 		m_YieldBank = new CatchYieldBank();
 	}
 	
-	//! override this to register world-specific yields
-	protected void InitYieldBank();
+	//! override this to properly register world-specific yields
+	protected void InitYieldBank()
+	{
+		GetDayZGame().GetYieldDataInitInvoker().Invoke(m_YieldBank); //injects defaults from 4_World and above
+	}
 	
 	protected void SetupWeatherSettings()
 	{

@@ -25,7 +25,7 @@ class ActionWashHandsWater : ActionContinuousBase
 	override void CreateConditionComponents()
 	{		
 		m_ConditionItem		= new CCINone();
-		m_ConditionTarget 	= new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, LIQUID_GROUP_WATER);
+		m_ConditionTarget 	= new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, LIQUID_GROUP_WATER - LIQUID_SNOW);
 	}
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)

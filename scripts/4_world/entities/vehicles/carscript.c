@@ -1034,77 +1034,77 @@ class CarScript extends Car
 			
 		}
 			
-		//FX only on Client and in Single
-		if ( false && !GetGame().IsDedicatedServer() )
-		{
-			float carSpeed = GetVelocity(this).Length();
-			for (int i = 0; i < WheelCount(); i++)
+			//FX only on Client and in Single
+			if ( !GetGame().IsDedicatedServer() )
 			{
-				EffWheelSmoke eff = m_WheelSmokeFx.Get(i);
-				int ptrEff = m_WheelSmokePtcFx.Get(i);
-				bool haveParticle = false;
-	
-				if (WheelHasContact(i))
+				float carSpeed = GetVelocity(this).Length();
+				for (int i = 0; i < WheelCount(); i++)
 				{
-					CarWheel wheel = CarWheel.Cast(WheelGetEntity(i));
-					float wheelSpeed = WheelGetAngularVelocity(i) * wheel.GetRadius();
-					
-					vector wheelPos = WheelGetContactPosition(i);
-					vector wheelVel = dBodyGetVelocityAt(this, wheelPos);
-
-					vector transform[3];
-					transform[2] = WheelGetDirection(i);
-					transform[1] = vector.Up;
-					transform[0] = transform[2] * transform[1];
-
-					wheelVel = wheelVel.InvMultiply3(transform);
-
-					float bodySpeed = wheelVel[2];
-					
-					bool applyEffect = false;
-					if ((wheelSpeed > 0 && bodySpeed > 0) || (wheelSpeed < 0 && bodySpeed < 0))
-					{
-						applyEffect = Math.AbsFloat(wheelSpeed) > Math.AbsFloat(bodySpeed) + EffWheelSmoke.WHEEL_SMOKE_THRESHOLD;
-					}
-					else
-					{
-						applyEffect = Math.AbsFloat(wheelSpeed) > EffWheelSmoke.WHEEL_SMOKE_THRESHOLD;
-					}
-					
-					if (applyEffect)
-					{
-						haveParticle = true;
-						
-						string surface;
-						GetGame().SurfaceGetType(wheelPos[0], wheelPos[2], surface);
-						wheelPos = WorldToModel(wheelPos);
+					EffWheelSmoke eff = m_WheelSmokeFx.Get(i);
+					int ptrEff = m_WheelSmokePtcFx.Get(i);
+					bool haveParticle = false;
 	
-						if (!SEffectManager.IsEffectExist(ptrEff))
+					if (WheelHasContact(i))
+					{
+						CarWheel wheel = CarWheel.Cast(WheelGetEntity(i));
+						float wheelSpeed = WheelGetAngularVelocity(i) * wheel.GetRadius();
+					
+						vector wheelPos = WheelGetContactPosition(i);
+						vector wheelVel = dBodyGetVelocityAt(this, wheelPos);
+
+						vector transform[3];
+						transform[2] = WheelGetDirection(i);
+						transform[1] = vector.Up;
+						transform[0] = transform[2] * transform[1];
+
+						wheelVel = wheelVel.InvMultiply3(transform);
+
+						float bodySpeed = wheelVel[2];
+					
+						bool applyEffect = false;
+						if ((wheelSpeed > 0 && bodySpeed > 0) || (wheelSpeed < 0 && bodySpeed < 0))
 						{
-							eff = new EffWheelSmoke();
-							eff.SetSurface(surface);
-							ptrEff = SEffectManager.PlayOnObject(eff, this, wheelPos, "0 1 -1");
-							eff.SetCurrentLocalPosition(wheelPos);
-							m_WheelSmokeFx.Set(i, eff);
-							m_WheelSmokePtcFx.Set(i, ptrEff);
+							applyEffect = Math.AbsFloat(wheelSpeed) > Math.AbsFloat(bodySpeed) + EffWheelSmoke.WHEEL_SMOKE_THRESHOLD;
 						}
 						else
 						{
-							if (!eff.IsPlaying())
-								eff.Start();
-							eff.SetSurface(surface);
-							eff.SetCurrentLocalPosition(wheelPos);
+							applyEffect = Math.AbsFloat(wheelSpeed) > EffWheelSmoke.WHEEL_SMOKE_THRESHOLD;
+						}
+						
+						if (applyEffect)
+						{
+							haveParticle = true;
+
+							string surface;
+							GetGame().SurfaceGetType(wheelPos[0], wheelPos[2], surface);
+							wheelPos = WorldToModel(wheelPos);
+	
+							if (!SEffectManager.IsEffectExist(ptrEff))
+							{
+								eff = new EffWheelSmoke();
+								eff.SetSurface(surface);
+								ptrEff = SEffectManager.PlayOnObject(eff, this, wheelPos, "0 1 -1");
+								eff.SetCurrentLocalPosition(wheelPos);
+								m_WheelSmokeFx.Set(i, eff);
+								m_WheelSmokePtcFx.Set(i, ptrEff);
+							}
+							else
+							{
+								if (!eff.IsPlaying())
+									eff.Start();
+								eff.SetSurface(surface);
+								eff.SetCurrentLocalPosition(wheelPos);
+							}
 						}
 					}
-				}
 					
-				if (!haveParticle)
-				{
-					if (eff && eff.IsPlaying())
-						eff.Stop();
+					if (!haveParticle)
+					{
+						if (eff && eff.IsPlaying())
+							eff.Stop();
+					}
 				}
 			}
-		}
 		//}
 	}
 	

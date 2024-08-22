@@ -40,8 +40,16 @@ class Land_WarheadStorage_Main : House
 	protected const string ALARM_DOOR_CLOSE_SOUND		= "UndergroundDoor_Alarm_End_SoundSet";
 	protected const string BIG_DOOR_OPEN_SOUND			= "Bunker_Airlock_Door_Open_SoundSet";
 	protected const string BIG_DOOR_CLOSE_SOUND			= "Bunker_Airlock_Door_Close_SoundSet";
+	protected const string STORAGE_DOOR_OPEN_SOUND 		= "Bunker_doorMetalStorageOpen_SoundSet";
+	protected const string STORAGE_DOOR_CLOSE_SOUND 	= "Bunker_doorMetalStorageClose_SoundSet";
+	protected const string FENCE_DOOR_OPEN_SOUND 		= "Bunker_doorMetalJailSlide_Open_SoundSet";
+	protected const string FENCE_DOOR_CLOSE_SOUND 		= "Bunker_doorMetalJailSlide_Close_SoundSet";
+	protected const string METAL_DOOR_OPEN_SOUND 		= "Bunker_doorMetal_Open_SoundSet";
+	protected const string METAL_DOOR_CLOSE_SOUND 		= "Bunker_doorMetal_Close_SoundSet";
 	protected const string VENTILATION_SOUND			= "Bunker_Ventilation_SoundSet";
 	protected const string LAMPS_SOUND					= "Bunker_Lamp_Hum_SoundSet";
+	protected const string ELECTRICITY_ON_SOUND			= "Bunker_bunker_electricity_on_SoundSet";
+	protected const string ELECTRICITY_OFF_SOUND		= "Bunker_bunker_electricity_off_SoundSet";
 	
 	protected const string LAMP_SELECTION 			= "GlassLamp";
 	protected const string MAIN_DOOR_SELECTION1 	= "maindoor1_outer";
@@ -117,6 +125,9 @@ class Land_WarheadStorage_Main : House
 		m_PoweredSoundEffects.Insert(soundEff);
 		soundEff.SetAutodestroy(true);
 		
+		PlaySoundSetAtMemoryPoint(soundEff, ELECTRICITY_ON_SOUND, VENT_MAIN_POS_MEMPOINT, false);
+		soundEff.SetAutodestroy(true);
+		
 		for (int i; i < SOURCES_COUNT; i++)
 		{
 			m_StorageDoorLights[i] = BunkerStorageDoorLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(BunkerStorageDoorLight, this, "lamp" + (i+1).ToString() + "_pos"));
@@ -143,12 +154,15 @@ class Land_WarheadStorage_Main : House
 			soundEff.Stop();
 		}
 		
+		PlaySoundSetAtMemoryPoint(soundEff, ELECTRICITY_OFF_SOUND, VENT_MAIN_POS_MEMPOINT, false);
+		soundEff.SetAutodestroy(true);
+		
 		m_PoweredSoundEffects.Clear();
 	}
 	
 	
 	override void OnDoorOpenStart(DoorStartParams params)
-	{
+	{		
 		#ifndef SERVER
 		if (IsBunkerDoor(params.param1))
 		{
@@ -161,6 +175,22 @@ class Land_WarheadStorage_Main : House
 			PlaySoundSetAtMemoryPoint(m_SoundDoorLoop, ALARM_DOOR_OPEN_LOOP_SOUND, ALARM_POS_MEMPOINT, true, 0, 0);
 			m_SoundDoorLoop.SetAutodestroy(true);
 		}
+		else if (IsMetalDoor(params.param1))
+		{
+			sound = SEffectManager.PlaySoundEnviroment(METAL_DOOR_OPEN_SOUND, GetDoorSoundPos(params.param1), 0, 0, false);
+			sound.SetAutodestroy(true);
+		}
+		else if (IsFenceDoor(params.param1))
+		{
+			sound = SEffectManager.PlaySoundEnviroment(FENCE_DOOR_OPEN_SOUND, GetDoorSoundPos(params.param1), 0, 0, false);
+			sound.SetAutodestroy(true);
+		}
+		else if (IsStorageDoor(params.param1))
+		{
+			sound = SEffectManager.PlaySoundEnviroment(STORAGE_DOOR_OPEN_SOUND, GetDoorSoundPos(params.param1), 0, 0, false);
+			sound.SetAutodestroy(true);
+		}
+		
 		#endif
 		
 		if (!IsBunkerDoor(params.param1))
@@ -207,6 +237,21 @@ class Land_WarheadStorage_Main : House
 			
 			PlaySoundSetAtMemoryPoint(m_SoundDoorLoop, ALARM_DOOR_OPEN_LOOP_SOUND, ALARM_POS_MEMPOINT, true, 0, 0);
 			m_SoundDoorLoop.SetAutodestroy(true);
+		}
+		else if (IsMetalDoor(params.param1))
+		{
+			sound = SEffectManager.PlaySoundEnviroment(METAL_DOOR_CLOSE_SOUND, GetDoorSoundPos(params.param1), 0, 0, false);
+			sound.SetAutodestroy(true);
+		}
+		else if (IsFenceDoor(params.param1))
+		{
+			sound = SEffectManager.PlaySoundEnviroment(FENCE_DOOR_CLOSE_SOUND, GetDoorSoundPos(params.param1), 0, 0, false);
+			sound.SetAutodestroy(true);
+		}
+		else if (IsStorageDoor(params.param1))
+		{
+			sound = SEffectManager.PlaySoundEnviroment(STORAGE_DOOR_CLOSE_SOUND, GetDoorSoundPos(params.param1), 0, 0, false);
+			sound.SetAutodestroy(true);
 		}
 		#endif
 
@@ -305,6 +350,16 @@ class Land_WarheadStorage_Main : House
 		if (IsStorageDoor(doorIndex) || IsBunkerDoor(doorIndex))
 			return false;
 		return super.CanDoorBeLocked(doorIndex);
+	}
+	
+	protected bool IsMetalDoor(int doorIndex)
+	{
+		return (doorIndex == 0 || doorIndex == 1);
+	}
+	
+	protected bool IsFenceDoor(int doorIndex)
+	{
+		return (doorIndex == 2 || doorIndex == 3);
 	}
 	
 	protected bool IsBunkerDoor(int doorIndex)
