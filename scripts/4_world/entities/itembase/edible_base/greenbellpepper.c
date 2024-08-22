@@ -33,16 +33,37 @@ class GreenBellPepper : Edible_Base
 	override void EEOnCECreate()
 	{
 		int rand = Math.RandomInt(0,10);
+		float baseTemp = GetGame().GetMission().GetWorldData().GetBaseEnvTemperature();
 
-		if ( rand > 6 )
+		if ( baseTemp <= GameConstants.COLD_AREA_TEMPERATURE_THRESHOLD )
 		{
-			ChangeFoodStage( FoodStageType.ROTTEN );
-			SetHealth( "", "", GetMaxHealth()*0.1 );
+			int randQ = Math.RandomFloat(10,80);
+			SetQuantity( randQ );
+
+			if ( rand >= 9 )
+			{
+				ChangeFoodStage( FoodStageType.ROTTEN );
+				SetHealth( "", "", GetMaxHealth()*0.1 );
+				
+			}
+			else
+			{
+				ChangeFoodStage( FoodStageType.DRIED );
+				SetHealth( "", "", GetMaxHealth()*0.4 );
+			}
 		}
-		else if ( rand > 2 )
+		else
 		{
-			ChangeFoodStage( FoodStageType.DRIED );
-			SetHealth( "", "", GetMaxHealth()*0.4 );
+			if ( rand > 6 )
+			{
+				ChangeFoodStage( FoodStageType.ROTTEN );
+				SetHealth( "", "", GetMaxHealth()*0.1 );
+			}
+			else if ( rand > 2 )
+			{
+				ChangeFoodStage( FoodStageType.DRIED );
+				SetHealth( "", "", GetMaxHealth()*0.4 );
+			}
 		}
 	}
 }

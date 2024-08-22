@@ -32,7 +32,7 @@ class ActionDefibrilateBase: ActionContinuousBase
 			defib.DischargeServer(player);
 			
 			
-			float regain_energy = player.GetSoftSkillsManager().SubtractSpecialtyBonus( defib.GetEnergyNeededToCharge(), this.GetSpecialtyWeight() );
+			float regain_energy = defib.GetEnergyNeededToCharge();
 			regain_energy = defib.GetEnergyNeededToCharge() - regain_energy;
 			
 			ItemBase battery;
@@ -45,7 +45,6 @@ class ActionDefibrilateBase: ActionContinuousBase
 			{
 				DPrint("ERROR! Defibrillator has no battery! Defibrillator softskill bonus can't be applied!");
 			}
-		}		
-		player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+		}
 	}
 };

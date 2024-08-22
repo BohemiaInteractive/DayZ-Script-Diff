@@ -11,7 +11,14 @@ enum SelectedPanel
 {
 	BROWSER,
 	FILTERS,
-	MENU
+	MENU,
+	DETAILS
+}
+
+enum ServerBrowserRightAreaView
+{
+	FILTERS,
+	DETAILS
 }
 
 class ServerBrowserTab extends ScriptedWidgetEventHandler
@@ -58,6 +65,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	protected Widget										m_PopulationSort;
 	protected Widget										m_SlotsSort;
 	protected Widget										m_PingSort;
+	protected Widget										m_MapSort;
 	protected Widget										m_FilterSearchText;
 	protected Widget										m_FilterSearchTextBox;
 	protected TextWidget									m_LoadingText;
@@ -67,20 +75,30 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	protected ref map<ESortType, ref array<ref GetServersResultRow>> m_EntriesSorted;
 	protected ref map<ESortType, ESortOrder>				m_SortInverted;
 	protected ref set<string> 								m_OnlineFavServers;
+	
+	protected TextWidget m_RightAreaHeaderText;
+	protected Widget m_FilterRoot;
+	protected Widget m_FilterContent;
+	protected ButtonWidget m_BtnShowDetails;
+	
+	protected Widget m_DetailsRoot;
+	protected ButtonWidget m_BtnShowFilters;
+	
+	protected ref ServerBrowserDetailsContainer	m_Details;
 
-	void ServerBrowserTab( Widget parent, ServerBrowserMenuNew menu, TabType type )
+	void ServerBrowserTab(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
 		Construct(parent, menu, type);
 		m_OnlineFavServers = new set<string>();
 		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
 	}
 	
-	protected void Construct( Widget parent, ServerBrowserMenuNew menu, TabType type )
+	protected void Construct(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
 		m_SortInverted = new map<ESortType, ESortOrder>;
 		m_EntriesSorted = new map<ESortType, ref array<ref GetServersResultRow>>;
 		m_EntryMods = new map<string, ref array<string>>;
-		m_LoadingText			= TextWidget.Cast( m_Root.FindAnyWidget( "loading_servers_info" ) );
+		m_LoadingText = TextWidget.Cast(m_Root.FindAnyWidget("loading_servers_info"));
 	}
 	
 	void ~ServerBrowserTab()
@@ -105,6 +123,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		return m_LoadingFinished;
 	}
 	
+	// Why we override this here when it is not used?
 	override bool OnClick( Widget w, int x, int y, int button )
 	{
 		
@@ -114,6 +133,16 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	{
 		switch (dlcId)
 		{
+			case EDLCId.DLC_FROSTLINE:
+			{
+				array<ServerBrowserEntry> serverEntries = m_EntryWidgets.GetValueArray();
+				foreach (ServerBrowserEntry entry : serverEntries)
+				{
+					entry.RefreshDLCIcon();
+				}
+				break;
+			}
+			
 			default:
 				break;
 		}
@@ -170,84 +199,110 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	
 	void Focus()
 	{
-		if ( m_EntryWidgets.Contains( m_CurrentSelectedServer ) )
+		if (m_EntryWidgets.Contains(m_CurrentSelectedServer))
 		{
-			m_EntryWidgets.Get( m_CurrentSelectedServer ).Focus();
-			ScrollToEntry( m_EntryWidgets.Get( m_CurrentSelectedServer ) );
+			m_EntryWidgets.Get(m_CurrentSelectedServer).Focus();
+			ScrollToEntry(m_EntryWidgets.Get(m_CurrentSelectedServer));
 		}
 	}
 	
-	void OnFilterFocusLost( Widget w )
+	void OnFilterFocusLost(Widget w)
 	{
 		m_SelectedPanel = SelectedPanel.FILTERS;
-		m_Menu.FilterFocus( false );
+		m_Menu.FilterFocus(false);
 	}
 	
-	void OnFilterFocus( Widget w )
+	void OnFilterFocus(Widget w)
 	{
 		m_SelectedPanel = SelectedPanel.FILTERS;
-		m_Menu.FilterFocus( true );
+		m_Menu.FilterFocus(true);
 	}
 	
-	void OnFilterChanged()
+	void OnDetailsFocusLost(Widget w)
 	{
-		
+		m_SelectedPanel = SelectedPanel.DETAILS;
+		m_Menu.DetailsFocus(false);
 	}
 	
-	void ServerListFocus( bool focus, bool favorite )
+	void OnDetailsFocus(Widget w)
 	{
-		m_SelectedPanel = SelectedPanel.BROWSER;
-		
+		m_SelectedPanel = SelectedPanel.DETAILS;
+		m_Menu.DetailsFocus(true);
+	}
+
+	void OnFilterChanged();
+	
+	void ServerListFocus(bool focus, bool favorite)
+	{
 		if (!m_Menu)
 			return;
 		
-		m_Menu.ServerListFocus( focus, favorite );
+		m_Menu.ServerListFocus(focus, favorite);
 	}
 	
-	override bool OnFocus( Widget w, int x, int y )
-	{
-		if ( IsFocusable( w ) )
+	override bool OnFocus(Widget w, int x, int y)
+	{	
+		if (IsFocusable(w))
 		{
-			if ( w == m_FilterSearchTextBox )
+			if (w == m_FilterSearchTextBox)
 			{
-				ColorHighlight( m_FilterSearchText );
+				ColorHighlight(m_FilterSearchText);
 				return false;
 			}
 			else
 			{
-				ColorHighlight( w );
+				ColorHighlight(w);
 			}
+			
+		#ifdef PLATFORM_CONSOLE
+			string aButtonLabel;
+			if (w == m_RefreshList || w == m_ApplyFilter || w == m_ResetFilters || w == m_BtnShowDetails || w == m_BtnShowFilters)
+			{
+			#ifdef PLATFORM_PS4
+				aButtonLabel = "#ps4_ingame_menu_select";
+			#else
+				aButtonLabel = "#layout_xbox_ingame_menu_select";
+			#endif
+			}
+			else
+			{
+				aButtonLabel = "#dialog_change";
+			}
+			
+			m_Menu.UpdateAButtonLabel(aButtonLabel);
+		#endif
+			
 			return true;
 		}
 		return false;
 	}
 	
-	override bool OnFocusLost( Widget w, int x, int y )
+	override bool OnFocusLost(Widget w, int x, int y)
 	{
-		if ( IsFocusable( w ) )
+		if (IsFocusable(w))
 		{
-			if ( w == m_FilterSearchTextBox )
+			if (w == m_FilterSearchTextBox)
 			{
-				ColorNormal( m_FilterSearchText );
+				ColorNormal(m_FilterSearchText);
 				return true;
 			}
 			else
 			{
-				ColorNormal( w );
+				ColorNormal(w);
 			}
 			return true;
 		}
 		return false;
 	}
 	
-	override bool OnMouseEnter( Widget w, int x, int y )
+	override bool OnMouseEnter(Widget w, int x, int y)
 	{		
-		if ( IsFocusable( w ) )
+		if (IsFocusable(w))
 		{
-			ColorHighlight( w );
-			if ( w == m_FilterSearchText )
+			ColorHighlight(w);
+			if (w == m_FilterSearchText)
 			{
-				SetFocus( m_FilterSearchTextBox );
+				SetFocus(m_FilterSearchTextBox);
 				return true;
 			}
 			return true;
@@ -255,40 +310,35 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		return false;
 	}
 	
-	override bool OnMouseLeave( Widget w, Widget enterW, int x, int y )
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{		
-		if ( IsFocusable( w ) )
+		if (IsFocusable(w))
 		{
-			if ( enterW == m_FilterSearchText || enterW == m_FilterSearchTextBox )
+			if (enterW == m_FilterSearchText || enterW == m_FilterSearchTextBox) //! WTF?
 			{
 			}
 			else
 			{
-				ColorNormal( w );
+				ColorNormal(w);
 			}
 			return true;
 		}
 		return false;
 	}
 	
-	bool IsFocusable( Widget w )
+	bool IsFocusable(Widget w)
 	{
-		if ( w )
+		if (w)
 		{
-			return ( w == m_ApplyFilter || w == m_RefreshList || w == m_ResetFilters || w == m_FilterSearchText || w == m_FilterSearchTextBox );
+			return (w == m_ApplyFilter || w == m_RefreshList || w == m_ResetFilters || w == m_FilterSearchText || w == m_FilterSearchTextBox || w == m_BtnShowDetails || w == m_BtnShowFilters);
 		}
 		return false;
 	}
 	
-	void SetPanelFocus()
-	{
-		
-	}
+	// Unused?!
+	void SetPanelFocus();
 	
-	void PressA()
-	{
-		
-	}
+	void PressA();
 	
 	void PressX()
 	{
@@ -299,6 +349,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	void PressY();
 	void PressSholderLeft();
 	void PressSholderRight();
+	void OnPressShoulder();
 	void Left();
 	void LeftHold();
 	void LeftRelease();
@@ -307,6 +358,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	void RightRelease();
 	void Up();
 	void Down();
+	void PressThumbRight();
 	
 	void OnLoadServerModsAsync(string server_id, array<string> mods)
 	{
@@ -354,15 +406,11 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		}
 	}
 	
-	void GetNextFilter()
-	{
+	// Unused?!
+	void GetNextFilter();
 	
-	}
-	
-	void GetPrevFilter()
-	{
-	
-	}
+	// Unused?!
+	void GetPrevFilter();
 	
 	void SetCurrentPage(int page_num)
 	{
@@ -384,10 +432,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		m_Filters.ResetFilters();
 	}
 	
-	void ApplyFilters()
-	{
-	
-	}
+	void ApplyFilters();
 	
 	void AddFavoritesToFilter( ref GetServersInput input )
 	{
@@ -456,30 +501,24 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		}
 	}
 	
-	void SelectServer( ServerBrowserEntry server )
+	void SelectServer(ServerBrowserEntry server)
 	{
-#ifdef PLATFORM_CONSOLE
-		ScrollToEntry( server );
-#endif
+		#ifdef PLATFORM_CONSOLE
+		ScrollToEntry(server);
+		#endif
 		
 		m_SelectedServer = server;
 		
 		if (!m_Menu)
 			return;
 		
-		m_Menu.SelectServer( server );
+		m_Menu.SelectServer(server);
 	}
+
+	void OnLoadServersAsyncPC(ref GetServersResult result_list, EBiosError error, string response);
 	
-	void OnLoadServersAsyncPC( ref GetServersResult result_list, EBiosError error, string response )
-	{
-		
-	}
-	
-	void OnLoadServersAsyncConsole( GetServersResult result_list, EBiosError error, string response )
-	{
-		
-	}
-	
+	void OnLoadServersAsyncConsole(GetServersResult result_list, EBiosError error, string response);
+
 	void SetSort( ESortType type, ESortOrder order )
 	{
 		m_SortOrder = order;
@@ -496,7 +535,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	}
 	
 	bool PassFilter( GetServersResultRow result )
-	{			
+	{
 		if ( !m_Menu || m_Menu.GetServersLoadingTab() != m_TabType )
 		{
 			return false;
@@ -509,30 +548,12 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 				return false;
 			}
 		}
-
-		if ( m_Filters.m_PreviouslyPlayedFilter.IsSet() )
-		{
-			bool is_visited = g_Game.IsVisited( result.m_HostIp, result.m_HostPort );
-			
-			if ( !is_visited && m_Filters.m_PreviouslyPlayedFilter.IsEnabled() )
-			{
-				return false;
-			}
-			
-			if ( is_visited && m_Filters.m_PreviouslyPlayedFilter.IsEnabled() )
-			{
-				return false;
-			}
-		}
 		
 		return true;
 	}
 	
 	// Adds extra servers to the END of the list
-	protected void LoadExtraEntries(int index)
-	{
-		
-	}
+	protected void LoadExtraEntries(int index);
 	
 	void Connect( ServerBrowserEntry server )
 	{
@@ -721,5 +742,66 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 				button.SetTextColor( ColorManager.COLOR_DISABLED_TEXT );
 			}
 		}
+	}
+	
+	void SwitchRightAreaView()
+	{
+		switch (m_SelectedPanel)
+		{
+			case SelectedPanel.BROWSER:
+			{
+				if (m_DetailsRoot.IsVisible())
+				{
+					SwitchToFilters(false);
+				}
+				else if (m_FilterRoot.IsVisible())
+				{
+					SwitchToDetails(false);
+				}
+				break;
+			}
+			case SelectedPanel.DETAILS:
+			{
+				SwitchToFilters();
+				break;
+			}
+			case SelectedPanel.FILTERS:
+			{
+				SwitchToDetails();
+				break;
+			}
+		}
+	}
+
+	// Here for overrides in the classes that inherit from class ServerBrowserTab
+	void SwitchToDetails(bool focus = true);
+	void SwitchToFilters(bool focus = true);
+	
+	void SetServerDetails(GetServersResultRow server_info, bool online)
+	{		
+		m_Details.SetDetails(server_info, online);
+	}
+	
+	void ShowServerDetails()
+	{
+		m_DetailsRoot.Show(true);
+		m_BtnShowDetails.Show(false);
+		m_Root.FindAnyWidget("spacer1").Show(m_TabType != TabType.FAVORITE && m_TabType != TabType.LAN);
+		m_RightAreaHeaderText.SetText("#STR_server_browser_menu_server_details");
+	}
+	
+	Widget GetFilterRoot()
+	{
+		return m_FilterRoot;
+	}
+	
+	Widget GetDetailsRoot()
+	{
+		return m_DetailsRoot;
+	}
+	
+	ServerBrowserEntry GetSelectedServer()
+	{
+		return m_SelectedServer;
 	}
 }

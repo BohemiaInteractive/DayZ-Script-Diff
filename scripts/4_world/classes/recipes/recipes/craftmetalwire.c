@@ -65,7 +65,6 @@ class CraftMetalWire extends RecipeBase
 		{
 			int health = wire.GetHealthLevel();
 			health++;
-			Print(health);
 			wire.SetHealth01("","", 1 - 0.3*health);
 		}
 	}

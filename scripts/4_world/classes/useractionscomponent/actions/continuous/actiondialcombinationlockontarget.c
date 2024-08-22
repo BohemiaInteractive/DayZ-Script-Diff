@@ -70,6 +70,11 @@ class ActionDialCombinationLockOnTarget: ActionContinuousBase
 			//check for unlock state
 			if (!combination_lock.IsLockedOnGate())
 			{
+				if (GetGame().IsMultiplayer())
+					ClearActionJuncture(action_data);
+				else 
+					ClearInventoryReservationEx(action_data);
+				
 				EntityAI target_entity = EntityAI.Cast(action_data.m_Target.GetObject());
 				combination_lock.UnlockServer(action_data.m_Player, target_entity.GetHierarchyParent());
 			}

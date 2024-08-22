@@ -88,9 +88,10 @@ class ActionRemoveSeed: ActionInteractBase
 		return success;
 	}
 	
-	override void OnExecuteClient(ActionData action_data)
+	override void OnExecute( ActionData action_data )
 	{
-		super.OnExecuteClient(action_data);
+		if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
+			return;
 		
 		PlayerBase player = action_data.m_Player;
 		float stackable;
@@ -105,7 +106,6 @@ class ActionRemoveSeed: ActionInteractBase
 			
 			stackable = m_Seed.GetTargetQuantityMax( il.GetSlot() );
 			
-			ClearInventoryReservationEx(action_data);
 			if ( stackable == 0 || stackable >= m_Seed.GetQuantity() )
 			{
 				player.PredictiveTakeToDst( targetInventoryLocation, il );
@@ -118,7 +118,8 @@ class ActionRemoveSeed: ActionInteractBase
 		else
 		{
 			//We place in hands
-			ClearInventoryReservationEx(action_data);
+			ClearInventoryReservationEx( action_data );
+			
 			stackable = m_Seed.GetTargetQuantityMax( -1 );
 			
 			if ( stackable == 0 || stackable >= m_Seed.GetQuantity() )

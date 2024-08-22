@@ -69,9 +69,14 @@ class ActionDismantlePart: ActionContinuousBase
 	{
 		return false;
 	}
+	
+	override bool CanBeUsedInFreelook()
+	{
+		return false;
+	}
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
-	{	
+	{
 		if ( player.IsPlacingLocal() )
 			return false;
 		
@@ -102,8 +107,6 @@ class ActionDismantlePart: ActionContinuousBase
 			//add damage to tool
 			action_data.m_MainItem.DecreaseHealth( UADamageApplied.DISMANTLE, false );
 		}
-
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 		
 	//setup
@@ -138,65 +141,56 @@ class ActionDismantlePart: ActionContinuousBase
 		}
 	}	
 	
-	protected bool DismantleCondition( PlayerBase player, ActionTarget target, ItemBase item, bool camera_check )
+	protected bool DismantleCondition(PlayerBase player, ActionTarget target, ItemBase item, bool camera_check)
 	{	
-		if ( player && !player.IsPlacingLocal() && !player.IsPlacingServer() )
+		if (player && !player.IsPlacingLocal() && !player.IsPlacingServer())
 		{
-			Object target_object = target.GetObject();
-			EntityAI target_entity;
-			if ( target_object && target_object.CanUseConstruction() )
+			Object targetObject = target.GetObject();
+			EntityAI targetEntity;
+			if (targetObject && targetObject.CanUseConstruction())
 			{
 				//invalid if is gate and is locked
-				if ( Class.CastTo(target_entity,target_object) && (target_entity.FindAttachmentBySlotName("Att_CombinationLock") || target_entity.FindAttachmentBySlotName("Material_FPole_Flag")) )
-				{
+				if (Class.CastTo(targetEntity, targetObject) && (targetEntity.FindAttachmentBySlotName("Att_CombinationLock") || targetEntity.FindAttachmentBySlotName("Material_FPole_Flag")) )
 					return false;
-				}
 				
-				string part_name = target_object.GetActionComponentName( target.GetComponentIndex() );
+				string partName = targetObject.GetActionComponentName(target.GetComponentIndex());
 				
-				BaseBuildingBase base_building = BaseBuildingBase.Cast( target_object );
-				Construction construction = base_building.GetConstruction();		
-				ConstructionPart construction_part = construction.GetConstructionPartToDismantle( part_name, item );
+				BaseBuildingBase baseBuilding = BaseBuildingBase.Cast(targetObject);
+				Construction construction = baseBuilding.GetConstruction();		
+				ConstructionPart constructionPart = construction.GetConstructionPartToDismantle(partName, item);
 				
-				if ( construction_part )
+				if (constructionPart)
 				{
-					/*Print("DismantleCondition");
-					Print(part_name);
-					Print("construction_part.GetPartName: " + construction_part.GetPartName());
-					Print("construction_part.GetMainPartName: " + construction_part.GetMainPartName());
-					Print("-----");*/
 					
 					//invalid on gate if the gate is opened
-					if ( construction_part.IsGate() && base_building.IsOpened() )
+					if (constructionPart.IsGate() && baseBuilding.IsOpened())
 						return false;
 					
 					//camera and position checks
 					bool checked = false;
 					
-					if ( construction_part.IsBase() )
+					if (constructionPart.IsBase())
 						checked = true;
 					
-					if ( !checked && base_building.IsPlayerInside( player, part_name ) && !player.GetInputController().CameraIsFreeLook() )
+					if (!checked && baseBuilding.IsPlayerInside(player, partName))
 					{
 						//Camera check (client-only)
-						if ( camera_check )
+						if (camera_check)
 						{
-							if ( GetGame() && ( !GetGame().IsDedicatedServer() ) )
+							if (GetGame() && (!GetGame().IsDedicatedServer()))
 							{
-								if ( base_building.IsFacingCamera( part_name ) )
-								{
+								if (baseBuilding.IsFacingCamera(partName))
 									return false;
-								}
 							}
 						}
 
 						checked = true;
 					}
 
-					if ( checked )
+					if (checked)
 					{
-						ConstructionActionData construction_action_data = player.GetConstructionActionData();
-						construction_action_data.SetTargetPart( construction_part );
+						ConstructionActionData constructionActionData = player.GetConstructionActionData();
+						constructionActionData.SetTargetPart(constructionPart);
 						
 						return true;
 					}

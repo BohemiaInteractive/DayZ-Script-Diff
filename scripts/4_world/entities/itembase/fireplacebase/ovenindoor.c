@@ -28,7 +28,7 @@ class OvenIndoor extends FireplaceBase
 		RegisterNetSyncVariableInt( "m_FirePointIndex", 0, 9 );
 		
 		m_LightDistance = 50;
-		m_RoofAbove = true;
+		SetRoofAbove(true);
 	}
 	
 	//================================================================
@@ -202,19 +202,6 @@ class OvenIndoor extends FireplaceBase
 		break;
 		}
 		
-		// reset cooking time (to prevent the cooking exploit)
-		if (GetGame().IsServer() && edible_base_attached)
-		{
-			Edible_Base edBase = Edible_Base.Cast(item_base);
-			if (edBase)
-			{
-				if ( edBase.GetFoodStage())
-				{
-					edBase.SetCookingTime(0);
-				}
-			}
-		}
-
 		RefreshFireplaceVisuals();
 	}
 

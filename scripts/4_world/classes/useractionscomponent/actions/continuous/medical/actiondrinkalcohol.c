@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionDrinkAlcohol: ActionDrink
 {	
 	override void ApplyModifiers( ActionData action_data )

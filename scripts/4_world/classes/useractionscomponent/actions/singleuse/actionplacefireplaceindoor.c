@@ -68,9 +68,11 @@ class ActionPlaceFireplaceIndoor: ActionSingleUseBase
 		FireplaceToIndoorsLambda lambda = new FireplaceToIndoorsLambda( fireplace_in_hands, "FireplaceIndoor", action_data.m_Player, action_data.m_Player.GetLastFirePoint(), action_data.m_Target.GetObject() );
 		lambda.SetTransferParams( true, true, true );
 		action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere( lambda );
-
-		//add to soft skills
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
+	}
+		
+	override bool IsLockTargetOnUse()
+	{
+		return false;
 	}
 }
 

@@ -638,6 +638,9 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 		return soundCat;
 	}
 	
-	
+	int GetAnimationCommandUID(int recipeID)
+	{
+		return m_RecipeList[recipeID].GetAnimationCommandUID();
+	}
 	
 }

@@ -495,11 +495,6 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 		{
 			icon = m_SlotIcon;
 		}
-		/*else
-		{
-			Print("Dbg | no object in icon here!");
-		}
-		*/
 		
 		SetOpenForSlotIcon(false,icon);
 		OnHide();

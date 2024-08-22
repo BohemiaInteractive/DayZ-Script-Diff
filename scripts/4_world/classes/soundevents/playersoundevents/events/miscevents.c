@@ -19,3 +19,30 @@ class ThirstSoundEvent extends PlayerSoundEventBase
 		m_SoundVoiceAnimEventClassID = 902;
 	}
 }
+
+class ForceConsumeSoundEvent extends PlayerSoundEventBase
+{
+	void ForceConsumeSoundEvent()
+	{
+		m_HasPriorityOverTypes = -1;//-1 for all
+		m_Type = EPlayerSoundEventType.GENERAL;
+	}
+}
+
+class ForceFeedSoundEvent extends ForceConsumeSoundEvent
+{
+	void ForceFeedSoundEvent()
+	{
+		m_ID = EPlayerSoundEventID.FORCE_FEED;
+		m_SoundVoiceAnimEventClassID = 888;
+	}
+}
+
+class ForceDrinkSoundEvent extends ForceConsumeSoundEvent
+{
+	void ForceDrinkSoundEvent()
+	{
+		m_ID = EPlayerSoundEventID.FORCE_DRINK;
+		m_SoundVoiceAnimEventClassID = 200;
+	}
+}

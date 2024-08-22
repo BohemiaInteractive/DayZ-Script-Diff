@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionPickupChicken: ActionInteractBase
 {
 	void ActionPickupChicken()

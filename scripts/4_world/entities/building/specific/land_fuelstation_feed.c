@@ -32,6 +32,13 @@ class Land_FuelStation_Feed extends FuelStation
 	{
 		return !IsRuined();
 	}
+	
+	override int GetLiquidSourceType()
+	{
+		if (HasFuelToGive())
+			return super.GetLiquidSourceType();
+		return LIQUID_NONE;
+	}
 };
 
 class Land_FuelStation_Feed_Enoch : Land_FuelStation_Feed {};

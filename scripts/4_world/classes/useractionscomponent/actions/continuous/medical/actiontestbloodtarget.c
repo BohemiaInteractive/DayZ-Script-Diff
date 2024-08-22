@@ -11,49 +11,50 @@ class ActionTestBloodTarget: ActionContinuousBase
 	void ActionTestBloodTarget()
 	{
 		m_CallbackClass = ActionTestBloodTargetCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_BANDAGETARGET;
-		m_FullBody = true;
-		m_SpecialtyWeight = UASoftSkillsWeight.PRECISE_LOW;
+		m_CommandUID	= DayZPlayerConstants.CMD_ACTIONMOD_BLOODTESTOTHER;
+		m_FullBody		= false;
+		m_StanceMask	= DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
+
 		m_Text = "#test_targets_blood";
 	}
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTMan(UAMaxDistances.DEFAULT);
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTMan(UAMaxDistances.DEFAULT);
 	}
 
-	override void OnFinishProgressClient( ActionData action_data )
+	override void OnFinishProgressClient(ActionData action_data)
 	{
-		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
+		PlayerBase ntarget = PlayerBase.Cast(action_data.m_Target.GetObject());
 
-		if( ntarget )
+		if (ntarget)
 		{
-			string blood_type_name, blood_name;
+			string bloodTypeName, bloodName;
 			bool positive;
-			blood_type_name = BloodTypes.GetBloodTypeName( ntarget.GetBloodType(), blood_name, positive );
+			bloodTypeName = BloodTypes.GetBloodTypeName(ntarget.GetBloodType(), bloodName, positive);
 	
-			ntarget.SetLastUAMessage(blood_type_name);
+			ntarget.SetLastUAMessage(bloodTypeName);
 		}
 	}
 
-	override void OnStartServer( ActionData action_data )
+	override void OnStartServer(ActionData action_data)
 	{
-		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
-		PluginLifespan module_lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
-		int blood_type = ntarget.GetStatBloodType().Get();
+		super.OnStartServer(action_data);
 		
-		module_lifespan.UpdateBloodType( ntarget, blood_type );			
+		PlayerBase ntarget = PlayerBase.Cast(action_data.m_Target.GetObject());
+		PluginLifespan lifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
+		int bloodType = ntarget.GetStatBloodType().Get();
+		
+		lifespan.UpdateBloodType(ntarget, bloodType);			
 	}
 	
-	override void OnFinishProgressServer( ActionData action_data )
+	override void OnFinishProgressServer(ActionData action_data)
 	{	
-		PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
-		PluginLifespan module_lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
-		
-		module_lifespan.UpdateBloodTypeVisibility( ntarget, true );
+		PlayerBase ntarget = PlayerBase.Cast(action_data.m_Target.GetObject());
+		PluginLifespan lifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
+		lifespan.UpdateBloodTypeVisibility(ntarget, true);
 		
 		action_data.m_MainItem.Delete();
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
-};
+}

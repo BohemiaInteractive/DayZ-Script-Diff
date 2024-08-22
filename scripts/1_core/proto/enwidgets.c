@@ -125,10 +125,10 @@ class Widget: Managed
 	proto native void Show(bool show, bool immedUpdate = true);
 	proto native void Enable(bool enable);
 	proto native int GetFlags();
-	proto native int SetFlags(int flags, bool immedUpdate = true);
+	proto native int SetFlags(int flags, bool immedUpdate = true); //! ADDS the value to the existing flag
 	proto native int GetSort();
 	proto native void SetSort(int sort, bool immedUpdate = true);
-	proto native int ClearFlags(int flags, bool immedUpdate = true);
+	proto native int ClearFlags(int flags, bool immedUpdate = true); //! SUBSTRACTS the value to the existing flag
 	proto native bool IsControlClass();
 	proto native owned string GetStyleName();
 	proto void GetUserData(out Class data);

@@ -6,8 +6,10 @@ class Barrel_ColorBase : DeployableContainer_Base
 	protected ref RainProcurementComponentBarrel m_RainProcComponent; 
 	protected ref OpenableBehaviour m_Openable;
 	
-	void Barrel_ColorBase()
+	override void InitItemVariables()
 	{
+		super.InitItemVariables();
+		
 		m_BarrelOpener = new Timer();
 
 		m_Openable = new OpenableBehaviour(false);
@@ -15,7 +17,7 @@ class Barrel_ColorBase : DeployableContainer_Base
 		m_RainProcComponent = new RainProcurementComponentBarrel(this);
 		
 		m_HalfExtents = Vector(0.30,0.85,0.30);
-
+		
 		RegisterNetSyncVariableBool("m_Openable.m_IsOpened");
 		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
 		RegisterNetSyncVariableBool("m_IsPlaceSound");

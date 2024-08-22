@@ -1,7 +1,6 @@
 //max 32 synced modifiers supported
 enum eModifierSyncIDs 
 {
-
 	MODIFIER_SYNC_WOUND_INFECT_1 	= 0x00000001,
 	MODIFIER_SYNC_WOUND_INFECT_2 	= 0x00000002,
 	MODIFIER_SYNC_CONTAMINATION 	= 0x00000004,//stage1 
@@ -16,22 +15,19 @@ enum eModifierSyncIDs
 	//0x00000800,
 	//0x00001000,
 	LAST_INDEX,
-};
+}
 
-
-
-
-enum EActivationType {
-
+enum EActivationType
+{
 	TRIGGER_EVENT_OFF,
 	TRIGGER_EVENT_ON_ACTIVATION,
 	TRIGGER_EVENT_ON_CONNECT
-};
+}
 
-const int DEFAULT_TICK_TIME_ACTIVE = 3;
-const int DEFAULT_TICK_TIME_ACTIVE_SHORT = 1;
-const int DEFAULT_TICK_TIME_INACTIVE = 3;
-const int DEFAULT_TICK_TIME_INACTIVE_LONG = 10;
+const int DEFAULT_TICK_TIME_ACTIVE 			= 3;
+const int DEFAULT_TICK_TIME_ACTIVE_SHORT 	= 1;
+const int DEFAULT_TICK_TIME_INACTIVE 		= 3;
+const int DEFAULT_TICK_TIME_INACTIVE_LONG 	= 10;
 
 class ModifierDebugObj
 {
@@ -71,17 +67,22 @@ class ModifierDebugObj
 
 class ModifiersManager
 {
-	PlayerBase m_Player;
-	ref map<int, ref ModifierBase> m_ModifierList;
-	ref array< ref ModifierBase> m_ModifierListArray = new array< ref ModifierBase>;
-	ref array<ref Param> m_ParamList;
-	bool m_AllowModifierTick = false;
 	const int STORAGE_VERSION = 121;
+
+	bool m_AllowModifierTick;
+
+	PlayerBase m_Player;
+
+	ref map<int, ref ModifierBase> 	m_ModifierList;
+	ref array< ref ModifierBase> 	m_ModifierListArray;
+	ref array<ref Param> 			m_ParamList;
+
 	void ModifiersManager(PlayerBase player)
 	{
-		m_ModifierList 	= new map<int, ref ModifierBase>;
-		m_ParamList 	= new array<ref Param>;
-		m_Player 		= player;
+		m_ModifierList 		= new map<int, ref ModifierBase>();
+		m_ModifierListArray = new array< ref ModifierBase>();
+		m_ParamList 		= new array<ref Param>;
+		m_Player 			= player;
 		
 		Init();
 	}
@@ -92,20 +93,15 @@ class ModifiersManager
 		AddModifier(new TestDiseaseMdfr);
 		#endif
 		AddModifier(new BloodRegenMdfr);
-		//AddModifier(new BoneRegen);
-		//AddModifier(new Health);
 		AddModifier(new SalineMdfr);
 		AddModifier(new HealthRegenMdfr);
 		AddModifier(new HungerMdfr);
-		//AddModifier(new Shock);
 		AddModifier(new ImmuneSystemMdfr);
 		AddModifier(new StomachMdfr);
 		AddModifier(new HeatComfortMdfr);
 		AddModifier(new ThirstMdfr);
 		AddModifier(new BleedingCheckMdfr);
-		//AddModifier(new Blinded);
-		//AddModifier(new BrokenArms);
-		AddModifier(new BrokenLegsMdfr); // <-- Broken legs are here
+		AddModifier(new BrokenLegsMdfr);
 		AddModifier(new VomitStuffedMdfr);
 		AddModifier(new BurningMdfr);
 		AddModifier(new FeverMdfr);
@@ -113,7 +109,6 @@ class ModifiersManager
 		AddModifier(new HemolyticReactionMdfr);
 		AddModifier(new PoisoningMdfr);
 		AddModifier(new StuffedStomachMdfr);
-		//AddModifier(new Tremor);
 		AddModifier(new UnconsciousnessMdfr);
 		AddModifier(new ShockDamageMdfr);
 		AddModifier(new CommonColdMdfr);
@@ -143,6 +138,11 @@ class ModifiersManager
 		AddModifier(new MaskMdfr);
 		AddModifier(new FliesMdfr);
 		AddModifier(new DrowningMdfr);
+		AddModifier(new HeavyMetalPhase1Mdfr);
+		AddModifier(new HeavyMetalPhase2Mdfr);
+		AddModifier(new HeavyMetalPhase3Mdfr);
+		AddModifier(new PneumoniaMdfr);
+		AddModifier(new ChelationMdfr);
 	}
 
 	void SetModifiers(bool enable)
@@ -158,7 +158,7 @@ class ModifiersManager
 		#endif
 		#endif
 		
-		if ( !enable )
+		if (!enable)
 		{
 			for (int i = 0; i < m_ModifierList.Count(); i++)
 			{
@@ -179,17 +179,21 @@ class ModifiersManager
 	
 	void AddModifier(ModifierBase modifier)
 	{
-		modifier.InitBase(m_Player,this);
+		modifier.InitBase(m_Player, this);
 		int id = modifier.GetModifierID();
 		
 		if (id < 1)
-		{
-			Error("modifiers ID must be 1 or higher(for debugging reasons)");			
-		}
+			ErrorEx("modifiers ID must be 1 or higher(for debugging reasons)", ErrorExSeverity.WARNING);
 		
-		//TODO: add a check for duplicity
-		m_ModifierList.Insert(id, modifier);
-		m_ModifierListArray.Insert(modifier);
+		if (m_ModifierListArray.Find(modifier) == -1)
+		{
+			m_ModifierList.Insert(id, modifier);
+			m_ModifierListArray.Insert(modifier);
+		}
+		else
+		{
+			ErrorEx(string.Format("Modifier '%1' is already registered", modifier.GetName()), ErrorExSeverity.WARNING);
+		}
 	}
 	
 	bool IsModifierActive(eModifiers modifier_id)
@@ -199,21 +203,17 @@ class ModifiersManager
 
 	void OnScheduledTick(float delta_time)
 	{
-		if(!m_AllowModifierTick) return;
+		if (!m_AllowModifierTick)
+			return;
 
-		foreach(ModifierBase m: m_ModifierListArray)
-		{
-			m.Tick(delta_time);
-		}
-
+		foreach (ModifierBase modifier : m_ModifierListArray)
+			modifier.Tick(delta_time);
 	}
 	
 	void DeactivateAllModifiers()
 	{
-		for(int i = 0; i < m_ModifierList.Count(); i++)
-		{
-			m_ModifierList.GetElement(i).Deactivate();
-		}
+		foreach (ModifierBase modifier : m_ModifierList)
+			modifier.Deactivate();
 	}
 	
 	void ActivateModifier(int modifier_id, bool triggerEvent = EActivationType.TRIGGER_EVENT_ON_ACTIVATION)
@@ -230,33 +230,28 @@ class ModifiersManager
 	{
 		CachedObjectsArrays.ARRAY_INT.Clear();
 		
-		int modifier_count;
-		for(int x = 0; x < m_ModifierList.Count(); x++)
+		int modifierCount;
+		foreach (ModifierBase modifier : m_ModifierList)
 		{
-			ModifierBase mdfr = m_ModifierList.GetElement(x);
-			if( mdfr.IsActive() && mdfr.IsPersistent() ) 
+			if (modifier.IsActive() && modifier.IsPersistent())
 			{
-				modifier_count++;
+				modifierCount++;
 				//save the modifier id
-				CachedObjectsArrays.ARRAY_INT.Insert( mdfr.GetModifierID() );
-				if( mdfr.IsTrackAttachedTime() )
+				CachedObjectsArrays.ARRAY_INT.Insert(modifier.GetModifierID());
+				if (modifier.IsTrackAttachedTime())
 				{
 					//save the overall attached time
-					CachedObjectsArrays.ARRAY_INT.Insert( mdfr.GetAttachedTime() );
+					CachedObjectsArrays.ARRAY_INT.Insert(modifier.GetAttachedTime());
 				}
 			}
 		}
 
-		//write the count
-		//CachedObjectsParams.PARAM1_INT.param1 = modifier_count;
-		//PrintString("Saving modifiers count: "+ modifier_count);
-		ctx.Write(modifier_count);
+		ctx.Write(modifierCount);
 
 		//write the individual modifiers and respective attached times
-		for(int i = 0; i < CachedObjectsArrays.ARRAY_INT.Count(); i++)
+		for (int i = 0; i < CachedObjectsArrays.ARRAY_INT.Count(); i++)
 		{
 			int item = CachedObjectsArrays.ARRAY_INT.Get(i);
-			//PrintString( "saving item: "+item );
 			ctx.Write(item);
 		}
 
@@ -267,45 +262,44 @@ class ModifiersManager
 
 	}
 
-	bool OnStoreLoad( ParamsReadContext ctx, int version )
+	bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
-		int modifier_count;
-		if(!ctx.Read(modifier_count))
+		int modifierCount;
+		if (!ctx.Read(modifierCount))
 			return false;
-		//PrintString("Loading modifiers count: "+ modifier_count);
-		for(int i = 0; i < modifier_count; i++)
+
+		for (int i = 0; i < modifierCount; i++)
 		{
-			int modifier_id;
-			if(!ctx.Read(modifier_id))
+			int modifierId;
+			if (!ctx.Read(modifierId))
 				return false;
-			//PrintString( "loading item: "+modifier_id );
-			//int modifier_id = CachedObjectsParams.PARAM1_INT.param1;
-			ModifierBase modifier = GetModifier(modifier_id);
-			if( modifier )
+
+			ModifierBase modifier = GetModifier(modifierId);
+			if (modifier)
 			{
-				if( modifier.IsTrackAttachedTime() )
+				if (modifier.IsTrackAttachedTime())
 				{
 					int time;
-					if(!ctx.Read(time))//get the attached time
+					if (!ctx.Read(time))//get the attached time
 						return false;
-					modifier.SetAttachedTime( time );
+
+					modifier.SetAttachedTime(time);
 				}
 				
-				ActivateModifier(modifier_id, EActivationType.TRIGGER_EVENT_ON_CONNECT);
+				ActivateModifier(modifierId, EActivationType.TRIGGER_EVENT_ON_CONNECT);
 			}
 			else
 			{
-				Debug.LogError("DB loading: non-existent modifier with id:"+modifier_id.ToString());
+				Debug.LogError("DB loading: non-existent modifier with id:"+modifierId.ToString());
 			}
 		}
 		
 		for (int x = 0; x < m_ParamList.Count(); x++)
 		{
-			if(!m_ParamList.Get(x).Deserializer(ctx))
-			{
+			if (!m_ParamList.Get(x).Deserializer(ctx))
 				return false;
-			}
 		}
+
 		return true;
 	}
 
@@ -324,7 +318,6 @@ class ModifiersManager
 		m_ModifierList.Get(modifier_id).SetLock(state);
 	}
 
-
 	bool GetModifierLock(int modifier_id)
 	{
 		return m_ModifierList.Get(modifier_id).IsLocked();
@@ -333,24 +326,25 @@ class ModifiersManager
 	void DbgGetModifiers(array<ref ModifierDebugObj> modifiers)
 	{
 		modifiers.Clear();
-		for(int i = 1;i < eModifiers.COUNT; i++)
+		for (int i = 1;i < eModifiers.COUNT; i++)
 		{
-			if(m_ModifierList.Contains(i))
+			if (m_ModifierList.Contains(i))
 			{
 				ModifierBase modifier = m_ModifierList.Get(i);
-				int modifier_id = modifier.GetModifierID();
-				string modifier_name = modifier.GetName();
-				bool active = modifier.IsActive();
-				string debug_text = modifier.GetDebugTextSimple();
-				bool is_locked = modifier.IsLocked();
 
-				if(active && debug_text != "")
-				{
-					modifier_name +=" | "+debug_text; 
-				}
-				ModifierDebugObj obj = new ModifierDebugObj(modifier_id, modifier_name, active, is_locked);
-	
-				modifiers.Insert( obj );
+				int modifierId 	= modifier.GetModifierID();
+				bool isLocked 	= modifier.IsLocked();
+				bool active 	= modifier.IsActive();
+
+				string modifierName = modifier.GetName();
+				string debugText 	= modifier.GetDebugTextSimple();
+
+				if (active && debugText != "")
+					modifierName += " | " + debugText; 
+
+				ModifierDebugObj obj = new ModifierDebugObj(modifierId, modifierName, active, isLocked);
+
+				modifiers.Insert(obj);
 			}
 		}
 	}

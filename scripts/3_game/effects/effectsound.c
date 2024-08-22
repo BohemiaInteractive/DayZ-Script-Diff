@@ -217,7 +217,7 @@ class EffectSound : Effect
 	void SoundStop()
 	{
 		super.Stop();
-		
+				
 		if ( IsSoundPlaying() )
 		{
 			if ( m_SoundFadeOutDuration > 0 && !m_SoundWaveStopping )
@@ -232,7 +232,7 @@ class EffectSound : Effect
 				m_SoundWaveObject.Stop();
 			}
 		}
-		else
+		else if (!IsPendingDeletion()) // not about to be destroyed
 		{
 			SoundReset();
 		}	
@@ -364,6 +364,9 @@ class EffectSound : Effect
 	*/
 	protected void ValidateSoundWave()
 	{
+		if (!m_SoundWaveObject)
+			Print(this.ToString() + " SoundWaveObject does not exist, SoundSet: " + m_SoundSetName);
+		
 		m_SoundWaveLenght = m_SoundWaveObject.GetLength();
 					
 		if ( SoundWaveValidation() )
@@ -496,7 +499,7 @@ class EffectSound : Effect
 				{
 					SetSoundVolume( 0 );
 				}
-				
+								
 				if ( GetSoundVolume() <= 0 )
 				{		
 					if ( m_SoundWaveObject )
@@ -629,7 +632,7 @@ class EffectSound : Effect
 	
 	override bool CanDestroy()
 	{
-		return m_SoundFadeOutDuration <= 0 || m_SoundFadedOut;
+		return m_SoundFadeOutDuration <= 0 || !m_SoundWaveIsPlaying;
 	}
 	
 	//@}

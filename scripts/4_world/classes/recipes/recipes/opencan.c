@@ -81,6 +81,7 @@ class OpenCan extends RecipeBase
 		InsertIngredient(1,"MeatTenderizer");
 		InsertIngredient(1,"Cleaver");
 		InsertIngredient(1,"Sword");
+		InsertIngredient(1,"Iceaxe");
 		
 		m_IngredientAddHealth[1] = -0.5;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

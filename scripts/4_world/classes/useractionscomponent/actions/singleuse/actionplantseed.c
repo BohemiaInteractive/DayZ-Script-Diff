@@ -84,7 +84,5 @@ class ActionPlantSeed: ActionSingleUseBase
 			
 			seed_IB.SplitIntoStackMax( garden_base, slot_ID, action_data.m_Player );
 		}
-
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

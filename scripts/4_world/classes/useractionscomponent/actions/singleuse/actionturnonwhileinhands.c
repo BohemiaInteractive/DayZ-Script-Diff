@@ -74,6 +74,8 @@ class ActionTurnOnWhileInHands : ActionSingleUseBase
 	
 	override void OnStartServer( ActionData action_data )
 	{
+		super.OnStartServer(action_data);
+		
 		if (action_data.m_MainItem && action_data.m_MainItem.IsInherited(Roadflare))
 		{
 			Roadflare flare = Roadflare.Cast(action_data.m_MainItem);

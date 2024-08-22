@@ -434,8 +434,8 @@ typedef Param1<vector> PreloadEventParams;
 typedef Param1<Man> LogoutCancelEventParams; 
 //! PlayerIdentity
 typedef Param1<PlayerIdentity> ConnectivityStatsUpdatedEventParams; 
-//! float
-typedef Param1<float> ServerFpsStatsUpdatedEventParams; 
+//! average server fps, highest frame time, skipped physics simulation steps server/client
+typedef Param4<float, float, int, int> ServerFpsStatsUpdatedEventParams; 
 //! text message for line 1, text message for line 2 
 typedef Param2<string, string> LoginStatusEventParams; 
 //! logoutTime
@@ -656,8 +656,8 @@ class Hud : Managed
 	void Update(float timeslice){}
 	void ShowVehicleInfo();
 	void HideVehicleInfo();
-	void ToggleHeatBufferPlusSign(bool show);
-	
+
+	void InitHeatBufferUI(Man player);
 	void ShowQuickbarUI(bool show);
 	void ShowQuickbarPlayer(bool show);
 	void ShowHudPlayer(bool show);
@@ -1275,12 +1275,18 @@ enum OptionAccessType
 	AT_OPTIONS_CONTROLLER_RS_XAXIS_AIM_MOD,
 	AT_OPTIONS_CONTROLLER_RS_YAXIS_AIM_MOD,
 	AT_OPTIONS_VON_INPUT_MODE,
+	AT_OPTIONS_CONTROLLER_LS_DEADZONE,
+	AT_OPTIONS_CONTROLLER_RS_DEADZONE,
+	
+	AT_OPTIONS_VISIBILITY_COMBO,
+	AT_OPTIONS_OBJECT_VISIBILITY_COMBO,
 };
 
 //! Used for script-based game options. For anything C++ based, you would most likely use "Option Access Type" above
 enum OptionIDsScript
 {
 	OPTION_HUD = 100, //starts at 100 to avoid ID conflict with AT_
+	OPTION_HUD_VEHICLE,
 	OPTION_CROSSHAIR,
 	OPTION_GAME_MESSAGES,
 	OPTION_ADMIN_MESSAGES,
@@ -1423,6 +1429,16 @@ class ListOptionsAccess extends OptionsAccess
 	proto native void	SetIndex(int index);
 	proto native int	GetItemsCount();
 	proto	void		GetItemText(int index, out string value);
+	
+	void GetAllItemsText(array<string> output)
+	{
+		string s;
+		for (int i = 0; i < GetItemsCount(); ++i)
+		{
+			GetItemText(i, s);
+			output.Insert(s);
+		}
+	}
 };
 
 // -------------------------------------------------------------------------

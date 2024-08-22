@@ -660,6 +660,16 @@ class Particle : ParticleBase
 		return value;
 	}
 	
+	float GetParameterOriginal(int emitter, int parameter)
+	{
+		if (!m_ParticleEffect)
+			return 0;
+		
+		float value;
+		GetParticleParmOriginal(m_ParticleEffect, emitter, parameter, value);
+		return value;
+	}
+	
 	/**
 	\brief Scales the given parameter on all emitors relatively to their ORIGINAL value.
 		\param parameter_id \p int The parameter to adjust (enum EmitorParam)

@@ -53,6 +53,8 @@ class ActionExtinguishFireplaceByExtinguisher : ActionContinuousBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
+		super.OnEndServer(action_data);
+		
 		FireplaceBase fireplace = FireplaceBase.Cast(action_data.m_Target.GetObject());		
 		fireplace.RefreshFireState();
 	}

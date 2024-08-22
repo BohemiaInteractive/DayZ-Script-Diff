@@ -89,4 +89,26 @@ class ActionSwitchSeats: ActionBase
 	{
 		return true;
 	}
+	
+	override bool AddActionJuncture(ActionData action_data)
+	{
+		Transport trans = Transport.Cast(action_data.m_Target.GetObject());
+		bool accepted = false;
+		int nextSeat = trans.CrewPositionIndex( action_data.m_Target.GetComponentIndex() );
+		Transport transport = Transport.Cast(action_data.m_Target.GetObject());
+		InventoryLocation il = new InventoryLocation;
+		if (transport)
+		{
+			il.SetVehicle(transport, action_data.m_Player, nextSeat);
+		
+			//Lock target
+			if (GetGame().AddInventoryJuncture(action_data.m_Player, action_data.m_Player, il, true, 10000))
+			{
+				accepted = true;
+				action_data.m_ReservedInventoryLocations.Insert(il);
+			}
+		}
+		
+		return accepted;
+	}
 };

@@ -385,7 +385,10 @@ class MainMenu extends UIScriptedMenu
 		string version;
 		GetGame().GetVersion(version);
 		m_Version.SetText("#main_menu_version" + " " + version);
-	}	
+		
+		if (m_DisplayedDlcHandler)
+			m_DisplayedDlcHandler.UpdateAllPromotionInfo();
+	}
 	
 	override void OnShow()
 	{
@@ -413,7 +416,10 @@ class MainMenu extends UIScriptedMenu
 		
 		if (GetGame() && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
-			Exit();
+			if (!GetGame().GetUIManager().IsDialogHiding())
+			{
+				Exit();
+			}
 		}
 	}
 	

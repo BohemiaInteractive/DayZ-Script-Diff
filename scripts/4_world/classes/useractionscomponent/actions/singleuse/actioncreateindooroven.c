@@ -83,7 +83,18 @@ class ActionCreateIndoorOven: ActionSingleUseBase
 			fp_indoor.Synchronize();
 			
 			//move item to target fireplace
-			action_data.m_Player.ServerTakeEntityToTargetAttachment(fp_indoor, action_data.m_MainItem);
+			if (!GetGame().IsMultiplayer())
+			{
+				ClearInventoryReservationEx(action_data);
+				action_data.m_Player.LocalTakeEntityToTargetAttachment(fp_indoor, action_data.m_MainItem);
+			}
+			else
+				action_data.m_Player.ServerTakeEntityToTargetAttachment(fp_indoor, action_data.m_MainItem);
 		}
+	}
+		
+	override bool IsLockTargetOnUse()
+	{
+		return false;
 	}
 }

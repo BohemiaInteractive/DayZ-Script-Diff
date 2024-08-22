@@ -32,6 +32,8 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 		protected ref OptionSelectorMultistate	m_TerrainDetailSelector;
 		protected ref OptionSelectorMultistate	m_TextureDetailSelector;
 		protected ref OptionSelectorMultistate	m_ShadowDetailSelector;
+		protected ref OptionSelectorMultistate	m_VisibilitySelector;
+		protected ref OptionSelectorMultistate	m_ObjectVisibilitySelector;
 		
 		//Rendering
 		protected ref OptionSelectorMultistate	m_TextureFilteringSelector;
@@ -64,6 +66,8 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 		protected ref ListOptionsAccess			m_TerrainDetailOption;
 		protected ref ListOptionsAccess			m_TextureDetailOption;
 		protected ref ListOptionsAccess			m_ShadowDetailOption;
+		protected ref ListOptionsAccess			m_VisibilityOption;
+		protected ref ListOptionsAccess			m_ObjectVisibilityOption;
 		
 		//Rendering
 		protected ref ListOptionsAccess			m_TextureFilteringOption;
@@ -108,6 +112,8 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			m_Root.FindAnyWidget( "terrain_detail_setting_option" ).SetUserID( OptionAccessType.AT_OPTIONS_TERRAIN );
 			m_Root.FindAnyWidget( "texture_detail_setting_option" ).SetUserID( OptionAccessType.AT_TEXTURE_DETAIL );
 			m_Root.FindAnyWidget( "shadow_detail_setting_option" ).SetUserID( OptionAccessType.AT_SHADOW_DETAIL );
+			m_Root.FindAnyWidget( "visibility_setting_option" ).SetUserID( OptionAccessType.AT_OPTIONS_VISIBILITY_COMBO );
+			m_Root.FindAnyWidget( "object_visibility_setting_option" ).SetUserID( OptionAccessType.AT_OPTIONS_OBJECT_VISIBILITY_COMBO );
 			
 			//Rendering
 			m_Root.FindAnyWidget( "texture_filtering_setting_option" ).SetUserID( OptionAccessType.AT_ANISO_DETAIL );
@@ -152,35 +158,28 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			array<string> opt3			= { "#options_video_low", "#options_video_medium", "#options_video_high" };
 			array<string> opt4			= { "#options_video_poor", "#options_video_low", "#options_video_medium", "#options_video_high", "#options_video_extreme" };
 			array<string> opt41			= { "#options_video_low", "#options_video_medium", "#options_video_high", "#options_video_extreme" };
-			array<string> opt5			= { "#options_video_poor", "#options_video_low", "#options_video_medium", "#options_video_high", "#options_video_extreme", "#options_video_custom" };
 			array<string> opt6			= { "#options_controls_disabled", "#options_video_low", "#options_video_medium", "#options_video_high", "#options_video_extreme" };
 			array<string> opt7			= { "#options_controls_disabled", "#options_video_low", "#options_video_medium", "#options_video_high" };
-			array<string> opt8			= new array<string>;
 			array<string> opt9			= { "#options_controls_disabled", "#options_video_low", "#options_video_high" };
 			
-			for ( int i = 0; i < m_ResolutionOption.GetItemsCount(); i++ )
-			{
-				string opt_text;
-				m_ResolutionOption.GetItemText( i, opt_text );
-				opt8.Insert( opt_text );
-			}
 			
 			//Overall
-			m_OverallQualitySelector		= new OptionSelectorMultistate( m_Root.FindAnyWidget( "overall_quality_setting_option" ), m_OverallQualityOption.GetIndex(), this, false, opt5 );
+			m_OverallQualitySelector		= OptionSelectorMultistate.NewFromAccess( m_Root.FindAnyWidget( "overall_quality_setting_option" ), m_OverallQualityOption, this, false );
 			
 			//Screen
 			m_DisplayModeSelector			= new OptionSelectorMultistate( m_Root.FindAnyWidget( "display_mode_setting_option" ), m_DisplayModeOption.GetIndex(), this, false, opt2 );
-			m_ResolutionSelector			= new OptionSelectorMultistate( m_Root.FindAnyWidget( "resolution_setting_option" ), m_ResolutionOption.GetIndex(), this, false, opt8 );
+			m_ResolutionSelector			= OptionSelectorMultistate.NewFromAccess( m_Root.FindAnyWidget( "resolution_setting_option" ), m_ResolutionOption, this, false );
 			m_BrightnessSelector			= new OptionSelectorSlider( m_Root.FindAnyWidget( "brightness_setting_option" ), m_BrightnessOption.ReadValue(), this, false, m_BrightnessOption.GetMin(), m_BrightnessOption.GetMax() );
 			m_VSyncSelector					= new OptionSelectorMultistate( m_Root.FindAnyWidget( "vsync_setting_option" ), m_VSyncOption.GetIndex(), this, false, opt1 );
 			//m_ColorDepthSelector			= new OptionSelectorMultistate( m_Root.FindAnyWidget( "color_depth_setting_option" ), m_ColorDepthOption.GetIndex(), this, false, opt3 );
 			
 			//Scene
-			m_ObjectDetailSelector			= new OptionSelectorMultistate( m_Root.FindAnyWidget( "object_detail_setting_option" ), m_ObjectDetailOption.GetIndex(), this, false, opt4 );
-			m_TerrainDetailSelector			= new OptionSelectorMultistate( m_Root.FindAnyWidget( "terrain_detail_setting_option" ), m_TerrainDetailOption.GetIndex(), this, false, opt4 );
-			m_TextureDetailSelector			= new OptionSelectorMultistate( m_Root.FindAnyWidget( "texture_detail_setting_option" ), m_TextureDetailOption.GetIndex(), this, false, opt4 );
+			m_ObjectDetailSelector			= OptionSelectorMultistate.NewFromAccess( m_Root.FindAnyWidget( "object_detail_setting_option" ), m_ObjectDetailOption, this, false );
+			m_TerrainDetailSelector			= OptionSelectorMultistate.NewFromAccess( m_Root.FindAnyWidget( "terrain_detail_setting_option" ), m_TerrainDetailOption, this, false );
+			m_TextureDetailSelector			= OptionSelectorMultistate.NewFromAccess( m_Root.FindAnyWidget( "texture_detail_setting_option" ), m_TextureDetailOption, this, false );
 			m_ShadowDetailSelector			= new OptionSelectorMultistate( m_Root.FindAnyWidget( "shadow_detail_setting_option" ), m_ShadowDetailOption.GetIndex(), this, false, opt4 );
-			
+			m_VisibilitySelector			= OptionSelectorMultistate.NewFromAccess( m_Root.FindAnyWidget( "visibility_setting_option" ), m_VisibilityOption, this, false );
+			m_ObjectVisibilitySelector		= OptionSelectorMultistate.NewFromAccess( m_Root.FindAnyWidget( "object_visibility_setting_option" ), m_ObjectVisibilityOption, this, false );
 			//Rendering
 			m_TextureFilteringSelector		= new OptionSelectorMultistate( m_Root.FindAnyWidget( "texture_filtering_setting_option" ), m_TextureFilteringOption.GetIndex(), this, false, opt3 );
 			m_TerrainSurfaceDetailSelector	= new OptionSelectorMultistate( m_Root.FindAnyWidget( "terrain_surface_detail_setting_option" ), m_TerrainSurfaceDetailOption.GetIndex(), this, false, opt41 );
@@ -213,6 +212,8 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			m_TerrainDetailSelector.m_OptionChanged.Insert( OnTerrainDetailChanged );
 			m_TextureDetailSelector.m_OptionChanged.Insert( OnTextureDetailChanged );
 			m_ShadowDetailSelector.m_OptionChanged.Insert( OnShadowDetailChanged );
+			m_VisibilitySelector.m_OptionChanged.Insert( OnVisibilityChanged );
+			m_ObjectVisibilitySelector.m_OptionChanged.Insert( OnObjectVisibilityChanged );
 			
 			//Rendering
 			m_TextureFilteringSelector.m_OptionChanged.Insert( OnTextureFilteringChanged );
@@ -322,7 +323,9 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			m_TerrainDetailOption			= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_TERRAIN ) );
 			m_TextureDetailOption			= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_TEXTURE_DETAIL ) );
 			m_ShadowDetailOption			= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_SHADOW_DETAIL ) );
-			
+			m_VisibilityOption	 			= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_VISIBILITY_COMBO ) );
+			m_ObjectVisibilityOption	 	= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_OBJECT_VISIBILITY_COMBO ) );
+		
 			//Rendering
 			m_TextureFilteringOption		= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_ANISO_DETAIL ) );
 			m_TerrainSurfaceDetailOption	= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_OPTIONS_TERRAIN_SHADER ) );
@@ -356,6 +359,8 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			m_TerrainDetailSelector.SetValue( m_TerrainDetailOption.GetIndex(), false );
 			m_TextureDetailSelector.SetValue( m_TextureDetailOption.GetIndex(), false );
 			m_ShadowDetailSelector.SetValue( m_ShadowDetailOption.GetIndex(), false );
+			m_VisibilitySelector.SetValue( m_VisibilityOption.GetIndex(), false );
+			m_ObjectVisibilitySelector.SetValue( m_ObjectVisibilityOption.GetIndex(), false );
 			
 			//Rendering
 			m_TextureFilteringSelector.SetValue( m_TextureFilteringOption.GetIndex(), false );
@@ -403,9 +408,10 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 	void OnOptionChanged()
 	{
 		#ifndef PLATFORM_CONSOLE
-			if ( m_OverallQualityOption.GetIndex() != 5 )
+			int customPresetIndex = m_OverallQualityOption.GetItemsCount() - 1;
+			if ( m_OverallQualityOption.GetIndex() != customPresetIndex )
 			{
-				m_OverallQualitySelector.SetValue( 5 );
+				m_OverallQualitySelector.SetValue( customPresetIndex );
 			}
 		#endif
 	}
@@ -492,6 +498,20 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			OnOptionChanged();
 			m_Menu.OnChanged();
 		}
+	
+		void OnVisibilityChanged( int value )
+		{
+			m_VisibilityOption.SetIndex( value );
+			OnOptionChanged();
+			m_Menu.OnChanged();
+		}
+	
+		void OnObjectVisibilityChanged( int value )
+		{
+			m_ObjectVisibilityOption.SetIndex( value );
+			OnOptionChanged();
+			m_Menu.OnChanged();
+		}
 		
 		void OnTextureFilteringChanged( int value )
 		{
@@ -524,6 +544,12 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			else
 			{
 				m_ATOCSelector.Enable();
+				// with HWAA enabled, reapply last AToC option as it depends on HWAA
+				int atoc = m_ATOCSelector.GetValue();
+				if (atoc)
+				{
+					m_ATOCSelector.SetValue(atoc);
+				}
 			}
 			OnOptionChanged();
 			m_Menu.OnChanged();
@@ -631,6 +657,8 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			m_TextMap.Insert( OptionAccessType.AT_AMBIENT_OCCLUSION, new Param2<string, string>( "#options_video_ambient_occlusion", "#options_video_ambient_occlusion_desc" ) );
 			m_TextMap.Insert( OptionAccessType.AT_POSTPROCESS_EFFECTS, new Param2<string, string>( "#options_video_post_process", "#options_video_post_process_desc" ) );
 			m_TextMap.Insert( OptionAccessType.AT_WATER_DETAIL, new Param2<string, string>( "#STR_option_video_ssr_quality_tip_header", "#STR_option_video_ssr_quality_tip" ) );
+			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_VISIBILITY_COMBO, new Param2<string, string>( "#STR_option_video_visibility", "#STR_option_video_visibility_desc" ) );
+			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_OBJECT_VISIBILITY_COMBO, new Param2<string, string>( "#STR_option_video_objectvisibility", "#STR_option_video_objectvisibility_desc" ) );
 		#endif
 	}
 }

@@ -37,6 +37,6 @@ class ActionDrink: ActionConsume
 		if (!super.ActionCondition(player, target, item))
 			return false;
 		
-		return player.CanEatAndDrink();
+		return player.CanEatAndDrink() && !item.GetIsFrozen();
 	}
 };

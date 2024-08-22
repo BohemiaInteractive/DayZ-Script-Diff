@@ -30,6 +30,8 @@ enum EPlayerSoundEventID
 	DROWNING_PAIN,
 	PICKUP_HEAVY,
 	THIRST,
+	FORCE_FEED,
+	FORCE_DRINK,
 	//--------------
 	// Count bellow, put enums above
 	//--------------
@@ -86,6 +88,8 @@ class PlayerSoundEventHandler extends SoundEventHandler
 		RegisterState(new DrowningEvent2());
 		RegisterState(new PickupHeavySoundEvent());
 		RegisterState(new ThirstSoundEvent());
+		RegisterState(new ForceFeedSoundEvent());
+		RegisterState(new ForceDrinkSoundEvent());
 
 
 	}
@@ -138,7 +142,7 @@ class PlayerSoundEventHandler extends SoundEventHandler
 	}
 
 	override bool PlayRequestEx(EPlayerSoundEventID id, bool sent_from_server = false, int param = 0)
-	{
+	{		
 		if (id < 0 || id > (SOUND_EVENTS_MAX - 1))
 		{
 			Error("EPlayerSoundEventID out of bounds");

@@ -16,6 +16,7 @@ class ActionPickBerryCB : ActionInteractLoopBaseCB
 	}*/
 };
 
+//!DEPRECATED
 class ActionPickBerry: ActionInteractLoopBase
 {
 	void ActionPickBerry()

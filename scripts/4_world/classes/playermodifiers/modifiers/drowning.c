@@ -1,7 +1,8 @@
 class DrowningMdfr: ModifierBase
 {
-	const int 	TICK_FREQUENCY = 1;
 	static const float STAMINA_RECOVERY_MULTIPLIER = 0;
+
+	const int 	TICK_FREQUENCY = 1;
 	
 	override void Init()
 	{

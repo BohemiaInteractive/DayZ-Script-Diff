@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionTurnOnChemlight: ActionTurnOnWhileInHands
 {
 	void ActionTurnOnChemlight()

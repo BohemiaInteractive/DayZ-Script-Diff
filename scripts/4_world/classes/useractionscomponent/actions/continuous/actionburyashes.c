@@ -61,8 +61,5 @@ class ActionBuryAshes: ActionContinuousBase
 		GetGame().ObjectDelete(action_data.m_Target.GetObject());
 
 		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 4);
-		
-		//add soft skill specialty
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty(UASoftSkillsWeight.ROUGH_LOW);
 	}
 }

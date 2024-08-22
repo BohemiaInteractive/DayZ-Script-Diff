@@ -52,7 +52,7 @@ class RainProcurementComponentBase : Managed
 		m_UpdateCounter = -1;
 	}
 	
-	protected void ProcureLiquid(float amountBase, int liquidType = LIQUID_WATER)
+	protected void ProcureLiquid(float amountBase, int liquidType = LIQUID_CLEANWATER)
 	{
 		if (!m_IsUnderRoof)
 		{

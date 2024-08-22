@@ -244,6 +244,12 @@ class ParticleList
 	static const int IMPACT_PLASTIC_ENTER			= RegisterParticle("impacts/hit_plastic_ent_01");
 	static const int IMPACT_PLASTIC_RICOCHET		= RegisterParticle("impacts/hit_plastic_ric_01");
 	static const int IMPACT_PLASTIC_EXIT			= RegisterParticle("impacts/hit_plastic_ext_01");
+	static const int IMPACT_SNOW_ENTER				= RegisterParticle("impacts/hit_snow_ent_01");
+	static const int IMPACT_SNOW_RICOCHET			= RegisterParticle("impacts/hit_snow_ric_01");
+	static const int IMPACT_SNOW_EXIT				= RegisterParticle("impacts/hit_snow_ext_01");
+	static const int IMPACT_ICE_ENTER				= RegisterParticle("impacts/hit_ice_ent_01");
+	static const int IMPACT_ICE_RICOCHET			= RegisterParticle("impacts/hit_ice_ric_01");
+	static const int IMPACT_ICE_EXIT				= RegisterParticle("impacts/hit_ice_ext_01");
 	
 	// EXPLOSIONS
 	static const int EXPLOSION_LANDMINE				= RegisterParticle("explosion_landmine_01");
@@ -263,6 +269,9 @@ class ParticleList
 	static const int HATCHBACK_ENGINE_OVERHEATING	= RegisterParticle("Hatchback_engine_failing");
 	static const int HATCHBACK_ENGINE_OVERHEATED	= RegisterParticle("Hatchback_engine_failure");
 	static const int HATCHBACK_EXHAUST_SMOKE		= RegisterParticle("Hatchback_exhaust");
+	static const int BOAT_WATER_FRONT				= RegisterParticle("vehicles/boat/boat_water_front");
+	static const int BOAT_WATER_BACK				= RegisterParticle("vehicles/boat/boat_water_back");
+	static const int BOAT_WATER_SIDE				= RegisterParticle("vehicles/boat/boat_water_side");
 	
 	// CORPSE DECAY
 	static const int ENV_SWARMING_FLIES 			= RegisterParticle("env_fly_swarm_01");
@@ -319,9 +328,65 @@ class ParticleList
 	static const int BOLT_CUPID_TAIL				= RegisterParticle("cupid_bolt");
 	static const int BOLT_CUPID_HIT					= RegisterParticle("cupid_hit");
 	
+	// VOLCANIC
+	static const int HOTPSRING_WATERVAPOR			= RegisterParticle("hotspring_watervapor");
+	static const int GEYSER_NORMAL					= RegisterParticle("geyser_normal");
+	static const int GEYSER_STRONG					= RegisterParticle("geyser_strong");
+	static const int VOLCANO						= RegisterParticle("volcano_smoke");
+	
+	// FISHING
+	static const int FISHING_SIGNAL_SPLASH			= RegisterParticle("fishing_signal_splash");
+	
+	// STEPS
+	static const int STEP_SNOW						= RegisterParticle("step_snow");
+	
+	// STEPS
+	static const int VEHICLE_WHEEL_SNOW				= RegisterParticle("vehicle_wheel_snow");//
+	static const int VEHICLE_WHEEL_GRAVEL			= RegisterParticle("vehicle_wheel_gravel");//
+	static const int VEHICLE_WHEEL_ASPHALT			= RegisterParticle("vehicle_wheel_asphalt");//
+	
+	//TREE FALLING PARTICLES
+	static const int TREE_FALLING_SNOW				= RegisterParticle("tree_falling_snow");//
+	static const int TREE_FALLING_NEEDLE			= RegisterParticle("tree_falling_needle");//
+	static const int TREE_FALLING_LEAF				= RegisterParticle("tree_falling_leaf");//
+	static const int BUSH_FALLING_SNOW				= RegisterParticle("bush_falling_snow");//
+	
+	
 	static int RegisterParticle(string file_name)
 	{
 		return RegisterParticle(GetPathToParticles(), file_name);
+	}
+
+	//! Splits the full path into name of particle and it's directory path, then registers the particle with the name and returns its ID
+	//! Called by C++
+	static int RegisterParticleByFullPath(string fullPath)
+	{
+		//! Silently fail on retail, game already takes too long to boot, lets not make it longer
+#ifdef DIAG_DEVELOPER
+		if (fullPath.Replace("\\", "/") > 0)
+		{
+			ErrorEx(string.Format("Using wrong path delimiter for particle registering! Use '/' instead of '\\'. fullPath=%1", fullPath), ErrorExSeverity.WARNING);
+		}
+#endif
+
+		int lastIndex = fullPath.LastIndexOf("/");
+		if (lastIndex < 0)
+		{
+			//! TODO(kumarjac): bake in this error
+#ifdef WAITING_FOR_PBOS_TO_BE_UPDATED
+			ErrorEx(string.Format("No root path found! fullPath=%1", fullPath), ErrorExSeverity.ERROR);
+			return ParticleList.INVALID;
+#else
+			return RegisterParticleByFullPath(GetPathToParticles() + fullPath);
+#endif
+		}
+		
+		// 'graphics/particles/vehicle_wheel_snow' becomes 'graphics/particles/' and 'vehicle_wheel_snow'
+		
+		string rootPath = fullPath.Substring(0, lastIndex + 1);
+		string fileName = fullPath.Substring(lastIndex + 1, fullPath.Length() - (lastIndex + 1));
+
+		return RegisterParticle(rootPath, fileName);
 	}
 	
 	//! Registers a particle and returns its ID
@@ -344,6 +409,7 @@ class ParticleList
 			#endif
 			ErrorEx(string.Format("Particle file not found! <%1> Correct path to this particle in script file ParticleList.c!%2",
 				fullPath, devMsgSuffix), ErrorExSeverity.WARNING);
+			//return ParticleList.INVALID;
 		}
 
 		int existingNameId;

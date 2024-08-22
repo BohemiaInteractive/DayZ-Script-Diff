@@ -51,6 +51,8 @@ class ActionAnimateCarSelection: ActionInteractBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
+		super.OnStartServer(action_data);
+		
 		Entity targetEnt;
 		if (Class.CastTo(targetEnt, action_data.m_Target.GetObject()))
 		{
@@ -74,6 +76,8 @@ class ActionAnimateCarSelection: ActionInteractBase
 	
 	override void OnEndServer( ActionData action_data )
 	{
+		super.OnEndServer(action_data);
+		
 		CarScript car;
 		if (Class.CastTo(car, action_data.m_Target.GetObject()))
 		{

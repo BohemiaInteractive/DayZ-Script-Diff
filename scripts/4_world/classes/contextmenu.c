@@ -56,10 +56,10 @@ class ContextMenu extends ScriptedWidgetEventHandler
 		for ( int i = 0; i < m_count; i++)
 		{
 			ButtonWidget menu_button = ButtonWidget.Cast( m_context_menu_root_widget.FindAnyWidget( String( "Button" + (i+1).ToString() ) ) );
-			if(menu_button)
+			if (menu_button)
 			{
-					menu_button.SetSize(0.90, button_height);
-					menu_button.Show(true);
+				menu_button.SetSize(0.90, button_height);
+				menu_button.Show(true);
 			}
 		}
 	
@@ -190,8 +190,15 @@ class ContextMenu extends ScriptedWidgetEventHandler
 			menuButton.SetText(label);
 			menuButton.SetTextColor(labelColor);
 			menuButton.Show(true);
-			if (!funcName)
-				menuButton.SetFlags(menuButton.GetFlags() | WidgetFlags.IGNOREPOINTER);	
+			
+			if (funcName == "")
+			{
+				menuButton.SetFlags(menuButton.GetFlags() | WidgetFlags.IGNOREPOINTER);
+			}
+			else
+			{
+				menuButton.ClearFlags(WidgetFlags.IGNOREPOINTER);
+			}
 
 			int itemWidth = label.Length();
 			if (m_max_item_width < itemWidth)
@@ -262,7 +269,7 @@ class ContextMenu extends ScriptedWidgetEventHandler
 				int actionId 		= actionInfo.param2;
 				int textColor		= actionInfo.param4;
 				string actionText 	= actionInfo.param3;
-	
+				
 				if (actionId == EActions.SEPARATOR)
 					AddEx(actionText, textColor, null, "", null);
 				else

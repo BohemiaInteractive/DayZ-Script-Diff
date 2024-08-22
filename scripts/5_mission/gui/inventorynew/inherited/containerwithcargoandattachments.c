@@ -41,37 +41,88 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 	
 	void RecomputeContainers()
 	{
-		m_Body.Clear();
+		int currentIndex = -1;
+		map<int, int> bodyAttachmentSortIndex = new map<int, int>;
 
+		m_Body.Clear();
+		
 		if(m_Atts)
 		{
-			m_Body.Insert(m_Atts.GetWrapper());
+			currentIndex = m_Body.Insert(m_Atts.GetWrapper());
 		}
 
 		if(m_CargoGrid)
 		{
-			m_Body.Insert(m_CargoGrid);
+			currentIndex = m_Body.Insert(m_CargoGrid);
 		}
-		
+
 		GameInventory inv = m_Entity.GetInventory();
 		for (int i = 0; i < inv.AttachmentCount(); i++)
 		{
+			int slotIndex = -1;
+			int sortIndex = -1;
 			EntityAI ent = inv.GetAttachmentFromIndex(i);
 			if(ent)
 			{
 				AttachmentsWrapper att = m_AttachmentAttachmentsContainers.Get(ent);
 				if(att)
 				{
-					m_Body.Insert(att);
+					if(m_Atts && m_Atts.GetSlotsSorted().Count())		
+					{
+						sortIndex = m_Atts.GetSlotsSorted().Find(att.m_Attachments.GetAttachmentSlotID());
+					}
+					
+					if(bodyAttachmentSortIndex.Find(currentIndex, slotIndex))
+					{
+						if(slotIndex > sortIndex)
+						{
+							m_Body.InsertAt(att, currentIndex);
+							bodyAttachmentSortIndex.Set(currentIndex, sortIndex);
+						}
+						else
+						{
+							currentIndex = m_Body.Insert(att);
+							bodyAttachmentSortIndex.Insert(currentIndex, sortIndex);
+						}
+					}
+					else
+					{
+						currentIndex = m_Body.Insert(att);
+						bodyAttachmentSortIndex.Insert(currentIndex, sortIndex);
+					}
 				}
 				
 				CargoContainer cargo = m_AttachmentCargos.Get(ent);
 				if(cargo)
 				{
-					m_Body.Insert(cargo);
+					if(m_Atts && m_Atts.GetSlotsSorted().Count())		
+					{
+						sortIndex = m_Atts.GetSlotsSorted().Find(cargo.GetAttachmentSlotID());
+					}
+					
+					if (bodyAttachmentSortIndex.Find(currentIndex, slotIndex))
+					{
+						if(slotIndex > sortIndex)
+						{
+							m_Body.InsertAt(cargo, currentIndex);
+							bodyAttachmentSortIndex.Set(currentIndex, sortIndex);
+						}
+						else
+						{
+							currentIndex = m_Body.Insert(cargo);
+							bodyAttachmentSortIndex.Insert(currentIndex, sortIndex);
+						}
+					}
+					else
+					{
+						currentIndex = m_Body.Insert(cargo);
+						bodyAttachmentSortIndex.Insert(currentIndex, sortIndex);
+					}
 				}
 			}
 		}
+		
+		bodyAttachmentSortIndex.Clear();
 	}
 	
 	void AttachmentAddedEx(EntityAI item, string slot, EntityAI parent, bool immedUpdate = true)
@@ -89,7 +140,8 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 			att_cont = new Attachments( this, item );
 			sort = (m_AttachmentSlotsSorted.Find( slot_id ) * 2) + SORT_ATTACHMENTS_NEXT_OFFSET;
 			att_cont.InitAttachmentGrid( sort );
-			
+			att_cont.SetAttachmentSlotID(slot_id);
+						
 			m_AttachmentAttachments.Insert( item, att_cont );
 			m_AttachmentAttachmentsContainers.Insert( item, att_cont.GetWrapper() );
 			
@@ -104,6 +156,7 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 			sort = (m_AttachmentSlotsSorted.Find( slot_id ) * 2) + SORT_CARGO_NEXT_OFFSET;
 			cont.GetRootWidget().SetSort( sort );
 			cont.SetEntity( item, false );
+			cont.SetAttachmentSlotID(slot_id);
 			Insert( cont, m_Atts.GetAttachmentHeight() + m_AttachmentCargos.Count() + 1 );
 			
 			m_AttachmentCargos.Insert( item, cont );
@@ -445,7 +498,7 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 						{
 							if (controlledPlayer.CanDropEntity(selectedItem))
 							{
-								if (selectedItem.GetTargetQuantityMax() < selectedItem.GetQuantity())
+								if (selectedItem.CanBeSplit() && selectedItem.GetTargetQuantityMax() < selectedItem.GetQuantity())
 									selectedItem.SplitIntoStackMaxClient(null, -1);
 								else
 									controlledPlayer.PhysicalPredictiveDropItem(selectedItem);
@@ -600,41 +653,17 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 		}
 		else if( attached_entity && attached_entity.GetInventory().CanAddAttachmentEx( item, slot_id ) )
 		{
-			stackable = item_base.GetTargetQuantityMax(slot_id);
-			if( stackable == 0 || stackable >= item_base.GetQuantity() )
-			{
-				player.PredictiveTakeEntityToTargetAttachmentEx(attached_entity, item, slot_id);
-			}
-			else if( stackable != 0 && stackable < item_base.GetQuantity() )
-			{
-				item_base.SplitIntoStackMaxClient( attached_entity, slot_id );
-			}
+			player.PredictiveTakeEntityToTargetAttachmentEx(attached_entity, item, slot_id);
 		}
 		else if(attached_entity && attached_entity.GetInventory().CanAddAttachment(item))
 		{
 			attached_entity.GetInventory().FindFreeLocationFor(item,FindInventoryLocationType.ATTACHMENT,il);
-			stackable = item_base.GetTargetQuantityMax(il.GetSlot());
-			if( stackable == 0 || stackable >= item_base.GetQuantity() )
-			{
-				player.PredictiveTakeEntityToTargetAttachmentEx(attached_entity, item, il.GetSlot());
-			}
-			else if( stackable != 0 && stackable < item_base.GetQuantity() )
-			{
-				item_base.SplitIntoStackMaxClient( attached_entity, il.GetSlot() );
-			}
+			player.PredictiveTakeEntityToTargetAttachmentEx(attached_entity, item, il.GetSlot());
 		}
 		else if( m_Entity.GetInventory().CanAddAttachment(item) )
 		{
 			m_Entity.GetInventory().FindFreeLocationFor(item,FindInventoryLocationType.ATTACHMENT,il);
-			stackable = item_base.GetTargetQuantityMax(il.GetSlot());
-			if( stackable == 0 || stackable >= item_base.GetQuantity() )
-			{
-				player.PredictiveTakeEntityToTargetAttachmentEx(m_Entity, item, il.GetSlot());
-			}
-			else if( stackable != 0 && stackable < item_base.GetQuantity() )
-			{
-				item_base.SplitIntoStackMaxClient( m_Entity, il.GetSlot() );
-			}
+			player.PredictiveTakeEntityToTargetAttachmentEx(m_Entity, item, il.GetSlot());
 		}
 		else if( m_Entity.GetInventory().CanAddEntityInCargo( item, item.GetInventory().GetFlipCargo() ) && !m_Entity.GetInventory().HasEntityInCargo( item ) )
 		{
@@ -946,5 +975,54 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 				ColorManager.GetInstance().SetColor( w, ColorManager.RED_COLOR );
 			}
 		}
+	}
+		
+	override void SetSameLevelNextActive()
+	{
+		if (GetAttachmentCargos())
+		{
+			for (int i = 0; i < GetAttachmentCargos().Count(); i++)
+			{
+				Entity entA = GetAttachmentCargos().GetKey(i);
+				Print(entA);
+				CargoContainer cc = GetAttachmentCargos().GetElement(i);
+				Print(cc);
+				if (cc && cc.IsActive())
+					Print(ToString() + "::SetSameLevelNextActive - CASE 1 - ContainerWithCargoAndAttachments - Attachment Cargo Active=" + cc);
+			}
+		}
+		
+		if (GetAttachmentAttachmentsContainers())
+		{
+			for (int j = 0; j < GetAttachmentAttachmentsContainers().Count(); j++)
+			{
+				Entity entB = GetAttachmentAttachmentsContainers().GetKey(j);
+				Print(entB);
+				AttachmentsWrapper aw = GetAttachmentAttachmentsContainers().GetElement(j);
+				Print(aw);
+				if (aw && aw.IsActive())
+					Print(ToString() + "::SetSameLevelNextActive - CASE 1 - ContainerWithCargoAndAttachments - Attachment Attachments Container Active=" + aw);
+			}
+		}
+		
+		if (GetCargo() && GetCargo().IsActive())
+		{
+			Print(ToString() + "::SetSameLevelNextActive - CASE 1 - ContainerWithCargoAndAttachments - Cargo Active=" + GetCargo());
+		}
+	}
+	
+	CargoContainer GetCargo()
+	{
+		return m_CargoGrid;
+	}
+	
+	map<EntityAI, ref CargoContainer> GetAttachmentCargos()
+	{
+		return m_AttachmentCargos;
+	}
+	
+	map<EntityAI, ref AttachmentsWrapper> GetAttachmentAttachmentsContainers()
+	{
+		return m_AttachmentAttachmentsContainers;
 	}
 }

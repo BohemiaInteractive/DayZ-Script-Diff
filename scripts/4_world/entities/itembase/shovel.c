@@ -10,7 +10,7 @@ class Shovel extends ItemBase
 		super.SetActions();
 		
 		AddAction(ActionClapBearTrapWithThisItem);
-		AddAction(ActionTogglePlaceObject);
+		AddAction(ActionTogglePlaceObjectDigging);
 		AddAction(ActionDigGardenPlot);
 		AddAction(ActionDismantleGardenPlot);
 		AddAction(ActionDismantlePart);
@@ -22,5 +22,15 @@ class Shovel extends ItemBase
 		AddAction(ActionFillObject);
 		AddAction(ActionDigWorms);
 		AddAction(ActionCreateGreenhouseGardenPlot);
+	}
+	
+	override void SetActionAnimOverrides()
+	{
+		OverrideActionAnimation(ActionDigWorms, DayZPlayerConstants.CMD_ACTIONFB_DIGGIN_WORMS, DayZPlayerConstants.STANCEMASK_ERECT);
+	}
+	
+	override int GetOnDigWormsAmount()
+	{
+		return 3;
 	}
 }

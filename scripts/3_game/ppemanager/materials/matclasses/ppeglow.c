@@ -51,6 +51,7 @@ class PPEGlow: PPEClassBase
 	
 	static const int L_23_GLASSES = 100;
 	static const int L_23_TOXIC_TINT = 200;
+	static const int L_23_HMP = 300;
 	static const int L_23_NVG = 600;
 	
 	static const int L_25_MENU = 100;

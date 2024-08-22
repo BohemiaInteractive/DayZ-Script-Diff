@@ -30,6 +30,8 @@ class ActionUseUndergroundPanel: ActionSingleUseBase
 	
 	override void OnStartServer( ActionData action_data )
 	{
+		super.OnStartServer(action_data);
+		
 		Land_Underground_Panel target =  Land_Underground_Panel.Cast(action_data.m_Target.GetObject());
 		
 		if (!target)
@@ -37,6 +39,11 @@ class ActionUseUndergroundPanel: ActionSingleUseBase
 		
 		target.Interact();
 		PunchedCard.Cast(action_data.m_MainItem).OnUse();
+	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
 	}
 
 };

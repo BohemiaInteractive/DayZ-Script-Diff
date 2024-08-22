@@ -13,7 +13,6 @@ class FirefighterAxe extends ToolBase
 		//AddAction(ActionRepairPart);
 		AddAction(ActionDismantlePart);
 		//AddAction(ActionBuildPart);
-		//AddAction(ActionDestroyPart);
 		//AddAction(ActionSawPlanks);
 		AddAction(ActionUnrestrainTarget);
 		AddAction(ActionSkinning);

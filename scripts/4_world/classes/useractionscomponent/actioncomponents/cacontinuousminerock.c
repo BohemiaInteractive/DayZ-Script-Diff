@@ -13,7 +13,7 @@ class CAContinuousMineRock : CAContinuousMineWood
 			m_AmountOfDrops = ntarget.GetAmountOfDrops(action_data.m_MainItem);
 			ntarget.GetMaterialAndQuantityMap(action_data.m_MainItem,m_MaterialAndQuantityMap);
 			m_DamageToMiningItemEachDrop = ntarget.GetDamageToMiningItemEachDrop(action_data.m_MainItem);
-			m_AdjustedDamageToMiningItemEachDrop = action_data.m_Player.GetSoftSkillsManager().SubtractSpecialtyBonus( m_DamageToMiningItemEachDrop, m_Action.GetSpecialtyWeight(), true );
+			m_AdjustedDamageToMiningItemEachDrop = m_DamageToMiningItemEachDrop;//removed softskills 
 			return true;
 		}
 		return false;

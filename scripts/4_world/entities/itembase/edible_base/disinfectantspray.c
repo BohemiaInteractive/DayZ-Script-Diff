@@ -1,73 +1,60 @@
-class DisinfectantSpray extends Edible_Base
+class DisinfectantSpray : Edible_Base
 {
-	
 	override void InitItemVariables()
 	{
 		super.InitItemVariables();
-		can_this_be_combined = true;
+
+		can_this_be_combined 	= true;
+		m_VarLiquidType 		= GetLiquidTypeInit();
 	}
 	
-	override bool CanPutAsAttachment( EntityAI parent )
+	override bool CanPutAsAttachment(EntityAI parent)
 	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
+		if (!super.CanPutAsAttachment(parent))
+			return false;
+
 		const int SLOTS_ARRAY = 8;
-		bool is_barrel = false;
-		bool is_opened_barrel = false;
-		bool slot_test = true;
-		string slot_names[SLOTS_ARRAY] = { "BerryR", "BerryB", "Plant", "Nails", "OakBark", "BirchBark", "Lime", "Guts" };
+		bool isBarrel;
+		bool isBarrelOpened;
+		bool slotsEmptyTest = true;
+		string slotNames[SLOTS_ARRAY] = {"BerryR", "BerryB", "Plant", "Nails", "OakBark", "BirchBark", "Lime", "Guts"};
 
-		
-		// is barrel
-		if ( parent.IsKindOf("Barrel_ColorBase") )
-		{
-			is_barrel = true;
-		}
+		if (parent.IsKindOf("Barrel_ColorBase"))
+			isBarrel = true;
 
-		// is opened barrel				
-		if ( is_barrel && parent.GetAnimationPhase("Lid") == 1 )
-		{
-			is_opened_barrel = true;
-		}
+		if (isBarrel && parent.GetAnimationPhase("Lid") == 1)
+			isBarrelOpened = true;
 
-		// all of the barrel slots are empty
-		for ( int i = 0; i < SLOTS_ARRAY ; i++ )
+		for (int i = 0; i < SLOTS_ARRAY ; ++i)
 		{
-			if ( parent.FindAttachmentBySlotName(slot_names[i]) != NULL )
+			if (parent.FindAttachmentBySlotName(slotNames[i]) != null)
 			{
-				slot_test = false;
+				slotsEmptyTest = false;
 				break;
 			}
 		}
 		
-		if ( ( is_opened_barrel && slot_test ) || !is_barrel )
-		{
+		if ((isBarrelOpened && slotsEmptyTest) || !isBarrel)
 			return true;
-		}
+
 		return false;
 	}
 
 	override bool CanDetachAttachment( EntityAI parent )
 	{
 		
-		bool is_barrel = false;
-		bool is_opened_barrel = false;
+		bool isBarrel;
+		bool isBarrelOpened;
 		
-		// is barrel
-		if ( parent.IsKindOf("Barrel_ColorBase") )
-		{
-			is_barrel = true;
-		}
+		if (parent.IsKindOf("Barrel_ColorBase"))
+			isBarrel = true;
 
-		// is opened barrel				
-		if ( is_barrel && parent.GetAnimationPhase("Lid") == 1 )
-		{
-			is_opened_barrel = true;
-		}
+		if (isBarrel && parent.GetAnimationPhase("Lid") == 1)
+			isBarrelOpened = true;
 		
-		if ( is_opened_barrel || !is_barrel )
-		{
+		if (isBarrelOpened || !isBarrel)
 			return true;
-		}
+
 		return false;
 	}
 	
@@ -81,13 +68,8 @@ class DisinfectantSpray extends Edible_Base
 		super.SetActions();
 		
 		AddAction(ActionDisinfectTarget);
-		AddAction(ActionDisinfectSelf);;
+		AddAction(ActionDisinfectSelf);
 		AddAction(ActionDisinfectPlant);
 		AddAction(ActionWashHandsItemContinuous);
-		//AddAction(ActionForceDrinkDisinfectant);
-		//AddAction(ActionDrinkDisinfectant);
-		
-		
-		
 	}
 }

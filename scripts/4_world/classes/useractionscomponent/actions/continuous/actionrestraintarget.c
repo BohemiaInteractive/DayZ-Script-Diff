@@ -90,6 +90,8 @@ class ActionRestrainTarget: ActionContinuousBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
+		super.OnStartServer(action_data);
+		
 		PlayerBase target_player = PlayerBase.Cast(action_data.m_Target.GetObject());
 		if ( target_player.IsSurrendered() )
 		{
@@ -106,6 +108,8 @@ class ActionRestrainTarget: ActionContinuousBase
 	
 	override void OnEndServer(ActionData action_data)
 	{
+		super.OnEndServer(action_data);
+		
 		PlayerBase target_player = PlayerBase.Cast(action_data.m_Target.GetObject());
 		if (target_player)
 		{
@@ -141,8 +145,6 @@ class ActionRestrainTarget: ActionContinuousBase
 				RestrainTargetPlayerLambda lambda = new RestrainTargetPlayerLambda(item_in_hands_source, new_item_name, target_player);
 				source_player.LocalReplaceItemInHandsWithNewElsewhere(lambda);
 			}
-			
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
 	}
 	

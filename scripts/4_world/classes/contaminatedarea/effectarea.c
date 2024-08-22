@@ -5,6 +5,13 @@ enum eZoneType
 	DYNAMIC = 2
 }
 
+enum EEffectAreaType
+{
+	UNDEFINED	= 1,
+	HOT_SPRING 	= 2,
+	VOLCANIC 	= 4
+}
+
 // Class used for parameter transfer, all of the params are shadows of EffectArea member variables
 class EffectAreaParams
 {
@@ -20,6 +27,9 @@ class EffectAreaParams
 	int 	m_ParamOuterOffset 			= -5;
 	int 	m_ParamVertLayers 			= 0;
 	int 	m_ParamVerticalOffset 		= 10;
+	int		m_ParamEffectInterval		= 0;
+	int		m_ParamEffectDuration		= 0;
+	int		m_ParamEffectModifier		= 0;
 	/*
 	int 	m_ParamPartId 				= ParticleList.CONTAMINATED_AREA_GAS_BIGASS;
 	int 	m_ParamAroundPartId 		= ParticleList.CONTAMINATED_AREA_GAS_AROUND;
@@ -39,6 +49,9 @@ class EffectArea : House
 	string					m_Name = "Default setup"; 				// The user defined name of the area
 	int						m_Type = eZoneType.STATIC; 				// If the zone is static or dynamic
 	vector 					m_Position; 							// World position of Area
+	int 					m_EffectInterval;						// If non persisent effect: determines intervals between effect activation
+	int						m_EffectDuration;						// If non persisent effect: determines duration of effect
+	bool 					m_EffectModifier;						// Flag for modification of internal behavior of the effect
 	
 	// Trigger Data
 	float					m_Radius = 100; 						// Radius of the Contaminated Area
@@ -131,6 +144,10 @@ class EffectArea : House
 			m_VerticalLayers = params.m_ParamVertLayers;
 		if ( params.m_ParamVerticalOffset > 0 )
 			m_VerticalOffset = params.m_ParamVerticalOffset;
+		
+		m_EffectInterval = params.m_ParamEffectInterval;
+		m_EffectDuration = params.m_ParamEffectDuration;
+		m_EffectModifier = params.m_ParamEffectModifier;
 		
 		m_ParticleID = params.m_ParamPartId;
 		m_AroundParticleID = params.m_ParamAroundPartId;
@@ -451,5 +468,4 @@ class EffectArea : House
 	{
 		player.DecreaseEffectAreaCount();
 	}
-	
 }

@@ -1,23 +1,38 @@
 class TrapSpawnBase extends ItemBase
 {
-	int   							m_InitWaitTime; 			//After this time after deployment, the trap is activated
-	int  							m_UpdateWaitTime; 			//Time when timer will be called again until success or not succes catch is done
-	float 							m_DefectRate; 				//Added damage after trap activation
 	bool 							m_IsFoldable;
 	bool							m_CanCatch = false;
-	float 							m_MinimalDistanceFromPlayersToCatch;
 	
-	float							m_BaitCatchProb; // The probability (0-100) to catch something when bait is attached
-	float							m_NoBaitCatchProb; // The probability (0-100) to catch something when no bait is attached
-	float							m_FinalCatchProb; // The selected catch probability (0-100) -> Will be overriden no need to allocate
+	//configurable stuff
+	bool 							m_NeedInstalation;
+	int   							m_InitWaitTimeMin;
+	int   							m_InitWaitTimeMax;
+	int  							m_UpdateWaitTime; 			//! Catch evaluation interval
+	int  							m_SpawnUpdateWaitTime; 		//! Catch spawn and player check interval (expensive-ish)
+	int  							m_MaxActiveTime; 			//! Max time of trap activity (seconds)
+	float 							m_BaitLossFraction; 		//! Normalized bait qty reduction on unsuccessful catch
+	float 							m_DefectRate; 				//! Absolute damage dealt to trap when used
+	float 							m_MinimalDistanceFromPlayersToCatch; //! duh
+	
+	//derived stuff
+	private int   					m_InitWaitTime; 			//! After this time after deployment, the trap is activated
+	private int 					m_AdjustedMaxActiveTime; 	//! Adjusted by init wait time, when appropriate
+	private int  					m_ElapsedTime;
+	private int  					m_ActivationTime;
+	private int  					m_RollSuccessTime;
+	private float 					m_CurrentMinimalDistance;
+	private float 					m_CurrentlyUsedDelta;
+	private bool 					m_IsCatchSuccessful;
+	private int 					m_CatchEnviroMask = 0;
+	private int 					m_YieldItemIdxLocal = -1;
+	private int 					m_YieldItemIdx = -1;
+	private int 					m_CatchParticleEffecterId = -1;
 	
 	vector 							m_PreyPos; // The position where prey will be spawned -> Will be overriden later
 	
-	protected EntityAI				m_Bait;
-
 	protected bool 					m_IsActive;
+	protected bool 					m_IsPastWaitingTime;
 	protected bool 					m_IsDeployed;
-	protected bool 					m_IsInProgress;
 	
 	ref Timer 						m_Timer;
 	
@@ -25,62 +40,62 @@ class TrapSpawnBase extends ItemBase
 	string 							m_AnimationPhaseTriggered;
 	string 							m_AnimationPhaseUsed;
 
-	const string 					m_PlaceableWaterType //! DEPRECATED
 	protected ref array<string>		m_PlaceableWaterSurfaceList;
-
-	bool m_WaterSurfaceForSetup;	//if trap can be installed on water surface (cannot be detected via getsurfacetype)
-	ref multiMap<string, float>	m_CatchesPond;	//array of catches that can be catched in trap - string key, float catch_chance
-	ref multiMap<string, float>	m_CatchesSea;	//array of catches that can be catched in trap - string key, float catch_chance
-	ref multiMap<string, float>	m_CatchesGroundAnimal;	//array of catches that can be catched in trap - string key, float catch_chance
 	
-	protected ref EffectSound 	m_DeployLoopSound;
+	protected ref CatchingContextTrapsBase 	m_CatchingContext;
 	
-	// ===============================================================
-	// =====================  DEPRECATED  ============================
-	// ===============================================================
-	ref Timer 						m_PrevTimer;
-	bool 							m_NeedInstalation;
-	bool 							m_BaitNeeded;
-	bool 							m_IsUsable;
-	private ItemBase 				m_Catch;
-	ref Timer 						m_AlignCatchTimer;
-	string 							m_InfoSetup;
-	// ===============================================================
+	#ifdef DEVELOPER
+	int m_dbgAttemptCount = 0;
+	#endif
 	
 	void TrapSpawnBase()
 	{
-		m_DefectRate 							= 10; 			//Added damage after trap activation
-		m_UpdateWaitTime 						= 10;
-		m_InitWaitTime 							= 10;
-		m_NeedInstalation 						= true;
-		m_BaitNeeded 							= true;
-		m_IsFoldable 							= false;
-		m_MinimalDistanceFromPlayersToCatch 	= 0;
-
-		m_BaitCatchProb 						= 95;
-		m_NoBaitCatchProb 						= 50;
-		
-		m_AnimationPhaseSet 					= "";
-		m_AnimationPhaseTriggered 				= "";
-		m_AnimationPhaseUsed 					= "";
-		
-		m_CatchesPond 							= NULL;
-		m_CatchesSea 							= NULL;
-		m_CatchesGroundAnimal 					= NULL;
-		
-		m_PlaceableWaterSurfaceList 			= new array<string>();
-		m_PlaceableWaterSurfaceList.Insert(UAWaterType.SEA);
-		m_PlaceableWaterSurfaceList.Insert(UAWaterType.FRESH);
+		InitTrapValues();
 		
 		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
 		RegisterNetSyncVariableBool("m_IsDeploySound");
 		RegisterNetSyncVariableBool("m_IsActive");
 		RegisterNetSyncVariableBool("m_IsDeployed");
+		RegisterNetSyncVariableInt("m_YieldItemIdx");
+		
+		//DEPRECATED stuff below, legacy reasons only
+		m_CatchesPond 							= new multiMap<string, float>; //yields now in WorldData.InitYieldBank
+		m_CatchesSea 							= new multiMap<string, float>; //yields now in WorldData.InitYieldBank
+		m_CatchesGroundAnimal 					= new multiMap<string, float>; //yields now in WorldData.InitYieldBank
 	}
-
+	
 	void ~TrapSpawnBase()
 	{
-		SEffectManager.DestroyEffect( m_DeployLoopSound );
+		if (m_Timer)
+		{
+			m_Timer.Stop();
+			delete m_Timer;
+		}
+		
+		ClearCatchingComponent();
+	}
+	
+	void InitTrapValues()
+	{
+		m_DefectRate 							= 10; 			//Added damage after trap activation
+		m_BaitLossFraction 						= 0.2;
+		m_UpdateWaitTime 						= 60;
+		m_SpawnUpdateWaitTime 					= 30;
+		m_InitWaitTimeMin 						= 10;
+		m_InitWaitTimeMax 						= 10;
+		m_MaxActiveTime 						= 1200;
+		m_NeedInstalation 						= true;
+		m_IsFoldable 							= false;
+		m_IsCatchSuccessful 					= false;
+		m_MinimalDistanceFromPlayersToCatch 	= 0;
+		
+		m_AnimationPhaseSet 					= "";
+		m_AnimationPhaseTriggered 				= "";
+		m_AnimationPhaseUsed 					= "";
+		
+		m_PlaceableWaterSurfaceList 			= new array<string>();
+		m_PlaceableWaterSurfaceList.Insert(UAWaterType.SEA);
+		m_PlaceableWaterSurfaceList.Insert(UAWaterType.FRESH);
 	}
 	
 	override void OnStoreSave( ParamsWriteContext ctx )
@@ -89,9 +104,9 @@ class TrapSpawnBase extends ItemBase
 		
 		ctx.Write( m_IsActive );
 		
-		ctx.Write( m_IsInProgress );
-		
 		ctx.Write( m_IsDeployed );
+		
+		ctx.Write(m_CatchEnviroMask);
 	}
 	
 	override bool OnStoreLoad( ParamsReadContext ctx, int version )
@@ -104,25 +119,32 @@ class TrapSpawnBase extends ItemBase
 			b_is_active = false;
 		
 		bool b_is_in_progress = false;
-		if ( !ctx.Read( b_is_in_progress ) )
-			b_is_in_progress = false;
+		if (version < 139)
+		{
+			if ( !ctx.Read( b_is_in_progress ) )
+				b_is_in_progress = false;
+		}
 		
 		bool b_is_deployed = false;
 		if ( !ctx.Read( b_is_deployed ) )
 			b_is_deployed = false;
 		
-		if ( b_is_active )
+		if (version >= 139)
+		{
+			int enviroMask;
+			if (ctx.Read(enviroMask))
+				m_CatchEnviroMask = enviroMask;
+		}
+		
+		InitCatchingComponent();
+		
+		if (b_is_active)
 		{
 			SetActive();
 		}
 		
-		if ( b_is_in_progress && !b_is_active )
-		{
-			StartActivate( NULL );
-		}
-		
 		SetDeployed( b_is_deployed );
-
+		
 		return true;
 	}
 
@@ -131,19 +153,16 @@ class TrapSpawnBase extends ItemBase
     {
         super.OnVariablesSynchronized();
 		
-		if ( IsDeploySound() && IsDeployed() )
+		if (IsDeploySound() && IsDeployed())
 		{
 			PlayDeploySound();
 		}
 		
-		if ( CanPlayDeployLoopSound() )
+		if (m_YieldItemIdx != m_YieldItemIdxLocal)
 		{
-			PlayDeployLoopSound();
-		}
-					
-		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
-		{
-			StopDeployLoopSound();
+			m_YieldItemIdxLocal = m_YieldItemIdx;
+			if (m_YieldItemIdxLocal != -1)
+				OnCatchSpawnClient();
 		}
 	}
 	
@@ -223,6 +242,13 @@ class TrapSpawnBase extends ItemBase
 		}
 	}
 	
+	void UpdatePreyPos()
+	{
+		m_PreyPos = GetPosition();
+		if (MemoryPointExists("Prey_Position"))
+			m_PreyPos = ModelToWorld(GetMemoryPointPos("Prey_Position"));
+	}
+	
 	void Fold()
 	{
 		if ( GetGame().IsServer() && m_IsFoldable == true )
@@ -266,25 +292,85 @@ class TrapSpawnBase extends ItemBase
 		return CanBeTaken();
 	}
 	
+	void ResetActiveProgress()
+	{
+		m_ActivationTime = GetGame().GetTickTime();
+		m_ElapsedTime = 0;
+		m_CurrentMinimalDistance = m_MinimalDistanceFromPlayersToCatch;
+		
+		#ifdef DEVELOPER
+		m_dbgAttemptCount = 0;
+		#endif
+	}
+	
+	void ResetRunningTimerProgress()
+	{
+		if (m_IsPastWaitingTime)
+		{
+			m_AdjustedMaxActiveTime = m_MaxActiveTime;;
+			RunTrappingTimer(m_UpdateWaitTime,"EvaluateCatch");
+		}
+		else
+		{
+			m_AdjustedMaxActiveTime = m_MaxActiveTime + m_InitWaitTime;
+			RunTrappingTimer(m_InitWaitTime,"EvaluateCatch");
+		}
+	}
+	
+	//! generic trapping launcher for traps, use this to store delta info
+	void RunTrappingTimer(float duration, string fnName)
+	{
+		if (!m_Timer)
+			m_Timer = new Timer(CALL_CATEGORY_SYSTEM);
+		else
+			m_Timer.Stop();
+		
+		m_CurrentlyUsedDelta = duration;
+		m_Timer.Run(duration, this, fnName);
+	}
+	
 	// Set animation phases according to state
 	void SetActive()
 	{
+		UpdatePreyPos();
+		
 		if ( GetGame().IsServer() && !IsActive() )
 		{
+			SetCatchSuccessful(false);
 			m_IsActive = true;
-
+			m_IsPastWaitingTime = false;
+			m_YieldItemIdx = -1;
+			
+			if (m_CatchParticleEffecterId >= 0)
+				SEffectManager.DestroyEffecterParticleServer(m_CatchParticleEffecterId);
+			m_CatchParticleEffecterId = -1;
+			
+			SetSynchDirty();
+			
 			if ( m_AnimationPhaseSet != "" && m_AnimationPhaseTriggered != "" )
 			{
 				SetAnimationPhase( m_AnimationPhaseSet, 1 );
 				SetAnimationPhase( m_AnimationPhaseTriggered, 0 );
 				SetAnimationPhase( m_AnimationPhaseUsed, 1 );
 			}
-
-			// When activated we start timer for catch check
-			m_Timer = new Timer( CALL_CATEGORY_GAMEPLAY );
-			m_Timer.Run( m_InitWaitTime, this, "SpawnCatch" );
 			
-			SetSynchDirty();
+			ResetActiveProgress();
+			m_InitWaitTime = Math.RandomFloatInclusive(m_InitWaitTimeMin,m_InitWaitTimeMax);
+			if (!m_CatchingContext) //presumably activated by the player, store load initializes component separately
+			{
+				InitCatchingComponent();
+				UpdateTrapEnviroMask();
+				
+				RunTrappingTimer(m_InitWaitTime,"EvaluateCatch");
+				m_AdjustedMaxActiveTime = m_MaxActiveTime + m_InitWaitTime;
+			}
+			else //presumed store load
+			{
+				SetTrapEnviroMask(m_CatchEnviroMask);
+				
+				RunTrappingTimer(m_UpdateWaitTime,"EvaluateCatch");
+				m_AdjustedMaxActiveTime = m_MaxActiveTime + m_UpdateWaitTime;
+			}
 		}
 	}
 
@@ -294,10 +380,15 @@ class TrapSpawnBase extends ItemBase
 		{
 			// We stop timers as the trap is no longer active, then update visuals
 			m_IsActive = false;
+			
+			ClearCatchingComponent();
+			
 			if ( m_Timer )
 			{
 				m_Timer.Stop();
 			}
+			
+			m_IsPastWaitingTime = false;
 			
 			SetDeployed( false );
 			
@@ -312,10 +403,20 @@ class TrapSpawnBase extends ItemBase
 			// We updated state, visuals and stop timers
 			m_IsActive = false;
 			m_IsDeployed = false;
+			
+			// Deal damage to trap
+			AddDefect();
+			HandleBaitLoss();
+			DetachAllAttachments();
+			
+			ClearCatchingComponent();
+			
 			if ( m_Timer )
 			{
 				m_Timer.Stop();
 			}
+			
+			m_IsPastWaitingTime = false;
 			
 			if ( m_AnimationPhaseSet != "" && m_AnimationPhaseTriggered != "" )
 			{
@@ -328,93 +429,213 @@ class TrapSpawnBase extends ItemBase
 		}
 	}
 	
-	// Used to check catch conditions and spawn relevant prey
+	void IncreaseElapsedTime()
+	{
+		m_ElapsedTime += m_CurrentlyUsedDelta;
+		
+		#ifdef DEVELOPER
+		if (IsCLIParam("catchingLogs"))
+		{
+			Print("dbgTrapz | delta: " + m_CurrentlyUsedDelta);
+			Print("dbgTrapz | m_ElapsedTime: " + m_ElapsedTime);
+		}
+		#endif
+	}
+	
+	void AdjustDetectionRange()
+	{
+		if (m_CurrentMinimalDistance > 0)
+		{
+			float time = m_ElapsedTime - m_RollSuccessTime;
+			float timeLimit = m_AdjustedMaxActiveTime - m_RollSuccessTime;
+			time = Math.InverseLerp(0,timeLimit,time);
+			time = Easing.EaseInQuad(time);
+			m_CurrentMinimalDistance = Math.Lerp(m_MinimalDistanceFromPlayersToCatch,0,time);
+			m_CurrentMinimalDistance = Math.Clamp(m_CurrentMinimalDistance,0,m_MinimalDistanceFromPlayersToCatch);
+			
+			#ifdef DEVELOPER
+			if (IsCLIParam("catchingLogs"))
+			{
+				Print("dbgTrapz | adjusted distance: " + m_CurrentMinimalDistance + "/" + m_MinimalDistanceFromPlayersToCatch + " | LERP progress: " + time);
+			}
+			#endif
+		}
+	}
+	
+	void EvaluateCatch()
+	{
+		#ifdef DEVELOPER
+		m_dbgAttemptCount++;
+		#endif
+		
+		m_IsPastWaitingTime = true;
+		IncreaseElapsedTime();
+		if (m_ElapsedTime > m_AdjustedMaxActiveTime)
+		{
+			SetUsed();
+			return;
+		}
+		
+		#ifdef DEVELOPER
+		if (IsCLIParam("catchingLogs"))
+		{
+			Print("dbgTrapz | m_dbgAttemptCount: " + m_dbgAttemptCount + "/" + (m_MaxActiveTime/m_UpdateWaitTime));
+		}
+		#endif
+		
+		bool success = false;
+		m_CanCatch = SetCanCatch(m_Bait);
+		if (m_CanCatch)
+		{
+			if (m_CatchingContext.RollCatch())
+			{
+				success = true;
+				
+				#ifdef DEVELOPER
+				if (IsCLIParam("catchingLogs"))
+				{
+					Print("dbgTrapz | success!!!");
+					Print("---------------------");
+				}
+				#endif
+			}
+		}
+		
+		m_Timer.Stop();
+		
+		if (success)
+		{
+			m_RollSuccessTime = m_ElapsedTime;
+			m_CurrentlyUsedDelta = 0;
+			TrySpawnCatch();
+		}
+		else
+		{
+			RunTrappingTimer(m_UpdateWaitTime,"EvaluateCatch");
+		}
+	}
+	
+	bool IsPlayerInVicinity()
+	{
+		if (!GetCEApi())
+		{
+			Debug.Log("CE not enabled, player avoidance not available!");
+			return false;
+		}
+		
+		return !GetCEApi().AvoidPlayer(GetPosition(), m_CurrentMinimalDistance);
+	}
+	
+	void TrySpawnCatch()
+	{
+		IncreaseElapsedTime();
+		AdjustDetectionRange();
+		
+		if (m_CurrentMinimalDistance <= 0 || !IsPlayerInVicinity())
+		{
+			SpawnCatch();
+		}
+		else if (m_ElapsedTime < m_AdjustedMaxActiveTime)
+		{
+			RunTrappingTimer(m_SpawnUpdateWaitTime,"TrySpawnCatch");
+		}
+	}
+	
+	// Actually spawns the prey
 	void SpawnCatch()
 	{
 		// Only server side, let's make sure
-		if ( GetGame().IsClient() )
+		if (GetGame().IsMultiplayer() && GetGame().IsClient())
 			return;
 		
-		// If we can't get CEApi we won't be able to test proximity
-		if ( !GetCEApi() )
-			return;
+		SetIsDeploySound(false);
+		ItemBase catch;
+		if (m_CanCatch)
+		{
+			catch = ItemBase.Cast(m_CatchingContext.SpawnAndSetupCatch(m_YieldItemIdx,m_PreyPos));
+			
+			OnCatchSpawnServer();
+			SetCatchSuccessful(catch != null);
+			// We change the trap state and visuals
+			SetUsed();
+		}
 		
-		int i;
-		m_Bait = null;
-		
-		// We check if we have bait and can catch
-		m_CanCatch = SetCanCatch( m_Bait );
-		
-		SetIsDeploySound( false );
 		SetSynchDirty();
-		
-		// We check the distance from players through CEApi if that check is enabled
-		if ( m_MinimalDistanceFromPlayersToCatch > 0 )
-		{
-			if ( !GetCEApi().AvoidPlayer( GetPosition(), m_MinimalDistanceFromPlayersToCatch ) && m_CanCatch )
-			{
-				m_CanCatch = false;
-				
-				// We could not catch yet, let's retest until we can
-				if ( m_Timer )
-					m_Timer.Stop();
-				
-				m_Timer = new Timer( CALL_CATEGORY_GAMEPLAY );
-				m_Timer.Run( m_UpdateWaitTime, this, "SpawnCatch" );
-				
-				return; // No need to go further, let's just wait for next check
-			}
-		}
-		
-		// We get the probability to catch depending on bait presence
-		if ( m_Bait )
-			m_FinalCatchProb = m_BaitCatchProb;
-		else
-			m_FinalCatchProb = m_NoBaitCatchProb;
-		
-		// We get the position of prey when it will spawn
-		m_PreyPos = GetPosition();
-		if ( MemoryPointExists("Prey_Position") )
-		{
-			m_PreyPos = ModelToWorld( GetMemoryPointPos("Prey_Position") );
-		}
-	}
-
-	// Used to set if the given trap can catch a prey in it's current state
-	// Also outs the current bait to check for specific catches if required
-	bool SetCanCatch( out EntityAI bait )
-	{
-		int slotIdx = InventorySlots.GetSlotIdFromString("Trap_Bait");
-		bait = GetInventory().FindAttachment( slotIdx );
-		
-		if ( bait )
-		{
-			Edible_Base edibleBait = Edible_Base.Cast( bait );
-			if ( edibleBait )
-			{
-				if ( !edibleBait.GetFoodStage().IsFoodBurned() && !edibleBait.GetFoodStage().IsFoodRotten() )
-					return true;
-				else
-					return false; // We have invalid bait, no catch
-			}
-		}
-		// We are allowed to catch with no bait
-		return true;
 	}
 	
-	// Used to set the quantity of the catch ( later used when preparing fish )
-	void CatchSetQuant( ItemBase catch )
+	void SetCatchSuccessful(bool successful)
 	{
-		if ( catch.HasQuantity() )
+		m_IsCatchSuccessful = successful;
+	}
+	
+	void OnCatchSpawnServer()
+	{
+		PlayCatchEffectsServer();
+	}
+	
+	void OnCatchSpawnClient()
+	{
+		UpdatePreyPos(); //previously set on server only
+		
+		PlayCatchEffectsClient();
+	}
+	
+	protected void PlayCatchEffectsServer()
+	{
+		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
+		
+		PlayCatchNoise(yItem);
+		PlayCatchParticleSynced(yItem);
+	}
+	
+	protected void PlayCatchEffectsClient()
+	{
+		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
+		PlayCatchSound(yItem);
+	}
+	
+	protected void PlayCatchSound(YieldItemBase yItem)
+	{
+		if (yItem.GetCatchDeathSoundset() != "")
+			SEffectManager.PlaySoundEnviroment(yItem.GetCatchDeathSoundset(),m_PreyPos);
+	}
+	
+	protected void PlayCatchNoise(YieldItemBase yItem)
+	{
+		NoiseParams m_NoisePar = new NoiseParams();
+		string noiseType = yItem.GetCatchAINoise();
+		if (noiseType == "")
+			return;
+		
+		m_NoisePar.Load(noiseType);
+		float noiseMultiplier = yItem.GetCatchAINoiseBaseStrength();
+		noiseMultiplier *= NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather());
+		GetGame().GetNoiseSystem().AddNoiseTarget(m_PreyPos, 5, m_NoisePar, noiseMultiplier);
+	}
+	
+	protected void PlayCatchParticleSynced(YieldItemBase yItem)
+	{
+		int particleId = yItem.GetCatchParticleID();
+		if (particleId == ParticleList.INVALID)
+			return;
+		
+		if (m_CatchParticleEffecterId < 0)
 		{
-			// Random quantity between 50% and 100%
-			float coef = Math.RandomFloatInclusive(0.5, 1.0);
-			float item_quantity = catch.GetQuantityMax() * coef;
-			item_quantity = Math.Round(item_quantity);
-			catch.SetQuantity( item_quantity );
+			m_CatchParticleEffecterId = SEffectManager.CreateParticleServer(m_PreyPos, new ParticleEffecterParameters("ParticleEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, particleId));
+		}
+		else
+		{
+			SEffectManager.ReinitParticleServer(m_CatchParticleEffecterId, new ParticleEffecterParameters("ParticleEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, particleId)); //reinit here, since particleId might differ
+			SEffectManager.ReactivateParticleServer(m_CatchParticleEffecterId); //TODO: re-evaluate, variable sync could cause issues here...store last 'particleId' and compare, reinit on change only?
 		}
 	}
-
+	
+	//Pre-roll validation, bait compatibility handled between YieldItems and bait type
+	bool SetCanCatch( out EntityAI bait )
+	{
+		return m_CatchingContext.IsValid();
+	}
+	
 	override void OnItemLocationChanged( EntityAI old_owner, EntityAI new_owner ) 
 	{
 		super.OnItemLocationChanged( old_owner, new_owner );
@@ -466,10 +687,69 @@ class TrapSpawnBase extends ItemBase
 	{
 		super.EEItemAttached( item, slot_name );
 		
-		// In the case the trap was still deployed, enable "quick re-arm" by attaching
-		if ( IsDeployed() && slot_name == "Trap_Bait" )
+		if (IsActive() && GetGame().IsServer())
 		{
-			SetActive();
+			ResetActiveProgress();
+			m_CatchingContext.UpdateDataAndMasks();
+			m_CatchingContext.GenerateResult();
+			ResetRunningTimerProgress();
+		}
+	}
+	
+	override void EEItemDetached(EntityAI item, string slot_name)
+	{
+		super.EEItemDetached( item, slot_name );
+		
+		if (IsActive() && GetGame().IsServer())
+		{
+			ResetActiveProgress();
+			m_CatchingContext.UpdateDataAndMasks();
+			m_CatchingContext.GenerateResult();
+			ResetRunningTimerProgress();
+		}
+	}
+	
+	void InitCatchingComponent();
+	
+	void ClearCatchingComponent()
+	{
+		if (m_CatchingContext)
+			delete m_CatchingContext;
+	}
+	
+	void UpdateTrapEnviroMask()
+	{
+		m_CatchEnviroMask = m_CatchingContext.UpdateTrapEnviroMask();
+	}
+	
+	void SetTrapEnviroMask(int value)
+	{
+		m_CatchingContext.SetTrapEnviroMask(value);
+	}
+	
+	void HandleBaitLoss()
+	{
+		if (m_CatchingContext)
+		{
+			if (m_IsCatchSuccessful)
+				m_CatchingContext.RemoveBait();
+			else
+				m_CatchingContext.ReduceBaitQty(m_BaitLossFraction);
+		}
+	}
+	
+	//! detaches everything on catching end (some slots may not be accessible when folded)
+	void DetachAllAttachments()
+	{
+		int count = GetInventory().AttachmentCount();
+		if (count > 0)
+		{
+			EntityAI att;
+			for (int i = 0; i < count; i++)
+			{
+				att = GetInventory().GetAttachmentFromIndex(i);
+				GetInventory().DropEntity(InventoryMode.SERVER,this,att);
+			}
 		}
 	}
 	
@@ -494,62 +774,34 @@ class TrapSpawnBase extends ItemBase
 			{		
 				destination.SetGroundEx(this, position, direction);
 				if (GetGame().IsMultiplayer())
+				{
 					player.ServerTakeToDst(source, destination);
+					SetupTrapPlayer(PlayerBase.Cast(player), false);
+				}
 				else // singleplayer
-					player.GetInventory().TakeToDst(InventoryMode.LOCAL, source, destination);
+				{
+					PlayerBase.Cast(player).GetDayZPlayerInventory().RedirectToHandEvent(InventoryMode.LOCAL, source, destination);
+					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SetupTrapPlayer, 100, false, PlayerBase.Cast(player), false);
+				}
 			}
 			
-			SetupTrapPlayer(PlayerBase.Cast(player), false);
 			SetIsDeploySound(true);
+			
+			InitCatchingComponent();
+			UpdateTrapEnviroMask();
 			SetActive();
 		}
 	}
-	
-	void PlayDeployLoopSound()
-	{		
-		if ( !GetGame().IsDedicatedServer() )
-		{		
-			if ( !m_DeployLoopSound || !m_DeployLoopSound.IsSoundPlaying() )
-			{
-				m_DeployLoopSound = SEffectManager.PlaySound( GetLoopDeploySoundset(), GetPosition() );
-			}
-		}
-	}
-	
-	void StopDeployLoopSound()
-	{
-		if ( !GetGame().IsDedicatedServer() )
-		{	
-			m_DeployLoopSound.SetSoundFadeOut(0.5);
-			m_DeployLoopSound.SoundStop();
-		}
-	}
-	
-	// We add the action to deploy a trap laid on ground
-	override void SetActions()
-	{
-		super.SetActions();
-		
-		AddAction(ActionActivateTrap);
-		AddAction(ActionDeployHuntingTrap);
-	}
-	
-	
-	// ===============================================================
-	// =====================  DEPRECATED  ============================
-	// ===============================================================
-	
-	bool CanPutInInventory( EntityAI  player ) { }
-	
-	void AlignCatch( ItemBase obj, string catch_name ) { }
 	
 	bool IsPlaceable()
 	{
 		if ( GetGame().IsServer() )
 		{
-			if ( GetHierarchyRootPlayer() != NULL && GetHierarchyRootPlayer().GetHumanInventory().GetEntityInHands() == this )
+			InventoryLocation loc = new InventoryLocation();
+			GetInventory().GetCurrentInventoryLocation(loc);
+			if (loc.GetType() == InventoryLocationType.HANDS)
 			{
-				PlayerBase player = PlayerBase.Cast( GetHierarchyRootPlayer() );
+				PlayerBase player = PlayerBase.Cast(GetHierarchyRootPlayer());
 				
 				vector player_pos = player.GetPosition();
 				vector aim_pos = player.GetAimPosition();
@@ -568,6 +820,47 @@ class TrapSpawnBase extends ItemBase
 	{
 		return IsPlaceableAtPosition(position);
 	}
-
+	
+	// We add the action to deploy a trap laid on ground
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionActivateTrap);
+		AddAction(ActionDeployHuntingTrap);
+	}
+	
+	// ===============================================================
+	// =====================  DEPRECATED  ============================
+	// ===============================================================
+	
+	const string 					m_PlaceableWaterType //!DEPRECATED
+	
+	ref Timer 						m_PrevTimer;//!DEPRECATED
+	bool 							m_BaitNeeded;//!DEPRECATED
+	bool 							m_IsUsable;//!DEPRECATED
+	private ItemBase 				m_Catch;//!DEPRECATED, no reason to keep the information as member
+	ref Timer 						m_AlignCatchTimer;//!DEPRECATED
+	string 							m_InfoSetup;//!DEPRECATED
+	protected bool 					m_IsInProgress;//!DEPRECATED
+	protected ref EffectSound 		m_DeployLoopSound;//!DEPRECATED
+	protected EntityAI				m_Bait;
+	float							m_BaitCatchProb; //!DEPRECATED
+	float							m_NoBaitCatchProb; //!DEPRECATED
+	float							m_FinalCatchProb; //!DEPRECATED
+	
+	bool m_WaterSurfaceForSetup;	//!DEPRECATED
+	ref multiMap<string, float>	m_CatchesPond;	//!DEPRECATED
+	ref multiMap<string, float>	m_CatchesSea;	//!DEPRECATED
+	ref multiMap<string, float>	m_CatchesGroundAnimal;	//!DEPRECATED
+	
+	//!DEPRECATED
+	bool CanPutInInventory(EntityAI  player);
+	//!DEPRECATED
+	void AlignCatch(ItemBase obj, string catch_name);
+	///!DEPRECATED
+	void CatchSetQuant(ItemBase catch);
+	void PlayDeployLoopSound();	//!DEPRECATED
+	void StopDeployLoopSound();	//!DEPRECATED
 	// ===============================================================
 }

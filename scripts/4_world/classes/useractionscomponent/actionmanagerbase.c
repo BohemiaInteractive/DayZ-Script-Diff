@@ -53,6 +53,7 @@ class ActionManagerBase
 	protected bool								m_ActionInputWantEnd;
 	protected bool								m_ActionsEnabled;
 	protected bool								m_ActionsAvaibale;
+	protected bool 								m_IsRestrictedLookLimits;	// restricts head look/aim limits while performing an action
 		
 	//Pending actions waiting for acknowledgment
 	protected int 					m_PendingActionAcknowledgmentID;
@@ -124,6 +125,31 @@ class ActionManagerBase
 		else if (m_Interrupted)
 		{
 			m_Interrupted = false;
+		}
+		
+		if (m_CurrentActionData)	// again, can be nulled meanwhile
+		{
+			ActionContinuousBase action = ActionContinuousBase.Cast(m_CurrentActionData.m_Action);
+			if (action && action.IsFullBody(m_Player) && action.IsCameraLockOnPerform())
+			{
+				if (!m_IsRestrictedLookLimits)
+				{
+					Vector2 angleUD = action.GetCameraUDAngle();
+					
+					m_IsRestrictedLookLimits = true;
+					m_Player.SetLookLimits(angleUD.x, angleUD.y, -160, 160);
+					m_Player.SetAimLimits(angleUD.x, angleUD.y, -180, 180);
+				}
+			
+				return;
+			}
+		}
+		
+		if (m_IsRestrictedLookLimits)
+		{
+			m_IsRestrictedLookLimits = false;
+			m_Player.SetLookLimits(-85, 85, -160, 160);
+			m_Player.SetAimLimits(-85, 85, -180, 180);
 		}
 	}
 	
@@ -217,12 +243,12 @@ class ActionManagerBase
 	//------------------------------------------------------
 	bool ActionPossibilityCheck(int pCurrentCommandID)
 	{	
-		if (!m_ActionsEnabled || m_Player.IsSprinting() || m_Player.IsUnconscious() || m_Player.GetCommandModifier_Action() || m_Player.GetCommand_Action() || m_Player.IsEmotePlaying() || m_Player.GetThrowing().IsThrowingAnimationPlaying() || m_Player.GetDayZPlayerInventory().IsProcessing() || m_Player.IsItemsToDelete())
+		if (!m_ActionsEnabled || m_Player.IsSprinting() || m_Player.IsUnconscious() || m_Player.GetCommandModifier_Action() || m_Player.GetCommand_Action() || m_Player.IsEmotePlaying())
 			return false;
 		
-		if (m_Player.GetWeaponManager().IsRunning())
+		if (m_Player.GetWeaponManager().IsRunning() || m_Player.GetThrowing().IsThrowingAnimationPlaying() || m_Player.GetDayZPlayerInventory().IsProcessing() || m_Player.IsItemsToDelete() || m_Player.IsRolling())
 			return false;
-		
+			
 		return (pCurrentCommandID == DayZPlayerConstants.COMMANDID_ACTION || pCurrentCommandID == DayZPlayerConstants.COMMANDID_MOVE || pCurrentCommandID == DayZPlayerConstants.COMMANDID_SWIM || pCurrentCommandID == DayZPlayerConstants.COMMANDID_LADDER || pCurrentCommandID == DayZPlayerConstants.COMMANDID_VEHICLE);
 	}	
 	//------------------------------------------------------

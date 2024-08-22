@@ -54,6 +54,8 @@ class ActionCraftBoltsFeather: ActionContinuousBase
 
 	override void OnStartServer(ActionData action_data)
 	{
+		super.OnStartServer(action_data);
+		
 		m_IsFeatherInHands = IsFeatherType(action_data.m_MainItem.ClassName());
 		m_ResultEntity = null;
 	}

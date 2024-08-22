@@ -88,6 +88,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		//---------------------------------------------------------------
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG, CBMiscEnvironmentDebug);	
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_DRYWET, CBMiscEnvironmentLoggingDryWet);	
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_ITEMHEAT, CBMiscEnvironmentLoggingItemHeat);	
 		
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Misc
@@ -285,6 +286,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		UpdateMiscVehicleGetOutBox();
 		UpdateEnvironmentDebug();
 		CheckTimeAccel();		
+		UpdateMaterialDebug();
 	}
 	
 	//---------------------------------------------
@@ -537,10 +539,140 @@ class PluginDiagMenuClient : PluginDiagMenu
 		else if (m_EnvDebugData)
 			m_EnvDebugData = null;
 	}
+	
+	//---------------------------------------------
+	void UpdateMaterialDebug()
+	{
+		if (DiagMenu.GetBool(DiagMenuIDs.MATERIALDIAG_GHOSTPP))
+		{
+			MatGhostDebug();
+		}
+	}
+	
+	//---------------------------------------------
+	void MatGhostDebug()
+	{
+		string materialPath = "Graphics/Materials/postprocess/ghost";
+		Material material = GetGame().GetWorld().GetMaterial(materialPath);
+		if (!material)
+		{
+			DiagMenu.SetValue(DiagMenuIDs.MATERIALDIAG_GHOSTPP, 0);
+			return;
+		}
+		
+		DbgUI.Begin("GhostEffect Debug");
+		{
+			float channelWeights[] = { 0, 0, 0, 0 };
+			float noiseOffset[] = { 0, 0 };
+			float noiseScale[] = { 1, 1 };
+			float noiseLo[] = { 0, 0, 0, 0 };
+			float noiseHi[] = { 1, 1, 1, 1 };
+			float ghostOffset[] = { 0, 0 };
+			float ghostScale[] = { 1, 1 };
+			float colormod[] = { 1, 1, 1, 0.5 };
+			int spacer_height = 10;
+			
+			float rw, gw, bw, aw;
+			DbgUI.Text("noise_channel_weight");
+			{			
+				DbgUI.InputFloat("noise_weight_r", rw);
+				DbgUI.InputFloat("noise_weight_g", gw);
+				DbgUI.InputFloat("noise_weight_b", bw);
+				DbgUI.InputFloat("noise_weight_a", aw);
+			}
+			DbgUI.Spacer(spacer_height);
+			//-------------------//
+			float nox, noy;
+			float nsx = 1, nsy = 1;
+			DbgUI.Text("noise_offset");
+			{
+				DbgUI.InputFloat("noise_offset_x", nox);
+				DbgUI.InputFloat("noise_offset_y", noy);
+				DbgUI.InputFloat("noise_scale_x", nsx);
+				DbgUI.InputFloat("noise_scale_y", nsy);
+			}
+			DbgUI.Spacer(spacer_height);
+			//-------------------//
+			float rl = 0, rh = 1;
+			float gl = 0, gh = 1;
+			float bl = 0, bh = 1;
+			float al = 0, ah = 1;
+			DbgUI.Text("noise_remap");
+			{
+				DbgUI.InputFloat("lo_r", rl);
+				DbgUI.SameLine();
+				DbgUI.InputFloat("hi_r", rh);
+				
+				DbgUI.InputFloat("lo_g", gl);
+				DbgUI.SameLine();
+				DbgUI.InputFloat("hi_g", gh);
+				
+				DbgUI.InputFloat("lo_b", bl);
+				DbgUI.SameLine();
+				DbgUI.InputFloat("hi_b", bh);
+				
+				DbgUI.InputFloat("lo_a", al);
+				DbgUI.SameLine();
+				DbgUI.InputFloat("hi_a", ah);
+			}
+			DbgUI.Spacer(spacer_height);
+			//-------------------//
+			float gox = 50, goy = 25;
+			float gsx = 0.85, gsy = 0.85;
+			DbgUI.Text("ghost_offset");
+				{
+				DbgUI.InputFloat("ghost_offset_x", gox);
+				DbgUI.InputFloat("ghost_offset_y", goy);
+				DbgUI.InputFloat("ghost_scale_x", gsx);
+				DbgUI.InputFloat("ghost_scale_y", gsy);
+				}
+			DbgUI.Spacer(spacer_height);
+			//-------------------//
+			float cmr = 1, cmg = 1, cmb = 1, cma = 1;
+			DbgUI.Text("color_mod");
+			{
+				DbgUI.InputFloat("color_mod_r", cmr);
+				DbgUI.InputFloat("color_mod_g", cmg);
+				DbgUI.InputFloat("color_mod_b", cmb);
+				DbgUI.InputFloat("color_curve", cma);
+			}
+			DbgUI.Spacer(spacer_height);
+			//-------------------//
+			channelWeights = { rw, gw, bw, aw };
+			noiseOffset = { nox, noy };	
+			noiseScale = { nsx, nsy };
+			noiseLo = { rl, gl, bl, al };
+			noiseHi = { rh, gh, bh, ah };
+			ghostOffset = { gox, goy };	
+			ghostScale = { gsx, gsy };
+			colormod = { cmr, cmg, cmb, cma };
+
+		}
+		DbgUI.End();
+		
+		material.SetParamByIndex(1, channelWeights);
+		material.SetParamByIndex(2, noiseOffset[0]);
+		material.SetParamByIndex(3, noiseOffset[1]);
+		material.SetParamByIndex(4, noiseScale[0]);
+		material.SetParamByIndex(5, noiseScale[1]);
+		material.SetParamByIndex(6, noiseLo);
+		material.SetParamByIndex(7, noiseHi);
+		material.SetParamByIndex(8, ghostOffset[0]);
+		material.SetParamByIndex(9, ghostOffset[1]);
+		material.SetParamByIndex(10, ghostScale[0]);
+		material.SetParamByIndex(11, ghostScale[1]);
+		material.SetParamByIndex(12, colormod );
+		
+	}
 
 	static void CBMiscEnvironmentLoggingDryWet(bool enabled)
 	{
 		SendDiagRPC(enabled, ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_DRYWET);
+	}
+	
+	static void CBMiscEnvironmentLoggingItemHeat(bool enabled)
+	{
+		SendDiagRPC(enabled, ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_ITEMHEAT);
 	}
 	
 	static void CBMiscFallDamageDebug(bool enabled)

@@ -8,5 +8,6 @@ enum VehicleAnimInstances
 	S120 = 5,
 	MULTICAR = 6,
 	GOLF = 7,
-	HMMWV = 8
+	HMMWV = 8,
+	ZODIAC = 9,
 };

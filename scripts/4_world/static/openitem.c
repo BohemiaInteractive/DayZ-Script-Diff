@@ -53,7 +53,6 @@ class OpenAndSwitchLambda : TurnItemIntoItemLambda
 		{	
 			float quantity_old = ib.GetQuantity();
 			float spill_amount = quantity_old * m_SpillModifier;
-			spill_amount = m_Player.GetSoftSkillsManager().SubtractSpecialtyBonus(spill_amount, m_SpecialtyWeight);
 			float quantity_new = quantity_old - spill_amount;
 	
 			Debug.Log("quantity before spill: "+quantity_old.ToString());

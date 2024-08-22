@@ -1,10 +1,23 @@
 //! Keeps information about currently loaded world, like temperature
 class WorldData
 {
-	protected float m_DayTemperature;	// legacy, no longer used
-	protected float m_NightTemperature;	// legacy, no longer used
+	const float SPAWN_CHANCE_CHOLERA_DEF = 50;
+	const float COLD_AREA_TOOL_DMG_MODIF_DEF = 1;
+	
+	//! directly accesible (defined/overriden in Init())
+	float m_TemperaturePerHeightReductionModifier; 	//! amount of °C reduced for each 100 meteres of height above water level
+	float m_CloudsTemperatureEffectModifier; 		//! how many % of environment temperature can be lowered by clouds
+	float m_TemperatureInsideBuildingsModifier
+	float m_WaterContactTemperatureModifier
+
+	protected float SUDDENCHANGE_TIME_MULTIPLIER 	= 0.2;
+	protected float SUDDENCHANGE_LENGTH_MULTIPLIER 	= 0.4;
+	protected float WIND_MAGNITUDE_TIME_MULTIPLIER 	= 0.1;
+	protected float WIND_DIRECTION_TIME_MULTIPLIER 	= 0.05;
+	
 	protected Weather m_Weather;
 	protected float m_EnvironmentTemperature;
+	protected bool m_EnTempUpdated;
 	protected float m_Timer;
 	protected float	m_MaxTemps[12];
 	protected float m_MinTemps[12];
@@ -13,16 +26,34 @@ class WorldData
 	protected float m_Sunrise_Jul;
 	protected float m_Sunset_Jul;
 	protected ref array<vector> m_FiringPos; // Where we should fire from. On Init set the relevant data
+	protected bool m_Pollution;
+	protected ref CatchYieldBank m_YieldBank;
+	protected ref WorldDataWeatherSettings m_WeatherDefaultSettings;
+	protected ref WorldDataLiquidSettings m_LiquidSettings;
 
+	//! weather related
+	protected int m_BadWeatherChance;
+	protected int m_ClearWeatherChance;
+	protected bool m_IsSuddenChange;
+	protected float m_WorldWindCoef;
+
+	protected float m_UniversalTemperatureSourceCapModifier;
+	
+	
 	void WorldData()
 	{
 		Init();
+		CreateYieldBank();
+		InitYieldBank();
+		UpdateBaseEnvTemperature(0);
 	}
 	
 	void Init()
 	{
-		m_DayTemperature = 10; 	// legacy, no longer used
-		m_NightTemperature = 6;	// legacy, no longer used
+		SetupWeatherSettings();
+		SetupLiquidTemperatures();
+
+		m_EnTempUpdated = false;
 		m_Weather = g_Game.GetWeather();
 		m_EnvironmentTemperature = 12.0;
 		m_Timer = 0.0;
@@ -32,6 +63,18 @@ class WorldData
 		m_Sunset_Jul = 20.73;
 		m_MaxTemps = {3,5,7,14,19,24,26,25,21,16,10,5};
 		m_MinTemps = {-3,-2,0,4,9,14,18,17,12,7,4,0};
+		m_Pollution = EPollution.NONE;
+		m_WorldWindCoef = 0.5;
+
+		m_UniversalTemperatureSourceCapModifier = 0.0;
+		
+		m_TemperaturePerHeightReductionModifier = 0.02;
+		m_CloudsTemperatureEffectModifier 		= 3.0;
+		m_TemperatureInsideBuildingsModifier 	= 1.0;
+		m_WaterContactTemperatureModifier 		= 10.0;
+		
+		m_ClearWeatherChance = m_WeatherDefaultSettings.m_ClearWeatherChance;
+		m_BadWeatherChance = m_WeatherDefaultSettings.m_BadWeatherChance;
 	}
 
 	float GetApproxSunriseTime( float monthday )
@@ -48,7 +91,7 @@ class WorldData
 		else
 			return ( ( ( monthday - 8 ) * ( m_Sunset_Jan - m_Sunset_Jul ) ) / ( 13 - 8 ) ) + m_Sunset_Jul;
 	}
-	
+
 	int GetDaytime()
 	{
 		int year, month, day, hour, minute;
@@ -112,13 +155,42 @@ class WorldData
 	void UpdateBaseEnvTemperature(float timeslice)
 	{
 		m_Timer += timeslice;
-		if ( m_Timer > 30 )
+		if (m_Timer > 30 || !m_EnTempUpdated)
 		{
 			int year, month, day, hour, minute;
 			GetGame().GetWorld().GetDate( year, month, day, hour, minute );
 			m_EnvironmentTemperature = CalcBaseEnvironmentTemperature( month + ( day / 32.0 ), hour + ( minute / 60.0 ) );
 			m_Timer = 0;
+			
+			if (!m_EnTempUpdated)
+				m_EnTempUpdated = true;
 		}
+	}
+	
+	/*!
+		\brief Updates *local* weather effects.
+		\param weather Weather instance
+		\param timeslice Time delta since last update
+	*/
+	void UpdateWeatherEffects( Weather weather, float timeslice )
+	{
+		float snowflakeScale = ComputeSnowflakeScale( weather );
+		weather.SetSnowflakeScale( snowflakeScale );
+	}
+	
+	/*!
+		\brief Returns the desired snowflake scale based on weather simulation state.
+		\param weather Weather instance
+	*/
+	float ComputeSnowflakeScale( Weather weather )
+	{
+		float overcast01 = Math.Clamp( Math.InverseLerp( 0.4, 1.0, weather.GetOvercast().GetActual() ), 0.0, 1.0 );  // remap range to <0.4, 1.0> snowfall overcast threshold
+		float wind01 = weather.GetWindSpeed() / weather.GetWindMaximumSpeed();
+		
+		float overcastScale = Math.Lerp( 0.50, 1.25, overcast01 );
+		float windScale     = Math.Lerp( 1.25, 1.00, wind01 );
+		
+		return Math.Clamp( overcastScale * windScale, 0.50, 1.25 );
 	}
 
 	// getter for the new base enviro temperature
@@ -126,20 +198,34 @@ class WorldData
 	{
 		return m_EnvironmentTemperature;
 	}
+	
+	float GetBaseEnvTemperatureAtObject(notnull Object object)
+	{
+		return GetBaseEnvTemperatureAtPosition(object.GetPosition());
+	}
+	
+	float GetBaseEnvTemperatureAtPosition(vector pos)
+	{
+		float terrainHeight = pos[1];
+		float heightCorrection = Math.Max(0, (terrainHeight * m_TemperaturePerHeightReductionModifier));
+		return m_EnvironmentTemperature - heightCorrection;
+	}
+
 	float GetBaseEnvTemperatureExact(int month, int day, int hour, int minute)
 	{
 		return CalcBaseEnvironmentTemperature( month + ( day / 32.0 ), hour + ( minute / 60.0 ) );
 	}
 
-	// legacy, no longer used
-	float GetDayTemperature()
+	float GetLiquidTypeEnviroTemperature(int liquidType)
 	{
-		return m_DayTemperature;
-	}
-	// legacy, no longer used
-	float GetNightTemperature()
-	{
-		return m_NightTemperature;
+		if (m_LiquidSettings.m_Temperatures.Count() > 0 && m_LiquidSettings.m_Temperatures.Contains(liquidType) != INDEX_NOT_FOUND)
+			return m_LiquidSettings.m_Temperatures.Get(liquidType);
+		
+		#ifdef DEVELOPER
+		ErrorEx("Undefined enviro temperature for liquid type: " + liquidType);
+		#endif
+		
+		return m_EnvironmentTemperature;
 	}
 
 	bool WeatherOnBeforeChange( EWeatherPhenomenon type, float actual, float change, float time )
@@ -152,6 +238,21 @@ class WorldData
 	array<vector> GetArtyFiringPos()
 	{
 		return m_FiringPos;
+	}
+	
+	// Returns chance percentage for selected agent to spawn, used with spawned loot
+	float GetAgentSpawnChance(eAgents agent)
+	{
+		if (agent == eAgents.CHOLERA)
+			return SPAWN_CHANCE_CHOLERA_DEF;
+		
+		return 0;
+	}
+	
+	// Returns modifier which is added to the tool damage logic when player is in cold area
+	float GetColdAreaToolDamageModifier()
+	{
+		return COLD_AREA_TOOL_DMG_MODIF_DEF;
 	}
 
 	// debug
@@ -167,7 +268,109 @@ class WorldData
 			}
 		}
 	}
-};
+	
+	int GetPollution()
+	{
+		return m_Pollution;
+	}
+	
+	float GetWindCoef()
+	{
+		return m_WorldWindCoef;
+	}
+	
+	float GetUniversalTemperatureSourceCapModifier()
+	{
+		return m_UniversalTemperatureSourceCapModifier;
+	}
+	
+	protected void CalculateWind(int newWeather, bool suddenChange, out float magnitude, out float direction);
+	
+	protected void CalculateVolFog(float lerpValue, float windMagnitude, float changeTime);
+	
+	protected void CreateYieldBank()
+	{
+		m_YieldBank = new CatchYieldBank();
+	}
+	
+	//! override this to register world-specific yields
+	protected void InitYieldBank();
+	
+	protected void SetupWeatherSettings()
+	{
+		m_WeatherDefaultSettings = new WorldDataWeatherSettings();
+	}
+	
+	protected void SetupLiquidTemperatures()
+	{
+		m_LiquidSettings = new WorldDataLiquidSettings();
+		
+		m_LiquidSettings.m_Temperatures[LIQUID_SALTWATER] 	= 23.0;
+		m_LiquidSettings.m_Temperatures[LIQUID_WATER] 		= 15.0;
+		m_LiquidSettings.m_Temperatures[LIQUID_STILLWATER] 	= 15.0;
+		m_LiquidSettings.m_Temperatures[LIQUID_RIVERWATER] 	= 15.0;
+		m_LiquidSettings.m_Temperatures[LIQUID_FRESHWATER] 	= 15.0;
+		m_LiquidSettings.m_Temperatures[LIQUID_CLEANWATER] 	= 10.0;
+		m_LiquidSettings.m_Temperatures[LIQUID_SNOW] 		= -5.0;
+	}
+	
+	CatchYieldBank GetCatchYieldBank()
+	{
+		return m_YieldBank;
+	}
+
+
+	//!
+	//! DEPRECATED
+	//!
+	
+	protected float m_DayTemperature 	= 10;	// legacy, no longer used
+	protected float m_NightTemperature	= 6;	// legacy, no longer used
+
+	float GetDayTemperature()
+	{
+		return m_DayTemperature;
+	}
+
+	float GetNightTemperature()
+	{
+		return m_NightTemperature;
+	}
+}
+
+class WorldDataWeatherConstants
+{
+	const int CLEAR_WEATHER 	= 1;
+	const int CLOUDY_WEATHER 	= 2;
+	const int BAD_WEATHER 		= 3;
+}
+
+class WorldDataWeatherSettings
+{
+	int m_OvercastMinTime = 600;
+	int m_OvercastMaxTime = 900;
+	
+	float m_RainThreshold 	= 0.6;
+	int m_RainTimeMin 		= 60;
+	int m_RainTimeMax 		= 120;
+	
+	float m_StormThreshold 			= 0.85;
+	float m_ThundersnowThreshold 	= 0.98;
+	
+	float m_SnowfallThreshold 	= 0.3;
+	int m_SnowfallTimeMin 		= 60;
+	int m_SnowfallTimeMax 		= 120;
+
+	int m_GlobalSuddenChance		= 95;
+	int m_ClearWeatherChance 		= 30;
+	int m_BadWeatherChance 			= 80;
+	int m_BadWeatherSuddenChance 	= 95;
+}
+
+class WorldDataLiquidSettings
+{
+	ref map<int, float> m_Temperatures = new map<int, float>();
+}
 
 class WorldDataDaytime
 {

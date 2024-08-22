@@ -196,14 +196,15 @@ class ActionEnterLadder: ActionInteractBase
 		Print("psovis - client");
 	}*/
 	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
+	
 	override bool IsInstant()
 	{
 		return true;
-	}
 	
-	override bool UseAcknowledgment()
-	{
-		return false;
 	}
 	
 	override bool CanBeUsedSwimming()

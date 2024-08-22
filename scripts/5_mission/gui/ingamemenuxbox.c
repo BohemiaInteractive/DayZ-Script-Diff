@@ -93,18 +93,18 @@ class InGameMenuXbox extends UIScriptedMenu
 		m_GamercardAvailable = false;
 		m_BackAvailable = true;
 		
-		Man player = GetGame().GetPlayer();
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		if (player)
 		{
-			int life_state = player.GetPlayerState();
+			m_PlayerAlive = player.GetPlayerState() == EPlayerStates.ALIVE;
 
-			if (life_state == EPlayerStates.ALIVE)
-			{
-				m_PlayerAlive = true;
-			}
+			player.GetOnUnconsciousStart().Insert(UpdateGUI);
+			player.GetOnUnconsciousStart().Insert(UpdateMenuFocus);
+			player.GetOnUnconsciousStop().Insert(UpdateGUI);
+			player.GetOnUnconsciousStop().Insert(UpdateMenuFocus);
+			player.GetOnDeathStart().Insert(UpdateGUI);
+			player.GetOnDeathStart().Insert(UpdateMenuFocus);
 		}
-		
-		UpdateMenuFocus();
 		
 		string version;
 		GetGame().GetVersion(version);
@@ -160,26 +160,20 @@ class InGameMenuXbox extends UIScriptedMenu
 		}
 		
 		//RESPAWN & RESTART
-		ButtonWidget restart_btn = ButtonWidget.Cast(layoutRoot.FindAnyWidgetById(IDC_INT_RETRY));
 		if (GetGame().IsMultiplayer())
 		{
-			restart_btn.SetText("#main_menu_respawn");
+			m_RestartButton.SetText("#main_menu_respawn");
 		}
 		else
 		{
-			restart_btn.SetText("#main_menu_restart");
+			m_RestartButton.SetText("#main_menu_restart");
 		}
 		
-		if (GetGame().IsMultiplayer() && !(GetGame().CanRespawnPlayer() || (player && player.IsUnconscious())))
+		if (!ShouldRestartBeVisible(player))
 		{
-			restart_btn.Enable(false);
-			restart_btn.Show(false);
+			//m_RestartButton.Enable(false);
+			m_RestartButton.Show(false);
 		}
-		//
-		
-		#ifdef BULDOZER
-		delete restart_btn;
-		#endif
 		
 		Mission mission = GetGame().GetMission();
 		if (mission)
@@ -391,8 +385,6 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	override void Update(float timeslice)
 	{
-		UpdateGUI();
-		
 		if (GetGame().IsMultiplayer() && layoutRoot.FindAnyWidget("OnlineInfo").IsVisible())
 		{
 			PlayerListEntryScriptedWidget selected;
@@ -417,22 +409,21 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	bool ShouldRestartBeVisible(Man player)
 	{
-		return player && player.IsUnconscious() && !CfgGameplayHandler.GetDisableRespawnInUnconsciousness();
+		PlayerBase p = PlayerBase.Cast(player);
+		return p && p.IsUnconsciousStateOnly() && !CfgGameplayHandler.GetDisableRespawnInUnconsciousness();
 	}
-	
-	
+
 	void UpdateGUI()
 	{
+		bool shouldUpdateMenuFocus = false;
 		Man player = GetGame().GetPlayer();
 		if (player)
-		{
-			int life_state = player.GetPlayerState();
-			m_PlayerAlive = life_state == EPlayerStates.ALIVE;
-		}
+			m_PlayerAlive = player.GetPlayerState() == EPlayerStates.ALIVE;
 		
 		if (m_PlayerAlive)
 		{
-			m_RestartButton.Show(ShouldRestartBeVisible(player));
+			bool showRestartBtn = ShouldRestartBeVisible(player);
+			m_RestartButton.Show(showRestartBtn);
 		}
 		else
 		{
@@ -440,7 +431,9 @@ class InGameMenuXbox extends UIScriptedMenu
 		}
 		
 		m_ContinueButton.Show(m_PlayerAlive);
-		m_RestartDeadButton.Show(!m_PlayerAlive);		
+		m_RestartDeadButton.Show(!m_PlayerAlive);
+		
+		UpdateMenuFocus();
 	}
 	
 	bool IsOnlineOpen()
@@ -491,31 +484,7 @@ class InGameMenuXbox extends UIScriptedMenu
 	override void OnShow()
 	{
 		super.OnShow();
-		Man player = GetGame().GetPlayer();
-		if (player)
-		{
-			int life_state = player.GetPlayerState();
 
-			if (life_state == EPlayerStates.ALIVE)
-			{
-				m_PlayerAlive = true;
-			}
-		}
-		
-		if (m_PlayerAlive)
-		{
-			if (player)
-				m_RestartButton.Show(player.IsUnconscious());
-		}
-		else
-		{
-			m_RestartButton.Show(false);
-		}
-		m_ContinueButton.Show(m_PlayerAlive);
-		m_RestartDeadButton.Show(!m_PlayerAlive);
-		
-		UpdateMenuFocus();
-		
 		#ifdef PLATFORM_CONSOLE
 			bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
 			bool mk_server = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
@@ -534,6 +503,10 @@ class InGameMenuXbox extends UIScriptedMenu
 		
 			warning.Show(mk);
 		#endif
+		
+		UpdateGUI();
+		
+		UpdateMenuFocus();
 		UpdateControlsElements();
 	}
 	

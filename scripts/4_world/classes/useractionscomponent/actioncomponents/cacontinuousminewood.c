@@ -42,7 +42,7 @@ class CAContinuousMineWood : CAContinuousBase
 			if (!action_data.m_MainItem) //hand action
 				m_TimeBetweenMaterialDrops = m_TimeBetweenMaterialDrops * 3;
 		}
-		m_AdjustedTimeBetweenMaterialDrops = action_data.m_Player.GetSoftSkillsManager().SubtractSpecialtyBonus( m_TimeBetweenMaterialDrops, m_Action.GetSpecialtyWeight(), true );		
+		m_AdjustedTimeBetweenMaterialDrops = m_TimeBetweenMaterialDrops;//removed softskills 
 		m_TimeToComplete = m_AmountOfDrops * m_AdjustedTimeBetweenMaterialDrops;
 	}
 	
@@ -141,7 +141,7 @@ class CAContinuousMineWood : CAContinuousBase
 			m_CycleTimeOverride = ntarget.GetCycleTimeOverride(); //TODO
 			ntarget.GetMaterialAndQuantityMapEx(action_data.m_MainItem,m_MaterialAndQuantityMap, adata.m_HarvestType);
 			m_DamageToMiningItemEachDrop = ntarget.GetDamageToMiningItemEachDropEx(action_data.m_MainItem, adata.m_HarvestType );
-			m_AdjustedDamageToMiningItemEachDrop = action_data.m_Player.GetSoftSkillsManager().SubtractSpecialtyBonus( m_DamageToMiningItemEachDrop, m_Action.GetSpecialtyWeight(), true );
+			m_AdjustedDamageToMiningItemEachDrop = m_DamageToMiningItemEachDrop;//removed softskills 
 			return true;
 		}
 		return false;

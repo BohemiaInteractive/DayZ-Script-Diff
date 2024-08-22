@@ -54,8 +54,8 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 				utsd.Add("position", uts.GetPosition().ToString(false));
 				utsd.Add("fullrange", uts.GetFullRange().ToString());
 				utsd.Add("maxrange", uts.GetMaxRange().ToString());
-				utsd.Add("temperature", uts.GetTemperature().ToString());
-				utsd.Add("temperatureraw", uts.GetTemperatureRaw().ToString());
+				utsd.Add("temperatureCap", uts.GetTemperatureCap().ToString());
+				utsd.Add("temperatureRaw", uts.GetTemperatureRaw().ToString());
 				utsd.Commit();
 
 				m_UTemperatureSourceDebugs.Insert(utsd);
@@ -70,8 +70,8 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 			utsd.Add("position", uts.GetPosition().ToString(false));
 			utsd.Add("fullrange", uts.GetFullRange().ToString());
 			utsd.Add("maxrange", uts.GetMaxRange().ToString());
-			utsd.Add("temperature", uts.GetTemperature().ToString());
-			utsd.Add("temperatureraw", uts.GetTemperatureRaw().ToString());
+			utsd.Add("temperatureCap", uts.GetTemperatureCap().ToString());
+			utsd.Add("temperatureRaw", uts.GetTemperatureRaw().ToString());
 			utsd.Commit();
 	
 			m_UTemperatureSourceDebugs.Insert(utsd);

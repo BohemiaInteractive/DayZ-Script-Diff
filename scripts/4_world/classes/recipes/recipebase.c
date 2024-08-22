@@ -19,6 +19,7 @@ class RecipeBase
 	
 	int	m_ID;
 	int m_NumberOfResults;
+	int m_RecipeUID;
 	float m_AnimationLength = 1;//animation length in relative time units
 	float m_Specialty = 0;// value > 0 for roughness, value < 0 for precision
 	bool m_IsInstaRecipe;//should this recipe be performed instantly without animation
@@ -69,6 +70,7 @@ class RecipeBase
 		//m_IsActionType = false;
 		
 		m_Name = "RecipeBase default name";
+		m_RecipeUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
 		Init();
 	}
 
@@ -260,18 +262,11 @@ class RecipeBase
 				continue;
 			}
 			
-			bool use_soft_skills = m_ResultUseSoftSkills[i];
-			
 			if( res.IsItemBase() )
 			{
 				value_delta = m_ResultSetQuantity[i];
 
 				ItemBase resIb = ItemBase.Cast(res);
-
-				if( use_soft_skills ) 
-				{
-					value_delta = player.GetSoftSkillsManager().AddSpecialtyBonus(value_delta, m_Specialty);
-				}
 				
 				if( !resIb.IsMagazine() )//is not a magazine
 				{
@@ -300,10 +295,6 @@ class RecipeBase
 			if( m_ResultSetHealth[i] != -1 )//<------m_ResultSetHealth
 			{
 				value_delta = m_ResultSetHealth[i];
-				if( use_soft_skills ) 
-				{
-					value_delta = player.GetSoftSkillsManager().AddSpecialtyBonus(value_delta, m_Specialty);
-				}
 				res.SetHealth("","",value_delta);
 			}
 			if( m_ResultInheritsHealth[i] != -1 )//<------m_ResultInheritsHealth
@@ -373,16 +364,9 @@ class RecipeBase
 			}
 			else
 			{
-				bool use_soft_skills = m_IngredientUseSoftSkills[i];
-				
 				if( m_IngredientAddHealth[i] != 0 )//<------m_IngredientAddHealth
 				{
 					float health_delta = m_IngredientAddHealth[i];
-					if( use_soft_skills ) 
-					{
-						if(health_delta <0) health_delta = player.GetSoftSkillsManager().SubtractSpecialtyBonus(health_delta, m_Specialty);
-						else 				health_delta = player.GetSoftSkillsManager().AddSpecialtyBonus(health_delta, m_Specialty);
-					}
 					ingredient.AddHealth("","",health_delta);
 				}
 				else if(m_IngredientSetHealth[i] != -1)//<------m_IngredientSetHealth
@@ -393,12 +377,6 @@ class RecipeBase
 				if( m_IngredientAddQuantity[i] != 0 )//<------m_IngredientAddQuantity
 				{
 					float quantity_delta = m_IngredientAddQuantity[i];
-					
-					if(	use_soft_skills )
-					{
-						if(quantity_delta <0) quantity_delta = player.GetSoftSkillsManager().SubtractSpecialtyBonus(quantity_delta, m_Specialty);
-						else 				quantity_delta = player.GetSoftSkillsManager().AddSpecialtyBonus(quantity_delta, m_Specialty);
-					}
 						
 					if( !ingredient.IsMagazine() )
 					{
@@ -546,8 +524,6 @@ class RecipeBase
 			ApplyModificationsResults(m_IngredientsSorted, spawned_objects, NULL, player);
 			ApplyModificationsIngredients(m_IngredientsSorted, player);
 			
-			ApplySoftSkillsSpecialty(player);
-			
 			Do( m_IngredientsSorted, player, spawned_objects, m_Specialty );
 			
 			
@@ -561,7 +537,6 @@ class RecipeBase
 
 	void ApplySoftSkillsSpecialty(PlayerBase player)
 	{
-		player.GetSoftSkillsManager().AddSpecialty(m_Specialty);
 	}	
 	
 	bool CanDo(ItemBase ingredients[], PlayerBase player)
@@ -654,5 +629,10 @@ class RecipeBase
 			}
 		}
 		return mask;
+	}
+	
+	int GetAnimationCommandUID()
+	{
+		return m_RecipeUID;
 	}
 }

@@ -26,7 +26,6 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected PluginDeveloper 					m_Developer;
 	protected bool 								m_FilterOrderReversed;
 	protected string 							m_SelectedObject;
-	protected bool								m_IsShiftDown;
 	protected string							m_FilterTextPrev;
 	//Widgets
 	protected CheckBoxWidget			m_CategoryMergeType;
@@ -67,9 +66,11 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	protected EditBoxWidget 			m_DamageEditBox;
 	protected EditBoxWidget 			m_BatchSpawnQuantity;
 	protected CheckBoxWidget			m_WithPhysicsCheckbox;
+	protected ButtonWidget				m_ReloadShapeButton;
 	protected TextWidget 				m_ItemDamageLabel;
 	protected TextWidget 				m_ItemQuantityLabel;
 	protected TextWidget 				m_SelectedObjectText;
+	protected TextWidget 				m_SelectedObjectLocalized;
 	protected ItemPreviewWidget 		m_ItemPreviewWidget;
 	protected ImageWidget				m_FilterOrderImage;
 	
@@ -83,6 +84,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		
 		m_CategoryMergeType = CheckBoxWidget.Cast(root.FindAnyWidget("CategoryMergeType"));
 		m_ItemPreviewCheckbox	= CheckBoxWidget.Cast(root.FindAnyWidget("ItemPreviewCheckbox"));
+		m_ReloadShapeButton	= ButtonWidget.Cast(root.FindAnyWidget("ReloadShapeButton"));
 		m_ShowProtected		= CheckBoxWidget.Cast(root.FindAnyWidget("ShowProtectedCheckbox"));
 		m_FilterOrderImage	= ImageWidget.Cast(root.FindAnyWidget("ObjectFilterSortPic"));
 		m_ClearInventory		= CheckBoxWidget.Cast(root.FindAnyWidget("ForceClearCheckbox"));
@@ -90,6 +92,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		m_ObjectFilter = MultilineEditBoxWidget.Cast(root.FindAnyWidget("ObjectFilter"));
 		m_SpawnDistanceEditBox = EditBoxWidget.Cast(root.FindAnyWidget("SpawnDistance"));
 		m_SelectedObjectText = TextWidget.Cast(root.FindAnyWidget("SelectedObject"));
+		m_SelectedObjectLocalized = TextWidget.Cast(root.FindAnyWidget("SelectedObjectLocalized"));
 		m_ObjectsTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("ObjectsList"));
 		m_PresetsTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("PresetList"));
 		m_PresetItemsTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("PresetItemsList"));
@@ -674,7 +677,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		}
 		
 	}
-	
+
 	void SetPreviewObject(string object)
 	{
 		#ifdef DEVELOPER
@@ -682,6 +685,8 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		{
 			m_PreviewEntity.Delete();
 		}
+		
+		m_SelectedObjectLocalized.SetText("");
 		
 		if (!GetGame().IsKindOf(object, "DZ_LightAI") && !GetGame().IsKindOf(object, "Man"))
 		{
@@ -695,6 +700,8 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 				m_PreviewEntity.DisableSimulation(true);
 				m_ItemPreviewWidget.SetItem(m_PreviewEntity);
 				m_PreviewEntity.SetAllowDamage(false);
+				
+				m_SelectedObjectLocalized.SetText(m_PreviewEntity.GetDisplayName());
 			}
 		}
 		#endif
@@ -1400,6 +1407,16 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			m_Developer.SpawnEntityOnGroundPatternGrid(player, m_SelectedObject,count, m_DamageEditBox.GetText().ToFloat(), 1, rows, columns, rowStep, columnStep, m_IsShiftDown, m_WithPhysicsCheckbox.IsChecked());
 			return true;
 		}
+		else if (w == m_ReloadShapeButton)
+		{
+#ifdef DEVELOPER
+			Object obj = m_ItemPreviewWidget.GetItem();
+			if (obj)
+			{
+				GetGame().ReloadShape(obj);
+			}
+#endif
+		}
 		else if (w == m_ListActions)
 		{
 			if (!m_PreviewEntity)
@@ -1504,11 +1521,9 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	
 	override void Update(float timeslice)
 	{
-		m_IsShiftDown = KeyState(KeyCode.KC_LSHIFT) || KeyState(KeyCode.KC_RSHIFT);
+		super.Update(timeslice);
 		
 		UpdateButtonNames();
-		
-		super.Update(timeslice);
 	}
 	
 	void SetTextSpawnButton(ButtonWidget w, bool special, string suffix = " Special")

@@ -69,6 +69,27 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	protected static float m_RainInterpolationTimeValue;
 	protected static float m_RainDurationTimeValue = -1;
 	
+	// Snowfall
+	protected SliderWidget m_SnowfallValueSetSlider;
+	protected SliderWidget m_SnowfallValueGetSlider;
+	
+	protected TextWidget m_SnowfallValueSetText;
+
+	protected SliderWidget m_SnowfallInterpolationTimeSlider;
+	protected SliderWidget m_SnowfallDurationTimeSlider;
+	
+	
+	protected TextWidget m_SnowfallInterpolationMaxText;
+	protected TextWidget m_SnowfallDurationMaxText;
+	
+	protected EditBoxWidget m_SnowfallValueEditbox;
+	protected EditBoxWidget m_SnowfallInterpolationEditbox;
+	protected EditBoxWidget m_SnowfallDurationEditbox;
+	
+	protected static float m_SnowfallValue = -1;
+	protected static float m_SnowfallInterpolationTimeValue;
+	protected static float m_SnowfallDurationTimeValue = -1;
+	
 	
 	// Other
 	protected ButtonWidget m_ResetButton;
@@ -96,6 +117,11 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_RainValue = m_RainValueSetSlider.GetCurrent() / 100;
 		m_RainInterpolationTimeValue = m_RainInterpolationTimeSlider.GetCurrent() / 100 * INTERPOLATION_MAX;
 		m_RainDurationTimeValue = m_RainDurationTimeSlider.GetCurrent() / 100 * DURATION_MAX;
+		
+		// Snowfall
+		m_SnowfallValue = m_SnowfallValueSetSlider.GetCurrent() / 100;
+		m_SnowfallInterpolationTimeValue = m_SnowfallInterpolationTimeSlider.GetCurrent() / 100 * INTERPOLATION_MAX;
+		m_SnowfallDurationTimeValue = m_SnowfallDurationTimeSlider.GetCurrent() / 100 * DURATION_MAX;
 	}
 	
 	void ScriptConsoleWeatherTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
@@ -145,6 +171,21 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_RainInterpolationEditbox = EditBoxWidget.Cast(root.FindAnyWidget("EditBoxRainTarget"));
 		m_RainDurationEditbox = EditBoxWidget.Cast(root.FindAnyWidget("EditBoxRainDuration"));
 		
+		// Snowfall
+		m_SnowfallValueSetSlider = SliderWidget.Cast(root.FindAnyWidget("SliderSnowfallValue"));
+		m_SnowfallValueGetSlider = SliderWidget.Cast(root.FindAnyWidget("SliderSnowfallActualValue"));
+		m_SnowfallValueSetText = TextWidget.Cast(root.FindAnyWidget("TextSnowfallValueActual"));
+		
+		m_SnowfallInterpolationTimeSlider = SliderWidget.Cast(root.FindAnyWidget("SliderSnowfallTarget"));
+		m_SnowfallDurationTimeSlider = SliderWidget.Cast(root.FindAnyWidget("SliderSnowfallDuration"));
+		
+		m_SnowfallInterpolationMaxText = TextWidget.Cast(root.FindAnyWidget("TextMaxSnowfallTarget"));
+		m_SnowfallDurationMaxText = TextWidget.Cast(root.FindAnyWidget("TextMaxSnowfallDuration"));
+		
+		m_SnowfallValueEditbox = EditBoxWidget.Cast(root.FindAnyWidget("EditBoxSnowfallValue"));
+		m_SnowfallInterpolationEditbox = EditBoxWidget.Cast(root.FindAnyWidget("EditBoxSnowfallTarget"));
+		m_SnowfallDurationEditbox = EditBoxWidget.Cast(root.FindAnyWidget("EditBoxSnowfallDuration"));
+		
 		//Other
 		m_ResetButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonReset"));
 		m_UpdateButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonUpdate"));
@@ -174,6 +215,11 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_RainDurationEditbox.SetText(DURATION_MAX.ToString());
 		m_RainInterpolationEditbox.SetText("0");
 		
+		// Snowfall
+		m_SnowfallValueEditbox.SetText("0");
+		m_SnowfallDurationEditbox.SetText(DURATION_MAX.ToString());
+		m_SnowfallInterpolationEditbox.SetText("0");
+		
 		UpdateSliderValues();
 		
 		//FOG
@@ -191,7 +237,10 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_RainInterpolationTimeValue = 0;
 		m_RainDurationTimeValue = DURATION_MAX;
 		
-		
+		//SNOWFALL
+		m_SnowfallValue = 0;
+		m_SnowfallInterpolationTimeValue = 0;
+		m_SnowfallDurationTimeValue = DURATION_MAX;
 	}
 	
 	protected void InitValues(bool forceCurrent = false)
@@ -250,6 +299,23 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_RainInterpolationMaxText.SetText(INTERPOLATION_MAX.ToString());
 		m_RainDurationMaxText.SetText(DURATION_MAX.ToString());
 		
+		// SNOWFALL
+		float snowfallVal = m_SnowfallValue;
+		if (forceCurrent || m_SnowfallValue == -1)
+		{
+			snowfallVal = GetGame().GetWeather().GetSnowfall().GetActual();
+		}
+
+		m_SnowfallValueEditbox.SetText(snowfallVal.ToString());
+		m_SnowfallInterpolationEditbox.SetText(m_SnowfallInterpolationTimeValue.ToString());
+		
+		if (m_SnowfallDurationTimeValue == -1)
+			m_SnowfallDurationTimeValue = DURATION_MAX;
+		m_SnowfallDurationEditbox.SetText(m_SnowfallDurationTimeValue.ToString());
+		
+		m_SnowfallInterpolationMaxText.SetText(INTERPOLATION_MAX.ToString());
+		m_SnowfallDurationMaxText.SetText(DURATION_MAX.ToString());
+		
 		UpdateSliderValues();
 	}	
 	
@@ -257,8 +323,8 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	{
 		TStringArray values = new TStringArray();
 		clipboard.Split(" ", values);
-		if (values.Count() != 9)
-			return;
+		if (values.Count() >= 9)
+		{
 		// FOG
 		m_FogValueEditbox.SetText(values.Get(0));
 		m_FogInterpolationEditbox.SetText(values.Get(1));
@@ -271,6 +337,16 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_RainValueEditbox.SetText(values.Get(6));
 		m_RainInterpolationEditbox.SetText(values.Get(7));
 		m_RainDurationEditbox.SetText(values.Get(8));
+			
+		if (values.Count() >= 12)
+		{
+			// SNOWFALL
+			m_SnowfallValueEditbox.SetText(values.Get(9));
+			m_SnowfallInterpolationEditbox.SetText(values.Get(10));
+			m_SnowfallDurationEditbox.SetText(values.Get(11));
+		}
+			
+		}		
 	}	
 	
 	protected string CopyValues()
@@ -297,13 +373,20 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		output += m_RainInterpolationEditbox.GetText();
 		output += " ";
 		output += m_RainDurationEditbox.GetText();
+		// SNOWFALL
+		output += m_SnowfallValueEditbox.GetText();
+		output += " ";
+		output += m_SnowfallInterpolationEditbox.GetText();
+		output += " ";
+		output += m_SnowfallDurationEditbox.GetText();
 		
 		return output;
 	}
 	
 	override bool OnChange(Widget w, int x, int y, bool finished)
 	{
-		bool rmbDrag = (GetMouseState(MouseState.RIGHT) & MB_EVENT_CLICK);
+		bool rmbDrag = (GetMouseState(MouseState.RIGHT) & MB_PRESSED_MASK);
+		bool immDrag = (GetMouseState(MouseState.LEFT) & MB_PRESSED_MASK) && KeyState(KeyCode.KC_LSHIFT);
 		
 		if (rmbDrag)
 		{
@@ -312,62 +395,86 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 			{
 				m_OvercastValueSetSlider.SetCurrent(m_FogValueSetSlider.GetCurrent());
 				m_RainValueSetSlider.SetCurrent(m_FogValueSetSlider.GetCurrent());
+				m_SnowfallValueSetSlider.SetCurrent(m_FogValueSetSlider.GetCurrent());
 			}
 			else if (w == m_OvercastValueSetSlider)
 			{
 				m_FogValueSetSlider.SetCurrent(m_OvercastValueSetSlider.GetCurrent());
 				m_RainValueSetSlider.SetCurrent(m_OvercastValueSetSlider.GetCurrent());
-			}
-			
+				m_SnowfallValueSetSlider.SetCurrent(m_OvercastValueSetSlider.GetCurrent());
+			}			
 			else if (w == m_RainValueSetSlider)
 			{
 				m_FogValueSetSlider.SetCurrent(m_RainValueSetSlider.GetCurrent());
 				m_OvercastValueSetSlider.SetCurrent(m_RainValueSetSlider.GetCurrent());
+				m_SnowfallValueSetSlider.SetCurrent(m_RainValueSetSlider.GetCurrent());
+			}
+			else if (w == m_SnowfallValueSetSlider)
+			{
+				m_FogValueSetSlider.SetCurrent(m_SnowfallValueSetSlider.GetCurrent());
+				m_OvercastValueSetSlider.SetCurrent(m_SnowfallValueSetSlider.GetCurrent());
+				m_RainValueSetSlider.SetCurrent(m_SnowfallValueSetSlider.GetCurrent());
 			}
 			// second row
 			else if (w == m_FogInterpolationTimeSlider)
 			{
 				m_OvercastInterpolationTimeSlider.SetCurrent(m_FogInterpolationTimeSlider.GetCurrent());
 				m_RainInterpolationTimeSlider.SetCurrent(m_FogInterpolationTimeSlider.GetCurrent());
+				m_SnowfallInterpolationTimeSlider.SetCurrent(m_FogInterpolationTimeSlider.GetCurrent());
 			}
 			else if (w == m_OvercastInterpolationTimeSlider)
 			{
 				m_FogInterpolationTimeSlider.SetCurrent(m_OvercastInterpolationTimeSlider.GetCurrent());
 				m_RainInterpolationTimeSlider.SetCurrent(m_OvercastInterpolationTimeSlider.GetCurrent());
+				m_SnowfallInterpolationTimeSlider.SetCurrent(m_OvercastInterpolationTimeSlider.GetCurrent());
 			}
 			
 			else if (w == m_RainInterpolationTimeSlider)
 			{
 				m_OvercastInterpolationTimeSlider.SetCurrent(m_RainInterpolationTimeSlider.GetCurrent());
 				m_FogInterpolationTimeSlider.SetCurrent(m_RainInterpolationTimeSlider.GetCurrent());
+				m_SnowfallInterpolationTimeSlider.SetCurrent(m_RainInterpolationTimeSlider.GetCurrent());
+			}
+			else if (w == m_SnowfallInterpolationTimeSlider)
+			{
+				m_FogInterpolationTimeSlider.SetCurrent(m_SnowfallInterpolationTimeSlider.GetCurrent());
+				m_OvercastInterpolationTimeSlider.SetCurrent(m_SnowfallInterpolationTimeSlider.GetCurrent());
+				m_RainInterpolationTimeSlider.SetCurrent(m_SnowfallInterpolationTimeSlider.GetCurrent());
 			}
 			// third row
 			else if (w == m_FogDurationTimeSlider)
 			{
 				m_RainDurationTimeSlider.SetCurrent(m_FogDurationTimeSlider.GetCurrent());
 				m_OvercastDurationTimeSlider.SetCurrent(m_FogDurationTimeSlider.GetCurrent());
+				m_SnowfallDurationTimeSlider.SetCurrent(m_FogDurationTimeSlider.GetCurrent());
 			}
 			else if (w == m_RainDurationTimeSlider)
 			{
 				m_FogDurationTimeSlider.SetCurrent(m_RainDurationTimeSlider.GetCurrent());
 				m_OvercastDurationTimeSlider.SetCurrent(m_RainDurationTimeSlider.GetCurrent());
-			}
-			
+				m_SnowfallDurationTimeSlider.SetCurrent(m_RainDurationTimeSlider.GetCurrent());
+			}			
 			else if (w == m_OvercastDurationTimeSlider)
 			{
 				m_RainDurationTimeSlider.SetCurrent(m_OvercastDurationTimeSlider.GetCurrent());
 				m_FogDurationTimeSlider.SetCurrent(m_OvercastDurationTimeSlider.GetCurrent());
+				m_SnowfallDurationTimeSlider.SetCurrent(m_OvercastDurationTimeSlider.GetCurrent());
 			}
-			
+			else if (w == m_SnowfallDurationTimeSlider)
+			{
+				m_FogDurationTimeSlider.SetCurrent(m_SnowfallDurationTimeSlider.GetCurrent());
+				m_OvercastDurationTimeSlider.SetCurrent(m_SnowfallDurationTimeSlider.GetCurrent());
+				m_RainDurationTimeSlider.SetCurrent(m_SnowfallDurationTimeSlider.GetCurrent());
+			}
 		}
 
 		
 		SliderWidget slider = SliderWidget.Cast(w);
 		if (slider)
 		{
-			if (rmbDrag && !m_RPCTimer.IsRunning())
+			if ( (rmbDrag||immDrag) && !m_RPCTimer.IsRunning())
 			{
-				if (w == m_OvercastValueSetSlider || w == m_RainValueSetSlider || w == m_FogValueSetSlider)
+				if (w == m_OvercastValueSetSlider || w == m_RainValueSetSlider || w == m_FogValueSetSlider || w == m_SnowfallValueSetSlider)
 					m_RPCTimer.Run(0.25, this, "InvokeSendRPC");
 			}
 			UpdateEditboxValues();
@@ -413,6 +520,16 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 
 			float editboxRainDuration = m_RainDurationEditbox.GetText().ToFloat();
 			m_RainDurationTimeSlider.SetCurrent(Math.InverseLerp(0,INTERPOLATION_MAX,editboxRainDuration) * 100);
+		
+			//snowfall
+			float editboxSnowfallValue = m_SnowfallValueEditbox.GetText().ToFloat();
+			m_SnowfallValueSetSlider.SetCurrent(editboxSnowfallValue * 100);
+
+			float editboxSnowfallInterpolation = m_SnowfallInterpolationEditbox.GetText().ToFloat();
+			m_SnowfallInterpolationTimeSlider.SetCurrent(Math.InverseLerp(0,INTERPOLATION_MAX,editboxSnowfallInterpolation) * 100);
+
+			float editboxSnowfallDuration = m_SnowfallDurationEditbox.GetText().ToFloat();
+			m_SnowfallDurationTimeSlider.SetCurrent(Math.InverseLerp(0,INTERPOLATION_MAX,editboxSnowfallDuration) * 100);
 	}
 	
 	void UpdateEditboxValues()
@@ -446,6 +563,16 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 
 			m_RainValue = m_RainValueSetSlider.GetCurrent() / 100;
 			m_RainValueEditbox.SetText(m_RainValue.ToString());
+		
+			//snowfall
+			m_SnowfallInterpolationTimeValue = m_SnowfallInterpolationTimeSlider.GetCurrent() / 100 * INTERPOLATION_MAX;
+			m_SnowfallInterpolationEditbox.SetText(m_SnowfallInterpolationTimeValue.ToString());
+
+			m_SnowfallDurationTimeValue = m_SnowfallDurationTimeSlider.GetCurrent() / 100 * DURATION_MAX;
+			m_SnowfallDurationEditbox.SetText(m_SnowfallDurationTimeValue.ToString());
+
+			m_SnowfallValue = m_SnowfallValueSetSlider.GetCurrent() / 100;
+			m_SnowfallValueEditbox.SetText(m_SnowfallValue.ToString());
 	}
 	
 	override bool OnClick(Widget w, int x, int y, int button)
@@ -506,6 +633,11 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		data.m_OvercastInterpolation = m_OvercastInterpolationTimeValue;
 		data.m_OvercastDuration = m_OvercastDurationTimeSlider.GetCurrent() / 100 * 960;
 		
+		// SNOWFALL
+		data.m_SnowfallValue = m_SnowfallValueSetSlider.GetCurrent() / 100;
+		data.m_SnowfallInterpolation = m_SnowfallInterpolationTimeValue;
+		data.m_SnowfallDuration = m_SnowfallDurationTimeSlider.GetCurrent() / 100 * 960;
+		
 		return data;
 	}
 	
@@ -527,6 +659,11 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		data.m_OvercastValue = m_OvercastValueSetSlider.GetCurrent() / 100;
 		data.m_OvercastInterpolation = 0;
 		data.m_OvercastDuration = 960;
+		
+		// SNOWFALL
+		data.m_SnowfallValue = m_SnowfallValueSetSlider.GetCurrent() / 100;
+		data.m_SnowfallInterpolation =0;
+		data.m_SnowfallDuration = 960;
 		
 		return data;
 	}
@@ -561,5 +698,9 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float rain = GetGame().GetWeather().GetRain().GetActual();
 		m_RainValueGetSlider.SetCurrent(rain * 100);
 		m_RainValueSetText.SetText(rain.ToString());
+		
+		float snowfall = GetGame().GetWeather().GetSnowfall().GetActual();
+		m_SnowfallValueGetSlider.SetCurrent(snowfall * 100);
+		m_SnowfallValueSetText.SetText(snowfall.ToString());
 	}
 }

@@ -8,7 +8,6 @@ class ServerBrowserFavoritesTabPc extends ServerBrowserTabPc
 		m_CachedFavoriteServerInfo = new array<ref CachedServerInfo>();
 		
 		super.Construct(parent, menu, type);
-		DisableFilters();
 	}
 
 	protected override void LoadExtraEntries(int index)
@@ -53,7 +52,7 @@ class ServerBrowserFavoritesTabPc extends ServerBrowserTabPc
 
 			// do NOT insert offlineRow into m_EntriesSorted[m_SortType]!!
 			// we assume that rows already in m_EntriesSorted[m_SortType] are ONLINE,
-			// if we add offline info to m_EntriesSorted[m_SortType] then we cannot differente
+			// if we add offline info to m_EntriesSorted[m_SortType] then we cannot differentiate
 			// between online and offline servers			
 			GetServersResultRow offlineRow = new GetServersResultRow();
 			offlineRow.m_Id = relevantEntry.param1;

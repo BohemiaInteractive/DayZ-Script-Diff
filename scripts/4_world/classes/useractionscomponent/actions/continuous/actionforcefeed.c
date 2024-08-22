@@ -30,8 +30,10 @@ class ActionForceFeed: ActionForceConsume
 			return false;
 		
 		PlayerBase targetPlayer = PlayerBase.Cast(target.GetObject());
-		
-		return targetPlayer && targetPlayer.CanEatAndDrink();
+		if (!targetPlayer)
+			return false;
+				
+		return targetPlayer.CanEatAndDrink();
 	}
 	
 	

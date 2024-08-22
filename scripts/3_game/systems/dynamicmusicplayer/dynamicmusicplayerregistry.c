@@ -115,6 +115,7 @@ class DynamicMusicPlayerRegistry
 		RegisterTrackTime("Music_time_day_4_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackTime("Music_time_day_5_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackTime("Music_time_day_6_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
+		RegisterTrackTime("Music_time_day_7_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		//NIGHT
 		RegisterTrackTime("Music_time_night_1_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
 		RegisterTrackTime("Music_time_night_2_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);

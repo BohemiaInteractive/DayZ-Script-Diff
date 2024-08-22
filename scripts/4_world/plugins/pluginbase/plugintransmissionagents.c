@@ -7,7 +7,7 @@ enum InjectTypes
 
 class PluginTransmissionAgents extends PluginBase
 {
-	static ref map<int, ref AgentBase> m_AgentList =  new map<int, ref AgentBase>;
+	static ref map<int, ref AgentBase> m_AgentList =  new map<int, ref AgentBase>();
 	ref map<int, string> m_SimpleAgentList = new map<int, string>;
 	bool m_IsConstructed = false;
 	
@@ -22,6 +22,7 @@ class PluginTransmissionAgents extends PluginBase
 		RegisterAgent(new ChemicalAgent);
 		RegisterAgent(new WoundAgent);
 		RegisterAgent(new NerveAgent);
+		RegisterAgent(new HeavyMetalAgent);
 	}
 	
 	void RegisterAgent(AgentBase agent)
@@ -81,13 +82,14 @@ class PluginTransmissionAgents extends PluginBase
 		return m_AgentList.Get(agent_id).GetTransferabilityIn();
 	}
 	
-	
-	bool GrowDuringAntibioticsAttack(int agent_id, PlayerBase player)
+	bool GrowDuringMedicalDrugsAttack(int agentId, EMedicalDrugsType drugType, PlayerBase player)
 	{
-		if( !m_AgentList.Get(agent_id) ) return true;
-		return m_AgentList.Get(agent_id).GrowDuringAntibioticsAttack(player);
-	}
+		AgentBase agent = m_AgentList.Get(agentId);
+		if (!agent)
+			return true;
 
+		return agent.GrowDuringMedicalDrugsAttack(drugType, player);
+	}
 	
 	float GetAgentDieOffSpeedEx(int agent_id, PlayerBase player)
 	{
@@ -196,6 +198,8 @@ class PluginTransmissionAgents extends PluginBase
 		int targetAgents;
 		if(!sourceAgents && source) sourceAgents = source.GetAgents();//do not set sourceAgents again if already set
 		if(target) targetAgents = target.GetAgents();
+		int pollution = GetGame().GetMission().GetWorldData().GetPollution();
+		
 		float count = 0;
 		
 		switch (pathway)
@@ -211,8 +215,25 @@ class PluginTransmissionAgents extends PluginBase
 				break;
 
 			case AGT_WATER_POND:
-				//target.InsertAgent(eAgents.CHOLERA, dose_size);
-				InjectAgentsWithPlayer( target, eAgents.CHOLERA , 0, 1, InjectTypes.ITEM_TO_PLAYER );
+				if (pollution & EPollution.HEAVYMETAL)
+				{
+					sourceAgents = sourceAgents | eAgents.HEAVYMETAL;
+				}
+				sourceAgents = sourceAgents | eAgents.CHOLERA;
+				InjectAgentsWithPlayer( target, sourceAgents , 0, 1, InjectTypes.ITEM_TO_PLAYER );
+				break;
+			
+			case AGT_WATER_HOT_SPRING:
+				sourceAgents = sourceAgents | eAgents.FOOD_POISON | eAgents.HEAVYMETAL;
+				InjectAgentsWithPlayer( target, sourceAgents , 0, 1, InjectTypes.ITEM_TO_PLAYER );
+				break;
+			
+			case AGT_SNOW:
+				if (pollution & EPollution.HEAVYMETAL)
+				{
+					sourceAgents = sourceAgents | eAgents.HEAVYMETAL;
+				}
+				InjectAgentsWithPlayer( target, sourceAgents , 0, 1, InjectTypes.ITEM_TO_PLAYER );
 				break;
 				
 			case AGT_UACTION_CONSUME:
@@ -250,6 +271,8 @@ class PluginTransmissionAgents extends PluginBase
 				float prot_level_mask_target2 = GetProtectionLevel(DEF_CHEMICAL,InventorySlots.MASK, Man.Cast( target ));
 
 				count = InjectAgentWithPlayerDose( target, agents , prot_level_mask_target2, dose_size, InjectTypes.PLAYER_AIR_PLAYER );
+				break;
+			default:
 				break;
 		}
 		return count;
@@ -410,4 +433,13 @@ class PluginTransmissionAgents extends PluginBase
 	}
 	//------------------------------------------------------------------------------------------------------
 
-};
+
+	//! DEPRECATED
+	bool GrowDuringAntibioticsAttack(int agent_id, PlayerBase player)
+	{
+		if (!m_AgentList.Get(agent_id))
+			return true;
+
+		return m_AgentList.Get(agent_id).GrowDuringMedicalDrugsAttack(EMedicalDrugsType.ANTIBIOTICS, player);
+	}
+}

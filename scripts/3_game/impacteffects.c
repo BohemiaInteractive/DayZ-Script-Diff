@@ -54,6 +54,8 @@ class ImpactMaterials
 	static int WATER 						= RegisterSurface("Hit_Water");
 	static int RUBBER 						= RegisterSurface("Hit_Rubber");
 	static int PLASTER 						= RegisterSurface("Hit_Plaster");
+	static int ICE 							= RegisterSurface("Hit_Ice");
+	static int SNOW 						= RegisterSurface("Hit_Snow");
 	static int MEATBONES					= RegisterSurface("Hit_MeatBones");
 	static int MEATBONES_SHOVEL				= RegisterSurface("Hit_MeatBones_MeleeShovel");
 	static int MEATBONES_PIPEWRENCH			= RegisterSurface("Hit_MeatBones_MeleePipeWrench");
@@ -62,7 +64,7 @@ class ImpactMaterials
 	static int UNDEFINED 					= RegisterSurface("Hit_Undefined");
 	static int ERROR_NO_MATERIAL			= RegisterSurface("Hit_ErrorNoMaterial");
 	//@}
-	
+
 	/** \name  Ignored ammo
 	*	Register ammo which will not spawn impact effects here
 	*	When modding, these can be unregistered with 'UnregisterIgnoredAmmo' if so desired

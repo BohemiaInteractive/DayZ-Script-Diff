@@ -62,4 +62,9 @@ class ActionBandageTarget : ActionBandageBase
 	{
 		GetGame().GetAnalyticsClient().OnActionBandageTarget();
 	}
+	
+	override bool CanTargetBeInVehicle()
+	{
+		return true;
+	}
 }

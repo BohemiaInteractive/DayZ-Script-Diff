@@ -44,8 +44,7 @@ class TrapBase extends ItemBase
 	protected TrapTrigger m_TrapTrigger;
 	
 	protected ref array<int> m_ClothingDmg;
-	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
-	
+
 	void TrapBase()
 	{
 		m_IsInProgress = false;
@@ -78,11 +77,6 @@ class TrapBase extends ItemBase
 		RegisterNetSyncVariableBool("m_IsDeploySound");		
 	}
 	
-	void ~TrapBase()
-	{
-		SEffectManager.DestroyEffect( m_DeployLoopSound );
-	}
-	
 	void OnUpdate(EntityAI victim);
 	
 	TrapTrigger GetTrapTrigger()
@@ -97,13 +91,7 @@ class TrapBase extends ItemBase
 		
 		if (IsDeploySound())
 			PlayDeploySound();
-		
-		if (CanPlayDeployLoopSound())
-			PlayDeployLoopSound();
-					
-		if (m_DeployLoopSound && !CanPlayDeployLoopSound())
-			StopDeployLoopSound();
-		
+				
 		if (GetGame().IsMultiplayer())
 		{
 			if (m_IsActive && !m_IsInProgress)
@@ -339,13 +327,7 @@ class TrapBase extends ItemBase
 					bool isActivating = false;
 					if (ctx.Read(p))
 						isActivating = p.param1;
-					
-					if (isActivating)
-						PlayDeployLoopSound();
-					
-					if (!isActivating)
-						StopDeployLoopSound();
-			
+								
 					break;
 			}
 		}
@@ -635,10 +617,6 @@ class TrapBase extends ItemBase
 	// ADVANCED PLACEMENT
 	//================================================================
 		
-	void PlayDeployLoopSound(); //deprecated
-	
-	void StopDeployLoopSound(); //deprecated
-	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -714,4 +692,10 @@ class TrapBase extends ItemBase
 			equippedClothes[i].DecreaseHealth(m_ClothingDmg[i], false);
 		}
 	}
+	
+	//!DEPRECATED
+	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
+	
+	void PlayDeployLoopSound(); //!DEPRECATED
+	void StopDeployLoopSound(); //!DEPRECATED
 }

@@ -52,11 +52,13 @@ class ActionRepositionPluggedItem : ActionInteractBase
 		if (GetGame().IsMultiplayer() && GetGame().IsServer())
 			action_data.m_Player.PlacingStartServer(ntarget);
 		else
-			action_data.m_Player.TogglePlacingLocal(ntarget);
+			action_data.m_Player.PlacingStartLocal(ntarget);
 	}
 	
 	override void OnExecuteServer(ActionData action_data)
-	{
+	{	
+		ClearActionJuncture(action_data);
+		
 		if (GetGame().IsMultiplayer())
 			return;
 		

@@ -93,8 +93,6 @@ class ActionHarvestCrops: ActionInteractBase
 		if ( m_Plant )
 		{
 			m_Plant.Harvest( action_data.m_Player );
-
-			action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 		}
 	}
 };

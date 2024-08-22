@@ -8,8 +8,6 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 	override protected void RegisterTracksLocationStatic()
 	{
 		super.RegisterTracksLocationStatic();
-
-		//===================================================================================CHERNARUS=============================================================
 		array<ref TVectorArray> militaryVybor;
 		militaryVybor = {
 			{"4358.785156 329.249908 9393.362305", "4691.308594 338.790955 9858.332031"},
@@ -28,17 +26,11 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 			{"1258.536011 442.738800 13465.949219", "1915.419189 424.005707 14172.190430"},
 		};
 		
-		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_day1_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.DAY, true);
-		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_day2_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.DAY, true);
-		//RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_night_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.NIGHT, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_vybor_SoundSet", militaryVybor, DynamicMusicPlayerTimeOfDay.ANY, true);
 
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.ANY, true);
-		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_day2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.DAY, true);
-		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night1_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
-		//RegisterTrackLocationStaticMultiRectangle("Music_loc_tisy_night2_SoundSet", militaryTisy, DynamicMusicPlayerTimeOfDay.NIGHT, true);
 
 		//____________________________________________ChernarusPlus CITIES ___________________________________________
-		
 		
 		array<ref TVectorArray> cityChernohorsk;
 		cityChernohorsk = {
@@ -105,386 +97,51 @@ class DynamicMusicPlayerRegistryChernarus : DynamicMusicPlayerRegistry
 			{"10402.891602 7.446366 1960.392090", "10664.541016 5.829778 2200.995361"},
 		};
 
-		
-		/*
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.NIGHT);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", cityChernohorsk, DynamicMusicPlayerTimeOfDay.ANY, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", cityZelenogorsk, DynamicMusicPlayerTimeOfDay.ANY, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", cityNovajaPetrovka, DynamicMusicPlayerTimeOfDay.ANY, true);		
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", citySeverograd, DynamicMusicPlayerTimeOfDay.ANY, true);		
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", cityNovodmytrovsk, DynamicMusicPlayerTimeOfDay.ANY, true);		
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", citySvetlojarsk, DynamicMusicPlayerTimeOfDay.ANY, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", cityBerezeno, DynamicMusicPlayerTimeOfDay.ANY, true);
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.ANY, true);
 
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityZelenogorsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityZelenogorsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityZelenogorsk, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityZelenogorsk, DynamicMusicPlayerTimeOfDay.NIGHT);
+//____________________________________________ Industrial zones ___________________________________________
+		array<ref TVectorArray> industrial;
+		industrial = {
+			{"11854.528320 29.882481 14179.353516", "12478.435547 56.856274 14385.267578"},
+			{"6933.279297 -7.615602 2519.416016", "7373.195801 13.949765 2970.550293"},
+			{"7438.569336 5.645970 2927.914063", "8084.084473 6.028780 3287.097412"},
+			{"7200.540527 6.000000 3192.891602", "7474.596191 5.915507 3381.304199"},
+			{"7378.830078 4.619025 2598.827881", "7663.363281 5.787320 2912.731445"},
+			{"9866.310547 -15.653315 1599.896851", "10385.212891 6.046751 2074.640625"},
+			{"12946.036133 16.273359 6957.259766", "13165.247070 5.991191 7206.662109"},
+			{"8464.271484 137.924744 13101.271484", "8780.803711 161.241776 13672.717773"}
+		};
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_industrial_SoundSet", industrial, DynamicMusicPlayerTimeOfDay.ANY, true);
 
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityNovajaPetrovka, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityNovajaPetrovka, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityNovajaPetrovka, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityNovajaPetrovka, DynamicMusicPlayerTimeOfDay.NIGHT);
-		
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", citySeverograd, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", citySeverograd, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", citySeverograd, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", citySeverograd, DynamicMusicPlayerTimeOfDay.NIGHT);
-		
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityNovodmytrovsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityNovodmytrovsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityNovodmytrovsk, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityNovodmytrovsk, DynamicMusicPlayerTimeOfDay.NIGHT);
-		
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", citySvetlojarsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", citySvetlojarsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", citySvetlojarsk, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", citySvetlojarsk, DynamicMusicPlayerTimeOfDay.NIGHT);
 
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityBerezeno, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityBerezeno, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityBerezeno, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityBerezeno, DynamicMusicPlayerTimeOfDay.NIGHT);
-		
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_1_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_day_2_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.DAY);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_1_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.NIGHT);
-		RegisterTrackLocationStaticMultiRectangle("Music_loc_city_night_2_SoundSet", cityElectrozavodsk, DynamicMusicPlayerTimeOfDay.NIGHT);
-		*/
-		
-//____________________________________________ChernarusPlus Industrial zones Novodmytrovsk___________________________________________
+//____________________________________________ Traffic Jam ___________________________________________
+		array<ref TVectorArray> trafficjam;
+		trafficjam = {
+			{"798.668945 5.972593 1913.950195", "897.092590 5.879053 2004.056396"},
+			{"907.711365 5.772083 1993.015137", "987.267517 5.936453 2091.598145"},
+			{"239.559509 293.526276 9213.648438", "341.622986 294.961273 9320.047852"},
+			{"276.458130 295.051697 9357.187500", "410.040009 297.106293 9480.652344"},
+			{"417.146698 294.604492 9445.519531", "584.194885 300.853577 9496.502930"},
+			{"3284.781006 319.386780 14875.200195", "3374.985840 332.917664 15291.269531"},
 
-		/*
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"11854.528320 29.882481 14179.353516", "12478.435547 56.856274 14385.267578"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"11854.528320 29.882481 14179.353516", "12478.435547 56.856274 14385.267578"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"11854.528320 29.882481 14179.353516", "12478.435547 56.856274 14385.267578"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"11854.528320 29.882481 14179.353516", "12478.435547 56.856274 14385.267578"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-		
-//____________________________________________ChernarusPlus Industrial zones Chernogorsk___________________________________________
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"6933.279297 -7.615602 2519.416016", "7373.195801 13.949765 2970.550293"},
-				{"7438.569336 5.645970 2927.914063", "8084.084473 6.028780 3287.097412"},
-				{"7200.540527 6.000000 3192.891602", "7474.596191 5.915507 3381.304199"},
-				{"7378.830078 4.619025 2598.827881", "7663.363281 5.787320 2912.731445"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"6933.279297 -7.615602 2519.416016", "7373.195801 13.949765 2970.550293"},
-				{"7438.569336 5.645970 2927.914063", "8084.084473 6.028780 3287.097412"},
-				{"7200.540527 6.000000 3192.891602", "7474.596191 5.915507 3381.304199"},
-				{"7378.830078 4.619025 2598.827881", "7663.363281 5.787320 2912.731445"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"6933.279297 -7.615602 2519.416016", "7373.195801 13.949765 2970.550293"},
-				{"7438.569336 5.645970 2927.914063", "8084.084473 6.028780 3287.097412"},
-				{"7200.540527 6.000000 3192.891602", "7474.596191 5.915507 3381.304199"},
-				{"7378.830078 4.619025 2598.827881", "7663.363281 5.787320 2912.731445"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"6933.279297 -7.615602 2519.416016", "7373.195801 13.949765 2970.550293"},
-				{"7438.569336 5.645970 2927.914063", "8084.084473 6.028780 3287.097412"},
-				{"7200.540527 6.000000 3192.891602", "7474.596191 5.915507 3381.304199"},
-				{"7378.830078 4.619025 2598.827881", "7663.363281 5.787320 2912.731445"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-//____________________________________________ChernarusPlus Industrial zones Electrozavodsk___________________________________________
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"9866.310547 -15.653315 1599.896851", "10385.212891 6.046751 2074.640625"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"9866.310547 -15.653315 1599.896851", "10385.212891 6.046751 2074.640625"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"9866.310547 -15.653315 1599.896851", "10385.212891 6.046751 2074.640625"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"9866.310547 -15.653315 1599.896851", "10385.212891 6.046751 2074.640625"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-//____________________________________________ChernarusPlus Industrial zones Solnechnyj___________________________________________
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"12946.036133 16.273359 6957.259766", "13165.247070 5.991191 7206.662109"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"12946.036133 16.273359 6957.259766", "13165.247070 5.991191 7206.662109"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"12946.036133 16.273359 6957.259766", "13165.247070 5.991191 7206.662109"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"12946.036133 16.273359 6957.259766", "13165.247070 5.991191 7206.662109"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-//____________________________________________ChernarusPlus Industrial zones Severograd___________________________________________
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"8464.271484 137.924744 13101.271484", "8780.803711 161.241776 13672.717773"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"8464.271484 137.924744 13101.271484", "8780.803711 161.241776 13672.717773"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"8464.271484 137.924744 13101.271484", "8780.803711 161.241776 13672.717773"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"8464.271484 137.924744 13101.271484", "8780.803711 161.241776 13672.717773"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-//____________________________________________ChernarusPlus Traffic Jam 1 ___________________________________________
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"798.668945 5.972593 1913.950195", "897.092590 5.879053 2004.056396"},
-				{"907.711365 5.772083 1993.015137", "987.267517 5.936453 2091.598145"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"798.668945 5.972593 1913.950195", "897.092590 5.879053 2004.056396"},
-				{"907.711365 5.772083 1993.015137", "987.267517 5.936453 2091.598145"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"798.668945 5.972593 1913.950195", "897.092590 5.879053 2004.056396"},
-				{"907.711365 5.772083 1993.015137", "987.267517 5.936453 2091.598145"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"798.668945 5.972593 1913.950195", "897.092590 5.879053 2004.056396"},
-				{"907.711365 5.772083 1993.015137", "987.267517 5.936453 2091.598145"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-//____________________________________________ChernarusPlus Traffic Jam 2 ___________________________________________
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"239.559509 293.526276 9213.648438", "341.622986 294.961273 9320.047852"},
-				{"276.458130 295.051697 9357.187500", "410.040009 297.106293 9480.652344"},
-				{"417.146698 294.604492 9445.519531", "584.194885 300.853577 9496.502930"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"239.559509 293.526276 9213.648438", "341.622986 294.961273 9320.047852"},
-				{"276.458130 295.051697 9357.187500", "410.040009 297.106293 9480.652344"},
-				{"417.146698 294.604492 9445.519531", "584.194885 300.853577 9496.502930"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"239.559509 293.526276 9213.648438", "341.622986 294.961273 9320.047852"},
-				{"276.458130 295.051697 9357.187500", "410.040009 297.106293 9480.652344"},
-				{"417.146698 294.604492 9445.519531", "584.194885 300.853577 9496.502930"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"239.559509 293.526276 9213.648438", "341.622986 294.961273 9320.047852"},
-				{"276.458130 295.051697 9357.187500", "410.040009 297.106293 9480.652344"},
-				{"417.146698 294.604492 9445.519531", "584.194885 300.853577 9496.502930"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-//____________________________________________ChernarusPlus Traffic Jam 3 ___________________________________________
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"3284.781006 319.386780 14875.200195", "3374.985840 332.917664 15291.269531"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"3284.781006 319.386780 14875.200195", "3374.985840 332.917664 15291.269531"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"3284.781006 319.386780 14875.200195", "3374.985840 332.917664 15291.269531"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"3284.781006 319.386780 14875.200195", "3374.985840 332.917664 15291.269531"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
+		};
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_traffic_SoundSet", trafficjam, DynamicMusicPlayerTimeOfDay.ANY, true);
 
 //____________________________________________ChernarusPlus Prisone ___________________________________________
 
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"2403.832031 -32.429996 1190.847412", "2676.229004 -8.220685 1427.551514"},
-				{"2684.682861 -19.024158 1118.522705", "2906.357666 0.624884 1350.529175"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"2403.832031 -32.429996 1190.847412", "2676.229004 -8.220685 1427.551514"},
-				{"2684.682861 -19.024158 1118.522705", "2906.357666 0.624884 1350.529175"},
-			},
-			DynamicMusicPlayerTimeOfDay.DAY,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"2403.832031 -32.429996 1190.847412", "2676.229004 -8.220685 1427.551514"},
-				{"2684.682861 -19.024158 1118.522705", "2906.357666 0.624884 1350.529175"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-
-		RegisterTrackLocationStaticMultiRectangle(
-			"Music_loc_vybor_night_SoundSet", //========> PLACEHOLDER
-			{
-				{"2403.832031 -32.429996 1190.847412", "2676.229004 -8.220685 1427.551514"},
-				{"2684.682861 -19.024158 1118.522705", "2906.357666 0.624884 1350.529175"},
-			},
-			DynamicMusicPlayerTimeOfDay.NIGHT,
-		);
-		*/
-		
-
+		array<ref TVectorArray> prison;
+		prison = {
+			{"2403.832031 -32.429996 1190.847412", "2676.229004 -8.220685 1427.551514"},
+			{"2684.682861 -19.024158 1118.522705", "2906.357666 0.624884 1350.529175"}
+		};
+		RegisterTrackLocationStaticMultiRectangle("Music_loc_prison_SoundSet", prison, DynamicMusicPlayerTimeOfDay.ANY, true);
 //____________________________________________ Coast ___________________________________________
 		
 		RegisterTrackLocationStaticMultiRectangle(

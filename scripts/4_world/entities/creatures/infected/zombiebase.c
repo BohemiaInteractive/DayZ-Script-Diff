@@ -145,6 +145,11 @@ class ZombieBase extends DayZInfected
 	{
 		return false;
 	}
+	
+	override bool IsSelfAdjustingTemperature()
+	{
+		return IsAlive();
+	}
 
 	//! returns hit component for attacking AI
 	override string GetHitComponentForAI()
@@ -327,7 +332,6 @@ class ZombieBase extends DayZInfected
 			
 			if (m_OrientationSynced == -1 || Math.AbsInt(angleDiffRad) > 5)
 			{
-				//Print("DbgSyncOrientation | HandleMove | original: " + m_OrientationSynced + " | target: " + yaw + " | diff: " + angleDiffRad);
 				m_OrientationSynced = yaw;
 				SetSynchDirty();
 			}
@@ -587,7 +591,7 @@ class ZombieBase extends DayZInfected
 		if (GetGame().IsServer())
 		{
 			if (sound_event.m_NoiseParams != NULL)
-				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams);
+				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
 		}
 	}
 	
@@ -1068,8 +1072,6 @@ class ZombieBase extends DayZInfected
 
 		// set flag - death command will be executed
 		m_FinisherInProgress = true;
-				
-		//Print("DbgZombies | DumbZombie on: " + GetGame().GetTime());
 	}
 	
 	//! returns true if crawling; 'DayZInfectedCommandCrawl' is only for the transition, after that it remains 'DayZInfectedCommandMove' (unreliable)
@@ -1086,8 +1088,6 @@ class ZombieBase extends DayZInfected
 
 		// reset flag
 		m_FinisherInProgress = false;
-		
-		//Print("DbgZombies | DumbZombie off: " + GetGame().GetTime());
 	}
 	
 	override void AddArrow(Object arrow, int componentIndex, vector closeBonePosWS, vector closeBoneRotWS)

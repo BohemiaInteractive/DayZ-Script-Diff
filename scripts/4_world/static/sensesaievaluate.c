@@ -1,7 +1,7 @@
-class NoiseAIEvaluate 
+class NoiseAIEvaluate
 {
 	static float SURFACE_NOISE_WEIGHT = 0.25;
-	
+				
 	static float GetNoiseMultiplier(DayZPlayerImplement playerImplement)
 	{
 		float speedNoise	= GetNoiseMultiplierByPlayerSpeed(playerImplement);
@@ -15,6 +15,14 @@ class NoiseAIEvaluate
 		return avgNoise;
 	}
 	
+	static float GetNoiseReduction(Weather weather)
+	{
+		if (weather)
+			return weather.GetNoiseReductionByWeather();
+		 
+		return 0;
+	}
+		
 	//Noise multiplier based on player speed
 	static float GetNoiseMultiplierByPlayerSpeed(DayZPlayerImplement playerImplement)
 	{

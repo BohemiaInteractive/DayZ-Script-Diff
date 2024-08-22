@@ -8,6 +8,7 @@ class FlagTendencyActionData : ActionData
 	bool m_Tendency;
 };
 
+//!DEPRECATED
 class ActionWorldFlagActionSwitch: ActionSingleUseBase
 {
 	bool 	m_switch_to;

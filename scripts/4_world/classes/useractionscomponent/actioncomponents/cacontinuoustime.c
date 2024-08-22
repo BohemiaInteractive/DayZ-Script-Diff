@@ -23,7 +23,7 @@ class CAContinuousTime : CAContinuousBase
 			m_SpentUnits.param1 = 0;
 		}
 		
-		m_AdjustedTimeToComplete = action_data.m_Player.GetSoftSkillsManager().SubtractSpecialtyBonus( m_DefaultTimeToComplete, m_Action.GetSpecialtyWeight(), true);
+		m_AdjustedTimeToComplete = m_DefaultTimeToComplete; //removed softskills 
 	}
 	
 	override int Execute( ActionData action_data )

@@ -56,12 +56,16 @@ class ActionRaiseMegaphone: ActionContinuousBase
 
 	override void OnStartServer( ActionData action_data )
 	{
+		super.OnStartServer(action_data);
+		
 		ItemMegaphone megaphone = ItemMegaphone.Cast( action_data.m_MainItem );
 		megaphone.SetCanSpeak( true );
 	}
 		
 	override void OnEndServer( ActionData action_data )
 	{
+		super.OnEndServer(action_data);
+		
 		ItemMegaphone megaphone = ItemMegaphone.Cast( action_data.m_MainItem );
 		megaphone.SetCanSpeak( false );
 	}

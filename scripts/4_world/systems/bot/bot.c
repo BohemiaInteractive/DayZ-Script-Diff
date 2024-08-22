@@ -18,16 +18,10 @@ class MyBotTrigger : BotTrigger
 class Bot
 {
 	PlayerBase m_Owner = null;
-	protected ref Timer m_Timer = new Timer;
-	protected const float c_TriggerTimeoutMS = 1000.0;
-	//protected const float c_UpdateMS = 2000.0;
-	protected const float c_UpdateMS = 16.0;
 	protected ref BotFSM m_FSM = null;
-	protected bool m_UseTrigger = false;
-	protected bool m_Triggered = false;
 	protected DayZPlayerInstanceType m_InstanceType = DayZPlayerInstanceType.INSTANCETYPE_CLIENT;
-	protected ref BotTrigger m_BotTrigger = null;
-	protected ref BotStateBase m_BotTest = null;
+
+	protected ref BotStateBase m_IdleState = null;
 
 	void Bot (PlayerBase ow)
 	{
@@ -36,91 +30,52 @@ class Bot
 	
 	void SetInstanceType (DayZPlayerInstanceType t) { m_InstanceType = t; }
 
-	void Start (bool use_trigger, BotTrigger trigger = null)
+	void Start ()
 	{
-		m_UseTrigger = use_trigger;
-
 		InitFSM();
-
-		if (m_UseTrigger)
-		{
-			if (m_UseTrigger && trigger == null)
-				Error("use trigger, but trigger null");
-
-			m_Triggered = false;
-			m_BotTrigger = trigger;
-			botDebugPrint("[bot] + " + m_Owner + " Bot waiting for trigger...");
-			m_Timer.Run(c_TriggerTimeoutMS / 1000.0, this, "OnTrigger", null, true);
-		}
-		else
-		{
-			botDebugPrint("[bot] + " + m_Owner + " Bot Started.");
-			m_Timer.Run(c_UpdateMS / 1000.0, this, "OnTimer", null, true);
-		}
-	}
-
-	void DelayedStart (float ms)
-	{
-		m_Timer.Run(ms / 1000.0, this, "OnDelayedStart", null, false);
-	}
-
-	protected void OnDelayedStart ()
-	{
-		Start(false, null);
-
-		ProcessEvent(new BotEventStart(m_Owner));
-		m_UseTrigger = false;
 	}
 
 	void Stop ()
 	{
-		m_Triggered = false;
-		m_Timer.Stop();
 		m_FSM.Terminate();
 	}
 
-	protected void OnTrigger ()
+	void StartAction(int action)
 	{
-		bool triggered = m_BotTrigger.CheckTrigger();
-
-		if (!m_Triggered)
+		switch (action)
 		{
-			if (triggered)
-			{
-				m_Timer.Stop(); // stop trigger timer
-				m_Triggered = true;
-				ProcessEvent(new BotEventStart(m_Owner));
-				m_Timer.Run(c_UpdateMS / 1000.0, this, "OnUpdate", null, true);
-
-				botDebugPrint("[bot] + " + m_Owner + " Started test!");
-			}
+		case EActions.PLAYER_BOT_STOP_CURRENT:
+			ProcessEvent(new BotEventStop(m_Owner, null));
+			return;
 		}
-		else
-		{
-			if (!triggered)
-			{
-				m_Timer.Stop(); // stop update timer
-				m_Triggered = false;
-				ProcessEvent(new BotEventStop(m_Owner));
-				m_Timer.Run(c_TriggerTimeoutMS / 1000.0, this, "OnTrigger", null, true);
 
-				botDebugPrint("[bot] + " + m_Owner + " Stopped test!");
-			}
-		}
+		ProcessEvent(new BotEventStartDebug(m_Owner, null, action));
 	}
 
 	void OnUpdate (float dt)
 	{
 		m_FSM.GetCurrentState().OnUpdate(dt);
-
-		OnTrigger(); // to detect trigger stop
 	}
 
-	void OnTimer ()
-	{
-		//m_FSM.GetCurrentState().OnUpdate(c_UpdateMS / 1000.0);
+	// events
+	ref BotEventBase ___Bgn__ = new BotEventStart;
+	ref BotEventBase __Stop__ = new BotEventStop;
+	ref BotEventBase ___OK___ = new BotEventEndOK;
+	ref BotEventBase __Fail__ = new BotEventEndFail;
+	ref BotEventBase __Tout__ = new BotEventEndTimeout;
+	ref BotEventBase __IChg__ = new BotEventOnItemInHandsChanged;
 
-		//OnTrigger(); // to detect trigger stop
+	void AddTransition(BotStateBase state, int id)
+	{
+		BotEventStartDebug evt = new BotEventStartDebug(null, null, id);
+
+		m_FSM.AddTransition(new BotTransition(m_IdleState, evt, state, null, new BotGuardDebugEventMatches(evt)));
+
+		m_FSM.AddTransition(new BotTransition(state, ___OK___, m_IdleState));
+		m_FSM.AddTransition(new BotTransition(state, __Fail__, m_IdleState));
+		m_FSM.AddTransition(new BotTransition(state, __Tout__, m_IdleState));
+
+		m_FSM.AddTransition(new BotTransition(state, __Stop__, m_IdleState));
 	}
 
 	void InitFSM ()
@@ -128,39 +83,24 @@ class Bot
 		m_FSM = new BotFSM();
 
 		// basic states
-		BotStateBase BotIdle = new BotStateIdle(this, NULL);
-		// unstable (intermediate) states
-		m_BotTest = new BotTestSpamUserActions(this, NULL);
-		//m_BotTest = new BotTestAttachAndDropCycle(this, NULL);
-		//m_BotTest = new BotTestItemMoveBackAndForth(this, NULL);
-		//m_BotTest = new Bot_TestSpawnOpen(this, NULL);
-		//m_BotTest = new Bot_TestSpawnOpenDestroy(this, NULL);
-		//m_BotTest = new Bot_TestSpawnOpenEat(this, NULL);
-		//m_BotTest = new BotTestSwapG2H(this, NULL);
-		//m_BotTest = new BotTestSwapC2H(this, NULL);
-		//m_BotTest = new BotTestSwapInternal(this, NULL);
-
-		// events
-		BotEventBase ___Bgn__ = new BotEventStart;
-		BotEventBase __Stop__ = new BotEventStop;
-		BotEventBase ___OK___ = new BotEventEndOK;
-		BotEventBase __Fail__ = new BotEventEndFail;
-		BotEventBase __Tout__ = new BotEventEndTimeout;
-		BotEventBase __IChg__ = new BotEventOnItemInHandsChanged;
+		m_IdleState = new BotStateIdle(this, NULL);
 
 		///@{ transition table
-		m_FSM.AddTransition(new BotTransition(  BotIdle     , ___Bgn__,   m_BotTest));
-		m_FSM.AddTransition(new BotTransition(  BotIdle     , __Stop__,        NULL));
 
-		// causes restart of FSM
-		//m_FSM.AddTransition(new BotTransition(m_BotTest     , __IChg__,   m_BotTest));
+		AddTransition(new BotStanceRandomizer(this, NULL), EActions.PLAYER_BOT_RANDOMIZE_STANCE);
+		AddTransition(new BotTestSpamUserActions(this, NULL), EActions.PLAYER_BOT_SPAM_USER_ACTIONS);
+		AddTransition(new BotTestAttachAndDropCycle(this, NULL), EActions.PLAYER_BOT_TEST_ATTACH_AND_DROP_CYCLE);
+		AddTransition(new BotTestItemMoveBackAndForth(this, NULL), EActions.PLAYER_BOT_TEST_ITEM_MOVE_BACK_AND_FORTH);
+		AddTransition(new Bot_TestSpawnOpen(this, NULL), EActions.PLAYER_BOT_TEST_SPAWN_OPEN);
+		AddTransition(new Bot_TestSpawnOpenDestroy(this, NULL), EActions.PLAYER_BOT_TEST_SPAWN_OPEN_DESTROY);
+		AddTransition(new Bot_TestSpawnOpenEat(this, NULL), EActions.PLAYER_BOT_TEST_SPAWN_OPEN_EAT);
+		AddTransition(new BotTestSwapG2H(this, NULL), EActions.PLAYER_BOT_TEST_SWAP_G2H);
+		//AddTransition(new BotTestSwapC2H(this, NULL), EActions.PLAYER_BOT_TEST_SWAP_C2H);
+		AddTransition(new BotTestSwapInternal(this, NULL), EActions.PLAYER_BOT_TEST_SWAP_INTERNAL);
 
-		//m_FSM.AddTransition(new BotTransition(m_BotTest     , ___OK___,     BotIdle));
-		m_FSM.AddTransition(new BotTransition(m_BotTest     , __Fail__,     BotIdle));
-		m_FSM.AddTransition(new BotTransition(m_BotTest     , __Tout__,     BotIdle));
 		///@} transition table
 
-		m_FSM.SetInitialState(BotIdle);
+		m_FSM.SetInitialState(m_IdleState);
 		m_FSM.Start();
 	}
 	

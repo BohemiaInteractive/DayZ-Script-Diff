@@ -44,13 +44,14 @@ class SlotsIcon: LayoutHolder
 	protected Widget				m_ItemSizePanel;
 	protected TextWidget			m_ItemSizeWidget;
 	
-	protected Widget				m_AmmoIcon;
-	
 	protected Widget				m_RadialIconPanel;
 	protected Widget				m_RadialIconClosed;
 	protected Widget				m_RadialIcon;
-	
+
 	protected bool					m_Reserved;
+
+	protected ImageWidget				m_AmmoIcon;
+	protected ref array<ImageWidget>	m_AmmoIcons;
 
 	void SlotsIcon( LayoutHolder parent, Widget root, int index, EntityAI slot_parent )
 	{
@@ -82,7 +83,7 @@ class SlotsIcon: LayoutHolder
 		m_ItemSizePanel			= m_MainWidget.FindAnyWidget( "ItemSizePanel" + index );
 		m_ItemSizeWidget		= TextWidget.Cast( m_MainWidget.FindAnyWidget( "ItemSize" + index ) );
 		
-		m_AmmoIcon				= m_MainWidget.FindAnyWidget( "AmmoIcon" + index );
+		m_AmmoIcon				= ImageWidget.Cast(m_MainWidget.FindAnyWidget( "AmmoIcon" + index ));
 		
 		m_RadialIconPanel		= m_MainWidget.FindAnyWidget( "RadialIconPanel" + index );
 		m_RadialIconClosed		= m_MainWidget.FindAnyWidget( "RadialIconClosed" + index );
@@ -102,9 +103,6 @@ class SlotsIcon: LayoutHolder
 		
 		WidgetEventHandler.GetInstance().RegisterOnDrag( m_PanelWidget, this, "OnIconDrag" );
 		WidgetEventHandler.GetInstance().RegisterOnDrop( m_PanelWidget, this, "OnIconDrop" );
-		
-		//WidgetEventHandler.GetInstance().RegisterOnMouseEnter( m_ReservedWidget,  this, "MouseEnter" );
-		//WidgetEventHandler.GetInstance().RegisterOnMouseLeave( m_ReservedWidget,  this, "MouseLeave" );
 		
 		m_Reserved 				= false;
 		m_SlotID 				= -1;
@@ -294,7 +292,7 @@ class SlotsIcon: LayoutHolder
 		return m_ItemSizeWidget;
 	}
 
-	Widget GetAmmoIcon()
+	ImageWidget GetAmmoIcon()
 	{
 		return m_AmmoIcon;
 	}
@@ -346,17 +344,17 @@ class SlotsIcon: LayoutHolder
 
 	override void Refresh()
 	{
-		if( m_HasTemperature )
+		//if (m_HasTemperature)
 			SetTemperature();
-		if( m_IsWeapon )
+		if (m_IsWeapon)
 			RefreshMuzzleIcon();
-		if( m_HasQuantity )
+		if (m_HasQuantity)
 			SetQuantity();
 	}
 
 	void SetTemperature()
 	{
-		ItemManager.GetInstance().SetIconTemperature( EntityAI.Cast( m_Obj ), m_MainWidget );
+		ItemManager.GetInstance().SetTemperature(EntityAI.Cast( m_Obj ), m_ItemPreview);
 	}
 
 	Object GetObject()
@@ -376,18 +374,47 @@ class SlotsIcon: LayoutHolder
 	
 	void RefreshMuzzleIcon()
 	{
-		Weapon_Base wpn = Weapon_Base.Cast( GetObject() );
-		if( wpn )
+		Weapon_Base wpn = Weapon_Base.Cast(GetObject());
+		if (wpn)
 		{
-			if( wpn.IsShowingChamberedBullet() )
+			int i;
+			if (!wpn.IsShowingChamberedBullet())
 			{
-				int mi = wpn.GetCurrentMuzzle();
-				m_AmmoIcon.Show( wpn.IsChamberFull( mi ) );
-				
+				for (i = 0; i < m_AmmoIcons.Count(); i++)
+					m_AmmoIcon = m_AmmoIcons.Get(i);
 			}
 			else
 			{
-				m_AmmoIcon.Show( false );
+				for (i = 0; i < wpn.GetMuzzleCount(); i++)
+				{
+					if (i > m_AmmoIcons.Count())
+						break;
+					
+					m_AmmoIcon = m_AmmoIcons.Get(i);
+					if (wpn.IsChamberFull(i))
+					{
+						m_AmmoIcon.Show(true);
+						if (wpn.IsJammed())
+						{
+							m_AmmoIcon.Show(true);
+							m_AmmoIcon.SetImage(2);
+						}
+						else if (wpn.IsChamberFiredOut(i))
+						{
+							m_AmmoIcon.Show(true);
+							m_AmmoIcon.SetImage(1);
+						}
+						else
+						{
+							m_AmmoIcon.Show(true);
+							m_AmmoIcon.SetImage(0);
+						}
+					}
+					else
+					{
+						m_AmmoIcon.Show(false);
+					}
+				}
 			}
 		}
 	}
@@ -595,7 +622,66 @@ class SlotsIcon: LayoutHolder
 	
 	void CheckIsWeapon()
 	{
-		m_IsWeapon = ( Weapon_Base.Cast( m_Obj ) != null );
+		Weapon_Base wpn = Weapon_Base.Cast(m_Obj);
+		if (wpn)
+		{
+			m_AmmoIcons = new array<ImageWidget>();
+			m_IsWeapon = true;
+			float posX = 0.0;
+			float width = 0.0, height = 0.0;
+			for (int i = 0; i < wpn.GetMuzzleCount(); i++)
+			{
+				if (i == 1)
+				{
+					m_AmmoIcons[0].GetSize(width,height);
+				}
+				posX += width;
+				
+				m_AmmoIcon.SetPos(posX, 0.0, false);
+				
+				AmmoData data = Magazine.GetAmmoData(wpn.GetChamberAmmoTypeName(i));
+				if (data)
+				{
+					CartridgeType cartridgeType = data.m_CartridgeType;
+					switch (cartridgeType)
+					{
+						case CartridgeType.Pistol:
+						{
+							m_AmmoIcon.LoadImageFile(0, "set:dayz_gui image:cartridge_pistol");
+							m_AmmoIcon.LoadImageFile(1, "set:dayz_gui image:shell_pistol");
+							m_AmmoIcon.LoadImageFile(2, "set:dayz_gui image:jam_pistol");
+							break;
+						}
+						case CartridgeType.Intermediate:
+						{
+							m_AmmoIcon.LoadImageFile(0, "set:dayz_gui image:cartridge_int");
+							m_AmmoIcon.LoadImageFile(1, "set:dayz_gui image:shell_int");
+							m_AmmoIcon.LoadImageFile(2, "set:dayz_gui image:jam_int");
+							break;
+						}
+						case CartridgeType.FullPower:
+						{
+							m_AmmoIcon.LoadImageFile(0, "set:dayz_gui image:cartridge_fp");
+							m_AmmoIcon.LoadImageFile(1, "set:dayz_gui image:shell_fp");
+							m_AmmoIcon.LoadImageFile(2, "set:dayz_gui image:jam_fp");
+							break;
+						}
+						case CartridgeType.Shell:
+						{
+							m_AmmoIcon.LoadImageFile(0, "set:dayz_gui image:cartridge_shell");
+							m_AmmoIcon.LoadImageFile(1, "set:dayz_gui image:shell_shell");
+							m_AmmoIcon.LoadImageFile(2, "set:dayz_gui image:jam_shell");
+							break;
+						}
+					}
+				}
+				m_AmmoIcons.Insert(m_AmmoIcon);
+			}
+		}
+		else
+		{
+			m_IsWeapon = false;
+		}
 	}
 	
 	void CheckIsMagazine()
@@ -605,9 +691,9 @@ class SlotsIcon: LayoutHolder
 	
 	void CheckHasTemperature()
 	{
-		if( m_Item )
+		if (m_Item)
 		{
-			m_HasTemperature = ( m_Item.GetTemperatureMax() != 0 && m_Item.GetTemperatureMin() != 0 );
+			m_HasTemperature = m_Item.CanHaveTemperature();
 		}
 	}
 	
@@ -697,15 +783,15 @@ class SlotsIcon: LayoutHolder
 	
 	override void UpdateInterval()
 	{
-		if( m_Item )
+		if (m_Item)
 		{
-			if( m_HasTemperature )
+			if (m_HasTemperature)
 				SetTemperature();
-			if( m_IsWeapon )
+			if (m_IsWeapon)
 				RefreshMuzzleIcon();
-			if( m_HasQuantity )
+			if (m_HasQuantity)
 				SetQuantity();
-			if( m_HasItemSize )
+			if (m_HasItemSize)
 				SetItemSize();
 		}
 	}

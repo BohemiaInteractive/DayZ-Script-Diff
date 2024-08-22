@@ -7,7 +7,7 @@ class BakedBeansCan_Opened: Edible_Base
 	
 	override bool CanProcessDecay()
 	{
-		return !(GetAgents() & eAgents.FOOD_POISON);
+		return !GetIsFrozen() && !(GetAgents() & eAgents.FOOD_POISON);
 	}
 	
 	override void SetActions()

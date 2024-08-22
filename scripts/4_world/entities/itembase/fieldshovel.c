@@ -10,7 +10,7 @@ class FieldShovel extends ItemBase
 		super.SetActions();
 		
 		AddAction(ActionClapBearTrapWithThisItem);
-		AddAction(ActionTogglePlaceObject);
+		AddAction(ActionTogglePlaceObjectDigging);
 		AddAction(ActionDigGardenPlot);
 		AddAction(ActionDismantleGardenPlot);
 		AddAction(ActionDismantlePart);
@@ -22,5 +22,10 @@ class FieldShovel extends ItemBase
 		AddAction(ActionFillObject);
 		AddAction(ActionDigWorms);
 		AddAction(ActionCreateGreenhouseGardenPlot);
+	}
+		
+	override int GetOnDigWormsAmount()
+	{
+		return 3;
 	}
 }

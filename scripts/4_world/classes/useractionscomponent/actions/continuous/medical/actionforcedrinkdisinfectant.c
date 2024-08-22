@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionForceDrinkDisinfectant: ActionForceDrink
 {
 	override void ApplyModifiers( ActionData action_data )

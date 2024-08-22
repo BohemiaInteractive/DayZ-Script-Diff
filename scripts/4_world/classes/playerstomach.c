@@ -6,8 +6,9 @@ class StomachItem
 	//bool m_IsLiquid;
 	string m_ClassName;
 	int m_Agents;
+	protected float m_Temperature;
 	
-	void StomachItem(string class_name, float amount, NutritionalProfile profile,int foodstage, int agents)
+	void StomachItem(string class_name, float amount, NutritionalProfile profile,int foodstage, int agents, float temperature)
 	{
 		m_Amount = amount;
 		m_Profile = profile;
@@ -15,6 +16,7 @@ class StomachItem
 		m_FoodStage = foodstage;
 		m_ClassName = class_name;
 		m_Agents = agents;
+		m_Temperature = temperature;
 	}
 	
 	string GetClassName()
@@ -32,9 +34,7 @@ class StomachItem
 	{
 		return m_IsLiquid;
 	}*/
-	
-
-	
+		
 	int GetFoodStage()
 	{
 		return m_FoodStage;
@@ -62,36 +62,50 @@ class StomachItem
 		m_Agents = m_Agents | agents;
 	}
 	
+	float GetTemperature()
+	{
+		return m_Temperature;
+	}
+	
+	// adjust temperature based on the fraction of the new amount compared to the original amount
+	void AddTemperature(float temperature, float fraction)
+	{
+		float currentTempFraction = (1 - 1/fraction) * m_Temperature;
+		float newTempFraction = (1/fraction) * temperature;
+		
+		m_Temperature = currentTempFraction + newTempFraction;
+	}
+	
 	
 	// "digests" given amount, "outs" nutritional components, and returns 'true' if leads to complete item digestion(no amount left)
 	bool ProcessDigestion(float digestion_points, out float water, out float energy, out float toxicity, out float volume, out int agents, out float consumed_amount)
 	{
 		agents = m_Agents;
-		consumed_amount = GetNutritions(digestion_points, m_Profile, water, energy, toxicity );
+		consumed_amount = GetNutritions(digestion_points, m_Profile, water, energy, toxicity);
 		m_Amount -= consumed_amount;
 		volume = m_Profile.GetFullnessIndex() * m_Amount;
-		return( m_Amount < 0.001 );
+		return(m_Amount < 0.001);
 	}
 	
-	float GetNutritions( float digestion_points, NutritionalProfile profile, out float water, out float energy, out float toxicity )
-	{	
+	float GetNutritions(float digestion_points, NutritionalProfile profile, out float water, out float energy, out float toxicity)
+	{
 		float energy_per_unit = profile.GetEnergy() / 100;
 		float water_per_unit = profile.GetWaterContent() / 100;
 		float toxicity_per_unit = profile.GetToxicity();
 		float digestability = profile.GetDigestibility();
 		
-		if(digestability == 0)//if undefined
+		if (digestability == 0)//if undefined
 		{
 			digestability = 1;
 		}
 		
 		float consumed_quantity = digestion_points * digestability;
 		
-		if( m_Amount < consumed_quantity )
+		if (m_Amount < consumed_quantity)
 		{
 			consumed_quantity = m_Amount;
 		}
-		if ( consumed_quantity > 0 )
+		if (consumed_quantity > 0)
 		{
 			water = consumed_quantity * water_per_unit;
 			energy = consumed_quantity * energy_per_unit;
@@ -121,6 +135,7 @@ class PlayerStomach
 	int 	m_DigestingType;
 	PlayerBase m_Player;
 	float m_StomachVolume;
+	protected float m_StomachTemperature;
 	const int STORAGE_VERSION = 106;
 	
 		
@@ -129,21 +144,36 @@ class PlayerStomach
 		m_Player = player;
 	}
 
-	void ~PlayerStomach()
-	{
-		
-	}
-	
 	
 	float GetStomachVolume()
 	{
 		return m_StomachVolume;
 	}
 	
+	float GetStomachTemperature()
+	{
+		return m_StomachTemperature;
+	}
+	
 	void ClearContents()
 	{
 		m_StomachContents.Clear();
 		m_StomachVolume = 0.0;
+		m_StomachTemperature = 0;
+	}
+	
+	// Reduce content of the stomach by provided percentage
+	void ReduceContents(float percent)
+	{
+		percent = Math.Clamp(percent, 0, 100);
+		float reduction = percent * 0.01;
+		
+		foreach (StomachItem item : m_StomachContents)
+		{
+			item.AddAmount( -(item.GetAmount() * reduction) );
+		}
+		
+		m_StomachVolume -= m_StomachVolume * reduction;
 	}
 	
 	void SetAgentTransferFilter(int filter_agents)
@@ -160,8 +190,6 @@ class PlayerStomach
 	{
 		int hash = classname.Hash();
 		CHECKSUM = CHECKSUM^hash; //xor hash vs current checksum
-//		Print(classname);
-//		Print(CHECKSUM);
 		m_NamesToIDs.Insert(classname, id);
 		m_IDsToNames.Insert(id, classname);
 	}
@@ -173,7 +201,7 @@ class PlayerStomach
 	
 	static int GetIDFromClassname(string name)
 	{
-		if(!m_NamesToIDs.Contains(name))
+		if (!m_NamesToIDs.Contains(name))
 			return -1;
 		return m_NamesToIDs.Get(name);
 	}
@@ -199,19 +227,19 @@ class PlayerStomach
 			{
 				GetGame().ConfigGetChildName(config_path, x, child_name);
 				path = config_path + " " + child_name;
-				scope = GetGame().ConfigGetInt( config_path + " " + child_name + " scope" );
+				scope = GetGame().ConfigGetInt(config_path + " " + child_name + " scope");
 				bool should_check = 1;
-				if( config_path == "CfgVehicles" && scope == 0)
+				if (config_path == "CfgVehicles" && scope == 0)
 				{
 					should_check = 0;
 				}
 				
-				if ( should_check )
+				if (should_check)
 				{
 					bool has_nutrition = GetGame().ConfigIsExisting(path + " Nutrition");
 					bool has_stages = GetGame().ConfigIsExisting(path + " Food");
 					
-					if(has_nutrition || has_stages)
+					if (has_nutrition || has_stages)
 					{
 						//Print("child name:" + child_name);
 						RegisterItem(child_name, consumable_count);//consumable_count value serves as an unique ID for each item
@@ -239,6 +267,24 @@ class PlayerStomach
 		return m_DigestingType;
 	}
 	
+	protected void UpdateStomachTemperature()
+	{
+		m_StomachTemperature = 0;
+		
+		int stomachItemsCount = m_StomachContents.Count();
+		if (stomachItemsCount == 0)
+			return;
+		
+		StomachItem item;
+	
+		for (int i = 0; i < stomachItemsCount; i++)
+		{
+			item = m_StomachContents[i];
+			m_StomachTemperature += item.GetTemperature();
+		}
+		
+		m_StomachTemperature = m_StomachTemperature / stomachItemsCount;
+	}
 	
 	void Update(float delta_time)
 	{
@@ -250,31 +296,31 @@ class PlayerStomach
 		StomachItem item;
 		int stomach_items_count = m_StomachContents.Count();
 		m_DigestingType = 0;
-		if(stomach_items_count == 0) 
+		if (stomach_items_count == 0) 
 			return;
 		
 		float digestion_points_per_item = (DIGESTION_POINTS / stomach_items_count) * delta_time;
 		m_StomachVolume = 0;//reset, it's accumulated with each pass
-		for(int i = 0; i < m_StomachContents.Count(); i ++)
+		for (int i = stomach_items_count - 1; i >= 0; i--)
 		{
-			item = m_StomachContents.Get(i);
+			item = m_StomachContents[i];
 			float water, energy, toxicity, volume, consumed_amount;
 			int agents;
-			if(item.ProcessDigestion( digestion_points_per_item, water, energy, toxicity, volume, agents, consumed_amount ))
+			if (item.ProcessDigestion(digestion_points_per_item, water, energy, toxicity, volume, agents, consumed_amount))
 			{
 				m_StomachContents.Remove(i);
-				i--;
+				UpdateStomachTemperature();
 			}
 			m_StomachVolume += volume;
 			m_Player.GetStatEnergy().Add(energy);
 			m_Player.GetStatWater().Add(water);
 			
-			if(energy > 0)
+			if (energy > 0)
 			{
 				m_DigestingType = m_DigestingType | DIGESTING_ENERGY;
 			}
 			
-			if(water > 0)
+			if (water > 0)
 			{
 				m_DigestingType = m_DigestingType | DIGESTING_WATER;
 			}
@@ -282,24 +328,45 @@ class PlayerStomach
 			DigestAgents(agents, consumed_amount);
 		}
 	}
-
 	
 	void DigestAgents(int agents, float quantity)
 	{
-		if(!agents)
+		if (!agents)
 			return;
 		agents = agents & (~m_AgentTransferFilter);//filter against the agent filter mask
 		int highest_bit = Math.Log2(agents) + 1;
 		for(int i = 0; i < highest_bit;i++)
 		{
 			int agent = (1 << i)& agents;
-			if( agent )
+			if (agent)
 			{
 				m_Player.m_AgentPool.DigestAgent(agent, quantity);
 			}
 		}
 	}
-	
+
+	float GetVolumeContainingAgent(eAgents agent)
+	{
+		float amountByAgent = 0.0;
+		foreach (StomachItem item : m_StomachContents)
+		{
+			if (item.m_Agents == agent)
+				amountByAgent += item.m_Amount;
+		}
+		
+		return amountByAgent;
+	}
+
+	float GetVolumeContainingAgent01(eAgents agent)
+	{
+		float amount = GetVolumeContainingAgent(agent);
+		
+		if (amount > 0.0)
+			return Math.InverseLerp(0.0, GetStomachVolume(), amount);
+		
+		return 0.0;
+	}
+
 	void PrintUpdate()
 	{
 		Print("================================");
@@ -320,14 +387,14 @@ class PlayerStomach
 		Print("================================");
 	}
 	
-	void AddToStomach(string class_name, float amount, int food_stage = 0, int agents = 0)
+	void AddToStomach(string class_name, float amount, int food_stage = 0, int agents = 0, float temperature = 0)
 	{
 		if (GetIDFromClassname(class_name) == -1)
 			return;
 		bool is_liquid;
 		
 		NutritionalProfile profile = Liquid.GetNutritionalProfileByName(class_name);
-		if(profile)
+		if (profile)
 		{
 			is_liquid = true;
 		}
@@ -336,10 +403,10 @@ class PlayerStomach
 			profile = Edible_Base.GetNutritionalProfile(null,class_name, food_stage);
 		}
 		
-		if(profile)
+		if (profile)
 		{
 			// sanity checks start
-			if(amount > ACCEPTABLE_QUANTITY_MAX || amount < 0)
+			if (amount > ACCEPTABLE_QUANTITY_MAX || amount < 0)
 			{
 				amount = 0;
 			}
@@ -351,31 +418,41 @@ class PlayerStomach
 			
 			agents = agents | profile.GetAgents();
 			bool found = false;
-			for(int i = 0; i < m_StomachContents.Count(); i++)
+			int count = m_StomachContents.Count();
+			float fraction;
+			for(int i = 0; i < count; i++)
 			{
 				StomachItem stomach_item = m_StomachContents.Get(i);
-				if(stomach_item.GetClassName() == class_name )
+				if (stomach_item.GetClassName() == class_name && stomach_item.m_Agents == agents)
 				{
 					if (is_liquid || stomach_item.GetFoodStage() == food_stage)
 					{
+						if (amount != 0)
+							fraction = (stomach_item.m_Amount + amount) / amount;
+						else 
+							fraction = 1;
+						
+						stomach_item.AddTemperature(temperature, fraction);
 						stomach_item.AddAmount(amount);
-						stomach_item.AddAgents(agents);
+						stomach_item.AddAgents(agents); //nutrition profile agents
 						found = true;
 					}
 				}
 			}
 			
-			if(!found)
+			if (!found)
 			{
-				m_StomachContents.Insert(new StomachItem(class_name, amount, profile, food_stage, agents));
+				m_StomachContents.Insert(new StomachItem(class_name, amount, profile, food_stage, agents, temperature));
 			}
+			
+			UpdateStomachTemperature();
 		}
 	}
 	
 	void OnStoreSave(ParamsWriteContext ctx)
 	{
-		ctx.Write( PlayerStomach.CHECKSUM );
-		ctx.Write( m_StomachContents.Count() );
+		ctx.Write(PlayerStomach.CHECKSUM);
+		ctx.Write(m_StomachContents.Count());
 		StomachItem stomach_item;
 		for(int i = 0; i < m_StomachContents.Count();i++)
 		{
@@ -384,10 +461,11 @@ class PlayerStomach
 			//Print("SAVE id:" + id);
 			//Print("SAVE id_bit_offset:" + id_bit_offset);
 			
-			int write_result = stomach_item.m_FoodStage | ( id << id_bit_offset );
+			int write_result = stomach_item.m_FoodStage | (id << id_bit_offset);
 			write_result = write_result | ((int)stomach_item.m_Amount << quantity_bit_offset);
-			ctx.Write( write_result );
-			ctx.Write( stomach_item.m_Agents );
+			ctx.Write(write_result);
+			ctx.Write(stomach_item.m_Agents);
+			ctx.Write((int)stomach_item.GetTemperature());
 			//Print("SAVE write_result:" + write_result);
 		}
 		//Print("SAVE CHECKSUM:" + PlayerStomach.CHECKSUM);
@@ -396,27 +474,31 @@ class PlayerStomach
 	bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
 		int checksum, count;
-		if(!ctx.Read(checksum))
+		if (!ctx.Read(checksum))
 		{
 			return false;
 		}
 		
-		if(!ctx.Read(count))
+		if (!ctx.Read(count))
 		{
 			return false;
 		}
 		for(int i = 0; i < count; i++)
 		{
-			int value, agents;
-			if(!ctx.Read(value) )
+			int value, agents, temperature;
+			if (!ctx.Read(value))
 			{
 				return false;
 			}	
-			if(!ctx.Read(agents) )
+			if (!ctx.Read(agents))
 			{
 				return false;
 			}
-			if(checksum == CHECKSUM)//if checksum matches, add to stomach, otherwise throw the data away but go through the de-serialization to keep the stream intact
+			if (!ctx.Read(temperature))
+			{
+				return false;
+			}
+			if (checksum == CHECKSUM)//if checksum matches, add to stomach, otherwise throw the data away but go through the de-serialization to keep the stream intact
 			{
 				int amount = value >> quantity_bit_offset;//isolate amount bits
 				int id_mask = Math.Pow(2, quantity_bit_offset) - 1;
@@ -428,11 +510,11 @@ class PlayerStomach
 				//Print("LOAD id_bit_offset:" + id_bit_offset);
 				//Print("LOAD food_stage:" + food_stage);
 				string classname = GetClassnameFromID(id);
-				AddToStomach(classname, amount, food_stage, agents);
+				AddToStomach(classname, amount, food_stage, agents, temperature);
 			}
 		}
 		//Print("LOAD checksum:" + checksum);
-		if(checksum != CHECKSUM)
+		if (checksum != CHECKSUM)
 		{
 			Print("Stomach checksum fail");
 		}
@@ -448,11 +530,14 @@ class PlayerStomach
 			int food_stage = m_StomachContents.Get(i).m_FoodStage;
 			int agents = m_StomachContents.Get(i).m_Agents;
 			float amount = m_StomachContents.Get(i).m_Amount;
-			Param4<int,int,int,float> p4 = new Param4<int,int,int,float>(id, food_stage, agents, amount);
-			object_out.Insert(p4);
+			float temperature = m_StomachContents.Get(i).GetTemperature();
+			Param5<int,int,int,float,float> p5 = new Param5<int,int,int,float,float>(id, food_stage, agents, amount, temperature);
+			object_out.Insert(p5);
 		}
 		Param1<float> p1 = new Param1<float>(m_StomachVolume);
 		object_out.Insert(p1);
+		Param1<float> paramTemp = new Param1<float>(m_StomachTemperature);
+		object_out.Insert(paramTemp);
 		return count;
 		
 	}

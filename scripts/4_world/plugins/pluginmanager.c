@@ -52,7 +52,6 @@ class PluginManager
 		RegisterPlugin( "PluginObjectsInteractionManager",				false, 	true );
 		RegisterPlugin( "PluginRecipesManager",							true, 	true );
 		RegisterPlugin( "PluginTransmissionAgents",						true, 	true );
-		RegisterPlugin( "PluginAdditionalInfo",							true,	true ); //TODO clean up after Gamescom
 		RegisterPlugin( "PluginConfigEmotesProfile",					true, 	true );
 		RegisterPlugin( "PluginPresenceNotifier",						true,	false );
 		RegisterPlugin( "PluginAdminLog",								false, 	true );
@@ -68,6 +67,7 @@ class PluginManager
 		RegisterPluginDiag( "PluginRemotePlayerDebugServer",			false,	true );
 		RegisterPluginDiag( "PluginUniversalTemperatureSourceClient",	true, 	false );
 		RegisterPluginDiag( "PluginUniversalTemperatureSourceServer",	false, 	true );
+		RegisterPluginDiag( "PluginTargetTemperature",					true, 	false );
 		RegisterPluginDiag( "PluginDrawCheckerboard",					true,	false );
 		RegisterPluginDiag( "PluginItemDiagnostic",						true, 	true );
 		RegisterPluginDiag( "PluginDayZCreatureAIDebug",				true, 	true );

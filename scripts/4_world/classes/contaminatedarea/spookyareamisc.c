@@ -335,18 +335,20 @@ class SpookyPlayerStalker : ScriptedEntity
 		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
- 			m_UTSSettings 					= new UniversalTemperatureSourceSettings();
-			m_UTSSettings.m_Updateable		= true;
-			m_UTSSettings.m_UpdateInterval	= 3;
-			m_UTSSettings.m_TemperatureMin	= -20;
-			m_UTSSettings.m_TemperatureMax	= -20;
-			m_UTSSettings.m_RangeFull		= 2;
-			m_UTSSettings.m_RangeMax		= 2;
-			m_UTSSettings.m_TemperatureCap	= -20;
-			m_UTSSettings.m_ManualUpdate	= false;
+ 			m_UTSSettings 							= new UniversalTemperatureSourceSettings();
+			m_UTSSettings.m_Updateable				= true;
+			m_UTSSettings.m_UpdateInterval			= 3;
+			m_UTSSettings.m_TemperatureMin			= 0;
+			m_UTSSettings.m_TemperatureMax			= -20;
+			m_UTSSettings.m_TemperatureItemCap		= -20;
+			m_UTSSettings.m_TemperatureCap			= -20;
+			m_UTSSettings.m_RangeFull				= 2;
+			m_UTSSettings.m_RangeMax				= 2;
+			m_UTSSettings.m_ManualUpdate			= false;
+			m_UTSSettings.m_IsWorldOverriden		= false;
 			
-			m_UTSLConstant					= new UniversalTemperatureSourceLambdaConstant();
-			m_UTSource						= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLConstant);
+			m_UTSLConstant							= new UniversalTemperatureSourceLambdaConstant();
+			m_UTSource								= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLConstant);
 			m_UTSource.SetActive(true);
 		}
 

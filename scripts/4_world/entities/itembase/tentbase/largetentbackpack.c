@@ -53,11 +53,4 @@ class LargeTentBackPack extends Backpack_Base
 		m_RepackingLoopSound.SetSoundFadeOut(0.5);
 		m_RepackingLoopSound.SoundStop();
 	}
-	
-	override void SetActions()
-	{
-		super.SetActions();
-		
-		//AddAction(ActionRepackTent);
-	}
 };

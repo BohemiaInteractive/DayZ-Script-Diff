@@ -78,6 +78,7 @@ enum PostProcessEffectType
 	RotBlur,
 	GodRays,
 	Rain,
+	Snowfall,
 	FilmGrain,
 	RadialBlur,
 	ChromAber,
@@ -91,7 +92,9 @@ enum PostProcessEffectType
 	Median,//unused?
 	SunMask,
 	GaussFilter,
-	SSR //not available
+	SSR, //not available
+	Distort,
+	Ghost
 };
 /*!
 set postprocess effect to camera

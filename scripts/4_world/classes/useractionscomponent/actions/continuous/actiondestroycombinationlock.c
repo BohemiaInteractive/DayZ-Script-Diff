@@ -6,6 +6,7 @@ class ActionDestroyCombinationLockCB : ActionContinuousBaseCB
 	}
 };
 
+//!DEPRECATED
 class ActionDestroyCombinationLock: ActionContinuousBase
 {
 	static int CYCLES = 5;
@@ -58,9 +59,6 @@ class ActionDestroyCombinationLock: ActionContinuousBase
 		}
 		
 		action_data.m_MainItem.DecreaseHealth( UADamageApplied.SAW_LOCK, false );
-		
-		//soft skills
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 	
 	override string GetAdminLogMessage(ActionData action_data)

@@ -633,15 +633,14 @@ class GameInventory
 		
 		item2.GetInventory().GetCurrentInventoryLocation(il2);
 		slot = il2.GetSlot();
-
-		if (item1.GetQuantity() > item1.GetTargetQuantityMax(slot))
-			return false;
 		
+		if (item1.CanBeSplit() && item1.GetQuantity() > item1.GetTargetQuantityMax(slot))
+			return false;
 		
 		item1.GetInventory().GetCurrentInventoryLocation(il1);
 		slot = il1.GetSlot();
 		
-		if (item2.GetQuantity() > item2.GetTargetQuantityMax(slot))
+		if (item2.CanBeSplit() && item2.GetQuantity() > item2.GetTargetQuantityMax(slot))
 			return false;
 		
 		if (!item1.CanSwapEntities(item2, il2, il1) || !item2.CanSwapEntities(item1, il1, il2))
@@ -1139,11 +1138,29 @@ class GameInventory
 		InventoryLocation src = new InventoryLocation();
 		if (item.GetInventory().GetCurrentInventoryLocation(src))
 		{
-			
 			EntityAI att = target.GetInventory().FindAttachment(slot);
 			if (att)
 			{
-				att.CombineItemsClient(item, true);
+				if (mode == InventoryMode.SERVER)
+				{
+					att.CombineItemsEx(item, true);
+				}
+				else
+				{
+					att.CombineItemsClient(item, true);
+				}
+				return true;
+			}
+			else if (item.CanBeSplit() && item.GetTargetQuantityMax(slot) < item.GetQuantity())
+			{
+				if (mode == InventoryMode.SERVER)
+				{
+					item.SplitIntoStackMaxEx(target, slot);
+				}
+				else
+				{
+					item.SplitIntoStackMaxClient(target,slot);
+				}
 				return true;
 			}
 			else

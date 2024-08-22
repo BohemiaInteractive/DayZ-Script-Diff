@@ -114,6 +114,14 @@ enum EInputRestrictors
 	MAP
 }
 
+enum EPollution // FLAG - 1,2,4,8...
+{
+	NONE 			= 0,
+	HEAVYMETAL		= 1,
+	//POLLUTION2	= 2,
+	//POLLUTION3	= 4,
+}
+
 /** @}*/
 
 //! how often virtual hud checks if there is a difference since last sync
@@ -235,7 +243,6 @@ const string	CFG_FILE_ENS_HISTORY	= "script_enscript.history";
 const string	CFG_FILE_ENS_HISTORY_SERVER	= "script_enscriptServer.history";
 const string	CFG_FILE_SCRIPT_LOG		= "$profile:script.log";
 const string	CFG_FILE_SCRIPT_LOG_EXT	= "$profile:scriptExt.log";
-const string	CFG_FILE_ADDITIONAL_INFO= "$profile:serverInfo.cfg";
 const string 	CFG_FILE_DEBUG_DIR =	"$profile:ScriptConsole/";
 const string 	CFG_FILE_MISSION_LIST =	"$profile:missionlist.json";
 /** @}*/
@@ -463,6 +470,7 @@ const int		UA_SETEND_2 = 32;
  * \desc Agent transmission system
  * @{
  */
+const int AGT_NONE				= 0;
 const int AGT_INV_IN	 		= 1;
 const int AGT_INV_OUT	 		= 2;
 const int AGT_UACTION_CONSUME	= 3;
@@ -474,6 +482,9 @@ const int AGT_UACTION_TO_PLAYER	= 8;
 const int AGT_UACTION_TO_ITEM	= 9;
 const int AGT_ITEM_TO_FLESH		= 10;
 const int AGT_AIRBOURNE_CHEMICAL = 11;
+const int AGT_SNOW				= 12;
+const int AGT_WATER_FRESH		= 13;
+const int AGT_WATER_HOT_SPRING	= 14;
 
 const int DEF_BIOLOGICAL		= 1;
 const int DEF_CHEMICAL			= 2;
@@ -492,6 +503,8 @@ const int QUANTITY_PROGRESS = 2;
  */
 // BEWARE ALL INDIVIDUAL LIQUID TYPES ARE ALSO REPRESENTED CONFIG-SIDE AND MUST MATCH(all changes must be made on both sides)
 // NOTE ANY NUMBER HERE MUST BE A 0 OR ANY POWER OF TWO, THERE IS A MAXIMUM OF 32 INDIVIDUAL LIQUID TYPES POSSIBLE
+const int LIQUID_NONE		= 0;
+
 const int LIQUID_BLOOD_0_P	= 1;
 const int LIQUID_BLOOD_0_N	= 2;
 const int LIQUID_BLOOD_A_P	= 4;
@@ -502,14 +515,23 @@ const int LIQUID_BLOOD_AB_P	= 64;
 const int LIQUID_BLOOD_AB_N = 128;
 const int LIQUID_SALINE 	= 256;
 
-const int LIQUID_WATER = 512;
-const int LIQUID_RIVERWATER = 1024;
-const int LIQUID_VODKA = 2048;
-const int LIQUID_BEER = 4096;
-const int LIQUID_GASOLINE = 8192;
-const int LIQUID_DIESEL = 16384;
-const int LIQUID_DISINFECTANT = 32768;
-const int LIQUID_SOLUTION = 65536;
+const int LIQUID_WATER			= 512;		// base water liquid type, LIQUID_GROUP_DRINKWATER translates into this type within script
+const int LIQUID_RIVERWATER		= 1024;		// unused? river surfaces are using FRESHWATER
+const int LIQUID_VODKA 			= 2048;
+const int LIQUID_BEER 			= 4096;
+const int LIQUID_GASOLINE 		= 8192;
+const int LIQUID_DIESEL 		= 16384;
+const int LIQUID_DISINFECTANT 	= 32768;
+const int LIQUID_SOLUTION 		= 65536;
+const int LIQUID_SNOW 			= 131072;
+const int LIQUID_SALTWATER 		= 262144;
+const int LIQUID_FRESHWATER 	= 524288;	// used by river/pond surfaces
+const int LIQUID_STILLWATER 	= 1048576;	// used for unfishable surfaces
+const int LIQUID_HOTWATER	 	= 2097152;	// hot springs
+const int LIQUID_CLEANWATER		= 4194304;	// clean water from wells / rain
+
+const int LIQUID_GROUP_DRINKWATER 	= LIQUID_WATER | LIQUID_RIVERWATER | LIQUID_SNOW | LIQUID_FRESHWATER | LIQUID_STILLWATER | LIQUID_HOTWATER | LIQUID_CLEANWATER;
+const int LIQUID_GROUP_WATER 		= LIQUID_GROUP_DRINKWATER | LIQUID_SALTWATER;
 
 // these are groups which do not have to correspond with configs
 const int GROUP_LIQUID_BLOOD = 255;
@@ -554,6 +576,7 @@ const string PLAYER_CHAT_MSG 	= "player_chat_msg";
  */
 const string SHOW_QUICKBAR 		= "show_quickbar";
 const string SHOW_HUD 			= "show_hud";
+const string SHOW_HUD_VEHICLE 	= "show_hud_vehicle";
 const string HUD_BRIGHTNESS		= "hud_brightness";
 const string ENABLE_BLEEDINGINDICATION	= "enable_bleedingindication";
 const string SHOW_CONNECTIVITYINFO	= "show_connectivityinfo";
@@ -680,40 +703,46 @@ class GameConstants
 	const float ENVIRO_FIRE_INCREMENT					= 23.5;		//! how much is the generic temp effect increased when player is next to a fireplace
 	const float ENVIRO_CLOUD_DRY_EFFECT 				= 0.7;		//! how many % of ENVIRO_SUN_INCREMENT is reduced by cloudy sky
 	const float ENVIRO_FOG_DRY_EFFECT 					= 0.9;		//! how many % of ENVIRO_SUN_INCREMENT is reduced by fog
-	const float ENVIRO_CLOUDS_TEMP_EFFECT 				= 0.35;		//! how many % of environment temperature can be lowered by clouds
-	const float ENVIRO_FOG_TEMP_EFFECT 					= 0.24;		//! how many % of environment temperature can be lowered by fog
+	const float ENVIRO_FOG_TEMP_EFFECT 					= -2;		//! how strong the effect of fog is
 	const float ENVIRO_WET_PENALTY 						= 0.5;		//! at which state of item wetness (0-1) will heat isolation start having negative effect on heat comfort of item
 	const float ENVIRO_WET_PASSTHROUGH_COEF 			= 0.1;		//! how many times slower is wetting/drying items in backpacks
-	const float ENVIRO_ITEM_HEAT_TRANSFER_COEF 			= 0.01;		//! converts temperature of items to entities heatcomfort gain
-	const float ENVIRO_WATER_TEMPERATURE_COEF 			= 1.5;		//! how many time is water colder than air
 	const float ENVIRO_DEFAULT_ENTITY_HEAT 				= 2.5;		//! heat entity generates if not moving
-	const float ENVIRO_TEMPERATURE_HEIGHT_REDUCTION 	= 0.02;		//! amount of ?C reduced for each 100 meteres of height above water level
-	const float ENVIRO_TEMPERATURE_INSIDE_COEF 			= 0.085;	//! increases temp in interiors
 	const float ENVIRO_TEMPERATURE_INSIDE_VEHICLE_COEF	= 0.051;	//! increases temp inside vehicles
-	const float ENVIRO_TEMPERATURE_UNDERROOF_COEF		= 0.072;
+	const float ENVIRO_TEMPERATURE_UNDERROOF_COEF		= 0.75;		//! underroof wind multiplier
 	const float ENVIRO_TEMPERATURE_WIND_COEF			= 2.5;		//! windchill effect on base temperature
 	const float ENVIRO_WIND_EFFECT 						= 0.25;		//! amount of % wind affect drying/wetting
 	const float ENVIRO_HIGH_NOON 						= 12;		//! when is sun highest on sky
 	
-	const float ENVIRO_HEATCOMFORT_HEADPARTS_WEIGHT		= 0.3;		//! how much this head parts (clothing) affects final heatcomfort
-	const float ENVIRO_HEATCOMFORT_BODYPARTS_WEIGHT		= 1.0;		//! how much this body parts (clothing) affects final heatcomfort
-	const float ENVIRO_HEATCOMFORT_FEETPARTS_WEIGHT		= 0.5;		//! how much this feet parts (clothing) affects final heatcomfort
-	const float ENVIRO_HEATISOLATION_BACK_WEIGHT		= 0.45;		//! weight of back for the sum of heat isolation
-	const float ENVIRO_HEATISOLATION_VEST_WEIGHT		= 0.64;		//! weight of vest for the sum of heat isolation
-	const float ENVIRO_LOW_TEMP_LIMIT					= -40;		//! lowest temperature(deg Celsius) where the player gets lowest possible heat comfort (-1)
-	const float ENVIRO_HIGH_TEMP_LIMIT					= 50;		//! highest temperature(deg Celsius) where the player gets highest possible heat comfort (1)
-	const float ENVIRO_PLAYER_COMFORT_TEMP				= 26;		//! comfort temperature of environment for the player
-	const float ENVIRO_TEMP_EFFECT_ON_PLAYER			= 60;		//! impact of enviro temperature on player (lower value = higher, cannot be zero or below!)
-	const float ENVIRO_PLAYER_HEATBUFFER_DECREASE		= 0.34;		//! Multiplier of enviro temperature for heat buffer decrease (after its static timer runs out)
-	const float ENVIRO_PLAYER_HEATBUFFER_INCREASE		= 0.51;		//! How much heat buffer increases per one enviro tick
-	const float ENVIRO_PLAYER_HEATBUFFER_TICK			= 0.011;	//! Heat buffer static timer tick (set for 2s enviro tick, 180s to 1.0)
+	const float ENVIRO_HEATCOMFORT_MAX_STEP_SIZE 		= 0.25;		//! max step of dynamic heatcomfort change (applies if diff between target and dynamic HC is bigger than this value)
 	
+	static const float ENVIRO_HEATCOMFORT_HEADGEAR_WEIGHT		= 0.05;		//! how much this body part affects final heatcomfort
+	static const float ENVIRO_HEATCOMFORT_MASK_WEIGHT			= 0.05;
+	static const float ENVIRO_HEATCOMFORT_VEST_WEIGHT			= 0.04;
+	static const float ENVIRO_HEATCOMFORT_BODY_WEIGHT			= 0.12;
+	static const float ENVIRO_HEATCOMFORT_BACK_WEIGHT			= 0.03;
+	static const float ENVIRO_HEATCOMFORT_GLOVES_WEIGHT			= 0.04;
+	static const float ENVIRO_HEATCOMFORT_LEGS_WEIGHT			= 0.12;
+	static const float ENVIRO_HEATCOMFORT_FEET_WEIGHT			= 0.06;
+	static const float ENVIRO_HEATCOMFORT_HIPS_WEIGHT			= 0.00;
+	//! don't forget to update the weights from above if you are adding/removing them
+	static const float ENVIRO_HEATCOMFORT_WEIGHT_SUMMARY 		= ENVIRO_HEATCOMFORT_HEADGEAR_WEIGHT + ENVIRO_HEATCOMFORT_MASK_WEIGHT +ENVIRO_HEATCOMFORT_VEST_WEIGHT + ENVIRO_HEATCOMFORT_BODY_WEIGHT + ENVIRO_HEATCOMFORT_BACK_WEIGHT + ENVIRO_HEATCOMFORT_GLOVES_WEIGHT + ENVIRO_HEATCOMFORT_LEGS_WEIGHT + ENVIRO_HEATCOMFORT_FEET_WEIGHT + ENVIRO_HEATCOMFORT_HIPS_WEIGHT;
+	
+	const float ENVIRO_STOMACH_WEIGHT					= 0.2;		//! how much stomach content affects final heatcomfort
+	const float ENVIRO_LOW_TEMP_LIMIT					= -20;		//! lowest temperature(deg Celsius) where the player gets lowest possible heat comfort (-1)
+	const float ENVIRO_HIGH_TEMP_LIMIT					= 70;		//! highest temperature(deg Celsius) where the player gets highest possible heat comfort (1)
+	const float ENVIRO_PLAYER_COMFORT_TEMP				= 24;		//! comfort temperature of environment for the player
+	const float ENVIRO_TEMP_EFFECT_ON_PLAYER			= 40;		//! impact of enviro temperature on player (lower value = higher, cannot be zero or below!)
+	const float ENVIRO_PLAYER_HEATBUFFER_DECREASE		= 0.03;		//! How much heat buffer decreases per one enviro tick
+	const float ENVIRO_PLAYER_HEATBUFFER_INCREASE		= 0.3;		//! How much heat buffer increases per one enviro tick
+	const float ENVIRO_PLAYER_HEATBUFFER_TEMP_AFFECT	= 0.50;		//! How much heat buffer change rates are affected by temperature
+	const float ENVIRO_PLAYER_HEATBUFFER_CAPACITY_MIN	= 0.3;		//! Minimal heatbuffer capacity of naked character
+
 	//! impact of item wetness to the heat isolation
 	const float ENVIRO_ISOLATION_WETFACTOR_DRY			= 1.0;
 	const float ENVIRO_ISOLATION_WETFACTOR_DAMP			= 0.9;
-	const float ENVIRO_ISOLATION_WETFACTOR_WET			= 0.75;
-	const float ENVIRO_ISOLATION_WETFACTOR_SOAKED		= 0.5;
-	const float ENVIRO_ISOLATION_WETFACTOR_DRENCHED 	= 0.0;
+	const float ENVIRO_ISOLATION_WETFACTOR_WET			= 0.5;
+	const float ENVIRO_ISOLATION_WETFACTOR_SOAKED		= 0.1;
+	const float ENVIRO_ISOLATION_WETFACTOR_DRENCHED 	= -0.15;
 	//! impact of item health (state) to the heat isolation
 	const float ENVIRO_ISOLATION_HEALTHFACTOR_PRISTINE  = 1.0;
 	const float ENVIRO_ISOLATION_HEALTHFACTOR_WORN		= 0.9;
@@ -723,11 +752,28 @@ class GameConstants
 	
 	const float ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS		= 20.0;
 	
+	const float ENVIRO_NAKED_BODY_PENALTY_RAIN_MIN_VALUE 		= 0.2; //! how intensive a rain should be to enable rain penalty on naked body
+	const float ENVIRO_NAKED_BODY_PENALTY_SNOWFALL_MIN_VALUE 	= 0.4; //! how intensive a snowfall should be to enable snowfall penalty on naked body
+	
 	const float LIQUID_RAIN_AMOUNT_COEF_BASE = 10.0;
+	const float COLD_AREA_TEMPERATURE_THRESHOLD = 5;				//! (deg Celsius) temperature limit up to which player is allowed to dig garden plots
+	const float COLD_AREA_DIG_WORMS_MODIF = 1.5;					//! time modifier, how much longer it takes to dig up worms while in a cold area
+	
+	const float ENVIRO_WIND_EFFECT_SLOPE = -35.0;					//! Affects the slope of calculation
+	const float ENVIRO_WIND_CHILL_LIMIT = 30.0;						//! Above this value, the wind effect increases the modified temperature
+	
+	const float ENVIRO_SNOW_WET_COEF = 0.1;
 	
 	// --
 	//! various damage per second constants
 	const float FIRE_ATTACHMENT_DAMAGE_PER_SECOND 		= 0.07;		//! damage per second dealt to attachment by fire
+	
+	const float ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT	= 15.0;
+	const float ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT	= 35.0;
+	
+	const float ITEM_TEMPERATURE_QUANTITY_WEIGHT_MULTIPLIER = 0.04;
+	
+	static const float ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE = (GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT + GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT) * 0.5;
 	
 	/** @}*/
 	
@@ -789,6 +835,22 @@ class GameConstants
 	/** @}*/
 	
 	/**
+	 * \defgroup ItemTemperature Item Temperature Levels (ItemBase.GetTemperature) (ObjectTemperatureState)
+	 * \desc Constants for Item Temperature Levels
+	 * @{
+	 */
+	const int STATE_HOT_LVL_FOUR 	= 600;
+	const int STATE_HOT_LVL_THREE  	= 250;
+	const int STATE_HOT_LVL_TWO 	= 70;
+	const int STATE_HOT_LVL_ONE  	= 35;
+	const int STATE_NEUTRAL_TEMP	= 15;
+	const int STATE_COLD_LVL_ONE  	= 3;
+	const int STATE_COLD_LVL_TWO  	= -10;
+	const int STATE_COLD_LVL_THREE  = -50;
+	const int STATE_COLD_LVL_FOUR	= -100;
+	/** @}*/
+	
+	/**
 	 * \defgroup ItemWetness Item Wetness Weight Modifiers
 	 * \desc Constants for Item Wetness States
 	 * @{
@@ -809,14 +871,46 @@ class GameConstants
 	const float WETNESS_RATE_DRYING_INSIDE  = -0.0016;
 	const float WETNESS_RATE_DRYING_GROUND  = -0.0008;
 	
-	const float TEMPERATURE_RATE_COOLING_INSIDE = -0.17;
-	const float TEMPERATURE_RATE_COOLING_GROUND = -0.34;
-	const float TEMPERATURE_RATE_COOLING_PLAYER = -0.35; // celsius per second
+	/**
+	 * \defgroup EntityTemperature Entity Temperature constants
+	 * \desc Constants for generic Entity temperature simulation
+	 * @{
+	 */
+	
+	static const float TEMPERATURE_RATE_AVERAGE_ABS = 0.17; // °C/s
+	static const float TEMPERATURE_RATE_MAX_ABS = TEMPERATURE_RATE_AVERAGE_ABS * 6; // °C/s
+	//static const float TEMPERATURE_INTERPOLATION_EXPONENT_MAX = 3.0;
+	static const float TEMPERATURE_INTERPOLATION_THRESHOLD_MIN_ABS = 1.0; //difference in current - target temperatures
+	static const float TEMPERATURE_INTERPOLATION_THRESHOLD_MAX_ABS = 300.0; //difference in current - target temperatures
+	
+	static const float TEMPERATURE_FREEZETHAW_LEGACY_COEF = 0.2; //artificially lowers the freeze/thaw progression on reverse-calculated time values
+	
+	static const float TEMPERATURE_TIME_OVERHEAT_MIN = 180; //minimal time in seconds to overheat any overheatable entity
+	static const float TEMPERATURE_TIME_FREEZE_MIN = 60; //minimal time in seconds to freeze entity
+	static const float TEMPERATURE_TIME_THAW_MIN = 60; //minimal time in seconds to thaw entity
+	
+	static const float TEMPERATURE_FREEZE_TIME_COEF_DRIED = 0.25;
+	static const float TEMPERATURE_FREEZE_TIME_COEF_BURNED = 0.25;
+	static const float TEMPERATURE_THAW_TIME_COEF_BURNED = 0.25;
+	static const float TEMPERATURE_THAW_TIME_COEF_DRIED = 0.25;
+	
+	static const float TEMPERATURE_SENSITIVITY_THRESHOLD = 0.1; //changes lower than this will usually not be processed (absolute)
+	
+	const float TEMP_COEF_WORLD = 1; //entities on the ground
+	const float TEMP_COEF_INVENTORY = 1;
+	const float TEMP_COEF_FIREPLACE_COOLING = 2.0;
+	const float TEMP_COEF_FIREPLACE_HEATING = 2.0;
+	const float TEMP_COEF_GAS_STOVE = 1.0;
+	const float TEMP_COEF_UTS = 3.0; //universal temperature sources
+	const float TEMP_COEF_COOKING_CATCHUP = 3.0; //heating of child items that are below minimal cooking temperature (catching up)
+	const float TEMP_COEF_COOKING_DEFAULT = 3.0;
+	const float TEMP_COEF_COOLING_GLOBAL = 1.0; //one universal coef for item cooling
 	
 	const float HEATISO_THRESHOLD_BAD = 0.2;
 	const float HEATISO_THRESHOLD_LOW = 0.4;
 	const float HEATISO_THRESHOLD_MEDIUM = 0.6;
 	const float HEATISO_THRESHOLD_HIGH = 0.8;
+	/** @}*/
 	
 	/**
 	 * \defgroup Barrel Barrel related functions constants
@@ -909,7 +1003,11 @@ class GameConstants
 	 * \desc Constants for inventory
 	 */
 	const int INVENTORY_ENTITY_DROP_OVERLAP_DEPTH = 2; // How deep should it go looking for a free spot to drop an entity
-	const int INVENTORY_MAX_REACHABLE_DEPTH_ATT = 2; //ContainerWithCargoAndAttachments::AttachmentAddedEx creates 'Attachments' and 'CargoContainer' objects at depth 3 (nature of the architecture)
+	/**
+	\brief Inventory visibility depth, also governs default direct access for most cases. Actual inventory depth CAN be higher than this, but direct access from player should not be possible in the context of player inventory.
+	\note ContainerWithCargoAndAttachments::AttachmentAddedEx creates 'Attachments' and 'CargoContainer' objects at depth 3 (nature of the architecture)
+	*/
+	const int INVENTORY_MAX_REACHABLE_DEPTH_ATT = 2;
 	
 	//----------------------------------------------------------
 	//							AI
@@ -919,9 +1017,47 @@ class GameConstants
 	const float AI_MAX_BLOCKABLE_ANGLE = 60; // The angle under which an infected must be relative to player to be blockable
 	const float AI_CONTAMINATION_DMG_PER_SEC = 3; // The amount of damage AI agents take per contaminated area damage event
 	
+	/*
+		Noise multiplier works with a 0-1 value which is then multiplied by noise levels. Noise reduction is a value in 0-1 range depending on phenomenon intensity.
+		noise = (NoiseMultiplier - NoiseReduction) * NOISE_LEVEL_MAX
+	
+		Reduction is substracted from multiplier before the noise conversion happens, meaning that if:
+		RAIN_NOISE_REDUCTION_WEIGHT == 1 && rain instensity == 1, any noise would be reduced to 0
+		RAIN_NOISE_REDUCTION_WEIGHT == 0.5, max possible reduction of noise would be by half
+	
+		In case of multiple phenomenons happening at the same time, the noise reduction does not stack and the stronger one is picked for calculation
+	*/
+	static float RAIN_NOISE_REDUCTION_WEIGHT = 0.5;
+	static float SNOWFALL_NOISE_REDUCTION_WEIGHT = 0.25;
+	
 	//----------------------------------------------------------
 	//						   MELEE
 	//----------------------------------------------------------
 	
 	const float PVP_MAX_BLOCKABLE_ANGLE = 60; // The angle under which a Player must be relative to player to be blockable
+	
+	//!
+	//! DEPRECATED
+	//!
+	const float ENVIRO_HEATCOMFORT_HEADPARTS_WEIGHT		= 0.3;		//! how much this head parts (clothing) affects final heatcomfort
+	const float ENVIRO_HEATCOMFORT_BODYPARTS_WEIGHT		= 0.8;		//! how much this body parts (clothing) affects final heatcomfort
+	const float ENVIRO_HEATCOMFORT_FEETPARTS_WEIGHT		= 0.4;		//! how much this feet parts (clothing) affects final heatcomfort
+	
+	const float ENVIRO_HEATISOLATION_BACK_WEIGHT		= 0.3;		//! weight of back for the sum of heat isolation
+	const float ENVIRO_HEATISOLATION_VEST_WEIGHT		= 0.5;		//! weight of vest for the sum of heat isolation
+
+	const float ENVIRO_ITEM_HEAT_TRANSFER_COEF 			= 0.01;		//! converts temperature of items to entities heatcomfort gain
+	const float ENVIRO_TEMPERATURE_HEIGHT_REDUCTION 	= 0.02;		//! amount of ?C reduced for each 100 meteres of height above water level
+	const float ENVIRO_CLOUDS_TEMP_EFFECT 				= 0.35;		//! how many % of environment temperature can be lowered by clouds
+	const float ENVIRO_TEMPERATURE_INSIDE_COEF 			= 0.085;	//! increases temp in interiors	
+	const float ENVIRO_WATER_TEMPERATURE_COEF 			= 1.5;		//! how many time is water colder than air
+
+	const float ENVIRO_PLAYER_HEATBUFFER_TICK			= 0.011;	//! Heat buffer static timer tick (set for 2s enviro tick, 180s to 1.0)
+
+	const float TEMPERATURE_RATE_COOLING_INSIDE = -0.17;
+	const float TEMPERATURE_RATE_COOLING_GROUND = -0.34;
+	const float TEMPERATURE_RATE_COOLING_PLAYER = -0.35;
 }
+
+//! DEPRECATED
+const string	CFG_FILE_ADDITIONAL_INFO= "$profile:serverInfo.cfg";

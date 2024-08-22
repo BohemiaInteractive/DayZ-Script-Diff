@@ -122,10 +122,13 @@ class ActionTakeItem: ActionInteractBase
 		return success;
 	}
 	
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecute(ActionData action_data)
 	{
-		if (GetGame().IsMultiplayer())
+		if (GetGame().IsDedicatedServer())
+		{
+			ClearActionJuncture(action_data);
 			return;
+		}
 		
 		//Debug.Log("[Action DEBUG] Start time stamp: " + action_data.m_Player.GetSimulationTimeStamp());
 		ItemBase ntarget = ItemBase.Cast(action_data.m_Target.GetObject());	
@@ -150,28 +153,5 @@ class ActionTakeItem: ActionInteractBase
 		}
 		
 		//action_data.m_Player.PredictiveTakeToDst(targetInventoryLocation, il);
-	}
-	
-	override void OnExecuteClient( ActionData action_data )
-	{
-		//Debug.Log("[Action DEBUG] Start time stamp: " + action_data.m_Player.GetSimulationTimeStamp());
-		ItemBase ntarget = ItemBase.Cast(action_data.m_Target.GetObject());
-		InventoryLocation il = action_data.m_ReservedInventoryLocations.Get(0);
-		InventoryLocation targetInventoryLocation = new InventoryLocation;
-		ntarget.GetInventory().GetCurrentInventoryLocation(targetInventoryLocation);
-		
-		ClearInventoryReservationEx(action_data);
-		//SplitItemUtils.TakeOrSplitToInventoryLocation( action_data.m_Player, il );
-		//action_data.m_Player.PredictiveTakeToDst(targetInventoryLocation, il);
-		float stackable = ntarget.GetTargetQuantityMax(il.GetSlot());
-		
-		if( stackable == 0 || stackable >= ntarget.GetQuantity() )
-		{
-			action_data.m_Player.PredictiveTakeToDst(targetInventoryLocation, il);
-		}
-		else
-		{
-			ntarget.SplitIntoStackMaxToInventoryLocationClient( il );
-		}
 	}
 };

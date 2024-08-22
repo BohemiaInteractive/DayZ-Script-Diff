@@ -25,6 +25,11 @@ class EmoteSOS extends EmoteBase
 		m_FullbodyCallbackUID = DayZPlayerConstants.CMD_GESTUREFB_SOS;
 		m_HideItemInHands = true;
 	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
+	}
 }
 
 class EmoteHeart extends EmoteBase
@@ -38,6 +43,11 @@ class EmoteHeart extends EmoteBase
 		m_AdditiveCallbackUID = DayZPlayerConstants.CMD_GESTUREMOD_HEART;
 		m_FullbodyCallbackUID = DayZPlayerConstants.CMD_GESTUREFB_HEART;
 		m_HideItemInHands = true;
+	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
 	}
 }
 
@@ -72,9 +82,9 @@ class EmoteLyingDown extends EmoteBase
 	override bool EmoteCondition(int stancemask)
 	{
 		vector water_info = HumanCommandSwim.WaterLevelCheck( m_Player, m_Player.GetPosition() - (m_Player.GetDirection() * 0.9) );
-		if ( water_info[0] < WATER_DEPTH ) //is player able to lay down without "drowning"?
-			return true;
-		return false;
+		if (water_info[0] >= WATER_DEPTH) //is player able to lay down without "drowning"?
+			return false;
+		return !m_Player.GetItemInHands();
 	}
 }
 
@@ -117,6 +127,11 @@ class EmoteTauntElbow extends EmoteBase
 		m_AdditiveCallbackUID = DayZPlayerConstants.CMD_GESTUREMOD_TAUNTELBOW;
 		m_FullbodyCallbackUID = 0;
 		m_HideItemInHands = true;
+	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
 	}
 }
 
@@ -180,7 +195,7 @@ class EmoteDance extends EmoteBase
 		if (m_Player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
 			return false;
 		
-		return true;
+		return !m_Player.GetItemInHands();
 	}
 }
 
@@ -196,6 +211,11 @@ class EmoteSalute extends EmoteBase
 		m_FullbodyCallbackUID = DayZPlayerConstants.CMD_GESTUREFB_SALUTE;
 		m_HideItemInHands = true;
 	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
+	}
 }
 
 class EmoteTimeout extends EmoteBase
@@ -209,6 +229,11 @@ class EmoteTimeout extends EmoteBase
 		m_AdditiveCallbackUID = DayZPlayerConstants.CMD_GESTUREMOD_TIMEOUT;
 		m_FullbodyCallbackUID = DayZPlayerConstants.CMD_GESTUREFB_TIMEOUT;
 		m_HideItemInHands = true;
+	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
 	}
 }
 
@@ -251,6 +276,11 @@ class EmoteClap extends EmoteBase
 		m_AdditiveCallbackUID = DayZPlayerConstants.CMD_GESTUREMOD_CLAP;
 		m_FullbodyCallbackUID = 0;
 		m_HideItemInHands = true;
+	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
 	}
 }
 
@@ -439,6 +469,11 @@ class EmoteCampfireSit extends EmoteBase
 		m_FullbodyCallbackUID = DayZPlayerConstants.CMD_GESTUREFB_CAMPFIRE;
 		m_HideItemInHands = true;
 	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
+	}
 }
 
 class EmoteSitA extends EmoteBase
@@ -466,6 +501,11 @@ class EmoteSitB extends EmoteBase
 		m_AdditiveCallbackUID = 0;
 		m_FullbodyCallbackUID = DayZPlayerConstants.CMD_GESTUREFB_SITB;
 		m_HideItemInHands = false;
+	}
+	
+	override bool EmoteCondition(int stancemask)
+	{
+		return !m_Player.GetItemInHands();
 	}
 }
 

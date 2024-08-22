@@ -225,11 +225,13 @@ class PluginDiagMenu : PluginBase
 					//---------------------------------------------------------------
 					DiagMenu.RegisterBool(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG, "", "Show Environment stats", DiagMenuIDs.MISC_ENVIRONMENT_MENU);
 					DiagMenu.RegisterBool(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_DRYWET, "", "Log Player Dry/Wetness", DiagMenuIDs.MISC_ENVIRONMENT_MENU, false);
+					DiagMenu.RegisterBool(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_ITEMHEAT, "", "Log Player Item Heat", DiagMenuIDs.MISC_ENVIRONMENT_MENU, false);
 
 				}
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_FALLDAMAGE_DEBUG, "", "Show FallDamage stats", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterRange(DiagMenuIDs.MISC_DISPLAY_PLAYER_INFO, "", "Display Player Info", DiagMenuIDs.MISC_MENU, "0,2,0,1");
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_UNIVERSAL_TEMPERATURE_SOURCES, "lalt+u", "Universal Temp Sources", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_TARGET_TEMPERATURE, "", "Target Temperature", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_DRAW_CHECKERBOARD, "", "Draw Checkerboard on screen", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_BULLET_IMPACT, "", "BulletImpact", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PRESENCE_NOTIFIER_DBG, "", "Show Presence to AI dbg", DiagMenuIDs.MISC_MENU);
@@ -282,6 +284,7 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_FREEZE_ENTITY, "lalt+x", "Freeze entity", DiagMenuIDs.MISC_MENU);		
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_CONNECTION_STATS, "lalt+4", "Show Connection Stats", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PLAYER_SYMPTOMS_SHOW, "", "Show States", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterRange(DiagMenuIDs.MISC_PLAYER_SYMPTOMS_TOGGLE_HMP, "", "Set HMP symptom", DiagMenuIDs.MISC_MENU, "-1, 1, -1, 1");
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_INPUT_DEVICE_DISCONNECT_DBG, "", "InputDevice states", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_DEBUG_MONITOR, "", "Debug Monitor", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterRange(DiagMenuIDs.MISC_FORCE_HINT_INDEX, "", "Force Hint Index", DiagMenuIDs.MISC_MENU, "-1, 512, -1, 1");
@@ -511,6 +514,17 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.FEATURE_TIME_ACCEL_ENERGY_CONSUME, "", "Energy Consumption", DiagMenuIDs.FEATURE_TIME_ACCEL_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.FEATURE_TIME_ACCEL_FOOD_DECAY, "", "Decay", DiagMenuIDs.FEATURE_TIME_ACCEL_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.FEATURE_TIME_ACCEL_DYNAMIC_MUSIC_PLAYER, "", "Dynamic Music Player", DiagMenuIDs.FEATURE_TIME_ACCEL_MENU);
+			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.MATERIALDIAG_MENU, "Materials Diag", DiagMenuIDs.SCRIPTS_MENU);
+			{
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Material Diag
+				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.MATERIALDIAG_GHOSTPP, "", "Ghost PP", DiagMenuIDs.MATERIALDIAG_MENU);
 			}
 		}
 	}
@@ -811,6 +825,16 @@ class PluginDiagMenu : PluginBase
 				{
 					if (player.m_Environment)
 						player.m_Environment.m_DebugLogDryWet = CachedObjectsParams.PARAM1_BOOL.param1;
+				}
+				break;
+			}
+			
+			case ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_ITEMHEAT:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+				{
+					if (player.m_Environment)
+						player.m_Environment.m_DebugLogItemHeat = CachedObjectsParams.PARAM1_BOOL.param1;
 				}
 				break;
 			}

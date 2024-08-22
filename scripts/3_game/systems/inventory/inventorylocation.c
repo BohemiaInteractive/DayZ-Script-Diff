@@ -8,6 +8,7 @@ enum InventoryLocationType
 	CARGO, ///< cargo of another entity
 	HANDS, ///< hands of another entity
 	PROXYCARGO, ///< cargo of a large object (building,...)
+	VEHICLE,
 };
 
 //@NOTE: DO NOT EDIT! enum values are overwritten from c++
@@ -170,6 +171,13 @@ class InventoryLocation
 	proto native void SetHands(notnull EntityAI parent, EntityAI e);
 	
 	/**
+	 * @fn		SetVehicle
+	 * brief	sets current inventory location's GetParent
+	 * @param[in]	idx		index of seat
+	 **/
+	proto native void SetVehicle(notnull EntityAI parent, EntityAI e, int idx);
+	
+	/**
 	 * @fn		SetParent
 	 * brief	sets current inventory location's GetParent
 	 **/
@@ -266,6 +274,13 @@ class InventoryLocation
 				res = res + " item=" + Object.GetDebugName(GetItem());
 				res = res + " parent=" + Object.GetDebugName(GetParent());
 				res = res + " idx=" + GetIdx() + " row=" + GetRow() + " col=" + GetCol() + " f=" + GetFlip();
+				break;
+			}
+			case InventoryLocationType.VEHICLE:
+			{
+				res = res + " item=" + Object.GetDebugName(GetItem());
+				res = res + " parent=" + Object.GetDebugName(GetParent());
+				res = res + " idx=" + GetIdx();
 				break;
 			}
 			default:
@@ -420,6 +435,28 @@ class InventoryLocation
 				SetProxyCargo(parent, item, idx, row, col, flp);
 				break;
 			}
+			case InventoryLocationType.VEHICLE:
+			{
+				if (!ctx.Read(parent))
+					return false;
+				if (!ctx.Read(item))
+					return false;
+				if (!ctx.Read(idx))
+					return false;
+				
+				if (!parent || !item)
+				{
+#ifdef ENABLE_LOGGING
+#ifdef SERVER
+					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "VEHICLE" , "n/a", "ReadFromContext", this.ToString() );
+#endif
+#endif
+					break; // parent or item is possibly not spawned in bubble yet
+				}
+
+				SetVehicle(parent, item, idx);
+				break;
+			}
 			default:
 			{
 				ErrorEx("ReadFromContext - really unknown location type, this should not happen, type=" + type);
@@ -568,6 +605,26 @@ class InventoryLocation
 					return false;
 				}
 
+				break;
+			}
+			
+			case InventoryLocationType.VEHICLE:
+			{
+				if (!ctx.Write(GetParent()))
+				{
+					Error("InventoryLocation::WriteToContext - cannot write to context! failed VHC, arg=parent");
+					return false;
+				}
+				if (!ctx.Write(GetItem()))
+				{
+					Error("InventoryLocation::WriteToContext - cannot write to context! failed VHC, arg=item");
+					return false;
+				}
+				if (!ctx.Write(GetIdx()))
+				{
+					Error("InventoryLocation::WriteToContext - cannot write to context! failed VHC, arg=idx");
+					return false;
+				}
 				break;
 			}
 			default:

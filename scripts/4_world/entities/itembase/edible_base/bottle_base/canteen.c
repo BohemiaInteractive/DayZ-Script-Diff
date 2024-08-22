@@ -10,11 +10,6 @@ class Canteen extends Bottle_Base
 		
 	}
 	
-	override bool IsContainer()
-	{
-		return true;
-	}
-	
 	override string GetPouringSoundset()
 	{
 		return "emptyVessle_Canteen_SoundSet";
@@ -70,10 +65,14 @@ class Canteen extends Bottle_Base
 	{
 		super.EEOnCECreate();
 
-		int rand = Math.RandomInt(0, 10);
-		if (rand > 5)
+		WorldData data = GetGame().GetMission().GetWorldData();
+		if (data)
 		{
-			InsertAgent(eAgents.CHOLERA, 1);
+			float chance = data.GetAgentSpawnChance(eAgents.CHOLERA);
+			int rand = Math.RandomFloat(0, 100);
+			
+			if (rand < chance)
+				InsertAgent(eAgents.CHOLERA, 1);
 		}
 	}
 }

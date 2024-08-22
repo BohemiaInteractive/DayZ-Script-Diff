@@ -2,6 +2,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 {
 	private bool m_IsFilterChanged;
 	private bool m_IsFilterFocused;
+	private bool m_IsDetailsFocused;
 	
 	private Widget m_WidgetNavFilters;
 	private Widget m_WidgetNavServers;
@@ -31,18 +32,22 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		m_PopulationSort		= m_Root.FindAnyWidget( "server_list_content_header_population" );
 		m_SlotsSort				= m_Root.FindAnyWidget( "server_list_content_header_slots" );
 		m_PingSort				= m_Root.FindAnyWidget( "server_list_content_header_ping" );
+		m_MapSort				= m_Root.FindAnyWidget( "server_list_content_header_map" );
 		m_LoadingText			= TextWidget.Cast( m_Root.FindAnyWidget( "loading_servers_info" ) );
 		m_WidgetNavFilters		= m_Root.FindAnyWidget( "filters_root_nav_wrapper" );
 		m_WidgetNavServers		= m_Root.FindAnyWidget( "server_list_root_nav_wrapper" );
 		
 		ShowHideConsoleWidgets();		
 		
-		m_Filters				= new ServerBrowserFilterContainer( m_Root.FindAnyWidget( "filters_content" ), this );
+		m_Filters = new ServerBrowserFilterContainer(m_Root.FindAnyWidget("filters_content"), this);
 		
-		SetSort( ESortType.HOST, ESortOrder.ASCENDING );
-		SetFocusFilters();
+		SetSort(ESortType.HOST, ESortOrder.ASCENDING);
 		
-		m_Root.SetHandler( this );
+		m_Details = new ServerBrowserDetailsContainer(m_Root.FindAnyWidget("details_content"), this);
+		
+		m_Root.SetHandler(this);
+		
+		SetFocusServers();
 	}
 	
 	void ShowHideConsoleWidgets()
@@ -219,7 +224,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 		
 		m_LoadingText.SetText( "#dayz_game_loading" );
 		
-		SetFocusFilters();
+		//SetFocusFilters();
 		//UpdateStatusBar();
 	}
 	
@@ -282,69 +287,83 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 	
 	override void PressSholderLeft()
 	{
-		if ( m_IsFilterFocused )
-		{
-			SetFocusServers();
-		}
-		else
-		{
-			SetFocusFilters();
-		}
+		OnPressShoulder();
 	}
 	
 	override void PressSholderRight()
 	{
-		if ( m_IsFilterFocused )
+		OnPressShoulder();
+	}
+	
+	override void OnPressShoulder()
+	{
+		switch (m_SelectedPanel)
 		{
-			SetFocusServers();
-		}
-		else
-		{
-			SetFocusFilters();
+			case SelectedPanel.FILTERS:
+			case SelectedPanel.DETAILS:
+			{
+				SetFocusServers();
+				break;
+			}
+			case SelectedPanel.BROWSER:
+			{
+				SwitchToFilters();
+				break;
+			}
 		}
 	}
 	
 	void SetFocusFilters()
 	{
-		SetEnableFilters( true );
-		SetEnableServers( false );
+		SetEnableFilters(true);
+		SetEnableServers(false);
 		
 		// if loaded servers is 0, then hide Top navigation menu <Left / Right>
-		m_WidgetNavFilters.Show( (m_EntryWidgets.Count() > 0) );
-		m_WidgetNavServers.Show( false );
+		m_WidgetNavFilters.Show((m_EntryWidgets.Count() > 0));
+		m_WidgetNavServers.Show(false);
 		
 		m_Filters.Focus();
 		m_IsFilterFocused = true;
+	}
+	
+	void SetFocusDetails()
+	{
+		SetEnableFilters(false);
+		SetEnableServers(false);
+		
+		m_Details.Focus();
+		m_IsDetailsFocused = true;
+		m_IsFilterFocused = false;
 	}
 	
 	override void Focus()
 	{
 		if ( m_EntryWidgets.Contains( m_CurrentSelectedServer ) )
 		{
-			m_EntryWidgets.Get( m_CurrentSelectedServer ).Focus();
-			ScrollToEntry( m_EntryWidgets.Get( m_CurrentSelectedServer ) );
+			m_EntryWidgets.Get(m_CurrentSelectedServer).Focus();
+			ScrollToEntry(m_EntryWidgets.Get(m_CurrentSelectedServer));
 		}
 		SetFocusServers();
 	}
 	
 	void SetFocusServers()
 	{
-		SetEnableServers( true );
-		SetEnableFilters( false );
+		SetEnableServers(true);
+		SetEnableFilters(false);
 		
-		m_WidgetNavFilters.Show( false );
-		m_WidgetNavServers.Show( true );
+		m_WidgetNavFilters.Show(false);
+		m_WidgetNavServers.Show(true);
 		
 		array<ref GetServersResultRow> entries = m_EntriesSorted[m_SortType];
-		if ( entries.Count() > 0 )
+		if (entries.Count() > 0)
 		{
 			m_EntryWidgets.Get(entries.Get(0).GetIpPort()).Focus();
 			m_IsFilterFocused = false;
 		}
-		else
+		/*else
 		{
 			SetFocusFilters();
-		}
+		}*/
 	}
 	
 	void SetEnableFilters(bool enable)

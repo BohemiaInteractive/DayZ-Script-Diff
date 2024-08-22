@@ -35,8 +35,6 @@ class ActionUncoverHeadBase: ActionContinuousBase
 			{
 				MiscGameplayFunctions.TransferItemProperties(attachment,new_item,true,false,true);
 				attachment.Delete();
-				
-				source.GetSoftSkillsManager().AddSpecialty(m_SpecialtyWeight);
 			}
 		}
 	}

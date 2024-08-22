@@ -117,6 +117,8 @@ class ActionDeployObject : ActionDeployBase
 	
 	override void OnStartServer(ActionData action_data)
 	{
+		super.OnStartServer(action_data);
+		
 		if (GetGame().IsMultiplayer())
 		{
 			PlaceObjectActionData poActionData;
@@ -231,8 +233,11 @@ class ActionDeployObject : ActionDeployBase
 			if (action_data.m_Player.GetItemInHands())
 				ActiondeployObjectCB.Cast(action_data.m_Callback).DropDuringPlacing(); //legacy stuff
 			
-			ClearInventoryReservationEx(action_data);
-			DropDuringPlacing(action_data.m_Player);
+			if (HasProgress())	// if object has no progress, it is moved directly when action finishes
+			{
+				ClearInventoryReservationEx(action_data);	// Clear reservation as we put the main item from hands on ground
+				DropDuringPlacing(action_data.m_Player);
+			}
 		}
 	}
 	

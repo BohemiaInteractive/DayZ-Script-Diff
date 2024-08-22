@@ -2,7 +2,7 @@ class CraftBoneHook extends RecipeBase
 {	
 	override void Init()
 	{
-		m_Name = "#STR_CraftBoneHook0";
+		m_Name = "#STR_CraftImprovisedHook0";
 		m_IsInstaRecipe = false;//should this recipe be performed instantly without animation
 		m_AnimationLength = 1.5;//animation length in relative time units
 		m_Specialty = -0.02;// value > 0 for roughness, value < 0 for precision
@@ -21,17 +21,17 @@ class CraftBoneHook extends RecipeBase
 		m_MinQuantityIngredient[1] = -1;//-1 = disable check
 		m_MaxQuantityIngredient[1] = -1;//-1 = disable check
 		//----------------------------------------------------------------------------------------------------------------------
-		
+
 		//INGREDIENTS
 		//ingredient 1
 		InsertIngredient(0,"Bone");//you can insert multiple ingredients this way
-		
+
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing
 		m_IngredientAddQuantity[0] = -1;// 0 = do nothing
 		m_IngredientDestroy[0] = false;//true = destroy, false = do nothing
 		m_IngredientUseSoftSkills[0] = false;// set 'true' to allow modification of the values by softskills on this ingredient
-		
+
 		//ingredient 2
 		InsertIngredient(1,"Sickle");//you can insert multiple ingredients this way
 		InsertIngredient(1,"KukriKnife");
@@ -59,9 +59,10 @@ class CraftBoneHook extends RecipeBase
 		InsertIngredient(1,"M9A1_Bayonet");
 		InsertIngredient(1,"Mosin_Bayonet");
 		InsertIngredient(1,"SKS_Bayonet");	
-		InsertIngredient(1,"BoneKnife");	
+		InsertIngredient(1,"BoneKnife");
+		InsertIngredient(1,"Iceaxe");
 		
-		m_IngredientAddHealth[1] = -12;// 0 = do nothing
+		m_IngredientAddHealth[1] = -3;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing
 		m_IngredientAddQuantity[1] = 0;// 0 = do nothing
 		m_IngredientDestroy[1] = false;// false = do nothing

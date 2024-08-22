@@ -1,19 +1,22 @@
 class AITargetCallbacksPlayer : AITargetCallbacks
 {
+	private int m_iChestBoneIndex;
+
+	private PlayerBase m_Player;
+
 	void AITargetCallbacksPlayer(PlayerBase pPlayer)
 	{
 		m_Player = pPlayer;
 		
-		m_iHeadBoneIndex = m_Player.GetBoneIndexByName("Head");
 		m_iChestBoneIndex = m_Player.GetBoneIndexByName("Spine3");
 	}
 	
 	override vector GetHeadPositionWS() 
 	{ 
-		if (m_iHeadBoneIndex != -1)
-			return m_Player.GetBonePositionWS(m_iHeadBoneIndex);
-		else
-			return m_Player.GetPosition() + "0 1.7 0";
+		vector position;
+		MiscGameplayFunctions.GetHeadBonePos(m_Player, position);
+
+		return position;
 	}
 	
 	override vector GetVisionPointPositionWS(EntityAI pApplicant) 
@@ -48,7 +51,6 @@ class AITargetCallbacksPlayer : AITargetCallbacks
 		float mod = 1.0;
 		float speedCoef = PlayerConstants.AI_VISIBILITY_RUN;
 		float stanceCoef = PlayerConstants.AI_VISIBILITY_STANDING;
-		float playerVisCoef = 1.0; //Use disabled since 1.12
 		
 		//! player speed mofifications
 		switch (AITargetCallbacksPlayer.StanceToMovementIdxTranslation(state))
@@ -90,45 +92,44 @@ class AITargetCallbacksPlayer : AITargetCallbacks
 
 		switch (pState.m_iStanceIdx)
 		{
-		case DayZPlayerConstants.STANCEIDX_CROUCH:
-			switch (pState.m_iMovement)
-			{
-				case DayZPlayerConstants.MOVEMENTIDX_IDLE:
-					movementSpeed = DayZPlayerConstants.MOVEMENTIDX_IDLE;
-					break;
-
-				case DayZPlayerConstants.MOVEMENTIDX_WALK:
-				case DayZPlayerConstants.MOVEMENTIDX_RUN:
-					movementSpeed = DayZPlayerConstants.MOVEMENTIDX_WALK;
-					break;
-
-				case DayZPlayerConstants.MOVEMENTIDX_SPRINT:
-					movementSpeed = DayZPlayerConstants.MOVEMENTIDX_CROUCH_RUN;
-					break;
-			}
-			break;
-
-		case DayZPlayerConstants.STANCEIDX_PRONE:
-			switch (pState.m_iMovement)
-			{
-				case DayZPlayerConstants.MOVEMENTIDX_IDLE:
-					movementSpeed = DayZPlayerConstants.MOVEMENTIDX_IDLE;
-					break;
-
-				default:
-					movementSpeed = DayZPlayerConstants.MOVEMENTIDX_WALK;
-					break;
-			}
-			break;
-
-		default:
-			movementSpeed = pState.m_iMovement;
+			case DayZPlayerConstants.STANCEIDX_CROUCH:
+				switch (pState.m_iMovement)
+				{
+					case DayZPlayerConstants.MOVEMENTIDX_IDLE:
+						movementSpeed = DayZPlayerConstants.MOVEMENTIDX_IDLE;
+						break;
+	
+					case DayZPlayerConstants.MOVEMENTIDX_WALK:
+					case DayZPlayerConstants.MOVEMENTIDX_RUN:
+						movementSpeed = DayZPlayerConstants.MOVEMENTIDX_WALK;
+						break;
+	
+					case DayZPlayerConstants.MOVEMENTIDX_SPRINT:
+						movementSpeed = DayZPlayerConstants.MOVEMENTIDX_CROUCH_RUN;
+						break;
+				}
+				break;
+	
+			case DayZPlayerConstants.STANCEIDX_PRONE:
+				switch (pState.m_iMovement)
+				{
+					case DayZPlayerConstants.MOVEMENTIDX_IDLE:
+						movementSpeed = DayZPlayerConstants.MOVEMENTIDX_IDLE;
+						break;
+	
+					default:
+						movementSpeed = DayZPlayerConstants.MOVEMENTIDX_WALK;
+						break;
+				}
+				break;
+	
+			default:
+				movementSpeed = pState.m_iMovement;
 		}
 		
 		return movementSpeed;
 	}
 	
-	private PlayerBase m_Player;
+	//! DEPRECATED
 	private int m_iHeadBoneIndex;
-	private int m_iChestBoneIndex;
 }

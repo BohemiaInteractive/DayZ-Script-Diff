@@ -24,9 +24,6 @@ class Edible_Base : ItemBase
 			m_FoodStage = new FoodStage(this);
 			
 			RegisterNetSyncVariableInt("m_FoodStage.m_FoodStageType",  FoodStageType.NONE, FoodStageType.COUNT);
-			RegisterNetSyncVariableInt("m_FoodStage.m_SelectionIndex", 0, 6);
-			RegisterNetSyncVariableInt("m_FoodStage.m_TextureIndex",   0, 6);
-			RegisterNetSyncVariableInt("m_FoodStage.m_MaterialIndex",  0, 6);
 			RegisterNetSyncVariableFloat("m_FoodStage.m_CookingTime",  0, 600, 0);
 
 			m_SoundPlaying = "";
@@ -40,9 +37,9 @@ class Edible_Base : ItemBase
 	{
 		super.EEInit();
 		
-		UpdateVisuals();
+		UpdateVisualsEx(true); //forced init visuals, mostly for debugs and SP
 	}
-
+	
 	override void EEDelete(EntityAI parent)
 	{
 		super.EEDelete(parent);
@@ -73,14 +70,15 @@ class Edible_Base : ItemBase
 				MakeSoundsOnClient(false);
 			}
 		}
+		
+		if (oldLoc.IsValid())
+			ResetCookingTime();
 	}
 
-	void UpdateVisuals()
+	void UpdateVisualsEx(bool forced = false)
 	{
 		if (GetFoodStage())
-		{
-			GetFoodStage().UpdateVisuals();
-		}
+			GetFoodStage().UpdateVisualsEx(forced);
 	}
 	
 	bool Consume(float amount, PlayerBase consumer)
@@ -91,7 +89,19 @@ class Edible_Base : ItemBase
 		return true;
 	}
 	
-	void OnConsume(float amount, PlayerBase consumer);	
+	void OnConsume(float amount, PlayerBase consumer)
+	{
+		if (GetTemperature() > PlayerConstants.CONSUMPTION_DAMAGE_TEMP_THRESHOLD)
+		{
+			consumer.ProcessDirectDamage(DamageType.CUSTOM, this, "", "EnviroDmg", "0 0 0", PlayerConstants.CONSUMPTION_DAMAGE_PER_BITE);
+		}
+	}
+	
+	//! Filter agents from the item (override on higher implements)
+	int FilterAgents(int agentsIn)
+	{
+		return agentsIn;
+	}
 	
 	//food staging
 	override bool CanBeCooked()
@@ -104,25 +114,65 @@ class Edible_Base : ItemBase
 		return false;
 	}
 	
+	override float GetTemperatureFreezeTime()
+	{
+		if (GetFoodStage())
+		{
+			switch (m_FoodStage.GetFoodStageType())
+			{
+				case FoodStageType.DRIED:
+					return super.GetTemperatureFreezeTime() * GameConstants.TEMPERATURE_FREEZE_TIME_COEF_DRIED;
+				
+				case FoodStageType.BURNED:
+					return super.GetTemperatureFreezeTime() * GameConstants.TEMPERATURE_FREEZE_TIME_COEF_BURNED;
+				
+				default:
+					return super.GetTemperatureFreezeTime();
+			}
+		}
+		
+		return super.GetTemperatureFreezeTime();
+	}
+	
+	override float GetTemperatureThawTime()
+	{
+		if (GetFoodStage())
+		{
+			switch (m_FoodStage.GetFoodStageType())
+			{
+				case FoodStageType.DRIED:
+					return super.GetTemperatureThawTime() * GameConstants.TEMPERATURE_THAW_TIME_COEF_DRIED;
+				
+				case FoodStageType.BURNED:
+					return super.GetTemperatureThawTime() * GameConstants.TEMPERATURE_THAW_TIME_COEF_BURNED;
+				
+				default:
+					return super.GetTemperatureThawTime();
+			}
+		}
+		
+		return super.GetTemperatureThawTime();
+	}
+	
+	override bool CanItemOverheat()
+	{
+		return super.CanItemOverheat() && (!GetFoodStage() || (IsFoodBurned() || !GetFoodStage().CanTransitionToFoodStageType(FoodStageType.BURNED))); //for foodstaged items - either is burned, or it can't get burned
+	}
+	
 	//================================================================
 	// SYNCHRONIZATION
 	//================================================================	
 	void Synchronize()
 	{
 		SetSynchDirty();
-			
-		if (GetGame().IsMultiplayer())
-		{
-			UpdateVisuals();
-		}
 	}
 	
 	override void OnVariablesSynchronized()
 	{
 		super.OnVariablesSynchronized();
 		
-		UpdateVisuals();
-
+		//UpdateVisualsEx(); //performed on client only
+		
 		//update audio
 		if (m_MakeCookingSounds)
 		{
@@ -220,6 +270,9 @@ class Edible_Base : ItemBase
 			}
 		}
 		
+		UpdateVisualsEx(true); //forced init visuals
+		Synchronize();
+		
 		return true;
 	}
 	
@@ -231,7 +284,7 @@ class Edible_Base : ItemBase
 	}	
 
 	//get food stage
-	FoodStage GetFoodStage()
+	override FoodStage GetFoodStage()
 	{
 		return m_FoodStage;
 	}
@@ -466,12 +519,36 @@ class Edible_Base : ItemBase
 	//Use this to receive food stage from another Edible_Base
 	void TransferFoodStage( notnull Edible_Base source )
 	{
-		if ( !source.HasFoodStage())
+		if ( !source.GetFoodStage())
 			return;
 		m_LastDecayStage = source.GetLastDecayStage();
 		ChangeFoodStage(source.GetFoodStage().GetFoodStageType());
 		m_DecayTimer = source.GetDecayTimer();
 		m_DecayDelta = source.GetDecayDelta();
+	}
+	
+	//! called on server 
+	void OnFoodStageChange(FoodStageType stageOld, FoodStageType stageNew)
+	{
+		HandleFoodStageChangeAgents(stageOld,stageNew);
+		UpdateVisualsEx(); //performed on server only
+	}
+	
+	//! removes select agents on foodstage transitions
+	void HandleFoodStageChangeAgents(FoodStageType stageOld, FoodStageType stageNew)
+	{
+		switch (stageNew)
+		{
+			case FoodStageType.BAKED:
+			case FoodStageType.BOILED:
+			case FoodStageType.DRIED:
+				RemoveAllAgentsExcept(eAgents.BRAIN|eAgents.HEAVYMETAL);
+			break;
+			
+			case FoodStageType.BURNED:
+				RemoveAllAgentsExcept(eAgents.HEAVYMETAL);
+			break;
+		}
 	}
 	
 	//================================================================
@@ -489,6 +566,15 @@ class Edible_Base : ItemBase
 		
 		//synchronize when calling on server
 		Synchronize();
+	}
+	
+	void ResetCookingTime()
+	{
+		if (GetFoodStage())
+		{
+			GetFoodStage().SetCookingTime(0);
+			Synchronize();
+		}
 	}
 	
 	//replace edible with new item (opening cans)
@@ -537,11 +623,6 @@ class Edible_Base : ItemBase
 		#endif
 	}
 	
-	override bool CanHaveTemperature()
-	{
-		return true;
-	}
-	
 	override bool CanDecay()
 	{
 		return false;
@@ -549,11 +630,13 @@ class Edible_Base : ItemBase
 	
 	override bool CanProcessDecay()
 	{
-		return ( GetFoodStageType() != FoodStageType.ROTTEN );
+		return !GetIsFrozen() && ( GetFoodStageType() != FoodStageType.ROTTEN );
 	}
 	
 	override void ProcessDecay( float delta, bool hasRootAsPlayer )
 	{
+		m_DecayDelta = 0.0;
+		
 		delta *= DayZGame.Cast(GetGame()).GetFoodDecayModifier();
 		m_DecayDelta += ( 1 + ( 1 - GetHealth01( "", "" ) ) );
 		if ( hasRootAsPlayer )
@@ -738,15 +821,13 @@ class Edible_Base : ItemBase
 				}
 			}
 		}
-		
-		m_DecayDelta = 0.0;
 	}
 	
 	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
 		super.GetDebugActions(outputList);
 		
-		if (HasFoodStage())
+		if (GetFoodStage())
 		{
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_PREV, "Food Stage Prev", FadeColors.WHITE));
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_NEXT, "Food Stage Next", FadeColors.WHITE));
@@ -799,6 +880,18 @@ class Edible_Base : ItemBase
 	// GENERAL GETTERS
 	//================================================================
 	
+	override float GetBaitEffectivity()
+	{
+		float ret = super.GetBaitEffectivity();
+		
+		if (IsFoodRotten())
+		{
+			ret *= 0.5;
+		}
+		
+		return ret;
+	}
+	
 	float GetDecayTimer()
 	{
 		return m_DecayTimer;
@@ -812,6 +905,14 @@ class Edible_Base : ItemBase
 	FoodStageType GetLastDecayStage()
 	{
 		return m_LastDecayStage;
+	}
+	
+	//////////////////////////////////////////
+	//DEPRECATED
+	//////////////////////////////////////////
+	void UpdateVisuals()
+	{
+		UpdateVisualsEx();
 	}
 }
 

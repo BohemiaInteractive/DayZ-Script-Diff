@@ -1,3 +1,4 @@
+//!DEPRECATED
 class ActionWorldCraftSwitch: ActionSingleUseBase
 {
 	void ActionWorldCraftSwitch()

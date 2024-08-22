@@ -1,4 +1,5 @@
 //can be eventually extended to allow switching for multiple action types?
+//!DEPRECATED
 class ActionWorldLiquidActionSwitch: ActionSingleUseBase
 {
 	bool 	m_switch_to;

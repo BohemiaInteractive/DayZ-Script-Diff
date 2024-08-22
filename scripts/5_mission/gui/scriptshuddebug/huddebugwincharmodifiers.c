@@ -30,8 +30,6 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	protected TextWidget 									m_WgtDetailedInfoText;
 	protected int 											m_DetailedInfoIndex;
 
-//m_RPCSent
-	
 	//============================================
 	// HudDebugWinCharModifiers
 	//============================================
@@ -157,13 +155,17 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 		//clear window
 		ClearModifiers();
 		
-		if ( m_PluginDeveloperSync.m_PlayerModsSynced.Count() > 0 )
+		if (m_PluginDeveloperSync.m_PlayerModsSynced.Count() > 0)
 		{
 			//set active mods
-			for ( int i = 0; i < m_PluginDeveloperSync.m_PlayerModsSynced.Count(); ++i )
+			foreach (SyncedValueModifier modifier : m_PluginDeveloperSync.m_PlayerModsSynced)
 			{
-				SyncedValueModifier synced_value = m_PluginDeveloperSync.m_PlayerModsSynced.Get( i );
-				AddModifier( synced_value.GetName(), synced_value.GetID(), synced_value.GetActive(),synced_value.GetLocked() );
+				AddModifier(
+					modifier.GetName(),
+					modifier.GetID(),
+					modifier.GetActive(),
+					modifier.GetLocked(),
+				);
 			}
 		}
 		
@@ -221,10 +223,9 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 		m_ModifierWidgetData.Clear();
 		
 		//destroy all modifier widgets
-		for ( int i = 0; i < m_ModifierWidgets.Count(); ++i )
-		{
-			delete m_ModifierWidgets.Get( i );
-		}
+		foreach (Widget widget : m_ModifierWidgets)
+			delete widget;
+
 		m_ModifierWidgets.Clear();
 	}
 	

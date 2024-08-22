@@ -35,7 +35,5 @@ class ActionRepairWithToolFromHands: ActionSingleUseBase
 			Param1<float> nacdata = Param1<float>.Cast( action_data.m_ActionComponent.GetACData() );
 			bool was_repaired = item_to_repair.Repair(action_data.m_Player, action_data.m_MainItem, nacdata.param1);
 		}
-
-		action_data.m_Player.GetSoftSkillsManager().AddSpecialty( m_SpecialtyWeight );
 	}
 };

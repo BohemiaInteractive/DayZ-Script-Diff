@@ -8,6 +8,7 @@ class UAQuantityConsumed
 	const float EAT_NORMAL = 15;
 	const float EAT_BIG = 25;
 	const float FILL_LIQUID = 200;
+	const float FILL_SNOW = 100;
 	const float POUR_LIQUID = 100;
 	const float DRAIN_LIQUID = 100;
 	const float DRINK = 65;
@@ -45,7 +46,7 @@ class UATimeSpent
 	const float SEW_CUTS = 8;
 	const float COLLECT_BLOOD = 10;
 	const float COLLECT_SAMPLE = 3;
-	const float TEST_BLOOD = 5;
+	const float TEST_BLOOD = 3;
 	const float DEFIBRILATE = 3;
 	const float INJECT = 3;
 	const float MEASURE_TEMP = 12;
@@ -113,6 +114,16 @@ class UAMaxDistances
 	const float EXPLOSIVE_REMOTE_ACTIVATION = 100.0;
 };
 
+/**@class	Constants for spread of created items. Mostly for actions
+ */
+class UAItemsSpreadRadius
+{
+	const float PRECISE = 0.0;
+	const float NARROW = 0.5;
+	const float DEFAULT = 1.0;
+	const float WIDE = 2.0;
+}
+
 /**@class	Constants for specialty weight and type
  */
 class UASoftSkillsWeight
@@ -134,7 +145,7 @@ class UADamageApplied
 	const float REPAIR 			= 3;
 	const float DESTROY 		= 25;
 	const float SAW_LOCK 		= 150;
-	const float SKINNING 		= 4;
+	const float SKINNING 		= 10;
 	const float SAW_PLANKS		= 4;
 	const float DEFUSE_TOOLS	= 2;
 };
@@ -146,13 +157,35 @@ class UAWaterType
 	const string SEA 	= "sea"; //! fake
 	const string FRESH 	= "fresh_water";
 	const string STILL 	= "still_water";
+	const string SNOW 	= "snow";
 
-	const string ALL 	= string.Format("%1|%2|%3", UAWaterType.SEA, UAWaterType.FRESH, UAWaterType.STILL);
-}
+	const string ALL 	= string.Format("%1|%2|%3|%4", UAWaterType.SEA, UAWaterType.FRESH, UAWaterType.STILL, UAWaterType.SNOW);
+};
 
 /**@class	Miscelaneous constants for use in actions
  */
 class UAMisc
 {
 	const float FLAG_STEP_INCREMENT = 0.2; //0..1
+	const float CONSUMPTION_SLOWDOWN_COEF_HOT = 5.0;
+};
+
+class UAFishingConstants
+{
+	const float CYCLE_LENGTH_BASE = 5.0; //seconds, used as a backup
+	const float CYCLE_LENGTH_MIN = 4.5; //seconds
+	const float CYCLE_LENGTH_MAX = 5.5; //seconds
+	const float SIGNAL_DURATION_MIN_BASE = 1.0; //seconds
+	const float SIGNAL_DURATION_MAX_BASE = 1.5; //seconds
+	const float SIGNAL_START_TIME_MIN_BASE = 0.5; //seconds
+	const float SIGNAL_START_TIME_MAX_BASE = 2.5; //seconds
+	const float SIGNAL_DEADZONE_START_DURATION = 0.5; //deadzone DURATION in seconds
+	const float SIGNAL_DEADZONE_END_DURATION = 0.5; //deadzone DURATION in seconds
+	const float SIGNAL_CYCLE_MEAN_DEFAULT = 10;
+	const float SIGNAL_FISHING_CHANCE_COEF = 1.6;
+	
+	const float DAMAGE_HOOK = 1.5;
+	
+	const int EVENT_SPLASH_SIGNAL = 100;
+	const int EVENT_ANIMATE_ROD_CLOSE = 101;
 };

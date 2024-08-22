@@ -22,8 +22,6 @@ class CCTWaterSurface : CCTBase
 		
 		//! use hit position from ActionTarget otherwise player's position
 		vector hitPosition = target.GetCursorHitPos();
-		if (hitPosition == vector.Zero)
-			hitPosition = player.GetPosition();
 		
 		string surfaceType;
 		float waterLevel = player.GetCurrentWaterLevel();
@@ -48,6 +46,39 @@ class CCTWaterSurface : CCTBase
 			return false;
 
 		return Surface.AllowedWaterSurface(hitPosition[1], surfaceType, m_AllowedSurfaceList);
+	}
+	
+	override bool CanContinue(PlayerBase player, ActionTarget target)
+	{
+		return true;
+	}
+}
+
+class CCTWaterSurfaceEx : CCTBase
+{
+	protected float m_MaximalActionDistanceSq;
+	protected int m_AllowedLiquidSource;
+	
+	void CCTWaterSurfaceEx(float maximal_target_distance, int allowedLiquidSource)
+	{
+		m_MaximalActionDistanceSq 	= maximal_target_distance * maximal_target_distance;	
+		m_AllowedLiquidSource = allowedLiquidSource;
+	}
+	
+	override bool Can(PlayerBase player, ActionTarget target)
+	{
+		if (!target || (target && target.GetObject()))
+			return false;
+		
+		vector hitPosition = target.GetCursorHitPos();
+		string surfaceType;
+		g_Game.SurfaceGetType3D(hitPosition[0], hitPosition[1], hitPosition[2], surfaceType);
+		
+		float distSq = vector.DistanceSq(player.GetPosition(), hitPosition);
+		if (distSq > m_MaximalActionDistanceSq)
+			return false;
+		
+		return Surface.CheckLiquidSource(hitPosition[1], surfaceType, m_AllowedLiquidSource);
 	}
 	
 	override bool CanContinue(PlayerBase player, ActionTarget target)

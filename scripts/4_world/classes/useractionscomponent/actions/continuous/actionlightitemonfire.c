@@ -84,7 +84,7 @@ class ActionLightItemOnFire: ActionContinuousBase
 					
 					if (Fireplace.CanIgniteEntityAsFireplace(targetItem))
 						return true;
-
+					
 					return false;
 				}
 				
@@ -102,6 +102,7 @@ class ActionLightItemOnFire: ActionContinuousBase
 	
 	override void OnFinishProgressServer( ActionData action_data )
 	{
+		ClearActionJuncture(action_data);
 		ItemBase target_item = ItemBase.Cast( action_data.m_Target.GetObject() );
 		ItemBase item = action_data.m_MainItem;
 		

@@ -4,6 +4,7 @@ enum RandomGeneratorSyncUsage
 	RGSJam,
 	RGSGeneric,
 	RGSAimingModel,
+	RGSAnimalCatching,
 	Count,
 }
 

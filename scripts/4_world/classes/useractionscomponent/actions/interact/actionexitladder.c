@@ -34,22 +34,18 @@ class ActionExitLadder: ActionInteractBase
 		}
 	}
 
-
-	/*override void OnCompleteServer( ActionData action_data )
-	{
-	}*/
 	override bool IsInstant()
 	{
 		return true;
-	}
-	
-	override bool UseAcknowledgment()
-	{
-		return false;
 	}
 
 	override bool CanBeUsedOnLadder()
 	{
 		return true;
+	}
+	
+	override bool HasTarget()
+	{
+		return false;
 	}
 };
