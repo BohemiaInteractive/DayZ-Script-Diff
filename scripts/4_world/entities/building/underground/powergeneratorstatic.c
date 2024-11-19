@@ -1,5 +1,7 @@
 class PowerGeneratorStatic : PowerGeneratorBase
 {
+	const int SWITCH_COUNT = 6;
+	
 	protected static ref set<PowerGeneratorStatic> m_PowerGenerators = new set<PowerGeneratorStatic>();
 	protected Land_WarheadStorage_PowerStation m_Parent;
 	
@@ -64,6 +66,14 @@ class PowerGeneratorStatic : PowerGeneratorBase
 		{
 			m_Parent.OnGeneratorStart();
 		}
+		
+		if (!GetGame().IsServer())
+			return;
+		
+		for (int i = 1; i <= SWITCH_COUNT; i++)
+		{
+			SetAnimationPhase("Switch" + i.ToString(), 1);
+		}
 	}
 	
 	// Turn off when this runs out of fuel
@@ -73,6 +83,14 @@ class PowerGeneratorStatic : PowerGeneratorBase
 		if (m_Parent)
 		{
 			m_Parent.OnGeneratorStop();
+		}
+		
+		if (!GetGame().IsServer())
+			return;
+		
+		for (int i = 1; i <= SWITCH_COUNT; i++)
+		{
+			SetAnimationPhase("Switch" + i.ToString(), 0);
 		}
 	}
 	

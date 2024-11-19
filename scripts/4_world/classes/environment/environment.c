@@ -460,7 +460,7 @@ class Environment
 		}
 
 		// incorporate temperature from temperature sources (buffer)
-		if (Math.AbsFloat(m_UTSAverageTemperature) > 0.0)
+		if (Math.AbsFloat(m_UTSAverageTemperature) > 0.0 && m_UTSAverageTemperature > temperature)
 			temperature = m_UTSAverageTemperature;
 		
 		return temperature;
@@ -1015,6 +1015,10 @@ class Environment
 	{
 		EntityAI attachment;
 		ItemBase item;
+		
+		
+		// TODO:
+		// * based on water level - change the target temperature and speed exchange while swimming
 		
 		int attCount = m_Player.GetInventory().AttachmentCount();
 		for (int attIdx = 0; attIdx < attCount; ++attIdx)

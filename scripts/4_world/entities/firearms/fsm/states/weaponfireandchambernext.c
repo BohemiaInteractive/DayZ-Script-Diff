@@ -66,8 +66,16 @@ class WeaponFireAndChamberNext extends WeaponStateBase
 	
 	override void OnAbort (WeaponEventBase e)
 	{
+		m_weapon.SetCoolDown(GetCoolDown());
 		m_weapon.ResetBurstCount();
 		super.OnAbort(e);
+	}
+	
+	override float GetCoolDown()
+	{
+		int muzzleIndex = m_weapon.GetCurrentMuzzle();
+		float reloadTime = m_weapon.GetReloadTime(muzzleIndex);
+		return reloadTime - m_dtAccumulator;
 	}
 };
 

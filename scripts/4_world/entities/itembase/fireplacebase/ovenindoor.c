@@ -29,6 +29,10 @@ class OvenIndoor extends FireplaceBase
 		
 		m_LightDistance = 50;
 		SetRoofAbove(true);
+		
+		m_UTSSettings.m_EnableOnTemperatureControl		= true;
+		m_UTSSettings.m_ActiveTemperatureThreshold 		= 250.0;
+		m_UTSSettings.m_InactiveTemperatureThreshold 	= 975.0;
 	}
 	
 	//================================================================

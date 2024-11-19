@@ -1326,6 +1326,11 @@ class ItemBase extends InventoryItem
 				}
 			}
 		}
+		
+		if (old_owner)
+			old_owner.OnChildItemRemoved(this);
+		if (new_owner)
+			new_owner.OnChildItemReceived(this);
 	}
 
 	// -------------------------------------------------------------------------------

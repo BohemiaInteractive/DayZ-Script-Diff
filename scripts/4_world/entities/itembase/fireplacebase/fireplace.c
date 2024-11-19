@@ -16,7 +16,6 @@ class Fireplace extends FireplaceBase
 		SetEventMask( EntityEvent.CONTACT | EntityEvent.TOUCH );
 
 		//! universal temperature sources overrides
-		m_UTSSettings.m_TemperatureMax		= PARAM_OUTDOOR_FIRE_TEMPERATURE;
 		m_UTSSettings.m_TemperatureItemCap	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
 		m_UTSSettings.m_TemperatureCap		= 20;
 		

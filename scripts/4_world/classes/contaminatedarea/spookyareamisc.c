@@ -338,8 +338,6 @@ class SpookyPlayerStalker : ScriptedEntity
  			m_UTSSettings 							= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_Updateable				= true;
 			m_UTSSettings.m_UpdateInterval			= 3;
-			m_UTSSettings.m_TemperatureMin			= 0;
-			m_UTSSettings.m_TemperatureMax			= -20;
 			m_UTSSettings.m_TemperatureItemCap		= -20;
 			m_UTSSettings.m_TemperatureCap			= -20;
 			m_UTSSettings.m_RangeFull				= 2;

@@ -50,9 +50,9 @@ class ActionSwitchSeats: ActionBase
 		return true;
 	}
 
-	override void Start( ActionData action_data )
+	override void OnStart(ActionData action_data)
 	{
-		super.Start( action_data );
+		super.OnStart(action_data);
 		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
 		if ( vehCommand )
 		{
@@ -94,6 +94,7 @@ class ActionSwitchSeats: ActionBase
 	{
 		Transport trans = Transport.Cast(action_data.m_Target.GetObject());
 		bool accepted = false;
+		int currSeat = trans.CrewMemberIndex(action_data.m_Player);  
 		int nextSeat = trans.CrewPositionIndex( action_data.m_Target.GetComponentIndex() );
 		Transport transport = Transport.Cast(action_data.m_Target.GetObject());
 		InventoryLocation il = new InventoryLocation;
@@ -106,6 +107,21 @@ class ActionSwitchSeats: ActionBase
 			{
 				accepted = true;
 				action_data.m_ReservedInventoryLocations.Insert(il);
+			}
+			
+			if(accepted)
+			{
+				il.SetVehicle(transport, action_data.m_Player, currSeat);
+			
+				if (GetGame().AddInventoryJunctureEx(action_data.m_Player, action_data.m_Player, il, true, 10000))
+				{
+					action_data.m_ReservedInventoryLocations.Insert(il);
+				}
+				else
+				{
+					ClearActionJuncture(action_data);
+					accepted = false;
+				}
 			}
 		}
 		

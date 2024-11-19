@@ -100,6 +100,11 @@ class LoginScreenBase extends UIScriptedMenu
 	{
 		return m_IsStatic;
 	}
+	
+	override bool IsHandlingPlayerDeathEvent()
+	{
+		return false;
+	}
 }
 
 class LoginQueueBase extends LoginScreenBase

@@ -175,6 +175,8 @@ class WeaponStateBase
 	 * @param[in]	dst		to state (current)
 	 **/
 	void OnStateChanged (WeaponStateBase src, WeaponStateBase dst) { }
+	
+	float GetCoolDown() { return 0; }
 };
 
 

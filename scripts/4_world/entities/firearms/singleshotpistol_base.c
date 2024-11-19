@@ -92,18 +92,22 @@ class SingleShotPistol_Base: Weapon_Base
 		// charging
 		m_fsm.AddTransition(new WeaponTransition( E,			__M__,	Mech_F));
 		m_fsm.AddTransition(new WeaponTransition( F,			__M__,	Mech_F));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_F,		_fin_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Mech_F,		_fin_,	E));
 		m_fsm.AddTransition(new WeaponTransition(  Mech_F,		_abt_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Mech_F,		_abt_,	E));
 		
 		// eject good cartridge
 		m_fsm.AddTransition(new WeaponTransition( L,			__M__,	Mech_L));
-		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_fin_,	E));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_fin_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_fin_,	L));
 		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_abt_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Mech_L,		_abt_,	L));
 
 		m_fsm.AddTransition(new WeaponTransition( E,			__L__,	Chamber_F));
 		m_fsm.AddTransition(new WeaponTransition( F,			__L__,	Chamber_F));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	L));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	F, NULL, new WeaponGuardCurrentChamberFiredOut(this)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	E, NULL, new WeaponGuardCurrentChamberEmpty(this)));

@@ -1,25 +1,35 @@
 class UniversalTemperatureSourceSettings
 {
 	float m_UpdateInterval		= 1.0;			//! how often the Update is ticking
-	float m_TemperatureMin		= 0;			//! min temperature you can get from the TemperatureSource
-	float m_TemperatureMax		= 100;			//! max temperature you can get from the TemperatureSource
 	float m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE; //! max temperature 'non-IsSelfAdjustingTemperature' entity in vicinity will get per update (cap);
 	float m_TemperatureItemCoef = GameConstants.TEMP_COEF_UTS; //! used to determine speed of temperature change, and some temperature subsystems
 	float m_TemperatureCap		= float.MAX;	//! temperature cap that will limit the return value from GetTemperature method
 	float m_RangeFull			= 1;			//! range where the full temperature is given to receiver
 	float m_RangeMax			= 2;			//! maximum range where the receiver can get some temperature
 	
+	bool m_EnableOnTemperatureControl		= false;	//! enable or disable activation/deactivation on set temperature
+	float m_ActiveTemperatureThreshold 		= 0.0; 	 	//! UTS will be active on temperature >= to this value
+	float m_InactiveTemperatureThreshold 	= 0.0;	 	//! UTS will be inactive on temperature < to this value
+	
 	bool m_Updateable 			= false;		//! if the Update is running periodically
 	bool m_ManualUpdate  		= false;		//! update is called manually (ex. own tick of parent entity)
-	bool m_AffectStat			= false;		//! if the temperature generated is also set as Temperature Stat on Item itself
 	bool m_IsWorldOverriden		= true;			//! if the stats can be overriden by coefficient/variables from WorldData (currently TemperatureCap only)
 
 	vector m_Position			= vector.Zero;
 	EntityAI m_Parent			= null;			//! parent Entity of the UTS
+
+	//! DEPRECATED
+	bool m_AffectStat			= false;
+	float m_TemperatureMin		= 0;
+	float m_TemperatureMax		= 100;
 }
 
 class UniversalTemperatureSourceResult
 {
+	float m_TemperatureItem = 0; //! Item target temperature
+	float m_TemperatureHeatcomfort = 0; //! Player HC target(?) value
+	
+	//! DEPRECATED
 	float m_Temperature = 0;
 }
 
@@ -54,6 +64,8 @@ typedef UniversalTemperatureSource UTemperatureSource;
 
 class UniversalTemperatureSource
 {
+	private float m_ParentTemperaturePrevious;
+
 	protected bool 										m_Active
 	protected ref UniversalTemperatureSourceTimer 		m_Timer;
 	protected UniversalTemperatureSourceSettings 		m_Settings;
@@ -110,32 +122,9 @@ class UniversalTemperatureSource
 		return m_Settings.m_RangeMax;
 	}
 	
-	float GetTemperature()
-	{
-		return GetTemperatureRaw();
-	}
-	
 	float GetTemperatureCap()
 	{
 		return m_Settings.m_TemperatureCap;
-	}
-	
-	float GetTemperatureRaw()
-	{
-		if (m_ResultValues)
-			return m_ResultValues.m_Temperature;
-
-		return 0;
-	}
-	
-	float GetTemperatureMin()
-	{
-		return m_Settings.m_TemperatureMin;
-	}
-	
-	float GetTemperatureMax()
-	{
-		return m_Settings.m_TemperatureMax;
 	}
 	
 	float GetTemperatureItemCap()
@@ -203,11 +192,23 @@ class UniversalTemperatureSource
 
 	void Update(UniversalTemperatureSourceSettings settings, UniversalTemperatureSourceLambdaBase lambda)
 	{
-		if (!IsActive())
+		if (settings.m_EnableOnTemperatureControl)
 		{
-			return;
+			float parentTemperature = GetParent().GetTemperature();
+			float temperatureDifference = parentTemperature - m_ParentTemperaturePrevious;
+
+			if (parentTemperature >= settings.m_ActiveTemperatureThreshold && temperatureDifference > 0)
+				SetActive(true);
+
+			if (parentTemperature < settings.m_InactiveTemperatureThreshold && temperatureDifference < 0)
+				SetActive(false);
+			
+			m_ParentTemperaturePrevious = parentTemperature;
 		}
 
+		if (!IsActive())
+			return;
+		
 		if (lambda)
 		{
 			settings.m_Position = settings.m_Parent.GetUniversalTemperatureSourcePosition();
@@ -216,6 +217,32 @@ class UniversalTemperatureSource
 			lambda.OnAfterExecute();
 		}
 
+	}
+	
+	//!
+	//!DEPRECATED
+	//!
+	float GetTemperatureMin()
+	{
+		return m_Settings.m_TemperatureMin;
+	}
+	
+	float GetTemperatureMax()
+	{
+		return m_Settings.m_TemperatureMax;
+	}
+	
+	float GetTemperature()
+	{
+		return GetTemperatureRaw();
+	}
+	
+	float GetTemperatureRaw()
+	{
+		if (m_ResultValues)
+			return m_ResultValues.m_Temperature;
+
+		return 0;
 	}
 }
 

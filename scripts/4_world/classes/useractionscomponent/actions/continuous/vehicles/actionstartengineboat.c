@@ -75,4 +75,9 @@ class ActionStartEngineBoat : ActionContinuousBase
 	{
 		return true;
 	}
+	
+	override bool HasTarget()
+	{
+		return false;
+	}
 }

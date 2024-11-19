@@ -350,88 +350,93 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		Weapon_Base weapon;
 		Class.CastTo(weapon, GetEntityInHands());
 		
-		if (hcw && weapon && weapon.CanProcessWeaponEvents())
+		if (weapon)
 		{
-			weapon.GetCurrentState().OnUpdate(dt);
-
-			if (LogManager.IsWeaponLogEnable())
+			weapon.UpdateCoolDown(dt);
+			if (hcw && weapon.CanProcessWeaponEvents())
 			{
-				wpnDebugSpamALot("[wpnfsm] " + Object.GetDebugName(weapon) + " HCW: playing A=" + typename.EnumToString(WeaponActions, hcw.GetRunningAction()) + " AT=" + WeaponActionTypeToString(hcw.GetRunningAction(), hcw.GetRunningActionType()) + " fini=" + hcw.IsActionFinished());
-			}
-
-			if (!weapon.IsIdle())
-			{
-				while (true)
-				{
-					int weaponEventId = hcw.IsEvent();
-					if (weaponEventId == -1)
-					{
-						break;
-					}
-
-					if (weaponEventId == WeaponEvents.CHANGE_HIDE)
-					{
-						break;
-					}
-
-					WeaponEventBase anim_event = WeaponAnimEventFactory(weaponEventId, GetDayZPlayerOwner(), NULL);
-					
-					if (LogManager.IsWeaponLogEnable())
-					{
-						wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " HandleWeapons: event arrived " + typename.EnumToString(WeaponEvents, weaponEventId) + "(" + weaponEventId + ")  fsm_ev=" + anim_event.ToString());
-					}
-
-					if (anim_event != NULL)
-					{
-						weapon.ProcessWeaponEvent(anim_event);
-					}
-				}
-
-				if (hcw.IsActionFinished())
-				{
-					if (weapon.IsWaitingForActionFinish())
-					{
-						if (LogManager.IsWeaponLogEnable())
-						{
-							wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: finished! notifying waiting state=" + weapon.GetCurrentState());
-						}
-						
-						weapon.ProcessWeaponEvent(new WeaponEventHumanCommandActionFinished(GetDayZPlayerOwner()));
-					}
-					else
-					{
-						if (LogManager.IsWeaponLogEnable())
-						{
-							wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: ABORT! notifying running state=" + weapon.GetCurrentState());
-						}
-
-						weapon.ProcessWeaponAbortEvent(new WeaponEventHumanCommandActionAborted(GetDayZPlayerOwner()));
-					}
-				}
-			}
-
-			if (m_DeferredWeaponEvent)
-			{
+				
+				weapon.GetCurrentState().OnUpdate(dt);
+	
 				if (LogManager.IsWeaponLogEnable())
 				{
-					wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: deferred " + m_DeferredWeaponEvent.DumpToString());
+					wpnDebugSpamALot("[wpnfsm] " + Object.GetDebugName(weapon) + " HCW: playing A=" + typename.EnumToString(WeaponActions, hcw.GetRunningAction()) + " AT=" + WeaponActionTypeToString(hcw.GetRunningAction(), hcw.GetRunningActionType()) + " fini=" + hcw.IsActionFinished());
 				}
-
-				if (weapon.ProcessWeaponEvent(m_DeferredWeaponEvent))
+	
+				if (!weapon.IsIdle())
 				{
-					exitIronSights = true;
-
+					while (true)
+					{
+						int weaponEventId = hcw.IsEvent();
+						if (weaponEventId == -1)
+						{
+							break;
+						}
+	
+						if (weaponEventId == WeaponEvents.CHANGE_HIDE)
+						{
+							break;
+						}
+	
+						WeaponEventBase anim_event = WeaponAnimEventFactory(weaponEventId, GetDayZPlayerOwner(), NULL);
+						
+						if (LogManager.IsWeaponLogEnable())
+						{
+							wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " HandleWeapons: event arrived " + typename.EnumToString(WeaponEvents, weaponEventId) + "(" + weaponEventId + ")  fsm_ev=" + anim_event.ToString());
+						}
+	
+						if (anim_event != NULL)
+						{
+							weapon.ProcessWeaponEvent(anim_event);
+						}
+					}
+	
+					if (hcw.IsActionFinished())
+					{
+						if (weapon.IsWaitingForActionFinish())
+						{
+							if (LogManager.IsWeaponLogEnable())
+							{
+								wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: finished! notifying waiting state=" + weapon.GetCurrentState());
+							}
+							
+							weapon.ProcessWeaponEvent(new WeaponEventHumanCommandActionFinished(GetDayZPlayerOwner()));
+						}
+						else
+						{
+							if (LogManager.IsWeaponLogEnable())
+							{
+								wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: ABORT! notifying running state=" + weapon.GetCurrentState());
+							}
+	
+							weapon.ProcessWeaponAbortEvent(new WeaponEventHumanCommandActionAborted(GetDayZPlayerOwner()));
+						}
+					}
+				}
+	
+				if (m_DeferredWeaponEvent)
+				{
 					if (LogManager.IsWeaponLogEnable())
 					{
-						fsmDebugSpam("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: resetting deferred event" + m_DeferredWeaponEvent.DumpToString());
+						wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: deferred " + m_DeferredWeaponEvent.DumpToString());
 					}
-
-					m_DeferredWeaponEvent = NULL;
-					m_DeferredWeaponTimer.Stop();
-				}
-				else if (!m_DeferredWeaponTimer.IsRunning())
-				{
-					m_DeferredWeaponTimer.Run(3, this, "DeferredWeaponFailed");
+	
+					if (weapon.ProcessWeaponEvent(m_DeferredWeaponEvent))
+					{
+						exitIronSights = true;
+	
+						if (LogManager.IsWeaponLogEnable())
+						{
+							fsmDebugSpam("[wpnfsm] " + Object.GetDebugName(weapon) + " Weapon event: resetting deferred event" + m_DeferredWeaponEvent.DumpToString());
+						}
+	
+						m_DeferredWeaponEvent = NULL;
+						m_DeferredWeaponTimer.Stop();
+					}
+					else if (!m_DeferredWeaponTimer.IsRunning())
+					{
+						m_DeferredWeaponTimer.Run(3, this, "DeferredWeaponFailed");
+					}
 				}
 			}
 		}

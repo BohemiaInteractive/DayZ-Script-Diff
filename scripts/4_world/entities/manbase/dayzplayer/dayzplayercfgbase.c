@@ -1155,6 +1155,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("SteelheadTroutFilletMeat",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mackerel_fillet.anm"); 
 		pType.AddItemInHandsProfileIK("RedCaviar",							"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/red_caviar.anm"); 
 		pType.AddItemInHandsProfileIK("Lard",								"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/lard.anm");
+		pType.AddItemInHandsProfileIK("Shrimp",							    "dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/shrimp.anm");
 		
 		//! Food mushrooms	
 		pType.AddItemInHandsProfileIK("AgaricusMushroom",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,				"dz/anims/anm/player/ik/gear/mushroom_agaricus.anm"); // Not configured

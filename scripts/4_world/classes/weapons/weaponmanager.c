@@ -84,8 +84,7 @@ class WeaponManager
 		if( m_player.IsLiftWeapon() || !m_player.IsRaised() || wpn.IsDamageDestroyed() || m_player.GetDayZPlayerInventory().IsProcessing() || !m_player.IsWeaponRaiseCompleted() || m_player.IsFighting() ) 
 			return false;
 		
-		return true;
-		
+		return !wpn.IsCoolDown();	
 	}
 	
 	
@@ -655,7 +654,7 @@ class WeaponManager
 					if ( !det_mag || ( mag != det_mag) )
 						break;
 					
-					if( GetGame().AddInventoryJunctureEx(m_player, il.GetItem(), il, true, 10000))
+					if (GetGame().AddInventoryJunctureEx(m_player, il.GetItem(), il, true, 10000))
 						accepted = true;
 					m_PendingInventoryLocation = il;
 					m_PendingTargetMagazine = mag;
@@ -943,7 +942,7 @@ class WeaponManager
 		
 		if (!m_ControlAction)
 		{
-			if(GetGame().IsServer() && GetGame().IsMultiplayer())
+			if (GetGame().IsServer() && GetGame().IsMultiplayer())
 			{
 				if(m_PendingTargetMagazine)
 				{
@@ -1021,14 +1020,18 @@ class WeaponManager
 		for (int i = 0; i < m_SuitableMagazines.Count(); i++)
 		{
 			mag = m_SuitableMagazines[i];
-			if (!mag || mag.IsRuined() || (mag.GetHierarchyParent() && !mag.GetHierarchyParent().GetInventory().AreChildrenAccessible()))
+			if (!mag || mag.IsRuined() || (mag.GetHierarchyParent() && mag.GetHierarchyParent().IsWeapon()) )
 			{
 				m_SuitableMagazines.Remove(i);
 				i--;
 				continue;
 			}
-			if (mag.GetAmmoCount() > 0)
-				return mag;
+			
+			if(!mag.GetHierarchyParent() || mag.GetHierarchyParent().GetInventory().AreChildrenAccessible())
+			{
+				if (mag.GetAmmoCount() > 0)
+					return mag;
+			}
 		}
 		
 		return null;

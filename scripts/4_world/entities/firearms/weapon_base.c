@@ -72,6 +72,7 @@ class Weapon_Base extends Weapon
 	protected ref PropertyModifiers m_PropertyModifierObject;
 	protected PhxInteractionLayers hit_mask = PhxInteractionLayers.CHARACTER | PhxInteractionLayers.BUILDING | PhxInteractionLayers.DOOR | PhxInteractionLayers.VEHICLE | PhxInteractionLayers.ROADWAY | PhxInteractionLayers.TERRAIN | PhxInteractionLayers.ITEM_SMALL | PhxInteractionLayers.ITEM_LARGE | PhxInteractionLayers.FENCE | PhxInteractionLayers.AI;
 	protected ref Timer m_DelayedValidationTimer;
+	private float m_coolDownTime = 0;
 	void Weapon_Base()
 	{
 		//m_DmgPerShot		= ConfigGetFloat("damagePerShot");
@@ -1896,6 +1897,17 @@ class Weapon_Base extends Weapon
 		{
 			GetGame().ClearJuncture(player, mag);
 		}
+	}
+	
+	// CoolDown
+	void SetCoolDown( float coolDownTime ) 
+	{
+		m_coolDownTime = coolDownTime; 
+	}		
+	void UpdateCoolDown( float dt ) { m_coolDownTime -= dt; }	
+	bool IsCoolDown() 
+	{ 		
+		return m_coolDownTime > 0; 
 	}
 };
 

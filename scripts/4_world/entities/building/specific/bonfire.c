@@ -58,8 +58,6 @@ class Bonfire extends BuildingSuper
  			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_UpdateInterval		= TIMER_HEATING_UPDATE_INTERVAL;
 			m_UTSSettings.m_Updateable			= true;
-			m_UTSSettings.m_TemperatureMin		= 0;
-			m_UTSSettings.m_TemperatureMax		= CONST_FIRE_TEMP;
 			m_UTSSettings.m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
 			m_UTSSettings.m_TemperatureCap		= PARAM_MAX_TRANSFERED_TEMPERATURE;
 			m_UTSSettings.m_RangeFull			= PARAM_FULL_HEAT_RADIUS;

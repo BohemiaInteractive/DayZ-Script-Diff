@@ -60,25 +60,28 @@ class ActionCreateIndoorFireplace: ActionSingleUseBase
 		return false;
 	}
 	
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{
-		Object obj = GetGame().CreateObjectEx( "FireplaceIndoor", action_data.m_Player.GetLastFirePoint(), ECE_PLACE_ON_SURFACE );
-	
+		BuildingWithFireplace building = BuildingWithFireplace.Cast(action_data.m_Target.GetObject());
+		int index = action_data.m_Player.GetLastFirePointIndex();
+		//action_data
+		Object obj = GetGame().CreateObjectEx(building.GetFireplaceType(index), action_data.m_Player.GetLastFirePoint(), ECE_PLACE_ON_SURFACE);
+		
 		int m_FirePointIndex = action_data.m_Player.GetLastFirePointIndex();
 		float m_FireplaceRot = action_data.m_Player.GetLastFirePointRot();
-		vector smoke_point_pos = action_data.m_Target.GetObject().GetSelectionPositionMS( FireplaceIndoor.FIREPOINT_SMOKE_POSITION + m_FirePointIndex.ToString() );
-		vector smoke_point_pos_world = action_data.m_Target.GetObject().ModelToWorld( smoke_point_pos );		
+		vector smoke_point_pos = action_data.m_Target.GetObject().GetSelectionPositionMS(FireplaceIndoor.FIREPOINT_SMOKE_POSITION + m_FirePointIndex.ToString());
+		vector smoke_point_pos_world = action_data.m_Target.GetObject().ModelToWorld(smoke_point_pos);		
 		vector m_SmokePosition = smoke_point_pos_world;
 		
-		FireplaceIndoor fp_indoor = FireplaceIndoor.Cast( obj );
+		FireplaceIndoor fp_indoor = FireplaceIndoor.Cast(obj);
 		if ( fp_indoor )
 		{
-			fp_indoor.SetFirePointIndex( m_FirePointIndex );
-			fp_indoor.SetSmokePointPosition( m_SmokePosition );
+			fp_indoor.SetFirePointIndex(m_FirePointIndex);
+			fp_indoor.SetSmokePointPosition(m_SmokePosition);
 
 			vector fprot = vector.Zero;
 			fprot[0] = m_FireplaceRot;
-			fp_indoor.SetOrientation( fprot );
+			fp_indoor.SetOrientation(fprot);
 
 			fp_indoor.Synchronize();
 			
@@ -93,7 +96,7 @@ class ActionCreateIndoorFireplace: ActionSingleUseBase
 		}
 	}
 	
-	override void OnExecuteClient( ActionData action_data )
+	override void OnExecuteClient(ActionData action_data)
 	{
 		ClearInventoryReservationEx(action_data);
 	}

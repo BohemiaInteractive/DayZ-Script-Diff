@@ -223,6 +223,11 @@ class ActionGetOutTransport : ActionBase
 		return true;
 	}
 	
+	override bool HasTarget()
+	{
+		return false;
+	}
+	
 	override int GetActionCategory()
 	{
 		return AC_INTERACT;

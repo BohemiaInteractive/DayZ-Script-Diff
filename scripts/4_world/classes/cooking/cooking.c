@@ -527,9 +527,14 @@ class Cooking
 		{
 			float itemTemp = cooked_item.GetTemperature();
 			//set target temperature
-			float targetTemp = DEFAULT_COOKING_TEMPERATURE;	//default for direct attachments (direct cooking slots, smoking...)
-			if (cooking_equipment)
-				targetTemp = cooking_equipment.GetTemperature();
+			float targetTemp;
+			if (!cooked_item.GetHierarchyRoot().GetCookingTargetTemperature(targetTemp)) //if not valid, fallback values enter the equation
+			{
+				if (cooking_equipment)
+					targetTemp = cooking_equipment.GetTemperature();
+				else
+					targetTemp = DEFAULT_COOKING_TEMPERATURE;
+			}
 			
 			//adjust temperature
 			if (targetTemp != itemTemp)

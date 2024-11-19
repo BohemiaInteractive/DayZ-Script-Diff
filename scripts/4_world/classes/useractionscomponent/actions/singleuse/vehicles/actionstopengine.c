@@ -60,4 +60,9 @@ class ActionStopEngine: ActionSingleUseBase
 	{
 		return false;
 	}
+	
+	override bool HasTarget()
+	{
+		return false;
+	}
 };

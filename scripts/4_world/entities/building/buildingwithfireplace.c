@@ -3,6 +3,11 @@ class BuildingWithFireplace : BuildingSuper
 	void BuildingWithFireplace()
 	{
 	}
+	
+	string GetFireplaceType(int firePointIndex)
+	{
+		return "FireplaceIndoor";
+	}
 };
 
 //Moved from bliss folder

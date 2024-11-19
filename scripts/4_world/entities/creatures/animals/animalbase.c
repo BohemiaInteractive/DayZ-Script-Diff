@@ -229,6 +229,7 @@ class Animal_RangiferTarandus extends AnimalBase
 	}
 }
 class Animal_RangiferTarandusF extends Animal_RangiferTarandus {}
+class Animal_RangiferTarandus_Xmas extends Animal_RangiferTarandus {}
 
 class Animal_GallusGallusDomesticus extends AnimalBase
 {

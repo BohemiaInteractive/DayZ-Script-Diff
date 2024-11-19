@@ -18,8 +18,6 @@ class Truck_02 extends CarScript
 		{
  			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_ManualUpdate 		= true;
-			m_UTSSettings.m_TemperatureMin		= 0;
-			m_UTSSettings.m_TemperatureMax		= 30;
 			m_UTSSettings.m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
 			m_UTSSettings.m_TemperatureCap		= 0;
 			m_UTSSettings.m_RangeFull			= 0.5;

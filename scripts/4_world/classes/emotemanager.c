@@ -916,10 +916,13 @@ class EmoteManager
 			return false;
 		}
 		
-		if (m_Player.GetCommand_Move() && m_Player.GetCommand_Move().IsOnBack() && id != EmoteConstants.ID_EMOTE_SURRENDER)
+		HumanCommandMove cm = m_Player.GetCommand_Move();
+		if (cm)
 		{
-			//Debug.Log("!CanPlayEmote | reason:  7");
-			return false;
+			if (cm.IsOnBack() && id != EmoteConstants.ID_EMOTE_SURRENDER)
+				return false;
+			if (cm.IsChangingStance())
+				return false;
 		}
 		
 		//"locks" player in surrender state

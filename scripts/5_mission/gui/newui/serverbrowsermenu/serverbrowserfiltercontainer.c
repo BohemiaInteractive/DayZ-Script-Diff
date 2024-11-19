@@ -11,7 +11,7 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 	ref OptionSelectorMultistate m_RegionFilter;
 	ref OptionSelectorMultistate m_PingFilter;
 	ref OptionSelectorMultistate m_MapFilter;
-	ref OptionSelector m_DLCFilter;
+	ref OptionSelector m_DLCFilter; // DEPRECATED
 	ref OptionSelector m_FavoritedFilter;
 	ref OptionSelector m_FriendsPlayingFilter;
 	ref OptionSelector m_BattleyeFilter; // DEPRECATED
@@ -52,7 +52,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 
 		m_MapFilter	= new OptionSelectorMultistate(root.FindAnyWidget("map_setting_option"), 0, this, false, map_options);
 		
-		m_DLCFilter	= new OptionSelector(root.FindAnyWidget("dlc_setting_option"), 0, this, false);
 		m_FriendsPlayingFilter = new OptionSelector(root.FindAnyWidget("friends_setting_option"), 0, this, false);
 		m_PreviouslyPlayedFilter = new OptionSelector(root.FindAnyWidget("prev_played_setting_option"), 0, this, false);
 		m_FullServerFilter = new OptionSelector(root.FindAnyWidget("full_server_setting_option"), 0, this, false);
@@ -60,7 +59,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		m_PasswordFilter = new OptionSelector(root.FindAnyWidget("password_setting_option"), 0, this, false);
 		m_WhitelistFilter = new OptionSelector(root.FindAnyWidget("whitelist_setting_option"), 0, this, false);
 
-		m_DLCFilter.m_OptionChanged.Insert(OnFilterChanged);
 		m_RegionFilter.m_OptionChanged.Insert(OnFilterChanged);
 		m_PingFilter.m_OptionChanged.Insert(OnFilterChanged);
 		m_FavoritedFilter.m_OptionChanged.Insert(OnFilterChanged);
@@ -142,7 +140,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		if (m_Options && m_Options.Count() >= 6)
 		{
 			m_SearchByName.SetText(m_Options.Get("m_SearchByName"));
-			m_DLCFilter.SetStringOption(m_Options.Get("m_DLCFilter"));
 			m_RegionFilter.SetStringOption(m_Options.Get("m_RegionFilter"), false);
 			m_PingFilter.SetStringOption(m_Options.Get("m_PingFilter"), false);
 			m_FriendsPlayingFilter.SetStringOption(m_Options.Get("m_FriendsPlayingFilter"), false);
@@ -178,7 +175,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		m_Options.Clear();
 		
 		m_Options.Insert("m_SearchByName", m_SearchByName.GetText());
-		m_Options.Insert("m_DLCFilter", m_DLCFilter.GetStringValue());
 		m_Options.Insert("m_RegionFilter", m_RegionFilter.GetStringValue());
 		m_Options.Insert("m_PingFilter", m_PingFilter.GetStringValue());
 		m_Options.Insert("m_FriendsPlayingFilter", m_FriendsPlayingFilter.GetStringValue());
@@ -215,7 +211,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 	{
 		m_SearchByName.SetText("");
 		m_RegionFilter.Reset();
-		m_DLCFilter.Reset();
 		m_PingFilter.Reset();
 		m_FavoritedFilter.Reset();
 		m_FriendsPlayingFilter.Reset();
@@ -486,11 +481,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 				input.SetNameFilter(name_text);
 			}
 		}
-
-		if (m_DLCFilter.IsSet())
-		{
-			input.SetIsDLC(m_DLCFilter.IsEnabled());
-		}
 		
 		if (m_FullServerFilter.IsSet())
 		{
@@ -580,11 +570,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		if (m_RegionFilter.IsSet())
 		{
 			input.SetRegionIdFilter(m_RegionFilter.GetValue());
-		}
-		
-		if (m_DLCFilter.IsSet())
-		{
-			input.SetIsDLC(m_DLCFilter.IsEnabled());
 		}
 
 		if (m_FullServerFilter.IsSet())

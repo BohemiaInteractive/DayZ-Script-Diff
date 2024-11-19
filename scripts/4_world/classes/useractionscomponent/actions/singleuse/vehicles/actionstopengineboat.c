@@ -51,4 +51,9 @@ class ActionStopEngineBoat: ActionSingleUseBase
 	{
 		return false;
 	}
+	
+	override bool HasTarget()
+	{
+		return false;
+	}
 };

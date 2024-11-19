@@ -97,8 +97,6 @@ class PlayerStat<Class T> extends PlayerStatBase
 			m_Value = value;
 		}
 		
-		m_Value = Math.Round(m_Value * 100) * 0.01;
-		
 		#ifdef SERVER
 		if (IsSynced())
 		{

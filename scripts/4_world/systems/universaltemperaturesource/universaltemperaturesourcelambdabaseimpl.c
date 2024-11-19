@@ -12,7 +12,7 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 			if (nearestItem && nearestItem.HasWetness() && nearestItem != pSettings.m_Parent && !nearestItem.IsInherited(Man) && !nearestItem.IsUniversalTemperatureSource())
 			{
 				distanceToTemperatureSource = vector.Distance(nearestItem.GetPosition(), position);
-				distanceToTemperatureSource = Math.Max(distanceToTemperatureSource, 0.1);	//min distance cannot be 0 (division by zero)
+				distanceToTemperatureSource = Math.Max(distanceToTemperatureSource, 0.3);	//min distance cannot be 0 (division by zero)
 				
 				float dryModifier = 0;				
 				
@@ -47,7 +47,6 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 	{
 		float distanceToTemperatureSource;
 		float tempTarget = pSettings.m_TemperatureItemCap;
-		float distanceBasedTemperature;
 		EntityAI nearestEntity;
 		
 		foreach (Object nearestObject : nearestObjects)
@@ -138,7 +137,8 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 	
 	override void Execute(UniversalTemperatureSourceSettings pSettings, UniversalTemperatureSourceResult resultValues)
 	{
-		resultValues.m_Temperature = pSettings.m_TemperatureMax;
+		resultValues.m_TemperatureItem = pSettings.m_TemperatureItemCap;
+		resultValues.m_TemperatureHeatcomfort = pSettings.m_TemperatureCap;
 		
 		array<Object> nearestObjects = new array<Object>();
 		

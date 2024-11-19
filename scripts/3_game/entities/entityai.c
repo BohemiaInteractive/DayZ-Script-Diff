@@ -917,6 +917,8 @@ class EntityAI extends Entity
 	
 	
 	void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner) { }
+	void OnChildItemRemoved(InventoryItem item) { }
+	void OnChildItemReceived(InventoryItem item) { }
 	
 	void OnItemAttachmentSlotChanged (notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc) {}
 	
@@ -2394,6 +2396,12 @@ class EntityAI extends Entity
 	float GetTemperatureMax()
 	{
 		return m_VarTemperatureMax;
+	}
+	
+	//! specifically for cooking system, to get heat source target temperatures
+	bool GetCookingTargetTemperature(out float temperature)
+	{
+		return false;
 	}
 	
 	/**

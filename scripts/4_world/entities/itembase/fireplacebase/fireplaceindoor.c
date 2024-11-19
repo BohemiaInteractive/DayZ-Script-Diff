@@ -1,4 +1,4 @@
-class FireplaceIndoor extends FireplaceBase
+class FireplaceIndoor : FireplaceBase
 {
 	protected float 				m_SmokePosX;
 	protected float 				m_SmokePosY;
@@ -29,11 +29,16 @@ class FireplaceIndoor extends FireplaceBase
 		
 		m_LightDistance = 50;
 		SetRoofAbove(true);
+		
+		m_UTSSettings.m_EnableOnTemperatureControl		= true;
+		m_UTSSettings.m_ActiveTemperatureThreshold 		= 250.0;
+		m_UTSSettings.m_InactiveTemperatureThreshold 	= 975.0;
 	}
 	
 	//================================================================
 	// ONSTORESAVE/LOAD/AFTERLOAD
-	//================================================================
+	//================================================================	
+	
 	override void OnStoreSave( ParamsWriteContext ctx )
 	{   
 		super.OnStoreSave( ctx );

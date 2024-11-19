@@ -122,6 +122,11 @@ class ActionCarDoors: ActionInteractBase
 		return true;
 	}
 	
+	override bool HasTarget()
+	{
+		return false;
+	}
+	
 	protected void FillCommandUIDPerCrewIdx(int crewIdx0, int crewIdx1, int crewIdx2, int crewIdx3)
 	{
 		m_CommandUIDPerCrewIdx[0] = crewIdx0;

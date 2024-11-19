@@ -61,11 +61,19 @@ class Wreck_SantasSleigh extends CrashBase
 		for (int i = 0; i < m_MaxDeersAmount; i++)
 		{
 			vector deer_pos = RandomizePosition(crash_pos);
-			deer = EntityAI.Cast(GetGame().CreateObject("Animal_CervusElaphus", deer_pos,false, true));
+			deer = EntityAI.Cast(GetGame().CreateObject("Animal_RangiferTarandus", deer_pos,false, true));
 			deer.SetHealth01("","", 0);
 			vector orientation = deer.GetOrientation();
 			deer.SetOrientation(Vector(Math.RandomIntInclusive(0,360),orientation[1],orientation[2]));
-		}		
+		}
+		
+		//spawns xmas reindeer
+		deer_pos = RandomizePosition(crash_pos);
+		deer = EntityAI.Cast(GetGame().CreateObject("Animal_RangiferTarandus_Xmas", deer_pos,false, true));
+		deer.SetHealth01("","", 0);
+		vector redorientation = deer.GetOrientation();
+		deer.SetOrientation(Vector(Math.RandomIntInclusive(0,360),redorientation[1],redorientation[2]));
+				
 	}
 	
 	//Return a new vector scattered around origin.

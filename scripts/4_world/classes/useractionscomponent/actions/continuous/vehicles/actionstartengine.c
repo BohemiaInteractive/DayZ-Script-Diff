@@ -111,4 +111,9 @@ class ActionStartEngine : ActionContinuousBase
 	{
 		return true;
 	}
+	
+	override bool HasTarget()
+	{
+		return false;
+	}
 }

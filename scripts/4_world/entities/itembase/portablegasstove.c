@@ -9,9 +9,8 @@ class PortableGasStove extends ItemBase
 	typename ATTACHMENT_CAULDRON	 				= Cauldron;
 	
 	//cooking
-	protected const float PARAM_COOKING_TEMP_THRESHOLD			= 100;		//temperature threshold for starting coooking process (degree Celsius)
-	protected const float PARAM_COOKING_EQUIP_MAX_TEMP			= 250;		//maximum temperature of attached cooking equipment (degree Celsius)
 	protected const float PARAM_COOKING_TIME_INC_COEF			= 0.5;		//cooking time increase coeficient, can be used when balancing how fast a food can be cooked
+	protected const float PARAM_COOKING_TARGET_TEMP				= 400;		//target temperature for general item heating
 	
 	private 		float m_TimeFactor;
 	//
@@ -71,8 +70,6 @@ class PortableGasStove extends ItemBase
 		{
  			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_ManualUpdate		= true;
-			m_UTSSettings.m_TemperatureMin		= 0;
-			m_UTSSettings.m_TemperatureMax		= 400;
 			m_UTSSettings.m_TemperatureItemCap 	= GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
 			m_UTSSettings.m_TemperatureCap		= 0;
 			m_UTSSettings.m_RangeFull			= 0;
@@ -198,7 +195,10 @@ class PortableGasStove extends ItemBase
 			if (GetGame() && GetGame().IsServer())
 			{
 				float cook_equip_temp = item.GetTemperature();
-				float target = PARAM_COOKING_EQUIP_MAX_TEMP; //makes sense here, since gas stove does not heat itself, and we need some target
+				float target; //makes sense here, since gas stove does not heat itself, and we need some target
+				if (!GetCookingTargetTemperature(target))
+					target = PARAM_COOKING_TARGET_TEMP; //fallback value
+				
 				float diff = target - cook_equip_temp;
 				float heatPermCoef = item.GetHeatPermeabilityCoef();
 				
@@ -221,6 +221,12 @@ class PortableGasStove extends ItemBase
 			m_CookingProcess = new Cooking();
 		
 		m_CookingProcess.CookWithEquipment(GetCookingEquipment(), PARAM_COOKING_TIME_INC_COEF * m_TimeFactor);
+	}
+	
+	override bool GetCookingTargetTemperature(out float temperature)
+	{
+		temperature = PARAM_COOKING_TARGET_TEMP;
+		return true;
 	}
 
 	protected void RefreshFlameVisual(bool working = false, bool hasAttachment = false)
@@ -444,8 +450,8 @@ class PortableGasStove extends ItemBase
 	///////////////////////////
 	//DEPRECATED STUFF BELOW//
 	/////////////////////////
-	protected const float PARAM_COOKING_EQUIP_TEMP_INCREASE		= 10;		//how much will temperature increase when attached on burning fireplace (degree Celsius)
+	protected const float PARAM_COOKING_TEMP_THRESHOLD			= 100;		//!DEPRECATED
+	protected const float PARAM_COOKING_EQUIP_MAX_TEMP			= 400;		//!DEPRECATED
+	protected const float PARAM_COOKING_EQUIP_TEMP_INCREASE		= 10;		//!DEPRECATED
 	/////////////////////////
-	//////////////////////////
-	///////////////////////////
 }
