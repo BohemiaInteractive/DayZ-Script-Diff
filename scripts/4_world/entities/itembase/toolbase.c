@@ -8,6 +8,14 @@ class ToolBase extends ItemBase
 		
 	}
 	
+	//! If used to un/lock doors, which does it open. Bitwise.
+	int GetKeyCompatibilityType()
+	{
+		//you can combine the bit values like so:
+		//return (1 << EBuildingLockType.LOCKPICK) | (1 << EBuildingLockType.SHIP_CONTAINER_1);
+		return EBuildingLockType.NONE; //pure '0'
+	}
+	
 	int GetDisarmRate()
 	{
 		return m_MineDisarmRate;

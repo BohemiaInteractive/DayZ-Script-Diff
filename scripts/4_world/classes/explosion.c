@@ -20,6 +20,6 @@ class ExplosionTest : House
 	
 	void ExplodeNow()
 	{
-		Explode(DT_EXPLOSION, "Explosion_NonLethal");
+		Explode(DamageType.EXPLOSION, "Explosion_NonLethal");
 	}
 }

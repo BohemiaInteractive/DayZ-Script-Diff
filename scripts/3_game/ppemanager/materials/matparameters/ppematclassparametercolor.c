@@ -4,14 +4,14 @@ class ColorValuesData : Managed
 	protected ref array<float> m_Values;
 	protected int m_Operator;
 	
-	void ColorValuesData(ref array<float> values, int operator)
+	void ColorValuesData(array<float> values, int operator)
 	{
 		m_Values = new array<float>;
 		m_Values.Copy(values);
 		m_Operator = operator;
 	}
 	
-	void SetValues(ref array<float> values)
+	void SetValues(array<float> values)
 	{
 		m_Values.Copy(values);
 	}
@@ -279,7 +279,7 @@ class PPEMatClassParameterColor extends PPEMatClassParameterCommandData
 	}
 	
 	//! Fills relative values into arrays/member variables
-	void PrepareLayerInfo(int layer, ref array<float> values, int operator)
+	void PrepareLayerInfo(int layer, array<float> values, int operator)
 	{
 		ColorValuesData tmp;
 		if (m_LayerInfo.Contains(layer))

@@ -8,6 +8,7 @@ class ActionStartCarCB : ActionContinuousBaseCB
 
 class ActionStartEngine : ActionContinuousBase
 {
+	private const int SOUND_IGNITION_DELAY = 700; // ms, delay for ignition sound to match animation of hand touching the key
 	private const float ROUGH_SPECIALTY_WEIGHT	= 0.5;
 	static const float MINIMUM_BATTERY_ENERGY	= 5.0;	//! DEPRECATED
 	
@@ -56,6 +57,23 @@ class ActionStartEngine : ActionContinuousBase
 		return false;
 	}
 	
+	override void OnStartServer(ActionData action_data)
+	{
+		super.OnStartServer(action_data);
+		
+		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
+		if (!vehCommand)
+			return;
+		
+		CarScript car = CarScript.Cast(vehCommand.GetTransport());
+		if (!car)
+			return;
+		
+		if (car.CheckOperationalState())
+			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(car.SetCarEngineSoundState, SOUND_IGNITION_DELAY, false, CarEngineSoundState.STARTING);
+		
+	}
+		
 	override void OnEndServer(ActionData action_data)
 	{
 		super.OnEndServer(action_data);

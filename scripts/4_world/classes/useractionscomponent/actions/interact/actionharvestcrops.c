@@ -1,14 +1,21 @@
-class ActionHarvestCrops: ActionInteractBase
+class ActionHarvestCropsCB : ActionContinuousBaseCB
+{
+	override void CreateActionComponent()
+	{
+		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_HARVEST);
+	}
+};
+
+class ActionHarvestCrops: ActionContinuousBase
 {
 	PlantBase m_Plant;
 	
 	void ActionHarvestCrops()
 	{
-
-		m_SpecialtyWeight = UASoftSkillsWeight.PRECISE_MEDIUM;
-		/*m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_INTERACT;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
-		m_FullBody = true;*/
+		m_CallbackClass = ActionHarvestCropsCB;
+		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_INTERACT;
+		m_FullBody = true;
+		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
 	}
 
 	override typename GetInputType()
@@ -73,22 +80,15 @@ class ActionHarvestCrops: ActionInteractBase
 			if (slot)
 			{
 				m_Plant = PlantBase.Cast(slot.GetPlant());
-				bool is_mature = m_Plant.IsMature();
-				bool is_spoiled = m_Plant.IsSpoiled();
-				bool has_crops = m_Plant.HasCrops();
-				int plant_state = m_Plant.GetPlantState();
-
-				if ( is_mature && has_crops )
-				{
+				if ( m_Plant && m_Plant.IsHarvestable())
 					return true;
-				}
 			}
 		}
 		return false;
 
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnFinishProgressServer( ActionData action_data )
 	{
 		if ( m_Plant )
 		{

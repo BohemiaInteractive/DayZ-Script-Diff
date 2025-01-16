@@ -11,17 +11,19 @@ class InspectMenuNew extends UIScriptedMenu
 	
 	void InspectMenuNew()
 	{
-		
+		GetGame().GetMission().AddActiveInputExcludes({"inspect"});
 	}
 	
 	//--------------------------------------------------------------------------
 	void ~InspectMenuNew()
 	{
 		GetGame().GetDragQueue().RemoveCalls(this);
-		if (GetGame().GetMission())
+		Mission mis = GetGame().GetMission();
+		if (mis)
 		{
-			GetGame().GetMission().GetHud().ShowHudUI( true );
-			GetGame().GetMission().GetHud().ShowQuickbarUI( true );
+			mis.GetHud().ShowHudUI(true);
+			mis.GetHud().ShowQuickbarUI(true);
+			mis.RemoveActiveInputExcludes({"inspect"});
 		}
 	}
 	

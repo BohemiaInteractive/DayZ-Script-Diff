@@ -1,4 +1,4 @@
-class Land_WaterSpring_Sakhal extends Well
+class Land_WaterSpring_Sakhal : BuildingSuper
 {
 	
 }

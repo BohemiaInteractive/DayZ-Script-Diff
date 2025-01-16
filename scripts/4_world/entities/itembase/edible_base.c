@@ -4,6 +4,10 @@ class Edible_Base : ItemBase
 
 	const string SOUND_BAKING_START 		= "Baking_SoundSet";
 	const string SOUND_BAKING_DONE 			= "Baking_Done_SoundSet";
+	const string SOUND_BOILING_START 		= "Boiling_SoundSet";
+	const string SOUND_BOILING_DONE 		= "Boiling_Done_SoundSet";
+	const string SOUND_DRYING_START 		= "Drying_SoundSet";
+	const string SOUND_DRYING_DONE 			= "Drying_Done_SoundSet";
 	const string SOUND_BURNING_DONE 		= "Food_Burning_SoundSet";
 
 	protected bool m_MakeCookingSounds;
@@ -107,6 +111,17 @@ class Edible_Base : ItemBase
 	//! Filter agents from the item (override on higher implements)
 	int FilterAgents(int agentsIn)
 	{
+		int foodStageType;
+
+		FoodStage foodStage = GetFoodStage();
+		if (foodStage)
+			foodStageType = foodStage.GetFoodStageType();
+
+		//! if no per FoodStage/Nutrition override is set, remove possible Food Poisoning to prevent double punishment from Bloody Hands
+		NutritionalProfile nutritionalProfile = GetNutritionalProfile(this, ClassName(), foodStageType);
+		if ((agentsIn & eAgents.SALMONELLA == eAgents.SALMONELLA) && (nutritionalProfile.m_Agents == 0 || nutritionalProfile.m_AgentsPerDigest == 0))
+			agentsIn &= ~eAgents.FOOD_POISON;
+
 		return agentsIn;
 	}
 	
@@ -209,26 +224,75 @@ class Edible_Base : ItemBase
 	{
 		string soundName = "";
 		
-		FoodStageType nextFoodState = GetNextFoodStageType(m_CookedByMethod);
+		FoodStageType currentFoodStage = GetFoodStageType();
+		FoodStageType nextFoodStage = GetNextFoodStageType(m_CookedByMethod);
 
-		switch (GetFoodStageType())
+		if (currentFoodStage == FoodStageType.BURNED)
 		{
-			case FoodStageType.RAW:
-				soundName = SOUND_BAKING_START;
-				if (nextFoodState == FoodStageType.BOILED)
-					soundName = "";
-				break;
-			case FoodStageType.BAKED:
-				soundName = SOUND_BAKING_DONE;
-				break;
-			case FoodStageType.BURNED:
-				soundName = SOUND_BURNING_DONE;
-				break;
-			default:
-				soundName = "";
-				break;
+			soundName = SOUND_BURNING_DONE;
 		}
-
+		else
+		{
+			switch (m_CookedByMethod)
+			{
+				case CookingMethodType.BAKING:
+				{
+					if (nextFoodStage == FoodStageType.BAKED)
+						soundName = SOUND_BAKING_START;
+					else if (currentFoodStage == FoodStageType.BAKED)
+						soundName = SOUND_BAKING_DONE;
+					else
+						soundName = "";
+					break;
+				}
+				
+				case CookingMethodType.BOILING:
+				{
+					if (nextFoodStage == FoodStageType.BOILED)
+						soundName = SOUND_BOILING_START;
+					else if (currentFoodStage == FoodStageType.BOILED)
+						soundName = SOUND_BOILING_DONE;
+					else
+						soundName = "";
+					break;
+				}
+				
+				case CookingMethodType.DRYING:
+				{
+					if (nextFoodStage == FoodStageType.DRIED)
+						soundName = SOUND_DRYING_START;
+					else if (currentFoodStage == FoodStageType.DRIED)
+						soundName = SOUND_DRYING_DONE;
+					else
+						soundName = "";
+					break;
+				}
+				
+				default:
+					soundName = "";
+					break;
+			}
+			
+			if (nextFoodStage == FoodStageType.BURNED)
+			{
+				if (soundName == "") //on 'bad' transitions only, indicates bad outcome
+				{
+					soundName = SOUND_BURNING_DONE;
+				}
+				else // pre-emptive burning sounds replace regular ones
+				{
+					array<float> nextStageProperties = new array<float>();
+					nextStageProperties = FoodStage.GetAllCookingPropertiesForStage(nextFoodStage, null, GetType());
+					float nextStageTime = nextStageProperties.Get(eCookingPropertyIndices.COOK_TIME);
+					float progress01 = GetCookingTime() / nextStageTime;
+					if (progress01 > Cooking.BURNING_WARNING_THRESHOLD)
+					{
+						soundName = SOUND_BURNING_DONE;
+					}
+				}
+			}
+		}
+		
 		SoundCookingStart(soundName);
 	}
 
@@ -431,9 +495,34 @@ class Edible_Base : ItemBase
 		return GetGame().ConfigGetInt( class_path + " digestibility" );
 	}
 	
+	static float GetAgentsPerDigest(ItemBase item, string className = "", int foodStage = 0)
+	{
+		Edible_Base foodItem = Edible_Base.Cast(item);
+		if (foodItem && foodItem.GetFoodStage())
+		{
+			return FoodStage.GetAgentsPerDigest(foodItem.GetFoodStage());
+		}
+		else if (className != "" && foodStage)
+		{
+			return FoodStage.GetAgentsPerDigest(null, foodStage, className);
+		}
+		string classPath = string.Format("cfgVehicles %1 Nutrition", className);
+		return GetGame().ConfigGetInt(classPath + " agentsPerDigest");
+	}
+	
 	static NutritionalProfile GetNutritionalProfile(ItemBase item, string classname = "", int food_stage = 0)
 	{
-		return new NutritionalProfile(GetFoodEnergy(item, classname, food_stage),GetFoodWater(item, classname, food_stage),GetFoodNutritionalIndex(item, classname, food_stage),GetFoodTotalVolume(item, classname, food_stage), GetFoodToxicity(item, classname, food_stage),  GetFoodAgents(item, classname,food_stage), GetFoodDigestibility(item, classname,food_stage));
+		NutritionalProfile profile = new NutritionalProfile();
+		profile.m_Energy = GetFoodEnergy(item, classname, food_stage);
+		profile.m_WaterContent = GetFoodWater(item, classname, food_stage);
+		profile.m_NutritionalIndex = GetFoodNutritionalIndex(item, classname, food_stage);
+		profile.m_FullnessIndex = GetFoodTotalVolume(item, classname, food_stage);
+		profile.m_Toxicity = GetFoodToxicity(item, classname, food_stage);
+		profile.m_Agents = GetFoodAgents(item, classname, food_stage);
+		profile.m_Digestibility = GetFoodDigestibility(item, classname, food_stage);
+		profile.m_AgentsPerDigest = GetAgentsPerDigest(item, classname, food_stage);
+		
+		return profile;
 	}
 	
 	//================================================================
@@ -556,7 +645,7 @@ class Edible_Base : ItemBase
 			break;
 			
 			case FoodStageType.BURNED:
-				RemoveAllAgentsExcept(eAgents.HEAVYMETAL);
+				RemoveAllAgentsExcept(eAgents.BRAIN|eAgents.HEAVYMETAL);
 			break;
 		}
 	}
@@ -842,7 +931,7 @@ class Edible_Base : ItemBase
 		{
 			InventoryLocation invLoc = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation(invLoc);
-			if (invLoc && (invLoc.GetType() == InventoryLocationType.GROUND || invLoc.GetType() == InventoryLocationType.HANDS))
+			if (invLoc && (invLoc.GetType() == InventoryLocationType.GROUND || invLoc.GetType() == InventoryLocationType.HANDS || invLoc.GetType() == InventoryLocationType.ATTACHMENT))
 			{
 				ParticleManager ptcMgr = ParticleManager.GetInstance();
 				if (ptcMgr)
@@ -879,6 +968,7 @@ class Edible_Base : ItemBase
 		
 		if (GetFoodStage())
 		{
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_NUTRITIONS_DATA, "Food Nutritions Data", FadeColors.WHITE));
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_PREV, "Food Stage Prev", FadeColors.WHITE));
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_NEXT, "Food Stage Next", FadeColors.WHITE));
 		}
@@ -910,7 +1000,17 @@ class Edible_Base : ItemBase
 				ChangeFoodStage(food_stage_next);
 				return true;
 			}
+			
 		}
+		
+		#ifdef DIAG_DEVELOPER
+		if (action_id == EActions.FOOD_NUTRITIONS_DATA)
+		{
+			PrintNutritionsData();
+			return true;
+		}
+		#endif
+
 		return false;
 	}
 	
@@ -956,6 +1056,39 @@ class Edible_Base : ItemBase
 	{
 		return m_LastDecayStage;
 	}
+	
+	#ifdef DIAG_DEVELOPER
+	private void PrintNutritionsData()
+	{
+		string nutritionsData 	= "";
+		
+		FoodStage stage 		= GetFoodStage();
+		FoodStageType stageType = stage.GetFoodStageType();
+
+		NutritionalProfile profile = GetNutritionalProfile(this, ClassName(), stageType);
+		if (profile)
+		{
+			nutritionsData = string.Format("Item: %1\n\n", this);
+			nutritionsData += string.Format("Stage name: %1\n", GetFoodStageName(stageType));
+			nutritionsData += string.Format("Energy: %1\n", profile.m_Energy);
+			nutritionsData += string.Format("Water content: %1\n", profile.m_WaterContent);
+			nutritionsData += string.Format("Nutritional index: %1\n", profile.m_NutritionalIndex);
+			nutritionsData += string.Format("Fullness index: %1\n", profile.m_FullnessIndex);
+			nutritionsData += string.Format("Toxicity (obsolete): %1\n", profile.m_Toxicity);
+			nutritionsData += string.Format("Digestibility: %1\n", profile.m_Digestibility);
+
+			if (profile.IsLiquid())
+				nutritionsData += string.Format("Liquid type: %1\n", profile.m_LiquidClassname);
+			
+			nutritionsData += string.Format("Agents: %1\n", profile.m_Agents);
+			nutritionsData += string.Format("Agents per consume: %1\n", profile.m_AgentsPerDigest);
+		}
+		
+		nutritionsData += "-----\n";
+		
+		Debug.Log(nutritionsData);
+	}
+	#endif
 	
 	//////////////////////////////////////////
 	//DEPRECATED

@@ -87,7 +87,7 @@ class SelectionTranslation
 		
 		string path;
 		int selectionIdx = -1;
-		m_TranslatedSelections = new ref array<int>;
+		m_TranslatedSelections = new array<int>;
 		
 		//Hair
 		path = m_BasePath + " Group_Hair";

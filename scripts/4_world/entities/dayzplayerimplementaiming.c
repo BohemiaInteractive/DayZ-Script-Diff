@@ -44,6 +44,7 @@ class DayZPlayerImplementAiming
 	protected PlayerBase m_PlayerPb;
 	protected float m_TotalTime;
 	protected float m_ReferenceTime = 0;
+	protected float m_StaminaPercentage;
 	protected float m_SwayStateStartTime;
 	//protected float m_SwayStateStartTime[eSwayStates.MAX];
 	protected float m_LastSwayMultiplier = PlayerSwayConstants.SWAY_MULTIPLIER_DEFAULT;
@@ -193,6 +194,7 @@ class DayZPlayerImplementAiming
 		if (m_PlayerPb.IsHoldingBreath() && !m_HoldingBreathSet)
 		{
 			m_ReferenceTime = m_TotalTime;
+			m_StaminaPercentage = m_PlayerPb.GetStaminaHandler().GetStamina() / m_PlayerPb.GetStaminaHandler().GetStaminaMax();
 		}
 		else if (!m_PlayerPb.IsHoldingBreath() && m_HoldingBreathSet)
 		{
@@ -309,14 +311,14 @@ class DayZPlayerImplementAiming
 		{
 			time = m_TotalTime - m_ReferenceTime;
 			
-			if (time < PlayerSwayConstants.SWAY_TIME_IN)
+			if (time < (PlayerSwayConstants.SWAY_TIME_IN * m_StaminaPercentage))
 			{
 				UpdateSwayState(eSwayStates.HOLDBREATH_IN);
-				max = PlayerSwayConstants.SWAY_TIME_IN;
+				max = PlayerSwayConstants.SWAY_TIME_IN * m_StaminaPercentage;
 				time_clamped = Math.Clamp((m_TotalTime - m_SwayStateStartTime),0,max);
 				ret = Math.Lerp(m_LastSwayMultiplier,PlayerSwayConstants.SWAY_MULTIPLIER_STABLE,time_clamped/max);
 			}
-			else if (time >= PlayerSwayConstants.SWAY_TIME_IN && time < (PlayerSwayConstants.SWAY_TIME_IN + PlayerSwayConstants.SWAY_TIME_STABLE))
+			else if (time >= (PlayerSwayConstants.SWAY_TIME_IN * m_StaminaPercentage) && time < (m_StaminaPercentage * (PlayerSwayConstants.SWAY_TIME_IN + PlayerSwayConstants.SWAY_TIME_STABLE)))
 			{
 				UpdateSwayState(eSwayStates.HOLDBREATH_STABLE);
 				ret = PlayerSwayConstants.SWAY_MULTIPLIER_STABLE;
@@ -324,7 +326,7 @@ class DayZPlayerImplementAiming
 			else
 			{
 				UpdateSwayState(eSwayStates.HOLDBREATH_EXHAUSTED);
-				max = PlayerSwayConstants.SWAY_TIME_EXHAUSTED;
+				max = PlayerSwayConstants.SWAY_TIME_EXHAUSTED * m_StaminaPercentage;
 				time_clamped = Math.Clamp((m_TotalTime - m_SwayStateStartTime),0,max);
 				ret = Math.Lerp(PlayerSwayConstants.SWAY_MULTIPLIER_STABLE,PlayerSwayConstants.SWAY_MULTIPLIER_EXHAUSTED,(time_clamped/max));
 			}

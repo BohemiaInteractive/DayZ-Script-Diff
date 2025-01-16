@@ -606,18 +606,6 @@ class ZombieContainer: CollapsibleContainer
 		super.CollapseButtonOnMouseButtonDown(w);
 	}
 	
-	override bool SplitItem()
-	{
-		if ( CanSplit() )
-		{
-			if ( GetFocusedContainer().IsInherited( ContainerWithCargo ) || GetFocusedContainer().IsInherited( ContainerWithCargoAndAttachments ) )
-			{
-				return GetFocusedContainer().SplitItem();
-			}
-		}
-		return false;
-	}
-	
 	override bool EquipItem()
 	{
 		if (CanEquip())

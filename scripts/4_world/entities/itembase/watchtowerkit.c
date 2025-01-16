@@ -26,8 +26,6 @@ class WatchtowerKit extends KitBase
 			
 			//make the kit invisible, so it can be destroyed from deploy UA when action ends
 			HideAllSelections();
-			
-			SetIsDeploySound( true );
 		}
 	}
 	

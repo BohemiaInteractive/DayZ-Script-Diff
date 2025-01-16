@@ -83,10 +83,6 @@ class PokeHolesBarrel extends RecipeBase
 		return false;
 		//return true;
 	}
-
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
-	{
-	}
 	
 	void TransferItemsToNew(PlayerBase player, ItemBase barrel_old, ItemBase barrel_new)
 	{

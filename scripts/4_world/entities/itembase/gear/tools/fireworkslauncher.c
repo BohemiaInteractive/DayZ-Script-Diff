@@ -348,11 +348,6 @@ class FireworksLauncher: FireworksBase
 		SEffectManager.DestroyEffect(m_FuseSoundStart);
 	}
 	
-	override protected bool UsesGlobalDeploy()
-	{
-		return true;
-	}
-	
 	override bool IsDeployable()
 	{
 		return true;

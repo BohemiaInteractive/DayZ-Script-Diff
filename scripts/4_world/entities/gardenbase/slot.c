@@ -24,6 +24,7 @@ class Slot
 	float m_Fertility;
 	float m_FertilizerUsage;
 	float m_FertilizerQuantity;
+	float m_FertilizerQuantityMax;	// how much of a fertilizer can the slot contain
 	int m_slotIndex;
 	int m_slotId;
 	
@@ -200,16 +201,22 @@ class Slot
 	{
 		return m_FertilizerQuantity;
 	}
-	
-	float GetFertilizerQuantityMax()
-	{
-		return m_FertilizerUsage;
-	}
-	
+
 	void SetFertilizerQuantity(float fertility)
 	{
 		m_FertilizerQuantity = fertility;
 	}
+	
+	float GetFertilizerQuantityMax()
+	{
+		return m_FertilizerQuantityMax;
+	}
+	
+	void SetFertilizerQuantityMax(float quantMax)
+	{
+		m_FertilizerQuantityMax = quantMax;
+	}
+	
 	
 	string GetFertilityType()
 	{

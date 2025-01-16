@@ -99,7 +99,7 @@ class Plastic_Explosive : ExplosivesBase
 	{
 		InventoryLocation il = new InventoryLocation();
 		GetInventory().GetCurrentInventoryLocation(il);
-		if (il.GetType() == InventoryLocationType.HANDS)
+		if (il.GetType() != InventoryLocationType.GROUND)
 		{
 			return false;
 		}
@@ -350,22 +350,27 @@ class Plastic_Explosive : ExplosivesBase
 			SetAnimationPhase(ANIM_PHASE_TRIGGER_REMOTE, 1.0);
 		}
 	}
-	
-	
+		
 	override string GetDeploySoundset()
 	{
-		return "placeImprovisedExplosive_SoundSet";
+		return "placePlasticExplosive_SoundSet";
 	}
 	
 	override string GetLoopDeploySoundset()
 	{
-		return "improvisedexplosive_deploy_SoundSet";
+		return "plasticexplosive_deploy_SoundSet";
 	}
 	
-	override protected bool UsesGlobalDeploy()
+	override string GetArmSoundset()
 	{
-		return true;
+		return "plasticexplosive_deploy_SoundSet";
 	}
+	
+	override string GetDisarmSoundset()
+	{
+		return "ImprovisedExplosive_disarm_SoundSet";
+	}
+	
 }
 
 class Plastic_Explosive_Placing : Plastic_Explosive {}

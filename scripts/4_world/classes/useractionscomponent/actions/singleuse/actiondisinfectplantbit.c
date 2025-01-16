@@ -32,7 +32,7 @@ class ActionDisinfectPlantBit: ActionSingleUseBase
 		{
 			PlantBase plant = PlantBase.Cast( targetObject );
 			
-			if ( plant.IsGrowing() && plant.NeedsSpraying() )
+			if (plant.IsSprayable())
 			{	
 				if ( item.GetQuantity() > 0 )
 				{

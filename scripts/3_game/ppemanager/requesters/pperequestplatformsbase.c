@@ -194,7 +194,7 @@ class PPERequesterBase
 		//DbgPrnt("PPEDebug | PPERequesterBase - SetTargetValueFloatDefault | mat/par/req: " + mat_id + "/" + param_idx + "/" + m_IDX + " | data: " + data);
 	}
 	
-	protected void SetTargetValueColor(int mat_id, int param_idx, ref array<float> val, int priority_layer, int operator = PPOperators.ADD_RELATIVE)
+	protected void SetTargetValueColor(int mat_id, int param_idx, array<float> val, int priority_layer, int operator = PPOperators.ADD_RELATIVE)
 	{
 		if ( !m_RequestDataStructure )
 			return;

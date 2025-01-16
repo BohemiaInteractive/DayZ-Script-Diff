@@ -723,7 +723,8 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		foreach (WeaponTransition trans : m_Transitions)
 		{
 			WeaponStableState state = WeaponStableState.Cast(trans.m_srcState);
-			if (state && state.HasMagazine() == hasMagazine && state.IsJammed() == isJammed)
+			
+			if (state && candidates.Find(state) == INDEX_NOT_FOUND && state.HasMagazine() == hasMagazine && state.IsJammed() == isJammed)
 			{
 				if (state.IsSingleState())
 				{

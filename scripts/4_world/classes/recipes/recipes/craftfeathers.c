@@ -97,11 +97,7 @@ class CraftFeathers extends RecipeBase
 	//gets called upon recipe's completion
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
 	{
-		ItemBase result;
-		Class.CastTo(result, results.Get(0));
-		ItemBase ingredient2 = ingredients[1];
-		int quantity = ingredient2.ConfigGetFloat("featherQuantity");
-		
-		result.SetQuantity(quantity);
+		int quantity = ingredients[1].ConfigGetFloat("featherQuantity");
+		results.Get(0).SetQuantity(quantity);
 	}
 };

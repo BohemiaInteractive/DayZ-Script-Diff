@@ -65,18 +65,15 @@ class FuelChainsaw extends RecipeBase
 
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
-		ItemBase container;
-		Class.CastTo(container, ingredients[1]);
+		ItemBase container = ingredients[1];
 		int liquid_type = container.GetLiquidType();
-		return (liquid_type & LIQUID_GASOLINE);
+		return (liquid_type & LIQUID_GASOLINE) && !container.GetIsFrozen();
 	}
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase chainsaw;
-		Class.CastTo(chainsaw, ingredients[0]);
-		ItemBase container;
-		Class.CastTo(container, ingredients[1]);
+		ItemBase chainsaw = ingredients[0];
+		ItemBase container = ingredients[1];
 		
 		float current_energy_level = chainsaw.GetCompEM().GetEnergy();
 		float energy_max = chainsaw.GetCompEM().GetEnergyMax();

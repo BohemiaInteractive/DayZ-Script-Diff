@@ -71,7 +71,7 @@ class ActionManagerServer: ActionManagerBase
 				if (commandID == DayZPlayerConstants.CMD_ACTIONINT_INTERRUPT)
 				{
 					//Print("INPUT_UDT_STANDARD_ACTION_END_REQUEST | CMD_ACTIONINT_INTERRUPT");
-					Interrupt();
+					RequestInterruptAction();
 				}
 				else
 				{
@@ -98,7 +98,7 @@ class ActionManagerServer: ActionManagerBase
 			}
 			else
 			{
-				Interrupt();
+				RequestInterruptAction();
 			}
 
 			return false;
@@ -171,7 +171,7 @@ class ActionManagerServer: ActionManagerBase
 			}
 			else
 			{
-				Interrupt();
+				RequestInterruptAction();
 			}
 		}
 	}
@@ -232,7 +232,7 @@ class ActionManagerServer: ActionManagerBase
 					}
 					else
 					{
-						Interrupt();
+						RequestInterruptAction();
 					}
 				}
 			}
@@ -269,7 +269,7 @@ class ActionManagerServer: ActionManagerBase
 					}
 					else
 					{
-						Interrupt();
+						RequestInterruptAction();
 					}
 					m_PendingActionAcknowledgmentID = -1;
 					break;
@@ -296,10 +296,9 @@ class ActionManagerServer: ActionManagerBase
 		}
 	}
 	
-	override void Interrupt()
+	//! server requests action interrupt
+	override void RequestInterruptAction()
 	{
-		super.Interrupt();
-		
 		if (m_CurrentActionData)
 			DayZPlayerSyncJunctures.SendActionInterrupt(m_Player);
 	}

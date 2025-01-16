@@ -70,7 +70,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	
 	protected ref map<int, ref Param2<string, string>> m_TextMap;
 	
-	static const float SLIDER_STEP = 0.025;
+	static const float SLIDER_STEP = 0.01;
 	
 	void OptionsMenuControls( Widget parent, Widget details_root, GameOptions options, OptionsMenu menu )
 	{
@@ -104,14 +104,18 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		mouse_AimMod_VSensitivitySettingOption.SetUserID( OptionAccessType.AT_OPTIONS_MOUSE_YAXIS_AIM_MOD );
 		mouse_AimMod_HSensitivitySettingOption.SetUserID( OptionAccessType.AT_OPTIONS_MOUSE_XAXIS_AIM_MOD );
 
-		m_Mouse_InvertSelector = new OptionSelectorMultistate( mouse_InvertSettingOption, m_Mouse_InvertOption.GetIndex(), this, false, opt );
-		m_Mouse_VSensitivitySelector = new OptionSelectorSlider( mouse_VSensitivitySettingOption, m_Mouse_VSensitivityOption.ReadValue(), this, false, m_Mouse_VSensitivityOption.GetMin(), m_Mouse_VSensitivityOption.GetMax() );
+		m_Mouse_InvertSelector = new OptionSelectorMultistate(mouse_InvertSettingOption, m_Mouse_InvertOption.GetIndex(), this, false, opt );
+		
+		m_Mouse_VSensitivitySelector = new OptionSelectorSlider(mouse_VSensitivitySettingOption, m_Mouse_VSensitivityOption.ReadValue(), this, false, m_Mouse_VSensitivityOption.GetMin(), m_Mouse_VSensitivityOption.GetMax(), true);
 		m_Mouse_VSensitivitySelector.SetStep(SLIDER_STEP);
-		m_Mouse_HSensitivitySelector = new OptionSelectorSlider( mouse_HSensitivitySettingOption, m_Mouse_HSensitivityOption.ReadValue(), this, false, m_Mouse_HSensitivityOption.GetMin(), m_Mouse_HSensitivityOption.GetMax() );
+
+		m_Mouse_HSensitivitySelector = new OptionSelectorSlider(mouse_HSensitivitySettingOption, m_Mouse_HSensitivityOption.ReadValue(), this, false, m_Mouse_HSensitivityOption.GetMin(), m_Mouse_HSensitivityOption.GetMax(), true);
 		m_Mouse_HSensitivitySelector.SetStep(SLIDER_STEP);
-		m_Mouse_AimMod_VSensitivitySelector = new OptionSelectorSlider( mouse_AimMod_VSensitivitySettingOption, m_Mouse_AimMod_VSensitivityOption.ReadValue(), this, false, m_Mouse_AimMod_VSensitivityOption.GetMin(), m_Mouse_AimMod_VSensitivityOption.GetMax() );
+	
+		m_Mouse_AimMod_VSensitivitySelector = new OptionSelectorSlider(mouse_AimMod_VSensitivitySettingOption, m_Mouse_AimMod_VSensitivityOption.ReadValue(), this, false, m_Mouse_AimMod_VSensitivityOption.GetMin(), m_Mouse_AimMod_VSensitivityOption.GetMax(), true);
 		m_Mouse_AimMod_VSensitivitySelector.SetStep(SLIDER_STEP);
-		m_Mouse_AimMod_HSensitivitySelector = new OptionSelectorSlider( mouse_AimMod_HSensitivitySettingOption, m_Mouse_AimMod_HSensitivityOption.ReadValue(), this, false, m_Mouse_AimMod_HSensitivityOption.GetMin(), m_Mouse_AimMod_HSensitivityOption.GetMax() );
+		
+		m_Mouse_AimMod_HSensitivitySelector = new OptionSelectorSlider(mouse_AimMod_HSensitivitySettingOption, m_Mouse_AimMod_HSensitivityOption.ReadValue(), this, false, m_Mouse_AimMod_HSensitivityOption.GetMin(), m_Mouse_AimMod_HSensitivityOption.GetMax(), true);
 		m_Mouse_AimMod_HSensitivitySelector.SetStep(SLIDER_STEP);
 
 		m_Mouse_InvertSelector.m_OptionChanged.Insert( UpdateMouseInvertView );
@@ -161,28 +165,39 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			m_KeyboardSelector = new OptionSelectorMultistate( keyboardSettingOption, m_KeyboardOption.GetIndex(), this, !m_MaKOptionAvailable, opt );
 			m_AimHelperSelector = new OptionSelectorMultistate( aimHelperSettingOption, m_AimHelperOption.GetIndex(), this, false, opt );
 		
-			m_ControllerLS_VSensitivitySelector = new OptionSelectorSlider( controllerLS_VSensitivitySettingOption, m_ControllerLS_VSensitivityOption.ReadValue(), this, false, m_ControllerLS_VSensitivityOption.GetMin(), m_ControllerLS_VSensitivityOption.GetMax() );
+			m_ControllerLS_VSensitivitySelector = new OptionSelectorSlider(controllerLS_VSensitivitySettingOption, m_ControllerLS_VSensitivityOption.ReadValue(), this, false, m_ControllerLS_VSensitivityOption.GetMin(), m_ControllerLS_VSensitivityOption.GetMax(), true);
 			m_ControllerLS_VSensitivitySelector.SetStep(SLIDER_STEP);
-			m_ControllerLS_HSensitivitySelector = new OptionSelectorSlider( controllerLS_HSensitivitySettingOption, m_ControllerLS_HSensitivityOption.ReadValue(), this, false, m_ControllerLS_HSensitivityOption.GetMin(), m_ControllerLS_HSensitivityOption.GetMax() );
+			
+			m_ControllerLS_HSensitivitySelector = new OptionSelectorSlider(controllerLS_HSensitivitySettingOption, m_ControllerLS_HSensitivityOption.ReadValue(), this, false, m_ControllerLS_HSensitivityOption.GetMin(), m_ControllerLS_HSensitivityOption.GetMax(), true);
 			m_ControllerLS_HSensitivitySelector.SetStep(SLIDER_STEP);
-			m_ControllerLS_VehicleMod_HSensitivitySelector = new OptionSelectorSlider( controllerLS_VehicleMod_HSensitivitySettingOption, m_ControllerLS_VehicleMod_HSensitivityOption.ReadValue(), this, false, m_ControllerLS_VehicleMod_HSensitivityOption.GetMin(), m_ControllerLS_VehicleMod_HSensitivityOption.GetMax() );
+			
+			m_ControllerLS_VehicleMod_HSensitivitySelector = new OptionSelectorSlider(controllerLS_VehicleMod_HSensitivitySettingOption, m_ControllerLS_VehicleMod_HSensitivityOption.ReadValue(), this, false, m_ControllerLS_VehicleMod_HSensitivityOption.GetMin(), m_ControllerLS_VehicleMod_HSensitivityOption.GetMax(), true);
 			m_ControllerLS_VehicleMod_HSensitivitySelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_InvertSelector = new OptionSelectorMultistate( controllerRS_InvertSettingOption, m_ControllerRS_InvertOption.GetIndex(), this, false, opt );
-			m_ControllerRS_VSensitivitySelector = new OptionSelectorSlider( controllerRS_VSensitivitySettingOption, m_ControllerRS_VSensitivityOption.ReadValue(), this, false, m_ControllerRS_VSensitivityOption.GetMin(), m_ControllerRS_VSensitivityOption.GetMax() );
+			
+			m_ControllerRS_InvertSelector = new OptionSelectorMultistate(controllerRS_InvertSettingOption, m_ControllerRS_InvertOption.GetIndex(), this, false, opt);
+			
+			m_ControllerRS_VSensitivitySelector = new OptionSelectorSlider(controllerRS_VSensitivitySettingOption, m_ControllerRS_VSensitivityOption.ReadValue(), this, false, m_ControllerRS_VSensitivityOption.GetMin(), m_ControllerRS_VSensitivityOption.GetMax(), true);
 			m_ControllerRS_VSensitivitySelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_HSensitivitySelector = new OptionSelectorSlider( controllerRS_HSensitivitySettingOption, m_ControllerRS_HSensitivityOption.ReadValue(), this, false, m_ControllerRS_HSensitivityOption.GetMin(), m_ControllerRS_HSensitivityOption.GetMax() );
+			
+			m_ControllerRS_HSensitivitySelector = new OptionSelectorSlider(controllerRS_HSensitivitySettingOption, m_ControllerRS_HSensitivityOption.ReadValue(), this, false, m_ControllerRS_HSensitivityOption.GetMin(), m_ControllerRS_HSensitivityOption.GetMax(), true);
 			m_ControllerRS_HSensitivitySelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_CurvatureSelector = new OptionSelectorSlider( controllerRS_CurvatureSettingOption, m_ControllerRS_CurvatureOption.ReadValue(), this, false, m_ControllerRS_CurvatureOption.GetMin(), m_ControllerRS_CurvatureOption.GetMax() );
+			
+			m_ControllerRS_CurvatureSelector = new OptionSelectorSlider(controllerRS_CurvatureSettingOption, m_ControllerRS_CurvatureOption.ReadValue(), this, false, m_ControllerRS_CurvatureOption.GetMin(), m_ControllerRS_CurvatureOption.GetMax(), true);
 			m_ControllerRS_CurvatureSelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_AimMod_VSensitivitySelector = new OptionSelectorSlider( controllerRS_AimMod_VSensitivitySettingOption, m_ControllerRS_AimMod_VSensitivityOption.ReadValue(), this, false, m_ControllerRS_AimMod_VSensitivityOption.GetMin(), m_ControllerRS_AimMod_VSensitivityOption.GetMax() );
+			
+			m_ControllerRS_AimMod_VSensitivitySelector = new OptionSelectorSlider(controllerRS_AimMod_VSensitivitySettingOption, m_ControllerRS_AimMod_VSensitivityOption.ReadValue(), this, false, m_ControllerRS_AimMod_VSensitivityOption.GetMin(), m_ControllerRS_AimMod_VSensitivityOption.GetMax(), true);
 			m_ControllerRS_AimMod_VSensitivitySelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_AimMod_HSensitivitySelector = new OptionSelectorSlider( controllerRS_AimMod_HSensitivitySettingOption, m_ControllerRS_AimMod_HSensitivityOption.ReadValue(), this, false, m_ControllerRS_AimMod_HSensitivityOption.GetMin(), m_ControllerRS_AimMod_HSensitivityOption.GetMax() );
+			
+			m_ControllerRS_AimMod_HSensitivitySelector = new OptionSelectorSlider(controllerRS_AimMod_HSensitivitySettingOption, m_ControllerRS_AimMod_HSensitivityOption.ReadValue(), this, false, m_ControllerRS_AimMod_HSensitivityOption.GetMin(), m_ControllerRS_AimMod_HSensitivityOption.GetMax(), true);
 			m_ControllerRS_AimMod_HSensitivitySelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_AimMod_CurvatureSelector = new OptionSelectorSlider( controllerRS_AimMod_CurvatureSettingOption, m_ControllerRS_AimMod_CurvatureOption.ReadValue(), this, false, m_ControllerRS_AimMod_CurvatureOption.GetMin(), m_ControllerRS_AimMod_CurvatureOption.GetMax() );
+			
+			m_ControllerRS_AimMod_CurvatureSelector = new OptionSelectorSlider(controllerRS_AimMod_CurvatureSettingOption, m_ControllerRS_AimMod_CurvatureOption.ReadValue(), this, false, m_ControllerRS_AimMod_CurvatureOption.GetMin(), m_ControllerRS_AimMod_CurvatureOption.GetMax(), true);
 			m_ControllerRS_AimMod_CurvatureSelector.SetStep(SLIDER_STEP);
-			m_ControllerLS_DeadZoneSelector = new OptionSelectorSlider( controllerLS_DeadZoneOption, m_ControllerLS_DeadZoneOption.ReadValue(), this, false, m_ControllerLS_DeadZoneOption.GetMin(), m_ControllerLS_DeadZoneOption.GetMax() );
+			
+			m_ControllerLS_DeadZoneSelector = new OptionSelectorSlider(controllerLS_DeadZoneOption, m_ControllerLS_DeadZoneOption.ReadValue(), this, false, m_ControllerLS_DeadZoneOption.GetMin(), m_ControllerLS_DeadZoneOption.GetMax(), true);
 			m_ControllerLS_DeadZoneSelector.SetStep(SLIDER_STEP);
-			m_ControllerRS_DeadZoneSelector = new OptionSelectorSlider( controllerRS_DeadZoneOption, m_ControllerRS_DeadZoneOption.ReadValue(), this, false, m_ControllerRS_DeadZoneOption.GetMin(), m_ControllerRS_DeadZoneOption.GetMax() );
+			
+			m_ControllerRS_DeadZoneSelector = new OptionSelectorSlider(controllerRS_DeadZoneOption, m_ControllerRS_DeadZoneOption.ReadValue(), this, false, m_ControllerRS_DeadZoneOption.GetMin(), m_ControllerRS_DeadZoneOption.GetMax(), true);
 			m_ControllerRS_DeadZoneSelector.SetStep(SLIDER_STEP);
 		
 			m_KeyboardSelector.m_OptionChanged.Insert( UpdateKeyboard );
@@ -306,6 +321,12 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 				return true;
 			}
 			
+			if( w.IsInherited( EditBoxWidget ) )
+			{
+				ColorRed( w );
+				return true;
+			}
+			
 			if( IsFocusable( w ) )
 			{
 				ColorRed( w );
@@ -362,9 +383,16 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	bool IsChanged()
 	{
 		#ifdef PLATFORM_CONSOLE
-			return ( ( m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0 ) || ( !m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1 ) );
+			if (m_MaKOptionAvailable)
+			{
+				return ( ( m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0 ) || ( !m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1 ) );
+			}
+			else
+			{
+				return false;
+			}
 		#else
-			return false;
+			return (m_Mouse_VSensitivitySelector.Changed() || m_Mouse_HSensitivitySelector.Changed() || m_Mouse_AimMod_VSensitivitySelector.Changed() || m_Mouse_AimMod_HSensitivitySelector.Changed());
 		#endif
 	}
 	
@@ -388,99 +416,269 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			g_Game.UpdateInputDeviceDisconnectWarning();
 		
 		m_Menu.Refresh();
+		m_ControllerLS_VSensitivitySelector.Refresh();
+		m_ControllerLS_HSensitivitySelector.Refresh();
+		m_ControllerLS_VehicleMod_HSensitivitySelector.Refresh();
+		m_ControllerRS_VSensitivitySelector.Refresh();
+		m_ControllerRS_HSensitivitySelector.Refresh();
+		m_ControllerRS_CurvatureSelector.Refresh();
+		m_ControllerRS_AimMod_VSensitivitySelector.Refresh();
+		m_ControllerRS_AimMod_HSensitivitySelector.Refresh();
+		m_ControllerRS_AimMod_CurvatureSelector.Refresh();
+		m_ControllerLS_DeadZoneSelector.Refresh();
+		m_ControllerRS_DeadZoneSelector.Refresh();
+		
+		if (m_MaKOptionAvailable)
+		{
+		#endif
+			m_Mouse_VSensitivitySelector.Refresh(m_Mouse_VSensitivityOption.GetDefault());
+			m_Mouse_HSensitivitySelector.Refresh(m_Mouse_HSensitivityOption.GetDefault());
+			m_Mouse_AimMod_VSensitivitySelector.Refresh(m_Mouse_AimMod_VSensitivityOption.GetDefault());
+			m_Mouse_AimMod_HSensitivitySelector.Refresh(m_Mouse_AimMod_HSensitivityOption.GetDefault());
+		#ifdef PLATFORM_CONSOLE
+		}
 		#endif
 	}
 	
 	void Revert()
 	{
-		if( m_Mouse_InvertSelector )
-			m_Mouse_InvertSelector.SetValue( m_Mouse_InvertOption.GetIndex(), true );
-		if( m_Mouse_VSensitivitySelector )
-			m_Mouse_VSensitivitySelector.SetValue( m_Mouse_VSensitivityOption.ReadValue(), true );
-		if( m_Mouse_HSensitivitySelector )
-			m_Mouse_HSensitivitySelector.SetValue( m_Mouse_HSensitivityOption.ReadValue(), true );
-		if( m_Mouse_AimMod_VSensitivitySelector )
-			m_Mouse_AimMod_VSensitivitySelector.SetValue( m_Mouse_AimMod_VSensitivityOption.ReadValue(), true );
-		if( m_Mouse_AimMod_HSensitivitySelector )
-			m_Mouse_AimMod_HSensitivitySelector.SetValue( m_Mouse_AimMod_HSensitivityOption.ReadValue(), true );
-		
+		if(m_Mouse_InvertSelector)
+			m_Mouse_InvertSelector.SetValue(m_Mouse_InvertOption.GetIndex(), true);
+
+		if(m_Mouse_VSensitivitySelector)
+		{
+			m_Mouse_VSensitivitySelector.SetValue(m_Mouse_VSensitivityOption.ReadValue(), true);
+			m_Mouse_VSensitivitySelector.SetValueText();
+			m_Mouse_VSensitivitySelector.SetChanged(false);
+		}
+
+		if(m_Mouse_HSensitivitySelector)
+		{
+			m_Mouse_HSensitivitySelector.SetValue(m_Mouse_HSensitivityOption.ReadValue(), true);
+			m_Mouse_HSensitivitySelector.SetValueText();
+			m_Mouse_HSensitivitySelector.SetChanged(false);
+		}
+
+		if(m_Mouse_AimMod_VSensitivitySelector)
+		{
+			m_Mouse_AimMod_VSensitivitySelector.SetValue(m_Mouse_AimMod_VSensitivityOption.ReadValue(), true);
+			m_Mouse_AimMod_VSensitivitySelector.SetValueText();
+			m_Mouse_AimMod_VSensitivitySelector.SetChanged(false);
+		}
+
+		if(m_Mouse_AimMod_HSensitivitySelector)
+		{
+			m_Mouse_AimMod_HSensitivitySelector.SetValue(m_Mouse_AimMod_HSensitivityOption.ReadValue(), true);
+			m_Mouse_AimMod_HSensitivitySelector.SetValueText();
+			m_Mouse_AimMod_HSensitivitySelector.SetChanged(false);
+		}
 
 		#ifdef PLATFORM_CONSOLE
-			if( m_KeyboardSelector )
-				m_KeyboardSelector.SetValue( m_KeyboardOption.GetIndex(), true );
-			if( m_AimHelperSelector )
-				m_AimHelperSelector.SetValue( m_AimHelperOption.GetIndex(), true );
+			if(m_KeyboardSelector)
+				m_KeyboardSelector.SetValue(m_KeyboardOption.GetIndex(), true);
+			if(m_AimHelperSelector)
+				m_AimHelperSelector.SetValue(m_AimHelperOption.GetIndex(), true);
 
-			if( m_ControllerLS_VSensitivitySelector )
-				m_ControllerLS_VSensitivitySelector.SetValue( m_ControllerLS_VSensitivityOption.ReadValue(), true );
-			if( m_ControllerLS_HSensitivitySelector )
-				m_ControllerLS_HSensitivitySelector.SetValue( m_ControllerLS_HSensitivityOption.ReadValue(), true );
-			if( m_ControllerLS_VehicleMod_HSensitivitySelector )
-				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValue( m_ControllerLS_VehicleMod_HSensitivityOption.ReadValue(), true );
-			if( m_ControllerRS_InvertSelector )
-				m_ControllerRS_InvertSelector.SetValue( m_ControllerRS_InvertOption.GetIndex(), true );
-			if( m_ControllerRS_VSensitivitySelector )
-				m_ControllerRS_VSensitivitySelector.SetValue( m_ControllerRS_VSensitivityOption.ReadValue(), true );
-			if( m_ControllerRS_HSensitivitySelector )
-				m_ControllerRS_HSensitivitySelector.SetValue( m_ControllerRS_HSensitivityOption.ReadValue(), true );
-			if( m_ControllerRS_CurvatureSelector )
-				m_ControllerRS_CurvatureSelector.SetValue( m_ControllerRS_CurvatureOption.ReadValue(), true );
-			if( m_ControllerRS_AimMod_VSensitivitySelector )
-				m_ControllerRS_AimMod_VSensitivitySelector.SetValue( m_ControllerRS_AimMod_VSensitivityOption.ReadValue(), true );
-			if( m_ControllerRS_AimMod_HSensitivitySelector )
-				m_ControllerRS_AimMod_HSensitivitySelector.SetValue( m_ControllerRS_AimMod_HSensitivityOption.ReadValue(), true );
-			if( m_ControllerRS_AimMod_CurvatureSelector )
-				m_ControllerRS_AimMod_CurvatureSelector.SetValue( m_ControllerRS_AimMod_CurvatureOption.ReadValue(), true );
-			if( m_ControllerLS_DeadZoneSelector )
-				m_ControllerLS_DeadZoneSelector.SetValue( m_ControllerLS_DeadZoneOption.ReadValue(), true );
-			if( m_ControllerRS_DeadZoneSelector )
-				m_ControllerRS_DeadZoneSelector.SetValue( m_ControllerRS_DeadZoneOption.ReadValue(), true );
+			if(m_ControllerLS_VSensitivitySelector)
+			{
+				m_ControllerLS_VSensitivitySelector.SetValue(m_ControllerLS_VSensitivityOption.ReadValue(), true);
+				m_ControllerLS_VSensitivitySelector.SetValueText();
+				m_ControllerLS_VSensitivitySelector.SetChanged(false);
+			}
+		
+			if(m_ControllerLS_HSensitivitySelector)
+			{
+				m_ControllerLS_HSensitivitySelector.SetValue(m_ControllerLS_HSensitivityOption.ReadValue(), true);
+				m_ControllerLS_HSensitivitySelector.SetValueText();
+				m_ControllerLS_HSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerLS_VehicleMod_HSensitivitySelector)
+			{
+				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValue(m_ControllerLS_VehicleMod_HSensitivityOption.ReadValue(), true);
+				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValueText();
+				m_ControllerLS_VehicleMod_HSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_InvertSelector)
+				m_ControllerRS_InvertSelector.SetValue(m_ControllerRS_InvertOption.GetIndex(), true);
+
+			if(m_ControllerRS_VSensitivitySelector)
+			{
+				m_ControllerRS_VSensitivitySelector.SetValue(m_ControllerRS_VSensitivityOption.ReadValue(), true);
+				m_ControllerRS_VSensitivitySelector.SetValueText();
+				m_ControllerRS_VSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_HSensitivitySelector)
+			{
+				m_ControllerRS_HSensitivitySelector.SetValue(m_ControllerRS_HSensitivityOption.ReadValue(), true);
+				m_ControllerRS_HSensitivitySelector.SetValueText();
+				m_ControllerRS_HSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_CurvatureSelector)
+			{
+				m_ControllerRS_CurvatureSelector.SetValue(m_ControllerRS_CurvatureOption.ReadValue(), true);
+				m_ControllerRS_CurvatureSelector.SetValueText();
+				m_ControllerRS_CurvatureSelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_AimMod_VSensitivitySelector)
+			{
+				m_ControllerRS_AimMod_VSensitivitySelector.SetValue(m_ControllerRS_AimMod_VSensitivityOption.ReadValue(), true);
+				m_ControllerRS_AimMod_VSensitivitySelector.SetValueText();
+				m_ControllerRS_AimMod_VSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_AimMod_HSensitivitySelector)
+			{
+				m_ControllerRS_AimMod_HSensitivitySelector.SetValue(m_ControllerRS_AimMod_HSensitivityOption.ReadValue(), true);
+				m_ControllerRS_AimMod_HSensitivitySelector.SetValueText();
+				m_ControllerRS_AimMod_HSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_AimMod_CurvatureSelector)
+			{
+				m_ControllerRS_AimMod_CurvatureSelector.SetValue(m_ControllerRS_AimMod_CurvatureOption.ReadValue(), true);
+				m_ControllerRS_AimMod_CurvatureSelector.SetValueText();
+				m_ControllerRS_AimMod_CurvatureSelector.SetChanged(false);
+			}
+
+			if(m_ControllerLS_DeadZoneSelector)
+			{
+				m_ControllerLS_DeadZoneSelector.SetValue(m_ControllerLS_DeadZoneOption.ReadValue(), true);
+				m_ControllerLS_DeadZoneSelector.SetValueText();
+				m_ControllerLS_DeadZoneSelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_DeadZoneSelector)
+			{
+				m_ControllerRS_DeadZoneSelector.SetValue(m_ControllerRS_DeadZoneOption.ReadValue(), true);
+				m_ControllerRS_DeadZoneSelector.SetValueText();
+				m_ControllerRS_DeadZoneSelector.SetChanged(false);
+			}
 		#endif		
 	}
 	
 	void SetToDefaults()
 	{
-		if( m_Mouse_InvertSelector )
-			m_Mouse_InvertSelector.SetValue( m_Mouse_InvertOption.GetDefaultIndex(), true );
-		if( m_Mouse_VSensitivitySelector )
-			m_Mouse_VSensitivitySelector.SetValue( m_Mouse_VSensitivityOption.GetDefault(), true );
-		if( m_Mouse_HSensitivitySelector )
-			m_Mouse_HSensitivitySelector.SetValue( m_Mouse_HSensitivityOption.GetDefault(), true );
-		if( m_Mouse_AimMod_VSensitivitySelector )
-			m_Mouse_AimMod_VSensitivitySelector.SetValue( m_Mouse_AimMod_VSensitivityOption.GetDefault(), true );
-		if( m_Mouse_AimMod_HSensitivitySelector )
-			m_Mouse_AimMod_HSensitivitySelector.SetValue( m_Mouse_AimMod_HSensitivityOption.GetDefault(), true );
+		if(m_Mouse_InvertSelector)
+			m_Mouse_InvertSelector.SetValue(m_Mouse_InvertOption.GetDefaultIndex(), true);
+		
+		if(m_Mouse_VSensitivitySelector)
+		{
+			m_Mouse_VSensitivitySelector.SetValue(m_Mouse_VSensitivityOption.GetDefault(), true);
+			m_Mouse_VSensitivitySelector.SetValueText();
+			m_Mouse_VSensitivitySelector.SetChanged(false);
+		}
+		
+		if(m_Mouse_HSensitivitySelector)
+		{
+			m_Mouse_HSensitivitySelector.SetValue(m_Mouse_HSensitivityOption.GetDefault(), true);
+			m_Mouse_HSensitivitySelector.SetValueText();
+			m_Mouse_HSensitivitySelector.SetChanged(false);
+		}
+		
+		if(m_Mouse_AimMod_VSensitivitySelector)
+		{
+			m_Mouse_AimMod_VSensitivitySelector.SetValue(m_Mouse_AimMod_VSensitivityOption.GetDefault(), true);
+			m_Mouse_AimMod_VSensitivitySelector.SetValueText();
+			m_Mouse_AimMod_VSensitivitySelector.SetChanged(false);
+		}
+		
+		if(m_Mouse_AimMod_HSensitivitySelector)
+		{
+			m_Mouse_AimMod_HSensitivitySelector.SetValue(m_Mouse_AimMod_HSensitivityOption.GetDefault(), true);
+			m_Mouse_AimMod_HSensitivitySelector.SetValueText();
+			m_Mouse_AimMod_HSensitivitySelector.SetChanged(false);
+		}
 
 		#ifdef PLATFORM_CONSOLE
-			if( m_KeyboardSelector )
-				m_KeyboardSelector.SetValue( m_KeyboardOption.GetDefaultIndex(), true );
-			if( m_AimHelperSelector )
-				m_AimHelperSelector.SetValue( m_AimHelperOption.GetDefaultIndex(), true );
+			if(m_KeyboardSelector)
+				m_KeyboardSelector.SetValue(m_KeyboardOption.GetDefaultIndex(), true);
+			if(m_AimHelperSelector)
+				m_AimHelperSelector.SetValue(m_AimHelperOption.GetDefaultIndex(), true);
 	
-			if( m_ControllerLS_VSensitivitySelector )
-				m_ControllerLS_VSensitivitySelector.SetValue( m_ControllerLS_VSensitivityOption.GetDefault(), true );
-			if( m_ControllerLS_HSensitivitySelector )
-				m_ControllerLS_HSensitivitySelector.SetValue( m_ControllerLS_HSensitivityOption.GetDefault(), true );
-			if( m_ControllerLS_VehicleMod_HSensitivitySelector )
-				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValue( m_ControllerLS_VehicleMod_HSensitivityOption.GetDefault(), true );
-			if( m_ControllerRS_InvertSelector )
-				m_ControllerRS_InvertSelector.SetValue( m_ControllerRS_InvertOption.GetDefaultIndex(), true );
-			if( m_ControllerRS_VSensitivitySelector )
-				m_ControllerRS_VSensitivitySelector.SetValue( m_ControllerRS_VSensitivityOption.GetDefault(), true );
-			if( m_ControllerRS_HSensitivitySelector )
-				m_ControllerRS_HSensitivitySelector.SetValue( m_ControllerRS_HSensitivityOption.GetDefault(), true );
-			if( m_ControllerRS_CurvatureSelector )
-				m_ControllerRS_CurvatureSelector.SetValue( m_ControllerRS_CurvatureOption.GetDefault(), true );
-			if( m_ControllerRS_AimMod_VSensitivitySelector )
-				m_ControllerRS_AimMod_VSensitivitySelector.SetValue( m_ControllerRS_AimMod_VSensitivityOption.GetDefault(), true );
-			if( m_ControllerRS_AimMod_HSensitivitySelector )
-				m_ControllerRS_AimMod_HSensitivitySelector.SetValue( m_ControllerRS_AimMod_HSensitivityOption.GetDefault(), true );
-			if( m_ControllerRS_AimMod_CurvatureSelector )
-				m_ControllerRS_AimMod_CurvatureSelector.SetValue( m_ControllerRS_AimMod_CurvatureOption.GetDefault(), true );
-			if( m_ControllerLS_DeadZoneSelector )
-				m_ControllerLS_DeadZoneSelector.SetValue( m_ControllerLS_DeadZoneOption.GetDefault(), true );
-			if( m_ControllerRS_DeadZoneSelector )
-				m_ControllerRS_DeadZoneSelector.SetValue( m_ControllerRS_DeadZoneOption.GetDefault(), true );
+			if(m_ControllerLS_VSensitivitySelector)
+			{
+				m_ControllerLS_VSensitivitySelector.SetValue(m_ControllerLS_VSensitivityOption.GetDefault(), true);
+				m_ControllerLS_VSensitivitySelector.SetValueText();
+				m_ControllerLS_VSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerLS_HSensitivitySelector)
+			{
+				m_ControllerLS_HSensitivitySelector.SetValue(m_ControllerLS_HSensitivityOption.GetDefault(), true);
+				m_ControllerLS_HSensitivitySelector.SetValueText();
+				m_ControllerLS_HSensitivitySelector.SetChanged(false);
+			}
+			
+			if(m_ControllerLS_VehicleMod_HSensitivitySelector)
+			{
+				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValue(m_ControllerLS_VehicleMod_HSensitivityOption.GetDefault(), true);
+				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValueText();
+				m_ControllerLS_VehicleMod_HSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_InvertSelector)
+				m_ControllerRS_InvertSelector.SetValue(m_ControllerRS_InvertOption.GetDefaultIndex(), true);
+
+			if(m_ControllerRS_VSensitivitySelector)
+			{
+				m_ControllerRS_VSensitivitySelector.SetValue(m_ControllerRS_VSensitivityOption.GetDefault(), true);
+				m_ControllerRS_VSensitivitySelector.SetValueText();
+				m_ControllerRS_VSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_HSensitivitySelector)
+			{
+				m_ControllerRS_HSensitivitySelector.SetValue(m_ControllerRS_HSensitivityOption.GetDefault(), true);
+				m_ControllerRS_HSensitivitySelector.SetValueText();
+				m_ControllerRS_HSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_CurvatureSelector)
+			{
+				m_ControllerRS_CurvatureSelector.SetValue(m_ControllerRS_CurvatureOption.GetDefault(), true);
+				m_ControllerRS_CurvatureSelector.SetValueText();
+				m_ControllerRS_CurvatureSelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_AimMod_VSensitivitySelector)
+			{
+				m_ControllerRS_AimMod_VSensitivitySelector.SetValue(m_ControllerRS_AimMod_VSensitivityOption.GetDefault(), true);
+				m_ControllerRS_AimMod_VSensitivitySelector.SetValueText();
+				m_ControllerRS_AimMod_VSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_AimMod_HSensitivitySelector)
+			{
+				m_ControllerRS_AimMod_HSensitivitySelector.SetValue(m_ControllerRS_AimMod_HSensitivityOption.GetDefault(), true);
+				m_ControllerRS_AimMod_HSensitivitySelector.SetValueText();
+				m_ControllerRS_AimMod_HSensitivitySelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_AimMod_CurvatureSelector)
+			{
+				m_ControllerRS_AimMod_CurvatureSelector.SetValue(m_ControllerRS_AimMod_CurvatureOption.GetDefault(), true);
+				m_ControllerRS_AimMod_CurvatureSelector.SetValueText();
+				m_ControllerRS_AimMod_CurvatureSelector.SetChanged(false);
+			}
+
+			if(m_ControllerLS_DeadZoneSelector)
+			{
+				m_ControllerLS_DeadZoneSelector.SetValue(m_ControllerLS_DeadZoneOption.GetDefault(), true);
+				m_ControllerLS_DeadZoneSelector.SetValueText();
+				m_ControllerLS_DeadZoneSelector.SetChanged(false);
+			}
+
+			if(m_ControllerRS_DeadZoneSelector)
+			{
+				m_ControllerRS_DeadZoneSelector.SetValue(m_ControllerRS_DeadZoneOption.GetDefault(), true);
+				m_ControllerRS_DeadZoneSelector.SetValueText();
+				m_ControllerRS_DeadZoneSelector.SetChanged(false);
+			}
 
 			Focus();
 		#endif

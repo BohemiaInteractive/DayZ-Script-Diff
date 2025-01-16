@@ -58,29 +58,11 @@ class CraftTerritoryFlagKit extends RecipeBase
 
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
-		/*int slot_id_junk;
-		string slot_string;
-		if ( ingredients[0].GetInventory().GetCurrentAttachmentSlotInfo(slot_id_junk,slot_string) )
-		{
-			return false;
-		}
-		if ( ingredients[1].GetInventory().GetCurrentAttachmentSlotInfo(slot_id_junk,slot_string) )
-		{
-			return false;
-		}*/
 		if ( ingredients[0].GetInventory().IsAttachment() )
 			return false;
 		if ( ingredients[1].GetInventory().IsAttachment() )
 			return false;
 		
 		return true;
-	}
-
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
-	{
-		/*ItemBase fence_kit = results[0];
-		Rope rope = Rope.Cast(fence_kit.GetInventory().CreateAttachment("Rope"));
-		MiscGameplayFunctions.TransferItemProperties(ingredients[0],rope);*/
-		Debug.Log("Recipe Do method called","recipes");
 	}
 };

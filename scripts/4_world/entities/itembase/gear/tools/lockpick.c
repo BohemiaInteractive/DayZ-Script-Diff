@@ -5,6 +5,11 @@ class Lockpick: ToolBase
 		m_MineDisarmRate = 90;
 	}
 	
+	override int GetKeyCompatibilityType()
+	{
+		return 1 << EBuildingLockType.LOCKPICK;
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();

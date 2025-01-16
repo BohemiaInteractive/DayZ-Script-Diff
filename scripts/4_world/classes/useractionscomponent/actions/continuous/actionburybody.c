@@ -35,7 +35,7 @@ class ActionBuryBody: ActionContinuousBase
 		EntityAI bodyEAI;
 		Class.CastTo(bodyEAI, target.GetObject());
 		
-		if (bodyEAI && !bodyEAI.IsAlive() && (bodyEAI.IsInherited(DayZCreature) || bodyEAI.IsInherited(Man) || bodyEAI.IsInherited(DeadChicken_ColorBase) ) && !bodyEAI.GetParent())
+		if (bodyEAI && (bodyEAI.IsCorpse() || (!bodyEAI.IsAlive() && (bodyEAI.IsInherited(DayZCreature) || bodyEAI.IsInherited(Man)))) && !bodyEAI.GetParent())
 		{
 			int liquidType;
 			string surfaceType;

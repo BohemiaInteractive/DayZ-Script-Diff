@@ -80,7 +80,8 @@
                         "Martin Strnad",
                         "Michal Břinda",
                         "Ondřej Malota",
-                        "Özgür Nergis"
+                        "Özgür Nergis",
+                        "Tomáš Pavlík"
                     ]
                 }
             ]
@@ -91,7 +92,7 @@
                 {
                     "SectionName": "#lead_scripter",
                     "SectionLines": [
-                        "Radek Řáda",
+                        "Rudolf Klenovský",
                         "Ivan Klčo"
                     ]
                 }
@@ -113,6 +114,7 @@
                         "Martin Weiser",
                         "Peter Jánošík",
                         "Pierre Rencurel",
+                        "Radek Řáda",
                         "Stephan Moser",
                         "Vratislav Jindřich"
                     ]
@@ -146,10 +148,11 @@
                 {
                     "SectionName": "#lead_programmers",
                     "SectionLines": [
-                        "Miroslav Maněna",
                         "Lukáš Jagelka",
                         "Martin Slavkov",
-                        "Mikuláš Florek"
+                        "Mikuláš Florek",
+                        "Miroslav Maněna",
+                        "Vlad Mihai Baderca"
                     ]
                 }
             ]
@@ -187,8 +190,8 @@
                         "Rastislav Tisovčík",
                         "Tomas Grünwald",
                         "Tomáš Vajda",
-                        "Vlad Mihai Baderca",
                         "Volodymyr Syvochka",
+                        "Xeniya Vondrashkova",
                         "Zuzana Péteriová"
                     ]
                 }
@@ -230,6 +233,7 @@
                         "Jakub Mirola",
                         "Jamie Foster",
                         "Jan Kudrnáč",
+                        "Jan Pazdera",
                         "Kristýna Duhárová",
                         "Marcin Pindara",
                         "Marián Ferko",
@@ -383,6 +387,7 @@
                 {
                     "SectionName": "#quality_assurance_lead",
                     "SectionLines": [
+                        "Eszter Barabás",
                         "Filip Konupka"
                     ]
                 }
@@ -596,6 +601,7 @@
                         "Jitka Vysloužilová",
                         "Karolina Havelkova",
                         "Htun Lynn Zaw",
+                        "Mark O'Keeffe",
                         "Miguel Raimundo",
                         "Michael Christensen",
                         "Zuzana Cinková"
@@ -625,6 +631,7 @@
                         "Anastasios Ntirlis",
                         "Antonie Hálková",
                         "Chelsea Steeb",
+                        "David Bódi",
                         "David Foltýn",
                         "David Korejtko",
                         "Filip Hauer",
@@ -749,6 +756,7 @@
                         "Jiří Petrů",
                         "Marco Piccinnu",
                         "Aya Pickard",
+                        "Cristina Righi",
                         "Raphaël Rouby",
                         "Igor Savenkov",
                         "Vojtěch Schubert",
@@ -759,6 +767,7 @@
                         "Rumi Tasaki",
                         "Loek van Kooten",
                         "Tobiáš Zíka",
+                        "Will Zheng",
                         "Aleksandra Zrebiec"
 
                     ]
@@ -860,7 +869,7 @@
                         "Karolina Komárková",
                         "Karolína Skalová",
                         "Kateřina Szerudová",
-						"Kristina Kirichenko",
+                        "Kristýna Hricková",
                         "Kryštof Verner",
                         "Lalisa Leakakul",
                         "Le Do",
@@ -896,6 +905,7 @@
                         "Ondřej Vanáč",
                         "Ondřej Vanča",
                         "Pankaj Singh",
+                        "Patrik Bartošík",
 						"Pavel Fronek",
                         "Pavel Hamata",
                         "Pavol Sočuvka",

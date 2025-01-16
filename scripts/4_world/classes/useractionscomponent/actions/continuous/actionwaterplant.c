@@ -33,11 +33,7 @@ class ActionWaterPlant: ActionContinuousBase
 		if ( targetObject != NULL && targetObject.IsInherited(PlantBase) && item != NULL && !item.IsDamageDestroyed() )
 		{
 			PlantBase plant = PlantBase.Cast( targetObject );
-			
-			if ( plant.NeedsWater() && item.GetQuantity() > 0 )
-			{
-				return true;
-			}
+			return plant.NeedsWater() && item.GetQuantity() > 0 && !item.GetIsFrozen();
 		}
 		
 		return false;

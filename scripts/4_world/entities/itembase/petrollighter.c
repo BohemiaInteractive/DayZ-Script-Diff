@@ -8,7 +8,7 @@ class PetrolLighter extends ItemBase
 			return false;
 	}
 	
-	override void OnIgnitedTarget( EntityAI ignited_item )
+	override void OnIgnitedTarget( EntityAI target_item )
 	{
 		if ( GetGame().IsServer() )
 		{

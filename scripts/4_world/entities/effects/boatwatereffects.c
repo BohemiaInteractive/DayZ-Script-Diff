@@ -63,7 +63,7 @@ class EffectBoatWaterFront : EffectBoatWaterBase
 		}
 	}
 		
-	override void Update()
+	override void Update(float timeSlice = 0)
 	{
 		if (m_Boat.GetCurrentGear() == 0)
 		{
@@ -77,7 +77,7 @@ class EffectBoatWaterFront : EffectBoatWaterBase
 			return;
 		}
 		
-		super.Update();
+		super.Update(timeSlice);
 				
 		Particle ptc = GetParticle();
 		float lerp1, lerp2;
@@ -86,7 +86,7 @@ class EffectBoatWaterFront : EffectBoatWaterBase
 		float speed = velocity.Normalize() * 3.6; // to km/h
 		UpdateSpeedState(ptc, speed);
 		
-		UpdatePosToSeaLevel(-0.2);
+		UpdatePosToSeaLevel(timeSlice, -0.2);
 		
 		lerp1 = Math.InverseLerp(0, m_SpeedFast, speed);
 		lerp2 = Math.InverseLerp(m_SpeedMedium - 5, m_SpeedFast + 10, speed);
@@ -163,7 +163,7 @@ class EffectBoatWaterBack : EffectBoatWaterBase
 		}
 	}
 	
-	override void Update()
+	override void Update(float timeSlice = 0)
 	{
 		if (m_Boat.GetCurrentGear() == 0)
 		{
@@ -177,7 +177,7 @@ class EffectBoatWaterBack : EffectBoatWaterBase
 			return;
 		}
 		
-		super.Update();
+		super.Update(timeSlice);
 		Particle ptc = GetParticle();
 		
 		float speed = m_Boat.PropellerGetAngularVelocity();
@@ -238,9 +238,9 @@ class EffectBoatWaterSide : EffectBoatWaterBase
 		}
 	}
 	
-	override void Update()
+	override void Update(float timeSlice = 0)
 	{
-		super.Update();
+		super.Update(timeSlice);
 		
 		Particle ptc = GetParticle();
 		
@@ -248,7 +248,7 @@ class EffectBoatWaterSide : EffectBoatWaterBase
 		float speed = velocity.Normalize() * 3.6; // to km/h
 		UpdateSpeedState(ptc, speed);
 		
-		UpdatePosToSeaLevel(-0.2);
+		UpdatePosToSeaLevel(timeSlice, -0.2);
 		
 		float lerp = Math.InverseLerp(0, m_SpeedFast, speed);
 		
@@ -270,10 +270,13 @@ class EffectBoatWaterSide : EffectBoatWaterBase
 
 class EffectBoatWaterBase : EffectParticle
 {	
+	const float POS_UPDATE_THROTTLE = 0.2; // seconds, controls how often can boat update somewhat expensive particle local reposition
+	
 	protected int m_EmitorCount;
 	protected int m_SpeedSlow;
 	protected int m_SpeedMedium;
 	protected int m_SpeedFast;
+	protected float m_PosUpdateTimer; 
 	
 	protected EBoatSpeed m_SpeedState;
 	protected BoatScript m_Boat;
@@ -319,7 +322,7 @@ class EffectBoatWaterBase : EffectParticle
 	{}
 	
 	// Update runs every frame
-	void Update()
+	void Update(float timeSlice = 0)
 	{
 		if (!IsPlaying())
 		{
@@ -329,11 +332,17 @@ class EffectBoatWaterBase : EffectParticle
 	};
 		
 	// Adjust position to sea level
-	protected void UpdatePosToSeaLevel(float surfaceOffset = 0)
+	protected void UpdatePosToSeaLevel(float timeSlice = 0, float surfaceOffset = 0)
 	{
-		vector posAdjusted = m_Boat.CoordToParent(m_MemPointPos);
-		posAdjusted[1] = GetGame().SurfaceGetSeaLevel() + surfaceOffset;
-		posAdjusted = m_Boat.CoordToLocal(posAdjusted);
-		SetCurrentLocalPosition(posAdjusted);
+		m_PosUpdateTimer += timeSlice;
+		if (m_PosUpdateTimer > POS_UPDATE_THROTTLE)
+		{
+			m_PosUpdateTimer = 0;
+			
+			vector posAdjusted = m_Boat.CoordToParent(m_MemPointPos);
+			posAdjusted[1] = GetGame().SurfaceGetSeaLevel() + surfaceOffset;
+			posAdjusted = m_Boat.CoordToLocal(posAdjusted);
+			SetCurrentLocalPosition(posAdjusted);
+		}
 	}
 }

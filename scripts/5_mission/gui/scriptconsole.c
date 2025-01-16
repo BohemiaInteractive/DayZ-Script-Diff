@@ -141,6 +141,7 @@ class ScriptConsole extends UIScriptedMenu
 		RegisterTab(new ScriptConsoleVicinityTab(layoutRoot.FindAnyWidget("VicinityPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("VicinityWidget"))));
 		RegisterTab(new ScriptConsoleSoundsTab(layoutRoot.FindAnyWidget("SoundsPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("SoundsWidget"))));
 		RegisterTab(new ScriptConsoleWeatherTab(layoutRoot.FindAnyWidget("WeatherPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("WeatherButtonWidget"))));
+		RegisterTab(new ScriptConsoleCameraTab(layoutRoot.FindAnyWidget("CameraPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("CameraButtonWidget"))));
 
 		m_CloseConsoleButton = ButtonWidget.Cast(layoutRoot.FindAnyWidget("CloseConsoleButtonWidget"));
 
@@ -249,9 +250,8 @@ class ScriptConsole extends UIScriptedMenu
 		if (GetGame() && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			GetGame().GetUIManager().Back();
+			return;
 		}
-		
-		
 	
 		if (!GetGame().IsMultiplayer() && KeyState(KeyCode.KC_RCONTROL) && KeyState(KeyCode.KC_NUMPAD0) && m_HintWidgetRoot && m_HintWidgetRoot.IsVisible())
 		{
@@ -264,10 +264,12 @@ class ScriptConsole extends UIScriptedMenu
 			
 		}
 		
-		
 		foreach (ScriptConsoleTabBase handler: m_TabHandlers)
 		{
-			handler.Update(timeslice);
+			if (handler.IsSelected())
+			{
+				handler.Update(timeslice);
+			}
 		}
 	}
 
@@ -334,6 +336,10 @@ class ScriptConsole extends UIScriptedMenu
 		
 		if (!m_EditTooltipRoot.IsVisible())
 			HoverInterrupt();
+		
+		if (m_SelectedHandler.OnMouseLeave(w, enterW, x, y))
+			return true;
+		
 		return false;
 	}
 	
@@ -343,7 +349,8 @@ class ScriptConsole extends UIScriptedMenu
 		if (!m_EditTooltipRoot.IsVisible())
 			m_CurrentHoverWidget = w;
 		
-		
+		if (m_SelectedHandler.OnMouseEnter(w ,x, y))
+			return true;
 		
 		#ifdef PLATFORM_CONSOLE
 		return false;
@@ -356,17 +363,15 @@ class ScriptConsole extends UIScriptedMenu
 		super.OnChange(w, x, y, finished);
 		
 		if (m_SelectedHandler.OnChange(w,x,y,finished))
-				return true; 
+			return true; 
 		
 		return false;
 	}
-		
+
 	override bool OnItemSelected(Widget w, int x, int y, int row, int  column,	int  oldRow, int  oldColumn)
 	{
 		super.OnItemSelected(w, x, y, row, column, oldRow, oldColumn);
-		
 
-		
 		if (m_SelectedHandler.OnItemSelected(w, x, y, row, column,oldRow, oldColumn))
 			return true;
 		
@@ -385,7 +390,6 @@ class ScriptConsole extends UIScriptedMenu
 		return null;
 	}
 
-	
 	void SelectTabByID(int id)
 	{
 		ScriptConsoleTabBase tab = m_TabHandlersByID.Get(id);
@@ -406,8 +410,34 @@ class ScriptConsole extends UIScriptedMenu
 		{
 			handler.Select(handler == selectedHandler, selectedHandler);
 		}
+		
+		if (ScriptConsoleCameraTab.Cast(selectedHandler))
+		{
+			// Remove alpha background for camera tab
+			ShowMenuBackground(false);
+			GetGame().GetMission().RemoveActiveInputExcludes({"movement"}, true);
+		}
+		else
+		{
+			// Add back alpha background
+			ShowMenuBackground(true);
+			GetGame().GetMission().AddActiveInputExcludes({"movement"});
+		}
+		
 		m_SelectedHandler = selectedHandler;
 		m_ConfigDebugProfile.SetTabSelected(selectedHandler.GetID());
+	}
+	
+	void ShowMenuBackground(bool state)
+	{
+		if (!state)
+		{
+			GetLayoutRoot().FindAnyWidget("MenuWindow").SetColor(ARGB(0, 0, 0, 0));
+		}
+		else
+		{
+			GetLayoutRoot().FindAnyWidget("MenuWindow").SetColor(ARGB(128, 0, 0, 0));
+		}
 	}
 	
 	protected void DisplayHint(string message)
@@ -457,6 +487,109 @@ class ScriptConsole extends UIScriptedMenu
 		}
 		#endif
 
+	}
+	
+	override void OnShow()
+	{
+		super.OnShow();
+		
+		// Inputs excluded when in script console menu
+		array<string> inputExcludes = {
+			// Menu
+			"movement",
+			"aiming",
+			"gestures",
+			"stances",
+			"optics",
+			"actions", 
+			"hotkey",
+			"UAGear",
+			"UAVoiceLevel",
+			"UAVoiceModifierHelper",
+			"UAVoiceDistanceUp",
+			"UAVoiceDistanceDown",
+			"UAVoiceOverNet",
+			"UAVoiceOverNetToggle",
+			"UAVoiceOverNetMute",
+			// Inventory
+			"gestures",
+    		"stances",
+    		"optics",
+   			"actions",
+			// Buldozer
+			"UABuldResetCamera",
+			"UABuldTurbo",
+			"UABuldSlow",
+			"UABuldRunScript",
+			"UABuldSelectToggle",
+			"UABuldFreeLook",
+			"UABuldSelect",
+			"UABuldSelectAddMod",
+			"UABuldSelectRemoveMod",
+			"UABuldModifySelected",
+			"UABuldCycleMod",
+			"UABuldRotationXAxisMod",
+			"UABuldRotationZAxisMod",
+			"UABuldCoordModCycle",
+			"UABuldSampleTerrainHeight",
+			"UABuldSetTerrainHeight",
+			"UABuldScaleMod",
+			"UABuldElevateMod",
+			"UABuldSmoothMod",
+			"UABuldFlattenMod",
+			"UABuldBrushRatioUp",
+			"UABuldBrushRatioDown",
+			"UABuldBrushOuterUp",
+			"UABuldBrushOuterDown",
+			"UABuldBrushStrengthUp",
+			"UABuldBrushStrengthDown",
+			"UABuldToggleNearestObjectArrow",
+			"UABuldCycleBrushMod",
+			"UABuldSelectionType",
+			"UABuldCreateLastSelectedObject",
+			"UABuldDuplicateSelection",
+			"UABuldDeleteSelection",
+			"UABuldUndo",
+			"UABuldRedo",
+			"UABuldMoveLeft",
+			"UABuldMoveRight",
+			"UABuldMoveForward",
+			"UABuldMoveBack",
+			"UABuldMoveUp",
+			"UABuldMoveDown",
+			"UABuldLeft",
+			"UABuldRight",
+			"UABuldForward",
+			"UABuldBack",
+			"UABuldLookLeft",
+			"UABuldLookRight",
+			"UABuldLookUp",
+			"UABuldLookDown",
+			"UABuldZoomIn",
+			"UABuldZoomOut",
+			"UABuldTextureInfo",
+			"UABuldViewerMoveForward",
+			"UABuldViewerMoveBack",
+			"UABuldViewerMoveLeft",
+			"UABuldViewerMoveRight",
+			"UABuldViewerMoveUp",
+			"UABuldViewerMoveDown",
+			"UABuldObjectRotateLeft",
+			"UABuldObjectRotateRight",
+			"UABuldObjectRotateForward",
+			"UABuldObjectRotateBack",
+			"UABuldPreviousAnimation",
+			"UABuldNextAnimation",
+			"UABuldRecedeAnimation",
+			"UABuldAdvanceAnimation"
+		};
+
+		if (m_SelectedHandler && ScriptConsoleCameraTab.Cast(m_SelectedHandler))
+		{
+			inputExcludes.Remove(0);
+		}
+				
+		GetGame().GetMission().AddActiveInputExcludes(inputExcludes);
 	}
 
 	PluginConfigDebugProfile m_ConfigDebugProfile;

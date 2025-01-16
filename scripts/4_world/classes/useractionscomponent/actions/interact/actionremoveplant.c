@@ -40,41 +40,16 @@ class ActionRemovePlant: ActionInteractBase
 			if ( slot && slot.GetPlant() )
 			{
 				m_Plant = PlantBase.Cast(slot.GetPlant());
-				if ( m_Plant.IsGrowing()  ||  m_Plant.IsDry()  ||  !m_Plant.HasCrops() || m_Plant.IsSpoiled())
-				{
+				if (!m_Plant.IsHarvestable())
 					return true;
-				}
 			}
 		}
 		return false;
-		/*Object targetObject = target.GetObject();
-		if ( targetObject != NULL && targetObject.IsInherited(PlantBase) )
-		{
-			PlantBase plant = PlantBase.Cast( targetObject );
-			
-			if ( plant.IsGrowing()  ||  plant.IsDry()  ||  !plant.HasCrops() || plant.IsSpoiled())
-			{
-				return true;
-			}
-		}
-		
-		return false;*/
 	}
 
 	override void OnExecuteServer( ActionData action_data )
 	{
 		if ( m_Plant )
-		{
-			//m_Plant.RemovePlant();
-			
-			//New method allowing us to pass player position
 			m_Plant.RemovePlantEx( action_data.m_Player.GetPosition() );
-		}
-		/*Object targetObject = action_data.m_Target.GetObject();
-		if ( targetObject != NULL && targetObject.IsInherited(PlantBase) )
-		{
-			PlantBase plant = PlantBase.Cast( targetObject );
-			plant.RemovePlant();
-		}*/
 	}
 };

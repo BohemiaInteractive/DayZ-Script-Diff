@@ -3,6 +3,11 @@ class ContaminatedTrigger extends EffectTrigger
 {
 	const float DAMAGE_TICK_RATE = 10;//deal damage every n-th second
 	
+	override string GetDisplayName()
+	{
+		return "#STR_contaminatedarea";
+	}
+	
 	// ----------------------------------------------
 	// 				TRIGGER EVENTS
 	// ----------------------------------------------

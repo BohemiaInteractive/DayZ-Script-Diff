@@ -7,7 +7,7 @@ class OnlineServices
 	static ref ScriptInvoker												m_MuteUpdateAsyncInvoker	= new ScriptInvoker(); // DEPRECATED
 	static ref ScriptInvoker												m_ServerModLoadAsyncInvoker	= new ScriptInvoker();
 	
-	static ref BiosClientServices											m_ClientServices;
+	static BiosClientServices												m_ClientServices;
 	static ref TrialService													m_TrialService;
 	
 	protected static string													m_InviteServerIP;

@@ -136,7 +136,7 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 	
 	void Focus()
 	{
-		OnFocus( m_Root, 0, 0 );
+		SetFocus(m_PlayerButton);
 	}
 	
 	override bool OnFocus( Widget w, int x, int y )

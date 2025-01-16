@@ -1522,7 +1522,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	override void Update(float timeslice)
 	{
 		super.Update(timeslice);
-		
+
 		UpdateButtonNames();
 	}
 	

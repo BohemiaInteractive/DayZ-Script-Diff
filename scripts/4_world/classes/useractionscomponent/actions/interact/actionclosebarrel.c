@@ -32,18 +32,8 @@ class ActionCloseBarrel: ActionInteractBase
 		if( ntarget )
 		{
 			ntarget.DetermineAction(action_data.m_Player);
-		}
-	}
-	
-	override void OnEndServer( ActionData action_data )
-	{
-		super.OnEndServer(action_data);
-		
-		Object target_object = action_data.m_Target.GetObject();
-		Barrel_ColorBase ntarget = Barrel_ColorBase.Cast( target_object );
-		if( ntarget )
-		{
-			ntarget.SoundSynchRemoteReset();
+			if (ntarget.GetBarrelCloseSoundset() != string.Empty)
+				ntarget.StartItemSoundServer(SoundConstants.ITEM_BARREL_CLOSE);
 		}
 	}
 }

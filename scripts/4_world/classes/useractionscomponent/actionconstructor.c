@@ -251,6 +251,7 @@ class ActionConstructor
 		actions.Insert(ActionTurnValve);
 		actions.Insert(ActionTurnValveUndergroundReservoir);
 		actions.Insert(ActionEatCereal);
+		actions.Insert(ActionUnlockShippingContainer);
 		
 		// Interact actions
 		actions.Insert(ActionPullOutPlug);

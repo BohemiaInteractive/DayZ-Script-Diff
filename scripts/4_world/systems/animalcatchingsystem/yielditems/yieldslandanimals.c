@@ -31,7 +31,7 @@ class YieldItemDeadRabbit : LandAnimalYieldItemBase
 		{
 			case ECatchingBaitCategories.BAIT_TYPE_EMPTY:
 			case ECatchingBaitCategories.BAIT_TYPE_PLANT:
-				return 1;
+				return 1.0;
 			
 			/*
 			//We can define 'offputing' baits the animal would actually AVOID
@@ -39,12 +39,9 @@ class YieldItemDeadRabbit : LandAnimalYieldItemBase
 			case ECatchingBaitCategories.BAIT_TYPE_MEAT_LARGE:
 				return -1;
 			*/
-			
-			default:
-				return 0.0;
 		}
 		
-		return super.GetBaitTypeSensitivity(type);
+		return 0.0;
 	}
 	
 	override string GetCatchDeathSoundset()
@@ -82,13 +79,10 @@ class YieldItemDeadFox : LandAnimalYieldItemBase
 			case ECatchingBaitCategories.BAIT_TYPE_MUSHROOM:
 			case ECatchingBaitCategories.BAIT_TYPE_MEAT_SMALL:
 			case ECatchingBaitCategories.BAIT_TYPE_MEAT_LARGE:
-				return 1;
-			
-			default:
-				return 0.0;
+				return 1.0;
 		}
 		
-		return super.GetBaitTypeSensitivity(type);
+		return 0.0;
 	}
 	
 	override string GetCatchDeathSoundset()
@@ -127,13 +121,10 @@ class YieldItemCapraHircusBase : LandAnimalYieldItemBase
 			case ECatchingBaitCategories.BAIT_TYPE_SEED:
 			case ECatchingBaitCategories.BAIT_TYPE_MUSHROOM:
 			case ECatchingBaitCategories.BAIT_TYPE_MEAT_SMALL:
-				return 1;
-			
-			default:
-				return 0.0;
+				return 1.0;
 		}
 		
-		return super.GetBaitTypeSensitivity(type);
+		return 0.0;
 	}
 	
 	override string GetCatchDeathSoundset()

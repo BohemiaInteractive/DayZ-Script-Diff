@@ -100,7 +100,6 @@ class SplitBroom extends RecipeBase
 	{
 		ItemBase broom = ingredients[0];
 		
-		
 		if (broom.GetCompEM().IsWorking())
 		{
 			return false;
@@ -111,7 +110,6 @@ class SplitBroom extends RecipeBase
 			return true;
 		}
 		return false;
-
 	}
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
@@ -124,8 +122,6 @@ class SplitBroom extends RecipeBase
 			Class.CastTo(item_result, results.Get(i));
 			
 			MiscGameplayFunctions.TransferItemProperties(broom, item_result);
-		}	
-		
-		super.Do( ingredients, player, results, specialty_weight);
+		}
 	}
 };

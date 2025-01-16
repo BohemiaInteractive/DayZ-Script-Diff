@@ -28,7 +28,7 @@ class AreaDamageBase : AreaDamageManager
 		m_OthersDamage		= 0.0;
 		
 		m_AmmoName			= "MeleeDamage";
-		m_DamageType 		= DT_CUSTOM;
+		m_DamageType 		= DamageType.CUSTOM;
 		
 		m_LoopInterval 		= 1.0;
 		m_DeferDuration		= 1.0;

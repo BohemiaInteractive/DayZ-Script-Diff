@@ -1,6 +1,7 @@
 class Land_WarheadStorage_Main : House
 {
 	protected bool m_HasPowerPrev;
+	protected bool m_IsLowEnergy;
 	protected WarheadStorageLight m_StorageDoorLights[4];
 	protected EffectSound m_SoundDoorLoop[4];
 	protected ref array<EffectSound> m_PoweredSoundEffects = new array<EffectSound>();
@@ -38,6 +39,7 @@ class Land_WarheadStorage_Main : House
 	{
 		RegisterNetSyncVariableBool("m_HasPower");
 		RegisterNetSyncVariableInt("m_LeverStatesBits");
+		RegisterNetSyncVariableInt("m_IsLowEnergy");
 		
 		Land_WarheadStorage_PowerStation.RegisterBunker(this);
 		#ifndef SERVER
@@ -55,13 +57,7 @@ class Land_WarheadStorage_Main : House
 				m_StorageDoorLights[i].Destroy();
 		}	
 	}
-	
-	protected void UpdateLamp(string selection, string color)
-	{
-		int selectionIdx = GetHiddenSelectionIndex(selection);
-		SetObjectMaterial(selectionIdx, color);
-	}
-	
+		
 	override void DeferredInit()
 	{
 		GetGame().RegisterNetworkStaticObject(this);
@@ -91,6 +87,17 @@ class Land_WarheadStorage_Main : House
 		UpdateDoorStateServer();
 	}
 	
+	void SetLowEnergyStateServer(bool state)
+	{
+		m_IsLowEnergy = state;
+		SetSynchDirty();
+	}
+	
+	bool IsLowEnergy()
+	{
+		return m_IsLowEnergy;
+	}
+	
 	protected void OnPowerOnClient()
 	{
 		EffectSound soundEff;
@@ -103,8 +110,6 @@ class Land_WarheadStorage_Main : House
 		
 		for (int i; i < SOURCES_COUNT; i++)
 		{
-			m_StorageDoorLights[i] = WarheadStorageLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(WarheadStorageLight, this, "lamp" + (i+1).ToString() + "_pos"));
-			
 			PlaySoundSetAtMemoryPoint(soundEff, VENTILATION_SOUND, VENT_POS_MEMPOINT + (i+1).ToString(), true, 0.5, 0.5);
 			m_PoweredSoundEffects.Insert(soundEff);
 			soundEff.SetAutodestroy(true);
@@ -189,6 +194,12 @@ class Land_WarheadStorage_Main : House
 		{
 			EffectSound sound;
 			int effectID = GetBunkerEffectIndexByDoor(params.param1);
+			if (m_SoundDoorLoop[effectID] && m_SoundDoorLoop[effectID].IsPlaying())	// in case events fire in wrong order
+			{
+				sound = m_SoundDoorLoop[effectID];
+				StopSoundSet(sound);
+			}
+			
 			PlaySoundSetAtMemoryPoint(sound, ALARM_DOOR_OPEN_LOOP_SOUND, ALARM_POS_MEMPOINT, true, 0, 0);
 			m_SoundDoorLoop[effectID] = sound;
 			m_SoundDoorLoop[effectID].SetAutodestroy(true);
@@ -233,18 +244,12 @@ class Land_WarheadStorage_Main : House
 			if ( ((bit & m_LeverStatesBits) != 0) && m_HasPower )
 			{
 				if (!IsDoorOpen(doorIndex))
-				{
 					OpenDoor(doorIndex);
-					UpdateLamp(LAMP_SELECTION + (GetStorageLightIndexByDoor(doorIndex) + 1).ToString(), COLOR_LAMP_ON);
-				}
 			}
 			else
 			{
 				if (IsDoorOpen(doorIndex))
-				{
 					CloseDoor(doorIndex);
-					UpdateLamp(LAMP_SELECTION + (GetStorageLightIndexByDoor(doorIndex) + 1).ToString(), COLOR_LAMP_OFF);
-				}
 			}
 		}
 	}
@@ -260,12 +265,19 @@ class Land_WarheadStorage_Main : House
 			if ( ((bit & m_LeverStatesBits) != 0) && m_HasPower )
 			{
 				if (!m_StorageDoorLights[lightId])
+				{
 					m_StorageDoorLights[lightId] = WarheadStorageLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(WarheadStorageLight, this, "lamp" + (lightId + 1).ToString() + "_pos"));
+					m_StorageDoorLights[lightId].SetSelectionID(GetHiddenSelectionIndex(LAMP_SELECTION + (lightId + 1).ToString()));
+					m_StorageDoorLights[lightId].UpdateLightSourceMaterial(WarheadStorageLight.LIGHT_MAT_ON);
+				}
 			}
 			else
 			{
 				if (m_StorageDoorLights[lightId])
+				{
+					m_StorageDoorLights[lightId].UpdateLightSourceMaterial(WarheadStorageLight.LIGHT_MAT_OFF);
 					m_StorageDoorLights[lightId].Destroy();
+				}
 			}
 		}
 	}

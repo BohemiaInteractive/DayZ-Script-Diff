@@ -39,19 +39,18 @@ class ActionCookOnStick: ActionContinuousBase
 			if (fireplace_target.IsBaseFireplace())
 			{
 				Fireplace fireplace = Fireplace.Cast(fireplace_target);
-				if (!fireplace.IsOven() && fireplace_target.CanCookOnStick())
-				{
+				if (fireplace && fireplace.IsOven())
+					return false;
+				
+				if (fireplace_target.CanCookOnStick()) 
 					return true;
-				}
 			}
 			
 			//fireplace indoor
 			if (fireplace_target.IsFireplaceIndoor())
 			{
 				if (fireplace_target.CanCookOnStick()) 
-				{
 					return true;
-				}	
 			}
 		}
 		

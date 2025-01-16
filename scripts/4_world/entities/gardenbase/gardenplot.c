@@ -2,6 +2,7 @@ class GardenPlot extends GardenBase
 {
 	Object 	m_ClutterCutter;
 	private const int GARDEN_SLOT_COUNT = 9;
+	private const float PLACEMENT_HEIGHT_LIMIT = 0.3; // Y coord placement limit - this is important when server has collision checks disabled
 	
 	void GardenPlot()
 	{
@@ -112,7 +113,9 @@ class GardenPlot extends GardenBase
 	override bool CanBePlaced( Man player, vector position )
 	{
 		string surface_type;
-		GetGame().SurfaceGetType3D( position[0], position[1], position[2], surface_type );
+		float surfaceHeight = GetGame().SurfaceGetType3D( position[0], position[1], position[2], surface_type );
+		if ((position[1] - surfaceHeight) > PLACEMENT_HEIGHT_LIMIT)
+			return false;
 		
 		return GetGame().IsSurfaceFertile(surface_type);
 	}

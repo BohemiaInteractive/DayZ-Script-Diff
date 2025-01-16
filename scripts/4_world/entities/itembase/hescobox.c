@@ -15,8 +15,6 @@ class HescoBox extends Inventory_Base
 
 		//synchronized variables
 		RegisterNetSyncVariableInt( "m_State", FOLDED, FILLED );
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsDeploySound");
 	}
 	
 	override bool HasProxyParts()
@@ -44,11 +42,6 @@ class HescoBox extends Inventory_Base
 		
 		//refresh visuals
 		RefreshVisuals();
-				
-		if ( IsDeploySound() )
-		{
-			PlayDeploySound();
-		}
 	}
 	
 	void RefreshVisuals()
@@ -226,8 +219,6 @@ class HescoBox extends Inventory_Base
 		if ( GetGame().IsServer() )
 		{
 			Unfold();
-			
-			SetIsDeploySound( true );
 		}
 	}
 		

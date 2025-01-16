@@ -43,8 +43,6 @@ class Spotlight extends ItemBase
 	{
 		m_EvaluateDeployment = false;
 
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsDeploySound");
 		RegisterNetSyncVariableBool("m_IsFolded");
 	}
 		
@@ -237,16 +235,6 @@ class Spotlight extends ItemBase
 		UpdateAllSelections();
 	}
 
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-		
-		if (IsDeploySound())
-		{
-			PlayDeploySound();
-		}
-	}
-
 	void Fold(bool keep_connected = false)
 	{
 		m_IsFolded = true;
@@ -305,7 +293,7 @@ class Spotlight extends ItemBase
 		return !GetCompEM().IsPlugged();
 	}
 
-	override bool CanPutIntoHands(EntityAI player) 
+	override bool CanPutIntoHands(EntityAI parent) 
 	{
 		if (!super.CanPutIntoHands(parent))
 		{
@@ -359,11 +347,6 @@ class Spotlight extends ItemBase
 	{
 		super.OnPlacementComplete(player, position, orientation);
 		
-		if (GetGame().IsServer())
-		{
-			SetIsDeploySound(true);
-		}
-
 		Unfold();
 		m_EvaluateDeployment = true;
 	}
@@ -379,7 +362,7 @@ class Spotlight extends ItemBase
 	{
 		return true;
 	}
-	
+		
 	override string GetDeploySoundset()
 	{
 		return "placeSpotlight_SoundSet";

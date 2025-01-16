@@ -195,7 +195,7 @@ class MeleeTargeting
 	}
 	
 
-	bool FindMostSuitableComponentEx(Object obj, BoxCollidingResult bResult, MeleeTargetSettings settings, out float sum, out ref ComponentResult result, array<string> blacklistedDamageZones)
+	bool FindMostSuitableComponentEx(Object obj, BoxCollidingResult bResult, MeleeTargetSettings settings, out float sum, out ComponentResult result, array<string> blacklistedDamageZones)
 	{
 		foreach (ComponentInfo cInfo : bResult.componentInfo)
 		{
@@ -218,12 +218,12 @@ class MeleeTargeting
 		return result != null;
 	}
 
-	bool FindMostSuitableComponent(Object obj, BoxCollidingResult bResult, MeleeTargetSettings settings, out float sum, out ref ComponentResult result)
+	bool FindMostSuitableComponent(Object obj, BoxCollidingResult bResult, MeleeTargetSettings settings, out float sum, out ComponentResult result)
 	{
 		return FindMostSuitableComponentEx(obj, bResult, settings, sum, result, null);
 	}
 	
-	bool EvaluateComponentEx(Object obj, ComponentInfo cInfo, MeleeTargetSettings settings, out ref ComponentResult result, array<string> blacklistedDamageZones)
+	bool EvaluateComponentEx(Object obj, ComponentInfo cInfo, MeleeTargetSettings settings, out ComponentResult result, array<string> blacklistedDamageZones)
 	{
 		//! check if the component is on blacklist, if so, continue in lookup
 		foreach (string zoneName: blacklistedDamageZones)
@@ -269,7 +269,7 @@ class MeleeTargeting
 		return true;
 	}
 	
-	bool EvaluateComponent(Object obj, ComponentInfo cInfo, MeleeTargetSettings settings, out ref ComponentResult result)
+	bool EvaluateComponent(Object obj, ComponentInfo cInfo, MeleeTargetSettings settings, out ComponentResult result)
 	{
 		return EvaluateComponentEx(obj, cInfo, settings, result, {});
 	}

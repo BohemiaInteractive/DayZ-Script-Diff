@@ -1,5 +1,10 @@
-class DeadChicken_ColorBase extends Edible_Base
+class DeadChicken_ColorBase : Edible_Base
 {
+	void DeadChicken_ColorBase()
+	{
+		CacheSkinningBloodInfectionChance(eAgents.SALMONELLA);
+	}
+
 	override bool CanBeCookedOnStick()
 	{
 		return false;
@@ -19,17 +24,9 @@ class DeadChicken_ColorBase extends Edible_Base
 	{
 		return true;
 	}
-	
-	override bool CanBeSkinned()
-	{
-		if ( GetHealthLevel() == GameConstants.STATE_RUINED )
-			return false;
-
-		return true;
-	}
 }
 
-class DeadRooster extends DeadChicken_ColorBase {}
-class DeadChicken_White extends DeadChicken_ColorBase {}
-class DeadChicken_Spotted extends DeadChicken_ColorBase {}
-class DeadChicken_Brown extends DeadChicken_ColorBase {}
+class DeadRooster : DeadChicken_ColorBase {}
+class DeadChicken_White : DeadChicken_ColorBase {}
+class DeadChicken_Spotted : DeadChicken_ColorBase {}
+class DeadChicken_Brown : DeadChicken_ColorBase {}

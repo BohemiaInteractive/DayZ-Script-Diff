@@ -94,16 +94,4 @@ class ActionCheckPulse: ActionInteractBase
 			action_data.m_Player.m_CheckPulseLastTarget = ntarget;
 		}
 	}
-	
-	override void OnEndServer( ActionData action_data )
-	{
-		super.OnEndServer(action_data);
-		
-		/*
-		PlayerBase target_player = PlayerBase.Cast(action_data.m_Target.GetObject());
-		PlayerBase player = action_data.m_Player;
-		CachedObjectsParams.PARAM1_INT.param1 = target_player.GetStatLevelBlood();
-		GetGame().RPCSingleParam( target_player ,ERPCs.RPC_CHECK_PULSE, CachedObjectsParams.PARAM1_INT, true, target_player.GetIdentity() );
-		*/
-	}
 }

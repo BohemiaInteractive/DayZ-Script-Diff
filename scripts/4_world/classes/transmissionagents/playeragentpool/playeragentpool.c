@@ -134,7 +134,7 @@ class PlayerAgentPool
 		else
 		{
 			if (!ctx.Read(count))
-				return false;		
+				return false;
 		}
 
 		
@@ -164,7 +164,7 @@ class PlayerAgentPool
 	}
 	void DigestAgent(int agent_id, float count)
 	{
-		AddAgent(agent_id, m_PluginTransmissionAgents.GetAgentDigestibility(agent_id) * count);
+		AddAgent(agent_id, m_PluginTransmissionAgents.GetAgentDigestibilityEx(agent_id, m_Player) * count);
 	}	
 	
 	void AddAgent(int agent_id, float count)

@@ -209,12 +209,9 @@ class BoltActionRifle_InnerMagazine_Base extends BoltActionRifle_Base
 	
 	override void SetActions()
 	{
+		AddAction(FirearmActionLoadMultiBulletQuick);
 		super.SetActions();
 		AddAction(FirearmActionLoadMultiBullet);
-
-		RemoveAction(FirearmActionLoadBulletQuick); // Easy reload
-		AddAction(FirearmActionLoadMultiBulletQuick); // Easy reload
-
 	}
 };
 

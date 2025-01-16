@@ -62,20 +62,13 @@ class CraftBloodBagIV extends RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase ingredient2;
-		Class.CastTo(ingredient2, ingredients[1]);
-		ItemBase result;
-		Class.CastTo(result, results.Get(0));
-
-		BloodContainerBase bloodBag;
-
-		if ( Class.CastTo( bloodBag, ingredient2) )
-		{
-			if ( bloodBag.GetBloodTypeVisible() )
-				BloodContainerBase.Cast(result).SetBloodTypeVisible( true );
-		}
+		BloodContainerBase bloodBagIngr = BloodContainerBase.Cast(ingredients[1]);
+		BloodContainerBase bloodBagResult = BloodContainerBase.Cast(results.Get(0));
 		
-		if( result)
-			MiscGameplayFunctions.TransferItemProperties(ingredient2,result, true, true, false, true);
+		if (bloodBagIngr && bloodBagResult)
+		{
+			MiscGameplayFunctions.TransferItemProperties(bloodBagIngr, bloodBagResult, true, true, false, true);
+			bloodBagResult.SetBloodTypeVisible(bloodBagIngr.GetBloodTypeVisible());
+		}
 	}
 };

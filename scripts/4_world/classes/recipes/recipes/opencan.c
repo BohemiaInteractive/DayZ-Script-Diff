@@ -107,31 +107,13 @@ class OpenCan extends RecipeBase
 
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
-		if ( player.IsPlacingLocal() )
-			return false;
-		
-		return true;
+		return !ingredients[0].GetIsFrozen() && !player.IsPlacingLocal();
 	}
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase can;
-		Class.CastTo(can, ingredients[0]);
-		ItemBase tool;
-		Class.CastTo(tool, ingredients[1]);
-		PlayerBase playerPB;
-		Class.CastTo(playerPB, player);
-		OpenItem.OpenAndSwitch(tool, can, playerPB, specialty_weight);
-		//DamageTool(tool,player);
+		ItemBase can = ingredients[0];
+		ItemBase tool = ingredients[1];
+		OpenItem.OpenAndSwitch(tool, can, player, specialty_weight);
 	}
-	
-	/*void DamageTool(ItemBase tool,PlayerBase player)
-	{
-		float health_delta = -(tool.GetMaxHealth("","Health") / 40);
-		health_delta = Math.Clamp(health_delta,-10,-0.5);
-		
-		if(health_delta <0) health_delta = player.GetSoftSkillsManager().SubtractSpecialtyBonus(health_delta, m_Specialty);
-		else 				health_delta = player.GetSoftSkillsManager().AddSpecialtyBonus(health_delta, m_Specialty);
-		tool.AddHealth("","",health_delta);
-	}*/
 };

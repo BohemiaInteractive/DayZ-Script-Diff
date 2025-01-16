@@ -55,6 +55,24 @@ class ActionArmExplosive : ActionContinuousBase
 		return explosive && !explosive.GetArmed();
 	}
 	
+	override void OnStartServer(ActionData action_data)
+	{
+		super.OnStartServer(action_data);
+		
+		ExplosivesBase item = ExplosivesBase.Cast(action_data.m_Target.GetObject());
+		if (item.GetArmSoundset() != string.Empty)
+			item.StartItemSoundServer(SoundConstants.ITEM_EXPLOSIVE_ARM);
+	}
+	
+	override void OnEndServer(ActionData action_data)
+	{
+		super.OnEndServer(action_data);
+		
+		ExplosivesBase item = ExplosivesBase.Cast(action_data.m_Target.GetObject());
+		if (item.GetArmSoundset() != string.Empty)
+			item.StopItemSoundServer(SoundConstants.ITEM_EXPLOSIVE_ARM);
+	}
+	
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		super.OnFinishProgressServer(action_data);

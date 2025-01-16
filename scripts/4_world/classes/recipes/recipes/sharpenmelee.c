@@ -81,4 +81,9 @@ class SharpenMelee extends RecipeBase
 		Class.CastTo(ingredient2, ingredients[1]);
 		module_repairing.Repair(playerPB, ingredient1,ingredient2,m_Specialty);
 	}
+	
+	override bool IsRepeatable()
+	{
+		return true;
+	}
 };

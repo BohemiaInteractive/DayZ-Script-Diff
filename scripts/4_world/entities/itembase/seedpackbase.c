@@ -6,20 +6,19 @@ class SeedPackBase extends Inventory_Base
 	{	
 	}
 
-	void EmptySeedPack( PlayerBase player )
+	void EmptySeedPack(PlayerBase player)
 	{
-
 		string pack_type = GetType();
 		string seeds_type = "";
 		
-		GetGame().ConfigGetText( "cfgVehicles " + pack_type + " Horticulture ContainsSeedsType", seeds_type );
+		GetGame().ConfigGetText("cfgVehicles " + pack_type + " Horticulture ContainsSeedsType", seeds_type);
 		
-		int seeds_quantity_max = GetGame().ConfigGetInt( "cfgVehicles " + pack_type + " Horticulture ContainsSeedsQuantity" );
+		int seeds_quantity_max = GetGame().ConfigGetInt("cfgVehicles " + pack_type + " Horticulture ContainsSeedsQuantity");
 		int seeds_quantity = seeds_quantity_max;
 		
-		seeds_quantity = Math.Round( seeds_quantity_max * GetHealth01("","") );
+		seeds_quantity = Math.Round(seeds_quantity_max * GetHealth01("",""));
 	
-		if ( seeds_quantity < 1 )
+		if (seeds_quantity < 1)
 		{ 
 			seeds_quantity = 1;
 		}
@@ -33,7 +32,7 @@ class SeedPackBase extends Inventory_Base
 		{
 			vector pos = GetPosition();
 			GetGame().CreateObjectEx(seeds_type, pos, ECE_PLACE_ON_SURFACE);
-			GetGame().ObjectDelete( this );
+			GetGame().ObjectDelete(this);
 		}
 	}
 	
@@ -48,13 +47,15 @@ class SeedPackBase extends Inventory_Base
 class EmptySeedsPackLambda : ReplaceItemWithNewLambdaBase
 {
 	int m_ItemCount;
+	PlayerBase m_Player;
 	
-	void EmptySeedsPackLambda (EntityAI old_item, string new_item_type, PlayerBase player, int count) 
+	void EmptySeedsPackLambda(EntityAI old_item, string new_item_type, PlayerBase player, int count) 
 	{
-		m_ItemCount = count; 
+		m_ItemCount = count;
+		m_Player = player;
 	}
 
-	override void CopyOldPropertiesToNew (notnull EntityAI old_item, EntityAI new_item)
+	override void CopyOldPropertiesToNew(notnull EntityAI old_item, EntityAI new_item)
 	{
 		super.CopyOldPropertiesToNew(old_item, new_item);
 
@@ -68,6 +69,13 @@ class EmptySeedsPackLambda : ReplaceItemWithNewLambdaBase
 		super.OnSuccess(new_item);
 		
 		//spawns wrapping Paper
-		ItemBase paper = ItemBase.Cast( GetGame().CreateObjectEx("Paper", new_item.GetHierarchyRoot().GetPosition(), ECE_PLACE_ON_SURFACE) );
+		if (m_Player)
+		{
+			m_Player.SpawnEntityOnGroundRaycastDispersed("Paper",DEFAULT_SPAWN_DISTANCE,UAItemsSpreadRadius.NARROW);
+		}
+		else
+		{
+			GetGame().CreateObjectEx("Paper", new_item.GetHierarchyRoot().GetPosition(), ECE_PLACE_ON_SURFACE);
+		}
 	}
 };

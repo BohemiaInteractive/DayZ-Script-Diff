@@ -34,11 +34,6 @@ class PrepareFox extends PrepareAnimal
 		m_ResultToInventory[1] = -2;		// (value) == -2 spawn result on the ground;(value) == -1 place anywhere in the players inventory, (value) >= 0 means switch position with ingredient number(value)
 		m_ResultReplacesIngredient[1] = 0;	// (value) == -1 means do nothing; a value >= 0 means this result will transfer item propertiesvariables, attachments etc.. from an ingredient value
 	}
-
-	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
-	{
-		return true;
-	}
 	
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
@@ -46,19 +41,16 @@ class PrepareFox extends PrepareAnimal
 		ItemBase resultBones = results[0];
 		
 		int legCount = Math.RandomIntInclusive(2,4);
-		for (int i=0; i < legCount; i++)
+		for (int i=0; i < legCount; ++i)
 		{
-			ItemBase result = ItemBase.Cast(player.SpawnEntityOnGroundOnCursorDir("FoxSteakMeat", DEFAULT_SPAWN_DISTANCE));
+			ItemBase result = ItemBase.Cast(player.SpawnEntityOnGroundRaycastDispersed("FoxSteakMeat"));
 			MiscGameplayFunctions.TransferItemProperties(deadRabbit, result);
 			result.SetQuantityNormalized(Math.RandomFloatInclusive(0.8,1));
 		}
 		
-		
 		MiscGameplayFunctions.TransferItemProperties(deadRabbit, resultBones);
 		resultBones.SetQuantity(Math.RandomIntInclusive(2,5));
 		
-		
-		PluginLifespan lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
-		lifespan.UpdateBloodyHandsVisibility( player, true );
+		SetBloodyHands(ingredients, player);
 	}
-};
+}

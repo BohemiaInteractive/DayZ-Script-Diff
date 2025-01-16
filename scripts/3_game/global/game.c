@@ -2,7 +2,7 @@
  *  Game Class provide most "world" or global engine API functions.
  */
 
-static int GAME_STORAGE_VERSION = 140;
+static int GAME_STORAGE_VERSION = 141;
 
 class CGame
 {
@@ -11,6 +11,7 @@ class CGame
 
 	ScriptModule GameScript;
 
+	//Obsolete, port [Obsolete()] as well, maybe?
 	private ref array<ref Param> m_ParamCache;
 	
 	//analytics	
@@ -35,6 +36,7 @@ class CGame
 		Math.Randomize(-1);
 		
 		LogManager.Init();
+
 		m_ParamCache = new array<ref Param>;
 		m_ParamCache.Insert(null);
 		
@@ -357,6 +359,14 @@ class CGame
 		@return false, if registration wasn't successful or when object is already registered
 	*/
 	proto native bool		RegisterNetworkStaticObject(Object object);
+
+	/**
+	\brief Returns the state of the buffer for network inputs (UAInterface) 
+		\note See: NetworkInputBufferEventTypeID
+		\note Client side only, returns false on the server always
+		@return true, if the buffer is filled and client simulation must stop
+	*/
+	proto native bool		IsNetworkInputBufferFull();
 	
 	/**
   	\brief Creates spectator object (mostly cameras)
@@ -791,6 +801,47 @@ class CGame
 	proto native float		GetFps();
 	
 	/**
+	\brief Returns current framerate.
+	@return Current framerate as frames per second.
+	*/
+	proto native float		GetLastFPS();
+	
+	/**
+	\brief Returns average framerate over last n frames.
+	\param nFrames The number of frames to compute average of, up to 64.
+	@return Average frames per second over last n frames.
+	*/
+	proto native float		GetAvgFPS(int nFrames = 64);
+	
+	/**
+	\brief Returns minimum framerate over last n frames.
+	\param nFrames The number of frames to find minimum of, up to 64.
+	@return Minimum frames per second over last 64 frames.
+	*/
+	proto native float		GetMinFPS(int nFrames = 64);
+	
+	/**
+	\brief Returns maximum framerate over last n frames.
+	\param nFrames The number of frames to find maximum of, up to 64.
+	@return Maximum frames per second over last n frames.
+	*/
+	proto native float		GetMaxFPS(int nFrames = 64);
+	
+	/**
+	\brief Outputs framerate statistics.
+	\param min Outputs minimum framerate over last n frames in frames per second.
+	\param max Outputs maximum framerate over last n frames in frames per second.
+	\param avg Outputs average framerate over last n frames in frames per second.
+	\param nFrames The number of frames to take into account, up to 64. 
+	*/
+	void GetFPSStats(out float min, out float max, out float avg, int nFrames = 64)
+	{
+		min     = GetMinFPS(nFrames);
+		max     = GetMaxFPS(nFrames);
+		avg     = GetAvgFPS(nFrames);
+	}
+	
+	/**
 	\brief Returns current time from start of the game
 	@return time in seconds
 	*/
@@ -896,18 +947,10 @@ class CGame
 	*/
 	proto native void		RPC(Object target, int rpcType, notnull array<ref Param> params, bool guaranteed,PlayerIdentity recipient = null);
 	//! see CGame.RPC
-	void					RPCSingleParam(Object target, int rpc_type, Param param, bool guaranteed, PlayerIdentity recipient = null)
-	{
-		m_ParamCache.Set(0, param);
-		RPC(target, rpc_type, m_ParamCache, guaranteed, recipient);
-	}
+	proto native void		RPCSingleParam(Object target, int rpc_type, Param param, bool guaranteed, PlayerIdentity recipient = null);
 	//! Not actually an RPC, as it will send it only to yourself
 	proto native void		RPCSelf(Object target, int rpcType, notnull array<ref Param> params);
-	void					RPCSelfSingleParam(Object target, int rpcType, Param param)
-	{
-		m_ParamCache.Set(0, param);
-		RPCSelf(target, rpcType, m_ParamCache);
-	}
+	proto native void		RPCSelfSingleParam(Object target, int rpcType, Param param);
 
 	//! Use for profiling code from start to stop, they must match have same name, look wiki pages for more info: https://confluence.bistudio.com/display/EN/Profiler
 	proto native void		ProfilerStart(string name);
@@ -1047,6 +1090,9 @@ class CGame
 	}
 	
 	proto native void		GetPlayerIndentities( out array<PlayerIdentity> identities );
+	
+	//! API for surface detection
+	proto native bool		GetSurface(SurfaceDetectionParameters params, SurfaceDetectionResult result);
 	
 	proto native float		SurfaceY(float x, float z);
 	proto native float		SurfaceRoadY(float x, float z, RoadSurfaceDetection rsd = RoadSurfaceDetection.LEGACY);

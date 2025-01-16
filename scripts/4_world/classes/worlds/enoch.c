@@ -93,8 +93,8 @@ class EnochData : WorldData
 		m_YieldBank.ClearAllRegisteredItems();
 		
 		//fishies
-		m_YieldBank.RegisterYieldItem(new YieldItemCarp(15));
-		m_YieldBank.RegisterYieldItem(new YieldItemMackerel(15));
+		m_YieldBank.RegisterYieldItem(new YieldItemCarp(42));
+		m_YieldBank.RegisterYieldItem(new YieldItemMackerel(42));
 		m_YieldBank.RegisterYieldItem(new YieldItemSardines(15));
 		m_YieldBank.RegisterYieldItem(new YieldItemBitterlings(15));
 		

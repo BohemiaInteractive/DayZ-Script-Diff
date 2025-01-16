@@ -50,7 +50,7 @@ class ActionDisinfectPlant: ActionContinuousBase
 			if ( slot && slot.GetPlant() )
 			{
 				m_Plant = PlantBase.Cast(slot.GetPlant());
-				if ( m_Plant.IsGrowing()  &&  m_Plant.NeedsSpraying() )
+				if (m_Plant.IsSprayable())
 				{	
 					if ( m_Plant.GetPlantStateIndex() < 1 )
 						return false;

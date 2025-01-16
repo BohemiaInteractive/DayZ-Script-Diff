@@ -131,6 +131,10 @@ class ParticleList
 	static const int RGD5							= RegisterParticle("explosion_RGD5_01");
 	static const int M67							= RegisterParticle("explosion_M67_01");
 	
+	// GRENADE EXPLOSION BY SURFACE
+	static const int EXPLOSION_GRENADE_SNOW			= RegisterParticle("explosion_grenade_snow");
+	static const int EXPLOSION_GRENADE_ICE			= RegisterParticle("explosion_grenade_ice");
+	
 	// ELECTRICITY	        
 	static const int POWER_GENERATOR_SMOKE			= RegisterParticle("smoke_small_generator_01");
 	static const int BARBED_WIRE_SPARKS				= RegisterParticle("electro_shortc2");
@@ -208,6 +212,12 @@ class ParticleList
 	static const int IMPACT_FOLIAGE_ENTER			= RegisterParticle("impacts/hit_foliage_ent_01");
 	static const int IMPACT_FOLIAGE_RICOCHET		= RegisterParticle("impacts/hit_foliage_ric_01");
 	static const int IMPACT_FOLIAGE_EXIT			= RegisterParticle("impacts/hit_foliage_ext_01");
+	static const int IMPACT_FOLIAGE_GREEN_ENTER		= RegisterParticle("impacts/hit_foliage_green_ent_01");
+	static const int IMPACT_FOLIAGE_GREEN_RICOCHET	= RegisterParticle("impacts/hit_foliage_green_ric_01");
+	static const int IMPACT_FOLIAGE_GREEN_EXIT		= RegisterParticle("impacts/hit_foliage_green_ext_01");
+	static const int IMPACT_FOLIAGE_CONIFER_ENTER	= RegisterParticle("impacts/hit_foliage_conifer_ent_01");
+	static const int IMPACT_FOLIAGE_CONIFER_RICOCHET= RegisterParticle("impacts/hit_foliage_conifer_ric_01");
+	static const int IMPACT_FOLIAGE_CONIFER_EXIT	= RegisterParticle("impacts/hit_foliage_conifer_ext_01");
 	static const int IMPACT_GRASS_ENTER				= RegisterParticle("impacts/hit_grass_ent_01");
 	static const int IMPACT_GRASS_RICOCHET			= RegisterParticle("impacts/hit_grass_ric_01");
 	static const int IMPACT_DIRT_ENTER				= RegisterParticle("impacts/hit_dirt_ent_01");
@@ -334,6 +344,7 @@ class ParticleList
 	static const int HOTPSRING_WATERVAPOR			= RegisterParticle("hotspring_watervapor");
 	static const int GEYSER_NORMAL					= RegisterParticle("geyser_normal");
 	static const int GEYSER_STRONG					= RegisterParticle("geyser_strong");
+	static const int GEYSER_BUBBLES					= RegisterParticle("geyser_bubbles");
 	static const int VOLCANO						= RegisterParticle("volcano_smoke");
 	
 	// FISHING
@@ -349,9 +360,15 @@ class ParticleList
 	
 	//TREE FALLING PARTICLES
 	static const int TREE_FALLING_SNOW				= RegisterParticle("tree_falling_snow");//
+	static const int TREE_SOFT_FALLING_SNOW			= RegisterParticle("tree_soft_falling_snow");//
+	static const int TREE_SOFT_LARGE_FALLING_SNOW	= RegisterParticle("tree_soft_large_falling_snow");//
+	static const int TREE_SMALL_FALLING_SNOW		= RegisterParticle("tree_small_falling_snow");//
 	static const int TREE_FALLING_NEEDLE			= RegisterParticle("tree_falling_needle");//
 	static const int TREE_FALLING_LEAF				= RegisterParticle("tree_falling_leaf");//
 	static const int BUSH_FALLING_SNOW				= RegisterParticle("bush_falling_snow");//
+	//TREE PASSING ParticleSource
+	static const int TREE_PASSING_SNOW				= RegisterParticle("tree_passing_snow");//
+	static const int BUSH_PASSING_SNOW				= RegisterParticle("bush_passing_snow");// same as bush_falling_snow
 	
 	
 	static int RegisterParticle(string file_name)

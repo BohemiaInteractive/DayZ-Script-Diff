@@ -43,29 +43,12 @@ class Refridgerator extends ItemBase
 	{
 		
 	}
-	
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-				
-		if ( IsPlaceSound() )
-		{
-			PlayPlaceSound();
-		}
-	}
-		
+			
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================
-	
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
-	{
-		super.OnPlacementComplete( player, position, orientation );
-			
-		SetIsPlaceSound( true );
-	}
-	
-	override string GetPlaceSoundset()
+		
+	override string GetDeploySoundset()
 	{
 		return "placeRefridgerator_SoundSet";
 	}

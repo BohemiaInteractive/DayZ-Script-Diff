@@ -3,10 +3,12 @@ class HeatComfortAnimHandler
 	const float TICK_INTERVAL  = 2;
 	float m_TimeSinceLastTick;
 	float m_ProcessTimeAccuFreeze;
+	float m_ProcessTimeAccuFreezeRattle;
 	float m_ProcessTimeAccuHot;
 	
 	PlayerBase m_Player;
 	float m_EventTimeFreeze = -1;
+	float m_EventTimeFreezeRattle = -1;
 	float m_EventTimeHot = -1;
 	protected ref HumanMovementState m_MovementState = new HumanMovementState();
 	
@@ -52,6 +54,21 @@ class HeatComfortAnimHandler
 			float value_min;
 			float value_max;
 			float offset_time;
+			
+			if ( hc <= PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL )
+			{
+				m_ProcessTimeAccuFreezeRattle++;
+				
+				if (m_EventTimeFreezeRattle < 0)
+					m_EventTimeFreezeRattle = GetEventTime(hc, -1 ,PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL, TIME_INTERVAL_HC_MINUS_LOW_MIN, TIME_INTERVAL_HC_MINUS_HIGH_MIN, TIME_INTERVAL_HC_MINUS_LOW_MAX, TIME_INTERVAL_HC_MINUS_HIGH_MAX);
+				
+				if( m_ProcessTimeAccuFreezeRattle > m_EventTimeFreezeRattle )
+				{
+					m_ProcessTimeAccuFreezeRattle = 0;
+					m_EventTimeFreezeRattle = -1;
+					m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_FREEZE_RATTLE);
+				}
+			}
 			
 			if ( hc <= PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING )
 			{

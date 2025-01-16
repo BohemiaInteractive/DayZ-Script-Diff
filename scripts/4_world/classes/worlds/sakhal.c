@@ -89,8 +89,8 @@ class SakhalData : WorldData
 		m_YieldBank.ClearAllRegisteredItems();
 		
 		//fishies
-		m_YieldBank.RegisterYieldItem(new YieldItemWalleyePollock(24));
-		m_YieldBank.RegisterYieldItem(new YieldItemSteelheadTrout(12));
+		m_YieldBank.RegisterYieldItem(new YieldItemWalleyePollock(61));
+		m_YieldBank.RegisterYieldItem(new YieldItemSteelheadTrout(36));
 		
 		m_YieldBank.RegisterYieldItem(new YieldItemShrimp(1));
 		

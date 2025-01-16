@@ -9,6 +9,16 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 	protected float m_SignalDurationMax; //seconds
 	protected float m_SignalStartTimeMin; //seconds
 	protected float m_SignalStartTimeMax; //seconds
+	//signal targets
+	protected float m_SignalCycleTarget;
+	protected float m_SignalCycleEndTarget;
+	protected float m_SignalCycleTargetAdjustment;
+	protected float m_SignalCycleTargetEndAdjustment;
+	//signal targets - constant
+	protected float m_SignalTargetProbability;
+	protected float m_SignalTargetEndProbability;
+	//misc
+	protected int m_SignalCurrent;
 	
 	//important items
 	protected EntityAI m_Hook;
@@ -21,10 +31,6 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 		
 		m_Rod = m_MainItem; //only stable one, rest initialized on 'InitItemValues' periodically
 		m_Player = PlayerBase.Cast(m_MainItem.GetHierarchyRootPlayer());
-		m_SignalDurationMin = UAFishingConstants.SIGNAL_DURATION_MIN_BASE;
-		m_SignalDurationMax = UAFishingConstants.SIGNAL_DURATION_MAX_BASE;
-		m_SignalStartTimeMin = UAFishingConstants.SIGNAL_START_TIME_MIN_BASE;
-		m_SignalStartTimeMax = UAFishingConstants.SIGNAL_START_TIME_MAX_BASE;
 	}
 	
 	override protected void InitCatchMethodMask()
@@ -52,9 +58,61 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 	{
 		super.ClearCatchingItemData();
 		
-		m_SignalPoissonMean = UAFishingConstants.SIGNAL_CYCLE_MEAN_DEFAULT;
+		ResetSignalCounter();
 		m_HookLossChanceMod = 0.0;
 		m_BaitLossChanceMod = 0.0;
+		m_SignalDurationMin = -1;
+		m_SignalDurationMax = -1;
+		m_SignalStartTimeMin = -1;
+		m_SignalStartTimeMax = -1;
+		m_SignalCycleTarget = UAFishingConstants.SIGNAL_CYCLE_MEAN_DEFAULT - 1; //lowered by '1', configured value is count
+		m_SignalCycleEndTarget = UAFishingConstants.SIGNAL_CYCLE_HARD_TARGET_DEFAULT - 1; //lowered by '1', configured value is count
+		m_SignalTargetProbability = UAFishingConstants.SIGNAL_MEAN_CHANCE_DEFAULT;
+		m_SignalTargetEndProbability = UAFishingConstants.SIGNAL_HARD_TARGET_CHANCE_DEFAULT;
+		m_SignalCycleTargetAdjustment = 0.0;
+		m_SignalCycleTargetEndAdjustment = 0.0;
+	}
+	
+	override void InitCatchingItemData()
+	{
+		super.InitCatchingItemData();
+		
+		//sanitize fishing values
+		if (m_SignalDurationMin == -1) //if not set by any item
+			m_SignalDurationMin = UAFishingConstants.SIGNAL_DURATION_MIN_BASE;
+		else
+			m_SignalDurationMin = Math.Clamp(m_SignalDurationMin,UAFishingConstants.SIGNAL_DURATION_MIN_BASE,UAFishingConstants.SIGNAL_DURATION_MAX_BASE);
+		
+		if (m_SignalDurationMax == -1) //if not set by any item
+			m_SignalDurationMax = UAFishingConstants.SIGNAL_DURATION_MAX_BASE;
+		else
+			m_SignalDurationMax = Math.Clamp(m_SignalDurationMax,UAFishingConstants.SIGNAL_DURATION_MIN_BASE,UAFishingConstants.SIGNAL_DURATION_MAX_BASE);
+		
+		if (m_SignalStartTimeMin == -1) //if not set by any item (else already clamped)
+			m_SignalStartTimeMin = UAFishingConstants.SIGNAL_START_TIME_MIN_BASE;
+		
+		if (m_SignalStartTimeMax == -1) //if not set by any item (else already clamped)
+			m_SignalStartTimeMax = UAFishingConstants.SIGNAL_START_TIME_MAX_BASE;
+		
+		m_SignalCycleTarget = Math.Clamp((m_SignalCycleTarget + m_SignalCycleTargetAdjustment),0,float.MAX);
+		m_SignalCycleEndTarget = Math.Clamp((m_SignalCycleEndTarget + m_SignalCycleTargetEndAdjustment),(m_SignalCycleTarget + 1),float.MAX);
+		
+		#ifdef DEVELOPER
+		if (IsCLIParam("fishingLogs"))
+		{
+			Debug.Log("---InitCatchingItemData---","Fishing");
+			Debug.Log("m_SignalCycleTarget (adjusted): " + m_SignalCycleTarget,"Fishing");
+			Debug.Log("m_SignalCycleTargetAdjustment: " + m_SignalCycleTargetAdjustment,"Fishing");
+			Debug.Log("m_SignalTargetProbability: " + m_SignalTargetProbability,"Fishing");
+			Debug.Log("m_SignalCycleEndTarget (adjusted): " + m_SignalCycleEndTarget,"Fishing");
+			Debug.Log("m_SignalCycleTargetEndAdjustment: " + m_SignalCycleTargetEndAdjustment,"Fishing");
+			Debug.Log("m_SignalTargetEndProbability: " + m_SignalTargetEndProbability,"Fishing");
+			Debug.Log("m_SignalDurationMin: " + m_SignalDurationMin,"Fishing");
+			Debug.Log("m_SignalDurationMax: " + m_SignalDurationMax,"Fishing");
+			Debug.Log("m_SignalStartTimeMin: " + m_SignalStartTimeMin,"Fishing");
+			Debug.Log("m_SignalStartTimeMax: " + m_SignalStartTimeMax,"Fishing");
+		}
+		#endif
 	}
 	
 	override protected void InitItemValues(EntityAI item)
@@ -66,8 +124,6 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 		string path = "" + CFG_VEHICLESPATH + " " + item.GetType() + " Fishing";
 		if (GetGame().ConfigIsExisting(path))
 		{
-			if (GetGame().ConfigIsExisting(path + " signalCycleTarget"))
-				m_SignalPoissonMean = Math.Min(m_SignalPoissonMean,GetGame().ConfigGetFloat(path + " signalCycleTarget"));
 			if (GetGame().ConfigIsExisting(path + " resultQuantityBaseMod"))
 				m_QualityBaseMod += GetGame().ConfigGetFloat(path + " resultQuantityBaseMod");
 			if (GetGame().ConfigIsExisting(path + " resultQuantityDispersionMin"))
@@ -78,6 +134,24 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 				m_HookLossChanceMod += GetGame().ConfigGetFloat(path + " hookLossChanceMod");
 			if (GetGame().ConfigIsExisting(path + " baitLossChanceMod"))
 				m_BaitLossChanceMod += GetGame().ConfigGetFloat(path + " baitLossChanceMod");
+			
+			if (GetGame().ConfigIsExisting(path + " signalDurationMin"))
+			{
+				if (m_SignalDurationMin == -1)
+					m_SignalDurationMin = 0;
+				m_SignalDurationMin += GetGame().ConfigGetFloat(path + " signalDurationMin");
+			}
+			if (GetGame().ConfigIsExisting(path + " signalDurationMax"))
+			{
+				if (m_SignalDurationMax == -1)
+					m_SignalDurationMax = 0;
+				m_SignalDurationMax += GetGame().ConfigGetFloat(path + " signalDurationMax");
+			}
+			
+			if (GetGame().ConfigIsExisting(path + " signalCycleTargetAdjustment"))
+				m_SignalCycleTargetAdjustment += GetGame().ConfigGetFloat(path + " signalCycleTargetAdjustment");
+			if (GetGame().ConfigIsExisting(path + " signalCycleTargetEndAdjustment"))
+				m_SignalCycleTargetEndAdjustment += GetGame().ConfigGetFloat(path + " signalCycleTargetEndAdjustment");
 			
 			int slotID;
 			string slotName;
@@ -95,6 +169,50 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 				}
 			}
 		}
+	}
+	
+	override bool ModifySignalProbability(inout float probability)
+	{
+		float easingTime;
+		if ((float)m_SignalCurrent < m_SignalCycleTarget)
+		{
+			easingTime = Math.InverseLerp(0,m_SignalCycleTarget,(float)m_SignalCurrent);
+			probability = Easing.EaseInExpo(easingTime) * m_SignalTargetProbability * GetChanceCoef();
+		}
+		else
+		{
+			easingTime = Math.InverseLerp(m_SignalCycleTarget,m_SignalCycleEndTarget,(float)m_SignalCurrent);
+			probability = (m_SignalTargetProbability + (Easing.EaseInExpo(easingTime) * (m_SignalTargetEndProbability - m_SignalTargetProbability))) * GetChanceCoef();
+		}
+		
+		#ifdef DEVELOPER
+		if (IsCLIParam("fishingLogs"))
+		{
+			Debug.Log("---ModifySignalProbability---","Fishing");
+			Debug.Log("m_SignalCurrent: " + m_SignalCurrent,"Fishing");
+			Debug.Log("easingTime: " + easingTime,"Fishing");
+			Debug.Log("probability: " + probability,"Fishing");
+		}
+		#endif
+		
+		return true;
+	}
+	
+	float GetChanceCoef()
+	{
+		return UAFishingConstants.SIGNAL_FISHING_CHANCE_COEF;
+	}
+	
+	override bool RollCatch()
+	{
+		bool ret = super.RollCatch();
+		m_SignalCurrent++;
+		return ret;
+	}
+	
+	protected void ResetSignalCounter()
+	{
+		m_SignalCurrent = 0.0;
 	}
 	
 	//! done locally on both sides, needs a synced random
@@ -136,17 +254,29 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 	
 	float RandomizeSignalDuration()
 	{
-		return m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSAnimalCatching,m_SignalDurationMin,m_SignalDurationMax);
+		float res = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSAnimalCatching,m_SignalDurationMin,m_SignalDurationMax);
+		#ifdef DEVELOPER
+		if (IsCLIParam("fishingLogs"))
+		{
+			Debug.Log("---RandomizeSignalDuration---","Fishing");
+			Debug.Log("next signal duration: " + res,"Fishing");
+		}
+		#endif
+		
+		return res;
 	}
 	
 	float RandomizeSignalStartTime()
 	{
-		return m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSAnimalCatching,m_SignalStartTimeMin,m_SignalStartTimeMax);
-	}
-	
-	override float GetChanceCoef()
-	{
-		return UAFishingConstants.SIGNAL_FISHING_CHANCE_COEF;
+		float res = m_Player.GetRandomGeneratorSyncManager().GetRandomInRange(RandomGeneratorSyncUsage.RGSAnimalCatching,m_SignalStartTimeMin,m_SignalStartTimeMax);
+		#ifdef DEVELOPER
+		if (IsCLIParam("fishingLogs"))
+		{
+			Debug.Log("---RandomizeSignalStartTime---","Fishing");
+			Debug.Log("next signal start time: " + res,"Fishing");
+		}
+		#endif
+		return res;
 	}
 	
 	protected void TryHookLoss()
@@ -219,7 +349,6 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 	{
 		RemoveItemSafe(m_Bait);
 		TryDamageItems();
-		UpdateCatchingItemData();
 	}
 	
 	//! release without signal
@@ -227,16 +356,19 @@ class CatchingContextFishingRodAction : CatchingContextFishingBase
 	{
 		TryHookLoss();
 		TryBaitLoss();
-		//RemoveItemSafe(m_Bait);
-		//TryDamageItems();
-		UpdateCatchingItemData();
 	}
 	
 	void OnSignalPass()
 	{
-		//TryBaitLoss();
 		RemoveItemSafe(m_Bait);
 		TryDamageItems();
 		UpdateCatchingItemData();
 	}
+	
+	///////////////////////////////
+	//Fish pen of deprecated code//
+	///////////////////////////////
+	protected float m_SignalPoissonMean = AnimalCatchingConstants.POISSON_CYCLE_MEAN_DEFAULT; //!Deprecated, left here due to inheritance change
+	float GetSignalPoissonMean() {return m_SignalPoissonMean;} //!Deprecated, left here due to inheritance change
+	int GetSignalMax() {return Math.Ceil(m_SignalPoissonMean) + Math.Ceil(m_SignalPoissonMean/5);} //!Deprecated, left here due to inheritance change
 }

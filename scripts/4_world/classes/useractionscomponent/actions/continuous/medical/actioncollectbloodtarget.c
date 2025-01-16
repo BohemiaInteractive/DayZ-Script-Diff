@@ -44,7 +44,6 @@ class ActionCollectBloodTarget: ActionContinuousBase
 			ActionCollectBloodTargetLambda lambda = new ActionCollectBloodTargetLambda(action_data.m_MainItem, "BloodBagFull", action_data.m_Player, m_SpecialtyWeight, ntarget, delta);
 			action_data.m_Player.ServerReplaceItemInHandsWithNew(lambda);
 		}
-		//action_data.m_Player.GetItemInHands().SetQuantity();
 	}
 };
 

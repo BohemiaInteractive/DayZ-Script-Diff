@@ -32,7 +32,10 @@ class ActionCreateGreenhouseGardenPlot: ActionContinuousBase
 		if ( !target ) 
 			return false;
 		
-		if ( player.IsPlacingLocal() || player.GetInColdArea() )
+		if ( player.IsPlacingLocal() )
+			return false;
+		
+		if (!CfgGameplayHandler.GetDisableColdAreaPlacementCheck() && player.GetInColdArea())
 			return false;
 
 		Object target_object = target.GetObject();

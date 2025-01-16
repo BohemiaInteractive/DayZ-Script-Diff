@@ -69,6 +69,7 @@ class UIScriptedMenu extends UIMenuPanel
 	private Widget	m_AnimAlphaWidget;
 	private bool	m_AnimAlphaIsIncreasing;
 	private float	m_AnimAlphaValue;
+	private ScriptInvoker m_PlayerDeathInvoker; //DayZPlayer::GetOnDeathStart -> used to keep track of and ensure proper callback handling
 
 	Widget GetLayoutRoot()
 	{
@@ -173,7 +174,8 @@ class UIScriptedMenu extends UIMenuPanel
 		LockControls();
 		if (IsHandlingPlayerDeathEvent() && g_Game && g_Game.GetPlayer())
 		{
-			g_Game.GetPlayer().GetOnDeathStart().Insert(OnPlayerDeath);
+			m_PlayerDeathInvoker = g_Game.GetPlayer().GetOnDeathStart();
+			m_PlayerDeathInvoker.Insert( OnPlayerDeath );
 		}
 	}
 
@@ -181,9 +183,10 @@ class UIScriptedMenu extends UIMenuPanel
 	void OnHide()
 	{
 		UnlockControls();
-		if (IsHandlingPlayerDeathEvent() && g_Game && g_Game.GetPlayer())
+		if (m_PlayerDeathInvoker) // Only ever registered while `IsHandlingPlayerDeathEvent`. Remove callback directly.
 		{
-			g_Game.GetPlayer().GetOnDeathStart().Remove(OnPlayerDeath);
+			m_PlayerDeathInvoker.Remove( OnPlayerDeath, EScriptInvokerRemoveFlags.NONE );
+			m_PlayerDeathInvoker = null;
 		}
 	}
 

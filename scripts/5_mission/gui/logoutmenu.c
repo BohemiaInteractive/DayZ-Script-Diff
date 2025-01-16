@@ -5,7 +5,9 @@ class LogoutMenu extends UIScriptedMenu
 	private TextWidget m_DescriptionText;
 	private ButtonWidget m_bLogoutNow;
 	private ButtonWidget m_bCancel;
+	#ifdef PLATFORM_CONSOLE
 	private ButtonWidget m_bCancelConsole;
+	#endif
 	private int m_iTime;
 	
 	private ref FullTimeData m_FullTime;
@@ -25,6 +27,13 @@ class LogoutMenu extends UIScriptedMenu
 			Cancel(); //cancels request on irregular close (player death, suicide, some mass-menu closure...)
 
 		m_FullTime = null;
+		
+		#ifdef PLATFORM_CONSOLE
+		if (GetGame().GetMission())
+		{
+			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
+		}
+		#endif
 	}
 	
 	override Widget Init()
@@ -37,12 +46,9 @@ class LogoutMenu extends UIScriptedMenu
 		m_bCancel 			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("bCancel"));
 		
 		#ifdef PLATFORM_CONSOLE
+		m_bCancelConsole	= ButtonWidget.Cast(layoutRoot.FindAnyWidget("bCancelConsole"));
 		m_bCancel.Show(false);
 		m_bLogoutNow.Show(false);
-		
-		layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
-		RichTextWidget toolbar_b = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
-		toolbar_b.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		#else
 		m_bCancel.Show(true);
 		m_bLogoutNow.Show(true);
@@ -58,7 +64,16 @@ class LogoutMenu extends UIScriptedMenu
 			player.GetEmoteManager().CreateEmoteCBFromMenu(EmoteConstants.ID_EMOTE_SITA);
 			player.GetEmoteManager().GetEmoteLauncher().SetForced(EmoteLauncher.FORCE_DIFFERENT);
 		}
+
+		#ifdef PLATFORM_CONSOLE
+		if (GetGame().GetMission())
+		{
+			GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		}
 		
+		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		#endif
+
 		return layoutRoot;
 	}
 
@@ -84,7 +99,11 @@ class LogoutMenu extends UIScriptedMenu
 			
 			return true;
 		}
+		#ifdef PLATFORM_CONSOLE
+		else if (w == m_bCancelConsole)
+		#else
 		else if (w == m_bCancel)
+		#endif
 		{
 			Hide();
 			Cancel();
@@ -177,4 +196,25 @@ class LogoutMenu extends UIScriptedMenu
 		// request logout cancel from server
 		GetGame().LogoutRequestCancel();
 	}
+	
+	#ifdef PLATFORM_CONSOLE
+	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
+	{
+		UpdateControlsElementVisibility();
+	}
+
+	protected void UpdateControlsElementVisibility()
+	{
+		bool toolbarShow = false;
+		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
+		m_bCancelConsole.Show(!toolbarShow);
+
+		if (toolbarShow)
+		{
+			RichTextWidget toolbar_b = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
+			toolbar_b.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		}
+	}
+	#endif
 }

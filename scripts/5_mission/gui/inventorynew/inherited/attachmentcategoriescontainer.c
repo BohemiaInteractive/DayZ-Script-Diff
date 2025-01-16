@@ -9,6 +9,21 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 		m_CategorySlotIndex = new map<string, int>;
 	}
 	
+	void ~AttachmentCategoriesContainer()
+	{
+		#ifdef PLATFORM_CONSOLE
+		if (IsActive() && GetParent())
+		{
+			LeftArea leftArea = LeftArea.Cast(GetParent());
+			if (leftArea)
+			{
+				leftArea.SetFirstActive();
+				leftArea.ScrollToActiveContainer();
+			}
+		}
+		#endif
+	}
+	
 	void SetEntity( EntityAI entity )
 	{
 		m_Entity = entity;
@@ -529,11 +544,6 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 			}
 		}
 		
-		return false;
-	}
-	
-	override bool CanSplitEx(EntityAI focusedEntity)
-	{
 		return false;
 	}
 }

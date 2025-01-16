@@ -303,4 +303,10 @@ class Grenade_Base : ExplosivesBase
 		
 		RegisterNetSyncVariableBool("m_Pinned");
 	}
+	
+	override void InitSpecificsExplosionEffectForSurface()
+	{
+		AddExplosionEffectForSurface("Hit_Snow", ParticleList.EXPLOSION_GRENADE_SNOW);
+		AddExplosionEffectForSurface("Hit_Ice", ParticleList.EXPLOSION_GRENADE_ICE);
+	}
 }

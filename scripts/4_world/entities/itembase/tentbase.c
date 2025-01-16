@@ -45,11 +45,9 @@ class TentBase extends ItemBase
 
 		m_HalfExtents = vector.Zero;
 		RegisterNetSyncVariableInt("m_State");
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
 		RegisterNetSyncVariableBool("m_IsEntrance");
 		RegisterNetSyncVariableBool("m_IsWindow");	
 		RegisterNetSyncVariableBool("m_IsToggle");
-		RegisterNetSyncVariableBool("m_IsDeploySound");
 		RegisterNetSyncVariableInt("m_OpeningMask");
 		RegisterNetSyncVariableBool("m_IsBeingPacked");
 		
@@ -166,40 +164,7 @@ class TentBase extends ItemBase
 	override void OnVariablesSynchronized()
 	{
 		super.OnVariablesSynchronized();
-		
-		if (IsDeploySound())
-		{
-			PlayDeploySound();
-		}
-		else
-		{
-			if (m_State == PITCHED)
-			{
-				if (IsManipulatedEntrance() && IsSoundSynchRemote())
-				{
-					if (m_IsToggle)
-					{
-						SoundTentOpenPlay();
-					}
-					else
-					{
-						SoundTentClosePlay();
-					}
-				}
-				else if (IsManipulatedWindow() && IsSoundSynchRemote())
-				{
-					if (m_IsToggle)
-					{
-						SoundTentOpenWindowPlay();
-					}
-					else
-					{
-						SoundTentCloseWindowPlay();
-					}
-				}
-			}
-		}
-				
+						
 		if (m_State != m_StateLocal)
 		{
 			if (m_State == PACKED)
@@ -291,6 +256,14 @@ class TentBase extends ItemBase
 		return CanBeManipulated();
 	}
 
+	override bool IsTakeable()
+	{
+		if (!super.IsTakeable())	
+			return false;
+		
+		return CanBeManipulated();
+	}
+	
 	override bool CanPutIntoHands(EntityAI parent)
 	{
 		if (!super.CanPutIntoHands(parent))
@@ -307,6 +280,22 @@ class TentBase extends ItemBase
 		{			
 			return false;
 		}
+				
+		return CanBeManipulated();
+	}
+	
+	override bool CanRemoveFromCargo(EntityAI parent)
+	{
+		if (!super.CanRemoveFromCargo(parent))		
+			return false;
+				
+		return CanBeManipulated();
+	}
+	
+	override bool CanRemoveFromHands(EntityAI parent)
+	{
+		if (!super.CanRemoveFromHands(parent))
+			return false;
 				
 		return CanBeManipulated();
 	}
@@ -717,11 +706,15 @@ class TentBase extends ItemBase
 					if (selection.Contains("window"))
 					{
 						ManipulateWindow();
+						if (GetSoundOpenWindow() != string.Empty)
+							StartItemSoundServer(SoundConstants.ITEM_TENT_WINDOW_OPEN);
 					}
 					
 					if (selection.Contains("entrance") || selection.Contains("door"))
 					{
 						ManipulateEntrance();
+						if (GetSoundOpen() != string.Empty)
+							StartItemSoundServer(SoundConstants.ITEM_TENT_OPEN);
 					}
 					
 					AnimateCamonetToggle(toggle);
@@ -739,11 +732,15 @@ class TentBase extends ItemBase
 					if (selection.Contains("window"))
 					{
 						ManipulateWindow();
+						if (GetSoundCloseWindow() != string.Empty)
+							StartItemSoundServer(SoundConstants.ITEM_TENT_WINDOW_CLOSE);
 					}
 					
 					if (selection.Contains("entrance") || selection.Contains("door"))
 					{
 						ManipulateEntrance();
+						if (GetSoundClose() != string.Empty)
+							StartItemSoundServer(SoundConstants.ITEM_TENT_CLOSE);
 					}
 					
 					AnimateCamonetToggle(toggle);
@@ -751,7 +748,6 @@ class TentBase extends ItemBase
 			}
 		}
 		SetSynchDirty();
-		SoundSynchRemote();
 	}
 	
 	void HandleCamoNetAttachment(bool hide)
@@ -770,30 +766,6 @@ class TentBase extends ItemBase
 	string GetSoundOpenWindow() {};
 	
 	string GetSoundCloseWindow() {};
-	
-	void SoundTentOpenPlay()
-	{
-		EffectSound sound =	SEffectManager.PlaySound(GetSoundOpen(), GetPosition());
-		sound.SetAutodestroy(true);
-	}
-	
-	void SoundTentClosePlay()
-	{
-		EffectSound sound =	SEffectManager.PlaySound(GetSoundClose(), GetPosition());
-		sound.SetAutodestroy(true);
-	}
-	
-	void SoundTentOpenWindowPlay()
-	{
-		EffectSound sound =	SEffectManager.PlaySound(GetSoundOpenWindow(), GetPosition());
-		sound.SetAutodestroy(true);
-	}
-	
-	void SoundTentCloseWindowPlay()
-	{
-		EffectSound sound =	SEffectManager.PlaySound(GetSoundCloseWindow(), GetPosition());
-		sound.SetAutodestroy(true);
-	}
 	
 	void RegenerateNavmesh()
 	{
@@ -832,9 +804,26 @@ class TentBase extends ItemBase
 		if (GetGame().IsServer())
 		{
 			TryPitch(true);
-			
-			SetIsDeploySound(true);
 		}
+	}
+		
+	override void InitItemSounds()
+	{
+		super.InitItemSounds();
+		
+		ItemSoundHandler handler = GetItemSoundHandler();
+		
+		if (GetSoundOpen() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_TENT_OPEN, GetSoundOpen());
+	
+		if (GetSoundClose() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_TENT_CLOSE, GetSoundClose());
+		
+		if (GetSoundOpenWindow() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_TENT_WINDOW_OPEN, GetSoundOpenWindow());
+	
+		if (GetSoundCloseWindow() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_TENT_WINDOW_CLOSE, GetSoundCloseWindow());
 	}
 	
 	override void SetActions()
@@ -976,4 +965,8 @@ class TentBase extends ItemBase
 	
 	void PlayDeployLoopSound(); //!DEPRECATED
 	void StopDeployLoopSound(); //!DEPRECATED
+	void SoundTentOpenPlay();
+	void SoundTentClosePlay();
+	void SoundTentOpenWindowPlay();
+	void SoundTentCloseWindowPlay();
 };

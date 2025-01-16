@@ -133,21 +133,5 @@ class DeCraftWoodenCrate extends RecipeBase
 				results[1].SetHealth( results[1].GetMaxHealth() * Math.RandomFloat( 0.05, 0.2 ));
 			break;
 		}
-		
-		/*
-		float originalPlanks = 8;
-		float originalNails = 16;
-
-		float hp = crate.GetHealth01("","Health");
-		originalPlanks *= hp;
-		originalNails *= hp;
-
-		int newPlanks = Math.Round( originalPlanks );
-		int newNails = Math.Round( originalNails );
-
-		m_ResultSetQuantity[0] = newPlanks;
-		m_ResultSetQuantity[1] = newNails;
-		*/
-		Debug.Log("Recipe Do method called","recipes");
 	}
 };

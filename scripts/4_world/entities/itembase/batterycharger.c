@@ -38,8 +38,6 @@ class BatteryCharger extends ItemBase
 		m_UpdateStatusLightsTimer = new Timer( CALL_CATEGORY_SYSTEM );
 		SwitchLightOff();
 		RegisterNetSyncVariableInt("m_BatteryEnergy0To100");
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsPlaceSound");
 	}
 	
 	override bool IsElectricAppliance()
@@ -197,7 +195,7 @@ class BatteryCharger extends ItemBase
 		return false;
 	}
 
-	override bool CanPutIntoHands( EntityAI player ) 
+	override bool CanPutIntoHands( EntityAI parent ) 
 	{
 		if( !super.CanPutIntoHands( parent ) )
 		{
@@ -357,17 +355,7 @@ class BatteryCharger extends ItemBase
 		HideSelection(SEL_CLIPS_DETACHED);
 		ShowSelection(SEL_CLIPS_FOLDED);
 	}
-	
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-				
-		if ( IsPlaceSound() )
-		{
-			PlayPlaceSound();
-		}
-	}
-	
+		
 	override void RefreshPhysics()
 	{
 		super.RefreshPhysics();
@@ -413,20 +401,13 @@ class BatteryCharger extends ItemBase
 				playerPB.GetHologramLocal().SetSelectionToRefresh(selection);
 		}
 	}
-	
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
-	{
-		super.OnPlacementComplete( player, position, orientation );
-			
-		SetIsPlaceSound( true );
-	}
-	
+		
 	override bool IsDeployable()
 	{
 		return true;
 	}
 	
-	override string GetPlaceSoundset()
+	override string GetDeploySoundset()
 	{
 		return "placeBatteryCharger_SoundSet";
 	}

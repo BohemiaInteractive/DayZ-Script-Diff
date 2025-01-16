@@ -228,16 +228,6 @@ class AttachmentCategoriesRow: ClosableContainer
 		return false;
 	}
 	
-	override bool CanSplitEx(EntityAI focusedItem)
-	{
-		return false;
-	}
-
-	override bool SplitItem()
-	{
-		return false;
-	}
-	
 	override bool EquipItem() //TODO: may be possible, but the hint doesn't reflect it anyway
 	{
 		return false;
@@ -676,17 +666,14 @@ class AttachmentCategoriesRow: ClosableContainer
 		}
 		else if (!item)
 		{
-			if (icon.GetEntity())
-			{
-				icon.ClearRemainSelected();
+			icon.ClearRemainSelected();
 				
-				cont = m_AttachmentCargos.Get(slot_id_);
-				if (cont)
-				{
-					m_AttachmentCargos.Remove(slot_id_);
-					this.Remove(cont);
-					( Container.Cast( cont.m_Parent ) ).Remove( cont );
-				}
+			cont = m_AttachmentCargos.Get(slot_id_);
+			if (cont)
+			{
+				m_AttachmentCargos.Remove(slot_id_);
+				this.Remove(cont);
+				( Container.Cast( cont.m_Parent ) ).Remove( cont );
 			}
 			icon.GetMainWidget().Show(true);
 		}
@@ -855,6 +842,11 @@ class AttachmentCategoriesRow: ClosableContainer
 					if (g_Game.IsLeftCtrlDown())
 						ShowActionMenu(selectedItem);
 					#endif
+				
+					if (CanSplitEx(selectedItem))
+					{
+						selectedItem.OnRightClick();
+					}
 
 					break;
 			

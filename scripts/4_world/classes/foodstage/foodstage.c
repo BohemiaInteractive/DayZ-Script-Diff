@@ -346,6 +346,11 @@ class FoodStage
 		return GetNutritionPropertyFromIndex( 6 , stage_type, stage, classname );
 	}
 	
+	static float GetAgentsPerDigest(FoodStage stage, int stageType = -1, string className = "")
+	{
+		return GetNutritionPropertyFromIndex(7, stageType, stage, className);
+	}
+	
 	//Food item
 	protected Edible_Base GetFoodItem()
 	{

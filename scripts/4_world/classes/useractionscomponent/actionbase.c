@@ -1199,6 +1199,11 @@ class ActionBase : ActionBase_Basic
 		return -1;
 	}
 	
+	float GetProgressWidgetMultiplier( ActionData action_data ) // override when action length is not supposed to be the same length as progress widget
+	{
+		return 1;
+	}
+	
 	ActionInput GetInput()
 	{
 		return m_Input;

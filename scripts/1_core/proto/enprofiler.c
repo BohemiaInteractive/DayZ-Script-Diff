@@ -698,7 +698,7 @@ class EnProfiler
 		float timeOfFunc = EnProfiler.GetTimeOfFuncG("ErrorEx", true);
 	@endcode
 	*/
-	static proto float GetTimeOfFuncG(string funct, bool immediate, bool immediate = false);
+	static proto float GetTimeOfFuncG(string funct, bool immediate = false);
 	
 	/**
 	\brief Obtain [SD] or [PD] regarding the amount of times a specific function was called

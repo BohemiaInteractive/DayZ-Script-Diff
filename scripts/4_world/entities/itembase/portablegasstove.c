@@ -87,14 +87,10 @@ class PortableGasStove extends ItemBase
 		super.EEItemAttached(item, slot_name);
 		
 		//cookware
-		switch (item.Type())
+		if (item.IsCookware())
 		{
-		case ATTACHMENT_CAULDRON:
-		case ATTACHMENT_COOKING_POT:
-		case ATTACHMENT_FRYING_PAN:
 			SetCookingEquipment(ItemBase.Cast(item));
 			RefreshFlameVisual(m_EM.IsSwitchedOn(), true);
-		break;
 		}
 	}
 	
@@ -103,17 +99,15 @@ class PortableGasStove extends ItemBase
 		super.EEItemDetached(item, slot_name);
 		
 		//cookware
-		switch (item.Type())
+		if (item.IsCookware())
 		{
-		case ATTACHMENT_CAULDRON:
-		case ATTACHMENT_COOKING_POT:
-		case ATTACHMENT_FRYING_PAN:
-			RemoveCookingAudioVisuals();
 			//remove cooking equipment reference
 			ClearCookingEquipment(ItemBase.Cast(item));
 			RefreshFlameVisual(m_EM.IsSwitchedOn(), false);
-		break;
 		}
+		
+		//stop effects
+		RemoveCookingAudioVisuals();
 	}
 	
 	//--- POWER EVENTS
@@ -174,8 +168,8 @@ class PortableGasStove extends ItemBase
 		
 		//refresh visual
 		RefreshFlameVisual(false, false);
-		//stop steam particle
-		RemoveCookingAudioVisuals();		
+		//stop effects
+		RemoveCookingAudioVisuals();
 		//sound (client only)
 		SoundBurningStop();
 	}
@@ -259,22 +253,9 @@ class PortableGasStove extends ItemBase
 	//cooking equipment steam
 	protected void RemoveCookingAudioVisuals()
 	{
-		ItemBase cookEquipment = GetCookingEquipment();
-		if (cookEquipment)
-		{
-			switch (cookEquipment.Type())
-			{
-			case ATTACHMENT_CAULDRON:
-			case ATTACHMENT_COOKING_POT:
-				Bottle_Base cookingPot = Bottle_Base.Cast(cookEquipment);
-				cookingPot.RemoveAudioVisualsOnClient();
-			break;
-			case ATTACHMENT_FRYING_PAN:
-				FryingPan fryingPan = FryingPan.Cast(cookEquipment);
-				fryingPan.RemoveAudioVisualsOnClient();
-			break;
-			}
-		}
+		ItemBase cookEquipment;
+		if (Class.CastTo(cookEquipment,GetCookingEquipment()) && (cookEquipment.IsCookware() || cookEquipment.IsLiquidContainer())) //also stops boiling effect on bottles
+			cookEquipment.RemoveAudioVisualsOnClient();
 	}
 	
 	//================================================================

@@ -8,6 +8,8 @@ class MainMenuConsole extends UIScriptedMenu
 	protected TextWidget			m_PlayerName;
 	protected TextWidget			m_Version;
 	
+	protected Widget				m_MainMenuPanel;
+	protected Widget				m_DialogPanel;
 	protected Widget				m_ChangeAccount;
 	protected Widget				m_CustomizeCharacter;
 	protected Widget				m_PlayVideo;
@@ -16,6 +18,11 @@ class MainMenuConsole extends UIScriptedMenu
 	protected Widget				m_Controls;
 	protected Widget				m_Play;
 	protected Widget				m_MessageButton;
+	protected Widget				m_ShowFeedback;
+	protected ImageWidget			m_FeedbackQRCode;
+	protected ImageWidget			m_FeedbackPlatformIcon;
+	protected ButtonWidget			m_FeedbackClose;
+	protected RichTextWidget		m_FeedbackCloseLabel;
 	
 	protected ref Widget			m_LastFocusedButton;
 	
@@ -30,21 +37,27 @@ class MainMenuConsole extends UIScriptedMenu
 	{
 		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/main_menu_console.layout");
 		
-		m_PlayerName				= TextWidget.Cast(layoutRoot.FindAnyWidget("character_name_xbox"));
+		m_MainMenuPanel = layoutRoot.FindAnyWidget("main_menu_panel");
+		m_PlayerName = TextWidget.Cast(layoutRoot.FindAnyWidget("character_name_xbox"));
+		m_ChangeAccount	= layoutRoot.FindAnyWidget("choose_account");
+		m_CustomizeCharacter = layoutRoot.FindAnyWidget("customize_character");
+		m_PlayVideo	= layoutRoot.FindAnyWidget("play_video");
+		m_Tutorials	= layoutRoot.FindAnyWidget("tutorials");
+		m_Options = layoutRoot.FindAnyWidget("options");
+		m_Controls = layoutRoot.FindAnyWidget("controls");
+		m_Play = layoutRoot.FindAnyWidget("play");
+		m_MessageButton = layoutRoot.FindAnyWidget("message_button");
 		
-		m_ChangeAccount				= layoutRoot.FindAnyWidget("choose_account");
-		m_CustomizeCharacter		= layoutRoot.FindAnyWidget("customize_character");
-		m_PlayVideo					= layoutRoot.FindAnyWidget("play_video");
-		m_Tutorials					= layoutRoot.FindAnyWidget("tutorials");
-		m_Options					= layoutRoot.FindAnyWidget("options");
-		m_Controls					= layoutRoot.FindAnyWidget("controls");
-		m_Play						= layoutRoot.FindAnyWidget("play");
-		m_MessageButton				= layoutRoot.FindAnyWidget("message_button");
+		m_DlcFrame = layoutRoot.FindAnyWidget("dlc_Frame");
+		m_Version = TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
+		m_Mission = MissionMainMenu.Cast(GetGame().GetMission());
+		m_ShowFeedback = layoutRoot.FindAnyWidget("feedback");
+		m_FeedbackQRCode = ImageWidget.Cast(layoutRoot.FindAnyWidget("qr_image"));
+		m_FeedbackClose = ButtonWidget.Cast(layoutRoot.FindAnyWidget("close_button"));
+		m_FeedbackCloseLabel = RichTextWidget.Cast(layoutRoot.FindAnyWidget("close_button_label"));
+		m_DialogPanel = layoutRoot.FindAnyWidget("main_menu_dialog");
 		
-		m_DlcFrame 					= layoutRoot.FindAnyWidget("dlc_Frame");
-		m_Version					= TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
-		m_Mission					= MissionMainMenu.Cast(GetGame().GetMission());
-		m_LastFocusedButton			= m_Play;
+		m_LastFocusedButton	= m_Play;
 				
 		GetGame().GetUIManager().ScreenFadeOut(1);
 
@@ -70,6 +83,15 @@ class MainMenuConsole extends UIScriptedMenu
 		
 		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
 		
+		#ifdef PLATFORM_CONSOLE
+		#ifndef PLATFORM_PS4
+		m_ChangeAccount.Show(GetGame().GetInput().IsEnabledMouseAndKeyboard());
+		m_FeedbackQRCode.LoadImageFile(0, "gui/textures/feedback_qr_xbox.edds");
+		#else
+		m_FeedbackQRCode.LoadImageFile(0, "gui/textures/feedback_qr_ps.edds");
+		#endif
+		#endif
+
 		return layoutRoot;
 	}
 	
@@ -168,57 +190,108 @@ class MainMenuConsole extends UIScriptedMenu
 
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
+		switch (pInputDeviceType)
+		{
+		case EInputDeviceType.CONTROLLER:
+			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			{
+				GetGame().GetUIManager().ShowUICursor(false);
+				#ifdef PLATFORM_CONSOLE
+				if (m_LastFocusedButton == m_ShowFeedback || !GetFocus() || GetFocus() == m_FeedbackClose)
+				{
+					SetFocus(m_Play);
+				}
+
+				m_FeedbackClose.Show(false);
+				m_ShowFeedback.Show(false);
+				#ifndef PLATFORM_PS4
+				m_ChangeAccount.Show(false);
+				if (m_LastFocusedButton == m_ChangeAccount)
+				{
+					SetFocus(m_Play);
+				}
+				#endif
+				#endif
+			}
+		break;
+
+		default:
+			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			{
+				GetGame().GetUIManager().ShowUICursor(true);
+				#ifdef PLATFORM_CONSOLE
+				m_ShowFeedback.Show(true);
+				m_FeedbackClose.Show(true);
+				m_FeedbackCloseLabel.SetText(string.Format("%1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_NORMAL)));
+				#ifndef PLATFORM_PS4
+				m_ChangeAccount.Show(true);
+				#endif
+				#endif
+			}
+		break;
+		}
+
 		UpdateControlsElements();
 		UpdateControlsElementVisibility();
 	}
 	
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
-		if (w == m_Play)
+		if (!FeedbackDialogVisible())
 		{
-			m_LastFocusedButton = m_Play;
-			OpenMenuServerBrowser();
-			return true;
+			if (w == m_Play)
+			{
+				m_LastFocusedButton = m_Play;
+				OpenMenuServerBrowser();
+				return true;
+			}
+			else if (w == m_Options)
+			{
+				m_LastFocusedButton = m_Options;
+				OpenMenuOptions();					
+				return true;
+			}
+			else if (w == m_PlayVideo)
+			{
+				m_LastFocusedButton = m_PlayVideo;
+				OpenMenuPlayVideo();
+				return true;
+			}
+			else if (w == m_Tutorials)
+			{
+				m_LastFocusedButton = m_Tutorials;
+				OpenMenuTutorials();
+				return true;
+			}
+			else if (w == m_Controls)
+			{
+				m_LastFocusedButton = m_Controls;
+				OpenMenuControls();
+				return true;
+			}
+			else if (w == m_CustomizeCharacter)
+			{
+				m_LastFocusedButton = m_CustomizeCharacter;
+				OpenMenuCustomizeCharacter();
+				return true;
+			}
+			else if (w == m_ChangeAccount)
+			{
+				m_LastFocusedButton = m_ChangeAccount;
+				ChangeAccount();
+				return true;
+			}
+			else if (w == m_MessageButton)
+			{
+				OpenCredits();
+				return true;
+			}
 		}
-		else if (w == m_Options)
+		
+		if (w == m_ShowFeedback || w == m_FeedbackClose)
 		{
-			m_LastFocusedButton = m_Options;
-			OpenMenuOptions();					
-			return true;
-		}
-		else if (w == m_PlayVideo)
-		{
-			m_LastFocusedButton = m_PlayVideo;
-			OpenMenuPlayVideo();
-			return true;
-		}
-		else if (w == m_Tutorials)
-		{
-			m_LastFocusedButton = m_Tutorials;
-			OpenMenuTutorials();
-			return true;
-		}
-		else if (w == m_Controls)
-		{
-			m_LastFocusedButton = m_Controls;
-			OpenMenuControls();
-			return true;
-		}
-		else if (w == m_CustomizeCharacter)
-		{
-			m_LastFocusedButton = m_CustomizeCharacter;
-			OpenMenuCustomizeCharacter();
-			return true;
-		}
-		else if (w == m_ChangeAccount)
-		{
-			m_LastFocusedButton = m_ChangeAccount;
-			ChangeAccount();
-			return true;
-		}
-		else if (w == m_MessageButton)
-		{
-			OpenCredits();
+			m_LastFocusedButton = w;
+			ToggleFeedbackDialog();
 			return true;
 		}
 		return false;
@@ -227,12 +300,36 @@ class MainMenuConsole extends UIScriptedMenu
 	override bool OnFocus(Widget w, int x, int y)
 	{
 		ColorHighlight(w);
+		if (ButtonWidget.Cast(w))
+		{
+			m_LastFocusedButton = w;
+		}
 		return true;
 	}
 	
 	override bool OnFocusLost(Widget w, int x, int y)
 	{
 		ColorNormal(w);
+		return true;
+	}
+	
+	override bool OnMouseEnter(Widget w, int x, int y)
+	{
+		if (w == m_FeedbackClose)
+		{
+			ColorHighlight(w);
+			return true;
+		}
+		return false;
+	}
+	
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
+	{
+		if (w == m_FeedbackClose)
+		{
+			ColorNormal(w);
+			return true;
+		}
 		return true;
 	}
 	
@@ -277,12 +374,8 @@ class MainMenuConsole extends UIScriptedMenu
 		
 		super.OnShow();
 		#ifdef PLATFORM_CONSOLE
-			#ifndef PLATFORM_PS4
-			layoutRoot.FindAnyWidget("choose_account").Show(GetGame().GetInput().IsEnabledMouseAndKeyboard());
-			#endif
 		layoutRoot.FindAnyWidget("ButtonHolderCredits").Show(GetGame().GetInput().IsEnabledMouseAndKeyboard());
-		UpdateControlsElements();
-		UpdateControlsElementVisibility();
+		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 		#endif
 	}
 	
@@ -307,7 +400,16 @@ class MainMenuConsole extends UIScriptedMenu
 			}
 		#else
 			if (GetUApi().GetInputByID(UAUIBack).LocalPress())
-				EnterScriptedMenu(MENU_MAIN);
+			{
+				if (FeedbackDialogVisible())
+				{
+					ToggleFeedbackDialog();
+				}
+				else
+				{
+					EnterScriptedMenu(MENU_MAIN);
+				}
+			}
 
 			if (GetUApi().GetInputByID(UAUICredits).LocalPress())
 				OpenCredits();
@@ -324,6 +426,35 @@ class MainMenuConsole extends UIScriptedMenu
 			if (CanStoreBeOpened())
 				m_DisplayedDlcHandler.GetModInfo().GoToStore();
 		}
+		
+		if (GetUApi().GetInputByID(UAUIThumbRight).LocalPress())
+		{
+			ToggleFeedbackDialog();
+		}
+	}
+	
+	protected void ToggleFeedbackDialog()
+	{
+		bool dialogVisible = FeedbackDialogVisible();
+		m_DialogPanel.Show(!dialogVisible);
+		m_MainMenuPanel.Show(dialogVisible);
+		
+		if (!dialogVisible)
+		{
+			PPERequesterBank.GetRequester(PPERequester_FeedbackBlur).Start();
+		}
+		else
+		{
+			PPERequesterBank.GetRequester(PPERequester_FeedbackBlur).Stop();
+		}
+		
+		SetFocus(m_LastFocusedButton);
+		UpdateControlsElements();
+	}
+	
+	bool FeedbackDialogVisible()
+	{
+		return m_DialogPanel.IsVisible();
 	}
 	
 	bool CanStoreBeOpened()
@@ -366,7 +497,7 @@ class MainMenuConsole extends UIScriptedMenu
 		EnterScriptedMenu(MENU_CREDITS);
 		m_Mission.OnMenuEnter(MENU_CREDITS);
 	}
-	
+
 	void ChangeAccount()
 	{
 		BiosUserManager user_manager = GetGame().GetUserManager();
@@ -501,13 +632,21 @@ class MainMenuConsole extends UIScriptedMenu
 	protected void UpdateControlsElements()
 	{
 		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
-		string context = InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_credits", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
-		
-#ifndef PLATFORM_PS4
-		context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#layout_xbox_main_menu_toolbar_account", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-#endif
-		context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#layout_xbox_main_menu_toolbar_select", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
-		
+		string context;
+		if (!FeedbackDialogVisible())
+		{
+			context = InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_credits", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
+			#ifndef PLATFORM_PS4
+			context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#layout_xbox_main_menu_toolbar_account", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			#endif
+			context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#layout_xbox_main_menu_toolbar_select", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIThumbRight", "Feedback", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		}
+		else
+		{
+			context = InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
+		}
+
 		toolbar_text.SetText(context);
 	}
 	

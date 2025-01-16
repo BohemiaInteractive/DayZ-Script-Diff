@@ -329,6 +329,11 @@ class CfgGameplayHandler
 		return m_Data.BaseBuildingData.ConstructionData.disableDistanceCheck;
 	}
 	//----------------------------------------------------------------------------------
+	static bool GetDisableColdAreaPlacementCheck()
+	{
+		return m_Data.BaseBuildingData.HologramData.disableColdAreaPlacementCheck;
+	}
+	//----------------------------------------------------------------------------------
 	static TStringSet GetDisallowedTypesInUnderground()
 	{
 		return m_Data.BaseBuildingData.HologramData.disallowedTypesInUnderground;
@@ -445,4 +450,8 @@ class CfgGameplayHandler
 		return m_Data.WorldsData.playerRestrictedAreaFiles;
 	}
 	//----------------------------------------------------------------------------------
+	static float GetBoatDecayMultiplier()
+	{
+		return m_Data.VehicleData.boatDecayMultiplier;
+	}
 }

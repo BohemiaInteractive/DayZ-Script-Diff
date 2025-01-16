@@ -1,12 +1,4 @@
-class ActionConsumeSingleCB : ActionSingleUseBaseCB
-{
-	override void CreateActionComponent()
-	{
-		m_ActionData.m_ActionComponent = new CASingleUseQuantityEdible(UAQuantityConsumed.DEFAULT);
-	}
-};
-
-class ActionConsumeSingle: ActionSingleUseBase
+class ActionConsumeSingle : ActionSingleUseBase
 {
 	const int DEFAULT_CONSUMED_QUANTITY = 1;
 	
@@ -41,7 +33,8 @@ class ActionConsumeSingle: ActionSingleUseBase
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{	
-		return super.ActionCondition(player, target, item) && player.CanEatAndDrink();
+		ConsumeConditionData dta = new ConsumeConditionData(player,item);
+		return super.ActionCondition(player, target, item) && player.CanEatAndDrink() && player.CanConsumeFood(dta) && item.CanBeConsumed(dta);
 	}
 	
 	override void OnExecuteServer(ActionData action_data)
@@ -49,7 +42,15 @@ class ActionConsumeSingle: ActionSingleUseBase
 		PlayerBase player = action_data.m_Player;
 		
 		if (player && action_data.m_MainItem)
-			player.Consume(action_data.m_MainItem, GetConsumedQuantity(), EConsumeType.ITEM_SINGLE_TIME);
+		{
+			PlayerConsumeData consumeData = new PlayerConsumeData();
+			consumeData.m_Type	= EConsumeType.ITEM_SINGLE_TIME;
+			consumeData.m_Amount = GetConsumedQuantity();
+			consumeData.m_Source = action_data.m_MainItem;
+			consumeData.m_Agents = action_data.m_Player.GetBloodyHandsPenaltyAgents();
+
+			player.Consume(consumeData);
+		}
 	}
 	
 	override void OnEndServer(ActionData action_data)
@@ -58,8 +59,14 @@ class ActionConsumeSingle: ActionSingleUseBase
 		
 		if (action_data.m_MainItem && (action_data.m_MainItem.GetQuantity() <= 0))
 			action_data.m_MainItem.SetQuantity(0);
-		
-		if (action_data.m_Player.HasBloodyHandsEx() == eBloodyHandsTypes.SALMONELA && !action_data.m_Player.GetInventory().FindAttachment(InventorySlots.GLOVES) && GetProgress(action_data) > 0)
-			action_data.m_Player.SetBloodyHandsPenalty();
+	}
+}
+
+//! DEPRECATED
+class ActionConsumeSingleCB : ActionSingleUseBaseCB
+{
+	override void CreateActionComponent()
+	{
+		m_ActionData.m_ActionComponent = new CASingleUseQuantityEdible(UAQuantityConsumed.DEFAULT);
 	}
 }

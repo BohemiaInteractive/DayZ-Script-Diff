@@ -38,6 +38,7 @@ class UATimeSpent
 	const float DEFAULT_DEPLOY 			= 5;
 	const float DEFAULT_CRAFT 			= 6;
 	const float DEFAULT_DECRAFT 		= 5;
+	const float DEFAULT_HARVEST			= 5;
 	
 	const float BANDAGE = 4;
 	const float ADD_FUEL_TO_TORCH = 4;
@@ -66,6 +67,9 @@ class UATimeSpent
 	const float BASEBUILDING_REPAIR_FAST = 3;
 	const float BASEBUILDING_REPAIR_MEDIUM = 5;
 	const float BASEBUILDING_REPAIR_SLOW = 10;
+	
+	const float PUSH_BOAT = 6;
+	const float PUSH_CAR = 10;
 
 	const float DRINK_POND = 2.0;
 	const float DRINK_WELL = 3.5;
@@ -119,9 +123,10 @@ class UAMaxDistances
 class UAItemsSpreadRadius
 {
 	const float PRECISE = 0.0;
-	const float NARROW = 0.5;
-	const float DEFAULT = 1.0;
-	const float WIDE = 2.0;
+	const float VERY_NARROW = 0.2;
+	const float NARROW = 0.35;
+	const float DEFAULT = 0.5;
+	const float WIDE = 1;
 }
 
 /**@class	Constants for specialty weight and type
@@ -172,17 +177,21 @@ class UAMisc
 
 class UAFishingConstants
 {
-	const float CYCLE_LENGTH_BASE = 5.0; //seconds, used as a backup
-	const float CYCLE_LENGTH_MIN = 4.5; //seconds
-	const float CYCLE_LENGTH_MAX = 5.5; //seconds
-	const float SIGNAL_DURATION_MIN_BASE = 1.0; //seconds
-	const float SIGNAL_DURATION_MAX_BASE = 1.5; //seconds
-	const float SIGNAL_START_TIME_MIN_BASE = 0.5; //seconds
-	const float SIGNAL_START_TIME_MAX_BASE = 2.5; //seconds
+	const float CYCLE_LENGTH_BASE = 6.0; //seconds, used as a backup
+	const float CYCLE_LENGTH_MIN = 5.5; //seconds
+	const float CYCLE_LENGTH_MAX = 6.5; //seconds
+	const float SIGNAL_DURATION_MIN_BASE = 0.8; //seconds
+	const float SIGNAL_DURATION_MAX_BASE = 1.0; //seconds
+	const float SIGNAL_START_TIME_MIN_BASE = 0.5; //seconds after cycle start
+	const float SIGNAL_START_TIME_MAX_BASE = 2.5; //seconds after cycle start
 	const float SIGNAL_DEADZONE_START_DURATION = 0.5; //deadzone DURATION in seconds
 	const float SIGNAL_DEADZONE_END_DURATION = 0.5; //deadzone DURATION in seconds
-	const float SIGNAL_CYCLE_MEAN_DEFAULT = 10;
-	const float SIGNAL_FISHING_CHANCE_COEF = 1.6;
+	
+	const float SIGNAL_CYCLE_MEAN_DEFAULT = 14; //! re-purposed as soft cycle target 
+	const float SIGNAL_MEAN_CHANCE_DEFAULT = 0.5; //! chance at MEAN
+	const float SIGNAL_CYCLE_HARD_TARGET_DEFAULT = 30; //! hard cycle target
+	const float SIGNAL_HARD_TARGET_CHANCE_DEFAULT = 0.9; //! chance at HARD_TARGET (we probably want close to 100% here, randomness being random..)
+	const float SIGNAL_FISHING_CHANCE_COEF = 1.0; //! modifies chance for every signal roll
 	
 	const float DAMAGE_HOOK = 1.5;
 	

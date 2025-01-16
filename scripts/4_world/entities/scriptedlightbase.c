@@ -29,6 +29,7 @@ class ScriptedLightBase extends EntityLightSource
 	float 		m_DancingShadowsSpeed;
 	
 	float		m_BlinkingSpeed;
+	protected int m_HiddenSelectionID;
 	
 	bool 		m_IsDebugEnabled = false;
 	
@@ -36,8 +37,9 @@ class ScriptedLightBase extends EntityLightSource
 	vector 		m_LocalPos; // Local position to my attachment parent
 	vector 		m_LocalOri; // Local orientation to my attachment parent
 	vector 		m_DancingShadowsLocalPos;
-	
+		
 	ref Timer 	m_DeleteTimer;
+	protected ref LightDimming m_LightDimming;
 	
 	static ref set<ScriptedLightBase> m_NightTimeOnlyLights = new set<ScriptedLightBase>();
 	
@@ -403,6 +405,9 @@ class ScriptedLightBase extends EntityLightSource
 		HandleBrightnessFadeing(timeSlice);
 		HandleRadiusFadeing(timeSlice);
 		
+		if (m_LightDimming)
+			m_LightDimming.HandleDimming(timeSlice);
+		
 		CheckIfParentIsInCargo();
 		TryShadowOptimization();
 		OnFrameLightSource(other, timeSlice);
@@ -432,6 +437,20 @@ class ScriptedLightBase extends EntityLightSource
 	float GetDancingShadowsMovementSpeed()
 	{
 		return m_DancingShadowsSpeed;
+	}
+	
+	// Object and hidden selection ID which we can link to light source object
+	void SetSelectionID(int id)
+	{
+		m_HiddenSelectionID = id;
+	}
+	
+	// Update linked source object's material
+	void UpdateLightSourceMaterial(string path)
+	{
+		EntityAI parent = EntityAI.Cast(m_Parent);
+		if (parent)
+			parent.SetObjectMaterial(m_HiddenSelectionID, path);
 	}
 	
 	//! Enables some debug functionality of this light
@@ -725,5 +744,22 @@ class ScriptedLightBase extends EntityLightSource
 		
 		multiplier = Math.Round(multiplier);						// Rounding to 0 or 1 to make it blink instantly	
 		SetBrightness(m_Brightness * multiplier);
+	}
+	
+	// Dimming
+	void EnableDimming(float baseBrightness, DimmingConfig dimCfg)
+	{
+		if (!m_LightDimming)
+			m_LightDimming = new LightDimming(this, baseBrightness, dimCfg);
+	}
+	
+	LightDimming GetDimming()
+	{
+		return m_LightDimming;
+	}
+	
+	void StopDimming()
+	{
+		m_LightDimming = null;
 	}
 };

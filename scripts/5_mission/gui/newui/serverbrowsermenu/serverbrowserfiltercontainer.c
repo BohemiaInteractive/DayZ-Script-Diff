@@ -615,6 +615,11 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 				input.SetMapNameToRun(internalMapName);
 		}
 		
+		if (m_PreviouslyPlayedFilter.IsSet())
+		{
+			input.SetPreviouslyPlayed(m_PreviouslyPlayedFilter.IsEnabled());
+		}
+		
 		return input;
 	}
 }

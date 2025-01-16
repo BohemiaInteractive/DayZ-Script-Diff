@@ -53,6 +53,8 @@ class ObjectSpawnerHandler
 				object.SetOrientation( vector.ArrayToVec(item.ypr));
 				if (item.scale != 1)
 					object.SetScale(scale);
+				
+				object.OnSpawnByObjectSpawner(item);
 			}
 		}
 		
@@ -91,6 +93,7 @@ class ITEM_SpawnerObject
 	float ypr[3];
 	float scale;
 	bool enableCEPersistency;
+	string customString;
 };
 
 

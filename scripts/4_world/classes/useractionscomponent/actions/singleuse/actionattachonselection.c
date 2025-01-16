@@ -21,8 +21,9 @@ class ActionAttachOnSelection: ActionSingleUseBase
 	{
 		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
 		if (targetEntity && item)
-		{
-			if (!targetEntity.GetInventory())
+		{				
+			GameInventory inv = targetEntity.GetInventory();
+			if (!inv)
 				return InventorySlots.INVALID;
 
 			int slotsCount = item.GetInventory().GetSlotIdCount();			
@@ -43,7 +44,7 @@ class ActionAttachOnSelection: ActionSingleUseBase
 					int itemSlotId = item.GetInventory().GetSlotId(i);
 					if (slotId == itemSlotId)
 					{
-						ItemBase currentAttachment = ItemBase.Cast(targetEntity.GetInventory().FindAttachment(slotId));
+						ItemBase currentAttachment = ItemBase.Cast(inv.FindAttachment(slotId));
 						if (currentAttachment)
 						{
 							if (currentAttachment.CanBeCombined(item))
@@ -51,7 +52,7 @@ class ActionAttachOnSelection: ActionSingleUseBase
 						}
 						else
 						{
-							if (targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item))
+							if (inv.CanAddAttachment(item))
 								return itemSlotId;
 						}	
 					}

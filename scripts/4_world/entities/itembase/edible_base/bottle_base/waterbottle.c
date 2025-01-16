@@ -82,9 +82,22 @@ class WaterBottle extends Bottle_Base
 	override void AffectLiquidContainerOnFill(int liquid_type, float amount)
 	{
 		float liquidTemperature = GetGame().GetMission().GetWorldData().GetLiquidTypeEnviroTemperature(liquid_type);
-		if (liquidTemperature >= GetTemperatureMax())
+		if (liquidTemperature >= GetItemOverheatThreshold())
 		{
 			float temperatureDiff = liquidTemperature - GetTemperature();
+			float tTime = Math.Clamp(Math.InverseLerp(DAMAGE_ENVIRO_TEMPDIFF_MIN,DAMAGE_ENVIRO_TEMPDIFF_MAX,temperatureDiff),0,1);
+			float temperatureDiffCoef = Math.Lerp(DAMAGE_ENVIRO_LIQUID_COEF_MIN,DAMAGE_ENVIRO_LIQUID_COEF_MAX,tTime);
+			float damageVal = GetMaxHealth("","Health") / GetQuantityMax();
+			DecreaseHealth(amount * damageVal * temperatureDiffCoef,false);
+		}
+	}
+	
+	override void AffectLiquidContainerOnTransfer(int liquidType, float amount, float sourceLiquidTemperature)
+	{
+		//does damage if receiving scalding liquid
+		if (sourceLiquidTemperature >= GetItemOverheatThreshold())
+		{
+			float temperatureDiff = sourceLiquidTemperature - GetTemperature();
 			float tTime = Math.Clamp(Math.InverseLerp(DAMAGE_ENVIRO_TEMPDIFF_MIN,DAMAGE_ENVIRO_TEMPDIFF_MAX,temperatureDiff),0,1);
 			float temperatureDiffCoef = Math.Lerp(DAMAGE_ENVIRO_LIQUID_COEF_MIN,DAMAGE_ENVIRO_LIQUID_COEF_MAX,tTime);
 			float damageVal = GetMaxHealth("","Health") / GetQuantityMax();
@@ -96,11 +109,5 @@ class WaterBottle extends Bottle_Base
 	override float GetItemOverheatThreshold()
 	{
 		return GetTemperatureMax();
-	}
-	
-	override void OnItemOverheat(float deltaTime)	
-	{
-		float damageVal = deltaTime * DAMAGE_OVERHEAT_PER_S;
-		DecreaseHealth(damageVal,false);
 	}
 }

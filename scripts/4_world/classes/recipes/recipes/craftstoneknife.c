@@ -65,10 +65,11 @@ class CraftStoneKnife extends RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase ingredient0;
-		Class.CastTo(ingredient0, ingredients[0]);
-		ItemBase result;
-		Class.CastTo(result, results.Get(0));
-		MiscGameplayFunctions.TransferItemProperties(ingredient0,result, false, true, true, true);
+		MiscGameplayFunctions.TransferItemProperties(ingredients[0],results.Get(0), false, true, true, true);
+	}
+	
+	override bool IsRepeatable()
+	{
+		return true;
 	}
 };

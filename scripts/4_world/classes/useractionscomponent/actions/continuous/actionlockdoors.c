@@ -28,18 +28,17 @@ class ActionLockDoors: ActionContinuousBase
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		if( !target ) return false;
-		//if( IsDamageDestroyed(action_data.m_Target) ) return false;
 		if( !IsBuilding(target) ) return false;
 		if( !IsInReach(player, target, UAMaxDistances.DEFAULT) ) return false;
 
 		Building building;
-		if( Class.CastTo(building, target.GetObject()) )
+		ToolBase tool;
+		if (Class.CastTo(building, target.GetObject())&& Class.CastTo(tool, item))
 		{
 			int doorIndex = building.GetDoorIndex(target.GetComponentIndex());
-			if ( doorIndex != -1 )
+			if (doorIndex != -1 && tool.GetKeyCompatibilityType() & building.GetLockCompatibilityType(doorIndex))
 				return building.CanDoorBeLocked(doorIndex);
-		}		
+		}
 		return false;
 	}
 

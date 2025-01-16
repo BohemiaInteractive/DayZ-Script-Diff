@@ -27,6 +27,14 @@ class CraftingManager
 		m_actionVariantManager.GetOnUpdateInvoker().Insert(OnUpdate);
 		m_recipes = new array<int>;
 	}
+	
+	void ~CraftingManager()
+	{
+		if (m_actionVariantManager)
+		{
+			m_actionVariantManager.GetOnUpdateInvoker().Remove(OnUpdate);
+		}
+	}
 
 	void SetRecipeID(int recipeID)
 	{

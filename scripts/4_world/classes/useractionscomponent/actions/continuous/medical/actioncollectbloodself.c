@@ -41,6 +41,7 @@ class ActionCollectBloodSelf: ActionContinuousBase
 		
 		if(delta > 0)
 		{
+			ClearInventoryReservationEx(action_data);
 			ActionCollectBloodTargetLambda lambda = new ActionCollectBloodTargetLambda(action_data.m_MainItem, "BloodBagFull", action_data.m_Player, m_SpecialtyWeight, action_data.m_Player, delta);
 			action_data.m_Player.ServerReplaceItemInHandsWithNew(lambda);
 		}

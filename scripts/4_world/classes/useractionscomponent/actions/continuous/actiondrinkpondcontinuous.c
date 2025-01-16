@@ -6,7 +6,7 @@ class ActionDrinkPondContinuousCB : ActionContinuousBaseCB
 	}
 }
 
-class ActionDrinkPondContinuous: ActionContinuousBase
+class ActionDrinkPondContinuous : ActionContinuousBase
 {
 	private const float WATER_DRANK_PER_SEC = 35;
 	protected const string ALLOWED_WATER_SURFACES = string.Format("%1|%2", UAWaterType.FRESH, UAWaterType.STILL);
@@ -64,29 +64,30 @@ class ActionDrinkPondContinuous: ActionContinuousBase
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		Param1<float> nacdata = Param1<float>.Cast(action_data.m_ActionComponent.GetACData());
-		float amount = UAQuantityConsumed.DRINK;
-		
-		EConsumeType consumeType;
-		int liquidSource = GetLiquidSource(action_data.m_Target);
-		switch (liquidSource)
+		if (nacdata)
 		{
-			case LIQUID_CLEANWATER:
-				consumeType = EConsumeType.ENVIRO_WELL;
-				break;
-		
-			default:
-				consumeType = EConsumeType.ENVIRO_POND;
-				break;
-		}
-		
-		action_data.m_Player.Consume(null, amount, consumeType);
-	}
+			EConsumeType consumeType;
+			int liquidSource = GetLiquidSource(action_data.m_Target);
+			switch (liquidSource)
+			{
+				case LIQUID_CLEANWATER:
+					consumeType = EConsumeType.ENVIRO_WELL;
+					break;
+			
+				default:
+					consumeType = EConsumeType.ENVIRO_POND;
+					break;
+			}
 
-	override void OnEndAnimationLoopServer(ActionData action_data)
-	{
-		if (action_data.m_Player.HasBloodyHands() && !action_data.m_Player.GetInventory().FindAttachment(InventorySlots.GLOVES))
-		{
-			action_data.m_Player.SetBloodyHandsPenalty();
+			PlayerConsumeData consumeData = new PlayerConsumeData();
+
+			consumeData.m_Type 		= consumeType;
+			consumeData.m_Amount 	= UAQuantityConsumed.DRINK;
+			consumeData.m_Source 	= null;
+			consumeData.m_Agents 	= action_data.m_Player.GetBloodyHandsPenaltyAgents();
+			consumeData.m_LiquidType = liquidSource;
+			
+			action_data.m_Player.Consume(consumeData);
 		}
 	}
 	

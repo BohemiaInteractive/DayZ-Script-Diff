@@ -249,7 +249,7 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 	override void Update(float timeslice)
 	{
 		super.Update(timeslice);
-		
+
 		HandleKeys();
 		m_DebugMapWidget.ClearUserMarks();
 		

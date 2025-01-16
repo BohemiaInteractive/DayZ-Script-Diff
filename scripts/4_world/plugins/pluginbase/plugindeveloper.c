@@ -758,8 +758,6 @@ class PluginDeveloper extends PluginBase
 			if ( g_Game.GetUIManager().GetMenu() == NULL )
 			{
 				m_ScriptConsole = g_Game.GetUIManager().EnterScriptedMenu(MENU_SCRIPTCONSOLE, NULL);
-				GetGame().GetMission().AddActiveInputExcludes({"menu"});
-				
 			}
 			else if ( g_Game.GetUIManager().IsMenuOpen(MENU_SCRIPTCONSOLE) )
 			{

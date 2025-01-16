@@ -282,7 +282,7 @@ class RadialQuickbarMenu extends UIScriptedMenu
 	//
 	//	ITEMS
 	//
-	protected void GetItems( out ref array<ref RadialQuickbarItem> items )
+	protected void GetItems( out array<ref RadialQuickbarItem> items )
 	{
 		items.Clear();
 		
@@ -300,7 +300,7 @@ class RadialQuickbarMenu extends UIScriptedMenu
 		CheckForLightsAndNVG(m_Items,i);
 	}
 	
-	protected void CheckForLightsAndNVG( out ref array<ref RadialQuickbarItem> items, int last_idx )
+	protected void CheckForLightsAndNVG( out array<ref RadialQuickbarItem> items, int last_idx )
 	{
 		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 		int count = 0;

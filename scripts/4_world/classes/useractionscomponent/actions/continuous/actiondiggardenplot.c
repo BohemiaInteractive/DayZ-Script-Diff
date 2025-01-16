@@ -27,7 +27,10 @@ class ActionDigGardenPlot: ActionDeployObject
 		if (!GetGame().IsDedicatedServer())
 		{
 			//Action not allowed if player has broken legs
-			if (player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS || player.GetInColdArea())
+			if (player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS)
+				return false;
+			
+			if (!CfgGameplayHandler.GetDisableColdAreaPlacementCheck() && player.GetInColdArea())
 				return false;
 			
 			if (player.IsPlacingLocal())
@@ -130,7 +133,6 @@ class ActionDigGardenPlot: ActionDeployObject
 		GetGame().ClearJuncture(action_data.m_Player, entity_for_placing);
 		action_data.m_MainItem.SetIsBeingPlaced(false);
 		poActionData.m_AlreadyPlaced = true;
-		action_data.m_MainItem.SoundSynchRemoteReset();
 		
 		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 10);
 		

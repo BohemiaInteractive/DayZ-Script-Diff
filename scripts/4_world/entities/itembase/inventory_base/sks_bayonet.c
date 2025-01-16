@@ -12,7 +12,12 @@ class SKS_Bayonet extends Inventory_Base
 	
 	override bool CanPutAsAttachment( EntityAI parent )
 	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
+		if (!super.CanPutAsAttachment(parent)) 
+			return false;
+		
+		if (parent.IsSlotReserved(InventorySlots.GetSlotIdFromString("suppressorImpro")) || parent.IsSlotReserved(InventorySlots.GetSlotIdFromString("weaponMuzzle")))
+			return false;
+		
 		if ( parent.FindAttachmentBySlotName("suppressorImpro") == null && parent.FindAttachmentBySlotName("weaponMuzzle") == null )
 		{
 			return true;

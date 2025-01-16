@@ -23,14 +23,6 @@ class CatchingContextPoissonBase : CatchingContextBase
 		return Math.Ceil(m_SignalPoissonMean) + Math.Ceil(m_SignalPoissonMean/5); //TODO?
 	}
 	
-	/*float GetSignalChance()
-	{
-		if (m_SignalCurrent > GetSignalMax() || m_SignalCurrent > 12) //necessary reset
-			m_SignalCurrent = 0;
-		
-		return Math.Poisson(m_SignalPoissonMean,m_SignalCurrent) * GetChanceCoef();
-	}*/
-	
 	override bool ModifySignalProbability(inout float probability)
 	{
 		if (m_SignalCurrent > GetSignalMax() || m_SignalCurrent > 12) //necessary reset
@@ -40,12 +32,6 @@ class CatchingContextPoissonBase : CatchingContextBase
 		
 		return true;
 	}
-	
-	/*float GetQualityModifier()
-	{
-		float ret = m_QualityBaseMod + Math.RandomFloatInclusive(m_QualityDispersionMinMod,m_QualityDispersionMaxMod);//server only, this is fine
-		return ret;
-	}*/
 	
 	override bool RollCatch()
 	{

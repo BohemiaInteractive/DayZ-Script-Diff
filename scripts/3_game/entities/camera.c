@@ -22,6 +22,11 @@ class Camera extends Entity
 		2 = first third - acceleration, second third - linear movement, last third - deceleration
 	*/
 	static proto native void InterpolateTo(Camera targetCamera, float time, int type);
+	
+	/**
+	Checks if the current interpolation reached it's end
+	*/
+	static proto native bool IsInterpolationComplete();
 
 	/*!
 	set near plane of camera
@@ -38,6 +43,16 @@ class Camera extends Entity
 	\brief Sets this camera as active
 	*/
 	proto native void SetActive(bool active);
+	
+	/**
+	\brief Enables the smoothing in interpolation
+	*/
+	proto native void EnableSmooth(bool enable);
+	
+	/**
+	Performs cleanup. Important to call when interpolation run is finished.
+	*/
+	proto native void StopInterpolation();
 
 	/**
 	\brief Is this camera active?

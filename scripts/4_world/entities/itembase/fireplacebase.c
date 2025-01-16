@@ -43,7 +43,7 @@ class FireplaceBase : ItemBase
 	const float PARAM_OUTDOOR_FIRE_TEMPERATURE		= 500;		//! maximum fireplace temperature of an outdoor fire (degree Celsius)
 	const float PARAM_MIN_FIRE_TEMPERATURE 			= 30;		//! minimum fireplace temperature under which the fireplace is inactive (degree Celsius)
 	const float	PARAM_TEMPERATURE_INCREASE 			= 10;		//! how much will temperature increase when fireplace is burning (degree Celsius per second)
-	const float	PARAM_TEMPERATURE_DECREASE 			= 10;		//! how much will temperature decrease when fireplace is cooling (degree Celsius per second)
+	const float	PARAM_TEMPERATURE_DECREASE 			= 3;		//! how much will temperature decrease when fireplace is cooling (degree Celsius per second)
 	const float	PARAM_MAX_WET_TO_IGNITE 			= 0.2;		//! maximum wetness value when the fireplace can be ignited
 	const float PARAM_MIN_TEMP_TO_REIGNITE 			= 30;		//! minimum fireplace temperature under which the fireplace can be reignited using air only (degree Celsius)
 	const float	PARAM_IGNITE_RAIN_THRESHOLD 		= 0.1;		//! maximum rain value when the fireplace can be ignited
@@ -197,10 +197,11 @@ class FireplaceBase : ItemBase
 	typename ATTACHMENT_TRIPOD 			= Tripod;
 	typename ATTACHMENT_COOKINGSTAND	= CookingStand;
 	typename ATTACHMENT_STONES 			= Stone;
-	typename ATTACHMENT_COOKING_POT 	= Pot;
-	typename ATTACHMENT_FRYING_PAN 		= FryingPan;
-	typename ATTACHMENT_CAULDRON	 	= Cauldron;
+	typename ATTACHMENT_COOKING_POT 	= Pot; //'IsCookware' used instead
+	typename ATTACHMENT_FRYING_PAN 		= FryingPan; //'IsCookware' used instead
+	typename ATTACHMENT_CAULDRON	 	= Cauldron; //'IsCookware' used instead
 	//
+	protected const float PLACEMENT_HEIGHT_LIMIT = 0.1; // Y coord placement limit - this is important when server has collision checks disabled
 	const string OBJECT_CLUTTER_CUTTER 	= "ClutterCutterFireplace";
 	protected Object m_ClutterCutter;
 	
@@ -268,8 +269,6 @@ class FireplaceBase : ItemBase
 		RegisterNetSyncVariableBool("m_HasStoneCircle");
 		RegisterNetSyncVariableBool("m_RoofAbove");
 		RegisterNetSyncVariableInt("m_FireState", FireplaceFireState.NO_FIRE, FireplaceFireState.COUNT);
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsPlaceSound");
 		RegisterNetSyncVariableBool("m_NoIgnite");
 		
 		m_HalfExtents = vector.Zero;
@@ -333,14 +332,8 @@ class FireplaceBase : ItemBase
 		super.EEItemAttached(item, slot_name);
 		
 		//cookware
-		switch (item.Type())
-		{
-		case ATTACHMENT_CAULDRON:
-		case ATTACHMENT_COOKING_POT:
-		case ATTACHMENT_FRYING_PAN:
+		if (item.IsCookware())
 			SetCookingEquipment(ItemBase.Cast(item));
-		break;
-		}
 	}
 
 	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner) 
@@ -383,27 +376,20 @@ class FireplaceBase : ItemBase
 		case ATTACHMENT_COOKINGSTAND:
 			int slot = InventorySlots.GetSlotIdFromString("CookingEquipment");
 			EntityAI ent = GetInventory().FindAttachment(slot);
-			if (ent)
+			if (ent && ent.IsCookware())
 			{
-				switch (ent.Type())
+				vector direction = ent.GetDirection();
+				float dot = vector.Dot(direction, vector.Forward);
+				
+				float angle = Math.Acos(dot);	
+				if (direction[0] < 0)
 				{
-				case ATTACHMENT_COOKING_POT:
-				case ATTACHMENT_CAULDRON:
-				case ATTACHMENT_FRYING_PAN:
-					vector direction = ent.GetDirection();
-					float dot = vector.Dot(direction, vector.Forward);
-					
-					float angle = Math.Acos(dot);	
-					if (direction[0] < 0)
-					{
-						angle = -angle;
-					}
-			
-					float cos = Math.Cos(angle);
-					float sin = Math.Sin(angle);
-					GetInventory().DropEntityInBounds(InventoryMode.SERVER, this, ent, "2 0 2", angle, cos, sin);
-				break;
+					angle = -angle;
 				}
+		
+				float cos = Math.Cos(angle);
+				float sin = Math.Sin(angle);
+				GetInventory().DropEntityInBounds(InventoryMode.SERVER, this, ent, "2 0 2", angle, cos, sin);
 			}
 
 			attachment.Delete();
@@ -515,12 +501,7 @@ class FireplaceBase : ItemBase
 
 		RefreshFireplaceVisuals();
 		RefreshFireParticlesAndSounds(false);
-		
-		if (IsPlaceSound())
-		{
-			PlayPlaceSound();
-		}
-		
+				
 		if (IsBaseFireplace() && !IsOven())
 		{
 			if (m_IsBurning && !m_AreaDamage)
@@ -1994,7 +1975,17 @@ class FireplaceBase : ItemBase
 		if (IsOpen() && !IsOven())
 			CheckForRoofLimited(1000 * TIMER_HEATING_UPDATE_INTERVAL * 5);
 		
-		if (!IsBurning() && temperature >= 10)
+		//should never be true!
+		if (IsBurning())
+		{
+			StopCooling();
+			return;
+		}
+		
+		//float target = g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);
+		float target = 10;
+		
+		if (temperature > target)
 		{
 			//set wetness and alter temperature modifier (which will lower temperature increase because of soaking)
 			float rain = GetGame().GetWeather().GetRain().GetActual();
@@ -2023,7 +2014,7 @@ class FireplaceBase : ItemBase
 			temperatureModifier = temperatureModifier + (PARAM_TEMPERATURE_DECREASE * wetness);
 
 			// COMBINED temperature decrease
-			float target = g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);
+			target = g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);
 			//FLAT for wetness
 			float flatWetTarget = GetTemperature() - temperatureModifier;
 			flatWetTarget = Math.Clamp(flatWetTarget,target,GetTemperatureMax());
@@ -2077,11 +2068,7 @@ class FireplaceBase : ItemBase
 		}
 		else
 		{
-			//stop cooling
-			if (Math.AbsFloat(temperature) < 10)
-			{
-				StopCooling();
-			}
+			StopCooling();
 		}
 	}
 
@@ -2099,12 +2086,9 @@ class FireplaceBase : ItemBase
 		DestroyAreaDamage();
 
 		//remove cookware audio visuals
-		if (GetCookingEquipment())
-		{
-			Bottle_Base cooking_pot = Bottle_Base.Cast(GetCookingEquipment());
-			if (cooking_pot)
-				cooking_pot.RemoveAudioVisualsOnClient();
-		}
+		ItemBase cookware;
+		if (Class.CastTo(cookware,GetCookingEquipment()) && (cookware.IsCookware() || cookware.IsLiquidContainer())) //also stops boiling effects on bottles
+			cookware.RemoveAudioVisualsOnClient();
 
 		if (DirectCookingSlotsInUse())
 		{
@@ -2112,17 +2096,27 @@ class FireplaceBase : ItemBase
 			{
 				if (m_DirectCookingSlots[i])
 				{
-					Bottle_Base cookingpot = Bottle_Base.Cast(m_DirectCookingSlots[i]);
-					if (cookingpot)
-						cookingpot.RemoveAudioVisualsOnClient();
-
-					FryingPan fryingpan = FryingPan.Cast(m_DirectCookingSlots[i]);
-					if (fryingpan)
-						fryingpan.RemoveAudioVisualsOnClient();
-
+					if (Class.CastTo(cookware,m_DirectCookingSlots[i]) && (cookware.IsCookware() || cookware.IsLiquidContainer())) //also stops boiling effects on bottles
+						cookware.RemoveAudioVisualsOnClient();
+					
 					Edible_Base itsfood = Edible_Base.Cast(m_DirectCookingSlots[i]);
 					if (itsfood)
 						itsfood.MakeSoundsOnClient(false);
+					
+					GameInventory inv = m_DirectCookingSlots[i].GetInventory();
+					if (!inv)
+						return;
+					
+					CargoBase cargo = inv.GetCargo();
+					if (!cargo) // cookware
+						return;
+					
+					for (int j = 0; j < cargo.GetItemCount(); j++)
+					{
+						Edible_Base edible = Edible_Base.Cast(cargo.GetItem(j));
+						if (edible)
+							edible.MakeSoundsOnClient(false);
+					}
 				}
 			}
 		}
@@ -2273,13 +2267,15 @@ class FireplaceBase : ItemBase
 			{
 				case ATTACHMENT_TRIPOD:
 				case ATTACHMENT_COOKINGSTAND:
-				case ATTACHMENT_COOKING_POT:
-				case ATTACHMENT_CAULDRON:
-				case ATTACHMENT_FRYING_PAN:
 					item.DecreaseHealth(GameConstants.FIRE_ATTACHMENT_DAMAGE_PER_SECOND * timerCoef, false);
 				break;
 			}
-	
+			
+			if (item.IsCookware())
+			{
+				item.DecreaseHealth(GameConstants.FIRE_ATTACHMENT_DAMAGE_PER_SECOND * timerCoef, false);
+			}
+			
 			//! fuel & kindling		
 			if (IsFuel(item) || IsKindling(item))
 			{
@@ -2570,6 +2566,15 @@ class FireplaceBase : ItemBase
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================
+	override bool CanBePlaced( Man player, vector position )
+	{
+		string surfaceType;
+		float surfaceHeight = GetGame().SurfaceGetType3D( position[0], position[1], position[2], surfaceType );
+		if ((position[1] - surfaceHeight) > PLACEMENT_HEIGHT_LIMIT)
+			return false;
+		
+		return true;
+	}
 	
 	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
@@ -2581,12 +2586,10 @@ class FireplaceBase : ItemBase
 			Object cc_object = GetGame().CreateObjectEx(OBJECT_CLUTTER_CUTTER , position, ECE_PLACE_ON_SURFACE);
 			cc_object.SetOrientation(orientation);
 			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(GetGame().ObjectDelete, 1000, false, cc_object);
-			
-			SetIsPlaceSound(true);
 		}
 	}
-	
-	override string GetPlaceSoundset()
+		
+	override string GetDeploySoundset()
 	{
 		return "placeFireplace_SoundSet";
 	}

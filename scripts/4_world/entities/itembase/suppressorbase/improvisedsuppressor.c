@@ -9,9 +9,17 @@ class ImprovisedSuppressor extends SuppressorBase
 	override bool CanPutAsAttachment( EntityAI parent )
 	{
 		bool cond_state = true;
-		if(!super.CanPutAsAttachment(parent)) {return false;}
+		if (!super.CanPutAsAttachment(parent)) 
+			return false;
+		
 		for ( int i = 0; i < SLOTS_ARRAY ; i++ )
 		{
+			if (parent.IsSlotReserved(InventorySlots.GetSlotIdFromString(slot_names[i])))
+			{
+				cond_state = false;
+				break;
+			}
+			
 			if ( parent.FindAttachmentBySlotName(slot_names[i]) != NULL )
 			{
 				cond_state = false;

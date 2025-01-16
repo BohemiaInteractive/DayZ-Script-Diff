@@ -248,12 +248,7 @@ class ClaymoreMine : ExplosivesBase
 		
 		return 0;
 	}
-	
-	override protected bool UsesGlobalDeploy()
-	{
-		return true;
-	}
-	
+			
 	override string GetDeploySoundset()
 	{
 		return "placeClaymore_SoundSet";
@@ -262,6 +257,16 @@ class ClaymoreMine : ExplosivesBase
 	override string GetLoopDeploySoundset()
 	{
 		return "claymore_deploy_Soundset";
+	}
+	
+	override string GetArmSoundset()
+	{
+		return "claymore_deploy_Soundset";
+	}
+	
+	override string GetDisarmSoundset()
+	{
+		return "claymore_disarm_SoundSet";
 	}
 	
 	override void OnDebugSpawn()

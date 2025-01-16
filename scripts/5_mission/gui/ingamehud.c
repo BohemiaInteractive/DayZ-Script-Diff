@@ -15,7 +15,6 @@ class IngameHud extends Hud
 	protected ref map<int,int>					m_BadgesSupportedLevels;
 	protected ref map<int,int>					m_BadgesWidgetDisplay;
 	protected ref map<int,ImageWidget>			m_BadgesWidgets;  // [key] ImageWidget
-	protected bool								m_AnyBadgeVisible;
 	protected bool								m_IsTemperatureVisible;
 	protected float								m_TemperatureTimer;
 	protected float								m_TemperatureShowTime = 30;
@@ -25,55 +24,14 @@ class IngameHud extends Hud
 	protected float								m_StaminaTimer;
 	protected float								m_StaminaShowTime = 0.15;
 	
-	#ifndef VEH_UI_REFACTOR
-	protected ref map<int,string>				m_VehicleGearTable;
-	protected ref map<int,string>				m_VehicleGearTableAuto;
-	#endif
-
-	protected Widget							m_HudPanelWidget;
-	protected Widget							m_LeftHudPanelWidget;
-	protected Widget							m_PlayerPanelWidget;
+	protected Widget							m_HudPanelWidget;		// always visible
 	protected Widget							m_QuickbarWidget;
-	protected ref InventoryQuickbar				m_Quickbar;
-	
-	protected Widget							m_VehiclePanel;
 	protected Widget 							m_VehicleHudPanels;
-	
-	#ifndef VEH_UI_REFACTOR
-	protected ImageWidget						m_VehicleRPMPointer;
-	protected ImageWidget						m_VehicleRPMDial;
-	protected ImageWidget						m_VehicleRPMRedline;
-	protected ImageWidget						m_VehicleSpeedPointer;
-	protected Widget							m_VehicleTemperatureIndicator;
-	protected ImageWidget						m_VehicleTemperaturePointer;
-	protected ImageWidget						m_VehicleTemperatureLight;
-	protected ImageWidget						m_VehicleFuelPointer;
-	protected ImageWidget						m_VehicleFuelLight;
-	
-	protected TextWidget						m_VehicleSpeedValue;
-	
-	protected TextWidget						m_VehicleCurrentGearValue;
-	protected TextWidget						m_VehicleNextGearValue;
-	protected TextWidget						m_VehiclePrevGearValue;
-	
-	protected ImageWidget						m_VehicleBatteryLight;
-	protected ImageWidget						m_VehicleEngineLight;
-	protected ImageWidget						m_VehicleOilLight;
-	protected ImageWidget						m_VehicleHandBrakeLight;
-	protected ImageWidget						m_VehicleWheelLight;
-	
-	protected bool 								m_VehicleDamageZoneHitEngineState;
-	protected float								m_VehicleDamageZonesHitTimer;
-	
-	protected bool								m_InVehicleAsDriver;
-	protected CarScript							m_CurrentVehicle;
-	#endif
-	
-	protected VehicleHudBase 					m_ActiveVehicleHUD;
-	protected ref array<VehicleHudBase>			m_VehicleHudArray;		// for iterating frame update
+	protected ref InventoryQuickbar				m_Quickbar;
+			
+	protected VehicleHudBase 						m_ActiveVehicleHUD;
 	protected ref map<string, ref VehicleHudBase>	m_VehicleHudMap; 
-	
-	
+		
 	protected Widget 							m_GameStatusIconsPanel;					
 	protected ImageWidget 						m_HighPingA;					
 	protected ImageWidget 						m_HighPingB;					
@@ -84,7 +42,6 @@ class IngameHud extends Hud
 	protected Widget							m_Notifiers;
 	protected TextWidget						m_BloodType;
 	protected TextWidget						m_BloodPosType;
-	protected Widget							m_BadgeNotifierDivider;
 	protected Widget							m_Badges;
 	protected ref Timer							m_HideTimer;
 	protected ref WidgetFadeTimer				m_FadeTimerCrosshair;
@@ -107,7 +64,6 @@ class IngameHud extends Hud
 	protected Widget							m_StanceStandWalk;
 	protected Widget							m_StanceCrouch;
 	protected Widget							m_StanceCar;
-	protected Widget							m_StancePanel;
 	protected Widget							m_PresenceLevel0;
 	protected Widget							m_PresenceLevel1;
 	protected Widget							m_PresenceLevel2;
@@ -143,20 +99,6 @@ class IngameHud extends Hud
 	
 	// CrossHairs
 	protected ImageWidget						m_PermanentCrossHair;
-	
-	protected bool								m_HudHideUI;
-	protected bool								m_HudHidePlayer;
-	protected bool								m_HudInventory;
-	protected bool								m_HudState; //options-driven global setting
-	protected bool								m_VehicleHudState;
-	protected bool								m_VehicleHudDisabled;
-	protected bool								m_IsVehicleHudVisible;
-	protected bool								m_QuickbarHideUI;
-	protected bool								m_QuickbarHidePlayer;
-	protected bool								m_QuickbarState; //options-driven global setting
-	protected bool								m_IsQuickbarVisible;
-	protected bool								m_IsHudVisible;
-	protected bool								m_Faded;
 	protected bool								m_ZeroingKeyPressed;
 	
 	protected Widget 							m_HitIndicatorUp;
@@ -164,12 +106,16 @@ class IngameHud extends Hud
 	protected Widget 							m_HitIndicatorLeft;
 	protected Widget 							m_HitIndicatorRight;
 	protected Widget 							m_HitIndicatorSingle;
-	protected Widget							m_SpecializatonPanel;
-	protected Widget							m_SpecializationIcon;
 	
 	ref array<ref HitDirectionEffectBase> 		m_HitDirEffectArray;
 	
 	protected ref IngameHudHeatBuffer			m_HeatBufferUI;
+	protected ref IngameHudVisibility			m_HudVisibility;
+	
+	int			m_PlayerSpineIndex;
+	PlayerBase	m_CurrentTaggedPlayer;
+	Widget		m_PlayerTag;
+	TextWidget	m_PlayerTagText;
 		
 	void IngameHud()
 	{
@@ -190,45 +136,19 @@ class IngameHud extends Hud
 		m_BadgesWidgetDisplay			= new map<int, int>;
 		
 		m_VehicleHudMap 				= new map<string, ref VehicleHudBase>;
-		m_VehicleHudArray				= new array<VehicleHudBase>;
-
-		#ifndef VEH_UI_REFACTOR
-		m_VehicleDamageZonesHitTimer	= 0;
 		
-		m_VehicleGearTable				= new map<int, string>;
-		m_VehicleGearTable.Set(-1, "");
-		m_VehicleGearTable.Set(CarGear.REVERSE, "R");
-		m_VehicleGearTable.Set(CarGear.NEUTRAL, "N");
-		m_VehicleGearTable.Set(CarGear.FIRST, "1");
-		m_VehicleGearTable.Set(CarGear.SECOND, "2");
-		m_VehicleGearTable.Set(CarGear.THIRD, "3");
-		m_VehicleGearTable.Set(CarGear.FOURTH, "4");
-		m_VehicleGearTable.Set(CarGear.FIFTH, "5");
-		m_VehicleGearTable.Set(CarGear.SIXTH, "6");
-		m_VehicleGearTable.Set(CarGear.SEVENTH, "7");
-		m_VehicleGearTable.Set(CarGear.EIGTH, "8");
-		
-		m_VehicleGearTableAuto			= new map<int, string>;
-		m_VehicleGearTableAuto.Set(-1, "");
-		m_VehicleGearTableAuto.Set(CarAutomaticGearboxMode.R, "R");
-		m_VehicleGearTableAuto.Set(CarAutomaticGearboxMode.N, "N");
-		m_VehicleGearTableAuto.Set(CarAutomaticGearboxMode.D, "D");
-		#endif
+		m_HudVisibility 				= new IngameHudVisibility();
 	}
 	
 	override void Init( Widget hud_panel_widget )
 	{
+		m_HudVisibility.Init(hud_panel_widget);
 		m_HudPanelWidget = hud_panel_widget;
-		m_HudPanelWidget.Show( true );
-
+		
 		//Quickbar
 		m_QuickbarWidget		= m_HudPanelWidget.FindAnyWidget("QuickbarGrid");
 		m_QuickbarWidget.Show( false );
-		
-		//Left HUD Panel
-		m_LeftHudPanelWidget	= m_HudPanelWidget.FindAnyWidget("LeftHUDPanel");
-		m_PlayerPanelWidget 	= m_LeftHudPanelWidget.FindAnyWidget("PlayerPanel");
-		
+				
 		//TEMPORARY HACK!!! player is not present when Hud is being initialized 
 		myTimer = new Timer( CALL_CATEGORY_GAMEPLAY );
 		myTimer.Run( 1, this, "InitQuickbar" );
@@ -247,22 +167,14 @@ class IngameHud extends Hud
 		m_Presence						= m_HudPanelWidget.FindAnyWidget("PresencePanel");
 		m_Badges						= hud_panel_widget.FindAnyWidget("BadgesPanel");
 		m_Notifiers						= m_HudPanelWidget.FindAnyWidget("NotifiersPanel");
-		m_SpecializatonPanel			= m_HudPanelWidget.FindAnyWidget("SpecializationPanel");
-		m_SpecializationIcon 			= m_HudPanelWidget.FindAnyWidget("SpecializationIcon");
-		m_BadgeNotifierDivider			= m_HudPanelWidget.FindAnyWidget("BadgeNotifierDivider");
 		m_BloodType						= TextWidget.Cast( m_HudPanelWidget.FindAnyWidget("BloodType") );
 		m_BloodPosType					= TextWidget.Cast( m_HudPanelWidget.FindAnyWidget("BloodPosType") );
-		
-		m_VehiclePanel					= m_HudPanelWidget.FindAnyWidget("VehiclePanel");
-		m_VehiclePanel.Show(false);
-		
+				
 		// Init vehicle HUDs
 		m_VehicleHudPanels			= m_HudPanelWidget.FindAnyWidget("VehicleHUDPanels");
 		
-		#ifdef VEH_UI_REFACTOR
 		CarHud carHud = new CarHud();
 		m_VehicleHudMap.Insert("VehicleTypeCar", carHud);	
-		#endif
 		
 		BoatHud boatHud = new BoatHud();
 		m_VehicleHudMap.Insert("VehicleTypeBoat", boatHud);
@@ -270,34 +182,9 @@ class IngameHud extends Hud
 		foreach (VehicleHudBase vehHud : m_VehicleHudMap)
 		{
 			vehHud.Init(m_VehicleHudPanels);
-			m_VehicleHudArray.Insert(vehHud);
+			vehHud.HidePanel();
 		}
-		
-		#ifndef VEH_UI_REFACTOR
-		m_VehicleRPMPointer				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("RPMPointer") );
-		m_VehicleRPMDial				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("RPMDial") );
-		m_VehicleRPMRedline				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("RPMDialRedline") );
-		m_VehicleSpeedPointer			= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("SpeedPointer") );
-		m_VehicleSpeedValue				= TextWidget.Cast( m_VehiclePanel.FindAnyWidget("SpeedValue") );
-		
-		m_VehicleCurrentGearValue		= TextWidget.Cast( m_VehiclePanel.FindAnyWidget("Current") );
-		m_VehicleNextGearValue			= TextWidget.Cast( m_VehiclePanel.FindAnyWidget("Next") );
-		m_VehiclePrevGearValue			= TextWidget.Cast( m_VehiclePanel.FindAnyWidget("Prev") );
-		
-		m_VehicleBatteryLight			= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("BatteryLight"));
-		m_VehicleEngineLight			= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("EngineLight"));
-		m_VehicleOilLight				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("OilLight"));
-		m_VehicleHandBrakeLight			= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("HandBrakeLight"));
-		m_VehicleWheelLight				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("WheelLight"));
-		
-		m_VehicleTemperatureIndicator	= m_VehiclePanel.FindAnyWidget("TemperatureIndicator");
-		m_VehicleTemperaturePointer		= ImageWidget.Cast(m_VehiclePanel.FindAnyWidget("TemperaturePointer"));
-		m_VehicleTemperatureLight		= ImageWidget.Cast(m_VehiclePanel.FindAnyWidget("TemperatureLight"));
-		m_VehicleFuelPointer			= ImageWidget.Cast(m_VehiclePanel.FindAnyWidget("FuelPointer"));
-		m_VehicleFuelLight				= ImageWidget.Cast(m_VehiclePanel.FindAnyWidget("FuelLight"));
-		#endif
-	
-		
+				
 		m_StaminaBackground				= m_HudPanelWidget.FindAnyWidget("StaminaBackground");
 		m_StaminaBackground.Show(true);
 		m_StanceProne					= m_HudPanelWidget.FindAnyWidget("StanceProne");
@@ -305,7 +192,6 @@ class IngameHud extends Hud
 		m_StanceStand					= m_HudPanelWidget.FindAnyWidget("StanceStand");
 		m_StanceStandWalk				= m_HudPanelWidget.FindAnyWidget("StanceStandWalk");
 		m_StanceCar						= m_HudPanelWidget.FindAnyWidget("StanceCar");
-		m_StancePanel					= m_HudPanelWidget.FindAnyWidget("StancePanel");
 
 		m_ActionTarget					= m_HudPanelWidget.FindAnyWidget("ActionTargetsCursorWidget");
 		//! gets scripted handler from widget
@@ -341,10 +227,13 @@ class IngameHud extends Hud
 		m_PresenceLevel2.Show( false );
 		m_PresenceLevel3.Show( false );
 		m_PresenceLevel4.Show( false );
+				
+		if (!g_Game.GetProfileOption(EDayZProfilesOptions.HUD))
+			ShowHud(false);
 		
-		SetLeftStatsVisibility( true );
-		m_HudState = g_Game.GetProfileOption( EDayZProfilesOptions.HUD );
-		m_VehicleHudDisabled = !g_Game.GetProfileOption( EDayZProfilesOptions.HUD_VEHICLE );
+		if (!g_Game.GetProfileOption(EDayZProfilesOptions.HUD_VEHICLE))
+			SetVehicleHudDisabled(true);
+		
 		MissionGameplay.Cast(GetGame().GetMission()).GetConnectivityInvoker().Insert(OnConnectionIconsSettingsChanged);
 		m_GameStatusIconsPanel.Show(g_Game.GetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO));
 		//ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR)); //unreliable
@@ -437,9 +326,7 @@ class IngameHud extends Hud
 			badge_widget.Show( false );
 			m_BadgesWidgetDisplay.Set( key, false );
 		}
-		m_AnyBadgeVisible = false;
-		m_BadgeNotifierDivider.Show(false);
-	
+		m_HudVisibility.SetContextFlag(EHudContextFlags.NO_BADGE, true);
 	}
 	
 	void OnConnectionIconsSettingsChanged(bool enabled)
@@ -455,10 +342,34 @@ class IngameHud extends Hud
 		m_Badges.Update();
 		m_Notifiers.SetPos( 0, 0 );
 	}
+	
+	override void OnPlayerLoaded()
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		if (!player)
+			Error("OnPlayerLoaded: Cannot retreive player");
+	
+		if (!player.IsUnconscious())	// uncon stop is not called when player respawns
+			OnUnconsciousStop();
+		
+		player.GetOnUnconsciousStart().Insert(OnUnconsciousStart);
+		player.GetOnUnconsciousStop().Insert(OnUnconsciousStop);
+	}
+	
+	protected void OnUnconsciousStart()
+	{
+		m_HudVisibility.SetContextFlag(EHudContextFlags.UNCONSCIOUS, true);
+	}
+	
+	protected void OnUnconsciousStop()
+	{
+		m_HudVisibility.SetContextFlag(EHudContextFlags.UNCONSCIOUS, false);
+	}
+
 
 	override void Show( bool show )
 	{
-		m_HudPanelWidget.Show( show );
+		m_HudPanelWidget.Show(show);
 	}
 
 	override void ShowWalkieTalkie( bool show )
@@ -672,7 +583,7 @@ class IngameHud extends Hud
 		TextWidget bleed_count = TextWidget.Cast( m_Badges.FindAnyWidget( "BleedingCount" ) );
 		
 		m_BadgesWidgetDisplay.Set( key, value );
-		m_AnyBadgeVisible = false;
+		m_HudVisibility.SetContextFlag(EHudContextFlags.NO_BADGE, true);
 		for ( int i = 0; i < m_BadgesWidgetDisplay.Count(); i++ )
 		{
 			int badge_key = m_BadgesWidgetDisplay.GetKey( i );
@@ -694,7 +605,7 @@ class IngameHud extends Hud
 					}
 
 					badge_widget.Show( true );
-					m_AnyBadgeVisible = true;
+					m_HudVisibility.SetContextFlag(EHudContextFlags.NO_BADGE, false);
 					if( badge_key == NTFKEY_BLEEDISH )
 					{
 						bleed_count.Show( true );
@@ -711,8 +622,6 @@ class IngameHud extends Hud
 				}
 			}
 		}
-		
-		RefreshHudVisibility();
 	}
 	
 	override void SetTemperature( string temp )
@@ -896,11 +805,6 @@ class IngameHud extends Hud
 			}
 		}
 	}
-	
-	int		m_VehicleGearCount = -1;
-	float	m_TimeSinceLastEngineLightChange;
-	bool	m_VehicleHasOil;
-	bool	m_VehicleHasCoolant;
 		
 	override void ShowVehicleInfo()
 	{	
@@ -917,226 +821,40 @@ class IngameHud extends Hud
 		{
 			vehHud.ShowVehicleInfo(currentPlayer);
 			m_ActiveVehicleHUD = vehHud;
+			m_ActiveVehicleHUD.ShowPanel();
+			ShowVehicleHud(true);
 		}
-		
-		#ifndef VEH_UI_REFACTOR
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-		if (player)
-		{
-			HumanCommandVehicle hcv = player.GetCommand_Vehicle();
-			if (hcv)
-			{
-				m_CurrentVehicle = CarScript.Cast(hcv.GetTransport());
-				if (m_CurrentVehicle)
-				{					
-					m_VehicleGearCount 	= m_CurrentVehicle.GetGearsCount();
-					m_VehicleOilLight.Show(m_VehicleHasOil);
-
-					float rpm_value_red = m_CurrentVehicle.EngineGetRPMRedline() / m_CurrentVehicle.EngineGetRPMMax();
-					m_VehicleRPMDial.SetMaskProgress(rpm_value_red);
-					m_VehicleRPMRedline.SetMaskProgress(1 - rpm_value_red);
-				}
-			}
-		}
-		#endif
-		
-		ShowVehicleHud(true);
 	}
 	
 	override void HideVehicleInfo()
-	{
-		ShowVehicleHud(false);
-		
+	{		
 		if (m_ActiveVehicleHUD)
 		{
+			ShowVehicleHud(false);
 			m_ActiveVehicleHUD.HideVehicleInfo();
-			m_ActiveVehicleHUD = null;
-			if (m_IsHudVisible)
-			{
-				m_PlayerPanelWidget.Show(true);
-				m_Presence.Show(true);
-				m_StancePanel.Show(true);
-			}
-			
+			m_ActiveVehicleHUD.HidePanel();
+			m_ActiveVehicleHUD = null;			
 			return;
 		}
-	
-		#ifndef VEH_UI_REFACTOR
-		if (m_IsHudVisible)
-		{
-			m_PlayerPanelWidget.Show(true);
-			m_Presence.Show(true);
-			m_StancePanel.Show(true);
-		}
-		
-		m_CurrentVehicle	= null;
-		m_VehicleGearCount	= -1;
-		#endif
 	}
 	
 	void RefreshVehicleHud(float timeslice)
-	{		
-		RefreshVehicleHudVisibility(); // these run in frame because they are overriden by close menu logic which forces everything in left HUD panel visible atm 
+	{			
+		DayZPlayer currentPlayer = GetGame().GetPlayer();
+		if (!currentPlayer)
+			return;
+			
+		HumanCommandVehicle cmdVehicle = currentPlayer.GetCommand_Vehicle();
+		if (cmdVehicle && cmdVehicle.GetTransport())
+		{
+			if (!m_HudVisibility.IsContextFlagActive(EHudContextFlags.VEHICLE))
+				m_HudVisibility.SetContextFlag(EHudContextFlags.VEHICLE, true);
+		}
+		else if (m_HudVisibility.IsContextFlagActive(EHudContextFlags.VEHICLE))
+			m_HudVisibility.SetContextFlag(EHudContextFlags.VEHICLE, false);
 		
 		if (m_ActiveVehicleHUD)
 			m_ActiveVehicleHUD.RefreshVehicleHud(timeslice);				
-		
-		#ifndef VEH_UI_REFACTOR
-		if (m_CurrentVehicle)
-		{
-			m_PlayerPanelWidget.Show(false);
-			m_StancePanel.Show(false);
-			m_Presence.Show(false);
-			float rpm_value		= m_CurrentVehicle.EngineGetRPM() / m_CurrentVehicle.EngineGetRPMMax();
-			float rpm_value_red	= m_CurrentVehicle.EngineGetRPMRedline() / m_CurrentVehicle.EngineGetRPMMax();
-			float speed_value	= m_CurrentVehicle.GetSpeedometerAbsolute() / 200;
-			
-			m_VehicleRPMPointer.SetRotation(0, 0, rpm_value * 270 - 130, true);
-			m_VehicleSpeedPointer.SetRotation(0, 0, speed_value * 260 - 130, true);
-			m_VehicleSpeedValue.SetText(Math.AbsInt(m_CurrentVehicle.GetSpeedometer()).ToString());
-
-			int engineHealthLevel	= m_CurrentVehicle.GetHealthLevel("Engine");
-			int fuelTankHealthLevel	= m_CurrentVehicle.GetHealthLevel("FuelTank");
-			bool newHealth			= false;
-			
-			//! engine
-			if (m_CurrentVehicle.HasEngineZoneReceivedHit())
-			{
-				if (m_TimeSinceLastEngineLightChange > 0.35)
-				{
-					m_VehicleEngineLight.Show(!m_VehicleEngineLight.IsVisible());
-					if (engineHealthLevel <= GameConstants.STATE_WORN)
-					{
-						m_VehicleEngineLight.SetColor(Colors.WHITE);
-					}
-					else
-					{
-						m_VehicleEngineLight.SetColor(ItemManager.GetItemHealthColor(engineHealthLevel));
-					}
-					
-					m_VehicleEngineLight.SetAlpha(1);
-					m_TimeSinceLastEngineLightChange = 0;
-				}
-				
-				m_TimeSinceLastEngineLightChange += timeslice;
-				newHealth = true;
-			}
-			else if (engineHealthLevel > GameConstants.STATE_WORN)
-			{
-				m_VehicleEngineLight.SetColor(ItemManager.GetItemHealthColor(engineHealthLevel));
-				m_VehicleEngineLight.SetAlpha(1);
-				m_VehicleEngineLight.Show(true);
-			}
-			else
-			{
-				m_VehicleEngineLight.Show(false);
-			}
-			
-			//! fuel tank
-			if (fuelTankHealthLevel <= GameConstants.STATE_WORN)
-			{
-				m_VehicleFuelLight.SetColor(Colors.WHITE);
-				m_VehicleFuelLight.SetAlpha(1);
-				m_VehicleFuelLight.Show(true);	
-			}
-			else if (fuelTankHealthLevel > GameConstants.STATE_WORN)
-			{
-				m_VehicleFuelLight.SetColor(ItemManager.GetItemHealthColor(fuelTankHealthLevel));
-				m_VehicleFuelLight.SetAlpha(1);
-				m_VehicleFuelLight.Show(true);
-			}
-			
-			//! temperature
-			if (m_CurrentVehicle.IsVitalRadiator())
-			{
-				m_VehicleTemperatureIndicator.Show(true);
-				if (m_CurrentVehicle.HasRadiator())
-				{
-					int radiatorHealthLevel = m_CurrentVehicle.GetRadiator().GetHealthLevel("");
-					if (radiatorHealthLevel <= GameConstants.STATE_WORN)
-					{
-						m_VehicleTemperatureLight.SetColor(Colors.WHITE);
-						m_VehicleTemperatureLight.SetAlpha(1);
-						m_VehicleTemperatureLight.Show(true);	
-					}
-					else if (radiatorHealthLevel > GameConstants.STATE_WORN)
-					{
-						m_VehicleTemperatureLight.SetColor(ItemManager.GetItemHealthColor(radiatorHealthLevel));
-						m_VehicleTemperatureLight.SetAlpha(1);
-						m_VehicleTemperatureLight.Show(true);
-					}
-				}
-				else
-				{
-					m_VehicleTemperatureLight.SetColor(Colors.COLOR_RUINED);
-					m_VehicleTemperatureLight.SetAlpha(1);
-					m_VehicleTemperatureLight.Show(true);
-				}
-			}
-			else
-			{
-				m_VehicleTemperatureIndicator.Show(false);
-			}
-			
-			m_VehicleHandBrakeLight.Show(m_CurrentVehicle.IsHandbrakeActive());
-			m_VehicleWheelLight.Show(m_CurrentVehicle.WheelIsAnyLocked());
-
-			
-			int engagedGear	= -1;
-			int prevGear	= -1;
-			int nextGear	= -1;
-			
-			if (m_CurrentVehicle.GearboxGetType() == CarGearboxType.MANUAL)
-			{
-				engagedGear = m_CurrentVehicle.GetGear();
-				prevGear = engagedGear - 1;
-				nextGear = engagedGear + 1;
-
-				if (engagedGear == CarGear.NEUTRAL)
-				{
-					prevGear = CarGear.REVERSE;
-				}
-				else if (engagedGear == CarGear.REVERSE)
-				{
-					prevGear = -1;
-					nextGear = CarGear.NEUTRAL;
-				}
-
-				m_VehicleCurrentGearValue.SetText(m_VehicleGearTable.Get(engagedGear));
-				m_VehicleNextGearValue.Show(nextGear < m_VehicleGearCount);
-			
-				m_VehicleNextGearValue.SetText(m_VehicleGearTable.Get(nextGear));
-				m_VehiclePrevGearValue.SetText(m_VehicleGearTable.Get(prevGear));
-			}
-			else
-			{
-				engagedGear = m_CurrentVehicle.GearboxGetMode();
-				prevGear = engagedGear - 1;
-				nextGear = engagedGear + 1;
-				
-				m_VehicleCurrentGearValue.SetText(m_VehicleGearTableAuto.Get(engagedGear));
-				m_VehicleNextGearValue.Show(nextGear < EnumTools.GetEnumSize(CarAutomaticGearboxMode));
-			
-				m_VehicleNextGearValue.SetText(m_VehicleGearTableAuto.Get(nextGear));
-				m_VehiclePrevGearValue.SetText(m_VehicleGearTableAuto.Get(prevGear));
-			}
-			
-			// refresh backlit
-			GetDayZGame().GetBacklit().RefreshVehicleLayout(engagedGear, newHealth);
-			
-			m_VehicleFuelPointer.SetRotation( 0, 0, m_CurrentVehicle.GetFluidFraction( CarFluid.FUEL ) * 260 - 130, true );
-			m_VehicleTemperaturePointer.SetRotation( 0, 0, -1 * m_CurrentVehicle.GetFluidFraction( CarFluid.COOLANT ) * 260 + 130, true );
-
-			//! general hit timer reset			
-			if (m_VehicleDamageZonesHitTimer > 1)
-			{
-				m_VehicleDamageZoneHitEngineState = false;
-				m_VehicleDamageZonesHitTimer = 0;
-			}
-			
-			m_VehicleDamageZonesHitTimer += timeslice;
-		}
-		#endif
 	}
 	
 	void InitQuickbar()
@@ -1152,14 +870,9 @@ class IngameHud extends Hud
 		return m_Quickbar;
 	}
 	
-	bool IsQuickbarVisible()
+	IngameHudVisibility GetHudVisibility()
 	{
-		return m_IsQuickbarVisible;
-	}
-	
-	bool IsHudVisible()
-	{
-		return m_IsHudVisible;
+		return m_HudVisibility;
 	}
 	
 	override void UpdateQuickbarGlobalVisibility()
@@ -1170,156 +883,61 @@ class IngameHud extends Hud
 			ShowQuickBar(g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR));
 		#endif
 	}
-	
-	void RefreshQuickbarVisibility()
-	{
-		m_IsQuickbarVisible = !m_QuickbarHideUI && !m_QuickbarHidePlayer && m_QuickbarState;
-		m_QuickbarWidget.Show( m_IsQuickbarVisible );
-	}
-	
-	void RefreshVehicleHudVisibility()
-	{
-		m_IsVehicleHudVisible = !m_VehicleHudDisabled && m_VehicleHudState && !GetGame().GetUIManager().GetMenu();
-		
-		if (m_VehicleHudState)	// being in vehicle should hide stamina and others
-		{
-			m_PlayerPanelWidget.Show(false);
-			m_StancePanel.Show(false);
-			m_Presence.Show(false);
-		}
-		
-		if (m_ActiveVehicleHUD && m_IsVehicleHudVisible)
-		{
-			m_VehicleHudPanels.Show(true);
 			
-			foreach (VehicleHudBase hudBase : m_VehicleHudArray)	// hide inactive vehicle huds
-			{
-				if (hudBase != m_ActiveVehicleHUD)
-					hudBase.HidePanel();
-			}
-		}
-		else 
-			m_VehicleHudPanels.Show(false);
-		
-		#ifdef VEH_UI_REFACTOR
-		m_VehiclePanel.Show(false); // Temp 
-		#endif
-		
-		#ifndef VEH_UI_REFACTOR
-		if (!m_ActiveVehicleHUD && m_IsVehicleHudVisible)
-			m_VehiclePanel.Show(true);
-		else 
-			m_VehiclePanel.Show(false);
-		#endif
-	}
-	
-	void RefreshHudVisibility()
-	{
-		m_IsHudVisible = ( !m_HudHidePlayer && !m_HudHideUI && m_HudState ) || m_HudInventory;
-		
-		SetLeftStatsVisibility( m_IsHudVisible );
-		m_Badges.Show( m_IsHudVisible );
-		m_Notifiers.Show( m_IsHudVisible );
-		m_BadgeNotifierDivider.Show( m_IsHudVisible && m_AnyBadgeVisible );
-		#ifdef PLATFORM_CONSOLE
-		m_SpecializatonPanel.Show(m_HudInventory);
-		#else
-		m_SpecializatonPanel.Show(false);
-		#endif
-	}
-	
-	void UpdateSpecialtyMeter(float x, float y)
-	{
-		#ifdef PLATFORM_CONSOLE
-		m_SpecializationIcon.SetPos(x, y, true);
-		#endif
-	}
-	
-	bool IsHideQuickbarPlayer()
-	{
-		return m_QuickbarHidePlayer;
-	}
-	
-	bool IsHideHudPlayer()
-	{
-		return m_HudHidePlayer;
-	}
-	
+	// disable quick bar visibility in options
 	override void ShowQuickbarUI( bool show )
 	{
-		m_QuickbarHideUI = !show;
-		RefreshQuickbarVisibility();
+		m_HudVisibility.SetContextFlag(EHudContextFlags.QUICKBAR_DISABLE, !show);
 	}
 	
+	// hide quick bar
 	override void ShowQuickbarPlayer( bool show )
 	{
-		m_QuickbarHidePlayer = !show;
-		RefreshQuickbarVisibility();
+		m_HudVisibility.SetContextFlag(EHudContextFlags.QUICKBAR_HIDE, !show);
 	}
 	
+	// hide left HUD elements
 	override void ShowHudPlayer( bool show )
 	{
-		m_HudHidePlayer = !show;
-		if (m_HudState)
-		{
-			RefreshHudVisibility();
-		}
+		m_HudVisibility.SetContextFlag(EHudContextFlags.HUD_HIDE, !show);
 	}
 	
+	// set visibility of left/right HUD when another menu opens/closes
 	override void ShowHudUI( bool show )
 	{
-		m_HudHideUI = !show;
-		if (m_HudState)
-		{
-			RefreshHudVisibility();
-		}
+		m_HudVisibility.SetContextFlag(EHudContextFlags.MENU_OPEN, !show);
 	}
-	
+		
+	// switches with inventory open in cases where UI is otherwise hidden
 	override void ShowHudInventory( bool show )
 	{
-		m_HudInventory = show;
-		RefreshHudVisibility();
+		m_HudVisibility.SetContextFlag(EHudContextFlags.INVENTORY_OPEN, show);
 	}
 
-	//! global setting; is quickbar visibility allowed?
+	//! global setting -> used to determine visibility based on platform
 	override void ShowQuickBar( bool show )
 	{
-		m_QuickbarState = show;
-		//shown by default
-		m_QuickbarHidePlayer = false;
-		RefreshQuickbarVisibility();
+		m_HudVisibility.SetContextFlag(EHudContextFlags.QUICKBAR_GLOBAL, !show);
 	}
 	
+	// disable HUD through options menu
 	override void ShowHud( bool show )
 	{
-		m_HudState = show;
-		m_HudHidePlayer = false;
-		RefreshHudVisibility();
+		m_HudVisibility.SetContextFlag(EHudContextFlags.HUD_DISABLE, !show);
+		ShowHudPlayer(true);
 	}
 	
 	//! enter/exit driver seat
 	void ShowVehicleHud(bool state)
 	{
-		m_VehicleHudState = state;
-		RefreshVehicleHudVisibility();
+		m_HudVisibility.SetContextFlag(EHudContextFlags.DRIVER, state);
 	}
 	
-	//! game settings option
+	//! disable vehicle HUD through options menu
 	void SetVehicleHudDisabled(bool state)
 	{
-		m_VehicleHudDisabled = state;
-		RefreshVehicleHudVisibility();
+		m_HudVisibility.SetContextFlag(EHudContextFlags.VEHICLE_DISABLE, state);
 	}
-	
-	bool GetQuickBarState()
-	{
-		return m_QuickbarState;
-	}
-	
-	bool GetHudState()
-	{
-		return m_HudState;
-	}	
 	
 	override void SetConnectivityStatIcon(EConnectivityStatType type, EConnectivityStatLevel level)
 	{
@@ -1372,32 +990,12 @@ class IngameHud extends Hud
 			}
 		}
 	}
-	
-	//! eg. stamina bar...
-	void SetLeftStatsVisibility(bool visible)
-	{
-		if (!m_IsHudVisible)
-			visible = false;
 		
-		Widget child = m_LeftHudPanelWidget.GetChildren();
-		while (child)
-		{
-			if (child.GetName() == "ChatFrameWidget")
-			{
-				child = child.GetSibling();
-				continue
-			}
-			
-			child.Show(visible);
-			child = child.GetSibling();
-		}
-	}
-	
 	override void RefreshQuickbar( bool itemChanged = false )
 	{
-		if ((!m_QuickbarState || m_QuickbarHidePlayer || m_QuickbarHideUI) && !itemChanged) // Don't update when it is hidden or disabled
+		if (!itemChanged && !m_HudVisibility.IsElementVisible(EHudElement.QUICKBAR)) // Don't update when it is hidden or disabled
 			return;
-		
+				
 		if ( itemChanged )
 		{
 			UIManager manager = GetGame().GetUIManager();
@@ -1494,11 +1092,6 @@ class IngameHud extends Hud
 			}
 		}
 	}
-	
-	int			m_PlayerSpineIndex;
-	PlayerBase	m_CurrentTaggedPlayer;
-	Widget		m_PlayerTag;
-	TextWidget	m_PlayerTagText;
 	
 	void ShowPlayerTag( float timeslice )
 	{
@@ -1612,7 +1205,7 @@ class IngameHud extends Hud
 		
 		RefreshVehicleHud(timeslice);
 		
-		if (m_IsHudVisible && m_HeatBufferUI && m_HeatBufferUI.CanUpdate())
+		if (!m_HudVisibility.IsContextFlagActive(IngameHudVisibility.HUD_HIDE_FLAGS) && m_HeatBufferUI && m_HeatBufferUI.CanUpdate())
 			m_HeatBufferUI.Update(timeslice);
 
 		#ifdef PLATFORM_PS4
@@ -1674,9 +1267,47 @@ class IngameHud extends Hud
 	
 //------------------------------------------
 //ye olde unused methods
+// everything below is DEPRECATED
+	
+	protected Widget m_VehiclePanel;
+	protected Widget m_LeftHudPanelWidget;
+	protected Widget m_PlayerPanelWidget;
+	protected Widget m_StancePanel;
+	protected Widget m_SpecializatonPanel;
+	protected Widget m_SpecializationIcon;
+	protected Widget m_BadgeNotifierDivider;
+	protected bool	m_VehicleHudState;
+	protected bool	m_VehicleHudDisabled;
+	protected bool	m_IsVehicleHudVisible;
+	protected bool	m_AnyBadgeVisible;
+	protected bool	m_IsQuickbarVisible;
+	protected bool	m_QuickbarHideUI;
+	protected bool	m_QuickbarHidePlayer;
+	protected bool	m_QuickbarState;
+	protected bool	m_HudHideUI;
+	protected bool	m_HudHidePlayer;
+	protected bool	m_HudInventory;
+	protected bool	m_HudState;
+	protected bool	m_IsHudVisible;
+	protected bool	m_Faded;
+	protected bool 	m_IsInVehicle;
+	protected ref array<VehicleHudBase>	m_VehicleHudArray;
+	int		m_VehicleGearCount = -1;
+	float	m_TimeSinceLastEngineLightChange;
+	bool	m_VehicleHasOil;
+	bool	m_VehicleHasCoolant;
 	
 	//DEPRECATED
-	void HideQuickbarTimer()
-	{
-	}
+	void HideQuickbarTimer();
+	void RefreshVehicleHudVisibility();
+	void RefreshQuickbarVisibility();
+	void RefreshHudVisibility();
+	void UpdateSpecialtyMeter(float x, float y);
+	void SetLeftStatsVisibility(bool visible);
+	bool IsQuickbarVisible(){return false;}
+	bool IsHideQuickbarPlayer(){return false;}
+	bool GetQuickBarState(){return false;}
+	bool IsHudVisible(){return false;}
+	bool IsHideHudPlayer(){return false;}
+	bool GetHudState(){return false;}	
 }

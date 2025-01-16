@@ -5,8 +5,9 @@ class VomitSymptom : SymptomBase
 
 	//just for the Symptom parameters set-up and gets called even if the Symptom doesn't execute, don't put any gameplay code in here
 	const int BLOOD_LOSS = 250;
+	const int STOMACH_CONTENT_PERCENTAGE_DEFAULT = 5; //per second
 	
-	private float m_VomitContentPercentage;
+	private float m_VomitContentPercentage = -1; //considered unspecified at -1
 	
 	override void OnInit()
 	{
@@ -17,6 +18,7 @@ class VomitSymptom : SymptomBase
 		m_SyncToClient = false;
 		m_Duration = 5;
 		m_MaxCount = 1;
+		m_VomitContentPercentage = -1;
 	}
 	
 	bool IsContaminationActive()
@@ -39,7 +41,15 @@ class VomitSymptom : SymptomBase
 		{
 			m_Player.GetStatToxicity().Set(0);
 			if (m_Player.m_PlayerStomach)
-				m_Player.m_PlayerStomach.ReduceContents(m_VomitContentPercentage);
+			{
+				if (m_VomitContentPercentage < 0) //unspecified, calculate from duration
+				{
+					float contentLoss = STOMACH_CONTENT_PERCENTAGE_DEFAULT * m_Duration;
+					m_Player.m_PlayerStomach.ReduceContents(contentLoss);
+				}
+				else
+					m_Player.m_PlayerStomach.ReduceContents(m_VomitContentPercentage);
+			}
 			
 			if (IsContaminationActive())
 				m_Player.AddHealth("","Blood", -BLOOD_LOSS);

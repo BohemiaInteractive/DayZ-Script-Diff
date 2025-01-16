@@ -58,12 +58,6 @@ class CraftRabbitSnare extends RecipeBase
 
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
-		//turned off for beta
 		return true;
-	}
-
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
-	{
-		Debug.Log("Recipe Do method called","recipes");
 	}
 };

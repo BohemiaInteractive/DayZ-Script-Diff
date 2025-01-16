@@ -57,11 +57,6 @@ class CraftGasMask_Filter_Improvised extends RecipeBase
 
 	override bool CanDo( ItemBase ingredients[], PlayerBase player )//final check for recipe's validity
 	{
-		return true;
-	}
-
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
-	{
-		Debug.Log("Recipe Do method called","recipes");
+		return ingredients[0].GetQuantity() == 0 && !ingredients[0].GetIsFrozen();
 	}
 };

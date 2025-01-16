@@ -77,13 +77,14 @@ class ActionSkinning: ActionContinuousBase
 		
 		if (body)
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().ObjectDelete,body);
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().ObjectDelete, body);
 		}
 		
 		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, UADamageApplied.SKINNING);
 		
 		PluginLifespan moduleLifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
 		moduleLifespan.UpdateBloodyHandsVisibility(action_data.m_Player, true);
+		action_data.m_Player.SetBloodyHandsPenaltyChancePerAgent(eAgents.SALMONELLA, body.GetSkinningBloodInfectionChance(eAgents.SALMONELLA));
 	}
 	
 	// Spawns an organ defined in the given config

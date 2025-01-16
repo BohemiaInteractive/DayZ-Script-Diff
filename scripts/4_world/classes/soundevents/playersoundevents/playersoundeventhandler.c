@@ -1,3 +1,4 @@
+// defined in animEventsSoundVoice.hpp
 enum EPlayerSoundEventID
 {
 	HOLD_BREATH = 1,
@@ -22,6 +23,7 @@ enum EPlayerSoundEventID
 	INJURED_MEDIUM,
 	INJURED_HIGH,
 	FREEZING,
+	RATTLING_TEETH,
 	HOT,
 	SYMPTOM_FATIGUE,
 	STAMINA_LOW_FILTER_UPPER,
@@ -82,6 +84,7 @@ class PlayerSoundEventHandler extends SoundEventHandler
 		RegisterState(new InjuryMediumSoundEvent());
 		RegisterState(new InjuryHeavySoundEvent());
 		RegisterState(new FreezingSoundEvent());
+		RegisterState(new RattlingTeethSoundEvent());
 		RegisterState(new HotSoundEvent());
 		RegisterState(new StaminaLowFilterUpper());
 		RegisterState(new StaminaLowFilterMid());

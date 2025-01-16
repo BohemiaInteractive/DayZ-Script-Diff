@@ -36,10 +36,10 @@ class HandAnimatedSwapping extends HandStateBase
 		HandEventSwap es = HandEventSwap.Cast(e);
 		if (es)
 		{
-			m_Src1 = es.GetSrc();
-			m_Src2 = es.m_Src2;
-			m_Dst1 = es.GetDst();
-			m_Dst2 = es.m_Dst2;
+			m_Src1 = es.m_Src2;
+			m_Src2 = es.GetSrc();
+			m_Dst1 = es.m_Dst2;
+			m_Dst2 = es.GetDst();
 
 			m_Show.m_Src1 = m_Src1;
 			m_Show.m_Src2 = m_Src2;
@@ -51,8 +51,8 @@ class HandAnimatedSwapping extends HandStateBase
 			
 			if (!GetGame().IsDedicatedServer())
 			{
-				e.m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst2.GetItem(), m_Dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
-				e.m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst1.GetItem(), m_Dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
+				m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst2.GetItem(), m_Dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
+				m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst1.GetItem(), m_Dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
 			}
 		}
 
@@ -65,22 +65,22 @@ class HandAnimatedSwapping extends HandStateBase
 		{
 			if (m_Dst2)
 			{
-				e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
+				m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
 			}
 			if (m_Dst1)
 			{
-				e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);
+				m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);
 			}
 		}
 		else
 		{
 			if (m_Dst2)
 			{
-				GetGame().ClearJuncture(e.m_Player, m_Dst2.GetItem());
+				GetGame().ClearJunctureEx(m_Player, m_Dst2.GetItem());
 			}
 			if (m_Dst1)
 			{
-				GetGame().ClearJuncture(e.m_Player, m_Dst1.GetItem());
+				GetGame().ClearJunctureEx(m_Player, m_Dst1.GetItem());
 			}
 		}
 		
@@ -96,8 +96,8 @@ class HandAnimatedSwapping extends HandStateBase
 	{
 		if ( !GetGame().IsDedicatedServer())
 		{
-			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
-			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);		
+			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
+			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);		
 		}
 		
 		m_Src1 = null;

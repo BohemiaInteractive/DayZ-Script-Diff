@@ -44,6 +44,17 @@ class HFSMBase<Class FSMStateBase, Class FSMEventBase, Class FSMActionBase, Clas
 	{
 		return m_State;
 	}
+	
+	/**@fn		SetCurrentState
+	 * @return	returns currently active state within this machine (i.e. not hierarchic state)
+	 **/
+	void SetCurrentState (FSMStateBase state)
+	{
+		if(m_State != state)
+		{
+			m_State = state;
+		}
+	}	
 	/**@fn		GetOwnerState
 	 * @return	returns state that is owner of this fsm submachine. returns null if this is a root machine.
 	 **/

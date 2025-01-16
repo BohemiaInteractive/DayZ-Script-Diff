@@ -84,26 +84,6 @@ class VicinitySlotsContainer: Container
 		return ( amc.CanPerformActionFromInventory( item_in_hands, ent ) || amc.CanSetActionFromInventory( item_in_hands, ent ) );
 	}
 	
-	override bool EquipItem()
-	{
-		if (CanEquip())
-		{	
-			EntityAI ent = GetFocusedItem();
-			bool res = false;
-			
-			if( ent && !ent.IsInherited( Magazine ))
-			{
-				res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment( ent );
-				if(!res)
-				{
-					res = GetGame().GetPlayer().GetInventory().TakeEntityToInventory(InventoryMode.JUNCTURE,FindInventoryLocationType.ATTACHMENT,ent);
-				}
-			}
-			return res;
-		}
-		return false;
-	}
-	
 	override bool InspectItem()
 	{
 		EntityAI ent = GetFocusedItem();
@@ -130,6 +110,12 @@ class VicinitySlotsContainer: Container
 					if (il.IsValid() && GetGame().GetPlayer().GetInventory().LocationCanAddEntity( il ))
 					{
 						SplitItemUtils.TakeOrSplitToInventoryLocation( PlayerBase.Cast( GetGame().GetPlayer() ), il );
+						#ifdef PLATFORM_CONSOLE
+						if (GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER)
+						{
+							GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(PrepareOwnedTooltipAfterItemTransfer, 100); //update item tooltip after vicinity item has been transfered and the current selected row gets populated with a new item						
+						}
+						#endif
 						return true;
 					}
 				}
@@ -353,14 +339,14 @@ class VicinitySlotsContainer: Container
 			ItemPreviewWidget iw = ItemPreviewWidget.Cast( w.FindAnyWidget( "Render" ) );
 			if( !iw )
 			{
-			  string name = w.GetName();
-			  name.Replace( "PanelWidget", "Render" );
-			  iw = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
+				string name = w.GetName();
+				name.Replace( "PanelWidget", "Render" );
+				iw = ItemPreviewWidget.Cast( w.FindAnyWidget( name ) );
 			} 
 			
 			if( !iw )
 			{
-			  iw = ItemPreviewWidget.Cast( w );
+				iw = ItemPreviewWidget.Cast( w );
 			}
 			
 			ItemBase item = ItemBase.Cast( iw.GetItem() );
@@ -399,6 +385,8 @@ class VicinitySlotsContainer: Container
 			}
 			
 			HideOwnedTooltip();
+			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(PrepareOwnedTooltipAfterItemTransferClick, 300); //update item tooltip after vicinity item has been transfered and the current selected row gets populated with a new item
+			
 			InventoryMenu menu = InventoryMenu.Cast( GetGame().GetUIManager().FindMenu( MENU_INVENTORY ) );
 			if( menu )
 			{
@@ -638,5 +626,61 @@ class VicinitySlotsContainer: Container
 		
 		RecomputeOpenedContainers();
 		m_Container.RecomputeOpenedContainers();
+	}
+	
+	void PrepareOwnedTooltipAfterItemTransfer()
+	{
+		if (m_IsActive)
+		{
+			float x, y;
+			SlotsIcon icon = GetFocusedSlotsIcon();	
+			if (icon)
+			{
+				icon.GetSelectedPanel().GetScreenPos(x, y);
+				EntityAI focusedItem = GetFocusedItem();
+				if (focusedItem)
+				{
+				#ifdef PLATFORM_CONSOLE
+					PrepareOwnedTooltip(focusedItem, -1, y); //custom positioning for the controller
+				#else
+					PrepareOwnedTooltip(focusedItem);
+				#endif
+				}
+			}
+		}
+	}
+	
+	void PrepareOwnedTooltipAfterItemTransferClick()
+	{
+		Widget w = GetWidgetUnderCursor();
+		if (!w)
+		{
+			return;
+		}
+		
+		ItemPreviewWidget iw = ItemPreviewWidget.Cast(w.FindAnyWidget("Render"));
+		if (!iw)
+		{
+			string name = w.GetName();
+			name.Replace("PanelWidget", "Render");
+			iw = ItemPreviewWidget.Cast( w.FindAnyWidget(name));
+		} 
+		
+		if (!iw)
+		{
+			iw = ItemPreviewWidget.Cast(w);
+			if (!iw)
+			{
+				return;
+			}
+		}
+
+		ItemBase item = ItemBase.Cast(iw.GetItem());
+		if (!item)
+		{
+			return;
+		}
+		
+		PrepareOwnedTooltip(item);
 	}
 }

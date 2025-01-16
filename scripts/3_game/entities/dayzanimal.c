@@ -59,7 +59,7 @@ class DayZCreature extends EntityAI
 	
 	override bool CanBeSkinned()
 	{
-		return true;
+		return !GetIsFrozen();
 	}
 	
 	override bool IsIgnoredByConstruction()

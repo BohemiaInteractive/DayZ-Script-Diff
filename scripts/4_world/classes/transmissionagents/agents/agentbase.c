@@ -41,6 +41,11 @@ class AgentBase : MessageReceiverBase
 		return GetInvasibility();
 	}
 	
+	float GetDigestibilityEx(PlayerBase player)
+	{
+		return GetDigestibility();
+	}
+	
 	EStatLevels GetPotency()
 	{
 		return m_Potency;

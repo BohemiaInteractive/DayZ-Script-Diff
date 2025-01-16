@@ -63,6 +63,9 @@ class YieldItemBase
 		return res;
 	}
 	
+	//! called on item spawn
+	void OnEntityYieldSpawned(EntityAI spawn);
+	
 	float GetChanceForYieldItem(CatchingContextBase ctx)
 	{
 		float ret = 1.0;

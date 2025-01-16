@@ -84,6 +84,8 @@ class ScriptConsoleTabBase
 	void OnRPCEx(int rpc_type, ParamsReadContext ctx);
 	bool OnMouseButtonDown(Widget w, int x, int y, int button);
 	bool OnKeyPress(Widget w, int x, int y, int key);
+	bool OnMouseEnter(Widget w, int x, int y);
+	bool OnMouseLeave(Widget w, Widget enterW, int x, int y);
 	
 	protected void AddItemToClipboard(TextListboxWidget text_listbox_widget)
 	{

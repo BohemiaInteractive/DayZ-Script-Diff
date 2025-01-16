@@ -177,6 +177,7 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 			else if (cont)
 			{
 				cont.SetAlternateFalseTextHeaderWidget(null); //just to be safe..
+				cont.UpdateSize();
 			}
 			
 			RecomputeContainers();
@@ -480,6 +481,10 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 						EntityAI attachmentParent = icon.GetSlotParent();
 						GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced(selectedItem);
 						attachmentParent.GetOnAttachmentReleaseLock().Invoke(selectedItem, icon.GetSlotID());
+					}
+					else if (CanSplitEx(selectedItem))
+					{
+						selectedItem.OnRightClick();
 					}
 
 					break;

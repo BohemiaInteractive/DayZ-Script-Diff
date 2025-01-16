@@ -12,4 +12,10 @@ class RedCaviar extends Edible_Base
 		AddAction(ActionForceFeed);
 		AddAction(ActionEat);
 	}
+	
+	override void InitItemVariables()
+	{
+		super.InitItemVariables();
+		can_this_be_combined = true;
+	}
 }

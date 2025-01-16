@@ -41,8 +41,8 @@ class ActionDeCraftDrysackBag: ActionContinuousBase
 		string color = mainItem.ConfigGetString("color");
 		string className = "WaterproofBag_" + color;
 		
-		EntityAI result1 = action_data.m_Player.SpawnEntityOnGroundPos(className, action_data.m_Player.GetPosition());
-		EntityAI result2 = action_data.m_Player.SpawnEntityOnGroundPos("Rope", action_data.m_Player.GetPosition());
+		EntityAI result1 = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed(className);
+		EntityAI result2 = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("Rope");
 		
 		if (!result1 || !result2)
 			return;

@@ -1,6 +1,7 @@
 class PowerGeneratorStatic : PowerGeneratorBase
 {
 	const int SWITCH_COUNT = 6;
+	const int LOW_ENERGY_PERCENT = 5;
 	
 	protected static ref set<PowerGeneratorStatic> m_PowerGenerators = new set<PowerGeneratorStatic>();
 	protected Land_WarheadStorage_PowerStation m_Parent;
@@ -9,6 +10,8 @@ class PowerGeneratorStatic : PowerGeneratorBase
 	protected int m_ParentID2;
 	protected int m_ParentID3;
 	protected int m_ParentID4;
+	
+	protected int m_LeverStatesBits;
 	
 	void PowerGeneratorStatic()
 	{
@@ -54,8 +57,19 @@ class PowerGeneratorStatic : PowerGeneratorBase
 	}
 	
 	void SetParent(Land_WarheadStorage_PowerStation parent)
-	{
+	{		
 		m_Parent = parent;
+	}
+	
+	// States saved thorugh the generator entity since it doesnt work when done building side
+	void StoreLeverStates(int leverStateBits)
+	{
+		m_LeverStatesBits = leverStateBits;
+	}
+	
+	int GetStoredLeverBits()
+	{
+		return m_LeverStatesBits;
 	}
 	
 	// Generator is working
@@ -94,6 +108,18 @@ class PowerGeneratorStatic : PowerGeneratorBase
 		}
 	}
 	
+	override void SetLowEnergyState(bool state)
+	{
+		super.SetLowEnergyState(state);
+		
+		if (GetGame().IsServer())
+		{
+			Land_WarheadStorage_Main bunker = m_Parent.GetClosestBunker();
+			if (bunker)
+				bunker.SetLowEnergyStateServer(state);
+		}
+	}
+		
 	override vector GetSmokeParticlePosition()
 	{
 		return "1.1 1.1 -1.1";
@@ -120,7 +146,7 @@ class PowerGeneratorStatic : PowerGeneratorBase
 	}
 
 	// Taking item into inventory
-	override bool CanPutIntoHands(EntityAI player)
+	override bool CanPutIntoHands(EntityAI parent)
 	{
 		return false;
 	}
@@ -131,11 +157,13 @@ class PowerGeneratorStatic : PowerGeneratorBase
 		
 		if (m_Parent)
 			m_Parent.GetPersistentID(m_ParentID1,m_ParentID2, m_ParentID3, m_ParentID4);
-		
+				
 		ctx.Write(m_ParentID1);
 		ctx.Write(m_ParentID2);
 		ctx.Write(m_ParentID3);
 		ctx.Write(m_ParentID4);
+		
+		ctx.Write(m_LeverStatesBits);
 	}
 	
 	override bool OnStoreLoad( ParamsReadContext ctx, int version )
@@ -159,12 +187,16 @@ class PowerGeneratorStatic : PowerGeneratorBase
 		{
 			return false;
 		}
+				
+		if (version >= 141 && !ctx.Read(m_LeverStatesBits) )
+			return false;
 		
 		return true;
 	}
 	
 	override void EEOnAfterLoad()
 	{
+		// Does this part actually do anything?
 		Land_WarheadStorage_PowerStation powerStation = Land_WarheadStorage_PowerStation.Cast(GetGame().GetEntityByPersitentID(m_ParentID1, m_ParentID2, m_ParentID3, m_ParentID4));
 		if (powerStation)
 		{
@@ -198,4 +230,8 @@ class PowerGeneratorStatic : PowerGeneratorBase
     {
         return true;
     }
+	
+	// DEPRECATED
+	
+	void SetLowEnergyStateServer(bool state);
 }

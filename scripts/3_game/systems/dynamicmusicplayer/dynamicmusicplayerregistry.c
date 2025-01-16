@@ -101,6 +101,7 @@ class DynamicMusicPlayerRegistry
 		RegisterTrackMenu("Music_Menu_2_SoundSet");
 		RegisterTrackMenu("Music_Menu_3_SoundSet");
 		RegisterTrackMenu("Music_Menu_4_SoundSet");
+		RegisterTrackMenu("Music_Menu_subtitles_remake_SoundSet");
 	}
 //____________________________________________Day Time setup___________________________________________
 
@@ -116,6 +117,7 @@ class DynamicMusicPlayerRegistry
 		RegisterTrackTime("Music_time_day_5_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackTime("Music_time_day_6_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		RegisterTrackTime("Music_time_day_7_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
+		RegisterTrackTime("Music_time_day_8_SoundSet", DynamicMusicPlayerTimeOfDay.DAY);
 		//NIGHT
 		RegisterTrackTime("Music_time_night_1_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
 		RegisterTrackTime("Music_time_night_2_SoundSet", DynamicMusicPlayerTimeOfDay.NIGHT);
@@ -170,6 +172,7 @@ class DynamicMusicPlayerRegistry
 		DynamicMusicTrackData track = new DynamicMusicTrackData();
 		track.m_SoundSet 	= soundSetName;
 		track.m_TimeOfDay 	= timeOfDay;
+		track.m_Shape		= DynamicMusicLocationShape.BOX;
 		
 		track.InsertLocation(start, end);
 		
@@ -185,11 +188,12 @@ class DynamicMusicPlayerRegistry
 		}
 	}
 	
-	protected void RegisterTrackLocationStaticMultiRectangle(string soundSetName, ref array<ref TVectorArray> locationBoundaries, int timeOfDay = DynamicMusicPlayerTimeOfDay.ANY, bool runImmediately = false)
+	protected void RegisterTrackLocationStaticMultiRectangle(string soundSetName, array<ref TVectorArray> locationBoundaries, int timeOfDay = DynamicMusicPlayerTimeOfDay.ANY, bool runImmediately = false)
 	{
 		DynamicMusicTrackData track = new DynamicMusicTrackData();
 		track.m_SoundSet 	= soundSetName;
 		track.m_TimeOfDay 	= timeOfDay;
+		track.m_Shape		= DynamicMusicLocationShape.BOX;
 		
 		track.locationBoundaries = locationBoundaries;
 		
@@ -204,6 +208,27 @@ class DynamicMusicPlayerRegistry
 			m_TracksLocationStaticPrioritized.Insert(track);
 		}
 		
+	}
+	
+	protected void RegisterTrackLocationStaticPoints(string soundSetName, array<vector> vertices, int timeOfDay = DynamicMusicPlayerTimeOfDay.ANY, bool runImmediately = false)
+	{
+		DynamicMusicTrackData track = new DynamicMusicTrackData();
+		track.m_SoundSet 	= soundSetName;
+		track.m_TimeOfDay 	= timeOfDay;
+		track.m_Shape		= DynamicMusicLocationShape.POLYGON;
+		
+		track.vertices = vertices;
+		
+		if (!runImmediately)
+		{
+			track.m_Category = EDynamicMusicPlayerCategory.LOCATION_STATIC;
+			m_TracksLocationStatic.Insert(track);
+		}
+		else
+		{
+			track.m_Category = EDynamicMusicPlayerCategory.LOCATION_STATIC_PRIORITY;
+			m_TracksLocationStaticPrioritized.Insert(track);
+		}
 	}
 	
 	protected void RegisterTrackLocationDynamic(string soundSetName, int locationType = DynamicMusicLocationTypes.NONE, int timeOfDay = DynamicMusicPlayerTimeOfDay.ANY)

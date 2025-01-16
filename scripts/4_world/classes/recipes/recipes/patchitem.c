@@ -24,9 +24,9 @@ class PatchItem extends RecipeBase
 		
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"LeatherSewingKit");//you can insert multiple ingredients this way
-		InsertIngredient(0,"SewingKit");//you can insert multiple ingredients this way
-		InsertIngredient(0,"TireRepairKit");//you can insert multiple ingredients this way
+		InsertIngredient(0,"LeatherSewingKit", DayZPlayerConstants.CMD_ACTIONFB_PATCHING_LEATHER_SEWING_KIT);//you can insert multiple ingredients this way
+		InsertIngredient(0,"SewingKit", DayZPlayerConstants.CMD_ACTIONFB_PATCHING_SEWING);//you can insert multiple ingredients this way
+		InsertIngredient(0,"TireRepairKit", DayZPlayerConstants.CMD_ACTIONFB_PATCHING_TIRE);//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing
@@ -82,5 +82,10 @@ class PatchItem extends RecipeBase
 		ItemBase ingredient2;
 		Class.CastTo(ingredient2, ingredients[1]);
 		module_repairing.Repair(playerPB, ingredient1,ingredient2,m_Specialty); //TODO repair all damage zones if packed? Design pending
+	}
+	
+	override bool IsRepeatable()
+	{
+		return true;
 	}
 };

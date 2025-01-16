@@ -20,7 +20,7 @@ class SplitFirewood extends RecipeBase
 		//----------------------------------------------------------------------------------------------------------------------
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"Firewood");						// you can insert multiple ingredients this way
+		InsertIngredient(0,"Firewood",DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD);	// you can insert multiple ingredients this way
 
 		m_IngredientAddHealth[0]		= 0;				// 0 = do nothing
 		m_IngredientSetHealth[0]		= -1;				// -1 = do nothing
@@ -58,11 +58,5 @@ class SplitFirewood extends RecipeBase
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)
 	{
 		return true;
-	}
-
-	//gets called upon recipe's completion
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
-	{
-		Debug.Log("Recipe Do method called","recipes");
 	}
 };

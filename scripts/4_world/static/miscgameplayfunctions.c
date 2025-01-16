@@ -62,7 +62,7 @@ class TurnItemIntoItemLambda extends ReplaceItemWithNewLambda
 			else //is array
 			{
 				inventory_slots_idx.Clear();
-				for (int i = 0; i < inventory_slots.Count(); i++)
+				for (int i = 0; i < inventory_slots.Count(); ++i)
 				{
 					inventory_slots_idx.Insert(InventorySlots.GetSlotIdFromString(inventory_slots.Get(i)));
 				}
@@ -130,7 +130,7 @@ class DropEquipAndDestroyRootLambda : ReplaceItemWithNewLambdaBase
 		array<EntityAI> children = new array<EntityAI>;
 		old_item.GetInventory().EnumerateInventory(InventoryTraversalType.LEVELORDER, children);
 		int count = children.Count();
-		for (int i = 0; i < count; i++)
+		for (int i = 0; i < count; ++i)
 		{
 			EntityAI child = children.Get(i);
 			if (child)
@@ -348,7 +348,7 @@ class MiscGameplayFunctions
 		array<EntityAI> children = new array<EntityAI>;
 		sourceItem.GetInventory().EnumerateInventory(InventoryTraversalType.LEVELORDER, children);
 		int count = children.Count();
-		for (int i = 0; i < count; i++)
+		for (int i = 0; i < count; ++i)
 		{
 			EntityAI child = children.Get(i);
 			if (child)
@@ -488,7 +488,7 @@ class MiscGameplayFunctions
 		int full_piles_count = Math.Floor(quantity/max_stack_size);
 		int rest = quantity - (full_piles_count*max_stack_size);
 		
-		for ( int i = 0; i < full_piles_count; i++ )
+		for (int i = 0; i < full_piles_count; ++i)
 		{
 			if (floaty_spawn)
 				pile = ItemBase.Cast(GetGame().CreateObjectEx(item_name, ground_position, ECE_CREATEPHYSICS|ECE_UPDATEPATHGRAPH));
@@ -498,12 +498,51 @@ class MiscGameplayFunctions
 			pile.SetHealth(health);
 			item_piles.Insert(pile);
 		}
-		if ( rest > 0 )
+		
+		if (rest > 0)
 		{
 			if (floaty_spawn)
 				pile = ItemBase.Cast(GetGame().CreateObjectEx(item_name, ground_position, ECE_CREATEPHYSICS|ECE_UPDATEPATHGRAPH));
 			else
 				pile = ItemBase.Cast(GetGame().CreateObjectEx(item_name, ground_position, ECE_PLACE_ON_SURFACE));
+			pile.SetQuantity(rest);
+			pile.SetHealth(health);
+			item_piles.Insert(pile);
+		}
+		return item_piles;
+	}
+	
+	//! creation method using raycast-dispersed positioning; ECE_TRACE not used as a result
+	static array<ItemBase> CreateItemBasePilesDispersed(string item_name, vector starPos, vector targetPos, float radius, float quantity, float health, Object ignoreObjectCollison)
+	{
+		array<ItemBase>	item_piles;
+		float max_stack_size;
+		ItemBase pile;
+		
+		item_piles = new array<ItemBase>;
+		max_stack_size = g_Game.ConfigGetInt("cfgVehicles " + item_name + " varStackMax");
+		if( max_stack_size < 1)
+			max_stack_size = g_Game.ConfigGetInt("cfgVehicles " + item_name + " varQuantityMax");
+		if( max_stack_size < 1)
+			max_stack_size = 1;
+		
+		int full_piles_count = Math.Floor(quantity/max_stack_size);
+		int rest = quantity - (full_piles_count*max_stack_size);
+		vector randomizedPos;
+		
+		for (int i = 0; i < full_piles_count; ++i)
+		{
+			randomizedPos = MiscGameplayFunctions.GetRandomizedPositionVerified(starPos,targetPos,radius,ignoreObjectCollison);
+			pile = ItemBase.Cast(GetGame().CreateObjectEx(item_name, randomizedPos, ECE_PLACE_ON_SURFACE));
+			pile.SetQuantity(max_stack_size);
+			pile.SetHealth(health);
+			item_piles.Insert(pile);
+		}
+		
+		if (rest > 0)
+		{
+			randomizedPos = MiscGameplayFunctions.GetRandomizedPositionVerified(starPos,targetPos,radius,ignoreObjectCollison);
+			pile = ItemBase.Cast(GetGame().CreateObjectEx(item_name, randomizedPos, ECE_PLACE_ON_SURFACE));
 			pile.SetQuantity(rest);
 			pile.SetHealth(health);
 			item_piles.Insert(pile);
@@ -523,15 +562,47 @@ class MiscGameplayFunctions
 		int piles_count = Math.Floor(quantity/stack_size);
 		int rest = quantity - (piles_count*stack_size);
 		
-		for ( int i = 0; i < piles_count; i++ )
+		for (int i = 0; i < piles_count; ++i)
 		{
 			pile = Magazine.Cast(GetGame().CreateObjectEx(item_name, ground_position, ECE_PLACE_ON_SURFACE));
 			pile.ServerSetAmmoCount(stack_size);
 			items.Insert(pile);
 		}
-		if ( rest > 0)
+		if (rest > 0)
 		{
 			pile = Magazine.Cast(GetGame().CreateObjectEx(item_name, ground_position, ECE_PLACE_ON_SURFACE));
+			pile.ServerSetAmmoCount(rest);
+			items.Insert(pile);
+		}
+		return items;
+	}
+	
+	//! creation method using raycast-dispersed positioning; ECE_TRACE not used as a result
+	static array<Magazine> CreateMagazinePilesDispersed(string item_name, vector starPos, vector targetPos, float radius, float quantity, float health, Object ignoreObjectCollison)
+	{
+		array<Magazine>	items;
+		float stack_size;
+		Magazine pile;
+		
+		items = new array<Magazine>;
+		stack_size = g_Game.ConfigGetInt("cfgMagazines " + item_name + " count");
+		
+		int piles_count = Math.Floor(quantity/stack_size);
+		int rest = quantity - (piles_count*stack_size);
+		vector randomizedPos;
+		
+		for (int i = 0; i < piles_count; ++i)
+		{
+			randomizedPos = MiscGameplayFunctions.GetRandomizedPositionVerified(starPos,targetPos,radius,ignoreObjectCollison);
+			pile = Magazine.Cast(GetGame().CreateObjectEx(item_name, randomizedPos, ECE_CREATEPHYSICS|ECE_UPDATEPATHGRAPH));
+			pile.ServerSetAmmoCount(stack_size);
+			items.Insert(pile);
+		}
+		
+		if (rest > 0)
+		{
+			randomizedPos = MiscGameplayFunctions.GetRandomizedPositionVerified(starPos,targetPos,radius,ignoreObjectCollison);
+			pile = Magazine.Cast(GetGame().CreateObjectEx(item_name, randomizedPos, ECE_CREATEPHYSICS|ECE_UPDATEPATHGRAPH));
 			pile.ServerSetAmmoCount(rest);
 			items.Insert(pile);
 		}
@@ -545,23 +616,24 @@ class MiscGameplayFunctions
 		float stack_size;
 		Magazine pile;
 		string item_name;
-		if( !g_Game.ConfigGetText("cfgAmmo " + bullet_type + " spawnPileType", item_name) )
+		if (!g_Game.ConfigGetText("cfgAmmo " + bullet_type + " spawnPileType", item_name))
 			return items;
 		
 		stack_size = g_Game.ConfigGetInt("cfgMagazines " + item_name + " count");
 		
-		if(stack_size > 0)
+		if (stack_size > 0)
 		{
 			int piles_count = Math.Floor(quantity/stack_size);
 			int rest = quantity - (piles_count*stack_size);
 		
-			for ( int i = 0; i < piles_count; i++ )
+			for (int i = 0; i < piles_count; ++i)
 			{
 				pile = Magazine.Cast(GetGame().CreateObjectEx(item_name, ground_position, ECE_PLACE_ON_SURFACE));
 				pile.ServerSetAmmoCount(stack_size);
 				items.Insert(pile);
 			}
-			if ( rest > 0)
+			
+			if (rest > 0)
 			{
 				pile = Magazine.Cast(GetGame().CreateObjectEx(item_name, ground_position, ECE_PLACE_ON_SURFACE));
 				pile.ServerSetAmmoCount(rest);
@@ -571,13 +643,26 @@ class MiscGameplayFunctions
 		return items;
 	}
 	
+	//CreateMagazinePilesDispersed(string item_name, vector starPos, vector targetPos, float radius, float quantity, float health, Object ignoreObjectCollison)
+	static array<Magazine> CreateMagazinePilesFromBulletDispersed(string bullet_type, vector starPos, vector targetPos, float radius, float quantity, float health, Object ignoreObjectCollison)
+	{
+		array<Magazine>	items = new array<Magazine>;
+		Magazine pile;
+		string item_name;
+		if (!g_Game.ConfigGetText("cfgAmmo " + bullet_type + " spawnPileType", item_name))
+			return items;
+		
+		items = CreateMagazinePilesDispersed(item_name,starPos,targetPos,radius,quantity,health,ignoreObjectCollison);
+		return items;
+	}
+	
 	static int GetHealthLevelForAmmo(string class_name, float health)
 	{
 		float health_normalized = health / 100;
 		string config_path = CFG_WEAPONSPATH + " " + class_name + " DamageSystem" + " GlobalHealth" + " healthLabels";
 		CachedObjectsArrays.ARRAY_FLOAT.Clear();
 		GetGame().ConfigGetFloatArray(config_path, CachedObjectsArrays.ARRAY_FLOAT);
-		for(int i = 0; i < CachedObjectsArrays.ARRAY_FLOAT.Count(); i++)
+		for(int i = 0; i < CachedObjectsArrays.ARRAY_FLOAT.Count(); ++i)
 		{
 			if( health_normalized >= CachedObjectsArrays.ARRAY_FLOAT.Get(i) )
 			{
@@ -998,6 +1083,14 @@ class MiscGameplayFunctions
 		return ret;
 	}
 	
+	static vector GetRandomizedPositionVerifiedPlayer(Man player, float distance, float radius, Object ignore)
+	{
+		vector startPos;
+		MiscGameplayFunctions.GetHeadBonePos(PlayerBase.Cast(player),startPos);
+		vector targetPos = player.GetPosition() + (player.GetDirection() * distance);
+		return GetRandomizedPositionVerified(startPos,targetPos,radius,ignore);
+	}
+	
 	static void DropAllItemsInInventoryInBounds(ItemBase ib, vector halfExtents)
 	{
 		if (!GetGame().IsServer())
@@ -1397,7 +1490,7 @@ class MiscGameplayFunctions
 	
 	static bool IsObjectObstructedFilter(Object object, IsObjectObstructedCache cache, PlayerBase player)
 	{
-		for ( int m = 0; m < cache.HitObjects.Count(); m++ )
+		for (int m = 0; m < cache.HitObjects.Count(); ++m)
 		{
 			Object hit_object = cache.HitObjects.Get(m);
 			
@@ -1438,7 +1531,7 @@ class MiscGameplayFunctions
 		{
 			count = cache.HitProxyObjects.Count();
 			Object parent;
-			for (i = 0; i < count; i++)
+			for (i = 0; i < count; ++i)
 			{
 				if (cache.HitProxyObjects[i].hierLevel > 0) //parent has to exist, skipping nullcheck
 				{
@@ -1458,7 +1551,7 @@ class MiscGameplayFunctions
 			geometry = geometryTypeOverride;
 		DayZPhysics.RaycastRV(cache.RaycastStart, cache.ObjectCenterPos, cache.ObjectContactPos, cache.ObjectContactDir, cache.ContactComponent, cache.HitObjects, object, GetGame().GetPlayer(), false, false, geometry, 0.0, CollisionFlags.ALLOBJECTS);
 		count = cache.HitObjects.Count();
-		for (i = 0; i < count; i++ )
+		for (i = 0; i < count; ++i)
 		{
 			if (cache.HitObjects[i].CanObstruct())
 				return true;
@@ -1659,7 +1752,7 @@ class MiscGameplayFunctions
 	static float GetMinValue(array<float> pArray)
 	{
 		float minValue = 0.0;
-		for (int i = 0; i < pArray.Count(); i++)
+		for (int i = 0; i < pArray.Count(); ++i)
 		{
 			if (minValue == 0 || pArray.Get(i) < minValue)
 			{
@@ -1673,7 +1766,7 @@ class MiscGameplayFunctions
 	static float GetMaxValue(array<float> pArray)
 	{
 		float maxValue = 0.0;
-		for (int i = 0; i < pArray.Count(); i++)
+		for (int i = 0; i < pArray.Count(); ++i)
 		{
 			if (maxValue == 0 || pArray.Get(i) > maxValue)
 			{
@@ -1739,7 +1832,7 @@ class MiscGameplayFunctions
 	
 				if (childToRemove.IsAnyInherited(listOfTypenames))
 				{
-					vector pos = childToRemove.GetPosition();			
+					vector pos = parent.GetPosition();			
 					parent.RemoveChild(childToRemove, false);
 	
 					vector m4[4];
@@ -1786,15 +1879,16 @@ class MiscGameplayFunctions
 	{
 		if (g_Game.IsServer())
 		{
-			if (parent.GetLiquidType() != 0 && parent.GetQuantityNormalized() > liquidQuantityThresholdPercentage)
+			if (parent.GetLiquidType() != 0 && parent.GetQuantityNormalized() > liquidQuantityThresholdPercentage && !parent.GetIsFrozen())
 				item.SetWetMax();
 		}
 	}
 
 	static float GetCombinedSnowfallWindValue()
 	{
+		float windMin;
 		float windMax;
-		g_Game.GetWeather().GetWindMagnitude().GetLimits(null, windMax);
+		g_Game.GetWeather().GetWindMagnitude().GetLimits(windMin, windMax);
 		float snowfall = g_Game.GetWeather().GetSnowfall().GetActual();
 		float value = snowfall + g_Game.GetWeather().GetWindMagnitude().GetActual() / windMax;
 		

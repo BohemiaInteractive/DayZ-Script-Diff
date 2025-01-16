@@ -275,7 +275,27 @@ class ActionManagerBase
 	void OnContinuousStart();
 	void OnContinuousCancel();
 	void OnSingleUse();
-	void Interrupt();
+	
+	void InterruptNoSync()
+	{
+		m_Interrupted = true;
+	}
+	
+	void Interrupt()
+	{
+		if (m_CurrentActionData)
+		{
+			if(GetGame().IsMultiplayer())
+			{
+				RequestInterruptAction();
+			}
+			else
+			{
+				InterruptNoSync();
+			}
+		}
+	}
+	void RequestInterruptAction();
 
 	protected void LocalInterrupt()
 	{
@@ -293,7 +313,7 @@ class ActionManagerBase
 		if (LogManager.IsActionLogEnable())
 		{
 			if (m_CurrentActionData)
-				Debug.ActionLog("n/a", m_CurrentActionData.m_Action.ToString() , "n/a", "OnActionEnd", m_CurrentActionData.m_Player.ToString());
+				Debug.ActionLog("Time stamp: " + m_CurrentActionData.m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "OnActionEnd", m_CurrentActionData.m_Player.ToString());
 			Debug.ActionLog("Action data cleared ", this.ToString() , "n/a", "ActionEnd", m_CurrentActionData.m_Player.ToString());
 		}
 		if (m_CurrentActionData)
@@ -316,6 +336,14 @@ class ActionManagerBase
 			return m_CurrentActionData.m_Action.GetProgress(m_CurrentActionData);
 
 		return 0.0;
+	}
+	
+	float GetACProgressWidgetMultiplier()
+	{
+		if (m_CurrentActionData)
+			return m_CurrentActionData.m_Action.GetProgressWidgetMultiplier(m_CurrentActionData);
+		
+		return 1;
 	}
 	
 	int GetActionState()

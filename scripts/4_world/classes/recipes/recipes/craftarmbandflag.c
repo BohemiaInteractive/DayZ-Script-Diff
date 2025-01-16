@@ -20,7 +20,7 @@ class CraftArmbandFlag extends RecipeBase
 		//----------------------------------------------------------------------------------------------------------------------
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredient(0,"Flag_Base");			// you can insert multiple ingredients this way
+		InsertIngredientEx(0,"Flag_Base","ImprovisedCloth_craft");			// you can insert multiple ingredients this way
 
 		m_IngredientAddHealth[0]		= 0;		// 0 = do nothing
 		m_IngredientSetHealth[0]		= -1;		// -1 = do nothing
@@ -99,11 +99,5 @@ class CraftArmbandFlag extends RecipeBase
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)
 	{
 		return ingredients[0].IsEmpty();
-	}
-
-	// gets called upon recipe's completion
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
-	{
-		
 	}
 };

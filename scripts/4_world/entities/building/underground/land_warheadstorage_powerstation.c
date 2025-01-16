@@ -3,11 +3,13 @@ class Land_WarheadStorage_PowerStation : House
 	protected bool m_InitBunkerState;	// if generator is running already, used for initial power setup of related bunker
 	protected static ref set<Land_WarheadStorage_Main> 	m_Bunkers;
 	protected ref Timer m_UpdateTimer;
-	protected int m_LeverStatesBits;
-	protected int m_LastActivatedLeverId;
 	protected PowerGeneratorStatic m_PowerGenerator;
 	protected bool m_IsPowerGeneratorRunning;
 	protected int m_PlaySparks;
+	protected int m_LastActivatedLeverId;
+	protected int m_LeverStatesBits;	// is persistent through power generator
+	
+	protected static ref map<Land_WarheadStorage_PowerStation, Land_WarheadStorage_Main> m_BunkerStationMap = new map<Land_WarheadStorage_PowerStation, Land_WarheadStorage_Main>();
 	
 	protected const string LEVERS_POS_MEMPOINT 		= "leverup_axis";
 	protected const string GENERATOR_POS_MEMPOINT 	= "generator_pos";
@@ -68,6 +70,9 @@ class Land_WarheadStorage_PowerStation : House
 		}
 
 		m_PowerGenerator.SetParent(this);
+		
+		if (GetGame().IsServer())
+			OnAfterLoadUpdate();
 		
 		//DebugPrepareGenerator();
 		
@@ -162,6 +167,7 @@ class Land_WarheadStorage_PowerStation : House
 		}
 		if (updated)
 		{
+			m_PowerGenerator.StoreLeverStates(m_LeverStatesBits);
 			OnLeverToggled();
 			UpdateLeverStatesServer();
 		}
@@ -201,7 +207,7 @@ class Land_WarheadStorage_PowerStation : House
 		{
 			leverName = GetLeverComponentNameByLeverIndex(i);
 			if (GetAnimationPhase(leverName) > 0)
-				AnimateLever(i, 0);
+				AnimateLever(i, 0);	// will update the lever states through tick
 		}
 	}
 	
@@ -296,10 +302,14 @@ class Land_WarheadStorage_PowerStation : House
 	//-------------------------------------- Remote bunker get/set -------------------------------------
 	//--------------------------------------------------------------------------------------------------
 	
-	protected Land_WarheadStorage_Main GetClosestBunker()
+	Land_WarheadStorage_Main GetClosestBunker()
 	{
-		float smallestDist = float.MAX;
 		Land_WarheadStorage_Main closestBunker;
+		closestBunker = m_BunkerStationMap.Get(this);
+		if (closestBunker)
+			return closestBunker;
+		
+		float smallestDist = float.MAX;
 		vector thisPos = GetPosition();
 		
 		if (!m_Bunkers)
@@ -323,9 +333,11 @@ class Land_WarheadStorage_PowerStation : House
 				closestBunker.SetPowerServer(true);
 		}
 		
+		m_BunkerStationMap.Insert(this, closestBunker);
+		
 		return closestBunker;
 	}
-	
+		
 	static void RegisterBunker(Land_WarheadStorage_Main bunker)
 	{
 		if (!m_Bunkers)
@@ -357,6 +369,24 @@ class Land_WarheadStorage_PowerStation : House
 		{
 			m_PowerGenerator.GetCompEM().SetEnergy(10000);
 			m_PowerGenerator.GetInventory().CreateInInventory("GlowPlug");
+		}
+	}
+			
+	// animates levers based on synched lever state from linked generator entity
+	void OnAfterLoadUpdate()
+	{
+		int leverBits = m_PowerGenerator.GetStoredLeverBits();
+		
+		for (int index = 1; index <= 4; index++)
+		{
+			int bit = 1 << (index - 1);
+			
+			if ( (bit & leverBits) != 0 )
+			{
+				float animPhase = GetAnimationPhase(GetLeverComponentNameByLeverIndex(index));
+				if (animPhase == 0)
+					AnimateLever(index, 1);			
+			}
 		}
 	}
 }

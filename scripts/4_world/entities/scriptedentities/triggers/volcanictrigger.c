@@ -19,6 +19,11 @@ class VolcanicTrigger : EffectTrigger
 		#endif
 	}
 	
+	override string GetDisplayName()
+	{
+		return "#STR_volcanicarea";
+	}
+	
 	override void EEDelete( EntityAI parent )
 	{
 		if (m_VaporParticle)

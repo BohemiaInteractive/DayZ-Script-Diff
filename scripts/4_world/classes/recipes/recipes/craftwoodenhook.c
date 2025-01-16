@@ -91,10 +91,4 @@ class CraftWoodenHook extends RecipeBase
 	{
 		return true;
 	}
-
-	//gets called upon recipe's completion
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
-	{
-		Debug.Log("Recipe Do method called","recipes");
-	}
 };

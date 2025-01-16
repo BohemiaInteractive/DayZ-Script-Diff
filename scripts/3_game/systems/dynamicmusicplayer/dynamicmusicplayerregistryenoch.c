@@ -18,7 +18,7 @@ class DynamicMusicPlayerRegistryEnoch : DynamicMusicPlayerRegistry
 		
 		array<ref TVectorArray> militaryDambog;
 		militaryDambog = {
-			{"591.944336 534.083801 1127.866089", "740.260620 531.480774 1233.501831"},
+			{"591.944336 334.083801 1127.866089", "740.260620 331.480774 1233.501831"},
 		};
 
 		RegisterTrackLocationStaticMultiRectangle("Music_loc_sila_SoundSet", militarySila, DynamicMusicPlayerTimeOfDay.ANY, true);

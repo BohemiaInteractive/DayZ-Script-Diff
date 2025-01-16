@@ -30,6 +30,11 @@ class TreeHard : PlantSuper
 	{
 		return false;
 	}
+	
+	override bool HasPlayerCollisionSound()
+	{
+		return false;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -47,6 +52,11 @@ class TreeSoft : PlantSuper
 	}
 
 	override bool CanBeAutoDeleted()
+	{
+		return false;
+	}
+
+	override bool HasPlayerCollisionSound()
 	{
 		return false;
 	}
@@ -88,7 +98,7 @@ class BushSoft : PlantSuper
 		return true;
 	}
 
-		override bool CanBeAutoDeleted()
+	override bool CanBeAutoDeleted()
 	{
 		return false;
 	}

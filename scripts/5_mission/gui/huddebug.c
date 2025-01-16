@@ -89,6 +89,7 @@ class HudDebug extends Hud
 	static const int HUD_WIN_VERSION			= 7;
 	static const int HUD_WIN_TEMPERATURE		= 8;
 	static const int HUD_WIN_HEALTH				= 9;
+	static const int HUD_WIN_HORTICULTURE		= 10;
 	
 	Widget							m_WgtRoot;
 	Widget							m_Crosshair;
@@ -99,6 +100,7 @@ class HudDebug extends Hud
 	ref HudDebugWinCharStats		m_WinCharStats;
 	ref HudDebugWinCharAgents 		m_WinCharAgents;
 	ref HudDebugWinHealth 			m_WinHealth;
+	ref HudDebugWinHorticulture		m_WinHorticulture;
 	
 	//============================================
 	// HudDebug
@@ -164,6 +166,11 @@ class HudDebug extends Hud
 		// Register Window Character Health
 		m_WinHealth = new HudDebugWinHealth( m_WgtRoot.FindAnyWidget( "wdw_Health" ) );
 		m_Panels.Insert( m_WinHealth );
+		
+		m_WinHorticulture = new HudDebugWinHorticulture( m_WgtRoot.FindAnyWidget( "wdw_Horticulture" ) );
+		m_Panels.Insert( m_WinHorticulture );
+		
+		
 				
 		
 		RefreshByLocalProfile();
@@ -297,6 +304,7 @@ class HudDebug extends Hud
 			SetPanelVisible( HudDebug.HUD_WIN_VERSION, 			module_cfg_profile.GetVersionVisible() );
 			SetPanelVisible( HudDebug.HUD_WIN_TEMPERATURE, 		module_cfg_profile.GetTempVisible() );
 			SetPanelVisible( HudDebug.HUD_WIN_HEALTH, 			module_cfg_profile.GetHealthVisible() );
+			SetPanelVisible( HudDebug.HUD_WIN_HORTICULTURE, 	module_cfg_profile.GetHorticultureVisible() );
 		}
 	}
 	
@@ -340,6 +348,12 @@ class HudDebug extends Hud
 		if ( m_WinHealth )
 		{
 			if (m_WinHealth.OnClick( w, x, y, button ))
+				return true;
+		}
+				
+		if ( m_WinHorticulture )
+		{
+			if (m_WinHorticulture.OnClick( w, x, y, button ))
 				return true;
 		}
 		

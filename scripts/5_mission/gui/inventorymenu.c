@@ -146,8 +146,8 @@ class InventoryMenu extends UIScriptedMenu
 		PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR).Stop();
 		if(m_Inventory)
 			m_Inventory.OnHide();
-		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
-		if( mission )
+		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		if(mission)
 		{
 			mission.MoveHudForInventory( false );
 		}
@@ -165,5 +165,15 @@ class InventoryMenu extends UIScriptedMenu
 	bool LanguageChanged()
 	{
 		return g_Game.GetCurrentDisplayLanguageIdx() != m_LastDisplayLanguage;
+	}
+	
+	override void OnPlayerDeath()
+	{
+		super.OnPlayerDeath();
+		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		if (mission)
+		{
+			mission.HideInventory();
+		}
 	}
 }

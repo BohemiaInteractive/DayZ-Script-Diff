@@ -49,13 +49,16 @@ class ActionActivateTrap : ActionContinuousBase
 		if (targetItem && targetItem.IsBeingPlaced())
 			return false;
 		
+		if (player.PhysicsGetLinkedEntity() != null)
+			return false;
+		
 		Object targetObject = target.GetObject();
 		if (targetObject != null)
 		{
 			if (targetObject.IsInherited(TrapBase))
 			{
 				TrapBase trap = TrapBase.Cast(targetObject);
-				if (trap.IsActivable())
+				if (trap.IsActivable() && trap.IsPlaceableAtPosition(trap.GetPosition()))
 					return true;
 			}
 			else if (targetObject.IsInherited(TrapSpawnBase))

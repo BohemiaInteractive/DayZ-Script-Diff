@@ -67,7 +67,6 @@ class IngameHudHeatBuffer
 		float heatBufferVal = m_Player.GetStatHeatBuffer().Get();
 		float heatBufferDynMax = m_Player.GetHeatBufferDynamicMax();
 		float heatBufferPercent = heatBufferVal / m_Player.GetStatHeatBuffer().GetMax();
-		//heatBufferPercent = Math.Floor(heatBufferPercent * 100) * 0.01; // Buff value percentage with micro optimization
 		float heatBufferDiff = heatBufferVal - m_CurrentValue;
 		m_CurrentValue = heatBufferVal;
 		
@@ -88,8 +87,10 @@ class IngameHudHeatBuffer
 		for (int i = 1; i < HeatBufferMdfr.NUMBER_OF_STAGES; ++i)
 		{
 			Widget hbw = m_Root.FindAnyWidget("HeatBuffer" + i);
+			if (!hbw)
+				continue;
+
 			float stageThreshold = HeatBufferMdfr.STAGE_THRESHOLDS[i];
-		
 			#ifdef HEATBUFFER_INDICATOR_DEBUG
 			Print("Stage treshold=" + stageThreshold);
 			#endif
@@ -122,7 +123,7 @@ class IngameHudHeatBuffer
 			#endif
 		
 			// Hide visibility of flashing stages
-			if (heatBufferStage < i && m_FlashingStage != i || m_FlashingStage == i && m_FlashingTime >= 3.0)
+			if (heatBufferStage < i && m_FlashingStage != i || m_FlashingStage == i && m_FlashingTime >= 2.9)
 			{
 				if (m_FlashingStage == i)
 				{
@@ -190,9 +191,6 @@ class IngameHudHeatBuffer
 							Print("HEAT BUFFER - STAGE " + i + " - FLASHING");
 							#endif
 							
-							if (m_FlashingStage == i && m_FlashingTime <= 3.0)
-								m_FlashingStage = i;
-							
 							#ifdef HEATBUFFER_INDICATOR_DEBUG
 							hbw.SetColor(ARGB(hbw.GetAlpha() * 255, 255, 0, 0)); // COLOR SET ON INDICATOR IS ONLY HERE FOR DEBUG TESTING FOR NOW
 							#endif
@@ -200,7 +198,7 @@ class IngameHudHeatBuffer
 							UpdateEffect(hbw, 0.25, timeslice);
 							
 							m_FlashingTime += timeslice;
-							if (m_FlashingTime >= 3.0)
+							if (m_FlashingTime >= 2.9)
 							{
 								m_IsActive = false;
 								m_FlashingTime = 0;

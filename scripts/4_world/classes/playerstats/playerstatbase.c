@@ -68,17 +68,17 @@ class PlayerStat<Class T> extends PlayerStatBase
 	
 	override void OnRPC(ParamsReadContext ctx)
 	{
+		super.OnRPC(ctx);
+		
 		if (IsSynced())
-		{			
-			Param2<int, T> data;
-			if (ctx.Read(data))
-			{
-				int type 	= data.param1;
-				T value 	= data.param2;
-
-				if (m_Type == type)
-					Set(value);
-			}
+		{
+			ctx.Read(CachedObjectsParams.PARAM2_INT_FLOAT);
+			
+			int type = CachedObjectsParams.PARAM2_INT_FLOAT.param1;
+			T value	= CachedObjectsParams.PARAM2_INT_FLOAT.param2;
+				
+			if (m_Type == type)
+				Set(value);
 		}
 	}
 	
@@ -106,10 +106,9 @@ class PlayerStat<Class T> extends PlayerStatBase
 				if (T == float && Math.AbsFloat(m_ValueLastSynced - m_Value) < 0.05)
 					return;
 				
-				Param2<int, T> data = new Param2<int, T>(-1, 0);
-				data.param1 = m_Type;
-				data.param2 = m_Value;
-				m_Player.RPCSingleParam(ERPCs.RPC_PLAYER_STAT, data, true, m_Player.GetIdentity());
+				CachedObjectsParams.PARAM2_INT_FLOAT.param1 = m_Type;
+				CachedObjectsParams.PARAM2_INT_FLOAT.param2 = m_Value;
+				m_Player.RPCSingleParam(ERPCs.RPC_PLAYER_STAT, CachedObjectsParams.PARAM2_INT_FLOAT, true, m_Player.GetIdentity());
 				m_ValueLastSynced = m_Value;
 			}
 		}

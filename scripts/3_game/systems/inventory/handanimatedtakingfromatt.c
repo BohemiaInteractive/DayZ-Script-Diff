@@ -27,15 +27,23 @@ class HandTakingAnimated_Show extends HandStartAction
 				}
 				#endif
 				
-				//if (GameInventory.LocationCanMoveEntity(m_Src, m_Dst))
-				//{
+				if (!GetGame().IsMultiplayer())
+				{
 					GameInventory.LocationSyncMoveEntity(m_Src, m_Dst);
-					e.m_Player.OnItemInHandsChanged();
-				//}
-				//else
-				//{
-				//	if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[hndfsm] HandTakingAnimated_Show - not allowed");
-				//}
+					m_Player.OnItemInHandsChanged();
+				}
+				else
+				{
+					if (!GetGame().IsDedicatedServer())
+					{
+						m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
+						m_Player.GetHumanInventory().PostDeferredEventTakeToDst(InventoryMode.JUNCTURE, m_Src, m_Dst);
+					}
+					else
+					{
+						GetGame().ClearJunctureEx(e.m_Player, m_Dst.GetItem());
+					}
+				}
 			}
 			else
 			{
@@ -101,7 +109,7 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 		m_Hide.m_ActionType = e.GetAnimationID();
 		m_Show.m_ActionType = e.GetAnimationID();
 			
-		e.m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst.GetItem(), m_Dst, GameInventory.c_InventoryReservationTimeoutShortMS);
+		m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst.GetItem(), m_Dst, GameInventory.c_InventoryReservationTimeoutShortMS);
 
 		super.OnEntry(e); // @NOTE: super at the end (prevent override from submachine start)
 	}
@@ -116,9 +124,9 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 		#endif
 		if (m_Dst)
 		{
-			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
+			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
 			if ( GetGame().IsServer() )
-				GetGame().ClearJuncture(e.m_Player, m_Dst.GetItem());
+				GetGame().ClearJunctureEx(e.m_Player, m_Dst.GetItem());
 		}
 		m_Dst = null;
 
@@ -127,7 +135,7 @@ class HandAnimatedTakingFromAtt extends HandStateBase
 
 	override void OnExit(HandEventBase e)
 	{
-		e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
+		m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
 		m_Dst = null;
 
 		super.OnExit(e);

@@ -1,8 +1,8 @@
 class HeatBufferMdfr : ModifierBase
 {
 	const int NUMBER_OF_STAGES = 4;
-	const float STAGE_THRESHOLDS[NUMBER_OF_STAGES] = {0.0, 0.33, 0.66, 1.0};
-	
+	const float STAGE_THRESHOLDS[NUMBER_OF_STAGES] = {0.0, 0.60, 0.85, 1.0};
+
 	protected int m_Stage;
 	protected int m_StageLast;
 
@@ -44,7 +44,8 @@ class HeatBufferMdfr : ModifierBase
 	{
 		player.ToggleHeatBufferVisibility(GetHeatBufferStage());
 		//Protection against influenza with duration
-		player.SetTemporaryResistanceToAgent(eAgents.INFLUENZA, 300);
+		if (player.GetTemporaryResistanceToAgent(eAgents.INFLUENZA) < 300)
+			player.SetTemporaryResistanceToAgent(eAgents.INFLUENZA, 300);
 	}
 	
 	override void Tick(float delta_time)

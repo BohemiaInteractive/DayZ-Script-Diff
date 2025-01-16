@@ -349,7 +349,10 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		{
 			m_HitType = GetAttackTypeByWeaponAttachments(itemInHands);
 			if ( m_HitType == EMeleeHitType.NONE )
+			{
+				pContinueAttack = false;
 				return false; //! exit if there is no suitable attack
+			}
 			
 			m_MeleeCombat.Update(itemInHands, m_HitType);
 
@@ -501,6 +504,17 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 	protected bool HandleComboHit(int pCurrentCommandID, HumanInputController pInputs, InventoryItem itemInHands, HumanMovementState pMovementState, out bool pContinueAttack)
 	{
 		//Debug.MeleeLog(m_Player, "HandleComboHit::");
+		m_IsInComboRange = false;
+		
+		//! wait for the previous hit commit before hitting again
+		if (!m_WasPreviousHitProcessed)
+			return false;
+		
+		//! select if the next attack will be light or heavy (based on input/attachment modifier)
+		if (itemInHands && itemInHands.IsWeapon())
+			m_HitType = GetAttackTypeByWeaponAttachments(itemInHands);
+		else
+			m_HitType = GetAttackTypeFromInputs(pInputs);
 
 		//! no suitable attack - skip that
 		if (m_HitType == EMeleeHitType.NONE)
@@ -514,24 +528,10 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		EMeleeTargetType targetType;
 		GetTargetData(target, targetType);
 		float attackByDistance = GetAttackTypeByDistanceToTarget(target, targetType);
-		
-		//! select if the next attack will light or heavy (based on input/attachment modifier)
-		if (itemInHands && itemInHands.IsWeapon())
-		{
-			m_HitType = GetAttackTypeByWeaponAttachments(itemInHands);			
-		}
-		else
-		{
-			m_HitType = GetAttackTypeFromInputs(pInputs);
-		}
 
 		//! targetting
 		//Debug.MeleeLog(m_Player, string.Format("HandleComboHit:: %1", EnumTools.EnumToString(EMeleeHitType, m_HitType)));
-		//! wait for the previous hit commit before hitting again
-		if (m_WasPreviousHitProcessed)
-		{
-		  m_MeleeCombat.Update(itemInHands, m_HitType);
-		}
+	 	m_MeleeCombat.Update(itemInHands, m_HitType);
 
 		//! continue 'combo' - left hand attacks
 		bool isHeavy = (m_HitType == EMeleeHitType.HEAVY || m_HitType == EMeleeHitType.WPN_STAB);	
@@ -564,8 +564,6 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 				m_Player.DepleteStamina(EStaminaModifiers.MELEE_LIGHT);
 				break;
 		}
-
-		m_IsInComboRange = false;
 
 		return true;
 	}

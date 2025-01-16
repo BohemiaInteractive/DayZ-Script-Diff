@@ -55,6 +55,9 @@ class Liquid
 	
 	static bool InitAllLiquids()
 	{
+		if (!g_Game)
+			return false;
+		
 		string cfg_classname = "cfgLiquidDefinitions";
 		string property_value = "NULL_PROPERTY";
 		int cfg_item_count = g_Game.ConfigGetChildrenCount(cfg_classname);
@@ -110,6 +113,8 @@ class Liquid
 		float retultTemp = (source_ent.GetTemperature() * quantity_to_transfer + target_ent.GetTemperature() * (targetCfgWeight + target_quantity)) / (targetCfgWeight + target_quantity + quantity_to_transfer);
 		target_ent.SetTemperature(retultTemp);
 		
+		AffectContainerOnTransfer(target_ent,source_liquid_type,quantity_to_transfer,source_ent.GetTemperature());
+		
 		Liquid.FillContainer(target_ent,source_liquid_type,quantity_to_transfer);
 	}
 	
@@ -163,6 +168,7 @@ class Liquid
 		container.AddQuantity(amount);
 	}
 
+	//! Filled from any enviro source (fuel feed, pond, snow...)
 	static void FillContainerEnviro(ItemBase container, int liquid_type, float amount, bool inject_agents = true)
 	{
 		float containerCfgWeight = container.m_ConfigWeight;
@@ -198,9 +204,15 @@ class Liquid
 		}
 	}
 	
+	//! from enviro source
 	static void AffectContainerOnFill(ItemBase container, int liquid_type, float amount)
 	{
 		container.AffectLiquidContainerOnFill(liquid_type,amount);
+	}
+	
+	static void AffectContainerOnTransfer(ItemBase container, int liquidType, float amount, float sourceLiquidTransfer)
+	{
+		container.AffectLiquidContainerOnTransfer(liquidType,amount,sourceLiquidTransfer);
 	}
 	
 	static bool IsLiquidDrinkWater(int liquidType)
@@ -274,6 +286,9 @@ class Liquid
 	{
 		string cfg_classname = "cfgLiquidDefinitions";
 		string property_value = "NULL_PROPERTY";
+		if (!g_Game)
+			return property_value;
+		
 		int cfg_item_count = g_Game.ConfigGetChildrenCount(cfg_classname);
 
 		for (int i = 0; i < cfg_item_count; i++)
@@ -320,14 +335,16 @@ class Liquid
 	
 	static NutritionalProfile SetUpNutritionalProfile(int liquid_type, string liquid_class_name)
 	{
-		float energy = Liquid.GetLiquidConfigProperty(liquid_type, "energy", true).ToFloat();
-		float nutritional_index = Liquid.GetLiquidConfigProperty(liquid_type, "nutritionalIndex", true).ToFloat();
-		float volume = Liquid.GetLiquidConfigProperty(liquid_type, "fullnessIndex", true).ToFloat();
-		float water_content = Liquid.GetLiquidConfigProperty(liquid_type, "water", true).ToFloat();
-		float toxicity = Liquid.GetLiquidConfigProperty(liquid_type, "toxicity", true).ToFloat();
-		int agents = Liquid.GetLiquidConfigProperty(liquid_type, "agents", true).ToInt();
-		float digest = Liquid.GetLiquidConfigProperty(liquid_type, "digestibility", true).ToFloat();
-		NutritionalProfile profile = new NutritionalProfile(energy, water_content, nutritional_index, volume, toxicity, agents, digest);
+		NutritionalProfile profile = new NutritionalProfile();
+		profile.m_Energy = Liquid.GetLiquidConfigProperty(liquid_type, "energy", true).ToFloat();
+		profile.m_NutritionalIndex = Liquid.GetLiquidConfigProperty(liquid_type, "nutritionalIndex", true).ToFloat();
+		profile.m_FullnessIndex = Liquid.GetLiquidConfigProperty(liquid_type, "fullnessIndex", true).ToFloat();
+		profile.m_WaterContent = Liquid.GetLiquidConfigProperty(liquid_type, "water", true).ToFloat();
+		profile.m_Toxicity = Liquid.GetLiquidConfigProperty(liquid_type, "toxicity", true).ToFloat();
+		profile.m_Agents = Liquid.GetLiquidConfigProperty(liquid_type, "agents", true).ToInt();
+		profile.m_Digestibility = Liquid.GetLiquidConfigProperty(liquid_type, "digestibility", true).ToFloat();
+		profile.m_AgentsPerDigest = Liquid.GetLiquidConfigProperty(liquid_type, "agentsPerDigest", true).ToFloat();
+
 		profile.MarkAsLiquid(liquid_type, liquid_class_name);
 		return profile;
 	}
@@ -335,6 +352,11 @@ class Liquid
 	static int GetAgents(int liquid_type)
 	{
 		return m_LiquidInfosByType.Get(liquid_type).m_NutriProfile.GetAgents();
+	}
+	
+	static int GetAgentsPerDigest(int liquidType)
+	{
+		return m_LiquidInfosByType.Get(liquidType).m_NutriProfile.m_AgentsPerDigest;
 	}
 	
 	static float GetToxicity(int liquid_type)

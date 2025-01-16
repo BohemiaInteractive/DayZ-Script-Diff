@@ -30,17 +30,7 @@ class Trap_RabbitSnare extends TrapSpawnBase
 
 		return g_Game.IsSurfaceDigable(surfaceType);
 	}
-	
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-				
-		if (IsPlaceSound())
-		{
-			PlayPlaceSound();
-		}
-	}
-	
+		
 	override void SetupTrap()
 	{
 		if ( GetGame().IsServer() )
@@ -86,7 +76,6 @@ class Trap_RabbitSnare extends TrapSpawnBase
 	{
 		super.OnPlacementComplete( player, position, orientation );
 		SetOrientation(orientation);	
-		SetIsPlaceSound( true );
 	}
 	
 	override bool IsDeployable()

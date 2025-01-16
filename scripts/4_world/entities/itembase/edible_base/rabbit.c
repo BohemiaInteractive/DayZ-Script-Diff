@@ -1,5 +1,10 @@
-class DeadRabbit extends Edible_Base
+class DeadRabbit : Edible_Base
 {
+	void DeadRabbit()
+	{
+		CacheSkinningBloodInfectionChance(eAgents.SALMONELLA);
+	}
+
 	override bool CanBeCookedOnStick()
 	{
 		return false;

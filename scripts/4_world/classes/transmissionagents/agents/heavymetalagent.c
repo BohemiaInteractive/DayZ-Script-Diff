@@ -42,13 +42,9 @@ class HeavyMetalAgent : AgentBase
 	
 	override float GetDieOffSpeedEx(PlayerBase player)
 	{
-		if( player.GetModifiersManager().IsModifierActive(eModifiers.MDF_CHELATION))
-		{
-			return GetDieOffSpeed() * 0.3 ;
-		}
-		else
-		{
-			return super.GetDieOffSpeedEx(player);
-		}
+		if (player.GetModifiersManager().IsModifierActive(eModifiers.MDF_CHELATION))
+			return GetDieOffSpeed() * 0.3;
+
+		return super.GetDieOffSpeedEx(player);
 	}
 }

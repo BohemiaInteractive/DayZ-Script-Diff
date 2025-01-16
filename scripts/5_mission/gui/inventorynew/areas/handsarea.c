@@ -104,14 +104,13 @@ class HandsArea: Container
 	
 	override void SetSameLevelNextActive()
 	{
-		m_HandsContainer.SetSameLevelNextActive();
-		
+		super.SetSameLevelNextActive();
 		Refresh();
 	}
+
 	override void SetSameLevelPreviousActive()
 	{
-		m_HandsContainer.SetSameLevelPreviousActive();
-		
+		super.SetSameLevelPreviousActive();
 		Refresh();
 	}
 	

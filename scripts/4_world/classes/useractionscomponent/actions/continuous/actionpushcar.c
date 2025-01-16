@@ -8,11 +8,24 @@ class ActionPushCarData : ActionPushObjectData
 	CarScript m_Car;
 }
 
+class CAContinuousRepeatPushCar : CAContinuousRepeatPushObject
+{
+	override float GetProgressWidgetMultiplier()
+	{
+		return 2.5;
+	}
+}
+
 class ActionPushCarCB : ActionPushObjectCB
 {	
 	protected float PUSH_FORCE_IMPULSE_INCREMENT = 200.0;
 	
 	private ActionPushCarData m_ActionDataPushCar;
+	
+	override void CreateActionComponent()
+	{
+		m_ActionData.m_ActionComponent = new CAContinuousRepeatPushCar(UATimeSpent.PUSH_CAR);
+	}
 	
 	override protected void ApplyForce(ActionPushObjectData actionData)
 	{	
@@ -115,6 +128,3 @@ class ActionPushCarDataReceiveData : ActionPushObjectDataReceiveData
 {
 	CarScript m_Car; 
 }
-
-class CAContinuousRepeatPushCar : CAContinuousRepeatPushObject
-{}

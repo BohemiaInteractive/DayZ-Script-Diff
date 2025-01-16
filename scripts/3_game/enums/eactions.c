@@ -27,6 +27,7 @@ enum EActions
 	SPIN,
 	FOOD_STAGE_PREV,
 	FOOD_STAGE_NEXT,
+	FOOD_NUTRITIONS_DATA,
 	MAKE_SPECIAL,
 	DELETE,
 	SEPARATOR,
@@ -65,6 +66,7 @@ enum EActions
 	SPECIALIZED_ACTION4,
 	SPECIALIZED_ACTION5,
 	SPECIALIZED_ACTION6,
+	FLIP_ENTITY,
 	
 	//<----add new individual types above this line
 	

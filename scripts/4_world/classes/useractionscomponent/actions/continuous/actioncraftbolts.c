@@ -122,7 +122,7 @@ class ActionCraftBolts: ActionContinuousBase
 		
 		if (!added)
 		{
-			m_ResultEntity = Ammunition_Base.Cast(action_data.m_Player.SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_1", action_data.m_Player.GetPosition()));
+			m_ResultEntity = Ammunition_Base.Cast(action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("Ammo_ImprovisedBolt_1"));
 			m_ResultEntity.SetHealth("", "", material.GetHealth("", ""));
 			m_ResultEntity.ServerSetAmmoCount(1);
 		}

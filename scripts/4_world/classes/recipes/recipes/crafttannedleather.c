@@ -49,7 +49,6 @@ class CraftTannedLeather extends RecipeBase
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
 		
-		//return true;
 		Pelt_Base ingredient1 = Pelt_Base.Cast(ingredients[0]);
 		ItemBase ingredient2 = ingredients[1]; //The garden lime
 		
@@ -67,14 +66,10 @@ class CraftTannedLeather extends RecipeBase
 		{
 			return false;
 		}
-	
 	}
-
 	
 	override void Do( ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight )//gets called upon recipe's completion
 	{
-		Debug.Log("Craft Tanned Leather","recipes");
-		
 		ItemBase ingredient1 = ingredients[0];
 		
 		//Set tanned leather output quantity
@@ -88,6 +83,9 @@ class CraftTannedLeather extends RecipeBase
 		gardenLime.SetQuantity(gardenLime.GetQuantity() - usedLime);
 		
 		//Create output piles
-		MiscGameplayFunctions.CreateItemBasePiles("TannedLeather", player.GetPosition(), yieldQuantity, float.MAX);
+		vector posHead;
+		MiscGameplayFunctions.GetHeadBonePos(player,posHead);
+		vector posTarget = player.GetPosition() + (player.GetDirection() * DEFAULT_SPAWN_DISTANCE);
+		MiscGameplayFunctions.CreateItemBasePilesDispersed("TannedLeather",posHead,posTarget,UAItemsSpreadRadius.NARROW,yieldQuantity,float.MAX,player);
 	}
 }

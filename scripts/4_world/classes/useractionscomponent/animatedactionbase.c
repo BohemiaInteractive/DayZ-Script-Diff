@@ -185,7 +185,7 @@ class AnimatedActionBase : ActionBase
 	{
 		if (action_data.m_DelayedAnimationEventID == UA_ANIM_EVENT)
 		{
-			if (action_data && !action_data.m_WasExecuted)
+			if (HasMultipleExecution(action_data) || !action_data.m_WasExecuted)
 			{
 				ActionBase action = action_data.m_Action;
 				
@@ -203,6 +203,11 @@ class AnimatedActionBase : ActionBase
 				}
 			}
 		}
+	}
+	
+	bool HasMultipleExecution(ActionData action_data)
+	{
+		return false;
 	}
 	
 	void CheckAnimationEvent(ActionData action_data)
@@ -502,5 +507,13 @@ class AnimatedActionBase : ActionBase
 			return action_data.m_ActionComponent.GetProgress();
 		}
 		return 0;
+	}
+		
+	override float GetProgressWidgetMultiplier( ActionData action_data )
+	{
+		if ( action_data.m_ActionComponent )
+			return action_data.m_ActionComponent.GetProgressWidgetMultiplier();
+		
+		return 1;
 	}
 };

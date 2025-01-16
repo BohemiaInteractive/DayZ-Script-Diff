@@ -13,6 +13,7 @@ class GeyserTrigger : EffectTrigger
 	protected vector 			m_DefaultPosition;
 	protected EGeyserState 		m_GeyserState = EGeyserState.DORMANT;	// synchronized state
 	
+	protected ParticleSource 	m_GeyserBubblesParticle;
 	protected ParticleSource 	m_GeyserParticle;
 	protected ParticleSource 	m_GeyserTallParticle;
 	protected EffectSound		m_SoundBubbling;
@@ -36,6 +37,11 @@ class GeyserTrigger : EffectTrigger
 		m_bIsEruptingTall = false;
 		
 		RandomizeMouthPos();
+	}
+	
+	override string GetDisplayName()
+	{
+		return "#STR_geyser";
 	}
 	
 	override void EEDelete( EntityAI parent )
@@ -87,6 +93,7 @@ class GeyserTrigger : EffectTrigger
 			if (IsSubmerged())
 			{
 				RandomizeMouthPos();
+				m_GeyserBubblesParticle = ParticleManager.GetInstance().PlayInWorld(ParticleList.GEYSER_BUBBLES, GetAdjustedPosition());
 				m_SoundBubbling = SEffectManager.PlaySound(SOUND_BUBBLING, GetAdjustedPosition(), 0, 0, true);
 			}
 			
@@ -94,6 +101,7 @@ class GeyserTrigger : EffectTrigger
 		}
 		else if (m_GeyserState != EGeyserState.DORMANT && m_bIsDormant)
 		{
+			m_GeyserBubblesParticle.Stop();
 			m_SoundBubbling.Stop();
 			m_bIsDormant = false;
 		}
@@ -156,6 +164,7 @@ class GeyserTrigger : EffectTrigger
 	{
 		if (m_bIsDormant)
 		{
+			m_GeyserBubblesParticle.StopParticle();
 			m_SoundBubbling.Stop();
 			m_bIsDormant = false;
 		}

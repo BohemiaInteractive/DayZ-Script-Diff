@@ -220,7 +220,64 @@ class WeaponManager
 		for (int i = 0; i < wpn.GetMuzzleCount(); i++)
 		{
 			if (wpn.CanChamberBullet(i, mag))
+			{
 				return true;
+			}
+		}
+		
+		return false;
+	}
+//---------------------------------------------------------------------------
+	bool CanLoadMultipleBullet(Weapon_Base wpn, Magazine mag, bool reservationCheck = true)
+	{
+		if (!wpn || !mag)
+			return false;
+		
+		if (m_player.GetHumanInventory().GetEntityInHands() != wpn)
+			return false;
+		
+		if (mag.IsDamageDestroyed() || wpn.IsDamageDestroyed())
+			return false;
+		
+		if (wpn.IsJammed())
+			return false;
+	
+		if (m_player.IsItemsToDelete())
+			return false;
+		
+		if (reservationCheck && (m_player.GetInventory().HasInventoryReservation(wpn, null) || m_player.GetInventory().HasInventoryReservation(mag, null)))
+			return false;
+		
+		bool found = false;
+		bool fireout = false;
+		for (int i = 0; i < wpn.GetMuzzleCount(); i++)
+		{
+			if (fireout)
+				return true;
+			
+			if (wpn.CanChamberBullet(i, mag) )
+			{
+				if (found)
+				{
+					return true;
+				}
+					
+				if (wpn.HasInternalMagazine(i))
+				{
+					if ((wpn.GetInternalMagazineCartridgeCount(i) + 1) < wpn.GetInternalMagazineMaxCartridgeCount(i))
+					{
+						return true;
+					}
+				}
+				
+				if (wpn.IsChamberFiredOut(i))
+				{
+					if (i > 0)
+						return true;
+					fireout = true;
+				}
+				found = true;
+			}
 		}
 		
 		return false;

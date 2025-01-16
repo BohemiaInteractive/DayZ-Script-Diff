@@ -764,6 +764,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("Whetstone",							"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,			"dz/anims/anm/player/ik/gear/WoodenStick.anm");
 		pType.AddItemInHandsProfileIK("ScientificBriefcase",				"dz/anims/workspaces/player/player_main/player_main_2h.asi",	            twoHanded,				"dz/anims/anm/player/ik/two_handed/ScientificCase.anm");
 		pType.AddItemInHandsProfileIK("ScientificBriefcaseKeys",			"dz/anims/workspaces/player/player_main/props/player_main_1h_keys.asi",				toolsOneHanded,			"dz/anims/anm/player/ik/gear/handcuff_keys.anm");
+		pType.AddItemInHandsProfileIK("ShippingContainerKeys_ColorBase",		"dz/anims/workspaces/player/player_main/props/player_main_1h_keys.asi",				toolsOneHanded,			"dz/anims/anm/player/ik/gear/handcuff_keys.anm");
 		
 		//! Tools two handed
 		pType.AddItemInHandsProfileIK("PipeWrench",							"dz/anims/workspaces/player/player_main/weapons/player_main_2h_pipewrench.asi",		twoHanded,				"dz/anims/anm/player/ik/two_handed/pipewrench.anm");
@@ -781,6 +782,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("BaseballBat",						"dz/anims/workspaces/player/player_main/weapons/player_main_2h_bat.asi",			twoHanded,				"dz/anims/anm/player/ik/two_handed/baseballbat.anm");	
 		pType.AddItemInHandsProfileIK("NailedBaseballBat",					"dz/anims/workspaces/player/player_main/weapons/player_main_2h_bat.asi",			twoHanded,				"dz/anims/anm/player/ik/two_handed/baseballbat.anm");	
 		pType.AddItemInHandsProfileIK("BarbedBaseballBat",					"dz/anims/workspaces/player/player_main/weapons/player_main_2h_bat.asi",			twoHanded,				"dz/anims/anm/player/ik/two_handed/baseballbat.anm");		
+		pType.AddItemInHandsProfileIK("XmasBaseballBat",					"dz/anims/workspaces/player/player_main/weapons/player_main_2h_bat.asi",			twoHanded,				"dz/anims/anm/player/ik/two_handed/baseballbat.anm");		
 		pType.AddItemInHandsProfileIK("HockeyStick",						"dz/anims/workspaces/player/player_main/weapons/player_main_2h_fireaxe.asi",		twoHanded,				"dz/anims/anm/player/ik/two_handed/hockey_stick.anm");	
 		pType.AddItemInHandsProfileIK("Chainsaw",							"dz/anims/workspaces/player/player_main/player_main_2h.asi",						twoHanded,				"dz/anims/anm/player/ik/two_handed/chainsaw.anm"); 
 		pType.AddItemInHandsProfileIK("FireExtinguisher",					"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,				"dz/anims/anm/player/ik/two_handed/fire_extinguisher.anm");	

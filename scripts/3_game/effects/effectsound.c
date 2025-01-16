@@ -365,7 +365,10 @@ class EffectSound : Effect
 	protected void ValidateSoundWave()
 	{
 		if (!m_SoundWaveObject)
-			Print(this.ToString() + " SoundWaveObject does not exist, SoundSet: " + m_SoundSetName);
+		{
+			ErrorEx(string.Format("%1 SoundWaveObject is null. SoundSet: %2", this.ToString(), m_SoundSetName));
+			return;
+		}
 		
 		m_SoundWaveLenght = m_SoundWaveObject.GetLength();
 					

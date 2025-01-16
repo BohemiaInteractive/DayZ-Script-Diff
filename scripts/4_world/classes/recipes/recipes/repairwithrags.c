@@ -75,4 +75,9 @@ class RepairWithRags extends RecipeBase
 		float percent = mHealth*0.2; //20% of the item's health
 		item_ingredient.AddHealth(percent);
 	}
+	
+	override bool IsRepeatable()
+	{
+		return true;
+	}
 };

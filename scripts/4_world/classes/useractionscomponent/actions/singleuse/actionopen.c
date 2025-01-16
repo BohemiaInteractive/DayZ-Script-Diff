@@ -21,8 +21,12 @@ class ActionOpen: ActionSingleUseBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		if ( item && !item.IsOpen() )
+		if (item && !item.IsOpen())
 		{ 
+			Edible_Base edible;
+			if (Class.CastTo(edible,item) && edible.GetIsFrozen())
+				return false;
+			
 			return true;
 		}
 		return false;

@@ -14,7 +14,7 @@ class ActionBreakLongWoodenStick: ActionContinuousBase
 	void ActionBreakLongWoodenStick()
 	{
 		m_CallbackClass = ActionBreakLongWoodenStickCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
+		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_BREAKING_STICK;
 		m_FullBody = true;
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
@@ -53,7 +53,7 @@ class ActionBreakLongWoodenStick: ActionContinuousBase
 		
 		if (LongWoodenStick.Cast(startingItem) == null) // case if it is a broom
 		{
-			EntityAI longStick = action_data.m_Player.SpawnEntityOnGroundPos("LongWoodenStick", action_data.m_Player.GetPosition());
+			EntityAI longStick = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("LongWoodenStick");
 			
 			ItemBase item_result;
 			Class.CastTo(item_result, longStick);
@@ -69,7 +69,7 @@ class BreakLongWoodenStick : ReplaceItemWithNewLambdaBase
 	
 	void BreakLongWoodenStick(EntityAI old_item, string new_item_type, PlayerBase player, int count) 
 	{
-		m_ItemCount = count; 
+		m_ItemCount = count;
 	}
 
 	override void CopyOldPropertiesToNew(notnull EntityAI old_item, EntityAI new_item)

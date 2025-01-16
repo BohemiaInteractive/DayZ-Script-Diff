@@ -198,8 +198,18 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 
 		m_LoadingText.SetText(msg);
 		m_LoadingFinished = true;
-		
 		m_Menu.SetServersLoadingTab(TabType.NONE);
+		
+		if (m_ServerListEntiers && m_ServerListEntiers.Count() && m_SelectedPanel == SelectedPanel.BROWSER)
+		{
+			ServerBrowserEntry entry = m_ServerListEntiers[0];
+			if (entry)
+			{
+				entry.Darken(entry.GetRoot(), 0, 0);
+				entry.Select();
+				SetFocus(entry.GetRoot());
+			}
+		}
 	}
 	
  	protected void LoadEntries( int cur_page_index , GetServersResultRowArray page_entries )
@@ -254,6 +264,21 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		
 		LoadExtraEntries(index);
 		m_ServerList.Update();
+	}
+	
+	override bool PassFilter(GetServersResultRow result)
+	{
+		if (m_Filters.m_PreviouslyPlayedFilter.IsSet())
+        {
+            bool is_visited = g_Game.IsVisited(result.m_HostIp, result.m_HostPort);
+            if (!is_visited && m_Filters.m_PreviouslyPlayedFilter.IsEnabled())
+                return false;
+			
+            if (is_visited && !m_Filters.m_PreviouslyPlayedFilter.IsEnabled())
+                return false;
+        }
+		
+		return super.PassFilter(result);
 	}
 	
 	protected ServerBrowserEntry GetServerEntryByIndex( int index )
@@ -345,18 +370,21 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void PressX()
 	{
-		if ( (GetGame().GetTime() - m_TimeLastServerRefresh) > 1000 )
-		{
-			m_TimeLastServerRefresh = GetGame().GetTime();
+		RefreshServerList();
+	}
+	
+	void RefreshServerList()
+	{
+		if (m_TabType != TabType.FAVORITE && (GetGame().GetTime() - m_TimeLastServerRefresh) < 1000)
+			return;
 			
-			if ( m_IsFilterChanged)
-			{
-				SetCurrentPage(1);
-			}
-			m_OnlineFavServers.Clear();
-			RefreshList();
+		m_TimeLastServerRefresh = GetGame().GetTime();
+		if (m_IsFilterChanged)
+		{
+			SetCurrentPage(1);
 		}
-		
+		m_OnlineFavServers.Clear();
+		RefreshList();
 	}
 	
 	override void PressY()
@@ -779,7 +807,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		if (focus)
 			SetFocusDetails();
 
-		m_Menu.UpdateYButtonLabel("#STR_server_browser_menu_server_filters");
+		m_Menu.UpdateYButtonLabel("#server_browser_tab_server #STR_server_browser_menu_server_filters");
 		m_RightAreaHeaderText.SetText("#STR_server_browser_menu_server_details");
 	}
 	

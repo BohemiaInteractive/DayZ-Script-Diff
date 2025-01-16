@@ -34,6 +34,7 @@ class ItemManager
 	protected int 						m_TooltipPosX;
 	protected int	 					m_TooltipPosY;
 	protected Widget 					m_TooltipSourceWidget; //stored here for tooltip position updates
+	protected ScrollWidget				m_LeftSlotsScroller;
 	
 	#ifndef PLATFORM_CONSOLE
 	protected const float TOOLTIP_DELAY = 0.25; // in seconds
@@ -204,7 +205,6 @@ class ItemManager
 		{
 			GetGame().SetProfileStringList( "defaultHeaderOpenStates", serialized_types );
 		}
-		GetGame().SaveProfile();
 	}
 
 	void DeserializeDefaultHeaderOpenStates()
@@ -237,7 +237,6 @@ class ItemManager
 		{
 			GetGame().SetProfileStringList( "defaultOpenStates", serialized_types );
 		}
-		GetGame().SaveProfile();
 	}
 
 	void DeserializeDefaultOpenStates()
@@ -290,6 +289,14 @@ class ItemManager
 		GetRightDropzone().SetAlpha( 0 );
 		GetLeftDropzone().SetAlpha( 0 );
 		GetCenterDropzone().SetAlpha( 0 );
+		
+		#ifndef PLATFORM_CONSOLE
+		bool ignorePointer = GetLeftSlotsScroller().GetFlags() & WidgetFlags.IGNOREPOINTER;
+		if (ignorePointer)
+		{
+			GetLeftSlotsScroller().ClearFlags(WidgetFlags.IGNOREPOINTER);
+		}
+		#endif
 	}
 
 	void ShowSourceDropzone( EntityAI item )
@@ -793,7 +800,7 @@ class ItemManager
 	static int GetCombinationFlags( EntityAI entity1, EntityAI entity2 )
 	{
 		int flags = 0;
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
 
 		if (!entity1 || !entity2)
 			return flags;
@@ -801,10 +808,15 @@ class ItemManager
 		if (entity1.IsInherited( ItemBase ) && entity2.IsInherited( ItemBase ))
 		{
 			ItemBase ent1 = ItemBase.Cast( entity1 );
-			if (ent1.CanBeCombined( ItemBase.Cast( entity2 ) )) flags = flags | InventoryCombinationFlags.COMBINE_QUANTITY2;
+			if (ent1.CanBeCombined( ItemBase.Cast( entity2 ) )) 
+				flags = flags | InventoryCombinationFlags.COMBINE_QUANTITY2;
 		}
-
-		if (entity1.GetInventory().CanAddAttachment( entity2 ))
+		
+		InventoryLocation il = new InventoryLocation();
+		
+		entity1.GetInventory().FindFreeLocationFor( entity2, FindInventoryLocationType.ATTACHMENT, il );
+		
+		if (il.IsValid() && !entity1.GetInventory().FindAttachment(il.GetSlot()))
 		{
 			if (!entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ) && !entity2.IsInherited( ZombieBase ) && !entity2.IsInherited( Car ))
 			{
@@ -813,11 +825,11 @@ class ItemManager
 		}
 		if (!entity1.GetInventory().HasEntityInInventory(entity2) && entity1.GetInventory().CanAddEntityInCargo( entity2, entity2.GetInventory().GetFlipCargo() )) flags = flags | InventoryCombinationFlags.ADD_AS_CARGO;
 
-		if (entity1 == m_player.GetHumanInventory().GetEntityInHands() || entity2 == m_player.GetHumanInventory().GetEntityInHands())
+		if (entity1 == player.GetHumanInventory().GetEntityInHands() || entity2 == player.GetHumanInventory().GetEntityInHands())
 		{
 			ActionManagerClient amc;
-			Class.CastTo(amc, m_player.GetActionManager());
-			if (entity1 == m_player.GetHumanInventory().GetEntityInHands())
+			Class.CastTo(amc, player.GetActionManager());
+			if (entity1 == player.GetHumanInventory().GetEntityInHands())
 			{
 				if (amc.CanPerformActionFromInventory( ItemBase.Cast(entity1), ItemBase.Cast(entity2) ))
 				{
@@ -847,5 +859,13 @@ class ItemManager
 	{
 		PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast(GetPlugin( PluginRecipesManager ));
 		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), NULL, PlayerBase.Cast( GetGame().GetPlayer() ) );
+	}
+	
+	ScrollWidget GetLeftSlotsScroller()
+	{
+		if (!m_LeftSlotsScroller)
+			m_LeftSlotsScroller	= ScrollWidget.Cast(m_RootWidget.FindAnyWidget("LeftPanel").FindAnyWidget("ScrollerSlotsContent"));
+		
+		return m_LeftSlotsScroller;
 	}
 }

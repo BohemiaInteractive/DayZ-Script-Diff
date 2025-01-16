@@ -109,6 +109,10 @@ class Icon: LayoutHolder
 			GetMainWidget().GetScreenPos(x, y);
 			PrepareOwnedTooltip(EntityAI.Cast( GetObject() ), -1, y);
 		}
+		else
+		{
+			HideOwnedTooltip();
+		}
 		
 		m_SelectedPanel.Show(active);
 	}
@@ -1552,6 +1556,13 @@ class Icon: LayoutHolder
 							ammoIconImg.LoadImageFile(0, "set:dayz_gui image:cartridge_shell");
 							ammoIconImg.LoadImageFile(1, "set:dayz_gui image:shell_shell");
 							ammoIconImg.LoadImageFile(2, "set:dayz_gui image:jam_shell");
+							break;
+						}
+						//@note: Crossbows cant jam so we dont add a icon for the jam state
+						case CartridgeType.Arrow:
+						{
+							ammoIconImg.LoadImageFile(0, "set:dayz_gui image:arrow_int");
+							ammoIconImg.LoadImageFile(1, "set:dayz_gui image:arrow_int");
 							break;
 						}
 					}

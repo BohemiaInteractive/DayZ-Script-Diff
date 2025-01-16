@@ -134,12 +134,7 @@ class ActionPackTent : ActionContinuousBase
 		Object targetParent = action_data.m_Target.GetParent();
 		TentBase tent = TentBase.Cast( targetParent );
 		if (tent.CanBePacked())
-		{
-			tent.Pack( true );
-			tent.SetPosition( action_data.m_Player.GetPosition() /*+ offset*/ ); //Add offset to allign tent with player
-			tent.SetOrientation( action_data.m_Player.GetOrientation() );
-			tent.PlaceOnSurface();
-		}
+			tent.Pack(true);
 	}
 	
 	override string GetAdminLogMessage(ActionData action_data)

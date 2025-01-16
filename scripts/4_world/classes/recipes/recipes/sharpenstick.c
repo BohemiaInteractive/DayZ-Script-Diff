@@ -83,16 +83,9 @@ class SharpenStick extends RecipeBase
 	//gets called upon recipe's completion
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
 	{
-		ItemBase ingredient = ingredients[0];
-	
-		for (int i=0; i < results.Count(); i++)
+		for (int i=0; i < results.Count(); ++i)
 		{
-			ItemBase item_result;
-			Class.CastTo(item_result, results.Get(i));
-			
-			MiscGameplayFunctions.TransferItemProperties(ingredient, item_result);
-		}	
-		
-		super.Do( ingredients, player, results, specialty_weight);;
+			MiscGameplayFunctions.TransferItemProperties(ingredients[0], results[i]);
+		}
 	}
 };

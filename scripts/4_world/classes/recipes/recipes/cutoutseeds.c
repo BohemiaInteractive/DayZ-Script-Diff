@@ -1,13 +1,9 @@
 class CutOutSeeds extends RecipeBase
-{	
-	override void Init()
+{
+	//! final check for recipe's validity
+	override bool CanDo(ItemBase ingredients[], PlayerBase player)
 	{
-		
-	}
-
-	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
-	{
-		return true;
+		return !ingredients[0].GetIsFrozen();
 	}
 
 	override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
@@ -55,7 +51,5 @@ class CutOutSeeds extends RecipeBase
 		resultQty = Math.Ceil(resultQty);
 	
 		result.SetQuantity(resultQty);
-		
-		Debug.Log("Recipe Do method called","recipes");
 	}
-};
+}

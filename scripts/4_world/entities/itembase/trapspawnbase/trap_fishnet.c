@@ -19,17 +19,7 @@ class Trap_FishNet extends TrapSpawnBase
 		m_AnimationPhaseTriggered 				= "placing";
 		m_AnimationPhaseUsed 					= "triggered";
 	}
-	
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-				
-		if ( IsPlaceSound() )
-		{
-			PlayPlaceSound();
-		}
-	}
-	
+		
 	override void InitCatchingComponent()
 	{
 		if (!m_CatchingContext)
@@ -109,15 +99,7 @@ class Trap_FishNet extends TrapSpawnBase
 	
 	//================================================================
 	// ADVANCED PLACEMENT
-	//================================================================
-		
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
-	{
-		super.OnPlacementComplete( player, position, orientation );
-			
-		SetIsPlaceSound( true );
-	}
-	
+	//================================================================	
 	override bool IsDeployable()
 	{
 		return true;

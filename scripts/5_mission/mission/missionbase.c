@@ -36,8 +36,12 @@ class MissionBase extends MissionBaseWorld
 			#ifdef DIAG_DEVELOPER
 			GetOnTimeChanged().Insert(m_DynamicMusicPlayer.SetTimeOfDate);
 			#endif
+		AmmoTypesAPI.Init();
 		#endif
-		
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		{
+			OutdoorThermometerManager.Init();
+		}
 		GetOnInputDeviceConnected().Insert(UpdateInputDevicesAvailability);
 		GetOnInputDeviceDisconnected().Insert(UpdateInputDevicesAvailability);
 		
@@ -48,6 +52,9 @@ class MissionBase extends MissionBaseWorld
 
 	void ~MissionBase()
 	{
+		// prevent use after free with typename being destructed when switching mission / exitting game
+		SetDispatcher(null);
+
 		GetDayZGame().GetYieldDataInitInvoker().Remove(InitWorldYieldDataDefaults);
 		
 		PluginManagerDelete();
@@ -57,6 +64,16 @@ class MissionBase extends MissionBaseWorld
 			GetDayZGame().GetAnalyticsClient().UnregisterEvents();	
 		}
 		TriggerEffectManager.DestroyInstance();
+		
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		{
+			OutdoorThermometerManager.Cleanup();
+		}
+		
+		#ifndef SERVER
+			AmmoTypesAPI.Cleanup();
+			ExplosivesBase.Cleanup();
+		#endif
 	}
 
 	override ObjectSnapCallback GetInventoryDropCallback()
@@ -71,6 +88,10 @@ class MissionBase extends MissionBaseWorld
 		#ifndef SERVER
 		m_DynamicMusicPlayer.OnUpdate(timeslice);
 		#endif
+		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		{
+			OutdoorThermometerManager.Update(timeslice);
+		}
 	}
 	
 	override void OnEvent(EventType eventTypeId, Param params)
@@ -124,8 +145,8 @@ class MissionBase extends MissionBaseWorld
 		if (bank)
 		{
 			//fishies
-			bank.RegisterYieldItem(new YieldItemCarp(15));
-			bank.RegisterYieldItem(new YieldItemMackerel(15));
+			bank.RegisterYieldItem(new YieldItemCarp(42));
+			bank.RegisterYieldItem(new YieldItemMackerel(42));
 			bank.RegisterYieldItem(new YieldItemSardines(15));
 			bank.RegisterYieldItem(new YieldItemBitterlings(15));
 			
@@ -297,6 +318,9 @@ class MissionBase extends MissionBaseWorld
 			break;	
 		case MENU_MISSION_LOADER:
 			menu = new MissionLoader;
+			break;
+		case MENU_CONNECTION_DIALOGUE:
+			menu = new ConnectionDialogue;
 			break;
 		}
 

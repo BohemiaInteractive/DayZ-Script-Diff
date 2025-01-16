@@ -79,16 +79,16 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 				{
 					dta.m_HeatPermeabilityCoef = nearestEntity.GetHeatPermeabilityCoef();
 					
-					if (Math.AbsFloat(temperatureDifference) < GameConstants.TEMPERATURE_SENSITIVITY_THRESHOLD) //ignoring insignificant increments
-						nearestEntity.RefreshTemperatureAccess(dta);
-					else
+					if (Math.AbsFloat(temperatureDifference) >= GameConstants.TEMPERATURE_SENSITIVITY_THRESHOLD || !nearestEntity.IsFreezeThawProgressFinished()) //ignoring insignificant increments
 						nearestEntity.SetTemperatureEx(dta);
+					else
+						nearestEntity.RefreshTemperatureAccess(dta);
 				}
 			}
 		}
 	}
 	
-	protected void UpdateVicinityTemperatureRecursive(EntityAI ent, TemperatureData dta, float heatPermeabilityCoef = 1.0) //TODO
+	protected void UpdateVicinityTemperatureRecursive(EntityAI ent, TemperatureData dta, float heatPermeabilityCoef = 1.0)
 	{
 		float heatPermCoef = heatPermeabilityCoef;
 		heatPermCoef *= ent.GetHeatPermeabilityCoef();
@@ -98,10 +98,10 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 		if (ent.CanHaveTemperature() && !ent.IsSelfAdjustingTemperature())
 		{
 			float temperatureDifference = dta.m_AdjustedTarget - ent.GetTemperature();
-			if (Math.AbsFloat(temperatureDifference) < GameConstants.TEMPERATURE_SENSITIVITY_THRESHOLD) //ignoring insignificant increments
-				ent.RefreshTemperatureAccess(dta);
-			else
+			if (Math.AbsFloat(temperatureDifference) >= GameConstants.TEMPERATURE_SENSITIVITY_THRESHOLD || !ent.IsFreezeThawProgressFinished()) //ignoring insignificant increments
 				ent.SetTemperatureEx(dta);
+			else
+				ent.RefreshTemperatureAccess(dta);
 		}
 		
 		// go through any attachments and cargo, recursive

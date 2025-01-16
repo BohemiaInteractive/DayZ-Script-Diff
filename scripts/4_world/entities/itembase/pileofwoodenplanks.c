@@ -81,11 +81,16 @@ class PileOfWoodenPlanks extends ItemBase
 		// Remove long planks from this object
 		AddQuantity( -available_planks, true ); // Autodelete enabled
 		
-		// Visual feedback
-		UpdateSelections();
-		
 		// Return the number of removed long planks
 		return available_planks;
+	}
+	
+	override bool SetQuantity(float value, bool destroy_config = true, bool destroy_forced = false, bool allow_client = false, bool clamp_to_stack_max = true)
+	{
+		bool result = super.SetQuantity(value, destroy_config, destroy_forced, allow_client, clamp_to_stack_max);
+		UpdateSelections();
+		
+		return result;
 	}
 	
 	override bool CanPutIntoHands( EntityAI parent )
@@ -95,14 +100,6 @@ class PileOfWoodenPlanks extends ItemBase
 	
 	override bool CanPutInCargo (EntityAI parent)
 	{
-		// Uncomment this if you want to make it possible to put the pile into V3S Cargo
-		/*
-		if ( parent.IsKindOf("V3S_Cargo") )
-			return true;
-		else
-			return false;
-		*/
-		
 		return false;
 	}
 }

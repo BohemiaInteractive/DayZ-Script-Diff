@@ -26,7 +26,12 @@ class VehicleHudBase : Managed
 	// Logic for when vehicle info is hidden
 	void HideVehicleInfo();
 	
-	// This is used for continuous hiding of each panel because some unrelated parts of UI force it visible when any menu is closed 
+	void ShowPanel()
+	{
+		if (m_VehiclePanel)
+			m_VehiclePanel.Show(true);
+	}
+	
 	void HidePanel()
 	{
 		if (m_VehiclePanel)

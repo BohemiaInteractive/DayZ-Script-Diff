@@ -65,4 +65,9 @@ class RepairPlanks extends RecipeBase
 		Class.CastTo(moduleRepairing, GetPlugin(PluginRepairing));
 		moduleRepairing.Repair(player,ingredients[0],ingredients[1],specialty_weight);
 	}
+	
+	override bool IsRepeatable()
+	{
+		return true;
+	}
 };

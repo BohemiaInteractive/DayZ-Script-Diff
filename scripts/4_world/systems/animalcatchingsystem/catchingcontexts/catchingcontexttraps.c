@@ -234,7 +234,7 @@ class CatchingContextTrapsBase : CatchingContextBase
 	{
 		if (m_Bait)
 		{
-			if (m_Bait.HasQuantity() && !m_Bait.CanBeSplit())
+			if (m_Bait.HasQuantity() && !m_Bait.IsSplitable())
 				m_Bait.SetQuantityNormalized((m_Bait.GetQuantityNormalized() - qtyNorm));
 			else
 				m_Bait.DeleteSafe();

@@ -1219,6 +1219,23 @@ class HumanCommandScript
 	proto native 	void 	SetHeading(float yawAngle, float filterDt = -1, float maxYawSpeed = FLT_MAX);
 	proto native 	void 	AddHeadingRelativeTo(HumanRelativeHeadingMode mode, float yawAngle, float filterDt = -1, float maxYawSpeed = FLT_MAX);
 
+	//! Override this to return the current stance of the human.
+	int GetCurrentStance()
+	{
+		return DayZPlayerConstants.STANCEIDX_ERECT;
+	}
+	
+	//! Override this to return the current movement state of the human.
+	int GetCurrentMovement()
+	{
+		return DayZPlayerConstants.MOVEMENT_IDLE;
+	}
+	
+	//! Override this to return the current leaning state of the human. <-1, 1>
+	float GetCurrentLeaning()
+	{
+		return 0.0;
+	}
 
 	//---------------------------------------------------------------
 	// PreAnim Update 

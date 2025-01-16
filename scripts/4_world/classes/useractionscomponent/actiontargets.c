@@ -438,6 +438,9 @@ class ActionTargets
 					return c_UtilityMaxValue;
 			}
 
+			if ( PlayerBase.Cast(pTarget) && PlayerBase.Cast(pTarget).IsInVehicle() ) // utility in vehicle should be below base vehicle val
+				return 0.20;
+			
 			float distSqr = DistSqrPoint2Line(pTarget.GetPosition(), pRayStart, pRayEnd);
 			return (c_UtilityMaxDistFromRaySqr - distSqr) / c_UtilityMaxDistFromRaySqr;
 		}

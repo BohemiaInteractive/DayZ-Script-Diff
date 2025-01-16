@@ -99,7 +99,7 @@ class float
 	const float MAX = FLT_MAX;
 	const float LOWEST = -FLT_MAX;
 	
-	proto string ToString();
+	proto string ToString(bool simple = true);
 };
 
 class vector

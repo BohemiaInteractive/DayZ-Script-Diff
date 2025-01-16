@@ -49,6 +49,12 @@ class BloodRegenMdfr: ModifierBase
 		PrintString("regen_modifier_energy" + regen_modifier_energy);
 		PrintString("blood_regen_speed" + blood_regen_speed);
 		*/
+		
+		if ( player.IsUnconscious() &&  player.GetHealth("GlobalHealth", "Blood") <= PlayerConstants.SL_BLOOD_CRITICAL )
+		{
+			blood_regen_speed *= PlayerConstants.UNCONSCIOUS_BLOOD_REGEN_MLTP;
+		}
+		
 		player.AddHealth("","Blood", blood_regen_speed * deltaT );
 	}
 	

@@ -4,7 +4,7 @@ class ActionCraftStoneKnifeEnvCB : ActionContinuousBaseCB
 	
 	override void CreateActionComponent()
 	{
-		m_ActionData.m_ActionComponent = new CAContinuousTime(TIME_TO_CRAFT_KNIFE);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(TIME_TO_CRAFT_KNIFE);
 	}
 };
 
@@ -45,9 +45,7 @@ class ActionCraftStoneKnifeEnv: ActionContinuousBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
 		EntityAI item_ingredient = action_data.m_MainItem;
-		EntityAI knife;
-		
-		knife = action_data.m_Player.SpawnEntityOnGroundPos("StoneKnife", action_data.m_Player.GetPosition());
+		EntityAI knife = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("StoneKnife");
 		action_data.m_MainItem.Delete();
 		
 		MiscGameplayFunctions.TransferItemProperties(item_ingredient, knife);

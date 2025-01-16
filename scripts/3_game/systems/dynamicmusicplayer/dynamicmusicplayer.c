@@ -8,6 +8,12 @@ class DynamicMusicLocationTypes
 	const int UNDERGROUND = 1;
 }
 
+class DynamicMusicLocationShape
+{
+	const int BOX = 0;
+	const int POLYGON = 1;
+}
+
 class DynamicMusicLocationDynamicData
 {
 	int m_Type = DynamicMusicLocationTypes.NONE;
@@ -38,11 +44,13 @@ class DynamicMusicTrackData
 	bool m_HasPriority		= false;
 	int m_TimeOfDay 		= -1;
 	int m_LocationType 		= DynamicMusicLocationTypes.NONE;
+	int m_Shape				= DynamicMusicLocationShape.BOX;
 	string m_SoundSet;
 
 	EDynamicMusicPlayerCategory m_Category;
 	
-	ref array<ref array<vector>> locationBoundaries = new ref array<ref array<vector>>();
+	ref array<ref array<vector>> locationBoundaries = new array<ref array<vector>>();
+	ref array<vector> vertices = new array<vector>();
 	
 	void InsertLocation(vector min, vector max)
 	{
@@ -124,7 +132,7 @@ class DynamicMusicPlayer
 		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.LOCATION_STATIC_PRIORITY] 	= new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
 		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.LOCATION_DYNAMIC] 			= new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
 		
-		m_LocationsDynamic = new ref map<int, ref DynamicMusicLocationDynamicData>();
+		m_LocationsDynamic = new map<int, ref DynamicMusicLocationDynamicData>();
 		m_TracksLocationStaticCached = new array<ref DynamicMusicTrackData>();
 		m_TracksLocationStaticPrioritizedCached = new array<ref DynamicMusicTrackData>();
 		
@@ -191,7 +199,7 @@ class DynamicMusicPlayer
 					m_TickPriorityLocationUpdateElapsed = 0.0;
 					
 					//! no playback at all OR playback of non-prioritized category
-					if (!IsPlaybackActive() || (IsPlaybackActive() && !IsPriotitizedCategorySelected()))
+					if ((IsPlaybackActive() && !IsPriotitizedCategorySelected()) || !IsPlaybackActive())
 					{
 						if (PlayerInsideOfLocationFilter(m_LocationsDynamic))
 							OnLocationMatched(EDynamicMusicPlayerCategory.LOCATION_DYNAMIC, true);
@@ -420,7 +428,13 @@ class DynamicMusicPlayer
 			if (!IsPriotitizedCategorySelected())
 			{
 				m_CategorySelected = category;
-				FadeoutTrack(GetPreviousTrackFadeoutSeconds(category));
+				if (m_WaitingForPlayback)
+					ResetWaitingQueue();
+				
+				if (m_SoundPlaying)
+					FadeoutTrack(GetPreviousTrackFadeoutSeconds(category));
+
+				SetCategory(category, isPriorityLocation);
 			}
 			else
 				SetCategory(category, true); //! play prio location track (no fadeout)
@@ -510,7 +524,7 @@ class DynamicMusicPlayer
 		}
 	}
 
-	private bool PlayerInsideOfLocationFilter(ref array<ref DynamicMusicTrackData> locations)
+	private bool PlayerInsideOfLocationFilter(array<ref DynamicMusicTrackData> locations)
 	{
 		m_TracksLocationMatchedPlayerInside.Clear();
 		
@@ -518,17 +532,33 @@ class DynamicMusicPlayer
 		{
 			foreach (DynamicMusicTrackData track : locations)
 			{
-				foreach (int locationId, array<vector> bounds : track.locationBoundaries)
+				switch (track.m_Shape)
 				{
-					if (Math.IsPointInRectangle(bounds[0], bounds[1], m_PlayerPosition))
-					{
-						if (m_TracksLocationMatchedPlayerInside.Find(track) == INDEX_NOT_FOUND)
-							m_TracksLocationMatchedPlayerInside.Insert(track);
-	
-						#ifdef DIAG_DEVELOPER
-						DMPDebugPrint(string.Format("Player inside location <%1, %2>", bounds[0], bounds[1]));
-						#endif
-					}
+					case DynamicMusicLocationShape.BOX:
+						foreach (int locationId, array<vector> bounds : track.locationBoundaries)
+						{
+							if (Math.IsPointInRectangle(bounds[0], bounds[1], m_PlayerPosition))
+							{
+								if (m_TracksLocationMatchedPlayerInside.Find(track) == INDEX_NOT_FOUND)
+									m_TracksLocationMatchedPlayerInside.Insert(track);
+			
+								#ifdef DIAG_DEVELOPER
+								DMPDebugPrint(string.Format("Player inside location <%1, %2>", bounds[0], bounds[1]));
+								#endif
+							}
+						}
+						break;
+					case DynamicMusicLocationShape.POLYGON:
+						if (Math2D.IsPointInPolygonXZ(track.vertices, m_PlayerPosition))
+						{
+							if (m_TracksLocationMatchedPlayerInside.Find(track) == INDEX_NOT_FOUND)
+								m_TracksLocationMatchedPlayerInside.Insert(track);					
+
+							#ifdef DIAG_DEVELOPER
+							DMPDebugPrint(string.Format("Player inside polygon location at <%1>", m_PlayerPosition));
+							#endif	
+						}
+						break;
 				}
 			}
 		}
@@ -536,7 +566,7 @@ class DynamicMusicPlayer
 		return m_TracksLocationMatchedPlayerInside.Count() > 0;
 	}
 
-	private bool PlayerInsideOfLocationFilter(ref map<int, ref DynamicMusicLocationDynamicData> locations)
+	private bool PlayerInsideOfLocationFilter(map<int, ref DynamicMusicLocationDynamicData> locations)
 	{
 		if (locations.Count() > 0)
 		{
@@ -555,7 +585,7 @@ class DynamicMusicPlayer
 		return false;
 	}
 	
-	private bool SetSelectedTrackFromCategory(EDynamicMusicPlayerCategory category, notnull ref array<ref DynamicMusicTrackData> tracklist, int historyLookupType = DynamicMusicPlayerTrackHistoryLookupType.ANY)
+	private bool SetSelectedTrackFromCategory(EDynamicMusicPlayerCategory category, notnull array<ref DynamicMusicTrackData> tracklist, int historyLookupType = DynamicMusicPlayerTrackHistoryLookupType.ANY)
 	{
 		if (tracklist.Count() == 0)
 			return true;
@@ -694,10 +724,13 @@ class DynamicMusicPlayer
 			m_TracksLocationStaticCached.Clear();
 			foreach (DynamicMusicTrackData track : m_DynamicMusicPlayerRegistry.m_TracksLocationStatic)
 			{
-				foreach (array<vector> bounds : track.locationBoundaries)
+				if (track.m_Shape == DynamicMusicLocationShape.BOX)
 				{
-					if (vector.Distance(m_PlayerPosition, Math.CenterOfRectangle(bounds[0], bounds[1])) > LOCATION_DISTANCE_MAX)
-						continue;
+					foreach (array<vector> bounds : track.locationBoundaries)
+					{
+						if (vector.Distance(m_PlayerPosition, Math.CenterOfRectangle(bounds[0], bounds[1])) > LOCATION_DISTANCE_MAX)
+							continue;
+					}
 				}
 	
 				m_TracksLocationStaticCached.Insert(track);
@@ -706,10 +739,13 @@ class DynamicMusicPlayer
 			m_TracksLocationStaticPrioritizedCached.Clear();
 			foreach (DynamicMusicTrackData trackPrio : m_DynamicMusicPlayerRegistry.m_TracksLocationStaticPrioritized)
 			{
-				foreach (array<vector> boundsPrio : trackPrio.locationBoundaries)
+				if (trackPrio.m_Shape == DynamicMusicLocationShape.BOX)
 				{
-					if (vector.Distance(m_PlayerPosition, Math.CenterOfRectangle(boundsPrio[0], boundsPrio[1])) > LOCATION_DISTANCE_MAX)
-						continue;
+					foreach (array<vector> boundsPrio : trackPrio.locationBoundaries)
+					{
+						if (vector.Distance(m_PlayerPosition, Math.CenterOfRectangle(boundsPrio[0], boundsPrio[1])) > LOCATION_DISTANCE_MAX)
+							continue;
+					}
 				}
 				
 				m_TracksLocationStaticPrioritizedCached.Insert(trackPrio);
@@ -718,7 +754,8 @@ class DynamicMusicPlayer
 	}
 	
 	#ifdef DIAG_DEVELOPER
-	private ref array<Shape> m_DebugShapesLocations = new array<Shape>();
+	private ref array<Shape> m_DebugShapesLocations 		= new array<Shape>();
+	private ref array<Shape> m_DebugShapesLocationsVertices = new array<Shape>();
 	private float m_DebugWaitTime = 0;
 
 	private void DisplayDebugStats(bool enabled)
@@ -788,6 +825,9 @@ class DynamicMusicPlayer
 		{
 			if (DbgUI.Button("Stop"))
 				StopTrack();
+
+			if (DbgUI.Button("Reset Waiting"))
+				ResetWaitingQueue();
 			
 			DbgUI.Text("Set Category:\n");
 			if (DbgUI.Button("Time"))
@@ -832,12 +872,15 @@ class DynamicMusicPlayer
 					if (vector.Distance(position, Math.CenterOfRectangle(locationMin, locationMax)) > 2000)
 						continue;
 		
-					CleanupDebugShapes(m_DebugShapesLocations);
+					Debug.CleanupDrawShapes(m_DebugShapesLocations);
 		
-					locationMax[1] = locationMin[1] + 50.0; //! force the height of box for debug
+					locationMax[1] = locationMin[1] + 200.0; //! force the height of box for debug
 					locationMin[1] = locationMin[1] - 50.0;
 					m_DebugShapesLocations.Insert(Debug.DrawBoxEx(locationMin, locationMax, Colors.PURPLE, ShapeFlags.NOZWRITE|ShapeFlags.ONCE));
 				}
+				
+				Debug.CleanupDrawShapes(m_DebugShapesLocationsVertices);
+				DrawPolygonLocation(track);
 			}
 			
 			foreach (DynamicMusicTrackData trackPrio : m_TracksLocationStaticPrioritizedCached)
@@ -850,12 +893,15 @@ class DynamicMusicPlayer
 					if (vector.Distance(position, Math.CenterOfRectangle(locationMin, locationMax)) > 2000)
 						continue;
 
-					CleanupDebugShapes(m_DebugShapesLocations);
+					Debug.CleanupDrawShapes(m_DebugShapesLocations);
 
-					locationMax[1] = locationMin[1] + 50.0; //! force the height of box for debug
+					locationMax[1] = locationMin[1] + 200.0; //! force the height of box for debug
 					locationMin[1] = locationMin[1] - 50.0;
 					m_DebugShapesLocations.Insert(Debug.DrawBoxEx(locationMin, locationMax, Colors.RED, ShapeFlags.NOZWRITE|ShapeFlags.ONCE));
 				}
+				
+				Debug.CleanupDrawShapes(m_DebugShapesLocationsVertices);
+				DrawPolygonLocation(trackPrio);
 			}
 			
 			foreach (DynamicMusicLocationDynamicData locationDynamic : m_LocationsDynamic)
@@ -866,25 +912,39 @@ class DynamicMusicPlayer
 				if (vector.Distance(position, Math.CenterOfRectangle(locationMin, locationMax)) > 2000)
 					continue;
 
-				CleanupDebugShapes(m_DebugShapesLocations);
+				Debug.CleanupDrawShapes(m_DebugShapesLocations);
 
-				locationMax[1] = locationMin[1] + 50.0; //! force the height of box for debug
+				locationMax[1] = locationMin[1] + 200.0; //! force the height of box for debug
 				locationMin[1] = locationMin[1] - 50.0;
 				m_DebugShapesLocations.Insert(Debug.DrawBoxEx(locationMin, locationMax, Colors.YELLOW, ShapeFlags.NOZWRITE|ShapeFlags.ONCE));
 			}
 		}
 		else
-			CleanupDebugShapes(m_DebugShapesLocations);
-	}
-
-	private void CleanupDebugShapes(array<Shape> shapesArr)
-	{
-		for ( int it = 0; it < shapesArr.Count(); ++it )
 		{
-			Debug.RemoveShape( shapesArr[it] );
+			Debug.CleanupDrawShapes(m_DebugShapesLocations);
+			Debug.CleanupDrawShapes(m_DebugShapesLocationsVertices);
+		}
+	}
+	
+	private void DrawPolygonLocation(notnull DynamicMusicTrackData track)
+	{
+		vector first, current, last;
+		
+		int count =  track.vertices.Count();
+		foreach (int i, vector vertexPos : track.vertices)
+		{
+			vertexPos[1] = vertexPos[1] + 0.5;
+			current = vertexPos;
+
+			if (i == 0)
+				first = vertexPos;
+			else
+				m_DebugShapesLocationsVertices.Insert(Debug.DrawLine(last, current, COLOR_WHITE, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE|ShapeFlags.ONCE));
+			
+			last = current;
 		}
 		
-		shapesArr.Clear();
+		m_DebugShapesLocationsVertices.Insert(Debug.DrawLine(current, first, COLOR_WHITE, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE|ShapeFlags.ONCE));
 	}
 	
 	private void DMPDebugPrint(string message)
@@ -893,6 +953,13 @@ class DynamicMusicPlayer
 		Debug.Log(message);
 		#endif
 	}
+	
+	//!DEPRECATED
+	private void CleanupDebugShapes(array<Shape> shapesArr)
+	{
+		Debug.CleanupDrawShapes(shapesArr);
+	}
+
 	#endif
 }
 

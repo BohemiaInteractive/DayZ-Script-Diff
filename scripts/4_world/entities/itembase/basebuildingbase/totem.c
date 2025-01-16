@@ -175,7 +175,7 @@ class TerritoryFlag extends BaseBuildingBase
 		SetRefresherActive(m_RefresherTimeRemaining > 0);
 	}
 	
-	//! Client-side, saves positions of active lifetime refreshers to MissionGameplay
+	//! Saves positions of active lifetime refreshers to MissionGameplay / MissionServer
 	void HandleRefreshers()
 	{
 		Mission mission = GetGame().GetMission();
@@ -200,6 +200,8 @@ class TerritoryFlag extends BaseBuildingBase
 			m_RefresherActive = state;
 			SetSynchDirty();
 			
+			HandleRefreshers();
+			
 			//update on refresher activation / last update on refresher deactivation
 			if (GetCEApi())
 				GetCEApi().RadiusLifetimeReset(GetPosition(),GameConstants.REFRESHER_RADIUS);
@@ -214,7 +216,7 @@ class TerritoryFlag extends BaseBuildingBase
 	
 	void RemoveRefresherPosition(int idx = -2)
 	{
-		if (!GetGame() || (GetGame().IsMultiplayer() && GetGame().IsServer()) )
+		if (!GetGame())
 			return;
 		
 		Mission mission = GetGame().GetMission();

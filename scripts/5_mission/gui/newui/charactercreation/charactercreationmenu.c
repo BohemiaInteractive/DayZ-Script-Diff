@@ -52,11 +52,25 @@ class CharacterCreationMenu extends UIScriptedMenu
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
 		#ifdef PLATFORM_CONSOLE
-		UpdateControlsElementVisibility();
-		if (pInputDeviceType == EInputDeviceType.CONTROLLER)
+		switch (pInputDeviceType)
 		{
+		case EInputDeviceType.CONTROLLER:
+			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			{
+				GetGame().GetUIManager().ShowUICursor(false);
+			}
 			CheckNewOptions(); //TODO - pick only the 'focus' bit
+		break;
+
+		default:
+			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			{
+				GetGame().GetUIManager().ShowUICursor(true);
+			}
+		break;
 		}
+		
+		UpdateControlsElementVisibility();
 		#endif
 	}
 	
@@ -468,7 +482,7 @@ class CharacterCreationMenu extends UIScriptedMenu
 	{
 #ifdef PLATFORM_CONSOLE
 		m_GenderSelector.Focus();
-		UpdateControlsElementVisibility();
+		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 #endif
 		CheckNewOptions();
 	}

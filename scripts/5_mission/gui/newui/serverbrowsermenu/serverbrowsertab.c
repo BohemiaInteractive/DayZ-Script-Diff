@@ -430,7 +430,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	
 	void ApplyFilters();
 	
-	void AddFavoritesToFilter( ref GetServersInput input )
+	void AddFavoritesToFilter( GetServersInput input )
 	{
 		m_Menu.AddFavoritesToFilter( input );
 	}
@@ -515,7 +515,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		m_Menu.SelectServer(server);
 	}
 
-	void OnLoadServersAsyncPC(ref GetServersResult result_list, EBiosError error, string response);
+	void OnLoadServersAsyncPC(GetServersResult result_list, EBiosError error, string response);
 	
 	void OnLoadServersAsyncConsole(GetServersResult result_list, EBiosError error, string response);
 	

@@ -4,7 +4,7 @@ class Land_FuelStation_Feed extends FuelStation
 	{
 		super.EEKilled(killer);
 
-	 	Explode(DT_EXPLOSION, "LandFuelFeed_Ammo");
+	 	Explode(DamageType.EXPLOSION, "LandFuelFeed_Ammo");
 	}
 	
 	override void OnExplosionEffects(Object source, Object directHit, int componentIndex, string surface, vector pos, vector surfNormal, float energyFactor, float explosionFactor, bool isWater, string ammoType)

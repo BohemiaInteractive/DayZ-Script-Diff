@@ -2,12 +2,12 @@ class AttachmentsWrapper: AttachmentsGroupContainer
 {
 	Attachments m_Attachments;
 	protected Widget m_AttachmentsFalseHeader;
-	protected RichTextWidget m_AttachmentsFalseHeaderText;
+	protected TextWidget m_AttachmentsFalseHeaderText;
 	
 	void AttachmentsWrapper(LayoutHolder parent) 
 	{
 		m_AttachmentsFalseHeader 		= m_RootWidget.FindAnyWidget( "attachmets_wrapper_header_spacer" );
-		m_AttachmentsFalseHeaderText 	= RichTextWidget.Cast(m_AttachmentsFalseHeader.FindAnyWidget("TextWidget0"));
+		m_AttachmentsFalseHeaderText 	= TextWidget.Cast(m_AttachmentsFalseHeader.FindAnyWidget("TextWidget0"));
 		m_AttachmentsFalseHeader.Show( false );
 	}
 	

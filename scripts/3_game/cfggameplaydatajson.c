@@ -18,6 +18,7 @@ class CfgGameplayJson
 	ref ITEM_BaseBuildingData BaseBuildingData 	= new ITEM_BaseBuildingData;
 	ref ITEM_UIData UIData 						= new ITEM_UIData;
 	ref ITEM_MapData MapData 					= new ITEM_MapData;
+	ref ITEM_VehicleData VehicleData 			= new ITEM_VehicleData;
 	
 };
 
@@ -113,10 +114,14 @@ class ITEM_StaminaData : ITEM_DataBase
 {
 	override void InitServer()
 	{
+		staminaMax = GameConstants.STAMINA_MAX;
 	}
 	
 	override bool ValidateServer()
 	{
+		if (staminaMax == 0.0)
+			return false;
+		
 		return true;
 	}
 	
@@ -239,6 +244,7 @@ class ITEM_HologramData : ITEM_DataBase
 	bool disableHeightPlacementCheck;
 	bool disableIsUnderwaterCheck;
 	bool disableIsInTerrainCheck;
+	bool disableColdAreaPlacementCheck;
 	ref TStringSet disallowedTypesInUnderground;
 };
 
@@ -352,3 +358,21 @@ class ITEM_DrowningData : ITEM_DataBase
 	float healthDepletionSpeed = 10;
 	float shockDepletionSpeed = 10;
 }
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ITEM_VehicleData : ITEM_DataBase
+{
+	override void InitServer()
+	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
+	float boatDecayMultiplier = 1;
+};

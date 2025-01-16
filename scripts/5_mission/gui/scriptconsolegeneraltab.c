@@ -48,6 +48,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	protected CheckBoxWidget		m_HudDFreeCamCross;
 	protected CheckBoxWidget		m_HudDVersion;
 	protected CheckBoxWidget		m_HudDHealth;
+	protected CheckBoxWidget		m_HudDHorticulture;
 	
 	protected CheckBoxWidget		m_ShowOthers;
 	
@@ -58,11 +59,15 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	protected TextWidget	 		m_PlayerCurDir;
 	protected TextWidget	 		m_MouseCurPos;
 	protected TextWidget	 		m_PlayerMouseDiff;
+	protected TextWidget			m_CameraCurPos;
+	protected TextWidget			m_CameraCurDir;
 
 	protected TextListboxWidget 	m_DiagToggleTextListbox;
 	protected TextListboxWidget		m_PositionsListbox;
 	protected TextListboxWidget 	m_DiagDrawmodeTextListbox;
 	protected TextListboxWidget 	m_HelpTextListboxWidget;
+	
+	protected FreeDebugCamera m_FreeDebugCamera;
 	
 	//-----------------------------------------------------------------------------------
 	
@@ -88,6 +93,8 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_PlayerCurDir		= TextWidget.Cast(root.FindAnyWidget("PlayerDirLabel"));
 		m_PlayerMouseDiff	= TextWidget.Cast(root.FindAnyWidget("PlayerMouseDiff"));
 		m_MouseCurPos		= TextWidget.Cast(root.FindAnyWidget("MousePosLabel"));
+		m_CameraCurPos		= TextWidget.Cast(root.FindAnyWidget("CameraPosLabel"));
+		m_CameraCurDir		= TextWidget.Cast(root.FindAnyWidget("CameraDirLabel"));
 		m_LogsEnabled		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_LogsEnabled"));
 		m_HudDCharStats		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_CharacterStats"));
 		m_HudDCharLevels	= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_CharacterLevels"));
@@ -99,6 +106,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_HudDTemperature	= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Temp"));
 		m_HudDVersion		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Version"));
 		m_HudDHealth		= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Health"));
+		m_HudDHorticulture	= CheckBoxWidget.Cast(root.FindAnyWidget("cbx_Horticulture"));
 		
 		m_LocationAddButton	= ButtonWidget.Cast(root.FindAnyWidget("AddButton"));
 		//m_LocationAddButton.SetHandler(ToolTipEventHandler.GetInstance());
@@ -115,11 +123,11 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_ShowOthers		= CheckBoxWidget.Cast(root.FindAnyWidget("ShowOthersCheckbox"));
 
 		m_HelpTextListboxWidget = TextListboxWidget.Cast(root.FindAnyWidget("HelpTextListboxWidget"));
-		m_Developer					= PluginDeveloper.Cast(GetPlugin(PluginDeveloper));
+		m_Developer	= PluginDeveloper.Cast(GetPlugin(PluginDeveloper));
+		m_FreeDebugCamera = FreeDebugCamera.GetInstance();
 		
 		Init();
 		LateInit();
-		
 	}
 	
 	void ~ScriptConsoleGeneralTab()
@@ -133,9 +141,6 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 
 	protected void Init()
 	{
-		
-		
-		
 		// Update checkbox Character Values
 		m_HudDCharStats.SetChecked(m_ConfigDebugProfile.GetCharacterStatsVisible());
 		m_HudDCharLevels.SetChecked(m_ConfigDebugProfile.GetCharacterLevelsVisible());
@@ -147,6 +152,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_HudDVersion.SetChecked(m_ConfigDebugProfile.GetVersionVisible());
 		m_HudDTemperature.SetChecked(m_ConfigDebugProfile.GetTempVisible());
 		m_HudDHealth.SetChecked(m_ConfigDebugProfile.GetHealthVisible());
+		m_HudDHorticulture.SetChecked(m_ConfigDebugProfile.GetHorticultureVisible());
 		
 
 		m_LogsEnabled.SetChecked(m_ConfigDebugProfile.GetLogsEnabled());
@@ -185,7 +191,6 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		RefreshDateWidgets(year,month, day, hour, minute);
 	}
 	
-	
 	void RefreshDateWidgets(int year, int month, int day, int hour, int minute)
 	{
 		float time01 = Math.InverseLerp(0,60*24 - 1, (hour * 60) + minute);
@@ -210,9 +215,6 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		return true;
 	}
 
-	
-	
-	
 	void LateInit()
 	{
 		m_ShowOthers.SetChecked(SHOW_OTHERS);
@@ -481,8 +483,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			GetGame().GetPlayer().RPCSingleParam(ERPCs.DEV_RPC_SET_TIME, p5, true);
 		}
 	}
-	
-	
+
 	void UpdateMousePos()
 	{
 		int x,y;
@@ -507,11 +508,15 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		}
 	}
 
-
 	void SetMapPos(vector pos)
 	{
 		m_MapPos = pos;
 		m_PlayerCurPos.SetText("Position: "+  MiscGameplayFunctions.TruncateToS(pos[0]) +", "+ MiscGameplayFunctions.TruncateToS(pos[1]) +", "+ MiscGameplayFunctions.TruncateToS(pos[2]));
+	}
+	
+	void SetMapCameraPos(vector pos)
+	{
+		m_CameraCurPos.SetText("Camera Position: "+  MiscGameplayFunctions.TruncateToS(pos[0]) +", "+ MiscGameplayFunctions.TruncateToS(pos[1]) +", "+ MiscGameplayFunctions.TruncateToS(pos[2]));
 	}
 	
 	void SetDir(vector dir)
@@ -519,11 +524,16 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_PlayerCurDir.SetText("Direction: "+  MiscGameplayFunctions.TruncateToS(dir[0]) +", "+ MiscGameplayFunctions.TruncateToS(dir[1]) +", "+ MiscGameplayFunctions.TruncateToS(dir[2]));
 	}
 	
+	void SetCameraDir(vector dir)
+	{
+		m_CameraCurDir.SetText("Camera Direction: "+  MiscGameplayFunctions.TruncateToS(dir[0]) +", "+ MiscGameplayFunctions.TruncateToS(dir[1]) +", "+ MiscGameplayFunctions.TruncateToS(dir[2]));
+	}
+	
 	vector GetMapPos()
 	{
 		return m_MapPos;
 	}
-	
+
 	override bool OnMouseButtonDown(Widget w, int x, int y, int button)
 	{
 		super.OnMouseButtonDown(w,x,y,button);
@@ -532,25 +542,34 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		{
 			if (button == 0)
 			{
-				m_PlayerPosRefreshBlocked = true;
-				int mouseX, mouseY;
-				GetMousePos(mouseX,mouseY);
-				vector mousePos, worldPos;
-				mousePos[0] = mouseX;
-				mousePos[1] = mouseY;
-				worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
-				worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
-				
-				SetMapPos(worldPos);
+				if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
+				{
+					SetMapCameraPos(m_FreeDebugCamera.GetWorldPosition());
+					SetCameraDir(m_FreeDebugCamera.GetDirection());
+				}
+				else
+				{
+					m_PlayerPosRefreshBlocked = true;
+					int mouseX, mouseY;
+					GetMousePos(mouseX,mouseY);
+					vector mousePos, worldPos;
+					mousePos[0] = mouseX;
+					mousePos[1] = mouseY;
+					worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
+					worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
+					SetMapPos(worldPos);
+				}
 			}
 			else if (button == 1 && GetGame().GetPlayer())
 			{
-				SetMapPos(GetGame().GetPlayer().GetWorldPosition());
+				if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
+					SetMapCameraPos(m_FreeDebugCamera.GetWorldPosition());
+				else
+					SetMapPos(GetGame().GetPlayer().GetWorldPosition());
 			}
 		}
 		return true;
 	}
-	
 
 	override bool OnKeyDown(Widget w, int x, int y, int key)
 	{
@@ -623,14 +642,33 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			float pos_y_b = GetGame().SurfaceRoadY(screen_to_map[0], screen_to_map[2]);
 			float pos_y = Math.Max(pos_y_a, pos_y_b);
 			screen_to_map[1] = pos_y;
-			m_Developer.Teleport(player, screen_to_map);
+			
+			if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
+			{
+				vector camPos = m_FreeDebugCamera.GetPosition();
+				float camPosY = camPos[1];
+				screen_to_map[1] = camPosY;
+				m_FreeDebugCamera.SetPosition(screen_to_map);
+			}
+			else
+			{
+				m_Developer.Teleport(player, screen_to_map);
+			}
+			
 			return true;
 		}
 		
 		if (w == m_PositionsListbox)
 		{
 			vector position = GetCurrentLocationPos();
-			Teleport(player, position);
+			if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
+			{
+				m_FreeDebugCamera.SetPosition(position);
+			}
+			else
+			{
+				Teleport(player, position);
+			}
 			return true;
 		}
 		
@@ -770,6 +808,18 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 
 			return true;
 		}
+		else if (w == m_HudDHorticulture)
+		{
+			if (m_ConfigDebugProfile)
+			{
+				m_ConfigDebugProfile.SetHorticultureVisible(m_HudDHorticulture.IsChecked());
+			}
+
+			// Refresh UI by new settings
+			m_MissionGameplay.GetHudDebug().RefreshByLocalProfile();
+
+			return true;
+		}
 		else if (w == m_HudDCharModifiers)
 		{
 			if (m_ConfigDebugProfile)
@@ -887,6 +937,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 				}
 			}
 		}
+
 		if (player)
 		{
 			vector playerPos = player.GetWorldPosition();
@@ -894,10 +945,16 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			if (playerPos != GetMapPos())
 				m_DebugMapWidget.AddUserMark(GetMapPos(),"Pos", COLOR_BLUE,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
 		}
+		
+		if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
+		{
+			vector cameraPos = m_FreeDebugCamera.GetWorldPosition();
+			m_DebugMapWidget.AddUserMark(cameraPos,"Camera", COLOR_GREEN,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+		}
+		
 		UpdateMousePos();
 		if (!m_PlayerPosRefreshBlocked)
 			RefreshPlayerPosEditBoxes();
-		
 		
 		foreach (MapMarker marker: ScriptConsole.m_MarkedEntities)
 		{

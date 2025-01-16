@@ -30,7 +30,7 @@ class VehicleBattery : ItemBase
 		return super.CanReceiveAttachment(attachment, slotId);
 	}
 	
-	override bool CanPutIntoHands(EntityAI player)
+	override bool CanPutIntoHands(EntityAI parent)
 	{
 		if (!super.CanPutIntoHands(parent))
 		{

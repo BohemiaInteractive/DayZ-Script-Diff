@@ -110,6 +110,24 @@ class ActionMountBarbedWire: ActionContinuousBase
 		BarbedWireActionData.Cast(action_data).m_SlotName = receiveDataBW.m_SlotName;
 	}
 	
+	override void OnStartServer(ActionData action_data)
+	{
+		super.OnStartServer(action_data);
+		
+		BarbedWire wire = GetBarbedWire(action_data.m_Target);
+		if (wire && wire.GetLoopDeploySoundset() != string.Empty)
+			wire.StartItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
+	}
+	
+	override void OnEndServer(ActionData action_data)
+	{
+		BarbedWire wire = GetBarbedWire(action_data.m_Target);
+		if (wire && wire.GetLoopDeploySoundset() != string.Empty)
+			wire.StopItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
+		
+		super.OnEndServer(action_data);
+	}
+	
 	override void OnFinishProgressServer(ActionData action_data)
 	{	
 		BarbedWireActionData actionDataBW = BarbedWireActionData.Cast(action_data);
@@ -118,6 +136,9 @@ class ActionMountBarbedWire: ActionContinuousBase
 		//mount and refresh parent
 		BarbedWire wire = BarbedWire.Cast(base_building.FindAttachmentBySlotName(actionDataBW.m_SlotName));
 		wire.SetMountedState(true);
+		
+		if (wire.GetDeploySoundset() != string.Empty)
+			wire.StartItemSoundServer(SoundConstants.ITEM_DEPLOY);
 		
 		//solution for DamageSystem's case sensitivity
 		string zone = "invalid";

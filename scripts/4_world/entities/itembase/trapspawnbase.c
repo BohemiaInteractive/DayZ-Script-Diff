@@ -52,8 +52,6 @@ class TrapSpawnBase extends ItemBase
 	{
 		InitTrapValues();
 		
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsDeploySound");
 		RegisterNetSyncVariableBool("m_IsActive");
 		RegisterNetSyncVariableBool("m_IsDeployed");
 		RegisterNetSyncVariableInt("m_YieldItemIdx");
@@ -154,12 +152,7 @@ class TrapSpawnBase extends ItemBase
     override void OnVariablesSynchronized()
     {
         super.OnVariablesSynchronized();
-		
-		if (IsDeploySound() && IsDeployed())
-		{
-			PlayDeploySound();
-		}
-		
+				
 		if (m_YieldItemIdx != m_YieldItemIdxLocal)
 		{
 			m_YieldItemIdxLocal = m_YieldItemIdx;
@@ -555,7 +548,7 @@ class TrapSpawnBase extends ItemBase
 			return;
 		
 		UpdatePreyPos();
-		SetIsDeploySound(false);
+				
 		ItemBase catch;
 		if (m_CanCatch)
 		{
@@ -804,13 +797,12 @@ class TrapSpawnBase extends ItemBase
 				}
 			}
 			
-			SetIsDeploySound(true);
-			
 			InitCatchingComponent();
 			UpdateTrapEnviroMask();
 			SetActive();
 		}
 	}
+	
 	
 	bool IsPlaceable()
 	{

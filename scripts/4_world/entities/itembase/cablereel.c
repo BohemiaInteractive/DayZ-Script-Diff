@@ -8,8 +8,6 @@ class CableReel extends ItemBase
 	void CableReel()
 	{
 		m_ForceIntoHands = false;
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsPlaceSound");
 	}
 	
 	override bool IsElectricAppliance()
@@ -37,7 +35,7 @@ class CableReel extends ItemBase
 		return allowIntoInventory;
 	}
 
-	override bool CanPutIntoHands(EntityAI player) 
+	override bool CanPutIntoHands(EntityAI parent) 
 	{
 		if (!super.CanPutIntoHands(parent))
 			return false;
@@ -71,17 +69,9 @@ class CableReel extends ItemBase
 			GetCompEM().UnplugThis();
 	}
 	
-	override bool CanRemoveFromHands(EntityAI player)
+	override bool CanRemoveFromHands(EntityAI parent)
 	{
 		return true;
-	}
-	
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-						
-		if (IsPlaceSound())
-			PlayPlaceSound();
 	}
 	
 	//================================================================
@@ -104,14 +94,7 @@ class CableReel extends ItemBase
 			playerPB.GetHologramLocal().SetSelectionToRefresh(selections);
 	}
 	
-	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
-	{
-		super.OnPlacementComplete(player, position, orientation);
-		
-		SetIsPlaceSound(true);
-	}
-	
-	override string GetPlaceSoundset()
+	override string GetDeploySoundset()
 	{
 		return "placeCableReel_SoundSet";
 	}

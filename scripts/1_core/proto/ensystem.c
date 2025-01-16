@@ -4,7 +4,7 @@
  */
 
 /**
-\brief Returns world time
+\brief Returns system time
 	\param[out] hour \p int Hour
 	\param[out] minute \p int Minute
 	\param[out] second \p int Second
@@ -28,7 +28,7 @@
 proto void GetHourMinuteSecond(out int hour, out int minute, out int second);
 
 /**
-\brief Returns world date
+\brief Returns system date
 	\param[out] year \p int Year
 	\param[out] month \p int Month
 	\param[out] day \p int Day
@@ -52,7 +52,7 @@ proto void GetHourMinuteSecond(out int hour, out int minute, out int second);
 proto void GetYearMonthDay(out int year, out int month, out int day);
 
 /**
-\brief Returns UTC world time
+\brief Returns UTC system time
 	\param[out] hour \p int Hour
 	\param[out] minute \p int Minute
 	\param[out] second \p int Second
@@ -76,7 +76,7 @@ proto void GetYearMonthDay(out int year, out int month, out int day);
 proto void GetHourMinuteSecondUTC(out int hour, out int minute, out int second);
 
 /**
-\brief Returns UTC world date
+\brief Returns UTC system date
 	\param[out] year \p int Year
 	\param[out] month \p int Month
 	\param[out] day \p int Day

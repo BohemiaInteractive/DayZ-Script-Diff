@@ -1,44 +1,30 @@
-// TODO:
-// 1. Alredy exist some key in array / map
-// 2. Object is null (check object & log error)
-// 3. Debug version only
-// 4. Destructor of static classes
-// 5. Debug Console Interface:
-//		- Clear Log
-//		- Filter
-//		- Log per frame
-// 6. Per frame log ?
-// 7. Zapis do fajlu
-
 class Debug
 {	
-	static private const string	LOG_DEBUG					= "Debug";
-	static private const string	LOG_DEBUG_ACTION			= "Action";
-	static private const string	LOG_DEBUG_SYMPTOM			= "Symptom";
-	static private const string	LOG_DEBUG_INV_MOVE			= "Inv Move";
-	static private const string	LOG_DEBUG_INV_RESERVATION	= "Inv Rrsv";
-	static private const string	LOG_DEBUG_INV_HFSM			= "HFSM";
-	static private const string	LOG_DEBUG_QUICKBAR			= "Quickbar";
-	static private const string	LOG_DEBUG_BASEBUILDING		= "Base Building";
-	static private const string	LOG_DEBUG_BLEEDING_CHANCES	= "Bleeding";
-	static private const string LOG_DEBUG_TRIGGER			= "Trigger";
-	static private const string LOG_DEBUG_PARTICLE			= "Particle";
-	static private const string LOG_DEBUG_TF				= "TestFramework";
-	static private const string LOG_DEBUG_WEIGHT			= "Weight";
-	static private const string LOG_DEBUG_MELEE				= "Melee";
-	static private const string LOG_DEBUG_WEATHER			= "Weather";
+	private static const string	LOG_DEBUG					= "Debug";
+	private static const string	LOG_DEBUG_ACTION			= "Action";
+	private static const string	LOG_DEBUG_SYMPTOM			= "Symptom";
+	private static const string	LOG_DEBUG_INV_MOVE			= "Inv Move";
+	private static const string	LOG_DEBUG_INV_RESERVATION	= "Inv Rrsv";
+	private static const string	LOG_DEBUG_INV_HFSM			= "HFSM";
+	private static const string	LOG_DEBUG_QUICKBAR			= "Quickbar";
+	private static const string	LOG_DEBUG_BASEBUILDING		= "Base Building";
+	private static const string	LOG_DEBUG_BLEEDING_CHANCES	= "Bleeding";
+	private static const string LOG_DEBUG_TRIGGER			= "Trigger";
+	private static const string LOG_DEBUG_PARTICLE			= "Particle";
+	private static const string LOG_DEBUG_TF				= "TestFramework";
+	private static const string LOG_DEBUG_WEIGHT			= "Weight";
+	private static const string LOG_DEBUG_MELEE				= "Melee";
+	private static const string LOG_DEBUG_WEATHER			= "Weather";
 
-	static private const string	LOG_INFO					= "Info";
-	static private const string	LOG_WARNING					= "Warning";
-	static private const string	LOG_ERROR					= "Error";
-	static private const string	LOG_DEFAULT					= "n/a";
+	private static const string	LOG_INFO					= "Info";
+	private static const string	LOG_WARNING					= "Warning";
+	private static const string	LOG_ERROR					= "Error";
+	private static const string	LOG_DEFAULT					= "n/a";
 	
-	static private ref array<Shape>	m_DebugShapes;
+	private static ref array<Shape>	m_DebugShapes;
 	
 	static Widget m_DebugLayoutCanvas;
 	static CanvasWidget m_CanvasDebug;
-	
-	
 	
 	static string GetDebugName(Managed entity)
 	{
@@ -373,6 +359,14 @@ class Debug
 		return shapes;
 	}
 	
+	static void CleanupDrawShapes(array<Shape> shapes)
+	{
+		foreach (Shape shape : shapes)
+			Debug.RemoveShape(shape);
+		
+		shapes.Clear();
+	}
+	
 	/**
 	DrawLine
 	\nFlags:
@@ -483,9 +477,9 @@ class Debug
 	//---------------------------------------------------------------
 	//-------private
 	
-	static private bool				m_EnabledLogs; //! DEPRECATED
+	private static bool				m_EnabledLogs; //! DEPRECATED
 		
-	static private string LogMessage(string level, string plugin, string entity, string author, string label, string message)
+	private static string LogMessage(string level, string plugin, string entity, string author, string label, string message)
 	{
 		if (GetGame() == null || !LogManager.IsLogsEnable())
 			return string.Empty;
@@ -523,7 +517,7 @@ class Debug
 		return msg;
 	}
 
-	static private void	SaveLog(string log_message)
+	private static void	SaveLog(string log_message)
 	{
 		if (log_message.Length() == 0)
 			return;
@@ -578,7 +572,7 @@ class Debug
 		return CFG_FILE_SCRIPT_LOG_EXT;
 	}
 	
-	static private string GetDate()
+	private static string GetDate()
 	{
 		int year;
 		int month;
@@ -758,7 +752,7 @@ enum WeightDebugType
 
 class WeightDebug
 {
-	static private ref map<EntityAI, ref WeightDebugData> m_WeightDebugData 	= new map<EntityAI, ref WeightDebugData>();
+	private static ref map<EntityAI, ref WeightDebugData> m_WeightDebugData 	= new map<EntityAI, ref WeightDebugData>();
 	static WeightDebugType m_VerbosityFlags;
 	
 	//-------------------------------------------------------------

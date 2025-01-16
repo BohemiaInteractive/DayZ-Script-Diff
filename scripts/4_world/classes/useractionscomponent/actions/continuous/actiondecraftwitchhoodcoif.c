@@ -42,8 +42,8 @@ class ActionDeCraftWitchHoodCoif : ActionContinuousBase
 		string color = mainItem.ConfigGetString("color");
 		string className = "WitchHood_" + color;
 		
-		EntityAI result1 = action_data.m_Player.SpawnEntityOnGroundPos(className, action_data.m_Player.GetPosition());
-		EntityAI result2 = action_data.m_Player.SpawnEntityOnGroundPos("Chainmail_Coif", action_data.m_Player.GetPosition());
+		EntityAI result1 = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed(className);
+		EntityAI result2 = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("Chainmail_Coif");
 		
 		if (!result1 || !result2)
 			return;

@@ -13,6 +13,43 @@ enum WaveKind
 	WAVEUI
 }
 
+
+//@}
+
+//----------------------------------------------
+/**
+ * \defgroup SoundController API
+ * @{
+ */
+
+enum SoundControllerAction
+{
+	None,
+	Limit,
+	Overwrite
+}
+
+/*!
+Overrides or limits soundmap value for a sound cotroller
+\param controllerName the sound controller name. One of: rain,night,meadow,trees,hills,houses,windy,deadBody,sea,forest,altitudeGround,altitudeSea,altitudeSurface,daytime,shooting,coast,waterDepth,overcast,fog,snowfall,caveSmall,caveBig
+\param action what action will be used on the normal landscape sound controller value
+\param value the new value of sound controller
+*/
+proto native void SetSoundControllerOverride(string controllerName, float value, SoundControllerAction action);
+
+/*!
+Overrides all the environment controllers to be muted
+*/
+proto native void MuteAllSoundControllers();
+
+/*!
+Removes all the previously set overrides of sound controllers
+*/
+proto native void ResetAllSoundControllers();
+
+//@}
+
+
 class AbstractSoundScene
 {
 	private void AbstractSoundScene() {}

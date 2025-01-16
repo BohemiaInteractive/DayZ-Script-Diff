@@ -65,6 +65,7 @@ class MissionServer extends MissionBase
 		m_LogoutPlayers = new map<PlayerBase, ref LogoutInfo>;
 		m_NewLogoutPlayers = new map<PlayerBase, ref LogoutInfo>;
 		m_RainProcHandler = new RainProcurementHandler(this);
+		m_ActiveRefresherLocations 	= new array<vector>();
 	}
 	
 	void ~MissionServer()
@@ -554,6 +555,9 @@ class MissionServer extends MissionBase
 		{
 			if (player.IsUnconscious() || player.IsRestrained())
 			{
+				PluginAdminLog adm = PluginAdminLog.Cast(GetPlugin(PluginAdminLog));
+				adm.PlayerKilledByRespawn(player);
+				
 				// kill character
 				player.SetHealth("", "", 0.0);
 			}
@@ -688,6 +692,9 @@ class MissionServer extends MissionBase
 		{
 			if (ShouldPlayerBeKilled(player))
 			{
+				PluginAdminLog adm = PluginAdminLog.Cast(GetPlugin(PluginAdminLog));
+				adm.PlayerKilledByDisconnect(player);
+				
 				player.SetHealth("", "", 0.0);//kill
 			}
 			else
@@ -768,6 +775,11 @@ class MissionServer extends MissionBase
 	override RainProcurementHandler GetRainProcurementHandler()
 	{
 		return m_RainProcHandler;
+	}
+	
+	override array<vector> GetActiveRefresherLocations()
+	{
+		return m_ActiveRefresherLocations;
 	}
 	
 	//! DEPRECATED

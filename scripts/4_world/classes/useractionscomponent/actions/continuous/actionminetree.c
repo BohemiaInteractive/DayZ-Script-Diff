@@ -100,7 +100,7 @@ class ActionMineTree : ActionMineBase
 		return ActionConditionContinue(action_data);
 	}
 	
-	/*override void OnFinishProgressServer(ActionData action_data)
+	override void OnExecuteServer(ActionData action_data)
 	{
 		MineActionData mad = MineActionData.Cast(action_data);
 		if (mad.m_EffecterID == -1)
@@ -111,7 +111,12 @@ class ActionMineTree : ActionMineBase
 		{
 			SEffectManager.ReactivateParticleServer(mad.m_EffecterID);
 		}
-	}*/
+	}
+	
+	override bool HasMultipleExecution(ActionData action_data)
+	{
+		return true;
+	}
 	
 	override void OnEndServer(ActionData action_data)
 	{

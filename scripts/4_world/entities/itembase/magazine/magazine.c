@@ -6,7 +6,8 @@ enum CartridgeType
 	Pistol = 1,
 	Intermediate = 2,
 	FullPower = 3,
-	Shell = 4
+	Shell = 4,
+	Arrow = 5
 }
 
 enum ProjectileType

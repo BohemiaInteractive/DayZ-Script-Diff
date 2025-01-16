@@ -23,8 +23,11 @@ class Cooking
 	static const float FOOD_MAX_COOKING_TEMPERATURE					= 150;	//
 	static const float PARAM_BURN_DAMAGE_COEF						= 0.05;	//value for calculating damage on items located in fireplace CargoGrid
 
-	static const float LIQUID_BOILING_POINT 						= 150;	//boiling point for liquids
-	static const float LIQUID_VAPOR_QUANTITY 						= 2;	//vapor quantity
+	static const float LIQUID_BOILING_POINT 						= 150;	//default boiling point for liquids, overriden by 'liquidBoilingThreshold' in cfgLiquidDefinitions
+	static const float LIQUID_VAPOR_QUANTITY 						= 2;	//vaporization quantity loss
+	static const float SOLID_OVERHEAT_QUANTITY 						= 2;	//solid overheat quantity loss
+	
+	static const float BURNING_WARNING_THRESHOLD 					= 0.75; //! 0..1, validly cooked item will pre-emptively start emitting burning sounds when this close to being burned
 
 	typename COOKING_EQUIPMENT_POT	 					= Pot;
 	typename COOKING_EQUIPMENT_FRYINGPAN				= FryingPan;
@@ -41,10 +44,6 @@ class Cooking
 	void ProcessItemToCook(notnull ItemBase pItem, ItemBase cookingEquip, Param2<CookingMethodType, float> pCookingMethod, out Param2<bool, bool> pStateFlags)
 	{
 		Edible_Base item_to_cook = Edible_Base.Cast(pItem);
-		
-		//! state flags are in order: is_done, is_burned
-		pStateFlags = new Param2<bool, bool>(false, false);
-		
 		if (item_to_cook && item_to_cook.CanBeCooked())
 		{
 			//! update food
@@ -53,44 +52,62 @@ class Cooking
 			//check for done state for boiling and drying
 			if (item_to_cook.IsFoodBoiled() || item_to_cook.IsFoodDried())
 			{
-				pStateFlags.param1 = true;
+				pStateFlags.param1 |= true;
 			}
 			//! check for done state from baking (exclude Lard from baked items)
 			else if (item_to_cook.IsFoodBaked() && item_to_cook.Type() != Lard)
 			{
-				pStateFlags.param1 = true;
+				pStateFlags.param1 |= true;
 			}
 			//! check for burned state
 			else if (item_to_cook.IsFoodBurned())
 			{
-				pStateFlags.param2 = true;
+				pStateFlags.param2 |= true;
 			}
 		}
 		else
 		{
 			//add temperature to item
-			if (pItem != cookingEquip) //already handled by the fireplace directly!
+			if (pItem != cookingEquip) //1st order item already handled by the fireplace directly!
 				AddTemperatureToItem(pItem, null, 0);
 			
-			//damage item that can actually overheat?
+			int liquidType = pItem.GetLiquidType();
+			bool handleLiquid = pItem.IsLiquidContainer() && liquidType != LIQUID_NONE;
+			bool isLiquiBoiling = handleLiquid && pItem.GetTemperature() >= Liquid.GetBoilThreshold(liquidType);
+			
+			//handle items that can actually overheat
 			if (pItem.CanItemOverheat())
 			{
-				if (pItem.IsItemOverheated())
+				//handle qty first
+				if (pItem.HasQuantity() && pItem.GetQuantityNormalized() > 0)
 				{
-					if (pItem.HasQuantity() && pItem.GetQuantityNormalized() > 0)
+					if (handleLiquid)
 					{
-						pItem.AddQuantity(-LIQUID_VAPOR_QUANTITY,!pItem.IsLiquidContainer()); //TODO: use other constant here, or calculate from qtyMax..
+						if (pItem.IsItemOverheated() || isLiquiBoiling) //overheat causes qty loss here!
+							pItem.AddQuantity(-LIQUID_VAPOR_QUANTITY,false);
 					}
-					else
+					else if (pItem.IsItemOverheated())
 					{
-						pItem.DecreaseHealth(PARAM_BURN_DAMAGE_COEF * 100);
+						pItem.AddQuantity(-SOLID_OVERHEAT_QUANTITY,true);
 					}
+				}//next handle damage
+				else if (!pItem.IsCookware() && pItem.IsItemOverheated()) //cookware already damaged by fireplace, skipping
+				{
+					pItem.DecreaseHealth(PARAM_BURN_DAMAGE_COEF * 100);
 				}
 			}
 			else
 			{
-				pItem.DecreaseHealth(PARAM_BURN_DAMAGE_COEF * 100); //pItem.IsKindOf("Grenade_Base")
+				if (!pItem.IsCookware()) //cookware already damaged by fireplace, skipping
+					pItem.DecreaseHealth(PARAM_BURN_DAMAGE_COEF * 100);
+				
+				if (isLiquiBoiling)
+					pItem.AddQuantity(-LIQUID_VAPOR_QUANTITY,false);
 			}
+			
+			//last handle agents
+			if (isLiquiBoiling)
+				pItem.RemoveAllAgentsExcept(eAgents.HEAVYMETAL);
 		}
 	}
 
@@ -99,73 +116,65 @@ class Cooking
 	//Returns 1 if the item changed its cooking stage, 0 if not
 	int CookWithEquipment(ItemBase cooking_equipment, float cooking_time_coef = 1)
 	{
-		bool is_empty;
+		bool is_empty = true;
 		
 		//check cooking conditions
 		if (cooking_equipment == null)
-		{
 			return 0;
-		}
 		
 		if (cooking_equipment.IsRuined())
-		{
 			return 0;
-		}
 		
 		//manage items in cooking equipment
 		Param2<bool, bool> stateFlags = new Param2<bool, bool>(false, false); // 1st - done; 2nd - burned
 		Param2<CookingMethodType, float> cookingMethodWithTime = GetCookingMethodWithTimeOverride(cooking_equipment);
-		
-		//! cooking time coef override
 		if (cooking_time_coef != 1)
-		{
 			cookingMethodWithTime.param2 = cooking_time_coef;
+		
+		//handle the cooking equipment/direct cooking first
+		ProcessItemToCook(cooking_equipment, cooking_equipment, cookingMethodWithTime, stateFlags);
+		
+		//cooking method may have changed due to liquid evaporating, refresh..
+		if (cooking_equipment.IsCookware() && cooking_equipment.IsLiquidContainer())
+		{
+			cookingMethodWithTime = GetCookingMethodWithTimeOverride(cooking_equipment);
+			if (cooking_time_coef != 1)
+				cookingMethodWithTime.param2 = cooking_time_coef;
 		}
 		
+		//handle the cooking inside of a container last
 		CargoBase cargo = cooking_equipment.GetInventory().GetCargo();
 		if (cargo)
 		{
-			is_empty = cargo.GetItemCount() == 0;
+			int count = cargo.GetItemCount();
+			is_empty = count == 0;
 			
 			//process items
-			for (int i = 0; i < cargo.GetItemCount(); i++)
+			for (int i = 0; i < count; i++)
 			{
 				ProcessItemToCook(ItemBase.Cast(cargo.GetItem(i)), cooking_equipment, cookingMethodWithTime, stateFlags);
 			}
 		}
-		else
-		{
-			ProcessItemToCook(cooking_equipment, cooking_equipment, cookingMethodWithTime, stateFlags);
-		}
 		
-		//manage cooking equipment
-		Bottle_Base bottle_base = Bottle_Base.Cast(cooking_equipment);
-		if (bottle_base)
+		//manage equipment EFFECTS
+		int liquidType = cooking_equipment.GetLiquidType();
+		//handle liquid boiling EFFECTS
+		if (cooking_equipment.IsLiquidContainer() && liquidType != LIQUID_NONE)
 		{
-			float cookingEquipmentTemp = bottle_base.GetTemperature();
-			int liquidType = bottle_base.GetLiquidType();
-			
-			//handle water boiling
-			if (liquidType != LIQUID_NONE && cookingEquipmentTemp >= Liquid.GetBoilThreshold(liquidType))
+			if (cooking_equipment.GetTemperature() >= Liquid.GetBoilThreshold(liquidType))
 			{
-				//remove agents
-				bottle_base.RemoveAllAgentsExcept(eAgents.HEAVYMETAL);
-				
-				//vaporize liquid
-				if (bottle_base.IsItemOverheated())
-					bottle_base.AddQuantity(-LIQUID_VAPOR_QUANTITY);
+				//handle boiling audiovisuals for any liquid container
+				cooking_equipment.RefreshAudioVisualsOnClient(cookingMethodWithTime.param1, stateFlags.param1, is_empty, stateFlags.param2);
 			}
-			
-			//handle audio visuals
-			if (bottle_base.Type() == COOKING_EQUIPMENT_POT || bottle_base.Type() == COOKING_EQUIPMENT_CAULDRON)
-				bottle_base.RefreshAudioVisualsOnClient(cookingMethodWithTime.param1, stateFlags.param1, is_empty, stateFlags.param2);
+			else
+			{
+				cooking_equipment.RemoveAudioVisualsOnClient();
+			}
 		}
-		
-		FryingPan frying_pan = FryingPan.Cast(cooking_equipment);
-		if (frying_pan && !bottle_base)
+		else if (cooking_equipment.IsCookware())
 		{
-			//handle audio visuals
-			frying_pan.RefreshAudioVisualsOnClient(cookingMethodWithTime.param1, stateFlags.param1, is_empty, stateFlags.param2);
+			//handle non-boiling audiovisuals for cookware only
+			cooking_equipment.RefreshAudioVisualsOnClient(cookingMethodWithTime.param1, stateFlags.param1, is_empty, stateFlags.param2);
 		}
 		
 		return 1;
@@ -417,82 +426,41 @@ class Cooking
 		
 		return null;
 	}
-
-	//! DEPREACTED
-	protected CookingMethodType GetCookingMethod(ItemBase cooking_equipment)
-	{
-		if (cooking_equipment.Type() == COOKING_EQUIPMENT_POT || cooking_equipment.Type() == COOKING_EQUIPMENT_CAULDRON)
-		{
-			//has water, but not petrol dammit X)
-			if (cooking_equipment.GetQuantity() > 0 && cooking_equipment.GetLiquidType() != LIQUID_GASOLINE)
-			{
-				return CookingMethodType.BOILING;
-			}
-			
-			//has lard in cargo
-			if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
-			{
-				return CookingMethodType.BAKING;
-			}
-			return CookingMethodType.DRYING;
-		}
-		
-		if (cooking_equipment.Type() == COOKING_EQUIPMENT_FRYINGPAN)
-		{
-			if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
-			{
-				return CookingMethodType.BAKING;
-			}
-			return CookingMethodType.DRYING;
-		}
-
-		return CookingMethodType.NONE;
-	}
 	
 	protected Param2<CookingMethodType, float> GetCookingMethodWithTimeOverride(ItemBase cooking_equipment)
 	{
-		Param2<CookingMethodType, float> val = new Param2<CookingMethodType, float>(CookingMethodType.NONE, TIME_WITH_SUPPORT_MATERIAL_COEF);
-
-		switch (cooking_equipment.Type())
+		if (cooking_equipment.IsCookware())
 		{
-			case COOKING_EQUIPMENT_POT:
-			case COOKING_EQUIPMENT_CAULDRON:
-			case COOKING_EQUIPMENT_FRYINGPAN:
-				if (cooking_equipment.GetQuantity() > 0)
+			if (cooking_equipment.GetQuantity() > 0)
+			{
+				if (cooking_equipment.GetLiquidType() == LIQUID_GASOLINE)
 				{
-					if (cooking_equipment.GetLiquidType() == LIQUID_GASOLINE)
-					{
-						//! when cooking in gasoline, jump to drying state(will be burnt then)
-						val = new Param2<CookingMethodType, float>(CookingMethodType.DRYING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
-						break;
-					}
-	
-					val = new Param2<CookingMethodType, float>(CookingMethodType.BOILING, TIME_WITH_SUPPORT_MATERIAL_COEF);
-					break;
-				}
-				
-				if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
-				{
-					//has lard in cargo, slower process
-					val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITH_SUPPORT_MATERIAL_COEF);
-					break;
+					//! when cooking in gasoline, jump to drying state(will be burnt then)
+					return new Param2<CookingMethodType, float>(CookingMethodType.DRYING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
 				}
 
-				if (cooking_equipment.GetInventory().GetCargo().GetItemCount() > 0)
-				{
-					val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
-					break;
-				}
-				
-				val = new Param2<CookingMethodType, float>(CookingMethodType.NONE, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
-				break;
+				return new Param2<CookingMethodType, float>(CookingMethodType.BOILING, TIME_WITH_SUPPORT_MATERIAL_COEF);
+			}
 			
-			default:
-				val = new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
-				break;
-		}
+			if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
+			{
+				//has lard in cargo, slower process
+				return new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITH_SUPPORT_MATERIAL_COEF);
+			}
 
-		return val;
+			if (cooking_equipment.GetInventory().GetCargo().GetItemCount() > 0)
+			{
+				return new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
+			}
+		
+			return new Param2<CookingMethodType, float>(CookingMethodType.NONE, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
+		}
+		else if (cooking_equipment.IsLiquidContainer() && cooking_equipment.GetQuantity() > 0 && cooking_equipment.GetLiquidType() != LIQUID_GASOLINE) //fake 'boiling' on liquid containers, for effects playback
+		{
+			return new Param2<CookingMethodType, float>(CookingMethodType.BOILING, TIME_WITH_SUPPORT_MATERIAL_COEF);
+		}
+		
+		return new Param2<CookingMethodType, float>(CookingMethodType.BAKING, TIME_WITHOUT_SUPPORT_MATERIAL_COEF);
 	}
 	
 	Edible_Base GetFoodOnStick( ItemBase stick_item )
@@ -537,20 +505,13 @@ class Cooking
 			}
 			
 			//adjust temperature
-			if (targetTemp != itemTemp)
+			if (targetTemp != itemTemp || !cooked_item.IsFreezeThawProgressFinished())
 			{
 				float heatPermCoef = 1.0;
 				if (cooking_equipment)
 					heatPermCoef = cooking_equipment.GetHeatPermeabilityCoef();
 				heatPermCoef *= cooked_item.GetHeatPermeabilityCoef();
-				float tempCoef;
-				
-				if (itemTemp < min_temperature && targetTemp > itemTemp) //heating 'catch-up' only
-					tempCoef = GameConstants.TEMP_COEF_COOKING_CATCHUP;
-				else
-					tempCoef = GameConstants.TEMP_COEF_COOKING_DEFAULT;
-				
-				cooked_item.SetTemperatureEx(new TemperatureDataInterpolated(targetTemp,ETemperatureAccessTypes.ACCESS_COOKING,m_UpdateTime,tempCoef,heatPermCoef));
+				cooked_item.SetTemperatureEx(new TemperatureDataInterpolated(targetTemp,ETemperatureAccessTypes.ACCESS_COOKING,m_UpdateTime,GameConstants.TEMP_COEF_COOKING_DEFAULT,heatPermCoef));
 			}
 		}
 	}
@@ -563,5 +524,38 @@ class Cooking
 			quantity = Math.Clamp(quantity, 0, pItem.GetQuantityMax());
 			pItem.SetQuantity(quantity);
 		}
+	}
+	
+	////////////////////////////
+	//DEPRECATED cooking stuff
+	//! DEPRECATED
+	protected CookingMethodType GetCookingMethod(ItemBase cooking_equipment)
+	{
+		if (cooking_equipment.Type() == COOKING_EQUIPMENT_POT || cooking_equipment.Type() == COOKING_EQUIPMENT_CAULDRON)
+		{
+			//has water, but not petrol dammit X)
+			if (cooking_equipment.GetQuantity() > 0 && cooking_equipment.GetLiquidType() != LIQUID_GASOLINE)
+			{
+				return CookingMethodType.BOILING;
+			}
+			
+			//has lard in cargo
+			if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
+			{
+				return CookingMethodType.BAKING;
+			}
+			return CookingMethodType.DRYING;
+		}
+		
+		if (cooking_equipment.Type() == COOKING_EQUIPMENT_FRYINGPAN)
+		{
+			if (GetItemTypeFromCargo(COOKING_INGREDIENT_LARD, cooking_equipment))
+			{
+				return CookingMethodType.BAKING;
+			}
+			return CookingMethodType.DRYING;
+		}
+
+		return CookingMethodType.NONE;
 	}
 }

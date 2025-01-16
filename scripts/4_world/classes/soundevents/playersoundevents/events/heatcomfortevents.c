@@ -22,6 +22,15 @@ class FreezingSoundEvent extends HeatComfortEventsBase
 	}
 }
 
+class RattlingTeethSoundEvent extends HeatComfortEventsBase
+{
+	void RattlingTeethSoundEvent()
+	{
+		m_ID = EPlayerSoundEventID.RATTLING_TEETH;
+		m_SoundVoiceAnimEventClassID = 906;
+	}
+}
+
 class HotSoundEvent extends HeatComfortEventsBase
 {
 	void HotSoundEvent()

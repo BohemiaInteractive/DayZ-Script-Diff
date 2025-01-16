@@ -70,7 +70,7 @@ class PlayerListScriptedWidget extends ScriptedWidgetEventHandler
 		return ( m_Entries.Count() == 0 );
 	}
 	
-	void OnLoadServersAsync( ref GetServersResult result_list, EBiosError error, string response )
+	void OnLoadServersAsync( GetServersResult result_list, EBiosError error, string response )
 	{
 
 	}
@@ -181,26 +181,47 @@ class PlayerListScriptedWidget extends ScriptedWidgetEventHandler
 		}
 	}
 	
-	void RemovePlayer( string UID )
+	void RemovePlayer(string UID)
 	{
-		if ( m_Entries )
+		if (m_Entries)
 		{
 			PlayerListEntryScriptedWidget next_entry;
-			
-			if ( m_Entries.Get( UID ) == m_SelectedEntry )
+			if (m_Entries.Get(UID) == m_SelectedEntry)
 			{
-				for ( int i = 0; i < m_Entries.Count() - 1; i++ )
+				for (int i = 0; i < m_Entries.Count() - 1; i++)
 				{
-					if ( m_Entries.GetElement( i ) == m_Entries.Get( UID ) )
+					if (m_Entries.GetElement(i) != m_Entries.Get(UID))
+						continue;
+					
+					// Select next possibe player entry after the one to delete if possible
+					if (i + 1 <= m_Entries.Count() - 1)
 					{
-						next_entry = m_Entries.GetElement( i + 1 );
+						next_entry = m_Entries.GetElement(i + 1);
 					}
 				}
 			}
 			
-			m_Entries.Remove( UID );
+			m_Entries.Remove(UID);
 			m_TotalEntries--;
-			SelectPlayer( next_entry );
+			
+			// If there is no other possibe player entry after the current one to select we try to select the first indexed one
+			if (!next_entry)
+			{
+				next_entry = m_Entries.GetElement(0);
+			}
+			
+			// If we found a next entry to select from we select it in the UI class and focus on it
+			// if not we only deselect the current one as there is no other possible entry to focus on
+			if (next_entry)
+			{
+				SelectPlayer(next_entry);
+			}
+			else
+			{
+				if (m_SelectedEntry)
+					m_SelectedEntry.Deselect();
+			}
+
 			m_Content.Update();
 		}
 	}
@@ -244,14 +265,23 @@ class PlayerListScriptedWidget extends ScriptedWidgetEventHandler
 		return m_SelectedEntry;
 	}
 	
-	void SelectPlayer( PlayerListEntryScriptedWidget entry )
+	void SelectPlayer(PlayerListEntryScriptedWidget entry)
 	{
-		if ( m_SelectedEntry )
+		if (m_SelectedEntry)
+		{
 			m_SelectedEntry.Deselect();
+		}
+
 		m_SelectedEntry = entry;
-		if ( GetGame().GetUIManager().GetMenu() )
+		
+		#ifdef PLATFORM_CONSOLE
+		// Focus on new selected entry as OnFocus event function will handle the rest 
+		m_SelectedEntry.Focus();
+		#endif
+
+		if (GetGame().GetUIManager().GetMenu())
 			GetGame().GetUIManager().GetMenu().Refresh();
-		ScrollToEntry( entry );
+		ScrollToEntry(m_SelectedEntry);
 	}
 	
 	void ScrollToEntry( PlayerListEntryScriptedWidget entry )

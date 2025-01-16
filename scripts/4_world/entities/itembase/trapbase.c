@@ -73,8 +73,6 @@ class TrapBase extends ItemBase
 		
 		RegisterNetSyncVariableBool("m_IsActive");
 		RegisterNetSyncVariableBool("m_IsInProgress");
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsDeploySound");		
 	}
 	
 	void OnUpdate(EntityAI victim);
@@ -89,9 +87,6 @@ class TrapBase extends ItemBase
     {
         super.OnVariablesSynchronized();
 		
-		if (IsDeploySound())
-			PlayDeploySound();
-				
 		if (GetGame().IsMultiplayer())
 		{
 			if (m_IsActive && !m_IsInProgress)
@@ -616,7 +611,7 @@ class TrapBase extends ItemBase
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================
-		
+	
 	override void SetActions()
 	{
 		super.SetActions();

@@ -13,12 +13,6 @@ class TransportOwnerState : PawnOwnerState
 
 	proto native void	SetAngularVelocity(vector value);
 	proto native void	GetAngularVelocity(out vector value);
-
-	proto native void	SetPhysicsTimeStamp(int value);
-	proto native int	GetPhysicsTimeStamp();
-	
-	proto native void	SetWaterTime(float value);
-	proto native float	GetWaterTime();
 	
 	proto native void	SetBuoyancySubmerged(float value);
 	proto native float	GetBuoyancySubmerged();
@@ -56,6 +50,9 @@ class Transport extends Pawn
 class Transport extends EntityAI
 #endif
 {
+	//! Shared context across all vehicles for flipping
+	private static ref VehicleFlippedContext m_FlippedContext;
+	
 	ref TIntArray m_SingleUseActions;
 	ref TIntArray m_ContinuousActions;
 	ref TIntArray m_InteractActions;
@@ -199,6 +196,119 @@ class Transport extends EntityAI
 	vector GetRefillPointPosWS()
 	{
 		return ModelToWorld( m_fuelPos );
+	}
+	
+	protected /*sealed*/ VehicleFlippedContext GetFlipContext()
+	{
+		if (!m_FlippedContext)
+		{
+			m_FlippedContext = new VehicleFlippedContext();
+		}
+
+#ifdef DIAG_DEVELOPER
+		m_FlippedContext.Reset(DiagMenu.GetBool(DiagMenuIDs.VEHICLE_DRAW_FLIP_CONTEXT));
+#endif
+		
+		return m_FlippedContext;
+	}
+	
+	protected bool DetectFlippedUsingSurface(VehicleFlippedContext ctx, float angleTolerance)
+	{
+		vector corners[4];
+		GetTightlyPackedCorners(ETransformationAxis.BOTTOM, corners);
+		
+		// compute the average position to find the lowest "center-most" position
+		vector avgPosition = vector.Zero;		
+		for (int i = 0; i < 4; i++)
+		{			
+			avgPosition = avgPosition + corners[i];
+		}
+		
+		avgPosition = avgPosition * 0.25;
+		
+		// get depth of the water to determine if we should use the roadway surface normal or just up vector
+		float depth = GetGame().GetWaterDepth(avgPosition);
+		
+		vector normal = vector.Up;
+		vector dirUp = GetDirectionUp();
+		
+		bool testLand = depth < -1.0;
+		
+		// iterate over the corners to find the average normal
+		if (testLand)
+		{
+			// trace roadway, incase the vehicle is on a rock, or bridge
+			ctx.m_SurfaceParams.type = SurfaceDetectionType.Roadway;
+			
+			// ignore expensive water computation, we already know we are above land
+			ctx.m_SurfaceParams.includeWater = false;
+			
+			// ignore this vehicle, it may have a roadway LOD
+			ctx.m_SurfaceParams.ignore = this;
+			
+			// detect closest to the given point
+			ctx.m_SurfaceParams.rsd = RoadSurfaceDetection.CLOSEST;
+			
+			for (i = 0; i < 4; i++)
+			{
+				ctx.m_SurfaceParams.position = corners[i];
+				
+				GetGame().GetSurface(ctx.m_SurfaceParams, ctx.m_SurfaceResult);
+				
+				corners[i][1] = ctx.m_SurfaceResult.height;
+			}
+			
+			vector d0 = vector.Direction(corners[0], corners[1]);
+			vector d1 = vector.Direction(corners[0], corners[2]);
+			
+			d0.Normalize();
+			d1.Normalize();
+			
+			// cross product the two directions to get the normal vector of the land
+			normal = d0 * d1;
+		}
+				
+		bool isFlipped = vector.Dot(normal, dirUp) < Math.Cos(angleTolerance * Math.DEG2RAD);
+		
+#ifdef DIAG_DEVELOPER
+		if (ctx.IsDebug())
+		{
+			int color = 0xFF00FF00;
+			if (isFlipped)
+				color = 0xFFFF0000;
+			
+			ctx.AddShape(Shape.Create(ShapeType.LINE, color, ShapeFlags.NOZBUFFER, corners[0], corners[0] + normal));
+			ctx.AddShape(Shape.Create(ShapeType.LINE, color, ShapeFlags.NOZBUFFER, corners[1], corners[1] + normal));
+			ctx.AddShape(Shape.Create(ShapeType.LINE, color, ShapeFlags.NOZBUFFER, corners[2], corners[2] + normal));
+			ctx.AddShape(Shape.Create(ShapeType.LINE, color, ShapeFlags.NOZBUFFER, corners[3], corners[3] + normal));
+		}
+#endif
+		
+		return isFlipped;
+	}
+	
+	//! Override based on vehicle implementation (Car, Boat, modded, etc.)
+	protected bool DetectFlipped(VehicleFlippedContext ctx)
+	{
+		return false;
+	}
+	
+	//! Don't override, may change to native for caching 'DetectFlipped' in the future based on active-ness (i.e. only updated when vehicle changes active state)
+	/*sealed*/ bool IsFlipped()
+	{
+		VehicleFlippedContext ctx = GetFlipContext();
+		ctx.m_bIsAction = false;
+		ctx.m_ActionPlayer = null;
+		return DetectFlipped(ctx);
+	}
+	
+	//! Don't override, may change to native for caching 'DetectFlipped' in the future based on active-ness (i.e. only updated when vehicle changes active state)
+	/*sealed*/ bool IsActionFlipped(Man player)
+	{
+		VehicleFlippedContext ctx = GetFlipContext();
+		ctx.m_bIsAction = true;
+		ctx.m_ActionPlayer = player;
+		return DetectFlipped(ctx);
 	}
 	
 	bool IsAnyCrewPresent()
@@ -457,4 +567,50 @@ class VehicleContactData
 		m_Other		= other;
 		m_Impulse	= impulse;
 	}
-}
+};
+
+class VehicleFlippedContext
+{
+	bool m_bIsAction = false;
+	Man m_ActionPlayer;
+	
+	ref SurfaceDetectionParameters m_SurfaceParams = new SurfaceDetectionParameters();
+	ref SurfaceDetectionResult m_SurfaceResult = new SurfaceDetectionResult();
+	
+#ifdef DIAG_DEVELOPER	
+	private ref array<Shape> m_DebugShapes;
+	private bool m_bIsDebug;
+
+	void VehicleFlippedContext()
+	{
+		m_DebugShapes = new array<Shape>();
+	}
+	
+	void ~VehicleFlippedContext()
+	{
+		Reset();
+	}
+	
+	void Reset(bool isDebug = false)
+	{
+		foreach (Shape shape : m_DebugShapes)
+		{
+			shape.Destroy();
+		}
+		
+		m_DebugShapes.Clear();
+		
+		m_bIsDebug = isDebug;
+	}
+	
+	void AddShape(Shape shape)
+	{
+		m_DebugShapes.Insert(shape);
+	}
+	
+	bool IsDebug()
+	{
+		return m_bIsDebug;
+	}
+#endif
+};

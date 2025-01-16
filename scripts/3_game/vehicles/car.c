@@ -146,6 +146,29 @@ class Car extends Transport
 		return shape;
 	}
 	
+	protected bool DetectFlippedUsingWheels(VehicleFlippedContext ctx, bool disallowSide)
+	{
+		if (disallowSide && (vector.Dot(GetDirectionUp(), vector.Up) < 0.7))
+		{
+			// return as "flipped", vehicle isn't pointing enough up to be reasonably certain
+			return true;
+		}
+		
+		int wheelCount = WheelCount();
+		
+		for (int wheelIdx = 0; wheelIdx < wheelCount; wheelIdx++)
+		{
+			if (!WheelHasContact(wheelIdx))
+			{
+				// wheel not in contact, then we could be flipped, we assume there exist other predicates
+				return true;
+			}
+		}
+		
+		// all wheels in contact (or zero registered wheels), then we are in contact
+		return false;
+	}
+	
 //-----------------------------------------------------------------------------
 // controls
 

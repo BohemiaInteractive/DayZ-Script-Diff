@@ -143,9 +143,11 @@ const int IDC_MAIN_OPTIONS      	= 102;
 const int IDC_MAIN_MULTIPLAYER  	= 105;
 const int IDC_MAIN_QUIT         	= 106;
 const int IDC_MAIN_CONTINUE			= 114;
+const int IDC_MAIN_TUTORIAL			= 117;
 const int IDC_MAIN_PLAY         	= 142;
 const int IDC_MAIN_CHARACTER		= 143;
 const int IDC_MAIN_ONLINE			= 124;
+const int IDC_MAIN_FEEDBACK			= 125;
 const int IDC_MULTI_REFRESH			= 123;
 const int IDC_MULTI_INVITE			= 126;
 
@@ -210,6 +212,7 @@ const int MENU_CONNECT_ERROR						= 42;
 const int MENU_WARNING_INPUTDEVICE_DISCONNECT		= 43;
 const int MENU_SCRIPTCONSOLE_UNIVERSAL_INFO_DIALOG	= 44;
 const int MENU_MISSION_LOADER						= 45;
+const int MENU_CONNECTION_DIALOGUE					= 46;
 
 
 const int GUI_WINDOW_MISSION_LOADER = 1;
@@ -406,6 +409,24 @@ class EmoteConstants
 	const int EMOTE_SUICIDE_BLEED 	= 2;
 	const int EMOTE_SUICIDE_SIMULATION_END = 3;
 	/** @}*/
+}
+
+//! for ItemSoundHandler use, values limited by ItemBase.ITEM_SOUNDS_MAX (networking optimization)
+class SoundConstants
+{
+	const int ITEM_PLACE = 1;
+	const int ITEM_DEPLOY_LOOP = 2;
+	const int ITEM_DEPLOY = 3;
+	
+	const int ITEM_BARREL_OPEN = 20;
+	const int ITEM_BARREL_CLOSE = 21;
+	const int ITEM_TENT_OPEN = 22;
+	const int ITEM_TENT_CLOSE = 23;
+	const int ITEM_TENT_WINDOW_OPEN = 24;
+	const int ITEM_TENT_WINDOW_CLOSE = 25;
+	const int ITEM_EXPLOSIVE_ARM = 26;
+	const int ITEM_EXPLOSIVE_DISARM = 27;
+	const int ITEM_KEY_BREAK = 28;
 }
 
 /**
@@ -733,10 +754,18 @@ class GameConstants
 	const float ENVIRO_PLAYER_COMFORT_TEMP				= 24;		//! comfort temperature of environment for the player
 	const float ENVIRO_TEMP_EFFECT_ON_PLAYER			= 40;		//! impact of enviro temperature on player (lower value = higher, cannot be zero or below!)
 	const float ENVIRO_PLAYER_HEATBUFFER_WATEREFFECT	= 20;		//! impact of water contact on player's heatbuffer
-	const float ENVIRO_PLAYER_HEATBUFFER_DECREASE		= 0.03;		//! How much heat buffer decreases per one enviro tick
-	const float ENVIRO_PLAYER_HEATBUFFER_INCREASE		= 0.3;		//! How much heat buffer increases per one enviro tick
-	const float ENVIRO_PLAYER_HEATBUFFER_TEMP_AFFECT	= 0.50;		//! How much heat buffer change rates are affected by temperature
-	const float ENVIRO_PLAYER_HEATBUFFER_CAPACITY_MIN	= 0.3;		//! Minimal heatbuffer capacity of naked character
+	const float ENVIRO_PLAYER_HEATBUFFER_DECREASE		= 0.01;		//! How much heat buffer decreases per one enviro tick
+	const float ENVIRO_PLAYER_HEATBUFFER_INCREASE		= 0.18;		//! How much heat buffer increases per one enviro tick
+	const float ENVIRO_PLAYER_HEATBUFFER_TEMP_AFFECT	= 0.4;		//! How much heat buffer change rates are affected by temperature
+	const float ENVIRO_PLAYER_HEATBUFFER_CAPACITY_MIN	= 0.35;		//! Minimal heatbuffer capacity of naked character
+	
+	//! heatbuffer per stage decrease rate limiting - each entry represents the {min, max} value per HB stage
+	static ref array<ref TFloatArray> ENVIRO_PLAYER_HEATBUFFER_STAGE_RATELIMIT = {
+		{1.0, 1.0},	// not used now
+		{1.82, 4.0},
+		{0.8, 1.6},
+		{1.0, 1.0}, // not used now
+	};
 
 	//! impact of item wetness to the heat isolation
 	const float ENVIRO_ISOLATION_WETFACTOR_DRY			= 1.0;
@@ -776,6 +805,16 @@ class GameConstants
 	
 	static const float ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE = (GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT + GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT) * 0.5;
 	
+	/** @}*/
+	
+	/**
+	 * \defgroup Vehicle Vehicle Constants 
+	 * \desc Constants for vehicles
+	 * @{
+	 */
+
+	const float VEHICLE_FLIP_ANGLE_TOLERANCE = 45; //! Angle of the vehicle from the normal of the surface under the vehicle
+	const bool VEHICLE_FLIP_WHEELS_LIMITED = true; //! If the vehicle is not facing directly up, then don't use the "wheels early exit optimization"
 	/** @}*/
 	
 	/**
@@ -885,6 +924,7 @@ class GameConstants
 	static const float TEMPERATURE_INTERPOLATION_THRESHOLD_MAX_ABS = 300.0; //difference in current - target temperatures
 	
 	static const float TEMPERATURE_FREEZETHAW_LEGACY_COEF = 0.2; //artificially lowers the freeze/thaw progression on reverse-calculated time values
+	static const float TEMPERATURE_FREEZETHAW_ACCELERATION_COEF = 20.0; //accelerates 'lowering' of the FT progress in the oposite direction
 	
 	static const float TEMPERATURE_TIME_OVERHEAT_MIN = 180; //minimal time in seconds to overheat any overheatable entity
 	static const float TEMPERATURE_TIME_FREEZE_MIN = 120; //minimal time in seconds to freeze entity
@@ -897,20 +937,24 @@ class GameConstants
 	
 	static const float TEMPERATURE_SENSITIVITY_THRESHOLD = 0.1; //changes lower than this will usually not be processed (absolute)
 	
-	const float TEMP_COEF_WORLD = 1; //entities on the ground
-	const float TEMP_COEF_INVENTORY = 1;
+	const float TEMP_COEF_WORLD 			= 1; 	//entities on the ground
+	const float TEMP_COEF_INVENTORY 		= 1;
 	const float TEMP_COEF_FIREPLACE_COOLING = 2.0;
 	const float TEMP_COEF_FIREPLACE_HEATING = 2.0;
-	const float TEMP_COEF_GAS_STOVE = 1.0;
-	const float TEMP_COEF_UTS = 6.0; //universal temperature sources
-	const float TEMP_COEF_COOKING_CATCHUP = 3.0; //heating of child items that are below minimal cooking temperature (catching up)
-	const float TEMP_COEF_COOKING_DEFAULT = 3.0;
-	const float TEMP_COEF_COOLING_GLOBAL = 1.0; //one universal coef for item cooling
+	const float TEMP_COEF_GAS_STOVE 		= 1.0;
+	const float TEMP_COEF_UTS 				= 6.0; 	//universal temperature sources
+	const float TEMP_COEF_COOKING_DEFAULT 	= 2.0;
+	const float TEMP_COEF_COOLING_GLOBAL 	= 1.0; 	//one universal coef for item cooling
+	const float TEMP_COEF_SWIMMING 			= 5.0; 	//speed of change for items in player's inventory during swimming
+	
 	
 	const float HEATISO_THRESHOLD_BAD = 0.2;
 	const float HEATISO_THRESHOLD_LOW = 0.4;
 	const float HEATISO_THRESHOLD_MEDIUM = 0.6;
 	const float HEATISO_THRESHOLD_HIGH = 0.8;
+	
+	//Deprecated temperature constants
+	const float TEMP_COEF_COOKING_CATCHUP 	= 3.0; 	//DEPRECEATED, heating of child items that are below minimal cooking temperature (catching up)
 	/** @}*/
 	
 	/**

@@ -2,7 +2,7 @@ class OpenScientificBriefcase extends RecipeBase
 {	
 	override void Init()
 	{
-		m_Name = "#widget_unlock";
+		m_Name = "#STR_unlock_briefcase";
 		m_IsInstaRecipe = false;//should this recipe be performed instantly without animation
 		m_AnimationLength = 1;//animation length in relative time units
 		m_Specialty = 0.03;// value > 0 for roughness, value < 0 for precision

@@ -50,8 +50,8 @@ class Building extends EntityAI
 	//! Locks the door if not already locked, resets the door health. 'force = true' will close the door if open
 	proto native void LockDoor(int index, bool force = false);
 
-	//! Unlocks the door if locked
-	proto native void UnlockDoor(int index);
+	//! Unlocks the door if locked, AJAR animation optional
+	proto native void UnlockDoor(int index, bool animate = true);
 
 	//! Position in world space for where the door sounds are played from
 	proto native vector GetDoorSoundPos(int index);
@@ -149,6 +149,19 @@ class Building extends EntityAI
 	bool CanDoorBeLocked(int doorIndex)
 	{
 		return (!IsDoorOpen(doorIndex) && !IsDoorLocked(doorIndex));
+	}
+	
+	/**
+	\brief Which door is compatible with which key (door idx supplied). Bitwise.
+	@param doorIdx
+	@return bitwise value of all compatible locks
+	\note you can combine the bit values like so:
+	\note return (1 << EBuildingLockType.LOCKPICK) | (1 << EBuildingLockType.SHIP_CONTAINER_1);
+	\note you can also this for each individual door idx
+	*/	
+	int GetLockCompatibilityType(int doorIdx)
+	{
+		return 1 << EBuildingLockType.LOCKPICK; //all doors are lockpickable by default
 	}
 	
 	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)

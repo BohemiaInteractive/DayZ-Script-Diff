@@ -36,7 +36,7 @@ class ActionCraftArmband: ActionContinuousBase
 	
 	override void OnFinishProgressServer(ActionData action_data)
 	{	
-		EntityAI armband = action_data.m_Player.SpawnEntityOnGroundPos("Armband_White", action_data.m_Player.GetPosition());
+		EntityAI armband = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("Armband_White");
 		action_data.m_MainItem.AddQuantity(-1);
 		
 		MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem, armband);

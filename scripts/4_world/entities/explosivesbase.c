@@ -37,6 +37,8 @@ class ExplosivesBase : ItemBase
 	protected vector					m_ParticlePosition;
 	protected vector					m_ParticleOrientation;
 	
+	static protected ref map<string, ref map<string, int>> m_TypeToSurfaceParticleIDMap;
+	
 	void ExplosivesBase()
 	{
 		m_DeleteTimer 	= new Timer();
@@ -49,6 +51,8 @@ class ExplosivesBase : ItemBase
 		
 		RegisterNetSyncVariableBool("m_Armed");
 		RegisterNetSyncVariableBool("m_Defused");
+		
+		Init();
 	}
 	
 	
@@ -68,8 +72,11 @@ class ExplosivesBase : ItemBase
 			{
 				parent = GetHierarchyParent();
 			}
+			
+			//SEffectManager.CreateParticleServer(pos, new TreeEffecterParameters("TreeEffecter", 1.0, 10 * explosionFactor));
+			int particleID = GetParticleExplosionID(surface);
 
-			ParticleSource p = ParticleManager.GetInstance().PlayOnObject(m_ParticleExplosionId, parent, m_ParticlePosition, m_ParticleOrientation);
+			ParticleSource p = ParticleManager.GetInstance().PlayOnObject(particleID, parent, m_ParticlePosition, m_ParticleOrientation);
 			m_ParticleExplosionArr.Insert(p);
 			m_ParticleExplosion = p;
 		}
@@ -140,6 +147,29 @@ class ExplosivesBase : ItemBase
 			SetPosition(position);
 			PlaceOnSurface();
 		}
+	}
+	
+	string GetArmSoundset()
+	{
+		return string.Empty;
+	}
+	
+	string GetDisarmSoundset()
+	{
+		return string.Empty;
+	}
+	
+	override void InitItemSounds()
+	{
+		super.InitItemSounds();
+		
+		ItemSoundHandler handler = GetItemSoundHandler();
+		
+		if (GetArmSoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_EXPLOSIVE_ARM, GetArmSoundset());
+	
+		if (GetDisarmSoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_EXPLOSIVE_DISARM, GetDisarmSoundset());
 	}
 	
 	protected void CreateLight()
@@ -356,4 +386,51 @@ class ExplosivesBase : ItemBase
 	void LockExplosivesSlots();
 	void UnlockExplosivesSlots();
 	
+	void Init()
+	{
+		#ifndef SERVER
+		if (!m_TypeToSurfaceParticleIDMap)
+		{
+			m_TypeToSurfaceParticleIDMap = new map<string, ref map<string, int>>;
+		}
+		
+		if(!m_TypeToSurfaceParticleIDMap.Contains(GetName()))
+		{
+			map<string, int> extraSurfaceeffect = new map<string, int>();
+			m_TypeToSurfaceParticleIDMap.Insert(GetName(), extraSurfaceeffect);
+			InitSpecificsExplosionEffectForSurface();
+		}
+		#endif
+	}
+	
+	static void Cleanup()
+	{
+		if (m_TypeToSurfaceParticleIDMap)
+		{
+			m_TypeToSurfaceParticleIDMap.Clear();
+		}
+	}
+	
+	void InitSpecificsExplosionEffectForSurface()
+	{
+		//Here add in override call AddExplosionEffectForSurface for specific explosion on surface 
+	}
+	
+	void AddExplosionEffectForSurface(string surface, int effectID)
+	{
+		map<string, int> extraSurfaceeffect;
+		m_TypeToSurfaceParticleIDMap.Find(GetName(), extraSurfaceeffect);
+		extraSurfaceeffect.Insert(surface, effectID);
+	}
+	
+	int GetParticleExplosionID(string surface)
+	{
+		map<string, int> extraSurfaceeffect;
+		m_TypeToSurfaceParticleIDMap.Find(GetName(), extraSurfaceeffect);
+		
+		int particleID;
+		if (extraSurfaceeffect.Find(surface, particleID))
+			return particleID;
+		return m_ParticleExplosionId;
+	}
 }

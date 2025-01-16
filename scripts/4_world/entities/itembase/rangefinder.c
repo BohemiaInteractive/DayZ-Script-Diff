@@ -9,6 +9,11 @@ class Rangefinder extends PoweredOptic_Base
 	{
 	}
 	
+	void ~Rangefinder()
+	{
+		m_IsActionActive = false;
+	}
+	
 	// How frequently the measurement should be taken
 	float GetMeasurementUpdateInterval()
 	{
@@ -17,6 +22,9 @@ class Rangefinder extends PoweredOptic_Base
 	
 	override void OnWorkStart()
 	{
+		if (GetGame().IsServer() && !m_IsActionActive)	// incorrectly synchronized state from EM
+			StopWorkServer();
+		
 		if( !GetGame().IsDedicatedServer())
 		{
 			PlayerBase player_this = PlayerBase.Cast( GetGame().GetPlayer() );

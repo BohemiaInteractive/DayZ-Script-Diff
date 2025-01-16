@@ -250,26 +250,16 @@ class FireplaceIndoor : FireplaceBase
 		break;
 		}
 
-		// cookware-specifics (remove audio visuals)
-		if (item_base.Type() == ATTACHMENT_COOKING_POT)
-		{	
-			ClearCookingEquipment(item_base);
-			Bottle_Base cooking_pot = Bottle_Base.Cast(item);
-			cooking_pot.RemoveAudioVisualsOnClient();	
-		}
-		if (item_base.Type() == ATTACHMENT_CAULDRON)
+		// cookware-specifics (remove audio visuals and clear references)
+		if (item_base.IsCookware())
 		{
 			ClearCookingEquipment(item_base);
-			Bottle_Base cauldron = Bottle_Base.Cast(item);
-			cauldron.RemoveAudioVisualsOnClient();	
+			item_base.RemoveAudioVisualsOnClient();	
 		}
-		if (item_base.Type() == ATTACHMENT_FRYING_PAN)
-		{
-			ClearCookingEquipment(item_base);
-			FryingPan frying_pan = FryingPan.Cast(item);
-			frying_pan.RemoveAudioVisualsOnClient();
-		}
-		
+
+		if (item_base.IsLiquidContainer()) //boiling bottle effects stop
+			item_base.RemoveAudioVisualsOnClient();
+				
 		RefreshFireplaceVisuals();
 	}
 		
@@ -299,7 +289,7 @@ class FireplaceIndoor : FireplaceBase
 		return false;
 	}
 	
-	override bool CanRemoveFromHands( EntityAI player ) 
+	override bool CanRemoveFromHands( EntityAI parent ) 
 	{
 		return false;
 	}
@@ -335,7 +325,7 @@ class FireplaceIndoor : FireplaceBase
 		return IsBurning();
 	}
 	
-	override void OnIgnitedTarget( EntityAI ignited_item )
+	override void OnIgnitedTarget( EntityAI target_item )
 	{
 	}
 	

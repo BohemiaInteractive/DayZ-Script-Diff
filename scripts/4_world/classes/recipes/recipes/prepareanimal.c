@@ -56,26 +56,30 @@ class PrepareAnimal extends RecipeBase
 	//final check for recipe's validity
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)
 	{
-		return true;
+		return !ingredients[0].GetIsFrozen();
 	}
-
+	
 	//gets called upon recipe's completion
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
+	override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)
 	{
 		ItemBase ingredient = ingredients[0];
 		
-		for (int i=0; i < results.Count(); i++)
+		for (int i=0; i < results.Count(); ++i)
 		{
-			ItemBase item_result;
-			Class.CastTo(item_result, results.Get(i));
-			
-			//Trasnfer current food state
-			MiscGameplayFunctions.TransferItemProperties(ingredient, item_result);
-			item_result.SetQuantityNormalized(ingredient.GetQuantityNormalized());
-			
+			//Transfer current food state
+			MiscGameplayFunctions.TransferItemProperties(ingredient, results[i]);
+			results[i].SetQuantityNormalized(ingredient.GetQuantityNormalized());
 		}
 
-		PluginLifespan lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
-		lifespan.UpdateBloodyHandsVisibility( player, true );
+		SetBloodyHands(ingredients, player);
 	}
-};
+	
+	protected void SetBloodyHands(ItemBase ingredients[], PlayerBase player)
+	{
+		ItemBase ingredient = ingredients[0];
+
+		PluginLifespan lifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
+		lifespan.UpdateBloodyHandsVisibility(player, true);
+		player.SetBloodyHandsPenaltyChancePerAgent(eAgents.SALMONELLA, ingredient.GetSkinningBloodInfectionChance(eAgents.SALMONELLA));	
+	}
+}

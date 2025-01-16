@@ -16,17 +16,6 @@ class FryingPan : Inventory_Base
 	protected int PARTICLE_DRYING_DONE 		= ParticleList.COOKING_DRYING_DONE;
 	protected int PARTICLE_BURNING_DONE		= ParticleList.COOKING_BURNING_DONE;
 
-	// Sounds
-	protected SoundOnVehicle	m_SoundCooking;	//! DEPRECATED
-	protected EffectSound		m_SoundEffectCooking;
-	protected string			m_SoundPlaying = "";
-
-	const string SOUND_BAKING_START 	= "Baking_SoundSet";		//! DEPRECATED
-	const string SOUND_BAKING_DONE 		= "Baking_Done_SoundSet";	//! DEPRECATED
-	const string SOUND_DRYING_START 	= "Drying_SoundSet";		//! DEPRECATED
-	const string SOUND_DRYING_DONE 		= "Drying_Done_SoundSet";  	//! DEPRECATED
-	const string SOUND_BURNING_DONE 	= "Food_Burning_SoundSet"; 	//! DEPRECATED
-
 	void FryingPan()
 	{
 		RegisterNetSyncVariableInt( "m_CookingMethod", CookingMethodType.NONE, CookingMethodType.COUNT );
@@ -39,6 +28,11 @@ class FryingPan : Inventory_Base
 	override bool IsContainer()
 	{
 		return true;		
+	}
+	
+	override bool IsCookware()
+	{
+		return true;
 	}
 	
 	override bool CanHaveTemperature()
@@ -157,14 +151,14 @@ class FryingPan : Inventory_Base
 		}
 	}
 
-	void RemoveAudioVisualsOnClient()
+	override void RemoveAudioVisualsOnClient()
 	{
 		m_CookingMethod	= CookingMethodType.NONE;
 		
 		Synchronize();
 	}
 
-	void RefreshAudioVisualsOnClient( CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned )
+	override void RefreshAudioVisualsOnClient( CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned )
 	{
 		m_CookingMethod		= cooking_method;
 		m_CookingIsDone 	= is_done;
@@ -238,7 +232,19 @@ class FryingPan : Inventory_Base
 		}
 	}
 
-	//! DEPRECATED
-	protected void SoundCookingStart(string sound_name);
-	protected void SoundCookingStop();
+	/////////////////////////////////////////////////
+	// DEPRECATED STUFF
+	// Sounds
+	protected SoundOnVehicle	m_SoundCooking;	//! DEPRECATED
+	protected EffectSound		m_SoundEffectCooking; //! DEPRECATED
+	protected string			m_SoundPlaying = ""; //! DEPRECATED
+
+	const string SOUND_BAKING_START 	= "Baking_SoundSet";		//! DEPRECATED
+	const string SOUND_BAKING_DONE 		= "Baking_Done_SoundSet";	//! DEPRECATED
+	const string SOUND_DRYING_START 	= "Drying_SoundSet";		//! DEPRECATED
+	const string SOUND_DRYING_DONE 		= "Drying_Done_SoundSet";  	//! DEPRECATED
+	const string SOUND_BURNING_DONE 	= "Food_Burning_SoundSet"; 	//! DEPRECATED
+	
+	protected void SoundCookingStart(string sound_name); //! DEPRECATED
+	protected void SoundCookingStop(); //! DEPRECATED
 }

@@ -145,6 +145,13 @@ class ActionDeployObject : ActionDeployBase
 			action_data.m_Player.PlacingStartServer(action_data.m_MainItem);
 			action_data.m_MainItem.SetIsBeingPlaced(true);
 		}
+		
+		ItemBase item = ItemBase.Cast(action_data.m_MainItem);
+		if (item.GetPlaceSoundset() != string.Empty)
+			item.StartItemSoundServer(SoundConstants.ITEM_PLACE);
+		
+		if (item.GetLoopDeploySoundset() != string.Empty)
+			item.StartItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
 	}
 			
 	override void OnFinishProgressClient(ActionData action_data)
@@ -160,6 +167,15 @@ class ActionDeployObject : ActionDeployBase
 		poActionData.m_AlreadyPlaced = true;
 		
 		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation);
+	}
+	
+	override void OnFinishProgressServer(ActionData action_data)
+	{
+		super.OnFinishProgressServer(action_data);
+		
+		ItemBase item = ItemBase.Cast(action_data.m_MainItem);
+		if (item.GetDeploySoundset() != string.Empty)
+			item.StartItemSoundServer(SoundConstants.ITEM_DEPLOY);
 	}
 
 	override void OnEndClient(ActionData action_data)
@@ -200,7 +216,6 @@ class ActionDeployObject : ActionDeployBase
 			if (GetGame().IsMultiplayer())
 			{	
 				action_data.m_Player.PlacingCancelServer();
-				action_data.m_MainItem.SoundSynchRemoteReset();
 			}
 			else
 			{
@@ -210,11 +225,7 @@ class ActionDeployObject : ActionDeployBase
 			}
 		}
 		else
-		{
-			action_data.m_MainItem.SetIsDeploySound(false);
-			action_data.m_MainItem.SetIsPlaceSound(false);
-			action_data.m_MainItem.SoundSynchRemoteReset();
-			
+		{			
 			if (action_data.m_MainItem.IsBasebuildingKit())
 			{
 				action_data.m_MainItem.Delete();
@@ -224,6 +235,10 @@ class ActionDeployObject : ActionDeployBase
 				GetGame().ClearJunctureEx(action_data.m_Player, action_data.m_MainItem);
 			}
 		}
+		
+		ItemBase item = ItemBase.Cast(action_data.m_MainItem);
+		if (item.GetLoopDeploySoundset() != string.Empty)
+			item.StopItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
 	}
 	
 	override void OnStartAnimationLoop(ActionData action_data)
@@ -241,11 +256,6 @@ class ActionDeployObject : ActionDeployBase
 		}
 	}
 	
-	override void OnExecuteServer(ActionData action_data)
-	{
-		action_data.m_MainItem.SoundSynchRemote();
-	}
-
 	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
 	{
 		super.WriteToContext(ctx, action_data);

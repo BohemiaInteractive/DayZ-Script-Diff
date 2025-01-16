@@ -1,5 +1,10 @@
-class DeadFox extends Edible_Base
+class DeadFox : Edible_Base
 {
+	void DeadFox()
+	{
+		CacheSkinningBloodInfectionChance(eAgents.SALMONELLA);
+	}
+
 	override bool CanBeCookedOnStick()
 	{
 		return false;

@@ -60,10 +60,7 @@ class ItemBase extends InventoryItem
 	int 	m_QuickBarBonus;
 	bool	m_IsBeingPlaced;
 	bool	m_IsHologram;
-	bool	m_IsPlaceSound;
-	bool	m_IsDeploySound;
 	bool	m_IsTakeable;
-	bool	m_IsSoundSynchRemote;
 	bool 	m_ThrowItemOnDrop;
 	bool 	m_ItemBeingDroppedPhys;
 	bool    m_CanBeMovedOverride;
@@ -75,8 +72,6 @@ class ItemBase extends InventoryItem
 	bool	m_HasQuantityBar;
 	protected bool m_CanBeDigged;
 	protected bool m_IsResultOfSplit //! distinguish if item has been created as new or it came from splitting (server only flag)
-	
-	protected EffectSound m_DeployLoopSoundEx;
 	
 	string	m_SoundAttType;
 	// items color variables
@@ -132,9 +127,11 @@ class ItemBase extends InventoryItem
 	protected ref EffectSound 	m_LockingSound;
 	protected string 			m_LockSoundSet;
 	
-	protected EffectSound 		m_SoundPlace;
-	protected EffectSound 		m_SoundDeploy;
-	protected EffectSound 		m_SoundDeployFinish;
+	// ItemSoundHandler 
+	protected const int ITEM_SOUNDS_MAX = 63;	// optimize network synch  
+	protected int m_SoundSyncPlay;				// id for sound to play
+	protected int m_SoundSyncStop;				// id for sound to stop
+	private ref ItemSoundHandler m_ItemSoundHandler;
 	
 	//temperature
 	private float 				m_TemperaturePerQuantityWeight;
@@ -221,10 +218,7 @@ class ItemBase extends InventoryItem
 			m_VarLiquidType = GetLiquidTypeInit();
 		m_IsBeingPlaced = false;
 		m_IsHologram = false;
-		m_IsPlaceSound = false;
-		m_IsDeploySound = false;
 		m_IsTakeable = true;
-		m_IsSoundSynchRemote = false;
 		m_CanBeMovedOverride = false;
 		m_HeatIsolation = GetHeatIsolationInit();
 		m_ItemModelLength = GetItemModelLength();
@@ -267,10 +261,11 @@ class ItemBase extends InventoryItem
 		RegisterNetSyncVariableBool("m_IsTakeable");
 		RegisterNetSyncVariableBool("m_IsHologram");
 		
-		if (UsesGlobalDeploy())
+		InitItemSounds();		
+		if (m_ItemSoundHandler)
 		{
-			RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-			RegisterNetSyncVariableBool("m_IsDeploySound");
+			RegisterNetSyncVariableInt("m_SoundSyncPlay", 0, ITEM_SOUNDS_MAX);
+			RegisterNetSyncVariableInt("m_SoundSyncStop", 0, ITEM_SOUNDS_MAX);
 		}
 		
 		m_LockSoundSet = ConfigGetString("lockSoundSet");
@@ -279,12 +274,6 @@ class ItemBase extends InventoryItem
 		if (ConfigIsExisting("temperaturePerQuantityWeight"))
 			m_TemperaturePerQuantityWeight = ConfigGetFloat("temperaturePerQuantityWeight");
 			
-	}
-	
-	// allows for checking whether or not we can safely register net sync variables without causing VMEs for duplicate registration
-	protected bool UsesGlobalDeploy()
-	{
-		return false;
 	}
 	
 	override int GetQuickBarBonus()
@@ -750,11 +739,6 @@ class ItemBase extends InventoryItem
 	// -------------------------------------------------------------------------
 	void ~ItemBase()
 	{
-		#ifndef SERVER
-		if (m_DeployLoopSoundEx)
-			m_DeployLoopSoundEx.SoundStop();
-		#endif
-		
 		if (GetGame() && GetGame().GetPlayer() && (!GetGame().IsDedicatedServer()))
 		{
 			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
@@ -1603,6 +1587,9 @@ class ItemBase extends InventoryItem
 	
 	override void SplitIntoStackMaxClient(EntityAI destination_entity, int slot_id )
 	{
+		if (!CanBeSplit())
+			return;
+		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1626,6 +1613,9 @@ class ItemBase extends InventoryItem
 
 	void SplitIntoStackMax(EntityAI destination_entity, int slot_id, PlayerBase player)
 	{
+		if (!CanBeSplit())
+			return;
+		
 		float split_quantity_new;
 		ref ItemBase new_item;
 		float quantity = GetQuantity();
@@ -1703,6 +1693,9 @@ class ItemBase extends InventoryItem
 	
 	override void SplitIntoStackMaxEx(EntityAI destination_entity, int slot_id)
 	{
+		if (!CanBeSplit())
+			return;
+		
 		float split_quantity_new;
 		ref ItemBase new_item;
 		float quantity = GetQuantity();
@@ -1771,6 +1764,9 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxToInventoryLocationClient(notnull InventoryLocation dst)
 	{
+		if (!CanBeSplit())
+			return;
+		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1792,6 +1788,9 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxCargoClient(EntityAI destination_entity, int idx, int row, int col)
 	{
+		if (!CanBeSplit())
+			return;
+		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1853,6 +1852,9 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxCargo(EntityAI destination_entity, int idx, int row, int col)
 	{
+		if (!CanBeSplit())
+			return;
+		
 		float quantity = GetQuantity();
 		float split_quantity_new;
 		ref ItemBase new_item;
@@ -1877,6 +1879,9 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxHandsClient(PlayerBase player)
 	{
+		if (!CanBeSplit())
+			return;
+		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1901,6 +1906,9 @@ class ItemBase extends InventoryItem
 
 	void SplitIntoStackMaxHands(PlayerBase player)
 	{
+		if (!CanBeSplit())
+			return;
+		
 		float quantity = GetQuantity();
 		float split_quantity_new;
 		ref ItemBase new_item;
@@ -2095,7 +2103,9 @@ class ItemBase extends InventoryItem
 					else
 					{
 						dst.SetCargo(dst.GetParent(), this, dst.GetIdx(), dst.GetRow(), dst.GetCol(), dst.GetFlip());
-						if (GetGame().GetPlayer().GetInventory().HasInventoryReservation(null, dst))
+						/*	hacky solution to check reservation of "this" item instead of null since the gamecode is checking null against null and returning reservation=true incorrectly
+							this shouldnt cause issues within this scope*/
+						if (GetGame().GetPlayer().GetInventory().HasInventoryReservation(this, dst))
 						{
 							if (root)
 							{
@@ -2563,6 +2573,10 @@ class ItemBase extends InventoryItem
 	{
 		return false;
 	}		
+	
+	//! cooking-related effect methods
+	void RefreshAudioVisualsOnClient( CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned );
+	void RemoveAudioVisualsOnClient();
 	
 	//----------------------------------------------------------------
 	bool CanRepair(ItemBase item_repair_kit)
@@ -3185,22 +3199,7 @@ class ItemBase extends InventoryItem
 			}
 			#endif
 		}
-		
-		if (CanPlayDeployLoopSound())
-		{
-			PlayDeployLoopSoundEx();
-		}
-		
-		if (m_DeployLoopSoundEx && !CanPlayDeployLoopSound())
-		{
-			StopDeployLoopSoundEx();
-		}
-		
-		if (IsDeploySound())
-		{
-			PlayDeploySound();
-		}
-		
+				
 		if (!dBodyIsDynamic(this) && m_WantPlayImpactSound)
 		{
 			PlayImpactSound(m_ConfigWeight, m_ImpactSpeed, m_ImpactSoundSurfaceHash);
@@ -3216,6 +3215,17 @@ class ItemBase extends InventoryItem
 		{
 			OnWetChanged(m_VarWet,m_VarWetPrev);
 			m_VarWetPrev = m_VarWet;
+		}
+		
+		if (m_SoundSyncPlay != 0)
+		{
+			m_ItemSoundHandler.PlayItemSoundClient(m_SoundSyncPlay);
+			m_SoundSyncPlay = 0;
+		}
+		if (m_SoundSyncStop != 0)
+		{
+			m_ItemSoundHandler.StopItemSoundClient(m_SoundSyncStop);
+			m_SoundSyncStop = 0;
 		}
 			
 		super.OnVariablesSynchronized();
@@ -3831,10 +3841,7 @@ class ItemBase extends InventoryItem
 		{
 			m_AdminLog.OnPlacementComplete(player, this);
 		}
-		if (GetGame().IsServer())
-		{
-			SetIsDeploySound(true);
-		}
+		
 		super.OnPlacementComplete(player, position, orientation);
 	}
 		
@@ -3869,7 +3876,7 @@ class ItemBase extends InventoryItem
 		m_AttachedAgents = 0;
 	}
 	//--------------------------------------------------------------------------
-	override void RemoveAllAgentsExcept(int agents_to_keep_mask)
+	override void RemoveAllAgentsExcept(int agent_to_keep)
 	{
 		m_AttachedAgents = m_AttachedAgents & agent_to_keep;
 	}
@@ -4299,115 +4306,77 @@ class ItemBase extends InventoryItem
 	}
 	
 	//----------------------------------------------------------------
-	//SOUNDS FOR ADVANCED PLACEMNT
+	//SOUNDS - ItemSoundHandler
 	//----------------------------------------------------------------
 	
-	void SoundSynchRemoteReset()
-	{	
-		m_IsSoundSynchRemote = false;
+	string GetPlaceSoundset();		// played when deploy starts
+	string GetLoopDeploySoundset();	// played when deploy starts and stopped when it finishes
+	string GetDeploySoundset();		// played when deploy sucessfully finishes
+			
+	ItemSoundHandler GetItemSoundHandler()
+	{
+		if (!m_ItemSoundHandler)
+			m_ItemSoundHandler = new ItemSoundHandler(this);
 		
-		SetSynchDirty();
+		return m_ItemSoundHandler;
 	}
 	
-	void SoundSynchRemote()
-	{	
-		m_IsSoundSynchRemote = true;
+	// override to initialize sounds
+	protected void InitItemSounds()
+	{
+		if (GetPlaceSoundset() == string.Empty && GetDeploySoundset() == string.Empty && GetLoopDeploySoundset() == string.Empty)
+			return;
+		
+		ItemSoundHandler handler = GetItemSoundHandler();
+		
+		if (GetPlaceSoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_PLACE, GetPlaceSoundset());
+		
+		if (GetDeploySoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_DEPLOY, GetDeploySoundset());
+		
+		SoundParameters params = new SoundParameters();
+		params.m_Loop = true;
+		if (GetLoopDeploySoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_DEPLOY_LOOP, GetLoopDeploySoundset(), params);	
+	}
+	
+	// Start sound using ItemSoundHandler
+	void StartItemSoundServer(int id)
+	{
+		if (!GetGame().IsServer())
+			return;
+		
+		m_SoundSyncPlay = id;
+		SetSynchDirty();
+		
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(ClearStartItemSoundServer);	// in case one is queued already
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearStartItemSoundServer, 100);
+	}
+	
+	// Stop sound using ItemSoundHandler
+	void StopItemSoundServer(int id)
+	{
+		if (!GetGame().IsServer())
+			return;
+		
+		m_SoundSyncStop = id;
+		SetSynchDirty();
+		
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(ClearStopItemSoundServer);	// in case one is queued already
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearStopItemSoundServer, 100);
+	}
+	
+	protected void ClearStartItemSoundServer()
+	{
+		m_SoundSyncPlay = 0;
+	}
+	
+	protected void ClearStopItemSoundServer()
+	{
+		m_SoundSyncStop = 0;
+	}
 				
-		SetSynchDirty();
-	}
-	
-	bool IsSoundSynchRemote()
-	{	
-		return m_IsSoundSynchRemote;
-	}
-	
-	string GetDeploySoundset();	
-	string GetPlaceSoundset();
-	string GetLoopDeploySoundset();
-	string GetDeployFinishSoundset();
-	
-	void SetIsPlaceSound(bool is_place_sound)
-	{
-		m_IsPlaceSound = is_place_sound;
-	}
-	
-	bool IsPlaceSound()
-	{
-		return m_IsPlaceSound;
-	}
-	
-	void SetIsDeploySound(bool is_deploy_sound)
-	{
-		m_IsDeploySound = is_deploy_sound;
-	}
-	
-	bool IsDeploySound()
-	{
-		return m_IsDeploySound;
-	}
-	
-	void PlayDeployLoopSoundEx()
-	{		
-		if (!GetGame().IsDedicatedServer() && !m_DeployLoopSoundEx)
-		{		
-			m_DeployLoopSoundEx = SEffectManager.PlaySound(GetLoopDeploySoundset(), GetPosition());
-			if (m_DeployLoopSoundEx)
-				m_DeployLoopSoundEx.SetAutodestroy(true);
-			else
-				Debug.Log("null m_DeployLoopSoundEx from sound set: " + GetLoopDeploySoundset());
-		}
-	}
-	
-	void StopDeployLoopSoundEx()
-	{
-		if (!GetGame().IsDedicatedServer())
-		{	
-			m_DeployLoopSoundEx.SetSoundFadeOut(0.5);
-			m_DeployLoopSoundEx.SoundStop();
-		}
-	}
-	
-	void PlayDeploySound()
-	{
-		if (!GetGame().IsDedicatedServer() && !m_SoundDeploy)
-		{
-			m_SoundDeploy = SEffectManager.PlaySound(GetDeploySoundset(), GetPosition());
-			if (m_SoundDeploy)
-				m_SoundDeploy.SetAutodestroy(true);
-			else
-				Debug.Log("null m_SoundDeploy from sound set: " + GetDeploySoundset());
-		}
-	}
-	
-	void PlayDeployFinishSound()
-	{
-		if (!GetGame().IsDedicatedServer() && !m_SoundDeployFinish)
-		{
-			m_SoundDeployFinish = SEffectManager.PlaySound(GetDeployFinishSoundset(), GetPosition());
-			if (m_SoundDeployFinish)
-				m_SoundDeployFinish.SetAutodestroy(true);
-			else
-				Debug.Log("null m_SoundDeployFinish from sound set: " + GetDeployFinishSoundset());
-		}
-	}
-	
-	void PlayPlaceSound()
-	{
-		if (!GetGame().IsDedicatedServer() && !m_SoundPlace)
-		{
-			m_SoundPlace = SEffectManager.PlaySound(GetPlaceSoundset(), GetPosition());
-			if (m_SoundPlace)
-				m_SoundPlace.SetAutodestroy(true);
-			else
-				Debug.Log("null m_SoundPlace from sound set: " + GetPlaceSoundset());
-		}
-	}
-	
-	bool CanPlayDeployLoopSound()
-	{		
-		return IsBeingPlaced() && IsSoundSynchRemote();
-	}
-	
 	//! Plays sound on item attach. Be advised, the config structure may slightly change in 1.11 update to allow for more complex use.
 	void PlayAttachSound(string slot_type)
 	{
@@ -4535,7 +4504,7 @@ class ItemBase extends InventoryItem
 		if (CanHaveTemperature() && !IsSelfAdjustingTemperature() && !GetHierarchyRoot().IsSelfAdjustingTemperature())
 		{
 			float target = g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);
-			if (GetTemperature() != target)
+			if (GetTemperature() != target || !IsFreezeThawProgressFinished())
 			{
 				float heatPermCoef = 1.0;
 				EntityAI ent = this;
@@ -4589,6 +4558,12 @@ class ItemBase extends InventoryItem
 	{
 		// return true used on selected items that have a wetness effect
 		return false;
+	}
+	
+	//! Items cannot be consumed if frozen by default. Override for exceptions.
+	bool CanBeConsumed(ConsumeConditionData data = null)
+	{
+		return !GetIsFrozen() && IsOpen();
 	}
 	
 	override void ProcessVariables()
@@ -4667,7 +4642,10 @@ class ItemBase extends InventoryItem
 		return super.GetTemperatureThawTime();
 	}
 	
+	//! from enviro source
 	void AffectLiquidContainerOnFill(int liquid_type, float amount);
+	//! from other liquid container source
+	void AffectLiquidContainerOnTransfer(int liquidType, float amount, float sourceLiquidTemperature);
 	
 	bool IsCargoException4x3(EntityAI item)
 	{
@@ -4774,6 +4752,31 @@ class ItemBase extends InventoryItem
 		ProcessItemWetness(delta, hasParent, hasRootAsPlayer, refParentIB);
 		ProcessItemTemperature(delta, hasParent, hasRootAsPlayer, refParentIB);
 	}
+	
+	// replaced by ItemSoundHandler
+	protected EffectSound m_SoundDeployFinish;
+	protected EffectSound m_SoundPlace;
+	protected EffectSound m_DeployLoopSoundEx;
+	protected EffectSound m_SoundDeploy;
+	bool m_IsPlaceSound;
+	bool m_IsDeploySound;
+	bool m_IsSoundSynchRemote;
+	
+	string GetDeployFinishSoundset();
+	void PlayDeploySound();
+	void PlayDeployFinishSound();
+	void PlayPlaceSound();
+	void PlayDeployLoopSoundEx();
+	void StopDeployLoopSoundEx();
+	void SoundSynchRemoteReset();
+	void SoundSynchRemote();
+	bool UsesGlobalDeploy(){return false;}
+	bool CanPlayDeployLoopSound(){return false;}
+	bool IsSoundSynchRemote(){return m_IsSoundSynchRemote;}
+	bool IsPlaceSound(){return m_IsPlaceSound;}
+	bool IsDeploySound(){return m_IsDeploySound;}
+	void SetIsPlaceSound(bool is_place_sound);
+	void SetIsDeploySound(bool is_deploy_sound);
 }
 
 EntityAI SpawnItemOnLocation(string object_name, notnull InventoryLocation loc, bool full_quantity)

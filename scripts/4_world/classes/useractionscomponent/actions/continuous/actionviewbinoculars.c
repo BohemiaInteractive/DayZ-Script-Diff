@@ -39,13 +39,14 @@ class ActionViewBinoculars : ActionViewOptics
 		
 		if ( optic.HasEnergyManager() )
 		{
-			PoweredOptic_Base rf = PoweredOptic_Base.Cast(optic);
-			if (!rf)
-				return;
-			
-			rf.SetPlayer( player );
-			if ( GetGame().IsServer() )
-				rf.GetCompEM().SwitchOn();
+			PoweredOptic_Base opticBase = PoweredOptic_Base.Cast(optic);
+			if (opticBase)
+			{
+				opticBase.SetPlayer(player);
+				
+				if (GetGame().IsServer())
+					opticBase.StartWorkServer();
+			}
 		}
 	}
 	
@@ -60,13 +61,14 @@ class ActionViewBinoculars : ActionViewOptics
 		player.ExitSights();
 		if ( optic.HasEnergyManager() )
 		{
-			PoweredOptic_Base rf = PoweredOptic_Base.Cast(optic);
-			if (!rf)
-				return;
-			
-			rf.SetPlayer( null );
-			if ( GetGame().IsServer() )
-				rf.GetCompEM().SwitchOff();
+			PoweredOptic_Base opticBase = PoweredOptic_Base.Cast(optic);
+			if (opticBase)
+			{
+				opticBase.SetPlayer(null);
+				
+				if (GetGame().IsServer())
+					opticBase.StopWorkServer();
+			}
 		}
 	}
 }

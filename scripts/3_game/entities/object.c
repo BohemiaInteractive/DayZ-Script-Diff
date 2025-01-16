@@ -1055,15 +1055,15 @@ class Object extends IEntity
 	@param zoneName if empty string, sets state of global health
 	@param healthType if empty string, sets state of main health
 	*/
-	void   DecreaseHealth(string zoneName, string healthType, float value, bool auto_delete)
+	void DecreaseHealth(string zoneName, string healthType, float value, bool auto_delete)
 	{
-		DecreaseHealth( zoneName, healthType, value);
+		DecreaseHealth(zoneName, healthType, value);
 		
-		float result_health = GetHealth(zoneName, healthType);
-		
-		if ( auto_delete  &&  result_health <= 0 )
+		if (auto_delete)
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().ObjectDelete, this); 
+			float result_health = GetHealth(zoneName, healthType);
+			if (result_health <= 0)
+				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().ObjectDelete, this); 
 		}
 	}
 	
@@ -1425,6 +1425,9 @@ class Object extends IEntity
 	{
 		return false;
 	}
+	
+	void OnSpawnByObjectSpawner(ITEM_SpawnerObject item)
+	{}
 
 	//Debug
 	//----------------------------------------------

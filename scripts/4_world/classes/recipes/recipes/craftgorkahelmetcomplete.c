@@ -59,8 +59,4 @@ class CraftGorkaHelmetComplete extends RecipeBase
 	{
 		return true;
 	}
-
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
-	{
-	}
 };

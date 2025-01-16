@@ -109,7 +109,6 @@ class DayZPlayerImplementMove : DayZPlayerMove
 
 class DayZPlayerImplement extends DayZPlayer
 {
-	static const int DEAD_SCREEN_DELAY = 1000; 			//! DEPRECATED
 	static const float DEFAULT_DYING_TIME = 2.5; 		//! how long does it take to full death screen [s]
 	static const float DYING_PROGRESSION_TIME = 0.05; 	//! time step for gradual update of dead screen visibilibty up to full visbility [s]
 
@@ -137,7 +136,6 @@ class DayZPlayerImplement extends DayZPlayer
 	private float 										m_WeaponRaiseTime; //! measures time from the weapon raise start to complete raise (once per)
 	protected bool 										m_WeaponRaiseCompleted;
 	protected ECameraZoomType							m_CameraEyeZoomLevel;
-	protected bool										m_WasIronsight; // was previously ironsights. Only used on weapons
 	protected bool										m_CameraIronsight; // Ironsight NOW!
 	protected bool										m_CameraOptics; // Optics NOW!
 	protected bool										m_CameraOpticsAimOverride;	// for tracking if aim limit is currently overriden by optics
@@ -206,7 +204,6 @@ class DayZPlayerImplement extends DayZPlayer
 		m_IsShootingFromCamera = true;
 		m_ProcessFirearmMeleeHit = false;
 		m_ContinueFirearmMelee = false;
-		m_WasIronsight = true; //initially uses ironsights by default
 		#ifdef PLATFORM_CONSOLE
 		m_Camera3rdPerson = !GetGame().GetWorld().Is3rdPersonDisabled();
 		#endif
@@ -378,9 +375,7 @@ class DayZPlayerImplement extends DayZPlayer
 	{
 		Weapon_Base weapon = Weapon_Base.Cast(GetHumanInventory().GetEntityInHands());
 		if (weapon)
-		{
-			m_WasIronsight = m_CameraIronsight;
-		}
+			weapon.SetWasIronSight(m_CameraIronsight);
 		
 		m_CameraIronsight = value;
 		
@@ -388,9 +383,11 @@ class DayZPlayerImplement extends DayZPlayer
 		{
 			HumanCommandWeapons hcw = GetCommandModifier_Weapons();
 			if (hcw)
-			{
 				hcw.SetADS(true);
-			}
+			
+			HumanInputController hic = GetInputController();
+			if (hic)
+				hic.ResetFreeLookToggle();
 		}
 	}
 	
@@ -402,9 +399,11 @@ class DayZPlayerImplement extends DayZPlayer
 		{
 			HumanCommandWeapons hcw = GetCommandModifier_Weapons();
 			if (hcw)
-			{
 				hcw.SetADS(!IsHandheldOpticsInUse());
-			}
+			
+			HumanInputController hic = GetInputController();
+			if (hic)
+				hic.ResetFreeLookToggle();
 		}
 	}
 	
@@ -612,7 +611,7 @@ class DayZPlayerImplement extends DayZPlayer
 		super.OnVariablesSynchronized();
 	}
 
-	bool	HandleDeath(int pCurrentCommandID)
+	bool HandleDeath(int pCurrentCommandID)
 	{
 		if (pCurrentCommandID == DayZPlayerConstants.COMMANDID_DEATH)
 		{
@@ -713,12 +712,12 @@ class DayZPlayerImplement extends DayZPlayer
 		return false;
 	}
 	
-	void	ResetDeathStartTime()
+	void ResetDeathStartTime()
 	{
 		ResetDeathCooldown();
 	}
 	
-	int		GetTypeOfDeath(int pCurrentCommandID)
+	int	GetTypeOfDeath(int pCurrentCommandID)
 	{
 		switch (pCurrentCommandID)
 		{
@@ -876,12 +875,13 @@ class DayZPlayerImplement extends DayZPlayer
 	
 	void SetDeathDarknessLevel(float duration, float tick_time);
 	
-	void SendCompleteWeaponRaiseJuncture();
-	
 	void CompleteWeaponRaise()
 	{
 		m_WeaponRaiseTime = 0;
 		m_WeaponRaiseCompleted = true;
+		HumanInputController hic = GetInputController();
+		if (hic)
+			hic.ResetFreeLookToggle();
 	}
 	
 	void ResetWeaponRaiseProgress()
@@ -962,6 +962,8 @@ class DayZPlayerImplement extends DayZPlayer
 			//Print("inv: DayZPlayerImplement::OnItemInHandsChanged - human not alive! calling ResetWeaponInHands");
 			GetItemAccessor().ResetWeaponInHands();
 		}
+		
+		HumanInventoryWithFSM.Cast(GetHumanInventory()).CheckFSMState();
 	}
 
 	WeaponManager GetWeaponManager() { return null; }
@@ -1176,7 +1178,6 @@ class DayZPlayerImplement extends DayZPlayer
 						if (weapon && weapon.CanEnterIronsights()) //loop into ironsights
 						{
 							SwitchOptics(optic,false);
-							pInputs.ResetFreeLookToggle();
 							SetIronsights(true);
 						}
 					}
@@ -1208,7 +1209,6 @@ class DayZPlayerImplement extends DayZPlayer
 					if (weapon && weapon.CanEnterIronsights())
 					{
 						SwitchOptics(optic,false);
-						pInputs.ResetFreeLookToggle();
 						SetIronsights(true);
 					}
 				}
@@ -1386,7 +1386,7 @@ class DayZPlayerImplement extends DayZPlayer
 
 		switch (pDamageType)
 		{
-			case DT_CLOSE_COMBAT:
+			case DamageType.CLOSE_COMBAT:
 				//! impact from infected attack will be light only
 			 	if (pSource.IsInherited(DayZInfected))
 					break;
@@ -1397,7 +1397,7 @@ class DayZPlayerImplement extends DayZPlayer
 					pAnimHitFullbody = true;
 				break;
 
-			case DT_FIRE_ARM:
+			case DamageType.FIRE_ARM:
 				int impactBehaviour = 0;
 
 				if (!IsUnconscious() && GetHealth("", "Shock") > 25)
@@ -1415,14 +1415,14 @@ class DayZPlayerImplement extends DayZPlayer
 
 				break;
 
-			case DT_EXPLOSION:
+			case DamageType.EXPLOSION:
 				break;
 
-			case DT_CUSTOM:
+			case DamageType.CUSTOM:
 				pAnimType = GetGame().ConfigGetInt("cfgAmmo " + pAmmoType + " hitAnimation");
 				if (pAnimType == 1)
 					pAnimHitFullbody = true;
-				else if (pAmmoType != "HeatDamage" || IsSwimming())
+				else if (pAmmoType != "HeatDamage" || IsSwimming() || IsInVehicle())
 					return false; //! skip evaluation of dmg hit animation
 
 				break;
@@ -1858,22 +1858,21 @@ class DayZPlayerImplement extends DayZPlayer
 				else if (switchToADS) // enter ironsights or optics
 				{
 					// filter by usability
-					if (m_WasIronsight && !canUseIronsights)
+					if (weapon.GetWasIronSight() && !canUseIronsights)
 					{
-						m_WasIronsight = false;
+						weapon.SetWasIronSight(false);
 					}
-					else if (!m_WasIronsight && !canUseOptics)
+					else if (!weapon.GetWasIronSight() && !canUseOptics)
 					{
-						m_WasIronsight = true;
+						weapon.SetWasIronSight(true);
 					}
 					
-					if (m_WasIronsight)
+					if (weapon.GetWasIronSight())
 					{
-						hic.ResetFreeLookToggle();
 						SwitchOptics(optic,false);
 						SetIronsights(true);
 					}
-					else if (!m_WasIronsight || (!canUseIronsights && canUseOptics))
+					else if (!weapon.GetWasIronSight() || (!canUseIronsights && canUseOptics))
 					{
 						SetIronsights(false);
 						SwitchOptics(optic,true);
@@ -2925,8 +2924,13 @@ class DayZPlayerImplement extends DayZPlayer
 	{
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
-			GetUApi().GetInputByID(UALeanLeft).Unlock();
-			GetUApi().GetInputByID(UALeanRight).Unlock();
+			#ifdef PLATFORM_CONSOLE
+			if (GetUApi().GetInputByID(UAVoiceModifierHelper).LocalValue() == 0)
+			#endif
+			{
+				GetUApi().GetInputByID(UALeanLeft).Unlock();
+				GetUApi().GetInputByID(UALeanRight).Unlock();
+			}
 		}
 	}
 	//-------------------------------------------------------------
@@ -3167,6 +3171,7 @@ class DayZPlayerImplement extends DayZPlayer
 
 	void OnStepEvent(string pEventType, string pUserString, int pUserInt)
 	{
+		vector orientation;
 		DayZPlayerType type = GetDayZPlayerType();
 		HumanMovementState	state = new HumanMovementState();
 		GetMovementState(state);
@@ -3195,11 +3200,12 @@ class DayZPlayerImplement extends DayZPlayer
 			
 			if (state.m_iMovement == DayZPlayerConstants.MOVEMENTIDX_SPRINT)
 			{
+				orientation = GetOrientation() * (-1);
 				int stepParticleID = Surface.GetStepsParticleID(surface);
 			
 				if (stepParticleID > 0)
 				{
-					ParticleManager.GetInstance().PlayInWorld(stepParticleID, GetPosition());
+					ParticleManager.GetInstance().PlayInWorldEx(stepParticleID, null, GetPosition(), orientation);
 				}
 			}
 			
@@ -3216,19 +3222,21 @@ class DayZPlayerImplement extends DayZPlayer
 
 		if (soundBuilder != NULL && GetGame().GetPlayer())
 		{
-			vector orientation = Vector(0, 0, 0);
+			orientation = Vector(0, 0, 0);
 			vector edgeLength = Vector(1.5, 3.0, 1.5);
 			array<Object> excludedObjects = new array<Object>;
+			excludedObjects.Insert(this);
 			array<Object> collidedObjects = new array<Object>;
 			
-			if (GetGame().IsBoxColliding(GetPosition(), orientation, edgeLength, excludedObjects, collidedObjects))
+			if (GetGame().IsBoxCollidingGeometry(GetPosition(), orientation, edgeLength, ObjIntersectView, ObjIntersectNone, excludedObjects, collidedObjects))
 			{
 				for (int i = 0; i < collidedObjects.Count(); ++i)
 				{
-					Object colObject = collidedObjects.Get(i);
-					string objectClass = colObject.GetType();
+					WoodBase colObject = WoodBase.Cast(collidedObjects.Get(i));
+					if (colObject && colObject.HasPlayerCollisionParticle() && state.m_iMovement > DayZPlayerConstants.MOVEMENTIDX_WALK)
+						MiscEffects.PlayVegetationCollideParticles(colObject, this);
 					
-					if (objectClass.Contains("BushSoft") || objectClass.Contains("BushHard"))
+					if (colObject && colObject.HasPlayerCollisionSound())
 					{
 						for (int j = 0; j < type.GetVegetationSounds().Count(); ++j)
 						{
@@ -3827,12 +3835,15 @@ class DayZPlayerImplement extends DayZPlayer
 //Obsolete stuff below this point//
 ///////////////////////////////////
 	
+	static const int 									DEAD_SCREEN_DELAY = 1000; //! DEPRECATED
 	protected bool										m_CameraEyeZoom; //DEPRECATED
 	ref Timer 											m_ADSAutomationTimer; //DEPRECATED
 	protected bool 										m_ADSTimerLaunched; //DEPRECATED
 	protected bool 										m_ProcessWeaponRaiseCompleted; //DEPRECATED
 	protected bool										m_IsFireWeaponRaised; //DEPRECATED, value still set for legacy reasons
+	protected bool										m_WasIronSight;	// moved from player to weapon
 	void SetReturnToOptics(bool state); //DEPRECATED
 	void RunADSTimer(); //DEPRECATED
 	void StopADSTimer(); //DEPRECATED
+	void SendCompleteWeaponRaiseJuncture(); //DEPRECATED
 }

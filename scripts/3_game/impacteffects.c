@@ -46,6 +46,8 @@ class ImpactMaterials
 	static int GRAVEL 						= RegisterSurface("Hit_Gravel");
 	static int DIRT 						= RegisterSurface("Hit_Dirt");
 	static int FOLIAGE 						= RegisterSurface("Hit_Foliage");
+	static int FOLIAGE_GREEN 				= RegisterSurface("Hit_Foliage_Green");
+	static int FOLIAGE_CONIFER 				= RegisterSurface("Hit_Foliage_Conifer");
 	static int GRASS 						= RegisterSurface("Hit_Grass");
 	static int WOOD 						= RegisterSurface("Hit_Wood");
 	static int METAL 						= RegisterSurface("Hit_Metal");

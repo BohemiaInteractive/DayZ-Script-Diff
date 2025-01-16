@@ -54,4 +54,9 @@ class UndergroundBunkerHandlerClient : UndergroundHandlerClient
 	{
 		GetGame().GetWorld().SetExplicitVolumeFactor_EnvSounds2D(m_EyeAcco, 0);
 	}
+	
+	override protected void PlayAmbientSound()
+	{
+		m_Player.PlaySoundSetLoop(m_AmbientSound, "Warhead_Storage_Ambient_SoundSet",3,3);
+	}
 }

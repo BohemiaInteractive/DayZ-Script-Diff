@@ -114,6 +114,8 @@ class ActionWorldCraft: ActionContinuousBase
 
 			PluginRecipesManager moduleRecipesManager;
 			Class.CastTo(moduleRecipesManager, GetPlugin(PluginRecipesManager));
+			moduleRecipesManager.IsRecipePossibleToPerform(action_data_wc.m_RecipeID, action_data_wc.m_MainItem, ItemBase.Cast(action_data_wc.m_Target.GetObject()), player); // sorts items server side, needed for anim selection
+			
 			m_CommandUID = moduleRecipesManager.GetAnimationCommandUID(action_data_wc.m_RecipeID);
 			
 			return true;
@@ -151,15 +153,15 @@ class ActionWorldCraft: ActionContinuousBase
 		
 		if (action_data.m_MainItem && item2)
 		{
-			ClearActionJuncture(action_data);
+			if (GetGame().IsMultiplayer())
+				ClearActionJuncture(action_data);
+			else
+				ClearInventoryReservationEx(action_data);
+			
 			module_recipes_manager.PerformRecipeServer(action_data_wc.m_RecipeID, action_data.m_MainItem, item2, action_data.m_Player);
 		}
 	}
-	
-	override void OnFinishProgressClient( ActionData action_data )
-	{
-	}
-	
+		
 	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
 	{
 		super.WriteToContext(ctx, action_data);

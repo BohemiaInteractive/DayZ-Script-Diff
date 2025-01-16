@@ -163,10 +163,10 @@ class MissionGameplay extends MissionBase
 		}		
 		#endif
 		
-		// temporary hud watermark
+		// experimental hud watermark
 		#ifndef DIAG_DEVELOPER
 		#ifdef BUILD_EXPERIMENTAL
-		m_Watermark = new Watermark(m_HudRootWidget);
+		m_Watermark = new Watermark();
 		#endif
 		#endif
 	}
@@ -202,6 +202,21 @@ class MissionGameplay extends MissionBase
 				
 		if( player )
 			player.OnScheduledTick(timeslice);
+
+		if (g_Game.m_AutotestEnabled)
+		{
+			if (!AutotestRunner.IsDone())
+			{
+				if (!AutotestRunner.IsRunning())
+					AutotestRunner.Start();
+
+				AutotestRunner.Update(timeslice);
+			}
+			else
+			{
+				g_Game.RequestExit(0);
+			}
+		}
 	}
 	
 	void SendMuteListToServer( map<string, bool> mute_list )
@@ -326,8 +341,11 @@ class MissionGameplay extends MissionBase
 			GetUApi().GetInputByID(UAUIQuickbarRadialOpen).Unlock();
 			GetUApi().GetInputByID(UAZoomInToggle).Unlock();
 			GetUApi().GetInputByID(UAPersonView).Unlock();
-			GetUApi().GetInputByID(UALeanLeft).Unlock();
-			GetUApi().GetInputByID(UALeanRight).Unlock();
+			if (playerPB && !playerPB.IsSprinting())
+			{
+				GetUApi().GetInputByID(UALeanLeft).Unlock();
+				GetUApi().GetInputByID(UALeanRight).Unlock();
+			}
 			
 			manualInputUnlockProcessed = true;
 		}
@@ -465,7 +483,7 @@ class MissionGameplay extends MissionBase
 					ShowInventory();
 					menu = m_InventoryMenu;
 				}
-				else if (menu == inventory)
+				else if (menu == inventory && m_InventoryMenu && m_InventoryMenu.IsOpened())
 				{
 					HideInventory();
 				}
@@ -495,7 +513,7 @@ class MissionGameplay extends MissionBase
 				if (!m_QuickbarHold)
 				{
 					m_QuickbarHold = true;
-					m_Hud.ShowHudPlayer(m_Hud.IsHideHudPlayer());
+					m_Hud.ShowHudPlayer(m_Hud.GetHudVisibility().IsContextFlagActive(EHudContextFlags.HUD_HIDE));
 				}
 			}
 			
@@ -503,7 +521,7 @@ class MissionGameplay extends MissionBase
 			{
 				if (!m_QuickbarHold)
 				{
-					m_Hud.ShowQuickbarPlayer(m_Hud.IsHideQuickbarPlayer());
+					m_Hud.ShowQuickbarPlayer(m_Hud.GetHudVisibility().IsContextFlagActive(EHudContextFlags.QUICKBAR_HIDE));
 				}
 				m_QuickbarHold = false;
 			}
@@ -627,7 +645,7 @@ class MissionGameplay extends MissionBase
 				else if (IsPaused())
 				{
 					InGameMenuXbox menu_xb = InGameMenuXbox.Cast(GetGame().GetUIManager().GetMenu());
-					if (!g_Game.GetUIManager().ScreenFadeVisible() && (!menu_xb || !menu_xb.IsOnlineOpen()))
+					if (!g_Game.GetUIManager().ScreenFadeVisible() && (!menu_xb || !menu_xb.IsOnlineOpen() && !menu_xb.FeedbackDialogVisible()))
 					{
 						if (GetUApi().GetInputByID(UAUIMenu).LocalPress())
 						{
@@ -870,11 +888,11 @@ class MissionGameplay extends MissionBase
 			
 			if (m_ActiveInputExcludeGroups)
 			{
-				for (int i = 0; i < excludes.Count(); i++)
+				foreach (string excl : excludes)
 				{
-					if (m_ActiveInputExcludeGroups.Find(excludes[i]) != -1)
+					if (m_ActiveInputExcludeGroups.Find(excl) != -1)
 					{
-						m_ActiveInputExcludeGroups.RemoveItem(excludes[i]);
+						m_ActiveInputExcludeGroups.RemoveItem(excl);
 						changed = true;
 					}
 				}
@@ -930,11 +948,11 @@ class MissionGameplay extends MissionBase
 				m_ActiveInputExcludeGroups = new array<string>;
 			}
 			
-			for (int i = 0; i < excludes.Count(); i++)
+			foreach (string excl : excludes)
 			{
-				if (m_ActiveInputExcludeGroups.Find(excludes[i]) == -1)
+				if (m_ActiveInputExcludeGroups.Find(excl) == -1)
 				{
-					m_ActiveInputExcludeGroups.Insert(excludes[i]);
+					m_ActiveInputExcludeGroups.Insert(excl);
 					changed = true;
 				}
 			}
@@ -998,9 +1016,9 @@ class MissionGameplay extends MissionBase
 	{
 		if (m_ActiveInputExcludeGroups)
 		{
-			for (int i = 0; i < m_ActiveInputExcludeGroups.Count(); i++)
+			foreach (string excl : m_ActiveInputExcludeGroups)
 			{
-				GetUApi().ActivateExclude(m_ActiveInputExcludeGroups[i]);
+				GetUApi().ActivateExclude(excl);
 			}
 		}
 		
@@ -1125,7 +1143,7 @@ class MissionGameplay extends MissionBase
 	
 	override void HideInventory()
 	{
-		if ( m_InventoryMenu )
+		if (m_InventoryMenu)
 		{
 			GetUIManager().HideScriptedMenu(m_InventoryMenu);
 			RemoveActiveInputExcludes({"inventory"},false);
@@ -1137,7 +1155,7 @@ class MissionGameplay extends MissionBase
 	
 	void DestroyInventory()
 	{
-		if ( m_InventoryMenu )
+		if (m_InventoryMenu)
 		{
 			if (!m_InventoryMenu.GetParentMenu() && GetUIManager().GetMenu() != m_InventoryMenu)
 			{
@@ -1249,13 +1267,13 @@ class MissionGameplay extends MissionBase
 	override void Continue()
 	{
 		UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
-		if (!menu)
-			return;
-		
-		int menu_id = menu.GetID();
-		if ( !IsPaused() || ( menu_id != MENU_INGAME && menu_id != MENU_LOGOUT && menu_id != MENU_RESPAWN_DIALOGUE ) || ( m_Logout && m_Logout.layoutRoot.IsVisible() ) )
+		if (menu)
 		{
-			return;
+			int menu_id = menu.GetID();
+			if (!IsPaused() || (menu_id != MENU_INGAME && menu_id != MENU_LOGOUT && menu_id != MENU_RESPAWN_DIALOGUE && menu_id != MENU_CONNECTION_DIALOGUE) || (m_Logout && m_Logout.layoutRoot.IsVisible()))
+			{
+				return;
+			}
 		}
 
 		RemoveActiveInputExcludes({"menu"},true);
@@ -1279,8 +1297,11 @@ class MissionGameplay extends MissionBase
 	
 	override void CreateLogoutMenu(UIMenuPanel parent)
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		// prevent creating logout dialog if input buffer has reached server config maximumClientInputs limit.
+		if (GetGame() && GetGame().IsNetworkInputBufferFull())
+			return;
 		
+		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );		
 		// do not show logout screen if player's dead
 		if (!player || player.IsDamageDestroyed())
 		{
@@ -1388,6 +1409,11 @@ class MissionGameplay extends MissionBase
 				m_DebugMonitor.SetPosition(MiscGameplayFunctions.TruncateVec(player.GetPosition(),1));
 			}
 		}
+		
+		float currFPS = GetGame().GetAvgFPS(10); // Not using last, but average of last x to prevent jitter
+		float minFPS, maxFPS, avgFPS;
+		GetGame().GetFPSStats(minFPS, maxFPS, avgFPS);				
+		m_DebugMonitor.SetFramerate(currFPS, minFPS, maxFPS, avgFPS);
 	}
 	
 	void SetActionDownTime( int time_down )

@@ -6,7 +6,7 @@ class ActionDrinkWellContinuousCB : ActionContinuousBaseCB
 	}
 }
 
-class ActionDrinkWellContinuous: ActionContinuousBase
+class ActionDrinkWellContinuous : ActionContinuousBase
 {	
 	void ActionDrinkWellContinuous()
 	{
@@ -67,21 +67,14 @@ class ActionDrinkWellContinuous: ActionContinuousBase
 		Param1<float> nacdata = Param1<float>.Cast(action_data.m_ActionComponent.GetACData());
 		if (nacdata)
 		{
-			float amount = UAQuantityConsumed.DRINK;
-			action_data.m_Player.Consume(null,amount, EConsumeType.ENVIRO_WELL);
-		}
-		
-		if (action_data.m_Player.HasBloodyHands() && !action_data.m_Player.GetInventory().FindAttachment(InventorySlots.GLOVES))
-		{
-			action_data.m_Player.SetBloodyHandsPenalty();
-		}
-	}
-
-	override void OnEndAnimationLoopServer(ActionData action_data)
-	{
-		if (action_data.m_Player.HasBloodyHands())
-		{
-			action_data.m_Player.InsertAgent(eAgents.CHOLERA, 1);
+			PlayerConsumeData consumeData = new PlayerConsumeData();
+			consumeData.m_Type = EConsumeType.ENVIRO_WELL;
+			consumeData.m_Amount = UAQuantityConsumed.DRINK;
+			consumeData.m_Source = null;
+			consumeData.m_Agents = action_data.m_Player.GetBloodyHandsPenaltyAgents();
+			consumeData.m_LiquidType = LIQUID_CLEANWATER;
+			
+			action_data.m_Player.Consume(consumeData);
 		}
 	}
 	

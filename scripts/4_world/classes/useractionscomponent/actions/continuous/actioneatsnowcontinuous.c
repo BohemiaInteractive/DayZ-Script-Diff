@@ -56,18 +56,19 @@ class ActionEatSnowContinuous: ActionContinuousBase
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		Param1<float> nacdata = Param1<float>.Cast(action_data.m_ActionComponent.GetACData());
-		float amount = UAQuantityConsumed.EAT_NORMAL;
-		action_data.m_Player.Consume(null, amount, EConsumeType.ENVIRO_SNOW);
-	}
-
-	override void OnEndAnimationLoopServer(ActionData action_data)
-	{
-		if (action_data.m_Player.HasBloodyHands() && !action_data.m_Player.GetInventory().FindAttachment(InventorySlots.GLOVES))
+		if (nacdata)
 		{
-			action_data.m_Player.SetBloodyHandsPenalty();
+			PlayerConsumeData consumeData = new PlayerConsumeData();
+			consumeData.m_Type = EConsumeType.ENVIRO_SNOW;
+			consumeData.m_Amount = UAQuantityConsumed.EAT_NORMAL;
+			consumeData.m_Source = null;
+			consumeData.m_Agents = action_data.m_Player.GetBloodyHandsPenaltyAgents();
+			consumeData.m_LiquidType = LIQUID_SNOW;
+			
+			action_data.m_Player.Consume(consumeData);
 		}
 	}
-	
+
 	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
 	{
 		super.WriteToContext(ctx, action_data);

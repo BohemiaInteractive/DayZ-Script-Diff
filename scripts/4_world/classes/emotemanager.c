@@ -590,15 +590,17 @@ class EmoteManager
 		
 		if (CanPlayEmote(id))
 		{
+			EmoteBase emote;
+			m_NameEmoteMap.Find(id,emote);
+			
 			if (m_AdminLog)
-				m_AdminLog.LogPrint("[emote] " + Object.GetDebugName(m_Player) + " play emote id=" + id + " IH=" + Object.GetDebugName(m_Player.GetItemInHands()));
+				m_AdminLog.OnEmote(m_Player, emote);
 			
 			m_PreviousGestureID = m_CurrentGestureID;
 			m_CurrentGestureID = id;
 			if (id > 0)
 			{
-				EmoteBase emote;
-				if (m_NameEmoteMap.Find(id,emote))
+				if (emote)
 				{
 					int callback_ID;
 					int stancemask;
@@ -672,6 +674,12 @@ class EmoteManager
 		{
 			m_Player.TryHideItemInHands(false);
 		}
+	}
+	
+	void RequestCommitSuicide()
+	{
+		if (!GetGame().IsClient())
+			CommitSuicide();
 	}
 	
 	protected void CommitSuicide()

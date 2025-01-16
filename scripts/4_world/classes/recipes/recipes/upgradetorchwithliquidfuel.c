@@ -77,8 +77,6 @@ class UpgradeTorchWithLiquidFuel extends RecipeBase
 		ItemBase vessel = ItemBase.Cast(ingredients[0]);
 		FlammableBase item = Torch.Cast(ingredients[1]);
 		
-		//torch.ConsumeRag();
-		
 		if (item && vessel)
 		{
 			item.Upgrade(vessel);

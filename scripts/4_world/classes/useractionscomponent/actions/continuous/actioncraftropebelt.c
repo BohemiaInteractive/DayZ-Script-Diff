@@ -37,9 +37,7 @@ class ActionCraftRopeBelt: ActionContinuousBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{			
 		EntityAI item_ingredient = action_data.m_MainItem;
-		EntityAI belt;
-		
-		belt = action_data.m_Player.SpawnEntityOnGroundPos("RopeBelt", action_data.m_Player.GetPosition());
+		EntityAI belt = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("RopeBelt");
 		action_data.m_MainItem.Delete();
 		
 		MiscGameplayFunctions.TransferItemProperties(item_ingredient, belt);

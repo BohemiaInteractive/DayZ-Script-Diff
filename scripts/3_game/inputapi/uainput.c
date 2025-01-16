@@ -73,6 +73,7 @@ class UAInput
 
 	proto native void Supress();			// supress press event for next frame (while not pressed ATM - otherwise until release)
 
+	// take care when using these locking methods, if two or more systems un/lock the same input, there is a chance off cross-un/locking it from a wrong place! Use exclude groups instead.
 	proto native bool IsLocked();			// determine if locked (not active ATM)
 	proto native void Lock();				// lock (until unlock called or exclusion is selected)
 	proto native void Unlock();				// unlock exclusively

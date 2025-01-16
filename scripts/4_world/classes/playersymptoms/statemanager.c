@@ -17,6 +17,7 @@ enum SymptomIDs
 	SYMPTOM_LAUGHTER,
 	SYMPTOM_UNCONSCIOUS,
 	SYMPTOM_FREEZE,
+	SYMPTOM_FREEZE_RATTLE,
 	SYMPTOM_HOT,
 	SYMPTOM_PAIN_LIGHT,
 	SYMPTOM_PAIN_HEAVY,
@@ -81,6 +82,7 @@ class SymptomManager
 		RegisterSymptom(new BloodLoss);
 		RegisterSymptom(new LaughterSymptom);
 		RegisterSymptom(new FreezeSymptom);
+		RegisterSymptom(new FreezeRattleSymptom);
 		RegisterSymptom(new HotSymptom);
 		RegisterSymptom(new PainLightSymptom);
 		RegisterSymptom(new PainHeavySymptom);
@@ -470,9 +472,14 @@ class SymptomManager
 
 	SymptomBase QueueUpPrimarySymptom(int symptom_id, int uid = -1)
 	{
-		SymptomBase symptom;
 		if ((GetSymptomCount(symptom_id) >= GetSymptomMaxCount(symptom_id)) && GetSymptomMaxCount(symptom_id) != -1)
 			return null;
+		
+		SymptomBase symptom = m_AvailableSymptoms.Get(symptom_id);
+		if (m_Player.IsUnconscious() && !symptom.AllowInUnconscious())
+			return null;
+		else 
+			symptom = null; // needed for check below
 		
 		for (int i = 0; i < m_SymptomQueuePrimary.Count(); i++)
 		{
@@ -509,6 +516,9 @@ class SymptomManager
 			return null;
 		
 		if (m_AvailableSymptoms.Get(symptom_id).IsPrimary())
+			return null;
+		
+		if (m_Player.IsUnconscious() && !m_AvailableSymptoms.Get(symptom_id).AllowInUnconscious())
 			return null;
 		
 		SymptomBase Symptom = SpawnSymptom( symptom_id, uid);

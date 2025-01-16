@@ -67,10 +67,9 @@ class ExtinguishTorch extends RecipeBase
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
 		FlammableBase target = FlammableBase.Cast(ingredients[0]);
-		ItemBase container;
-		Class.CastTo(container, ingredients[1]);
+		ItemBase container = ingredients[1];
 		
-		if ( container.GetLiquidType() & (GROUP_LIQUID_BLOOD | LIQUID_WATER | LIQUID_BEER) )
+		if ( container.GetLiquidType() & (GROUP_LIQUID_BLOOD | LIQUID_WATER | LIQUID_BEER) && !container.GetIsFrozen() )
 		{
 			return target.IsIgnited();
 		}

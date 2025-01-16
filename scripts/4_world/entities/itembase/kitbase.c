@@ -2,12 +2,6 @@ class KitBase extends ItemBase
 {
 	protected bool 					m_DeployedRegularly;
 
-	void KitBase()
-	{
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsDeploySound");
-	}
-
 	override bool IsBasebuildingKit()
 	{
 		return true;
@@ -21,21 +15,6 @@ class KitBase extends ItemBase
 	override bool CanProxyObstruct()
 	{
 		return false;
-	}
-	
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-		
-		if ( IsDeploySound() )
-		{
-			PlayDeploySound();
-		}
-				
-		if ( m_DeployedRegularly && IsSoundSynchRemote() )
-		{
-			PlayDeployFinishSound();
-		}
 	}
 	
 	override void EEInit()
@@ -86,7 +65,6 @@ class KitBase extends ItemBase
 	override void OnEndPlacement()
 	{
 		m_DeployedRegularly = true;
-		SoundSynchRemote();
 	}
 	
 	override void OnPlacementCancelled( Man player )
@@ -104,7 +82,7 @@ class KitBase extends ItemBase
 	{
 		return false;
 	}
-	
+		
 	override string GetDeploySoundset()
 	{
 		return "putDown_FenceKit_SoundSet";
@@ -112,13 +90,7 @@ class KitBase extends ItemBase
 	
 	override string GetLoopDeploySoundset()
 	{
-		//return "BarbedWire_Deploy_loop_SoundSet";
 		return "Shelter_Site_Build_Loop_SoundSet";
-	}
-	
-	override string GetDeployFinishSoundset()
-	{
-		return "";
 	}
 	
 	override void RefreshPhysics()

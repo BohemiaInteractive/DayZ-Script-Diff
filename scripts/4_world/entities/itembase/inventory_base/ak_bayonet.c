@@ -12,14 +12,19 @@ class AK_Bayonet extends ToolBase
 	
 	override bool CanPutAsAttachment( EntityAI parent )
 	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
+		if (!super.CanPutAsAttachment(parent)) 
+			return false;
+		
+		if (parent.IsSlotReserved(InventorySlots.GetSlotIdFromString("suppressorImpro")) || parent.IsSlotReserved(InventorySlots.GetSlotIdFromString("weaponMuzzleAK")))
+			return false;
+		
 		if ( parent.FindAttachmentBySlotName("suppressorImpro") == null && parent.FindAttachmentBySlotName("weaponMuzzleAK") == null )
 		{
 			return true;
 		}
 		return false;
 	}
-
+	
 	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
 		super.OnWasAttached(parent, slot_id);

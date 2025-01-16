@@ -50,7 +50,7 @@ class Paper extends ItemBase
 		return false;
 	}
 	
-	override void OnIgnitedTarget(EntityAI ignited_item) {}
+	override void OnIgnitedTarget(EntityAI target_item) {}
 	
 	override void OnIgnitedThis(EntityAI fire_source)
 	{

@@ -331,7 +331,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		bool isVisionObstructionActive = PPEManagerStatic.GetPPEManager().IsAnyRequesterRunning(VISION_OBSTRUCTION_PPEFFECTS_TYPES);
 				
 		//! don't show floating widget if it's disabled in profile or the player is unconscious
-		if (GetGame().GetUIManager().GetMenu() || !g_Game.GetProfileOption(EDayZProfilesOptions.HUD) || m_Hud.IsHideHudPlayer() || m_Player.IsUnconscious() || isVisionObstructionActive)
+		if (isVisionObstructionActive || m_Hud.GetHudVisibility().IsContextFlagActive(IngameHudVisibility.HUD_HIDE_FLAGS))
 		{
 			HideWidget();
 			return;
@@ -366,7 +366,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 			}
 			else if (m_Target.GetObject() != null && !m_Target.GetObject().IsHologram() && (!m_Target.GetParent() || m_Target.GetParent() && !m_Target.GetParent().IsHologram()))
 			{
-				CheckRefresherFlagVisibility(m_Target.GetObject());
+				CheckRefresherFlagVisibilityEx(m_Target);
 				//! build cursor for new target
 				if (m_Target.GetObject() != m_CachedObject.Get())
 				{
@@ -944,12 +944,11 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 			Object tgParent = m_Target.GetParent();
 			EntityAI targetEntity;
 			
-			if (tgParent && (tgParent.IsItemBase() || tgParent.IsTransport()))
+			if (tgParent)
 			{
 				targetEntity = EntityAI.Cast(tgParent);
 			}
-			
-			if (tgObject.IsItemBase() || tgObject.IsTransport())
+			else
 			{
 				targetEntity = EntityAI.Cast(tgObject);
 			}
@@ -1289,14 +1288,18 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		textWidget.Show(true);
 	}
 	
-	protected void CheckRefresherFlagVisibility(Object object)
+	protected void CheckRefresherFlagVisibilityEx(ActionTarget target)
 	{
-		EntityAI entity;
+		EntityAI entity = EntityAI.Cast(target.GetObject());
+		if (!entity)
+			entity = EntityAI.Cast(target.GetParent());
+		
+		if (!entity)
+			return;
+		
 		Widget w = m_Root.FindAnyWidget("item_flag_icon");
-		if (Class.CastTo(entity,object) && w)
-		{
+		if (w)
 			w.Show(entity.IsRefresherSignalingViable() && m_Player.IsTargetInActiveRefresherRange(entity));
-		}
 	}
 	
 	protected int AttachmentsWithInventoryOrCargoCount(notnull GameInventory inventory)
@@ -1334,4 +1337,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 
 		return null;
 	}
+	
+	// deprecated 
+	protected void CheckRefresherFlagVisibility(Object object);
 }

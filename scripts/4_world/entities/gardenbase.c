@@ -202,17 +202,6 @@ class GardenBase extends ItemBase //BuildingSuper
 			int wateredState = (m_SlotWateredState >> i) & 1;
 			m_Slots[i].SetWateredState( wateredState );
 			
-			if ( fertilityState == eFertlityState.NONE )
-			{
-				m_Slots[i].SetFertilityType( "" );
-				m_Slots[i].SetFertilizerQuantity( 0 );
-			}
-			
-			if ( wateredState == eWateredState.DRY )
-			{
-				m_Slots[i].SetWater( 0 );
-			}
-			
 			UpdateSlotTexture( i );
 		}
 		
@@ -291,7 +280,7 @@ class GardenBase extends ItemBase //BuildingSuper
 		return false;
 	}
 
-	override bool CanPutIntoHands( EntityAI player )
+	override bool CanPutIntoHands( EntityAI parent )
 	{
 		if ( !super.CanPutIntoHands( parent ) )
 		{
@@ -300,7 +289,7 @@ class GardenBase extends ItemBase //BuildingSuper
 		return false;
 	}
 
-	override bool CanRemoveFromHands( EntityAI player )
+	override bool CanRemoveFromHands( EntityAI parent )
 	{
 		return false;
 	}
@@ -543,7 +532,7 @@ class GardenBase extends ItemBase //BuildingSuper
 			ShowSelection( str_show );
 		}		
 		
-		if ( slot.GetFertilityType() != "" )
+		if ( slot.GetFertilityState() == eFertlityState.FERTILIZED && slot.GetFertilityType() != "" )
 		{
 			SetSlotTextureFertilized( slot_index, slot.GetFertilityType() );
 		}
@@ -639,8 +628,13 @@ class GardenBase extends ItemBase //BuildingSuper
 			slot.SetFertilityState(eFertlityState.NONE);
 			m_SlotFertilityState &= ~(1 << slot.GetSlotIndex());
 			
+			slot.SetFertilityType(string.Empty);
+			slot.SetFertilizerQuantity(0);
+			
 			slot.SetWateredState( eWateredState.DRY );
 			m_SlotWateredState &= ~(1 << slot.GetSlotIndex());
+			
+			slot.SetWater(0);
 			
 			SetSynchDirty();
 			

@@ -76,6 +76,14 @@ class CameraToolsMenu extends UIScriptedMenu
 	
 	void ~CameraToolsMenu()
 	{
+		if (m_IsPlaying)
+		{
+			Stop();
+			layoutRoot.Show( false );
+			GetGame().GetUIManager().ShowUICursor(false);
+			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+		}
+		
 		SaveData();
 
 		m_Camera1.SetActive(false);
@@ -479,6 +487,7 @@ class CameraToolsMenu extends UIScriptedMenu
 				m_NextCamPosition		= m_Camera2.GetPosition();
 				m_FollowingTimeFinished	= -1;
 				m_Camera1.SetActive( true );
+				m_Camera1.EnableSmooth(m_InterpTypeCombo.GetCurrentItem() == 3);
 				m_Camera1.InterpolateTo( m_Camera2, time, m_InterpTypeCombo.GetCurrentItem() );
 			}
 			
@@ -493,6 +502,7 @@ class CameraToolsMenu extends UIScriptedMenu
 		layoutRoot.Show( true );
 		GetGame().GetUIManager().ShowUICursor( true );
 		
+		m_Camera1.StopInterpolation();
 		m_Camera1.SetActive( false );
 		m_Camera2.SetActive( false );
 		FreeDebugCamera.GetInstance().SetActive(true);
@@ -587,7 +597,7 @@ class CameraToolsMenu extends UIScriptedMenu
 			
 			m_Time += timeslice;
 			
-			if ( !Camera.GetCurrentCamera() || !m_Camera1 || !m_Camera2 )
+			if ( !Camera.IsInterpolationComplete() || !m_Camera1 || !m_Camera2 )
 			{
 				return;
 			}
@@ -630,7 +640,7 @@ class CameraToolsMenu extends UIScriptedMenu
 				return;
 			}
 			
-			if ( Camera.GetCurrentCamera().GetPosition() == m_NextCamPosition || ( m_FollowingTimeFinished != -1 && m_Time >= m_FollowingTimeFinished ) )
+			if ( Camera.IsInterpolationComplete() || Camera.GetCurrentCamera().GetPosition() == m_NextCamPosition || ( m_FollowingTimeFinished != -1 && m_Time >= m_FollowingTimeFinished ) )
 			{
 				float time;
 				if ( GetCameraLine( m_NextCameraIndex - 1 ).param6 > -1 )

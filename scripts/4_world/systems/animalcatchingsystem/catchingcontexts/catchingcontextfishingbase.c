@@ -1,4 +1,4 @@
-class CatchingContextFishingBase : CatchingContextPoissonBase
+class CatchingContextFishingBase : CatchingContextBase
 {
 	bool m_IsSea;
 	

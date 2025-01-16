@@ -38,5 +38,6 @@ class ActionWashHandsWater : ActionContinuousBase
 	{
 		PluginLifespan moduleLifespan = PluginLifespan.Cast(GetPlugin(PluginLifespan));
 		moduleLifespan.UpdateBloodyHandsVisibility(action_data.m_Player, false);
+		action_data.m_Player.ClearBloodyHandsPenaltyChancePerAgent(eAgents.SALMONELLA);
 	}
 }

@@ -216,7 +216,7 @@ class VicinityItemManager
 		array<Object> allFoundObjects 		= new array<Object>();
 		vector playerPosition 				= player.GetPosition();
 		vector playerHeadPositionFixed		= playerPosition;
-		playerHeadPositionFixed[1]			= playerPosition[1] + 1.6;
+		playerHeadPositionFixed[1]			= playerHeadPositionFixed[1] + GetFixedHeadHeightAdjustment(player);
 		vector headingDirection 			= MiscGameplayFunctions.GetHeadingVector(player);		
 		
 		//! If in free camera, override the position that the inventory gets generated from
@@ -287,7 +287,7 @@ class VicinityItemManager
 		//3. Add objects from GetEntitiesInCone
 		DayZPlayerUtils.GetEntitiesInCone(playerPosition, headingDirection, VICINITY_CONE_ANGLE, VICINITY_CONE_REACH_DISTANCE, CONE_HEIGHT_MIN, CONE_HEIGHT_MAX, objectsInVicinity);
 		//DebugConeDraw(playerPosition, VICINITY_CONE_ANGLE);
-
+		
 		RaycastRVParams rayInput;
 		array<ref RaycastRVResult> raycastResults = new array<ref RaycastRVResult>();
 		//filter unnecessary and duplicate objects beforehand
@@ -301,22 +301,37 @@ class VicinityItemManager
 
 			if (filteredObjects.Find(objectInCone) == INDEX_NOT_FOUND)
 			{
-				//Test distance to closest component first
 				rayInput 		= new RaycastRVParams(playerHeadPositionFixed, objectInCone.GetPosition());
-				rayInput.flags	= CollisionFlags.NEARESTCONTACT;
+				rayInput.flags	= CollisionFlags.ALLOBJECTS;
 				rayInput.type 	= ObjIntersectView;
 				rayInput.radius = 0.1;
 				DayZPhysics.RaycastRVProxy(rayInput, raycastResults, {player});
+				//Debug.DrawLine(playerHeadPositionFixed,objectInCone.GetPosition(),COLOR_WHITE,ShapeFlags.ONCE);
 				
 				foreach (RaycastRVResult result : raycastResults)
 				{
-					if (vector.DistanceSq(result.pos, playerHeadPositionFixed) > VICINITY_CONE_REACH_DISTANCE * VICINITY_CONE_REACH_DISTANCE)
+					if (vector.DistanceSq(result.pos, playerPosition) > VICINITY_CONE_REACH_DISTANCE * VICINITY_CONE_REACH_DISTANCE)
 						continue;
 					
-					if (result.hierLevel > 0 && result.parent == objectInCone)
-						filteredObjects.Insert(objectInCone);
-					else if (result.hierLevel == 0 && result.obj == objectInCone)
-						filteredObjects.Insert(objectInCone);
+					if (result.hierLevel > 0)
+					{
+						if (result.parent.CanProxyObstruct())
+							break;
+						
+						if (result.parent == objectInCone)
+						{
+							filteredObjects.Insert(objectInCone);
+							break;
+						}
+					}
+					else
+					{
+						if (result.obj == objectInCone)
+						{
+							filteredObjects.Insert(objectInCone);
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -338,17 +353,13 @@ class VicinityItemManager
 				if (bResult.obj && (bResult.obj.CanObstruct() || bResult.obj.CanProxyObstruct()))
 				{
 					if (allFoundObjects.Find(bResult.obj) == INDEX_NOT_FOUND)
-					{
 						allFoundObjects.Insert(bResult.obj);
-					}
 				}
 				
 				if (bResult.parent && (bResult.parent.CanObstruct() || bResult.parent.CanProxyObstruct()))
 				{
 					if (allFoundObjects.Find(bResult.parent) == INDEX_NOT_FOUND)
-					{
 						allFoundObjects.Insert(bResult.parent);
-					}
 				}
 			}
 		}
@@ -360,13 +371,11 @@ class VicinityItemManager
 		//! If in free camera, don't worry about obstructed objects if there are any
 		if (obstructingObjects.Count() > 0 && !cameraActive)
 		{
+			//obstructingObjects.Debug();
 			if (filteredObjects.Count() > 10)
 			{
-				vector rayStart;
-				MiscGameplayFunctions.GetHeadBonePos(player, rayStart);
-				
 				array<Object> filteredObjectsGrouped = new array<Object>();
-				MiscGameplayFunctions.FilterObstructedObjectsByGrouping(rayStart, VICINITY_CONE_DISTANCE, 0.3, filteredObjects, obstructingObjects, filteredObjectsGrouped, true, true, VICINITY_CONE_REACH_DISTANCE);
+				MiscGameplayFunctions.FilterObstructedObjectsByGrouping(playerHeadPositionFixed, VICINITY_CONE_DISTANCE, 0.3, filteredObjects, obstructingObjects, filteredObjectsGrouped, true, true, VICINITY_CONE_REACH_DISTANCE);
 				
 				foreach (Object object: filteredObjectsGrouped)
 					AddVicinityItems(object);
@@ -399,6 +408,18 @@ class VicinityItemManager
 			foreach (Object filteredObject: filteredObjects)
 				AddVicinityItems(filteredObject);
 		}
+	}
+	
+	protected float GetFixedHeadHeightAdjustment(PlayerBase player)
+	{
+		if (player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_ERECT|DayZPlayerConstants.STANCEMASK_RAISEDERECT))
+			return PlayerConstants.HEAD_HEIGHT_ERECT;
+		if (player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_CROUCH|DayZPlayerConstants.STANCEMASK_RAISEDCROUCH))
+			return PlayerConstants.HEAD_HEIGHT_CROUCH;
+		if (player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE|DayZPlayerConstants.STANCEMASK_RAISEDPRONE))
+			return PlayerConstants.HEAD_HEIGHT_PRONE;
+		
+		return PlayerConstants.HEAD_HEIGHT_ERECT;
 	}
 	
 	bool IsObstructed(Object filtered_object)

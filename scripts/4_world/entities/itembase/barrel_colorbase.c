@@ -19,8 +19,6 @@ class Barrel_ColorBase : DeployableContainer_Base
 		m_HalfExtents = Vector(0.30,0.85,0.30);
 		
 		RegisterNetSyncVariableBool("m_Openable.m_IsOpened");
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsPlaceSound");
 	}
 	
 	override int GetDamageSystemVersionChange()
@@ -33,6 +31,22 @@ class Barrel_ColorBase : DeployableContainer_Base
 		super.EECargoIn(item);
 
 		MiscGameplayFunctions.SoakItemInsideParentContainingLiquidAboveThreshold(ItemBase.Cast(item), this);
+	}
+	
+	override void OnFreezeStateChangeServer()
+	{
+		super.OnFreezeStateChangeServer();
+		
+		//soak CARGO items on unfreeze
+		CargoBase cargo;
+		if (!GetIsFrozen() && GetLiquidType() != 0 && Class.CastTo(cargo,GetInventory().GetCargo()))
+		{
+			int count = cargo.GetItemCount();
+			for (int i = 0; i < count; ++i)
+			{
+				MiscGameplayFunctions.SoakItemInsideParentContainingLiquidAboveThreshold(ItemBase.Cast(cargo.GetItem(i)), this);
+			}
+		}
 	}
 	
 	override void OnStoreSave( ParamsWriteContext ctx )
@@ -74,7 +88,6 @@ class Barrel_ColorBase : DeployableContainer_Base
 	{
 		m_Openable.Open();
 		m_RainProcComponent.StartRainProcurement();
-		SoundSynchRemote();
 		SetTakeable(false);
 		
 		UpdateVisualState();
@@ -94,7 +107,6 @@ class Barrel_ColorBase : DeployableContainer_Base
 	{
 		m_Openable.Close();
 		m_RainProcComponent.StopRainProcurement();
-		SoundSynchRemote();
 		SetTakeable(true);
 		
 		UpdateVisualState();
@@ -147,36 +159,9 @@ class Barrel_ColorBase : DeployableContainer_Base
 	{
 		super.OnVariablesSynchronized();
 		
-		if ( IsPlaceSound() )
-		{
-			PlayPlaceSound();
-		}
-		else if ( IsSoundSynchRemote() && !IsBeingPlaced() && m_Initialized )
-		{
-			if ( IsOpen() )
-			{
-				SoundBarrelOpenPlay();
-			}
-			else if ( !IsOpen() )
-			{
-				SoundBarrelClosePlay();
-			}
-		}
 		UpdateVisualState();
 	}
 	
-	void SoundBarrelOpenPlay()
-	{
-		EffectSound sound =	SEffectManager.PlaySound( "barrel_open_SoundSet", GetPosition() );
-		sound.SetAutodestroy( true );
-	}
-	
-	void SoundBarrelClosePlay()
-	{
-		EffectSound sound =	SEffectManager.PlaySound( "barrel_close_SoundSet", GetPosition() );
-		sound.SetAutodestroy( true );
-	}
-
 	void Lock(float actiontime)
 	{
 		m_IsLocked = true;
@@ -532,7 +517,7 @@ class Barrel_ColorBase : DeployableContainer_Base
 		return false;
 	}
 	
-	override bool CanReleaseCargo( EntityAI attachment )
+	override bool CanReleaseCargo( EntityAI cargo )
 	{
 		return IsOpen();
 	}
@@ -543,20 +528,33 @@ class Barrel_ColorBase : DeployableContainer_Base
 			return true;
 		return false;
 	}
-	
-	//================================================================
-	// ADVANCED PLACEMENT
-	//================================================================
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+		
+	override void InitItemSounds()
 	{
-		super.OnPlacementComplete( player, position, orientation );
-			
-		SetIsPlaceSound( true );
+		super.InitItemSounds();
+		
+		ItemSoundHandler handler = GetItemSoundHandler();
+		
+		if (GetBarrelOpenSoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_BARREL_OPEN, GetBarrelOpenSoundset());
+	
+		if (GetBarrelCloseSoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_BARREL_CLOSE, GetBarrelCloseSoundset());
 	}
 	
-	override string GetPlaceSoundset()
+	override string GetDeploySoundset()
 	{
 		return "placeBarrel_SoundSet";
+	}
+	
+	string GetBarrelOpenSoundset()
+	{
+		return "barrel_open_SoundSet";
+	}
+	
+	string GetBarrelCloseSoundset()
+	{
+		return "barrel_close_SoundSet";
 	}
 	//================================================================
 	
@@ -584,6 +582,8 @@ class Barrel_ColorBase : DeployableContainer_Base
 	//OUBLIETTE OF THE DEPRECATED CODE//
 	///////////////////////////////////
 	ref RainProcurementManager m_RainProcurement; //DEPRECATED
+	void SoundBarrelOpenPlay();
+	void SoundBarrelClosePlay();
 };
 
 class Barrel_Green: Barrel_ColorBase {};

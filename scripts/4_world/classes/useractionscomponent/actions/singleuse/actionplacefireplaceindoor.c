@@ -60,14 +60,16 @@ class ActionPlaceFireplaceIndoor: ActionSingleUseBase
 		return false;
 	}
 		
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{	
-		FireplaceBase fireplace_in_hands = FireplaceBase.Cast( action_data.m_MainItem );
+		FireplaceBase fireplaceInHands = FireplaceBase.Cast(action_data.m_MainItem);
+		Object targetObject = action_data.m_Target.GetObject();
+		BuildingWithFireplace buildingFireplace = BuildingWithFireplace.Cast(targetObject);
 		
 		//replace fireplace with lambda
-		FireplaceToIndoorsLambda lambda = new FireplaceToIndoorsLambda( fireplace_in_hands, "FireplaceIndoor", action_data.m_Player, action_data.m_Player.GetLastFirePoint(), action_data.m_Target.GetObject() );
-		lambda.SetTransferParams( true, true, true );
-		action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere( lambda );
+		FireplaceToIndoorsLambda lambda = new FireplaceToIndoorsLambda(fireplaceInHands, buildingFireplace.GetFireplaceType(0), action_data.m_Player, action_data.m_Player.GetLastFirePoint(), action_data.m_Target.GetObject());
+		lambda.SetTransferParams(true, true, true);
+		action_data.m_Player.ServerReplaceItemInHandsWithNewElsewhere(lambda);
 	}
 		
 	override bool IsLockTargetOnUse()

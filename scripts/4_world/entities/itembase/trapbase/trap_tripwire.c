@@ -33,16 +33,6 @@ class TripwireTrap : TrapBase
 	
 		RegisterNetSyncVariableInt("m_State");
 	}
-
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-				
-		if ( IsPlaceSound() )
-		{
-			PlayPlaceSound();
-		}
-	}
 	
 	override void OnStoreSave(ParamsWriteContext ctx)
 	{
@@ -94,7 +84,7 @@ class TripwireTrap : TrapBase
 		// We must deal some damage, here 5 shock as melee damage in order to trigger hit animation
 		if (GetGame().IsServer())
 		{
-			victim.ProcessDirectDamage(DT_CLOSE_COMBAT, this, "", "TripWireHit", "0 0 0", 1);
+			victim.ProcessDirectDamage(DamageType.CLOSE_COMBAT, this, "", "TripWireHit", "0 0 0", 1);
 			SetState(TRIGGERED);
 			SetInactive(false);
 		}
@@ -347,7 +337,6 @@ class TripwireTrap : TrapBase
 	// On placement complete, set state, play sound, create trigger and synch to client
 	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
-		SetIsPlaceSound(true);
 		if (GetGame().IsServer())
 		{
 			SetState(DEPLOYED);

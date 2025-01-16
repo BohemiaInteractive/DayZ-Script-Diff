@@ -10,7 +10,7 @@ class ActionDigWormsCB : ActionContinuousBaseCB
 		if (m_ActionData.m_Player.GetInColdArea())
 			time_spent *= GameConstants.COLD_AREA_DIG_WORMS_MODIF;
 		
-		m_ActionData.m_ActionComponent = new CAContinuousTime(time_spent);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(time_spent);
 	}
 };
 
@@ -60,11 +60,17 @@ class ActionDigWorms: ActionContinuousBase
 
 	override void OnFinishProgressServer(ActionData action_data)
 	{	
-		ItemBase worms;
 		int count = action_data.m_MainItem.GetOnDigWormsAmount();
 		for (int i = 0; i < count; i++)
 		{
-			Class.CastTo(worms,  GetGame().CreateObjectEx("Worm", action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+			/*
+			vector posHead;
+			MiscGameplayFunctions.GetHeadBonePos(action_data.m_Player,posHead);
+			vector posRandom = MiscGameplayFunctions.GetRandomizedPositionVerified(posHead,action_data.m_Target.GetCursorHitPos(),UAItemsSpreadRadius.NARROW,action_data.m_Player);
+			
+			GetGame().CreateObjectEx("Worm", posRandom, ECE_PLACE_ON_SURFACE);
+			*/
+			GetGame().CreateObjectEx("Worm", action_data.m_Target.GetCursorHitPos(), ECE_PLACE_ON_SURFACE);
 		}
 		
 		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 4);

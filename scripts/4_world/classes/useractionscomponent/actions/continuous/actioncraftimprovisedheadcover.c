@@ -44,9 +44,7 @@ class ActionCraftImprovisedHeadCover: ActionContinuousBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{
 		EntityAI item_ingredient = action_data.m_MainItem;
-		EntityAI cover;
-		
-		cover = action_data.m_Player.SpawnEntityOnGroundPos("HeadCover_Improvised", action_data.m_Player.GetPosition());
+		EntityAI cover = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("HeadCover_Improvised");
 		action_data.m_MainItem.AddQuantity(-2);
 		
 		MiscGameplayFunctions.TransferItemProperties(item_ingredient, cover);

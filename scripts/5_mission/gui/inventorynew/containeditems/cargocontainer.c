@@ -478,38 +478,49 @@ class CargoContainer extends Container
 		}
 	}
 	
-	void UpdateRowVisibility( int count )
+	void UpdateRowVisibility(int count)
 	{
 		int i;
-		int rows = Math.Max( 1, Math.Ceil( (count + 1) / ROWS_NUMBER_XBOX ) );
-		int diff = rows - m_Rows.Count();
-		
-		if( diff < 0 )
+		int rows = Math.Max(1, Math.Ceil((count + 1) / ROWS_NUMBER_XBOX));
+		if (m_Cargo)
 		{
-			for( i = m_Rows.Count() - 1; i >= rows; i-- )
+			int maxRows = Math.Ceil(GetMaxCargoCapacity() / ROWS_NUMBER_XBOX);
+			if (rows > maxRows) // limit amout of cargo rows depending on max cargo capacity
+				rows = maxRows;
+		}
+		else
+		{
+			if (m_Entity)
+				Error(string.Format("%1::UpdateRowVisibility - CargoBase is NULL for entity %2 at position %3", ToString(), m_Entity.GetType(), m_Entity.GetPosition()));
+		}
+		
+		int diff = rows - m_Rows.Count();
+		if(diff < 0)
+		{
+			for(i = m_Rows.Count() - 1; i >= rows; i--)
 			{
-				m_Rows.Remove( i );
+				m_Rows.Remove(i);
 			}
 		}
-		else if( diff > 0 )
+		else if(diff > 0)
 		{
 			m_MainWidget	= m_CargoContainer;
-			for( i = m_Rows.Count(); i < rows; i++ )
+			for(i = m_Rows.Count(); i < rows; i++)
 			{
-				ref CargoContainerRow row = new CargoContainerRow( this );
+				ref CargoContainerRow row = new CargoContainerRow(this);
 				
-				row.SetNumber( i );
-				row.SetEntity( m_Entity );
-				row.GetRootWidget().SetSort( i );
-				m_Rows.Insert( row );
+				row.SetNumber(i);
+				row.SetEntity(m_Entity);
+				row.GetRootWidget().SetSort(i);
+				m_Rows.Insert(row);
 			}
-			m_MainWidget	= m_ItemsContainer;
+			m_MainWidget = m_ItemsContainer;
 		}
-		
+
 		m_Resizer2.ResizeParentToChild();
-#ifndef PLATFORM_CONSOLE
+		#ifndef PLATFORM_CONSOLE
 		m_Resizer1.ResizeParentToChild();
-#endif
+		#endif
 	}
 	
 	override void Refresh()
@@ -816,48 +827,6 @@ class CargoContainer extends Container
 				if (entity)
 				{
 					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	override bool SplitItem()
-	{
-		if (CanSplit())
-		{
-			if ( GetFocusedIcon() )
-			{
-				ItemBase entity = ItemBase.Cast( GetFocusedIcon().GetObject() );
-				if ( entity )
-				{
-					if ( entity.HasQuantity() && entity.CanBeSplit() )
-					{
-						entity.OnRightClick();
-						Icon icon = m_ShowedItemPositions.Get( entity ).param1;
-						
-						if ( icon )
-						{
-							icon.SetQuantity();
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
-	
-	override bool EquipItem()
-	{
-		if (CanEquip())
-		{	
-			if (GetFocusedIcon())
-			{
-				ItemBase entity = ItemBase.Cast( GetFocusedIcon().GetObject() );
-				if( entity )
-				{
-					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, entity );
 					return true;
 				}
 			}

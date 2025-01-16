@@ -63,4 +63,9 @@ class CABase
 	{
 		return 0;
 	}
+	
+	float GetProgressWidgetMultiplier() // override when action length is not supposed to be the same length as progress widge
+	{
+		return 1;
+	}
 };

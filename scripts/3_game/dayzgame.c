@@ -728,7 +728,7 @@ class LoadingScreen
 			m_ProgressText.Show(GetGame().CommandlineGetParam("loadingTest", tmp));
 		}
 		m_WidgetRoot.FindAnyWidget("notification_root").Show(false);
-		
+
 		#ifdef PLATFORM_CONSOLE
 		#ifdef PLATFORM_XBOX
 		#ifdef BUILD_EXPERIMENTAL
@@ -894,6 +894,8 @@ class DayZGame extends CGame
 	const int MISSION_STATE_GAME = 1;
 	const int MISSION_STATE_FINNISH = 2;
 	
+	bool m_AutotestEnabled;
+	
 	private const int STATS_COUNT = EConnectivityStatType.COUNT;
 	private EConnectivityStatLevel m_ConnectivityStatsStates[STATS_COUNT];
 	
@@ -985,6 +987,9 @@ class DayZGame extends CGame
 	#ifdef DIAG_DEVELOPER
 	ref CameraToolsMenuServer m_CameraToolsMenuServer;
 	#endif
+	
+	protected ref ScriptInvoker m_OnInputBufferEvent;
+
 	// CGame override functions
 	void DayZGame()
 	{
@@ -1717,6 +1722,44 @@ class DayZGame extends CGame
 				}
 				break;
 			}
+			case NetworkInputBufferEventTypeID:
+			{
+				if (!GetGame().GetPlayer().IsAlive() || GetGame().GetPlayer().IsUnconscious())
+					return;
+				
+				NetworkInputBufferEventParams networkInputBufferParams;
+				if (Class.CastTo(networkInputBufferParams, params))
+				{
+					bool inputBufferFull = networkInputBufferParams.param1;
+					if (inputBufferFull)
+					{
+						if (g_Game.GetUIManager() && g_Game.GetUIManager().IsDialogVisible())
+						{
+							g_Game.GetUIManager().CloseDialog();
+						}
+
+						if (g_Game.GetUIManager().GetMenu() && g_Game.GetUIManager().GetMenu().GetID() != MENU_CONNECTION_DIALOGUE)
+						{
+							if (g_Game.GetUIManager().GetMenu().GetID() == MENU_INVENTORY)
+							{
+								g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetMission().HideInventory);
+							}
+							else
+							{
+								g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetUIManager().GetMenu().Close);
+							}
+						}
+						
+						if (!g_Game.GetUIManager().GetMenu() || g_Game.GetUIManager().GetMenu() && g_Game.GetUIManager().GetMenu().GetID() != MENU_CONNECTION_DIALOGUE)
+						{
+							g_Game.GetUIManager().EnterScriptedMenu(MENU_CONNECTION_DIALOGUE, null);
+						}
+					}
+					
+					OnInputBufferEvent().Invoke(inputBufferFull);
+				}
+				break;
+			}
 		}
 		
 		VONManager.GetInstance().OnEvent(eventTypeId, params);
@@ -1732,7 +1775,7 @@ class DayZGame extends CGame
 			emh.OnEvent(eventTypeId, params);
 	}
 	
-	protected void SetConnectivityStatState(EConnectivityStatType type, EConnectivityStatLevel level)
+	void SetConnectivityStatState(EConnectivityStatType type, EConnectivityStatLevel level)
 	{
 		if (level != m_ConnectivityStatsStates[type])
 		{
@@ -2078,6 +2121,10 @@ class DayZGame extends CGame
 			{
 				ConnectLaunch();
 			}
+			else if (GetCLIParam("autotest", param))
+			{
+				AutoTestLaunch(param);
+			}
 			else if (GetCLIParam("mission", param))
 			{
 				MissionLaunch();
@@ -2280,7 +2327,6 @@ class DayZGame extends CGame
 		
 		SetGameState(DayZGameState.IN_GAME);
 		SetLoadState(DayZLoadState.MISSION_START);
-		
 
 		#ifndef PLATFORM_WINDOWS
 			#ifdef PLATFORM_CONSOLE			
@@ -2294,6 +2340,24 @@ class DayZGame extends CGame
 
 		string mission;
 		GetCLIParam("mission", mission);
+		PlayMission(mission);
+	}
+	
+	void AutoTestLaunch(string param)
+	{
+		if (!AutotestConfigHandler.LoadData(param))
+			AutoTestFixture.LogRPT("Failed to load autotest configuration, continue with mission load.");
+		else
+			m_AutotestEnabled = true;
+
+		string mission;
+		GetCLIParam("mission", mission);
+		if (!mission)
+		{
+			AutoTestFixture.LogRPT("Parameter 'mission' is not set on CLI.");
+			RequestExit(IDC_MAIN_QUIT);
+		}
+
 		PlayMission(mission);
 	}
 	
@@ -3223,6 +3287,21 @@ class DayZGame extends CGame
 						
 						if (data.m_SnowfallValue >= 0)
 							GetGame().GetWeather().GetSnowfall().Set(data.m_SnowfallValue, data.m_SnowfallInterpolation, data.m_SnowfallDuration);
+						
+						if (data.m_VolFogDistanceDensity >= 0)
+							GetGame().GetWeather().SetDynVolFogDistanceDensity(data.m_VolFogDistanceDensity, data.m_VolFogDistanceDensityTime);
+						
+						if (data.m_VolFogHeightDensity >= 0)
+							GetGame().GetWeather().SetDynVolFogHeightDensity(data.m_VolFogHeightDensity, data.m_VolFogHeightDensityTime);
+						
+						if (data.m_VolFogHeightBias >= -500)
+							GetGame().GetWeather().SetDynVolFogHeightBias(data.m_VolFogHeightBias, data.m_VolFogHeightBiasTime);
+						
+						if (data.m_WindMagnitudeValue >= 0)
+							GetGame().GetWeather().GetWindMagnitude().Set(data.m_WindMagnitudeValue, data.m_WindDInterpolation, data.m_WindDDuration);
+						
+						if (data.m_WindDirectionValue >= -3.14)
+							GetGame().GetWeather().GetWindDirection().Set(data.m_WindDirectionValue, data.m_WindDInterpolation, data.m_WindDDuration);
 					}
 					else
 					{
@@ -3383,10 +3462,19 @@ class DayZGame extends CGame
 		#ifndef SERVER
 		if (source)
 		{
+			if (GetGame().GetPlayer() == null)
+				return;
 			source.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
 			
-			if (source.ShootsExplosiveAmmo() && ammoType == "Explosion_40mm_Ammo")
-				ParticleManager.GetInstance().PlayInWorld(ParticleList.EXPLOSION_LANDMINE, pos);
+			if (source.ShootsExplosiveAmmo() )
+			{
+				int particleID = AmmoTypesAPI.GetExplosionParticleID(ammoType, surface);
+				if (particleID > -1)
+				{
+					ParticleManager.GetInstance().PlayInWorld(particleID, pos);
+				}
+			}
+				
 			
 			float distance_to_player = vector.Distance(pos, GetGame().GetPlayer().GetPosition());
 			m_AmmoShakeParams.Load(ammoType);
@@ -3808,6 +3896,14 @@ class DayZGame extends CGame
 	BillboardSetHandler GetBillboardHandler()
 	{
 		return m_BillboardSetHandler;
+	}
+	
+	ScriptInvoker OnInputBufferEvent()
+	{
+		if (!m_OnInputBufferEvent)
+			m_OnInputBufferEvent = new ScriptInvoker();
+		
+		return m_OnInputBufferEvent;
 	}
 	
 	///////////////

@@ -148,7 +148,14 @@ class PluginTransmissionAgents extends PluginBase
 			return 0;
 		return m_AgentList.Get(agent_id).GetInvasibility();
 	}
-	
+
+	float GetAgentDigestibilityEx(int agent_id, PlayerBase player)
+	{
+		if (!m_AgentList.Get(agent_id))
+			return 0;
+
+		return m_AgentList.Get(agent_id).GetDigestibilityEx(player);
+	}
 	
 	float GetAgentDigestibility( int agent_id )
 	{

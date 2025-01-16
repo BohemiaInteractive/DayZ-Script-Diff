@@ -628,6 +628,13 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 #else
 		//Save Data Console		
 		m_IsFavorited = m_Tab.GetRootMenu().SetFavoriteConsoles(ip, m_ServerData.m_HostPort, m_IsFavorited);
+		//Refresh favorites server list when entry is unfavorited
+		ServerBrowserFavoritesTabConsolePages sbf = ServerBrowserFavoritesTabConsolePages.Cast(m_Tab);
+		if (!m_IsFavorited && sbf)
+		{
+			sbf.SetFavoriteChanged(true);
+			sbf.RefreshServerList();
+		}
 #endif
 		
 		m_Root.FindAnyWidget("unfavorite_image").Show(!m_IsFavorited);

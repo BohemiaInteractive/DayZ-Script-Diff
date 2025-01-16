@@ -52,7 +52,8 @@ class ActionForceConsume : ActionContinuousBase
 			return false;
 		
 		PlayerBase targetPlayer = PlayerBase.Cast(target.GetObject());
-		if (!targetPlayer || !targetPlayer.CanEatAndDrink())
+		ConsumeConditionData dta = new ConsumeConditionData(targetPlayer,item);
+		if (!targetPlayer || !targetPlayer.CanEatAndDrink() || !targetPlayer.CanConsumeFood(dta) || !item.CanBeConsumed(dta))
 			return false;
 		
 		float angleDiff = Math.AbsFloat(player.GetDirection().VectorToAngles()[0] - targetPlayer.GetDirection().VectorToAngles()[0]);
@@ -62,7 +63,7 @@ class ActionForceConsume : ActionContinuousBase
 		if (targetPlayer.GetPerformedActionID() != -1 || targetPlayer.GetActivePrimarySymptomID() == SymptomIDs.SYMPTOM_VOMIT)
 			return false;
 
-		return ( (item.GetQuantity() > item.GetQuantityMin()) && !item.GetIsFrozen() );
+		return item.GetQuantity() > item.GetQuantityMin();
 	}
 	
 	protected void PlaySound(PlayerBase player)

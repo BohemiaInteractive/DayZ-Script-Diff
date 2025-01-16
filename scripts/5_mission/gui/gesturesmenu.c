@@ -328,7 +328,7 @@ class GesturesMenu extends UIScriptedMenu
 		UpdateControlsElements();
 	}
 	
-	protected void GetGestureItems( out ref array<ref GestureMenuItem> gesture_items, GestureCategories category )
+	protected void GetGestureItems( out array<ref GestureMenuItem> gesture_items, GestureCategories category )
 	{
 		gesture_items.Clear();
 		

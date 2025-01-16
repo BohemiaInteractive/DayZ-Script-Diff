@@ -21,14 +21,14 @@ class BleedingSourcesManagerBase
 	protected void Init()
 	{
 		//dmgZone_head
-		RegisterBleedingZoneEx("Head",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 90 0" , "0 0 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.MASK);
+		RegisterBleedingZoneEx("Head",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "95 90 0" , "0.15 -0.08 0.00", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.MASK);
 		//dmgZone_torso
-		RegisterBleedingZoneEx("Neck", PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL,"", "-180 0 0" , "0.02 -0.05 0.05", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.HEADGEAR);
+		RegisterBleedingZoneEx("Neck", PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL,"", "-130 70 0" , "0.02 -0.05 0.05", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.HEADGEAR);
 		RegisterBleedingZoneEx("Pelvis",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -135 0" , "0 0.12 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.BODY);
 		RegisterBleedingZoneEx("Spine",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 55 0" , "0 -0.1 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.BODY);
 		RegisterBleedingZoneEx("Spine1",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 155 0" , "0 -0.1 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.BODY);
 		RegisterBleedingZoneEx("Spine2",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 55 0" , "0 -0.07 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.BODY);
-		RegisterBleedingZoneEx("Spine3",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 155 0" , "0 -0.05 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.BODY);
+		RegisterBleedingZoneEx("Spine3",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 90 0" , "0 -0.05 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_HIGH, "BleedingSourceEffect",InventorySlots.BODY);
 		//dmgZone_leftArm
 		RegisterBleedingZoneEx("LeftShoulder",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -90 0" , "0 0.07 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect", InventorySlots.BODY);
 		RegisterBleedingZoneEx("LeftArm", PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "","0 90 90" , "0 -0.05 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.BODY);
@@ -47,12 +47,12 @@ class BleedingSourcesManagerBase
 		RegisterBleedingZoneEx("LeftLeg",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 90 0" , "0 -0.07 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
 		RegisterBleedingZoneEx("LeftLegRoll",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 90 0" , "0 -0.07 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
 		RegisterBleedingZoneEx("LeftUpLeg",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 90 0" , "0 -0.12 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
-		RegisterBleedingZoneEx("LeftUpLegRoll",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 90 0" , "0 -0.07 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM , "BleedingSourceEffect",InventorySlots.LEGS);
+		RegisterBleedingZoneEx("LeftUpLegRoll",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -90 0" , "0 0.1 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM , "BleedingSourceEffect",InventorySlots.LEGS);
 		//dmgZone_rightLeg
 		RegisterBleedingZoneEx("RightLeg",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -90 0" , "0 0.06 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
 		RegisterBleedingZoneEx("RightLegRoll",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -90 0" , "0 0 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
 		RegisterBleedingZoneEx("RightUpLeg",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -90 0" , "0 0.12 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
-		RegisterBleedingZoneEx("RightUpLegRoll",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -90 0" , "0 0.06 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
+		RegisterBleedingZoneEx("RightUpLegRoll",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 90 0" , "0 -0.1 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_MEDIUM, "BleedingSourceEffect",InventorySlots.LEGS);
 		//dmgZone_leftFoot
 		RegisterBleedingZoneEx("LeftFoot",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 180 0" , "0 0 0.035", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_LOW, "BleedingSourceEffectLight", InventorySlots.LEGS);
 		RegisterBleedingZoneEx("LeftToeBase",PlayerConstants.BLEEDING_SOURCE_DURATION_NORMAL, "", "0 -90 0" , "0 0.07 0", PlayerConstants.BLEEDING_SOURCE_FLOW_MODIFIER_LOW, "BleedingSourceEffect",InventorySlots.FEET);

@@ -97,12 +97,6 @@
     },
     {
     "m_TabID": 4,
-        "m_TextWidgetID": 9,
-        "m_ButtonName": "inv2",
-        "m_InfoText": "#pc_tutorial_inventory2"
-    },
-    {
-    "m_TabID": 4,
         "m_TextWidgetID": 14,
         "m_ButtonName": "inv3",
         "m_InfoText": "#pc_tutorial_inventory3"

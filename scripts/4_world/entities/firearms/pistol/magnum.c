@@ -57,12 +57,9 @@ class Magnum_Base extends Weapon_Base
 	
 	override void SetActions()
 	{
+		AddAction(FirearmActionLoadMultiBulletQuick);
 		super.SetActions();
 		AddAction(FirearmActionLoadMultiBullet);
-
-		RemoveAction(FirearmActionLoadBulletQuick); // Easy reload
-		AddAction(FirearmActionLoadMultiBulletQuick); // Easy reload
-
 	}
 	
 	override RecoilBase SpawnRecoilObject()
@@ -164,16 +161,13 @@ class Magnum_Base extends Weapon_Base
 	
 	override bool CanChamberBullet(int muzzleIndex, Magazine mag)
 	{
-		for (int i = 0; i < GetMuzzleCount(); i++)
+		if ( CanChamberFromMag(muzzleIndex, mag) )
 		{
-			if ( CanChamberFromMag(i, mag) )
-			{
-				if (IsChamberEmpty(i))
-					return true;
+			if (IsChamberEmpty(muzzleIndex))
+				return true;
 				
-				if (IsChamberFiredOut(i))
-					return true;
-			} 
+			if (IsChamberFiredOut(muzzleIndex))
+				return true;
 		}
 		return false;
 	}

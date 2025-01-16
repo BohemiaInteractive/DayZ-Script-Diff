@@ -1,6 +1,7 @@
 class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 {
 	protected float m_SlotFertilizerNeed;
+	protected float m_AlreadyFilledAmount; // amount of fertilizer present within slot during the setup of action
 	protected float	m_TimeToComplete;
 	protected float m_SpentQuantityTotal;
 	protected float m_StartQuantity;
@@ -51,15 +52,20 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 						break;
 				}
 				
-				
 				string item_type = action_data.m_MainItem.GetType();
 				float consumed_quantity = GetGame().ConfigGetFloat( "cfgVehicles " + item_type + " Horticulture ConsumedQuantity" );
+				float action_length = GetGame().ConfigGetFloat( "cfgVehicles " + item_type + " Horticulture FertilizeLength" );
+				if (action_length == 0)
+					action_length = 1;
 				
-				float max = m_Slot.GetFertilizerQuantityMax();
-				
-				m_SlotFertilizerNeed = max - consumed_quantity;
+				m_Slot.SetFertilizerQuantityMax(consumed_quantity);
+				m_AlreadyFilledAmount = m_Slot.GetFertilizerQuantity();
+				m_SlotFertilizerNeed = consumed_quantity - m_AlreadyFilledAmount;
 			}
-			m_TimeToComplete = (Math.Min(m_SlotFertilizerNeed,m_ItemQuantity))/m_QuantityUsedPerSecond;
+
+			float defaultTimeComplete = consumed_quantity/m_QuantityUsedPerSecond;
+			float speedMultiplier = defaultTimeComplete / action_length;
+			m_QuantityUsedPerSecond *= speedMultiplier;
 		}
 	}
 	
@@ -79,7 +85,7 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 		{
 			if ( m_SpentQuantity <= m_ItemQuantity )
 			{
-				m_SpentQuantity += m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
+				m_SpentQuantity = m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
 				GardenBase garden_base;
 				Class.CastTo(garden_base,  action_data.m_Target.GetObject() );
 				//string selection = garden_base.GetActionComponentName(action_data.m_Target.GetComponentIndex());
@@ -106,11 +112,6 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 	
 	override float GetProgress()
 	{	
-		/*if ( m_TimeToComplete == 0) //Prevent division by 0 case
-		{
-			return -1;
-		}*/
-		return -(m_SpentQuantityTotal / m_StartQuantity);
-		//return (m_SpentQuantity)/m_ItemQuantity;///(m_TimeToComplete * m_QuantityUsedPerSecond)/m_ItemQuantity;
+		return -((m_Slot.GetFertilizerQuantity() - m_AlreadyFilledAmount)/m_SlotFertilizerNeed);
 	}
 };

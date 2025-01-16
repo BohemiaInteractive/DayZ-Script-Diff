@@ -39,7 +39,8 @@ class JsonUndergroundAreaTriggerData
 	ref array<float> Size;
 	float  EyeAccommodation;
 	float  InterpolationSpeed;
-	bool UseLinePointFade;	// simple fade between points which are defined using existing breadcrumbs array 
+	bool UseLinePointFade;		// simple fade between points which are defined using existing breadcrumbs array 
+	string AmbientSoundType;	// type of ambient sound which will be played by sound controller
 	
 	ref array<ref JsonUndergroundAreaBreadcrumb> Breadcrumbs;
 	

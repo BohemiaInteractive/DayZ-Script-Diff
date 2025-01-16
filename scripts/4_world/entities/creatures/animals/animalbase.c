@@ -5,6 +5,7 @@ class AnimalBase extends DayZAnimal
 	void AnimalBase()
 	{
 		m_ArrowManager = new ArrowManagerBase(this);
+		CacheSkinningBloodInfectionChance(eAgents.SALMONELLA);
 	}
 	
 	override ArrowManagerBase GetArrowManager()

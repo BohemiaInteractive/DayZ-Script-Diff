@@ -2,7 +2,8 @@ class RightArea: Container
 {
 	ref PlayerContainer	m_PlayerContainer;
 	protected Widget	m_ContentParent;
-	
+
+	protected Widget							m_SlotsContent;
 	protected ScrollWidget						m_ScrollWidget;
 	protected Widget							m_UpIcon;
 	protected Widget							m_DownIcon;
@@ -14,6 +15,8 @@ class RightArea: Container
 	void RightArea(LayoutHolder parent)
 	{
 		m_MainWidget.Show(true);
+
+		m_SlotsContent = m_MainWidget.FindAnyWidget("SlotsContent");
 		m_ScrollWidget	= ScrollWidget.Cast( m_MainWidget.FindAnyWidget( "Scroller" ) );
 		m_MainWidget		= m_MainWidget.FindAnyWidget("Content");
 		//m_ContentParent		= m_RootWidget.FindAnyWidget("ContentParent");
@@ -113,12 +116,13 @@ class RightArea: Container
 	
 	override void SetSameLevelNextActive()
 	{
-		m_PlayerContainer.SetSameLevelNextActive();
+		super.SetSameLevelNextActive();
 		Refresh();
 	}
+
 	override void SetSameLevelPreviousActive()
 	{
-		m_PlayerContainer.SetSameLevelPreviousActive();
+		super.SetSameLevelPreviousActive();
 		Refresh();
 	}
 	
@@ -245,5 +249,10 @@ class RightArea: Container
 		float cont_screen_pos		= GetFocusedContainerYScreenPos();
 		float cont_screen_height	= GetFocusedContainerHeight();
 		return cont_screen_pos - y + cont_screen_height;
+	}
+	
+	Widget GetSlotsArea()
+	{
+		return m_SlotsContent;
 	}
 }

@@ -38,7 +38,14 @@ class ShockMdfr: ModifierBase
 		}
 		if ( player.IsUnconscious() )
 		{
-			return CfgGameplayHandler.GetShockRefillSpeedUnconscious() * player.m_UnconRefillModifier;
+			if ( player.GetHealth("GlobalHealth", "Blood") <= PlayerConstants.SL_BLOOD_CRITICAL )
+			{
+				return CfgGameplayHandler.GetShockRefillSpeedUnconscious() * player.m_UnconRefillModifier * PlayerConstants.SHOCK_REFILL_UNCON_CRITICAL_BLOOD_MLTP;
+			}
+			else
+			{
+				return CfgGameplayHandler.GetShockRefillSpeedUnconscious() * player.m_UnconRefillModifier;
+			}
 		}
 		if (player.GetBrokenLegs() != eBrokenLegs.BROKEN_LEGS || (player.m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_PRONE || player.m_MovementState.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_RAISEDPRONE))
 		{

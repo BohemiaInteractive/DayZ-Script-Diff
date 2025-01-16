@@ -15,6 +15,7 @@ class ActionManagerClient: ActionManagerBase
 	protected ref array<ActionInput>			m_OrderedStandartActionInputs;
 	protected ref array<ActionInput>			m_DefaultOrderOfActionInputs;
 	protected int 								m_SelectedActionInputToSrollIndex;
+	protected bool								m_IgnoreAutoInputEnd;
 	
 	protected ref ActionData 					m_PendingActionData;
 
@@ -83,6 +84,7 @@ class ActionManagerClient: ActionManagerBase
 					}
 					else
 					{
+						RequestInterruptAction();
 						OnActionEnd();
 					}
 					m_PendingActionAcknowledgmentID = -1;
@@ -293,7 +295,7 @@ class ActionManagerClient: ActionManagerBase
 				}
 				else
 				{
-					if (ai.WasEnded() && (ai.GetInputType() == ActionInputType.AIT_CONTINUOUS || ai.GetInputType() == ActionInputType.AIT_CLICKCONTINUOUS))
+					if (ai.WasEnded() && (ai.GetInputType() == ActionInputType.AIT_CONTINUOUS || ai.GetInputType() == ActionInputType.AIT_CLICKCONTINUOUS) && !m_IgnoreAutoInputEnd)
 					{
 						EndActionInput();
 					}
@@ -552,6 +554,8 @@ class ActionManagerClient: ActionManagerBase
 				ActionInput ain = m_OrederedAllActionInput[i];
 				ain.UpdatePossibleActions(m_Player,target,item, actionConditionMask);
 			}
+
+			UpdateActionCategoryPriority();
 			SetActionContext(target,item);
 		}
 	}
@@ -1261,16 +1265,14 @@ class ActionManagerClient: ActionManagerBase
 		}	
 	}
 	
-	override void Interrupt()
+	// disables automatic end of continuous action when input ended
+	void SetIgnoreAutomaticInputEnd(bool state)
 	{
-		super.Interrupt();
-		
-		if (m_CurrentActionData)
-			m_Interrupted = true;
+		m_IgnoreAutoInputEnd = state;
 	}
-	
+
 	//! client requests action interrupt
-	void RequestInterruptAction()
+	override void RequestInterruptAction()
 	{
 		if (ScriptInputUserData.CanStoreInputUserData())
 		{

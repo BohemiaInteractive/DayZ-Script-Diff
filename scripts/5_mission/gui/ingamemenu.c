@@ -15,6 +15,7 @@ class InGameMenu extends UIScriptedMenu
 	protected Widget 			m_FavoriteImage;
 	protected Widget 			m_UnfavoriteImage;
 	protected Widget 			m_CopyInfoButton;
+	protected Widget			m_FeedbackButton;
 	
 	protected ref TextWidget	m_ModdedWarning;
 	protected ref TextWidget 	m_ServerIP;
@@ -53,6 +54,7 @@ class InGameMenu extends UIScriptedMenu
 		m_FavoriteImage 			= layoutRoot.FindAnyWidget("favorite_image");
 		m_UnfavoriteImage 			= layoutRoot.FindAnyWidget("unfavorite_image");
 		m_CopyInfoButton 			= layoutRoot.FindAnyWidget("copy_button");
+		m_FeedbackButton			= layoutRoot.FindAnyWidget("feedbackbtn");
 		
 		if (GetGame().IsMultiplayer())
 		{
@@ -199,6 +201,10 @@ class InGameMenu extends UIScriptedMenu
 		else if (w == m_CopyInfoButton)
 		{
 			GetGame().CopyToClipboard(m_ServerInfoText);
+		}
+		else if (w == m_FeedbackButton)
+		{
+			OpenFeedback();
 		}
 
 		return false;
@@ -386,7 +392,7 @@ class InGameMenu extends UIScriptedMenu
 			label.SetText(text);
 		
 	}
-	
+
 	protected void ButtonSetColor(Widget w, int color)
 	{
 		Widget panel = w.FindWidget(w.GetName() + "_panel");
@@ -404,6 +410,11 @@ class InGameMenu extends UIScriptedMenu
 	void SetServerInfoVisibility(bool show)
 	{
 		m_ServerInfoPanel.Show(show);
+	}
+	
+	protected void OpenFeedback()
+	{
+		GetGame().OpenURL("https://feedback.bistudio.com/project/view/2/");
 	}
 	
 	//! DEPRECATED

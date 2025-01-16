@@ -145,6 +145,12 @@ class SymptomBase
 		else return false;
 	}
 	
+	// override this if you want the symptom to be played also while the player is unconscious 
+	bool AllowInUnconscious()
+	{
+		return false;
+	}
+	
 	PlayerBase GetPlayer()
 	{
 		return m_Player;		

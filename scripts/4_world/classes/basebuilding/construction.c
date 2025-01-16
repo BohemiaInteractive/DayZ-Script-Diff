@@ -476,7 +476,6 @@ class Construction
 	}
 	
 	//checks if construction part has dependent part (that is already built) because of which it cannot be deconstruct
-	//TODO return whole array of dependent parts/dependencies (one or the other), should be used to eventually destroy all dependent parts instead
 	bool HasDependentPart( string part_name )
 	{
 		for ( int i = 0; i < m_ConstructionParts.Count(); ++i )
@@ -840,7 +839,7 @@ class Construction
 								InventoryLocation dst = new InventoryLocation;
 								vector mat[4];
 								attachment.GetTransform(mat);
-								
+								//TODO: why are we spawning and deleting here, instead of moving to location??
 								if ( parent.MemoryPointExists("" + part_name + "_materials") )
 								{
 									vector destination = parent.GetMemoryPointPos("" + part_name + "_materials");
@@ -852,8 +851,17 @@ class Construction
 									float dir[4];
 									inventory_location.GetDir(dir);
 									dst.SetGroundEx(attachment,destination,dir);
-									//Print(dst.DumpToString());
-									MiscGameplayFunctions.CreateItemBasePiles(attachment.GetType(),destination,quantity,health,true);
+									
+									if (player)
+									{
+										vector posHead;
+										MiscGameplayFunctions.GetHeadBonePos(PlayerBase.Cast(player),posHead);
+										MiscGameplayFunctions.CreateItemBasePilesDispersed(attachment.GetType(),posHead,destination,UAItemsSpreadRadius.NARROW,quantity,health,player);
+									}
+									else
+									{
+										MiscGameplayFunctions.CreateItemBasePiles(attachment.GetType(),destination,quantity,health,true);
+									}
 									attachment.AddQuantity( -quantity );
 								}
 								else
@@ -1290,12 +1298,21 @@ class StaticConstructionMethods
 					destination = entity.GetMemoryPointPos(main_part_name);
 					destination = GetGame().ObjectModelToWorld(entity,destination);
 				}
-				//pile_health = GameConstants.DAMAGE_WORN_VALUE * MiscGameplayFunctions.GetTypeMaxGlobalHealth(type);
 				pile_health = entity.GetHealth01(damagezone_name,"Health") * MiscGameplayFunctions.GetTypeMaxGlobalHealth(type);
 				qty_coef =  1 - (entity.GetHealthLevel(damagezone_name) * Construction.DECONSTURCT_MATERIAL_LOSS) - Construction.DECONSTURCT_MATERIAL_LOSS;
 				quantity *= qty_coef;
 				quantity = Math.Max(Math.Floor(quantity),1);
-				MiscGameplayFunctions.CreateItemBasePiles(type,destination,quantity,pile_health,true);
+				
+				if (player)
+				{
+					vector posHead;
+					MiscGameplayFunctions.GetHeadBonePos(PlayerBase.Cast(player),posHead);
+					MiscGameplayFunctions.CreateItemBasePilesDispersed(type,posHead,destination,UAItemsSpreadRadius.NARROW,quantity,pile_health,player);
+				}
+				else
+				{
+					MiscGameplayFunctions.CreateItemBasePiles(type,destination,quantity,pile_health,true);
+				}
 			}
 		}
 	}

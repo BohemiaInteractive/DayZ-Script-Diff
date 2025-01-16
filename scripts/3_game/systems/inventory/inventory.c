@@ -488,7 +488,7 @@ class GameInventory
 
 				if (!src.GetItem() || !dst.GetItem())
 				{
-					LogError("[syncinv] ServerInventoryCommand (cmd=SYNC_MOVE) dropped, item not in bubble");
+					Error("[syncinv] ServerInventoryCommand (cmd=SYNC_MOVE) dropped, item not in bubble");
 					break; // not in bubble
 				}
 

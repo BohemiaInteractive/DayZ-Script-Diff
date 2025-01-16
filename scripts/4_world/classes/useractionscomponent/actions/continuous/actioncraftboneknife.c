@@ -2,7 +2,7 @@ class ActionCraftBoneKnifeCB : ActionContinuousBaseCB
 {	
 	override void CreateActionComponent()
 	{	
-		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_CRAFT);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.DEFAULT_CRAFT);
 	}
 };
 
@@ -40,7 +40,7 @@ class ActionCraftBoneKnife: ActionContinuousBase
 	
 	override void OnFinishProgressServer( ActionData action_data )
 	{		
-		EntityAI knife = action_data.m_Player.SpawnEntityOnGroundPos("BoneKnife", action_data.m_Player.GetPosition());
+		EntityAI knife = action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("BoneKnife");
 		action_data.m_MainItem.AddQuantity(-2);
 		
 		MiscGameplayFunctions.TransferItemProperties(action_data.m_MainItem, knife);

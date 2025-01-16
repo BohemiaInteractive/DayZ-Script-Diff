@@ -12,7 +12,7 @@ class ActionUnlockDoors: ActionContinuousBase
 	
 	void ActionUnlockDoors()
 	{
-		m_CallbackClass = ActionLockDoorsCB;
+		m_CallbackClass = ActionUnlockDoorsCB;
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_INTERACT;
 		m_FullBody = true;
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
@@ -27,19 +27,17 @@ class ActionUnlockDoors: ActionContinuousBase
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		if( !target ) return false;
-		//if( IsDamageDestroyed(action_data.m_Target) ) return false;
 		if( !IsBuilding(target) ) return false;
 		if( !IsInReach(player, target, UAMaxDistances.DEFAULT) ) return false;
-
 		
 		Building building;
-		if( Class.CastTo(building, target.GetObject()) )
+		ToolBase tool;
+		if (Class.CastTo(building, target.GetObject())&& Class.CastTo(tool, item))
 		{
 			int doorIndex = building.GetDoorIndex(target.GetComponentIndex());
-			if ( doorIndex != -1 )
+			if (doorIndex != -1 && tool.GetKeyCompatibilityType() & building.GetLockCompatibilityType(doorIndex))
 				return building.IsDoorLocked(doorIndex);
-		}		
+		}
 		return false;
 	}
 

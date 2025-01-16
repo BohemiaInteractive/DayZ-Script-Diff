@@ -7,7 +7,7 @@ class FishYieldItemBase : YieldItemBase
 	{
 		super.Init();
 		
-		m_HourlyCycleLengthCoefs = {1,1,1,1,1,0,0,0,0,0,1,1,1/*12h*/,1,1,1,1,1,0,0,0,0,0,1};
+		m_HourlyCycleLengthCoefs = {1,1,1,1,0.5,0.2,0,0,0,0.2,0.5,1,1/*12h*/,1,1,1,0.75,0.5,0.2,0,0,0,0.2,0.5};
 		m_QualityBase = AnimalCatchingConstants.QUALITY_FISH_BASE; //base quality of the fish
 	}
 	
@@ -25,12 +25,9 @@ class FishYieldItemBase : YieldItemBase
 			case ECatchingBaitCategories.BAIT_TYPE_EMPTY:
 			case ECatchingBaitCategories.BAIT_TYPE_MEAT_SMALL:
 				return 1;
-			
-			default:
-				return 0.0;
 		}
 		
-		return super.GetBaitTypeSensitivity(type);
+		return 0.0;
 	}
 	
 	override string GetCatchDeathSoundset()
@@ -133,7 +130,7 @@ class YieldItemWalleyePollock : FishYieldItemBase
 	{
 		super.Init();
 		
-		m_HourlyCycleLengthCoefs = {1,1,1,1,1,1,1,1,1,1,0,0,0/*12h*/,0,0,0,0,1,1,1,1,1,1,1};
+		m_HourlyCycleLengthCoefs = {1,1,1,1,1,1,1,0.8,0.7,0.5,0.2,0,0/*12h*/,0,0,0,0.2,0.5,0.7,0.8,1,1,1,1};
 		//m_QualityBase = some custom value here;
 		m_Type = "WalleyePollock";
 		m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_SEA;
@@ -147,7 +144,7 @@ class YieldItemSteelheadTrout : FishYieldItemBase
 	{
 		super.Init();
 		
-		m_HourlyCycleLengthCoefs = {1,1,1,1,1,1,1,1,1,1,0,0,0/*12h*/,0,0,0,0,1,1,1,1,1,1,1};
+		m_HourlyCycleLengthCoefs = {1,1,1,1,1,1,1,1,1,0.5,0.2,0,0/*12h*/,0,0,0.2,0.5,0.7,1,1,1,1,1,1};
 		//m_QualityBase = some custom value here;
 		m_Type = "SteelheadTrout";
 		m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_SEA;

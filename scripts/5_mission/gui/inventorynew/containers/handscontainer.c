@@ -243,7 +243,12 @@ class HandsContainer: Container
 				{
 					if ( GetGame().GetPlayer().GetHumanInventory().CanRemoveEntityInHands() && !GetGame().GetPlayer().GetInventory().HasInventoryReservation(item_in_hands, null)  )
 					{
-						if ( GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, item_in_hands ) )
+						bool res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment( item_in_hands );
+						if(!res)
+						{
+							res = GetGame().GetPlayer().PredictiveTakeEntityToInventory(FindInventoryLocationType.ATTACHMENT, item_in_hands);
+						}
+						if(res)
 						{
 							m_MainWidget.FindAnyWidget("Cursor").Show( false );
 							m_MainWidget.FindAnyWidget("hands_preview_root").SetAlpha( 0.7 );
@@ -1433,6 +1438,10 @@ class HandsContainer: Container
 						if (g_Game.IsLeftCtrlDown())
 							ShowActionMenu(selectedItem);
 						#endif
+						if (CanSplitEx(selectedItem))
+						{
+							selectedItem.OnRightClick();
+						}
 
 						break;
 				

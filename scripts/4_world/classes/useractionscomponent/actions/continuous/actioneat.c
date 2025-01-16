@@ -30,26 +30,7 @@ class ActionEatBig: ActionConsume
 	{
 		return false;
 	}
-	
-	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
-	{	
-		if (!super.ActionCondition(player, target, item))
-			return false;
-		
-		return player.CanEatAndDrink();
-	}
-	
-	override void OnEndServer( ActionData action_data )
-	{	
-		super.OnEndServer(action_data);
-		
-		if ( action_data.m_Player.HasBloodyHandsEx() == eBloodyHandsTypes.SALMONELA && !action_data.m_Player.GetInventory().FindAttachment( InventorySlots.GLOVES ) && GetProgress(action_data) > 0 )
-		{
-			action_data.m_Player.SetBloodyHandsPenalty();
-		}
-	}
-};
+}
 
 
 //-------------- Action Eat

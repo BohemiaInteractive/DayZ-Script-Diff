@@ -24,14 +24,14 @@ class CraftFireplace extends RecipeBase
 		
 		//INGREDIENTS
 		//ingredient 1
-		InsertIngredientEx(0,"WoodenStick" , 		"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredient(0,"WoodenStick");//you can insert multiple ingredients this way
 		InsertIngredientEx(0,"Firewood" , 			"FireplaceDeploy_firewood");//you can insert multiple ingredients this way
-		InsertIngredientEx(0,"Rag" , 				"FireplaceDeploy");//you can insert multiple ingredients this way
-		InsertIngredientEx(0,"BandageDressing" ,	"FireplaceDeploy");//you can insert multiple ingredients this way
-		InsertIngredientEx(0,"Paper" ,			 	"FireplaceDeploy");//you can insert multiple ingredients this way
-		InsertIngredientEx(0,"ItemBook" , 			"FireplaceDeploy");//you can insert multiple ingredients this way
-		InsertIngredientEx(0,"Bark_Birch" , 		"FireplaceDeploy");//you can insert multiple ingredients this way
-		InsertIngredientEx(0,"Bark_Oak" , 			"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredient(0,"Rag");//you can insert multiple ingredients this way
+		InsertIngredient(0,"BandageDressing");//you can insert multiple ingredients this way
+		InsertIngredient(0,"Paper");//you can insert multiple ingredients this way
+		InsertIngredient(0,"ItemBook");//you can insert multiple ingredients this way
+		InsertIngredient(0,"Bark_Birch");//you can insert multiple ingredients this way
+		InsertIngredient(0,"Bark_Oak");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing
@@ -40,16 +40,16 @@ class CraftFireplace extends RecipeBase
 		m_IngredientUseSoftSkills[0] = false;// set 'true' to allow modification of the values by softskills on this ingredient
 		
 		//ingredient 2
-		InsertIngredient(1,"WoodenStick");//you can insert multiple ingredients this way
-		InsertIngredient(1,"Firewood");//you can insert multiple ingredients this way
-		InsertIngredient(1,"Rag");//you can insert multiple ingredients this way
-		InsertIngredient(1,"BandageDressing");//you can insert multiple ingredients this way
-		InsertIngredient(1,"Paper");//you can insert multiple ingredients this way
-		InsertIngredient(1,"GiftWrapPaper");//you can insert multiple ingredients this way
-		InsertIngredient(1,"ItemBook");//you can insert multiple ingredients this way
-		InsertIngredient(1,"Bark_Birch");//you can insert multiple ingredients this way
-		InsertIngredient(1,"Bark_Oak");//you can insert multiple ingredients this way
-		InsertIngredient(1,"EyeMask_ColorBase");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"WoodenStick",			"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"Firewood" ,			"FireplaceDeploy_firewood");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"Rag",					"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"BandageDressing",		"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"Paper",				"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"GiftWrapPaper",		"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"ItemBook",			"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"Bark_Birch",			"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"Bark_Oak",			"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"EyeMask_ColorBase",	"FireplaceDeploy");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[1] = 0;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

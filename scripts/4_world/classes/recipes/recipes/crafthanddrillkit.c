@@ -61,9 +61,4 @@ class CraftHandDrillKit extends RecipeBase
 	{
 		return true;
 	}
-
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
-	{
-		Debug.Log("Recipe Do method called","recipes");
-	}
 };

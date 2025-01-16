@@ -390,7 +390,7 @@ class StandardActionInput : ActionInput
 			_GetSelectedActions( player, select_actions_all, m_HasTarget);
 		}
 		
-		if ( select_actions_all.Count() )
+		if (select_actions_all.Count())
 		{
 			last_index = 0;
 			for ( i = 0; i < select_actions_all.Count(); i++ )
@@ -439,6 +439,7 @@ class StandardActionInput : ActionInput
 		}
 		else
 		{
+			change = true;
 			m_selectedActionIndex = 0;
 			m_SelectActions.Clear();
 		}

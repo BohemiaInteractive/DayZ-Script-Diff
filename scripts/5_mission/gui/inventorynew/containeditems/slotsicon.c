@@ -673,6 +673,13 @@ class SlotsIcon: LayoutHolder
 							m_AmmoIcon.LoadImageFile(2, "set:dayz_gui image:jam_shell");
 							break;
 						}
+						//@note: Crossbows cant jam so we dont add a icon for the jam state
+						case CartridgeType.Arrow:
+						{
+							m_AmmoIcon.LoadImageFile(0, "set:dayz_gui image:arrow_int");
+							m_AmmoIcon.LoadImageFile(1, "set:dayz_gui image:arrow_int");
+							break;
+						}
 					}
 				}
 				m_AmmoIcons.Insert(m_AmmoIcon);

@@ -38,6 +38,7 @@ class ActionWashHandsWaterOne extends ActionInteractLoopBase
 		{
 			PluginLifespan module_lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
 			module_lifespan.UpdateBloodyHandsVisibility( action_data.m_Player, false );
+			action_data.m_Player.ClearBloodyHandsPenaltyChancePerAgent(eAgents.SALMONELLA);
 		}
 	}
 };

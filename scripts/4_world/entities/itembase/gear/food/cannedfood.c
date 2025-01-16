@@ -257,7 +257,7 @@ class UnknownFoodCan_Opened: Edible_Base
 	
 	override bool IsOpen()
 	{
-		return false;
+		return true;
 	}
 };
 
@@ -309,7 +309,7 @@ class Pajka_Opened: Edible_Base
 	
 	override bool IsOpen()
 	{
-		return false;
+		return true;
 	}
 };
 
@@ -361,7 +361,7 @@ class Pate_Opened: Edible_Base
 	
 	override bool IsOpen()
 	{
-		return false;
+		return true;
 	}
 };
 

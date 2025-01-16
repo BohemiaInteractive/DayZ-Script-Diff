@@ -620,6 +620,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			{
 				src.ReadFromContext(ctx);
 				dst.ReadFromContext(ctx);
+				ClearInventoryReservationEx(dst.GetItem(), dst);
 				break;
 			}
 			case InventoryCommandType.HAND_EVENT:
@@ -627,6 +628,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				HandEventBase e = HandEventBase.CreateHandEventFromContext(ctx);
 				src = e.GetSrc();
 				dst = e.GetDst();
+				e.ClearInventoryReservation();
 				break;
 			}
 			case InventoryCommandType.SWAP:
@@ -635,6 +637,9 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				temp.ReadFromContext(ctx);
 				dst.ReadFromContext(ctx);
 				temp.ReadFromContext(ctx);
+				
+				ClearInventoryReservationEx(dst.GetItem(), dst);
+				ClearInventoryReservationEx(temp.GetItem(), temp);
 				break;
 			}
 			case InventoryCommandType.FORCESWAP:
@@ -969,6 +974,18 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			
 			Error("[desync] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " CANNOT move cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 			return true;
+		}
+		
+		//TODO: hotfix solution
+		if (!validation.m_IsRemote && validation.m_IsJuncture && !MoveCheckExclusionMaskLocal(src,dst))
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed - MoveCheckExclusionMaskLocal - condition failed locally", "SYNC_MOVE" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+			}
+			#endif
+			return false;
 		}
 		
 		#ifdef ENABLE_LOGGING
@@ -1457,8 +1474,25 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			
 		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT )
 		{
-			ClearInventoryReservationEx(dst1.GetItem(),dst1);
-			ClearInventoryReservationEx(dst2.GetItem(),dst2);
+			ClearInventoryReservationEx(dst1.GetItem(), dst1);
+			ClearInventoryReservationEx(dst2.GetItem(), dst2);
+		}
+		else
+		{
+			GetGame().ClearJunctureEx(GetDayZPlayerOwner(), dst1.GetItem());
+			GetGame().ClearJunctureEx(GetDayZPlayerOwner(), dst2.GetItem());
+		}
+		
+		//TODO: hotfix solution
+		if (!validation.m_IsRemote && validation.m_IsJuncture && !SwapCheckExclusionMaskLocal(src1,src2,dst1,dst2))
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed - !SwapCheckExclusionMaskLocal - condition failed locally", "SYNC_MOVE" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+			}
+			#endif
+			return false;
 		}
 		
 		#ifdef ENABLE_LOGGING
@@ -1792,17 +1826,25 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		if (!super.TakeToDst(mode,src,dst))
 		{
-			if (!m_DeferredEvent)
-			{
-				m_DeferredEvent = new DeferredTakeToDst(mode,src,dst);
-				if (m_DeferredEvent.ReserveInventory(this))
-					return true;
-			}
-			
-			m_DeferredEvent = null;
-			return false;
+			return PostDeferredEventTakeToDst(mode,src,dst);
 		}
 		return true;
+	}
+	
+	override bool PostDeferredEventTakeToDst(InventoryMode mode, notnull InventoryLocation src, notnull InventoryLocation dst)
+	{
+		if (!super.PostDeferredEventTakeToDst(mode,src,dst))
+			return false;
+		
+		if (!m_DeferredEvent)
+		{
+			m_DeferredEvent = new DeferredTakeToDst(mode,src,dst);
+			if (m_DeferredEvent.ReserveInventory(this))
+				return true;
+		}
+		
+		m_DeferredEvent = null;
+		return false;
 	}
 	
 	void HandleTakeToDst( DeferredEvent deferred_event )
@@ -1857,7 +1899,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					}
 					#endif
 				
-					if (LocationCanMoveEntity(deferred_take_to_dst.m_src,deferred_take_to_dst.m_dst))
+					if (LocationCanMoveEntity(deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst))
 					{
 						DayZPlayer player = GetGame().GetPlayer();
 						player.GetHumanInventory().AddInventoryReservationEx(deferred_take_to_dst.m_dst.GetItem(), deferred_take_to_dst.m_dst, GameInventory.c_InventoryReservationTimeoutShortMS);
@@ -1918,19 +1960,28 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		
 		if(!super.SwapEntities(mode,item1,item2))
 		{
-			if(!m_DeferredEvent)
+			if (GameInventory.MakeSrcAndDstForSwap(item1, item2, src1, src2, dst1, dst2))
 			{
-				if( GameInventory.MakeSrcAndDstForSwap(item1, item2, src1, src2, dst1, dst2) );
-				{
-					m_DeferredEvent = new DeferredSwapEntities(mode, item1, item2, dst1, dst2);
-					if( m_DeferredEvent.ReserveInventory(this) )
-						return true;
-				}
+				return PostDeferredForceSwapEntities(mode, item1, item2, dst1, dst2);
 			}
-			m_DeferredEvent = null;
-			return false;
 		}
 		return true;
+	}
+	
+	override bool PostDeferredForceSwapEntities(InventoryMode mode, notnull EntityAI item1, notnull EntityAI item2, notnull InventoryLocation dst1, notnull InventoryLocation dst2)
+	{
+		if (!super.PostDeferredForceSwapEntities(mode, item1, item2, dst1, dst2))
+			return false;
+		
+		if (!m_DeferredEvent)
+		{
+			m_DeferredEvent = new DeferredForceSwapEntities(mode, item1, item2, dst1, dst2);
+			if (m_DeferredEvent.ReserveInventory(this))
+				return true;
+		}
+		
+		m_DeferredEvent = null;
+		return false;
 	}
 	
 	void HandleSwapEntities( DeferredEvent deferred_event )
@@ -2008,9 +2059,9 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		#endif
 		
+		InventoryLocation src1, src2, dst1;
 		if( mode == InventoryMode.LOCAL )
 		{
-			InventoryLocation src1, src2, dst1;
 			if (GameInventory.MakeSrcAndDstForForceSwap(item1, item2, src1, src2, dst1, item2_dst))
 			{
 				LocationSwap(src1, src2, dst1, item2_dst);
@@ -2021,18 +2072,10 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		
 		if(!super.ForceSwapEntities(mode,item1,item2,item2_dst))
 		{
-			if(!m_DeferredEvent)
+			if (GameInventory.MakeSrcAndDstForForceSwap(item1, item2, src1, src2, dst1, item2_dst))
 			{
-				if (GameInventory.MakeSrcAndDstForForceSwap(item1, item2, src1, src2, dst1, item2_dst))
-				{
-					m_DeferredEvent = new DeferredForceSwapEntities(mode,item1,item2, dst1, item2_dst);
-					if( m_DeferredEvent.ReserveInventory(this))
-						return true;
-
-				}
+				return PostDeferredForceSwapEntities(mode, item1, item2, dst1, item2_dst);
 			}
-			m_DeferredEvent = null;
-			return false;
 		}
 		
 		return true;
@@ -2076,7 +2119,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					break;
 
 				case InventoryMode.JUNCTURE:
-					if (CanForceSwapEntitiesEx(deferred_force_swap_entities.m_dst1.GetItem(),deferred_force_swap_entities.m_dst1,deferred_force_swap_entities.m_dst2.GetItem(), deferred_force_swap_entities.m_dst2))
+					if (CanForceSwapEntitiesEx(deferred_force_swap_entities.m_dst1.GetItem(), deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2.GetItem(), deferred_force_swap_entities.m_dst2))
 					{	
 						player.GetHumanInventory().AddInventoryReservationEx(deferred_force_swap_entities.m_item1, deferred_force_swap_entities.m_dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
 						player.GetHumanInventory().AddInventoryReservationEx(deferred_force_swap_entities.m_item2, deferred_force_swap_entities.m_dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
@@ -2652,5 +2695,33 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		
 		return result;
+	}
+	
+	//! Local, checks only stuff that is in guaranteed sync
+	bool MoveCheckExclusionMaskLocal ( notnull InventoryLocation src, notnull InventoryLocation dst)
+	{
+		if (dst.GetType() == InventoryLocationType.ATTACHMENT)
+		{
+			return dst.GetParent().CheckAttachmentReceiveExclusion(src.GetItem(),dst.GetSlot());
+		}
+		
+		return true;
+	}
+	
+	//! Local, checks only stuff that is in guaranteed sync
+	bool SwapCheckExclusionMaskLocal ( notnull InventoryLocation src1, notnull InventoryLocation src2, notnull InventoryLocation dst1, notnull InventoryLocation dst2)
+	{
+		bool failed = false;
+		
+		if (dst1.GetType() == InventoryLocationType.ATTACHMENT)
+		{
+			failed |= !dst1.GetParent().CheckAttachmentReceiveExclusion(dst1.GetItem(),dst1.GetSlot());
+		}
+		
+		if (dst2.GetType() == InventoryLocationType.ATTACHMENT)
+		{
+			failed |= !dst2.GetParent().CheckAttachmentReceiveExclusion(dst2.GetItem(),dst2.GetSlot());
+		}
+		return !failed;
 	}
 };

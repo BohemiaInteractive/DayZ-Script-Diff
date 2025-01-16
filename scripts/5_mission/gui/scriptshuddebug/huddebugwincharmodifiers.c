@@ -23,7 +23,7 @@ class DebugModifierData
 class HudDebugWinCharModifiers extends HudDebugWinBase
 {	
 	protected Widget										m_WgtModifiersContent;
-	protected ref array<ref Widget>							m_ModifierWidgets;
+	protected ref map<int, Widget>							m_ModifierWidgets;
 	protected ref map<Widget, ref DebugModifierData>		m_ModifierWidgetData;
 	protected PluginDeveloperSync m_PluginDeveloperSync;
 	protected Widget 										m_WgtDetailedInfo;
@@ -37,7 +37,7 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	{	
 		m_WgtRoot = widget_root;
 		m_WgtModifiersContent = Widget.Cast( m_WgtRoot.FindAnyWidget( "pnl_CharModifiers_Values" ) );
-		m_ModifierWidgets = new array<ref Widget>;
+		m_ModifierWidgets = new map<int, Widget>();
 		m_ModifierWidgetData = new map<Widget, ref DebugModifierData>;
 		m_PluginDeveloperSync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
 	}
@@ -109,6 +109,13 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 		//Print("Hide()");
 		
 		SetUpdate( false );
+		
+		foreach (Widget widget : m_ModifierWidgets)
+		{
+			delete widget;
+		}
+
+		m_ModifierWidgets.Clear();
 	}
 	
 	void Refresh()
@@ -174,11 +181,15 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	
 	void AddModifier( string name, int id, bool active, bool locked )
 	{
-		//create widget
-		Widget widget = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_modifier.layout", m_WgtModifiersContent );
-		
-		//add to widget array (for clearing purposes)
-		m_ModifierWidgets.Insert( widget );
+		Widget widget = m_ModifierWidgets.Get(id);
+		if (!widget)
+		{
+			//create widget
+			widget = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_modifier.layout", m_WgtModifiersContent );
+			
+			//add to widget array (for clearing purposes)
+			m_ModifierWidgets.Insert( id, widget );
+		}
 		
 		//set widget name
 		ButtonWidget mod_name_text = ButtonWidget.Cast( widget.FindAnyWidget( "TextModifierName" ) );
@@ -221,12 +232,6 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	{
 		//clear widget data
 		m_ModifierWidgetData.Clear();
-		
-		//destroy all modifier widgets
-		foreach (Widget widget : m_ModifierWidgets)
-			delete widget;
-
-		m_ModifierWidgets.Clear();
 	}
 	
 	//============================================

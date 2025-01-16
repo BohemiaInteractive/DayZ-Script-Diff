@@ -15,6 +15,16 @@ class VicinityContainer: CollapsibleContainer
 		m_VicinityIconsContainer = new VicinitySlotsContainer( this );
 		m_Body.Insert( m_VicinityIconsContainer );
 		m_VicinityIconsContainer.GetRootWidget().SetColor(166 << 24 | 120 << 16 | 120 << 8 | 120);
+		
+		#ifndef PLATFORM_CONSOLE
+		LeftArea leftArea = LeftArea.Cast(GetParent());
+		if (leftArea)
+		{
+			leftArea.GetSlotsHeader().AddChild(GetHeader().GetRootWidget());
+			leftArea.GetSlotsArea().AddChild(m_VicinityIconsContainer.GetRootWidget());
+		}
+		#endif
+		
 		m_MainWidget = m_RootWidget.FindAnyWidget( "body" );
 		WidgetEventHandler.GetInstance().RegisterOnChildAdd( m_MainWidget, this, "OnChildAdd" );
 		WidgetEventHandler.GetInstance().RegisterOnChildRemove( m_MainWidget, this, "OnChildRemove" );
@@ -114,6 +124,14 @@ class VicinityContainer: CollapsibleContainer
 			ColorManager.GetInstance().SetColor( w, ColorManager.GREEN_COLOR );
 			ItemManager.GetInstance().HideDropzones();
 			ItemManager.GetInstance().GetLeftDropzone().SetAlpha( 1 );
+			
+			#ifndef PLATFORM_CONSOLE
+			bool ignorePointer = ItemManager.GetInstance().GetLeftSlotsScroller().GetFlags() & WidgetFlags.IGNOREPOINTER;
+			if (!ignorePointer)
+			{
+				ItemManager.GetInstance().GetLeftSlotsScroller().SetFlags(WidgetFlags.IGNOREPOINTER);
+			}
+			#endif
 		}
 		else
 		{
@@ -681,21 +699,5 @@ class VicinityContainer: CollapsibleContainer
 			}
 			ItemManager.GetInstance().SetWidgetDraggable(cont.GetHeader().GetMainWidget(),draggable);
 		}
-	}
-	
-	override bool SplitItem()
-	{
-		if ( CanSplit() )
-		{
-			ItemBase item = ItemBase.Cast(GetFocusedItem());
-			if (item)
-			{
-				if (item.HasQuantity() && item.CanBeSplit())
-				{
-					item.OnRightClick();
-				}
-			}
-		}
-		return false;
 	}
 }

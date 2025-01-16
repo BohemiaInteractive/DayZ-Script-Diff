@@ -64,13 +64,12 @@ class StaminaConsumers
 
 	bool HasEnoughStaminaFor(EStaminaConsumers consumer, float curStamina, bool isDepleted, float cap)
 	{
-		if ( m_StaminaConsumers && m_StaminaConsumers.Contains(consumer) )
+		StaminaConsumer sc;
+		if (m_StaminaConsumers && m_StaminaConsumers.Find(consumer, sc))
 		{
-			StaminaConsumer sc = m_StaminaConsumers.Get(consumer);
-			
-			if ( consumer != EStaminaConsumers.SPRINT )
+			if (consumer != EStaminaConsumers.SPRINT)
 			{
-				if ( (isDepleted || (curStamina < sc.GetDrainThreshold()/* && curStamina < cap*/)) )
+				if (isDepleted || (curStamina < sc.GetDrainThreshold()))
 				{
 					sc.SetState(false);
 					return false;
@@ -78,9 +77,9 @@ class StaminaConsumers
 			}
 			else
 			{
-				if ( !isDepleted )
+				if (!isDepleted)
 				{
-					if ( sc.GetState() ) 
+					if (sc.GetState())
 					{
 						sc.SetState(true);
 						return true;
@@ -93,7 +92,7 @@ class StaminaConsumers
 				}
 			}
 
-			if ( curStamina > sc.GetDrainThreshold() || curStamina == cap ) //Sometimes player can't go up to drain threshold
+			if (curStamina > sc.GetDrainThreshold() || curStamina == cap) //Sometimes player can't go up to drain threshold
 			{
 				sc.SetState(true);
 				return true;
@@ -105,11 +104,10 @@ class StaminaConsumers
 	
 	bool HasEnoughStaminaToStart(EStaminaConsumers consumer, float curStamina, bool isDepleted, float cap)
 	{
-		if ( m_StaminaConsumers && m_StaminaConsumers.Contains(consumer) )
+		StaminaConsumer sc;
+		if (m_StaminaConsumers && m_StaminaConsumers.Find(consumer, sc))
 		{
-			StaminaConsumer sc = m_StaminaConsumers.Get(consumer);
-			
-			if ( (isDepleted || (curStamina < sc.GetActivationThreshold() && curStamina < cap)) )
+			if ((isDepleted || (curStamina < sc.GetActivationThreshold() && curStamina < cap)))
 			{
 				sc.SetState(false);
 				return false;
@@ -427,10 +425,12 @@ class StaminaHandler
 		if (m_StaminaDisabled)
 			return;
 		#endif
+
 		if (m_Player)
 		{
+			bool isServerOrSingleplayer = GetGame().IsServer() || !GetGame().IsMultiplayer();
 			// Calculates actual max stamina based on player's load
-			if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+			if (isServerOrSingleplayer)
 			{
 				//! gets the actual players load
 				m_PlayerLoad = m_Player.GetWeightEx();
@@ -486,7 +486,7 @@ class StaminaHandler
 			m_Stamina = Math.Max(0, Math.Min((m_Stamina + temp), m_StaminaCap));
 			m_Stamina = m_Stamina - m_StaminaDepletion;
 
-			if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+			if (isServerOrSingleplayer)
 			{
 				m_Player.GetStatStamina().Set(m_Stamina);
 				m_Time += deltaT;
@@ -867,7 +867,7 @@ class StaminaHandler
 		}
 		else
 		{
-			timer = new ref Timer;
+			timer = new Timer;
 			m_TimerMap.Set(modifier,timer);
 		}
 		timer.Run(time, this, "ResetCooldown",  new Param1<int>( modifier ));

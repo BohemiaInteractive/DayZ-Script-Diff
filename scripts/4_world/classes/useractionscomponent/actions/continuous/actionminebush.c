@@ -33,4 +33,22 @@ class ActionMineBush : ActionMineBase
 		Object targetObject = target.GetObject();
 		return targetObject.IsBush() && targetObject.IsCuttable();
 	}
+	
+	override void OnExecuteServer(ActionData action_data)
+	{
+		MineActionData mad = MineActionData.Cast(action_data);
+		if (mad.m_EffecterID == -1)
+		{
+			mad.m_EffecterID = SEffectManager.CreateParticleServer(action_data.m_Target.GetObject().GetPosition(), new TreeEffecterParameters("TreeEffecter", EffecterBase.NOT_DEFINED_LIFESPAN, 0.1));
+		}
+		else
+		{
+			SEffectManager.ReactivateParticleServer(mad.m_EffecterID);
+		}
+	}
+	
+	override bool HasMultipleExecution(ActionData action_data)
+	{
+		return true;
+	}
 };

@@ -35,8 +35,6 @@ class BarbedWire extends ItemBase
 		m_IsPlaced 		= false;
 		
 		//synchronized variables
-		RegisterNetSyncVariableBool( "m_IsSoundSynchRemote" );	
-		RegisterNetSyncVariableBool( "m_IsDeploySound" );
 		RegisterNetSyncVariableBool( "m_IsMounted" );
 	}
 
@@ -126,11 +124,6 @@ class BarbedWire extends ItemBase
 			PlaySoundSet( m_MountSound, SOUND_MOUNT, 0.1, 0.1 );
 		}
 		m_LastMountedState = m_IsMounted;
-		
-		if ( IsDeploySound() )
-		{
-			PlayDeploySound();
-		}
 	}	
 	
 	// --- EVENTS
@@ -393,11 +386,9 @@ class BarbedWire extends ItemBase
 					{ CreateDamageTrigger(); }
 				m_IsPlaced = true;
 			}
-			
-			SetIsDeploySound( true );
 		}	
 	}
-	
+			
 	override string GetDeploySoundset()
 	{
 		return "placeBarbedWire_SoundSet";

@@ -28,8 +28,6 @@ class ShelterKit extends KitBase
 			
 			//make the kit invisible, so it can be destroyed from deploy UA when action ends
 			HideAllSelections();
-			
-			SetIsDeploySound( true );
 		}
 	}
 
@@ -42,22 +40,17 @@ class ShelterKit extends KitBase
 	{
 		return 1.6;
 	}
-	
-	override string GetDeploySoundset()
+
+	override string GetPlaceSoundset()
 	{
 		return "Shelter_Site_Build_Start_SoundSet";
 	}
 	
-	override string GetLoopDeploySoundset()
-	{
-		return "Shelter_Site_Build_Loop_SoundSet";
-	}
-	
-	override string GetDeployFinishSoundset()
+	override string GetDeploySoundset()
 	{
 		return "Shelter_Site_Build_Finish_SoundSet";
 	}
-	
+		
 	override void DisassembleKit(ItemBase item)
 	{
 		if (!IsHologram())

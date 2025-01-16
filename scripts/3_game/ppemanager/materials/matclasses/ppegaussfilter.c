@@ -10,7 +10,9 @@ class PPEGaussFilter: PPEClassBase
 	static const int L_0_INV = 500;
 	static const int L_0_MENU = 600;
 	static const int L_0_CONTROLS = 700;
+	static const int L_0_LATENCY = 750;
 	static const int L_0_TUTORIALS = 800;
+	static const int L_0_FEEDBACK = 850;
 	static const int L_0_SERVER_BROWSER = 900;
 	static const int L_0_DISCONNECT = 1000;
 	

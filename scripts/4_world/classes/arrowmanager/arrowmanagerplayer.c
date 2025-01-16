@@ -2,7 +2,7 @@ class ArrowManagerPlayer : ArrowManagerBase
 {	
 	private static ref map<int,typename> m_TypeHashTable;
 	
-	void ArrowManagerPlayer(PlayerBase player)
+	void ArrowManagerPlayer(EntityAI owner)
 	{
 		if (!m_TypeHashTable)
 		{

@@ -24,7 +24,7 @@ class AtlasBipod extends Inventory_Base
 		return false;
 	}
 
-	override bool CanDetachAttachment( EntityAI attachment )
+	override bool CanDetachAttachment( EntityAI parent )
 	{
 		return false;
 	}

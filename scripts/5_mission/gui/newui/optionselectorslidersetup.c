@@ -101,6 +101,9 @@ class OptionSelectorSliderSetup extends OptionSelectorBase
 	{
 		if (w == m_Slider)
 		{
+			if (GetFocus() && EditBoxWidget.Cast(GetFocus()))
+				return false;
+			
 			m_Parent.Enable(true);
 			return super.OnFocusLost(m_Parent, x, y);
 		}

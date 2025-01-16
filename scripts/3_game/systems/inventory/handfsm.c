@@ -35,13 +35,11 @@ class HandFSM extends HFSMBase<HandStateBase, HandEventBase, HandActionBase, Han
 {
 	int GetCurrentStateID ()
 	{
-		/*if (m_States.Count() == 2)
-		{
-			int s0 = m_States[0].GetCurrentStateID();
-			int s1 = m_States[1].GetCurrentStateID() << 8;
-			return s1 | s0;
-		}*/
-		return 0;
+		HandStableState hState = HandStableState.Cast(m_State);
+		if(hState)
+			return hState.GetCurrentStateID();
+
+		return HandStateID.UNKNOWN;
 	}
 
 	/**@fn			SyncStateFromID

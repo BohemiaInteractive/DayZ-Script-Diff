@@ -29,7 +29,10 @@ class ActionDismantleGardenPlot: ActionContinuousBase
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		//Action not allowed if player has broken legs
-		if ( player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS || player.GetInColdArea())
+		if ( player.GetBrokenLegs() == eBrokenLegs.BROKEN_LEGS )
+			return false;
+		
+		if (!CfgGameplayHandler.GetDisableColdAreaPlacementCheck() && player.GetInColdArea())
 			return false;
 		
 		GardenPlot targetPlot = GardenPlot.Cast( target.GetObject() );

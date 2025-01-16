@@ -49,7 +49,25 @@ class CAContinuousCraft : CAContinuousTime
 				m_SpentUnits.param1 = m_TimeElpased;
 				SetACData(m_SpentUnits);
 			}
+			m_TimeElpased = m_AdjustedTimeToComplete - m_TimeElpased;
+			
 			OnCompletePogress(action_data);
+			
+			WorldCraftActionData action_data_wc = WorldCraftActionData.Cast(action_data);
+			PluginRecipesManager module_recipes_manager;
+			Class.CastTo(module_recipes_manager, GetPlugin(PluginRecipesManager));
+			if (module_recipes_manager)
+			{
+				if(module_recipes_manager.GetIsRepeatable(action_data_wc.m_RecipeID))
+				{
+					ItemBase item2;
+					Class.CastTo(item2, action_data.m_Target.GetObject());
+					if(module_recipes_manager.IsRecipePossibleToPerform(action_data_wc.m_RecipeID, action_data.m_MainItem, item2, action_data.m_Player))
+					{
+						return UA_PROCESSING;
+					}
+				}
+			}
 			return UA_FINISHED;
 		}
 		return UA_PROCESSING;

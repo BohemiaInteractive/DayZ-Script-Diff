@@ -7,8 +7,8 @@ class WorldData
 	//! directly accesible (defined/overriden in Init())
 	float m_TemperaturePerHeightReductionModifier; 	//! amount of °C reduced for each 100 meteres of height above water level
 	float m_CloudsTemperatureEffectModifier; 		//! how many % of environment temperature can be lowered by clouds
-	float m_TemperatureInsideBuildingsModifier
-	float m_WaterContactTemperatureModifier
+	float m_TemperatureInsideBuildingsModifier;
+	float m_WaterContactTemperatureModifier;
 
 	protected float SUDDENCHANGE_TIME_MULTIPLIER 	= 0.2;
 	protected float SUDDENCHANGE_LENGTH_MULTIPLIER 	= 0.4;

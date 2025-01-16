@@ -1318,16 +1318,8 @@ class DayZPlayer extends Human
 	//! IsPlayerInStance(STANCEMASK_PRONE | STANCEIDX_RAISEDPRONE) returns true if player is in or in prone (both raised or nonraised)
 	//! IsPlayerInStance(STANCEMASK_ALL) returns true always 
 	//! IsPlayerInStance(STANCEMASK_RAISEDERECT | STANCEMASK_RAISEDCROUCH | STANCEMASK_RAISEDPRONE) returns true if player has raised hands
+	proto native 	bool	IsPlayerInStance(int pStanceMask);		// STANCEMASK_ERECT | STANCEMASK_CROUCH 
 	
-	// PSOVIS - move to native
-	bool		IsPlayerInStance(int pStanceMask)		// STANCEMASK_ERECT | STANCEMASK_CROUCH 
-	{
-		HumanMovementState		state = new HumanMovementState;
-		GetMovementState(state);
-		
-		bool ret = ((1 << state.m_iStanceIdx) & pStanceMask) != 0;
-		return ret;
-	}
 	
 	void OnInputForRemote (ParamsReadContext ctx) { }
 	void OnInputFromServer (ParamsReadContext ctx) { }

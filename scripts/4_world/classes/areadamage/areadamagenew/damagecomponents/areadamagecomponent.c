@@ -17,7 +17,7 @@ class AreaDamageComponent : AreaDamageEvents
 	{
 		m_Parent = parent;
 		
-		m_DamageType 		= DT_CUSTOM;
+		m_DamageType 		= DamageType.CUSTOM;
 		m_AmmoName			= "MeleeDamage";
 
 		m_DamageableTypes	= new array<typename>;

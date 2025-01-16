@@ -32,7 +32,7 @@ class ActionStartEngineBoat : ActionContinuousBase
 		BoatScript boat = BoatScript.Cast(vehCommand.GetTransport());
 		if (boat && !boat.EngineIsOn())
 		{
-			if (!boat.CheckOperationalState())
+			if (boat.GetHealthLevel("") >= GameConstants.STATE_RUINED || boat.GetHealthLevel("Engine") >= GameConstants.STATE_RUINED)
 				return false;
 			
 			return boat.CrewMemberIndex(player) == DayZPlayerConstants.VEHICLESEAT_DRIVER);
@@ -56,7 +56,7 @@ class ActionStartEngineBoat : ActionContinuousBase
 		}
 	}
 	
-	override void OnExecuteServer(ActionData action_data)
+	override void OnExecute(ActionData action_data)
 	{
 		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
 		if (vehCommand)
@@ -65,8 +65,8 @@ class ActionStartEngineBoat : ActionContinuousBase
 			if (trans)
 			{
 				Boat boat = Boat.Cast(trans);
-				//if (boat)
-					//boat.OnBeforeEngineStart(); // to be added
+				if (boat)
+					boat.OnBeforeEngineStart();
 			}
 		}
 	}

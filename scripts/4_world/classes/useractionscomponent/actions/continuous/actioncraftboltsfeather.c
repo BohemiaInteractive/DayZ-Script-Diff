@@ -100,7 +100,7 @@ class ActionCraftBoltsFeather: ActionContinuousBase
 		
 		if (!added)
 		{
-			m_ResultEntity = Ammunition_Base.Cast(action_data.m_Player.SpawnEntityOnGroundPos("Ammo_ImprovisedBolt_2", action_data.m_Player.GetPosition()));
+			m_ResultEntity = Ammunition_Base.Cast(action_data.m_Player.SpawnEntityOnGroundRaycastDispersed("Ammo_ImprovisedBolt_2"));
 			type = m_ResultEntity.ConfigGetString("Ammo");
 			m_ResultEntity.ServerSetAmmoCount(0);
 			m_ResultEntity.ServerStoreCartridge(dmg, type);

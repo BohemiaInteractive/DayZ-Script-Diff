@@ -24,6 +24,13 @@ class YieldItemJunk : FishYieldItemBase
 		return UAFishingConstants.CYCLE_LENGTH_MAX;
 	}
 	
+	override void OnEntityYieldSpawned(EntityAI spawn)
+	{
+		super.OnEntityYieldSpawned(spawn);
+		
+		spawn.SetHealthLevel(GameConstants.STATE_BADLY_DAMAGED,"");
+	}
+	
 	override string GetCatchDeathSoundset()
 	{
 		return "";

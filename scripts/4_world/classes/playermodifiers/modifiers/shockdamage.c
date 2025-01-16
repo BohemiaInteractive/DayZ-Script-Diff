@@ -1,6 +1,8 @@
 class ShockDamageMdfr: ModifierBase
 {
 	const int UNCONSIOUSS_COOLDOWN_TIME = 60;//in s
+	const int UNCONSIOUSS_COOLDOWN_MIN_TIME = 90000;//in miliseconds
+	const int UNCONSIOUSS_COOLDOWN_MAX_TIME = 150000;//in miliseconds
 	override void Init()
 	{
 		m_TrackActivatedTime	= false;
@@ -21,14 +23,20 @@ class ShockDamageMdfr: ModifierBase
 
 	override bool ActivateCondition(PlayerBase player)
 	{
-		if( !player.IsUnconscious() && player.GetHealth("","Blood") <= PlayerConstants.SHOCK_DAMAGE_BLOOD_THRESHOLD_HIGH && GetGame().GetTime() > (player.m_UnconsciousEndTime + UNCONSIOUSS_COOLDOWN_TIME) )
+		if( !player.IsUnconscious() && player.GetHealth("","Blood") <= PlayerConstants.SHOCK_DAMAGE_BLOOD_THRESHOLD_HIGH )
 		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+			float energyNormalized = player.GetStatEnergy().Get() / player.GetStatEnergy().GetMax();
+			float waterNormalized = player.GetStatWater().Get() / player.GetStatEnergy().GetMax();
+			float averageUnconsciousTime = (energyNormalized + waterNormalized) / 2;
+			
+			if ( g_Game.GetTime() > (player.m_UnconsciousEndTime + Math.Lerp(UNCONSIOUSS_COOLDOWN_MIN_TIME, UNCONSIOUSS_COOLDOWN_MAX_TIME, averageUnconsciousTime)) )
+			{
+				return true;
+			}						
+		}		
+		
+		return false;
+		
 	}
 
 	override bool DeactivateCondition(PlayerBase player)

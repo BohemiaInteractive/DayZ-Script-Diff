@@ -66,12 +66,11 @@ class ChelateWater extends RecipeBase
 
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
 	{
-		return ingredients[1].GetQuantity() > 0;
+		return ingredients[1].GetQuantity() > 0 && !ingredients[1].GetIsFrozen();
 	}
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase ingredient2 = ingredients[1];
-		ingredient2.RemoveAllAgents();
+		ingredients[1].RemoveAllAgents();
 	}
 };

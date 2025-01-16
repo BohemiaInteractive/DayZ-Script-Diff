@@ -122,8 +122,7 @@ class UndergroundTrigger : ManTrigger
 			return false;
 		}
 		
-		PlayerBase player = PlayerBase.Cast(object);
-		return player.IsControlledPlayer();
+		return ManBase.Cast(object).IsControlledPlayer();
 	}
 	
 	

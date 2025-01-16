@@ -178,7 +178,7 @@ class LandMineTrap extends TrapBase
 	{
 		if (obj.IsInherited(CarWheel))
 		{
-			obj.ProcessDirectDamage(DT_CLOSE_COMBAT, this, "", "LandMineExplosion_CarWheel", "0 0 0", 1);
+			obj.ProcessDirectDamage(DamageType.CLOSE_COMBAT, this, "", "LandMineExplosion_CarWheel", "0 0 0", 1);
 			Explode(DamageType.EXPLOSION);
 
 			if (m_UpdateTimer.IsRunning())

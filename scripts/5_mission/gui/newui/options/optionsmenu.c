@@ -108,6 +108,26 @@ class OptionsMenu extends UIScriptedMenu
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
 		#ifdef PLATFORM_CONSOLE
+		bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
+		bool mkServer = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		
+		switch (pInputDeviceType)
+		{
+		case EInputDeviceType.CONTROLLER:
+			if (mk && mkServer)
+			{
+				GetGame().GetUIManager().ShowUICursor(false);
+			}
+		break;
+
+		default:
+			if (mk && mkServer)
+			{
+				GetGame().GetUIManager().ShowUICursor(true);
+			}
+		break;
+		}
+		
 		UpdateControlsElementVisibility();
 		#endif
 	}
@@ -608,7 +628,7 @@ class OptionsMenu extends UIScriptedMenu
 		m_Version.SetText(version);
 		
 		#ifdef PLATFORM_CONSOLE
-		UpdateControlsElements();
+		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 		UpdateControlsElementVisibility();
 		#endif
 	}

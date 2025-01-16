@@ -298,26 +298,29 @@ class DoubleBarrel_Base : Rifle_Base
 
 	override bool CanChamberBullet (int muzzleIndex, Magazine mag)
 	{
-		for(int i = 0; i < GetMuzzleCount(); i++)
+		if( CanChamberFromMag(muzzleIndex, mag) )
 		{
-			if( CanChamberFromMag(i, mag) )
-			{
-				if(IsChamberEmpty(i))
-					return true;
+			if(IsChamberEmpty(muzzleIndex))
+				return true;
 				
-				if(IsChamberFiredOut(i))
-					return true;
-			} 
+			if(IsChamberFiredOut(muzzleIndex))
+				return true;
 		}
 		return false;
 	}
 	
 	override void SetActions()
 	{
+		AddAction(FirearmActionLoadMultiBulletQuick);
 		super.SetActions();
 		AddAction(FirearmActionLoadMultiBullet);
-
-		RemoveAction(FirearmActionLoadBulletQuick); // Easy reload
-		AddAction(FirearmActionLoadMultiBulletQuick); // Easy reload
+	}
+	
+	override void SetNextWeaponMode(int muzzleIndex)
+	{
+		for (int i = 0; i < GetMuzzleCount(); i++)
+		{
+			SetNextMuzzleMode(i);
+		}
 	}
 };

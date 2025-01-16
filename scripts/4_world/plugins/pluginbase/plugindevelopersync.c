@@ -389,6 +389,18 @@ class PluginDeveloperSync extends PluginBase
 				OnRPCHealthSet(ctx, player);
 				break;
 			}
+			
+			case ERPCs.DEV_RPC_HORTICULTURE_UPDATE:
+			{
+				OnRPCHorticultUpdate(ctx, player);
+				break;
+			}
+			
+			case ERPCs.DEV_RPC_HORTICULTURE_SPEED:
+			{
+				OnRPCHorticultureSpeed(ctx, player);
+				break;
+			}
 		}
 	}
 	
@@ -685,6 +697,33 @@ class PluginDeveloperSync extends PluginBase
 			targetHealth = zoneCurrentHealth - zoneMax * 0.1;
 		
 		target.SetHealth(zoneName, healthType, targetHealth);
+	}
+	
+	void OnRPCHorticultUpdate( ParamsReadContext ctx , PlayerBase player)
+	{
+		Param6<int, GardenBase, int, int, int, int> p = new Param6<int, GardenBase, int, int, int, int>(-1, null, 0, 0, 0, 0);
+		if ( !ctx.Read(p) )
+			return;
+		
+		GardenBase garden = p.param2;
+		
+		if (p.param1 != -1 && garden)
+			{
+				Slot gSlot = garden.GetSlotByIndex(p.param1);
+				if (gSlot && gSlot.GetPlant())
+					gSlot.GetPlant().DebugSetTimes(p.param3, p.param4, p.param5, p.param6);
+			}
+		else
+			PlantBase.DebugSetGlobalTimes(p.param3, p.param4, p.param5, p.param6);
+	}
+	
+	void OnRPCHorticultureSpeed(ParamsReadContext ctx , PlayerBase player)
+	{
+		Param1<float> p = new Param1<float>(1);
+		if (!ctx.Read(p))
+			return;
+		
+		PlantBase.DebugSetTickSpeedMultiplier(p.param1);
 	}
 
 	//============================================

@@ -1,6 +1,7 @@
 class TemperatureData
 {
 	ETemperatureAccessTypes m_AccessType;
+	bool m_UseGlobalCooling;
 	float m_Value; 					//target or increment, depends on context!
 	float m_AdjustedTarget; 		//actual target of the operation (can be adjusted via over-time interpolation, not necessarily the original target value!)
 	float m_UpdateTimeInfo; 		//if the temperature change was accumulated over some time, pass this info to temperature subsystems
@@ -24,6 +25,7 @@ class TemperatureData
 	
 	protected void Init()
 	{
+		m_UseGlobalCooling = true;
 		m_InterpolatedFraction = 0.0;
 	}
 }
@@ -45,11 +47,14 @@ class TemperatureDataInterpolated : TemperatureData
 			
 			float coef = m_UpdateTimeCoef;
 			float absBaseTempChange = m_UpdateTimeInfo * m_InterpolatedStepSize;
+			
 			if (start > target)
 			{
 				absBaseTempChange *= -1;
-				coef = GameConstants.TEMP_COEF_COOLING_GLOBAL;
+				if (m_UseGlobalCooling)
+					coef = GameConstants.TEMP_COEF_COOLING_GLOBAL;
 			}
+
 			coef *= m_HeatPermeabilityCoef;
 			absBaseTempChange *= coef;
 			

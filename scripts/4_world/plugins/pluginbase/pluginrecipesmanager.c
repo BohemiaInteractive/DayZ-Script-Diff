@@ -12,7 +12,7 @@ const int SANITY_CHECK_ACCEPTABLE_RESULT = ERecipeSanityCheck.NOT_OWNED_BY_ANOTH
 class PluginRecipesManager extends PluginRecipesManagerBase
 {
 	static ref map<string,ref CacheObject > m_RecipeCache = new map<string,ref CacheObject >;
-	static ref map<typename, bool> m_RecipesInitializedItem = new ref map<typename, bool>;
+	static ref map<typename, bool> m_RecipesInitializedItem = new map<typename, bool>;
 	
 	
 	ref Timer m_TestTimer;
@@ -147,6 +147,12 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 		if ( m_RecipeList[recipe_id] ) return m_RecipeList[recipe_id].IsInstaRecipe();
 		else return false;
 	}
+	
+	bool GetIsRepeatable(int recipe_id)
+	{
+		if ( m_RecipeList[recipe_id] ) return m_RecipeList[recipe_id].IsRepeatable();
+		return false;
+	}
 
 	override void OnInit()
 	{
@@ -278,6 +284,27 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 		}
 
 		
+	}
+	
+	bool IsRecipePossibleToPerform(int id, ItemBase itemA, ItemBase itemB, PlayerBase player)
+	{
+		if ( !itemA || !itemB ) 
+		{
+			return false;
+		}
+		
+		m_Ingredients[0] = itemA;
+		m_Ingredients[1] = itemB;
+		
+		SortIngredientsInRecipe(id, 2, m_Ingredients, m_sortedIngredients);
+
+		bool result = CheckRecipe(id, m_sortedIngredients[0], m_sortedIngredients[1], player);
+		if (result)
+		{
+			result = RecipeSanityCheck(2, m_sortedIngredients, player);
+		}
+		
+		return result;
 	}
 
 	void PerformRecipeServer(int id, ItemBase item_a,ItemBase item_b ,PlayerBase player)

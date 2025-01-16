@@ -78,4 +78,9 @@ class RepairWithPliers extends RecipeBase
 		float percent1 = mHealth1*0.2; //20% of the item's health
 		item_ingredient1.AddHealth(percent1);
 	}
+	
+	override bool IsRepeatable()
+	{
+		return true;
+	}
 };

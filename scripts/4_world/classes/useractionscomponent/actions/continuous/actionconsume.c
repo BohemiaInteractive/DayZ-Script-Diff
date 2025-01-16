@@ -22,7 +22,8 @@ class ActionConsume: ActionContinuousBase
 		if (!super.ActionCondition(player, target, item))
 			return false;
 		
-		return !item.GetIsFrozen() && player.CanEatAndDrink();
+		ConsumeConditionData dta = new ConsumeConditionData(player,item);
+		return player.CanEatAndDrink() && player.CanConsumeFood(dta) && item.CanBeConsumed(dta);
 	}
 	
 	override bool HasProneException()

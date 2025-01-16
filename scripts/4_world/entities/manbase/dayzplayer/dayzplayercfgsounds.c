@@ -246,10 +246,13 @@ class DayZPlayerTypeVoiceSoundLookupTableImpl extends DayZPlayerTypeVoiceSoundLo
 
 
 class DayZPlayerTypeSoundTableImpl extends DayZPlayerTypeAnimTable
-{
+{	
+	private static ref DayZPlayerTypeSoundTableImpl m_instance;
+	private ref map<int, ref AnimSoundEvent> m_AnimSoundEvents;
+
 	void DayZPlayerTypeSoundTableImpl()
 	{
-		m_animSoundEvents = new array<ref AnimSoundEvent>;
+		m_AnimSoundEvents = new map<int, ref AnimSoundEvent>();
 		
 		string soundsCfgPath = "CfgVehicles SurvivorBase AnimEvents Sounds ";
 
@@ -261,33 +264,24 @@ class DayZPlayerTypeSoundTableImpl extends DayZPlayerTypeAnimTable
 			string soundPath = soundsCfgPath + soundName + " ";
 			AnimSoundEvent soundEvent = new AnimSoundEvent(soundPath);
 			if(soundEvent.IsValid())
-				m_animSoundEvents.Insert(soundEvent);
+				m_AnimSoundEvents.Set(soundEvent.m_iID, soundEvent);
 		}
 	}
 	
 	override AnimSoundEvent GetSoundEvent(int event_id)
 	{
-		for(int i = 0; i < m_animSoundEvents.Count(); i++)
-		{
-			AnimSoundEvent soundEvent = m_animSoundEvents.Get(i);
-			if(soundEvent.m_iID == event_id)
-			{
-				return soundEvent;
-			}
-		}
-
-		return NULL;
+		return m_AnimSoundEvents.Get(event_id);
 	}
 	
 	static DayZPlayerTypeSoundTableImpl GetInstance()
 	{
-		if(m_instance == NULL)
+		if(m_instance == null)
 			m_instance = new DayZPlayerTypeSoundTableImpl();
 
 		return m_instance;
 	}
-	
-	private static ref DayZPlayerTypeSoundTableImpl m_instance;
+
+	//! DEPRECATED	
 	private ref array<ref AnimSoundEvent> m_animSoundEvents;
 }
 

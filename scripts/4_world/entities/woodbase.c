@@ -48,6 +48,16 @@ class WoodBase extends Plant
 		return ConfigGetBool("isCuttable");
 	}
 	
+	bool HasPlayerCollisionParticle()
+	{
+		return true;
+	}
+	
+	bool HasPlayerCollisionSound()
+	{
+		return true;
+	}
+	
 	int GetPrimaryDropsAmount()
 	{
 		return ConfigGetInt("primaryDropsAmount");
@@ -261,7 +271,6 @@ class TreeEffecterParameters : EffecterParameters
 
 class TreeEffecter : EffecterBase
 {
-	ref array<WoodBase> m_Plants;
 	protected ref array<EffectParticleGeneral> m_Effects = null;
 	private float m_Radius = -1;
 	private float m_RadiusSync = -1;
@@ -270,7 +279,6 @@ class TreeEffecter : EffecterBase
 	{
 		if (!GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			m_Plants = new array<WoodBase>; 
 			m_Effects = new array<EffectParticleGeneral>;
 		}
 		
@@ -304,7 +312,6 @@ class TreeEffecter : EffecterBase
 			}
 			
 			m_Effects.Clear();
-			m_Plants.Clear();
 		
 			GetGame().GetObjectsAtPosition(GetWorldPosition(), m_RadiusSync, objects, proxies);
 
@@ -322,40 +329,35 @@ class TreeEffecter : EffecterBase
 					{
 						particleID = ParticleList.RegisterParticle(particle);
 					}
-					else
-					{
-						particleID = ParticleList.TREE_FALLING_LEAF;
-					}
 					
-					LOD lod = plant.GetLODByName(LOD.NAME_MEMORY);
-					Selection selection = lod.GetSelectionByName("ptcFalling");
-					if (selection)
+					if (particleID > 0)
 					{
-						vector selectionPos;
-						for (int j = 0; j < selection.GetVertexCount(); j++)
+						LOD lod = plant.GetLODByName(LOD.NAME_MEMORY);
+						Selection selection = lod.GetSelectionByName("ptcFalling");
+						if (selection)
 						{
-							newEffect = new EffectParticleGeneral();
-							newEffect.SetParticle(particleID);
-							selectionPos = selection.GetVertexPosition(lod, j);
-							SEffectManager.PlayInWorld(newEffect, plant.GetPosition() + selectionPos);
-							m_Effects.Insert(newEffect);
+							vector selectionPos;
+							for (int j = 0; j < selection.GetVertexCount(); j++)
+							{
+								newEffect = new EffectParticleGeneral();
+								newEffect.SetParticle(particleID);
+								selectionPos = selection.GetVertexPosition(lod, j);
+								SEffectManager.PlayInWorld(newEffect, plant.GetPosition() + selectionPos);
+								m_Effects.Insert(newEffect);
+							}
+							
+							//play accompanying sounds
+							selectionPos = ModelToWorld(selectionPos);
+							EffectSound sound = SEffectManager.PlaySoundEnviroment("snow_fallen_trees_SoundSet", selectionPos);
+							sound.SetAutodestroy(true);
 						}
 					}
-					else
-					{
-						newEffect = new EffectParticleGeneral();
-						newEffect.SetParticle(particleID);
-						SEffectManager.PlayInWorld(newEffect, plant.GetPosition());
-						m_Effects.Insert(newEffect);
-					}
-					
-					m_Plants.Insert(plant);
 				}
 			}
 		}
 				
 		if (m_CommandSync != m_Command)
-		{	
+		{
 			foreach (EffectParticleGeneral effect : m_Effects)
 			{
 				switch (m_CommandSync)

@@ -5,12 +5,15 @@ class PowerGeneratorBase extends ItemBase
 	private static float		m_FuelToEnergyRatio; // Conversion ratio of 1 ml of fuel to X Energy
 	private int					m_FuelPercentage;
 	
+	protected const float		LOW_ENERGY_FUEL_PERCENTAGE = 20; // how much % of fuel has to remain to trigger low fuel state 
 	static const string			START_SOUND = "powerGeneratorTurnOn_SoundSet";
 	static const string			LOOP_SOUND = "powerGeneratorLoop_SoundSet";
+	protected const string		LOOP_LOW_FUEL_SOUND = "powerGenerator_low_Fuel_Loop_SoundSet";
 	static const string			STOP_SOUND = "powerGeneratorTurnOff_SoundSet";
 	static const string 		SPARKPLUG_ATTACH_SOUND = "sparkplug_attach_SoundSet";
 	static const string 		SPARKPLUG_DETACH_SOUND = "sparkplug_detach_SoundSet";
 	
+	protected bool 				m_IsLowEnergy; 
 	protected EffectSound 		m_EngineLoop;
 	protected EffectSound 		m_EngineStart;
 	protected EffectSound 		m_EngineStop;
@@ -21,7 +24,7 @@ class PowerGeneratorBase extends ItemBase
 	
 	protected ref UniversalTemperatureSource m_UTSource;
 	protected ref UniversalTemperatureSourceSettings m_UTSSettings;
-	protected ref UniversalTemperatureSourceLambdaEngine m_UTSLEngine;
+	protected ref UniversalTemperatureSourceLambdaConstant m_UTSLEngine;
 	
 	// Constructor
 	void PowerGeneratorBase()	
@@ -30,8 +33,6 @@ class PowerGeneratorBase extends ItemBase
 		
 		m_FuelPercentage = 50;
 		RegisterNetSyncVariableInt("m_FuelPercentage");
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
-		RegisterNetSyncVariableBool("m_IsPlaceSound");
 	}
 	
 	void ~PowerGeneratorBase()
@@ -52,7 +53,7 @@ class PowerGeneratorBase extends ItemBase
 			m_UTSSettings.m_RangeFull			= 1;
 			m_UTSSettings.m_RangeMax			= 2.5;
 			
-			m_UTSLEngine						= new UniversalTemperatureSourceLambdaEngine();
+			m_UTSLEngine						= new UniversalTemperatureSourceLambdaConstant();
 			m_UTSource							= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLEngine);
 		}		
 	}
@@ -90,7 +91,10 @@ class PowerGeneratorBase extends ItemBase
 		{
 			if (GetCompEM().IsWorking())
 			{
-				PlaySoundSetLoop(m_EngineLoop, LOOP_SOUND, 0, 0);
+				if (m_IsLowEnergy)
+					PlaySoundSetLoop(m_EngineLoop, LOOP_LOW_FUEL_SOUND, 0.3, 0.3);
+				else
+					PlaySoundSetLoop(m_EngineLoop, LOOP_SOUND, 0.3, 0.3);
 				
 				// Particle
 				m_Smoke = new EffGeneratorSmoke();
@@ -111,7 +115,7 @@ class PowerGeneratorBase extends ItemBase
 	}
 
 	// Taking item into inventory
-	override bool CanPutIntoHands(EntityAI player)
+	override bool CanPutIntoHands(EntityAI parent)
 	{
 		if(!super.CanPutIntoHands(parent))
 		{
@@ -179,6 +183,11 @@ class PowerGeneratorBase extends ItemBase
 			m_FuelPercentage = GetCompEM().GetEnergy0To100();
 			SetSynchDirty();
 		}
+		
+		if (m_FuelPercentage < LOW_ENERGY_FUEL_PERCENTAGE && !m_IsLowEnergy)
+			SetLowEnergyState(true);
+		else if (m_FuelPercentage >= LOW_ENERGY_FUEL_PERCENTAGE && m_IsLowEnergy)
+			SetLowEnergyState(false);
 		
 		UpdateFuelMeter();
 	}
@@ -253,6 +262,17 @@ class PowerGeneratorBase extends ItemBase
 	/*================================
 				FUNCTIONS
 	================================*/
+	
+	protected void SetLowEnergyState(bool state)
+	{
+		m_IsLowEnergy = state;
+		
+		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		{
+			StopSoundSet(m_EngineLoop);
+			StartLoopSound();
+		}
+	}
 	
 	void UpdateFuelMeter()
 	{
@@ -335,6 +355,11 @@ class PowerGeneratorBase extends ItemBase
 	{
 		return m_FuelTankCapacity;
 	}
+	
+	float GetFuelPercentage()
+	{
+		return m_FuelPercentage;
+	}
 
 	// Checks sparkplug
 	bool HasSparkplug()
@@ -350,25 +375,13 @@ class PowerGeneratorBase extends ItemBase
 		super.OnVariablesSynchronized();
 				
 		UpdateFuelMeter();
-		
-		if (IsPlaceSound())
-		{
-			PlayPlaceSound();
-		}
 	}
 	
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================
-	
-	override void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
-	{
-		super.OnPlacementComplete(player, position, orientation);
-			
-		SetIsPlaceSound(true);
-	}
-	
-	override string GetPlaceSoundset()
+		
+	override string GetDeploySoundset()
 	{
 		return "placePowerGenerator_SoundSet";
 	}

@@ -36,6 +36,16 @@ class Fireplace extends FireplaceBase
 		return true;
 	}
 	
+	override bool CanObstruct()
+	{
+		return IsOven();
+	}
+	
+	override bool CanProxyObstruct()
+	{
+		return IsOven();
+	}
+	
 	override void EOnTouch( IEntity other, int extra )
 	{
 		ContactEvent( other, GetPosition() );
@@ -205,27 +215,17 @@ class Fireplace extends FireplaceBase
 		}
 		
 		//cookware
-		if (item_base.Type() == ATTACHMENT_COOKING_POT)
-		{
+		if (item_base.IsCookware())
 			SetCookingEquipment(item_base);
-			
-			//rotate handle (if not in 'Oven' stage)
-			if (GetGame().IsServer() && !IsOven())
-			{
+		
+		if (GetGame().IsServer() && !IsOven())
+		{
+			if (item_base.Type() == ATTACHMENT_COOKING_POT)
 				item_base.SetAnimationPhase(ANIMATION_COOKWARE_HANDLE, 0);
-			}
-		}
-		if (item.Type() == ATTACHMENT_CAULDRON)
-		{
-			SetCookingEquipment(item_base);
-			
-			//rotate handle (if not in 'Oven' stage)
-			if (GetGame().IsServer() && !IsOven())
-			{
+			if (item.Type() == ATTACHMENT_CAULDRON)
 				item_base.SetAnimationPhase(ANIMATION_CAULDRON_HANDLE, 0);
-			}
 		}
-
+		
 		// direct cooking/smoking slots
 		bool edible_base_attached = false;
 		switch (slot_name)
@@ -279,43 +279,23 @@ class Fireplace extends FireplaceBase
 		}
 
 		//cookware
-		if (item_base.Type() == ATTACHMENT_COOKING_POT)
+		if (item_base.IsCookware())
 		{
 			ClearCookingEquipment(item_base);
-			
-			//rotate handle
-			if (GetGame().IsServer())
-			{
+			item_base.RemoveAudioVisualsOnClient();
+		}
+		
+		if (item_base.IsLiquidContainer()) //boiling bottle effects stop
+			item_base.RemoveAudioVisualsOnClient();
+		
+		if (GetGame().IsServer())
+		{
+			if (item_base.Type() == ATTACHMENT_COOKING_POT)
 				item_base.SetAnimationPhase(ANIMATION_COOKWARE_HANDLE, 1);
-			}
-			
-			//remove audio visuals
-			Bottle_Base cooking_pot = Bottle_Base.Cast(item);
-			cooking_pot.RemoveAudioVisualsOnClient();
-		}
-		if (item_base.Type() == ATTACHMENT_CAULDRON)
-		{
-			ClearCookingEquipment(item_base);
-
-			//rotate handle
-			if (GetGame().IsServer())
-			{
+			if (item_base.Type() == ATTACHMENT_CAULDRON)
 				item_base.SetAnimationPhase(ANIMATION_CAULDRON_HANDLE, 1);
-			}
-			
-			//remove audio visuals
-			Bottle_Base cauldron = Bottle_Base.Cast( item );
-			cauldron.RemoveAudioVisualsOnClient();
 		}
-		if (item_base.Type() == ATTACHMENT_FRYING_PAN)
-		{
-			ClearCookingEquipment(item_base);
-
-			//remove audio visuals
-			FryingPan frying_pan = FryingPan.Cast(item);
-			frying_pan.RemoveAudioVisualsOnClient();
-		}
-
+		
 		// direct cooking/smoking slots
 		switch (slot_name)
 		{
@@ -586,7 +566,7 @@ class Fireplace extends FireplaceBase
 		return IsBurning();
 	}
 	
-	override void OnIgnitedTarget( EntityAI ignited_item )
+	override void OnIgnitedTarget( EntityAI target_item )
 	{
 	}
 	
@@ -750,12 +730,7 @@ class Fireplace extends FireplaceBase
 	//================================================================
 	// ADVANCED PLACEMENT
 	//================================================================
-	
-	override string GetPlaceSoundset()
-	{
-		return "placeFireplace_SoundSet";
-	}
-	
+		
 	override void SetActions()
 	{
 		super.SetActions();

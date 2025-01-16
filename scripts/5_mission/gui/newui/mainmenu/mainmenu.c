@@ -15,6 +15,7 @@ class MainMenu extends UIScriptedMenu
 	protected Widget		 		m_ChooseServer;
 	protected Widget				m_CustomizeCharacter;
 	protected Widget				m_PlayVideo;
+	protected Widget				m_Feedback;
 	protected Widget				m_Tutorials;
 	protected Widget				m_TutorialButton;
 	protected Widget				m_MessageButton;
@@ -55,6 +56,7 @@ class MainMenu extends UIScriptedMenu
 		m_ChooseServer				= layoutRoot.FindAnyWidget("choose_server");
 		m_CustomizeCharacter		= layoutRoot.FindAnyWidget("customize_character");
 		m_PlayVideo					= layoutRoot.FindAnyWidget("play_video");
+		m_Feedback					= layoutRoot.FindAnyWidget("feedback_button");
 		m_Tutorials					= layoutRoot.FindAnyWidget("tutorials");
 		m_TutorialButton			= layoutRoot.FindAnyWidget("tutorial_button");
 		m_MessageButton				= layoutRoot.FindAnyWidget("message_button");
@@ -285,6 +287,11 @@ class MainMenu extends UIScriptedMenu
 				m_LastFocusedButton = m_Tutorials;
 				OpenTutorials();
 				return true;
+			}
+			else if (w == m_Feedback)
+			{
+				m_LastFocusedButton = m_Feedback;
+				OpenFeedback();
 			}
 		}
 		return false;
@@ -537,6 +544,11 @@ class MainMenu extends UIScriptedMenu
 	void PlayVideo()
 	{
 		EnterScriptedMenu(MENU_VIDEO);
+	}
+	
+	protected void OpenFeedback()
+	{
+		GetGame().OpenURL("https://feedback.bistudio.com/project/view/2/");
 	}
 	
 	void OpenTutorials()

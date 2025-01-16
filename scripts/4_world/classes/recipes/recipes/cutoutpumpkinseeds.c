@@ -105,15 +105,6 @@ class CutOutPumpkinSeeds extends CutOutSeeds
 		m_ResultReplacesIngredient[2]	= -1;
 	}
 
-	//final check for recipe's validity
-	override bool CanDo(ItemBase ingredients[], PlayerBase player)
-	{
-		if ( player.IsPlacingLocal() )
-			return false;
-		
-		return true;
-	}
-
 	//gets called upon recipe's completion
 	override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)
 	{		
@@ -142,4 +133,4 @@ class CutOutPumpkinSeeds extends CutOutSeeds
 			}	
 		}
 	}
-};
+}

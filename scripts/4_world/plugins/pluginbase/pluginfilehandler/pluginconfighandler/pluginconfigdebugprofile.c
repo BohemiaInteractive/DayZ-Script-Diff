@@ -1,6 +1,54 @@
+class ScriptConsoleCameraDOFPreset
+{
+	string Name = "New Preset";
+	float FocusDistance = 1.0;
+	float FocusLength = 0.0;
+	float FocusLengthNear = -1.0;
+	float Blur = 0.0;
+	float FocusDepthOffset = 1.0;
+	
+	void ScriptConsoleCameraDOFPreset(string name, float focusDistance, float focusLength, float focusLengthNear, float blur, float focusDepthOffset)
+	{
+		Name = name;
+		FocusDistance = focusDistance;
+		FocusLength = focusLength;
+		FocusLengthNear = focusLengthNear;
+		Blur = blur;
+		FocusDepthOffset = focusDepthOffset;
+	}
+}
+
+class ScriptConsoleWeatherPreset
+{
+	string Name = "New Preset";
+	float WOvercast = overcast;
+	float WRain;
+	float WSnow;
+	float WFog;
+	float WWindMagnitude;
+	float WWindDir;
+	float WVolFogDD;
+	float WVolFogHD;
+	float WVolFogHB;
+	
+	void ScriptConsoleWeatherPreset(string name, float overcast, float rain, float snow, float fog, float windMagnitude, float windDir, float volFogDD, float volFogHD, float volFogHB)
+	{
+		Name = name;
+		WOvercast = overcast;
+		WRain = rain;
+		WSnow = snow;
+		WFog = fog;
+		WWindMagnitude = windMagnitude;
+		WWindDir = windDir;
+		WVolFogDD = volFogDD;
+		WVolFogHD = volFogHD;
+		WVolFogHB = volFogHB;
+	}
+}
+
 typedef Param3<string, bool, vector> LocationParams;//  param1 - name, param2 - isCustom?, param3 - position
 class PluginConfigDebugProfile extends PluginConfigHandler
-{	
+{
 	protected const string SCENE_DRAW_SELECTION				= "scene_editor_draw_selection";
 	protected const string SCENE_LOAD_PLAYER_POS			= "scene_editor_load_player_pos";
 	protected const string SCENE_ROTATION_ANGLE				= "scene_editor_rotation_angle";
@@ -20,6 +68,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	protected const string MERGE_TYPE						= "category_merge_type";
 	protected const string TEMP_VIS							= "console_temperature_visible";
 	protected const string HEALTH_VIS						= "console_health_visible";
+	protected const string HORTICULTURE_VIS					= "console_horticulture_visible";
 	protected const string SUB_PARAM_ITEM					= "item";
 	protected const string SUB_PARAM_ITEM_NAME				= "name";
 	protected const string SUB_PARAM_ITEM_HEALTH			= "health";
@@ -35,10 +84,16 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	protected const string ITEMDEBUG						= "item_debug";
 	protected const string SPAWN_LOC_INDEX					= "spawn_loc_index";
 	protected const string FILTER_REVERSED					= "filter_order_reversed";
+	
+	protected const string CAMERA_PRESETS_LIST				= "camera_presets";
+	protected const string WEATHER_PRESETS_LIST				= "weather_presets";
 
-	protected ref map<string, ref CfgParam>				m_DefaultValues;
-	protected ref TStringArray 							m_PresetList;	
-	protected const string POSITION_NAME_ROOT			= "console_positions_";
+	protected ref map<string, ref CfgParam>					m_DefaultValues;
+	protected ref TStringArray 								m_PresetList;
+	protected const string POSITION_NAME_ROOT				= "console_positions_";
+	
+	protected ref array<ref ScriptConsoleCameraDOFPreset> 	m_CameraPresets;
+	protected ref array<ref ScriptConsoleWeatherPreset> 	m_WeatherPresets;
 	
 	//========================================
 	// GetInstance
@@ -308,6 +363,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		m_DefaultValues.Insert(CONFIG_CLASSES_FLAG,		GetNewCfgParamInt(15) );
 		m_DefaultValues.Insert(TEMP_VIS,				GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(HEALTH_VIS,				GetNewCfgParamBool(false) );
+		m_DefaultValues.Insert(HORTICULTURE_VIS,		GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(MERGE_TYPE,				GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(ITEM_PREVIEW,			GetNewCfgParamBool(true) );
 		m_DefaultValues.Insert(BATCH_RECT,				GetNewCfgParamArray(GetDefaultBatchRectParams()) );
@@ -316,6 +372,8 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		m_DefaultValues.Insert(ITEMDEBUG,				GetNewCfgParamString("0 0 0") );
 		m_DefaultValues.Insert(SPAWN_LOC_INDEX,			GetNewCfgParamInt(0));
 		m_DefaultValues.Insert(FILTER_REVERSED,			GetNewCfgParamBool(false));
+		m_DefaultValues.Insert(CAMERA_PRESETS_LIST,		GetNewCfgParamArray(GetDefaultCameraPresetsParams()));
+		m_DefaultValues.Insert(WEATHER_PRESETS_LIST,	GetNewCfgParamArray(GetDefaultWeatherPresetsParams()));
 	}
 	
 	array<ref CfgParam> GetDefaultBatchRectParams()
@@ -337,6 +395,695 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		
 		return params;
 	}
+
+	array<ref CfgParam> GetDefaultCameraPresetsParams()
+	{
+		array<ref CfgParam> params = new array<ref CfgParam>;
+		CfgParamArray presetParam;
+		CfgParamString paramName;
+		CfgParamFloat paramFocusDistance, paramFocusLength, paramFocusLengthNear, paramBlur, paramFocusDepthOffset;
+		
+		// 50m distance DOF (Buildings / action)
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("50m distance DOF (Buildings / action)");
+		
+		paramFocusDistance = new CfgParamFloat("FocusDistance");
+		paramFocusDistance.SetValue(50.0);
+		
+		paramFocusLength = new CfgParamFloat("FocusLength");
+		paramFocusLength.SetValue(2450.0);
+		
+		paramFocusLengthNear = new CfgParamFloat("FocusLengthNear");
+		paramFocusLengthNear.SetValue(750.0);
+		
+		paramBlur = new CfgParamFloat("Blur");
+		paramBlur.SetValue(4.0);
+		
+		paramFocusDepthOffset = new CfgParamFloat("FocusDepthOffset");
+		paramFocusDepthOffset.SetValue(8.0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramFocusDistance);
+		presetParam.InsertValue(paramFocusLength);
+		presetParam.InsertValue(paramFocusLengthNear);
+		presetParam.InsertValue(paramBlur);
+		presetParam.InsertValue(paramFocusDepthOffset);
+		params.Insert(presetParam);
+		
+		// 15m distance soft blur (close objects are blurred)
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("15m distance soft blur (close objects are blurred)");
+		
+		paramFocusDistance = new CfgParamFloat("FocusDistance");
+		paramFocusDistance.SetValue(15.0);
+		
+		paramFocusLength = new CfgParamFloat("FocusLength");
+		paramFocusLength.SetValue(1050.0);
+		
+		paramFocusLengthNear = new CfgParamFloat("FocusLengthNear");
+		paramFocusLengthNear.SetValue(500.0);
+		
+		paramBlur = new CfgParamFloat("Blur");
+		paramBlur.SetValue(4.0);
+		
+		paramFocusDepthOffset = new CfgParamFloat("FocusDepthOffset");
+		paramFocusDepthOffset.SetValue(10.0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramFocusDistance);
+		presetParam.InsertValue(paramFocusLength);
+		presetParam.InsertValue(paramFocusLengthNear);
+		presetParam.InsertValue(paramBlur);
+		presetParam.InsertValue(paramFocusDepthOffset);
+		params.Insert(presetParam);
+		
+		// Full Body Character
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Full Body Character");
+		
+		paramFocusDistance = new CfgParamFloat("FocusDistance");
+		paramFocusDistance.SetValue(5.0);
+		
+		paramFocusLength = new CfgParamFloat("FocusLength");
+		paramFocusLength.SetValue(1050.0);
+		
+		paramFocusLengthNear = new CfgParamFloat("FocusLengthNear");
+		paramFocusLengthNear.SetValue(100.0);
+		
+		paramBlur = new CfgParamFloat("Blur");
+		paramBlur.SetValue(4.0);
+		
+		paramFocusDepthOffset = new CfgParamFloat("FocusDepthOffset");
+		paramFocusDepthOffset.SetValue(10.0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramFocusDistance);
+		presetParam.InsertValue(paramFocusLength);
+		presetParam.InsertValue(paramFocusLengthNear);
+		presetParam.InsertValue(paramBlur);
+		presetParam.InsertValue(paramFocusDepthOffset);
+		params.Insert(presetParam);
+		
+		// Close up
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Close up");
+		
+		paramFocusDistance = new CfgParamFloat("FocusDistance");
+		paramFocusDistance.SetValue(1.0);
+		
+		paramFocusLength = new CfgParamFloat("FocusLength");
+		paramFocusLength.SetValue(450.0);
+		
+		paramFocusLengthNear = new CfgParamFloat("FocusLengthNear");
+		paramFocusLengthNear.SetValue(100.0);
+		
+		paramBlur = new CfgParamFloat("Blur");
+		paramBlur.SetValue(4.0);
+		
+		paramFocusDepthOffset = new CfgParamFloat("FocusDepthOffset");
+		paramFocusDepthOffset.SetValue(10.0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramFocusDistance);
+		presetParam.InsertValue(paramFocusLength);
+		presetParam.InsertValue(paramFocusLengthNear);
+		presetParam.InsertValue(paramBlur);
+		presetParam.InsertValue(paramFocusDepthOffset);
+		params.Insert(presetParam);
+
+		// NEW Close up
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("NEW Close up");
+		
+		paramFocusDistance = new CfgParamFloat("FocusDistance");
+		paramFocusDistance.SetValue(2.0);
+		
+		paramFocusLength = new CfgParamFloat("FocusLength");
+		paramFocusLength.SetValue(750.0);
+		
+		paramFocusLengthNear = new CfgParamFloat("FocusLengthNear");
+		paramFocusLengthNear.SetValue(500.0);
+		
+		paramBlur = new CfgParamFloat("Blur");
+		paramBlur.SetValue(4.0);
+		
+		paramFocusDepthOffset = new CfgParamFloat("FocusDepthOffset");
+		paramFocusDepthOffset.SetValue(10.0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramFocusDistance);
+		presetParam.InsertValue(paramFocusLength);
+		presetParam.InsertValue(paramFocusLengthNear);
+		presetParam.InsertValue(paramBlur);
+		presetParam.InsertValue(paramFocusDepthOffset);
+		params.Insert(presetParam);
+
+		return params;
+	}
+	
+	array<ref CfgParam> GetDefaultWeatherPresetsParams()
+	{
+		array<ref CfgParam> params = new array<ref CfgParam>;
+		CfgParamArray presetParam;
+		CfgParamString paramName;
+		CfgParamFloat paramOvercast, paramRain, paramSnow, paramFog, paramWindMagnitude, paramWindDirection, paramVolFogDD, paramVolFogHD, paramVolFogHB;
+		
+		// Chernarus - Clear
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Chernarus - Clear");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.04);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(10);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(-1);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.005);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.9);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(50);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Chernarus - Cloudy
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Chernarus - Cloudy");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.4);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.04);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(10);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(-2.2);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.013);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.94);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(50);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Chernarus - Bad
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Chernarus - Bad");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.7);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0.3);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.04);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(12);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(1.5);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.015);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.97);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(50);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Chernarus - Storm
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Chernarus - Storm");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.9);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0.55);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.04);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(15);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(1.2);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.011);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.99);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(50);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Chernarus - Heavy Storm
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Chernarus - Heavy Storm");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(1);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0.9);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.04);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(17);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(1.2);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.007);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(1);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(50);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		//------------------------------------------------------------------------
+		
+		// Livonia - Clear
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Livonia - Clear");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.1);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(3);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(-2);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.012);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.91);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(170);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Livonia - Cloudy
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Livonia - Cloudy");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.4);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.1);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(9);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(-1.2);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.14);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.94);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(170);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Livonia - Bad
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Livonia - Bad");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.7);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0.3);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.1);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(10);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(-0.3);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.019);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.97);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(170);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Livonia - Storm
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Livonia - Storm");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.85);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0.55);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.1);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(12);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(0);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.018);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(0.985);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(170);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Livonia - Heavy Storm
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Livonia - Heavy Storm");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(1);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0.9);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0.1);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(18);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(0.6);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.005);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(1);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(170);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		//------------------------------------------------------------------------
+
+		// Sakhal - Clear
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Sakhal - Clear");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.07);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(2);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(0);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.002);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(1);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Sakhal - Cloudy
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Sakhal - Cloudy");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.4);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0.35);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(9);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(1.1);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.058);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(1);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Sakhal - Bad
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Sakhal - Bad");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.7);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0.65);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(12);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(-1.6);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.139);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(1);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Sakhal - Storm
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Sakhal - Storm");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(0.9);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(0.85);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(19);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(2.5);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.283);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(1);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);
+		
+		// Sakhal - Heavy Storm
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue("Sakhal - Heavy Storm");
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(1);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(0);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(1);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(0);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(20);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(3);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(0.35);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(1);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(0);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		params.Insert(presetParam);		
+		
+		return params;
+	}
 	
 	//========================================
 	// OnInit
@@ -345,13 +1092,268 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	{
 		super.OnInit();
 		
-		array<ref CfgParam> params = GetArray( PRESET_LIST );
+		int i;
 		
+		array<ref CfgParam> params = GetArray( PRESET_LIST );
 		m_PresetList = new TStringArray;
-		for ( int i = 0; i < params.Count(); i++ )
+		for (i = 0; i < params.Count(); i++)
 		{
-			CfgParamString param = CfgParamString.Cast( params.Get( i ) );
-			m_PresetList.Insert( param.GetValue() );
+			CfgParamString param = CfgParamString.Cast(params.Get(i));
+			m_PresetList.Insert(param.GetValue());
+		}
+		
+		LoadCameraPresets();
+		LoadWeatherPresets();
+	}
+	
+	protected void LoadCameraPresets()
+	{
+		if (m_CameraPresets)
+		{
+			m_CameraPresets.Clear();
+		}
+		else
+		{
+			m_CameraPresets = new array<ref ScriptConsoleCameraDOFPreset>;
+		}
+
+		CfgParamArray presetParam;
+		array<ref CfgParam> camera_params = GetArray(CAMERA_PRESETS_LIST);
+		for (int i = 0; i < camera_params.Count(); i++)
+		{
+			presetParam = CfgParamArray.Cast(camera_params.Get(i));
+			if (!presetParam)
+				continue;
+
+			CfgParamString paramCName = CfgParamString.Cast(presetParam.GetValueByName("Name", CFG_TYPE_STRING));
+			CfgParamFloat paramFocusDistance = CfgParamFloat.Cast(presetParam.GetValueByName("FocusDistance", CFG_TYPE_FLOAT));
+			CfgParamFloat paramFocusLength = CfgParamFloat.Cast(presetParam.GetValueByName("FocusLength", CFG_TYPE_FLOAT));
+			CfgParamFloat paramFocusLengthNear = CfgParamFloat.Cast(presetParam.GetValueByName("FocusLengthNear", CFG_TYPE_FLOAT));
+			CfgParamFloat paramBlur = CfgParamFloat.Cast(presetParam.GetValueByName("Blur", CFG_TYPE_FLOAT));
+			CfgParamFloat paramFocusDepthOffset = CfgParamFloat.Cast(presetParam.GetValueByName("FocusDepthOffset", CFG_TYPE_FLOAT));
+			
+			m_CameraPresets.Insert(new ScriptConsoleCameraDOFPreset(paramCName.GetValue(), paramFocusDistance.GetValue(), paramFocusLength.GetValue(), paramFocusLengthNear.GetValue(), paramBlur.GetValue(), paramFocusDepthOffset.GetValue()));
+		}
+	}
+	
+	protected void LoadWeatherPresets()
+	{
+		if (m_WeatherPresets)
+		{
+			m_WeatherPresets.Clear();
+		}
+		else
+		{
+			m_WeatherPresets = new array<ref ScriptConsoleWeatherPreset>;
+		}
+
+		CfgParamArray presetParam;
+		array<ref CfgParam> weather_params = GetArray(WEATHER_PRESETS_LIST);
+		for (int i = 0; i < weather_params.Count(); i++)
+		{
+			presetParam = CfgParamArray.Cast(weather_params.Get(i));
+			if (!presetParam)
+				continue;
+
+			CfgParamString paramWName = CfgParamString.Cast(presetParam.GetValueByName("Name", CFG_TYPE_STRING));
+			CfgParamFloat paramOvercast = CfgParamFloat.Cast(presetParam.GetValueByName("Overcast", CFG_TYPE_FLOAT));
+			CfgParamFloat paramRain = CfgParamFloat.Cast(presetParam.GetValueByName("Rain", CFG_TYPE_FLOAT));
+			CfgParamFloat paramSnow = CfgParamFloat.Cast(presetParam.GetValueByName("Snow", CFG_TYPE_FLOAT));
+			CfgParamFloat paramFog = CfgParamFloat.Cast(presetParam.GetValueByName("Fog", CFG_TYPE_FLOAT));
+			CfgParamFloat paramWindMagnitude = CfgParamFloat.Cast(presetParam.GetValueByName("WindMagnitude", CFG_TYPE_FLOAT));
+			CfgParamFloat paramWindDirection = CfgParamFloat.Cast(presetParam.GetValueByName("WindDirection", CFG_TYPE_FLOAT));
+			CfgParamFloat paramVolFogDD = CfgParamFloat.Cast(presetParam.GetValueByName("VolFogDD", CFG_TYPE_FLOAT));
+			CfgParamFloat paramVolFogHD = CfgParamFloat.Cast(presetParam.GetValueByName("VolFogHD", CFG_TYPE_FLOAT));
+			CfgParamFloat paramVolFogHB = CfgParamFloat.Cast(presetParam.GetValueByName("VolFogHB", CFG_TYPE_FLOAT));
+			
+			m_WeatherPresets.Insert(new ScriptConsoleWeatherPreset(paramWName.GetValue(), paramOvercast.GetValue(), paramRain.GetValue(), paramSnow.GetValue(), paramFog.GetValue(), paramWindMagnitude.GetValue(), paramWindDirection.GetValue(), paramVolFogDD.GetValue(), paramVolFogHD.GetValue(), paramVolFogHB.GetValue()));
+		}
+	}
+
+	void AddCameraPreset(string name, float focusDistance, float focusLength, float focusLengthNear, float blur, float focusDepthOffset)
+	{
+		CfgParamArray presetParam;
+		CfgParamString paramName;
+		array<ref CfgParam> camera_params = GetArray(CAMERA_PRESETS_LIST);
+
+		for (int i = 0; i < camera_params.Count(); i++)
+		{
+			presetParam = CfgParamArray.Cast(camera_params.Get(i));
+			if (!presetParam)
+				return;
+
+			paramName = CfgParamString.Cast(presetParam.GetValueByName("Name", CFG_TYPE_STRING));
+			if (paramName.GetName() == name)
+			{
+				return;
+			}
+		}
+
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue(name);
+		
+		CfgParamFloat paramFocusDistance = new CfgParamFloat("FocusDistance");
+		paramFocusDistance.SetValue(focusDistance);
+		
+		CfgParamFloat paramFocusLength = new CfgParamFloat("FocusLength");
+		paramFocusLength.SetValue(focusLength);
+		
+		CfgParamFloat paramFocusLengthNear = new CfgParamFloat("FocusLengthNear");
+		paramFocusLengthNear.SetValue(focusLengthNear);
+		
+		CfgParamFloat paramBlur = new CfgParamFloat("Blur"); 
+		paramBlur.SetValue(blur);
+		
+		CfgParamFloat paramFocusDepthOffset = new CfgParamFloat("FocusDepthOffset");
+		paramFocusDepthOffset.SetValue(focusDepthOffset);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramFocusDistance);
+		presetParam.InsertValue(paramFocusLength);
+		presetParam.InsertValue(paramFocusLengthNear);
+		presetParam.InsertValue(paramBlur);
+		presetParam.InsertValue(paramFocusDepthOffset);
+		camera_params.Insert(presetParam);
+		
+		SaveConfigToFile();
+		
+		m_CameraPresets.Insert(new ScriptConsoleCameraDOFPreset(name, focusDistance, focusLength, focusLengthNear, blur, focusDepthOffset));
+	}
+	
+	void RemoveCameraPreset(string name)
+	{
+		int i;
+		array<ref CfgParam> camera_params = GetArray(CAMERA_PRESETS_LIST);
+		for (i = 0; i < camera_params.Count(); i++)
+		{
+			CfgParamArray presetParam = CfgParamArray.Cast(camera_params.Get(i));
+			if (!presetParam)
+				continue;
+
+			CfgParamString paramName = CfgParamString.Cast(presetParam.GetValueByName("Name", CFG_TYPE_STRING));
+			if (paramName.GetValue() == name)
+			{
+				camera_params.Remove(i);
+				break;
+			}
+		}
+		
+		SaveConfigToFile();
+		
+		for (i = 0; i < m_CameraPresets.Count(); i++)
+		{
+			ScriptConsoleCameraDOFPreset cameraPreset = m_CameraPresets.Get(i);
+			if (cameraPreset.Name == name)
+			{
+				m_CameraPresets.Remove(i);
+				break;
+			}
+		}
+	}
+	
+	void AddWeatherPreset(string name, float overcast, float rain, float snow, float fog, float windM, float windD, float volFogDD, float volFogHD, float volFogHB)
+	{
+		CfgParamArray presetParam;
+		CfgParamString paramName;
+		CfgParamFloat paramOvercast, paramRain, paramSnow, paramFog, paramWindMagnitude, paramWindDirection, paramVolFogDD, paramVolFogHD, paramVolFogHB;
+
+		array<ref CfgParam> weather_params = GetArray(WEATHER_PRESETS_LIST);
+		int weatherPresetIndex = -1;
+		for (int i = 0; i < weather_params.Count(); i++)
+		{
+			presetParam = CfgParamArray.Cast(weather_params.Get(i));
+			if (!presetParam)
+				return;
+
+			paramName = CfgParamString.Cast(presetParam.GetValueByName("Name", CFG_TYPE_STRING));
+			if (paramName.GetValue() == name)
+			{
+				weatherPresetIndex = i;
+				break;
+			}
+		}
+		
+		if (weatherPresetIndex > -1)
+		{
+			weather_params.Remove(weatherPresetIndex);
+		}
+
+		presetParam = new CfgParamArray("");
+		paramName = new CfgParamString("Name");
+		paramName.SetValue(name);
+		paramOvercast = new CfgParamFloat("Overcast");
+		paramOvercast.SetValue(overcast);
+		paramRain = new CfgParamFloat("Rain");
+		paramRain.SetValue(rain);
+		paramSnow = new CfgParamFloat("Snow");
+		paramSnow.SetValue(snow);
+		paramFog = new CfgParamFloat("Fog");
+		paramFog.SetValue(fog);
+		paramWindMagnitude = new CfgParamFloat("WindMagnitude");
+		paramWindMagnitude.SetValue(windM);
+		paramWindDirection = new CfgParamFloat("WindDirection");
+		paramWindDirection.SetValue(windD);
+		paramVolFogDD = new CfgParamFloat("VolFogDD");
+		paramVolFogDD.SetValue(volFogDD);
+		paramVolFogHD = new CfgParamFloat("VolFogHD");
+		paramVolFogHD.SetValue(volFogHD);
+		paramVolFogHB = new CfgParamFloat("VolFogHB");
+		paramVolFogHB.SetValue(volFogHB);
+		
+		presetParam.InsertValue(paramName);
+		presetParam.InsertValue(paramOvercast);
+		presetParam.InsertValue(paramRain);
+		presetParam.InsertValue(paramSnow);
+		presetParam.InsertValue(paramFog);
+		presetParam.InsertValue(paramWindMagnitude);
+		presetParam.InsertValue(paramWindDirection);
+		presetParam.InsertValue(paramVolFogDD);
+		presetParam.InsertValue(paramVolFogHD);
+		presetParam.InsertValue(paramVolFogHB);
+		
+		if (weatherPresetIndex == -1)
+		{
+			weather_params.Insert(presetParam);
+			m_WeatherPresets.Insert(new ScriptConsoleWeatherPreset(name, overcast, rain, snow, fog, windM, windD, volFogDD, volFogHD, volFogHB));
+		}
+		else
+		{
+			weather_params.InsertAt(presetParam, weatherPresetIndex);
+			LoadWeatherPresets();
+		}
+		
+		SaveConfigToFile();
+	}
+	
+	void RemoveWeatherPreset(string name)
+	{
+		int i;
+		array<ref CfgParam> weather_params = GetArray(WEATHER_PRESETS_LIST);
+		for (i = 0; i < weather_params.Count(); i++)
+		{
+			CfgParamArray presetParam = CfgParamArray.Cast(weather_params.Get(i));
+			if (!presetParam)
+				continue;
+
+			CfgParamString paramName = CfgParamString.Cast(presetParam.GetValueByName("Name", CFG_TYPE_STRING));
+			if (paramName.GetValue() == name)
+			{
+				weather_params.Remove(i);
+				break;
+			}
+		}
+		
+		SaveConfigToFile();
+		
+		for (i = 0; i < m_WeatherPresets.Count(); i++)
+		{
+			ScriptConsoleWeatherPreset weatherPreset = m_WeatherPresets.Get(i);
+			if (weatherPreset.Name == name)
+			{
+				m_WeatherPresets.Remove(i);
+				break;
+			}
 		}
 	}
 	
@@ -717,6 +1719,19 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	}
 	
 	//========================================
+	// HorticultureVisible
+	//========================================	
+	bool GetHorticultureVisible()
+	{
+		return GetBool( HORTICULTURE_VIS );
+	}
+
+	void SetHorticultureVisible( bool is_visible )
+	{
+		SetBool( HORTICULTURE_VIS, is_visible );
+	}
+	
+	//========================================
 	// Show Item Preview
 	//========================================	
 	bool GetShowItemPreview()
@@ -806,6 +1821,22 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		
 		//SetArray(paramName, params);
 		SaveConfigToFile();
+	}
+	
+	//========================================
+	// Camera Presets
+	//========================================
+	array<ref ScriptConsoleCameraDOFPreset> GetCameraPresets()
+	{
+		return m_CameraPresets;
+	}
+	
+	//========================================
+	// Weather Presets
+	//========================================
+	array<ref ScriptConsoleWeatherPreset> GetWeatherPresets()
+	{
+		return m_WeatherPresets;
 	}
 
 	//========================================
@@ -911,7 +1942,7 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	}
 	
 	bool ItemAddToPreset( string preset_name, string item_name )
-	{		
+	{
 		if ( m_PresetList.Find( preset_name ) == -1 )
 		{
 			return false;

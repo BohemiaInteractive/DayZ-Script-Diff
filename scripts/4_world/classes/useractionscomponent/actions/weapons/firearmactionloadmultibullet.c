@@ -30,7 +30,7 @@ class FirearmActionLoadMultiBullet : FirearmActionBase
 		
 		Weapon_Base wpn = Weapon_Base.Cast(item);
 		Magazine mag = Magazine.Cast(target.GetObject());		
-		return mag && player.GetWeaponManager().CanLoadBullet(wpn,mag);
+		return mag && player.GetWeaponManager().CanLoadMultipleBullet(wpn,mag);
 	}
 	
 	override void Start( ActionData action_data )
@@ -128,7 +128,7 @@ class FirearmActionLoadMultiBulletQuick : FirearmActionBase
 			return false;
 		
 		Weapon_Base weapon = Weapon_Base.Cast( item );
-		return player.GetWeaponManager().CanLoadBullet(weapon ,player.GetWeaponManager().GetPreparedMagazine());
+		return player.GetWeaponManager().CanLoadMultipleBullet(weapon ,player.GetWeaponManager().GetPreparedMagazine());
 	}
 	
 	override void Start( ActionData action_data )

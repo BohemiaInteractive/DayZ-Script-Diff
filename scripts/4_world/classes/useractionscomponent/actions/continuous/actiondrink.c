@@ -31,12 +31,4 @@ class ActionDrink: ActionConsume
 	{
 		return false;
 	}
-	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
-	{	
-		if (!super.ActionCondition(player, target, item))
-			return false;
-		
-		return player.CanEatAndDrink() && !item.GetIsFrozen();
-	}
-};
+}

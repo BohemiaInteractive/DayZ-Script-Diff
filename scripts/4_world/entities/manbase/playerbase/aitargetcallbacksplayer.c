@@ -93,6 +93,7 @@ class AITargetCallbacksPlayer : AITargetCallbacks
 		switch (pState.m_iStanceIdx)
 		{
 			case DayZPlayerConstants.STANCEIDX_CROUCH:
+			case DayZPlayerConstants.STANCEIDX_RAISEDCROUCH:
 				switch (pState.m_iMovement)
 				{
 					case DayZPlayerConstants.MOVEMENTIDX_IDLE:
@@ -111,6 +112,7 @@ class AITargetCallbacksPlayer : AITargetCallbacks
 				break;
 	
 			case DayZPlayerConstants.STANCEIDX_PRONE:
+			case DayZPlayerConstants.STANCEIDX_RAISEDPRONE:
 				switch (pState.m_iMovement)
 				{
 					case DayZPlayerConstants.MOVEMENTIDX_IDLE:

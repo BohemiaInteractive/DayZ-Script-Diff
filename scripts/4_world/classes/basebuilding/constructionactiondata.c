@@ -46,6 +46,22 @@ class ConstructionActionData
 		}
 	}
 	
+	void ~ConstructionActionData()
+	{
+		if (GetGame() && (GetGame().IsClient() || !GetGame().IsMultiplayer()))
+		{
+			if (m_ActionVariantManager)
+			{
+				m_ActionVariantManager.GetOnUpdateInvoker().Remove(OnUpdateActions);
+			}
+			
+			if (m_ActionNoToolVariantManager)
+			{
+				m_ActionNoToolVariantManager.GetOnUpdateInvoker().Remove(OnUpdateActionsNoTool);
+			}
+		}
+	}
+	
 	//************************************************/
 	//  Base building
 	//************************************************/

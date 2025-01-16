@@ -8,6 +8,11 @@ class Pot : Bottle_Base
 		return true;
 	}
 	
+	override bool IsCookware()
+	{
+		return true;
+	}
+	
 	override string GetPouringSoundset()
 	{
 		return "emptyVessle_Pot_SoundSet";

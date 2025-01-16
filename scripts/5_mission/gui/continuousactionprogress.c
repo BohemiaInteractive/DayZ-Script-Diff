@@ -57,8 +57,8 @@ class ContinuousActionProgress extends ScriptedWidgetEventHandler
 	{
 		//! don't show continuous action progressif it's disabled in profile OR soft-disabled by the '~' keyhold
 		Mission mission = GetGame().GetMission();
-		IngameHud hud;
-		if (mission && Class.CastTo(hud,mission.GetHud()) && (hud.IsHideHudPlayer() || !hud.GetHudState()))
+		IngameHud hud = IngameHud.Cast(mission.GetHud());
+		if (hud && hud.GetHudVisibility().IsContextFlagActive(IngameHudVisibility.HUD_HIDE_FLAGS))
 		{
 			m_Root.Show(false);
 			return;
@@ -93,7 +93,7 @@ class ContinuousActionProgress extends ScriptedWidgetEventHandler
 			{
 				m_InitProgress = 100;
 				m_LoaderImage.SetRotation(0, 0, 0);
-				SetProgress(Math.AbsFloat(m_AM.GetActionComponentProgress() * 100));
+				SetProgress(Math.AbsFloat(m_AM.GetActionComponentProgress() * 100 * m_AM.GetACProgressWidgetMultiplier()));
 			}
 			m_Root.Show(true);
 		}

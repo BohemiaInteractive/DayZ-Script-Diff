@@ -29,29 +29,33 @@ class HandAnimatedMoveToDst_W4T extends HandStartAction
 
 	override void OnEntry(HandEventBase e)
 	{
-		Man player = e.m_Player;
 		if (m_Dst && m_Dst.IsValid())
 		{
 			EntityAI item = m_Dst.GetItem();
 			InventoryLocation src = new InventoryLocation;
 			if (item.GetInventory().GetCurrentInventoryLocation(src))
 			{
-				if (GameInventory.LocationSyncMoveEntity(src, m_Dst))
+				if (!GetGame().IsDedicatedServer())
 				{
-					player.OnItemInHandsChanged();
+					if (!GetGame().IsMultiplayer())
+					{
+						m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
+						GameInventory.LocationSyncMoveEntity(src, m_Dst);
+						m_Player.OnItemInHandsChanged();
+					}
+					else
+					{
+						m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst.GetItem(), m_Dst);
+						m_Player.GetHumanInventory().PostDeferredEventTakeToDst(InventoryMode.JUNCTURE,src, m_Dst);
+					}
 				}
 				else
 				{
-					#ifdef ENABLE_LOGGING
-					if ( LogManager.IsInventoryHFSMLogEnable() )
-					{	
-						Debug.InventoryHFSMLog("[hndfsm] HandAnimatedMoveToDst_W4T - not allowed");
-					}
-					#endif
+					GetGame().ClearJunctureEx(m_Player, m_Dst.GetItem());
 				}
 			}
 			else
-				Error("[hndfsm] " + Object.GetDebugName(e.m_Player) + " STS = " + e.m_Player.GetSimulationTimeStamp() + " HandAnimatedMoveToDst_W4T - item " + item + " has no Inventory or Location, inv=" + item.GetInventory());
+				Error("[hndfsm] " + Object.GetDebugName(m_Player) + " STS = " + m_Player.GetSimulationTimeStamp() + " HandAnimatedMoveToDst_W4T - item " + item + " has no Inventory or Location, inv=" + item.GetInventory());
 		}
 		else
 			Error("[hndfsm] HandAnimatedMoveToDst_W4T - event has no valid m_Dst");
@@ -113,7 +117,7 @@ class HandAnimatedMovingToAtt extends HandStateBase
 			
 			m_ilEntity = m_Show.m_Dst;
 			
-			e.m_Player.GetHumanInventory().AddInventoryReservationEx(m_Entity, m_ilEntity, GameInventory.c_InventoryReservationTimeoutShortMS);
+			m_Player.GetHumanInventory().AddInventoryReservationEx(m_Entity, m_ilEntity, GameInventory.c_InventoryReservationTimeoutShortMS);
 		}
 		
 		super.OnEntry(e); // @NOTE: super at the end (prevent override from submachine start)
@@ -123,11 +127,11 @@ class HandAnimatedMovingToAtt extends HandStateBase
 	{
 		if ( !GetGame().IsDedicatedServer())
 		{
-			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Entity, m_ilEntity);
+			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Entity, m_ilEntity);
 		}
 		else
 		{
-			GetGame().ClearJunctureEx(e.m_Player, m_Entity);
+			GetGame().ClearJunctureEx(m_Player, m_Entity);
 		}
 		
 		m_Entity = null;
@@ -140,7 +144,7 @@ class HandAnimatedMovingToAtt extends HandStateBase
 	{
 		if ( !GetGame().IsDedicatedServer())
 		{
-			e.m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Entity, m_ilEntity);
+			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Entity, m_ilEntity);
 		}
 		
 		m_Entity = null;

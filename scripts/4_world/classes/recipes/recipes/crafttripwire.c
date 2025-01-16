@@ -68,13 +68,6 @@ class CraftTripWire extends RecipeBase
 		{
 			if ( ingredients[1].IsInherited( MetalWire ) )
 				tripWire.SetWireType( eWireMaterial.WIRE );
-			//Variants to make the trap out of rope or barbed wire
-			/*
-			else if ( ingredients[1].IsInherited( BarbedWire ) )
-				tripWire.SetWireType( eWireMaterial.BARBED_WIRE );
-			else if ( ingredients[1].IsInherited( Rope ) )
-				tripWire.SetWireType( eWireMaterial.ROPE );
-			*/
 		}
 	}
 };

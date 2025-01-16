@@ -10,14 +10,14 @@ class SlotsContainer: Container
 		{
 			if ( GetRootWidget().FindAnyWidget( "Icon" + i ) )
 				m_Icons.Insert( new SlotsIcon( this, GetRootWidget().FindAnyWidget( "Icon" + i ), i , slot_parent) );
-			else
+			/*else
 			{
 				Widget child = GetRootWidget().GetChildren();
 				while ( child )
 				{
 					child = child.GetSibling();
 				}
-			}
+			}*/
 		}
 	}
 	

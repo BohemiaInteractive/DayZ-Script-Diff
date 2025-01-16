@@ -123,7 +123,7 @@ class CarContactData
 
 typedef map<string, ref array<ref CarContactData>> CarContactCache
 
-#ifdef DEVELOPER 
+#ifdef DIAG_DEVELOPER 
 CarScript _car;
 #endif
 
@@ -279,7 +279,7 @@ class CarScript extends Car
 	
 	void CarScript()
 	{
-#ifdef DEVELOPER 
+#ifdef DIAG_DEVELOPER 
 		_car = this;
 #endif
 
@@ -1084,7 +1084,7 @@ class CarScript extends Car
 							}
 							else
 							{
-								if (!eff.IsPlaying())
+								if (!eff.IsPlaying() && Surface.GetWheelParticleID(surface) != 0)
 									eff.Start();
 								eff.SetSurface(surface);
 								eff.SetCurrentLocalPosition(wheelPos);
@@ -1185,6 +1185,15 @@ class CarScript extends Car
 		float healthCoef = Math.InverseLerp(ActionGetOutTransport.HEALTH_LOW_SPEED_VALUE, ActionGetOutTransport.HEALTH_HIGH_SPEED_VALUE, gotActionData.m_Speed);
 		healthCoef = Math.Clamp(healthCoef, 0.0, 1.0);
 		gotActionData.m_Player.ProcessDirectDamage(DamageType.CUSTOM, gotActionData.m_Player, "", "FallDamageHealth", posMS, healthCoef);
+	}
+	
+	protected override bool DetectFlipped(VehicleFlippedContext ctx)
+	{
+		if (!DetectFlippedUsingWheels(ctx, GameConstants.VEHICLE_FLIP_WHEELS_LIMITED))
+			return false;
+		if (!DetectFlippedUsingSurface(ctx, GameConstants.VEHICLE_FLIP_ANGLE_TOLERANCE))
+			return false;
+		return true;
 	}
 	
 	override void OnUpdate( float dt )
@@ -1388,15 +1397,15 @@ class CarScript extends Car
 			m_DebugContactDamageMessage += string.Format("%1: %2\n", zoneName, dmg);
 			#endif
 			
-			ProcessDirectDamage(DT_CUSTOM, null, zoneName, "EnviroDmg", "0 0 0", dmg, pddfFlags);
+			ProcessDirectDamage(DamageType.CUSTOM, null, zoneName, "EnviroDmg", "0 0 0", dmg, pddfFlags);
 			
 			//if (data[0].impulse > TRESHOLD)
 			//{
-			/*	Object targetEntity = Object.Cast(data[0].other);
+				Object targetEntity = Object.Cast(data[0].other);
 				if (targetEntity && targetEntity.IsTree())
 				{
 					SEffectManager.CreateParticleServer(targetEntity.GetPosition(), new TreeEffecterParameters("TreeEffecter", 1.0, 0.1));
-				}*/
+				}
 			//}
 		}
 		
@@ -1560,7 +1569,7 @@ class CarScript extends Car
 		WaveKind waveKind = WaveKind.WAVEEFFECT;
 
 		m_CarEngineLastSoundState = state;
-
+		
 		switch (state)
 		{
 			case CarEngineSoundState.STARTING:
@@ -1707,12 +1716,6 @@ class CarScript extends Car
 	{
 		EntityAI item = null;
 		
-		if (GetFluidFraction(CarFluid.FUEL) <= 0)
-		{
-			SetCarEngineSoundState(CarEngineSoundState.START_NO_FUEL);
-			return false;
-		}
-		
 		if (IsVitalCarBattery() || IsVitalTruckBattery())
 		{
 			item = GetBattery();
@@ -1743,8 +1746,44 @@ class CarScript extends Car
 			}
 		}
 		
-		SetCarEngineSoundState(CarEngineSoundState.STARTING);
+		if (GetFluidFraction(CarFluid.FUEL) <= 0)
+		{
+			SetCarEngineSoundState(CarEngineSoundState.START_NO_FUEL);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	// Whether the car engine can be started
+	bool CheckOperationalState()
+	{
+		EntityAI item = null;
+		
+		if (GetFluidFraction(CarFluid.FUEL) <= 0)
+			return false;
+		
+		if (IsVitalCarBattery() || IsVitalTruckBattery())
+		{
+			item = GetBattery();
+			if (!item || (item && (item.IsRuined() || item.GetCompEM().GetEnergy() < m_BatteryEnergyStartMin)))
+				return false;
+		}
 
+		if (IsVitalSparkPlug())
+		{
+			item = FindAttachmentBySlotName("SparkPlug");
+			if (!item || (item && item.IsRuined()))
+				return false;
+		}
+	
+		if (IsVitalGlowPlug())
+		{
+			item = FindAttachmentBySlotName("GlowPlug");
+			if (!item || (item && item.IsRuined()))
+				return false;
+		}
+		
 		return true;
 	}
 
@@ -2334,7 +2373,7 @@ class CarScript extends Car
 		#endif
 	}
 	
-	void PlaySound(string soundset, ref EffectSound sound, out bool soundbool)
+	void PlaySound(string soundset, EffectSound sound, out bool soundbool)
 	{
 		PlaySoundEx(soundset, sound, soundbool);
 	}
@@ -2468,7 +2507,7 @@ class CarScript extends Car
 
 	int GetCarDoorsState(string slotType)
 	{
-		return -1;
+		return CarDoorState.DOORS_MISSING;
 	}
 	
 	CarDoorState TranslateAnimationPhaseToCarDoorState(string animation)
@@ -2753,6 +2792,7 @@ class CarScript extends Car
 			debug_output += m_DebugContactDamageMessage + "\n";
 		}
 		debug_output += "Entity momentum: " + GetMomentum();
+		debug_output += "\nIsEngineON: " + EngineIsOn();
 
 		return debug_output;	
 	}

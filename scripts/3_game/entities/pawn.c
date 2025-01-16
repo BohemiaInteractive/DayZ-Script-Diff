@@ -32,6 +32,12 @@ class PawnOwnerState
 
 	proto native int	GetSimulationTimestamp();
 	
+	proto native void	SetPhysicsTimeStamp(int value);
+	proto native int	GetPhysicsTimeStamp();
+	
+	proto native void	SetWaterTime(float value);
+	proto native float	GetWaterTime();
+	
 	protected event void Write(PawnStateWriter ctx)
 	{
 	}

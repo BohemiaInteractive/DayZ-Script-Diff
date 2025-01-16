@@ -1,15 +1,31 @@
+class CAContinuousRepeatPushBoat : CAContinuousRepeatPushObject
+{
+	override float GetProgressWidgetMultiplier()
+	{
+		return 4;
+	}
+}
+
+class ActionPushBoatCB : ActionPushObjectCB
+{
+	override void CreateActionComponent()
+	{
+		m_ActionData.m_ActionComponent = new CAContinuousRepeatPushBoat(UATimeSpent.PUSH_BOAT);
+	}
+}
+
 class ActionPushBoat : ActionPushObject
 {	
 	void ActionPushBoat()
 	{
-		m_CallbackClass	= ActionPushObjectCB;
+		m_CallbackClass	= ActionPushBoatCB;
 		m_CommandUID 	= DayZPlayerConstants.CMD_ACTIONFB_VEHICLE_PUSH;
 		m_FullBody 		= true;
 		m_StanceMask 	= DayZPlayerConstants.STANCEMASK_ERECT;
 
 		m_Text = "#STR_push_boat";
 	}
-	
+		
 	override void OnStartServer(ActionData action_data)
 	{
 		super.OnStartServer(action_data);

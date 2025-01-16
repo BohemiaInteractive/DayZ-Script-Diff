@@ -1,3 +1,8 @@
+class SawPlanksActionData : ActionData
+{
+	ItemBase 	m_LastPlanksPile; //locally used on server only
+}
+
 class ActionSawPlanksCB : ActionContinuousBaseCB
 {
 	static const float TIME_SAW_HANDSAW = 1.5;
@@ -27,7 +32,7 @@ class ActionSawPlanksCB : ActionContinuousBaseCB
 				return TIME_AXES;
 			break
 		}
-		Print("ActionSawPlanksCB | Item detection error, assigning negative time");
+		Debug.Log("ActionSawPlanksCB | Item detection error, assigning negative time","recipes");
 		return -1;
 	}
 };
@@ -39,8 +44,6 @@ class ActionSawPlanks: ActionContinuousBase
 	//static const int DECREASE_FUEL_OF_CHAINSAW = 20; // chainsaw fuel in ml
 	
 	static const int YIELD = 3;
-	ItemBase m_Planks;
-	ref InventoryLocation m_PlanksLocation = new InventoryLocation;
 	
 	void ActionSawPlanks()
 	{
@@ -87,80 +90,48 @@ class ActionSawPlanks: ActionContinuousBase
 		return false;
 	}
 	
+	override ActionData CreateActionData()
+	{
+		SawPlanksActionData action_data = new SawPlanksActionData();
+		return action_data;
+	}
+	
 	override void OnFinishProgressServer( ActionData action_data )
 	{
-		PileOfWoodenPlanks item_POWP = PileOfWoodenPlanks.Cast( action_data.m_Target.GetObject() );
+		SawPlanksActionData sawPlanksData = SawPlanksActionData.Cast(action_data);
+		
+		PileOfWoodenPlanks item_POWP = PileOfWoodenPlanks.Cast( sawPlanksData.m_Target.GetObject() );
 		item_POWP.RemovePlanks(YIELD);
 		
-		vector pos = action_data.m_Player.GetPosition();
-		
-		InventoryLocation currentLoc = new InventoryLocation;
-		if (m_Planks)
-			m_Planks.GetInventory().GetCurrentInventoryLocation(currentLoc);
-		
-		if (!m_Planks || !currentLoc.CompareLocationOnly(m_PlanksLocation))
+		if (!sawPlanksData.m_LastPlanksPile)
 		{
-			m_Planks = ItemBase.Cast( GetGame().CreateObjectEx("WoodenPlank", pos, ECE_PLACE_ON_SURFACE) );
-			m_Planks.SetQuantity(YIELD);
-			
-			m_Planks.GetInventory().GetCurrentInventoryLocation(currentLoc);
-			m_PlanksLocation.Copy(currentLoc);
+			SpawnNewPlankPile(sawPlanksData,YIELD);
 		}
-		else if ((m_Planks.GetQuantity() + YIELD) >= m_Planks.GetQuantityMax())
+		else if ((sawPlanksData.m_LastPlanksPile.GetQuantity() + YIELD) >= sawPlanksData.m_LastPlanksPile.GetQuantityMax())
 		{
-			int remnant = m_Planks.GetQuantity() + YIELD - m_Planks.GetQuantityMax();
-			m_Planks.SetQuantity(m_Planks.GetQuantityMax());
+			int remnant = sawPlanksData.m_LastPlanksPile.GetQuantity() + YIELD - sawPlanksData.m_LastPlanksPile.GetQuantityMax();
+			sawPlanksData.m_LastPlanksPile.SetQuantity(sawPlanksData.m_LastPlanksPile.GetQuantityMax());
+			
 			if (remnant > 0)
-			{
-				m_Planks = ItemBase.Cast( GetGame().CreateObjectEx("WoodenPlank", pos, ECE_PLACE_ON_SURFACE) );
-				m_Planks.SetQuantity(remnant);
-
-				m_Planks.GetInventory().GetCurrentInventoryLocation(currentLoc);
-				m_PlanksLocation.Copy(currentLoc);
-			}
+				SpawnNewPlankPile(sawPlanksData,remnant);
 		}
 		else
 		{
-			m_Planks.AddQuantity(YIELD);
+			sawPlanksData.m_LastPlanksPile.AddQuantity(YIELD);
 		}
 		
-		ItemBase item = action_data.m_MainItem;
-		
-		string item_type = item.GetType();
-		
-		item.DecreaseHealth("", "", UADamageApplied.SAW_PLANKS);
-		/*switch(item_type)
-		{
-			case "WoodAxe": 
-				item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( DECREASE_HEALTH_OF_TOOL_AXE, GetSpecialtyWeight() ));
-			break;
-		
-			case "FirefighterAxe": 
-				item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( DECREASE_HEALTH_OF_TOOL_AXE, GetSpecialtyWeight() ));
-			break;
-		
-			case "FirefighterAxe_Black": 
-				item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( DECREASE_HEALTH_OF_TOOL_AXE, GetSpecialtyWeight() ));
-			break;
-		
-			case "FirefighterAxe_Green": 
-				item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( DECREASE_HEALTH_OF_TOOL_AXE, GetSpecialtyWeight() ));
-			break;
-		
-			case "Hatchet": 
-				item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( DECREASE_HEALTH_OF_TOOL_AXE, GetSpecialtyWeight() ));
-			break;
-		
-			case "Chainsaw":
-				if ( item.HasEnergyManager() )
-				{
-					item.GetCompEM().ConsumeEnergy(DECREASE_FUEL_OF_CHAINSAW);
-				}
-			break;
-		
-			default: // Hacksaw and other
-				item.DecreaseHealth( "", "", action_data.m_Player.GetSoftSkillsManager().AddSpecialtyBonus( UADamageApplied.SAW_PLANKS, GetSpecialtyWeight() ));
-			break;
-		}*/
+		sawPlanksData.m_MainItem.DecreaseHealth("", "", UADamageApplied.SAW_PLANKS);
 	}
+	
+	protected void SpawnNewPlankPile(SawPlanksActionData data, float quantity)
+	{
+		ItemBase planksNewResult = ItemBase.Cast(data.m_Player.SpawnEntityOnGroundRaycastDispersed("WoodenPlank",0.3,UAItemsSpreadRadius.VERY_NARROW));
+		planksNewResult.SetQuantity(quantity);
+		data.m_LastPlanksPile = planksNewResult;
+	}
+	
+	///////////////////////////////////////////////////////////////
+	//DEPREDATED; do NOT store anything on the shared server action directly!
+	ItemBase m_Planks;
+	ref InventoryLocation m_PlanksLocation = new InventoryLocation;
 };

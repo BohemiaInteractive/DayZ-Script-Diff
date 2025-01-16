@@ -70,6 +70,26 @@ class ControlsXboxNew extends UIScriptedMenu
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
+		bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
+		bool mkServer = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		
+		switch (pInputDeviceType)
+		{
+		case EInputDeviceType.CONTROLLER:
+			if (mk && mkServer)
+			{
+				GetGame().GetUIManager().ShowUICursor(false);
+			}
+		break;
+
+		default:
+			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			{
+				GetGame().GetUIManager().ShowUICursor(true);
+			}
+		break;
+		}
+		
 		UpdateControlsElementVisibility();
 	}
 	
@@ -80,12 +100,10 @@ class ControlsXboxNew extends UIScriptedMenu
 	
 	void UpdateTabContent(int tab_index)
 	{
-		Print("UpdateTabContent - 1");		
 		Widget w;
 		//hide old
 		if (m_CurrentTabIdx != -1)
 		{
-			Print("UpdateTabContent - 2");
 			m_VariantWidget.Show(false);
 			while (m_VariantWidget.GetParent())
 			{
@@ -191,9 +209,6 @@ class ControlsXboxNew extends UIScriptedMenu
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
-
-		
 		return layoutRoot;
 	}
 	
@@ -202,6 +217,7 @@ class ControlsXboxNew extends UIScriptedMenu
 		super.OnShow();
 		
 		SetFocus(null);
+		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 	}
 	
 	override bool OnClick(Widget w, int x, int y, int button)

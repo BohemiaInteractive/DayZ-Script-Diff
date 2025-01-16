@@ -118,8 +118,11 @@ class PlayerStatsPCO_Base
 	
 	void OnRPC(ParamsReadContext ctx)
 	{
-		foreach (PlayerStatBase playerStat : m_PlayerStats)
-			playerStat.OnRPC(ctx);
+		ParamsReadContext localContext = ctx;
+		localContext.Read(CachedObjectsParams.PARAM2_INT_FLOAT);
+			
+		PlayerStatBase playerStat = m_PlayerStats[CachedObjectsParams.PARAM2_INT_FLOAT.param1];
+		playerStat.OnRPC(ctx);
 	}
 	
 	void OnAfterStoreLoad()

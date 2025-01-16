@@ -4,6 +4,9 @@ class LeftArea: Container
 	protected Widget					m_DownIcon;
 	protected Widget					m_ContentParent;
 	protected ref VicinityContainer		m_VicinityContainer;
+	protected Widget					m_SlotsHeader;
+	protected Widget					m_SlotsContent;
+	protected ScrollWidget				m_SlotsScrollWidget;
 	protected ScrollWidget				m_ScrollWidget;
 	protected ref SizeToChild			m_ContentResize;
 	protected bool						m_ShouldChangeSize = true;
@@ -15,6 +18,12 @@ class LeftArea: Container
 		
 		m_ContentParent	= m_MainWidget.FindAnyWidget("ContentParent");
 		m_ContentParent.GetScript(m_ContentResize);
+		
+		#ifndef PLATFORM_CONSOLE
+		m_SlotsHeader	= m_MainWidget.FindAnyWidget("SlotsHeader");
+		m_SlotsContent	= m_MainWidget.FindAnyWidget("SlotsContent");
+		m_SlotsScrollWidget	= ScrollWidget.Cast(m_MainWidget.FindAnyWidget("ScrollerSlotsContent"));
+		#endif
 		
 		m_ScrollWidget	= ScrollWidget.Cast(m_MainWidget.FindAnyWidget("Scroller"));
 		m_MainWidget	= m_MainWidget.FindAnyWidget("Content");
@@ -120,12 +129,13 @@ class LeftArea: Container
 	
 	override void SetSameLevelNextActive()
 	{
-		m_VicinityContainer.SetSameLevelNextActive();
+		super.SetSameLevelNextActive();
 		Refresh();
 	}
+
 	override void SetSameLevelPreviousActive()
 	{
-		m_VicinityContainer.SetSameLevelPreviousActive();
+		super.SetSameLevelPreviousActive();
 		Refresh();
 	}
 	
@@ -174,7 +184,6 @@ class LeftArea: Container
 				}
 			}
 		#endif
-			
 	}
 	
 	override EntityAI GetFocusedItem()
@@ -205,6 +214,9 @@ class LeftArea: Container
 		
 		m_MainWidget.Update();
 		m_RootWidget.Update();
+		#ifndef PLATFORM_CONSOLE
+		m_SlotsScrollWidget.Update();
+		#endif
 		m_ScrollWidget.Update();
 		
 		UpdateSelectionIcons();
@@ -230,6 +242,9 @@ class LeftArea: Container
 		{
 			m_MainWidget.Update();
 			m_RootWidget.Update();
+			#ifndef PLATFORM_CONSOLE
+			m_SlotsScrollWidget.Update();
+			#endif
 			m_ScrollWidget.Update();
 			m_ShouldChangeSize = false;
 		}
@@ -249,4 +264,21 @@ class LeftArea: Container
 			Refresh();
 		return true;
 	}
+	
+	#ifndef PLATFORM_CONSOLE
+	override ScrollWidget GetSlotsScrollWidget()
+	{
+		return m_SlotsScrollWidget;
+	}
+	
+	Widget GetSlotsHeader()
+	{
+		return m_SlotsHeader;
+	}
+	
+	Widget GetSlotsArea()
+	{
+		return m_SlotsContent;
+	}
+	#endif
 }

@@ -43,6 +43,7 @@ class ActionWashHandsItem: ActionSingleUseBase
 		{
 			PluginLifespan module_lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
 			module_lifespan.UpdateBloodyHandsVisibility( action_data.m_Player, false );
+			action_data.m_Player.ClearBloodyHandsPenaltyChancePerAgent(eAgents.SALMONELLA);
 			action_data.m_MainItem.AddQuantity( -action_data.m_MainItem.GetDisinfectQuantity(), false );
 		}
 	}

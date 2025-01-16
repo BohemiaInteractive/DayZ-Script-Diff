@@ -102,7 +102,6 @@ class ActionDeployBase : ActionContinuousBase
 		GetGame().ClearJunctureEx(action_data.m_Player, entity_for_placing);
 		action_data.m_MainItem.SetIsBeingPlaced(false);
 		poActionData.m_AlreadyPlaced = true;
-		action_data.m_MainItem.SoundSynchRemoteReset();
 		
 		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation); //beware, this WILL fire on server before the item is moved to final position!
 		action_data.m_Player.PlacingCompleteServer();

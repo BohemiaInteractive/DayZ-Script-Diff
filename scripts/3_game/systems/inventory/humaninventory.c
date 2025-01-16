@@ -613,4 +613,15 @@ class HumanInventory : GameInventory
 		
 		return true; 
 	}
+	
+	bool PostDeferredEventTakeToDst(InventoryMode mode, notnull InventoryLocation src, notnull InventoryLocation dst)
+	{
+		return true;
+	}
+
+	
+	bool PostDeferredForceSwapEntities(InventoryMode mode, notnull EntityAI item1, notnull EntityAI item2, notnull InventoryLocation dst1, notnull InventoryLocation dst2)
+	{
+		return true;
+	}
 }

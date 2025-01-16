@@ -8,6 +8,11 @@ class PlayerConstants
 	static const float FULL_SPRINT_DELAY_FROM_CROUCH 	= 1.0;	//! [seconds]
 	static const float FULL_SPRINT_DELAY_FROM_PRONE 	= 2.0;	//! [seconds]
 	
+	//approximate head heights
+	static const float HEAD_HEIGHT_ERECT = 1.6;
+	static const float HEAD_HEIGHT_CROUCH = 1.05;
+	static const float HEAD_HEIGHT_PRONE = 0.66;
+	
 	//----------------------------------------------------------
 	//				SHOES DAMAGE/FEET BLEEDING
 	//----------------------------------------------------------
@@ -58,6 +63,9 @@ class PlayerConstants
 	static const float STOMACH_ENERGY_TRANSFERED_PER_SEC 		= 3;	//amount of kcal transfered to energy per second(this should ideally be higher than what player burns under high metabolic load[sprint])
 	static const float STOMACH_WATER_TRANSFERED_PER_SEC 		= 6;	//amount of ml transfered to water per second(this should ideally be higher than what player burns under high metabolic load[sprint])
 	static const float STOMACH_SOLID_EMPTIED_PER_SEC 			= 7;	//amount of g/ml emptied from stomach per second
+	
+	static const float STOMACH_DIGEST_AGENT_RANDOM_MIN = -0.5; 	//! Percents of agents count <-1.0; 1.0>
+	static const float STOMACH_DIGEST_AGENT_RANDOM_MAX = 0.5; 	//! Percents of agents count <-1.0; 1.0>
 
 	static const float LOW_WATER_THRESHOLD 						= SL_WATER_LOW;		//threshold from which water affects health
 
@@ -91,12 +99,14 @@ class PlayerConstants
 	static const float BLOOD_REGEN_RATE_PER_SEC				= 0.3; 	//base amount of blood regenerated per second
 	static const float DAMAGE_ZONE_BLOOD_REGEN_MODIFIER 	= 0.7;
 	
+	static const float UNCONSCIOUS_BLOOD_REGEN_MLTP 		= 2;	//multiplier for blood regen while character has critical blood and uncon
+	
 	static const float BLOOD_REGEN_MODIFIER_ENERGY_LOW		= 0; 	//multiplier for blood regen rate 
-	static const float BLOOD_REGEN_MODIFIER_ENERGY_MID		= 0.5;
+	static const float BLOOD_REGEN_MODIFIER_ENERGY_MID		= 0.65;
 	static const float BLOOD_REGEN_MODIFIER_ENERGY_HIGH		= 1;
 	
 	static const float BLOOD_REGEN_MODIFIER_WATER_LOW		= 0; 	//multiplier for blood regen rate (BLOOD_REGEN_MULTIPLIER_WATER_LOW ?)
-	static const float BLOOD_REGEN_MODIFIER_WATER_MID		= 0.5;
+	static const float BLOOD_REGEN_MODIFIER_WATER_MID		= 0.65;
 	static const float BLOOD_REGEN_MODIFIER_WATER_HIGH		= 1;
 	
 	static const float SALINE_BLOOD_REGEN_PER_SEC			= 3;	//boost for blood regen per second, independent on BLOOD_REGEN_SPEED
@@ -144,8 +154,9 @@ class PlayerConstants
 	static const float UNCONSCIOUS_THRESHOLD				= 25.0;		//player goes unconscious when we get under this threshold
 	static const float CONSCIOUS_THRESHOLD					= 50.0;		//player regains consciousness when he gets above this threshold
 	
-	static const float SHOCK_REFILL_CONSCIOUS_SPEED			= 5;		//shock refill speed when the player is conscious
-	static const float SHOCK_REFILl_UNCONSCIOUS_SPEED		= 1;		//shock refill speed when the player is unconscious
+	static const float SHOCK_REFILL_CONSCIOUS_SPEED				= 5;		//shock refill speed when the player is conscious
+	static const float SHOCK_REFILl_UNCONSCIOUS_SPEED			= 1;		//shock refill speed when the player is unconscious
+	static const float SHOCK_REFILL_UNCON_CRITICAL_BLOOD_MLTP	= 0.8;		//shock refill speed multiplier when the player is unconscious and has critical blood level
 	
 	static const float SHOCK_DAMAGE_BLOOD_THRESHOLD_HIGH	= 3000;		// we start dealing shock damage over time when we get at this value or lower
 	static const float SHOCK_DAMAGE_BLOOD_THRESHOLD_LOW		= 2500; 	// the closer we get to this value, the higher the over time shock damage we deal
@@ -250,4 +261,9 @@ class PlayerConstants
 	static const float	DROWNING_UNCONSCIOUS_THRESHOLD 		= 0.1;	//what water level value does it take for the player to be considered drowning while unconscious -  0.10 seemed a reasonable value based on visual observation and matching it to water depth values(can be adjust more precisely though)
 	static const int	DROWNING_BUBBLE_FREQUENCY_MAX		= 4000; //how often should bubbles appear when the stamina is at its highest,(in ms)
 	static const int	DROWNING_BUBBLE_FREQUENCY_MIN		= 1000; //how often should bubbles appear when the stamina is at its lowest,(in ms)
+	
+	static const float	BLOODY_HANDS_FOOD_POISON_AGENT_INCREMENT = 5;
+	
+	//! DEPRECATED
+	static const float	BLOODY_HANDS_SALMONELLA_CHANCE		= 0.05; //! replaced by EntityAI::m_BloodInfectionChanceCached
 }

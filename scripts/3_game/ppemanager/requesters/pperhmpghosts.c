@@ -56,11 +56,13 @@ class PPERequester_HMPGhosts extends PPERequester_GameplayBase
 			return;
 		}
 		
-		ProcessSimulation(delta);
+		if (m_IsRunning)
+			ProcessSimulation(delta);
 		
 		super.OnUpdate(delta);
 		
-		SetRequesterUpdating(true);
+		if (m_IsRunning)
+			SetRequesterUpdating(true);
 	}
 	
 	protected void ProcessSimulation(float delta)

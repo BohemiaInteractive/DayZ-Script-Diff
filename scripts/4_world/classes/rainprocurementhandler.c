@@ -157,9 +157,9 @@ class RainProcurementHandler : Managed
 		return m_LiquidAmountCoef;
 	}
 	
-	//! scalable on handler level
+	//! scalable on handler level. Now also handles SNOW, total value can exceed 1.0
 	float DetermineAmountCoef()
 	{
-		return GetGame().GetWeather().GetRain().GetActual();
+		return GetGame().GetWeather().GetRain().GetActual() + GetGame().GetWeather().GetSnowfall().GetActual();
 	}
 };

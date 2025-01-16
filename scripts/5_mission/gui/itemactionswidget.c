@@ -182,7 +182,7 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 	protected void Update()
 	{
 		//! don't show when disabled in profile
-		if (!g_Game.GetProfileOption(EDayZProfilesOptions.HUD) || !m_Hud.IsHudVisible())
+		if (m_Hud.GetHudVisibility().IsContextFlagActive(IngameHudVisibility.HUD_HIDE_FLAGS))
 		{
 			m_Root.Show(false);
 			return;

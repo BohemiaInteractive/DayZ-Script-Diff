@@ -85,10 +85,6 @@ class SharpenLongStick extends RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
 	{
-		ItemBase ingredient = ingredients[0];
-	
-		ItemBase item_result = results[0];
-			
-		MiscGameplayFunctions.TransferItemProperties(ingredient, item_result, false, false, false);
+		MiscGameplayFunctions.TransferItemProperties(ingredients[0], results[0], false, false, false);
 	}
 };

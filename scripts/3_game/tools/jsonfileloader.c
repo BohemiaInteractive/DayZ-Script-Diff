@@ -1,5 +1,7 @@
 class JsonFileLoader<Class T>
 {
+	protected static const int READ_FILE_LENGTH = 100000000;
+	
 	protected static ref JsonSerializer m_Serializer = new JsonSerializer();
 	
 	static bool LoadFile(string filename, out T data, out string errorMessage)
@@ -14,12 +16,8 @@ class JsonFileLoader<Class T>
 			}
 			
 			string fileContent;
-			string lineContent;
-			while (FGets(handle, lineContent) >= 0)
-			{
-				fileContent += lineContent;
-			}
-			
+			ReadFile(handle, fileContent, READ_FILE_LENGTH);
+
 			CloseFile(handle);
 			
 			if (!m_Serializer)

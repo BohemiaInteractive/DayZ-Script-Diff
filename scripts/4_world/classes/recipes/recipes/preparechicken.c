@@ -23,37 +23,31 @@ class PrepareChicken extends PrepareAnimal
 		m_ResultReplacesIngredient[0] = 0;		// (value) == -1 means do nothing; a value >= 0 means this result will transfer item propertiesvariables, attachments etc.. from an ingredient value
 
 	}
-
-	override bool CanDo(ItemBase ingredients[], PlayerBase player)//final check for recipe's validity
-	{
-		if (ingredients[0].GetHealthLevel() == GameConstants.STATE_RUINED)
-		{
-			return false;
-		}
-		return true;
-	}
 	
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
 		ItemBase deadChicken = ingredients[0];
-		ItemBase resultBones = results[0];
-
+		Bone resultBones = Bone.Cast(results[0]);
+		ItemBase result;
+		
 		int steakCount = Math.RandomIntInclusive(2,4);
-		for (int i=0; i < steakCount; i++)
+		for (int i=0; i < steakCount; ++i)
 		{
-			ItemBase result = ItemBase.Cast(player.SpawnEntityOnGroundOnCursorDir("ChickenBreastMeat", DEFAULT_SPAWN_DISTANCE));
+			result = ItemBase.Cast(player.SpawnEntityOnGroundRaycastDispersed("ChickenBreastMeat"));
 			MiscGameplayFunctions.TransferItemProperties(deadChicken, result);
 			result.SetQuantityNormalized(Math.RandomFloatInclusive(0.8,1));
 		}
-
-		ItemBase resultFeathers = ItemBase.Cast(player.SpawnEntityOnGroundOnCursorDir("ChickenFeather", DEFAULT_SPAWN_DISTANCE));
-		MiscGameplayFunctions.TransferItemProperties(deadChicken, resultFeathers);
-		resultFeathers.SetQuantity(Math.RandomIntInclusive(5,15));
-
-		MiscGameplayFunctions.TransferItemProperties(deadChicken, resultBones);
-		resultBones.SetQuantity(Math.RandomIntInclusive(2,5));		
-
-		PluginLifespan lifespan = PluginLifespan.Cast( GetPlugin( PluginLifespan ) );
-		lifespan.UpdateBloodyHandsVisibility( player, true );
+		
+		result = ItemBase.Cast(player.SpawnEntityOnGroundRaycastDispersed("ChickenFeather"));
+		MiscGameplayFunctions.TransferItemProperties(deadChicken, result);
+		result.SetQuantity(Math.RandomIntInclusive(5,15));
+		
+		if (resultBones)
+		{
+			MiscGameplayFunctions.TransferItemProperties(deadChicken, resultBones);
+			resultBones.SetQuantity(Math.RandomIntInclusive(2,5));		
+		}
+		
+		SetBloodyHands(ingredients, player);
 	}
-};
+}

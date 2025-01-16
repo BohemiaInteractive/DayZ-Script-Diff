@@ -39,7 +39,8 @@ class ActionForceConsumeSingle : ActionSingleUseBase
 			return false;
 		
 		PlayerBase targetPlayer = PlayerBase.Cast(target.GetObject());
-		return targetPlayer && targetPlayer.CanEatAndDrink();
+		ConsumeConditionData dta = new ConsumeConditionData(targetPlayer,item);
+		return targetPlayer && targetPlayer.CanEatAndDrink() && targetPlayer.CanConsumeFood(dta) && item.CanBeConsumed(dta);
 	}
 	
 	override void OnEndServer(ActionData action_data)
@@ -47,18 +48,7 @@ class ActionForceConsumeSingle : ActionSingleUseBase
 		super.OnEndServer(action_data);
 		
 		if (action_data.m_MainItem && action_data.m_MainItem.GetQuantity() <= 0) 
-		{
 			action_data.m_MainItem.SetQuantity(0);
-		}
-		
-		if (action_data.m_Player.HasBloodyHands() && !action_data.m_Player.GetInventory().FindAttachment(InventorySlots.GLOVES))
-		{
-			PlayerBase target = PlayerBase.Cast(action_data.m_Target.GetObject());
-			if (target)
-			{
-				target.SetBloodyHandsPenalty();
-			}
-		}
 	}
 	
 	override void OnExecuteServer(ActionData action_data)
@@ -67,7 +57,13 @@ class ActionForceConsumeSingle : ActionSingleUseBase
 		
 		if (target && action_data.m_MainItem)
 		{
-			target.Consume(action_data.m_MainItem, GetConsumedQuantity(), EConsumeType.ITEM_SINGLE_TIME);
+			PlayerConsumeData consumeData = new PlayerConsumeData();
+			consumeData.m_Type = EConsumeType.ITEM_SINGLE_TIME;
+			consumeData.m_Amount = GetConsumedQuantity();
+			consumeData.m_Source = action_data.m_MainItem;
+			consumeData.m_Agents = action_data.m_Player.GetBloodyHandsPenaltyAgents();
+			
+			target.Consume(consumeData);
 		}
 	}
 }

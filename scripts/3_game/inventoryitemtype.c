@@ -1,6 +1,6 @@
 class InventoryItemType
 {
-	ref array<ref AnimSoundEvent> m_animSoundEvents;
+	private ref map<int, ref AnimSoundEvent> m_AnimSoundEvents;
 
 	private void InventoryItemType()
 	{
@@ -13,7 +13,7 @@ class InventoryItemType
 	{
 		string cfgPath = "CfgVehicles " + GetName() + " AnimEvents SoundWeapon";
 		
-		m_animSoundEvents = new array<ref AnimSoundEvent>;
+		m_AnimSoundEvents = new map<int, ref AnimSoundEvent>();
 
 		int soundCount = GetGame().ConfigGetChildrenCount(cfgPath);
 		
@@ -42,22 +42,18 @@ class InventoryItemType
 			string soundPath = cfgPath + " " + soundName + " ";
 			AnimSoundEvent soundEvent = new AnimSoundEvent(soundPath);
 			if (soundEvent.IsValid())
-				m_animSoundEvents.Insert(soundEvent);
+				m_AnimSoundEvents.Set(soundEvent.m_iID, soundEvent);
 		}
 	}
 
 
 	AnimSoundEvent GetSoundEvent(int event_id)
 	{
-		foreach (AnimSoundEvent soundEvent : m_animSoundEvents)
-		{
-			if (soundEvent.m_iID == event_id)
-				return soundEvent;
-		}
-
-		return null;
+		return m_AnimSoundEvents.Get(event_id);
 	}
 
-
 	proto native owned string GetName();
+	
+	//! DEPRECATED
+	ref array<ref AnimSoundEvent> m_animSoundEvents;
 }

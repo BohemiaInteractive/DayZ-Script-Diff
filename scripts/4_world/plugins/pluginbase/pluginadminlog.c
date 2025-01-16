@@ -112,10 +112,9 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			return " into Block" + "(" + component.ToString() + ") for 0 damage ";
 		}
 	}
-		
+	
 	void PlayerKilled( PlayerBase player, Object source )  // PlayerBase.c   
 	{
-		
 		if (!player || !source) 
 		{
 	        LogPrint("DEBUG: PlayerKilled() player/source does not exist");
@@ -141,18 +140,19 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			m_StatEnergy = player.GetStatEnergy();
 			m_BleedMgr = player.GetBleedingManagerServer();
 			
-			if ( m_StatWater && m_StatEnergy && m_BleedMgr )
-			{
-				LogPrint( playerPrefix + " died. Stats> Water: " + m_StatWater.Get().ToString() + " Energy: " + m_StatEnergy.Get().ToString() + " Bleed sources: " + m_BleedMgr.GetBleedingSourcesCount().ToString() );
-			}
-			else if ( m_StatWater && m_StatEnergy && !m_BleedMgr )
-			{
-				LogPrint( playerPrefix + " died. Stats> Water: " + m_StatWater.Get().ToString() + " Energy: " + m_StatEnergy.Get().ToString() );
-			}
-			else
-			{
-				LogPrint( playerPrefix + " died. Stats> could not fetch");
-			}
+			string reason = " died.";
+			if (player.GetDrowningWaterLevelCheck())
+				reason = " drowned.";
+
+			string additionalStats;
+			if (m_StatWater && m_StatEnergy)
+				additionalStats = " Stats> Water: " + m_StatWater.Get().ToString() + " Energy: " + m_StatEnergy.Get().ToString();
+			
+			if (m_BleedMgr)
+				additionalStats = additionalStats + " Bleed sources: " + m_BleedMgr.GetBleedingSourcesCount().ToString();
+			
+			LogPrint(playerPrefix + reason + additionalStats);
+			
 		}
 		else if (source.IsWeapon() || source.IsMeleeWeapon())  // player
 		{			
@@ -184,6 +184,27 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			}
 			
 		}
+	}
+	
+	void PlayerKilledByDrowningUncon(PlayerBase player)
+	{
+		string playerPrefix = GetPlayerPrefix( player , player.GetIdentity() );
+		LogPrint( playerPrefix + " has drowned while unconscious" );
+	}
+	
+	void PlayerKilledByRespawn(PlayerBase player)
+	{
+		string playerPrefix = GetPlayerPrefix( player , player.GetIdentity() );
+		LogPrint( playerPrefix + " is choosing to respawn" );
+	}
+	
+	void PlayerKilledByDisconnect(PlayerBase player)
+	{
+		string playerPrefix = GetPlayerPrefix( player , player.GetIdentity() );
+		if (player.IsUnconscious())
+			LogPrint( playerPrefix + " is disconnecting while being unconscious" );
+		else if (player.IsRestrained())
+			LogPrint( playerPrefix + " is disconnecting while being restrained" );
 	}
 		
 	void PlayerHitBy( TotalDamageResult damageResult, int damageType, PlayerBase player, EntityAI source, int component, string dmgZone, string ammo ) // PlayerBase.c 
@@ -323,11 +344,11 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			
 			if ( m_DisplayName == "" )
 			{
-				LogPrint( m_PlayerPrefix + " placed unknown object" );
+				LogPrint( m_PlayerPrefix + " placed Nameless Object" + "<" + item.GetType() + ">" );
 			} 
 			else
 			{
-				LogPrint( m_PlayerPrefix + " placed " + m_DisplayName );
+				LogPrint( m_PlayerPrefix + " placed " + m_DisplayName + "<" + item.GetType() + ">");
 			}
 		}
 	}
@@ -345,6 +366,17 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			
 			LogPrint( m_PlayerPrefix + m_Message );
 		}	
+	}
+	
+	void OnEmote(PlayerBase player, EmoteBase emote)
+	{
+		m_PlayerPrefix = GetPlayerPrefix( player ,  player.GetIdentity() );
+		
+		ItemBase item = player.GetItemInHands();
+		if (item)
+			LogPrint(m_PlayerPrefix + " performed " + emote.GetInputActionName() + " with " + item.GetType());
+		else 
+			LogPrint(m_PlayerPrefix + " performed " + emote.GetInputActionName());
 	}
 	
 	void Suicide( PlayerBase player )  // EmoteManager.c 

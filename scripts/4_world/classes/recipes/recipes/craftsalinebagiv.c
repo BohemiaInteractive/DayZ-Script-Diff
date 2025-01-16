@@ -62,13 +62,8 @@ class CraftSalineBagIV extends RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		ItemBase ingredient2;
-		Class.CastTo(ingredient2, ingredients[1]);
-		ItemBase result;
-		Class.CastTo(result, results.Get(0));
-		
-		if( result )
-			MiscGameplayFunctions.TransferItemProperties(ingredient2,result, true, true, false, true);
-		Debug.Log("Recipe Do method called","recipes");
+		ItemBase result = results.Get(0);
+		if (result)
+			MiscGameplayFunctions.TransferItemProperties(ingredients[1],result, true, true, false, true);
 	}
 };

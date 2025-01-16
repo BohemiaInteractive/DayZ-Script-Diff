@@ -1,5 +1,7 @@
 class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 {
+	protected bool m_IsFavoriteChanged;
+
 	protected override void Construct(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
 		super.Construct(parent, menu, type);
@@ -116,6 +118,22 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 #endif
 		AddFavoritesToFilter(m_CurrentFilterInput);
 		OnlineServices.LoadServers(m_CurrentFilterInput);
+	}
+	
+	override void RefreshServerList()
+	{
+		super.RefreshServerList();
+
+		if (m_IsFavoriteChanged)
+		{
+			SetCurrentPage(1);
+			m_IsFavoriteChanged = false;
+		}
+	}
+	
+	void SetFavoriteChanged(bool state)
+	{
+		m_IsFavoriteChanged = state;
 	}
 	
 	override bool PassFilter(GetServersResultRow result)

@@ -102,7 +102,7 @@ class VirtualHud
 	}
 
 	//this will serialize all elements and 'compresses' them into integer(s) through bit shifting, these integers are placed into an array
-	void SerializeElements(ref array<int> mask_array)
+	void SerializeElements(array<int> mask_array)
 	{
 		int offset = 0;
 		int mask = 0;
@@ -124,7 +124,7 @@ class VirtualHud
 		mask_array.Insert(mask);
 	}
 
-	void DeserializeElements(ref array<int> mask_array)//extracts elements from mask
+	void DeserializeElements(array<int> mask_array)//extracts elements from mask
 	{
 		int maskArrayIndex = 0;
 		int offset = 0;

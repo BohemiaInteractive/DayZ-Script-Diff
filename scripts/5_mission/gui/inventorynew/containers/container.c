@@ -88,6 +88,11 @@ class Container extends LayoutHolder
 	{
 		m_ActiveIndex = index;
 	}
+
+	ScrollWidget GetSlotsScrollWidget()
+	{
+		return null;
+	}
 	
 	ScrollWidget GetScrollWidget()
 	{
@@ -155,30 +160,45 @@ class Container extends LayoutHolder
 		ScrollWidget sw = GetScrollWidget();
 		if (sw)
 		{
-			float x, y, y_s;
-			
-			sw.GetScreenPos( x, y );
-			sw.GetScreenSize( x, y_s );
-			float f_y,f_h;
-			float amount;
-			f_y = GetFocusedContainerYScreenPos( true );
-			f_h = GetFocusedContainerHeight( true );
-			
-			float next_pos	= f_y + f_h;
-				
-			if (next_pos > ( y + y_s ))
-			{
-				amount	=  sw.GetVScrollPos() + next_pos - ( y + y_s ) + 2;
-				sw.VScrollToPos( amount );
-			}
-			else if (f_y < y)
-			{
-				amount = sw.GetVScrollPos() + f_y - y - 2;
-				sw.VScrollToPos(amount);
-			}
-			
-			//CheckScrollbarVisibility();
+			ScrollToActiveContainer(sw);
 		}
+		
+		#ifndef PLATFORM_CONSOLE
+		ScrollWidget ssw = GetSlotsScrollWidget();
+		if (ssw)
+		{
+			ScrollToActiveContainer(ssw);
+		}
+		#endif
+	}
+	
+	void ScrollToActiveContainer(ScrollWidget sw)
+	{
+		if (!sw)
+			return;
+
+		float x, y, y_s;
+		float f_y,f_h;
+		float amount;
+		
+		sw.GetScreenPos(x, y);
+		sw.GetScreenSize(x, y_s);
+		f_y = GetFocusedContainerYScreenPos(true);
+		f_h = GetFocusedContainerHeight(true);
+		
+		float next_pos = f_y + f_h;
+		if (next_pos > (y + y_s))
+		{
+			amount	=  sw.GetVScrollPos() + next_pos - (y + y_s) + 2;
+			sw.VScrollToPos(amount);
+		}
+		else if (f_y < y)
+		{
+			amount = sw.GetVScrollPos() + f_y - y - 2;
+			sw.VScrollToPos(amount);
+		}
+		
+		//CheckScrollbarVisibility();
 	}
 	
 	void CheckScrollbarVisibility()
@@ -186,14 +206,30 @@ class Container extends LayoutHolder
 		ScrollWidget sw = GetScrollWidget();
 		if (sw)
 		{
-			if (!sw.IsScrollbarVisible())
-			{
-				sw.VScrollToPos01(0.0);
-			}
-			else if (sw.GetVScrollPos01() > 1.0)
-			{
-				sw.VScrollToPos01(1.0);
-			}
+			CheckScrollbarVisibility(sw);
+		}
+		
+		#ifndef PLATFORM_CONSOLE
+		ScrollWidget ssw = GetSlotsScrollWidget();
+		if (ssw)
+		{
+			CheckScrollbarVisibility(ssw);
+		}
+		#endif
+	}
+	
+	void CheckScrollbarVisibility(ScrollWidget sw)
+	{
+		if (!sw)
+			return;
+
+		if (!sw.IsScrollbarVisible())
+		{
+			sw.VScrollToPos01(0.0);
+		}
+		else if (sw.GetVScrollPos01() > 1.0)
+		{
+			sw.VScrollToPos01(1.0);
 		}
 	}
 	
@@ -357,15 +393,40 @@ class Container extends LayoutHolder
 	
 	bool SplitItem()
 	{
-		if( GetFocusedContainer() )
+		if (GetFocusedContainer())
+		{
 			return GetFocusedContainer().SplitItem();
+		}
+		else
+		{
+			if (CanSplit())
+			{
+				ItemBase.Cast(GetFocusedItem()).OnRightClick();
+			}
+		}
 		return false;
 	}
 	
 	bool EquipItem()
 	{
-		if( GetFocusedContainer() )
+		if (GetFocusedContainer())
 			return GetFocusedContainer().EquipItem();
+		
+		if (CanEquip())
+		{	
+			EntityAI ent = GetFocusedItem();
+			bool res = false;
+			
+			if (ent)
+			{
+				res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment(ent);
+				if(!res)
+				{
+					res = GetGame().GetPlayer().PredictiveTakeEntityToInventory(FindInventoryLocationType.ATTACHMENT, ent);
+				}
+			}
+			return res;
+		}
 		return false;
 	}
 	
@@ -412,6 +473,9 @@ class Container extends LayoutHolder
 		
 		if (focusedEntity)
 		{
+			if (GetFocusedContainer())
+				return GetFocusedContainer().CanSplitEx(focusedEntity);
+			
 			return focusedEntity.CanBeSplit();
 		}
 		return false;
@@ -991,105 +1055,40 @@ class Container extends LayoutHolder
 	
 	void SetSameLevelNextActive()
 	{
-		Icon icon;
-		Container active;
-		active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-		if (ClosableContainer.Cast(active) && active.m_OpenedContainers.Count()) // Check if current active container has any opened nested containers and go through them
+		HideOwnedTooltip();
+		Container active, next;
+		if (m_OpenedContainers.Count())
 		{
-			active.SetNextActive();
-
-			ContainerWithCargoAndAttachments cwcaa;
-			if (Class.CastTo(cwcaa, active))
-			{
-				if (cwcaa.GetAttachmentCargos())
-				{
-					bool foundActive;
-					for (int i = 0; i < cwcaa.GetAttachmentCargos().Count(); i++)
-					{
-						Entity entA = cwcaa.GetAttachmentCargos().GetKey(i);
-						CargoContainer cc = cwcaa.GetAttachmentCargos().GetElement(i);
-						if (cc && cc.IsActive())
-						{
-							icon = cc.GetIcon(0);
-							if (icon && !icon.IsActive())
-							{
-								cwcaa.SetActive(false);
-							}
-						}
-					}
-				}
-				
-				if (cwcaa.GetAttachmentAttachmentsContainers())
-				{
-					for (int j = 0; j < cwcaa.GetAttachmentAttachmentsContainers().Count(); j++)
-					{
-						Entity entB = cwcaa.GetAttachmentAttachmentsContainers().GetKey(j);
-						AttachmentsWrapper aw = cwcaa.GetAttachmentAttachmentsContainers().GetElement(j);
-						if (aw && aw.IsActive())
-						{
-							aw.SetFirstActive();
-						}
-					}
-				}
-				
-				if (cwcaa && cwcaa.GetCargo() && cwcaa.GetCargo().IsActive())
-				{
-					icon = cwcaa.GetCargo().GetIcon(0);
-					if (icon && !icon.IsActive())
-					{
-						cwcaa.SetActive(false);
-					}
-				}
-			}
-			
-			ContainerWithCargo cwc;
-			if (Class.CastTo(cwc, active) && cwc.GetCargo())
-			{
-				icon = cwc.GetCargo().GetIcon(0);
-				if (icon && !icon.IsActive())
-				{
-					cwc.SetActive(false);
-				}
-			}
-		}
-		else
-		{
-			active.SetActive(false);
-
-			m_ActiveIndex++;
-			if (m_ActiveIndex > m_OpenedContainers.Count() - 1)
-			{
-				m_ActiveIndex = 0;
-			}
-			
 			active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-			active.SetActive(true);
 		}
-		
+
+		if (active && active.IsActive())
+		{
+			SlotsIcon icon = GetFocusedSlotsIcon();
+			if (icon && icon.GetParent() && SlotsContainer.Cast(icon.GetParent()))
+			{
+				SlotsContainer sc = SlotsContainer.Cast(icon.GetParent());
+				AttachmentsGroupContainer agc = AttachmentsGroupContainer.Cast(sc.GetParent());
+				if (agc)
+				{
+					agc.SetActive(false);
+				}
+			}
+
+			active.SetSameLevelNextActive();
+		}
+
 		if (!active || !active.IsActive())
 		{
 			if (!IsLastContainerFocused())
 			{
 				m_ActiveIndex++;
-				Container next = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-				
-				ContainerWithCargo cwcn;
-				if (Class.CastTo(cwcn, next) && cwcn.GetCargo())
-				{				
-					icon = cwcn.GetCargo().GetIcon(0);
-					if (icon && icon.IsActive())
-					{
-						SetActive(false);
-					}
-					else
-					{
-						cwcn.SetFirstActive();
-					}
-				}
-				else
-				{
-					next.SetActive(true);
-				}
+				next = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
+				next.SetActive(true);
+			} 
+			else if (Container.Cast(GetParent()))
+			{
+				SetActive(false);
 			}
 			else
 			{
@@ -1098,73 +1097,30 @@ class Container extends LayoutHolder
 			}
 		}
 	}
-		
+
 	void SetSameLevelPreviousActive()
 	{
-		Icon icon;
+		HideOwnedTooltip();
 		Container active;
-		ContainerWithCargoAndAttachments cwcaa;
-		ContainerWithCargo cwc;
-		int i;
-
 		if (m_OpenedContainers.Count())
 		{
 			active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
 		}
-		
+
 		if (active && active.IsActive())
 		{
-			if (Class.CastTo(cwcaa, active))
+			SlotsIcon icon = GetFocusedSlotsIcon();
+			if (icon && icon.GetParent() && SlotsContainer.Cast(icon.GetParent()))
 			{
-				if (cwcaa.GetAttachmentCargos())
+				SlotsContainer sc = SlotsContainer.Cast(icon.GetParent());
+				AttachmentsGroupContainer agc = AttachmentsGroupContainer.Cast(sc.GetParent());
+				if (agc)
 				{
-					for (i = 0; i < cwcaa.GetAttachmentCargos().Count(); i++)
-					{
-						Entity entA = cwcaa.GetAttachmentCargos().GetKey(i);
-						CargoContainer cc = cwcaa.GetAttachmentCargos().GetElement(i);
-						if (cc && cc.IsActive())
-						{
-							icon = cc.GetIcon(cc.GetIconsCount() - 1);
-							if (icon && !icon.IsActive())
-							{
-								cc.SetActive(false);
-							}
-						}
-					}
-				}			
-				
-				if (cwcaa && cwcaa.GetCargo() && cwcaa.GetCargo().IsActive())
-				{
-					cwcaa.SetFirstActive();
-				}
-				else
-				{
-					active.SetPreviousActive();
+					agc.SetActive(false);
 				}
 			}
-			else
-			{
-				if (Class.CastTo(cwc, active))
-				{
-					if (cwc && cwc.GetCargo() && cwc.GetCargo().IsActive())
-					{
-						active.SetActive(false);
-					}
-				}
-				else
-				{
-					active.SetActive(false);
 
-					m_ActiveIndex--;
-					if (m_ActiveIndex < 0)
-					{
-						m_ActiveIndex = m_OpenedContainers.Count() - 1;
-					}
-					
-					active = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-					active.SetLastActive();
-				}
-			}
+			active.SetSameLevelPreviousActive();
 		}
 		
 		if (!active || !active.IsActive())
@@ -1173,23 +1129,14 @@ class Container extends LayoutHolder
 			if (!IsFirstContainerFocused())
 			{
 				m_ActiveIndex--;
+				
 				prev = Container.Cast(m_OpenedContainers[m_ActiveIndex]);
-				if (Class.CastTo(cwc, prev))
-				{
-					if (cwc && cwc.GetCargo() && cwc.GetCargo().IsActive())
-					{
-						prev.SetActive(false);
-					}
-					else
-					{			
-						prev.SetLastActive();
-					}
-				}
-				else
-				{
-					prev.SetLastActive();
-				}
+				prev.SetLastActive();
 			} 
+			else if (Container.Cast( GetParent() ))
+			{
+				SetActive(false);
+			}
 			else
 			{
 				SetActive(false);

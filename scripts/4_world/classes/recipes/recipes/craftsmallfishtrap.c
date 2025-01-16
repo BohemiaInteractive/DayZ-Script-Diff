@@ -80,12 +80,6 @@ class CraftSmallFishTrap extends RecipeBase
 	//final check for recipe's validity
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)
 	{
-		return true;
-	}
-
-	//gets called upon recipe's completion
-	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
-	{
-		Debug.Log("Recipe Do method called","recipes");
+		return ingredients[0].GetQuantity() == 0 && !ingredients[0].GetIsFrozen();
 	}
 };

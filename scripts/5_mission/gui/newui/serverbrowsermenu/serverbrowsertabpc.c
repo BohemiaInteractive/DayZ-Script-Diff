@@ -228,7 +228,7 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		}
 	}
 	
-	override void OnLoadServersAsyncPC(ref GetServersResult result_list, EBiosError error, string response)
+	override void OnLoadServersAsyncPC(GetServersResult result_list, EBiosError error, string response)
 	{
 		if (result_list)
 		{			

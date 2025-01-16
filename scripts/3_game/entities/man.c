@@ -71,12 +71,8 @@ class Man extends EntityAI
 	void AddItemToDelete(EntityAI item);
 
 	///@{ inventory
-	HumanInventory GetHumanInventory()
-	{
-		HumanInventory i = HumanInventory.Cast(GetInventory());
-		return i;
-	}
-
+	//! Returns player's inventory
+	proto native HumanInventory GetHumanInventory();
 	//Called when an item is removed from the cargo of this item
 	protected ref ScriptInvoker		m_OnItemAddedToHands;
 	//Called when an item is moved around in the cargo of this item
@@ -853,7 +849,7 @@ class Man extends EntityAI
 
 	override bool CanBeSkinned()
 	{
-		return true;
+		return !GetIsFrozen();
 	}
 	
 	override bool DisableVicinityIcon()

@@ -59,8 +59,6 @@ class TutorialsMenu extends UIScriptedMenu
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
-		
 		return layoutRoot;
 	}
 	
@@ -80,6 +78,26 @@ class TutorialsMenu extends UIScriptedMenu
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
+		bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
+		bool mkServer = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+
+		switch (pInputDeviceType)
+		{
+		case EInputDeviceType.CONTROLLER:
+			if (mk && mkServer)
+			{
+				GetGame().GetUIManager().ShowUICursor(false);
+			}
+		break;
+
+		default:
+			if (mk && mkServer)
+			{
+				GetGame().GetUIManager().ShowUICursor(true);
+			}
+		break;
+		}
+		
 		UpdateControlsElementVisibility();
 	}
 	
@@ -88,6 +106,7 @@ class TutorialsMenu extends UIScriptedMenu
 		super.OnShow();
 		
 		SetFocus(null);
+		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
 	}
 	
 	void Back()
@@ -150,7 +169,7 @@ class TutorialsMenu extends UIScriptedMenu
 				}
 				if (!button_marker_groups_unflitred.Contains(button_name))
 				{
-					button_marker_groups_unflitred.Insert(button_name, new ref array<int>);
+					button_marker_groups_unflitred.Insert(button_name, new array<int>);
 					button_marker_groups_unflitred.Get(button_name).Insert(text_widget_id);
 				}
 				else

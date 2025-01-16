@@ -35,10 +35,6 @@ class Bottle_Base extends Edible_Base
 	
 	//Boiling
 	const string SOUND_BOILING_EMPTY 		= "Boiling_SoundSet";
-	const string SOUND_BOILING_START 		= "Boiling_SoundSet";
-	const string SOUND_BOILING_DONE 		= "Boiling_Done_SoundSet";
-	const string SOUND_DRYING_START 		= "Drying_SoundSet";
-	const string SOUND_DRYING_DONE 			= "Drying_Done_SoundSet";
 	
 	float m_LiquidEmptyRate;
 	private const float QUANTITY_EMPTIED_PER_SEC_DEFAULT = 200; //default
@@ -72,6 +68,22 @@ class Bottle_Base extends Edible_Base
 		super.EECargoIn(item);
 		
 		MiscGameplayFunctions.SoakItemInsideParentContainingLiquidAboveThreshold(ItemBase.Cast(item), this);
+	}
+	
+	override void OnFreezeStateChangeServer()
+	{
+		super.OnFreezeStateChangeServer();
+		
+		//soak CARGO items on unfreeze
+		CargoBase cargo;
+		if (!GetIsFrozen() && GetLiquidType() != 0 && Class.CastTo(cargo,GetInventory().GetCargo()))
+		{
+			int count = cargo.GetItemCount();
+			for (int i = 0; i < count; ++i)
+			{
+				MiscGameplayFunctions.SoakItemInsideParentContainingLiquidAboveThreshold(ItemBase.Cast(cargo.GetItem(i)), this);
+			}
+		}
 	}
 	
 	//================================================================
@@ -130,14 +142,14 @@ class Bottle_Base extends Edible_Base
 		}
 	}
 	
-	void RemoveAudioVisualsOnClient()
+	override void RemoveAudioVisualsOnClient()
 	{
 		m_CookingMethod	= CookingMethodType.NONE;
 		
 		Synchronize();
 	}
 	
-	void RefreshAudioVisualsOnClient( CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned )
+	override void RefreshAudioVisualsOnClient( CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned )
 	{
 		m_CookingMethod		= cooking_method;
 		m_CookingIsDone 	= is_done;
@@ -147,78 +159,58 @@ class Bottle_Base extends Edible_Base
 		Synchronize();
 	}
 	
+	//! Remnants of old, responsible for particles and some (empty) sounds. Cooked items take care of the rest themselves
 	void RefreshAudioVisuals(CookingMethodType cooking_method, bool is_done, bool is_empty, bool is_burned)
 	{
-		string soundName;
+		string soundName = "";
 		int particleId;
+		
+		switch (cooking_method)
+		{
+			case CookingMethodType.BOILING:
+				soundName 	= SOUND_BOILING_EMPTY;
+			
+				if (is_empty)
+				{
+					particleId 	= PARTICLE_BOILING_EMPTY;
+				}
+				else
+				{
+					if (is_done)
+						particleId 	= PARTICLE_BOILING_DONE;
+					else
+						particleId 	= PARTICLE_BOILING_START;
+				}
+
+				break;
+
+			case CookingMethodType.BAKING:
+				if (is_done)
+					particleId 	= PARTICLE_BAKING_DONE;
+				else
+					particleId 	= PARTICLE_BAKING_START;
+
+				break;
+
+			case CookingMethodType.DRYING:
+				if (is_done)
+					particleId 	= PARTICLE_DRYING_DONE;
+				else
+					particleId 	= PARTICLE_DRYING_START;
+			
+				break;
+			
+			default:
+				soundName = "";
+				particleId = ParticleList.NONE;
+
+				break;
+		}
 		
 		//if at least one of the food items is burned
 		if (is_burned)
 		{
-			soundName 	= SOUND_BURNING_DONE;
 			particleId 	= PARTICLE_BURNING_DONE;
-		}
-		//proper cooking methods
-		else
-		{
-			switch (cooking_method)
-			{
-				case CookingMethodType.BOILING:
-					if (is_empty)
-					{
-						soundName 	= SOUND_BOILING_EMPTY;
-						particleId 	= PARTICLE_BOILING_EMPTY;
-					}
-					else
-					{
-						if (is_done)
-						{
-							soundName 	= SOUND_BOILING_DONE;
-							particleId 	= PARTICLE_BOILING_DONE;
-						}
-						else
-						{
-							soundName 	= SOUND_BOILING_START;
-							particleId 	= PARTICLE_BOILING_START;
-						}
-					}
-
-					break;
-
-				case CookingMethodType.BAKING:
-					if (is_done)
-					{
-						soundName 	= SOUND_BAKING_DONE;
-						particleId 	= PARTICLE_BAKING_DONE;
-					}
-					else
-					{
-						soundName 	= SOUND_BAKING_START;
-						particleId 	= PARTICLE_BAKING_START	;
-					}
-
-					break;
-
-				case CookingMethodType.DRYING:
-					if (is_done)
-					{
-						soundName 	= SOUND_DRYING_DONE;
-						particleId 	= PARTICLE_DRYING_DONE;
-					}
-					else
-					{
-						soundName 	= SOUND_DRYING_START;
-						particleId 	= PARTICLE_DRYING_START;
-					}
-				
-					break;
-				
-				default:
-					soundName = "";
-					particleId = ParticleList.NONE;
-
-					break;
-			}
 		}
 		
 		//play effects

@@ -171,7 +171,7 @@ class ActionSwapItemToHands: ActionTakeItemToHands
 		EntityAI object = EntityAI.Cast(action_data.m_Target.GetObject());
 		if (!object || !object.IsHeavyBehaviour())
 		{
-			action_data.m_Player.GetActionManager().Interrupt();
+			action_data.m_Player.GetActionManager().InterruptNoSync();
 		}
 		else
 			m_Executable = true;

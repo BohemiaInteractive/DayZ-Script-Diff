@@ -25,3 +25,5 @@ class SVD_Base : RifleBoltLock_Base
 		SpawnAttachedMagazine("Mag_SVD_10Rnd");
 	}
 };
+class SVD extends SVD_Base {};
+class SVD_Wooden extends SVD_Base {};

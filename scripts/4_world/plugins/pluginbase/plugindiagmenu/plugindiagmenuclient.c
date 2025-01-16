@@ -136,6 +136,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		// LEVEL 2 - Script > Misc
 		//---------------------------------------------------------------	
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_FREEZE_ENTITY, CBMiscFreezeEntity);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_FREEZE_PLAYER, CBMiscFreezePlayer);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_DEBUG_MONITOR, CBDebugMonitor);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_SHOW_PRA_ALL, CBPRADrawAll);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_PRA_DETECT, CBPRADetect);
@@ -894,6 +895,19 @@ class PluginDiagMenuClient : PluginDiagMenu
 		
 		if (entity)
 			entity.DisableSimulation(!entity.GetIsSimulationDisabled());
+	}
+	
+	//---------------------------------------------
+	static void CBMiscFreezePlayer(bool enabled, int id)
+	{
+		DiagButtonAction(enabled, id, ScriptCaller.Create(FreezePlayer));
+	}
+	
+	static void FreezePlayer()
+	{
+		EntityAI player = GetGame().GetPlayer();
+		if (player)
+			player.DisableSimulation(!player.GetIsSimulationDisabled());
 	}
 	
 	//---------------------------------------------

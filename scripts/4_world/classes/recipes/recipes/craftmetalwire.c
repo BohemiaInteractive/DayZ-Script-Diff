@@ -68,4 +68,12 @@ class CraftMetalWire extends RecipeBase
 			wire.SetHealth01("","", 1 - 0.3*health);
 		}
 	}
+	
+	override bool CanDo(ItemBase ingredients[], PlayerBase player)
+	{
+		if (ingredients[0] && ingredients[0].GetInventory().IsAttachment())
+			return false;
+		
+		return true;
+	}
 };

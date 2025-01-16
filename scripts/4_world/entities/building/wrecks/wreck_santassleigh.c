@@ -10,14 +10,14 @@ class Wreck_SantasSleigh extends CrashBase
 
 	void Wreck_SantasSleigh()
 	{
-		if ( !GetGame().IsDedicatedServer() )
+		if (!GetGame().IsDedicatedServer())
 		{
 			//particles - Aurora trail
-			m_ParticleEfx = ParticleManager.GetInstance().PlayOnObject(ParticleList.AURORA_SANTA_WRECK, this, Vector(0, 0, 0));
+			m_ParticleEfx = ParticleManager.GetInstance().PlayOnObject(ParticleList.AURORA_SANTA_WRECK,this,vector.Zero,vector.Zero,true);
 			
 			//lights - green light
-			m_SleighLight = XmasSleighLight.Cast( ScriptedLightBase.CreateLight( XmasSleighLight, Vector(0, 0, 0) ) );
-			m_SleighLight.AttachOnMemoryPoint( this, "light" );
+			m_SleighLight = XmasSleighLight.Cast(ScriptedLightBase.CreateLight(XmasSleighLight,vector.Zero));
+			m_SleighLight.AttachOnMemoryPoint(this, "light");
 		}
 	}
 	

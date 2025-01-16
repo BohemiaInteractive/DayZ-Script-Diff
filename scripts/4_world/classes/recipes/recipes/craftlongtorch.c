@@ -63,8 +63,6 @@ class CraftLongTorch extends RecipeBase
 
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)//gets called upon recipe's completion
 	{
-		Debug.Log("Recipe Do method called","recipes");
-		
 		ItemBase rag = ingredients[0];
 		rag.SetCleanness(0);
 		Torch torch = Torch.Cast(results[0]);
