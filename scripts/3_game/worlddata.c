@@ -46,8 +46,7 @@ class WorldData
 	protected int m_Chance = 50;
 	protected int m_ChoosenWeather = 1;
 	protected int m_LastWeather = 0;
-	
-	
+
 	void WorldData()
 	{
 		Init();
@@ -292,6 +291,64 @@ class WorldData
 	float GetUniversalTemperatureSourceCapModifier()
 	{
 		return m_UniversalTemperatureSourceCapModifier;
+	}
+	
+	/*!
+		\brief Return actual temperature of environment based on provided parameters
+		\param object Reference to object that is used mainly for sea height related calculation
+		\param properties Flag made of EEnvironmentTemperatureComponent which will influence the resulting value of temperature based on combination of the parts
+	*/	
+	float GetTemperature(Object object, EEnvironmentTemperatureComponent properties = EEnvironmentTemperatureComponent.BASE)
+	{
+		// EEnvironmentTemperatureComponent.BASE only
+		float temperature = GetBaseEnvTemperature();
+
+		if (object && properties & EEnvironmentTemperatureComponent.ALTITUDE)
+			temperature = GetBaseEnvTemperatureAtObject(object);
+		
+		if (properties & EEnvironmentTemperatureComponent.OVERCAST)
+			temperature += m_Weather.GetOvercast().GetActual() * m_CloudsTemperatureEffectModifier;
+
+		if (properties & EEnvironmentTemperatureComponent.WIND)
+			temperature += WindEffectTemperatureValue(temperature);
+		
+		if (properties & EEnvironmentTemperatureComponent.FOG)
+			temperature += m_Weather.GetFog().GetActual() * GameConstants.ENVIRO_FOG_TEMP_EFFECT;
+
+		return temperature;
+	}
+
+	/*!
+		\brief Return value of queried EEnvironmentTemperatureComponent which can be used in future calculation(s)
+		\param temperature Base temperature which will be used in component calculation (currently WIND only)
+		\param properties Flag made of EEnvironmentTemperatureComponent which will influence the resulting value of temperature based on combination of the parts
+	*/	
+	float GetTemperatureComponentValue(float temperatureIn, EEnvironmentTemperatureComponent properties = 0)
+	{
+		float temperatureOut = 0.0;
+
+		if ((properties & EEnvironmentTemperatureComponent.OVERCAST) == EEnvironmentTemperatureComponent.OVERCAST)
+			temperatureOut = m_Weather.GetOvercast().GetActual() * m_CloudsTemperatureEffectModifier;
+		else if ((properties & EEnvironmentTemperatureComponent.WIND) == EEnvironmentTemperatureComponent.WIND)
+			temperatureOut = WindEffectTemperatureValue(temperatureIn);
+		else if ((properties & EEnvironmentTemperatureComponent.FOG) == EEnvironmentTemperatureComponent.FOG)
+			temperatureOut = m_Weather.GetFog().GetActual() * GameConstants.ENVIRO_FOG_TEMP_EFFECT;
+		else
+		{
+			Debug.Log(string.Format("Only OVERCAST, WIND and FOG parameters are supported"));
+		}
+
+		return temperatureOut;
+	}
+	
+	protected float WindEffectTemperatureValue(float temperatureInput)
+	{
+		float temperatureOutput = 0.0;
+
+		temperatureOutput = (temperatureInput - GameConstants.ENVIRO_WIND_CHILL_LIMIT) / (GameConstants.ENVIRO_WIND_EFFECT_SLOPE - GameConstants.ENVIRO_WIND_CHILL_LIMIT);
+		temperatureOutput = temperatureOutput * m_Weather.GetWindMagnitude().GetActual() * GetWindCoef();
+		
+		return -temperatureOutput;
 	}
 	
 	protected void CalculateWind(int newWeather, bool suddenChange, out float magnitude, out float direction);

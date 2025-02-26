@@ -225,10 +225,15 @@ class PPERequesterBank extends Managed
 	}*/
 }
 
-//! Mod this, if you wish to register custom requesters
+//! Mod this, if you wish to register custom requesters inside 'RegisterAdditionalRequesters' override
 class PPERequesterRegistrations extends Managed
 {
 	void PPERequesterRegistrations()
+	{
+		RegisterAdditionalRequesters(); 
+	}
+	
+	protected void RegisterAdditionalRequesters()
 	{
 		//PPERequesterBank.RegisterRequester(TestReq);
 	}
@@ -236,7 +241,7 @@ class PPERequesterRegistrations extends Managed
 
 /*modded class PPERequesterRegistrations extends Managed
 {
-	void PPERequesterRegistrations()
+	override protected void RegisterAdditionalRequesters()
 	{
 		PPERequesterBank.RegisterRequester(TestReq2);
 	}

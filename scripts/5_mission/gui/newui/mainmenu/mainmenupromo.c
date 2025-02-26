@@ -213,4 +213,28 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	{
 		return m_ThisModInfo;
 	}
+	
+	override bool OnMouseEnter(Widget w, int x, int y)
+	{
+		if (w == m_StoreButton)
+		{
+			m_Root.FindAnyWidget("dlc_openStore_panel").SetColor(ARGB(255, 0, 0, 0));
+			m_Root.FindAnyWidget("dlc_openStore_label").SetColor(ARGB(255, 255, 0, 0));
+			return true;
+		}
+		
+		return false;
+	}
+	
+	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
+	{
+		if (w == m_StoreButton)
+		{
+			m_Root.FindAnyWidget("dlc_openStore_panel").SetColor(ARGB(140, 0, 0, 0));
+			m_Root.FindAnyWidget("dlc_openStore_label").SetColor(ARGB(255, 255, 255, 255));
+			return true;
+		}
+		
+		return false;
+	}
 }

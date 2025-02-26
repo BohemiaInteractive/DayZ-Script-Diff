@@ -7,4 +7,10 @@ class SodaCan_ColorBase : Edible_Base
 		AddAction(ActionForceDrink);
 		AddAction(ActionDrinkCan);
 	}
-};
+	
+	override int GetConsumptionPenaltyContext()
+	{
+		//! no penalty while drinking
+		return EConsumptionPenaltyContext.NONE;
+	}
+}

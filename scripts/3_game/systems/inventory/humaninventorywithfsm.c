@@ -133,23 +133,15 @@ class HumanInventoryWithFSM : HumanInventory
 		
 	void CheckFSMState()
 	{
-		if (!m_FSM.IsRunning())
+		if (GetEntityInHands())
 		{
-			GetManOwner();
-			if(GetEntityInHands())
-			{
-				if (GetCurrentStateID() == HandStateID.Empty)
-				{
-					m_FSM.SetCurrentState(m_Equipped);
-				}
-			}
-			else
-			{
-				if (GetCurrentStateID() == HandStateID.Equipped)
-				{
-					m_FSM.SetCurrentState(m_Empty);
-				}
-			}	
+			if (!m_FSM.IsRunning() || GetCurrentStateID() == HandStateID.Empty) //forcing when not running or in stable state only
+				m_FSM.SetCurrentState(m_Equipped);
+		}
+		else
+		{
+			if (!m_FSM.IsRunning() || GetCurrentStateID() == HandStateID.Equipped) //forcing when not running or in stable state only
+				m_FSM.SetCurrentState(m_Empty);
 		}
 	}
 

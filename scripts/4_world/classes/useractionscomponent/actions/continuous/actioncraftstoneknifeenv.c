@@ -4,7 +4,7 @@ class ActionCraftStoneKnifeEnvCB : ActionContinuousBaseCB
 	
 	override void CreateActionComponent()
 	{
-		m_ActionData.m_ActionComponent = new CAContinuousRepeat(TIME_TO_CRAFT_KNIFE);
+		m_ActionData.m_ActionComponent = new CAContinuousTime(TIME_TO_CRAFT_KNIFE);
 	}
 };
 

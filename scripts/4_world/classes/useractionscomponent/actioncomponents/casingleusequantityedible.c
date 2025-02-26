@@ -15,8 +15,12 @@ class CASingleUseQuantityEdible : CASingleUseQuantity
 		consumeData.m_Source = action_data.m_MainItem;
 
 		consumeData.m_Agents = 0;
-		if (!Bottle_Base.Cast(action_data.m_MainItem))
-			consumeData.m_Agents = action_data.m_Player.GetBloodyHandsPenaltyAgents();
+		Edible_Base edibleItem;
+		if (Edible_Base.CastTo(edibleItem, action_data.m_MainItem))
+		{
+			if ((edibleItem.GetConsumptionPenaltyContext() & EConsumptionPenaltyContext.DRINK|EConsumptionPenaltyContext.EAT) != EConsumptionPenaltyContext.NONE)
+				consumeData.m_Agents = action_data.m_Player.GetBloodyHandsPenaltyAgents();
+		}
 		
 		if (GetGame().IsServer())
 		{

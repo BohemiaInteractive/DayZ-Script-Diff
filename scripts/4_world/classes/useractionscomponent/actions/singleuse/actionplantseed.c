@@ -1,18 +1,17 @@
-class ActionPlantSeed: ActionSingleUseBase
+class ActionPlantSeed : ActionSingleUseBase
 {
 	void ActionPlantSeed()
 	{
-		m_SpecialtyWeight = UASoftSkillsWeight.PRECISE_MEDIUM;
-		
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_DROPITEM_HANDS;
-		m_FullBody = false;
+		m_CommandUID	= DayZPlayerConstants.CMD_ACTIONMOD_DROPITEM_HANDS;
+		m_FullBody 		= false;
+
 		m_Text = "#plant_seed";
 	}
 	
 	override void CreateConditionComponents()  
 	{		
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTDummy;
+		m_ConditionItem 	= new CCINonRuined();
+		m_ConditionTarget 	= new CCTDummy();
 	}
 
 	override bool HasTarget()
@@ -20,25 +19,22 @@ class ActionPlantSeed: ActionSingleUseBase
 		return true;
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		GardenBase targetObject = GardenBase.Cast( target.GetObject() );
+		GardenBase gardenBase = GardenBase.Cast(target.GetObject());
 		
-		if ( targetObject && ( !targetObject.IsHologram() || !targetObject.IsBeingPlaced() ) )
+		if (gardenBase && (!gardenBase.IsHologram() || !gardenBase.IsBeingPlaced()))
 		{
-			array<string> selections = new array<string>;
-			targetObject.GetActionComponentNameList(target.GetComponentIndex(), selections);
+			array<string> selections = new array<string>();
+			gardenBase.GetActionComponentNameList(target.GetComponentIndex(), selections);
 
-			for (int s = 0; s < selections.Count(); s++)
+			foreach (string selection : selections)
 			{
-				string selection = selections[s];
-				Slot slot = targetObject.GetSlotBySelection( selection );
+				Slot slot = gardenBase.GetSlotBySelection(selection);
 				if (slot)
 				{
-					if ( item != NULL && item.GetQuantity() > 0 && targetObject.CanPlantSeed( selection ) )
-					{
+					if (item != null && item.GetQuantity() > 0 && gardenBase.CanPlantSeed(selection))
 						return true;
-					}
 				}
 			}
 		}
@@ -46,43 +42,38 @@ class ActionPlantSeed: ActionSingleUseBase
 		return false;
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{
+		super.OnExecuteServer(action_data);
+
 		Process(action_data);
 	}
-	
-	override void OnExecuteClient( ActionData action_data )
-	{
-		//Process(action_data);
-	}
 
-	void Process( ActionData action_data )
+	void Process(ActionData action_data)
 	{
-		Object targetObject = action_data.m_Target.GetObject();
-		int slot_ID;
+		GardenBase gardenBase = GardenBase.Cast(action_data.m_Target.GetObject());
 		
-		if ( targetObject != NULL && targetObject.IsInherited(GardenBase) )
+		if (gardenBase)
 		{
-			GardenBase garden_base = GardenBase.Cast( targetObject );
-			array<string> selections = new array<string>;
-			targetObject.GetActionComponentNameList(action_data.m_Target.GetComponentIndex(), selections);
+			int slotID;
+			array<string> selections = new array<string>();
+			gardenBase.GetActionComponentNameList(action_data.m_Target.GetComponentIndex(), selections);
 
-			for (int s = 0; s < selections.Count(); s++)
+			foreach (string selection : selections)
 			{
-				string selection = selections[s];
-				Slot slot = garden_base.GetSlotBySelection( selection );
+				Slot slot = gardenBase.GetSlotBySelection(selection);
 				if (slot)
 				{
-					slot_ID = slot.GetSlotId();
+					slotID = slot.GetSlotId();
 					break;
 				}
 			}
-			
-			//int slot_ID = slot.GetSlotId();
-			
-			ItemBase seed_IB = ItemBase.Cast( action_data.m_MainItem );
-			
-			seed_IB.SplitIntoStackMax( garden_base, slot_ID, action_data.m_Player );
+	
+			ItemBase seed = ItemBase.Cast(action_data.m_MainItem);
+			if (seed.GetQuantity() > 1)
+				seed.SplitIntoStackMax(gardenBase, slotID, action_data.m_Player);
+			else
+				gardenBase.ServerTakeEntityToTargetAttachmentEx(gardenBase, seed, slotID);
 		}
 	}
-};
+}

@@ -67,9 +67,4 @@ class CraftStoneKnife extends RecipeBase
 	{
 		MiscGameplayFunctions.TransferItemProperties(ingredients[0],results.Get(0), false, true, true, true);
 	}
-	
-	override bool IsRepeatable()
-	{
-		return true;
-	}
 };

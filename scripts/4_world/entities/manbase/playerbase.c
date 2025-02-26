@@ -2493,16 +2493,24 @@ class PlayerBase extends ManBase
 	{
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT && GetGame().IsMultiplayer())
 		{
-			if (ScriptInputUserData.CanStoreInputUserData())
-			{
-				ScriptInputUserData ctx = new ScriptInputUserData;
-				ctx.Write(INPUT_UDT_RESET_ADS);
-				ctx.Send();
-			}
+			m_ProcessResetADS = true;
+			ProcessADSSyncResetRequest();
 		}
 		else if (!GetGame().IsMultiplayer())
 		{
 			m_ResetADS = true;
+		}
+	}
+	
+	void ProcessADSSyncResetRequest()
+	{
+		if (ScriptInputUserData.CanStoreInputUserData())
+		{
+			ScriptInputUserData ctx = new ScriptInputUserData;
+			ctx.Write(INPUT_UDT_RESET_ADS);
+			ctx.Send();
+			
+			m_ProcessResetADS = false;
 		}
 	}
 	
@@ -2549,9 +2557,10 @@ class PlayerBase extends ManBase
 					ScriptInputUserData ctx = new ScriptInputUserData;
 					ctx.Write(INPUT_UDT_ADVANCED_PLACEMENT);
 					ctx.Send();
+					
+					PlacingCancelLocal();
 				}
 			}
-			PlacingCancelLocal();
 		}
 		else if (!item)
 		{
@@ -2759,6 +2768,9 @@ class PlayerBase extends ManBase
 
 		if (CfgGameplayHandler.GetAllowStaminaAffectInertia())
 			UpdateMovementInertia();
+		
+		if (m_ProcessResetADS)
+			ProcessADSSyncResetRequest();
 	}
 	
 	//! Update movement inertia based on stamina available
@@ -3077,21 +3089,31 @@ class PlayerBase extends ManBase
 				mngr.Update(); // checks for suitable action and sets it
 			}*/
 		}
+			
 		if (m_StaminaHandler && hic)
 		{
-			HumanCommandMove hcm = GetCommand_Move();
-			if (hcm)
+			HumanCommandMove hcm = GetCommand_Move();		
+			bool isSwimmingOrClimbing = GetCommand_Swim() || GetCommand_Climb() || GetCommand_Ladder();		
+			bool isStaminaLimitAppliable = hcm || isSwimmingOrClimbing;	
+			
+			if (isStaminaLimitAppliable)
 			{
-				//! only run and higher				
-				if (hcm.GetCurrentMovementSpeed() > 1.0)
+				bool isRunning = hcm && hcm.GetCurrentMovementSpeed() > 1.0;
+				
+				//! only run and higher	for movement 			
+				if (isRunning || isSwimmingOrClimbing)
 				{
 					//! SPRINT: enable/disable - based on stamina; disable also when raised
-					if (!CanConsumeStamina(EStaminaConsumers.SPRINT) || !CanSprint())
-						hic.LimitsDisableSprint(true);
-					else
+					if (CanConsumeStamina(EStaminaConsumers.SPRINT) && CanSprint()) 
+					{
 						hic.LimitsDisableSprint(false);
+					}
+					else 
+					{
+						hic.LimitsDisableSprint(true);
+					}
 				}
-				else
+				else 
 				{
 					hic.LimitsDisableSprint(!CanSprint());
 				}
@@ -6131,8 +6153,9 @@ class PlayerBase extends ManBase
 			{
 				if (!ctx.Read(item1))
 					return false;
+				
 				InventoryLocation dst = new InventoryLocation;
-				if (dst.ReadFromContext(ctx))
+				if (item1 && dst.ReadFromContext(ctx))
 				{
 					//Print(InventoryLocation.DumpToStringNullSafe(dst));
 					bool dummy;
@@ -6659,12 +6682,6 @@ class PlayerBase extends ManBase
 		}
 		#endif
 		#endif
-	}
-	
-	// DEPRECATED
-	void SetBloodyHandsPenalty()
-	{
-		InsertAgent(eAgents.SALMONELLA, 1);
 	}
 	
 	int GetBloodyHandsPenaltyAgents()
@@ -9370,6 +9387,11 @@ class PlayerBase extends ManBase
 			return false;
 		
 		return GetStaminaHandler().GetStamina() > 0;
+	}
+
+	void SetBloodyHandsPenalty()
+	{
+		InsertAgent(eAgents.SALMONELLA, 1);
 	}
 }
 

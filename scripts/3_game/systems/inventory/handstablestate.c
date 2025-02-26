@@ -33,7 +33,7 @@ class HandStableState extends HandStateBase
 
 	override bool IsIdle () { return true; }
 
-	int GetCurrentStateID () { return 0; }
+	int GetCurrentStateID () { return HandStateID.UNKNOWN; }
 
 	/// query for entity in hands
 	bool HasEntityInHands () { return false; }

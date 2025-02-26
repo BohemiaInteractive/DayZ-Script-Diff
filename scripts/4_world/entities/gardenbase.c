@@ -113,6 +113,8 @@ class GardenBase extends ItemBase //BuildingSuper
 			slot.SetSlotId(slot_id);
 			slot.SetGarden(this);
 			slot.m_State = Slot.STATE_DIGGED;
+			slot.SetWateredState(eWateredState.DRY);
+			slot.SetWater(0.0);
 			m_Slots.Insert( slot );
 		}
 	}
@@ -166,9 +168,6 @@ class GardenBase extends ItemBase //BuildingSuper
 
 			if ( !slot.OnStoreLoadCustom( ctx, version ) )
 				return false;
-
-			//Slot textures will be updated after store load
-			//UpdateSlotTexture( i );
 		}
 		
 		if ( version >= 119 )
@@ -195,13 +194,6 @@ class GardenBase extends ItemBase //BuildingSuper
 	{
 		for ( int i = 0; i < GetGardenSlotsCount(); i++ )
 		{
-			// Read relevant bit
-			int fertilityState = (m_SlotFertilityState >> i) & 1;
-			m_Slots[i].SetFertilityState(fertilityState);
-			
-			int wateredState = (m_SlotWateredState >> i) & 1;
-			m_Slots[i].SetWateredState( wateredState );
-			
 			UpdateSlotTexture( i );
 		}
 		

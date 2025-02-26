@@ -86,6 +86,12 @@ class Bottle_Base extends Edible_Base
 		}
 	}
 	
+	override int GetConsumptionPenaltyContext()
+	{
+		//! no penalty while drinking
+		return EConsumptionPenaltyContext.NONE;
+	}
+	
 	//================================================================
 	// PARTICLES & SOUNDS
 	//================================================================

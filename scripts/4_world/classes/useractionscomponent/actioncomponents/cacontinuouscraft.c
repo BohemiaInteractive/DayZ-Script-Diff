@@ -60,12 +60,7 @@ class CAContinuousCraft : CAContinuousTime
 			{
 				if(module_recipes_manager.GetIsRepeatable(action_data_wc.m_RecipeID))
 				{
-					ItemBase item2;
-					Class.CastTo(item2, action_data.m_Target.GetObject());
-					if(module_recipes_manager.IsRecipePossibleToPerform(action_data_wc.m_RecipeID, action_data.m_MainItem, item2, action_data.m_Player))
-					{
-						return UA_PROCESSING;
-					}
+					return UA_PROCESSING;
 				}
 			}
 			return UA_FINISHED;

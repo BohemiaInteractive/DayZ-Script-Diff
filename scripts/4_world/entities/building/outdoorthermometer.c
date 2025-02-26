@@ -1,11 +1,10 @@
 class OutdoorThermometerManager
 {
-	static float TIME_BETWEEN_UPDATE = 1;
-	static float LIMIT_FOR_UPDATE_ALL_THERMOMETERS = 100;
-	static const string FIREPOINT_ACTION_SELECTION	= "Thermometer_Pos";
-	static ref array<OutdoorThermometer> m_Thermometers;
-	static int m_LastCheckIndex;
-	static float m_TimeToUpdate;
+	private static float TIME_BETWEEN_UPDATE = 1;
+	private static float LIMIT_FOR_UPDATE_ALL_THERMOMETERS = 100;
+	private static ref array<OutdoorThermometer> m_Thermometers;
+	private static int m_LastCheckIndex;
+	private static float m_TimeToUpdate;
 	//How many thermomethers will be set per update. 
 	private static int m_NumUpdate = 1;
 	
@@ -45,65 +44,62 @@ class OutdoorThermometerManager
 	static void Update(float timeslice)
 	{
 		int count = m_Thermometers.Count();
-		if(count)
+		if (count)
 		{
-			if(m_TimeToUpdate < 0)
+			if (m_TimeToUpdate < 0)
 			{
-				for(int i = 0; i < m_NumUpdate; i++)
+				for (int i = 0; i < m_NumUpdate; i++)
 				{
-					if(m_LastCheckIndex >= count)
-					{
+					if (m_LastCheckIndex >= count)
 						m_LastCheckIndex = 0;
-					}
+
 					m_Thermometers[m_LastCheckIndex].UpdateTemperature();
 					m_LastCheckIndex++;
 				}
+
 				m_TimeToUpdate = TIME_BETWEEN_UPDATE;
 			}
 			else
-			{
 				m_TimeToUpdate -= timeslice;
-			}
 		}
 	}
 }
 
-class OutdoorThermometer extends House
+class OutdoorThermometer : House
 {
-	float m_MaxValue = 50;
-	float m_MinValue = -20;
+	protected float m_MaxValue = 50;
+	protected float m_MinValue = -20;
 	
 	void OutdoorThermometer()
 	{
 		OutdoorThermometerManager.Add(this);
-	}
 
-	float GetTemperatureValue(PlayerBase player)
-	{
-		float temperature = GetGame().GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);	
-		float temperature01 = (temperature - m_MinValue) / (m_MaxValue - m_MinValue);
-				
-		SetAnimationPhase("ThermoGauge", temperature01);
-		return temperature;
-	}
-	
-	void UpdateTemperature()
-	{
-		float temperature = GetGame().GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);
-		float temperature01 = (temperature - m_MinValue) / (m_MaxValue - m_MinValue);
-		
-		temperature01 = Math.Clamp(temperature01, 0, 1);
-				
-		SetAnimationPhase("ThermoGauge", temperature01);
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(LateInit, 250);
 	}
 	
 	void ~OutdoorThermometer()
 	{
 		OutdoorThermometerManager.Remove(this);
 	}
+	
+	void UpdateTemperature()
+	{
+		float temperature = g_Game.GetMission().GetWorldData().GetTemperature(this, EEnvironmentTemperatureComponent.ALTITUDE|EEnvironmentTemperatureComponent.OVERCAST|EEnvironmentTemperatureComponent.FOG);
+		float temperature01 = (temperature - m_MinValue) / (m_MaxValue - m_MinValue);
+		
+		temperature01 = Math.Clamp(temperature01, 0.0, 1.0);
+				
+		SetAnimationPhase("ThermoGauge", temperature01);
+	}
+	
+	private void LateInit()
+	{
+		GetGame().RegisterNetworkStaticObject(this);
+		UpdateTemperature();
+	}
 }
 
-class Land_OutsideThermometer extends OutdoorThermometer
+class Land_OutsideThermometer : OutdoorThermometer
 {
 	void Land_OutsideThermometer()
 	{
@@ -112,7 +108,7 @@ class Land_OutsideThermometer extends OutdoorThermometer
 	}
 }
 
-class Land_OutsideThermometer_1 extends OutdoorThermometer
+class Land_OutsideThermometer_1 : OutdoorThermometer
 {
 	void Land_OutsideThermometer_1()
 	{
@@ -121,7 +117,7 @@ class Land_OutsideThermometer_1 extends OutdoorThermometer
 	}
 }
 
-class Land_OutsideThermometer_2 extends OutdoorThermometer
+class Land_OutsideThermometer_2 : OutdoorThermometer
 {
 	void Land_OutsideThermometer_2()
 	{
@@ -130,6 +126,6 @@ class Land_OutsideThermometer_2 extends OutdoorThermometer
 	}
 }
 
-class Land_OutsideThermometer_2_wall extends Land_OutsideThermometer_2
+class Land_OutsideThermometer_2_wall : Land_OutsideThermometer_2
 {
 }

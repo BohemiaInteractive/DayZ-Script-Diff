@@ -53,8 +53,6 @@ class ActionRepairItemWithBlowtorch : ActionContinuousBase
 			Class.CastTo(moduleRepairing, GetPlugin(PluginRepairing));
 			moduleRepairing.Repair(action_data.m_Player, action_data.m_MainItem, targetItem, m_SpecialtyWeight);
 		}
-		
-		action_data.m_MainItem.GetCompEM().SwitchOff();
 	}
 	
 	override void OnEndServer(ActionData action_data)

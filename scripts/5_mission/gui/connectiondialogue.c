@@ -1,40 +1,24 @@
 class ConnectionDialogue extends UIScriptedMenu
 {	
 	protected bool m_DebugMonitorHidden;
-	protected bool m_InputBufferFull;
-	
+
 	protected MultilineTextWidget m_Description;
 	protected ButtonWidget m_DisconnectBtn;
 	#ifdef PLATFORM_CONSOLE
 	protected RichTextWidget m_DisconnectBtnLabel;
 	protected Widget m_ConsoleToolbar;
 	#endif
-	protected float m_MenuShowTime;
-	protected const float MENU_SHOWTIME = 0.300;
 	
-	void ConnectionDialogue()
-	{
-		m_InputBufferFull = true;
-	}
+	void ConnectionDialogue() {}
 	
 	void ~ConnectionDialogue()
 	{
-		if (GetDayZGame())
-		{
-			GetDayZGame().OnInputBufferEvent().Remove(OnInputBufferEvent);
-		}
-		
 		#ifdef PLATFORM_CONSOLE
 		if (GetGame().GetMission())
 		{
 			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
 		}
 		#endif
-	}
-
-	void OnInputBufferEvent(bool bufferIsFull)
-	{
-		m_InputBufferFull = bufferIsFull;
 	}
 	
 	override Widget Init()
@@ -45,11 +29,6 @@ class ConnectionDialogue extends UIScriptedMenu
 		m_DisconnectBtnLabel = RichTextWidget.Cast(layoutRoot.FindAnyWidget("DCButtonLabel"));
 		m_ConsoleToolbar = layoutRoot.FindAnyWidget("ConsoleToolbar");
 		#endif
-
-		if (GetDayZGame())
-		{
-			GetDayZGame().OnInputBufferEvent().Insert(OnInputBufferEvent);
-		}
 		
 		#ifdef PLATFORM_CONSOLE
 		if (GetGame().GetMission())
@@ -166,6 +145,9 @@ class ConnectionDialogue extends UIScriptedMenu
 		{
 			mission.GetHud().ShowHud(false);
 			mission.GetHud().ShowQuickBar(false);
+			mission.AddActiveInputExcludes({"menu"});
+			mission.AddActiveInputRestriction(EInputRestrictors.INVENTORY);
+			GetUApi().SupressNextFrame(true);
 			
 			//! Hide debug monitor if it is shown
 			if (mission && mission.m_DebugMonitor && mission.m_DebugMonitor.IsVisible())
@@ -222,12 +204,6 @@ class ConnectionDialogue extends UIScriptedMenu
 	
 	override void Update(float timeslice)
 	{
-		if (!GetGame().GetPlayer().IsAlive() || GetGame().GetPlayer().IsUnconscious()) 
-		{
-			GetGame().GetUIManager().CloseMenu(MENU_CONNECTION_DIALOGUE);
-			return;
-		}
-		
 		#ifdef PLATFORM_CONSOLE
 		if (GetUApi().GetInputByID(UAUISelect).LocalValue())
 		{
@@ -235,27 +211,13 @@ class ConnectionDialogue extends UIScriptedMenu
 			return;
 		}
 		#endif
-		
-		m_MenuShowTime += timeslice;
-		if (m_MenuShowTime >= MENU_SHOWTIME)
-		{
-			if (!m_InputBufferFull)
-			{
-				GetGame().GetUIManager().CloseMenu(MENU_CONNECTION_DIALOGUE);
-				return;
-			}
-			else
-			{
-				m_MenuShowTime = 0;
-			}
-		}
 	}
 	
 	void CloseDialog()
 	{
 		if (GetGame())
 		{
-			Close();
+			GetGame().GetUIManager().CloseMenu(MENU_CONNECTION_DIALOGUE);
 			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().DisconnectSessionForce);
 		}
 	}

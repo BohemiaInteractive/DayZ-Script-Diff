@@ -365,17 +365,17 @@ class MainMenu extends UIScriptedMenu
 	{
 		if (w)
 		{
-			if (w == m_Play || w == m_ChooseServer || w == m_CustomizeCharacter || w == m_TutorialButton || w == m_MessageButton || w == m_SettingsButton);
+			if (w == m_Play || w == m_ChooseServer || w == m_CustomizeCharacter || w == m_TutorialButton || w == m_MessageButton || w == m_SettingsButton)
 			{
 				return true;
 			}
 			
-			if (w == m_Exit || w == m_PlayVideo);
+			if (w == m_Exit || w == m_PlayVideo || w == m_Feedback)
 			{
 				return true;
 			}
 			
-			if (w == m_NewsMain || w == m_NewsSec1 || w == m_NewsSec2 || w == m_PrevCharacter || w == m_NextCharacter);
+			if (w == m_NewsMain || w == m_NewsSec1 || w == m_NewsSec2 || w == m_PrevCharacter || w == m_NextCharacter)
 			{
 				return true;
 			}

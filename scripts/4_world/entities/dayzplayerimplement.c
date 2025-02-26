@@ -164,6 +164,7 @@ class DayZPlayerImplement extends DayZPlayer
 	bool												m_isFBsymptomPlaying;
 	protected bool 										m_HandheldOpticsInUse;
 	protected bool 										m_ResetADS;
+	protected bool 										m_ProcessResetADS;
 	protected int										m_StepCounter;
 	protected int 										m_NextVoNNoiseTime;
 	protected ref array<ref SyncHitInfo>				m_SyncedHitDataArray;

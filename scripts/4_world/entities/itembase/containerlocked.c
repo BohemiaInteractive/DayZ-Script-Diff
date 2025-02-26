@@ -79,10 +79,15 @@ class ContainerLockedBase : BuildingSuper
 	{
 		super.OnDoorUnlocked(params);
 		
-		m_LockedMask &= ~(1 << params.param1);
+		int doorIdx = params.param1;
 		
-		string selectionName = string.Format("side%1_lock",(params.param1 + 1));
+		m_LockedMask &= ~(1 << doorIdx);
+		
+		string selectionName = string.Format("side%1_lock",(doorIdx + 1));
 		SetAnimationPhase(selectionName,1);
+		
+		if (!GetGame().IsDedicatedServer())
+			SEffectManager.PlaySoundEnviroment("Land_ContainerLocked_lock_SoundSet",GetDoorSoundPos(doorIdx));
 	}
 	
 	override void OnDoorCloseStart(DoorStartParams params)

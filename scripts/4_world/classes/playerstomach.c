@@ -293,13 +293,13 @@ class PlayerStomach
 	
 	void ProcessNutrients(float delta_time)
 	{
+		m_DigestingType = 0;
+		
 		StomachItem item;
 		int stomachItemsCount = m_StomachContents.Count();
 		if (stomachItemsCount == 0) 
 			return;
 		
-		m_DigestingType = 0;
-
 		float digestionPointsPerItem = (DIGESTION_POINTS / stomachItemsCount) * delta_time;
 		m_StomachVolume = 0;//reset, it's accumulated with each pass
 		for (int i = stomachItemsCount - 1; i >= 0; i--)

@@ -72,6 +72,8 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	
 	static const float SLIDER_STEP = 0.01;
 	
+	protected OptionSelectorBase m_ActiveOption;
+	
 	void OptionsMenuControls( Widget parent, Widget details_root, GameOptions options, OptionsMenu menu )
 	{
 		array<string> opt							= { "#options_controls_disabled", "#options_controls_enabled" };
@@ -374,7 +376,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			m_DetailsText.Update();
 			m_DetailsLabel.Update();
 			m_DetailsRoot.Update();
-			m_DetailsBodyConnectivity.Update(); //...
+			m_DetailsBodyConnectivity.Update();
 			return true;
 		}
 		return false;
@@ -385,15 +387,35 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		#ifdef PLATFORM_CONSOLE
 			if (m_MaKOptionAvailable)
 			{
-				return ( ( m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0 ) || ( !m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1 ) );
+				return (IsConsoleOptionChanged() || (m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 0) || (!m_KeyboardSelector.IsEnabled() && m_KeyboardOption.GetIndex() == 1));
 			}
 			else
 			{
-				return false;
+				return IsConsoleOptionChanged();
 			}
 		#else
-			return (m_Mouse_VSensitivitySelector.Changed() || m_Mouse_HSensitivitySelector.Changed() || m_Mouse_AimMod_VSensitivitySelector.Changed() || m_Mouse_AimMod_HSensitivitySelector.Changed());
+			return IsOptionChanged();
 		#endif
+	}
+	
+	#ifdef PLATFORM_CONSOLE
+	bool IsConsoleOptionChanged()
+	{
+		bool consoleOptionChanged = (m_ControllerLS_VSensitivitySelector.Changed() || m_ControllerLS_HSensitivitySelector.Changed() || m_ControllerLS_VehicleMod_HSensitivitySelector.Changed() || m_ControllerRS_VSensitivitySelector.Changed() || m_ControllerRS_HSensitivitySelector.Changed() || m_ControllerRS_CurvatureSelector.Changed() || m_ControllerRS_AimMod_VSensitivitySelector.Changed());
+		if (m_MaKOptionAvailable)
+		{
+			return (IsOptionChanged() || consoleOptionChanged);
+		}
+		else
+		{
+			return consoleOptionChanged;
+		}
+	}
+	#endif
+	
+	bool IsOptionChanged()
+	{
+		return (m_Mouse_VSensitivitySelector.Changed() || m_Mouse_HSensitivitySelector.Changed() || m_Mouse_AimMod_VSensitivitySelector.Changed() || m_Mouse_AimMod_HSensitivitySelector.Changed());
 	}
 	
 	void Apply()
@@ -431,10 +453,10 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		if (m_MaKOptionAvailable)
 		{
 		#endif
-			m_Mouse_VSensitivitySelector.Refresh(m_Mouse_VSensitivityOption.GetDefault());
-			m_Mouse_HSensitivitySelector.Refresh(m_Mouse_HSensitivityOption.GetDefault());
-			m_Mouse_AimMod_VSensitivitySelector.Refresh(m_Mouse_AimMod_VSensitivityOption.GetDefault());
-			m_Mouse_AimMod_HSensitivitySelector.Refresh(m_Mouse_AimMod_HSensitivityOption.GetDefault());
+			m_Mouse_VSensitivitySelector.Refresh();
+			m_Mouse_HSensitivitySelector.Refresh();
+			m_Mouse_AimMod_VSensitivitySelector.Refresh();
+			m_Mouse_AimMod_HSensitivitySelector.Refresh();
 		#ifdef PLATFORM_CONSOLE
 		}
 		#endif
@@ -449,28 +471,24 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		{
 			m_Mouse_VSensitivitySelector.SetValue(m_Mouse_VSensitivityOption.ReadValue(), true);
 			m_Mouse_VSensitivitySelector.SetValueText();
-			m_Mouse_VSensitivitySelector.SetChanged(false);
 		}
 
 		if(m_Mouse_HSensitivitySelector)
 		{
 			m_Mouse_HSensitivitySelector.SetValue(m_Mouse_HSensitivityOption.ReadValue(), true);
 			m_Mouse_HSensitivitySelector.SetValueText();
-			m_Mouse_HSensitivitySelector.SetChanged(false);
 		}
 
 		if(m_Mouse_AimMod_VSensitivitySelector)
 		{
 			m_Mouse_AimMod_VSensitivitySelector.SetValue(m_Mouse_AimMod_VSensitivityOption.ReadValue(), true);
 			m_Mouse_AimMod_VSensitivitySelector.SetValueText();
-			m_Mouse_AimMod_VSensitivitySelector.SetChanged(false);
 		}
 
 		if(m_Mouse_AimMod_HSensitivitySelector)
 		{
 			m_Mouse_AimMod_HSensitivitySelector.SetValue(m_Mouse_AimMod_HSensitivityOption.ReadValue(), true);
 			m_Mouse_AimMod_HSensitivitySelector.SetValueText();
-			m_Mouse_AimMod_HSensitivitySelector.SetChanged(false);
 		}
 
 		#ifdef PLATFORM_CONSOLE
@@ -483,21 +501,18 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			{
 				m_ControllerLS_VSensitivitySelector.SetValue(m_ControllerLS_VSensitivityOption.ReadValue(), true);
 				m_ControllerLS_VSensitivitySelector.SetValueText();
-				m_ControllerLS_VSensitivitySelector.SetChanged(false);
 			}
 		
 			if(m_ControllerLS_HSensitivitySelector)
 			{
 				m_ControllerLS_HSensitivitySelector.SetValue(m_ControllerLS_HSensitivityOption.ReadValue(), true);
 				m_ControllerLS_HSensitivitySelector.SetValueText();
-				m_ControllerLS_HSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerLS_VehicleMod_HSensitivitySelector)
 			{
 				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValue(m_ControllerLS_VehicleMod_HSensitivityOption.ReadValue(), true);
 				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValueText();
-				m_ControllerLS_VehicleMod_HSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_InvertSelector)
@@ -507,56 +522,48 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			{
 				m_ControllerRS_VSensitivitySelector.SetValue(m_ControllerRS_VSensitivityOption.ReadValue(), true);
 				m_ControllerRS_VSensitivitySelector.SetValueText();
-				m_ControllerRS_VSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_HSensitivitySelector)
 			{
 				m_ControllerRS_HSensitivitySelector.SetValue(m_ControllerRS_HSensitivityOption.ReadValue(), true);
 				m_ControllerRS_HSensitivitySelector.SetValueText();
-				m_ControllerRS_HSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_CurvatureSelector)
 			{
 				m_ControllerRS_CurvatureSelector.SetValue(m_ControllerRS_CurvatureOption.ReadValue(), true);
 				m_ControllerRS_CurvatureSelector.SetValueText();
-				m_ControllerRS_CurvatureSelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_AimMod_VSensitivitySelector)
 			{
 				m_ControllerRS_AimMod_VSensitivitySelector.SetValue(m_ControllerRS_AimMod_VSensitivityOption.ReadValue(), true);
 				m_ControllerRS_AimMod_VSensitivitySelector.SetValueText();
-				m_ControllerRS_AimMod_VSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_AimMod_HSensitivitySelector)
 			{
 				m_ControllerRS_AimMod_HSensitivitySelector.SetValue(m_ControllerRS_AimMod_HSensitivityOption.ReadValue(), true);
 				m_ControllerRS_AimMod_HSensitivitySelector.SetValueText();
-				m_ControllerRS_AimMod_HSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_AimMod_CurvatureSelector)
 			{
 				m_ControllerRS_AimMod_CurvatureSelector.SetValue(m_ControllerRS_AimMod_CurvatureOption.ReadValue(), true);
 				m_ControllerRS_AimMod_CurvatureSelector.SetValueText();
-				m_ControllerRS_AimMod_CurvatureSelector.SetChanged(false);
 			}
 
 			if(m_ControllerLS_DeadZoneSelector)
 			{
 				m_ControllerLS_DeadZoneSelector.SetValue(m_ControllerLS_DeadZoneOption.ReadValue(), true);
 				m_ControllerLS_DeadZoneSelector.SetValueText();
-				m_ControllerLS_DeadZoneSelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_DeadZoneSelector)
 			{
 				m_ControllerRS_DeadZoneSelector.SetValue(m_ControllerRS_DeadZoneOption.ReadValue(), true);
 				m_ControllerRS_DeadZoneSelector.SetValueText();
-				m_ControllerRS_DeadZoneSelector.SetChanged(false);
 			}
 		#endif		
 	}
@@ -570,28 +577,24 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		{
 			m_Mouse_VSensitivitySelector.SetValue(m_Mouse_VSensitivityOption.GetDefault(), true);
 			m_Mouse_VSensitivitySelector.SetValueText();
-			m_Mouse_VSensitivitySelector.SetChanged(false);
 		}
 		
 		if(m_Mouse_HSensitivitySelector)
 		{
 			m_Mouse_HSensitivitySelector.SetValue(m_Mouse_HSensitivityOption.GetDefault(), true);
 			m_Mouse_HSensitivitySelector.SetValueText();
-			m_Mouse_HSensitivitySelector.SetChanged(false);
 		}
 		
 		if(m_Mouse_AimMod_VSensitivitySelector)
 		{
 			m_Mouse_AimMod_VSensitivitySelector.SetValue(m_Mouse_AimMod_VSensitivityOption.GetDefault(), true);
 			m_Mouse_AimMod_VSensitivitySelector.SetValueText();
-			m_Mouse_AimMod_VSensitivitySelector.SetChanged(false);
 		}
 		
 		if(m_Mouse_AimMod_HSensitivitySelector)
 		{
 			m_Mouse_AimMod_HSensitivitySelector.SetValue(m_Mouse_AimMod_HSensitivityOption.GetDefault(), true);
 			m_Mouse_AimMod_HSensitivitySelector.SetValueText();
-			m_Mouse_AimMod_HSensitivitySelector.SetChanged(false);
 		}
 
 		#ifdef PLATFORM_CONSOLE
@@ -604,21 +607,18 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			{
 				m_ControllerLS_VSensitivitySelector.SetValue(m_ControllerLS_VSensitivityOption.GetDefault(), true);
 				m_ControllerLS_VSensitivitySelector.SetValueText();
-				m_ControllerLS_VSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerLS_HSensitivitySelector)
 			{
 				m_ControllerLS_HSensitivitySelector.SetValue(m_ControllerLS_HSensitivityOption.GetDefault(), true);
 				m_ControllerLS_HSensitivitySelector.SetValueText();
-				m_ControllerLS_HSensitivitySelector.SetChanged(false);
 			}
 			
 			if(m_ControllerLS_VehicleMod_HSensitivitySelector)
 			{
 				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValue(m_ControllerLS_VehicleMod_HSensitivityOption.GetDefault(), true);
 				m_ControllerLS_VehicleMod_HSensitivitySelector.SetValueText();
-				m_ControllerLS_VehicleMod_HSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_InvertSelector)
@@ -628,56 +628,48 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			{
 				m_ControllerRS_VSensitivitySelector.SetValue(m_ControllerRS_VSensitivityOption.GetDefault(), true);
 				m_ControllerRS_VSensitivitySelector.SetValueText();
-				m_ControllerRS_VSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_HSensitivitySelector)
 			{
 				m_ControllerRS_HSensitivitySelector.SetValue(m_ControllerRS_HSensitivityOption.GetDefault(), true);
 				m_ControllerRS_HSensitivitySelector.SetValueText();
-				m_ControllerRS_HSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_CurvatureSelector)
 			{
 				m_ControllerRS_CurvatureSelector.SetValue(m_ControllerRS_CurvatureOption.GetDefault(), true);
 				m_ControllerRS_CurvatureSelector.SetValueText();
-				m_ControllerRS_CurvatureSelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_AimMod_VSensitivitySelector)
 			{
 				m_ControllerRS_AimMod_VSensitivitySelector.SetValue(m_ControllerRS_AimMod_VSensitivityOption.GetDefault(), true);
 				m_ControllerRS_AimMod_VSensitivitySelector.SetValueText();
-				m_ControllerRS_AimMod_VSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_AimMod_HSensitivitySelector)
 			{
 				m_ControllerRS_AimMod_HSensitivitySelector.SetValue(m_ControllerRS_AimMod_HSensitivityOption.GetDefault(), true);
 				m_ControllerRS_AimMod_HSensitivitySelector.SetValueText();
-				m_ControllerRS_AimMod_HSensitivitySelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_AimMod_CurvatureSelector)
 			{
 				m_ControllerRS_AimMod_CurvatureSelector.SetValue(m_ControllerRS_AimMod_CurvatureOption.GetDefault(), true);
 				m_ControllerRS_AimMod_CurvatureSelector.SetValueText();
-				m_ControllerRS_AimMod_CurvatureSelector.SetChanged(false);
 			}
 
 			if(m_ControllerLS_DeadZoneSelector)
 			{
 				m_ControllerLS_DeadZoneSelector.SetValue(m_ControllerLS_DeadZoneOption.GetDefault(), true);
 				m_ControllerLS_DeadZoneSelector.SetValueText();
-				m_ControllerLS_DeadZoneSelector.SetChanged(false);
 			}
 
 			if(m_ControllerRS_DeadZoneSelector)
 			{
 				m_ControllerRS_DeadZoneSelector.SetValue(m_ControllerRS_DeadZoneOption.GetDefault(), true);
 				m_ControllerRS_DeadZoneSelector.SetValueText();
-				m_ControllerRS_DeadZoneSelector.SetChanged(false);
 			}
 
 			Focus();
@@ -911,5 +903,15 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			button.SetTextColor( ARGB( 255, 255, 255, 255 ) );
 			button.SetAlpha( 0.0 );
 		}
+	}
+	
+	void SetActiveOption(OptionSelectorBase option)
+	{
+		m_ActiveOption = option;
+	}
+	
+	OptionSelectorBase GetActiveOption()
+	{
+		return m_ActiveOption;
 	}
 }

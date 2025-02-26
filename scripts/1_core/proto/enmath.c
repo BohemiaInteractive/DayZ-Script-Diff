@@ -727,6 +727,27 @@ class Math
 		return res;
 	}
 	
+	/**
+	\brief Returns given value remaped from input range into output range
+		\param inputMin \p float Minimal value of given input range
+		\param inputMax \p float Maximal value of given input range
+		\param outputMin \p float Minimal value of given output range
+		\param outputMax \p float Maximal value of given input range
+		\param inputValue \p float Value we want to remap
+		\param clampedOutput\p bool If value should stay in that range, otherwise it will be extrapolated 
+		\return \p float - Remapped value
+	*/
+	static float Remap(float inputMin, float inputMax, float outputMin, float outputMax, float inputValue, bool clampedOutput = true)
+	{
+		float tempValue = Math.InverseLerp(inputMin, inputMax, inputValue);
+		float remapped = Math.Lerp(outputMin, outputMax, tempValue);
+		
+		if (clampedOutput)
+			return Math.Clamp(remapped, outputMin, outputMax);
+		
+		return remapped;
+	}
+	
 	static vector CenterOfRectangle(vector min, vector max)
 	{
 		float x = (min[0] + max[0]) * 0.5;

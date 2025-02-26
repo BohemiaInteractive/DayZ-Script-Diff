@@ -18,6 +18,10 @@ enum EConnectErrorClient
 	
 	PASSWORD,					// Server is password protected
 	BE_LICENCE,					// Server is using BE and it has not yet been agreed to
+
+	ALREADY_ON_ANOTHER_SERVER,	// Player is already playing on a different server	
+	COMMUNICATION_TIMED_OUT,	// Communication timed out
+	ALREADY_ON_SERVER,			// Player is already playing on this server
 };
 
 class ConnectErrorClientModule : ErrorHandlerModuleScript
@@ -53,6 +57,10 @@ class ConnectErrorClientModule : ErrorHandlerModuleScript
 		
 		InsertErrorProperties(EConnectErrorClient.PASSWORD);
 		InsertErrorProperties(EConnectErrorClient.BE_LICENCE);
+		
+		InsertDialogueErrorProperties(EConnectErrorClient.ALREADY_ON_ANOTHER_SERVER,"#STR_already_on_another_server");
+		InsertDialogueErrorProperties(EConnectErrorClient.COMMUNICATION_TIMED_OUT,	"#STR_BIOS_CommTimeOutError");
+		InsertDialogueErrorProperties(EConnectErrorClient.ALREADY_ON_SERVER,		"#ps4_already_in_session");
 	}
 
 #ifndef NO_GUI	

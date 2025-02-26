@@ -1821,6 +1821,9 @@ class ItemBase extends InventoryItem
 	
 	ItemBase SplitIntoStackMaxToInventoryLocationEx(notnull InventoryLocation dst)
 	{
+		if (!CanBeSplit())
+			return this;
+		
 		float quantity = GetQuantity();
 		float split_quantity_new;
 		ItemBase new_item;
@@ -1968,9 +1971,7 @@ class ItemBase extends InventoryItem
 	void SplitItem(PlayerBase player)
 	{
 		if (!CanBeSplit())
-		{
 			return;
-		}
 		
 		float quantity = GetQuantity();
 		float split_quantity_new = Math.Floor(quantity / 2);

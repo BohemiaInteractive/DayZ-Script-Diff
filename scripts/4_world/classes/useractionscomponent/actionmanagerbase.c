@@ -324,6 +324,7 @@ class ActionManagerBase
 	}
 	
 	void OnJumpStart();
+	void EndOrInterruptCurrentAction();
 
 	bool OnInputUserDataProcess(int userDataType, ParamsReadContext ctx)
 	{

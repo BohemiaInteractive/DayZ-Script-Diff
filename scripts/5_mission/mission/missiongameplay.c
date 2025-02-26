@@ -49,6 +49,9 @@ class MissionGameplay extends MissionBase
 	protected Widget				m_VoiceLevels;
 	protected ref map<int,ImageWidget> m_VoiceLevelsWidgets;
 	protected ref map<int,ref WidgetFadeTimer> m_VoiceLevelTimers;
+	
+	protected bool 					m_InputBufferFull;
+	UIScriptedMenu					m_ConnectionMenu;
 
 	void MissionGameplay()
 	{
@@ -97,12 +100,14 @@ class MissionGameplay extends MissionBase
 			return;
 		}
 		
+		#ifndef BULDOZER
 		#ifdef DIAG_DEVELOPER
 		if (!GetGame().IsMultiplayer())//to make it work in single during development
 		{
 			CfgGameplayHandler.LoadData();
 			UndergroundAreaLoader.SpawnAllTriggerCarriers();
 		}
+		#endif
 		#endif
 		
 		PPEffects.Init(); //DEPRECATED, left in for legacy purposes only
@@ -746,6 +751,13 @@ class MissionGameplay extends MissionBase
 				PluginDeveloper plugin_developer = PluginDeveloper.Cast( GetPlugin(PluginDeveloper) );
 				plugin_developer.OnSetFreeCameraEvent( PlayerBase.Cast( player ), set_free_camera_event_params.param1 );
 				break;
+			case NetworkInputBufferEventTypeID:
+				NetworkInputBufferEventParams networkInputBufferParams = NetworkInputBufferEventParams.Cast(params);
+				if (networkInputBufferParams)
+				{
+					OnInputBufferEvent(networkInputBufferParams.param1);
+				}
+				break;
 		}
 	}
 	
@@ -1270,7 +1282,7 @@ class MissionGameplay extends MissionBase
 		if (menu)
 		{
 			int menu_id = menu.GetID();
-			if (!IsPaused() || (menu_id != MENU_INGAME && menu_id != MENU_LOGOUT && menu_id != MENU_RESPAWN_DIALOGUE && menu_id != MENU_CONNECTION_DIALOGUE) || (m_Logout && m_Logout.layoutRoot.IsVisible()))
+			if (!IsPaused() || (menu_id != MENU_INGAME && menu_id != MENU_LOGOUT && menu_id != MENU_RESPAWN_DIALOGUE) || (m_Logout && m_Logout.layoutRoot.IsVisible()))
 			{
 				return;
 			}
@@ -1298,7 +1310,7 @@ class MissionGameplay extends MissionBase
 	override void CreateLogoutMenu(UIMenuPanel parent)
 	{
 		// prevent creating logout dialog if input buffer has reached server config maximumClientInputs limit.
-		if (GetGame() && GetGame().IsNetworkInputBufferFull())
+		if (GetGame() && m_InputBufferFull)
 			return;
 		
 		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );		
@@ -1482,7 +1494,7 @@ class MissionGameplay extends MissionBase
 		}
 #endif
 	}
-	
+
 	override void UpdateVoiceLevelWidgets(int level)
 	{
 		for ( int n = 0; n < m_VoiceLevelsWidgets.Count(); n++ )
@@ -1631,5 +1643,88 @@ class MissionGameplay extends MissionBase
 			m_OnConnectivityChanged = new ScriptInvoker();
 		}
 		return m_OnConnectivityChanged;
+	}
+	
+	protected void OnInputBufferEvent(bool state)
+	{
+		if (m_InputBufferFull != state)
+		{
+			m_InputBufferFull = state;
+			if (m_InputBufferFull)
+			{
+				if (GetGame().GetUIManager().GetMenu() && GetGame().GetUIManager().GetMenu().GetID() == MENU_INVENTORY)
+				{
+					GetGame().GetMission().HideInventory();
+				}
+				
+				GetGame().GetUIManager().CloseAll();
+
+				m_ConnectionMenu = GetGame().GetUIManager().EnterScriptedMenu(MENU_CONNECTION_DIALOGUE, GetGame().GetUIManager().GetMenu());
+				GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(InputBufferCheck, 0.500, true);
+			}
+		}
+	}
+	
+	protected void InputBufferCheck()
+	{
+		PlayerBase player;
+		ActionManagerBase amb;
+		ActionBase action;
+
+		if (m_InputBufferFull)
+		{
+			if (m_ConnectionMenu && (!GetGame().GetPlayer().IsAlive() || GetGame().GetPlayer().IsUnconscious())) 
+			{
+				m_ConnectionMenu.Close();
+
+				player = PlayerBase.Cast(GetGame().GetPlayer());
+				if (!player)
+					return;
+
+				amb = player.GetActionManager();
+				if (!amb)
+					return;
+				
+				action = amb.GetRunningAction();
+				if (action && amb.GetActionState(action) != UA_NONE)
+				{
+					amb.RequestInterruptAction();
+				}
+				return;
+			}
+
+			if (!m_ConnectionMenu)
+			{
+				if (GetGame().GetUIManager().GetMenu() && GetGame().GetUIManager().GetMenu().GetID() == MENU_INVENTORY)
+				{
+					GetGame().GetMission().HideInventory();
+				}
+
+				GetGame().GetUIManager().CloseAll();
+				m_ConnectionMenu = GetGame().GetUIManager().EnterScriptedMenu(MENU_CONNECTION_DIALOGUE, GetGame().GetUIManager().GetMenu());
+			}
+		}
+		else
+		{
+			if (m_ConnectionMenu)
+			{
+				GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(InputBufferCheck);
+				m_ConnectionMenu.Close();
+
+				player = PlayerBase.Cast(GetGame().GetPlayer());
+				if (!player)
+					return;
+
+				amb = player.GetActionManager();
+				if (!amb)
+					return;
+				
+				action = amb.GetRunningAction();
+				if (action && amb.GetActionState(action) != UA_NONE)
+				{
+					amb.RequestInterruptAction();
+				}
+			}
+		}
 	}
 }

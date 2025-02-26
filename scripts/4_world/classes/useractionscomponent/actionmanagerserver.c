@@ -14,6 +14,11 @@ class ActionManagerServer: ActionManagerBase
 	//------------------------------------------
 	override void OnJumpStart()
 	{
+		EndOrInterruptCurrentAction();
+	}
+	
+	override void EndOrInterruptCurrentAction()
+	{
 		if (m_CurrentActionData)
 		{
 			if (m_CurrentActionData.m_State == UA_AM_PENDING || m_CurrentActionData.m_State == UA_AM_REJECTED || m_CurrentActionData.m_State == UA_AM_ACCEPTED)

@@ -987,8 +987,6 @@ class DayZGame extends CGame
 	#ifdef DIAG_DEVELOPER
 	ref CameraToolsMenuServer m_CameraToolsMenuServer;
 	#endif
-	
-	protected ref ScriptInvoker m_OnInputBufferEvent;
 
 	// CGame override functions
 	void DayZGame()
@@ -1719,44 +1717,6 @@ class DayZGame extends CGame
 					{
 						SetConnectivityStatState(EConnectivityStatType.SERVER_PERF, EConnectivityStatLevel.LEVEL2);
 					}
-				}
-				break;
-			}
-			case NetworkInputBufferEventTypeID:
-			{
-				if (!GetGame().GetPlayer().IsAlive() || GetGame().GetPlayer().IsUnconscious())
-					return;
-				
-				NetworkInputBufferEventParams networkInputBufferParams;
-				if (Class.CastTo(networkInputBufferParams, params))
-				{
-					bool inputBufferFull = networkInputBufferParams.param1;
-					if (inputBufferFull)
-					{
-						if (g_Game.GetUIManager() && g_Game.GetUIManager().IsDialogVisible())
-						{
-							g_Game.GetUIManager().CloseDialog();
-						}
-
-						if (g_Game.GetUIManager().GetMenu() && g_Game.GetUIManager().GetMenu().GetID() != MENU_CONNECTION_DIALOGUE)
-						{
-							if (g_Game.GetUIManager().GetMenu().GetID() == MENU_INVENTORY)
-							{
-								g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetMission().HideInventory);
-							}
-							else
-							{
-								g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetUIManager().GetMenu().Close);
-							}
-						}
-						
-						if (!g_Game.GetUIManager().GetMenu() || g_Game.GetUIManager().GetMenu() && g_Game.GetUIManager().GetMenu().GetID() != MENU_CONNECTION_DIALOGUE)
-						{
-							g_Game.GetUIManager().EnterScriptedMenu(MENU_CONNECTION_DIALOGUE, null);
-						}
-					}
-					
-					OnInputBufferEvent().Invoke(inputBufferFull);
 				}
 				break;
 			}
@@ -3896,14 +3856,6 @@ class DayZGame extends CGame
 	BillboardSetHandler GetBillboardHandler()
 	{
 		return m_BillboardSetHandler;
-	}
-	
-	ScriptInvoker OnInputBufferEvent()
-	{
-		if (!m_OnInputBufferEvent)
-			m_OnInputBufferEvent = new ScriptInvoker();
-		
-		return m_OnInputBufferEvent;
 	}
 	
 	///////////////

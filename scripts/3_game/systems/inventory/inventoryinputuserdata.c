@@ -103,23 +103,5 @@ class InventoryInputUserData
 		}
 	}
 	///@} hand
-
-	static void SerializeDestroy(ParamsWriteContext ctx, notnull InventoryLocation src)
-	{
-		ctx.Write(INPUT_UDT_INVENTORY);
-		ctx.Write(InventoryCommandType.DESTROY);
-		src.WriteToContext(ctx);
-	}
-
-	static void SendInputUserDataDestroy(notnull InventoryLocation src)
-	{
-		if (GetGame().IsClient())
-		{
-			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] SendInputUserDataDestroy src=" + InventoryLocation.DumpToStringNullSafe(src));
-			ScriptInputUserData ctx = new ScriptInputUserData;
-			SerializeDestroy(ctx, src);
-			ctx.Send();
-		}
-	}
-};
+}
 

@@ -127,6 +127,7 @@ class ScriptInputUserData : ParamsWriteContext
 
 	proto native bool CopyFrom(ParamsReadContext other);
 
+	//! Returns true when the channel is free, AND the InputBuffer is NOT full (same as '!IsNetworkInputBufferFull()')
 	proto native static bool CanStoreInputUserData ();
 };
 

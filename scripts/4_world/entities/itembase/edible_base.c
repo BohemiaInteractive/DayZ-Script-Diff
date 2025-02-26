@@ -108,7 +108,7 @@ class Edible_Base : ItemBase
 		}
 	}
 	
-	//! Filter agents from the item (override on higher implements)
+	//! Filter agents from the item (override on higher implementations)
 	int FilterAgents(int agentsIn)
 	{
 		int foodStageType;
@@ -592,7 +592,7 @@ class Edible_Base : ItemBase
 		}
 		
 		return false;
-	}				
+	}
 	
 	//food stage change
 	void ChangeFoodStage( FoodStageType new_food_stage_type )
@@ -687,6 +687,11 @@ class Edible_Base : ItemBase
 		}
 		else
 			Error("ReplaceEdibleWithNew - cannot use edible without player");
+	}
+	
+	int GetConsumptionPenaltyContext()
+	{
+		return EConsumptionPenaltyContext.DRINK|EConsumptionPenaltyContext.EAT;
 	}
 
 	override void SetActions()

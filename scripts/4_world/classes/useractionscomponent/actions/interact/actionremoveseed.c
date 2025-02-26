@@ -43,7 +43,7 @@ class ActionRemoveSeed: ActionInteractBase
 			//Can only remove seed if slot is not watered to prevent VME
 			if ( slot && slot.GetSeed() )
 			{
-				if ( slot.GetWateredState() != 0 )
+				if ( slot.GetWateredState() != eWateredState.DRY)
 					return false;
 				
 				m_Seed = SeedBase.Cast( slot.GetSeed() );

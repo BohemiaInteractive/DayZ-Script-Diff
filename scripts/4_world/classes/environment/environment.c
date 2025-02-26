@@ -438,9 +438,7 @@ class Environment
 	// Calculates and return temperature of environment
 	protected float GetEnvironmentTemperature()
 	{
-		float temperature;
-		temperature = m_WorldData.GetBaseEnvTemperatureAtObject(m_Player);
-		temperature += m_Clouds * m_WorldData.m_CloudsTemperatureEffectModifier;
+		float temperature = m_WorldData.GetTemperature(m_Player, EEnvironmentTemperatureComponent.ALTITUDE | EEnvironmentTemperatureComponent.OVERCAST);
 		
 		if (IsWaterContact())
 		{
@@ -461,13 +459,13 @@ class Environment
 		}
 		else if (IsUnderRoof() && !m_IsUnderRoofBuilding)
 		{
-			temperature += m_Fog * GameConstants.ENVIRO_FOG_TEMP_EFFECT;
+			temperature = m_WorldData.GetTemperature(m_Player, EEnvironmentTemperatureComponent.ALTITUDE | EEnvironmentTemperatureComponent.OVERCAST|EEnvironmentTemperatureComponent.FOG);
 			temperature += WindEffectTemperatureValue(temperature) * GetWindModifierPerSurface() * GameConstants.ENVIRO_TEMPERATURE_UNDERROOF_COEF;
 		}
 		else
 		{
-			temperature += m_Fog * GameConstants.ENVIRO_FOG_TEMP_EFFECT;
-			temperature += WindEffectTemperatureValue(temperature) * GetWindModifierPerSurface();
+			temperature = m_WorldData.GetTemperature(m_Player, EEnvironmentTemperatureComponent.ALTITUDE | EEnvironmentTemperatureComponent.OVERCAST|EEnvironmentTemperatureComponent.FOG);
+			temperature += m_WorldData.GetTemperatureComponentValue(temperature, EEnvironmentTemperatureComponent.WIND) * GetWindModifierPerSurface();
 		}
 
 		// incorporate temperature from temperature sources (buffer)
@@ -555,7 +553,7 @@ class Environment
 		m_DayOrNight 	= g_Game.GetMission().GetWorldData().GetDaytime();
 		m_Fog 			= weather.GetFog().GetActual();
 		m_Clouds 		= weather.GetOvercast().GetActual();
-		m_Wind 			= g_Game.GetWeather().GetWindMagnitude().GetActual();
+		m_Wind 			= weather.GetWindMagnitude().GetActual();
 
 		SetEnvironmentTemperature();
 		SetAreaGenericColdness();
@@ -572,16 +570,6 @@ class Environment
 	{			
 		float heigthCorrectedTemp = m_WorldData.GetBaseEnvTemperatureAtObject(m_Player);
 		m_Player.SetInColdArea(heigthCorrectedTemp <= GameConstants.COLD_AREA_TEMPERATURE_THRESHOLD);
-	}
-	
-	protected float WindEffectTemperatureValue(float temperatureInput)
-	{
-		float output = 0.0;
-
-		output = (temperatureInput - GameConstants.ENVIRO_WIND_CHILL_LIMIT) / (GameConstants.ENVIRO_WIND_EFFECT_SLOPE - GameConstants.ENVIRO_WIND_CHILL_LIMIT);
-		output = output * m_Wind * m_WorldData.GetWindCoef();
-		
-		return -output;
 	}
 
 	//! process attachments by water depth
@@ -887,15 +875,36 @@ class Environment
 		heatItems = hBodyPartTotal;
 		heatComfortSum = hcBodyPartTotal;
 		heatComfortSum += hcPenaltyTotal; //! heatcomfort body parts penalties
-		
+
+		//! Stomach temperature influence to heatcomfort		
 		{
-			float stomachContentTemperature = m_Player.GetStomach().GetStomachTemperature();
-			if (!IsNeutralTemperature(stomachContentTemperature))
+			if (m_Player.GetStomach().GetStomachVolume() > 0.0)
 			{
-				stomachContentTemperature = m_Player.GetStomach().GetStomachTemperature() * GameConstants.ENVIRO_STOMACH_WEIGHT;
-				stomachContentTemperature = Math.Clamp(stomachContentTemperature, -GameConstants.ENVIRO_STOMACH_WEIGHT, GameConstants.ENVIRO_STOMACH_WEIGHT);
-				
-				heatComfortSum += stomachContentTemperature;
+				float stomachContentTemperature = m_Player.GetStomach().GetStomachTemperature();
+				if (stomachContentTemperature < GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT)
+				{
+					stomachContentTemperature = Math.Remap(
+						-10.0,
+						GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT,
+						-GameConstants.ENVIRO_STOMACH_WEIGHT,
+						0.0,
+						stomachContentTemperature,
+					);
+				}
+				else if (stomachContentTemperature > GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT)
+				{
+					stomachContentTemperature = Math.Remap(
+						GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT,
+						70.0,
+						0.0,
+						GameConstants.ENVIRO_STOMACH_WEIGHT,
+						stomachContentTemperature,
+					);
+				}
+				else
+					stomachContentTemperature = 0.0;
+
+				heatComfortSum += stomachContentTemperature * GameConstants.ENVIRO_STOMACH_WEIGHT;
 			}
 		}
 
@@ -1676,13 +1685,24 @@ class Environment
 		m_EnvironmentSnapshot = data;
 	}
 	
-	//! for backward compatibility [<1.27]
+	//! backward compatibility [<1.27]
 	protected void ProcessHeatBuffer(float heatComfortCloths)
 	{
 		m_EnvironmentSnapshot.m_ClothingHeatComfort 	= heatComfortCloths;
 		m_EnvironmentSnapshot.m_TargetHeatComfort 	= m_TargetHeatComfort;
 		
 		ProcessHeatBuffer(m_EnvironmentSnapshot);
+	}
+	
+	//! backward compatibility [<1.28]
+	protected float WindEffectTemperatureValue(float temperatureInput)
+	{
+		float output = 0.0;
+
+		output = (temperatureInput - GameConstants.ENVIRO_WIND_CHILL_LIMIT) / (GameConstants.ENVIRO_WIND_EFFECT_SLOPE - GameConstants.ENVIRO_WIND_CHILL_LIMIT);
+		output = output * m_Wind * m_WorldData.GetWindCoef();
+		
+		return -output;
 	}
 	
 	float GetDayOrNight()

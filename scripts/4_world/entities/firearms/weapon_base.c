@@ -1068,7 +1068,16 @@ class Weapon_Base extends Weapon
 	{
 		m_PropertyModifierObject = null;
 
-		ValidateAndRepair();
+		if (GetGame().IsServer())
+		{
+		    // The server knows about all of its attachments
+		    ValidateAndRepair();
+		}
+		else
+		{
+		    // The client doesn't know it has attachments yet... give it a moment
+		    DelayedValidateAndRepair();
+		}
 		
 		super.OnInventoryEnter(player);
 	}
@@ -1113,6 +1122,29 @@ class Weapon_Base extends Weapon
 	
 	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner)
 	{
+		/*
+		// TODO(kumarjac):	Solve this in code instead, OnItemLocationChanged is called too late. 
+		//					Maybe extend an option for items to specify what attachments they must
+		//					be synchronized with? Moving to 'DelayedValidateAndRepair' works for now.
+		int muzzles = GetMuzzleCount();
+		for (int muzzleIdx = 0; muzzleIdx < muzzles; muzzleIdx++)
+		{
+			Magazine mag = GetMagazine(muzzleIdx);
+			Print(mag);
+			if (!mag)
+				continue;
+				
+			Print(mag.GetInventory());
+			if (!mag.GetInventory())
+				continue;
+				
+			InventoryLocation invLoc = new InventoryLocation();
+			mag.GetInventory().GetCurrentInventoryLocation(invLoc);
+				
+			GetGame().AddInventoryJunctureEx(null, this, invLoc, true, 1000);
+		}
+		*/
+			
 		super.OnItemLocationChanged(old_owner,new_owner);
 		
 		// "resets" optics memory on optics

@@ -187,7 +187,7 @@ class UAFishingConstants
 	const float SIGNAL_DEADZONE_START_DURATION = 0.5; //deadzone DURATION in seconds
 	const float SIGNAL_DEADZONE_END_DURATION = 0.5; //deadzone DURATION in seconds
 	
-	const float SIGNAL_CYCLE_MEAN_DEFAULT = 14; //! re-purposed as soft cycle target 
+	const float SIGNAL_CYCLE_MEAN_DEFAULT = 20; //! re-purposed as soft cycle target 
 	const float SIGNAL_MEAN_CHANCE_DEFAULT = 0.5; //! chance at MEAN
 	const float SIGNAL_CYCLE_HARD_TARGET_DEFAULT = 30; //! hard cycle target
 	const float SIGNAL_HARD_TARGET_CHANCE_DEFAULT = 0.9; //! chance at HARD_TARGET (we probably want close to 100% here, randomness being random..)

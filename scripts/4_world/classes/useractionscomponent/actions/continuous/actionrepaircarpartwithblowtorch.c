@@ -37,8 +37,6 @@ class ActionRepairCarPartWithBlowtorch : ActionRepairCarPart
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		super.OnFinishProgressServer(action_data);
-		
-		action_data.m_MainItem.GetCompEM().SwitchOff();
 	}
 	
 	override void OnEndServer(ActionData action_data)

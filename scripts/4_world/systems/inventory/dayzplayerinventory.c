@@ -1513,88 +1513,6 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		return true;
 	}
 
-	bool ValidateDestroy(inout Serializer ctx, InventoryValidation validation)
-	{
-		InventoryCommandType type = InventoryCommandType.DESTROY;
-
-		if (validation.m_IsJuncture)
-		{
-			/** TODO(kumarjac):
-			 *	Probably should be called through inventory juncture, 
-			 *	we shouldn't allow the client to delete until the 
-			 *	server says it is okay as there can be more reasons 
-			 *	than "cheater" for it to be rejected such as desync
-			 */
-			
-			return true;
-		}
-
-		InventoryLocation src = new InventoryLocation;
-		src.ReadFromContext(ctx);
-		
-		#ifdef ENABLE_LOGGING
-		if (LogManager.IsInventoryMoveLogEnable())
-		{
-			Debug.InventoryMoveLog("STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " src=" + InventoryLocation.DumpToStringNullSafe(src), "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
-		}
-		#endif
-
-		if (validation.m_IsRemote && !src.GetItem())
-		{
-			#ifdef ENABLE_LOGGING
-			if (LogManager.IsInventoryMoveLogEnable())
-			{
-				Debug.InventoryMoveLog("Failed item not exist", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
-			}
-			#endif
-
-			Error("[syncinv] HandleInputData remote input (cmd=DESTROY) dropped, item not in bubble");
-			return true;
-		}
-		
-		//! Do not check for action validity on remotes or when performing through juncture. 
-		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
-		//! Checking at this point is both wasteful and can result in a failure which leads to desync
-		if (!validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckRequestSrc(src, GameInventory.c_MaxItemDistanceRadius))
-		{
-			#ifdef ENABLE_LOGGING
-			if (LogManager.IsInventoryMoveLogEnable())
-			{
-				Debug.InventoryMoveLog("Failed CheckRequestSrc", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
-			}
-			#endif
-
-			return true;
-		}
-
-		//! Do not check for action validity on remotes or when performing through juncture. 
-		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
-		//! Checking at this point is both wasteful and can result in a failure which leads to desync
-		if (!validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckDropRequest(src, GameInventory.c_MaxItemDistanceRadius))
-		{
-			#ifdef ENABLE_LOGGING
-			if (LogManager.IsInventoryMoveLogEnable())
-			{
-				Debug.InventoryMoveLog("Failed CheckDropRequest", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
-			}
-			#endif
-
-			return true;
-		}
-
-		#ifdef ENABLE_LOGGING
-		if (LogManager.IsInventoryMoveLogEnable())
-		{
-			Debug.InventoryMoveLog("Success ObjectDelete", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
-		}
-		#endif
-
-		GetGame().ObjectDelete(src.GetItem());
-
-		validation.m_Result = InventoryValidationResult.SUCCESS;
-		return true;
-	}
-
 	/**
 	 * 
 	 * @return false on malformed data, true on anything else, including cheats
@@ -1622,38 +1540,32 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		
 		switch (type)
 		{
-		case InventoryCommandType.USER_RESERVATION_CANCEL:
-			if (!ValidateUserReservationCancel(serializer, validation))
-			{
-				return false;
-			}
-			break;
-		case InventoryCommandType.SYNC_MOVE:
-			if (!ValidateSyncMove(serializer, validation))
-			{
-				return false;
-			}
-			break;
-		case InventoryCommandType.HAND_EVENT:
-			if (!ValidateHandEvent(serializer, validation))
-			{
-				return false;
-			}
-			break;
-		case InventoryCommandType.SWAP:
-			if (!ValidateSwap(serializer, validation))
-			{
-				return false;
-			}
-			break;
-		case InventoryCommandType.DESTROY:
-			if (!ValidateDestroy(serializer, validation))
-			{
-				return false;
-			}
-			break;
-		default:
-			break;
+			case InventoryCommandType.USER_RESERVATION_CANCEL:
+				if (!ValidateUserReservationCancel(serializer, validation))
+				{
+					return false;
+				}
+				break;
+			case InventoryCommandType.SYNC_MOVE:
+				if (!ValidateSyncMove(serializer, validation))
+				{
+					return false;
+				}
+				break;
+			case InventoryCommandType.HAND_EVENT:
+				if (!ValidateHandEvent(serializer, validation))
+				{
+					return false;
+				}
+				break;
+			case InventoryCommandType.SWAP:
+				if (!ValidateSwap(serializer, validation))
+				{
+					return false;
+				}
+				break;
+			default:
+				break;
 		}
 
 		bool canSendJuncture = !isJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER;
@@ -2724,4 +2636,87 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		return !failed;
 	}
-};
+	
+	//! DEPRECATED
+	bool ValidateDestroy(inout Serializer ctx, InventoryValidation validation)
+	{
+		InventoryCommandType type = InventoryCommandType.DESTROY;
+
+		if (validation.m_IsJuncture)
+		{
+			/** TODO(kumarjac):
+			 *	Probably should be called through inventory juncture, 
+			 *	we shouldn't allow the client to delete until the 
+			 *	server says it is okay as there can be more reasons 
+			 *	than "cheater" for it to be rejected such as desync
+			 */
+			
+			return true;
+		}
+
+		InventoryLocation src = new InventoryLocation;
+		src.ReadFromContext(ctx);
+		
+		#ifdef ENABLE_LOGGING
+		if (LogManager.IsInventoryMoveLogEnable())
+		{
+			Debug.InventoryMoveLog("STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " src=" + InventoryLocation.DumpToStringNullSafe(src), "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
+		}
+		#endif
+
+		if (validation.m_IsRemote && !src.GetItem())
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed item not exist", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
+			}
+			#endif
+
+			Error("[syncinv] HandleInputData remote input (cmd=DESTROY) dropped, item not in bubble");
+			return true;
+		}
+		
+		//! Do not check for action validity on remotes or when performing through juncture. 
+		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
+		//! Checking at this point is both wasteful and can result in a failure which leads to desync
+		if (!validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckRequestSrc(src, GameInventory.c_MaxItemDistanceRadius))
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed CheckRequestSrc", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
+			}
+			#endif
+
+			return true;
+		}
+
+		//! Do not check for action validity on remotes or when performing through juncture. 
+		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
+		//! Checking at this point is both wasteful and can result in a failure which leads to desync
+		if (!validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckDropRequest(src, GameInventory.c_MaxItemDistanceRadius))
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed CheckDropRequest", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
+			}
+			#endif
+
+			return true;
+		}
+
+		#ifdef ENABLE_LOGGING
+		if (LogManager.IsInventoryMoveLogEnable())
+		{
+			Debug.InventoryMoveLog("Success ObjectDelete", "DESTROY" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
+		}
+		#endif
+
+		GetGame().ObjectDelete(src.GetItem());
+
+		validation.m_Result = InventoryValidationResult.SUCCESS;
+		return true;
+	}
+}

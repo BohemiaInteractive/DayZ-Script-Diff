@@ -1,6 +1,12 @@
 class ObjectSpawnerHandler
 {
-	protected static const ref TStringArray VALID_PATHS = {"DZ\\plants","DZ\\plants_bliss","DZ\\rocks","DZ\\rocks_bliss","DZ/plants","DZ/plants_bliss","DZ/rocks","DZ/rocks_bliss"};
+	protected static const ref TStringArray VALID_PATHS = {
+		"DZ\\plants","DZ\\plants_bliss", "DZ\\plants_sakhal",
+		"DZ\\rocks", "DZ\\rocks_bliss", "DZ\\rocks_sakhal",
+		"DZ/plants","DZ/plants_bliss", "DZ/plants_sakhal",
+		"DZ/rocks", "DZ/rocks_bliss", "DZ/rocks_sakhal",
+		};
+
 	//---------------------------------------------------------------------------------------
 	static void SpawnObjects()
 	{
@@ -64,8 +70,11 @@ class ObjectSpawnerHandler
 	//---------------------------------------------------------------------------------------
 	static void OnGameplayDataHandlerLoad()
 	{
-		SpawnObjects();
-		GetGame().GetWorld().ProcessMarkedObjectsForPathgraphUpdate();
+		if (g_Game && g_Game.IsServer())
+		{
+			SpawnObjects();
+			GetGame().GetWorld().ProcessMarkedObjectsForPathgraphUpdate();
+		}
 	}
 	
 	//---------------------------------------------------------------------------------------
@@ -76,6 +85,8 @@ class ObjectSpawnerHandler
 			if (path.Contains(p))
 				return true;
 		}
+		
+		PrintToRPT("Object spawner: invalid path "+ path);
 		return false;
 	}
 	//---------------------------------------------------------------------------------------

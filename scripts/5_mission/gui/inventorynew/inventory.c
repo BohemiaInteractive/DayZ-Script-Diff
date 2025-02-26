@@ -1178,6 +1178,7 @@ class Inventory: LayoutHolder
 			}
 		}
 		ItemManager.GetInstance().SetSelectedItemEx(null, null, null);
+		ResetFocusedContainers();
 	}
 	
 	override void Refresh()

@@ -86,4 +86,9 @@ class CraftBoneHook extends RecipeBase
 	{
 		return true;
 	}
+	
+	override bool IsRepeatable()
+	{
+		return true;
+	}
 };

@@ -26,6 +26,7 @@ class InGameMenuXbox extends UIScriptedMenu
 	protected ButtonWidget					m_RestartDeadButton;
 	protected ButtonWidget					m_RestartButton;
 	protected ButtonWidget					m_OptionsButton;
+	protected ButtonWidget					m_InviteButton;
 	protected ButtonWidget					m_ControlsButton;
 	protected ButtonWidget					m_OnlineButton;
 	protected ButtonWidget					m_TutorialsButton;	
@@ -121,6 +122,7 @@ class InGameMenuXbox extends UIScriptedMenu
 		m_ExitButton			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("exitbtn"));
 		m_RestartButton			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("restartbtn"));
 		m_OptionsButton			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("optionsbtn"));
+		m_InviteButton			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("invitebtn"));
 		m_ControlsButton		= ButtonWidget.Cast(layoutRoot.FindAnyWidget("controlsbtn"));
 		m_OnlineButton			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("onlinebtn"));
 		m_TutorialsButton		= ButtonWidget.Cast(layoutRoot.FindAnyWidget("tutorialsbtn"));
@@ -651,7 +653,7 @@ class InGameMenuXbox extends UIScriptedMenu
 	{
 		if (w)
 		{
-			if (w == m_ContinueButton || w == m_ExitButton || w == m_RestartButton || w == m_OptionsButton || w == m_ControlsButton || w == m_OnlineButton || w == m_TutorialsButton);
+			if (w == m_ContinueButton || w == m_RestartDeadButton || w == m_ExitButton || w == m_RestartButton || w == m_OptionsButton || w == m_InviteButton || w == m_ControlsButton || w == m_OnlineButton || w == m_TutorialsButton || w == m_ShowFeedback)
 				return true;
 		}
 		return false;
@@ -873,7 +875,7 @@ class InGameMenuXbox extends UIScriptedMenu
 				if (m_GamercardAvailable)
 					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", m_OpenGameCardButtonTextID, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 				if (!IsOnlineOpen())
-					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIThumbRight", "Feedback", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIThumbRight", "#layout_main_menu_feedback", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 			}
 			else
 			{

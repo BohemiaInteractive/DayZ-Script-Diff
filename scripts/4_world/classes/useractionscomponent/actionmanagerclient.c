@@ -20,7 +20,7 @@ class ActionManagerClient: ActionManagerBase
 	protected ref ActionData 					m_PendingActionData;
 
 	protected bool 								m_ActionWantEndRequest_Send;		//Request to server was sended
-	protected bool								m_ActionInputWantEnd_Send;	
+	protected bool								m_ActionInputWantEnd_Send;
 
 	void ActionManagerClient(PlayerBase player) 
 	{
@@ -721,6 +721,11 @@ class ActionManagerClient: ActionManagerBase
 	}
 
 	override void OnJumpStart()
+	{
+		EndOrInterruptCurrentAction();
+	}
+	
+	override void EndOrInterruptCurrentAction()
 	{
 		if (m_CurrentActionData)
 		{

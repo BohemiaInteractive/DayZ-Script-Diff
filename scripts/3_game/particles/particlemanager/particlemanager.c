@@ -19,7 +19,11 @@ class ParticleManagerConstants
  		Settings applied to the global ParticleManager
 	*/
 	//@{
+#ifdef BULDOZER
+	static const int POOL_SIZE = 1;
+#else
 	static const int POOL_SIZE = 10000;
+#endif
 	static const int FLAGS = ParticleManagerSettingsFlags.NONE;
 	//@}
 }

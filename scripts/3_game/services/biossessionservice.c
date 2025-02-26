@@ -260,4 +260,14 @@ class BiosSessionService
 		return ClientData.GetSimplePlayerList();
 	}
 	
+	//! Native callback function to retrieve the session player list.
+	/*!
+		@param outPlayerList Output list of players in the session.
+	*/
+	void GetSessionPlayerListEx(TStringArray outPlayerList)
+	{
+		TStringArray playerList = GetSessionPlayerList();
+		outPlayerList.Copy(playerList);
+	}
+	
 };

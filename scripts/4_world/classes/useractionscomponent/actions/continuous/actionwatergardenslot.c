@@ -62,7 +62,7 @@ class ActionWaterGardenSlot: ActionContinuousBase
 					break;
 			}
 					
-			if ( slot && !slot.GetPlant() && slot.GetWateredState() == 0 )
+			if ( slot && !slot.GetPlant() && slot.GetWateredState() == eWateredState.DRY )
 			{
 				return true;
 			}
