@@ -1584,12 +1584,29 @@ class ItemBase extends InventoryItem
 		
 		return false;
 	}
+
+	protected bool ShouldSplitQuantity(float quantity)
+	{
+		// don't call 'CanBeSplit' here, too strict and will introduce a freeze-crash when dismantling fence with a fireplace nearby
+		if (!IsSplitable())
+			return false;
+
+		// nothing to split?
+		if (GetQuantity() <= 1)
+			return false;
+
+		// check if we should re-use the item instead of creating a new copy?
+		// implicit cast to int, if 'IsSplitable' returns true, these values are assumed ints
+		int delta = GetQuantity() - quantity;
+		if (delta == 0)
+			return false;
+
+		// valid to split
+		return true;
+	}
 	
 	override void SplitIntoStackMaxClient(EntityAI destination_entity, int slot_id )
-	{
-		if (!CanBeSplit())
-			return;
-		
+	{		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1612,12 +1629,9 @@ class ItemBase extends InventoryItem
 	}
 
 	void SplitIntoStackMax(EntityAI destination_entity, int slot_id, PlayerBase player)
-	{
-		if (!CanBeSplit())
-			return;
-		
+	{		
 		float split_quantity_new;
-		ref ItemBase new_item;
+		ItemBase new_item;
 		float quantity = GetQuantity();
 		float stack_max = GetTargetQuantityMax(slot_id);
 		InventoryLocation loc = new InventoryLocation;
@@ -1629,13 +1643,16 @@ class ItemBase extends InventoryItem
 			else
 				split_quantity_new = GetQuantity();
 
-			new_item = ItemBase.Cast(destination_entity.GetInventory().CreateAttachmentEx(this.GetType(), slot_id));
-			if (new_item)
+			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				new_item.SetResultOfSplit(true);
-				MiscGameplayFunctions.TransferItemProperties(this, new_item);
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+				new_item = ItemBase.Cast(destination_entity.GetInventory().CreateAttachmentEx(this.GetType(), slot_id));
+				if (new_item)
+				{
+					new_item.SetResultOfSplit(true);
+					MiscGameplayFunctions.TransferItemProperties(this, new_item);
+					AddQuantity(-split_quantity_new, false, true);
+					new_item.SetQuantity(split_quantity_new, false, true);
+				}
 			}
 		}
 		else if (destination_entity && slot_id == -1)
@@ -1645,18 +1662,21 @@ class ItemBase extends InventoryItem
 			else
 				split_quantity_new = quantity;
 			
-			if (destination_entity.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
+			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				Object o = destination_entity.GetInventory().LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
-				new_item = ItemBase.Cast(o);
-			}
+				if (destination_entity.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
+				{
+					Object o = destination_entity.GetInventory().LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
+					new_item = ItemBase.Cast(o);
+				}
 
-			if (new_item)
-			{
-				new_item.SetResultOfSplit(true);		
-				MiscGameplayFunctions.TransferItemProperties(this, new_item);
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+				if (new_item)
+				{
+					new_item.SetResultOfSplit(true);		
+					MiscGameplayFunctions.TransferItemProperties(this, new_item);
+					AddQuantity(-split_quantity_new, false, true);
+					new_item.SetQuantity(split_quantity_new, false, true);
+				}
 			}
 		}
 		else
@@ -1677,27 +1697,27 @@ class ItemBase extends InventoryItem
 					return;
 				}
 				
-				new_item = ItemBase.Cast(GetGame().CreateObjectEx(GetType(), player.GetWorldPosition(), ECE_PLACE_ON_SURFACE));
-				
-				if (new_item)
+				if (ShouldSplitQuantity(split_quantity_new))
 				{
-					new_item.SetResultOfSplit(true);
-					MiscGameplayFunctions.TransferItemProperties(this, new_item);
-					SetQuantity(split_quantity_new);
-					new_item.SetQuantity(stack_max);
-					new_item.PlaceOnSurface();
+					new_item = ItemBase.Cast(GetGame().CreateObjectEx(GetType(), player.GetWorldPosition(), ECE_PLACE_ON_SURFACE));
+					
+					if (new_item)
+					{
+						new_item.SetResultOfSplit(true);
+						MiscGameplayFunctions.TransferItemProperties(this, new_item);
+						SetQuantity(split_quantity_new, false, true);
+						new_item.SetQuantity(stack_max, false, true);
+						new_item.PlaceOnSurface();
+					}
 				}
 			}
 		}
 	}
 	
 	override void SplitIntoStackMaxEx(EntityAI destination_entity, int slot_id)
-	{
-		if (!CanBeSplit())
-			return;
-		
+	{		
 		float split_quantity_new;
-		ref ItemBase new_item;
+		ItemBase new_item;
 		float quantity = GetQuantity();
 		float stack_max = GetTargetQuantityMax(slot_id);
 		InventoryLocation loc = new InventoryLocation;
@@ -1709,13 +1729,16 @@ class ItemBase extends InventoryItem
 			else
 				split_quantity_new = GetQuantity();
 
-			new_item = ItemBase.Cast(destination_entity.GetInventory().CreateAttachmentEx(this.GetType(), slot_id));
-			if (new_item)
+			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				new_item.SetResultOfSplit(true);
-				MiscGameplayFunctions.TransferItemProperties(this, new_item);
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+				new_item = ItemBase.Cast(destination_entity.GetInventory().CreateAttachmentEx(this.GetType(), slot_id));
+				if (new_item)
+				{
+					new_item.SetResultOfSplit(true);
+					MiscGameplayFunctions.TransferItemProperties(this, new_item);
+					AddQuantity(-split_quantity_new, false, true);
+					new_item.SetQuantity(split_quantity_new, false, true);
+				}
 			}
 		}
 		else if (destination_entity && slot_id == -1)
@@ -1725,18 +1748,21 @@ class ItemBase extends InventoryItem
 			else
 				split_quantity_new = quantity;
 			
-			if (destination_entity.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
+			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				Object o = destination_entity.GetInventory().LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
-				new_item = ItemBase.Cast(o);
-			}
+				if (destination_entity.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
+				{
+					Object o = destination_entity.GetInventory().LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
+					new_item = ItemBase.Cast(o);
+				}
 
-			if (new_item)
-			{
-				new_item.SetResultOfSplit(true);		
-				MiscGameplayFunctions.TransferItemProperties(this, new_item);
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+				if (new_item)
+				{
+					new_item.SetResultOfSplit(true);		
+					MiscGameplayFunctions.TransferItemProperties(this, new_item);
+					AddQuantity(-split_quantity_new, false, true);
+					new_item.SetQuantity(split_quantity_new, false, true);
+				}
 			}
 		}
 		else
@@ -1748,15 +1774,18 @@ class ItemBase extends InventoryItem
 					split_quantity_new = GetQuantity() - stack_max;
 				}
 				
-				new_item = ItemBase.Cast(GetGame().CreateObjectEx(GetType(),GetWorldPosition(), ECE_PLACE_ON_SURFACE));
-				
-				if (new_item)
+				if (ShouldSplitQuantity(split_quantity_new))
 				{
-					new_item.SetResultOfSplit(true);
-					MiscGameplayFunctions.TransferItemProperties(this, new_item);
-					SetQuantity(split_quantity_new);
-					new_item.SetQuantity(stack_max);
-					new_item.PlaceOnSurface();
+					new_item = ItemBase.Cast(GetGame().CreateObjectEx(GetType(),GetWorldPosition(), ECE_PLACE_ON_SURFACE));
+					
+					if (new_item)
+					{
+						new_item.SetResultOfSplit(true);
+						MiscGameplayFunctions.TransferItemProperties(this, new_item);
+						SetQuantity(split_quantity_new, false, true);
+						new_item.SetQuantity(stack_max, false, true);
+						new_item.PlaceOnSurface();
+					}
 				}
 			}
 		}
@@ -1764,9 +1793,6 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxToInventoryLocationClient(notnull InventoryLocation dst)
 	{
-		if (!CanBeSplit())
-			return;
-		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1788,9 +1814,6 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxCargoClient(EntityAI destination_entity, int idx, int row, int col)
 	{
-		if (!CanBeSplit())
-			return;
-		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1820,10 +1843,7 @@ class ItemBase extends InventoryItem
 	}
 	
 	ItemBase SplitIntoStackMaxToInventoryLocationEx(notnull InventoryLocation dst)
-	{
-		if (!CanBeSplit())
-			return this;
-		
+	{		
 		float quantity = GetQuantity();
 		float split_quantity_new;
 		ItemBase new_item;
@@ -1836,31 +1856,31 @@ class ItemBase extends InventoryItem
 				split_quantity_new = stack_max;
 			else
 				split_quantity_new = quantity;
-			
-			new_item = ItemBase.Cast(GameInventory.LocationCreateEntity(dst, this.GetType(), ECE_IN_INVENTORY, RF_DEFAULT));
-			
-			if (new_item)
+
+			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				new_item.SetResultOfSplit(true);
-				MiscGameplayFunctions.TransferItemProperties(this,new_item);
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+				new_item = ItemBase.Cast(GameInventory.LocationCreateEntity(dst, this.GetType(), ECE_IN_INVENTORY, RF_DEFAULT));
+				
+				if (new_item)
+				{
+					new_item.SetResultOfSplit(true);
+					MiscGameplayFunctions.TransferItemProperties(this,new_item);
+					AddQuantity(-split_quantity_new, false, true);
+					new_item.SetQuantity(split_quantity_new, false, true);
+				}
+				
+				return new_item;
 			}
-			
-			return new_item;
 		}
 		
 		return null;
 	}
 	
 	void SplitIntoStackMaxCargo(EntityAI destination_entity, int idx, int row, int col)
-	{
-		if (!CanBeSplit())
-			return;
-		
+	{		
 		float quantity = GetQuantity();
 		float split_quantity_new;
-		ref ItemBase new_item;
+		ItemBase new_item;
 		if (destination_entity)
 		{
 			float stackable = GetTargetQuantityMax();
@@ -1869,22 +1889,22 @@ class ItemBase extends InventoryItem
 			else
 				split_quantity_new = quantity;
 			
-			new_item = ItemBase.Cast(destination_entity.GetInventory().CreateEntityInCargoEx(this.GetType(), idx, row, col, false));
-			if (new_item)
+			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				new_item.SetResultOfSplit(true);	
-				MiscGameplayFunctions.TransferItemProperties(this,new_item);
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+				new_item = ItemBase.Cast(destination_entity.GetInventory().CreateEntityInCargoEx(this.GetType(), idx, row, col, false));
+				if (new_item)
+				{
+					new_item.SetResultOfSplit(true);	
+					MiscGameplayFunctions.TransferItemProperties(this,new_item);
+					AddQuantity(-split_quantity_new, false, true);
+					new_item.SetQuantity(split_quantity_new, false, true);
+				}
 			}
 		}
 	}
 	
 	void SplitIntoStackMaxHandsClient(PlayerBase player)
 	{
-		if (!CanBeSplit())
-			return;
-		
 		if (GetGame().IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
@@ -1908,10 +1928,7 @@ class ItemBase extends InventoryItem
 	}
 
 	void SplitIntoStackMaxHands(PlayerBase player)
-	{
-		if (!CanBeSplit())
-			return;
-		
+	{		
 		float quantity = GetQuantity();
 		float split_quantity_new;
 		ref ItemBase new_item;
@@ -1923,26 +1940,29 @@ class ItemBase extends InventoryItem
 			else
 				split_quantity_new = quantity;
 			
-			EntityAI in_hands = player.GetHumanInventory().CreateInHands(this.GetType());
-			new_item = ItemBase.Cast(in_hands);
-			if (new_item)
-			{		
-				new_item.SetResultOfSplit(true);
-				MiscGameplayFunctions.TransferItemProperties(this,new_item);
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+			if (ShouldSplitQuantity(split_quantity_new))
+			{
+				EntityAI in_hands = player.GetHumanInventory().CreateInHands(this.GetType());
+				new_item = ItemBase.Cast(in_hands);
+				if (new_item)
+				{		
+					new_item.SetResultOfSplit(true);
+					MiscGameplayFunctions.TransferItemProperties(this,new_item);
+					AddQuantity(-split_quantity_new, false, true);
+					new_item.SetQuantity(split_quantity_new, false, true);
+				}
 			}
 		}
 	}
 	
 	void SplitItemToInventoryLocation(notnull InventoryLocation dst)
-	{
-		if (!CanBeSplit())
-			return;
-		
+	{		
 		float quantity = GetQuantity();
 		float split_quantity_new = Math.Floor(quantity * 0.5);
 		
+		if (!ShouldSplitQuantity(split_quantity_new))
+			return;
+
 		ItemBase new_item = ItemBase.Cast(GameInventory.LocationCreateEntity(dst, GetType(), ECE_IN_INVENTORY, RF_DEFAULT));
 
 		if (new_item)
@@ -1957,24 +1977,24 @@ class ItemBase extends InventoryItem
 			
 			if (dst.IsValid() && dst.GetType() == InventoryLocationType.ATTACHMENT && split_quantity_new > 1)
 			{
-				AddQuantity(-1);
-				new_item.SetQuantity(1);
+				AddQuantity(-1, false, true);
+				new_item.SetQuantity(1, false, true);
 			}
 			else
 			{
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);				
+				AddQuantity(-split_quantity_new, false, true);
+				new_item.SetQuantity(split_quantity_new, false, true);				
 			}
 		}	
 	}
 	
 	void SplitItem(PlayerBase player)
 	{
-		if (!CanBeSplit())
-			return;
-		
 		float quantity = GetQuantity();
 		float split_quantity_new = Math.Floor(quantity / 2);
+		
+		if (!ShouldSplitQuantity(split_quantity_new))
+			return;
 		
 		InventoryLocation invloc = new InventoryLocation;
 		bool found = player.GetInventory().FindFirstFreeLocationForNewEntity(GetType(), FindInventoryLocationType.ATTACHMENT, invloc);
@@ -1990,13 +2010,13 @@ class ItemBase extends InventoryItem
 			}
 			if (found && invloc.IsValid() && invloc.GetType() == InventoryLocationType.ATTACHMENT && split_quantity_new > 1)
 			{
-				AddQuantity(-1);
-				new_item.SetQuantity(1);
+				AddQuantity(-1, false, true);
+				new_item.SetQuantity(1, false, true);
 			}
-			else
+			else if (split_quantity_new > 1)
 			{
-				AddQuantity(-split_quantity_new);
-				new_item.SetQuantity(split_quantity_new);
+				AddQuantity(-split_quantity_new, false, true);
+				new_item.SetQuantity(split_quantity_new, false, true);
 			}
 		}
 	}
