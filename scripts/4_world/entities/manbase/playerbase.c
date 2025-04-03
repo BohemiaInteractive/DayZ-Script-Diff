@@ -4351,10 +4351,10 @@ class PlayerBase extends ManBase
 			m_Hud.SetStaminaBarVisibility(show);
 	}
 	
-	override void DepleteStamina(EStaminaModifiers modifier, float dT = -1)
+	override void DepleteStaminaEx(EStaminaModifiers modifier, float dT = -1, float coef = 1.0)
 	{
 		if (GetStaminaHandler())
-			GetStaminaHandler().DepleteStamina(modifier,dT);		
+			GetStaminaHandler().DepleteStaminaEx(modifier,dT,coef);
 	}
 
 	override bool CanConsumeStamina(EStaminaConsumers consumer)
@@ -9392,6 +9392,13 @@ class PlayerBase extends ManBase
 	void SetBloodyHandsPenalty()
 	{
 		InsertAgent(eAgents.SALMONELLA, 1);
+	}
+	
+	//!Deprecated
+	override void DepleteStamina(EStaminaModifiers modifier, float dT = -1)
+	{
+		if (GetStaminaHandler())
+			GetStaminaHandler().DepleteStamina(modifier,dT);
 	}
 }
 

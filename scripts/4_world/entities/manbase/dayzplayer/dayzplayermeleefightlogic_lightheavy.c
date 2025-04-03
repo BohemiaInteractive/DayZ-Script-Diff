@@ -493,7 +493,8 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 
 		//! command
 		//Debug.MeleeLog(m_Player, string.Format("HandleSprintAttack[1] target=%1, animationType=%2, hitPositionWS=%3", target, false, m_MeleeCombat.GetHitPos().ToString()));
-		m_Player.StartCommand_Melee2(target, false, attackByDistance, m_MeleeCombat.GetHitPos());
+		
+		m_Player.StartCommand_Melee2(target, EMeleeHitType.HEAVY, attackByDistance, m_MeleeCombat.GetHitPos());
 		m_Player.DepleteStamina(EStaminaModifiers.MELEE_HEAVY);
 		DisableControls();
 
@@ -504,37 +505,43 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 	protected bool HandleComboHit(int pCurrentCommandID, HumanInputController pInputs, InventoryItem itemInHands, HumanMovementState pMovementState, out bool pContinueAttack)
 	{
 		//Debug.MeleeLog(m_Player, "HandleComboHit::");
-		m_IsInComboRange = false;
-		
-		//! wait for the previous hit commit before hitting again
-		if (!m_WasPreviousHitProcessed)
-			return false;
+		EMeleeHitType hitType;
 		
 		//! select if the next attack will be light or heavy (based on input/attachment modifier)
 		if (itemInHands && itemInHands.IsWeapon())
-			m_HitType = GetAttackTypeByWeaponAttachments(itemInHands);
+			hitType = GetAttackTypeByWeaponAttachments(itemInHands);
 		else
-			m_HitType = GetAttackTypeFromInputs(pInputs);
+			hitType = GetAttackTypeFromInputs(pInputs);
 
 		//! no suitable attack - skip that
-		if (m_HitType == EMeleeHitType.NONE)
+		if (hitType == EMeleeHitType.NONE)
 			return false;
 		
 		//! No combos for the finisher command
 		if (m_MeleeCombat.GetFinisherType() > -1)
 			return false;
 		
-		EntityAI target;
-		EMeleeTargetType targetType;
-		GetTargetData(target, targetType);
-		float attackByDistance = GetAttackTypeByDistanceToTarget(target, targetType);
+		bool isHeavy = (hitType == EMeleeHitType.HEAVY || hitType == EMeleeHitType.WPN_STAB);
+		EMeleeHitType previousHitType = m_HitType;
+
+		//! wait for the previous hit commit before hitting again if the next attack is heavy and the previous wasn't - otherwise the previous light attack will turn into heavy
+		if (!m_WasPreviousHitProcessed && previousHitType != EMeleeHitType.HEAVY && isHeavy)
+		{
+			return false;
+		}
+
+		m_HitType = hitType;
 
 		//! targetting
 		//Debug.MeleeLog(m_Player, string.Format("HandleComboHit:: %1", EnumTools.EnumToString(EMeleeHitType, m_HitType)));
 	 	m_MeleeCombat.Update(itemInHands, m_HitType);
 
+		EntityAI target;
+		EMeleeTargetType targetType;
+		GetTargetData(target, targetType);
+		float attackByDistance = GetAttackTypeByDistanceToTarget(target, targetType);
+
 		//! continue 'combo' - left hand attacks
-		bool isHeavy = (m_HitType == EMeleeHitType.HEAVY || m_HitType == EMeleeHitType.WPN_STAB);	
 		m_Player.GetCommand_Melee2().ContinueCombo(isHeavy, attackByDistance, target, m_MeleeCombat.GetHitPos());				
 		DisableControls();
 		

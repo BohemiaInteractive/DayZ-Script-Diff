@@ -471,7 +471,7 @@ class DayZPlayerImplement extends DayZPlayer
 	//! Implementations only! - used on PlayerBase
 	bool CanConsumeStamina(EStaminaConsumers consumer) {};
 	bool CanStartConsumingStamina(EStaminaConsumers consumer) {};
-	void DepleteStamina(EStaminaModifiers modifier, float dT = -1) {};
+	void DepleteStaminaEx(EStaminaModifiers modifier, float dT = -1, float coef = 1.0) {};
 	
 	bool IsInVehicle()
 	{
@@ -3847,4 +3847,5 @@ class DayZPlayerImplement extends DayZPlayer
 	void RunADSTimer(); //DEPRECATED
 	void StopADSTimer(); //DEPRECATED
 	void SendCompleteWeaponRaiseJuncture(); //DEPRECATED
+	void DepleteStamina(EStaminaModifiers modifier, float dT = -1) {};
 }

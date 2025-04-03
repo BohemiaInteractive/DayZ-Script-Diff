@@ -896,12 +896,12 @@ class StaminaHandler
 	// ---------------------------------------------------
 	bool HasEnoughStaminaFor(EStaminaConsumers consumer)
 	{
-		return m_StaminaConsumers.HasEnoughStaminaFor(consumer, m_Stamina, m_StaminaDepleted, m_StaminaCap);
+		return m_StaminaConsumers.HasEnoughStaminaFor(consumer, m_StaminaSynced, m_StaminaDepleted, m_StaminaCap);
 	}
 	
 	bool HasEnoughStaminaToStart(EStaminaConsumers consumer)
 	{
-		return m_StaminaConsumers.HasEnoughStaminaToStart(consumer, m_Stamina, m_StaminaDepleted, m_StaminaCap);
+		return m_StaminaConsumers.HasEnoughStaminaToStart(consumer, m_StaminaSynced, m_StaminaDepleted, m_StaminaCap);
 	}
 
 	void SetStamina(float stamina_value)
@@ -967,7 +967,7 @@ class StaminaHandler
 		return m_StaminaRecoveryMultiplier;
 	}
 	
-	void DepleteStamina(EStaminaModifiers modifier, float dT = -1)
+	void DepleteStaminaEx(EStaminaModifiers modifier, float dT = -1, float coef = 1.0)
 	{
 		#ifdef DIAG_DEVELOPER
 		if (m_StaminaDisabled)
@@ -986,13 +986,13 @@ class StaminaHandler
 				{
 					dT = 1;
 				}
-				m_StaminaDepletion = m_StaminaDepletion + sm.GetMaxValue() * dT;
+				m_StaminaDepletion += sm.GetMaxValue() * dT * coef;
 
 				break;
 			
 			case m_StaminaModifiers.RANDOMIZED:
 				val = Math.RandomFloat(sm.GetMinValue(), sm.GetMaxValue());
-				m_StaminaDepletion = m_StaminaDepletion + val;
+				m_StaminaDepletion += val * coef;
 
 				break;
 			
@@ -1005,7 +1005,7 @@ class StaminaHandler
 				}
 				valueProgress = Math.Clamp((current_time - sm.GetStartTime())/sm.GetDurationAdjusted(), 0, 1 );
 				val = Math.Lerp(sm.GetMinValue(), sm.GetMaxValue(), valueProgress);
-				m_StaminaDepletion = m_StaminaDepletion + val;
+				m_StaminaDepletion += val * coef;
 			
 				break;
 			
@@ -1036,17 +1036,16 @@ class StaminaHandler
 					val = Math.Pow(smex.GetBaseValue(),exp) + smex.GetBaseValue() - 1;
 				}
 				
-				m_StaminaDepletion = m_StaminaDepletion + val;
-				m_StaminaDepletion *= smex.GetMultiplier();
+				m_StaminaDepletion += val * smex.GetMultiplier() * coef;
 			
 				break;
 		}
 
 		//! run cooldown right after depletion
 		SetCooldown(sm.GetCooldown(),modifier);
+		
+		m_StaminaDepletion *= m_StaminaDepletionMultiplier;
 		m_StaminaDepletion = Math.Clamp(m_StaminaDepletion, 0, CfgGameplayHandler.GetStaminaMax());
-
-		m_StaminaDepletion = m_StaminaDepletion * m_StaminaDepletionMultiplier;
 	}
 	
 	#ifdef DIAG_DEVELOPER
@@ -1055,4 +1054,13 @@ class StaminaHandler
 		m_StaminaDisabled = value;
 	}
 	#endif
+	
+	////////////////////////////
+	//Deprecated code playpen//
+	//////////////////////////
+	//! Deprecated
+	void DepleteStamina(EStaminaModifiers modifier, float dT = -1)
+	{
+		DepleteStaminaEx(modifier,dT);
+	}
 }

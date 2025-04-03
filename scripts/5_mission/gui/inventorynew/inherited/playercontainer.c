@@ -40,7 +40,7 @@ class PlayerContainer: CollapsibleContainer
 		RightArea rightArea = RightArea.Cast(GetParent());
 		if (rightArea)
 		{
-			rightArea.GetSlotsArea().AddChild(GetHeader().GetRootWidget());
+			rightArea.GetSlotsHeader().AddChild(GetHeader().GetRootWidget());
 			rightArea.GetSlotsArea().AddChild(m_PlayerAttachmentsContainer.GetRootWidget());
 		}
 		#endif

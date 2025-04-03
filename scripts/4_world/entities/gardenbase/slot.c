@@ -131,18 +131,12 @@ class Slot
 	void GiveWater( float consumed_quantity )
 	{
 		bool needed_water = NeedsWater();
-		m_WaterQuantity += consumed_quantity;
+		m_WaterQuantity = Math.Clamp(m_WaterQuantity + consumed_quantity, 0, GetWaterMax());		
 		
-		if (m_WaterQuantity >= GetWaterMax())
-			m_WaterQuantity = GetWaterMax();
-		
-		if (m_WaterQuantity < 0)
-			m_WaterQuantity = 0;
-				
 		if (!g_Game.IsServer())
 			return;
 		
-		if (!GetPlant() && GetSeed() && !NeedsWater()) // if there is no seed then do not create plant. Plant will be created when the seed is inserted into watered slot.
+		if (!GetPlant() && GetSeed() && !needed_water) // if there is no seed then do not create plant. Plant will be created when the seed is inserted into watered slot.
 			GetGarden().CreatePlant(this);
 		
 		if ( needed_water != NeedsWater() )

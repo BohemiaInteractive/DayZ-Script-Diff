@@ -26,6 +26,7 @@ class PlayerSwayConstants
 	static const float SWAY_TIME_EXHAUSTED = 1.5;
 	static const float SWAY_TIME_OUT = 0.5;
 	static const float SWAY_ROLL = 3;
+	static const float HOLD_BREATH_STAMINA_THRESHOLD = 0.5; //! at which point does the stabilization start to get affected
 }
 
 class DayZPlayerImplementAiming
@@ -44,7 +45,8 @@ class DayZPlayerImplementAiming
 	protected PlayerBase m_PlayerPb;
 	protected float m_TotalTime;
 	protected float m_ReferenceTime = 0;
-	protected float m_StaminaPercentage;
+	protected float m_StaminaPercentage; //! stamina percentage at hold breath start
+	protected float m_HoldBreathSwayCoef = 1.0; //! proportionally shortens de/stabilization process and duration. Also affects stamina consumption (temporary!)
 	protected float m_SwayStateStartTime;
 	//protected float m_SwayStateStartTime[eSwayStates.MAX];
 	protected float m_LastSwayMultiplier = PlayerSwayConstants.SWAY_MULTIPLIER_DEFAULT;
@@ -194,7 +196,10 @@ class DayZPlayerImplementAiming
 		if (m_PlayerPb.IsHoldingBreath() && !m_HoldingBreathSet)
 		{
 			m_ReferenceTime = m_TotalTime;
-			m_StaminaPercentage = m_PlayerPb.GetStaminaHandler().GetStamina() / m_PlayerPb.GetStaminaHandler().GetStaminaMax();
+			m_StaminaPercentage = m_PlayerPb.GetStaminaHandler().GetSyncedStaminaNormalized();
+			m_HoldBreathSwayCoef = Math.InverseLerp(0,PlayerSwayConstants.HOLD_BREATH_STAMINA_THRESHOLD,m_StaminaPercentage);
+			m_HoldBreathSwayCoef = Math.Clamp(m_HoldBreathSwayCoef,0,1);
+			m_HoldBreathSwayCoef = Math.Lerp(PlayerSwayConstants.HOLD_BREATH_STAMINA_THRESHOLD,1,m_HoldBreathSwayCoef);
 		}
 		else if (!m_PlayerPb.IsHoldingBreath() && m_HoldingBreathSet)
 		{
@@ -292,7 +297,7 @@ class DayZPlayerImplementAiming
 		
 		if (m_PlayerPb.IsHoldingBreath())
 		{
-			m_PlayerPb.DepleteStamina(EStaminaModifiers.HOLD_BREATH,pDt*speed);
+			m_PlayerPb.DepleteStaminaEx(EStaminaModifiers.HOLD_BREATH, pDt * speed, m_HoldBreathSwayCoef);
 		}
 		#ifdef DEVELOPER
 		DbgPrintAimingImplement("----------------------------");
@@ -311,14 +316,14 @@ class DayZPlayerImplementAiming
 		{
 			time = m_TotalTime - m_ReferenceTime;
 			
-			if (time < (PlayerSwayConstants.SWAY_TIME_IN * m_StaminaPercentage))
+			if (time < (PlayerSwayConstants.SWAY_TIME_IN * m_HoldBreathSwayCoef))
 			{
 				UpdateSwayState(eSwayStates.HOLDBREATH_IN);
-				max = PlayerSwayConstants.SWAY_TIME_IN * m_StaminaPercentage;
+				max = PlayerSwayConstants.SWAY_TIME_IN * m_HoldBreathSwayCoef;
 				time_clamped = Math.Clamp((m_TotalTime - m_SwayStateStartTime),0,max);
 				ret = Math.Lerp(m_LastSwayMultiplier,PlayerSwayConstants.SWAY_MULTIPLIER_STABLE,time_clamped/max);
 			}
-			else if (time >= (PlayerSwayConstants.SWAY_TIME_IN * m_StaminaPercentage) && time < (m_StaminaPercentage * (PlayerSwayConstants.SWAY_TIME_IN + PlayerSwayConstants.SWAY_TIME_STABLE)))
+			else if (time >= (PlayerSwayConstants.SWAY_TIME_IN * m_HoldBreathSwayCoef) && time < (m_HoldBreathSwayCoef * (PlayerSwayConstants.SWAY_TIME_IN + PlayerSwayConstants.SWAY_TIME_STABLE)))
 			{
 				UpdateSwayState(eSwayStates.HOLDBREATH_STABLE);
 				ret = PlayerSwayConstants.SWAY_MULTIPLIER_STABLE;
@@ -326,7 +331,7 @@ class DayZPlayerImplementAiming
 			else
 			{
 				UpdateSwayState(eSwayStates.HOLDBREATH_EXHAUSTED);
-				max = PlayerSwayConstants.SWAY_TIME_EXHAUSTED * m_StaminaPercentage;
+				max = PlayerSwayConstants.SWAY_TIME_EXHAUSTED * m_HoldBreathSwayCoef;
 				time_clamped = Math.Clamp((m_TotalTime - m_SwayStateStartTime),0,max);
 				ret = Math.Lerp(PlayerSwayConstants.SWAY_MULTIPLIER_STABLE,PlayerSwayConstants.SWAY_MULTIPLIER_EXHAUSTED,(time_clamped/max));
 			}

@@ -631,9 +631,6 @@ class BaseBuildingBase extends ItemBase
 			//Destroy construction
 			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(DestroyConstruction, 200, false, this);
 		}
-		
-		if (GetGame().IsServer())
-			HandleItemFalling(construtionPart);
 	}
 	
 	void OnPartDismantledClient( string part_name, int action_id )
@@ -674,9 +671,6 @@ class BaseBuildingBase extends ItemBase
 			//Destroy construction
 			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(DestroyConstruction, 200, false, this);
 		}
-		
-		if (GetGame().IsServer())
-			HandleItemFalling(construtionPart);
 	}
 	
 	void OnPartDestroyedClient( string part_name, int action_id )
@@ -685,6 +679,7 @@ class BaseBuildingBase extends ItemBase
 		SoundDestroyStart( part_name );
 	}
 	
+	//! Disconnected temporarily
 	protected void HandleItemFalling(ConstructionPart part)
 	{
 		bool process = false;
@@ -723,6 +718,7 @@ class BaseBuildingBase extends ItemBase
 		}
 	}
 	
+	//! Disconnected temporarily
 	protected void ItemFall(vector min, vector max)
 	{
 		array<EntityAI> foundEntities = new array<EntityAI>();

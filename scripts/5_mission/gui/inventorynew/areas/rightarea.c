@@ -3,6 +3,7 @@ class RightArea: Container
 	ref PlayerContainer	m_PlayerContainer;
 	protected Widget	m_ContentParent;
 
+	protected Widget							m_SlotsHeader;
 	protected Widget							m_SlotsContent;
 	protected ScrollWidget						m_ScrollWidget;
 	protected Widget							m_UpIcon;
@@ -15,21 +16,22 @@ class RightArea: Container
 	void RightArea(LayoutHolder parent)
 	{
 		m_MainWidget.Show(true);
-
-		m_SlotsContent = m_MainWidget.FindAnyWidget("SlotsContent");
-		m_ScrollWidget	= ScrollWidget.Cast( m_MainWidget.FindAnyWidget( "Scroller" ) );
+		
+		m_SlotsHeader		= m_MainWidget.FindAnyWidget("SlotsHeader");
+		m_SlotsContent 		= m_MainWidget.FindAnyWidget("SlotsContent");
+		m_ScrollWidget		= ScrollWidget.Cast(m_MainWidget.FindAnyWidget("Scroller"));
 		m_MainWidget		= m_MainWidget.FindAnyWidget("Content");
-		//m_ContentParent		= m_RootWidget.FindAnyWidget("ContentParent");
+		//m_ContentParent	= m_RootWidget.FindAnyWidget("ContentParent");
 		m_PlayerContainer	= new PlayerContainer(this, false);
 		m_PlayerContainer.SetPlayer(PlayerBase.Cast(GetGame().GetPlayer()));
 		m_Body.Insert(m_PlayerContainer);
 		m_ActiveIndex = 0;
 		m_ProcessGridMovement = false;
 		
-		m_UpIcon		= m_RootWidget.FindAnyWidget( "Up" );
-		m_DownIcon		= m_RootWidget.FindAnyWidget( "Down" );
+		m_UpIcon		= m_RootWidget.FindAnyWidget("Up");
+		m_DownIcon		= m_RootWidget.FindAnyWidget("Down");
 		
-		//m_ContentParent.GetScript( m_ContentResize );
+		//m_ContentParent.GetScript(m_ContentResize);
 		
 		RecomputeOpenedContainers();
 	}
@@ -254,5 +256,10 @@ class RightArea: Container
 	Widget GetSlotsArea()
 	{
 		return m_SlotsContent;
+	}
+	
+	Widget GetSlotsHeader()
+	{
+		return m_SlotsHeader;
 	}
 }

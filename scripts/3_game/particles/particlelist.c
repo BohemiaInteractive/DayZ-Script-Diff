@@ -291,6 +291,7 @@ class ParticleList
 	// BONFIRE 
 	static const int BONFIRE_FIRE 					= RegisterParticle("fire_bonfire");
 	static const int BONFIRE_SMOKE		 			= RegisterParticle("smoke_bonfire");
+	static const int TIREPILE_FIRE 					= RegisterParticle("fire_tirepile");
 	static const int SPOOKY_MIST		 			= RegisterParticle("spooky_mist");
 	
 	static const int VOMIT_BLOOD					= RegisterParticle("character_vomitBlood_01");

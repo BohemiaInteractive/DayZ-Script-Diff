@@ -65,6 +65,15 @@ class GardenBase extends ItemBase //BuildingSuper
 		SetMaxWaterStateVal();
 	}
 	
+	void ~GardenBase()
+	{
+		if (GetGame() && m_CheckRainTimer)
+		{
+			m_CheckRainTimer.Stop();
+			m_CheckRainTimer = null;
+		}
+	}
+
 	override void OnVariablesSynchronized()
 	{
 		super.OnVariablesSynchronized();
@@ -224,7 +233,7 @@ class GardenBase extends ItemBase //BuildingSuper
 	void PrintSlots()
 	{
 		Debug.Log("PRINT ALL SLOTS FROM...");
-		Debug.Log("" + this);
+		Debug.Log("" + this + " | Position: " + GetPosition());
 		int slots = GetInventory().GetAttachmentSlotsCount();
 		Debug.Log("Nb Slots : " + slots);
 		
@@ -243,7 +252,7 @@ class GardenBase extends ItemBase //BuildingSuper
 			ItemBase slot_plant = slot.GetPlant();
 			float slot_state= slot.GetState();
 			float slot_slot_Index = slot.GetSlotIndex();
-			float slot_slot_ID = slot.GetSlotId();
+			int slot_slot_ID = slot.GetSlotId();
 			int   slot_wateredState = slot.GetWateredState();
 			int	  slot_FertilityState = slot.GetFertilityState();
 			
@@ -253,9 +262,11 @@ class GardenBase extends ItemBase //BuildingSuper
 			Debug.Log("Fertility State : " + slot_FertilityState);
 			Debug.Log("Water : " + slot_water);
 			Debug.Log("Water Usage : " + slot_water_usage);
-			Debug.Log("Watered State : " + slot_wateredState);
+			Debug.Log("Watered State : " + typename.EnumToString(eWateredState, slot_wateredState));
 			Debug.Log("Seed : " + slot_seed);
 			Debug.Log("Plant : " + slot_plant);
+			if (slot_plant && PlantBase.Cast(slot_plant))
+				PlantBase.Cast(slot_plant).PrintValues();
 			Debug.Log("State : " + slot_state);
 			Debug.Log("Slot Index : " + slot_slot_Index);
 			Debug.Log("Slot ID : " + slot_slot_ID);
@@ -325,9 +336,7 @@ class GardenBase extends ItemBase //BuildingSuper
 		string path = string.Format("CfgVehicles %1 Horticulture PlantType", item.GetType());
 		bool IsItemSeed = GetGame().ConfigIsExisting(path); // Is this item a seed?
 		
-		int slot_id = InventorySlots.GetSlotIdFromString(slot_name);
-		
-		if ( IsItemSeed ) 
+		if (IsItemSeed) 
 		{
 			string converted_slot_name;
 			
@@ -398,8 +407,7 @@ class GardenBase extends ItemBase //BuildingSuper
 			{
 				seed.LockToParent();
 				//Take some small amount of time before making a plant out of seeds
-				Timer growthTimer = NULL;
-				growthTimer = new Timer( CALL_CATEGORY_SYSTEM );
+				Timer growthTimer = new Timer(CALL_CATEGORY_SYSTEM);
 				Param createPlantParam = new Param1<Slot>(slot);
 				growthTimer.Run( 0.1, this, "CreatePlant", createPlantParam, false ); //Use a const for timer delay
 			}
@@ -776,23 +784,24 @@ class GardenBase extends ItemBase //BuildingSuper
 		if (wetness == 0)
 			wetness = -0.1 * CHECK_RAIN_INTERVAL;
 		
-		int slots_count = GetGardenSlotsCount();
-		
-		if ( rain_intensity > 0 )
+		if (rain_intensity > 0)
 		{
 			WaterAllSlots();
 			SetSynchDirty();
 		}
 		
-		for ( int i = 0; i < slots_count; i++ )
+		if (wetness != 0) // only change slot water quantity when wetness value can actually add/deduct something
 		{
-			if ( m_Slots )
+			int slots_count = GetGardenSlotsCount();
+			for (int i = 0; i < slots_count; i++)
 			{
-				Slot slot = m_Slots.Get( i );
-				
-				if ( slot )
+				if (m_Slots)
 				{
-					slot.GiveWater( wetness * Math.RandomFloat01() );
+					Slot slot = m_Slots.Get(i);
+					if (slot)
+					{
+						slot.GiveWater(wetness * Math.RandomFloat01());
+					}
 				}
 			}
 		}
