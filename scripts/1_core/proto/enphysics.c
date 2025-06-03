@@ -301,28 +301,64 @@ proto native float dJointSliderGetAngularPos(dJoint joint);
 //-----------------------------------------------------------------
 typedef int[] dMaterial;
 
-class Contact
+typedef int[] Physics;
+class Physics
+{
+	protected void Physics() {};
+	protected void ~Physics() {};
+
+	// PHYSICS_TODO: Duplicate above functions into here
+
+	proto int GetNumBones();
+	proto Physics GetBone(int index);
+
+};
+
+typedef int[] SurfaceProperties;
+class SurfaceProperties
+{
+	protected void SurfaceProperties() {};
+	protected void ~SurfaceProperties() {};
+
+};
+
+sealed class Contact
 {
 	private void Contact() {}
 	private void ~Contact() {}
-	
-	dMaterial	Material1;
-	dMaterial	Material2;
-	int			MaterialIndex1;
-	int			MaterialIndex2;
-	int			Index1;
-	int			Index2;
 
-	float		PenetrationDepth;
+	Physics Physics1;
+	Physics Physics2;
+	//! Surface properties of Object1
+	SurfaceProperties Material1; 
+	//! Surface properties of Object2
+	SurfaceProperties Material2;
+	//! Impulse applied to resolve the collision
+	float Impulse;
+	//! Index of collider on Object1
+	int ShapeIndex1;
+	//! Index of collider on Object2
+	int ShapeIndex2;
+	//! Collision axis at the contact point
+	vector	Normal;
+	//! Position of the contact point (world space)
+	vector	Position;
+	//! Penetration depth on Object1
+	float PenetrationDepth;
 
-	float		Impulse;
 	float		RelativeNormalVelocityBefore;
 	float		RelativeNormalVelocityAfter;
-
-	vector		Normal;
-	vector		Position;
 	vector		RelativeVelocityBefore;
 	vector		RelativeVelocityAfter;
+	
+	//! Velocity of Object1 before collision (world space)
+	vector	VelocityBefore1;
+	//! Velocity of Object2 before collision (world space)
+	vector	VelocityBefore2;
+	//! Velocity of Object1 after collision (world space)
+	vector	VelocityAfter1;
+	//! Velocity of Object2 after collision (world space)
+	vector	VelocityAfter2;
 
 	proto native vector GetNormalImpulse();
 	proto native float GetRelativeVelocityBefore(vector vel);

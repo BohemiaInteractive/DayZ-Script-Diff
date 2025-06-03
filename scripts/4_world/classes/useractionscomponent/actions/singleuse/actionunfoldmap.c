@@ -258,4 +258,9 @@ class ActionUnfoldMap: ActionBase
 			action_data.m_Callback = action_data.m_Player.m_hac;
 		}
 	}
+	
+	override bool CanBePerformedWhileChangingStance()
+	{
+		return false;
+	}
 };

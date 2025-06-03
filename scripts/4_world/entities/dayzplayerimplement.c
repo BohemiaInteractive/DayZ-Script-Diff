@@ -156,8 +156,10 @@ class DayZPlayerImplement extends DayZPlayer
 	protected bool										m_ProcessFirearmMeleeHit;
 	protected bool										m_ContinueFirearmMelee;
 	protected bool 										m_LiftWeapon_player;
+	protected float										m_ObstructWeapon_player;
 	protected bool 										m_ProcessLiftWeapon;
 	protected bool 										m_ProcessLiftWeaponState;
+	protected float										m_ProcessObstructWeapon;
 	protected int										m_LastSurfaceUnderHash;
 	protected Transport									m_TransportCache;
 	protected string 									m_ClimbingLadderType;
@@ -184,10 +186,15 @@ class DayZPlayerImplement extends DayZPlayer
 	int													m_ActionSoundCategoryHash;
 	
 	protected float										m_dT;
+
+	protected float m_fObstructionSmooth;
+	protected float m_fObstructionSmoothVelocity[1];
 	
 	//! constructor 
 	void 	DayZPlayerImplement()
 	{
+		SetEventMask(EntityEvent.CONTACT);
+
 		m_SprintFull = false;
 		m_SprintedTime = 0;
 		m_SprintedTimePerStanceMin = PlayerConstants.FULL_SPRINT_DELAY_DEFAULT;
@@ -439,12 +446,13 @@ class DayZPlayerImplement extends DayZPlayer
 	
 	void SwitchOptics(ItemOptics optic, bool state)
 	{
-		if (optic)
+		if (optic && !optic.IsSightOnly())
 		{
 			if (state)
 			{
 				if (optic.HasEnergyManager())
 					optic.GetCompEM().SwitchOn();
+
 				optic.EnterOptics();
 				optic.OnOpticEnter();
 			}
@@ -986,6 +994,61 @@ class DayZPlayerImplement extends DayZPlayer
 		ProcessLiftWeapon();
 		
 		GetMovementState(m_MovementState);
+		
+		// obstruction
+		bool 	wantedLift 			= m_LiftWeapon_player;
+		bool 	currentLift 		= hcw.IsWeaponLifted();
+		if (wantedLift != currentLift) 
+		{
+			hcw.LiftWeapon(wantedLift);
+			// Reset the velocity, cause at this point we might need to start moving in the opposite direction rather rapidly,
+			// to prevent the obstruction from smashing the player's head while lifting
+			m_fObstructionSmoothVelocity[0] = 0;
+		}		
+		
+		float 	wantedObstruction 	= m_ObstructWeapon_player;
+		float 	currentObstruction 	= hcw.GetWeaponObstruction();
+		if (wantedObstruction != currentObstruction)
+		{
+			// The following times are times chosen by observation; the following values produced
+			// consistent and relatively nicely looking results and were OK'd by the animators.
+			const float outTime    = 0.150;   // duration when smoothing hi -> lo
+			const float inTime     = 0.010;   // duration when smoothing lo -> hi
+			const float inTimeLift = 0.100;   // duration when smoothing in during lift
+			
+			float smoothTime;
+			if (wantedLift) // When lifting always transition rather quickly
+			{
+				wantedObstruction = 0.0;
+				smoothTime = inTimeLift;
+			}
+			else // Otherwise we can take our time based on the delta
+			{
+				float t = Math.Clamp(Math.AbsFloat(wantedObstruction-currentObstruction), 0, 1);
+				smoothTime = Math.Lerp(outTime, inTime, t);
+			}
+			
+			// Do the interpolation and clamp to wanted value if the change is below certain threshold, to prevent uneccessary interpolation
+			m_fObstructionSmooth = Math.SmoothCD(m_fObstructionSmooth, wantedObstruction, m_fObstructionSmoothVelocity, smoothTime, 6.0, pDt);
+			if (Math.AbsFloat(m_fObstructionSmooth-wantedObstruction) < 0.0001) 
+			{ 
+				m_fObstructionSmooth = wantedObstruction;
+			}
+			
+			#ifdef DIAG_DEVELOPER
+			if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_DISABLE_OBSTRUCTION_INTERPOLATION))
+				m_fObstructionSmooth = wantedObstruction;
+			#endif
+				
+			hcw.ObstructWeapon(m_fObstructionSmooth);
+			
+			#ifndef SERVER
+			#ifdef DIAG_DEVELOPER
+			PluginDiagMenuClient.GetWeaponLiftDiag().Data().SetInterpolation( inTime, inTimeLift, outTime, smoothTime, m_fObstructionSmooth, currentObstruction, wantedObstruction );
+			#endif
+			#endif
+		}
+		// !obstruction
 		
 		// hold breath
 		if (pInputs.IsHoldBreath() && m_MovementState.IsRaised() && (IsInIronsights() || IsInOptics()))
@@ -1852,7 +1915,7 @@ class DayZPlayerImplement extends DayZPlayer
 				}
 				
 				// fixes camera switching during item transitions
-				if (IsLiftWeapon() || !IsRaised() || GetDayZPlayerInventory().IsProcessing() || !IsWeaponRaiseCompleted() || IsFighting())
+				if (IsLiftWeapon() || IsWeaponObstructionBlockingADS() || !IsRaised() || GetDayZPlayerInventory().IsProcessing() || !IsWeaponRaiseCompleted() || IsFighting())
 				{
 					exitSights = true;
 				}
@@ -1936,7 +1999,7 @@ class DayZPlayerImplement extends DayZPlayer
 		}
 		
 		// exits optics completely, comment to return to ADS
-		if (m_LiftWeapon_player && (m_CameraOptics || m_CameraIronsight))
+		if ((m_LiftWeapon_player || IsWeaponObstructionBlockingADS()) && (m_CameraOptics || m_CameraIronsight))
 			ExitSights();
 		
 		if (IsPlayerInStance(DayZPlayerConstants.STANCEMASK_RAISEDPRONE) && (m_CameraOptics || m_CameraIronsight))
@@ -2176,6 +2239,9 @@ class DayZPlayerImplement extends DayZPlayer
 		m_dT = pDt;
 
 		vector playerPosition = PhysicsGetPositionWS();
+		
+		GetDayZPlayerInventory().HandleInventory(pDt);
+		GetHumanInventory().Update(pDt);
 		
 		if (ModCommandHandlerBefore(pDt, pCurrentCommandID, pCurrentCommandFinished))
 		{
@@ -2711,7 +2777,7 @@ class DayZPlayerImplement extends DayZPlayer
 	override int 	CameraHandler(int pCameraMode)
 	{
 		//! ironsights
-		if (!m_LiftWeapon_player)
+		if (!m_LiftWeapon_player && !IsWeaponObstructionBlockingADS())
 		{
 			ItemOptics optics = null;
 			EntityAI entityInHands = GetHumanInventory().GetEntityInHands();
@@ -3806,6 +3872,9 @@ class DayZPlayerImplement extends DayZPlayer
 	}
 	
 	bool IsLiftWeapon();
+	float GetWeaponObstruction();
+	bool IsWeaponObstructionBlockingADS();
+	
 	bool IsRaised()
 	{
 		return m_IsRaised;
@@ -3823,6 +3892,84 @@ class DayZPlayerImplement extends DayZPlayer
 	bool CanPickupHeavyItemSwap(notnull EntityAI item1, notnull EntityAI item2)
 	{
 		return CanPickupHeavyItem(item1) && CanPickupHeavyItem(item2);
+	}
+	
+	/*!
+		Called when 2D optics are about to be drawn.
+		\return Collection of optics to be drawn. 
+		        Draws the provided optics when of `ItemOptics` type.
+		        Draws optic of current muzzle when of `Weapon_Base` type.
+	*/
+	protected override array<InventoryItem> OnDrawOptics2D()
+	{
+		array<InventoryItem> optics;
+		
+		// Find preferred optics, i.e. active on in hands (if any are held) or the ones attached to weapon (if any is held)
+		ItemOptics preferredOptics;
+		{
+			HumanInventory inventory = GetHumanInventory();
+			EntityAI itemInHands = inventory.GetEntityInHands();
+			
+			ItemOptics opticsInHands = ItemOptics.Cast(itemInHands);
+			if (opticsInHands)
+			{
+				preferredOptics = opticsInHands;
+			}
+			else
+			{
+				Weapon_Base weaponInHands = Weapon_Base.Cast(itemInHands);
+				if (weaponInHands)
+				{
+					preferredOptics = weaponInHands.GetAttachedOptics();
+				}
+			}
+		}
+		
+		// Draw selected optics when the player is viewing through them
+		if (preferredOptics && preferredOptics.IsInOptics() && preferredOptics.IsUsingOptics2DModel())
+		{
+			optics = {}; // only allocate the array when necessary
+			optics.Insert(preferredOptics);
+		}
+		
+		// Draw equipped NVGs; employ better finding!
+		EntityAI nvAttachment = GetNVEntityAttached();
+		if (nvAttachment)
+		{
+			bool blockedByOptics = preferredOptics && preferredOptics.IsInOptics() && !preferredOptics.IsUsingOptics2DModel();
+			if (!blockedByOptics && PlayerBase.Cast(this).IsNVGWorking())
+			{
+				NVGoggles nvg = NVGoggles.Cast(nvAttachment);
+				if (nvg)
+				{
+					if (!optics) 
+						optics = {};
+					
+					optics.Insert(nvg);
+				}
+			}
+		}
+		
+		return optics;
+	}
+	
+	//!
+	//! TODO: transitional change - will be cleaned in near future
+	//! Do NOT mod this method - will be removed
+	private EntityAI GetNVEntityAttached()
+	{
+		EntityAI entity;
+		
+		if (FindAttachmentBySlotName("Eyewear") && FindAttachmentBySlotName("Eyewear").FindAttachmentBySlotName("NVG"))
+		{
+			entity = FindAttachmentBySlotName("Eyewear").FindAttachmentBySlotName("NVG");
+		}
+		else if (FindAttachmentBySlotName("Headgear") && FindAttachmentBySlotName("Headgear").FindAttachmentBySlotName("NVG"))
+		{
+			entity = FindAttachmentBySlotName("Headgear").FindAttachmentBySlotName("NVG");
+		}
+
+		return entity;
 	}
 
 #ifdef DIAG_DEVELOPER

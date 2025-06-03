@@ -19,6 +19,9 @@ class PluginDiagMenuClient : PluginDiagMenu
 	Shape m_VehicleFreeAreaBox;	
 	ref EnvDebugData m_EnvDebugData;
 	ref FallDamageDebugData m_FallDamageDebugData;
+#ifndef SERVER
+	ref WeaponLiftDiag m_WeaponLiftDiag = new WeaponLiftDiag();
+#endif
 	
 	override void OnInit()
 	{
@@ -87,8 +90,10 @@ class PluginDiagMenuClient : PluginDiagMenu
 		// LEVEL 2 - Script > Misc -> Environment
 		//---------------------------------------------------------------
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_DEBUG, CBMiscEnvironmentDebug);	
+		#ifdef ENABLE_LOGGING
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_DRYWET, CBMiscEnvironmentLoggingDryWet);	
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_ENVIRONMENT_LOGGING_ITEMHEAT, CBMiscEnvironmentLoggingItemHeat);	
+		#endif
 		
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Misc
@@ -290,6 +295,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		UpdateEnvironmentDebug();
 		CheckTimeAccel();		
 		UpdateMaterialDebug();
+		UpdateWeaponLiftDiag(delta_time);
 	}
 	
 	//---------------------------------------------
@@ -553,6 +559,27 @@ class PluginDiagMenuClient : PluginDiagMenu
 	}
 	
 	//---------------------------------------------
+	void UpdateWeaponLiftDiag(float delta_time)
+	{
+		#ifndef SERVER
+		int weaponLiftDebug = DiagMenu.GetValue(DiagMenuIDs.WEAPON_LIFT_DEBUG);		
+		if (weaponLiftDebug)
+		{
+			GetWeaponLiftDiag().DrawDiag(weaponLiftDebug, delta_time);
+		}
+		#endif
+	}
+	
+	#ifndef SERVER
+	//---------------------------------------------
+	static WeaponLiftDiag GetWeaponLiftDiag()
+	{
+		PluginDiagMenuClient pluginDiag = PluginDiagMenuClient.Cast(GetPlugin(PluginDiagMenuClient));
+		return pluginDiag.m_WeaponLiftDiag;
+	}
+	#endif
+	
+	//---------------------------------------------
 	void MatGhostDebug()
 	{
 		string materialPath = "Graphics/Materials/postprocess/ghost";
@@ -668,6 +695,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		
 	}
 
+	#ifdef ENABLE_LOGGING
 	static void CBMiscEnvironmentLoggingDryWet(bool enabled)
 	{
 		SendDiagRPC(enabled, ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_DRYWET);
@@ -677,6 +705,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 	{
 		SendDiagRPC(enabled, ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_ITEMHEAT);
 	}
+	#endif
 	
 	static void CBMiscFallDamageDebug(bool enabled)
 	{

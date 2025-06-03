@@ -4,7 +4,7 @@ class MapMarkerTypes
 	
 	static void Init()
 	{
-		m_MarkerTypes = new ref map<int,string>;
+		m_MarkerTypes = new map<int,string>;
 		
 		RegisterMarkerType(eMapMarkerTypes.MARKERTYPE_MAP_BORDER_CROSS,"\\DZ\\gear\\navigation\\data\\map_border_cross_ca.paa");
 		RegisterMarkerType(eMapMarkerTypes.MARKERTYPE_MAP_BROADLEAF,"\\DZ\\gear\\navigation\\data\\map_broadleaf_ca.paa");

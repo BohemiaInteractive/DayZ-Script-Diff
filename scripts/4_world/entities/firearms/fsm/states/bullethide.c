@@ -4,7 +4,10 @@ class BulletHide extends WeaponStateBase
 	{
 		super.OnEntry(e);
 		if(e)
+		{
 			m_weapon.SelectionBulletHide();
+			m_weapon.EffectBulletHide(m_weapon.GetCurrentMuzzle());
+		}
 	}
 
 	override void OnExit (WeaponEventBase e)

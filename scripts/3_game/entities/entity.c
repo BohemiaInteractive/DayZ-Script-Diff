@@ -14,6 +14,10 @@ class Entity extends ObjectTyped
 	//! Process animation on object. Animation is defined in config file. Wanted animation phase is set to phase.
 	proto native void SetAnimationPhase(string animation, float phase);
 	
+	proto int GetNumUserAnimationSourceNames();
+
+	proto string GetUserAnimationSourceName(int index);
+
 	//! Same as SetAnimationPhase, only ignores any animation and sets the phase immediately
 	void SetAnimationPhaseNow(string animation, float phase)
 	{

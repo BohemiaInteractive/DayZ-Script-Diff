@@ -106,7 +106,7 @@ class IngameHudVisibility : Managed
 	{
 		Widget widget = m_ElementMap.Get(element);
 		if (widget)
-			return widget.IsVisible());
+			return widget.IsVisible();
 		
 		return false;
 	}

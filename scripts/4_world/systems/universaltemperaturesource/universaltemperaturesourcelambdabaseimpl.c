@@ -1,6 +1,6 @@
 class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambdaBase
 {
-	override void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<Object> nearestObjects)
+	override void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<EntityAI> nearestObjects)
 	{
 		float distanceToTemperatureSource;
 		
@@ -43,7 +43,7 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 		}
 	}
 	
-	override void WarmAndCoolItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<Object> nearestObjects)
+	override void WarmAndCoolItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<EntityAI> nearestObjects)
 	{
 		float distanceToTemperatureSource;
 		float tempTarget = pSettings.m_TemperatureItemCap;
@@ -139,14 +139,33 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 	{
 		resultValues.m_TemperatureItem = pSettings.m_TemperatureItemCap;
 		resultValues.m_TemperatureHeatcomfort = pSettings.m_TemperatureCap;
-		
-		array<Object> nearestObjects = new array<Object>();
-		
+				
 		vector pos = pSettings.m_Position;
 		if (pSettings.m_Parent != null)
 			pos = pSettings.m_Parent.GetPosition();
 		
-		GetGame().GetObjectsAtPosition(pos, pSettings.m_RangeMax, nearestObjects, null);
+		// Define half-size (range)
+		float halfRange = pSettings.m_RangeMax;
+		
+		// Calculate min and max positions of the box
+		vector minPos = pos - Vector(halfRange, halfRange / 2, halfRange);
+		vector maxPos = pos + Vector(halfRange, halfRange / 2, halfRange);
+		
+		array<EntityAI> nearestObjects = {};
+		DayZPlayerUtils.SceneGetEntitiesInBox(minPos, maxPos, nearestObjects, QueryFlags.DYNAMIC);
+		
+		for (int i = nearestObjects.Count() - 1; i >= 0; --i)
+		{
+			EntityAI entity = nearestObjects[i];
+			if (entity)
+			{
+				vector objPos = entity.GetPosition();
+				float distance = vector.Distance(objPos, pos);
+				if (distance > pSettings.m_RangeMax)
+					nearestObjects.Remove(i);
+			}
+		}
+		
 		if (nearestObjects.Count() > 0)
 		{
 			DryItemsInVicinity(pSettings, pos, nearestObjects);
@@ -157,14 +176,32 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 	//! DEPRECATED
 	override void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings)
 	{
-		array<Object> nearestObjects = new array<Object>();
-		
 		vector pos = pSettings.m_Position;
 		if (pSettings.m_Parent != null)
 			pos = pSettings.m_Parent.GetPosition();
 		
-		GetGame().GetObjectsAtPosition(pos, pSettings.m_RangeMax, nearestObjects, null);
-
+		// Define half-size (range)
+		float halfRange = pSettings.m_RangeMax;
+		
+		// Calculate min and max positions of the box
+		vector minPos = pos - Vector(halfRange, halfRange / 2, halfRange);
+		vector maxPos = pos + Vector(halfRange, halfRange / 2, halfRange);
+		
+		array<EntityAI> nearestObjects = {};
+		DayZPlayerUtils.SceneGetEntitiesInBox(minPos, maxPos, nearestObjects, QueryFlags.DYNAMIC);
+		
+		for (int i = nearestObjects.Count() - 1; i >= 0; --i)
+		{
+			EntityAI entity = nearestObjects[i];
+			if (entity)
+			{
+				vector objPos = entity.GetPosition();
+				float distance = vector.Distance(objPos, pos);
+				if (distance > pSettings.m_RangeMax)
+					nearestObjects.Remove(i);
+			}
+		}
+		
 		DryItemsInVicinity(pSettings, pos, nearestObjects);
 	}
 }

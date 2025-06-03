@@ -238,7 +238,7 @@ class DayZPlayerImplementFallDamage
 			case 2:
 				return "MEDIUM";
 			case 3:
-				return "HEAVY":
+				return "HEAVY";
 		}
 		
 		return "NONE";
@@ -247,7 +247,7 @@ class DayZPlayerImplementFallDamage
 	private void PreloadAmmoTypeData()
 	{
 		if (m_AmmoTypeData == null)
-			m_AmmoTypeData = new ref map<string, float>();
+			m_AmmoTypeData = new map<string, float>();
 		
 		m_AmmoTypeData.Insert(FALL_DAMAGE_AMMO_HEALTH, GetValuesFromAmmoType(FALL_DAMAGE_AMMO_HEALTH)[0]);
 		m_AmmoTypeData.Insert(FALL_DAMAGE_AMMO_SHOCK, GetValuesFromAmmoType(FALL_DAMAGE_AMMO_SHOCK)[2]);

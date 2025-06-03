@@ -59,7 +59,7 @@ class RBF_CLO_BU0_MA1 extends WeaponStableState
 	override bool IsRepairEnabled () { return true; }
 	override void InitMuzzleArray () { m_muzzleHasBullet = {MuzzleState.E}; }
 };
-class RBF_JAM_BU1_MA0 extends WeaponStateJammed
+class RBF_JAM_BU1_MA0 extends WeaponStableState
 {
 	override void OnEntry (WeaponEventBase e) { Print("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { jammed bullet nomag"); super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } jammed bullet nomag"); } }
@@ -71,7 +71,7 @@ class RBF_JAM_BU1_MA0 extends WeaponStateJammed
 	override bool IsRepairEnabled () { return true; }
 	override void InitMuzzleArray () { m_muzzleHasBullet = {MuzzleState.F}; }
 };
-class RBF_JAM_BU1_MA1 extends WeaponStateJammed
+class RBF_JAM_BU1_MA1 extends WeaponStableState
 {
 	override void OnEntry (WeaponEventBase e) { Print("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { jammed bullet mag"); super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } jammed bullet mag"); } }

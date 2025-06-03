@@ -538,12 +538,12 @@ class WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponActionB
 		{
 			WeaponStableState repairedState;
 			
-			// Seeing this message is not TOO bad, it just means this system is working
+			// Seeing this message is not TOO bad, it is mostly informative
 			// It is simply being listed in the logs to identify how much the FSM state and weapon state still desyncs
 			// Which can be because of a myriad of causes, such as incorrectly set up transitions
 			// Or simply certain timings of certain actions or interrupts lined up perfectly, which can have repro rates such as 1/300
-			Error(string.Format("[wpnfsm] ValidateAndRepair Attempting to repair: %1 - %2 - %3 - state: %4 != weapon: %5",
-				weapon.GetDebugName(weapon), name, m_State, stateCondition, gunCondition));
+			ErrorEx(string.Format("[wpnfsm] ValidateAndRepair Attempting to repair: %1 - %2 - %3 - state: %4 != weapon: %5",
+				weapon.GetDebugName(weapon), name, m_State, stateCondition, gunCondition),ErrorExSeverity.INFO);
 			
 			if (e1 && e2)
 				repairedState = ValidateAndRepairStateFinder(gunCondition, e1, e2, state);

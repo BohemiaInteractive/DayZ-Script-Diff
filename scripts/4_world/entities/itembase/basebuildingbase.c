@@ -38,7 +38,7 @@ class BaseBuildingBase extends ItemBase
 	// Constructor
 	void BaseBuildingBase() 
 	{
-		m_DamageTriggers = new ref map<string, ref AreaDamageManager>;
+		m_DamageTriggers = new map<string, ref AreaDamageManager>;
 		
 		//synchronized variables
 		RegisterNetSyncVariableInt( "m_SyncParts01" );
@@ -89,6 +89,30 @@ class BaseBuildingBase extends ItemBase
 	override int GetHideIconMask()
 	{
 		return EInventoryIconVisibility.HIDE_VICINITY;
+	}
+	
+	override void InitItemSounds()
+	{
+		super.InitItemSounds();
+
+		ItemSoundHandler handler = GetItemSoundHandler();
+		SoundParameters params = new SoundParameters();
+		params.m_Loop = true;
+
+		if (GetFoldSoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_FOLD, GetFoldSoundset());
+		if (GetLoopFoldSoundset() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_FOLD_LOOP, GetLoopFoldSoundset(), params);
+	}
+	
+	override string GetFoldSoundset()
+	{
+		return "putDown_FenceKit_SoundSet";
+	}
+	
+	override string GetLoopFoldSoundset()
+	{
+		return "Shelter_Site_Build_Loop_SoundSet";
 	}
 
 	// --- SYNCHRONIZATION

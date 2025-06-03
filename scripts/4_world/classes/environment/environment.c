@@ -1,3 +1,6 @@
+/**
+ * \brief Categories that are changing behavior of Heat comfort processing
+ */
 enum EEnvironmentHeatcomfortBehaviorCategory
 {
 	DEFAULT,
@@ -10,6 +13,16 @@ class EnvironmentSnapshotData
 	float m_TargetHeatComfort;
 }
 
+class EnvironmentDrynessData
+{
+	bool m_UseTemperatureSources 		= false;
+	float m_TemperatureSourceDistance	= 1.0;
+}
+
+/**
+ * \brief Simulates influence of environment to character
+ *		Takes input data from WorldData, Weather system and entities simulating temperature and wetness.
+ */
 class Environment
 {
 	const float RAIN_LIMIT_LOW		= 0.05;
@@ -83,7 +96,9 @@ class Environment
 	
 	#ifdef DIAG_DEVELOPER
 	bool m_Debug = false;
+	#endif
 
+	#ifdef ENABLE_LOGGING
 	bool m_DebugLogDryWet = false;
 	bool m_DebugLogItemHeat = false;
 	#endif
@@ -185,8 +200,11 @@ class Environment
 		m_Initialized = true;
 	}
 
-	
-	// Calculates heatisolation of clothing, process its wetness, collects heat from heated items and calculates player's heat comfort
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * \brief Main loop that runs calculations for various Environment parts (wetness, heatcomfort, watercontact, etc.)
+	 */
 	void Update(float pDelta)
 	{
 		if (m_Player && m_Initialized)
@@ -211,8 +229,8 @@ class Environment
 				CheckWaterContact(m_WaterLevel);
 				CollectAndSetPlayerData();
 				CollectAndSetEnvironmentData();
-				GatherTemperatureSources();
 
+				GatherTemperatureSources();
 				ProcessTemperatureSources();
 				
 				//! Process temperatures
@@ -259,39 +277,56 @@ class Environment
 			}
 		}
 	}
-	
+
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * \brief For safe-guards, waiting for the proper temperature to be set
+	 */	
 	bool IsTemperatureSet()
 	{
 		return m_IsTempSet;
 	}
 
-	//! Returns heat player generated based on player's movement speed (for now)
+	/**
+	 * \brief Character's heat (calculated from movement speed multiplied by constant)
+	 * \return generated heat value
+	 */
 	protected float GetPlayerHeat()
 	{
 		float heat = m_PlayerSpeed * GameConstants.ENVIRO_DEFAULT_ENTITY_HEAT;
 		return heat;
 	}
-	
+
+	/**
+	 * \brief Is character under roof (periodically checked - GameConstants.ENVIRO_TICK_ROOF_RC_CHECK).
+	 *		Runs when player is not inside of building
+	 */	
 	bool IsUnderRoof()
 	{
 		return m_IsUnderRoof;
 	}
+
+	/**
+	 * \brief Is character inside building? (periodically checked - GameConstants.ENVIRO_TICK_ROOF_RC_CHECK).
+	 */	
+	bool IsInsideBuilding()
+	{
+		return m_Player.IsSoundInsideBuilding();
+	}
 	
+	/**
+	 * \brief Is character in contact with water body? (periodically checked - GameConstants.ENVIRO_TICK_RATE).
+	 */
 	protected bool IsWaterContact()
 	{
 		return m_IsInWater;
 	}
 	
-	bool IsInsideBuilding()
-	{
-		return m_Player && m_Player.IsSoundInsideBuilding();
-	}
-
-	protected bool IsInsideVehicle()
-	{
-		return m_Player && m_Player.IsInVehicle();
-	}
-	
+	/**
+	 * \brief Returns true if character is child of given parent type(s)
+	 * @param typenames list of types to check against
+	 */
 	private bool IsChildOfType(array<typename> typenames)
 	{
 		Object parent = Object.Cast(m_Player.GetParent());
@@ -300,22 +335,37 @@ class Environment
 		
 		return false;
 	}
-	
+
+	/**
+	 * \brief Is character under building's roof (periodically checked - GameConstants.ENVIRO_TICK_ROOF_RC_CHECK).
+	 *		There might be situations where the surface under is external, but character is inside building
+	 */	
 	private bool IsUnderRoofBuilding()
 	{
 		return m_IsUnderRoofBuilding;
 	}
-	
+
+	/**
+	 * \brief Rain phenomenon actual value > RAIN_LIMIT_LOW
+	 */		
 	protected bool IsRaining()
 	{
 		return m_Rain > RAIN_LIMIT_LOW;
 	}
-	
+
+	/**
+	 * \brief Snowfall phenomenon actual value > SNOWFALL_LIMIT_LOW
+	 */			
 	protected bool IsSnowing()
 	{
 		return m_Snowfall > SNOWFALL_LIMIT_LOW;
 	}
 
+	/**
+	 * \brief Changes Heat Comfort curve behavior based on where the character is
+	 *
+	 * \return true if the behavior is altered otherwise false
+	 */
 	protected bool DetermineHeatcomfortBehavior()
 	{
 		if (IsChildOfType({Car}))
@@ -333,10 +383,14 @@ class Environment
 		return false;
 	}
 	
-	//! Checks whether Player is sheltered
+	// --------------------------------------------------------------------------------
+	
+	/**
+	 * \brief Checks whether character is sheltered and sets the information
+	 */
 	protected void CheckUnderRoof()
 	{
-		// if inside vehicle return immediatelly
+		//! if inside vehicle return immediatelly
 		if (IsChildOfType({Car}))
 		{
 			m_IsUnderRoof = false;
@@ -356,6 +410,14 @@ class Environment
 		m_IsUnderRoofBuilding = hitObject && hitObject.IsInherited(House);
 	}
 	
+	// --------------------------------------------------------------------------------
+	
+	/**
+	 * \brief Checks player's contanct with water
+	 * @param[out] pWaterLevel water level height
+	 *
+	 * \return Nothing 
+	 */
 	protected void CheckWaterContact(out float pWaterLevel)
 	{
 		string surfType;
@@ -416,7 +478,14 @@ class Environment
 		m_LiquidType = liquidType;
 
 	}
+	
+	// --------------------------------------------------------------------------------
 
+	/**
+	 * \brief Wind intensity (influence) modifier of temperature value
+	 *
+	 * \return float modifier used in temperature calculations
+	 */
 	float GetWindModifierPerSurface()
 	{
 		if (IsUnderRoofBuilding())
@@ -435,7 +504,16 @@ class Environment
 		return m_TargetHeatComfort;
 	}
 	
-	// Calculates and return temperature of environment
+	// --------------------------------------------------------------------------------
+	
+	/**
+	 * \brief Calculations of temperarute for different situations
+	 *		- in water
+	 *		- inside building / inside vehicle / under roof
+	 *		- influence of UniversalTemperatureSource
+	 *
+	 * \return Resulting temperature of the environment
+	 */
 	protected float GetEnvironmentTemperature()
 	{
 		float temperature = m_WorldData.GetTemperature(m_Player, EEnvironmentTemperatureComponent.ALTITUDE | EEnvironmentTemperatureComponent.OVERCAST);
@@ -475,7 +553,13 @@ class Environment
 		return temperature;
 	}
 	
-	// Calculates wet/drying delta based on player's location and weather
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * \brief Calculates soaking/drying delta based on character's location and weather
+	 *
+	 * \return Resulting wet delta modifier
+	 */
 	float GetWetDelta()
 	{
 		float wetDelta = 0;
@@ -527,9 +611,15 @@ class Environment
 
 		return wetDelta;
 	}
+	
+	// --------------------------------------------------------------------------------
 
-	// EXPOSURE
-	// Each tick updates current entity member variables
+	/**
+	 * \brief Sets character related value for furher use
+	 * 		- position
+	 *  	- movement speed
+	 * 		- player heat (actual speed * heat constant)
+	 */
 	protected void CollectAndSetPlayerData()
 	{
 		vector playerPos = m_Player.GetPosition();
@@ -545,6 +635,9 @@ class Environment
 	}
 	
 	// Each tick updates current environment member variables
+	/**
+	 * \brief Sets actual weather related values for further use (rain, snow, wind, etc.)
+	 */
 	protected void CollectAndSetEnvironmentData()
 	{
 		Weather weather	= g_Game.GetWeather();
@@ -558,6 +651,8 @@ class Environment
 		SetEnvironmentTemperature();
 		SetAreaGenericColdness();
 	}
+
+	// --------------------------------------------------------------------------------
 	
 	void SetEnvironmentTemperature()
 	{
@@ -565,14 +660,19 @@ class Environment
 		m_EnvironmentTemperature = GetEnvironmentTemperature();
 	}
 	
-	//! Determines whether player is in cold area which restricts use of some actions (digging)
+	/**
+	 * \brief Determines whether player is in cold area which restricts use of some actions (digging)
+	 */
 	void SetAreaGenericColdness()
 	{			
 		float heigthCorrectedTemp = m_WorldData.GetBaseEnvTemperatureAtObject(m_Player);
 		m_Player.SetInColdArea(heigthCorrectedTemp <= GameConstants.COLD_AREA_TEMPERATURE_THRESHOLD);
 	}
 
-	//! process attachments by water depth
+	/**
+	 * \brief Processes items wetness in player possession based on the current water level (the character is in)
+	 * @param pWaterLevel Water level height
+	 */
 	protected void ProcessWetnessByWaterLevel(float pWaterLevel)
 	{
 		if (pWaterLevel >= WATER_LEVEL_HIGH)
@@ -584,15 +684,22 @@ class Environment
 		else if (pWaterLevel >= WATER_LEVEL_NONE && pWaterLevel < WATER_LEVEL_LOW)
 			ProcessItemsWetness(m_SlotIdsLower);
 	}
+	
+	// --------------------------------------------------------------------------------
 
-	// Wets or dry items once in given time
+	/**
+	 * \brief Soak items at specific Slot ID(s)
+	 * @param pSlotIds Inventory Slot IDs to process
+	 */
 	protected void ProcessItemsWetness(array<int> pSlotIds)
 	{
 		EntityAI attachment;
 		
 		int playerAttachmentCount = m_Player.GetInventory().AttachmentCount();
 		
+		#ifdef ENABLE_LOGGING
 		LogDryWetProcess(string.Format("Environment :: ProcessItemsWetness (update interval=%1s)", GameConstants.ENVIRO_TICK_RATE));
+		#endif
 		for (int attIdx = 0; attIdx < playerAttachmentCount; ++attIdx)
 		{
 			attachment = m_Player.GetInventory().GetAttachmentFromIndex(attIdx);
@@ -617,46 +724,9 @@ class Environment
 		if (m_Player.GetItemInHands())
 			ApplyWetnessToItem(m_Player.GetItemInHands());
 
+		#ifdef ENABLE_LOGGING
 		LogDryWetProcess("==========");
-
-	}
-
-	protected void ProcessItemsDryness()
-	{
-		EntityAI attachment;
-		ItemBase item;
-		
-		int attCount = m_Player.GetInventory().AttachmentCount();
-		
-		LogDryWetProcess(string.Format("Environment :: ProcessItemsDryness (update interval=%1s)", GameConstants.ENVIRO_TICK_RATE));
-		EnvironmentDrynessData drynessData = new EnvironmentDrynessData();
-		drynessData.m_UseTemperatureSources = m_HasTemperatureSources;
-
-		if (m_HasTemperatureSources)
-		{
-			float distance = vector.Distance(m_UTemperatureSources[0].GetPosition(), m_Player.GetPosition());
-			distance = Math.Max(distance, 0.1);
-			drynessData.m_TemperatureSourceDistance = distance;
-			LogDryWetProcess(string.Format("distance to heatsource: %1 m", distance));
-		}
-		
-		for (int attIdx = 0; attIdx < attCount; ++attIdx)
-		{
-			attachment = m_Player.GetInventory().GetAttachmentFromIndex(attIdx);
-			if (attachment && attachment.IsItemBase())
-			{
-				item = ItemBase.Cast(attachment);
-				if (item)
-					ApplyDrynessToItemEx(item, drynessData);
-			}
-		}
-
-		if (m_Player.GetItemInHands())
-		{
-			ApplyDrynessToItemEx(m_Player.GetItemInHands(), drynessData);
-		}
-		
-		LogDryWetProcess("==========");
+		#endif
 	}
 
 	protected void ApplyWetnessToItem(ItemBase pItem)
@@ -696,19 +766,25 @@ class Environment
 				if (parentContainsLiquid)
 				{
 					soakingCoef = pItem.GetSoakingIncrement("parentWithLiquid");
+					#ifdef ENABLE_LOGGING
 					LogDryWetProcess(string.Format("%1 (soak coef=%2/s, current wetness=%3) [parent contains liquid]", pItem.GetDisplayName(), soakingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+					#endif
 				}
 				else if (isParentWet && parentItem)
 				{
 					if (pItem.GetWet() < parentItem.GetWet())
 						soakingCoef = GetWetDelta();
 
+					#ifdef ENABLE_LOGGING
 					LogDryWetProcess(string.Format("%1 (soak coef=%2/s, current wetness=%3) [parent wet]", pItem.GetDisplayName(), soakingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+					#endif
 				}
 				else
 				{
 					soakingCoef = GetWetDelta();
+					#ifdef ENABLE_LOGGING
 					LogDryWetProcess(string.Format("%1 (soak coef=%2/s, current wetness=%3) [normal]", pItem.GetDisplayName(), soakingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+					#endif
 				}
 
 				pItem.AddWet(soakingCoef);
@@ -737,6 +813,54 @@ class Environment
 				}
 			}
 		}
+	}
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * \brief Dry items in player possession
+	 */
+	protected void ProcessItemsDryness()
+	{
+		EntityAI attachment;
+		ItemBase item;
+		
+		int attCount = m_Player.GetInventory().AttachmentCount();
+		
+		#ifdef ENABLE_LOGGING
+		LogDryWetProcess(string.Format("Environment :: ProcessItemsDryness (update interval=%1s)", GameConstants.ENVIRO_TICK_RATE));
+		#endif
+		EnvironmentDrynessData drynessData = new EnvironmentDrynessData();
+		drynessData.m_UseTemperatureSources = m_HasTemperatureSources;
+
+		if (m_HasTemperatureSources)
+		{
+			float distance = vector.Distance(m_UTemperatureSources[0].GetPosition(), m_Player.GetPosition());
+			distance = Math.Max(distance, 0.1);
+			drynessData.m_TemperatureSourceDistance = distance;
+			#ifdef ENABLE_LOGGING
+			LogDryWetProcess(string.Format("distance to heatsource: %1 m", distance));
+			#endif
+		}
+		
+		for (int attIdx = 0; attIdx < attCount; ++attIdx)
+		{
+			attachment = m_Player.GetInventory().GetAttachmentFromIndex(attIdx);
+			if (attachment && attachment.IsItemBase())
+			{
+				item = ItemBase.Cast(attachment);
+				if (item)
+					ApplyDrynessToItemEx(item, drynessData);
+			}
+		}
+
+		if (m_Player.GetItemInHands())
+		{
+			ApplyDrynessToItemEx(m_Player.GetItemInHands(), drynessData);
+		}
+		
+		#ifdef ENABLE_LOGGING
+		LogDryWetProcess("==========");
+		#endif
 	}
 	
 	protected void ApplyDrynessToItem(ItemBase pItem)
@@ -786,7 +910,9 @@ class Environment
 				dryingCoef = (-1 * GameConstants.ENVIRO_TICK_RATE * dryingIncrement) / pDrynessData.m_TemperatureSourceDistance;
 				if (pItem.GetWet() >= GameConstants.STATE_DAMP)
 				{
+					#ifdef ENABLE_LOGGING
 					LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [normal]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+					#endif
 					pItem.AddWet(dryingCoef);			
 				}
 				
@@ -818,7 +944,9 @@ class Environment
 			{
 				//! adds wetness to item inside parent item containing liquid
 				dryingCoef = (GameConstants.ENVIRO_TICK_RATE * pItem.GetSoakingIncrement("parentWithLiquid")) / pDrynessData.m_TemperatureSourceDistance;
+				#ifdef ENABLE_LOGGING
 				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent contains liquid]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+				#endif
 				pItem.AddWet(dryingCoef);
 			}
 	
@@ -826,14 +954,19 @@ class Environment
 			{
 				//! adds wetness to item inside wet parent item
 				dryingCoef = (GameConstants.ENVIRO_TICK_RATE * pItem.GetSoakingIncrement("wetParent")) / pDrynessData.m_TemperatureSourceDistance;
+				#ifdef ENABLE_LOGGING
 				LogDryWetProcess(string.Format("%1 (dry coef=%2/s, current wetness=%3) [parent wet]", pItem.GetDisplayName(), dryingCoef / GameConstants.ENVIRO_TICK_RATE, pItem.GetWet()), parentItem != null);
+				#endif
 				pItem.AddWet(dryingCoef);
 			}
 		}
 	}
 
-	// HEAT COMFORT
-	//! Calculates and process player's heatcomfort related to body parts
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * \brief Calculates and process player's heatcomfort related to defined body parts
+	 */
 	protected void ProcessHeatComfort()
 	{
 		float hcPenaltyTotal //! Heat Comfort Penalty
@@ -845,7 +978,9 @@ class Environment
 		float heatComfortSum = 0.0;
 		float heatItems = 0.0;
 		
+		#ifdef ENABLE_LOGGING
 		LogItemHeat("====================");
+		#endif
 		BodyPartHeatProperties(InventorySlots.HEADGEAR, GameConstants.ENVIRO_HEATCOMFORT_HEADGEAR_WEIGHT, hcBodyPart, hBodyPart);
 		hcBodyPartTotal += hcBodyPart; hBodyPartTotal += hBodyPart;
 		BodyPartHeatProperties(InventorySlots.MASK, GameConstants.ENVIRO_HEATCOMFORT_MASK_WEIGHT, hcBodyPart, hBodyPart);
@@ -961,6 +1096,8 @@ class Environment
  			m_Player.GetStatHeatComfort().Set(dynamicHeatComfort);
 		}
 	}
+	
+	// --------------------------------------------------------------------------------
 
 	protected void ProcessHeatBuffer(EnvironmentSnapshotData data)
 	{
@@ -972,12 +1109,14 @@ class Environment
 			float heatBufferCap = Math.InverseLerp(0.0, GameConstants.ENVIRO_HEATCOMFORT_WEIGHT_SUMMARY, data.m_ClothingHeatComfort);
 			float heatBufferMax = GameConstants.ENVIRO_PLAYER_HEATBUFFER_CAPACITY_MIN + heatBufferCap * (1 - GameConstants.ENVIRO_PLAYER_HEATBUFFER_CAPACITY_MIN);
 			m_Player.SetHeatBufferDynamicMax(heatBufferMax);
+			
+			PlayerStat<float> heatBuffer = m_Player.GetStatHeatBuffer();
 
 			//! deplete the heat buffer if there is difference in HB capacity (eg.: cloths were removed)
 			if (heatBufferCap < m_HeatBufferCapPrevious)
 			{
 				float heatBufferValueCorrection = GameConstants.ENVIRO_PLAYER_HEATBUFFER_INCREASE / (heatBufferMax * ((-GameConstants.ENVIRO_PLAYER_HEATBUFFER_TEMP_AFFECT * data.m_TargetHeatComfort) + 1 ));
-				m_Player.GetStatHeatBuffer().Add(-heatBufferValueCorrection);
+				heatBuffer.Add(-heatBufferValueCorrection);
 				m_HeatBufferCapPrevious = heatBufferCap;
 			}
 			
@@ -1027,7 +1166,7 @@ class Environment
 				if (m_Player.GetModifiersManager().IsModifierActive(eModifiers.MDF_HEATBUFFER))
 				{
 					if (m_HeatBufferTimer >= 1.0)
-						m_Player.GetStatHeatBuffer().Add(-decreaseRate);
+						heatBuffer.Add(-decreaseRate);
 					else
 						m_HeatBufferTimer = 1.0;
 				}
@@ -1035,9 +1174,9 @@ class Environment
 				{
 					m_HeatBufferTimer = 0.0;
 					if (applicableHeatbuffer > 0.0)
-						m_Player.GetStatHeatBuffer().Add(-decreaseRate);
+						heatBuffer.Add(-decreaseRate);
 					else if (applicableHeatbuffer != 0.0 && !m_Player.GetModifiersManager().IsModifierActive(eModifiers.MDF_HEATBUFFER))
-						m_Player.GetStatHeatBuffer().Set(0.0);
+						heatBuffer.Set(0.0);
 				}			
 			}
 			else
@@ -1046,14 +1185,14 @@ class Environment
 				{
 					if (applicableHeatbuffer < heatBufferMax)
 					{
-						m_Player.GetStatHeatBuffer().Add(increaseRate);
+						heatBuffer.Add(increaseRate);
 						m_HeatBufferCapPrevious = heatBufferCap;
 					}
 				}
 				else if (applicableHeatbuffer > 0.0)
-					m_Player.GetStatHeatBuffer().Add(-decreaseRate);
+					heatBuffer.Add(-decreaseRate);
 				else if (applicableHeatbuffer != 0.0 && !m_Player.GetModifiersManager().IsModifierActive(eModifiers.MDF_HEATBUFFER))
-					m_Player.GetStatHeatBuffer().Set(0.0);
+					heatBuffer.Set(0.0);
 	
 				m_HeatBufferTimer = 0.0;
 			}
@@ -1062,11 +1201,18 @@ class Environment
 	
 	protected float GetApplicableHeatbuffer()
 	{
-		float applicableHeatbuffer = Math.Round((m_Player.GetStatHeatBuffer().Get() / m_Player.GetStatHeatBuffer().GetMax()) * 1000) * 0.001;
+		PlayerStat<float> heatBuffer = m_Player.GetStatHeatBuffer();
+		float applicableHeatbuffer = Math.Round((heatBuffer.Get() / heatBuffer.GetMax()) * 1000) * 0.001;
+
 		return applicableHeatbuffer;
 	}
+	
+	// --------------------------------------------------------------------------------
 
-	//! go through all items in player's possession cool/warm them to neutral temperature
+	/**
+	 * \brief Iterate through items in player posession (by given body parts) and cool/warm them to neutral temparature
+	 * @param pBodyPartIds List of body parts to iterate through (see InventorySlots)
+	 */
 	protected void ProcessItemsTemperature(array<int> pBodyPartIds)
 	{
 		EntityAI attachment;
@@ -1087,14 +1233,17 @@ class Environment
 					float heatPermCoef = item.GetHeatPermeabilityCoef();
 					//first handle the item itself, if necessary
 					if (item.CanHaveTemperature() && !item.IsSelfAdjustingTemperature())
-						SetProcessedItemTemperature(item,heatPermCoef);
+						SetProcessedItemTemperature(item, heatPermCoef);
 					
-					ProcessItemHierarchyRecursive(item,heatPermCoef);
+					ProcessItemHierarchyRecursive(item, heatPermCoef);
 				}
 			}
 		}
 	}
-	
+
+	/**
+	 * \brief Process temperature of item in character hands and cool/warm it to neutral temparature
+	 */	
 	protected void ProcessItemsInHandsTemperature()
 	{
 		ItemBase item = m_Player.GetItemInHands();
@@ -1164,6 +1313,7 @@ class Environment
 	{
 		float targetTemperature = GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE;
 		bool globalCooling = true;
+		//! swimming special behavior
 		if (m_Player.IsSwimming())
 		{
 			SetItemHeatingCoef(GameConstants.TEMP_COEF_SWIMMING);
@@ -1186,12 +1336,20 @@ class Environment
 		}
 	}
 	
+	// --------------------------------------------------------------------------------
+	
 	protected float EnvTempToCoef(float pTemp)
 	{
 		return (pTemp - GameConstants.ENVIRO_PLAYER_COMFORT_TEMP) / GameConstants.ENVIRO_TEMP_EFFECT_ON_PLAYER;
 	}
 
-	//! returns enhanced heat comfort for given body part
+	/**
+	 * \brief Iterate through given body part and calculates heatcofort and item heat value
+	 * @param pBodyPartIds List of body parts to iterate through (see InventorySlots)
+	 * @param pCoef Multiplier used for heatcomfort enhancing
+	 * @param[out] pHeatComfort overall heatcomfort from items of given body part
+	 * @param[out] pHeat overall heat from items for given body part
+	 */
 	protected void BodyPartHeatProperties(int pBodyPartId, float pCoef, out float pHeatComfort, out float pHeat)
 	{
 		pHeatComfort = 0;
@@ -1208,7 +1366,9 @@ class Environment
 
 				if (attachmentSlot == pBodyPartId)
 				{
+					#ifdef ENABLE_LOGGING
 					LogItemHeat(string.Format("BodyPartHeatProperties (%1)", EnumTools.EnumToString(InventorySlots, pBodyPartId)));
+					#endif
 
 					float itemHeatcomfort = 0;
 					float itemTemperature = 0;
@@ -1217,7 +1377,9 @@ class Environment
 					int inventoryAttCount = item.GetInventory().AttachmentCount();
 					if (inventoryAttCount > 0)
 					{
+						#ifdef ENABLE_LOGGING
 						LogItemHeat(string.Format("attachments:"), false);
+						#endif
 						for (int inAttIdx = 0; inAttIdx < inventoryAttCount; ++inAttIdx)
 						{
 							EntityAI inAttachment = item.GetInventory().GetAttachmentFromIndex(inAttIdx);
@@ -1228,7 +1390,9 @@ class Environment
 								if (itemTemperature < GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT || itemTemperature > GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT)
 								{
 									itemHeatcomfort = NormalizedTemperature(itemTemperature) * attachmentItem.GetQuantityNormalizedScripted() * attachmentItem.GetTemperaturePerQuantityWeight();
+									#ifdef ENABLE_LOGGING
 									LogItemHeat(string.Format("%1: temperature=%2 heat=%3", attachmentItem, itemTemperature, pHeat), true);
+									#endif
 									pHeat += itemHeatcomfort;
 								}
 							}
@@ -1240,7 +1404,9 @@ class Environment
 						
 						if (inventoryItemCount > 0)
 						{
+							#ifdef ENABLE_LOGGING
 							LogItemHeat(string.Format("cargo:"), false);
+							#endif
 							for (int j = 0; j < inventoryItemCount; ++j)
 							{
 								ItemBase inventoryItem = ItemBase.Cast(item.GetInventory().GetCargo().GetItem(j));
@@ -1250,7 +1416,9 @@ class Environment
 									if (itemTemperature < GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT || itemTemperature > GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT)
 									{
 										itemHeatcomfort = NormalizedTemperature(itemTemperature) * inventoryItem.GetQuantityNormalizedScripted() * inventoryItem.GetTemperaturePerQuantityWeight();
+										#ifdef ENABLE_LOGGING
 										LogItemHeat(string.Format("%1: temperature=%2 heat=%3", inventoryItem, itemTemperature, itemHeatcomfort), true);
+										#endif
 										pHeat += itemHeatcomfort;
 									}
 								}
@@ -1260,8 +1428,10 @@ class Environment
 					
 					pHeatComfort = MiscGameplayFunctions.GetCurrentItemHeatIsolation(item) * pCoef;
 					
+					#ifdef ENABLE_LOGGING
 					LogItemHeat(string.Format("overall heat from items=%1 (coef applied)", pHeat));
 					LogItemHeat("");
+					#endif
 
 					break;
 				}
@@ -1269,6 +1439,12 @@ class Environment
 		}
 	}
 
+	/**
+	 * \brief Calculates penalty value for heatcomfort - this simulates uncovered body part reaction
+	 * @param pBodyPartSlotId InventorySlot ID to check
+	 * @param pCoef external coefficient used for that slot
+	 * \return Value of penalty for given slot ID
+	 */
 	protected float NakedBodyPartHeatComfortPenalty(int pBodyPartSlotId, float pCoef)
 	{
 		float penalty = 0.0;
@@ -1284,26 +1460,37 @@ class Environment
 		
 		return penalty;
 	}
-	
+
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * \brief Checks characters proximity for usable Universal Temperature Sources and register them
+	 */
 	protected void GatherTemperatureSources()
 	{
 		m_UTemperatureSources.Clear();
+		
+		// Calculate min and max positions of the box
+		vector pos = m_Player.GetPosition();
+		vector minPos = pos - Vector(GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS, GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS / 2, GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS);
+		vector maxPos = pos + Vector(GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS, GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS / 2, GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS);
 
-		array<Object> nearestObjects = new array<Object>();
-		GetGame().GetObjectsAtPosition(m_Player.GetPosition(), GameConstants.ENVIRO_TEMP_SOURCES_LOOKUP_RADIUS, nearestObjects, null);
-
-		foreach (Object nearestObject : nearestObjects)
+		array<EntityAI> nearestObjects = {};
+		DayZPlayerUtils.SceneGetEntitiesInBox(minPos, maxPos, nearestObjects, QueryFlags.STATIC|QueryFlags.DYNAMIC); //STATIC catches area effects and other static (or 'static') sources
+		
+		foreach (EntityAI nearestEntity : nearestObjects)
 		{
-			EntityAI ent = EntityAI.Cast(nearestObject);
-			if (ent && ent.IsUniversalTemperatureSource() && ent != m_Player)
+			if (nearestEntity.IsUniversalTemperatureSource() && nearestEntity != m_Player)
 			{
-				//! next temp source is too far
-				if (vector.DistanceSq(m_Player.GetPosition(), ent.GetPosition()) > Math.SqrFloat(ent.GetUniversalTemperatureSource().GetMaxRange()))
+				//! skip - Temperature Source is not affecting player entities
+				if (!nearestEntity.GetUniversalTemperatureSource().GetLambda().AffectsPlayer())
 					continue;
-				
-				//! skip - this TS is not affecting player entities
-				if (ent.GetUniversalTemperatureSource().GetLambda().AffectsPlayer())
-					m_UTemperatureSources.Insert(ent.GetUniversalTemperatureSource());
+
+				//! skip - Temperature Source is too far
+				if (vector.DistanceSq(pos, nearestEntity.GetPosition()) > Math.SqrFloat(nearestEntity.GetUniversalTemperatureSource().GetMaxRange()))
+					continue;
+
+				m_UTemperatureSources.Insert(nearestEntity.GetUniversalTemperatureSource());
 			}
 		}
 
@@ -1311,11 +1498,9 @@ class Environment
 			m_UTemperatureSources.Insert(m_Player.GetItemInHands().GetUniversalTemperatureSource());
 	}
 	
-	protected void SetItemHeatingCoef(float val)
-	{
-		m_ItemTemperatureCoef = val;
-	}
-	
+	/**
+	 * \brief Processes registered UTSources and calculates resulting m_UTSAverageTemperature
+	 */
 	protected void ProcessTemperatureSources()
 	{
 		int UTScount = m_UTemperatureSources.Count();
@@ -1361,7 +1546,19 @@ class Environment
 		m_HasTemperatureSources = true;
 	}
 	
+	protected void SetItemHeatingCoef(float val)
+	{
+		m_ItemTemperatureCoef = val;
+	}
+	
+	/**
+	 * \brief Event fired when characters enters into UTSource proximity
+	 */
 	protected void OnTemperatureSourcesEnter();	
+	
+	/**
+	 * \brief Event fired when characters leave the UTSource proximity
+	 */
 	protected void OnTemperatureSourcesLeft();
 	
 	float GetUniversalSourcesTemperageAverage()
@@ -1388,9 +1585,11 @@ class Environment
 
 		return temperature;
 	}
+	
+	// --------------------------------------------------------------------------------
 
 	//! debug
-#ifdef DIAG_DEVELOPER
+	#ifdef DIAG_DEVELOPER
 	EnvDebugData GetEnvDebugData()
 	{
 		EnvDebugData data = new EnvDebugData();
@@ -1452,7 +1651,7 @@ class Environment
 		data.m_Fog = m_Fog;
 		data.m_Clouds = m_Clouds;
 	}
-#endif
+	#endif
 
 	string GetDebugMessage()
 	{
@@ -1527,9 +1726,9 @@ class Environment
 		return 0.0;
 	}
 	
+	#ifdef ENABLE_LOGGING
 	private void LogDryWetProcess(string message, bool indented = false)
 	{
-		#ifdef DIAG_DEVELOPER
 		if (m_DebugLogDryWet)
 		{
 			string indentation = "";
@@ -1538,12 +1737,12 @@ class Environment
 
 			Debug.Log(string.Format("%1 %2", indentation, message));
 		}
-		#endif
 	}
-	
+	#endif
+
+	#ifdef ENABLE_LOGGING
 	private void LogItemHeat(string message, bool indented = false)
 	{
-		#ifdef DIAG_DEVELOPER
 		if (m_DebugLogItemHeat)
 		{
 			string indentation = "";
@@ -1552,8 +1751,10 @@ class Environment
 
 			Debug.Log(string.Format("%1 %2", indentation, message));
 		}
-		#endif	
-	}	
+	}
+	#endif
+	
+	// --------------------------------------------------------------------------------
 	
 	//! DEPRECATED
 	protected float 				m_HeatSourceTemp;	
@@ -1594,7 +1795,9 @@ class Environment
 		
 		if (pBodyPartIds.Count() > 0)
 		{
+			#ifdef ENABLE_LOGGING
 			LogItemHeat(string.Format("BodyPartHeatProperties (%1)", EnumTools.EnumToString(InventorySlots, pBodyPartIds[0])));
+			#endif
 	
 			int attCount = m_Player.GetInventory().AttachmentCount();
 			for (int attIdx = 0; attIdx < attCount; ++attIdx)
@@ -1625,7 +1828,9 @@ class Environment
 							int inventoryAttCount = item.GetInventory().AttachmentCount();
 							if (inventoryAttCount > 0)
 							{
+								#ifdef ENABLE_LOGGING
 								LogItemHeat(string.Format("attachments:"), false);
+								#endif
 								for (int inAttIdx = 0; inAttIdx < inventoryAttCount; ++inAttIdx)
 								{
 									EntityAI inAttachment = item.GetInventory().GetAttachmentFromIndex(inAttIdx);
@@ -1636,8 +1841,10 @@ class Environment
 										if (itemTemperature < GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT || itemTemperature > GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT)
 										{
 											itemHeatcomfort = NormalizedTemperature(itemTemperature) * attachmentItem.GetQuantityNormalizedScripted() * attachmentItem.GetTemperaturePerQuantityWeight();
+											#ifdef ENABLE_LOGGING 
 											LogItemHeat(string.Format("%1: temperature=%2 heat=%3", attachmentItem, itemTemperature, pHeat), true);
 											pHeat += itemHeatcomfort;
+											#endif
 										}
 									}
 								}
@@ -1648,7 +1855,9 @@ class Environment
 								
 								if (inventoryItemCount > 0)
 								{
+									#ifdef ENABLE_LOGGING
 									LogItemHeat(string.Format("cargo:"), false);
+									#endif
 									for (int j = 0; j < inventoryItemCount; ++j)
 									{
 										ItemBase inventoryItem = ItemBase.Cast(item.GetInventory().GetCargo().GetItem(j));
@@ -1658,7 +1867,9 @@ class Environment
 											if (itemTemperature < GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT || itemTemperature > GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT)
 											{
 												itemHeatcomfort = NormalizedTemperature(itemTemperature) * inventoryItem.GetQuantityNormalizedScripted() * inventoryItem.GetTemperaturePerQuantityWeight();
+												#ifdef ENABLE_LOGGING
 												LogItemHeat(string.Format("%1: temperature=%2 heat=%3", inventoryItem, itemTemperature, itemHeatcomfort), true);
+												#endif
 												pHeat += itemHeatcomfort;
 											}
 										}
@@ -1672,8 +1883,10 @@ class Environment
 
 			pHeatComfort += (pHeatComfort / pBodyPartIds.Count()) * pCoef;
 			
+			#ifdef ENABLE_LOGGING
 			LogItemHeat(string.Format("overall heat from items=%1 (coef applied)", pHeat));
 			LogItemHeat("");
+			#endif
 		}
 	}
 	
@@ -1709,12 +1922,11 @@ class Environment
 	{
 		return m_DayOrNight;
 	}
-}
-
-class EnvironmentDrynessData
-{
-	bool m_UseTemperatureSources 		= false;
-	float m_TemperatureSourceDistance	= 1.0;
+	
+	protected bool IsInsideVehicle()
+	{
+		return IsChildOfType({Car});
+	}
 }
 
 #ifdef DIAG_DEVELOPER

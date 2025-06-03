@@ -69,7 +69,7 @@ class AlarmClock_ColorBase: ClockBase
 	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ACTIVATE_ENTITY, "SetAlarmAhead1Min", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
 		super.GetDebugActions(outputList);
 	}

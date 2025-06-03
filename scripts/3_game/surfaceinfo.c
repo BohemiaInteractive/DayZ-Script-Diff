@@ -5,10 +5,10 @@ typedef int[] SurfaceInfo;
 	Lifetime is managed in code so don't store handles of this type yourself.
 	Any created 'SurfaceInfo' is destroyed during 'Game' ScriptModule destruction.
 */
-class SurfaceInfo
+class SurfaceInfo : SurfaceProperties
 {
-	private void SurfaceInfo() {};
-	private void ~SurfaceInfo() {};
+	protected void SurfaceInfo() {};
+	protected void ~SurfaceInfo() {};
 	
 	//! Warning: O(n) time complexity where n is the total number of loaded surfaces
 	//! Note: Will load the surface if not loaded

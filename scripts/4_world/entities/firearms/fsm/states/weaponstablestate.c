@@ -72,9 +72,13 @@ class WeaponStableState extends WeaponStateBase
 	override void OnEntry(WeaponEventBase e)
 	{
 		super.OnEntry(e);
-		m_weapon.SetJammed(false);
+		
 		if (e)
 			SyncAnimState();
+		
+		m_weapon.SetJammed(IsJammed());
+		m_weapon.SetCharged(!IsDischarged());
+		m_weapon.SetWeaponOpen(IsWeaponOpen());
 		m_weapon.ResetWeaponAnimState();
 	}
 	override void OnUpdate(float dt)

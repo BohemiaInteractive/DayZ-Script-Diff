@@ -79,7 +79,7 @@ class ActionDetachFromTarget: ActionInteractBase
 	{
 		if ( GetGame().IsMultiplayer() && GetGame().IsServer() ) return true;
 		
-		return FindSlotIdToDetach(player, target, item) != InventorySlots.INVALID);
+		return FindSlotIdToDetach(player, target, item) != InventorySlots.INVALID;
 	}
 	
 	override Object GetDisplayInteractObject(PlayerBase player, ActionTarget target)

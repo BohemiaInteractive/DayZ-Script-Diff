@@ -493,7 +493,7 @@ class ImprovisedExplosive : ExplosivesBase
 	
 	override string GetArmSoundset()
 	{
-		return "improvisedexplosive_deploy_SoundSet";
+		return "ImprovisedExplosive_disarm_SoundSet";
 	}
 	
 	override string GetDisarmSoundset()

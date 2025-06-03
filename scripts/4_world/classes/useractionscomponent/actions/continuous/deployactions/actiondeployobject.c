@@ -12,6 +12,11 @@ class ActionDeployObject : ActionDeployBase
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
 	}
 	
+	override bool ActionUsesHologram()
+	{
+		return true;
+	}
+	
 	override bool HasAlternativeInterrupt()
 	{
 		return true;
@@ -74,9 +79,12 @@ class ActionDeployObject : ActionDeployBase
 	{
 		if (super.SetupAction(player, target, item, action_data, extra_data))
 		{
-			PlaceObjectActionData poActionData;
-			poActionData = PlaceObjectActionData.Cast(action_data);
+			PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
+			if (!poActionData)
+				return false;
+			
 			poActionData.m_AlreadyPlaced = false;
+			
 			if (!GetGame().IsDedicatedServer())
 			{
 				player.GetHologramLocal().SetUpdatePosition(false);
@@ -84,8 +92,8 @@ class ActionDeployObject : ActionDeployBase
 				Hologram hologram = player.GetHologramLocal();
 				if (hologram)
 				{
-					poActionData.m_Position = player.GetHologramLocal().GetProjectionPosition();
-					poActionData.m_Orientation = player.GetHologramLocal().GetProjectionOrientation();
+					poActionData.m_Position = hologram.GetProjectionPosition();
+					poActionData.m_Orientation = hologram.GetProjectionOrientation();
 			
 					poActionData.m_Player.SetLocalProjectionPosition(poActionData.m_Position);
 					poActionData.m_Player.SetLocalProjectionOrientation(poActionData.m_Orientation);
@@ -96,10 +104,10 @@ class ActionDeployObject : ActionDeployBase
 				}
 			}
 			
-			if (!action_data.m_MainItem)
+			if (!poActionData.m_MainItem)
 				return false;
 			
-			SetupAnimation(action_data.m_MainItem);
+			SetupAnimation(poActionData.m_MainItem);
 			return true;
 		}
 		return false;
@@ -112,70 +120,68 @@ class ActionDeployObject : ActionDeployBase
 			return;
 		
 		if (GetGame().IsMultiplayer())
-			action_data.m_Player.PlacingCompleteLocal();
+			poActionData.m_Player.PlacingCompleteLocal();
 	}
 	
 	override void OnStartServer(ActionData action_data)
 	{
 		super.OnStartServer(action_data);
 		
+		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
+		if (!poActionData)
+			return;
+		
 		if (GetGame().IsMultiplayer())
 		{
-			PlaceObjectActionData poActionData;
-			poActionData = PlaceObjectActionData.Cast(action_data);
-			
-			if (!poActionData)
-				return;
-			
-			EntityAI entity_for_placing = action_data.m_MainItem;
+			EntityAI entity_for_placing = poActionData.m_MainItem;
 			poActionData.m_Player.SetLocalProjectionPosition(poActionData.m_Position);
 			poActionData.m_Player.SetLocalProjectionOrientation(poActionData.m_Orientation);
 			
-			if (action_data.m_MainItem)
+			if (poActionData.m_MainItem)
 			{
-				poActionData.m_Player.PlacingStartServer(action_data.m_MainItem);
+				poActionData.m_Player.PlacingStartServer(poActionData.m_MainItem);
 			
-				GetGame().AddActionJuncture(action_data.m_Player, entity_for_placing, 10000);
-				action_data.m_MainItem.SetIsBeingPlaced(true);
+				GetGame().AddActionJuncture(poActionData.m_Player, entity_for_placing, 10000);
+				poActionData.m_MainItem.SetIsBeingPlaced(true);
 			}
 		}
 		else
 		{
 			//local singleplayer			
-			action_data.m_Player.PlacingStartServer(action_data.m_MainItem);
-			action_data.m_MainItem.SetIsBeingPlaced(true);
+			poActionData.m_Player.PlacingStartServer(poActionData.m_MainItem);
+			poActionData.m_MainItem.SetIsBeingPlaced(true);
 		}
 		
-		ItemBase item = ItemBase.Cast(action_data.m_MainItem);
-		if (item.GetPlaceSoundset() != string.Empty)
-			item.StartItemSoundServer(SoundConstants.ITEM_PLACE);
+		if (poActionData.m_MainItem.GetPlaceSoundset() != string.Empty)
+			poActionData.m_MainItem.StartItemSoundServer(SoundConstants.ITEM_PLACE);
 		
-		if (item.GetLoopDeploySoundset() != string.Empty)
-			item.StartItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
+		if (poActionData.m_MainItem.GetLoopDeploySoundset() != string.Empty)
+			poActionData.m_MainItem.StartItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
 	}
-			
+	
 	override void OnFinishProgressClient(ActionData action_data)
 	{
 		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData)
 			return;
 		
-		EntityAI entity_for_placing = action_data.m_MainItem;
-		vector position = action_data.m_Player.GetLocalProjectionPosition();
-		vector orientation = action_data.m_Player.GetLocalProjectionOrientation();
+		EntityAI entity_for_placing = poActionData.m_MainItem;
+		vector position = poActionData.m_Player.GetLocalProjectionPosition();
+		vector orientation = poActionData.m_Player.GetLocalProjectionOrientation();
 
 		poActionData.m_AlreadyPlaced = true;
 		
-		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation);
+		entity_for_placing.OnPlacementComplete(poActionData.m_Player, position, orientation);
 	}
 	
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		super.OnFinishProgressServer(action_data);
 		
-		ItemBase item = ItemBase.Cast(action_data.m_MainItem);
-		if (item.GetDeploySoundset() != string.Empty)
-			item.StartItemSoundServer(SoundConstants.ITEM_DEPLOY);
+		if (action_data.m_MainItem.GetDeploySoundset() != string.Empty)
+			action_data.m_MainItem.StartItemSoundServer(SoundConstants.ITEM_DEPLOY);
+		if (action_data.m_MainItem.GetLoopDeploySoundset() != string.Empty)
+			action_data.m_MainItem.StopItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
 	}
 
 	override void OnEndClient(ActionData action_data)
@@ -183,19 +189,22 @@ class ActionDeployObject : ActionDeployBase
 		super.OnEndClient(action_data);
 
 		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
+		if (!poActionData)
+			return;
+		
 		if (!poActionData.m_AlreadyPlaced)
 		{
-			action_data.m_Player.PlacingCancelLocal();
+			poActionData.m_Player.PlacingCancelLocal();
 			
 			//action terminated locally, send cancel to server
 			poActionData.m_Player.GetActionManager().RequestEndAction();
-			if (action_data.m_Player.GetHologramLocal())
-				action_data.m_Player.GetHologramLocal().SetUpdatePosition(true);
+			if (poActionData.m_Player.GetHologramLocal())
+				poActionData.m_Player.GetHologramLocal().SetUpdatePosition(true);
 			
 			InventoryLocation source = new InventoryLocation;
-			if (action_data.m_MainItem.GetInventory().GetCurrentInventoryLocation(source) && source.GetType() == InventoryLocationType.GROUND)
+			if (poActionData.m_MainItem.GetInventory().GetCurrentInventoryLocation(source) && source.GetType() == InventoryLocationType.GROUND)
 			{
-				action_data.m_Player.PredictiveTakeEntityToHands(action_data.m_MainItem);
+				poActionData.m_Player.PredictiveTakeEntityToHands(poActionData.m_MainItem);
 			}
 		}
 	}
@@ -203,42 +212,41 @@ class ActionDeployObject : ActionDeployBase
 	override void OnEndServer(ActionData action_data)
 	{
 		super.OnEndServer(action_data);
-
-		if (!action_data || !action_data.m_MainItem)
-			return;
 		
 		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
+		if (!poActionData || !poActionData.m_MainItem)
+			return;
+		
 		if (!poActionData.m_AlreadyPlaced)
 		{
-			GetGame().ClearJunctureEx(action_data.m_Player, action_data.m_MainItem);
-			action_data.m_MainItem.SetIsBeingPlaced(false);
+			GetGame().ClearJunctureEx(poActionData.m_Player, poActionData.m_MainItem);
+			poActionData.m_MainItem.SetIsBeingPlaced(false);
 		
 			if (GetGame().IsMultiplayer())
 			{	
-				action_data.m_Player.PlacingCancelServer();
+				poActionData.m_Player.PlacingCancelServer();
 			}
 			else
 			{
 				//local singleplayer
-				action_data.m_Player.PlacingCancelLocal();
-				action_data.m_Player.PlacingCancelServer();
+				poActionData.m_Player.PlacingCancelLocal();
+				poActionData.m_Player.PlacingCancelServer();
 			}
 		}
 		else
 		{			
-			if (action_data.m_MainItem.IsBasebuildingKit())
+			if (poActionData.m_MainItem.IsBasebuildingKit())
 			{
-				action_data.m_MainItem.Delete();
+				poActionData.m_MainItem.Delete();
 			}
 			else
 			{
-				GetGame().ClearJunctureEx(action_data.m_Player, action_data.m_MainItem);
+				GetGame().ClearJunctureEx(poActionData.m_Player, poActionData.m_MainItem);
 			}
 		}
 		
-		ItemBase item = ItemBase.Cast(action_data.m_MainItem);
-		if (item.GetLoopDeploySoundset() != string.Empty)
-			item.StopItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
+		if (poActionData.m_MainItem.GetLoopDeploySoundset() != string.Empty)
+			poActionData.m_MainItem.StopItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
 	}
 	
 	override void OnStartAnimationLoop(ActionData action_data)
@@ -261,6 +269,8 @@ class ActionDeployObject : ActionDeployBase
 		super.WriteToContext(ctx, action_data);
 		
 		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
+		if (!poActionData)
+			return;
 
 		ctx.Write(poActionData.m_Position);
 		ctx.Write(poActionData.m_Orientation);
@@ -272,7 +282,7 @@ class ActionDeployObject : ActionDeployBase
 			action_recive_data = new PlaceObjectActionReciveData;
 
 		super.ReadFromContext(ctx, action_recive_data);
-		PlaceObjectActionReciveData action_data_po = PlaceObjectActionReciveData.Cast(action_recive_data);
+		PlaceObjectActionReciveData recive_data_po = PlaceObjectActionReciveData.Cast(action_recive_data);
 		
 		vector entity_position = "0 0 0";
 		vector entity_orientation = "0 0 0";
@@ -281,8 +291,8 @@ class ActionDeployObject : ActionDeployBase
 		if (!ctx.Read(entity_orientation))
 			return false;
 		
-		action_data_po.m_Position = entity_position;
-		action_data_po.m_Orientation = entity_orientation;
+		recive_data_po.m_Position = entity_position;
+		recive_data_po.m_Orientation = entity_orientation;
 		
 		return true;
 	}
@@ -296,6 +306,13 @@ class ActionDeployObject : ActionDeployBase
 		
 		action_data_po.m_Position = recive_data_po.m_Position;
 		action_data_po.m_Orientation = recive_data_po.m_Orientation;
+		
+		#ifdef DEVELOPER
+		if (IsCLIParam("hologramLogs"))
+		{
+			Debug.Log(string.Format("HandleReciveData | received pos: %1", action_data_po.m_Position), "hologramLogs");
+		}
+		#endif
 	}
 	
 	void SetupAnimation(ItemBase item)

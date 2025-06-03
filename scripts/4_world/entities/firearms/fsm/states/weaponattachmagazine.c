@@ -225,3 +225,120 @@ class WeaponAttachMagazine extends WeaponStateBase
 	}
 };
 
+class WeaponAttachMagazineOpenBoltCharged extends WeaponStateBase
+{
+	WeaponActions m_action;
+	int m_actionType;
+
+	ref WeaponStartAction m_start;
+	ref AttachNewMagazine m_attach;
+	ref WeaponStateBase m_attach_W;
+	ref WeaponChamberFromAttMagOpenbolt_W4T m_chamber;
+	ref WeaponChargingOpenBolt_CK m_onCK;
+
+	void WeaponAttachMagazineOpenBoltCharged (Weapon_Base w = NULL, WeaponStateBase parent = NULL, WeaponActions action = WeaponActions.NONE, int actionType = -1)
+	{
+		m_action = action;
+		m_actionType = actionType;
+
+		// setup nested state machine
+		m_start = new WeaponStartAction(m_weapon, this, m_action, m_actionType);
+		m_attach = new AttachNewMagazine(m_weapon, this);
+		m_attach_W = new WeaponStateBase(m_weapon, this);
+		m_chamber = new WeaponChamberFromAttMagOpenbolt_W4T(m_weapon, this);
+		m_onCK = new WeaponChargingOpenBolt_CK(m_weapon, this);
+		
+		
+
+		// events: MS, MA, BE, CK
+		WeaponEventBase _fin_ = new WeaponEventHumanCommandActionFinished;
+		WeaponEventBase __ms_ = new WeaponEventAnimMagazineShow;
+		WeaponEventBase __so_ = new WeaponEventAnimSliderOpen;
+		WeaponEventBase __ma_ = new WeaponEventAnimMagazineAttached;
+		WeaponEventBase __ck_ = new WeaponEventAnimCocked;
+
+		m_fsm = new WeaponFSM(this); // @NOTE: set owner of the submachine fsm
+
+		m_fsm.AddTransition(new WeaponTransition(   m_start,	__ms_, m_attach));
+		m_fsm.AddTransition(new WeaponTransition(	m_attach,	__ma_, m_chamber, NULL, new GuardAnd(new WeaponGuardWeaponCharged(m_weapon), new WeaponGuardHasAmmo(m_weapon))));
+		m_fsm.AddTransition(new WeaponTransition(	m_attach,	__ma_, m_attach_W));
+		m_fsm.AddTransition(new WeaponTransition(	m_attach_W,	__ck_, m_chamber, NULL, new WeaponGuardHasAmmo(m_weapon)));
+		m_fsm.AddTransition(new WeaponTransition(	m_attach_W,	__ck_, m_onCK));
+		
+		m_fsm.AddTransition(new WeaponTransition(	m_attach, _fin_, NULL));
+		m_fsm.AddTransition(new WeaponTransition(	m_attach_W, _fin_, NULL));
+		m_fsm.AddTransition(new WeaponTransition(	m_chamber, _fin_, NULL));
+		m_fsm.AddTransition(new WeaponTransition(	m_onCK, _fin_, NULL));
+		
+		
+		// Safety exits
+		m_fsm.AddTransition(new WeaponTransition(m_start  , _fin_, null));	
+
+		m_fsm.SetInitialState(m_start);
+	}
+
+	override void OnEntry (WeaponEventBase e)
+	{
+		if (e)
+		{
+			Magazine mag = e.m_magazine;
+
+			InventoryLocation newSrc = new InventoryLocation;
+			mag.GetInventory().GetCurrentInventoryLocation(newSrc);
+		
+			// move to LH
+			InventoryLocation lhand = new InventoryLocation;
+			lhand.SetAttachment(e.m_player, mag, InventorySlots.LEFTHAND);
+			if (GameInventory.LocationSyncMoveEntity(newSrc, lhand))
+			{
+				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponAttachMagazine, ok - new magazine removed from inv (inv->LHand)"); }
+			}
+			else
+				Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponAttachMagazineOpenBoltCharged, error - cannot new remove mag from inv");
+
+			InventoryLocation il = new InventoryLocation;
+			il.SetAttachment(m_weapon, mag, InventorySlots.MAGAZINE);
+			m_attach.m_newMagazine = mag;
+			m_attach.m_newDst = il;
+		}
+		super.OnEntry(e); // @NOTE: super at the end (prevent override from submachine start)
+	}
+
+	override void OnAbort (WeaponEventBase e)
+	{
+		EntityAI leftHandItem = e.m_player.GetInventory().FindAttachment(InventorySlots.LEFTHAND);
+		Magazine mag = Magazine.Cast(leftHandItem);
+		
+		if(mag)
+		{
+			e.m_player.GetInventory().ClearInventoryReservationEx( mag , null );
+			InventoryLocation il = new InventoryLocation;
+			e.m_player.GetInventory().FindFreeLocationFor( mag, FindInventoryLocationType.CARGO, il );
+		
+			if(!il || !il.IsValid())
+			{
+				if (DayZPlayerUtils.HandleDropMagazine(e.m_player, mag))
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponAttachMagazine, ok - no inventory space for old magazine - dropped to ground"); }
+				}
+				else
+					Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponAttachMagazineOpenBoltCharged, error - cannot drop magazine from left hand after not found inventory space for old magazine");
+				
+			}
+			else
+			{
+				InventoryLocation oldSrc = new InventoryLocation;
+				mag.GetInventory().GetCurrentInventoryLocation(oldSrc);
+				
+				if (GameInventory.LocationSyncMoveEntity(oldSrc, il))
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponAttachMagazine, ok - old magazine removed from wpn (LHand->inv)"); }
+				}
+				else
+					Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponAttachMagazineOpenBoltCharged, error - cannot remove old mag from wpn");
+			}
+		}
+		super.OnAbort(e);
+	}
+};
+

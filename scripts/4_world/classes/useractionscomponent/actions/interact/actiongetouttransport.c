@@ -192,17 +192,13 @@ class ActionGetOutTransport : ActionBase
 		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
 		if (vehCommand)
 		{
-			Transport trans = vehCommand.GetTransport();
-			if (trans)
+			CarScript car;
+			if (Class.CastTo(car, vehCommand.GetTransport()))
 			{
-				CarScript car;
-				if (Class.CastTo(car, trans))
-					car.ForceUpdateLightsStart();
+				car.ForceUpdateLightsStart();
 			}
 		}
 	}
-	
-	void Unhide(PlayerBase player);
 
 	override void OnUpdate(ActionData action_data)
 	{
@@ -276,5 +272,9 @@ class ActionGetOutTransport : ActionBase
 	int m_DmgFactor;
 	int m_ShockFactor;
 	
+	[Obsolete("no replacement")]
 	void ProcessGetOutActionData(Car car, GetOutTransportActionData got_action_data);
+	
+	[Obsolete("no replacement")]
+	void Unhide(PlayerBase player);
 }

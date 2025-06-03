@@ -367,7 +367,7 @@ class Land_WarheadStorage_Main : House
 	{
 		array<ref UndergroundBunkerTriggerData> dataArr = new array<ref UndergroundBunkerTriggerData>();
 		//memory point naming start at 1
-		for (int i = 1; i < count + 1; i++)
+		for (int i = 1; i < count + 1; ++i)
 		{
 			UndergroundBunkerTriggerData data = new UndergroundBunkerTriggerData();
 			string memoryPointNameMin = "darkness_" +i+"_min";
@@ -377,22 +377,22 @@ class Land_WarheadStorage_Main : House
 			vector triggerSize = memPosMax - memPosMin;
 			vector triggerPosLocal = memPosMin + (triggerSize * 0.5);
 			EUndergroundTriggerType type = EUndergroundTriggerType.INNER;
-			string linkeDoorSelection = "";
+			string linkedDoorSelection = "";
 			if (i == 4)
 			{
 				type = EUndergroundTriggerType.TRANSITIONING;
-				linkeDoorSelection = MAIN_DOOR_SELECTION1;
+				linkedDoorSelection = MAIN_DOOR_SELECTION1;
 			}
 			else if (i == 5)
 			{
 				type = EUndergroundTriggerType.TRANSITIONING;
-				linkeDoorSelection = MAIN_DOOR_SELECTION2;
+				linkedDoorSelection = MAIN_DOOR_SELECTION2;
 			}
 			
 			data.m_Position = triggerPosLocal;
 			data.m_Size = triggerSize;
 			data.m_Type = type;
-			data.m_LinkedDoorSelection = linkeDoorSelection;
+			data.m_LinkedDoorSelection = linkedDoorSelection;
 			
 			dataArr.Insert(data);
 		}
@@ -401,7 +401,7 @@ class Land_WarheadStorage_Main : House
 
 	protected void SpawnTriggers(int count)
 	{
-		array<ref UndergroundBunkerTriggerData> dataArr 	= GetTriggersData(5);
+		array<ref UndergroundBunkerTriggerData> dataArr 	= GetTriggersData(count);
 		
 		foreach (UndergroundBunkerTriggerData data:dataArr)
 		{

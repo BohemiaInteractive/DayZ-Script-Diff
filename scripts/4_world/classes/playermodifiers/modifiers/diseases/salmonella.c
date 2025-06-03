@@ -34,12 +34,12 @@ class SalmonellaMdfr: ModifierBase
 	
 	override protected bool ActivateCondition(PlayerBase player)
 	{
-		return player.GetSingleAgentCount(eAgents.SALMONELLA) >= AGENT_THRESHOLD_ACTIVATE);
+		return player.GetSingleAgentCount(eAgents.SALMONELLA) >= AGENT_THRESHOLD_ACTIVATE;
 	}
 	
 	override protected bool DeactivateCondition(PlayerBase player)
 	{
-		return player.GetSingleAgentCount(eAgents.SALMONELLA) <= AGENT_THRESHOLD_DEACTIVATE);
+		return player.GetSingleAgentCount(eAgents.SALMONELLA) <= AGENT_THRESHOLD_DEACTIVATE;
 	}
 
 	override protected void OnActivate(PlayerBase player)

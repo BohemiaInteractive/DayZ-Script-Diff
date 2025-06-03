@@ -58,31 +58,76 @@ class CCTWaterSurfaceEx : CCTBase
 {
 	protected float m_MaximalActionDistanceSq;
 	protected int m_AllowedLiquidSource;
+	protected int m_LiquidType = LIQUID_NONE;
 	
 	void CCTWaterSurfaceEx(float maximal_target_distance, int allowedLiquidSource)
 	{
-		m_MaximalActionDistanceSq 	= maximal_target_distance * maximal_target_distance;	
+		m_MaximalActionDistanceSq = maximal_target_distance * maximal_target_distance;	
 		m_AllowedLiquidSource = allowedLiquidSource;
 	}
 	
 	override bool Can(PlayerBase player, ActionTarget target)
 	{
-		if (!target || (target && target.GetObject()))
+		if (!target)
 			return false;
 		
 		vector hitPosition = target.GetCursorHitPos();
-		string surfaceType;
-		g_Game.SurfaceGetType3D(hitPosition[0], hitPosition[1], hitPosition[2], surfaceType);
-		
 		float distSq = vector.DistanceSq(player.GetPosition(), hitPosition);
 		if (distSq > m_MaximalActionDistanceSq)
 			return false;
+				
+		int liquidType = GetSurfaceLiquidType(target);
+		string surfaceName = target.GetSurfaceName();
+		return CheckLiquidSource(hitPosition, surfaceName, liquidType, m_AllowedLiquidSource);
+	}
+	
+	bool CheckLiquidSource(vector hitPos, string surfaceName, int liquidType, int allowedWaterSourceMask)
+	{
+		bool success = false;
+		if (surfaceName == "" && hitPos != vector.Zero)
+		{
+			//! Only return true if surface name is empty and
+			bool isSea = g_Game.SurfaceIsSea(hitPos[0], hitPos[2]);
+			if (allowedWaterSourceMask & LIQUID_SALTWATER && isSea)
+			{
+				success = hitPos[1] <= (g_Game.SurfaceGetSeaLevel() + 0.25);
+			}
+		}
+		else
+		{
+			success = allowedWaterSourceMask & liquidType;
+		}
+
+		return success;
+	}
+	
+	int GetSurfaceLiquidType(ActionTarget target)
+	{
+		m_LiquidType = LIQUID_NONE;
 		
-		return Surface.CheckLiquidSource(hitPosition[1], surfaceType, m_AllowedLiquidSource);
+		//! Check target surface liquid source first
+		if (target.GetSurfaceLiquidType() != LIQUID_NONE)
+		{
+			m_LiquidType = target.GetSurfaceLiquidType();
+		}
+		
+		//! Check target object for liquid source next
+		Object targetObject = target.GetObject();
+		if (m_LiquidType == LIQUID_NONE && targetObject)
+		{
+			m_LiquidType = targetObject.GetLiquidSourceType();
+		}
+		
+		return m_LiquidType;
 	}
 	
 	override bool CanContinue(PlayerBase player, ActionTarget target)
 	{
 		return true;
+	}
+	
+	int GetLiquidType()
+	{
+		return m_LiquidType;
 	}
 }

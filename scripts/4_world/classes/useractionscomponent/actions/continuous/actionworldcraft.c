@@ -1,10 +1,12 @@
 class WorldCraftActionReciveData : ActionReciveData
 {
-	int 		m_RecipeID;
+	int m_RecipeID;
 }
 class WorldCraftActionData : ActionData
 {
 	int m_RecipeID;
+	int m_AnimationID;
+	bool m_ShowItem;
 }
 
 class ActionWorldCraftCB : ActionContinuousBaseCB
@@ -132,9 +134,13 @@ class ActionWorldCraft: ActionContinuousBase
 
 			PluginRecipesManager moduleRecipesManager;
 			Class.CastTo(moduleRecipesManager, GetPlugin(PluginRecipesManager));
-			moduleRecipesManager.IsRecipePossibleToPerform(action_data_wc.m_RecipeID, action_data_wc.m_MainItem, ItemBase.Cast(action_data_wc.m_Target.GetObject()), player); // sorts items server side, needed for anim selection
 			
-			m_CommandUID = moduleRecipesManager.GetAnimationCommandUID(action_data_wc.m_RecipeID);
+			RecipeAnimationInfo recipeAnimationInfo = moduleRecipesManager.GetRecipeAnimationInfo(action_data_wc.m_RecipeID, player, action_data_wc.m_MainItem, ItemBase.Cast(action_data_wc.m_Target.GetObject())); 
+			
+			action_data_wc.m_AnimationID = recipeAnimationInfo.m_AnimationUID;
+			action_data_wc.m_ShowItem = recipeAnimationInfo.m_ItemVisible;
+			
+			m_CommandUID = action_data_wc.m_AnimationID;
 			
 			return true;
 		}
@@ -144,7 +150,9 @@ class ActionWorldCraft: ActionContinuousBase
 	override void Start( ActionData action_data ) //Setup on start of action
 	{
 		super.Start(action_data);
-		if ( action_data.m_Player ) action_data.m_Player.TryHideItemInHands(true);
+		WorldCraftActionData action_data_wc = WorldCraftActionData.Cast(action_data);
+		if ( action_data_wc.m_Player && !action_data_wc.m_ShowItem ) 
+			action_data.m_Player.TryHideItemInHands(true);
 	}
 	
 	override void OnEndServer( ActionData action_data )

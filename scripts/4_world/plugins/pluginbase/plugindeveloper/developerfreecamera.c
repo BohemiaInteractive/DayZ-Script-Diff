@@ -25,6 +25,14 @@ class DeveloperFreeCamera
 		return FreeDebugCamera.GetInstance().IsActive();
 	}
 	
+	static bool IsFreeCameraEnabledNoPlayerMovement()
+	{
+		if (FreeDebugCamera.GetInstance().IsPlayerMove())
+			return false;
+
+		return FreeDebugCamera.GetInstance().IsActive();
+	}
+	
 	protected static void EnableFreeCamera(PlayerBase player)
 	{
 		if (player)

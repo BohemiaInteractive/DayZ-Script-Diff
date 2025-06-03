@@ -484,7 +484,7 @@ class PluginLifespan extends PluginBase
 
 	bool CanMakeHandsBloody( PlayerBase player )
 	{
-		return !player.FindAttachmentBySlotName( "Gloves" ) );
+		return !player.FindAttachmentBySlotName( "Gloves" );
 	}
 	
 //-----------------------------

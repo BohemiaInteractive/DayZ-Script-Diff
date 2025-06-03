@@ -82,13 +82,28 @@ enum CarWheelWaterState
 	UNDER_WATER		//!< if the wheel is under a water plane
 };
 
+class CarOwnerState : TransportOwnerState
+{
+};
 
+class CarMove : TransportMove
+{
+};
 
-//!	Base native class for all motorized wheeled vehicles.
+//!	Native class for cars - handles physics simulation
 class Car extends Transport
 {
-	//!	DEPRECATED, left for backwards compatibility, the methods of this class are now directly accessible on Car itself
-	proto native CarController GetController();
+	//!
+	protected override event typename GetOwnerStateType()
+	{
+		return CarOwnerState;
+	}
+
+	//!
+	protected override event typename GetMoveType()
+	{
+		return CarMove;
+	}
 	
 	//!	Returns the current speed of the vehicle in km/h.
 	proto native float GetSpeedometer();
@@ -169,116 +184,40 @@ class Car extends Transport
 		return false;
 	}
 	
-//-----------------------------------------------------------------------------
-// controls
 
 	//!	Returns the current steering value in range <-1, 1>.
 	proto native float GetSteering();
-	/*!
-		Sets the steering value.
 
-		\param in     should be in range <-1, 1>
-		\param analog indicates if the input value was taken from analog controller
-	*/
-	proto native void SetSteering( float in, bool analog = false );
+	//! Sets the future steering value.
+	proto native void SetSteering(float value, bool unused0 = false);
 
-	//!	Returns the current thrust turbo modifier value in range <0, 1>.
-	proto native float GetThrustTurbo();
-	//!	Returns the current thrust gentle modifier value in range <0, 1>.
-	proto native float GetThrustGentle();
-	//!	Returns the current thrust value in range <0, 1>.
-	proto native float GetThrust();
-	/*!
-		Sets the thrust value.
+	//!	Returns the actual throttle value in range <0, 1>.
+	proto native float GetThrottle();
+	
+	//! Sets the future throttle value.
+	proto native void SetThrottle(float value);
 
-		\param in     should be in range <0, 1>
-		\param gentle should be in range <0, 1>, thrust modifier
-		\param turbo  should be in range <0, 1>, thrust modifier
-	*/
-	proto native void SetThrust( float in, float gentle = 0, float turbo = 0 );
+	//! Returns the value of how much the clutch is disengaged.
+	proto native int GetClutch();
+
+	//! Sets the future clutch value.
+	proto native void SetClutch(float value);
 
 	//! Returns the current brake value in range <0, 1>.
 	proto native float GetBrake();
-	/*!
-		Sets the brake value.
 
-		\param in should be in range <0, 1>
-		\param panic should be in range <0, 1>
-	*/
-	proto native void SetBrake( float in, float panic = 0, bool gentle = false );
+	//! Sets the future brake value
+	proto native void SetBrake(float value, float unused0 = 0, bool unused1 = false);
 	
 	//! Returns the current handbrake value in range <0, 1>.
 	proto native float GetHandbrake();
-	/*!
-		Sets the handbrake value.
 
-		\param in should be in range <0, 1>
-	*/
-	proto native void SetHandbrake( float in );
+	//! Sets the future handbrake value
+	proto native void SetHandbrake(float value);
 	
-	/*!
-		Sets if brakes should activate without a driver present
-	*/
-	proto native void SetBrakesActivateWithoutDriver( bool activate = true );
+	//! Sets if brakes should activate without a driver present
+	proto native void SetBrakesActivateWithoutDriver(bool activate = true);
 	
-	//! Returns the current clutch value in range <0, 1>.
-	proto native float GetClutch();
-	/*!
-		Sets the clutch state.
-	*/
-	proto native void SetClutchState( bool in );
-
-	//!	Returns index of the current gear.
-	proto native int GetGear();
-
-	proto native void ShiftUp();
-	proto native void ShiftTo( CarGear gear );
-	proto native void ShiftDown();
-
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// fluids
-
-	/*!
-		Returns tank capacity for the specified vehicle's fluid.
-
-		\param fluid the specified fluid type
-	*/
-	proto native float GetFluidCapacity( CarFluid fluid );
-
-	/*!
-		Returns fraction value (in range <0, 1>)
-		of the current state of the specified vehicle's fluid.
-
-		\param[in] fluid the specified fluid type
-	*/
-	proto native float GetFluidFraction( CarFluid fluid );
-
-	//! Removes from the specified fluid the specified amount.
-	proto native void Leak( CarFluid fluid, float amount );
-
-	//! Removes all the specified fluid from vehicle.
-	proto native void LeakAll( CarFluid fluid );
-
-	//! Adds to the specified fluid the specified amount.
-	proto native void Fill( CarFluid fluid, float amount );
-
-	/*!
-		Is called every time when the specified vehicle's fluid level
-		changes eg. when vehicle is consuming fuel.
-
-		\param[in] fluid fluid identifier, \see CarFluid
-		\param[in] newValue new fluid level
-		\param[in] oldValue previous fluid level before change
-	*/
-	void OnFluidChanged( CarFluid fluid, float newValue, float oldValue ) {}
-//-----------------------------------------------------------------------------
-
-
-//-----------------------------------------------------------------------------
-// engine
-
 	//! Returns engine's min operating rpm
 	proto native float EngineGetRPMMin();
 	
@@ -300,39 +239,35 @@ class Car extends Transport
 	//! Starts the engine.
 	proto native void EngineStart();
 
-	/*!
-		Is called every time the game wants to start the engine.
-
-		\return true if the engine can start, false otherwise.
-	*/
-	bool OnBeforeEngineStart()
-	{
-		// engine can start by default
-		return true;
-	}
-
-	//! Is called every time the engine starts.
-	void OnEngineStart() {}
-
 	//! Stops the engine.
 	proto native void EngineStop();
 
-	//! Is called every time the engine stops.
-	void OnEngineStop() {}
-
 	//! Get actual position of engine (model space)
 	proto native vector GetEnginePos();
+	
 	//! Override the position of engine (model space)
 	proto native void SetEnginePos(vector pos);
 
-//-----------------------------------------------------------------------------
+	//! Returns the index of the current gear, -1 if there is no engine.
+	proto native int GetCurrentGear();
 
+	//! Returns the index of the future gear, -1 if there is no engine.
+	proto native int GetGear();
 
-//-----------------------------------------------------------------------------
-// gearbox
+	//! Returns the index of the neutral gear.
+	proto native int GetNeutralGear();
 
-	//! Returns total number of gears.
-	proto native int GetGearsCount();
+	//! Returns the number of gears.
+	proto native int GetGearCount();
+
+	//! Shifts the future gear up, triggering gearbox simulation.
+	proto native void ShiftUp();
+
+	//! Shifts the future gear to selected gear, triggering gearbox simulation.
+	proto native void ShiftTo(int gear);
+
+	//! Shifts the future gear down, triggering gearbox simulation.
+	proto native void ShiftDown();
 
 	//! Returns gearbox type. See CarGearboxType enum for more info.
 	proto native CarGearboxType GearboxGetType();
@@ -340,71 +275,65 @@ class Car extends Transport
 	//! Returns gearbox mode. This is useful when car has automatic gearbox.
 	proto native CarAutomaticGearboxMode GearboxGetMode();
 
-	/*!
-		Is called every time when the simulation changed gear.
-
-		\param[in] newGear new gear level
-		\param[in] oldGear previous gear level before gear shift
-	*/
-	void OnGearChanged( int newGear, int oldGear )
-	{
-	}
-//-----------------------------------------------------------------------------
-
-
-//-----------------------------------------------------------------------------
-// wheels
-
 	//! Returns true if any of the wheels are locked in terms of its movement.
 	proto native bool WheelIsAnyLocked();
+
 	/*!
 		Returns the raw angular velocity of the wheel, unstable value
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native float WheelGetAngularVelocity( int wheelIdx );
+
 	/*!
 		Returns true if given wheel is making any contact
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native bool WheelHasContact( int wheelIdx );
+
 	/*!
 		Returns the position of contact in world space, only valid if there was an actual contact
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native vector WheelGetContactPosition( int wheelIdx );
+
 	/*!
 		Returns the normal of contact in world space, only valid if there was an actual contact
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native vector WheelGetContactNormal( int wheelIdx );
+
 	/*!
 		Returns the direction pointing forwards that the wheel is facing
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native vector WheelGetDirection( int wheelIdx );
+
 	/*!
 		Returns the surface that the wheel is nearby
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native SurfaceInfo WheelGetSurface( int wheelIdx );
+
 	/*!
 		Returns the state that the wheel is in with water
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native CarWheelWaterState WheelGetWaterState( int wheelIdx );
+
 	/*!
 		Returns the entity attached that represents the wheel
 
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native EntityAI WheelGetEntity( int wheelIdx );
+
 	/*!
 		Returns true if given wheel is locked in terms of its movement.
 
@@ -418,21 +347,70 @@ class Car extends Transport
 	//! Number of actually attached wheels (hubs only)
 	proto native int WheelCountPresent();
 
-//-----------------------------------------------------------------------------
+	/*!
+		Returns tank capacity for the specified vehicle's fluid.
 
-
-//-----------------------------------------------------------------------------
-// events
+		\param fluid the specified fluid type
+	*/
+	proto native float GetFluidCapacity(CarFluid fluid);
 
 	/*!
-		Is called every time when vehicle collides with other object.
+		Returns fraction value (in range <0, 1>)
+		of the current state of the specified vehicle's fluid.
 
-		\param[in] zoneName configured vehicle's zone that was hit
-		\param[in] localPos position where the vehicle was hit in vehicle's space
-		\param[in] other object with which the vehicle is colliding
-		\param[in] data contact properties
+		\param[in] fluid the specified fluid type
 	*/
-	void OnContact( string zoneName, vector localPos, IEntity other, Contact data ) {}
+	proto native float GetFluidFraction(CarFluid fluid);
+
+	//! Removes from the specified fluid the specified amount.
+	proto native void Leak(CarFluid fluid, float amount);
+
+	//! Removes all the specified fluid from vehicle.
+	proto native void LeakAll(CarFluid fluid);
+
+	//! Adds to the specified fluid the specified amount.
+	proto native void Fill(CarFluid fluid, float amount);
+
+	/*!
+		Is called every time the game wants to start the engine.
+
+		\return true if the engine can start, false otherwise.
+	*/
+	bool OnBeforeEngineStart()
+	{
+		// engine can start by default
+		return true;
+	}
+
+	/*!
+		Is called every time the engine starts.
+	*/
+	void OnEngineStart() {}
+
+	/*!
+		Is called every time the engine stops.
+	*/
+	void OnEngineStop() {}
+
+	/*!
+		Is called every time when the simulation changed gear.
+
+		\param[in] newGear new gear level
+		\param[in] oldGear previous gear level before gear shift
+	*/
+	void OnGearChanged(int newGear, int oldGear)
+	{
+	}
+
+	/*!
+		Is called every time when the specified vehicle's fluid level changes. 
+		This callback is called on owner only.
+
+		\param[in] fluid fluid identifier, \see CarFluid
+		\param[in] newValue new fluid level
+		\param[in] oldValue previous fluid level before change
+	*/
+	void OnFluidChanged(CarFluid fluid, float newValue, float oldValue) {}
 
 	/*!
 		Is called every sound simulation step.
@@ -442,34 +420,39 @@ class Car extends Transport
 		\param[in] oldValue already computed value by the game code
 		\return new value of the specified sound controller.
 	*/
-	float OnSound( CarSoundCtrl ctrl, float oldValue )
+	float OnSound(CarSoundCtrl ctrl, float oldValue)
 	{
 		// just use the computed value by the game code
 		return oldValue;
 	}
 
-	/*!
-		Is called after every input simulation step.
+	[Obsolete("no replacement")]
+	proto native void ForcePosition(vector pos);
+	
+	[Obsolete("no replacement")]
+	proto native void ForceDirection(vector dir);
 
-		Note that the player character and other systems can always change the internal state.
-		It is highly recommended to store state of custom inputs elsewhere and call Setters here.
+	[Obsolete("Use methods directly on Car")]
+	proto native CarController GetController();
 
-		\param[in] dt frame time in seconds
-	*/
-	void OnInput( float dt ) {}
+	[Obsolete("Use Car.IsTurbo")]
+	proto native float GetThrustTurbo();
 
-	/*!
-		Is called every game frame.
-		\param[in] dt frame time in seconds
-	*/
-	void OnUpdate( float dt ) {}
-//-----------------------------------------------------------------------------
+	[Obsolete("Use Car.IsGentle")]
+	proto native float GetThrustGentle();
 
+	[Obsolete("Use Car.GetThrottle")]
+	proto native float GetThrust();
+	
+	[Obsolete("Use Car.SetThrottle/Car.SetTurbo/Car.SetGentle")]
+	proto native void SetThrust(float in, float gentle = 0, float turbo = 0);
 
-	// implemented only in internal configuration
-	proto native void ForcePosition( vector pos );
-	// implemented only in internal configuration
-	proto native void ForceDirection( vector dir );
+	[Obsolete("no replacement")];
+	proto native void SetClutchState(bool in);
+
+	[Obsolete("Use Car.GetGearCount")]
+	proto native int GetGearsCount();
+
 };
 
 

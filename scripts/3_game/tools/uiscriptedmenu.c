@@ -14,6 +14,7 @@ class UIMenuPanel: Managed
 	proto native void DestroySubmenu();
 	proto native bool IsAnyMenuVisible();
 	proto native bool IsVisible();
+	proto native bool IsClosing();
 
 #ifdef FEATURE_CURSOR
 	//! Signal when the menu is created through 'UIManager.CreateScriptedMenu'

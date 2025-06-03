@@ -48,7 +48,7 @@ class DynamicMusicTrackData
 	string m_SoundSet;
 
 	EDynamicMusicPlayerCategory m_Category;
-	
+
 	ref array<ref array<vector>> locationBoundaries = new array<ref array<vector>>();
 	ref array<vector> vertices = new array<vector>();
 	
@@ -62,6 +62,20 @@ class DynamicMusicPlayerTrackHistoryLookupType
 {
 	const int ANY 		= 0;
 	const int BUFFER 	= 1;
+}
+
+/*
+ * \brief Structure for setting of Category playback
+ * @param m_Forced Force play of category (DEPRECATED)
+ * @param m_FadeOut If true, previously playing track will be faded out and stopped. Otherwise stopped only.
+ * @param m_Category Selected category that is going to be played
+ */
+class DynamicMusicPlayerCategoryPlaybackData
+{
+	bool m_Forced 	= false;
+	bool m_FadeOut 	= false;
+
+	EDynamicMusicPlayerCategory m_Category = EDynamicMusicPlayerCategory.NONE;
 }
 
 class DynamicMusicPlayer
@@ -125,8 +139,9 @@ class DynamicMusicPlayer
 
 		m_LastPlayedTrackBufferPerCategory = new map<EDynamicMusicPlayerCategory, ref SimpleCircularBuffer<int>>;
 		
-		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.MENU] = new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
-		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.TIME] = new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
+		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.MENU] 	= new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
+		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.CREDITS] = new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
+		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.TIME] 	= new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
 
 		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.LOCATION_STATIC] 			= new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
 		m_LastPlayedTrackBufferPerCategory[EDynamicMusicPlayerCategory.LOCATION_STATIC_PRIORITY] 	= new SimpleCircularBuffer<int>(TRACKS_BUFFER_HISTORY_SIZE, -1);
@@ -155,13 +170,13 @@ class DynamicMusicPlayer
 	{
 		if (m_DynamicMusicPlayerRegistry == null)
 			return;
-
-		m_TickTimeOfDateElapsed 				+= timeslice;
-		m_TickLocationCacheUpdateElapsed		+= timeslice;
-		m_TickLocationUpdateElapsed 			+= timeslice;
-		m_TickPriorityLocationUpdateElapsed 	+= timeslice;
-		m_TickFadeOutProcessingElapsed 			+= timeslice;
 		
+		m_TickTimeOfDateElapsed 				= Math.Clamp(m_TickTimeOfDateElapsed + timeslice, 0.0, TICK_TIME_OF_DATE_UPDATE_SECONDS);
+		m_TickLocationCacheUpdateElapsed 		= Math.Clamp(m_TickLocationCacheUpdateElapsed + timeslice, 0.0, TICK_LOCATION_CACHE_UPDATE_SECONDS);
+		m_TickLocationUpdateElapsed 			= Math.Clamp(m_TickLocationUpdateElapsed + timeslice, 0.0, TICK_LOCATION_UPDATE_SECONDS);
+		m_TickPriorityLocationUpdateElapsed 	= Math.Clamp(m_TickPriorityLocationUpdateElapsed + timeslice, 0.0, TICK_PRIORITY_LOCATION_UPDATE_SECONDS);
+		m_TickFadeOutProcessingElapsed 			= Math.Clamp(m_TickFadeOutProcessingElapsed + timeslice, 0.0, TICK_FADEOUT_PROCESSOR_SECONDS);
+
 		//! handle fadeouts
 		if (m_FadeoutInProgress && m_TickFadeOutProcessingElapsed >= TICK_FADEOUT_PROCESSOR_SECONDS)
 		{
@@ -179,7 +194,7 @@ class DynamicMusicPlayer
 		}
 		else
 		{
-			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU)
+			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU && m_CategorySelected != EDynamicMusicPlayerCategory.CREDITS)
 			{
 				//! caching of locations based on distance from player (<= LOCATION_DISTANCE_MAX)
 				if (m_TickLocationCacheUpdateElapsed >= TICK_LOCATION_CACHE_UPDATE_SECONDS)
@@ -226,10 +241,14 @@ class DynamicMusicPlayer
 					
 					//! works as default category selector
 					if (!IsPlaybackActive() || !IsPriotitizedCategorySelected())
-						SetCategory(EDynamicMusicPlayerCategory.TIME, false);
+					{
+						DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+						playbackData.m_Category = EDynamicMusicPlayerCategory.TIME;
+						SetCategory(playbackData);
+					}
 				}
 			}
-			else //! menu only
+			else
 			{
 				if (!IsPlaybackActive())
 					DetermineTrackByCategory(m_CategorySelected);
@@ -245,15 +264,26 @@ class DynamicMusicPlayer
 		}
 		#endif
 	}
-
-	void SetCategory(EDynamicMusicPlayerCategory category, bool forced)
+	
+	/*
+	 * \brief Set playback category
+	 * @param playbackData Structure holding information about category playback settings
+	 */
+	void SetCategory(DynamicMusicPlayerCategoryPlaybackData playbackData)
 	{
 		if (m_DynamicMusicPlayerRegistry == null)
 			return;
-
-		m_CategorySelected = category;
 		
-		OnCategorySet(category, forced);
+		m_CategorySelected = playbackData.m_Category;
+		
+		if (!playbackData.m_FadeOut)
+		{		
+			OnCategorySet(playbackData.m_Category, playbackData.m_Forced);
+			return;
+		}
+		
+		//! pass to fadeout handler
+		FadeoutTrack(GetPreviousTrackFadeoutSeconds(playbackData.m_Category));
 	}
 	
 	void RegisterDynamicLocation(notnull Entity caller, int locationType, float locationSize)
@@ -280,7 +310,10 @@ class DynamicMusicPlayer
 		if (eventTypeId == MPSessionPlayerReadyEventTypeID)
 		{
 			SetTimeOfDate();
-			SetCategory(EDynamicMusicPlayerCategory.TIME, false);
+			
+			DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+			playbackData.m_Category = EDynamicMusicPlayerCategory.TIME;
+			SetCategory(playbackData);
 		}
 	}
 	
@@ -301,6 +334,13 @@ class DynamicMusicPlayer
 		{
 			case EDynamicMusicPlayerCategory.MENU:
 				if (SetSelectedTrackFromCategory(category, m_DynamicMusicPlayerRegistry.m_TracksMenu, DynamicMusicPlayerTrackHistoryLookupType.BUFFER))
+					break;
+			
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DetermineTrackByCategory, 5000, false, category);
+				break;
+			
+			case EDynamicMusicPlayerCategory.CREDITS:
+				if (SetSelectedTrackFromCategory(category, m_DynamicMusicPlayerRegistry.m_TracksCredits, DynamicMusicPlayerTrackHistoryLookupType.BUFFER))
 					break;
 			
 				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DetermineTrackByCategory, 5000, false, category);
@@ -358,7 +398,7 @@ class DynamicMusicPlayer
 	
 	protected void OnCategorySet(EDynamicMusicPlayerCategory category, bool forced)
 	{
-		#ifdef DIAG_DEVELOPER
+		#ifdef ENABLE_LOGGING
 		DMPDebugPrint(string.Format(
 			"OnCategorySet() - category: %1, forced: %2",
 			EnumTools.EnumToString(EDynamicMusicPlayerCategory, category),
@@ -371,7 +411,7 @@ class DynamicMusicPlayer
 	
 	protected void OnTrackEnded()
 	{
-		#ifdef DIAG_DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if (m_CurrentTrack)
 			DMPDebugPrint(string.Format("Track END - %1", m_CurrentTrack.m_SoundSet));
 		#endif
@@ -384,7 +424,7 @@ class DynamicMusicPlayer
 	protected void OnTrackStopped()
 	{
 		//! stopped only by fadeouts
-		#ifdef DIAG_DEVELOPER
+		#ifdef ENABLE_LOGGING
 		if (m_CurrentTrack)
 			DMPDebugPrint(string.Format("Track STOP - %1", m_CurrentTrack.m_SoundSet));
 		#endif
@@ -402,7 +442,7 @@ class DynamicMusicPlayer
 		if (m_Created)
 			m_Created = false;
 
-		#ifdef DIAG_DEVELOPER
+		#ifdef ENABLE_LOGGING
 		DMPDebugPrint(string.Format(
 			"WaitTime set to %1s, deferring playback of \"%2\"",
 			(int)waitTime,
@@ -416,15 +456,19 @@ class DynamicMusicPlayer
 	
 	protected void OnLocationMatched(EDynamicMusicPlayerCategory category, bool isPriorityLocation)
 	{
-		#ifdef DIAG_DEVELOPER
+		#ifdef ENABLE_LOGGING
 		string messagePriority;
 		if (isPriorityLocation)
 			messagePriority = "(with priority)";
 		DMPDebugPrint(string.Format("Location matched %1", messagePriority));
 		#endif
 
+		DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+		playbackData.m_Category = category;
+
 		if (isPriorityLocation)
 		{
+			playbackData.m_Forced 	= isPriorityLocation;
 			if (!IsPriotitizedCategorySelected())
 			{
 				m_CategorySelected = category;
@@ -432,15 +476,19 @@ class DynamicMusicPlayer
 					ResetWaitingQueue();
 				
 				if (m_SoundPlaying)
-					FadeoutTrack(GetPreviousTrackFadeoutSeconds(category));
-
-				SetCategory(category, isPriorityLocation);
+				{
+					playbackData.m_FadeOut = true;
+					SetCategory(playbackData);
+					return;
+				}
+					
+				SetCategory(playbackData);
 			}
 			else
-				SetCategory(category, true); //! play prio location track (no fadeout)
+				SetCategory(playbackData); //! play prio location track (no fadeout)
 		}
 		else
-			SetCategory(category, false); //! play location track (no fadeout) 
+			SetCategory(playbackData); //! play location track (no fadeout) 
 	}
 	
 	protected void OnFadeoutFinished(EDynamicMusicPlayerCategory category)
@@ -449,7 +497,11 @@ class DynamicMusicPlayer
 			m_SoundPlaying.GetEvents().Event_OnSoundWaveEnded.Remove(OnTrackEnded);
 
 		StopTrack();
-		SetCategory(category, IsPriotitizedCategorySelected());
+
+		DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+		playbackData.m_Category = category;
+		playbackData.m_Forced = IsPriotitizedCategorySelected();
+		SetCategory(playbackData);
 	}
 	//! --------------------------------------------------------------------------------
 	
@@ -480,7 +532,6 @@ class DynamicMusicPlayer
 			m_WaitingForPlayback = false;
 			m_CurrentTrack 		 = null;
 		}
-		
 	}
 	
 	private void StopTrack()
@@ -503,10 +554,12 @@ class DynamicMusicPlayer
 	{
 		if (m_FadeoutInProgress)
 			return;
+		
+		ResetWaitingQueue();
 
 		if (m_CurrentTrack && m_SoundPlaying)
 		{
-			#ifdef DIAG_DEVELOPER
+			#ifdef ENABLE_LOGGING
 			DMPDebugPrint(string.Format("Stopping currently played track %1", m_CurrentTrack.m_SoundSet));
 			DMPDebugPrint(string.Format("-- Setting fadeout to %1", fadeoutSeconds));
 			#endif
@@ -542,7 +595,7 @@ class DynamicMusicPlayer
 								if (m_TracksLocationMatchedPlayerInside.Find(track) == INDEX_NOT_FOUND)
 									m_TracksLocationMatchedPlayerInside.Insert(track);
 			
-								#ifdef DIAG_DEVELOPER
+								#ifdef ENABLE_LOGGING
 								DMPDebugPrint(string.Format("Player inside location <%1, %2>", bounds[0], bounds[1]));
 								#endif
 							}
@@ -554,7 +607,7 @@ class DynamicMusicPlayer
 							if (m_TracksLocationMatchedPlayerInside.Find(track) == INDEX_NOT_FOUND)
 								m_TracksLocationMatchedPlayerInside.Insert(track);					
 
-							#ifdef DIAG_DEVELOPER
+							#ifdef ENABLE_LOGGING
 							DMPDebugPrint(string.Format("Player inside polygon location at <%1>", m_PlayerPosition));
 							#endif	
 						}
@@ -574,7 +627,7 @@ class DynamicMusicPlayer
 			{
 				if (Math.IsPointInRectangle(location.m_Min, location.m_Max, m_PlayerPosition))
 				{
-					#ifdef DIAG_DEVELOPER
+					#ifdef ENABLE_LOGGING
 					DMPDebugPrint(string.Format("Player inside location <%1, %2>", location.m_Min, location.m_Max));
 					#endif
 					return true;
@@ -664,7 +717,7 @@ class DynamicMusicPlayer
 					return INDEX_NOT_FOUND;
 			}
 		}
-		
+	
 		return INDEX_NOT_FOUND;
 	}
 	
@@ -773,7 +826,7 @@ class DynamicMusicPlayer
 			DbgUI.Text(string.Format("  waiting: %1", m_WaitingForPlayback.ToString()));
 			DbgUI.Text(string.Format("Selected Category: %1", EnumTools.EnumToString(EDynamicMusicPlayerCategory, m_CategorySelected)));
 
-			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU)
+			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU && m_CategorySelected != EDynamicMusicPlayerCategory.CREDITS)
 			{
 				DbgUI.Text("Update timers:");
 				DbgUI.Text(string.Format("  TimeOfDay: %1(%2)", TICK_TIME_OF_DATE_UPDATE_SECONDS, TICK_TIME_OF_DATE_UPDATE_SECONDS - (int)m_TickTimeOfDateElapsed));
@@ -782,7 +835,7 @@ class DynamicMusicPlayer
 				DbgUI.Text(string.Format("  Location Cache: %1(%2)", TICK_LOCATION_CACHE_UPDATE_SECONDS, TICK_LOCATION_CACHE_UPDATE_SECONDS - (int)m_TickLocationCacheUpdateElapsed));
 			}
 
-			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU)
+			if (m_CategorySelected != EDynamicMusicPlayerCategory.MENU && m_CategorySelected != EDynamicMusicPlayerCategory.CREDITS)
 			{			
 				DbgUI.Text("Player:");
 				DbgUI.Text(string.Format("  position: %1", m_PlayerPosition.ToString()));
@@ -790,8 +843,11 @@ class DynamicMusicPlayer
 			}
 			
 			DbgUI.Text("Tracks counts:");
-			if (m_CategorySelected == EDynamicMusicPlayerCategory.MENU)
+			if (m_CategorySelected == EDynamicMusicPlayerCategory.MENU || m_CategorySelected == EDynamicMusicPlayerCategory.CREDITS)
+			{
 				DbgUI.Text(string.Format("  Menu: %1", m_DynamicMusicPlayerRegistry.m_TracksMenu.Count()));
+				DbgUI.Text(string.Format("  Credits: %1", m_DynamicMusicPlayerRegistry.m_TracksCredits.Count()));
+			}
 			else
 			{
 				DbgUI.Text(string.Format("  Time: %1", m_DynamicMusicPlayerRegistry.m_TracksTime.Count()));
@@ -829,26 +885,42 @@ class DynamicMusicPlayer
 			if (DbgUI.Button("Reset Waiting"))
 				ResetWaitingQueue();
 			
+			DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+			playbackData.m_Category = EDynamicMusicPlayerCategory.TIME;
+			
 			DbgUI.Text("Set Category:\n");
 			if (DbgUI.Button("Time"))
-				SetCategory(EDynamicMusicPlayerCategory.TIME, false);
+				SetCategory(playbackData);
 			if (DbgUI.Button("Location"))
-				SetCategory(EDynamicMusicPlayerCategory.LOCATION_STATIC, false);
+			{
+				playbackData.m_Category = EDynamicMusicPlayerCategory.LOCATION_STATIC;
+				SetCategory(playbackData);
+			}	
+			if (DbgUI.Button("Menu"))
+			{
+				playbackData.m_Category = EDynamicMusicPlayerCategory.MENU;
+				SetCategory(playbackData);
+			}
+			if (DbgUI.Button("Credits"))
+			{
+				playbackData.m_Category = EDynamicMusicPlayerCategory.CREDITS;
+				SetCategory(playbackData);
+			}
 			
 			DbgUI.Text("Reset Timers\n");
 			if (DbgUI.Button("Timer ALL"))
 			{
-				m_TickTimeOfDateElapsed = TICK_TIME_OF_DATE_UPDATE_SECONDS - 1;
-				m_TickLocationUpdateElapsed = TICK_LOCATION_UPDATE_SECONDS - 1;
-				m_TickPriorityLocationUpdateElapsed = TICK_PRIORITY_LOCATION_UPDATE_SECONDS - 1;
+				m_TickTimeOfDateElapsed = TICK_TIME_OF_DATE_UPDATE_SECONDS - 1.0;
+				m_TickLocationUpdateElapsed = TICK_LOCATION_UPDATE_SECONDS - 1.0;
+				m_TickPriorityLocationUpdateElapsed = TICK_PRIORITY_LOCATION_UPDATE_SECONDS - 1.0;
 			}
 			
 			if (DbgUI.Button("Timer Daytime"))
-				m_TickTimeOfDateElapsed = TICK_TIME_OF_DATE_UPDATE_SECONDS - 1;
+				m_TickTimeOfDateElapsed = TICK_TIME_OF_DATE_UPDATE_SECONDS - 1.0;
 			if (DbgUI.Button("Timer Location"))
-				m_TickLocationUpdateElapsed = TICK_LOCATION_UPDATE_SECONDS - 1;
+				m_TickLocationUpdateElapsed = TICK_LOCATION_UPDATE_SECONDS - 1.0;
 			if (DbgUI.Button("Timer Location(prio)"))
-				m_TickPriorityLocationUpdateElapsed = TICK_PRIORITY_LOCATION_UPDATE_SECONDS - 1;
+				m_TickPriorityLocationUpdateElapsed = TICK_PRIORITY_LOCATION_UPDATE_SECONDS - 1.0;
 			
 		}
 		DbgUI.End();
@@ -947,20 +1019,30 @@ class DynamicMusicPlayer
 		m_DebugShapesLocationsVertices.Insert(Debug.DrawLine(current, first, COLOR_WHITE, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE|ShapeFlags.ONCE));
 	}
 	
+	#ifdef ENABLE_LOGGING
 	private void DMPDebugPrint(string message)
 	{
 		#ifdef DMP_DEBUG_PRINT
 		Debug.Log(message);
 		#endif
 	}
+	#endif
+	#endif
 	
 	//!DEPRECATED
 	private void CleanupDebugShapes(array<Shape> shapesArr)
 	{
 		Debug.CleanupDrawShapes(shapesArr);
 	}
-
-	#endif
+	
+	void SetCategory(EDynamicMusicPlayerCategory category, bool forced)
+	{
+		DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+		playbackData.m_Category = category;
+		playbackData.m_Forced 	= forced;
+		
+		SetCategory(playbackData);
+	}
 }
 
 

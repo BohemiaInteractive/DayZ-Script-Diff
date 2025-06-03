@@ -33,7 +33,7 @@ class ActionCarDoors: ActionInteractBase
 				int crewIdx = car.CrewMemberIndex(player);
 				
 				//! crewIdx sanity checks and see if there is a door
-				if (crewIdx < 0 || crewIdx > 3 || car.GetCarDoorsState(car.GetDoorInvSlotNameFromSeatPos(crewIdx)) == CarDoorState.DOORS_MISSING)
+				if (crewIdx < 0 || crewIdx > car.CrewSize() || car.GetCarDoorsState(car.GetDoorInvSlotNameFromSeatPos(crewIdx)) == CarDoorState.DOORS_MISSING)
 				{
 					return false;
 				}
@@ -46,7 +46,8 @@ class ActionCarDoors: ActionInteractBase
 					return false;
 				}
 				
-				m_CommandUID = m_CommandUIDPerCrewIdx[crewIdx];
+				int safeCrewIdx = crewIdx % 4;
+				m_CommandUID = m_CommandUIDPerCrewIdx[safeCrewIdx];
 				
 				float animationPhaseInside = car.GetAnimationPhase(animSource);				
 				return (m_IsOpening && animationPhaseInside <= 0.5) || (!m_IsOpening && animationPhaseInside > 0.5);

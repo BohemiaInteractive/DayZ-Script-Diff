@@ -218,7 +218,8 @@ class Man extends EntityAI
 		GetHumanInventory().LocalDestroyEntity(GetHumanInventory().GetEntityInHands());
 		UpdateInventoryMenu();
 	}
-
+	
+	//! ToDo: Old system method. Might should be adjusted to new system at some point
 	void PredictiveMoveItemFromHandsToInventory ()
 	{
 		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " Stash IH=" + GetHumanInventory().GetEntityInHands());
@@ -229,24 +230,40 @@ class Man extends EntityAI
 		}
 		
 		InventoryMode invMode = InventoryMode.PREDICTIVE;
+		EntityAI entityInHands = GetHumanInventory().GetEntityInHands();
 		
-		if (NeedInventoryJunctureFromServer( GetHumanInventory().GetEntityInHands(), this, this))
+		if (NeedInventoryJunctureFromServer(entityInHands, this, this))
 			invMode = InventoryMode.JUNCTURE;
 
 		//! returns item to previous location, if available
-		if (GetHumanInventory().GetEntityInHands().m_OldLocation && GetHumanInventory().GetEntityInHands().m_OldLocation.IsValid())
+		if (entityInHands.m_OldLocation && entityInHands.m_OldLocation.IsValid())
 		{
 			InventoryLocation invLoc = new InventoryLocation;
-			GetHumanInventory().GetEntityInHands().GetInventory().GetCurrentInventoryLocation(invLoc);
-			//old location is somewhere on player
-			if (GetHumanInventory().GetEntityInHands().m_OldLocation.GetParent() && GetHumanInventory().GetEntityInHands().m_OldLocation.GetParent().GetHierarchyRootPlayer())
+			entityInHands.GetInventory().GetCurrentInventoryLocation(invLoc);
+			
+			//! Check if old strored location is somewhere on this player
+			if (entityInHands.m_OldLocation.GetParent() && entityInHands.m_OldLocation.GetParent().GetHierarchyRootPlayer())
 			{
-				if (GetHumanInventory().LocationCanMoveEntity(invLoc, GetHumanInventory().GetEntityInHands().m_OldLocation))
+				GetHumanInventory().ClearInventoryReservation(entityInHands, entityInHands.m_OldLocation);
+				if (GetHumanInventory().LocationCanMoveEntity(invLoc, entityInHands.m_OldLocation))
 				{
-					if (GetHumanInventory().TakeToDst(invMode, invLoc,GetHumanInventory().GetEntityInHands().m_OldLocation))
+					EntityAI oldLocEntity = GetHumanInventory().LocationGetEntity(entityInHands.m_OldLocation);
+					if (!oldLocEntity && GetHumanInventory().TakeToDst(invMode, invLoc, entityInHands.m_OldLocation))
 					{
 						UpdateInventoryMenu();
 						return;
+					}
+					else //! This should not happen after clearing inventory reservation but just in case handle also getting a new location if the old location is obscured by an item.
+					{
+						InventoryLocation newLocation = new InventoryLocation;
+						if (GetHumanInventory().FindFreeLocationFor(entityInHands, FindInventoryLocationType.CARGO, newLocation))
+						{
+							if (GetHumanInventory().TakeToDst(invMode, invLoc, newLocation))
+							{
+								UpdateInventoryMenu();
+								return;
+							}
+						}
 					}
 				}
 			}
@@ -934,4 +951,15 @@ class Man extends EntityAI
 	void SetProcessUIWarning(bool state);
 	void OnGameplayDataHandlerSync(); //depricated, sync now happens before the player is created, calling of this event still happens for legacy reasons
 	bool CanPlaceItem(EntityAI item);
+	
+	/*!
+		Called when 2D optics are about to be drawn.
+		\return Collection of optics to be drawn. 
+		        Draws the provided optics when of `ItemOptics` type.
+		        Draws optic of current muzzle when of `Weapon_Base` type.
+	*/
+	protected array<InventoryItem> OnDrawOptics2D()
+	{
+		return null;
+	}
 };

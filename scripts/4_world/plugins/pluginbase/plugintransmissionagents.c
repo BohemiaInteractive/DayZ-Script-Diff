@@ -5,10 +5,15 @@ enum InjectTypes
 	PLAYER_AIR_PLAYER,
 };
 
+/**
+ * \brief Plugin interface for controlling of agent pool system
+ *		- access to specific agent attributes
+ *		- various transmission operations
+ */
 class PluginTransmissionAgents extends PluginBase
 {
 	static ref map<int, ref AgentBase> m_AgentList =  new map<int, ref AgentBase>();
-	ref map<int, string> m_SimpleAgentList = new map<int, string>;
+	ref map<int, string> m_SimpleAgentList = new map<int, string>; //! simple <eAgents, agentName> pair
 	bool m_IsConstructed = false;
 	
 	void PluginTransmissionAgents()
@@ -24,12 +29,19 @@ class PluginTransmissionAgents extends PluginBase
 		RegisterAgent(new NerveAgent);
 		RegisterAgent(new HeavyMetalAgent);
 	}
-	
+
+	/**
+	 * \brief Registers new agent into system
+	 * @param agent New agent class
+	 */	
 	void RegisterAgent(AgentBase agent)
 	{
 		m_AgentList.Insert(agent.GetAgentType(), agent);
 	}
 
+	/**
+	 * \brief Builds simplified list of agents in <id, name> format
+	 */
 	void ConstructSimpleAgentList()
 	{
 		string agent_name;
@@ -44,11 +56,19 @@ class PluginTransmissionAgents extends PluginBase
 		}
 	}
 
+	/**
+	 * \brief Returns map of all registered agent classes
+	 * \return map<int, ref AgentBase> map of agent classes
+	 */		
 	map<int, ref AgentBase> GetAgentList()
 	{
 		return	m_AgentList;
 	}
-	// this is a list which is easy to work with for displaying all agents and interacting with them, it doesn't serve any gameplay purpose
+
+	/**
+	 * \brief Returns map of all registered agents in simplified format(for non-gameplay purposas mainly)
+	 * \return map<int, ref AgentBase> map of agent classes
+	 */
 	map<int, string> GetSimpleAgentList()
 	{
 		if( !m_IsConstructed )
@@ -58,25 +78,42 @@ class PluginTransmissionAgents extends PluginBase
 		}
 		return m_SimpleAgentList;
 	}
-	
+
+	/**
+	 * \brief Returns agent's name from given id
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * \return Agent name
+	 */		
 	static string GetNameByID(int agent_id)
 	{
 		return m_AgentList.Get(agent_id).GetName();
 	}
-	
+
+	/**
+	 * \brief Removes all agents from given entity
+	 * @param target Entity to remove agents from
+	 */			
 	void RemoveAllAgents(EntityAI target)
 	{
 		target.RemoveAllAgents();
 	}
-	
-	static void RemoveAgent(EntityAI target, int agent_id )
+
+	/**
+	 * \brief Removes given agent from given entity
+	 * @param target Entity to remove agents from
+	 * @param agent_id Id of agent (see eAgents enum)
+	 */		
+	static void RemoveAgent(EntityAI target, int agent_id)
 	{
-		target.RemoveAgent( agent_id );
-	}
-	
-	
-	
-	protected float GetAgentTransferabilityIn( int agent_id )
+		target.RemoveAgent(agent_id);
+	}	
+
+	/**
+	 * \brief Returns transferabilityIn attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * \return AgentBase::m_TransferabilityIn
+	 */	
+	protected float GetAgentTransferabilityIn(int agent_id)
 	{
 		if( !m_AgentList.Get(agent_id) ) return 0;
 		return m_AgentList.Get(agent_id).GetTransferabilityIn();
@@ -91,86 +128,31 @@ class PluginTransmissionAgents extends PluginBase
 		return agent.GrowDuringMedicalDrugsAttack(drugType, player);
 	}
 	
-	float GetAgentDieOffSpeedEx(int agent_id, PlayerBase player)
-	{
-		if( !m_AgentList.Get(agent_id) ) return true;
-		return m_AgentList.Get(agent_id).GetDieOffSpeedEx(player);
-	}
-	
-	EStatLevels GetAgentPotencyEx(int agent_id, PlayerBase player)
-	{
-		if( !m_AgentList.Get(agent_id) ) return true;
-		return m_AgentList.Get(agent_id).GetPotencyEx(player);
-	}
-	
-	float GetAgentInvasibilityEx(int agent_id, PlayerBase player)
-	{
-		if( !m_AgentList.Get(agent_id) ) return true;
-		return m_AgentList.Get(agent_id).GetInvasibilityEx(player);
-	}
-	
-	
-	
-	
-	float GetAgentAntiboticsResistance( int agent_id )
-	{
-		if( !m_AgentList.Get(agent_id) ) return 0;
-		return m_AgentList.Get(agent_id).GetAntiboticsResistance();
-	}
-	
-	
-	float GetAgentAntiboticsResistanceEx( int agent_id , PlayerBase player)
-	{
-		if( !m_AgentList.Get(agent_id) ) return 0;
-		return m_AgentList.Get(agent_id).GetAntibioticsResistanceEx(player);
-	}
-	
-	protected float GetAgentTransferabilityOut( int agent_id )
-	{
-		if(!m_AgentList.Get(agent_id)) return 0;
-		return m_AgentList.Get(agent_id).GetTransferabilityOut();
-	}	
-	
-	protected float GetAgentTransferabilityAirOut( int agent_id )
-	{
-		if(!m_AgentList.Get(agent_id)) return 0;
-		return m_AgentList.Get(agent_id).GetTransferabilityAirOut();
-	}
-	/*
-	float GetAgentChance( int agent_id )
-	{
-		return m_AgentList.Get(agent_id).GetChanceOfInfection();
-	}			
-	*/
-	float GetAgentInvasibility( int agent_id )
-	{
-		if( !m_AgentList.Get(agent_id) ) 
-			return 0;
-		return m_AgentList.Get(agent_id).GetInvasibility();
-	}
-
-	float GetAgentDigestibilityEx(int agent_id, PlayerBase player)
-	{
-		if (!m_AgentList.Get(agent_id))
-			return 0;
-
-		return m_AgentList.Get(agent_id).GetDigestibilityEx(player);
-	}
-	
-	float GetAgentDigestibility( int agent_id )
-	{
-		if( !m_AgentList.Get(agent_id) ) 
-			return 0;
-		return m_AgentList.Get(agent_id).GetDigestibility();
-	}
-	
+	/**
+	 * \brief Returns dieOfSpeed attribute for given agent (see GetDieOffSpeedEx())
+	 */	
 	float GetDieOffSpeed( int agent_id )
 	{
 		if( !m_AgentList.Get(agent_id) ) 
 			return 0;
 		return m_AgentList.Get(agent_id).GetDieOffSpeed();
 	}
-	
+
+	/**
+	 * \brief Returns dieOfSpeed attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param player Actual player reference
+	 * \return AgentBase::m_DieOffSpeed
+	 */	
+	float GetAgentDieOffSpeedEx(int agent_id, PlayerBase player)
+	{
+		if( !m_AgentList.Get(agent_id) ) return true;
+		return m_AgentList.Get(agent_id).GetDieOffSpeedEx(player);
+	}
+
+	/**
+	 * \brief Returns potency attribute for given agent (see GetAgentPotencyEx())
+	 */		
 	EStatLevels GetPotency( int agent_id )
 	{
 		if( !m_AgentList.Get(agent_id) ) 
@@ -178,26 +160,130 @@ class PluginTransmissionAgents extends PluginBase
 		return m_AgentList.Get(agent_id).GetPotency();
 	}
 
+	/**
+	 * \brief Returns potency attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param player Actual player reference
+	 * \return AgentBase::m_Potency
+	 */	
+	EStatLevels GetAgentPotencyEx(int agent_id, PlayerBase player)
+	{
+		if( !m_AgentList.Get(agent_id) ) return true;
+		return m_AgentList.Get(agent_id).GetPotencyEx(player);
+	}
+
+	/**
+	 * \brief Returns invasibility attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param player Actual player reference
+	 * \return AgentBase::m_Invasibility
+	 */	
+	float GetAgentInvasibilityEx(int agent_id, PlayerBase player)
+	{
+		if( !m_AgentList.Get(agent_id) ) return true;
+		return m_AgentList.Get(agent_id).GetInvasibilityEx(player);
+	}
+
+
+	/**
+	 * \brief Returns antibiotics resistance attribute for given agent see GetAgentAntiboticsResistanceEx()
+	 */
+	float GetAgentAntiboticsResistance( int agent_id )
+	{
+		if( !m_AgentList.Get(agent_id) ) return 0;
+		return m_AgentList.Get(agent_id).GetAntiboticsResistance();
+	}
+
+	/**
+	 * \brief Returns antibiotics resistance attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param player Actual player reference
+	 * \return AgentBase::m_AntibioticsResistance
+	 */	
+	float GetAgentAntiboticsResistanceEx( int agent_id , PlayerBase player)
+	{
+		if( !m_AgentList.Get(agent_id) ) return 0;
+		return m_AgentList.Get(agent_id).GetAntibioticsResistanceEx(player);
+	}
+
+	/**
+	 * \brief Returns transferabilityOut attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * \return AgentBase::m_TransferabilityOut
+	 */		
+	protected float GetAgentTransferabilityOut( int agent_id )
+	{
+		if(!m_AgentList.Get(agent_id)) return 0;
+		return m_AgentList.Get(agent_id).GetTransferabilityOut();
+	}	
+
+	/**
+	 * \brief Returns transferabilitAiryOut attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * \return AgentBase::m_TransferabilityAirOut
+	 */	
+	protected float GetAgentTransferabilityAirOut( int agent_id )
+	{
+		if(!m_AgentList.Get(agent_id)) return 0;
+		return m_AgentList.Get(agent_id).GetTransferabilityAirOut();
+	}
+
+	/**
+	 * \brief Returns invasibility attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * \return AgentBase::m_Invasibility
+	 */	
+	float GetAgentInvasibility( int agent_id )
+	{
+		if( !m_AgentList.Get(agent_id) ) 
+			return 0;
+		return m_AgentList.Get(agent_id).GetInvasibility();
+	}
+
+	/**
+	 * \brief Returns stomach digetibility attribute for given agent (see GetAgentDigestibilityEx())
+	 */		
+	float GetAgentDigestibility( int agent_id )
+	{
+		if( !m_AgentList.Get(agent_id) ) 
+			return 0;
+		return m_AgentList.Get(agent_id).GetDigestibility();
+	}
+
+	/**
+	 * \brief Returns stomach digetibility attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param player Actual player reference
+	 * \return AgentBase::m_Digestibility
+	 */	
+	float GetAgentDigestibilityEx(int agent_id, PlayerBase player)
+	{
+		if (!m_AgentList.Get(agent_id))
+			return 0;
+
+		return m_AgentList.Get(agent_id).GetDigestibilityEx(player);
+	}
+
+	/**
+	 * \brief Returns max count attribute for given agent
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * \return AgentBase::m_MaxCount
+	 */	
 	static int GetAgentMaxCount( int agent_id )
 	{
 		if( !m_AgentList.Get(agent_id) ) return 0;
 		return m_AgentList.Get(agent_id).GetMaxCount();
 	}
-	
-	/*
-	private float GetAgentInitialCount( int agent_id )
-	{
-		return m_AgentList.Get(agent_id).GetInitialCount();
-	}
-	*/
-	
-	/*
-	float GetImmunityResistance( int agent_id )
-	{
-		if( !m_AgentList.Get(agent_id) ) return 0;
-		return m_AgentList.Get(agent_id).GetImmunityResistance();
-	}
-	*/
+
+	/**
+	 * \brief Process transmission of agents between entities (for specified transmission type)
+	 * @param source Entity to transfer agents from
+	 * @param target Entity to transfer agents to
+	 * @param pathway Type of transmission used
+	 * @param dose_size Number of agents to be transmitted
+	 * @param agents Bit mask specifing agents to transmit
+	 * \return count Number of transmitted agents
+	 */
 	float TransmitAgentsEx(EntityAI source, EntityAI target, int pathway, int dose_size = 1000, int agents = 0)
 	{
 		//Debug.Log("Transmitting agents for source: " +source.ToString()+", target: " +target.ToString(),"Agents");
@@ -285,12 +371,19 @@ class PluginTransmissionAgents extends PluginBase
 		return count;
 	}
 	
-	
+	/**
+	 * \brief Process transmission of agents between entities (for specified transmission type) (see TransmitAgentsEx()))
+	 */
 	void TransmitAgents(EntityAI source, EntityAI target, int pathway, int dose_size = 1000)
 	{
 		 TransmitAgentsEx(source, target, pathway, dose_size);
 	}
-	
+
+	/**
+	 * \brief Injects specified agents directly to target
+	 * @param target Entity to inject agents to
+	 * @param agents Bit mask with information about agents
+	 */	
 	protected void InjectAgentsWithoutPlayer(EntityAI target, int agents)
 	{
 		if( target.IsItemBase() )
@@ -299,9 +392,16 @@ class PluginTransmissionAgents extends PluginBase
 			ib_target.TransferAgents(agents);
 		}
 	}
-	
-	//! will add agents to a given target, using chance of transmission and full dose size if chance succeeds
-	protected void InjectAgentsWithPlayer(EntityAI target, int agents,float protection, int dose_size, int inject_type)//target,array_of_agents,protection_lvl
+
+	/**
+	 * \brief Injects agents to a given target, using chance of transmission and full dose size if chance succeeds
+	 * @param target Entity to inject agents to
+	 * @param agents Bit mask with information about agents
+	 * @param protection Protection size used for chance generation <0.0; 1.0>
+	 * @param dose_size Number of agents to be transmitted
+	 * @param inject_type Type of transmission
+	 */	
+	protected void InjectAgentsWithPlayer(EntityAI target, int agents, float protection, int dose_size, int inject_type)//target,array_of_agents,protection_lvl
 	{
 		if(target && (agents != 0) && target.IsEntityAI() )
 		{
@@ -317,9 +417,16 @@ class PluginTransmissionAgents extends PluginBase
 			}
 		}
 	}	
-	
-	//! will add agents to a given target, with no probability, but the dose size is modified by m_TransferabilityOut of the agent
-	protected void InjectAgentsWithPlayerCount(EntityAI target, int agents,float protection, int dose_size, int inject_type)//target,array_of_agents,protection_lvl
+
+	/**
+	 * \brief Injects agents to a given target, with no probability, but the dose size is modified by m_TransferabilityOut of the agent
+	 * @param target Entity to inject agents to
+	 * @param agents Bit mask with information about agents
+	 * @param protection Protection size used for chance generation <0.0; 1.0>
+	 * @param dose_size Number of agents to be transmitted
+	 * @param inject_type Type of transmission
+	 */	
+	protected void InjectAgentsWithPlayerCount(EntityAI target, int agents, float protection, int dose_size, int inject_type)//target,array_of_agents,protection_lvl
 	{
 		if(target && (agents != 0) && target.IsEntityAI() )
 		{
@@ -333,8 +440,16 @@ class PluginTransmissionAgents extends PluginBase
 			}
 		}
 	}
-	
-	//! will add agent to a given target
+
+	/**
+	 * \brief Injects agent to a given target
+	 * @param target Entity to inject agents to
+	 * @param agents Bit mask with information about agents
+	 * @param protection Protection size used for chance generation <0.0; 1.0>
+	 * @param dose_size Number of agents to be transmitted
+	 * @param inject_type Type of transmission
+	 * \return count Number of injected agents (dose_size might be shrinked by chance from protection)
+	 */	
 	protected float InjectAgentWithPlayerDose(EntityAI target, int agent, float protection, float dose_size, int inject_type)//target,array_of_agents,protection_lvl
 	{
 		float count = CalculateAgentsToTransmit(agent, protection, dose_size, inject_type);
@@ -360,7 +475,15 @@ class PluginTransmissionAgents extends PluginBase
 		}
 	}
 
-	
+	/**
+	 * \brief Protection level of an attachment against enviromental hazard (mask/filters for example)
+	 * @param type Type of protection (see DEF_BIOLOGICAL in constants.c for example)
+	 * @param slot Inventory slot id
+	 * @param player Player reference
+	 * @param consider_filter (unused parameter for now)
+	 * @param system (unused parameter for now)
+	 * \return Attachment protechtion level
+	 */
 	static float GetProtectionLevelEx(int type, int slot, Man player, bool consider_filter = true, int system = 0)
 	{
 		ItemBase attachment = ItemBase.Cast(player.GetInventory().FindAttachment(slot));
@@ -371,19 +494,31 @@ class PluginTransmissionAgents extends PluginBase
 		return attachment.GetProtectionLevel(type, consider_filter, system);
 		
 	}
-	
+
+	/**
+	 * \brief Protection level of an attachment against enviromental hazard (mask/filters for example) (see GetProtectionLevelEx())
+	 */	
 	protected float GetProtectionLevel(int type, int slot, Man player)
 	{
 		return GetProtectionLevelEx(type, slot, player);
 	}
 
 	//------------------------------------------------------------------------------------------------------
-	
+
+	/**
+	 * \brief Calculates number of agents that can be transmitted (based on given dose_size)
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param protection Protection size used for chance generation <0.0; 1.0>
+	 * @param dose_size Number of agents to be transmitted
+	 * @param inject_type Type of transmission
+	 * \return Number of agents that will be transmitted based on the processing of attributes
+	 */	
 	protected float CalculateAgentsToTransmit(int agent_id, float protection, int dose_size, int inject_type)
 	{
 
 		//Debug.Log("protection: "+protection.ToString());
-		float prot = 1 - protection; //reverse the value (in config, the higher the value, the higher the protection: 0 - 1) so that we can easily interpolate between 0 and 1 by multiplication
+		//reverse the value (in config, the higher the value, the higher the protection: 0 - 1) so that we can easily interpolate between 0 and 1 by multiplication
+		float prot = 1 - protection;
 		//Debug.Log("prot: "+prot.ToString(), "Agents");
 		float transf;
 		
@@ -409,11 +544,19 @@ class PluginTransmissionAgents extends PluginBase
 	}
 	
 	//------------------------------------------------------------------------------------------------------
+	/**
+	 * \brief Agent transmission chance processing
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param protection Protection size used for chance generation <0.0; 1.0>
+	 * @param inject_type Type of transmission
+	 * \return true if there is a chance to transmit agent
+	 */
 	protected bool DetermineChanceToTransmit(int agent_id, float protection, int inject_type)
 	{
 
 		//Debug.Log("protection: "+protection.ToString());
-		float prot = 1 - protection; //reverse the value (in config, the higher the value, the higher the protection: 0 - 1) so that we can easily interpolate between 0 and 1 by multiplication
+		//reverse the value (in config, the higher the value, the higher the protection: 0 - 1) so that we can easily interpolate between 0 and 1 by multiplication
+		float prot = 1 - protection;
 		//Debug.Log("prot: "+prot.ToString(), "Agents");
 		float transf;
 		

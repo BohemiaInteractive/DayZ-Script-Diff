@@ -97,6 +97,10 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
 		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 
+		#ifdef PLATFORM_WINDOWS
+		GetGame().GetInput().EnableGamepad(false);
+		#endif
+		
 		return layoutRoot;
 	}
 	
@@ -104,6 +108,10 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	{
 		#ifdef PLATFORM_CONSOLE
 		SaveFavoriteServersConsoles();
+		#endif
+
+		#ifdef PLATFORM_WINDOWS
+		GetGame().GetInput().EnableGamepad(true);
 		#endif
 
 		OnlineServices.m_ServersAsyncInvoker.Remove(OnLoadServersAsync);

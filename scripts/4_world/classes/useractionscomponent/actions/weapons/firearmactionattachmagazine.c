@@ -237,8 +237,16 @@ class FirearmActionAttachMagazineQuick : FirearmActionBase
 		if (hcw && hcw.GetRunningAction() == WeaponActions.RELOAD)
 			return false;
 		
-		MagazineStorage mag = MagazineStorage.Cast(player.GetWeaponManager().GetPreparedMagazine());
-		
+		Magazine magazine;
+		#ifdef SERVER
+		magazine = Magazine.Cast(target.GetObject());
+		#else
+		magazine = Magazine.Cast(player.GetWeaponManager().GetPreparedMagazine());
+		#endif
+		if (!magazine)
+			return false;
+
+		MagazineStorage mag = MagazineStorage.Cast(magazine);
 		if (!mag)
 			return false;
 		

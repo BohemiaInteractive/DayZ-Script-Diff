@@ -2,12 +2,28 @@ const int MAX_NUMBER_OF_INGREDIENTS = 2;
 const int MAXIMUM_RESULTS = 10;
 const float DEFAULT_SPAWN_DISTANCE = 0.6;
 
+class RecipeAnimationInfo
+{
+	string m_IngredientName;
+	int m_AnimationUID;
+	bool m_ItemVisible;
+	
+	void RecipeAnimationInfo(string ingredient, int animationID, bool itemVisible)
+	{
+		m_IngredientName = ingredient;
+		m_AnimationUID = animationID;
+		m_ItemVisible = itemVisible;
+	}
+}
+
 class RecipeBase
 {
+	protected const int BASE_CRAFT_ANIMATION_ID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
+	
 	string m_ItemsToCreate[MAXIMUM_RESULTS];
 	ref array<string> m_Ingredients[MAX_NUMBER_OF_INGREDIENTS];
 	ref array<string> m_SoundCategories[MAX_NUMBER_OF_INGREDIENTS];
-	protected ref array<int> m_AnimationUIDs = new array<int>();	// used for overriding animation based on ingredient
+	protected ref array<ref RecipeAnimationInfo> m_AnimationInfos = new array<ref RecipeAnimationInfo>();	// used for overriding animation based on ingredient
 	
 	ItemBase m_Items[MAX_NUMBER_OF_INGREDIENTS];
 	
@@ -18,7 +34,7 @@ class RecipeBase
 	
 	int	m_ID;
 	int m_NumberOfResults;
-	int m_RecipeUID;
+	int m_RecipeUID;//obsolete
 	float m_AnimationLength = 1;//animation length in relative time units
 	float m_Specialty = 0;// value > 0 for roughness, value < 0 for precision
 	bool m_IsInstaRecipe;//should this recipe be performed instantly without animation
@@ -65,7 +81,7 @@ class RecipeBase
 		m_NumberOfResults = 0;
 		
 		m_Name = "RecipeBase default name";
-		m_RecipeUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
+		m_RecipeUID = BASE_CRAFT_ANIMATION_ID;
 		Init();
 	}
 	
@@ -140,19 +156,27 @@ class RecipeBase
 		}
 	}
 
-	void InsertIngredient(int index, string ingredient, DayZPlayerConstants uid = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING)
+	void InsertIngredient(int index, string ingredient, DayZPlayerConstants uid = BASE_CRAFT_ANIMATION_ID, bool showItem = false)
 	{
-		InsertIngredientEx(index, ingredient, "", uid);
+		InsertIngredientEx(index, ingredient, "", uid, showItem);
 	}
 	
-	void InsertIngredientEx(int index, string ingredient, string soundCategory, DayZPlayerConstants uid = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING)
+	void InsertIngredientEx(int index, string ingredient, string soundCategory, DayZPlayerConstants uid = BASE_CRAFT_ANIMATION_ID, bool showItem = false)
 	{
 		array<string> ptr = m_Ingredients[index];
 		ptr.Insert(ingredient);
 		m_SoundCategories[index].Insert(soundCategory);
-		if(index == 0)
+
+		if(uid != BASE_CRAFT_ANIMATION_ID)
 		{
-			m_AnimationUIDs.Insert(uid);
+			RecipeAnimationInfo rai = new RecipeAnimationInfo(ingredient, uid, showItem);
+			int animationIndex;
+			for(animationIndex = 0; animationIndex < m_AnimationInfos.Count(); animationIndex++)
+			{
+				if(GetGame().IsKindOf(ingredient, m_AnimationInfos[animationIndex].m_IngredientName))
+					break;
+			}
+			m_AnimationInfos.InsertAt(rai, animationIndex);
 		}
 	}
 	
@@ -477,16 +501,6 @@ class RecipeBase
 		return false;
 	}
 	
-	protected void CheckIngredientAnimOverride()
-	{
-		array<string> tempArray = m_Ingredients[0];
-		for ( int i; i < m_AnimationUIDs.Count(); i++ )
-		{
-			if (m_IngredientsSorted[0].ClassName() == tempArray[i] || m_IngredientsSorted[1].ClassName() == tempArray[i])
-				SetAnimation(m_AnimationUIDs[i]);
-		}
-	}
-	
 	void OnSelectedRecipe(ItemBase item1, ItemBase item2, PlayerBase player)
 	{
 		if (item1 == NULL || item2 == NULL)
@@ -623,12 +637,33 @@ class RecipeBase
 		}
 		return mask;
 	}
-	
-	int GetAnimationCommandUID()
+
+	int GetAnimationCommandUID()//obsolete
 	{
-		if (m_AnimationUIDs.Count() > 0)
-			CheckIngredientAnimOverride();
+		return BASE_CRAFT_ANIMATION_ID;
+	}
+	
+	RecipeAnimationInfo GetRecipeAnimationInfo(PlayerBase player, ItemBase mainItem, ItemBase target)
+	{
+		RecipeAnimationInfo recipeAnimationInfo;
 		
-		return m_RecipeUID;
+		int found = false;
+		
+		for(int i = 0; i < m_AnimationInfos.Count();i++)
+		{
+			recipeAnimationInfo = m_AnimationInfos[i];
+			if(GetGame().IsKindOf(mainItem.GetType(), recipeAnimationInfo.m_IngredientName))
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if(!found)
+		{
+			recipeAnimationInfo = new RecipeAnimationInfo("ItemBase", BASE_CRAFT_ANIMATION_ID, false);
+		}
+
+		return recipeAnimationInfo;
 	}
 }

@@ -2105,40 +2105,40 @@ class ItemBase extends InventoryItem
 			{
 				if (ScriptInputUserData.CanStoreInputUserData())
 				{
-					vector m4[4];
-					PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-					
 					EntityAI root = GetHierarchyRoot();
-					
+					Man playerOwner = GetHierarchyRootPlayer();
 					InventoryLocation dst = new InventoryLocation;
-					if (!player.GetInventory().FindFirstFreeLocationForNewEntity(GetType(), FindInventoryLocationType.CARGO, dst))
-					{						
-						if (root)
-						{
-							root.GetTransform(m4);
-							dst.SetGround(this, m4);
-						}
-						else
-							GetInventory().GetCurrentInventoryLocation(dst);
+					
+					// If we have no hierarchy root player and the root is the same as this item the source item is in the vicinity so we want to create the new split item there also					
+					if (!playerOwner && root && root == this)
+					{
+						SetInventoryLocationToVicinityOrCurrent(root, dst);
 					}
 					else
 					{
-						dst.SetCargo(dst.GetParent(), this, dst.GetIdx(), dst.GetRow(), dst.GetCol(), dst.GetFlip());
-						/*	hacky solution to check reservation of "this" item instead of null since the gamecode is checking null against null and returning reservation=true incorrectly
-							this shouldnt cause issues within this scope*/
-						if (GetGame().GetPlayer().GetInventory().HasInventoryReservation(this, dst))
+						// Check if we can place the new split item in the same parent where the source item is placed in or otherwise drop it in vicinity
+						GetInventory().GetCurrentInventoryLocation(dst);
+						if (!dst.GetParent() || dst.GetParent() && !dst.GetParent().GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.CARGO, dst))
 						{
-							if (root)
+							PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+							if (!player.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.CARGO, dst) || !playerOwner)
 							{
-								root.GetTransform(m4);
-								dst.SetGround(this, m4);
+								SetInventoryLocationToVicinityOrCurrent(root, dst);
 							}
 							else
-								GetInventory().GetCurrentInventoryLocation(dst);
-						}
-						else
-						{
-							GetGame().GetPlayer().GetInventory().AddInventoryReservationEx(null, dst, GameInventory.c_InventoryReservationTimeoutShortMS);
+							{
+								dst.SetCargo(dst.GetParent(), this, dst.GetIdx(), dst.GetRow(), dst.GetCol(), dst.GetFlip());
+								/*	hacky solution to check reservation of "this" item instead of null since the gamecode is checking null against null and returning reservation=true incorrectly
+									this shouldnt cause issues within this scope*/
+								if (GetGame().GetPlayer().GetInventory().HasInventoryReservation(this, dst))
+								{
+									SetInventoryLocationToVicinityOrCurrent(root, dst);
+								}
+								else
+								{
+									GetGame().GetPlayer().GetInventory().AddInventoryReservationEx(null, dst, GameInventory.c_InventoryReservationTimeoutShortMS);
+								}
+							}
 						}
 					}
 					
@@ -2156,6 +2156,20 @@ class ItemBase extends InventoryItem
 			{
 				SplitItem(PlayerBase.Cast(GetGame().GetPlayer()));
 			}
+		}
+	}
+		
+	protected void SetInventoryLocationToVicinityOrCurrent(EntityAI root, inout InventoryLocation dst)
+	{
+		if (root)
+		{
+			vector m4[4];
+			root.GetTransform(m4);
+			dst.SetGround(this, m4);
+		}
+		else
+		{
+			GetInventory().GetCurrentInventoryLocation(dst);
 		}
 	}
 	
@@ -2329,35 +2343,52 @@ class ItemBase extends InventoryItem
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.REMOVE_QUANTITY, "Quantity -20%", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SET_QUANTITY_0, "Set Quantity 0", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SET_MAX_QUANTITY, "Set Quantity Max", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
 		//health
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ADD_HEALTH, "Health +20%", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.REMOVE_HEALTH, "Health -20%", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DESTROY_HEALTH, "Health 0", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		//temperature
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ADD_TEMPERATURE, "Temperature +20", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.REMOVE_TEMPERATURE, "Temperature -20", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FLIP_FROZEN, "Toggle Frozen", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
 		//wet
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ADD_WETNESS, "Wetness +20", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.REMOVE_WETNESS, "Wetness -20", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 
 		//liquidtype
 		if (IsLiquidContainer())
 		{
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.LIQUIDTYPE_UP, "LiquidType Next", FadeColors.LIGHT_GREY));
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.LIQUIDTYPE_DOWN, "LiquidType Previous", FadeColors.LIGHT_GREY));
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		}
 		
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.MAKE_SPECIAL, "Make Special", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+
 		// watch
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.WATCH_ITEM, "Watch (CTRL-Z)", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.WATCH_PLAYER, "Watch Player", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.RED));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.RED));
+
+		InventoryLocation loc = new InventoryLocation();
+		GetInventory().GetCurrentInventoryLocation(loc);
+		if (!loc || loc.GetType() == InventoryLocationType.GROUND)
+		{
+			if (Gizmo_IsSupported())
+				outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_OBJECT, "Gizmo Object", FadeColors.LIGHT_GREY));
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_PHYSICS, "Gizmo Physics (SP Only)", FadeColors.LIGHT_GREY)); // intentionally allowed for testing physics desync
+		}
+
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 	}
 	
 	// -------------------------------------------------------------------------	
@@ -2366,6 +2397,30 @@ class ItemBase extends InventoryItem
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
 		super.OnAction(action_id, player, ctx);
+
+		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		{
+			switch (action_id)
+			{
+				case EActions.GIZMO_OBJECT:
+					GetGame().GizmoSelectObject(this);
+					return true;
+				case EActions.GIZMO_PHYSICS:
+					GetGame().GizmoSelectPhysics(GetPhysics());
+					return true;
+			}
+		}
+
+		if (GetGame().IsServer())
+		{
+			switch (action_id)
+			{
+				case EActions.DELETE:
+					Delete();
+					return true;
+			}
+		}
+
 		if (action_id >= EActions.RECIPES_RANGE_START && action_id < EActions.RECIPES_RANGE_END)
 		{
 			PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast(GetPlugin(PluginRecipesManager));
@@ -2529,11 +2584,6 @@ class ItemBase extends InventoryItem
 			{
 				auto debugParams = DebugSpawnParams.WithPlayer(player);
 				OnDebugSpawnEx(debugParams);
-			}
-			
-			else if (action_id == EActions.DELETE)
-			{
-				Delete();
 			}
 			
 		}
@@ -3327,7 +3377,7 @@ class ItemBase extends InventoryItem
 	}
 	//----------------------------------------------------------------
 	//! Sets quantity in normalized 0..1 form between the item's Min a Max values as defined by item's config(for Min 0 and Max 5000, setting 0.5 will result in value 2500)
-	void SetQuantityNormalized(float value, bool destroy_config = true, bool destroy_forced = false)
+	override void SetQuantityNormalized(float value, bool destroy_config = true, bool destroy_forced = false)
 	{
 		float value_clamped = Math.Clamp(value, 0, 1);//just to make sure
 		int result = Math.Round(Math.Lerp(GetQuantityMin(), GetQuantityMax(), value_clamped));
@@ -3451,7 +3501,7 @@ class ItemBase extends InventoryItem
 				data2.SetCalcDetails("TIB2: "+super.GetWeightSpecialized(forceRecalc)+"(contents weight) + " + GetConfigWeightModifiedDebugText() +" + " + GetCompEM().GetEnergy()+"(energy) * " + ConfigGetFloat("weightPerQuantityUnit") +"(weightPerQuantityUnit)");
 			}
 			#endif
-			return super.GetWeightSpecialized(forceRecalc) + (GetCompEM().GetEnergy() * ConfigGetFloat("weightPerQuantityUnit")) + GetConfigWeightModified());
+			return super.GetWeightSpecialized(forceRecalc) + (GetCompEM().GetEnergy() * ConfigGetFloat("weightPerQuantityUnit")) + GetConfigWeightModified();
 		}
 		else//everything else
 		{
@@ -3462,7 +3512,7 @@ class ItemBase extends InventoryItem
 				data3.SetCalcDetails("TIB3: "+super.GetWeightSpecialized(forceRecalc)+"(contents weight) + " + GetConfigWeightModifiedDebugText() +" + " + GetQuantity()+"(quantity) * " + ConfigGetFloat("weightPerQuantityUnit") +"(weightPerQuantityUnit))");
 			}
 			#endif
-			return super.GetWeightSpecialized(forceRecalc) + (GetQuantity() * ConfigGetFloat("weightPerQuantityUnit")) + GetConfigWeightModified());
+			return super.GetWeightSpecialized(forceRecalc) + (GetQuantity() * ConfigGetFloat("weightPerQuantityUnit")) + GetConfigWeightModified();
 		}
 	}
 
@@ -4330,9 +4380,11 @@ class ItemBase extends InventoryItem
 	//SOUNDS - ItemSoundHandler
 	//----------------------------------------------------------------
 	
-	string GetPlaceSoundset();		// played when deploy starts
-	string GetLoopDeploySoundset();	// played when deploy starts and stopped when it finishes
-	string GetDeploySoundset();		// played when deploy sucessfully finishes
+	string GetPlaceSoundset();			// played when deploy starts
+	string GetLoopDeploySoundset();		// played when deploy starts and stopped when it finishes
+	string GetDeploySoundset();			// played when deploy sucessfully finishes
+	string GetLoopFoldSoundset();		// played when fold starts and stopped when it finishes
+	string GetFoldSoundset();			// played when fold sucessfully finishes
 			
 	ItemSoundHandler GetItemSoundHandler()
 	{
@@ -4347,9 +4399,9 @@ class ItemBase extends InventoryItem
 	{
 		if (GetPlaceSoundset() == string.Empty && GetDeploySoundset() == string.Empty && GetLoopDeploySoundset() == string.Empty)
 			return;
-		
+
 		ItemSoundHandler handler = GetItemSoundHandler();
-		
+
 		if (GetPlaceSoundset() != string.Empty)
 			handler.AddSound(SoundConstants.ITEM_PLACE, GetPlaceSoundset());
 		
@@ -4359,7 +4411,7 @@ class ItemBase extends InventoryItem
 		SoundParameters params = new SoundParameters();
 		params.m_Loop = true;
 		if (GetLoopDeploySoundset() != string.Empty)
-			handler.AddSound(SoundConstants.ITEM_DEPLOY_LOOP, GetLoopDeploySoundset(), params);	
+			handler.AddSound(SoundConstants.ITEM_DEPLOY_LOOP, GetLoopDeploySoundset(), params);
 	}
 	
 	// Start sound using ItemSoundHandler

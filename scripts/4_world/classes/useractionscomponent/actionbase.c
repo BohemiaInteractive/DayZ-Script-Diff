@@ -310,6 +310,12 @@ class ActionBase : ActionBase_Basic
 		return false;
 	}
 	
+	//! Condition used in PlayerBase::CanChangeStance to check if stance can be changed while action is performed/executed
+	bool CanBePerformedWhileChangingStance()
+	{
+		return true;
+	}
+	
 	bool CanBeSetFromInventory()
 	{
 		return !CanBePerformedFromInventory();
@@ -433,6 +439,7 @@ class ActionBase : ActionBase_Basic
 
 		Object targetObject = null;
 		Object targetParent = null;
+		string surfaceName;
 		
 		if (UseMainItem())
 		{
@@ -450,8 +457,10 @@ class ActionBase : ActionBase_Basic
 			ctx.Write(componentIndex);
 			cursorHitPos = action_data.m_Target.GetCursorHitPos();
 			ctx.Write(cursorHitPos);
+			surfaceName = action_data.m_Target.GetSurfaceName();
+			ctx.Write(surfaceName);
 		}
-		else if( HasTarget() && IsUsingProxies() )
+		else if (HasTarget() && IsUsingProxies())
 		{
 			//! get proxy bone idx from parent and selection we are looking at
 			//! ID is used for synchronisation to server where it's translated back to object
@@ -476,15 +485,16 @@ class ActionBase : ActionBase_Basic
 			ctx.Write(componentIndex);
 			cursorHitPos = action_data.m_Target.GetCursorHitPos();
 			ctx.Write(cursorHitPos);
+			surfaceName = action_data.m_Target.GetSurfaceName();
+			ctx.Write(surfaceName);
 		}
 	}
 	
 	bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
 	{
-		if ( !action_recive_data )
-		{
+		if (!action_recive_data)
 			action_recive_data = new ActionReciveData;
-		}
+		
 		Object actionTargetObject = null;
 		Object actionTargetParent = null;
 		int componentIndex = -1;
@@ -492,48 +502,55 @@ class ActionBase : ActionBase_Basic
 		vector cursorHitPos = vector.Zero;
 		ItemBase mainItem = null;
 		
-		ref ActionTarget target;
+		ActionTarget target;
+		string surfaceName;
 		
-		if ( UseMainItem() )
+		if (UseMainItem())
 		{
-			if ( !ctx.Read(mainItem) )
+			if (!ctx.Read(mainItem))
 				return false;
 		}
 
-		if ( HasTarget() && !IsUsingProxies() )
+		if (HasTarget() && !IsUsingProxies())
 		{			
-			if ( !ctx.Read(actionTargetObject) )
+			if (!ctx.Read(actionTargetObject))
 				return false;
 							
-			if ( !ctx.Read(actionTargetParent))
+			if (!ctx.Read(actionTargetParent))
 				return false;
 
-			if ( !ctx.Read(componentIndex) )
+			if (!ctx.Read(componentIndex))
 				return false;
 			
-			if ( !ctx.Read(cursorHitPos) )
+			if (!ctx.Read(cursorHitPos))
 				return false;
 			
-			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0);
+			if (!ctx.Read(surfaceName))
+				return false;
+			
+			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0, surfaceName);
 			
 			action_recive_data.m_Target = target;
 		}
-		else if( HasTarget() && IsUsingProxies() )
+		else if (HasTarget() && IsUsingProxies())
 		{
-			if ( !ctx.Read(proxyBoneIdx) )
+			if (!ctx.Read(proxyBoneIdx))
 				return false;
 							
-			if ( !ctx.Read(actionTargetParent))
+			if (!ctx.Read(actionTargetParent))
 				return false;
 
-			if ( !ctx.Read(componentIndex) )
+			if (!ctx.Read(componentIndex))
 				return false;
 			
-			if ( !ctx.Read(cursorHitPos) )
+			if (!ctx.Read(cursorHitPos))
+				return false;
+			
+			if (!ctx.Read(surfaceName))
 				return false;
 
 			//! create target object from proxyBoneIdx synced from client
-			if ( proxyBoneIdx > -1 )
+			if (proxyBoneIdx > -1)
 			{
 				Entity entParent = Entity.Cast(actionTargetParent);
 
@@ -546,14 +563,33 @@ class ActionBase : ActionBase_Basic
 			{
 				return false;
 			}
-			
-			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0);
 						
+			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0, surfaceName);
+			
 			action_recive_data.m_Target = target;
 		}
 
 		action_recive_data.m_MainItem = mainItem;
 		return true;
+	}
+	
+	SurfaceInfo GetTargetSurfaceInfo(vector cursorHitPos)
+	{
+		SurfaceInfo surfaceInfo;
+		SurfaceDetectionParameters surfaceParams = new SurfaceDetectionParameters();
+		surfaceParams.type = SurfaceDetectionType.Roadway;
+		surfaceParams.position = cursorHitPos;
+		surfaceParams.includeWater = true;
+		surfaceParams.syncMode = UseObjectsMode.NoWait;
+		surfaceParams.rsd = RoadSurfaceDetection.ABOVE;
+		
+		SurfaceDetectionResult surfaceResult = new SurfaceDetectionResult();
+		if (g_Game.GetSurface(surfaceParams, surfaceResult) && surfaceResult.surface)
+		{
+			surfaceInfo = surfaceResult.surface;
+		}
+		
+		return surfaceInfo;
 	}
 	
 	void HandleReciveData(ActionReciveData action_recive_data, ActionData action_data)
@@ -1024,16 +1060,19 @@ class ActionBase : ActionBase_Basic
 
 	void ClearInventoryReservationEx(ActionData action_data)
 	{
-		if (action_data.m_ReservedInventoryLocations)
+		if (action_data.m_Player.GetInstanceType() != DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
-			InventoryLocation il;
-			for ( int i = 0; i < action_data.m_ReservedInventoryLocations.Count(); i++)
+			if (action_data.m_ReservedInventoryLocations)
 			{
-				il = action_data.m_ReservedInventoryLocations.Get(i);
-				action_data.m_Player.GetInventory().ClearInventoryReservationEx( il.GetItem() , il );
+				InventoryLocation il;
+				for ( int i = 0; i < action_data.m_ReservedInventoryLocations.Count(); i++)
+				{
+					il = action_data.m_ReservedInventoryLocations.Get(i);
+					action_data.m_Player.GetInventory().ClearInventoryReservationEx( il.GetItem() , il );
+				}
+		
+				action_data.m_ReservedInventoryLocations.Clear();
 			}
-
-			action_data.m_ReservedInventoryLocations.Clear();
 		}
 	}
 	
@@ -1054,12 +1093,12 @@ class ActionBase : ActionBase_Basic
 	bool AddActionJuncture(ActionData action_data)
 	{
 		bool accepted = true;
-		if (HasTarget())
+		if (action_data.m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
-			EntityAI targetEntity;
-			if (EntityAI.CastTo(targetEntity,action_data.m_Target.GetObject()))
+			if (HasTarget() && IsLockTargetOnUse() && action_data.m_Target)
 			{
-				if (IsLockTargetOnUse())
+				EntityAI targetEntity;
+				if (EntityAI.CastTo(targetEntity, action_data.m_Target.GetObject()))
 				{
 					InventoryLocation targetIl = new InventoryLocation();
 					targetEntity.GetInventory().GetCurrentInventoryLocation(targetIl);

@@ -81,29 +81,32 @@ class InGameMenuXbox extends UIScriptedMenu
 		
 		switch (pInputDeviceType)
 		{
-		case EInputDeviceType.CONTROLLER:
-			if (mk && mkServer)
+			case EInputDeviceType.CONTROLLER:
 			{
-				GetGame().GetUIManager().ShowUICursor(false);
-				if (!GetFocus() || GetFocus() == m_FeedbackClose)
+				if (mk && mkServer)
 				{
-					UpdateMenuFocus();
+					GetGame().GetUIManager().ShowUICursor(false);
+					if (!GetFocus() || GetFocus() == m_FeedbackClose)
+					{
+						UpdateMenuFocus();
+					}
+	
+					m_FeedbackClose.Show(false);
+					m_ShowFeedback.Show(false);
 				}
-
-				m_FeedbackClose.Show(false);
-				m_ShowFeedback.Show(false);
+				break;
 			}
-		break;
-
-		default:
-			if (mk && mkServer)
+			default:
 			{
-				GetGame().GetUIManager().ShowUICursor(true);
-				m_ShowFeedback.Show(true);
-				m_FeedbackClose.Show(true);
-				m_FeedbackCloseLabel.SetText(string.Format("%1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_NORMAL)));
+				if (mk && mkServer)
+				{
+					GetGame().GetUIManager().ShowUICursor(true);
+					m_ShowFeedback.Show(true);
+					m_FeedbackClose.Show(true);
+					m_FeedbackCloseLabel.SetText(string.Format("%1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_NORMAL)));
+				}
+				break;
 			}
-		break;
 		}
 		
 		UpdateControlsElements();
@@ -156,9 +159,9 @@ class InGameMenuXbox extends UIScriptedMenu
 		string version;
 		GetGame().GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
-			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
+		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
-			version = "#main_menu_version" + " " + version;
+		version = "#main_menu_version" + " " + version;
 		#endif
 		m_Version.SetText(version);
 		
@@ -218,7 +221,6 @@ class InGameMenuXbox extends UIScriptedMenu
 		
 		if (!ShouldRestartBeVisible(player))
 		{
-			//m_RestartButton.Enable(false);
 			m_RestartButton.Show(false);
 		}
 		
@@ -261,7 +263,14 @@ class InGameMenuXbox extends UIScriptedMenu
 			{
 				case IDC_MAIN_CONTINUE:
 				{
-					GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().Continue);
+					if (!IsOnlineOpen())
+					{
+						GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().Continue);
+					}
+					else
+					{
+						CloseOnline();
+					}
 					return true;
 				}
 				case IDC_MAIN_OPTIONS:
@@ -312,11 +321,7 @@ class InGameMenuXbox extends UIScriptedMenu
 				}
 			}
 			
-			if (w == layoutRoot.FindAnyWidget("backbtn"))
-			{
-				CloseOnline();
-			}
-			else if (w == m_RestartDeadButton)
+			if (w == m_RestartDeadButton)
 			{
 				if (GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
 				{
@@ -423,7 +428,6 @@ class InGameMenuXbox extends UIScriptedMenu
 	{
 		if (GetGame().IsMultiplayer())
 		{
-			//GetGame().GetUIManager().CloseAll();
 			GetGame().GetMenuDefaultCharacterData(false).SetRandomCharacterForced(random);
 			GetGame().RespawnPlayer();
 
@@ -442,13 +446,17 @@ class InGameMenuXbox extends UIScriptedMenu
 			Close();
 		}
 		else
+		{
 			GetGame().RestartMission();
+		}
 	}
 	
 	void MenuRequestRespawn(UIScriptedMenu menu, bool random)
 	{
 		if (RespawnDialogue.Cast(menu))
+		{
 			GameRetry(random);
+		}
 	}
 	
 	bool IsLocalPlayer(string uid)
@@ -456,7 +464,10 @@ class InGameMenuXbox extends UIScriptedMenu
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		string local_uid;
 		if (GetGame().GetUserManager())
+		{
 			local_uid = GetGame().GetUserManager().GetSelectedUser().GetUid();
+		}
+
 		return (uid == local_uid);
 	}
 	
@@ -464,6 +475,7 @@ class InGameMenuXbox extends UIScriptedMenu
 	{
 		SyncPlayerList player_list = new SyncPlayerList;
 		player_list.m_PlayerList = new array<ref SyncPlayer>;
+		
 		for (int i = 0; i < player_count; i++)
 		{
 			SyncPlayer sync_player = new SyncPlayer;
@@ -471,6 +483,7 @@ class InGameMenuXbox extends UIScriptedMenu
 			sync_player.m_PlayerName = "Player " + i;
 			player_list.m_PlayerList.Insert(sync_player);
 		}
+
 		return player_list;
 	}
 	
@@ -487,11 +500,17 @@ class InGameMenuXbox extends UIScriptedMenu
 		{
 			PlayerListEntryScriptedWidget selected;
 			if (m_ServerInfoPanel)
+			{
 				selected = m_ServerInfoPanel.GetSelectedPlayer();
+			}
+
 			if (GetUApi().GetInputByID(UAUICtrlX).LocalPress())
 			{
 				if (selected)
+				{
 					m_ServerInfoPanel.ToggleMute(selected.GetUID());
+				}
+
 				Refresh();
 			}
 			
@@ -499,7 +518,9 @@ class InGameMenuXbox extends UIScriptedMenu
 			if (GetUApi().GetInputByID(UAUICtrlY).LocalPress())
 			{
 				if (selected)
+				{
 					OnlineServices.ShowUserProfile(selected.GetUID());
+				}
 			}
 			#endif
 		}
@@ -516,7 +537,9 @@ class InGameMenuXbox extends UIScriptedMenu
 		bool shouldUpdateMenuFocus = false;
 		Man player = GetGame().GetPlayer();
 		if (player)
+		{
 			m_PlayerAlive = player.GetPlayerState() == EPlayerStates.ALIVE;
+		}
 		
 		if (m_PlayerAlive)
 		{
@@ -546,8 +569,8 @@ class InGameMenuXbox extends UIScriptedMenu
 		m_SelectAvailable = true;
 		m_MuteAvailable = false;
 		m_GamercardAvailable = false;
+
 		UpdateControlsElements();
-		
 		SetFocus(m_OnlineButton);
 	}
 	
@@ -585,22 +608,22 @@ class InGameMenuXbox extends UIScriptedMenu
 		super.OnShow();
 
 		#ifdef PLATFORM_CONSOLE
-			bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
-			bool mk_server = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
-			TextWidget warning = TextWidget.Cast(layoutRoot.FindAnyWidget("MouseAndKeyboardWarning"));
-			if (mk)
+		bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
+		bool mk_server = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		TextWidget warning = TextWidget.Cast(layoutRoot.FindAnyWidget("MouseAndKeyboardWarning"));
+		if (mk)
+		{
+			if (mk_server)
 			{
-				if (mk_server)
-				{
-					warning.SetText("#str_mouse_and_keyboard_server_warning");
-				}
-				else
-				{
-					warning.SetText("#str_controller_server_warning");
-				}
+				warning.SetText("#str_mouse_and_keyboard_server_warning");
 			}
-		
-			warning.Show(mk);
+			else
+			{
+				warning.SetText("#str_controller_server_warning");
+			}
+		}
+	
+		warning.Show(mk);
 		#endif
 		
 		UpdateGUI();
@@ -654,7 +677,9 @@ class InGameMenuXbox extends UIScriptedMenu
 		if (w)
 		{
 			if (w == m_ContinueButton || w == m_RestartDeadButton || w == m_ExitButton || w == m_RestartButton || w == m_OptionsButton || w == m_InviteButton || w == m_ControlsButton || w == m_OnlineButton || w == m_TutorialsButton || w == m_ShowFeedback)
+			{
 				return true;
+			}
 		}
 		return false;
 	}
@@ -664,9 +689,9 @@ class InGameMenuXbox extends UIScriptedMenu
 		string version;
 		GetGame().GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
-			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
+		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
-			version = "#main_menu_version" + " " + version;
+		version = "#main_menu_version" + " " + version;
 		#endif
 		m_Version.SetText(version);
 		
@@ -707,14 +732,16 @@ class InGameMenuXbox extends UIScriptedMenu
 	void ColorHighlight(Widget w)
 	{
 		if (!w)
+		{
 			return;
+		}
 				
 		int color_pnl = ARGB(255, 0, 0, 0);
 		int color_lbl = ARGB(255, 255, 0, 0);
 		
 		#ifdef PLATFORM_CONSOLE
-			color_pnl = ARGB(255, 200, 0, 0);
-			color_lbl = ARGB(255, 255, 255, 255);
+		color_pnl = ARGB(255, 200, 0, 0);
+		color_lbl = ARGB(255, 255, 255, 255);
 		#endif
 		
 		ButtonSetColor(w, color_pnl);
@@ -723,9 +750,8 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	void ColorNormal(Widget w)
 	{
-		if (!w)
-			return;
-		
+		if (!w) return;
+
 		int color_pnl = ARGB(0, 0, 0, 0);
 		int color_lbl = ARGB(255, 255, 255, 255);
 		
@@ -736,10 +762,11 @@ class InGameMenuXbox extends UIScriptedMenu
 	void ButtonSetText(Widget w, string text)
 	{
 		if (!w)
+		{
 			return;
+		}
 				
 		TextWidget label = TextWidget.Cast(w.FindWidget(w.GetName() + "_label"));
-		
 		if (label)
 		{
 			label.SetText(text);
@@ -750,10 +777,11 @@ class InGameMenuXbox extends UIScriptedMenu
 	void ButtonSetColor(Widget w, int color)
 	{
 		if (!w)
+		{
 			return;
+		}
 		
 		Widget panel = w.FindWidget(w.GetName() + "_panel");
-		
 		if (panel)
 		{
 			panel.SetColor(color);
@@ -763,7 +791,9 @@ class InGameMenuXbox extends UIScriptedMenu
 	void ButtonSetTextColor(Widget w, int color)
 	{
 		if (!w)
+		{
 			return;
+		}
 
 		TextWidget label	= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_label"));
 		TextWidget text		= TextWidget.Cast(w.FindAnyWidget(w.GetName() + "_text"));
@@ -827,10 +857,12 @@ class InGameMenuXbox extends UIScriptedMenu
 		{
 			uiGamecardText.SetText(m_OpenGameCardButtonTextID);
 		}
+
 		if (uiBackText)
 		{
 			uiBackText.SetText(m_BackButtonTextID);
 		}
+
 		if (uiSelectText)
 		{
 			uiSelectText.SetText(m_SelectButtonTextID);
@@ -843,9 +875,13 @@ class InGameMenuXbox extends UIScriptedMenu
 		if (m_PlayerAlive)
 		{
 			if (ShouldRestartBeVisible(player))
+			{
 				SetFocus(m_RestartButton);
+			}
 			else
+			{
 				SetFocus(m_ContinueButton);
+			}
 		}
 		else
 		{
@@ -855,42 +891,79 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	protected void UpdateControlsElements()
 	{
-		bool toolbarShow = false;
-		#ifdef PLATFORM_CONSOLE
-		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
-		#endif
+		bool toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		bool onlineOpen = IsOnlineOpen();
+		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
+		layoutRoot.FindAnyWidget("top").Show(!onlineOpen);
 		
+		//! Continue/back button handling depending on current view
+		if (onlineOpen)
+		{
+			layoutRoot.FindAnyWidget("bottom").Show(!toolbarShow);
+		}
+		else
+		{
+			layoutRoot.FindAnyWidget("bottom").Show(true);
+		}
+		
+		RichTextWidget continueBtnIcon = RichTextWidget.Cast(layoutRoot.FindAnyWidget("continuebtn_icon"));
+		string contineBtnText = "";
+		continueBtnIcon.Show(!toolbarShow);
+
+		RichTextWidget toolbarTextWidget = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
+		string toolbarText = "";
+		
+		//! Set toolbar icons and text if toolbar is visible (controller is used as input device)
 		if (toolbarShow)
 		{
-			RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
-			string text = "";
 			if (!FeedbackDialogVisible())
 			{
 				if (m_SelectAvailable)
-					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", m_SelectButtonTextID, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				{
+					toolbarText += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", m_SelectButtonTextID, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				}
+
 				if (m_MuteAvailable)
-					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", m_CurrentMuteButtonText, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				{
+					toolbarText += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", m_CurrentMuteButtonText, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				}
+
 				if (m_BackAvailable)
-					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", m_BackButtonTextID, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				{
+					toolbarText += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", m_BackButtonTextID, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				}
+
 				if (m_GamercardAvailable)
-					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", m_OpenGameCardButtonTextID, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				{
+					toolbarText += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", m_OpenGameCardButtonTextID, EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				}
+
 				if (!IsOnlineOpen())
-					text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIThumbRight", "#layout_main_menu_feedback", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				{
+					toolbarText += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIThumbRight", "#layout_main_menu_feedback", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+				}
 			}
 			else
 			{
-				text = InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
+				toolbarText = InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
 			}
-			toolbar_text.SetText(text);
+		}
+		else
+		{
+			//! Set continue button icon if toolbar is not visible (mouse and keyboard is used as input device).
+			contineBtnText = InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER);
 		}
 		
-		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
-		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER));
+		toolbarTextWidget.SetText(toolbarText);
+		continueBtnIcon.SetText(contineBtnText);
 		
-		bool onlineOpen = IsOnlineOpen();
-		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
-		layoutRoot.FindAnyWidget("play_panel_root").Show(!onlineOpen);
-		layoutRoot.FindAnyWidget("play_panel_root2").Show(onlineOpen && !toolbarShow);
+		//! Continue button label depends on current view status
+		string continueBtnLabel = "#main_menu_continue";
+		if (onlineOpen)
+			continueBtnLabel = "#layout_character_creation_back";
+
+		TextWidget continueBtnTextWidget = TextWidget.Cast(layoutRoot.FindAnyWidget("continuebtn_label"));
+		continueBtnTextWidget.SetText(continueBtnLabel);
 		layoutRoot.FindAnyWidget("dayz_logo").Show(!onlineOpen);
 	}
 	

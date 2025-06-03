@@ -22,6 +22,36 @@ class WeaponChamberFromAttMag extends WeaponStateBase
 	}
 };
 
+class WeaponChamberFromAttMagOpenbolt extends WeaponStateBase
+{
+	void WeaponChamberFromAttMag (Weapon_Base w = NULL, WeaponStateBase parent = NULL, int action = -1, int actionType = -1)
+	{ }
+
+	override void OnEntry (WeaponEventBase e)
+	{
+		super.OnEntry(e);
+		if(e)
+		{
+			int mi = m_weapon.GetCurrentMuzzle();
+			m_weapon.SetCharged(true);
+			m_weapon.SetWeaponOpen(true);
+			pushToChamberFromAttachedMagazine(m_weapon, mi);
+		}
+	}
+	override void OnExit (WeaponEventBase e)
+	{
+		super.OnExit(e);
+	}
+};
+
+class WeaponChamberFromAttMagOpenbolt_W4T extends WeaponChamberFromAttMagOpenbolt
+{
+	override bool IsWaitingForActionFinish()
+	{
+		return true;
+	}
+}
+
 // load bullet from att mag (no anim)
 class WeaponChamberFromInnerMag extends WeaponStateBase
 {

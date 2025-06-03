@@ -12,7 +12,8 @@ class CivilianSedan extends CarScript
 		m_EngineStartBattery	= "CivilianSedan_engine_failed_start_battery_SoundSet";
 		m_EngineStartPlug		= "CivilianSedan_engine_failed_start_sparkplugs_SoundSet";
 		m_EngineStartFuel		= "CivilianSedan_engine_failed_start_fuel_SoundSet";
-		m_EngineStopFuel		= "offroad_engine_stop_fuel_SoundSet";
+		m_EngineStop 			= "CivilianSedan_engine_stop_SoundSet";
+		m_EngineStopFuel		= "CivilianSedan_engine_stop_fuel_SoundSet";
 
 		m_CarDoorOpenSound		= "offroad_door_open_SoundSet";
 		m_CarDoorCloseSound		= "offroad_door_close_SoundSet";

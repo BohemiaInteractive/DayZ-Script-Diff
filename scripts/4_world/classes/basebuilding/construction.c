@@ -25,7 +25,7 @@ class Construction
 	//============================================	
 	void Construction( BaseBuildingBase parent )
 	{
-		m_ConstructionParts = new ref map<string, ref ConstructionPart>;
+		m_ConstructionParts = new map<string, ref ConstructionPart>;
 		
 		//set parent object
 		SetParent( parent );

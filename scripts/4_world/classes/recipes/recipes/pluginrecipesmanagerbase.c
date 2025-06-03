@@ -2,7 +2,7 @@ enum Ingredient
 {
 	FIRST = 1,
 	SECOND = 2,
-	BOTH = 3;
+	BOTH = 3,
 }
 
 class PluginRecipesManagerBase extends PluginBase
@@ -38,8 +38,8 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftSuppressor);
 		RegisterRecipe(new CleanWeapon);
 		RegisterRecipe(new RepairWithTape);
-		RegisterRecipe(new RepairWithRags);
-		RegisterRecipe(new RepairEyePatch);
+		//RegisterRecipe(new RepairWithRags);
+		//RegisterRecipe(new RepairEyePatch);
 		RegisterRecipe(new CraftBoneKnife);
 		//RegisterRecipe(new CraftArrow);
 		//RegisterRecipe(new CraftArrowBone);

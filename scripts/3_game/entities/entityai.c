@@ -1522,7 +1522,7 @@ class EntityAI extends Entity
 	bool CanReceiveItemIntoCargo(EntityAI item)
 	{
 		if (GetInventory() && GetInventory().GetCargo())
-			return GetInventory().GetCargo().CanReceiveItemIntoCargo(item));
+			return GetInventory().GetCargo().CanReceiveItemIntoCargo(item);
 		
 		return true;
 	}
@@ -1558,7 +1558,7 @@ class EntityAI extends Entity
 	bool CanSwapItemInCargo (EntityAI child_entity, EntityAI new_entity)
 	{
 		if (GetInventory() && GetInventory().GetCargo())
-			return GetInventory().GetCargo().CanSwapItemInCargo(child_entity, new_entity));
+			return GetInventory().GetCargo().CanSwapItemInCargo(child_entity, new_entity);
 		
 		return true;
 	}
@@ -1807,7 +1807,7 @@ class EntityAI extends Entity
 
 	EntityAI FindAttachmentBySlotName(string slot_name)
 	{
-		if ( GetGame() )
+		if (g_Game && GetInventory())
 		{
 			int slot_id = InventorySlots.GetSlotIdFromString(slot_name);
 			if (slot_id != InventorySlots.INVALID)
@@ -2202,6 +2202,8 @@ class EntityAI extends Entity
 		return 0;
 	}
 	
+	void SetQuantityNormalized(float value, bool destroy_config = true, bool destroy_forced = false);
+			
 	float GetQuantityNormalized()
 	{
 		return 0;
@@ -3599,13 +3601,16 @@ class EntityAI extends Entity
 	{
 		//fix entity
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FIX_ENTITY, "Fix Entity", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 	
 		//weight
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_TOTAL_WEIGHT, "Print Weight", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_TOTAL_WEIGHT_RECALC, "Print Weight Verbose", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_PLAYER_WEIGHT, "Print Player Weight", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GET_PLAYER_WEIGHT_RECALC, "Print Player Weight Verbose", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 	}
+
 	bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
 		if (action_id == EActions.FIX_ENTITY)

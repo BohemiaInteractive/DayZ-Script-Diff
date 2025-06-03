@@ -264,7 +264,7 @@ class WeaponManager
 					
 				if (wpn.HasInternalMagazine(i))
 				{
-					if ((wpn.GetInternalMagazineCartridgeCount(i) + 1) < wpn.GetInternalMagazineMaxCartridgeCount(i))
+					if ((wpn.GetInternalMagazineCartridgeCount(i)) < wpn.GetInternalMagazineMaxCartridgeCount(i))
 					{
 						return true;
 					}
@@ -642,7 +642,7 @@ class WeaponManager
 			
 			if(m_PendingTargetMagazine)
 			{
-				GetGame().ClearJuncture(m_player, m_PendingTargetMagazine);
+				GetGame().ClearJunctureEx(m_player, m_PendingTargetMagazine);
 				m_PendingTargetMagazine = NULL;
 			}
 			m_InProgress = true;
@@ -1003,7 +1003,7 @@ class WeaponManager
 			{
 				if(m_PendingTargetMagazine)
 				{
-					GetGame().ClearJuncture(m_player,m_PendingTargetMagazine);
+					GetGame().ClearJunctureEx(m_player,m_PendingTargetMagazine);
 				}
 			}
 			else

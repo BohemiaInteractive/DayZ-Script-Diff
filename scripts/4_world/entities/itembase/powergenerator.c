@@ -441,12 +441,14 @@ class PowerGeneratorBase extends ItemBase
 				AddFuel(Math.Clamp(GetMaxFuel() * 0.1, 0.0, GetMaxFuel()));
 				return true;
 			case EActions.GENERIC_FUEL_DECREASE:
-				float value = GetMaxFuel() * -0.1;
-				if (value <= 0)
+				float value = GetMaxFuel() * 0.1;
+				if (value <= 0.0)
+				{
 					SetFuel(0.0);
 					return true;
+				}
 			
-				AddFuel(value);
+				SetFuel(GetFuel() - value);
 				return true;
 		}
 	

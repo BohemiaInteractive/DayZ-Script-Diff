@@ -300,6 +300,7 @@ class StaminaHandler
 		m_State 						= new HumanMovementState();
 		m_Player 						= player;
 		m_Stamina 						= CfgGameplayHandler.GetStaminaMax(); 
+		m_StaminaSynced 				= CfgGameplayHandler.GetStaminaMax(); 
 		m_StaminaCap 					= CfgGameplayHandler.GetStaminaMax();
 		m_StaminaDepletion 				= 0;
 		m_StaminaDepletionMultiplier 	= 1;

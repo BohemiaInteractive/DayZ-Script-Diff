@@ -84,7 +84,7 @@ class CarHud : VehicleHudBase
 		if (!m_CurrentVehicle)
 			return;
 					
-		m_VehicleGearCount 	= m_CurrentVehicle.GetGearsCount();
+		m_VehicleGearCount 	= m_CurrentVehicle.GetGearCount();
 
 		float rpm_value_red = m_CurrentVehicle.EngineGetRPMRedline() / m_CurrentVehicle.EngineGetRPMMax();
 		m_VehicleRPMDial.SetMaskProgress(rpm_value_red);

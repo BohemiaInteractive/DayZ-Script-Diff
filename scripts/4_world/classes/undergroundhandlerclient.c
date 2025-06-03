@@ -31,6 +31,7 @@ class UndergroundHandlerClient
 	protected string		m_AmbientController; // active sound controlelr for ambient
 	protected EffectSound 	m_AmbientSound;
 	
+	protected UndergroundTrigger m_BestTrigger;
 	protected UndergroundTrigger m_TransitionalTrigger;
 	
 	void UndergroundHandlerClient(PlayerBase player)
@@ -322,7 +323,12 @@ class UndergroundHandlerClient
 	
 	protected void ProcessSound(float timeSlice)
 	{
+		if (m_BestTrigger && m_BestTrigger.m_Data && m_BestTrigger.m_Data.AmbientSoundType != string.Empty)	// caves use sound controllers so EnvSounds2D shouldnt be touched
+			return;
+		
+		// reduces all env sounds and increases ambient based on eye acco
 		GetGame().GetWorld().SetExplicitVolumeFactor_EnvSounds2D(m_EyeAcco, 0);
+
 		if (m_AmbientSound)
 		{
 			if (m_TransitionalTrigger && m_TransitionalTrigger.m_Data.Breadcrumbs.Count() >= 2)
@@ -419,6 +425,8 @@ class UndergroundHandlerClient
 		//Print(bestType);
 		if (bestTrigger)
 		{
+			m_BestTrigger = bestTrigger;
+			
 			if (bestTrigger.m_Type == EUndergroundTriggerType.TRANSITIONING)
 			{
 				m_TransitionalTrigger = bestTrigger;
@@ -493,9 +501,9 @@ class UndergroundHandlerClient
 	
 	protected void PlayAmbientSound()
 	{
-		if (m_TransitionalTrigger && m_TransitionalTrigger.m_Data.AmbientSoundType != string.Empty)
+		if (m_BestTrigger && m_BestTrigger.m_Data.AmbientSoundType != string.Empty)
 		{
-			m_AmbientController = m_TransitionalTrigger.m_Data.AmbientSoundType;
+			m_AmbientController = m_BestTrigger.m_Data.AmbientSoundType;
 			SetSoundControllerOverride(m_AmbientController, 1.0, SoundControllerAction.Overwrite);
 		}
 		else 
@@ -521,6 +529,8 @@ class UndergroundHandlerClient
 			if (oldPresence == EUndergroundPresence.NONE)
 			{
 				EnableLights(true);
+				if (m_BestTrigger && m_BestTrigger.m_Data && m_BestTrigger.m_Data.AmbientSoundType != string.Empty)
+					PlayAmbientSound();
 			}
 			if (newPresence > EUndergroundPresence.OUTER && oldPresence <= EUndergroundPresence.OUTER)
 			{

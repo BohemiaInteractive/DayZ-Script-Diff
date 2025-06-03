@@ -1191,7 +1191,6 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	//RPC data where the duration and interpolation times are forced(their slider values are ignored) to allow for immediate change and lasting effect
 	protected DebugWeatherRPCData GetRPCDataImmediate()
 	{
-		Print(ToString() + "::GetRPCDataImmediate");
 		DebugWeatherRPCData data = new DebugWeatherRPCData();
 		// FOG
 		data.m_FogValue = m_FogValueSetSlider.GetCurrent() / 100;
@@ -1238,7 +1237,6 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	
 	protected void SendRPC(DebugWeatherRPCData data)
 	{
-		Print(ToString() + "::SendRPC");
 		PlayerIdentity identity = null;
 		if (GetGame().GetPlayer())
 		{
@@ -1250,7 +1248,6 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	
 	protected void InvokeSendRPC()
 	{
-		Print(ToString() + "::InvokeSendRPC");
 		SendRPC(GetRPCDataImmediate());
 		//m_RPCTimer.Stop();
 	}

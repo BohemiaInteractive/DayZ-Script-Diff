@@ -21,6 +21,15 @@ enum CarRearLightType
 	BRAKES_AND_REVERSE
 }
 
+enum ECarOperationalState
+{
+	OK = 0,
+	RUINED = 1,
+	NO_FUEL = 2,
+	NO_IGNITER = 4,
+	NO_BATTERY = 8,
+}
+
 enum CarEngineSoundState
 {
 	NONE,
@@ -123,12 +132,31 @@ class CarContactData
 
 typedef map<string, ref array<ref CarContactData>> CarContactCache
 
+class CarScriptOwnerState : CarOwnerState
+{
+	float m_fTime;
+	
+	protected override event void Write(PawnStateWriter ctx)
+	{
+		ctx.Write(m_fTime);
+	}
+	
+	protected override event void Read(PawnStateReader ctx)
+	{
+		ctx.Read(m_fTime);
+	}
+};
+
+class CarScriptMove : CarMove
+{
+};
+
 #ifdef DIAG_DEVELOPER 
 CarScript _car;
 #endif
 
 /*!
-	Base script class for all motorized wheeled vehicles.
+	Base script class for cars
 */
 class CarScript extends Car
 {
@@ -179,7 +207,6 @@ class CarScript extends Car
 	protected float m_BatteryRecharge = 0.15; 			//Battery recharge rate when engine is on
 	private	  float m_BatteryTimer = 0; 				//Used to factor energy consumption / recharging
 	private const float BATTERY_UPDATE_DELAY = 100;
-	protected float m_BatteryEnergyStartMin = 5.0;		// Minimal energy level of battery required for start
 
 	//! Particles
 	protected ref EffVehicleSmoke m_coolantFx;
@@ -208,6 +235,7 @@ class CarScript extends Car
 	string m_EngineStartBattery 		= "";
 	string m_EngineStartPlug 			= "";
 	string m_EngineStartFuel 			= "";
+	string m_EngineStop	 				= "";
 	string m_EngineStopFuel 			= "";
 	
 	string m_CarDoorOpenSound 			= "";
@@ -241,8 +269,6 @@ class CarScript extends Car
 	protected bool m_EngineDestroyed;
 	
 	protected int m_CarHornState;
-	protected int m_CarEngineSoundState;
-	protected int m_CarEngineLastSoundState;
 	
 	CarLightBase 		m_Headlight;
 	CarRearLightBase 	m_RearLight;
@@ -269,7 +295,9 @@ class CarScript extends Car
 		
 	protected ref array<ref EffWheelSmoke> m_WheelSmokeFx;
 	protected ref array<int> m_WheelSmokePtcFx;
-								
+
+	protected int m_CarEngineSoundState;
+	protected int m_CarEngineLastSoundState;
 	
 	#ifdef DEVELOPER 
 	private const int DEBUG_MESSAGE_CLEAN_TIME_SECONDS = 10;
@@ -553,6 +581,7 @@ class CarScript extends Car
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_HORN_START_SHORT, "Car Horn Start Short", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_HORN_START_LONG, "Car Horn Start Long", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_HORN_STOP, "Car Horn Stop", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "Car Fuel", FadeColors.RED));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_FUEL_FULL, "Full", FadeColors.LIGHT_GREY));
@@ -560,6 +589,7 @@ class CarScript extends Car
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_FUEL_INCREASE, "10% increase", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_FUEL_DECREASE, "10% decrease", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "Car Cooler", FadeColors.RED));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_FULL, "Full", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.CAR_COOLANT_EMPTY, "Empty", FadeColors.LIGHT_GREY));
@@ -568,9 +598,6 @@ class CarScript extends Car
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
 		super.GetDebugActions(outputList);
-		
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
 	}
 	
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
@@ -620,9 +647,6 @@ class CarScript extends Car
 			case EActions.CAR_COOLANT_DECREASE:
 				Leak(CarFluid.COOLANT, GetFluidCapacity(CarFluid.COOLANT) * 0.1);
 				return true;
-			case EActions.DELETE:
-				Delete();
-				return true;
 		}
 	
 		return false;
@@ -643,7 +667,7 @@ class CarScript extends Car
 		
 		HandleCarHornSound(m_CarHornState);
 		
-		if (m_CarEngineSoundState != m_CarEngineLastSoundState)
+		if (!IsOwner() && m_CarEngineSoundState != m_CarEngineLastSoundState)
 			HandleEngineSound(m_CarEngineSoundState);
 		
 		UpdateLights();
@@ -741,17 +765,22 @@ class CarScript extends Car
 		case "CarBattery":
 		case "TruckBattery":
 			m_BatteryHealth = -1;
-			if (GetGame().IsServer())
+			if (IsServerOrOwner())
 			{
 				if (EngineIsOn())
 				{
 					EngineStop();
 				}
-				
+			}
+
+			if (GetGame().IsServer())
+			{	
 				if (IsScriptedLightsOn())
 				{
 					ToggleHeadlights();
 				}
+
+				UpdateBattery(ItemBase.Cast(item));
 			}
 		break;
 		case "SparkPlug":
@@ -764,10 +793,13 @@ class CarScript extends Car
 		break;
 		case "CarRadiator":
 			m_Radiator = null;
-			if (GetGame().IsServer())
+			if (IsServerOrOwner())
 			{
 				LeakAll(CarFluid.COOLANT);
+			}
 
+			if (GetGame().IsServer())
+			{
 				if (m_DamageZoneMap.Contains("Radiator"))
 				{
 					SetHealth("Radiator", "Health", 0);
@@ -865,9 +897,6 @@ class CarScript extends Car
 		
 		if (GetGame().IsServer())
 		{
-			HandleByCrewMemberState(ECrewMemberState.UNCONSCIOUS);
-			HandleByCrewMemberState(ECrewMemberState.DEAD);
-
 			#ifdef DIAG_DEVELOPER
 			if (DEBUG_OUTPUT_TYPE & EVehicleDebugOutputType.CONTACT)
 			{
@@ -900,14 +929,16 @@ class CarScript extends Car
 
 			CarPartsHealthCheck();
 
+			bool isServerOrOwner = IsServerOrOwner();
+
 			//First of all check if the car should stop the engine
-			if (GetGame().IsServer() && EngineIsOn())
+			if (isServerOrOwner && EngineIsOn())
 			{
-				if ( GetFluidFraction(CarFluid.FUEL) <= 0 || m_EngineHealth <= 0 )
+				if (IsDamageDestroyed() || GetFluidFraction(CarFluid.FUEL) <= 0 || m_EngineHealth <= 0)
 					EngineStop();
 
-				CheckVitalItem(IsVitalCarBattery(), "CarBattery");
-				CheckVitalItem(IsVitalTruckBattery(), "TruckBattery");
+				//CheckVitalItem(IsVitalCarBattery(), CarBattery.SLOT_ID);
+				//CheckVitalItem(IsVitalTruckBattery(), TruckBattery.SLOT_ID);
 				CheckVitalItem(IsVitalSparkPlug(), "SparkPlug");
 				CheckVitalItem(IsVitalGlowPlug(), "GlowPlug");
 			}
@@ -935,6 +966,7 @@ class CarScript extends Car
 						if (EngineGetRPM() > EngineGetRPMMax())
 							AddHealth( "Engine", "Health", -GetMaxHealth("Engine", "") * 0.05 ); //CAR_RPM_DMG
 							
+						// only called on server, don't use deterministic RandomFloat
 						dmg = EngineGetRPM() * 0.001 * Math.RandomFloat( 0.02, 1.0 );  //CARS_TICK_DMG_MIN; //CARS_TICK_DMG_MAX
 						ProcessDirectDamage(DamageType.CUSTOM, null, "Engine", "EnviroDmg", vector.Zero, dmg);
 						SetEngineZoneReceivedHit(true);
@@ -943,7 +975,10 @@ class CarScript extends Car
 					{
 						SetEngineZoneReceivedHit(false);
 					}
+				}
 
+				if (isServerOrOwner)
+				{
 					//! leaking of coolant from radiator when damaged
 					if ( IsVitalRadiator() )
 					{
@@ -962,11 +997,15 @@ class CarScript extends Car
 
 					if ( m_EngineHealth < 0.25 )
 						LeakFluid( CarFluid.OIL );
-
+				}
+				
+				if ( GetGame().IsServer() )
+				{
 					if ( IsVitalRadiator() )
 					{
 						if ( GetFluidFraction( CarFluid.COOLANT ) < 0.5 && GetFluidFraction( CarFluid.COOLANT ) >= 0 )
 						{
+							// only called on server, don't use deterministic RandomFloat
 							dmg = ( 1 - GetFluidFraction(CarFluid.COOLANT) ) * Math.RandomFloat( 0.02, 10.00 );  //CARS_DMG_TICK_MIN_COOLANT; //CARS_DMG_TICK_MAX_COOLANT
 							AddHealth( "Engine", "Health", -dmg );
 							SetEngineZoneReceivedHit(true);
@@ -1038,9 +1077,9 @@ class CarScript extends Car
 					int ptrEff = m_WheelSmokePtcFx.Get(i);
 					bool haveParticle = false;
 	
-					if (WheelHasContact(i))
+					CarWheel wheel = CarWheel.Cast(WheelGetEntity(i));
+					if (wheel && WheelHasContact(i))
 					{
-						CarWheel wheel = CarWheel.Cast(WheelGetEntity(i));
 						float wheelSpeed = WheelGetAngularVelocity(i) * wheel.GetRadius();
 					
 						vector wheelPos = WheelGetContactPosition(i);
@@ -1099,7 +1138,6 @@ class CarScript extends Car
 					}
 				}
 			}
-		//}
 	}
 	
 	void OnBrakesPressed()
@@ -1110,6 +1148,16 @@ class CarScript extends Car
 	void OnBrakesReleased()
 	{
 		UpdateLights();
+	}
+
+	override void OnDriverExit(Human player)
+	{
+		super.OnDriverExit(player);
+		
+		if (GetGear() != GetNeutralGear())
+		{
+			EngineStop();
+		}
 	}
 	
 	// Server side event for jump out processing 
@@ -1147,7 +1195,8 @@ class CarScript extends Car
 
 			randNum = Math.RandomIntInclusive(0, PlayerBase.m_BleedingSourcesLow.Count() - 1);
 			
-			player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesLow[randNum]);
+			if (player.m_BleedingManagerServer)
+				player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesLow[randNum]);
 		}
 		else if (gotActionData.m_Speed >= ActionGetOutTransport.LOW_SPEED_VALUE && gotActionData.m_Speed < ActionGetOutTransport.HIGH_SPEED_VALUE)
 		{
@@ -1156,11 +1205,12 @@ class CarScript extends Car
 
 			randNum = Math.RandomInt(0, PlayerBase.m_BleedingSourcesUp.Count() - 1);
 			
-			player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesUp[randNum]);
+			if (player.m_BleedingManagerServer)
+				player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection(PlayerBase.m_BleedingSourcesUp[randNum]);
 		}
 		else if (gotActionData.m_Speed >= ActionGetOutTransport.HIGH_SPEED_VALUE)
 		{
-			if (!headGear)
+			if (!headGear && player.m_BleedingManagerServer)
 				player.m_BleedingManagerServer.AttemptAddBleedingSourceBySelection("Head");
 
 			if (randNum < 75)
@@ -1198,33 +1248,25 @@ class CarScript extends Car
 	
 	override void OnUpdate( float dt )
     {
-		if ( GetGame().IsServer() )
+		Human driver = CrewDriver();
+		if (driver && !driver.IsControllingVehicle())
+		{
+			// likely unconscious
+			if (driver.IsAlive())
+			{
+				SetBrake(0.5);
+			}
+		}
+
+		if (GetGame().IsServer())
 		{
 			ItemBase battery = GetBattery();
-			if ( battery )
+			if (battery)
 			{
-				if ( EngineIsOn() )
+				m_BatteryTimer += dt;
+				if (m_BatteryTimer >= BATTERY_UPDATE_DELAY)
 				{
-					m_BatteryTimer += dt;
-					if ( m_BatteryTimer >= BATTERY_UPDATE_DELAY )
-					{
-						battery.GetCompEM().ConsumeEnergy(GetBatteryRechargeRate() * m_BatteryTimer);
-						m_BatteryTimer = 0;
-					}
-				}
-				else if ( !EngineIsOn() && IsScriptedLightsOn() )
-				{
-					m_BatteryTimer += dt;
-					if ( m_BatteryTimer >= BATTERY_UPDATE_DELAY )
-					{
-						battery.GetCompEM().ConsumeEnergy(GetBatteryRuntimeConsumption() * m_BatteryTimer);
-						m_BatteryTimer = 0;
-						
-						if ( battery.GetCompEM().GetEnergy() <= 0 )
-						{
-							ToggleHeadlights();
-						}
-					}
+					UpdateBattery(battery);
 				}
 			}
 			
@@ -1502,6 +1544,51 @@ class CarScript extends Car
 		#endif
 	}
 	
+	protected EffectSound CreateSoundForAnimationSource(string animSource)
+	{
+		vector position = vector.Zero;
+		int pivotIndex = -1;
+		
+		string selectionName = GetSelectionFromAnimSource(animSource);
+		if (selectionName != "")
+		{			
+			position = GetSelectionBasePositionLS(selectionName);
+			
+			int level = GetViewGeometryLevel();
+		
+			array<int> pivots = new array<int>();
+							
+			pivots.Clear();
+			GetBonePivotsForAnimationSource(level, animSource, pivots);
+				
+			if (pivots.Count())
+			{
+				pivotIndex = pivots[0];
+			}
+		}
+
+		WaveKind waveKind = WaveKind.WAVEEFFECTEX;
+		
+		EffectSound sound = new EffectSound();
+		
+		PlayerBase player;
+		if (Class.CastTo(player, GetGame().GetPlayer()))
+		{
+			if (player.IsCameraInsideVehicle())
+			{
+				waveKind = WaveKind.WAVEEFFECT;
+			}
+		}
+
+		sound.SetAutodestroy(true);
+		sound.SetParent(this, pivotIndex);
+		sound.SetPosition(ModelToWorld(position));
+		sound.SetLocalPosition(position);
+		sound.SetSoundWaveKind(waveKind);
+
+		return sound;
+	}
+	
 	protected void HandleDoorsSound(string animSource, float phase)
 	{
 		switch (animSource)
@@ -1512,14 +1599,15 @@ class CarScript extends Car
 			case "doorscargo2":
 			case "doorshood":
 			case "doorstrunk":
-				EffectSound sound;
-				if (phase == 0)
-					sound = SEffectManager.PlaySound(m_CarDoorOpenSound, GetPosition());
-				else
-					sound = SEffectManager.PlaySound(m_CarDoorCloseSound, GetPosition());
+				EffectSound sound = CreateSoundForAnimationSource(animSource);
 				
-				if (sound)
-					sound.SetAutodestroy(true);
+				if (phase == 0)
+					sound.SetSoundSet(m_CarDoorOpenSound);
+				else
+					sound.SetSoundSet(m_CarDoorCloseSound);
+
+				SEffectManager.EffectRegister(sound);
+				sound.SoundPlay();
 
 				break;
 		}
@@ -1531,14 +1619,15 @@ class CarScript extends Car
 		{
 			case "seatdriver":
 			case "seatcodriver":
-				EffectSound sound;
+				EffectSound sound = CreateSoundForAnimationSource(animSource);
+
 				if (phase == 0)
-					sound = SEffectManager.PlaySound(m_CarSeatShiftInSound, GetPosition());
+					sound.SetSoundSet(m_CarSeatShiftInSound);
 				else
-					sound = SEffectManager.PlaySound(m_CarSeatShiftOutSound, GetPosition());
+					sound.SetSoundSet(m_CarSeatShiftOutSound);
 				
-				if (sound)
-					sound.SetAutodestroy(true);
+				SEffectManager.EffectRegister(sound);
+				sound.SoundPlay();
 
 				break;
 		}
@@ -1561,122 +1650,130 @@ class CarScript extends Car
 		}
 	}
 	
+	// Only used for sound states which happen before engine start
+	void SetCarEngineSoundState(CarEngineSoundState pState)
+	{
+		m_CarEngineSoundState = pState;
+		SetSynchDirty();
+	}
+	
 	void HandleEngineSound(CarEngineSoundState state)
 	{
+		SetCarEngineSoundState(state);
+		m_CarEngineLastSoundState 	= state;
+
 		#ifndef SERVER
 		PlayerBase player = null;
 		EffectSound sound = null;
-		WaveKind waveKind = WaveKind.WAVEEFFECT;
+		WaveKind waveKind = WaveKind.WAVEEFFECTEX;
+		
+		bool doInside = false;
 
 		m_CarEngineLastSoundState = state;
 		
 		switch (state)
 		{
 			case CarEngineSoundState.STARTING:
-				m_PreStartSound = SEffectManager.PlaySound("Offroad_02_Starting_SoundSet", ModelToWorld(GetEnginePos()));
-				m_PreStartSound.SetSoundFadeOut(0.15);
+				sound = new EffectSound();
+				sound.SetSoundSet("Offroad_02_Starting_SoundSet");
+				sound.SetSoundFadeOut(0.15);
+
+				m_PreStartSound = sound;
 				break;
 			case CarEngineSoundState.START_OK:
-				// play different sound based on selected camera
-				if (Class.CastTo(player, CrewMember(0)))
-				{
-					if (!player.IsCameraInsideVehicle())
-					{
-						waveKind = WaveKind.WAVEEFFECTEX;
-					}
+				doInside = true;
 		
-					sound = SEffectManager.CreateSound(m_EngineStartOK, ModelToWorld(GetEnginePos()));
-					if (sound)
-					{
-						sound.SetSoundWaveKind(waveKind);
-						sound.SoundPlay();
-						sound.SetAutodestroy(true);
-					}
-				}
+				sound = new EffectSound();
+				sound.SetSoundSet(m_EngineStartOK);
+				sound.SetAutodestroy(true);
 				
 				//! postpone the engine sound played from c++ on soundcontroller (via OnSound override)
 				GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(SetEngineStarted, 1000, false, true);
 				break;
 				
 			case CarEngineSoundState.START_NO_FUEL:
-				sound = SEffectManager.PlaySound("offroad_engine_failed_start_fuel_SoundSet", ModelToWorld(GetEnginePos()));
+				sound = new EffectSound();
+				sound.SetSoundSet("offroad_engine_failed_start_fuel_SoundSet");
 				sound.SetAutodestroy(true);
 				break;
 				
 			case CarEngineSoundState.START_NO_BATTERY:
-				sound = SEffectManager.PlaySound("offroad_engine_failed_start_battery_SoundSet", ModelToWorld(GetEnginePos()));
+				sound = new EffectSound();
+				sound.SetSoundSet("offroad_engine_failed_start_battery_SoundSet");
 				sound.SetAutodestroy(true);
 				break;
 				
 			case CarEngineSoundState.START_NO_SPARKPLUG:
-				sound = SEffectManager.PlaySound("offroad_engine_failed_start_sparkplugs_SoundSet", ModelToWorld(GetEnginePos()));
+				sound = new EffectSound();
+				sound.SetSoundSet("offroad_engine_failed_start_sparkplugs_SoundSet");
 				sound.SetAutodestroy(true);
 				break;
 				
 			case CarEngineSoundState.STOP_OK:
-			case CarEngineSoundState.STOP_NO_FUEL:
-				// play different sound based on selected camera
-				if (Class.CastTo(player, CrewMember(0)))
-				{
-					if (!player.IsCameraInsideVehicle())
-					{
-						waveKind = WaveKind.WAVEEFFECTEX;
-					}
+				doInside = true;
 					
-					sound = SEffectManager.CreateSound(m_EngineStopFuel, ModelToWorld(GetEnginePos()));
-					if (sound)
-					{
-						sound.SetSoundWaveKind(waveKind);
-						sound.SoundPlay();
-						sound.SetAutodestroy(true);
-					}
-				}
-			
-				SetEngineStarted(false);
+				sound = new EffectSound();
+				sound.SetSoundSet(m_EngineStop);
+				sound.SetAutodestroy(true);
+				break;
+			case CarEngineSoundState.STOP_NO_FUEL:
+				doInside = true;
+					
+				sound = new EffectSound();
+				sound.SetSoundSet(m_EngineStopFuel);
+				sound.SetAutodestroy(true);
 				break;
 			
 			default: 
 				break;
 		}
+		
+		// play different sound based on selected camera
+		if (doInside && Class.CastTo(player, GetGame().GetPlayer()))
+		{
+			if (player.IsCameraInsideVehicle())
+			{
+				waveKind = WaveKind.WAVEEFFECT;
+			}
+		}
+
+		if (sound)
+		{
+			vector enginePos = GetEnginePos();
+			
+			sound.SetParent(this);
+			sound.SetPosition(ModelToWorld(enginePos));
+			sound.SetLocalPosition(enginePos);
+			sound.SetSoundWaveKind(waveKind);
+			SEffectManager.EffectRegister(sound);
+			
+			sound.SoundPlay();
+		}
+
 		#endif
 	}
-		
-	override void HandleByCrewMemberState(ECrewMemberState state)
+
+	override void MarkCrewMemberUnconscious(int crewMemberIndex)
 	{
-		switch (state)
+		if (!IsAuthority())
+			return;
+
+		if (crewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
 		{
-			case ECrewMemberState.UNCONSCIOUS:
-				foreach (int unconsciousCrewMemberIndex : m_UnconsciousCrewMemberIndices)
-				{
-					if (unconsciousCrewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-					{
-						EngineStop();
-						SetBrake(0.5);
-					}
-					
-					m_UnconsciousCrewMemberIndices.RemoveItem(unconsciousCrewMemberIndex);
-				}
-
-				break
-			
-			case ECrewMemberState.DEAD:
-				foreach (int deadCrewMemberIndex : m_DeadCrewMemberIndices)
-				{
-					if (deadCrewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-					{
-						EngineStop();
-						SetBrake(0.5);
-					}
-					
-					m_DeadCrewMemberIndices.RemoveItem(deadCrewMemberIndex);
-				}
-
-				break
+			EngineStop();
 		}
 	}
 
-	//! DEPRECATED	
-	float GetEnviroHeatComfortOverride();
+	override void MarkCrewMemberDead(int crewMemberIndex)
+	{
+		if (!IsAuthority())
+			return;
+
+		if (crewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
+		{
+			EngineStop();
+		}
+	}
 
 	/*!
 		Gets called everytime when the specified vehicle's fluid
@@ -1708,83 +1805,91 @@ class CarScript extends Car
 	
 	/*!
 		Gets called everytime the game wants to start the engine.
-		This callback is called on server only.
 
 		\return true if the engine can start, false otherwise.
 	*/
 	override bool OnBeforeEngineStart()
 	{
-		EntityAI item = null;
-		
-		if (IsVitalCarBattery() || IsVitalTruckBattery())
+		ECarOperationalState state = CheckOperationalRequirements();
+		SetCarEngineSoundState(CarEngineSoundState.NONE);
+		return state == ECarOperationalState.OK;
+	}
+
+	void OnIgnition()
+	{
+		ECarOperationalState state = CheckOperationalRequirements();
+
+		if (state == ECarOperationalState.RUINED)
 		{
-			item = GetBattery();
-			if (!item || (item && (item.IsRuined() || item.GetCompEM().GetEnergy() < m_BatteryEnergyStartMin)))
-			{
-				SetCarEngineSoundState(CarEngineSoundState.START_NO_BATTERY);
-				return false;
-			}
+			return;
 		}
 
-		if (IsVitalSparkPlug())
+		if (state & ECarOperationalState.NO_BATTERY)
 		{
-			item = FindAttachmentBySlotName("SparkPlug");
-			if (!item || (item && item.IsRuined()))
-			{
-				SetCarEngineSoundState(CarEngineSoundState.START_NO_SPARKPLUG);
-				return false;
-			}
+			HandleEngineSound(CarEngineSoundState.START_NO_BATTERY);
+			return;
 		}
-	
-		if (IsVitalGlowPlug())
+
+		if (state & ECarOperationalState.NO_IGNITER)
 		{
-			item = FindAttachmentBySlotName("GlowPlug");
-			if (!item || (item && item.IsRuined()))
-			{
-				SetCarEngineSoundState(CarEngineSoundState.START_NO_SPARKPLUG);
-				return false;
-			}
+			HandleEngineSound(CarEngineSoundState.START_NO_SPARKPLUG);
+			return;
 		}
-		
-		if (GetFluidFraction(CarFluid.FUEL) <= 0)
+
+		if (state & ECarOperationalState.NO_FUEL)
 		{
-			SetCarEngineSoundState(CarEngineSoundState.START_NO_FUEL);
-			return false;
+			HandleEngineSound(CarEngineSoundState.START_NO_FUEL);
+			return;
 		}
-		
-		return true;
+
+		HandleEngineSound(CarEngineSoundState.STARTING);
 	}
 	
 	// Whether the car engine can be started
-	bool CheckOperationalState()
+	int CheckOperationalRequirements()
 	{
+		int state = ECarOperationalState.OK;
+
 		EntityAI item = null;
+
+		if (IsDamageDestroyed() || GetHealthLevel("Engine") >= GameConstants.STATE_RUINED)
+		{
+			state |= ECarOperationalState.RUINED;
+		}
 		
 		if (GetFluidFraction(CarFluid.FUEL) <= 0)
-			return false;
-		
+		{
+			state |= ECarOperationalState.NO_FUEL;
+		}
+
 		if (IsVitalCarBattery() || IsVitalTruckBattery())
 		{
 			item = GetBattery();
-			if (!item || (item && (item.IsRuined() || item.GetCompEM().GetEnergy() < m_BatteryEnergyStartMin)))
-				return false;
+			float batteryConsume = GetBatteryConsumption();
+			if (!item || (item && (item.IsRuined() || item.GetCompEM().GetEnergy() < batteryConsume)))
+				state |= ECarOperationalState.NO_BATTERY;
 		}
 
 		if (IsVitalSparkPlug())
 		{
 			item = FindAttachmentBySlotName("SparkPlug");
 			if (!item || (item && item.IsRuined()))
-				return false;
+				state |= ECarOperationalState.NO_IGNITER;
 		}
-	
+		
 		if (IsVitalGlowPlug())
 		{
 			item = FindAttachmentBySlotName("GlowPlug");
 			if (!item || (item && item.IsRuined()))
-				return false;
+				state |= ECarOperationalState.NO_IGNITER;
 		}
 		
-		return true;
+		return state;
+	}
+
+	bool CheckOperationalState()
+	{
+		return CheckOperationalRequirements() == ECarOperationalState.OK;
 	}
 
 	override void OnGearChanged(int newGear, int oldGear)
@@ -1799,7 +1904,10 @@ class CarScript extends Car
 		ItemBase battery = GetBattery();
 		if (GetGame().IsServer() && battery)
 		{
-			battery.GetCompEM().ConsumeEnergy(GetBatteryConsumption());
+			float batteryConsume = GetBatteryConsumption();
+			battery.GetCompEM().ConsumeEnergy(batteryConsume);
+
+			UpdateBattery(battery);
 		}
 		
 		UpdateLights();
@@ -1810,23 +1918,24 @@ class CarScript extends Car
 	//! Gets called everytime the engine stops.
 	override void OnEngineStop()
 	{
+		ItemBase battery = GetBattery();
+		if (GetGame().IsServer() && battery)
+		{
+			UpdateBattery(battery);
+		}
+
 		UpdateLights();
 		
-		HandleEngineSound(CarEngineSoundState.STOP_OK);
+		CarEngineSoundState stopSoundState = CarEngineSoundState.STOP_OK;
+		if (GetFluidFraction(CarFluid.FUEL) <= 0)
+			stopSoundState = CarEngineSoundState.STOP_NO_FUEL;
+
+		HandleEngineSound(stopSoundState);
 		
 		SetEngineZoneReceivedHit(false);
 	}
-
-	/*!
-		DEPRECATED Gets called everytime the game wants to switch the lights.
-		\return true when lights can be switched, false otherwise.
-	*/
-	bool OnBeforeSwitchLights( bool toOn )
-	{
-		return true;
-	}
 	
-	//! Propper way to get if light is swiched on. Use instead of IsLightsOn().
+	//! Proper way to get if light is swiched on. Use instead of IsLightsOn().
 	bool IsScriptedLightsOn()
 	{
 		return m_HeadlightsOn;
@@ -1835,6 +1944,8 @@ class CarScript extends Car
 	//! Switches headlights on/off, including the illumination of the control panel and synchronizes this change to all clients.
 	void ToggleHeadlights()
 	{
+		// TODO(kumarjac): Call 'UpdateBattery' here. Probably can't right now
+
 		m_HeadlightsOn = !m_HeadlightsOn;
 		SetSynchDirty();
 	}
@@ -2257,17 +2368,26 @@ class CarScript extends Car
 		return CarLightBase.Cast(ScriptedLightBase.CreateLight(OffroadHatchbackFrontLight));
 	}
 	
-	protected void CheckVitalItem( bool isVital, string itemName )
+	protected void CheckVitalItem(bool isVital, int slotId)
+	{
+		if ( !isVital || !GetInventory() )
+			return;
+
+		EntityAI item = GetInventory().FindAttachment(slotId);
+
+		if (!item || item.IsRuined())
+		{
+			EngineStop();
+		}
+	}
+	
+	protected void CheckVitalItem(bool isVital, string slot_name)
 	{
 		if ( !isVital )
 			return;
 
-		EntityAI item = FindAttachmentBySlotName(itemName);
-
-		if ( !item )
-			EngineStop();
-		else if ( item.IsRuined() )
-			EngineStop();
+		int slotId = InventorySlots.GetSlotIdFromString(slot_name);
+		CheckVitalItem(isVital, slotId);
 	}
 
 	protected void LeakFluid(CarFluid fluid)
@@ -2277,17 +2397,17 @@ class CarScript extends Car
 		switch (fluid)
 		{
 			case CarFluid.COOLANT:
-				ammount = (1- m_RadiatorHealth) * Math.RandomFloat(0.02, 0.05);//CARS_LEAK_TICK_MIN; CARS_LEAK_TICK_MAX
+				ammount = (1 - m_RadiatorHealth) * RandomFloat(0.02, 0.05);//CARS_LEAK_TICK_MIN; CARS_LEAK_TICK_MAX
 				Leak(fluid, ammount);
 			break;
 			
 			case CarFluid.OIL:
-				ammount =  ( 1 - m_EngineHealth ) * Math.RandomFloat(0.02, 1.0);//CARS_LEAK_OIL_MIN; CARS_LEAK_OIL_MAX
+				ammount = (1 - m_EngineHealth) * RandomFloat(0.02, 1.0);//CARS_LEAK_OIL_MIN; CARS_LEAK_OIL_MAX
 				Leak(fluid, ammount);
 			break;
 			
 			case CarFluid.FUEL:
-				ammount = ( 1 - m_FuelTankHealth ) * Math.RandomFloat(0.02, 0.05);//CARS_LEAK_TICK_MIN; CARS_LEAK_TICK_MAX
+				ammount = (1 - m_FuelTankHealth) * RandomFloat(0.02, 0.05);//CARS_LEAK_TICK_MIN; CARS_LEAK_TICK_MAX
 				Leak(fluid, ammount);
 			break;
 		}
@@ -2295,20 +2415,22 @@ class CarScript extends Car
 
 	protected void CarPartsHealthCheck()
 	{
-		if (GetGame().IsServer())
+		if (HasRadiator())
 		{
-			if (HasRadiator())
-			{
-				m_RadiatorHealth = GetRadiator().GetHealth01("", "");
-			}
-			else
-			{
-				m_RadiatorHealth = 0;
-			}
-			
-			m_EngineHealth 		= GetHealth01("Engine", "");
-			m_FuelTankHealth 	= GetHealth01("FuelTank", "");
+			EntityAI radiator = GetRadiator();
+			int radiatorHealthLevel = radiator.GetHealthLevel("");
+			m_RadiatorHealth = GetHealthLevelValue(radiatorHealthLevel, "");
 		}
+		else
+		{
+			m_RadiatorHealth = 0;
+		}
+
+		int engineHealthLevel = GetHealthLevel("Engine");
+		m_EngineHealth = GetHealthLevelValue(engineHealthLevel, "Engine");
+
+		int fuelTankHealthLevel = GetHealthLevel("FuelTank");
+		m_FuelTankHealth = GetHealthLevelValue(fuelTankHealthLevel, "FuelTank");
 	}
 	
 	bool GetCrashLightSound()
@@ -2380,6 +2502,29 @@ class CarScript extends Car
 	
 	string GetAnimSourceFromSelection( string selection )
 	{
+		return "";
+	}
+
+	string GetSelectionFromAnimSource( string animSource )
+	{
+		// Brute force for vehicles that aren't set up
+		
+		TStringArray allSelections = new TStringArray();
+		GetSelectionList(allSelections);
+		
+		foreach (string selectionAll : allSelections)
+		{
+			string animSrc = GetAnimSourceFromSelection(selectionAll);
+			animSrc.ToLower();
+			if (animSrc != animSource)
+				continue;
+			
+			if (animSrc)
+			{
+				return selectionAll;
+			}
+		}
+
 		return "";
 	}
 	
@@ -2718,7 +2863,7 @@ class CarScript extends Car
 	{
 		return m_BatteryContinuousConsume;
 	}
-	
+
 	float GetBatteryRechargeRate()
 	{
 		return -m_BatteryRecharge;
@@ -2728,14 +2873,53 @@ class CarScript extends Car
 	{
 		if (IsVitalCarBattery()) 
 		{
-			return ItemBase.Cast(FindAttachmentBySlotName("CarBattery"));
+			return ItemBase.Cast(GetInventory().FindAttachment(CarBattery.SLOT_ID));
 		}
 		else if (IsVitalTruckBattery())
 		{
-			return ItemBase.Cast(FindAttachmentBySlotName("TruckBattery"));
+			return ItemBase.Cast(GetInventory().FindAttachment(TruckBattery.SLOT_ID));
 		}
 		
 		return null;
+	}
+
+	protected void UpdateBattery(ItemBase battery)
+	{
+		if (!battery)
+		{
+			m_BatteryTimer = 0;
+			return;
+		}
+		
+		// unlikely
+		if (m_BatteryTimer < 0)
+		{
+			m_BatteryTimer = 0;
+		}
+
+		bool engineOn = EngineIsOn();
+		bool lightsOn = IsScriptedLightsOn();
+
+		if (engineOn)
+		{
+			// alternator
+			battery.GetCompEM().ConsumeEnergy(GetBatteryRechargeRate() * m_BatteryTimer);
+		}
+		else if (!engineOn && lightsOn)
+		{
+			battery.GetCompEM().ConsumeEnergy(GetBatteryRuntimeConsumption() * m_BatteryTimer);
+		}
+
+		if (lightsOn && battery.GetCompEM().GetEnergy() <= 0)
+		{
+			// lights currently don't automatically turn back on if the headlight was last turned on, so we just keep them on if the engine is on
+			if (!engineOn)
+			{
+				ToggleHeadlights();
+			}
+		}
+
+		m_BatteryTimer = 0;
 	}
 	
 	void SetCarHornState(int pState)
@@ -2747,13 +2931,6 @@ class CarScript extends Car
 		{
 			GenerateCarHornAINoise(pState);
 		}
-	}
-	
-	// Only used for sound states which happen before engine start
-	void SetCarEngineSoundState(CarEngineSoundState pState)
-	{
-		m_CarEngineSoundState = pState;
-		SetSynchDirty();
 	}
 	
 	protected void GenerateCarHornAINoise(int pState)
@@ -2872,4 +3049,55 @@ class CarScript extends Car
 		Fill(CarFluid.COOLANT, 200.0);
 		Fill(CarFluid.OIL, 200.0);
 	}
+
+	protected override event typename GetOwnerStateType()
+	{
+		return CarScriptOwnerState;
+	}
+
+	protected override event typename GetMoveType()
+	{
+		return CarScriptMove;
+	}
+
+	protected override event void ObtainState(/*inout*/ PawnOwnerState pState)
+	{
+		auto state = CarScriptOwnerState.Cast(pState);
+		state.m_fTime = m_Time;
+	}
+
+	protected override event void RewindState(PawnOwnerState pState, /*inout*/ PawnMove pMove, inout NetworkRewindType pRewindType)
+	{
+		auto state = CarScriptOwnerState.Cast(pState);
+		m_Time = state.m_fTime;
+	}
+
+	// Cars that use the old networking only perform this part of the simulation on the server and not the clients
+	// TODO(kumarjac): Obsolete this function once new networking is permanently enabled
+	bool IsServerOrOwner()
+	{
+		bool isServer = GetGame().IsServer();
+		if (isServer || GetNetworkMoveStrategy() != NetworkMoveStrategy.PHYSICS)
+		{
+			return isServer;
+		}
+		
+		return IsOwner();
+	}
+		
+	//! DEPRECATED
+	protected float m_BatteryEnergyStartMin = 5.0;
+
+	/*!
+		DEPRECATED Gets called everytime the game wants to switch the lights.
+		\return true when lights can be switched, false otherwise.
+	*/
+	[Obsolete("no replacement")]
+	bool OnBeforeSwitchLights(bool toOn)
+	{
+		return true;
+	}
+
+	[Obsolete("no replacement")]
+	float GetEnviroHeatComfortOverride();
 }

@@ -1,3 +1,4 @@
+[Obsolete("no replacement")]
 enum ECrewMemberState
 {
 	DEFAULT			= 0,

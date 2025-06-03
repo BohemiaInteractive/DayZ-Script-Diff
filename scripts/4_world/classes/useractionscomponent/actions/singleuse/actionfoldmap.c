@@ -36,4 +36,9 @@ class ActionFoldMap: ActionBase
 	{
 		return AC_SINGLE_USE;
 	}
+	
+	override bool CanBePerformedWhileChangingStance()
+	{
+		return false;
+	}
 };

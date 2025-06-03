@@ -559,6 +559,8 @@ class IEntity: Managed
 	*/
 	proto native external bool RemoveChild(notnull IEntity child, bool keepTransform = false);
 	
+	proto native external Physics GetPhysics();
+
 	//! Returns if the hierarchy component was created with positionOnly
 	proto native bool IsHierarchyPositionOnly();
 

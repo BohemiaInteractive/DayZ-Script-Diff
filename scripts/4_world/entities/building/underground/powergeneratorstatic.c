@@ -112,7 +112,7 @@ class PowerGeneratorStatic : PowerGeneratorBase
 	{
 		super.SetLowEnergyState(state);
 		
-		if (GetGame().IsServer())
+		if (GetGame().IsServer() && m_Parent)
 		{
 			Land_WarheadStorage_Main bunker = m_Parent.GetClosestBunker();
 			if (bunker)

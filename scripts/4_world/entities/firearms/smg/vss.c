@@ -21,7 +21,7 @@ class VSS : VSS_Base
 	override bool CanEnterIronsights()
 	{
 		ItemOptics optic = GetAttachedOptics();
-		if (optic && PSO1Optic.Cast(optic) || PSO11Optic.Cast(optic) || KazuarOptic.Cast(optic))
+		if (optic && PSO1Optic.Cast(optic) || PSO11Optic.Cast(optic) || PSO6Optic.Cast(optic) || KazuarOptic.Cast(optic))
 			return true;
 		return super.CanEnterIronsights();
 	}
@@ -32,7 +32,7 @@ class Vikhr : VSS_Base
 	override bool CanEnterIronsights()
 	{
 		ItemOptics optic = GetAttachedOptics();
-		if (optic && PSO1Optic.Cast(optic) || PSO11Optic.Cast(optic) || KazuarOptic.Cast(optic))
+		if (optic && PSO1Optic.Cast(optic) || PSO11Optic.Cast(optic) || PSO6Optic.Cast(optic) || KazuarOptic.Cast(optic))
 			return true;
 		return super.CanEnterIronsights();
 	}

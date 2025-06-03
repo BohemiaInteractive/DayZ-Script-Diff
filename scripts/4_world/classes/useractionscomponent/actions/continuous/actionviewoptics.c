@@ -2,16 +2,17 @@ class ActionViewOptics : ActionContinuousBase
 {
 	void ActionViewOptics()
 	{
-		m_CallbackClass = ActionRaiseAndViewCB;
-		m_CommandUID = DayZPlayerConstants.CMD_GESTUREFB_LOOKOPTICS;
-		m_CommandUIDProne = DayZPlayerConstants.CMD_GESTUREFB_LOOKOPTICS;
+		m_CallbackClass 	= ActionRaiseAndViewCB;
+		m_CommandUID 		= DayZPlayerConstants.CMD_GESTUREFB_LOOKOPTICS;
+		m_CommandUIDProne 	= DayZPlayerConstants.CMD_GESTUREFB_LOOKOPTICS;
+
 		m_Text = "#Look_Through";
 	}
 	
 	override void CreateConditionComponents()  
 	{	
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNone;
+		m_ConditionItem 	= new CCINone();
+		m_ConditionTarget 	= new CCTNone();
 	}
 	
 	override bool IsFullBody(PlayerBase player)
@@ -20,6 +21,11 @@ class ActionViewOptics : ActionContinuousBase
 	}
 	
 	override bool IsCameraLockOnPerform()
+	{
+		return false;
+	}
+	
+	override bool CanBeUsedLeaning()
 	{
 		return false;
 	}
@@ -149,20 +155,27 @@ class ActionViewOptics : ActionContinuousBase
 		player.SetIronsights(false);
 		player.SetHandheldOpticsInUse(true);
 		player.SetOptics(true);
+
 		optic.EnterOptics();
 		optic.HideSelection("hide");
+
 		if (optic.HasEnergyManager())
 			optic.GetCompEM().SwitchOn();
+
 		player.GetAimingModel().SetAimNoiseAllowed(false);
 	}
 	
 	void ExitOptics(ItemOptics optic, PlayerBase player)
 	{
-		optic.ShowSelection("hide");
 		player.ExitSights();
 		player.SetHandheldOpticsInUse(false);
+
+		optic.ShowSelection("hide");
+		optic.ExitOptics();
+
 		if (optic.HasEnergyManager())
 			optic.GetCompEM().SwitchOff();
+
 		player.GetAimingModel().SetAimNoiseAllowed(true);
 	}
 }

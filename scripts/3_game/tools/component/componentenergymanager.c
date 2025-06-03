@@ -761,7 +761,7 @@ class ComponentEnergyManager : Component
 			return m_CanWork;
 		}
 		
-		if (m_ThisEntityAI && m_ThisEntityAI.IsRuined())
+		if (!m_ThisEntityAI || m_ThisEntityAI.IsRuined())
 		{
 			return false;
 		}

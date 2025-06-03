@@ -164,7 +164,7 @@ class EffectSound : Effect
 					m_SoundObjectBuilder.AddEnvSoundVariables(GetPosition());
 					m_SoundObject = m_SoundObjectBuilder.BuildSoundObject();
 					m_SoundObject.SetKind( m_SoundWaveKind );
-					m_SoundObject.SetParent( m_ParentObject );
+					m_SoundObject.SetParent( m_ParentObject, m_PivotIndex );
 				}
 				
 				if ( m_SoundObject )
@@ -325,7 +325,7 @@ class EffectSound : Effect
 			if ( m_SoundObject )
 			{
 				m_SoundObject.SetKind( m_SoundWaveKind );
-				m_SoundObject.SetParent( m_ParentObject );
+				m_SoundObject.SetParent( m_ParentObject, m_PivotIndex );
 			}
 			else
 			{
@@ -651,13 +651,13 @@ class EffectSound : Effect
 	\brief Set parent for the sound to follow
 		\param parent_obj \p Object The parent for the sound to follow
 	*/
-	override void SetParent(Object parent_obj)
+	override void SetParent(Object parent_obj, int pivot)
 	{
-		super.SetParent(parent_obj); // ...
+		super.SetParent(parent_obj, pivot); // ...
 
 		if (m_SoundObject)
 		{
-			m_SoundObject.SetParent(parent_obj);
+			m_SoundObject.SetParent(parent_obj, pivot);
 		}
 	}
 	
@@ -671,6 +671,19 @@ class EffectSound : Effect
 			return Object.Cast(m_SoundObject.GetParent());
 		else
 			return super.GetParent();
+	}
+	
+	/**
+	\brief Get parent pivot of the Effect, only valid when there is some GetParent
+		\warning Only gets the cached variable
+		\return \p int The parent pivot of the Effect
+	*/
+	override int GetPivotIndex()
+	{
+		if (m_SoundObject)
+			return m_SoundObject.GetHierarchyPivot();
+		else
+			return super.GetPivotIndex();
 	}
 	
 	/**

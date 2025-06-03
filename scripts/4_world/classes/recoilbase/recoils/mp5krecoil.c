@@ -15,11 +15,11 @@ class Mp5kRecoil: RecoilBase
 		m_HandsCurvePoints.Insert(point_3);
 		m_HandsCurvePoints.Insert(point_4);
 		m_HandsCurvePoints.Insert("0 0 0");
-		m_HandsOffsetRelativeTime = 0.35;
+		m_HandsOffsetRelativeTime = 0.5;
 		
 		m_MouseOffsetRangeMin = 60;//in degrees min
 		m_MouseOffsetRangeMax = 145;//in degrees max
-		m_MouseOffsetDistance = 1.25;//how far should the mouse travel
+		m_MouseOffsetDistance = 1;//how far should the mouse travel
 		m_MouseOffsetRelativeTime = 0.4;//[0..1] a time it takes to move the mouse the required distance relative to the reload time of the weapon(firing mode)
 	
 		m_CamOffsetDistance = 0.0075;

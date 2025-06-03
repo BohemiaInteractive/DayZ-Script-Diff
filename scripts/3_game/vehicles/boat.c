@@ -17,13 +17,13 @@ enum BoatFluid
 
 class BoatOwnerState : TransportOwnerState
 {
-
 };
 
 class BoatMove : TransportMove
 {
 };
 
+//!	Native class for boats - handles physics simulation
 class Boat extends Transport
 {
 	//!
@@ -38,41 +38,23 @@ class Boat extends Transport
 		return BoatMove;
 	}
 
-	//!	Returns the actual throttle value in range <0, 1>.
-	proto native float GetThrottle();
-	
-	//! Sets the future throttle value.
-	proto native void SetThrottle(float value);
-
 	//!	Returns the actual steering value in range <-1, 1>.
 	proto native float GetSteering();
 
 	//! Sets the future steering value.
 	proto native void SetSteering(float value);
 
-	//! Returns the number of gears.
-	proto native int GetGearCount();
-
-	//! Returns the index of the neutral gear.
-	proto native int GetNeutralGear();
-
-	//! Returns the index of the future gear, -1 if there is no engine.
-	proto native int GetGear();
-
-	//! Returns the index of the current gear, -1 if there is no engine.
-	proto native int GetCurrentGear();
+	//!	Returns the actual throttle value in range <0, 1>.
+	proto native float GetThrottle();
+	
+	//! Sets the future throttle value.
+	proto native void SetThrottle(float value);
 
 	//! Returns the value of how much the clutch is disengaged.
 	proto native int GetClutch();
 
-	//! Shifts the future gear up, triggering gearbox simulation.
-	proto native void ShiftUp();
-
-	//! Shifts the future gear to selected gear, triggering gearbox simulation.
-	proto native void ShiftTo(int gear);
-
-	//! Shifts the future gear down, triggering gearbox simulation.
-	proto native void ShiftDown();
+	//! Sets the future clutch value.
+	proto native void SetClutch(float value);
 
 	//! Returns if there is an engine.
 	proto native bool HasEngine();
@@ -100,6 +82,27 @@ class Boat extends Transport
 
 	//! Stops the engine.
 	proto native void EngineStop();
+
+	//! Returns the index of the current gear, -1 if there is no engine.
+	proto native int GetCurrentGear();
+
+	//! Returns the index of the future gear, -1 if there is no engine.
+	proto native int GetGear();
+
+	//! Returns the index of the neutral gear.
+	proto native int GetNeutralGear();
+
+	//! Returns the number of gears.
+	proto native int GetGearCount();
+
+	//! Shifts the future gear up, triggering gearbox simulation.
+	proto native void ShiftUp();
+
+	//! Shifts the future gear to selected gear, triggering gearbox simulation.
+	proto native void ShiftTo(int gear);
+
+	//! Shifts the future gear down, triggering gearbox simulation.
+	proto native void ShiftDown();
 
 	//! Returns the propeller position in local space
 	proto native vector PropellerGetPosition();
@@ -130,11 +133,6 @@ class Boat extends Transport
 
 	//! Adds to the specified fluid the specified amount.
 	proto native void Fill(BoatFluid fluid, float amount);
-
-	/*!
-		Called every physics simulation step before inputs are applied.
-	*/
-	void OnInput(float dt) {}
 
 	/*!
 		Is called every time the game wants to start the engine.

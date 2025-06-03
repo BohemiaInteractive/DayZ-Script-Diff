@@ -14,32 +14,41 @@ class ActionStopEngineBoat: ActionSingleUseBase
 	}
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
-	{	
-		HumanCommandVehicle vehCmd = player.GetCommand_Vehicle();			
-		if (vehCmd && vehCmd.GetVehicleSeat() == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-		{
-			Transport trans = vehCmd.GetTransport();
-			if (!trans)
-				return false;
-			
-			Boat boat = Boat.Cast(trans);
-			if (boat && boat.EngineIsOn())
-				return true;		
-		}
+	{
+		HumanCommandVehicle vehCommand = player.GetCommand_Vehicle();
+		if (!vehCommand)
+			return false;
+		
+		auto vehicle = BoatScript.Cast(vehCommand.GetTransport());
+		if (!vehicle)
+			return false;
 
-		return false;
+		if (!vehicle.EngineIsOn())
+			return false;
+		
+		return vehicle.CrewDriver() == player;
 	}
 
 	override void OnExecute(ActionData action_data)
 	{
-		HumanCommandVehicle vehCmd = action_data.m_Player.GetCommand_Vehicle();
-		if (!vehCmd)
+		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
+		if (!vehCommand)
 			return;
-		
-		Boat boat = Boat.Cast(vehCmd.GetTransport());
-		if (boat)
-			boat.EngineStop();
-		
+
+		auto vehicle = BoatScript.Cast(vehCommand.GetTransport());
+		if (!vehicle)
+			return;
+
+		if (vehicle.GetNetworkMoveStrategy() == NetworkMoveStrategy.PHYSICS)
+		{
+			// Only perform on clients (or robos), validation is performed in C++
+			if (action_data.m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+			{
+				return;
+			}
+		}
+
+		vehicle.EngineStop();
 	}
 		
 	override bool CanBeUsedInVehicle()
@@ -56,4 +65,4 @@ class ActionStopEngineBoat: ActionSingleUseBase
 	{
 		return false;
 	}
-};
+}

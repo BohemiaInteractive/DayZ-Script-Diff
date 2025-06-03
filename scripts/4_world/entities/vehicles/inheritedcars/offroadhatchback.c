@@ -12,6 +12,7 @@ class OffroadHatchback extends CarScript
 		m_EngineStartBattery 	= "offroad_engine_failed_start_battery_SoundSet";
 		m_EngineStartPlug 		= "offroad_engine_failed_start_sparkplugs_SoundSet";
 		m_EngineStartFuel 		= "offroad_engine_failed_start_fuel_SoundSet";
+		m_EngineStop 			= "offroad_engine_stop_SoundSet";
 		m_EngineStopFuel 		= "offroad_engine_stop_fuel_SoundSet";
 		
 		m_CarDoorOpenSound 		= "offroad_door_open_SoundSet";

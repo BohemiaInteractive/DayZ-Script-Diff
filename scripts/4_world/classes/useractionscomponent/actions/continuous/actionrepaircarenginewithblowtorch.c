@@ -18,7 +18,7 @@ class ActionRepairCarEngineWithBlowtorch: ActionRepairCarEngine
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		Blowtorch bt = Blowtorch.Cast(item);
-		return super.ActionCondition(player, target, item) && bt.HasEnoughEnergyForRepair(UATimeSpent.BASEBUILDING_REPAIR_MEDIUM));
+		return super.ActionCondition(player, target, item) && bt.HasEnoughEnergyForRepair(UATimeSpent.BASEBUILDING_REPAIR_MEDIUM);
 	}
 
 	override void OnStartAnimationLoopServer(ActionData action_data)

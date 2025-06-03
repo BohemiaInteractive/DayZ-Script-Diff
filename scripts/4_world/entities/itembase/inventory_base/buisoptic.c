@@ -1,14 +1,18 @@
-class BUISOptic extends ItemOptics
+class BUISOptic : ItemOptics
 {
-	override bool CanPutAsAttachment( EntityAI parent )
+	override bool IsSightOnly()
 	{
-		if(!super.CanPutAsAttachment(parent)) {return false;}
-		if ( parent.IsKindOf("M4A1_Base") )
-		{
+		return true;
+	}
+
+	override bool CanPutAsAttachment(EntityAI parent)
+	{
+		if (!super.CanPutAsAttachment(parent))
+			return false;
+
+		if (parent.IsKindOf("M4A1_Base"))
 			return true;
-		}
 
 		return false;
-		//return true;
 	}
 }

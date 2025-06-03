@@ -2,6 +2,7 @@ enum EDynamicMusicPlayerCategory
 {
 	NONE = -1,
 	MENU = 0,
+	CREDITS,
 	TIME,
 	LOCATION_STATIC,
 	LOCATION_STATIC_PRIORITY,

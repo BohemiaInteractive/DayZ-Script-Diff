@@ -108,7 +108,7 @@ class RadialQuickbarMenu extends UIScriptedMenu
 	//============================================
 	void RadialQuickbarMenu()
 	{
-		m_Items = new ref array<ref RadialQuickbarItem>;
+		m_Items = new array<ref RadialQuickbarItem>;
 		m_CurrentCategory = RadialQuickbarCategory.DEFAULT;
 		
 		if ( !instance )

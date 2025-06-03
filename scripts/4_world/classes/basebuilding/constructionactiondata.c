@@ -27,11 +27,11 @@ class ConstructionActionData
 
 	void ConstructionActionData()
 	{
-		m_BuildParts = new ref array<ConstructionPart>;
-		m_BuildPartsNoTool = new ref array<ConstructionPart>;
+		m_BuildParts = new array<ConstructionPart>;
+		m_BuildPartsNoTool = new array<ConstructionPart>;
 		m_PartIndex = 0;
 		
-		m_Attachments = new ref array<EntityAI>;
+		m_Attachments = new array<EntityAI>;
 		m_AttachmentsIndex = 0;
 
 		if ( GetGame().IsClient() || !GetGame().IsMultiplayer() )

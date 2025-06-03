@@ -103,7 +103,7 @@ class ActionManagerClient: ActionManagerBase
 		}
 		
 #ifdef DEVELOPER
-		if (DeveloperFreeCamera.IsFreeCameraEnabled())
+		if (DeveloperFreeCamera.IsFreeCameraEnabledNoPlayerMovement())
 		{
 			m_ActionPossible = false;
 			ResetInputsActions();
@@ -488,6 +488,7 @@ class ActionManagerClient: ActionManagerBase
 				action_target = m_Targets.GetTarget(i);
 				Object targetObject = action_target.GetObject();
 				Object targetParent = action_target.GetParent();
+				int surfaceLiquidType = action_target.GetSurfaceLiquidType();
 				
 				if (targetParent)
 				{
@@ -495,6 +496,11 @@ class ActionManagerClient: ActionManagerBase
 				}
 				
 				if (targetObject)
+				{
+					break;
+				}
+				
+				if (surfaceLiquidType != LIQUID_NONE)
 				{
 					break;
 				}

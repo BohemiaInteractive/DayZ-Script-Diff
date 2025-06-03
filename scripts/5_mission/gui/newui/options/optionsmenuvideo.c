@@ -657,8 +657,8 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			m_TextMap.Insert( OptionAccessType.AT_AMBIENT_OCCLUSION, new Param2<string, string>( "#options_video_ambient_occlusion", "#options_video_ambient_occlusion_desc" ) );
 			m_TextMap.Insert( OptionAccessType.AT_POSTPROCESS_EFFECTS, new Param2<string, string>( "#options_video_post_process", "#options_video_post_process_desc" ) );
 			m_TextMap.Insert( OptionAccessType.AT_WATER_DETAIL, new Param2<string, string>( "#STR_option_video_ssr_quality_tip_header", "#STR_option_video_ssr_quality_tip" ) );
-			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_VISIBILITY_COMBO, new Param2<string, string>( "#STR_option_video_visibility", "#STR_option_video_visibility_desc" ) );
-			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_OBJECT_VISIBILITY_COMBO, new Param2<string, string>( "#STR_option_video_objectvisibility", "#STR_option_video_objectvisibility_desc" ) );
+			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_VISIBILITY_COMBO, new Param2<string, string>( "#STR_option_video_visibility_title", "#STR_option_video_visibility_desc" ) );
+			m_TextMap.Insert( OptionAccessType.AT_OPTIONS_OBJECT_VISIBILITY_COMBO, new Param2<string, string>( "#STR_option_video_objectvisibility_title", "#STR_option_video_objectvisibility_desc" ) );
 		#endif
 	}
 }

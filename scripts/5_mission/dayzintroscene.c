@@ -28,6 +28,7 @@ class DayZIntroScene : Managed
 		float fov = g_Game.ConfigGetFloat(scene_path + " fov");
 		float overcast = g_Game.ConfigGetFloat(scene_path + " overcast");
 		float rain = g_Game.ConfigGetFloat(scene_path + " rain");
+		float snowfall = g_Game.ConfigGetFloat(scene_path + " snowfall");
 		float fog = g_Game.ConfigGetFloat(scene_path + " fog");
 		float windspeed = -1;
 		if ( g_Game.ConfigIsExisting(scene_path + " windspeed") ) 	windspeed = g_Game.ConfigGetFloat(scene_path + " windspeed");
@@ -71,10 +72,12 @@ class DayZIntroScene : Managed
 		m_Weather = g_Game.GetWeather();
 		m_Weather.GetOvercast().SetLimits( overcast, overcast );
 		m_Weather.GetRain().SetLimits( rain, rain );
+		m_Weather.GetSnowfall().SetLimits( snowfall, snowfall );
 		m_Weather.GetFog().SetLimits( fog, fog );
 		
 		m_Weather.GetOvercast().Set( overcast, 0, 0);
 		m_Weather.GetRain().Set( rain, 0, 0);
+		m_Weather.GetSnowfall().Set( snowfall, 0, 0);
 		m_Weather.GetFog().Set( fog, 0, 0);
 		
 		if ( storm.Count() == 3 )

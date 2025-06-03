@@ -7,31 +7,26 @@ class ActionExitLadder: ActionInteractBase
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTNone;
+		m_ConditionItem 	= new CCINone();
+		m_ConditionTarget 	= new CCTNone();
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{	
 	    HumanCommandLadder cl = player.GetCommand_Ladder();
 		if (cl && cl.CanExit())
-		{
 			return true;
-		}
-		
-		//if ( action_data.m_Player.IsOnLadder() ) return true;
+
 		return false;
 	}
 
-	//! 
-	override void Start( ActionData action_data )
+	override void Start(ActionData action_data)
 	{
-		super.Start( action_data );
+		super.Start(action_data);
+
 	    HumanCommandLadder cl = action_data.m_Player.GetCommand_Ladder();
 		if (cl)
-		{
 			cl.Exit();
-		}
 	}
 
 	override bool IsInstant()
@@ -44,8 +39,8 @@ class ActionExitLadder: ActionInteractBase
 		return true;
 	}
 	
-	override bool HasTarget()
+	override bool IsLockTargetOnUse()
 	{
 		return false;
 	}
-};
+}

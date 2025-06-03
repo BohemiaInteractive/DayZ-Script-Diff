@@ -55,6 +55,17 @@ class PlayerSpawnHandler
 		}
 		
 		return m_Data.presets.Get(weightedPresetIndexes.GetRandomElement());
+	}
+	
+	static PlayerSpawnPreset GetCharacterPresetByName(string presetName)
+	{
+		foreach (PlayerSpawnPreset preset : m_Data.presets)
+		{
+			if (preset.IsValid() && preset.name == presetName)
+				return preset;
+		}
+		
+		return null;
 	} 
 	
 	//! equips character with the chosen preset

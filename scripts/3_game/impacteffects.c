@@ -1,10 +1,10 @@
 enum ImpactTypes
 {
-	UNKNOWN;
-	STOP;
-	PENETRATE;
-	RICOCHET;
-	MELEE;
+	UNKNOWN,
+	STOP,
+	PENETRATE,
+	RICOCHET,
+	MELEE,
 }
 
 class ImpactEffectsData

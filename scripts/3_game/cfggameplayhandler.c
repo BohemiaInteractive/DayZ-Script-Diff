@@ -259,6 +259,16 @@ class CfgGameplayHandler
 		return Math.Max(0.01, m_Data.PlayerData.MovementData.rotationSpeedSprint);
 	}
 	//----------------------------------------------------------------------------------
+	static EWeaponObstructionMode GetWeaponObstructionModeStatic()
+	{
+		return m_Data.PlayerData.WeaponObstructionData.staticMode;
+	}
+	//----------------------------------------------------------------------------------
+	static EWeaponObstructionMode GetWeaponObstructionModeDynamic()
+	{
+		return m_Data.PlayerData.WeaponObstructionData.dynamicMode;
+	}
+	//----------------------------------------------------------------------------------
 	static bool GetDisable2dMap()
 	{
 		return m_Data.PlayerData.disable2dMap;

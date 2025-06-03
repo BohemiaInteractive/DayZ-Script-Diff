@@ -21,6 +21,7 @@ class ParticleList
 	static const int NONE							= 0; // 0 does not exist either, valid particle starts from 1
 	static const int PARTICLE_TEST					= RegisterParticle("_test_orientation");
 	static const int DEBUG_DOT						= RegisterParticle("debug_dot");
+	static const int DEBUG_DOT5M					= RegisterParticle("debug_dot5m");
 	
 	// FIREPLACE	
 	// Normal fireplace
@@ -302,6 +303,7 @@ class ParticleList
 	static const int CONTAMINATED_AREA_GAS_BIGASS	= RegisterParticle("contaminated_area_gas_bigass");
 	static const int CONTAMINATED_AREA_GAS_GROUND	= RegisterParticle("contaminated_area_gas_ground");
 	static const int CONTAMINATED_AREA_GAS_SHELL	= RegisterParticle("contaminated_area_gas_shell");
+	static const int CONTAMINATED_AREA_GAS_DEBUG	= RegisterParticle("contaminated_area_gas_bigass_debug");
 	
 	//Fireworks
 	static const int FIREWORKS_SHOT					= RegisterParticle("fireworks_small_01");
@@ -345,6 +347,7 @@ class ParticleList
 	static const int HOTPSRING_WATERVAPOR			= RegisterParticle("hotspring_watervapor");
 	static const int GEYSER_NORMAL					= RegisterParticle("geyser_normal");
 	static const int GEYSER_STRONG					= RegisterParticle("geyser_strong");
+	static const int GEYSER_SPLASH					= RegisterParticle("geyser_strong_splash");
 	static const int GEYSER_BUBBLES					= RegisterParticle("geyser_bubbles");
 	static const int VOLCANO						= RegisterParticle("volcano_smoke");
 	

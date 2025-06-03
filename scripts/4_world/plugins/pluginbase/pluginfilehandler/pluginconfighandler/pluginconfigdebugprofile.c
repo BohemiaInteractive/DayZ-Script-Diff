@@ -6,22 +6,12 @@ class ScriptConsoleCameraDOFPreset
 	float FocusLengthNear = -1.0;
 	float Blur = 0.0;
 	float FocusDepthOffset = 1.0;
-	
-	void ScriptConsoleCameraDOFPreset(string name, float focusDistance, float focusLength, float focusLengthNear, float blur, float focusDepthOffset)
-	{
-		Name = name;
-		FocusDistance = focusDistance;
-		FocusLength = focusLength;
-		FocusLengthNear = focusLengthNear;
-		Blur = blur;
-		FocusDepthOffset = focusDepthOffset;
-	}
 }
 
 class ScriptConsoleWeatherPreset
 {
 	string Name = "New Preset";
-	float WOvercast = overcast;
+	float WOvercast;
 	float WRain;
 	float WSnow;
 	float WFog;
@@ -30,20 +20,6 @@ class ScriptConsoleWeatherPreset
 	float WVolFogDD;
 	float WVolFogHD;
 	float WVolFogHB;
-	
-	void ScriptConsoleWeatherPreset(string name, float overcast, float rain, float snow, float fog, float windMagnitude, float windDir, float volFogDD, float volFogHD, float volFogHB)
-	{
-		Name = name;
-		WOvercast = overcast;
-		WRain = rain;
-		WSnow = snow;
-		WFog = fog;
-		WWindMagnitude = windMagnitude;
-		WWindDir = windDir;
-		WVolFogDD = volFogDD;
-		WVolFogHD = volFogHD;
-		WVolFogHB = volFogHB;
-	}
 }
 
 typedef Param3<string, bool, vector> LocationParams;//  param1 - name, param2 - isCustom?, param3 - position
@@ -164,25 +140,29 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		return param;
 	}
 
-	protected array<ref CfgParam> GetArray( string key )
+	protected array<ref CfgParam> GetArray(string key)
 	{
-		if ( ParamExist(key) )
+		CfgParamArray paramsOut;
+		if (ParamExist(key))
 		{
-			CfgParamArray param = CfgParamArray.Cast( GetParamByName( key, CFG_TYPE_ARRAY ) );
-			return param.GetValues();
+			paramsOut = CfgParamArray.Cast( GetParamByName(key, CFG_TYPE_ARRAY));
+			return paramsOut.GetValues();
 		}
 		else
 		{
-			if ( m_DefaultValues.Contains(key) )
+			if (m_DefaultValues.Contains(key))
 			{
-				CfgParamArray default_param = CfgParamArray.Cast( m_DefaultValues.Get( key ) );
-				return SetArray( key, default_param.GetValues() ).GetValues();
+				CfgParamArray default_param = CfgParamArray.Cast(m_DefaultValues.Get(key));
+				paramsOut = SetArray(key, default_param.GetValues());
 			}
 			else
 			{
-				return SetArray( key, new array<ref CfgParam> ).GetValues();
-			}
+				array<ref CfgParam> param = new array<ref CfgParam>();
+				paramsOut = SetArray(key, param);
+			}			
 		}
+
+		return paramsOut.GetValues();
 	}
 	
 	//========================================
@@ -1094,9 +1074,9 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		
 		int i;
 		
-		array<ref CfgParam> params = GetArray( PRESET_LIST );
-		m_PresetList = new TStringArray;
-		for (i = 0; i < params.Count(); i++)
+		array<ref CfgParam> params = GetArray(PRESET_LIST);
+		m_PresetList = new TStringArray();
+		for (i = 0; i < params.Count(); ++i)
 		{
 			CfgParamString param = CfgParamString.Cast(params.Get(i));
 			m_PresetList.Insert(param.GetValue());
@@ -1132,7 +1112,14 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 			CfgParamFloat paramBlur = CfgParamFloat.Cast(presetParam.GetValueByName("Blur", CFG_TYPE_FLOAT));
 			CfgParamFloat paramFocusDepthOffset = CfgParamFloat.Cast(presetParam.GetValueByName("FocusDepthOffset", CFG_TYPE_FLOAT));
 			
-			m_CameraPresets.Insert(new ScriptConsoleCameraDOFPreset(paramCName.GetValue(), paramFocusDistance.GetValue(), paramFocusLength.GetValue(), paramFocusLengthNear.GetValue(), paramBlur.GetValue(), paramFocusDepthOffset.GetValue()));
+			ScriptConsoleCameraDOFPreset preset = new ScriptConsoleCameraDOFPreset();
+			preset.Name = paramCName.GetValue();
+			preset.FocusDistance = paramFocusDistance.GetValue();
+			preset.FocusLength = paramFocusLength.GetValue();
+			preset.FocusLengthNear = paramFocusLengthNear.GetValue();
+			preset.Blur = paramBlur.GetValue();
+			preset.FocusDepthOffset = paramFocusDepthOffset.GetValue();
+			m_CameraPresets.Insert(preset);
 		}
 	}
 	
@@ -1166,7 +1153,18 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 			CfgParamFloat paramVolFogHD = CfgParamFloat.Cast(presetParam.GetValueByName("VolFogHD", CFG_TYPE_FLOAT));
 			CfgParamFloat paramVolFogHB = CfgParamFloat.Cast(presetParam.GetValueByName("VolFogHB", CFG_TYPE_FLOAT));
 			
-			m_WeatherPresets.Insert(new ScriptConsoleWeatherPreset(paramWName.GetValue(), paramOvercast.GetValue(), paramRain.GetValue(), paramSnow.GetValue(), paramFog.GetValue(), paramWindMagnitude.GetValue(), paramWindDirection.GetValue(), paramVolFogDD.GetValue(), paramVolFogHD.GetValue(), paramVolFogHB.GetValue()));
+			ScriptConsoleWeatherPreset preset = new ScriptConsoleWeatherPreset();
+			preset.Name = paramWName.GetValue();
+			preset.WOvercast = paramOvercast.GetValue();
+			preset.WRain = paramRain.GetValue();
+			preset.WSnow = paramSnow.GetValue();
+			preset.WFog = paramFog.GetValue();
+			preset.WWindMagnitude =  paramWindMagnitude.GetValue();
+			preset.WWindDir = paramWindDirection.GetValue();
+			preset.WVolFogDD =  paramVolFogDD.GetValue();
+			preset.WVolFogHD = paramVolFogHD.GetValue();
+			preset.WVolFogHB = paramVolFogHB.GetValue();
+			m_WeatherPresets.Insert(preset);
 		}
 	}
 
@@ -1218,7 +1216,14 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		
 		SaveConfigToFile();
 		
-		m_CameraPresets.Insert(new ScriptConsoleCameraDOFPreset(name, focusDistance, focusLength, focusLengthNear, blur, focusDepthOffset));
+		ScriptConsoleCameraDOFPreset preset = new ScriptConsoleCameraDOFPreset();
+		preset.Name = name;
+		preset.FocusDistance = focusDistance;
+		preset.FocusLength = focusLength;
+		preset.FocusLengthNear = focusLengthNear;
+		preset.Blur = blur;
+		preset.FocusDepthOffset = focusDepthOffset;
+		m_CameraPresets.Insert(preset);
 	}
 	
 	void RemoveCameraPreset(string name)
@@ -1315,7 +1320,19 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		if (weatherPresetIndex == -1)
 		{
 			weather_params.Insert(presetParam);
-			m_WeatherPresets.Insert(new ScriptConsoleWeatherPreset(name, overcast, rain, snow, fog, windM, windD, volFogDD, volFogHD, volFogHB));
+			
+			ScriptConsoleWeatherPreset preset = new ScriptConsoleWeatherPreset();
+			preset.Name = name;
+			preset.WOvercast = overcast;
+			preset.WRain = rain;
+			preset.WSnow = snow;
+			preset.WFog = fog;
+			preset.WWindMagnitude = windM;
+			preset.WWindDir = windD;
+			preset.WVolFogDD = volFogDD;
+			preset.WVolFogHD = volFogHD;
+			preset.WVolFogHB = volFogHB;
+			m_WeatherPresets.Insert(preset);
 		}
 		else
 		{

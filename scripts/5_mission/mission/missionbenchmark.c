@@ -157,6 +157,8 @@ class MissionBenchmark : MissionGameplay
 	
 	void Start()
 	{		
+		DisableWeatherChange();
+		
 		if (!m_Config || m_Config.m_Locations.Count() <= 1)
 		{
 			OnBenchmarkEnd("Not enough locations defined");
@@ -222,6 +224,16 @@ class MissionBenchmark : MissionGameplay
 		}
 		
 		LerpCamera();	
+	}
+	
+	protected void DisableWeatherChange()
+	{
+		Weather weather = GetGame().GetWeather();		
+		weather.SetDynVolFogHeightBias(0,0);
+		weather.SetDynVolFogHeightDensity(0,0);
+		weather.SetDynVolFogDistanceDensity(0,0);
+		
+		weather.SetWeatherUpdateFreeze(true);
 	}
 	
  	protected void AdvanceLocation()
@@ -358,6 +370,7 @@ class MissionBenchmark : MissionGameplay
 		player.GetStatEnergy().Set(3000);
 		player.SetAllowDamage(false);
 		player.SetCanBeDestroyed(false);
+		player.DisableSimulation(true);
 		
 		FreeDebugCamera.GetInstance().SetFOV(0.72);
 		FreeDebugCamera.GetInstance().SetActive(true);

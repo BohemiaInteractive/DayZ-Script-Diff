@@ -76,6 +76,17 @@ class WeaponCharging_CK extends WeaponStateBase
 	}
 };
 
+class WeaponChargingOpenBolt_CK extends WeaponStateBase
+{
+	override bool IsWaitingForActionFinish () { return true; }
+	override void OnEntry (WeaponEventBase e)
+	{
+		super.OnEntry(e);
+		m_weapon.SetCharged(true);
+		m_weapon.SetWeaponOpen(true);
+	}
+};
+
 class WeaponEjectBullet_Cartridge extends WeaponStateBase
 {
 	Magazine m_dstMagazine; /// destination of the cartridge

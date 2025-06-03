@@ -65,10 +65,11 @@ class ITEM_GeneralData : ITEM_DataBase
 
 class ITEM_PlayerData : ITEM_DataBase
 {
-	ref ITEM_StaminaData StaminaData			 	= new ITEM_StaminaData;
-	ref ITEM_ShockHandlingData ShockHandlingData 	= new ITEM_ShockHandlingData;
-	ref ITEM_MovementData MovementData 				= new ITEM_MovementData;
-	ref ITEM_DrowningData DrowningData 				= new ITEM_DrowningData;
+	ref ITEM_StaminaData StaminaData			 			= new ITEM_StaminaData;
+	ref ITEM_ShockHandlingData ShockHandlingData 			= new ITEM_ShockHandlingData;
+	ref ITEM_MovementData MovementData 						= new ITEM_MovementData;
+	ref ITEM_DrowningData DrowningData 						= new ITEM_DrowningData;
+	ref ITEM_WeaponObstructionData WeaponObstructionData	= new ITEM_WeaponObstructionData;
 	
 	override void InitServer()
 	{
@@ -357,6 +358,31 @@ class ITEM_DrowningData : ITEM_DataBase
 	float staminaDepletionSpeed = 10;
 	float healthDepletionSpeed = 10;
 	float shockDepletionSpeed = 10;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+enum EWeaponObstructionMode
+{
+	DISABLED = 0, // Obstruction disallowed. Weapon doesn't obstruct, but still lifts.
+	ENABLED  = 1, // Obstruction allowed.    Weapon first obstructs and then lifts.
+	ALWAYS   = 2, // Obstruction always.     Weapon obstructs and never lifts.
+}
+
+class ITEM_WeaponObstructionData : ITEM_DataBase
+{
+	override void InitServer()
+	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
+	EWeaponObstructionMode staticMode  = EWeaponObstructionMode.ENABLED;
+	EWeaponObstructionMode dynamicMode = EWeaponObstructionMode.ENABLED;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------

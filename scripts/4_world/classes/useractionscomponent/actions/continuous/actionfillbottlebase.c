@@ -1,17 +1,19 @@
 class ActionFillBottleBaseCB : ActionContinuousBaseCB
 {
-	private int m_liquid_type;
 	private float m_BaseFillQuantity;
 	
 	override void CreateActionComponent()
 	{
-		m_liquid_type = ActionFillBottleBase.Cast(m_ActionData.m_Action).GetLiquidType(m_ActionData.m_Player, m_ActionData.m_Target, m_ActionData.m_MainItem);
+		CCTWaterSurfaceEx waterCheck = CCTWaterSurfaceEx.Cast(m_ActionData.m_Action.m_ConditionTarget);
+		if (!waterCheck)
+			return;
 		
-		if (m_liquid_type == LIQUID_GASOLINE)
+		int liquidType = waterCheck.GetLiquidType();
+		if (liquidType == LIQUID_GASOLINE)
 		{
 			m_BaseFillQuantity = UAQuantityConsumed.FUEL;
 		}
-		else if (m_liquid_type == LIQUID_SNOW)
+		else if (liquidType == LIQUID_SNOW)
 		{
 			m_BaseFillQuantity = UAQuantityConsumed.FILL_SNOW;
 		}
@@ -19,8 +21,11 @@ class ActionFillBottleBaseCB : ActionContinuousBaseCB
 		{
 			m_BaseFillQuantity = UAQuantityConsumed.FILL_LIQUID;
 		}
-		m_ActionData.m_ActionComponent = new CAContinuousFill(m_BaseFillQuantity, m_liquid_type);
+		m_ActionData.m_ActionComponent = new CAContinuousFill(m_BaseFillQuantity, liquidType);
 	}
+	
+	// DEPRECATED
+	private int m_liquid_type;
 };
 
 class ActionFillBottleBase: ActionContinuousBase
@@ -44,31 +49,18 @@ class ActionFillBottleBase: ActionContinuousBase
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem 	= new CCINonRuined();
-		m_ConditionTarget 	= new CCTNone()
+		m_ConditionItem = new CCINonRuined();
+		m_ConditionTarget = new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, m_AllowedLiquidMask);
 	}
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		Object targetObject = target.GetObject();
-		if (targetObject)
-		{
-			if (vector.DistanceSq(player.GetPosition(), targetObject.GetPosition()) > UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT)
-				return false;
-		}
-		else
-		{
-			CCTWaterSurfaceEx waterCheck = new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, m_AllowedLiquidMask);
-			if (!waterCheck.Can(player, target))
-				return false;
-		}
+		int liquidType = LIQUID_NONE;
+		CCTWaterSurfaceEx waterCheck = CCTWaterSurfaceEx.Cast(m_ConditionTarget);
+		if (waterCheck)
+			liquidType = waterCheck.GetSurfaceLiquidType(target);
 		
-		int liquidType = GetLiquidType(player, target, item);
-		
-		if (item.GetQuantity() > item.GetQuantityMin())
-			liquidType = Liquid.TranslateLiquidType(liquidType);
-		
-		return liquidType != LIQUID_NONE && Liquid.CanFillContainer(item,liquidType);
+		return liquidType != LIQUID_NONE && Liquid.CanFillContainer(item, liquidType);
 	}
 	
 	override bool ActionConditionContinue(ActionData action_data)
@@ -92,7 +84,9 @@ class ActionFillBottleBase: ActionContinuousBase
 	override protected int GetActionCommandEx(ActionData actionData)
 	{
 		int commandUID = DayZPlayerConstants.CMD_ACTIONFB_FILLBOTTLEPOND;
-		if (actionData.m_Target.GetObject())
+		Object targetObj = actionData.m_Target.GetObject();
+		
+		if (targetObj && (targetObj.IsWell() || targetObj.IsFuelStation()))
 		{
 			commandUID = DayZPlayerConstants.CMD_ACTIONFB_FILLBOTTLEWELL;
 		}
@@ -100,6 +94,29 @@ class ActionFillBottleBase: ActionContinuousBase
 		return commandUID;
 	}
 		
+	void SetupStance(PlayerBase player)
+	{
+		//returns in format (totalWaterDepth, characterDepht, 0)
+		vector water_info = HumanCommandSwim.WaterLevelCheck(player, player.GetPosition());
+		if (water_info[1] > WATER_DEPTH)
+		{
+			m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
+		}
+		else
+		{
+			m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
+		}
+	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
+	
+	// DEPRECATED
+	private const int ALLOWED_LIQUID;
+	
+	[Obsolete("CCTWaterSurfaceEx::GetSurfaceLiquidType can be used instead")]
 	int GetLiquidType(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		int liquidType = LIQUID_NONE;
@@ -127,26 +144,4 @@ class ActionFillBottleBase: ActionContinuousBase
 		
 		return liquidType & m_AllowedLiquidMask;
 	}
-	
-	void SetupStance(PlayerBase player)
-	{
-		//returns in format (totalWaterDepth, characterDepht, 0)
-		vector water_info = HumanCommandSwim.WaterLevelCheck(player, player.GetPosition());
-		if (water_info[1] > WATER_DEPTH)
-		{
-			m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
-		}
-		else
-		{
-			m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
-		}
-	}
-	
-	override bool IsLockTargetOnUse()
-	{
-		return false;
-	}
-	
-	// deprecated
-	private const int ALLOWED_LIQUID;
 }

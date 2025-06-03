@@ -849,61 +849,86 @@ class Clothing_Base extends ItemBase
 	
 	void UpdateNVGStatus(PlayerBase player, bool attaching = false, bool force_disable = false)
 	{
-		NVGoggles NVGAttachment;
-		NVGAttachment = NVGoggles.Cast(FindAttachmentBySlotName("NVG"));
-		bool has_nvg_slot;
-		for (int i = 0; i < GetInventory().GetAttachmentSlotsCount(); i++)
+		bool hasNVGSlot;
+		for (int i = 0; i < GetInventory().GetAttachmentSlotsCount(); ++i)
 		{
-			has_nvg_slot = GetInventory().GetAttachmentSlotId(i) == InventorySlots.GetSlotIdFromString("NVG");
-			if (has_nvg_slot)
+			hasNVGSlot = GetInventory().GetAttachmentSlotId(i) == InventorySlots.GetSlotIdFromString("NVG");
+			if (hasNVGSlot)
 				break;
 		}
 		
-		if ( player && has_nvg_slot )
+		if (player && hasNVGSlot)
 		{
-			if ( NVGAttachment )
+			NVGoggles nvgAttachment;
+			nvgAttachment = NVGoggles.Cast(FindAttachmentBySlotName("NVG"));
+			if (nvgAttachment)
 			{
-				NVGAttachment.LoweredCheck();
-				
-				if ( attaching && NVGAttachment.m_Strap && NVGAttachment.m_IsLowered )
+				if (attaching)
 				{
-					NVGAttachment.SetPlayer(player);
-					player.SetNVGLowered(true);
-					
-					if ( player.IsControlledPlayer() )
+				 	if (nvgAttachment.m_Strap && nvgAttachment.m_IsLowered)
 					{
-						if ( NVGAttachment.IsWorking() )
+						nvgAttachment.SetPlayer(player);
+						player.SetNVGLowered(true);
+						
+						if (player.IsControlledPlayer())
 						{
-							player.AddActiveNV(NVTypes.NV_GOGGLES);
-							//player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
-						}
-						else
-						{
-							//player.AddActiveNV(NVTypes.NV_GOGGLES_OFF);
 							player.RemoveActiveNV(NVTypes.NV_GOGGLES);
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES_2D);
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
+							
+							player.AddActiveNV(nvgAttachment.GetCurrentNVType());
 						}
 					}
 				}
-				else
+				else if (force_disable)
 				{
-					NVGAttachment.SetPlayer(null);
+					nvgAttachment.SetPlayer(null);
 					player.SetNVGLowered(false);
 					
-					if ( player.IsControlledPlayer() )
-					{
+					if (player.IsControlledPlayer())
+					{					
 						player.RemoveActiveNV(NVTypes.NV_GOGGLES);
-						//player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
+						player.RemoveActiveNV(NVTypes.NV_GOGGLES_2D);
+						player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
+					}
+				}
+				else // common case during operational state
+				{
+				 	if (nvgAttachment.m_Strap && nvgAttachment.m_IsLowered)
+					{
+						nvgAttachment.SetPlayer(player);
+						player.SetNVGLowered(true);
+						
+						if (player.IsControlledPlayer())
+						{						
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES);
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES_2D);
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
+							
+							player.AddActiveNV(nvgAttachment.GetCurrentNVType());
+						}
+					}
+					else
+					{
+						player.SetNVGLowered(false);
+						if (player.IsControlledPlayer())
+						{
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES);
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES_2D);
+							player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
+						}
 					}
 				}
 			}
-			else if ( player.IsNVGWorking() && force_disable )
+			else //! generic detach
 			{
 				player.SetNVGLowered(false);
 				
-				if ( player.IsControlledPlayer() )
-				{
+				if (player.IsControlledPlayer())
+				{					
 					player.RemoveActiveNV(NVTypes.NV_GOGGLES);
-					//player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
+					player.RemoveActiveNV(NVTypes.NV_GOGGLES_2D);
+					player.RemoveActiveNV(NVTypes.NV_GOGGLES_OFF);
 				}
 			}
 		}
@@ -1033,8 +1058,8 @@ class ItemMap extends InventoryItemSuper
 		SetObjectTexture(1,m_TextureOpened);
 		SetObjectTexture(2,m_TextureLegend);
 		
-		//m_MarkerArray = new ref array<vector,int,int,string>;
-		m_MapMarkerArray = new ref array<ref MapMarker>;
+		//m_MarkerArray = new array<vector,int,int,string>;
+		m_MapMarkerArray = new array<ref MapMarker>;
 		if (GetGame().IsMultiplayer() && GetGame().IsServer())
 		{
 			SyncMapMarkers();

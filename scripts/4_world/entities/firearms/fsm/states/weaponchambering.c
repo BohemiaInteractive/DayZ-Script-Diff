@@ -6,8 +6,9 @@ class WeaponChambering_Start extends WeaponStartAction
 		super.OnEntry(e);
 		if (e)
 		{
+			m_weapon.EffectBulletHide(m_weapon.GetCurrentMuzzle());
 			m_weapon.SelectionBulletHide();
-			m_weapon.ForceSyncSelectionState();
+			//m_weapon.ForceSyncSelectionState();
 		}
 	}
 	
@@ -79,165 +80,322 @@ class WeaponChambering_Base extends WeaponStateBase
 		}
 		return true;
 	}
-};
-
-
-class WeaponChambering_Cartridge extends WeaponChambering_Base
-{
-	override bool IsWaitingForActionFinish () { return true; }
-	override void OnEntry (WeaponEventBase e)
+	
+	bool ShowBullet(int muzzleIndex)
 	{
-		super.OnEntry(e);
-		if (e)
+		if (m_srcMagazine)
 		{
-			if (m_srcMagazine)
+			if (m_srcMagazine.GetCartridgeAtIndex(0, m_damage, m_type))
 			{
-				m_magazineType = m_srcMagazine.GetType();
-				
-				if (m_srcMagazine.ServerAcquireCartridge(m_damage, m_type))
-				{
-					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, ok - cartridge acquired: dmg=" + m_damage + " type=" + m_type); }
-					m_weapon.SelectionBulletShow();
-					m_weapon.ShowBullet(m_weapon.GetCurrentMuzzle());
-					m_weapon.EffectBulletShow( m_weapon.GetCurrentMuzzle(), m_damage, m_type);
-					m_weapon.SetWeaponOpen(false);
-				}
-				else
-					Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot take cartridge from magazine");
+				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering ShowBullet, ok - cartridge shown: dmg=" + m_damage + " type=" + m_type); }
+				m_weapon.SelectionBulletShow();
+				m_weapon.ShowBullet(muzzleIndex);
+				m_weapon.EffectBulletShow(muzzleIndex, m_damage, m_type);
+				return true;
 			}
 			else
 			{
-				Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - no magazine to load from (m_srcMagazine=NULL)");
+				Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering ShowBullet, error - cannot take cartridge from magazine");
 			}
 		}
+		else
+		{
+			Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering ShowBullet, error - no magazine to load from (m_srcMagazine=NULL)");
+		}
+		
+		return false;
+	}
+	
+	void HideBullet(int muzzleIndex)
+	{
+		m_weapon.EffectBulletHide(muzzleIndex);
+		m_weapon.SelectionBulletHide();
+	}
+	
+	void OpenBolt()
+	{
+		m_weapon.SetWeaponOpen(true);
+	}
+	
+	void CloseBolt()
+	{
+		m_weapon.SetWeaponOpen(false);
+	}
+	
+	bool AcquireCartridgeFromMagazine()
+	{
+		m_magazineType = m_srcMagazine.GetType();
+		if (m_srcMagazine.ServerAcquireCartridge(m_damage, m_type))
+		{
+			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering AcquireCartridgeFromMagazine, ok - bullet acquire " + m_type); }
+			return true;
+		}
+		else
+		{
+			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering AcquireCartridgeFromMagazine, error -Cannot acquire bullet from magazine!"); }
+			m_magazineType = string.Empty;
+			m_type = string.Empty;
+		}
+		return false;
+	}
+	
+	bool DropBullet(WeaponEventBase e)
+	{
+		if ( GetGame().IsServer() )
+		{
+			if(m_magazineType.Length() > 0 && m_type.Length() > 0)
+			{
+				if (DayZPlayerUtils.HandleDropCartridge(e.m_player, m_damage, m_type, m_magazineType))
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering DropBullet, ok - " + m_type + " - dropped to ground"); }
+					return true;
+				}
+				else
+				{
+					Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering DropBullet, error - cannot drop " + m_type + " - lost)");
+			
+				}
+			}
+			else
+			{
+				Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering DropBullet, error - magazine or bullet type is not set");
+			}
+			return false;
+		}
+		return true;
+	}
+	
+	bool PushBulletToChamber(int muzzleIndex)
+	{
+		if(m_type.Length() > 0)
+		{
+			if (!m_weapon.IsChamberFull(muzzleIndex))
+			{
+				if (m_weapon.PushCartridgeToChamber(muzzleIndex, m_damage, m_type))
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToChamber, ok - " + m_type + " - chamber"); }
+					return true;
+				}
+				else
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToChamber, error - cannot load " + m_type + " to chamber!"); }
+				}
+			}
+			else
+			{
+				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToChamber, error - chamber is already full!"); }
+			}
+		}
+		else
+		{
+			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToChamber, error - bullet type is not set!"); }
+		}
+		return false;
+	}
+	
+	bool PushBulletToInternalMagazine(int muzzleIndex)
+	{
+		if(m_type.Length() > 0)
+		{
+			if (!m_weapon.IsInternalMagazineFull(muzzleIndex))
+			{
+				if (m_weapon.PushCartridgeToInternalMagazine(muzzleIndex, m_damage, m_type))
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToInternalMagazine, ok - " + m_type + " - internal magazine"); }
+					return true;
+				}
+				else
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToInternalMagazine, error - " + m_type + " cannot load to internal magazine!"); }
+				}
+			}
+			else
+			{
+				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToInternalMagazine, error - " + m_type + " cannot load to internal magazine(full)!"); }
+			}
+
+		}
+		else
+		{
+			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletToInternalMagazine, error - bullet type is not set!"); }
+		}
+		return false;
+	}
+	
+	bool PushBulletFromChamberToInternalMagazine(int muzzleIndex)
+	{
+		float ammoDamage;
+ 		string ammoTypeName;
+
+		if (m_weapon.IsChamberFull(muzzleIndex))
+		{
+			if(m_weapon.PopCartridgeFromChamber(muzzleIndex, ammoDamage, ammoTypeName))
+			{
+				if (m_weapon.PushCartridgeToInternalMagazine(muzzleIndex, ammoDamage, ammoTypeName))
+				{
+					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering PushBulletFromChamberToInnerMagazine, ok - " + ammoTypeName + " - chamber -> internal magazine"); }
+					return true;
+				}
+				else
+				{
+					if (m_weapon.PushCartridgeToChamber(muzzleIndex, ammoDamage, ammoTypeName))
+					{
+						if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + "WeaponChambering PushBulletFromChamberToInnerMagazine, error - " + ammoTypeName + " - chamber"); }
+					}
+					else
+					{
+						if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + "WeaponChambering PushBulletFromChamberToInnerMagazine, error - " + ammoTypeName + " - lost"); } 
+					}
+				}	
+			}
+			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + "WeaponChambering PushBulletFromChamberToInnerMagazine, error - cannot pop bullet from chamber"); }
+		}
+		else
+		{
+			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + "WeaponChambering PushBulletFromChamberToInnerMagazine, ok - not bullet in chamber"); }
+			return true;
+		}
+		return false;
+	}
+};
+
+class WeaponChambering_Preparation extends WeaponChambering_Base
+{
+	override bool IsWaitingForActionFinish() { return false; }
+	override void OnEntry (WeaponEventBase e)
+	{
+		super.OnEntry(e);
+		
+		int mi = m_weapon.GetCurrentMuzzle();
+		ShowBullet(mi);
 	}
 
 	override void OnAbort(WeaponEventBase e)
 	{
-		int mi = m_weapon.GetCurrentMuzzle();
-		
-		string magazineTypeName;
-		
-		if (m_magazineType.Length() > 0)
-			magazineTypeName = m_magazineType;
-		else
-			magazineTypeName = m_weapon.GetChamberAmmoTypeName(mi);
-		
-		if ( GetGame().IsServer() )
-		{
-			if (DayZPlayerUtils.HandleDropCartridge(e.m_player, m_damage, m_type, magazineTypeName))
-			{
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, ok - aborting, chambering cartridge dropped to ground"); }
-			}
-			else
-				Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot abort removal from wpn (of old mag)");
-		}
-		
-		m_weapon.EffectBulletHide(mi);
-		m_weapon.SelectionBulletHide(); // force hide on abort
-		
-		m_magazineType = string.Empty;
-		m_type = string.Empty;
 		super.OnAbort(e);
-	}
-
-	override void OnExit (WeaponEventBase e)
-	{
+		
 		int mi = m_weapon.GetCurrentMuzzle();
-		//if ( m_weapon.IsChamberFiredOut(mi) )
-		//	m_weapon.EjectCasing(mi);
-		if (m_weapon.PushCartridgeToChamber(mi, m_damage, m_type))
+		if(AcquireCartridgeFromMagazine())
 		{
-			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, ok - loaded chamber"); }
+			DropBullet(e);
 		}
-		else
-			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot load chamber chamber!"); }
-
-		m_weapon.SetCharged(true);
+		HideBullet(mi);
+		
 		m_magazineType = string.Empty;
 		m_type = string.Empty;
-		super.OnExit(e);
-	}
-	
-};
-
-class WeaponChambering_Cartridge_ChambToMag extends WeaponChambering_Cartridge
-{
-	override void OnExit (WeaponEventBase e)
-	{
-		float ammoDamage;
- 		string ammoTypeName;
-		int mi = m_weapon.GetCurrentMuzzle();
-		if (m_weapon.IsChamberFull(mi))
-		{
-			m_weapon.PopCartridgeFromChamber(mi, ammoDamage, ammoTypeName);
-			if (m_weapon.PushCartridgeToInternalMagazine(mi, ammoDamage, ammoTypeName))
-			{
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, ok - loaded chamber"); }
-			}
-			else
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot load chamber chamber!"); }
-		}
-		
-		m_weapon.SetWeaponOpen(false);
-		super.OnExit(e);
 	}
 }
 
-//-----------MAGNUM-----------
-class WeaponChambering_MultiMuzzleMagnum extends WeaponChambering_Cartridge
+class WeaponChambering_Cartridge extends WeaponChambering_Preparation
 {
-	override bool IsWaitingForActionFinish () { return false; }
-	override void OnEntry(WeaponEventBase e)
+	override bool IsWaitingForActionFinish() { return false; }
+	override void OnEntry (WeaponEventBase e)
 	{
-		super.OnEntry(e);
-
-		/*for(int i = 0; i < m_weapon.GetMuzzleCount(); i++ )
-		{
-			if(!m_weapon.IsChamberFull(i))
-			{
-				m_weapon.ShowBullet(i);
-				m_weapon.EffectBulletShow(i, m_damage, m_type);
-				return;
-			}
-		}*/
+		super.OnEntry(e); 
+		OpenBolt();
 	}
 	
 	override void OnExit(WeaponEventBase e)
 	{
-		m_weapon.SelectionBulletHide();
-		int muzzle = m_weapon.GetCurrentMuzzle();
+		super.OnExit(e);
 		
-		if (!m_weapon.IsChamberFull(muzzle))
+		int mi = m_weapon.GetCurrentMuzzle();	
+		if(AcquireCartridgeFromMagazine())
 		{
-			if (m_weapon.PushCartridgeToChamber(muzzle, m_damage, m_type))
+			if(!PushBulletToChamber(mi))
+			{
+				DropBullet(e);
+			}
+		}
+		
+		m_weapon.SetCharged(true);
+		CloseBolt();
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
+	}
+};
+
+
+
+class WeaponChambering_Cartridge_ChambToMag extends WeaponChambering_Preparation
+{
+	override bool IsWaitingForActionFinish() { return true; }
+	
+	override void OnExit (WeaponEventBase e)
+	{
+		super.OnExit(e);
+		
+		int mi = m_weapon.GetCurrentMuzzle();
+		if(PushBulletFromChamberToInternalMagazine(mi))
+		{
+			if(AcquireCartridgeFromMagazine())
+			{
+				if(!PushBulletToChamber(mi))
+				{
+					DropBullet(e);
+				}
+			}
+		}
+		
+		m_weapon.SetCharged(true);
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
+	}
+}
+
+//-----------MAGNUM-----------
+class WeaponChambering_MultiMuzzleMagnum extends WeaponChambering_Base
+{
+	override bool IsWaitingForActionFinish() { return false; }
+
+	override void OnAbort(WeaponEventBase e)
+	{
+		super.OnAbort(e);
+		
+		int mi = m_weapon.GetCurrentMuzzle();
+		if(AcquireCartridgeFromMagazine())
+		{
+			DropBullet(e);
+		}
+		
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
+	}
+	override void OnExit(WeaponEventBase e)
+	{
+		super.OnExit(e);
+		
+		m_weapon.SelectionBulletHide();
+		int mi = m_weapon.GetCurrentMuzzle();
+		
+		if(AcquireCartridgeFromMagazine())
+		{
+			if(PushBulletToChamber(mi))
 			{
 				Magnum_Cylinder cylinder = Magnum_Cylinder.Cast(m_weapon.GetAttachmentByType(Magnum_Cylinder));
-
+					
 				if (cylinder)
 				{
 					string bullet = "bullet";
 					string bullet_nose = "bullet_nose";
 					
-					if (muzzle > 0)
+					if (mi > 0)
 					{
-						bullet = string.Format("bullet_" + ( muzzle + 1 ));
-						bullet_nose = string.Format("bullet_nose_" + ( muzzle + 1 ));
+						bullet = string.Format("bullet_" + ( mi + 1 ));
+						bullet_nose = string.Format("bullet_nose_" + ( mi + 1 ));
 					}
 					cylinder.ShowSelection(bullet);
 					cylinder.ShowSelection(bullet_nose);
 				}
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_MultiMuzzleMagnum, ok - loaded chamber"); }
 			}
 			else
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_MultiMuzzleMagnum, error - cannot load chamber chamber!"); }
-			m_type = string.Empty;
-			return;
+			{
+				DropBullet(e);
+			}
 		}
-		else
-			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_MultiMuzzleMagnum, error - cannot load chamber chamber!"); }
 		
-		//super.OnExit(e);
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
 	}
 }
 
@@ -245,7 +403,7 @@ class WeaponChambering_MultiMuzzleMagnum extends WeaponChambering_Cartridge
 
 //----------------------------
 
-class WeaponChambering_MultiMuzzle extends WeaponChambering_Cartridge
+class WeaponChambering_MultiMuzzle extends WeaponChambering_Base
 {
 	override bool IsWaitingForActionFinish () { return true; }
 	override void OnEntry(WeaponEventBase e)
@@ -256,114 +414,126 @@ class WeaponChambering_MultiMuzzle extends WeaponChambering_Cartridge
 		{
 			if(!m_weapon.IsChamberFull(i))
 			{
-				m_weapon.ShowBullet(i);
-				m_weapon.EffectBulletShow(i, m_damage, m_type);
+				ShowBullet(i);
 				return;
 			}
 		}
+		if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_MultiMuzzle OnEntry, error - all chambers full!"); }
+	}
+	
+	override void OnAbort(WeaponEventBase e)
+	{
+		super.OnAbort(e);
+		
+		int mi = m_weapon.GetCurrentMuzzle();
+		if(AcquireCartridgeFromMagazine())
+		{
+			DropBullet(e);
+		}
+		HideBullet(mi);
+		
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
 	}
 	
 	override void OnExit (WeaponEventBase e)
 	{
+		super.OnExit(e);
+		
 		for(int i = 0; i < m_weapon.GetMuzzleCount(); i++ )
 		{
 			if(!m_weapon.IsChamberFull(i))
 			{
-				if (m_weapon.PushCartridgeToChamber(i, m_damage, m_type))
-				{
-					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, ok - loaded chamber"); }
+				if(AcquireCartridgeFromMagazine())
+				{					
+					if (m_weapon.PushCartridgeToChamber(i, m_damage, m_type))
+					{
+						if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, ok - loaded chamber"); }
+					}
+					else
+					{
+						if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot load chamber chamber!"); }
+						DropBullet(e);
+					}
+	
+					m_type = string.Empty;
+					
+					return;
 				}
-				else
-					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge, error - cannot load chamber chamber!"); }
-				m_type = string.Empty;
-				return;
 			}
 		}
-		
-		super.OnExit(e);
 	}
 }
 
-class WeaponChambering_MultiMuzzle_W4T extends WeaponChambering_MultiMuzzle
+/*class WeaponChambering_MultiMuzzle_W4T extends WeaponChambering_MultiMuzzle
 {
 	override bool IsWaitingForActionFinish () { return true; }
-};
-
-
-class WeaponChambering_Cartridge_InnerMag extends WeaponChambering_Base
+};*/
+	
+class WeaponChambering_InternalMagazine_OnExit extends WeaponChambering_Preparation
 {
-	override void OnEntry (WeaponEventBase e)
-	{
-		super.OnEntry(e);
-		if (e)
-		{
-			if (m_srcMagazine)
-			{
-				m_magazineType = m_srcMagazine.GetType();
-				
-				if (m_srcMagazine.ServerAcquireCartridge(m_damage, m_type))
-				{
-					if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge_InnerMag, ok - cartridge acquired: dmg=" + m_damage + " type=" + m_type); }		
-				}
-				else
-					Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge_InnerMag, error - cannot take cartridge from magazine");
-			}
-			else
-			{
-				Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge_InnerMag, error - no magazine to load from (m_srcMagazine=NULL)");
-			}
-			
-			m_weapon.SelectionBulletShow();
-			m_weapon.EffectBulletShow(m_weapon.GetCurrentMuzzle(),m_damage,m_type);
-		}
-	}
-
-	override void OnAbort(WeaponEventBase e)
-	{
-		int mi = m_weapon.GetCurrentMuzzle();
-		string magazineTypeName;
-		
-		if (m_magazineType.Length() > 0)
-			magazineTypeName = m_magazineType;
-		else
-			magazineTypeName = m_weapon.GetChamberAmmoTypeName(mi);
-		
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
-		{
-			if (DayZPlayerUtils.HandleDropCartridge(e.m_player, m_damage, m_type, magazineTypeName))
-			{
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge_InnerMag, ok - aborting, chambering cartridge dropped to ground"); }
-			}
-			else
-				Error("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge_InnerMag, error - cannot abort removal from wpn (of old mag)");
-		}
-
-		m_weapon.SelectionBulletHide(); // force hide on abort
-		m_weapon.EffectBulletHide(m_weapon.GetCurrentMuzzle());
-
-		m_magazineType = string.Empty;
-		m_type = string.Empty;
-		super.OnAbort(e);
-	}
-
 	override void OnExit (WeaponEventBase e)
 	{
-		float ammoDamage;
- 		string ammoTypeName;
-		int mi = m_weapon.GetCurrentMuzzle();
-		if (!m_weapon.IsInternalMagazineFull(mi))
-		{
-			if (m_weapon.PushCartridgeToInternalMagazine(mi, m_damage, m_type))
-			{
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge_InnerMag, ok - loaded chamber"); }
-			}
-			else
-				if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponChambering_Cartridge_InnerMag, error - cannot load chamber chamber!"); }
-		}
-		m_magazineType = string.Empty;
 		super.OnExit(e);
+		
+		int mi = m_weapon.GetCurrentMuzzle();	
+		if(AcquireCartridgeFromMagazine())
+		{
+			if(!PushBulletToInternalMagazine(mi))
+			{
+				DropBullet(e);
+			}
+		}
+		
+		m_weapon.SetCharged(true);
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
 	}
 };
+
+class WeaponChambering_Chamber_OnEntry extends WeaponChambering_Base
+{
+	override bool IsWaitingForActionFinish() {return true;}
+	override void OnEntry(WeaponEventBase e)
+	{
+		super.OnEntry(e);
+		
+		int mi = m_weapon.GetCurrentMuzzle();	
+		if(AcquireCartridgeFromMagazine())
+		{
+			if(!PushBulletToChamber(mi))
+			{
+				DropBullet(e);
+			}
+		}
+		
+		m_weapon.SetCharged(true);
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
+	}
+};
+	
+class WeaponChambering_InternalMagazine_OnEntry extends WeaponChambering_Base
+{
+	override bool IsWaitingForActionFinish() {return true;}		
+	override void OnEntry(WeaponEventBase e)
+	{
+		super.OnEntry(e);
+		
+		int mi = m_weapon.GetCurrentMuzzle();	
+		if(AcquireCartridgeFromMagazine())
+		{
+			if(!PushBulletToInternalMagazine(mi))
+			{
+				DropBullet(e);
+			}
+		}
+		
+		m_weapon.SetCharged(true);
+		m_magazineType = string.Empty;
+		m_type = string.Empty;
+	}
+}
 
 class WeaponChambering_W4T extends WeaponStateBase
 {
@@ -637,7 +807,6 @@ class ChamberMultiBullet extends WeaponStateBase
 	ref WeaponStateBase m_start;
 	ref WeaponEjectCasingMultiMuzzle m_eject;
 	ref WeaponChambering_Base m_chamber;
-	ref WeaponChambering_Base m_chamber_end;
 	ref LoopedChambering_Wait4ShowBullet2 m_w4sb2;
 	ref WeaponEndAction m_endLoop;
 	ref BulletShow_W4T m_showB;
@@ -652,9 +821,8 @@ class ChamberMultiBullet extends WeaponStateBase
 		// setup nested state machine
 		m_start = new WeaponChambering_Start(m_weapon, this, m_action, m_startActionType);
 		m_eject = new WeaponEjectCasingMultiMuzzle(m_weapon, this);
-		m_chamber = new WeaponChambering_MultiMuzzle_W4T(m_weapon, this);
-		m_chamber_end = new WeaponChambering_MultiMuzzle_W4T(m_weapon, this);
-		m_w4sb2 = LoopedChambering_Wait4ShowBullet2(m_weapon, this);
+		m_chamber = new WeaponChambering_MultiMuzzle(m_weapon, this);
+		m_w4sb2 = new LoopedChambering_Wait4ShowBullet2(m_weapon, this);
 		m_showB = new BulletShow_W4T(m_weapon, this);
 		m_showB2= new BulletShow2_W4T(m_weapon, this);
 		

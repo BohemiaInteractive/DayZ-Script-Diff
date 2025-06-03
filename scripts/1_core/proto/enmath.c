@@ -732,7 +732,7 @@ class Math
 		\param inputMin \p float Minimal value of given input range
 		\param inputMax \p float Maximal value of given input range
 		\param outputMin \p float Minimal value of given output range
-		\param outputMax \p float Maximal value of given input range
+		\param outputMax \p float Maximal value of given output range
 		\param inputValue \p float Value we want to remap
 		\param clampedOutput\p bool If value should stay in that range, otherwise it will be extrapolated 
 		\return \p float - Remapped value
@@ -754,6 +754,18 @@ class Math
 		float z = (min[2] + max[2]) * 0.5;
 		
 		return Vector(x, 0.0, z);
+	}
+
+	/**
+	\brief Returns if given vectors are equal with given tolerance
+		\param v1 \p float First vector for comparison
+		\param v2 \p float Second vector for comparison
+		\param tolerance \p float Range in which given vectors can differ
+		\return \p bool - True if Vectors are equal; otherwise false
+	*/	
+	static bool VectorIsEqual(vector v1, vector v2, float tolerance)
+	{
+	    return (Math.AbsFloat(v1[0] - v2[0]) <= tolerance && Math.AbsFloat(v1[1] - v2[1]) <= tolerance && Math.AbsFloat(v1[2] - v2[2]) <= tolerance);
 	}
 }
 

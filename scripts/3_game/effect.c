@@ -37,6 +37,8 @@ class Effect : Managed
 	protected bool				m_IsPlaying;
 	//! Cached parent
 	protected Object 			m_ParentObject;
+	//! Cached parent pivot id
+	protected int				m_PivotIndex = -1;
 	//! Cached world position
 	protected vector    		m_Position;
 	//@}
@@ -391,11 +393,24 @@ class Effect : Managed
 	\brief Set parent of the Effect
 		\note Same as SetAttachmentParent, but more generic name
 		\warning Only sets the cached variable, for immediate effect use SetCurrent variant
+		\param parent_obj \p Object The parent
+		\param pivot \p int The pivot index
+	*/
+	void SetParent(Object parent_obj, int pivot)
+	{
+		m_ParentObject = parent_obj;
+		m_PivotIndex = pivot;
+	}
+
+	/**
+	\brief Set parent of the Effect
+		\note Same as SetAttachmentParent, but more generic name
+		\warning Only sets the cached variable, for immediate effect use SetCurrent variant
 		\param parent_obj \p Object The parent for the Effect
 	*/
 	void SetParent(Object parent_obj)
 	{
-		m_ParentObject = parent_obj;
+		SetParent(parent_obj, -1);
 	}
 	
 	/**
@@ -407,6 +422,16 @@ class Effect : Managed
 	Object GetParent()
 	{
 		return m_ParentObject;
+	}
+
+	/**
+	\brief Get parent pivot of the Effect, only valid when there is some GetParent
+		\warning Only gets the cached variable
+		\return \p int The parent pivot of the Effect
+	*/
+	int GetPivotIndex()
+	{
+		return m_PivotIndex;
 	}
 	
 	/**

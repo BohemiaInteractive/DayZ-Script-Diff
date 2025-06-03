@@ -440,7 +440,7 @@ class DayZPlayerImplementAiming
 				stance_modifier = 0.75;
 			break;
 			case DayZPlayerConstants.STANCEIDX_RAISEDPRONE:
-				stance_modifier = 0.9;
+				stance_modifier = 0.925;
 			break;
 			default:
 				stance_modifier = 0.75;

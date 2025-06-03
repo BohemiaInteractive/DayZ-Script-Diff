@@ -218,7 +218,7 @@ class HandEventTake extends HandEventBase
 
 	override bool CheckRequestSrc ()
 	{
-		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
+		if (!GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
 			Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CheckRequestSrc", m_Player.ToString() );
 			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
@@ -289,7 +289,7 @@ class HandEventMoveTo extends HandEventBase
 	
 	override bool CheckRequestSrc ()
 	{
-		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
+		if (!GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
 			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
 			return false; // stale packet
@@ -304,7 +304,7 @@ class HandEventMoveTo extends HandEventBase
 	
 	override bool CanPerformEvent ()
 	{
-		if (false == GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
+		if (!GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
 		{
 			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
@@ -346,7 +346,7 @@ class HandEventRemove extends HandEventBase
 
 	override bool CheckRequestSrc ()
 	{
-		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
+		if (!GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
 			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
@@ -366,11 +366,36 @@ class HandEventRemove extends HandEventBase
 	
 	override bool CanPerformEvent ()
 	{
-		if (false == GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
+		InventoryLocation src = GetSrc();
+		InventoryLocation dst = GetDst();
+
+		if (!dst)
 		{
 			#ifdef ENABLE_LOGGING
 			if ( LogManager.IsInventoryHFSMLogEnable() )
-			{	
+			{
+				Debug.InventoryHFSMLog("CANNOT perform. Dst location is NULL!", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
+			}
+			#endif
+			return false;
+		}
+		
+		if (dst.GetType() == InventoryLocationType.UNKNOWN)
+		{
+			#ifdef ENABLE_LOGGING
+			if ( LogManager.IsInventoryHFSMLogEnable() )
+			{
+				Debug.InventoryHFSMLog("CANNOT perform. Dst location type is UNKNOWN!", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
+			}
+			#endif
+			return false;
+		}
+		
+		if (!GameInventory.LocationCanMoveEntity(src, dst))
+		{
+			#ifdef ENABLE_LOGGING
+			if ( LogManager.IsInventoryHFSMLogEnable() )
+			{
 				Debug.InventoryHFSMLog("CANNOT perform", typename.EnumToString(HandEventID, GetEventID()) , "n/a", "CanPerformEvent", m_Player.ToString() );
 			}
 			#endif
@@ -406,12 +431,13 @@ class HandEventDrop extends HandEventRemove
 	{
 		super.ReadFromContext(ctx);
 
-		ctx.Read(m_CanPerformDrop);
-		OptionalLocationReadFromContext(m_Dst, ctx);
 		if (!m_Dst)
 		{
 			m_Dst = new InventoryLocation();
 		}
+		
+		ctx.Read(m_CanPerformDrop);
+		OptionalLocationReadFromContext(m_Dst, ctx);
 	}
 
 	override void WriteToContext(ParamsWriteContext ctx)
@@ -580,12 +606,12 @@ class HandEventSwap extends HandEventBase
 	{
 		//return false;
 
-		if (false == GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
+		if (!GameInventory.CheckRequestSrc(m_Player, GetSrc(), GameInventory.c_MaxItemDistanceRadius))
 		{
 			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src1 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src1=" + InventoryLocation.DumpToStringNullSafe(GetSrc()));
 			return false; // stale packet
 		}
-		if (false == GameInventory.CheckRequestSrc(m_Player, m_Src2, GameInventory.c_MaxItemDistanceRadius))
+		if (!GameInventory.CheckRequestSrc(m_Player, m_Src2, GameInventory.c_MaxItemDistanceRadius))
 		{
 			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(m_Player) + " failed src2 check with cmd=" + typename.EnumToString(HandEventID, GetEventID()) + " src2=" + InventoryLocation.DumpToStringNullSafe(m_Src2));
 			return false; // stale packet

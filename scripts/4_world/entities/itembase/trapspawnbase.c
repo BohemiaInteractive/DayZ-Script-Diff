@@ -302,7 +302,7 @@ class TrapSpawnBase extends ItemBase
 	{
 		if (m_IsPastWaitingTime)
 		{
-			m_AdjustedMaxActiveTime = m_MaxActiveTime;;
+			m_AdjustedMaxActiveTime = m_MaxActiveTime;
 			RunTrappingTimer(m_UpdateWaitTime,"EvaluateCatch");
 		}
 		else
@@ -320,8 +320,18 @@ class TrapSpawnBase extends ItemBase
 		else
 			m_Timer.Stop();
 		
-		m_CurrentlyUsedDelta = duration;
-		m_Timer.Run(duration, this, fnName);
+		#ifdef DEVELOPER
+		if (IsCLIParam("trapsQuick"))
+		{
+			m_CurrentlyUsedDelta = 1;
+			m_Timer.Run(1, this, fnName);
+		}
+		else
+		#endif
+		{
+			m_CurrentlyUsedDelta = duration;
+			m_Timer.Run(duration, this, fnName);
+		}
 	}
 	
 	// Set animation phases according to state
@@ -478,6 +488,7 @@ class TrapSpawnBase extends ItemBase
 		
 		bool success = false;
 		m_CanCatch = SetCanCatch(m_Bait);
+		
 		if (m_CanCatch)
 		{
 			if (m_CatchingContext.RollCatch())
@@ -494,9 +505,24 @@ class TrapSpawnBase extends ItemBase
 			}
 		}
 		
+		#ifdef DEVELOPER
+		string dbgSuccessOverride;
+		if (GetCLIParam("trapsSuccessOverride",dbgSuccessOverride))
+		{
+			if (dbgSuccessOverride == "true" || dbgSuccessOverride.ToInt() == 1)
+				success = true;
+			else if (dbgSuccessOverride == "false" || dbgSuccessOverride.ToInt() == 0)
+				success = false;
+		}
+		#endif
+		
 		m_Timer.Stop();
 		
+		#ifdef DEVELOPER
+		if (m_ElapsedTime >= m_AdjustedMaxActiveTime || (IsCLIParam("trapsQuick") && !success))
+		#else
 		if (m_ElapsedTime >= m_AdjustedMaxActiveTime)
+		#endif
 		{
 			SetUsed();
 			return;
@@ -530,7 +556,11 @@ class TrapSpawnBase extends ItemBase
 		IncreaseElapsedTime();
 		AdjustDetectionRange();
 		
+		#ifdef DEVELOPER
+		if (IsCLIParam("trapsQuick") || m_CurrentMinimalDistance <= 0 || !IsPlayerInVicinity())
+		#else
 		if (m_CurrentMinimalDistance <= 0 || !IsPlayerInVicinity())
+		#endif
 		{
 			SpawnCatch();
 		}
@@ -583,7 +613,7 @@ class TrapSpawnBase extends ItemBase
 	protected void PlayCatchEffectsServer()
 	{
 		if (m_YieldItemIdx == -1)
-			return 
+			return;
 		
 		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
 		
@@ -594,7 +624,7 @@ class TrapSpawnBase extends ItemBase
 	protected void PlayCatchEffectsClient()
 	{
 		if (m_YieldItemIdx == -1)
-			return 
+			return;
 		
 		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
 		PlayCatchSound(yItem);
@@ -608,11 +638,11 @@ class TrapSpawnBase extends ItemBase
 	
 	protected void PlayCatchNoise(YieldItemBase yItem)
 	{
-		NoiseParams m_NoisePar = new NoiseParams();
 		string noiseType = yItem.GetCatchAINoise();
 		if (noiseType == "")
 			return;
 		
+		NoiseParams m_NoisePar = new NoiseParams();
 		m_NoisePar.Load(noiseType);
 		float noiseMultiplier = yItem.GetCatchAINoiseBaseStrength();
 		noiseMultiplier *= NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather());

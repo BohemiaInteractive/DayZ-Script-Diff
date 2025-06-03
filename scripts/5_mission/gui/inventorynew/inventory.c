@@ -94,10 +94,24 @@ class Inventory: LayoutHolder
 		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("LeftPanel").FindAnyWidget("Scroller"), this, "OnLeftPanelDropReceived");
 		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("LeftPanel").FindAnyWidget("Scroller"), this, "DraggingOverLeftPanel");
 		
+		#ifndef PLATFORM_CONSOLE
+		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("LeftPanel").FindAnyWidget("SlotsContent"), this, "OnLeftPanelDropReceived");
+		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("LeftPanel").FindAnyWidget("SlotsContent"), this, "DraggingOverLeftPanel");
+		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("LeftPanel").FindAnyWidget("SlotsHeader"), this, "OnLeftPanelDropReceived");
+		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("LeftPanel").FindAnyWidget("SlotsHeader"), this, "DraggingOverLeftPanel");
+		#endif
+		
 		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("RightBackground"), this, "OnRightPanelDropReceived");
 		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("RightBackground"), this, "DraggingOverRightPanel");
 		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("RightPanel").FindAnyWidget("Scroller"), this, "OnRightPanelDropReceived");
 		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("RightPanel").FindAnyWidget("Scroller"), this, "DraggingOverRightPanel");
+		
+		#ifndef PLATFORM_CONSOLE
+		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("RightPanel").FindAnyWidget("SlotsContent"), this, "OnRightPanelDropReceived");
+		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("RightPanel").FindAnyWidget("SlotsContent"), this, "DraggingOverRightPanel");
+		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("RightPanel").FindAnyWidget("SlotsHeader"), this, "OnRightPanelDropReceived");
+		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("RightPanel").FindAnyWidget("SlotsHeader"), this, "DraggingOverRightPanel");
+		#endif
 		
 		WidgetEventHandler.GetInstance().RegisterOnDropReceived(GetMainWidget().FindAnyWidget("CharacterPanel"), this, "OnCenterPanelDropReceived");
 		WidgetEventHandler.GetInstance().RegisterOnDraggingOver(GetMainWidget().FindAnyWidget("CharacterPanel"), this, "DraggingOverCenterPanel");

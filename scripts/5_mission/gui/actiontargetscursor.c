@@ -510,9 +510,9 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 			if (!isTargetForced)
 			{
 				compName = object.GetActionComponentName(compIdx);
-				object.GetActionComponentNameList(compIdx, components);
+				int namedComponentType = object.GetActionComponentNameList(compIdx, components);
 
-				if (!object.IsInventoryItem() && (object.HasFixedActionTargetCursorPosition() || object.GetActionComponentNameList(compIdx, components) == 0))
+				if (!object.IsInventoryItem() && (object.HasFixedActionTargetCursorPosition() || namedComponentType == 0))
 				{
 					m_FixedOnPosition = true;
 					return;
@@ -1146,7 +1146,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 				
 				int x, y;
 				actionName.GetTextSize(x, y);
-				if (x > m_MaxWidthChild);
+				if (x > m_MaxWidthChild)
 					m_MaxWidthChild = x;
 			}
 			else

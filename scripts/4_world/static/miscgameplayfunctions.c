@@ -235,7 +235,7 @@ class MiscGameplayFunctions
 	
 	static string TruncateVecToS(vector value,int decimals = 2, string delimiter = " ")
 	{
-		return MiscGameplayFunctions.TruncateToS(value[0],decimals) + delimiter + MiscGameplayFunctions.TruncateToS(value[1],decimals) +delimiter + MiscGameplayFunctions.TruncateToS(value[2],decimals));
+		return MiscGameplayFunctions.TruncateToS(value[0],decimals) + delimiter + MiscGameplayFunctions.TruncateToS(value[1],decimals) +delimiter + MiscGameplayFunctions.TruncateToS(value[2],decimals);
 	}
 	
 	static string GetColorString(float r, float g, float b, float a)
@@ -1124,30 +1124,37 @@ class MiscGameplayFunctions
 		vector orientation = parent.GetOrientation();
 		vector rotation_matrix[3];
 		float direction[4];
-		
+		vector randomPos;
 		vector minmax[2];
 		parent.GetCollisionBox(minmax);
 
 		Math3D.YawPitchRollMatrix( orientation, rotation_matrix );
 		Math3D.MatrixToQuat( rotation_matrix, direction );
-
-		vector randomPos;
-		for ( int i = 0; i < parent.GetInventory().AttachmentCount(); ++i )
+		
+		//gather entities first
+		array<EntityAI> ents = new array<EntityAI>;
+		int count, i;
+		//atts
+		count = parent.GetInventory().AttachmentCount();
+		for (i = 0; i < count; ++i)
 		{
-			randomPos = Vector(position[0] + Math.RandomFloat(minmax[0][0], minmax[1][0]),
-								position[1] + Math.RandomFloat(minmax[0][1], minmax[1][1]),
-								position[2] + Math.RandomFloat(minmax[0][2], minmax[1][2]));
-			
-			ThrowEntityFromInventory(parent.GetInventory().GetAttachmentFromIndex( i ), randomPos, direction, -GetVelocity(parent), ThrowEntityFlags.NONE);
+			ents.Insert(parent.GetInventory().GetAttachmentFromIndex(i));
 		}
-
-		for ( int j = 0; j < parent.GetInventory().GetCargo().GetItemCount(); ++j )
+		
+		//cargo
+		count = parent.GetInventory().GetCargo().GetItemCount();
+		for (i = 0; i < count; ++i)
+		{
+			ents.Insert(parent.GetInventory().GetCargo().GetItem(i));
+		}
+		
+		//now throw them all
+		foreach (EntityAI ent : ents)
 		{
 			randomPos = Vector(position[0] + Math.RandomFloat(minmax[0][0], minmax[1][0]),
 								position[1] + Math.RandomFloat(minmax[0][1], minmax[1][1]),
 								position[2] + Math.RandomFloat(minmax[0][2], minmax[1][2]));
-			
-			ThrowEntityFromInventory(parent.GetInventory().GetCargo().GetItem( j ), randomPos, direction, -GetVelocity(parent), ThrowEntityFlags.NONE);
+			ThrowEntityFromInventory(ent, randomPos, direction, -GetVelocity(parent), ThrowEntityFlags.NONE);
 		}
 	}
 	
@@ -1573,7 +1580,7 @@ class MiscGameplayFunctions
 			modifierSurface = 1;
 		
 		if (player.GetInColdArea())
-			adjustedDamage = baseDamage * (modifierSurface + GetGame().GetMission().GetWorldData().GetColdAreaToolDamageModifier();
+			adjustedDamage = baseDamage * (modifierSurface + GetGame().GetMission().GetWorldData().GetColdAreaToolDamageModifier());
 		else 
 			adjustedDamage = baseDamage * modifierSurface;
 			

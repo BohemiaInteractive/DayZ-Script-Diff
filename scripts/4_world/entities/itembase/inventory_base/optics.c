@@ -1,15 +1,51 @@
 class Crossbow_RedpointOptic : ItemOptics {};
 class LongrangeOptic : ItemOptics {};
+class SportingOptic : ItemOptics {};
 class PistolOptic : ItemOptics {};
 class GrozaOptic : ItemOptics {};
 class ACOGOptic : ItemOptics {};
 class ACOGOptic_6x : ItemOptics {};
 class KashtanOptic : ItemOptics {};
-class M68Optic : ItemOptics {};
-class M4_T3NRDSOptic : ItemOptics {};
-class FNP45_MRDSOptic : ItemOptics {};
-class ReflexOptic : ItemOptics {};
-class KobraOptic : ItemOptics {};
+
+class M68Optic : ItemOptics
+{
+	override bool IsSightOnly()
+	{
+		return true;
+	}
+}
+
+class M4_T3NRDSOptic : ItemOptics
+{
+	override bool IsSightOnly()
+	{
+		return true;
+	}
+}
+
+class FNP45_MRDSOptic : ItemOptics
+{
+	override bool IsSightOnly()
+	{
+		return true;
+	}
+}
+
+class ReflexOptic : ItemOptics
+{
+	override bool IsSightOnly()
+	{
+		return true;
+	}
+}
+
+class KobraOptic : ItemOptics
+{
+	override bool IsSightOnly()
+	{
+		return true;
+	}
+}
 
 class KazuarOptic: ItemOptics
 {
@@ -155,4 +191,9 @@ class StarlightOptic: ItemOptics
 		
 		AddAction(ActionToggleNVMode);
 	}
-};
+}
+
+class MK4Optic_ColorBase : ItemOptics {};
+class MK4Optic_Tan : MK4Optic_ColorBase {};
+class MK4Optic_Black : MK4Optic_ColorBase {};
+class MK4Optic_Green : MK4Optic_ColorBase {};

@@ -52,7 +52,7 @@ class OptionSelectorSlider extends OptionSelectorSliderSetup
 	
 	void SetValueText()
 	{
-		float percentage = GetRangePercantageByValue();
+		float percentage = Math.Round(GetRangePercantageByValue());
 		m_ValueText.SetText(percentage.ToString());
 	}
 	

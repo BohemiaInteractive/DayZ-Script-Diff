@@ -18,8 +18,11 @@ class ActionRemovePlant: ActionInteractBase
 		m_ConditionTarget = new CCTCursor(UAMaxDistances.SMALL);
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
+		if (!super.ActionCondition(player, target, item))
+			return false;
+		
 		GardenBase garden_base;
 		if ( Class.CastTo(garden_base, target.GetObject()))
 		{
@@ -47,9 +50,11 @@ class ActionRemovePlant: ActionInteractBase
 		return false;
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{
-		if ( m_Plant )
-			m_Plant.RemovePlantEx( action_data.m_Player.GetPosition() );
+		super.OnExecuteServer(action_data);
+		
+		if (m_Plant)
+			m_Plant.RemovePlantEx(action_data.m_Player.GetPosition());
 	}
 };

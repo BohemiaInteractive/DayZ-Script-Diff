@@ -59,8 +59,12 @@ class DayZPlayerImplementThrowing
 				
 				//add 5 deg 
 				aimOrientation[1] = aimOrientation[1] + ud + 5;
-
-
+				
+				//clear inventoy reservation in case item is reserved (e.g. action was executed on this player)
+				InventoryLocation loc = new InventoryLocation;
+				pEntityInHands.GetInventory().GetCurrentInventoryLocation(loc);
+				m_Player.GetInventory().ClearInventoryReservationEx(pEntityInHands, loc);
+				
 				m_Player.GetHumanInventory().ThrowEntity(pEntityInHands, aimOrientation.AnglesToVector(), c_fThrowingForceMin + m_fThrowingForce01 * (c_fThrowingForceMax - c_fThrowingForceMin));
 				return;
 			}

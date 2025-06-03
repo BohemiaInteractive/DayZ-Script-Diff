@@ -25,17 +25,14 @@ class ActionWaterGardenSlot: ActionContinuousBase
 		m_ConditionItem = new CCINonRuined;
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		Object targetObject = target.GetObject();
-		
 		if (item.GetQuantity() == 0)
 			return false;
 		
 		// Get the liquid
-		int liquid_type	= item.GetLiquidType();
-
-		if (liquid_type != LIQUID_WATER)
+		int liquidType	= item.GetLiquidType();
+		if (liquidType != LIQUID_WATER)
 		{
 			return false; //  Forbid watering of plants with gasoline and other fluids
 		}
@@ -45,19 +42,18 @@ class ActionWaterGardenSlot: ActionContinuousBase
 			return false;
 		}
 		
-		if ( targetObject.IsInherited(GardenBase) )
+		Object targetObject = target.GetObject();
+		if (targetObject && targetObject.IsInherited(GardenBase))
 		{
-			GardenBase garden_base = GardenBase.Cast( targetObject );
-			
-			Slot slot;
-			
+			GardenBase gardenBase = GardenBase.Cast(targetObject);			
 			array<string> selections = new array<string>;
 			targetObject.GetActionComponentNameList(target.GetComponentIndex(), selections);
-
+			
+			Slot slot;
 			for (int s = 0; s < selections.Count(); s++)
 			{
 				string selection = selections[s];
-				slot = garden_base.GetSlotBySelection( selection );
+				slot = gardenBase.GetSlotBySelection(selection);
 				if (slot)
 					break;
 			}

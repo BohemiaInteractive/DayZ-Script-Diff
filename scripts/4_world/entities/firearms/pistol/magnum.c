@@ -357,10 +357,11 @@ class Magnum extends Magnum_Base
 {
 	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		super.GetDebugActions(outputList);
-
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SPIN, "Spin", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+
+		super.GetDebugActions(outputList);
 	}
 	
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)

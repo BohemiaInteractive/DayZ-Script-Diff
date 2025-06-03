@@ -48,7 +48,7 @@ class BARIMLoadedDischarged extends WeaponStableState
 	override bool IsRepairEnabled () { return true; }
 	override void InitMuzzleArray () { m_muzzleHasBullet = {MuzzleState.F}; }
 };
-class BARIMLoadedJammed extends WeaponStateJammed
+class BARIMLoadedJammed extends WeaponStableState
 {
 	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { LoadedJammed JF"); } super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } LoadedJammed JF"); } }
@@ -206,6 +206,11 @@ class BoltActionRifle_InnerMagazine_Base extends BoltActionRifle_Base
 
 		m_fsm.Start();
 	}	
+		
+	override bool MustBeChambered(int muzzleIndex)
+	{
+		return true;
+	}
 	
 	override void SetActions()
 	{

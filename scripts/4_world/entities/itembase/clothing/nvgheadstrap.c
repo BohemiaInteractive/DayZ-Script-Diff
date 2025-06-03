@@ -1,4 +1,4 @@
-class NVGHeadstrap extends Glasses_Base
+class NVGHeadstrap : Glasses_Base
 {
 	override void SetActions()
 	{
@@ -6,11 +6,12 @@ class NVGHeadstrap extends Glasses_Base
 		
 		AddAction(ActionToggleNVG);
 	}
-	
+
 	override protected void InitGlobalExclusionValues()
 	{
 		super.InitGlobalExclusionValues();
+
 		ClearSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_GLASSES_REGULAR_0);
 		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_HEADSTRAP_0);
 	}
-};
+}

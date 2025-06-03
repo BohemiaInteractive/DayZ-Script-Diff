@@ -1,3 +1,4 @@
+//Obsolete
 /**@class	WeaponStateJammed
  * @brief	handle jamming state set jam/unjam state for weapon 
  **/

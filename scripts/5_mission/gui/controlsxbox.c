@@ -84,7 +84,7 @@ class ControlsXbox extends UIScriptedMenu
 			}
 			if (!button_marker_groups_unflitred.Contains(button_name))
 			{
-				button_marker_groups_unflitred.Insert(button_name, new ref array<int>);
+				button_marker_groups_unflitred.Insert(button_name, new array<int>);
 				button_marker_groups_unflitred.Get(button_name).Insert(text_widget_id);
 			}
 			else
@@ -434,7 +434,7 @@ class ControlsXbox extends UIScriptedMenu
 		}
 		
 		inputAPI.PresetSelect(index);
-		if (Class.CastTo(nameWidget,layoutRoot.FindAnyWidget("PresetText")));
+		if (Class.CastTo(nameWidget,layoutRoot.FindAnyWidget("PresetText")))
 		{
 			preset_text = inputAPI.PresetName(inputAPI.PresetCurrent());
 			nameWidget.SetText(preset_text);

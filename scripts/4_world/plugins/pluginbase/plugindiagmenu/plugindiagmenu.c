@@ -347,6 +347,8 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterItem(DiagMenuIDs.WEAPON_BURST_VERSION, "lctrl+0", "Burst Version", DiagMenuIDs.WEAPON_MENU, "Hold, Press");
 				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_CLAYMORE_DEBUG, "", "Claymore debugs", DiagMenuIDs.WEAPON_MENU);
 				DiagMenu.RegisterItem(DiagMenuIDs.WEAPON_LIFT_DEBUG, "", "Weapon Lift Debug", DiagMenuIDs.WEAPON_MENU, "false,true,extended");
+				DiagMenu.RegisterItem(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION, "", "Force Allow Obstruction", DiagMenuIDs.WEAPON_MENU, "off,conditional,always,alwaysDynamic,neverStatic,alwaysDynamicNeverStatic,neverEver");
+				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_DISABLE_OBSTRUCTION_INTERPOLATION, "", "Disable Obstruction Interpolation", DiagMenuIDs.WEAPON_MENU);
 			}
 		
 			//---------------------------------------------------------------
@@ -828,6 +830,7 @@ class PluginDiagMenu : PluginBase
 				break;
 			}
 			
+			#ifdef ENABLE_LOGGING
 			case ERPCs.DIAG_MISC_ENVIRONMENT_LOGGING_DRYWET:
 			{
 				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
@@ -847,6 +850,7 @@ class PluginDiagMenu : PluginBase
 				}
 				break;
 			}
+			#endif
 			
 			//---------------------------------------------------------------
 			// LEVEL 2 - Script > Misc

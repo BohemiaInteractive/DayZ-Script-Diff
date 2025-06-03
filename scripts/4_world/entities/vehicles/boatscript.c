@@ -6,6 +6,14 @@ enum EBoatEffects
 	PTC_SIDE_R
 }
 
+enum EBoatOperationalState
+{
+	OK = 0,
+	RUINED = 1,
+	NO_FUEL = 2,
+	NO_IGNITER = 4,
+}
+
 enum EBoatEngineSoundState
 {
 	NONE,
@@ -27,6 +35,9 @@ class BoatScriptMove : BoatMove
 BoatScript _boat;
 #endif
 
+/*!
+	Base script class for boats
+*/
 class BoatScript : Boat
 {
 	protected const int DECAY_PLAYER_RANGE = 300;	// when a player is found within this range, decay is deactivated
@@ -227,26 +238,65 @@ class BoatScript : Boat
 	{
 		return super.IsAreaAtDoorFree(currentSeat, maxAllowedObjHeight, extents, transform);
 	}
+	
+	/*!
+		Gets called everytime the game wants to start the engine.
 
+		\return true if the engine can start, false otherwise.
+	*/
 	override bool OnBeforeEngineStart()
-	{	
-		if (IsVitalSparkPlug())
+	{
+		EBoatOperationalState state = CheckOperationalRequirements();
+		return state == EBoatOperationalState.OK;
+	}
+	
+	// Whether the car engine can be started
+	int CheckOperationalRequirements()
+	{
+		int state = EBoatOperationalState.OK;
+
+		EntityAI item = null;
+
+		if (GetHealthLevel("") >= GameConstants.STATE_RUINED || GetHealthLevel("Engine") >= GameConstants.STATE_RUINED)
 		{
-			EntityAI item = FindAttachmentBySlotName("SparkPlug");
-			if (!item || (item && item.IsRuined()))
-			{
-				HandleEngineSound(EBoatEngineSoundState.START_NO_FUEL);
-				return false;
-			}
+			state |= EBoatOperationalState.RUINED;
 		}
 		
 		if (GetFluidFraction(BoatFluid.FUEL) <= 0)
 		{
-			HandleEngineSound(EBoatEngineSoundState.START_NO_FUEL);
-			return false;
+			state |= EBoatOperationalState.NO_FUEL;
+		}
+
+		if (IsVitalSparkPlug())
+		{
+			item = FindAttachmentBySlotName("SparkPlug");
+			if (!item || (item && item.IsRuined()))
+				state |= EBoatOperationalState.NO_IGNITER;
 		}
 		
-		return true;
+		return state;
+	}
+
+	void OnIgnition()
+	{
+		EBoatOperationalState state = CheckOperationalRequirements();
+
+		if (state == EBoatOperationalState.RUINED)
+		{
+			return;
+		}
+
+		if (state & EBoatOperationalState.NO_IGNITER)
+		{
+			HandleEngineSound(EBoatEngineSoundState.START_NO_FUEL);
+			return;
+		}
+
+		if (state & EBoatOperationalState.NO_FUEL)
+		{
+			HandleEngineSound(EBoatEngineSoundState.START_NO_FUEL);
+			return;
+		}
 	}
 	
 	override void OnEngineStart()
@@ -288,14 +338,16 @@ class BoatScript : Boat
 
 		Fill(BoatFluid.FUEL, amount);
 	}
+
+	override void OnInput(float dt)
+	{
+		super.OnInput(dt);
+	}
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
 		if (!IsProxy())
 		{
-			HandleByCrewMemberState(ECrewMemberState.UNCONSCIOUS);
-			HandleByCrewMemberState(ECrewMemberState.DEAD);
-		
 			if (EngineIsOn())
 			{
 				if (GetFluidFraction(BoatFluid.FUEL) <= 0)
@@ -362,7 +414,8 @@ class BoatScript : Boat
 		}
 	}
 	
-	override void EOnContact(IEntity other, Contact extra)
+	//! WARNING: Can be called very frequently in one frame, use with caution
+	override void OnContact(string zoneName, vector localPos, IEntity other, Contact data)
 	{
 		if (GetGame().IsServer())
 		{
@@ -375,7 +428,7 @@ class BoatScript : Boat
 				momentumDelta = m_MomentumPrevTick;
 			
 			m_ContactData = new VehicleContactData();
-			m_ContactData.SetData(extra.Position, other, momentumDelta); // change to local pos
+			m_ContactData.SetData(localPos, other, momentumDelta); // change to local pos
 		}
 		
 		if (!IsProxy())
@@ -383,7 +436,6 @@ class BoatScript : Boat
 			if (EngineIsOn() && !CheckOperationalState())
 				EngineStop();
 		}
-			
 	}
 	
 	override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
@@ -448,32 +500,26 @@ class BoatScript : Boat
 		
 		return super.OnSound(ctrl, oldValue);
 	}
-	
-	override void HandleByCrewMemberState(ECrewMemberState state)
+
+	override void MarkCrewMemberUnconscious(int crewMemberIndex)
 	{
-		switch (state)
+		if (!IsAuthority())
+			return;
+
+		if (crewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
 		{
-			case ECrewMemberState.UNCONSCIOUS:
-				foreach (int unconsciousCrewMemberIndex : m_UnconsciousCrewMemberIndices)
-				{
-					if (unconsciousCrewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-						EngineStop();
-					
-					m_UnconsciousCrewMemberIndices.RemoveItem(unconsciousCrewMemberIndex);
-				}
+			EngineStop();
+		}
+	}
 
-				break;
-			
-			case ECrewMemberState.DEAD:
-				foreach (int deadCrewMemberIndex : m_DeadCrewMemberIndices)
-				{
-					if (deadCrewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
-						EngineStop();
-					
-					m_DeadCrewMemberIndices.RemoveItem(deadCrewMemberIndex);
-				}
+	override void MarkCrewMemberDead(int crewMemberIndex)
+	{
+		if (!IsAuthority())
+			return;
 
-				break;
+		if (crewMemberIndex == DayZPlayerConstants.VEHICLESEAT_DRIVER)
+		{
+			EngineStop();
 		}
 	}
 	
@@ -528,6 +574,16 @@ class BoatScript : Boat
 		}
 		
 		return true;
+	}
+
+	override void OnDriverExit(Human player)
+	{
+		super.OnDriverExit(player);
+		
+		if (GetGear() != GetNeutralGear())
+		{
+			EngineStop();
+		}
 	}
 	
 	// Server side event for jump out processing 
@@ -794,9 +850,6 @@ class BoatScript : Boat
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FLIP_ENTITY, "Flip vehicle", FadeColors.LIGHT_GREY));
 		
 		super.GetDebugActions(outputList);
-		
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
 	}
 	
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
@@ -810,11 +863,7 @@ class BoatScript : Boat
 		}
 
 		switch (action_id)
-		{
-			case EActions.DELETE:
-				Delete();
-				return true;
-			
+		{			
 			case EActions.FLIP_ENTITY:
 				FlipVehicle();
 				return true;

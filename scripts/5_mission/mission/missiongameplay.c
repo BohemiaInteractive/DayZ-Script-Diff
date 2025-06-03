@@ -52,7 +52,7 @@ class MissionGameplay extends MissionBase
 	
 	protected bool 					m_InputBufferFull;
 	UIScriptedMenu					m_ConnectionMenu;
-
+	
 	void MissionGameplay()
 	{
 		DestroyAllMenus();
@@ -191,6 +191,16 @@ class MissionGameplay extends MissionBase
 #endif
 
 		g_Game.SetMissionState(DayZGame.MISSION_STATE_GAME);
+
+		#ifndef BULDOZER
+		#ifdef DIAG_DEVELOPER
+		if (!GetGame().IsMultiplayer())
+		{
+			// We will load the Effect areas on Default mission start
+			EffectAreaLoader.CreateZones();
+		}
+		#endif
+		#endif
 	}
 	
 	void InitInventory()
@@ -1311,6 +1321,11 @@ class MissionGameplay extends MissionBase
 	{
 		// prevent creating logout dialog if input buffer has reached server config maximumClientInputs limit.
 		if (GetGame() && m_InputBufferFull)
+			return;
+		
+		// prevent creating the logout dialog if the in-game menu was closed before (DZ-23150)
+		UIScriptedMenu menu = GetUIManager().GetMenu();
+		if (menu && menu.GetID() != MENU_LOGOUT && menu.IsClosing())
 			return;
 		
 		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );		

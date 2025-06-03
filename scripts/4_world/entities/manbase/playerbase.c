@@ -107,7 +107,7 @@ class PlayerBase extends ManBase
 	int								m_StaminaState;
 	float							m_UnconsciousTime;
 	int 							m_ShockSimplified;
-	float							m_CurrentShock; //Used to synchronize shock between server and client
+	float							m_CurrentShock; //Used to synchronize shock between server and client, utilized by ShockHandler
 	bool							m_IsRestrained;
 	bool							m_IsRestrainedLocal;
 	bool 							m_IsRestrainStarted;
@@ -1407,7 +1407,7 @@ class PlayerBase extends ManBase
 				}
 			}
 			
-			clothing.UpdateNVGStatus(this);
+			clothing.UpdateNVGStatus(this, false, true);
 			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCorpseStateVisual, 200, false);//sometimes it takes a while to load in
 			UpdateCorpseStateVisual();//....but if possible, we don't want a delay
 		}
@@ -1979,16 +1979,7 @@ class PlayerBase extends ManBase
 		return super.CanReceiveItemIntoHands(item_to_hands);
 	}
 	
-	override bool CanSaveItemInHands(EntityAI item_in_hands)
-	{
-		return super.CanSaveItemInHands(item_in_hands);
-	}
-	
-	override bool CanReleaseFromHands(EntityAI handheld)
-	{
-		return super.CanReleaseFromHands(handheld);
-	}
-	
+
 	int GetCraftingRecipeID()
 	{
 		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
@@ -2575,6 +2566,13 @@ class PlayerBase extends ManBase
 	void SetLocalProjectionPosition(vector local_position)
 	{
 		m_LocalProjectionPosition = local_position;
+		
+		#ifdef DEVELOPER
+		if (IsCLIParam("hologramLogs"))
+		{
+			Debug.Log(string.Format("SetLocalProjectionPosition | pos: %1", m_LocalProjectionPosition), "hologramLogs");
+		}
+		#endif
 	}
 	
 	void SetLocalProjectionOrientation(vector local_orientation)
@@ -2840,6 +2838,10 @@ class PlayerBase extends ManBase
 				}
 			}
 			
+			SurrenderDummyItem dummyItem;
+			if (Class.CastTo(dummyItem, item) && GetEmoteManager())
+				GetEmoteManager().ForceSurrenderState(true);
+			
 			OnItemInHandsChanged();
 		}
 	}
@@ -2894,8 +2896,6 @@ class PlayerBase extends ManBase
 				}
 			}
 		}
-			
-		GetDayZPlayerInventory().HandleInventory(pDt);
 		
 		if (IsFireWeaponRaised() || m_IsHoldingBreath)
 		{
@@ -2959,7 +2959,6 @@ class PlayerBase extends ManBase
 			FreezeCheck();
 		}
 		
-		GetHumanInventory().Update(pDt);
 		if (m_IsDrowning)
 		{
 			ProcessDrowning(pDt);
@@ -3098,25 +3097,7 @@ class PlayerBase extends ManBase
 			
 			if (isStaminaLimitAppliable)
 			{
-				bool isRunning = hcm && hcm.GetCurrentMovementSpeed() > 1.0;
-				
-				//! only run and higher	for movement 			
-				if (isRunning || isSwimmingOrClimbing)
-				{
-					//! SPRINT: enable/disable - based on stamina; disable also when raised
-					if (CanConsumeStamina(EStaminaConsumers.SPRINT) && CanSprint()) 
-					{
-						hic.LimitsDisableSprint(false);
-					}
-					else 
-					{
-						hic.LimitsDisableSprint(true);
-					}
-				}
-				else 
-				{
-					hic.LimitsDisableSprint(!CanSprint());
-				}
+				hic.LimitsDisableSprint(!(CanConsumeStamina(EStaminaConsumers.SPRINT) && CanSprint()));
 			}
 		}
 
@@ -3448,7 +3429,8 @@ class PlayerBase extends ManBase
 			if (pCurrentCommandID != DayZPlayerConstants.COMMANDID_DEATH)
 			{
 				GetGame().GetSoundScene().SetSoundVolume(g_Game.m_volume_sound,1);
-				PPERequesterBank.GetRequester(PPERequester_UnconEffects).Stop();
+				PPERequester_UnconEffects requester = PPERequester_UnconEffects.Cast(PPERequesterBank.GetRequester(PPERequester_UnconEffects));
+				requester.FadeOutEffect(); //fading
 				GetGame().GetMission().GetHud().ShowQuickbarUI(true);
 				if (GetGame().GetUIManager().IsDialogVisible())
 				{
@@ -3508,7 +3490,7 @@ class PlayerBase extends ManBase
 			{
 				float shock_simple_normalized = GetSimplifiedShockNormalized();
 	
-				float sin = Math.Sin(m_UnconsciousTime * 0.3);
+				float sin = Math.Sin(m_UnconsciousTime * 0.35);
 				float sin_normalized = (sin + 1) / 2;
 				if (sin_normalized < 0.05)
 				{
@@ -3814,7 +3796,9 @@ class PlayerBase extends ManBase
 			if (itemInHands.IsHeavyBehaviour())
 			{
 				TryHideItemInHands(false);
-				DropHeavyItem();
+				#ifdef SERVER
+				ServerDropEntity(itemInHands); // Let server handle the hand item drop
+				#endif
 			}
 			else
 			{
@@ -3893,6 +3877,9 @@ class PlayerBase extends ManBase
 		if (GetInventory())
 			GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
 		
+		// properly finish jump in case it was interrupted by smth (heavy hit for example in the FOV expoit)		
+		m_JumpClimb.CheckAndFinishJump();
+		
 		GetWeaponManager().RefreshAnimationState();
 	}
 	
@@ -3946,7 +3933,8 @@ class PlayerBase extends ManBase
 		if (GetInventory())
 			GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
 		
-		TryHideItemInHands(false, true);
+		if (!m_ShouldBeUnconscious)
+			TryHideItemInHands(false, true);
 		
 		GetGame().GetMission().RemoveActiveInputExcludes({"vehicledriving"});
 	}	
@@ -4035,11 +4023,13 @@ class PlayerBase extends ManBase
 	
 	override bool CanChangeStance(int previousStance, int newStance)
 	{
+		// Check if the player is trying to perform restricted action while changing stance
+		if (GetActionManager() && GetActionManager().GetRunningAction() && !GetActionManager().GetRunningAction().CanBePerformedWhileChangingStance())
+			return false;
+
 		// Check if the player is playing a throwing animation
 		if (GetThrowing().IsThrowingAnimationPlaying())
-		{
 			return false;
-		}
 		
 		// don't allow base stance change, only raised hands change
 		if (IsRolling()) 
@@ -5185,7 +5175,7 @@ class PlayerBase extends ManBase
 	
 	bool IsSprinting()
 	{
-		return m_MovementState.m_iMovement == DayZPlayerConstants.MOVEMENT_SPRINT);
+		return m_MovementState.m_iMovement == DayZPlayerConstants.MOVEMENT_SPRINT;
 	}
 
 	bool CanSprint()
@@ -5220,7 +5210,7 @@ class PlayerBase extends ManBase
 	
 	bool IsRolling()
 	{
-		return GetCommand_Move() && GetCommand_Move().IsInRoll());
+		return GetCommand_Move() && GetCommand_Move().IsInRoll();
 	}
 	
 	bool IsClimbing()
@@ -5394,7 +5384,7 @@ class PlayerBase extends ManBase
 			}	
 			case ERPCs.RPC_INIT_SET_QUICKBAR:
 				ref Param1<int> count = new Param1<int>(0); 
-				if (ctx.Read(count));
+				if (ctx.Read(count))
 				{
 					for (int i = 0; i < count.param1 ; i++)
 					{
@@ -5661,6 +5651,7 @@ class PlayerBase extends ManBase
 			if (!m_AmbientContamination && soundset != "")
 				PlaySoundSetLoop(m_AmbientContamination, soundset, 0.1, 0.1);
 			
+			SetSoundControllerOverride("contamination",1,SoundControllerAction.Overwrite);
 		}
 		else // disable
 		{
@@ -5682,6 +5673,7 @@ class PlayerBase extends ManBase
 			if (m_AmbientContamination)
 				StopSoundSet(m_AmbientContamination);
 			
+			SetSoundControllerOverride("contamination",0,SoundControllerAction.None);
 			// We make sure to reset the state
 		}
 		m_ContaminatedAreaEffectEnabled = enable;
@@ -7766,7 +7758,33 @@ class PlayerBase extends ManBase
 		}
 #endif
 		
-		return super.OnAction(action_id, player, ctx);
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+
+		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		{
+			switch (action_id)
+			{
+				case EActions.GIZMO_OBJECT:
+					GetGame().GizmoSelectObject(this);
+					return true;
+				case EActions.GIZMO_PHYSICS:
+					GetGame().GizmoSelectPhysics(GetPhysics());
+					return true;
+			}
+		}
+	
+		if (GetGame().IsServer())
+		{
+			switch (action_id)
+			{
+				case EActions.DELETE:
+					Delete();
+					return true;
+			}
+		}
+
+		return false;
 	}
 	
 	// -------------------------------------------------------------------------
@@ -7776,7 +7794,11 @@ class PlayerBase extends ManBase
 		
 		PluginTransmissionAgents pluginTransmissionAgents = PluginTransmissionAgents.Cast(GetPlugin(PluginTransmissionAgents));
 		
-		if (pluginTransmissionAgents)
+#ifdef DIAG_DEVELOPER
+		if (pluginTransmissionAgents && !(m_Bot || GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_REMOTE))
+#else
+		if (pluginTransmissionAgents && !(GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_REMOTE))
+#endif
 		{
 			map<int, string> agentList = pluginTransmissionAgents.GetSimpleAgentList();
 			
@@ -7791,13 +7813,13 @@ class PlayerBase extends ManBase
 					outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEBUG_AGENTS_RANGE_REMOVE_START + tid, removeName, Colors.WHITE));
 				}
 			}
+
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		}
 		
 #ifdef DIAG_DEVELOPER
 		if (m_Bot || GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_REMOTE)
 		{
-			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
-			
 			typename e = EActions;
 			
 			int cnt = e.GetVariableCount();
@@ -7824,8 +7846,21 @@ class PlayerBase extends ManBase
 				
 				outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, val, name, FadeColors.LIGHT_GREY));
 			}
+
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		}
 #endif
+
+		super.GetDebugActions(outputList);
+
+		if (Gizmo_IsSupported())
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_OBJECT, "Gizmo Object", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_PHYSICS, "Gizmo Physics (SP Only)", FadeColors.LIGHT_GREY)); // intentionally allowed for testing physics desync
+		if (GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_AI_SINGLEPLAYER) // Prevent deleting ourselves
+		{
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
+		}
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 	}		
 
 	//-------------------------------------------------------------
@@ -8065,15 +8100,52 @@ class PlayerBase extends ManBase
 	{
 		return m_LiftWeapon_player;
 	}
+		
+	override float GetWeaponObstruction()
+	{
+		return m_ObstructWeapon_player;
+	}
+		
+	override bool IsWeaponObstructionBlockingADS()
+	{
+		Weapon_Base weapon = Weapon_Base.Cast(GetItemInHands());
+		if (!weapon) 
+			return false;
+		
+		// Recompute the relative obstruction [0 ... 1] value into actual distance ...
+		float obstruction = GetWeaponObstruction();
+			
+		// ... unless there is no obstruction to begin with at which point the
+		// additional checks are rendered competely irrelevant.
+		if (obstruction <= 0.0)
+		{
+			return false;
+		}
+			
+		float penetration = weapon.GetObstructionPenetrationDistance(obstruction);
+		bool  inSights    = m_CameraIronsight || m_CameraOptics;
+		// Create a threshold that allows the user to remain in ADS for lesser obstruction
+		// values, significantly reducing the continuous state changes near the edge.
+		if (inSights)
+		{
+			return penetration > 0.040; // 4.0 cm
+		}
+		// Prevent the user from entering ADS if there is even a tiny fraction of obstruction,
+		// further reinforcing the statement above.
+		else
+		{
+			return penetration > 0.005; // 0.5 cm
+		}
+	}
 	
 	//Server
 	bool ReadLiftWeaponRequest(int userDataType, ParamsReadContext ctx)
 	{
 		bool state;
+		float obstruct;
 		ctx.Read(state);
-		
-		
-		SetLiftWeapon(state);
+		ctx.Read(obstruct);
+		SetLiftWeapon(state, obstruct);
 		
 		return true;
 	}
@@ -8081,33 +8153,45 @@ class PlayerBase extends ManBase
 	void SetLiftWeapon(int pJunctureID, ParamsReadContext ctx) // Obsolete
 	{
 		bool state;
+		float obstruct;
 		ctx.Read(state);
+		ctx.Read(obstruct);
 		
-		SetLiftWeapon(state);
+		SetLiftWeapon(state, obstruct);
 		
 		//Print("SetLiftWeapon | STS: " + GetSimulationTimeStamp());
 	}
 	
-	void SetLiftWeapon(bool state)
+	void SetLiftWeapon(bool state, float obstruct = 0)
 	{
 		m_ProcessLiftWeaponState = state;
 		m_ProcessLiftWeapon = true;
+		m_ProcessObstructWeapon = obstruct;
 	}
 	
 	//! Client-side only
-	void SendLiftWeaponSync(bool state)
+	void SendLiftWeaponSync(bool state, float obstruct = 0)
 	{
 		HumanCommandWeapons	hcw;
+			
+		bool liftChange = m_LiftWeapon_player != state;
+		bool obstructChange = Math.AbsFloat(m_ObstructWeapon_player-obstruct) > 0.03;
 		
 		// Apply state immediately
 		m_LiftWeapon_player = state;
+		m_ObstructWeapon_player = obstruct;
 		
-		hcw = GetCommandModifier_Weapons();
-		if (hcw)
-			hcw.LiftWeapon(state);
-		
-		GetWeaponManager().OnLiftWeapon();
-		
+		if (liftChange)
+		{
+			GetWeaponManager().OnLiftWeapon();
+		}
+			
+		if (!liftChange && !obstructChange) 
+		{
+			// insignificant difference
+			return;
+		}
+			
 		// Notify server to apply same state
 		if (GetGame().IsMultiplayer() && GetGame().IsClient())
 		{
@@ -8120,6 +8204,7 @@ class PlayerBase extends ManBase
 			
 			ctx.Write(INPUT_UDT_WEAPON_LIFT_EVENT);
 			ctx.Write(state);
+			ctx.Write(obstruct);
 			ctx.Send();
 		}
 	}
@@ -8131,15 +8216,27 @@ class PlayerBase extends ManBase
 		{
 			Weapon_Base weap;
 			if (Weapon_Base.CastTo(weap, GetItemInHands()))
-			{				
-				bool limited = weap.LiftWeaponCheck(this);
-
-				if (limited && !m_LiftWeapon_player)
-					SendLiftWeaponSync(true);
-				else if (!limited && m_LiftWeapon_player)
-					SendLiftWeaponSync(false);
+			{
+				Object hitObject;
+				float obstruct;
+				bool limited = weap.LiftWeaponCheckEx(this, obstruct, hitObject);
+				if (weap.UseWeaponObstruction(this, obstruct, hitObject))
+				{
+					limited = false;
+				}
+				else
+				{
+					obstruct =  0.0;
+				}
+				
+				obstruct = Math.Clamp( obstruct, 0, 1 );
+				
+				if (m_LiftWeapon_player != limited || m_ObstructWeapon_player != obstruct)
+				{
+					SendLiftWeaponSync(limited, obstruct);
+				}
 			}
-			else if (m_LiftWeapon_player)
+			else if (m_LiftWeapon_player || m_ObstructWeapon_player > 0)
 			{
 				SendLiftWeaponSync(false);
 			}
@@ -8150,12 +8247,13 @@ class PlayerBase extends ManBase
 	{
 		if (m_ProcessLiftWeapon)
 		{
-			HumanCommandWeapons	hcw = GetCommandModifier_Weapons();
-			if (hcw)
-				hcw.LiftWeapon(m_ProcessLiftWeaponState);
-			
-			GetWeaponManager().OnLiftWeapon();
+			bool liftChange = m_LiftWeapon_player != m_ProcessLiftWeaponState;
+			if (liftChange)
+			{
+				GetWeaponManager().OnLiftWeapon();
+			}
 			m_LiftWeapon_player = m_ProcessLiftWeaponState;
+			m_ObstructWeapon_player = m_ProcessObstructWeapon;
 			m_ProcessLiftWeapon = false;
 			
 			//Debug.Log("SimulationStamp_server: " + this.GetSimulationTimeStamp());

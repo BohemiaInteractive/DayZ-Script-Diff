@@ -2,7 +2,7 @@ class ActionCraftBoneKnifeCB : ActionContinuousBaseCB
 {	
 	override void CreateActionComponent()
 	{	
-		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_CRAFT);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.DEFAULT_CRAFT);
 	}
 };
 

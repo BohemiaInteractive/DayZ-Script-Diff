@@ -90,6 +90,13 @@ class FreeDebugCamera extends Camera
 	static proto native FreeDebugCamera GetInstance();
 	
 	/**
+	\brief Returns if player movement is allowed while in free camera
+	\note See 'Game > Player move in FrCam' diag option
+	\return bool \p true if player movement is allowed
+	*/
+	proto native bool IsPlayerMove();
+
+	/**
 	\brief Sets cameras freeze state
 	\param freezed \p true = don't allow camera movement
 	*/

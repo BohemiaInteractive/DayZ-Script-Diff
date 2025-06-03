@@ -130,7 +130,7 @@ class GesturesMenu extends UIScriptedMenu
 	//============================================
 	void GesturesMenu()
 	{
-		m_GestureItems = new ref array<ref GestureMenuItem>;
+		m_GestureItems = new array<ref GestureMenuItem>;
 		
 		if ( !instance )
 		{

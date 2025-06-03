@@ -80,15 +80,19 @@ class DayZIntroSceneXbox: Managed
 		
 		float overcast = 0.42;
 		float rain = 0.0;
+		float snowfall = 0.0;
 		float fog = 0.0;
+		
 
 		m_Weather = g_Game.GetWeather();
 		m_Weather.GetOvercast().SetLimits(overcast, overcast);
 		m_Weather.GetRain().SetLimits(rain, rain);
+		m_Weather.GetSnowfall().SetLimits(snowfall, snowfall);
 		m_Weather.GetFog().SetLimits(fog, fog);
 		
 		m_Weather.GetOvercast().Set(overcast, 0, 0);
 		m_Weather.GetRain().Set(rain, 0, 0);
+		m_Weather.GetSnowfall().Set(snowfall, 0, 0);
 		m_Weather.GetFog().Set(fog, 0, 0);
 		
 		m_Character = new IntroSceneCharacter();

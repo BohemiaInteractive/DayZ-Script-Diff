@@ -9,7 +9,7 @@ class M14_Base : RifleBoltLock_Base
 	{
 		GameInventory inventory = GetInventory();
 
-		inventory.CreateInInventory( "ReflexOptic" );
+		inventory.CreateInInventory( "ACOGOptic_6x" );
 		inventory.CreateInInventory( "ImprovisedSuppressor" );
 		inventory.CreateInInventory( "Battery9V" );
 		

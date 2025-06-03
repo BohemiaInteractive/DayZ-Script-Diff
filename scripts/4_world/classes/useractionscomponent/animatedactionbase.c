@@ -248,7 +248,7 @@ class AnimatedActionBase : ActionBase
 		if (stanceOverride != -1)
 			return stanceOverride;
 		
-		return GetStanceMask(player));
+		return GetStanceMask(player);
 	}
 	
 	protected int GetActionCommandEx(ActionData actionData)

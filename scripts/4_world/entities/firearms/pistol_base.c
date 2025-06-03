@@ -58,7 +58,7 @@ class Pistol_CLO_CHG_BU1_MA0 extends WeaponStableState
 	override bool IsRepairEnabled () { return true; }
 	override void InitMuzzleArray () { m_muzzleHasBullet = {MuzzleState.L}; }
 };
-class Pistol_CLO_JAM_BU1_MA0 extends WeaponStateJammed
+class Pistol_CLO_JAM_BU1_MA0 extends WeaponStableState
 {
 	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnstate] { CJF0 closed jammed bullet nomag"); } super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnstate] } CJF0 closed jammed bullet nomag"); } }
@@ -105,7 +105,7 @@ class Pistol_CLO_DIS_BU0_MA1 extends WeaponStableState
 	override bool IsRepairEnabled () { return true; }
 	override void InitMuzzleArray () { m_muzzleHasBullet = {MuzzleState.E}; }
 };
-class Pistol_CLO_JAM_BU1_MA1 extends WeaponStateJammed
+class Pistol_CLO_JAM_BU1_MA1 extends WeaponStableState
 {
 	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnstate] { CJF1 closed jammed bullet mag"); } super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnstate] } CJF1 closed jammed bullet mag"); } }
@@ -626,6 +626,97 @@ class Pistol_Base extends Weapon_Base
 	{
 		super.SetActions();
 		AddAction(FirearmActionDetachMagazine);
+	}
+	
+	//----------------------------------------------------------------------------------------	
+	/*
+		Computes/fills the provided `dst` with aim offsets relevant for the provided `characterStance`.
+		Aiming angles are sampled as the normalized < -1.0, +1.0 > range.
+	*/
+	protected override void GetApproximateAimOffsets(Blend2DVector dst, int characterStance)
+	{			
+		if (characterStance >= 	DayZPlayerConstants.STANCEIDX_RAISED)
+			characterStance -= DayZPlayerConstants.STANCEIDX_RAISED;
+			
+		// All following values were set by inspecting the character with
+		// a weapon in-game and adjusting the offsets as such that with
+		// the weapon lift diagnostic enabled, the shapes would nearly
+		// perfectly overlap an equipped RIFLE.
+		if (characterStance == DayZPlayerConstants.STANCEIDX_CROUCH)
+		{
+			dst.Insert( 0.0, -1.0, "0.200  0.238 -0.050"); // fully down
+			dst.Insert( 0.0, -0.5, "0.185  0.142 -0.030"); // halfway down
+			dst.Insert( 0.0,  0.0, "0.170  0.046 -0.028"); // forward
+			dst.Insert( 0.0,  0.5, "0.176  0.023 -0.048"); // halfway up
+			dst.Insert( 0.0,  1.0, "0.182  0.006 -0.059"); // fully up
+		}
+		else if (characterStance == DayZPlayerConstants.STANCEIDX_PRONE)
+		{			
+			dst.Insert( 0.0, -1.0, " 0.040 -0.080 -0.030"); // fully down
+			dst.Insert( 0.0, -0.5, " 0.040 -0.040 -0.040"); // halfway down
+			dst.Insert( 0.0,  0.0, " 0.045  0.040 -0.008"); // forward
+			dst.Insert( 0.0,  0.5, " 0.070 -0.115 -0.150"); // halfway up
+			dst.Insert( 0.0,  1.0, " 0.100 -0.160 -0.320"); // fully up
+			
+			dst.Insert(-0.3,  0.0, " 0.008 -0.048 -0.056");	
+			dst.Insert(-0.5,  0.0, " 0.020 -0.002  0.052");
+			dst.Insert(-0.8,  0.0, " 0.100  0.001  0.075");
+			dst.Insert(-1.0,  0.0, " 0.094  0.110  0.080");
+				
+			dst.Insert( 0.3,  0.0, " 0.020  0.030  0.018");
+			dst.Insert( 0.5,  0.0, "-0.040  0.070  0.094");
+			dst.Insert( 0.8,  0.0, "-0.118  0.188  0.050");
+			dst.Insert( 1.0,  0.0, " 0.094  0.110  0.080");
+		}
+		else
+		{
+			dst.Insert( 0.0, -1.0, "0.135  0.155  0.065"); // fully down
+			dst.Insert( 0.0, -0.5, "0.155  0.055  0.030"); // halfway down
+			dst.Insert( 0.0,  0.0, "0.150  0.022 -0.017"); // forward
+			dst.Insert( 0.0,  0.5, "0.140  0.003 -0.032"); // halfway up
+			dst.Insert( 0.0,  1.0, "0.120 -0.026 -0.028"); // fully up
+		}
+	}	
+	//----------------------------------------------------------------------------------------	
+	/*
+		Computes approximate offset during movement for this weapon.
+	*/
+	protected override vector GetApproximateMovementOffset(vector localVelocity, int characterStance, float lean, float ud11, float lr11)
+	{
+		if (characterStance >= 	DayZPlayerConstants.STANCEIDX_RAISED)
+			characterStance -= DayZPlayerConstants.STANCEIDX_RAISED;
+			
+		vector offset;
+		if (lean != 0)
+		{
+			const float LEAN_VERT_OFFSET = -0.1;
+			const float LEAN_HORIZ_OFFSET_L = 0.075;
+			const float LEAN_HORIZ_OFFSET_R = -0.025;
+			float aimStraightWeight = 1.0 - Math.AbsFloat(ud11); // 1 when aiming forward
+			float leanOffset  = lean * aimStraightWeight;
+			offset += Vector( leanOffset * Math.Lerp(LEAN_HORIZ_OFFSET_L, LEAN_HORIZ_OFFSET_R, lean * 0.5 + 0.5), leanOffset * LEAN_VERT_OFFSET, 0);
+		}
+		float maxVelocity = Math.Max( Math.AbsFloat(localVelocity[0]), Math.AbsFloat(localVelocity[2]) );
+		float peakVelocity = 0.5;
+		float moveAmount01 = Math.Clamp(maxVelocity / peakVelocity, 0.0, 1.0);
+		if (moveAmount01 != 0.0)
+		{
+			vector moveOffset;
+			if (characterStance == DayZPlayerConstants.STANCEIDX_CROUCH)
+				moveOffset = "-0.1 -0.2 -0.1";
+			else
+				moveOffset = "0.0 -0.12 -0.1";
+				
+			
+			float ud01 = (ud11 * 0.5) + 0.5;
+			float aimWeight = Math.Clamp(1.0 - (ud01 * 2), 0, 1);
+			// The issue is only apparent when looking down and the 2nd power seems
+			// to follow the actual visual relatively accurately
+			float moveWeight = moveAmount01 * Math.Pow(aimWeight, 2.0);
+			offset = offset + (moveWeight * moveOffset);
+		}
+		
+		return offset;
 	}
 };
 

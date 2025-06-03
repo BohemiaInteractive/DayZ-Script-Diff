@@ -89,6 +89,40 @@ class DbgUI
 	
 	static proto native void Begin(string windowTitle, float x = 0, float y = 0);
     static proto native void End();
+	
+	//! Draw an "override" checkbox that unrolls into a slider in provided range when checked	
+	static bool FloatOverride(string id, inout float value, float min, float max, int precision = 1000, bool sameLine = true)
+	{
+		if (sameLine)
+			DbgUI.SameLine();
+		
+		bool enable;
+		
+		DbgUI.PushID_Str(id+"_override");
+		DbgUI.Check("override", enable);
+		DbgUI.PopID();
+		
+		if (enable)
+		{
+			DbgUI.SameLine();
+			float tmp = value * (float)precision;
+			
+			DbgUI.PushID_Str(id+"_slider");
+			DbgUI.SliderFloat("", tmp, min * (float)precision, max * (float)precision);
+			DbgUI.PopID();
+			
+			tmp = tmp / (float)precision;
+			DbgUI.SameSpot();
+			DbgUI.PushID_Str(id+"_slider_text");
+			DbgUI.Text(tmp.ToString());
+			DbgUI.PopID();
+			
+			value = tmp;
+			return true;
+		}
+		
+		return false;
+	}
 };
 //@}
 //@}

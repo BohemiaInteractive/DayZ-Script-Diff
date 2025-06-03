@@ -64,6 +64,7 @@ class Weapon_Base extends Weapon
 	protected float m_WeaponLength;
 	protected float m_WeaponLiftCheckVerticalOffset;
 	protected float m_ShoulderDistance;
+	protected float m_ObstructionDistance;
 	protected vector m_LastLiftPosition;
 	protected int m_LastLiftHit;
 	ref array<int> m_bulletSelectionIndex = new array<int>;
@@ -120,6 +121,7 @@ class Weapon_Base extends Weapon
 		InitWeaponLength();
 		InitWeaponLiftCheckVerticalOffset();
 		InitShoulderDistance();
+		InitObstructionDistance();
 		InitDOFProperties(m_DOFProperties);
 		if (GetGame().IsServer())
 		{
@@ -144,7 +146,7 @@ class Weapon_Base extends Weapon
 	{
 		m_fsm.SetInitialState(initState);
 		SetCharged(!initState.IsDischarged());
-		SetWeaponOpen(!initState.IsWeaponOpen());
+		SetWeaponOpen(initState.IsWeaponOpen());
 		SetGroundAnimFrameIndex(initState.m_animState);
 	}
 	
@@ -801,6 +803,16 @@ class Weapon_Base extends Weapon
 		// Decide random quantity when enabled
 		if (flags & WeaponWithAmmoFlags.QUANTITY_RNG)
 			mag.ServerSetAmmoCount(Math.RandomIntInclusive(0, mag.GetAmmoMax()));
+			
+		if(MustBeChambered(0))
+		{
+			string bulletType;
+			float dmg;
+			if(mag.ServerAcquireCartridge(dmg,bulletType))
+			{
+				FillChamber(bulletType, flags);
+			}
+		}
 		
 		// Fill chamber when flagged
 		bool chamberRng = (flags & WeaponWithAmmoFlags.CHAMBER_RNG);
@@ -838,7 +850,8 @@ class Weapon_Base extends Weapon
 		}
 		
 		
-		bool didSomething = false;		
+		bool didSomething = false;
+		bool needUpdateStateMachine = false;
 		int muzzCount = GetMuzzleCount();
 		
 		bool ammoRng = ammoType == "";
@@ -851,6 +864,7 @@ class Weapon_Base extends Weapon
 		// Fill the internal magazine
 		for (int i = 0; i < muzzCount; ++i)
 		{
+			bool loadAnyBullet = false;	
 			int ammoCount = GetInternalMagazineMaxCartridgeCount(i);
 			
 			// Decide random quantity when enabled
@@ -868,7 +882,18 @@ class Weapon_Base extends Weapon
 						ammoType = GetRandomChamberableAmmoTypeName(i);
 					
 					PushCartridgeToInternalMagazine(i, 0, ammoType);
+					loadAnyBullet = true;
 					didSomething = true;
+				}
+					
+				if (loadAnyBullet && MustBeChambered(i))
+				{
+					if ( ammoFullRng )
+						ammoType = GetRandomChamberableAmmoTypeName(i);
+						
+					if (FillSpecificChamber(i, 0, ammoType))
+						needUpdateStateMachine = true;
+					
 				}
 			}
 		}
@@ -879,10 +904,19 @@ class Weapon_Base extends Weapon
 		{
 			didSomething = true;
 		}
+			
+		// Only fix the FSM and Synchronize when absolutely needed
+		if (!didSomething)
+			return false;
 		
-		// Does not need any FSM fixing, FSM does not care about inner magazines
+		if( needUpdateStateMachine )
+		{
+			// FSM cares about chamber state
+			RandomizeFSMState();		
+			Synchronize();
+		}
 		
-		return didSomething;
+		return true;
 	}
 	
 	/**@fn		FillChamber
@@ -894,86 +928,77 @@ class Weapon_Base extends Weapon
 	 **/
 	bool FillChamber( string ammoType = "", int flags = WeaponWithAmmoFlags.CHAMBER )
 	{
-		// Quickly check if there are any chambers we can fill
-		int muzzCount = GetMuzzleCount();
-		bool anyEmpty = false;
-		
-		for (int m = 0; m < muzzCount; ++m)
-		{
-			if (IsChamberEmpty(m))
-			{
-				anyEmpty = true;
-				break;
-			}
-		}
-
-		if (!anyEmpty)
-			return false;
-		
-		// Make sure the given ammoType is actually useable
-		if (ammoType != "")
-			if (!AmmoTypesAPI.MagazineTypeToAmmoType(ammoType, ammoType))
-				return false;
-		
-		// Just so we don't '&' wastefully in a loop
-		bool didSomething = false;		
+		bool didSomething = false;
 		bool chamberFullRng = (flags & WeaponWithAmmoFlags.CHAMBER_RNG_SPORADIC);
 		bool chamberRng = (flags & WeaponWithAmmoFlags.CHAMBER_RNG);
 		bool chamber = (flags & WeaponWithAmmoFlags.CHAMBER);
-		
-		if (chamber || chamberRng || chamberFullRng)
-		{
-			int amountToChamber = muzzCount;
 			
-			// No need to do this for full rng, as that will roll for every muzzle
+			
+		if (chamber || chamberFullRng)
+		{
+			// Make sure the given ammoType is actually useable
+			if (ammoType != "")
+			{
+				if (!AmmoTypesAPI.MagazineTypeToAmmoType(ammoType, ammoType))
+					return false;
+			}
+			else if (!(flags & WeaponWithAmmoFlags.AMMO_CHAMBER_RNG))
+			{
+				ammoType = GetRandomChamberableAmmoTypeName(0);
+			}
+
+			// fill chambers 
+			int muzzCount = GetMuzzleCount();
+			int amountToChamber = muzzCount;
+					
 			if (chamberRng)
 				amountToChamber = Math.RandomIntInclusive(0, muzzCount);
 			
-			bool chamberAmmoRng = (ammoType == "");
-			bool chamberAmmoFullRng = chamberAmmoRng && (flags & WeaponWithAmmoFlags.AMMO_CHAMBER_RNG);
-			
-			// No full RNG flag, so pick one random and use only this one
-			if (chamberAmmoRng && !chamberAmmoFullRng)
-				ammoType = GetRandomChamberableAmmoTypeName(0);
-			
-			for (int i = 0; i < muzzCount; ++i)
+		
+			for (int m = 0; m < muzzCount; ++m)
 			{
-				// Skip when there's already something in the chamber
-				if (!IsChamberEmpty(i))
-					continue;
-				
-				// Roll the rng when enabled
 				if (chamberFullRng)
 					chamber = Math.RandomIntInclusive(0, 1);
-				
-				// We chambering
+					
 				if (chamber)
 				{
-					// Full random, decide a new one for every muzzle
-					if ( chamberAmmoFullRng )
-						ammoType = GetRandomChamberableAmmoTypeName(i);
-					
-					// Push it
-					PushCartridgeToChamber(i, 0, ammoType);
-					didSomething = true;
-					
-					// Stop chambering when we hit the desired amount
-					--amountToChamber;				
-					if (amountToChamber <= 0)
-						break;
+					if (FillSpecificChamber(m))
+					{
+						didSomething = true;
+						amountToChamber--;	
+						if (amountToChamber <= 0)
+							break;
+					}
 				}
 			}
 		}
-		
-		// Only fix the FSM and Synchronize when absolutely needed
+			
 		if (!didSomething)
 			return false;
-		
+			
 		// FSM cares about chamber state
 		RandomizeFSMState();		
 		Synchronize();
 		
 		return true;
+	}
+		
+	bool FillSpecificChamber(int muzzleIndex, float dmg = 0, string ammoType = "")
+	{
+		if(!IsChamberEmpty(muzzleIndex))
+			return false;
+		
+		if (ammoType == "")
+		{
+			ammoType = GetRandomChamberableAmmoTypeName(muzzleIndex);
+		}
+		else
+		{
+			if (!AmmoTypesAPI.MagazineTypeToAmmoType(ammoType, ammoType))
+				return false;
+		}
+
+		return PushCartridgeToChamber(muzzleIndex, dmg, ammoType);
 	}
 	
 	//@}
@@ -1314,6 +1339,19 @@ class Weapon_Base extends Weapon
 		return false;
 	}	
 	
+	//!gets weapon obstruction distance from shoulder at which the weapon is fully obstructed
+	protected bool InitObstructionDistance()
+	{
+		if (ConfigIsExisting("ObstructionDistance"))
+		{
+			m_ObstructionDistance = ConfigGetFloat("ObstructionDistance");
+			return true;
+		}
+			
+		m_ObstructionDistance = 0;
+		return false;
+	}
+	
 	ref array<float> GetWeaponDOF()
 	{
 		return m_DOFProperties;
@@ -1333,44 +1371,337 @@ class Weapon_Base extends Weapon
 	// lifting weapon on obstcles
 	bool LiftWeaponCheck(PlayerBase player)
 	{
-		int idx;
-		float distance;
-		float hit_fraction;
-		vector start, end;
-		vector direction;
-		vector hit_pos, hit_normal;
-		Object obj;		
+		Object object;
+		float obstruction;
+		return LiftWeaponCheckEx(player, obstruction, object);
+	}
+
+	/*!
+		Returns whether this weapon can use obstruction instead of weapon lift.
+		Implement simple conditions only (e.g. checking for attachments, weapon types, ...) to prevent possible desyncs.
+		\param obstructionValue The percentage of penetration into hit object
+		\param hitObject The object obstructing the weapon
+	*/
+	bool UseWeaponObstruction(PlayerBase player, float obstructionValue, Object hitObject)
+	{
+		HumanMovementState ms = new HumanMovementState();
+		player.GetMovementState(ms);
+
+		#ifdef DIAG_DEVELOPER
+		if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION) == 2) // allow always
+			return true;
+		if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION) == 6) // neverEver
+			return false;
+		#endif
+
+		// Obstruction in prone does not really work well, the weapon has no physical room
+		// to move, so we instead always lift in such stance
+		if (ms.IsInProne() || ms.IsInRaisedProne())
+		{
+			return false;
+		}
 		
+		// if ( m_ObstructionDistance != 0 && m_ObstructionDistance < 0.7 && ZombieBase.Cast( hitObject ) ) return true;
+		
+		bool isDynamic;
+		bool isStatic;
+		if (hitObject)
+		{
+			isDynamic = dBodyIsDynamic(hitObject);
+			isStatic  = !isDynamic;
+		}
+			
+		#ifdef DIAG_DEVELOPER
+		// alwaysDynamic || alwaysDynamicNeverStatic
+		bool diagAlwaysDynamic = DiagMenu.GetValue(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION) == 3 || DiagMenu.GetValue(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION) == 5;
+		if (diagAlwaysDynamic && isDynamic) // alwaysDynamic
+			return true;
+		
+		// neverStatic   || alwaysDynamicNeverStatic
+		bool diagNeverStatic   = DiagMenu.GetValue(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION) == 4 || DiagMenu.GetValue(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION) == 5;
+		if (diagNeverStatic && isStatic) // neverStatic
+			return false;
+		#endif
+		
+		//CFGGAMEPLAY
+		EWeaponObstructionMode staticMode  = CfgGameplayHandler.GetWeaponObstructionModeStatic();
+		EWeaponObstructionMode dynamicMode = CfgGameplayHandler.GetWeaponObstructionModeDynamic();
+		if (hitObject) // Can determine logic reliably
+		{
+			if ((isStatic && staticMode == EWeaponObstructionMode.DISABLED) || (isDynamic && dynamicMode == EWeaponObstructionMode.DISABLED))
+			{
+				return false;
+			}
+			else if ((isStatic && staticMode == EWeaponObstructionMode.ALWAYS) || (isDynamic && dynamicMode == EWeaponObstructionMode.ALWAYS))
+			{
+				return true;
+			}
+		}
+		else if (obstructionValue > 0) // With no hit we have to guess whether object was dynamic or static
+		{
+			// Allow obstruction if it was already going on	(and it is allowed in either mode)
+			return staticMode != EWeaponObstructionMode.DISABLED && dynamicMode != EWeaponObstructionMode.DISABLED;
+		}
+		//!CFGGAMEPLAY
+		
+		
+		// Create a buffer between entering and leaving the lift to prevent
+		// continuous state changes while the value is near the edge. (hysteresis)
+		bool isLift = player.IsLiftWeapon();
+		
+		if (isLift && obstructionValue > 0.9) // Retain lift while already lifted
+		{
+			return false;
+		}
+		
+		if (!isLift && obstructionValue >= 1.0) // Enter lift while not lifted and obstructed enough
+		{
+			return false;
+		}
+
+		#ifdef DIAG_DEVELOPER // Keep this diag below all state conditions but above weapon type checks
+		if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_FORCEALLOW_OBSTRUCTION) == 1) // allow conditionally
+			return true;
+		#endif
+		
+		// Allow obstruction with weapons that have their distance defined, otherwise don't	
+		return m_ObstructionDistance != 0;
+	}
+	
+	//----------------------------------------------------------------------------------------	
+	/*
+		Computes/fills the provided `dst` with aim offsets relevant for the provided `characterStance`.
+		Aiming angles are sampled as the normalized < -1.0, +1.0 > range.
+	*/
+	protected void GetApproximateAimOffsets(Blend2DVector dst, int characterStance)
+	{
+		if (characterStance >= 	DayZPlayerConstants.STANCEIDX_RAISED)
+			characterStance -= DayZPlayerConstants.STANCEIDX_RAISED;
+			
+		// All following values were set by inspecting the character with
+		// a weapon in-game and adjusting the offsets as such that with
+		// the weapon lift diagnostic enabled, the shapes would nearly
+		// perfectly overlap an equipped RIFLE.
+		if (characterStance == DayZPlayerConstants.STANCEIDX_CROUCH)
+		{
+			dst.Insert( 0.0, -1.0, " 0.16  0.22 -0.04"); // fully down
+			dst.Insert( 0.0, -0.5, " 0.14  0.13  0.00"); // halway down
+			dst.Insert( 0.0,  0.0, " 0.13  0.04 -0.02"); // forward
+			dst.Insert( 0.0,  0.5, " 0.13  0.01 -0.03"); // halfway up
+			dst.Insert( 0.0,  1.0, " 0.14 -0.01 -0.04"); // fully up
+		}
+		else if (characterStance == DayZPlayerConstants.STANCEIDX_PRONE)
+		{			
+			dst.Insert( 0.0, -1.0, " 0.120 -0.080 -0.030"); // fully down
+			dst.Insert( 0.0, -0.5, " 0.120 -0.040 -0.040"); // halfway down
+			dst.Insert( 0.0,  0.0, " 0.120  0.010 -0.022");// forward
+			dst.Insert( 0.0,  0.5, " 0.120 -0.080 -0.050"); // halfway up
+			dst.Insert( 0.0,  1.0, " 0.120 -0.160 -0.130"); // fully up
+			
+			// prone is very special, so there are some points mapped
+			// when aiming right and left (and up), to at least somewhat
+			// correspond with the actual character animation
+			dst.Insert( 0.3,  0.0, " 0.110  0.008  0.010");
+			dst.Insert( 0.5,  0.0, " 0.000  0.100  0.025");
+			dst.Insert( 0.8,  0.0, " 0.070  0.150 -0.014");
+			dst.Insert( 1.0,  0.0, " 0.140 -0.050  0.020");
+				
+			dst.Insert(-0.3,  0.0, " 0.090 -0.100 -0.025");
+			dst.Insert(-0.5,  0.0, " 0.072 -0.064 -0.002");
+			dst.Insert(-0.9,  0.0, " 0.129 -0.080  0.015");
+			dst.Insert(-1.0,  0.0, " 0.140 -0.050  0.020");	
+			
+			dst.Insert( 0.5,  1.0, "-0.050  0.150  0.120");
+			dst.Insert( 1.0,  1.0, " 0.150 -0.035  0.030");
+			dst.Insert(-0.5,  1.0, " 0.050 -0.124 -0.040");
+			dst.Insert(-1.0,  1.0, " 0.150 -0.035  0.030");
+		}
+		else
+		{
+			dst.Insert( 0.0, -1.0, "0.13  0.14  0.082"); // fully down
+			dst.Insert( 0.0, -0.5, "0.13  0.05  0.048"); // halfway down
+			dst.Insert( 0.0,  0.0, "0.13  0.01 -0.008"); // forward
+			dst.Insert( 0.0,  0.5, "0.13  0.00 -0.015"); // halfway up
+			dst.Insert( 0.0,  1.0, "0.13 -0.04 -0.016"); // fully up
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------
+	/*
+		Computes approximate offset during movement for this weapon.
+	*/
+	protected vector GetApproximateMovementOffset(vector localVelocity, int characterStance, float lean, float ud11, float lr11)
+	{
+		vector offset;
+		if (lean != 0)
+		{
+			const float LEAN_VERT_OFFSET = -0.1;
+			const float LEAN_HORIZ_OFFSET_L = 0;
+			const float LEAN_HORIZ_OFFSET_R = 0.01;
+			float aimStraightWeight = 1.0 - Math.AbsFloat(ud11); // 1 when aiming forward
+			float leanOffset  = lean * aimStraightWeight;
+			offset += Vector( leanOffset * Math.Lerp(LEAN_HORIZ_OFFSET_L, LEAN_HORIZ_OFFSET_R, lean * 0.5 + 0.5), leanOffset * LEAN_VERT_OFFSET, 0);
+		}
+		
+			
+		float maxVelocity = Math.Max( Math.AbsFloat(localVelocity[0]), Math.AbsFloat(localVelocity[2]) );
+		float peakVelocity = 0.5;
+		float moveAmount01 = Math.Clamp(maxVelocity / peakVelocity, 0.0, 1.0);
+		if (moveAmount01 != 0.0)
+		{
+			vector moveOffset = "0 -0.2 -0.1";
+			float ud01 = (ud11 * 0.5) + 0.5;
+			float aimWeight = Math.Clamp(1.0 - (ud01 * 2), 0, 1);
+			// The issue is only apparent when looking down and the 2nd power seems
+			// to follow the actual visual relatively accurately
+			float moveWeight = moveAmount01 * Math.Pow(aimWeight, 2.0);
+			offset = offset + (moveWeight * moveOffset);
+		}
+		
+		return offset;	
+	}
+	
+	//----------------------------------------------------------------------------------------	
+	/*!
+		Update provided `start` position and lift check `direction` to include appproximated character state.
+		\param start 		Ray start position, to be modified
+		\param direction 	Ray direction
+	*/
+	protected void ApproximateWeaponLiftTransform(inout vector start, inout vector direction, HumanMovementState hms, HumanInputController hic, HumanCommandWeapons hcw, HumanCommandMove hcm, vector localVelocity = "0 0 0")
+	{
+		// Construct stable trasformation matrix that somewhat aligns with the weapon transform,
+		// without actually using the weapon as reference - the weapon will move during the lift/obstruction
+		// in more than 1 axis and is therefore not realiable source of truth.
+		vector resTM[4];
+		resTM[0] = Vector(direction[0], 0, direction[2]).Normalized();
+		resTM[0] = vector.RotateAroundZeroDeg(resTM[0], vector.Up, 90);
+		resTM[2] = direction;
+		resTM[1] = resTM[2] * resTM[0];
+		resTM[3] = start;
+
+		// Approximate the roll angle of leaning
+		float leanAngle = hms.m_fLeaning * 35;
+		vector rotTM[3];
+		float xAimHandsOffset = hcw.GetAimingHandsOffsetLR();
+		float yAimHandsOffset = hcw.GetAimingHandsOffsetUD();
+		Math3D.YawPitchRollMatrix( Vector(xAimHandsOffset , yAimHandsOffset, leanAngle), rotTM );
+		Math3D.MatrixMultiply3(resTM, rotTM, resTM);
+
+		// Draw relative transformation matrix diagnostic
+		#ifndef SERVER
+		#ifdef DIAG_DEVELOPER
+		PluginDiagMenuClient.GetWeaponLiftDiag().Data().SetTransform(resTM);
+		#endif
+		#endif
+
+		// Compute normalized aiming angles
+		float udAngle = hcw.GetBaseAimingAngleUD();
+		float lrAngle = hcw.GetBaseAimingAngleLR();
+		
+		float ud01 = Math.InverseLerp(DayZPlayerCamera1stPerson.CONST_UD_MIN, DayZPlayerCamera1stPerson.CONST_UD_MAX, udAngle); // 0-1
+		float ud11 = Math.Clamp((ud01 * 2) - 1, -1, 1); // -1, 1
+		float lr01 = Math.InverseLerp(DayZPlayerCamera1stPerson.CONST_LR_MIN, DayZPlayerCamera1stPerson.CONST_LR_MAX, lrAngle); // 0-1
+		float lr11 = Math.Clamp((lr01 * 2) - 1, -1, 1);
+			
+		#ifndef SERVER
+		#ifdef DIAG_DEVELOPER
+		PluginDiagMenuClient.GetWeaponLiftDiag().Data().SetAimAngles(udAngle, lrAngle, ud11, lr11);
+		#endif
+		#endif
+		
+		// Fetch approximate aim offset position based on current state
+		Blend2DVector aimOffsets = new Blend2DVector();
+		GetApproximateAimOffsets(aimOffsets, hms.m_iStanceIdx);
+		vector offset = aimOffsets.Blend(lr11, ud11);
+		
+		// Apply height offset if any is defined
+		if (m_WeaponLiftCheckVerticalOffset != 0)
+		{
+			offset[1] = offset[1] + m_WeaponLiftCheckVerticalOffset;
+		}
+
+		// Approximate the shift caused by movement. There is an enormous shift when aiming
+		// downwards, creating insane shift that we will compensate by shifting the offset
+		// based on the movement and aiming angle:
+		vector moveOffset = GetApproximateMovementOffset(localVelocity, hms.m_iStanceIdx, hms.m_fLeaning, ud11, lr11);
+		offset += moveOffset;
+
+		// While changing stances the weapon moves slightly forward and although this may
+		// cause some unwanted lifts ocasionally, it should prevent some unwanted clipping
+		if (hcm.IsChangingStance())
+		{
+			offset[2] = offset[2] + 0.05;
+		}
+
+		offset = offset.InvMultiply3(rotTM);
+
+		// Finally use the computed offset as the start position.
+		start = offset.Multiply4(resTM);
+	}
+	//----------------------------------------------------------------------------------------
+	//! Approximate `ObstructionDistance` for weapons with no configuration. Returned length doesn't account for attachments.	
+	private float ApproximateBaseObstructionLength()
+	{
+		float approximateLength = Math.Max(0, m_WeaponLength / 1.5) * m_WeaponLength;
+		return m_ShoulderDistance + approximateLength;
+	}	
+
+	//----------------------------------------------------------------------------------------
+	/*!
+		Perform weapon obstruction check by the provided `player`.
+		\param player The player to perform the check.
+		\param outObstruction Result obstruction value [0 .. 1] or > 1 when out of range and needs lift instead
+		\param outHitObject Object that was hit (if any)
+		\return True whenever weapon should be lifted or obstruted. (See also Weapon_Base.UseWeaponObstruction)
+	*/
+	bool LiftWeaponCheckEx(PlayerBase player, out float outObstruction, out Object outHitObject)
+	{
 		bool wasLift = m_LiftWeapon;
 		vector lastLiftPosition = m_LastLiftPosition;
 		
 		m_LiftWeapon = false;
-		// not a gun, no weap.raise for now
-		if ( HasSelection("Usti hlavne") )
-			return false;
-		
+
+		// [14.2.2025]
+		// The following selection check should be *unused* for some time now.
+		// Leaving commented out for future reference, should the removal have unforseen consequences.
+		//	if ( HasSelection("Usti hlavne") )
+		//		return false;
+
 		if (!player)
 		{
-			Print("Error: No weapon owner, returning");
+			#ifndef SERVER
+			#ifdef DIAG_DEVELOPER
+				PluginDiagMenuClient.GetWeaponLiftDiag().Reset();
+			#endif
+			#endif
+			Print("Error: No weapon owner for LiftWeaponCheckEx, returning.");
 			return false;
 		}
 		
-		// weapon not raised
+		// Obstruction can only occur if the weapon is rasied
 		HumanMovementState movementState = new HumanMovementState();
 		player.GetMovementState(movementState);
 		if (!movementState.IsRaised())
 			return false;
 		
-		// suppress raising of weapon during melee attack preventing state inconsistency
+		// Suppress weapon obstruction during melee attack preventing state inconsistency
 		if (movementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_MELEE || movementState.m_CommandTypeId == DayZPlayerConstants.COMMANDID_MELEE2)
 		{
+			#ifndef SERVER
+			#ifdef DIAG_DEVELOPER
+				PluginDiagMenuClient.GetWeaponLiftDiag().Reset();
+			#endif
+			#endif
 			return false;
 		}
 		
 		
 		// If possible use aiming angles instead as these will work consistently
-		// and independently of any cameras, etc. 
+		// and independently of any cameras, etc.
+		vector direction;
+		HumanInputController hic = player.GetInputController();
 		HumanCommandWeapons hcw = player.GetCommandModifier_Weapons();
+		HumanCommandMove hcm = player.GetCommand_Move();
 		if (hcw)
 		{
 			vector yawPitchRoll = Vector(
@@ -1389,7 +1720,7 @@ class Weapon_Base extends Weapon
 		else // Fallback to previously implemented logic
 		{
 			// freelook raycast
-			if (player.GetInputController().CameraIsFreeLook())
+			if (hic.CameraIsFreeLook())
 			{
 				if (player.m_DirectionToCursor != vector.Zero)
 				{
@@ -1407,206 +1738,129 @@ class Weapon_Base extends Weapon
 			}
 		}
 		
-		idx = player.GetBoneIndexByName("Neck"); //RightHandIndex1
-		if ( idx == -1 )
-			{ start = player.GetPosition()[1] + 1.5; }
+		// Reference bone to perform checks from
+		vector start;
+		int boneIdx = player.GetBoneIndexByName("Neck");
+		if (boneIdx == -1)
+		{
+			start = player.GetPosition()[1] + 1.5;
+		}
 		else
-			{ start = player.GetBonePositionWS(idx); }
-		
-		
-		// Updated weapon lift detection code prototype
 		{
-			// 0: construct stable trasformation matrix that
-			// approximately aligns with the weapon transform
-			// without actually using the weapon as reference
-			// (as the weapon can be moved unpredictably by anims)
-			vector resTM[4];
-			resTM[0] = Vector(direction[0], 0, direction[2]).Normalized();
-			resTM[0] = vector.RotateAroundZeroDeg(resTM[0], vector.Up, 90);
-			resTM[2] = direction;
-			resTM[1] = resTM[2] * resTM[0]; 
-			resTM[3] = start;
-			
-			// Approximate the roll of leaning
-			HumanMovementState hms = new HumanMovementState();
-			player.GetMovementState(hms);
-			float leanAngle = hms.m_fLeaning * 35;
-			vector rotTM[3];
-			Math3D.YawPitchRollMatrix( Vector(xAimHandsOffset , yAimHandsOffset, leanAngle), rotTM );
-			Math3D.MatrixMultiply3(resTM, rotTM, resTM);
-			
-			// Draw relative TM diagnostic
-			#ifdef DIAG_DEVELOPER
-			if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_LIFT_DEBUG))
-			{
-				Shape.CreateArrow(resTM[3], resTM[3] + resTM[0], 0.05, COLOR_RED, ShapeFlags.ONCE);
-				Shape.CreateArrow(resTM[3], resTM[3] + resTM[1], 0.05, COLOR_GREEN, ShapeFlags.ONCE);
-				Shape.CreateArrow(resTM[3], resTM[3] + resTM[2], 0.05, COLOR_BLUE, ShapeFlags.ONCE);
-			}
-			#endif
-			
-			// 1: pick from predefined offset relative to
-			// the previously constructed transform 
-			float udAngle = Math.Asin(direction[1]) * Math.RAD2DEG;
-			
-			// offsets are [right, up, forward]
-			// values are based on what felt right after iterating
-			vector offsets[] = 
-			{ 
-				"0.11 0.17 0.0",  // offset while aiming down
-				"0.12 0.05 0.0", // offset while aiming forward
-				"0.112 0.03 0.0" // offset while aiming up
-			};
-			const int lastIndex = 2; // length of offsets - 1
-			
-			// <0,1> range of aiming
-			float a = Math.Clamp(Math.InverseLerp(DayZPlayerCamera1stPerson.CONST_UD_MIN, DayZPlayerCamera1stPerson.CONST_UD_MAX, udAngle), 0, 0.9999);
-			int lo = a * lastIndex;
-			int hi = Math.Clamp(lo+1, 0, lastIndex);
-			
-			// remap to current lo-hi range
-			float t = Math.Clamp(a * lastIndex - lo, 0, 1);
-			vector offset = vector.Lerp(offsets[lo], offsets[hi], t);
-			
-			// offsets are [right, up forward]
-			// additional offsets added to previous offsets per stance
-			vector stanceOffsets[] = 
-			{
-				"0 -0.015 0",	// erect
-				"0 0.03 0",	// crouch
-				"0 -0.04 0",// prone
-			};
-			
-			// 2. pick from predefined offsets based on stance,
-			// allows to even further approximate the alignment
-			int stanceOffsetIndex = hms.m_iStanceIdx;
-			if (stanceOffsetIndex >= DayZPlayerConstants.STANCEIDX_PRONE)
-				stanceOffsetIndex -= DayZPlayerConstants.STANCEIDX_RAISED;
-			
-			stanceOffsetIndex -= DayZPlayerConstants.STANCEIDX_ERECT;
-			offset += stanceOffsets[stanceOffsetIndex];
-			
-			// if any additional height offset is defined, apply it
-			if (m_WeaponLiftCheckVerticalOffset != 0)
-			{
-				offset[1] = offset[1] + m_WeaponLiftCheckVerticalOffset;
-			}
-			
-			// 
-			offset = offset.InvMultiply3(rotTM);
-			
-			// 3. use the offset as the start position.
-			// it will not be perfect, but it should reflect
-			// the actual weapon transform more accurately
-			start = offset.Multiply4(resTM);
+			 start = player.GetBonePositionWS(boneIdx);
 		}
 		
+		// Update the ray origin and direction with approximations of character state
+		vector velocity = GetVelocity(player);
+		velocity = player.VectorToLocal(velocity);
+		ApproximateWeaponLiftTransform(start, direction, movementState, hic, hcw, hcm, velocity);
 		
-		distance = m_WeaponLength + GetEffectiveAttachmentLength();
+		float effectiveAttachmentLength = GetEffectiveAttachmentLength();
+
+		// weapon length including effective attachments
+		float weaponLength = m_WeaponLength + effectiveAttachmentLength;
+		// distance of point from 'shoulder' (start) from which the weapon length should be computed,
+		// pistols have the start point further, near the character wrist whereas longer rifles, typically
+		// the ones with buttstocks have the start point at 0 distance, ie. directly at shoulder	
+		float weaponStartDist = m_ShoulderDistance;
+		float weaponEndDist = weaponStartDist + weaponLength;
 		
-		vector weaponStart = start + (m_ShoulderDistance * direction);
-		vector weaponEnd = weaponStart + (distance * direction);
+		// Weapon start and end positions as an offset from the character shoulder
+		vector weaponStart = start + (weaponStartDist * direction);
+		vector weaponEnd = start + (weaponEndDist * direction);
 		
-		// Draw diagnostics: Script -> Weapon -> Weapon Lift
-		#ifdef DIAG_DEVELOPER
-		if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_LIFT_DEBUG))
+		// distance of point from 'shoulder' (start) at which the weapon is "fully obstructed", i.e.
+		// needs to be lifted to be able to be physically fit wherever it is. Shifted by effective
+		// attachment length to account for e.g. suppressors that make the weapon "longer".
+		// Defaults to FLT_MAX if no value is configured, effectivelly always lifting weapon instead of obstructing.
+		float baseObstructionLength = m_ObstructionDistance;
+		if (baseObstructionLength==0)
 		{
-			vector diagNoAttachEnd = weaponStart + (m_WeaponLength * direction);
-			int diagPtsShpFlgs = ShapeFlags.ONCE | ShapeFlags.NOOUTLINE;
-			float diagPtsRadius = 0.025;
-			Shape.CreateSphere(COLOR_GREEN, diagPtsShpFlgs, weaponStart, diagPtsRadius);
-			Shape.CreateSphere(COLOR_YELLOW, diagPtsShpFlgs, diagNoAttachEnd, diagPtsRadius);
-			Shape.CreateSphere(COLOR_BLUE, diagPtsShpFlgs, weaponEnd, diagPtsRadius);
+			baseObstructionLength = ApproximateBaseObstructionLength();
 		}
+		
+		float weaponObstructionDist = baseObstructionLength + effectiveAttachmentLength;
+		float rayRadius = 0.02;
+		
+		#ifndef SERVER
+		#ifdef DIAG_DEVELOPER // Retrieve possible override
+		float overrideObstDist = PluginDiagMenuClient.GetWeaponLiftDiag().Data().m_ObstructionDistance;
+		PluginDiagMenuClient.GetWeaponLiftDiag().Data().SetWeaponRayParams(start, direction, weaponStartDist, weaponEndDist, effectiveAttachmentLength, m_ObstructionDistance, weaponObstructionDist, rayRadius);
+		weaponObstructionDist = overrideObstDist;
+		rayRadius = PluginDiagMenuClient.GetWeaponLiftDiag().Data().m_RayRadiusOverride;
 		#endif
-		
-		// For the physical cast, extend the distance by x%
-		// to allow for smoother transition handling in some cases
-		end = weaponEnd + ((0.1 * distance) * direction);
+		#endif
+
+		// Extend the raycast range by 30 cm to allow checking for intersections even
+		// under shallow angles and other odd cases
+		float rayEndDist = weaponEndDist + 0.30;
+		vector rayEnd = start + rayEndDist * direction;
 		
 		// Prepare raycast params and perform the cast in fire geo
-		RaycastRVParams rayParm = new RaycastRVParams(start, end, player, 0.02);
+		RaycastRVParams rayParm = new RaycastRVParams(start, rayEnd, player, rayRadius);
 		rayParm.flags = CollisionFlags.ALLOBJECTS;
 		rayParm.type = ObjIntersect.Fire;
 		
-		#ifdef DIAG_DEVELOPER
-		DbgUI.BeginCleanupScope();
-		#endif
+		RaycastRVResult hitResult;
+		float hitFraction;
+		float hitDist;
+		
 		array<ref RaycastRVResult> results = {};
 		if (!DayZPhysics.RaycastRVProxy(rayParm, results) || results.Count() == 0)
 		{
-			hit_pos = vector.Zero;
-			hit_fraction = 0;
+			hitFraction = 0;
 		}
 		else
 		{
-			RaycastRVResult res = results[0];
-			
-			#ifdef DIAG_DEVELOPER	// isect diag
-			if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_LIFT_DEBUG) == 2)
+			// In case of multiple results, find the best (nearest) match, RaycastRVProxy doesn't guarantee any sensible order
+			int numRes = results.Count();
+			if (numRes == 1)
 			{
-				DbgUI.Begin("Weapon Lift Diag");
-				{
-					if (res.surface)
-					{
-						DbgUI.Text("Intersection data:");
-						DbgUI.Text("  Name: " + res.surface.GetName());
-						DbgUI.Text("  EntryName: " + res.surface.GetEntryName());
-						DbgUI.Text("  SurfaceType: " + res.surface.GetSurfaceType());
-						
-						DbgUI.Text("  IsPassThrough: " + res.surface.IsPassthrough());
-						DbgUI.Text("  IsSolid: " + res.surface.IsSolid());
-					}
-					else
-					{
-						DbgUI.Text("Intersection with no surface");
-					}
-				}
-				DbgUI.End();
-			}
-			#endif	// !isect diag
-			
-			if (LiftWeaponRaycastResultCheck(res))
-			{
-				hit_pos = res.pos;
-				float len0 = (hit_pos - start).Length();
-				float len1 = (end - start).Length();
-				if (len0 <= 0 || len1 <= 0)
-				{
-					hit_fraction = 1;
-				}
-				else
-				{
-					hit_fraction = len0 / len1;
-				}
+				hitResult = results[0];
 			}
 			else
 			{
-				hit_pos = vector.Zero;
-				hit_fraction = 0;
+				int bi = -1;
+				float maxDist = float.MAX;
+				for (int i = 0, nr = results.Count(); i < nr; ++i)
+				{
+					float sqDist = vector.DistanceSq(results[i].pos, weaponStart);
+					if (sqDist < maxDist)
+					{
+						maxDist = sqDist;
+						bi = i;
+					}
+				}
+				hitResult = results[bi];
+			}
+
+			if (LiftWeaponRaycastResultCheck(hitResult))
+			{
+				float len0 = (hitResult.pos - start).Length();
+				float len1 = (weaponEnd - start).Length(); // Do not include 'rayEnd' - pretend as if the computation happened in <start, weaponEnd>
+				
+				if (len0 <= 0 || len1 <= 0)
+				{
+					hitFraction = 1;
+				}
+				else
+				{
+					hitFraction = len0 / len1;
+				}
+				hitDist = hitFraction * weaponEndDist;
+			}
+			else
+			{
+				hitFraction = 0;
+				hitDist = 0;
 			}
 		}
-		#ifdef DIAG_DEVELOPER
-		DbgUI.EndCleanupScope();
-		#endif
-		
-		// Draw diagnostics: Script -> Weapon -> Weapon Lift
-		#ifdef DIAG_DEVELOPER
-		if (DiagMenu.GetValue(DiagMenuIDs.WEAPON_LIFT_DEBUG))
-		{
-			const vector epsilon = "0 0.0002 0"; // to overcome excessive z-fighting for diag
-			if (lastLiftPosition!=vector.Zero)
-			{
-				Shape.CreateArrow(start-epsilon, lastLiftPosition-epsilon, 0.05, COLOR_YELLOW, ShapeFlags.ONCE);
-			}
 			
-			Shape.CreateArrow(start, weaponEnd, 0.05, COLOR_WHITE, ShapeFlags.ONCE | ShapeFlags.NOZBUFFER );
-			
-			if (hit_fraction != 0)
-			{
-				Shape.CreateArrow(start+epsilon, hit_pos+epsilon, 0.05, COLOR_RED, ShapeFlags.ONCE);
-			}
-		}
+		#ifndef SERVER
+		#ifdef DIAG_DEVELOPER	// isect diag
+		PluginDiagMenuClient.GetWeaponLiftDiag().Data().SetIntersectionParams(hitResult, hitFraction, hitDist);
+		PluginDiagMenuClient.GetWeaponLiftDiag().Data().SetLastPosition(lastLiftPosition);
+		#endif	// !isect diag
 		#endif
 		
 		// Start by assuming that we want to retain state
@@ -1618,7 +1872,7 @@ class Weapon_Base extends Weapon
 		const float outThreshold = 0.003;
 		const float noIsctOutThreshold = 0.01;
 		// Max num of ticks with no hit for which hysteresis will persist
-		// value chosen by iteration, should be approx 0.333s 
+		// value chosen by iteration, should be approx 0.333s
 		const int maxNumMissedTicks = 10;
 		
 		// Min angle in degrees change from last lift to stop lifting
@@ -1626,10 +1880,10 @@ class Weapon_Base extends Weapon
 		float angleThreshold = 0.75 + Math.Clamp( m_WeaponLength * 0.6, 0, 1.5 );
 		
 		// Update state when a hit is registered
-		if (hit_fraction != 0)
+		if (hitFraction != 0)
 		{
-			vector v1 = hit_pos - weaponEnd;
-			vector v2 = hit_pos - end;
+			vector v1 = hitResult.pos - weaponEnd;
+			vector v2 = hitResult.pos - rayEnd;
 			float d = vector.Dot(v1, v2);
 			// But leave some threshold where previous state is kept
 			// to prevent excessive switches from occuring
@@ -1642,7 +1896,7 @@ class Weapon_Base extends Weapon
 				wantsLift = false;
 			}
 			
-			m_LastLiftPosition = hit_pos;
+			m_LastLiftPosition = hitResult.pos;
 			m_LastLiftHit = player.GetSimulationTimeStamp();
 		}
 		else
@@ -1658,7 +1912,7 @@ class Weapon_Base extends Weapon
 			else
 			{
 				vector v3 = (lastLiftPosition - start).Normalized();
-				vector v4 = (end-start).Normalized();
+				vector v4 = (weaponEnd-start).Normalized();
 				float d2 = vector.Dot(v3, v4);
 				// no isect, angle delta check
 				if (Math.Acos(d2) > (angleThreshold * Math.DEG2RAD)) // if relative angle is > x degree, stop lifting
@@ -1669,19 +1923,33 @@ class Weapon_Base extends Weapon
 				// no isect, distance check
 				else
 				{
-					float d3 = vector.Dot( lastLiftPosition - weaponEnd, (start-end).Normalized() );
+					float d3 = vector.Dot( lastLiftPosition - weaponEnd, (start-weaponEnd).Normalized() );
 					if (d3 < -noIsctOutThreshold)
 					{
 						wantsLift = false;
 						m_LastLiftPosition = vector.Zero;
 					}
-					
+					float lastObstruction = hcw.GetWeaponObstruction();	
 					// fallback in case offending object disappears or moves
 					int timeSinceHit = player.GetSimulationTimeStamp() - m_LastLiftHit;
 					if (timeSinceHit > maxNumMissedTicks)
 					{
 						wantsLift = false;
 						m_LastLiftPosition = vector.Zero;
+					}
+					else if (wantsLift && m_LastLiftPosition != vector.Zero) // pretended hit to retain obstruction in this very tight edge case
+					{
+						float l0 = (m_LastLiftPosition - start).Length();
+						float l1 = (weaponEnd - start).Length();
+						if (l0 <= 0 || l1 <= 0)
+						{
+							hitFraction = 1;
+						}
+						else
+						{
+							hitFraction = l0 / l1;
+						}
+						hitDist = hitFraction * weaponEndDist;
 					}
 				}
 			}
@@ -1690,11 +1958,42 @@ class Weapon_Base extends Weapon
 		// lift is desired
 		if (wantsLift)
 		{
-			//Print(distance);
-			m_LiftWeapon = true;
+			// Remap the hit distance into the <obstruction, weaponWithAttachmentLength> range as 0..1 (and beyond)
+			float begDist = weaponObstructionDist;
+			float endDist = weaponStartDist + weaponLength;
+			
+			float obstFraction;
+			if (begDist < endDist)
+				obstFraction = Math.InverseLerp( begDist, endDist, hitDist );
+			
+			if (hitResult)
+				outHitObject = hitResult.obj;
+			
+			outObstruction 	= 1.0 - obstFraction;
+			m_LiftWeapon 	= true;
 			return true;
 		}
+
 		return false;
+	}
+	
+	/*!
+		Recomputes the provided `obstruction01` value typically returned by `LiftWeaponCheckEx`
+		from the [0 ... 1] range to distance in meters the weapon penetrates the obstacle.
+		\param obstruction01 Obstruction progress
+		\return Penetration depth in meters
+	*/
+	float GetObstructionPenetrationDistance(float obstruction01)
+	{
+		float baseObstructionLength = m_ObstructionDistance;
+		if (baseObstructionLength==0)
+		{
+			baseObstructionLength = ApproximateBaseObstructionLength();
+		}
+		
+		float effectiveAttachmentLength = GetEffectiveAttachmentLength();
+		float weaponEnd = m_ShoulderDistance + m_WeaponLength + effectiveAttachmentLength;
+		return weaponEnd - Math.Lerp(weaponEnd, baseObstructionLength + effectiveAttachmentLength, obstruction01);		
 	}
 	
 	//! Return whether provided material triggers weapon lift (true) or not (false).
@@ -1944,7 +2243,7 @@ class Weapon_Base extends Weapon
 		Magazine mag = GetMagazine(GetCurrentMuzzle());
 		if (mag)
 		{
-			GetGame().ClearJuncture(player, mag);
+			GetGame().ClearJunctureEx(player, mag);
 		}
 	}
 	
@@ -1952,7 +2251,7 @@ class Weapon_Base extends Weapon
 	{
 		SetNextMuzzleMode(muzzleIndex);
 	}
-	
+
 	// CoolDown
 	void SetCoolDown( float coolDownTime ) 
 	{
@@ -1963,5 +2262,27 @@ class Weapon_Base extends Weapon
 	{ 		
 		return m_coolDownTime > 0; 
 	}
+	
+	// If there are bullet in attached / internal magazine then bullet must be in chamber also	
+	bool MustBeChambered(int muzzleIndex)
+	{
+		return false;
+	}
+	
+#ifdef TEST_WEAPON_SYSNC_REPAIR
+	void SetSyncStable(bool value)
+	{
+		m_SyncStable = value;
+		if (!value)
+		{
+			m_SyncStableTime = GetGame().GetTickTime();
+		}
+	}
+	
+	bool IsSyncStable()
+	{
+		return m_SyncStable;
+	}
+#endif
 };
 

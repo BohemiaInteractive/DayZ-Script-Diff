@@ -60,10 +60,7 @@ class ActionDropItem : ActionSingleUseBase
 		HumanCommandMove hcm = player.GetCommand_Move();
 		if (hcm && hcm.IsChangingStance())
 			return false;
-		
-		if (player.GetCommand_Vehicle())
-			return false;
-		
+
 		return player && item;
 	}
 	
@@ -71,23 +68,20 @@ class ActionDropItem : ActionSingleUseBase
 	{
 		if (action_data.m_Player.IsPlacingServer())
 			action_data.m_Player.PlacingCancelServer();
-
-		if (!GetGame().IsMultiplayer())
+		
+		ClearInventoryReservationEx(action_data);
+		
+		if (GetGame().IsServer() && GetGame().IsMultiplayer())
 		{
-			ClearInventoryReservationEx(action_data);
-			PhysicalDropItem(action_data);
+			action_data.m_Player.ServerDropEntity(action_data.m_Player.GetItemInHands()); // multiplayer server side
+		}
+		else
+		{
+			PhysicalDropItem(action_data); // single player or multiplayer client side
 		}
 	}
-	
-	override void OnExecuteClient(ActionData action_data)
-	{
-		super.OnExecuteClient(action_data);
 
-		ClearInventoryReservationEx(action_data);
-		PhysicalDropItem(action_data);
-	}
-	
-	void PhysicalDropItem( ActionData action_data )
+	void PhysicalDropItem(ActionData action_data)
 	{
 		action_data.m_Player.PhysicalPredictiveDropItem(action_data.m_Player.GetItemInHands());
 	}

@@ -3,6 +3,7 @@ class DynamicMusicPlayerRegistry
 	ref map<EDynamicMusicPlayerCategory, ref DynamicMusicPlayerSettings> m_SettingsByCategory;
 	
 	ref array<ref DynamicMusicTrackData> m_TracksMenu;
+	ref array<ref DynamicMusicTrackData> m_TracksCredits;
 	ref array<ref DynamicMusicTrackData> m_TracksTime;
 	ref array<ref DynamicMusicTrackData> m_TracksLocationStatic;
 	ref array<ref DynamicMusicTrackData> m_TracksLocationStaticPrioritized;
@@ -22,6 +23,7 @@ class DynamicMusicPlayerRegistry
 		RegisterCategorySettings();
 
 		RegisterTracksMenu();
+		RegisterTracksCredits();
 		RegisterTracksTime();
 		RegisterTracksLocationStatic();
 		RegisterTracksLocationDynamic();
@@ -35,6 +37,7 @@ class DynamicMusicPlayerRegistry
 
 		RegisterGlobalSettings();
 		RegisterMenuSettings();
+		RegisterCreditsSettings();
 		RegisterTimeSettings();
 		RegisterLocationStaticSettings();
 		RegisterLocationDynamicSettings();
@@ -56,7 +59,20 @@ class DynamicMusicPlayerRegistry
 		settings.m_MinWaitTimeSeconds = 1.0;
 		settings.m_MaxWaitTimeSeconds = 3.0;
 		
+		settings.m_PreviousTrackFadeoutSeconds = 2.0;
+		
 		m_SettingsByCategory[EDynamicMusicPlayerCategory.MENU] = settings;
+	}
+
+	private void RegisterCreditsSettings()
+	{
+		DynamicMusicPlayerSettings settings = new DynamicMusicPlayerSettings();
+		settings.m_MinWaitTimeSeconds = 1.0;
+		settings.m_MaxWaitTimeSeconds = 3.0;
+		
+		settings.m_PreviousTrackFadeoutSeconds = 2.0;
+		
+		m_SettingsByCategory[EDynamicMusicPlayerCategory.CREDITS] = settings;
 	}
 	
 	private void RegisterTimeSettings()
@@ -101,7 +117,13 @@ class DynamicMusicPlayerRegistry
 		RegisterTrackMenu("Music_Menu_2_SoundSet");
 		RegisterTrackMenu("Music_Menu_3_SoundSet");
 		RegisterTrackMenu("Music_Menu_4_SoundSet");
-		RegisterTrackMenu("Music_Menu_subtitles_remake_SoundSet");
+	}
+//===============================================================================================================================================	
+	protected void RegisterTracksCredits()
+	{
+		m_TracksCredits = new array<ref DynamicMusicTrackData>();
+
+		RegisterTrackCredits("Music_Menu_subtitles_remake_SoundSet");
 	}
 //____________________________________________Day Time setup___________________________________________
 
@@ -155,6 +177,17 @@ class DynamicMusicPlayerRegistry
 		track.m_HasPriority	= hasPriority;
 
 		m_TracksMenu.Insert(track);
+	}
+	
+	//! --------------------------------------------------------------------------------
+	protected void RegisterTrackCredits(string soundSetName, bool hasPriority = false)
+	{
+		DynamicMusicTrackData track = new DynamicMusicTrackData();
+		track.m_Category 	= EDynamicMusicPlayerCategory.CREDITS;
+		track.m_SoundSet 	= soundSetName;
+		track.m_HasPriority	= hasPriority;
+
+		m_TracksCredits.Insert(track);
 	}
 	
 	protected void RegisterTrackTime(string soundSetName, int timeOfDay = DynamicMusicPlayerTimeOfDay.ANY)

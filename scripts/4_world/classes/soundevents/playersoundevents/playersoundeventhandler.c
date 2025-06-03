@@ -46,7 +46,7 @@ class PlayerSoundEventHandler extends SoundEventHandler
 	PlayerBase m_Player;
 	const int SOUND_EVENTS_MAX = EPlayerSoundEventID.ENUM_COUNT;
 	static ref PlayerSoundEventBase m_AvailableStates[SOUND_EVENTS_MAX];
-	static ref map<int,int> m_ConfigIDToScriptIDmapping = new ref map<int,int> ;
+	static ref map<int,int> m_ConfigIDToScriptIDmapping = new map<int,int> ;
 	ref PlayerSoundEventBase m_CurrentState;
 	ref Timer m_UpdateTimer;
 	

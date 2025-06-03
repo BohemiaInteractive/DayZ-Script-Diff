@@ -283,6 +283,13 @@ class InGameMenu extends UIScriptedMenu
 		}
 		else if (code == IDC_INT_RETRY && result == DBB_YES && GetGame().IsMultiplayer())
 		{
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			//! We dont want players to see the respawn dialog when they are still alive and not unconscious anymore (edge case).
+			if (player && player.IsAlive() && !player.IsUnconscious())
+			{
+				return true;
+			}
+			
 			if (GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
 			{
 				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);

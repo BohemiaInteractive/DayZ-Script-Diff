@@ -47,6 +47,12 @@ class ActionDeployBase : ActionContinuousBase
 		return true;
 	}
 	
+	//base CAN function without hologram, but inherited action should use it
+	bool ActionUsesHologram()
+	{
+		return false;
+	}
+	
 	override ActionData CreateActionData()
 	{
 		PlaceObjectActionData action_data = new PlaceObjectActionData();
@@ -63,48 +69,62 @@ class ActionDeployBase : ActionContinuousBase
 	
 	override void OnFinishProgressServer(ActionData action_data)
 	{	
-		PlaceObjectActionData poActionData;
-		poActionData = PlaceObjectActionData.Cast(action_data);
-		
+		PlaceObjectActionData poActionData = PlaceObjectActionData.Cast(action_data);
 		if (!poActionData)
 			return;
 
-		if (!action_data.m_MainItem)
+		if (!poActionData.m_MainItem)
 			return;
 		
-		EntityAI entity_for_placing = action_data.m_MainItem;
-		vector position;
-		vector orientation;
+		EntityAI entity_for_placing = poActionData.m_MainItem;
+		vector position = vector.Zero;
+		vector orientation = vector.Zero;
 		
-		// In case of placement with hologram
-		if (action_data.m_Player.GetHologramServer())
+		// In case of placement action that requires hologram, look for it, or fail
+		if (ActionUsesHologram())
 		{
-			position 	= action_data.m_Player.GetLocalProjectionPosition();
-			orientation = action_data.m_Player.GetLocalProjectionOrientation();
-			
-			action_data.m_Player.GetHologramServer().EvaluateCollision(action_data.m_MainItem);
-			if (GetGame().IsMultiplayer() && action_data.m_Player.GetHologramServer().IsColliding())
+			if (poActionData.m_Player.GetHologramServer())
+			{
+				position 	= poActionData.m_Position;
+				orientation = poActionData.m_Orientation;
+				
+				poActionData.m_Player.GetHologramServer().EvaluateCollision(poActionData.m_MainItem);
+				if (GetGame().IsMultiplayer() && poActionData.m_Player.GetHologramServer().IsColliding())
+					return;
+				
+				poActionData.m_Player.GetHologramServer().PlaceEntity(entity_for_placing);
+				
+				if (GetGame().IsMultiplayer())
+					poActionData.m_Player.GetHologramServer().CheckPowerSource();
+				
+				#ifdef DEVELOPER
+				if (IsCLIParam("hologramLogs"))
+				{
+					Debug.Log(string.Format("Hologram of %1 found, deployment successful.", poActionData.m_MainItem), "hologramLogs");
+					Debug.Log(string.Format("Pos Comparison | player: %1 | hologram: %2 | action data: %3", poActionData.m_Player.GetPosition(),poActionData.m_Player.GetLocalProjectionPosition(),position), "hologramLogs");
+				}
+				#endif
+			}
+			else
+			{
+				Debug.Log(string.Format("Expected hologram of %1 not found, failing deployment!", poActionData.m_MainItem), Type().ToString());
 				return;
-			
-			action_data.m_Player.GetHologramServer().PlaceEntity(entity_for_placing);
-			
-			if (GetGame().IsMultiplayer())
-				action_data.m_Player.GetHologramServer().CheckPowerSource();
+			}
 		}
-		else
+		else //action does NOT require hologram in the first place, take player's info instead
 		{
-			position 	= action_data.m_Player.GetPosition();
-			orientation = action_data.m_Player.GetOrientation();
-			position 	= position + (action_data.m_Player.GetDirection() * POSITION_OFFSET);
+			position 	= poActionData.m_Player.GetPosition();
+			orientation = poActionData.m_Player.GetOrientation();
+			position 	= position + (poActionData.m_Player.GetDirection() * POSITION_OFFSET);
 		}
 		
-		MoveEntityToFinalPosition(action_data, position, orientation);			
-		GetGame().ClearJunctureEx(action_data.m_Player, entity_for_placing);
-		action_data.m_MainItem.SetIsBeingPlaced(false);
+		MoveEntityToFinalPosition(poActionData, position, orientation);			
+		GetGame().ClearJunctureEx(poActionData.m_Player, entity_for_placing);
+		poActionData.m_MainItem.SetIsBeingPlaced(false);
 		poActionData.m_AlreadyPlaced = true;
 		
-		entity_for_placing.OnPlacementComplete(action_data.m_Player, position, orientation); //beware, this WILL fire on server before the item is moved to final position!
-		action_data.m_Player.PlacingCompleteServer();
+		entity_for_placing.OnPlacementComplete(poActionData.m_Player, position, orientation); //beware, this WILL fire on server before the item is moved to final position!
+		poActionData.m_Player.PlacingCompleteServer();
 		
 		m_MovedItems.Clear();
 	}

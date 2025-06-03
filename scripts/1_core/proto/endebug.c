@@ -140,11 +140,11 @@ enum ShapeFlags
 enum CollisionFlags
 {
 	FIRSTCONTACT,	//<In many cases only collided=true/false is enough
-	NEARESTCONTACT	//<We want only one, the nearest contact
-	ONLYSTATIC		//<Only static objects
-	ONLYDYNAMIC		//<Only dynamic objects
-	ONLYWATER		//<Only water components (legacy support for "walk on geometry")
-	ALLOBJECTS		//<Valid when CF_FIRST_CONTACT, we get first contact for each object
+	NEARESTCONTACT,	//<We want only one, the nearest contact
+	ONLYSTATIC,		//<Only static objects
+	ONLYDYNAMIC,	//<Only dynamic objects
+	ONLYWATER,		//<Only water components (legacy support for "walk on geometry")
+	ALLOBJECTS,		//<Valid when CF_FIRST_CONTACT, we get first contact for each object
 }
 		
 /*!
@@ -211,13 +211,21 @@ class Shape
 		return CreateLines(color, flags, pts, 7);
 	}
 
-	static void CreateMatrix(vector mat[4])
+	static void CreateMatrix(vector mat[4], float axisLength = 0.05, float arrowSize = 0.0)
 	{
-		vector org = mat[3];
-		int flags = ShapeFlags.NOZWRITE|ShapeFlags.DOUBLESIDE|ShapeFlags.TRANSP|ShapeFlags.ONCE;
-		Create(ShapeType.LINE, 0xffff0000, flags, org, mat[0] * 0.5 + org);
-		Create(ShapeType.LINE, 0xff00ff00, flags, org, mat[1] * 0.5 + org);
-		Create(ShapeType.LINE, 0xff0000ff, flags, org, mat[2] * 0.5 + org);
+		int flags = ShapeFlags.ONCE | ShapeFlags.NOZWRITE | ShapeFlags.DOUBLESIDE | ShapeFlags.TRANSP;
+		if (arrowSize <= 0)
+		{
+			Create(ShapeType.LINE, 0xFFFF0000, flags, mat[3], mat[3] + axisLength * mat[0]);
+			Create(ShapeType.LINE, 0xFF00FF00, flags, mat[3], mat[3] + axisLength * mat[1]);
+			Create(ShapeType.LINE, 0xFF0000FF, flags, mat[3], mat[3] + axisLength * mat[2]);
+		}
+		else
+		{
+			CreateArrow(mat[3], mat[3] + axisLength * mat[0], arrowSize, 0xFFFF0000, flags);
+			CreateArrow(mat[3], mat[3] + axisLength * mat[1], arrowSize, 0xFF00FF00, flags);
+			CreateArrow(mat[3], mat[3] + axisLength * mat[2], arrowSize, 0xFF0000FF, flags);
+		}
 	}
 };
 

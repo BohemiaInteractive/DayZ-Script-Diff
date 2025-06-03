@@ -194,6 +194,12 @@ class OptionSelector extends OptionSelectorBase
 			}
 		}
 	}
+		
+	void ShowNavigationButtons(bool show)
+	{
+		m_NextOption.Show(show);
+		m_PreviousOption.Show(show);
+	} 
 	
 	override bool IsFocusable(Widget w)
 	{

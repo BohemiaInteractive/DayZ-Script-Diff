@@ -104,6 +104,14 @@ class Input
 	proto native void	EnableMouseAndKeyboard(bool enable);
 	//! @return state of support mouse and keyboard (on consoles)
 	proto native bool	IsEnabledMouseAndKeyboard();
+	
+	//! Enable gamepad (on PC)
+	proto native void	EnableGamepad(bool enable);
+	//! @return state of support gamepad (on PC) 
+	// NOTE: not actually supported, just keeping naming consistent. 
+	// Required as we need to disable gamepad on windows when in the server browser to prevent 
+	// the client from freezing on gamepad queries while refreshing the server list .
+	proto native bool	IsEnabledGamepad();
 	/*!
 	@return state of support mouse and keyboard. If client playing on server 
 	where mouse and keyboard is disabled, then return false. (on consoles)

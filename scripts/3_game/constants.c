@@ -417,6 +417,8 @@ class SoundConstants
 	const int ITEM_PLACE = 1;
 	const int ITEM_DEPLOY_LOOP = 2;
 	const int ITEM_DEPLOY = 3;
+	const int ITEM_FOLD_LOOP = 4;
+	const int ITEM_FOLD = 5;
 	
 	const int ITEM_BARREL_OPEN = 20;
 	const int ITEM_BARREL_CLOSE = 21;

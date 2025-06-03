@@ -83,8 +83,8 @@ class HotSpringTrigger : EffectTrigger
 	protected void SpawnVaporEffect()
 	{
 		vector pos = GetPosition();
-		pos[1] = GetGame().SurfaceY(pos[0], pos[2]) + 0.5;
-		
+		pos[1] = GetGame().SurfaceRoadY(pos[0], pos[2], RoadSurfaceDetection.UNDER); 	// Snap to water volume surface or terrain
+
 		m_VaporParticle = ParticleManager.GetInstance().PlayInWorld(ParticleList.HOTPSRING_WATERVAPOR, pos);
 		
 		int randSize = Math.RandomIntInclusive(-1,2);

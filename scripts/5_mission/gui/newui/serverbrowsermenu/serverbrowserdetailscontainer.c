@@ -270,13 +270,13 @@ class ServerBrowserDetailsContainer extends ScriptedWidgetEventHandler
 			{
 				result = "#server_browser_entry_disabled";
 				color = ARGB(255, 255, 0, 0);
-				break:
+				break;
 			}
 			case 1:
 			{
 				result = "#server_browser_entry_enabled";
 				color = ARGB(255, 0, 255, 0);
-				break:
+				break;
 			}
 		}
 		

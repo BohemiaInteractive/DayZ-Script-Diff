@@ -1,6 +1,7 @@
 class Fireplace extends FireplaceBase
 {
-	bool m_ContactEventProcessing;
+	bool m_ContactEventProcessing = false;
+	protected bool m_ContactDeletionProcessing = false;
 	
 	void Fireplace()
 	{
@@ -58,12 +59,19 @@ class Fireplace extends FireplaceBase
 	
 	void ContactEvent( IEntity other, vector position )
 	{		
-		if ( GetGame().IsServer() && !m_ContactEventProcessing && dBodyIsActive(this) && !IsSetForDeletion() )
-		{
+		if (GetGame().IsServer() && !m_ContactEventProcessing && dBodyIsActive(this) && !IsSetForDeletion())
 			m_ContactEventProcessing = true;
+	}
+	
+	override protected void EOnPostSimulate(IEntity other, float timeSlice)
+	{
+		super.EOnPostSimulate(other,timeSlice);
+		
+		if (m_ContactEventProcessing && !m_ContactDeletionProcessing)
+		{
 			MiscGameplayFunctions.ThrowAllItemsInInventory(this, 0);
 			CheckForDestroy();
-			m_ContactEventProcessing = false;
+			m_ContactDeletionProcessing = true;
 		}
 	}
 	

@@ -55,6 +55,7 @@ enum NVTypes
 {
 	NONE = 0,
 	NV_GOGGLES,
+	NV_GOGGLES_2D,
 	NV_GOGGLES_OFF,
 	NV_OPTICS_ON,
 	NV_OPTICS_OFF,
@@ -476,17 +477,15 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	//! DayZPlayerCameraOptics handles this separately, otherwise it takes active NVType from PlayerBase::GetCameraNVType
 	void SetNVPostprocess(int NVtype)
 	{
-		//Print("+++Setting NV type: " + NVtype + " +++");
+		//remove ALL conflicting NV occluders first
+		if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+			GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER,EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+		
 		switch (NVtype)
 		{
 			case NVTypes.NONE:
 			{
 				PPERequesterBank.GetRequester(PPERequester_CameraNV).Stop();
-				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-				{
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
-				}
 			}
 			break;
 			
@@ -496,11 +495,6 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_OPTICS_ON:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DEFAULT_OPTICS) );
-				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-				{
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
-				}
 			}
 			break;
 			
@@ -509,11 +503,6 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_OPTICS_STARLIGHT_DAY:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DAYTIME_OPTICS) );
-				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-				{
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
-				}
 			}
 			break;
 			
@@ -521,11 +510,6 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_OPTICS_OFF:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_NO_BATTERY) );
-				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-				{
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
-				}
 			}
 			break;
 			
@@ -533,10 +517,13 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DEFAULT_GLASSES) );
 				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-				{
 					GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
-				}
+			}
+			break;
+			
+			case NVTypes.NV_GOGGLES_2D:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DEFAULT_GLASSES) );
 			}
 			break;
 			
@@ -544,10 +531,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_PUMPKIN) );
 				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-				{
 					GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
-					GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
-				}
 			}
 			break;
 		}

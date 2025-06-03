@@ -493,5 +493,13 @@ class Math3D
 		\param[out] rightPoint \p vector Right point of the cone
 	*/
 	proto static void ConePoints(vector origin, float length, float halfAngle, float angleOffset, out vector leftPoint, out vector rightPoint);
+	
+	/*!
+		Output 2D blend space weights for `inPositions` when sampled at `samplePosition`
+		\param samplePosition [X, Y, unused] coordinate to sample the 2d space
+		\param inPositions [X, Y, unused] positions in the 2d space
+		\param outWeights Output weights for individual nodes 1:1 to inPositions
+	*/
+	proto static void BlendCartesian(vector samplePosition, notnull array<vector> inPositions, notnull array<float> outWeights);
 };
 //@}

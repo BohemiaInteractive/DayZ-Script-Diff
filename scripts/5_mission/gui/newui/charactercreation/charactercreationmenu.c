@@ -29,6 +29,8 @@ class CharacterCreationMenu extends UIScriptedMenu
 	protected ref OptionSelectorMultistateCharacterMenu		m_BottomSelector;
 	protected ref OptionSelectorMultistateCharacterMenu		m_ShoesSelector;
 	
+	protected ref map<Widget, OptionSelectorMultistateCharacterMenu> m_MultiOptionSelectors;
+	
 	int m_OriginalCharacterID;
 	
 	void CharacterCreationMenu()
@@ -125,6 +127,22 @@ class CharacterCreationMenu extends UIScriptedMenu
 		m_TopSelector		= new OptionSelectorMultistateCharacterMenu(layoutRoot.FindAnyWidget("character_top_setting_option"), 0, null, false, DefaultCharacterCreationMethods.GetConfigAttachmentTypes(InventorySlots.BODY));
 		m_BottomSelector	= new OptionSelectorMultistateCharacterMenu(layoutRoot.FindAnyWidget("character_bottom_setting_option"), 0, null, false, DefaultCharacterCreationMethods.GetConfigAttachmentTypes(InventorySlots.LEGS));
 		m_ShoesSelector		= new OptionSelectorMultistateCharacterMenu(layoutRoot.FindAnyWidget("character_shoes_setting_option"), 0, null, false, DefaultCharacterCreationMethods.GetConfigAttachmentTypes(InventorySlots.FEET));
+		
+		m_GenderSelector.ShowNavigationButtons(true);
+		m_SkinSelector.ShowNavigationButtons(true);
+		m_TopSelector.ShowNavigationButtons(true);
+		m_BottomSelector.ShowNavigationButtons(true);
+		m_ShoesSelector.ShowNavigationButtons(true);
+		
+		if (!m_MultiOptionSelectors)
+		{
+			m_MultiOptionSelectors = new map<Widget, OptionSelectorMultistateCharacterMenu>;
+			m_MultiOptionSelectors.Insert(layoutRoot.FindAnyWidget("character_gender_button"), m_GenderSelector);
+			m_MultiOptionSelectors.Insert(layoutRoot.FindAnyWidget("character_head_button"), m_SkinSelector);
+			m_MultiOptionSelectors.Insert(layoutRoot.FindAnyWidget("character_top_button"), m_TopSelector);
+			m_MultiOptionSelectors.Insert(layoutRoot.FindAnyWidget("character_bottom_button"), m_BottomSelector);
+			m_MultiOptionSelectors.Insert(layoutRoot.FindAnyWidget("character_shoes_button"), m_ShoesSelector);
+		}
 		
 		PlayerBase scene_char = GetPlayerObj();
 		if (scene_char)
@@ -465,17 +483,20 @@ class CharacterCreationMenu extends UIScriptedMenu
 	void CheckNewOptions()
 	{
 		bool show_widgets = m_Scene.GetIntroCharacter().IsDefaultCharacter();
-		bool was_visible = layoutRoot.FindAnyWidget("character_gender_button").IsVisible();
 		layoutRoot.FindAnyWidget("character_gender_button").Show(show_widgets);
 		layoutRoot.FindAnyWidget("character_head_button").Show(show_widgets);
 		layoutRoot.FindAnyWidget("character_top_button").Show(show_widgets);
 		layoutRoot.FindAnyWidget("character_bottom_button").Show(show_widgets);
 		layoutRoot.FindAnyWidget("character_shoes_button").Show(show_widgets);
 		
-		if (!was_visible && show_widgets)
+		if (show_widgets)
+		{
 			m_GenderSelector.Focus();
-		if (!show_widgets)
+		}
+		else
+		{
 			SetFocus(m_RandomizeCharacter);
+		}
 	}
 	
 	override void OnShow()
@@ -551,6 +572,16 @@ class CharacterCreationMenu extends UIScriptedMenu
 			RandomizeCharacter();
 		}
 		
+		if (GetUApi().GetInputByID(UAUIRight).LocalPress())
+		{
+			NextOption();
+		}
+		
+		if (GetUApi().GetInputByID(UAUILeft).LocalPress())
+		{
+			PreviousOption();
+		}
+		
 		#ifdef PLATFORM_CONSOLE
 		if (GetUApi().GetInputByID(UAUICtrlY).LocalPress())
 		{
@@ -560,6 +591,28 @@ class CharacterCreationMenu extends UIScriptedMenu
 			}
 		}
 		#endif
+	}
+	
+	protected void NextOption()
+	{
+		Widget w = GetFocus();
+		if (!w)
+			return;
+
+		OptionSelectorMultistateCharacterMenu optionSelector = m_MultiOptionSelectors[w];
+		if (optionSelector)
+			optionSelector.SetNextOption();
+	}
+	
+	protected void PreviousOption()
+	{
+		Widget w = GetFocus();
+		if (!w)
+			return;
+
+		OptionSelectorMultistateCharacterMenu optionSelector = m_MultiOptionSelectors[w];
+		if (optionSelector)
+			optionSelector.SetPrevOption();
 	}
 	
 	override void OnHide()
@@ -743,7 +796,14 @@ class CharacterCreationMenu extends UIScriptedMenu
 		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "#layout_character_creation_toolbar_randomize", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		if (m_Scene.GetIntroCharacter().IsDefaultCharacter()) //edit options available
 		{
-			text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#layout_character_creation_toolbar_select", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			#ifdef PLATFORM_PS4
+			string result = string.Format("<image set=\"%1\" name=\"%2\" scale=\"%3\" />", "playstation_buttons", "DPAD_left_short", 1.92);
+			string result2 = string.Format("<image set=\"%1\" name=\"%2\" scale=\"%3\" />", "playstation_buttons", "DPAD_right_short", 1.92);
+			#else
+			string result = string.Format("<image set=\"%1\" name=\"%2\" scale=\"%3\" />", "xbox_buttons", "DPAD_left_short", 1.92);
+			string result2 = string.Format("<image set=\"%1\" name=\"%2\" scale=\"%3\" />", "xbox_buttons", "DPAD_right_short", 1.92);
+			#endif
+			text += string.Format(" %1%2 %3", result, result2, "#layout_character_creation_toolbar_select");
 		}
 		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#layout_character_creation_toolbar_back", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		toolbar_text.SetText(text);

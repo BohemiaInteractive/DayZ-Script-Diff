@@ -145,8 +145,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		bool isFireWeapon			= itemInHands && itemInHands.IsWeapon();
 		
 		//! Check if we need to damage
-		if (HandleHitEvent(pCurrentCommandID, pInputs, itemInHands, pMovementState, pContinueAttack))
-			return false;
+		HandleHitEvent(pCurrentCommandID, pInputs, itemInHands, pMovementState, pContinueAttack);
 
 		//! Actually pressing a button to start a melee attack
 		if ((pInputs.IsAttackButtonDown() && !isFireWeapon) || (pInputs.IsMeleeWeaponAttack() && isFireWeapon) || (pContinueAttack && isFireWeapon))
@@ -938,7 +937,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 
 	protected bool IsShortDistance(EntityAI pTarget, float pDistanceSq)
 	{
-		return pTarget && vector.DistanceSq(m_Player.GetPosition(), m_MeleeCombat.GetHitPos()) <= pDistanceSq || vector.DistanceSq(m_Player.GetBonePositionWS(m_Player.GetBoneIndexByName("Head")), m_MeleeCombat.GetHitPos()) <= pDistanceSq)
+		return pTarget && (vector.DistanceSq(m_Player.GetPosition(), m_MeleeCombat.GetHitPos()) <= pDistanceSq) || (vector.DistanceSq(m_Player.GetBonePositionWS(m_Player.GetBoneIndexByName("Head")), m_MeleeCombat.GetHitPos()) <= pDistanceSq);
 	}
 
 	//!

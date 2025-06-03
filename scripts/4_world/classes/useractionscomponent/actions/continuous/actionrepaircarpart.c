@@ -69,7 +69,7 @@ class ActionRepairCarPart : ActionContinuousBase
 			
 			//Check health level of door
 			int zoneHP = carDoor.GetHealthLevel("");
-			return zoneHP > GameConstants.STATE_WORN && zoneHP < GameConstants.STATE_RUINED);
+			return zoneHP > GameConstants.STATE_WORN && zoneHP < GameConstants.STATE_RUINED;
 		}
 		
 		return false;

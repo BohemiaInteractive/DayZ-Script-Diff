@@ -157,7 +157,7 @@ proto native int ClearLightFlags(HLIGHT light, LightFlags flags);
 proto native bool SetLightCone(HLIGHT light, float cone);
 
 /*!
-scene multiplicator of light (based on measured scene light levels) - preexposure of light
+scene light multiplier (based on measured scene light levels) - pre-exposure of light
 */
 proto native float GetSceneHDRMul(int camera);
 //@}

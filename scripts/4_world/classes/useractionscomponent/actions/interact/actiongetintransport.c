@@ -87,7 +87,6 @@ class ActionGetInTransport: ActionBase
 		int componentIndex = action_data.m_Target.GetComponentIndex();
 		int crew_index = trans.CrewPositionIndex(componentIndex);
 		
-		
 		int seat = trans.GetSeatAnimationType(crew_index);
 		HumanCommandVehicle vehCommand = action_data.m_Player.StartCommand_Vehicle(trans, crew_index, seat);
 		if (vehCommand)
@@ -95,10 +94,6 @@ class ActionGetInTransport: ActionBase
 			vehCommand.SetVehicleType(trans.GetAnimInstance());
 			
 			GetDayZGame().GetBacklit().OnEnterCar();
-			if (action_data.m_Player.GetInventory())
-			{
-				action_data.m_Player.GetInventory().LockInventory(LOCK_FROM_SCRIPT);
-			}
 		}
 	}
 	
@@ -134,25 +129,10 @@ class ActionGetInTransport: ActionBase
 		return AC_INTERACT;
 	}
 	
-	override void OnEndClient(ActionData action_data)
+	override void OnEnd(ActionData action_data)
 	{
-		if (action_data.m_Player.GetInventory())
-		{
-				action_data.m_Player.GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
-		}
-	}
-	
-	override void OnEndServer(ActionData action_data)
-	{
-		super.OnEndServer(action_data);
-		
-		if (action_data.m_Player.GetInventory())
-		{
-			action_data.m_Player.GetInventory().UnlockInventory(LOCK_FROM_SCRIPT);
-		}
-		
 		CarScript car = CarScript.Cast(action_data.m_Target.GetObject());
-		if (car)
+		if (car && GetGame().IsServer())
 		{
 			car.ForceUpdateLightsEnd();
 		}

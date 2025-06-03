@@ -38,7 +38,7 @@ class PresenceNotifierNoiseEvents
 		m_Value 		= 0;
 		m_CooldownTimer = new Timer(CALL_CATEGORY_SYSTEM);
 		
-		m_PresenceNotifierNotifierEvents = new ref map<EPresenceNotifierNoiseEventType, ref PresenceNotifierNoiseEvent>();
+		m_PresenceNotifierNotifierEvents = new map<EPresenceNotifierNoiseEventType, ref PresenceNotifierNoiseEvent>();
 	}
 
 	void RegisterEvent(EPresenceNotifierNoiseEventType pEventType, int pValue, float pLength)

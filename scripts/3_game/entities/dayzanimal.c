@@ -122,6 +122,48 @@ class DayZCreature extends EntityAI
 		return true;
 	}
 
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	{
+		super.GetDebugActions(outputList);
+		
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
+		if (Gizmo_IsSupported())
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_OBJECT, "Gizmo Object", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_PHYSICS, "Gizmo Physics (SP Only)", FadeColors.LIGHT_GREY)); // intentionally allowed for testing physics desync
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+	}
+	
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+
+		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		{
+			switch (action_id)
+			{
+				case EActions.GIZMO_OBJECT:
+					GetGame().GizmoSelectObject(this);
+					return true;
+				case EActions.GIZMO_PHYSICS:
+					GetGame().GizmoSelectPhysics(GetPhysics());
+					return true;
+			}
+		}
+	
+		if (GetGame().IsServer())
+		{
+			switch (action_id)
+			{
+				case EActions.DELETE:
+					Delete();
+					return true;
+			}
+		}
+	
+		return false;
+	}
+
 	//-------------------------------------------------------------
 	//!
 	//! ModOverrides
@@ -644,6 +686,8 @@ class DayZAnimal extends DayZCreatureAI
 		
 		//! sets default hit position and cache it here (mainly for impact particles)
 		m_DefaultHitPosition = SetDefaultHitPosition(GetDefaultHitPositionComponent());
+
+		SetEventMask(EntityEvent.CONTACT);
 	}
 	
 	override bool IsHealthVisible()

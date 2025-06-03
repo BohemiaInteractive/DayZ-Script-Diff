@@ -69,7 +69,7 @@ class TrapBase extends ItemBase
 		m_InfoDamage =				"#STR_TrapBase3";
 		m_InfoActivationTime = 		"#STR_TrapBase4" + m_InitWaitTime.ToString() + "#STR_TrapBase5";
 		
-		m_UpdateTimer				= new ref Timer();	//! timer calling OnUpdate in configured interval
+		m_UpdateTimer				= new Timer();	//! timer calling OnUpdate in configured interval
 		
 		RegisterNetSyncVariableBool("m_IsActive");
 		RegisterNetSyncVariableBool("m_IsInProgress");

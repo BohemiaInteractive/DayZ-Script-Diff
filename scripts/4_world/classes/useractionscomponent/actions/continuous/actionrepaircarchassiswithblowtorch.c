@@ -2,7 +2,7 @@ class ActionRepairCarChassisWithBlowtorchCB : ActionRepairCarChassisCB
 {
 	override void CreateActionComponent()
 	{
-		m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.BASEBUILDING_REPAIR_MEDIUM);
+		m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.BASEBUILDING_REPAIR_MEDIUM);
 	}
 }
 
@@ -24,7 +24,7 @@ class ActionRepairCarChassisWithBlowtorch : ActionRepairCarChassis
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		Blowtorch bt = Blowtorch.Cast(item);
-		return super.ActionCondition(player, target, item) && bt.HasEnoughEnergyForRepair(UATimeSpent.BASEBUILDING_REPAIR_MEDIUM));
+		return super.ActionCondition(player, target, item) && bt.HasEnoughEnergyForRepair(UATimeSpent.BASEBUILDING_REPAIR_MEDIUM);
 	}
 
 	override void OnStartAnimationLoopServer(ActionData action_data)
@@ -32,11 +32,6 @@ class ActionRepairCarChassisWithBlowtorch : ActionRepairCarChassis
 		super.OnStartAnimationLoopServer(action_data);
 
 		action_data.m_MainItem.GetCompEM().SwitchOn();
-	}
-	
-	override void OnFinishProgressServer(ActionData action_data)
-	{
-		super.OnFinishProgressServer(action_data);
 	}
 	
 	override void OnEndServer(ActionData action_data)

@@ -27,6 +27,8 @@ class Trap_SmallFish extends TrapSpawnBase
 			Param2<EntityAI,int> par = new Param2<EntityAI,int>(this,updateCount);
 			m_CatchingContext = new CatchingContextTrapFishSmall(par);
 		}
+		
+		super.InitCatchingComponent();
 	}
 	
 	//========================================================

@@ -45,7 +45,7 @@ class FlashbangEffect
 			m_Requester.Start();
 		}
 		
-		m_DeferAttenuation = new ref Timer();
+		m_DeferAttenuation = new Timer();
 		m_DeferAttenuation.Run(SOUND_DEFER_TIME, this, "PlaySound", null, false);
 		
 		//! naive time of the day selector

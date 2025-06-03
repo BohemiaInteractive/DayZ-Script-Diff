@@ -1,6 +1,6 @@
 class ActionFertilizeSlotCB : ActionContinuousBaseCB
 {
-	private const float QUANTITY_USED_PER_SEC = 10;
+	private const float QUANTITY_USED_PER_SEC = 150;
 	
 	override void CreateActionComponent()
 	{
@@ -30,31 +30,35 @@ class ActionFertilizeSlot: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		GardenBase garden_base;
-		if ( Class.CastTo(garden_base, target.GetObject()))
+		if (item.GetQuantity() == 0)
+			return false;
+		
+		Object targetObject = target.GetObject();
+		if (targetObject.IsInherited(GardenBase))
 		{
+			GardenBase gardenBase = GardenBase.Cast(targetObject);
 			Slot slot;
 			
 			array<string> selections = new array<string>;
-			garden_base.GetActionComponentNameList(target.GetComponentIndex(), selections);
-			string selection;
+			gardenBase.GetActionComponentNameList(target.GetComponentIndex(), selections);
 
-			for (int s = 0; s < selections.Count(); s++)
+			foreach(string selection: selections)
 			{
-				selection = selections[s];
-				slot = garden_base.GetSlotBySelection( selection );
+				slot = gardenBase.GetSlotBySelection(selection);
 				if (slot)
 					break;
 			}
 			
-			if ( garden_base.NeedsFertilization( selection ) )
+			if (slot)
 			{
-				if ( item.GetQuantity() > 0 )
-				{
+				if (slot.GetPlant())
+					return false;
+								
+				if (slot.GetFertilityState() == eFertlityState.NONE)
 					return true;
-				}
 			}
 		}
+
 		return false;
 	}
 	

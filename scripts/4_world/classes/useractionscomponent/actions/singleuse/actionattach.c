@@ -63,7 +63,7 @@ class ActionAttach : ActionSingleUseBase
 		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
 		if (targetEntity && item)
 		{
-			return targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item) && !targetEntity.CanUseConstruction());
+			return targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item) && !targetEntity.CanUseConstruction();
 		}
 
 		return false;

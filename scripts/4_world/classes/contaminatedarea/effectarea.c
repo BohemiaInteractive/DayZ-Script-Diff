@@ -1,3 +1,5 @@
+// #define EFFECT_AREA_VISUAL_DEBUG
+
 // Mostly used for better readability
 enum eZoneType
 {
@@ -48,7 +50,8 @@ class EffectArea : House
 	// Area Data
 	string					m_Name = "Default setup"; 				// The user defined name of the area
 	int						m_Type = eZoneType.STATIC; 				// If the zone is static or dynamic
-	vector 					m_Position; 							// World position of Area
+	vector 					m_Position; 							// World position of area snapped to ground on creation (see: EffectAreaLoader)
+	vector 					m_PositionTrigger; 						// World position adjusted according to trigger pivot (pivot is cylinder center)
 	int 					m_EffectInterval;						// If non persisent effect: determines intervals between effect activation
 	int						m_EffectDuration;						// If non persisent effect: determines duration of effect
 	bool 					m_EffectModifier;						// Flag for modification of internal behavior of the effect
@@ -78,12 +81,13 @@ class EffectArea : House
 	int 					m_PPERequesterIdx = -1;
 	int						m_EffectsPriority;						// When multiple areas overlap, only the area with the highest priority will play its effects
 	
+	const int 				PARTICLES_MAX = 1000;					// Better safe than sorry
+	
 	// Other values and storage
 	string 					m_TriggerType = "ContaminatedTrigger"; 	// The trigger class used by this zone
 	EffectTrigger			m_Trigger; 								// The trigger used to determine if player is inside toxic area
 
 	ref array<Particle> 	m_ToxicClouds; 							// All static toxic clouds in ContaminatedArea
-	
 
 	// ----------------------------------------------
 	// 				INITIAL SETUP
@@ -160,19 +164,26 @@ class EffectArea : House
 		}
 		// We get the PPE index for future usage and synchronization
 		
-		
 		// DEVELOPER NOTE :
 		// If you cannot register a new requester, add your own indexation and lookup methods to get an index and synchronize it
 		// EXAMPLE : m_PPERequesterIdx = MyLookupMethod()
 		
+		#ifdef ENABLE_LOGGING
+		Debug.Log(">>>> SetupZoneData: Finished: " + m_Name);
+		#endif
+		
 		// We sync our data
 		SetSynchDirty();
-		
-		// Now that everything is ready, we finalize setup
-		InitZone();
 	}
 
-	void Tick() {};
+	void Tick()
+	{
+		#ifdef DIAG_DEVELOPER
+		#ifdef EFFECT_AREA_VISUAL_DEBUG
+		CleanupDebugShapes(m_DebugTargets);
+		#endif
+		#endif
+	}
 	
 		
 	// Through this we will evaluate the resize of particles
@@ -184,29 +195,25 @@ class EffectArea : House
 	
 	void InitZone()
 	{
-		//Debug.Log("------------------------------------------");
-		//Debug.Log( "We have created the zone : " + m_Name );
+	//	Debug.Log("------------------------------------------");
+	//	Debug.Log("InitZone: " + m_Name);
 		
-		m_Position = GetWorldPosition();
+		m_Position 				= GetPosition();
+		m_PositionTrigger		= m_Position;
+		m_PositionTrigger[1] 	= m_Position[1] + ((m_PositiveHeight - m_NegativeHeight) * 0.5); // Cylinder trigger pivot correction
 		
-		if ( !GetGame().IsDedicatedServer() )
-		{
+		if (!GetGame().IsDedicatedServer())
 			InitZoneClient();
-		}
 		
-		if ( GetGame().IsServer() )
-		{
+		if (GetGame().IsServer())
 			InitZoneServer();
-		}
 		
-		//Debug.Log("------------------------------------------");
+	//	Debug.Log("------------------------------------------");
 	}
 	
 	// The following methods are to be overriden to execute specifc logic
-	// Each method is executed where it says it will so no need to check for server or client ;) 
-	void InitZoneServer() {};
-	
-	void InitZoneClient() {};
+	void InitZoneServer();
+	void InitZoneClient();
 	
 	// ----------------------------------------------
 	// 				INTERACTION SETUP
@@ -238,70 +245,44 @@ class EffectArea : House
 	// Used to position all particles procedurally
 	void PlaceParticles( vector pos, float radius, int nbRings, int innerSpacing, bool outerToggle, int outerSpacing, int outerOffset, int partId )
 	{
-#ifdef NO_GUI
+	//	Debug.Log("PlaceParticles: " + pos);
+		
+	#ifdef NO_GUI
 		return; // do not place any particles if there is no GUI
-#endif
+	#endif	
 		if (partId == 0)
 		{
 			Error("[WARNING] :: [EffectArea PlaceParticles] :: no particle defined, skipping area particle generation" );
 			return;
 		}
-		// Determine if we snap first layer to ground
-		bool snapFirstLayer = true; 
-		if ( m_Type == eZoneType.STATIC && pos[1] != GetGame().SurfaceRoadY( pos[0], pos[2] ) )
-			snapFirstLayer = false;
-		
-		// BEGINNING OF SAFETY NET
-		// We want to prevent divisions by 0
 		if ( radius == 0 )
 		{
-			// In specific case of radius, we log an error and return as it makes no sense
 			Error("[WARNING] :: [EffectArea PlaceParticles] :: Radius of contaminated zone is set to 0, this should not happen");
 			return;
 		}
-		
 		if ( outerToggle && radius == outerOffset )
 		{
 			Error("[WARNING] :: [EffectArea PlaceParticles] :: Your outerOffset is EQUAL to your Radius, this will result in division by 0");
 			return;
 		}
 		
-		// Inner spacing of 0 would cause infinite loops as no increment would happen
-		if ( innerSpacing == 0 )
-			innerSpacing = 1;
-		
-		// END OF SAFETY NET
-		
-		int partCounter = 0; // Used for debugging, allows one to know how many emitters are spawned in zone
-		int numberOfEmitters = 1; // We always have the central emitter
-		
-		//Debug.Log("We have : " + nbRings + " rings");
-		//Debug.Log("We have : " + m_VerticalLayers + " layers");
-		
-		float angle = 0; // Used in for loop to know where we are in terms of angle spacing ( RADIANS )
+		int partCount = 0;	// Number of spawned emitters
 		
 		ParticlePropertiesArray props = new ParticlePropertiesArray();
 		
-		// We also populate vertically, layer 0 will be snapped to ground, subsequent layers will see particles floating and relevant m_VerticalOffset
-		for ( int k = 0; k <= m_VerticalLayers; k++ )
+		// Inner spacing of 0 would cause infinite loops as no increment would happen
+		if (innerSpacing == 0)
+			innerSpacing = 1;
+			
+		// For each concentric ring, we place a particle emitter at a set offset
+		for ( int i = 0; i <= nbRings + outerToggle; ++i )
 		{
-			vector partPos = pos;
-			// We prevent division by 0
-			// We don't want to tamper with ground layer vertical positioning
-			if ( k != 0 )
+			if (i == 0)						// Skipping 0, we want to start by placing a particle at center of area
 			{
-				partPos[1] = partPos[1] + ( m_VerticalOffset * k );
-			}
-			
-			// We will want to start by placing a particle at center of area
-			props.Insert(ParticleProperties(partPos, ParticlePropertiesFlags.PLAY_ON_CREATION, null, vector.Zero, this));
-			partCounter++;
-			
-			// For each concentric ring, we place a particle emitter at a set offset
-			for ( int i = 1; i <= nbRings + outerToggle; i++ )
+				SpawnParticles(props, pos, pos, partCount);
+			}	
+			else
 			{
-				//Debug.Log("We are on iteration I : " + i );
-				
 				// We prepare the variables to use later in calculation
 				float angleIncrement; 		// The value added to the offset angle to place following particle
 				float ab; 					// Length of a side of triangle used to calculate particle positionning
@@ -329,48 +310,130 @@ class EffectArea : House
 					
 					//Debug.Log("Radius of inner circle " + i + " is : " + ab);
 				}
-				
+
 				for ( int j = 0; j <= ( Math.PI2 / angleIncrement ); j++ )
 				{
 					// Determine position of particle emitter
 					// Use offset of current ring for vector length
-					// Use accumulated angle for vector direction
-					
-					float sinAngle = Math.Sin( angle );
-					float cosAngle = Math.Cos( angle );
-				
-					partPos = vector.RotateAroundZero( temp, vector.Up, cosAngle, sinAngle );
-					partPos += pos;
-					
-					// We snap first layer to ground if specified
-					if ( k == 0 && snapFirstLayer == true )
-						partPos[1] = GetGame().SurfaceY( partPos[0], partPos[2] );
-					else if ( k == 0 && snapFirstLayer == false )
-						partPos[1] = partPos[1] - m_NegativeHeight;
-					
-					// We check the particle is indeed in the trigger to make it consistent
-					if ( partPos[1] <= pos[1] + m_PositiveHeight && partPos[1] >= pos[1] - m_NegativeHeight )
-					{
-						// Place emitter at vector end ( coord )
-						props.Insert(ParticleProperties(partPos, ParticlePropertiesFlags.PLAY_ON_CREATION, null, GetGame().GetSurfaceOrientation( partPos[0], partPos[2] ), this));
-						
-						++partCounter;
-					}
 
-					// Increase accumulated angle
-					angle += angleIncrement;
+					float sinAngle 	= Math.Sin(angleIncrement * j);
+					float cosAngle 	= Math.Cos(angleIncrement * j);
+
+					vector partPos = vector.RotateAroundZero( temp, vector.Up, cosAngle, sinAngle );
+					partPos += pos;
+
+					SpawnParticles(props, pos, partPos, partCount);
 				}
+			}			
+		}
+		
+		InsertParticles(props, partCount, partId);
+	}
+	
+	// Fill the radius with particle emitters using the Circle packing in a circle method
+	void FillWithParticles(vector pos, float areaRadius, float outwardsBleed, float partSize, int partId)
+	{
+	//	Debug.Log("FillWithParticles: " + pos);
+		
+	#ifdef NO_GUI
+		return; // do not place any particles if there is no GUI
+	#endif
+		if (partId == 0)
+			return;
+ 
+		if (partSize <= 0)
+			partSize = 1;
+		
+		int 	partCount 	= 0;								// Number of spawned emitters
+		int 	ringCount	= 0;								// Number of area rings
+		float	ringDist 	= 0;								// Distance between rings
+
+		float 	radiusMax	= areaRadius + outwardsBleed; 		// Visual radius of the area
+		float	radiusPart	= partSize / 2;						// Particle radius
 				
-				angle = 0; // We reset our accumulated angle for the next ring
+		bool 	centerPart	= true;								// Spawn central particle?
+		
+		ParticlePropertiesArray props = new ParticlePropertiesArray();	
+
+		// Debug.Log("Area radius: " + radiusMax + "m, Particle radius: " + radiusPart + "m");
+		
+		if (radiusMax > radiusPart * 1.5)						// Area has to be larger than particle, plus some margin
+		{
+			if (radiusMax < radiusPart * 2.5)					// Area fits one ring of particles, but no center particle (minus some overlap margin)
+			{
+				ringDist	= radiusMax - radiusPart;			// Snap the particles to outer edge
+				ringCount 	= 1;
+				centerPart 	= false;
+			}
+			else 												// Area fits all
+			{
+				radiusMax  -= radiusPart;						// Snap the particles to outer edge
+				ringCount 	= Math.Ceil(radiusMax / partSize);	// Get number of inner rings
+				ringDist 	= radiusMax / ringCount;			// Adjust ring distance after rounding
+			}	
+		}
+							
+		// Debug.Log("We have : " + ringCount + " rings, " + ringDist + "m apart, center: " + centerPart);
+		// Debug.Log("We have : " + m_VerticalLayers + " layers, " + m_VerticalOffset + "m apart");
+		
+		// For each concentric ring, we place a particle emitter at a set offset
+		for (int ring = 0; ring <= ringCount; ++ring)
+		{
+			if (ring == 0 && centerPart)						// We start by placing particle at center of area
+			{
+				SpawnParticles(props, pos, pos, partCount);
+			}	
+			else if (ring > 0)
+			{
+				float ringRadius = ringDist * ring;
+				float circumference = 2 * Math.PI2 * ringRadius;
+				
+				int count = Math.Floor(circumference / partSize);				// Get number of particles on ring (roughly)
+				float angleInc = Math.PI2 / count;								// Get angle between particles on ring
+			
+				for (int i = 0; i < count; ++i)		// Insert particles around the ring
+				{
+					vector partPos = pos;
+					float x = ringRadius * Math.Sin(angleInc * i);
+					float z = ringRadius * Math.Cos(angleInc * i);
+					
+					partPos[0] = partPos[0] + x;
+					partPos[2] = partPos[2] + z;
+					
+					SpawnParticles(props, pos, partPos, partCount);
+				}				
 			}
 		}
 		
-		m_ToxicClouds.Reserve(partCounter);
+		InsertParticles(props, partCount, partId);
+ 	}
+	
+	protected void SpawnParticles(ParticlePropertiesArray props, vector centerPos, vector partPos, inout int count)
+	{
+		partPos[1] = GetGame().SurfaceY(partPos[0], partPos[2]);	// Snap particles to ground
+		
+		// We also populate vertically, layer 0 will be snapped to ground, subsequent layers will see particles floating by m_VerticalOffset
+		for (int layer = 0; layer <= m_VerticalLayers; ++layer)
+		{
+			partPos[1] = partPos[1] + (m_VerticalOffset * layer);
+		
+			// We check that spawned particle is inside the trigger	
+			if (count < PARTICLES_MAX && Math.IsInRange(partPos[1], centerPos[1] - m_NegativeHeight, centerPos[1] + m_PositiveHeight))
+			{
+				props.Insert(ParticleProperties(partPos, ParticlePropertiesFlags.PLAY_ON_CREATION, null, GetGame().GetSurfaceOrientation( partPos[0], partPos[2] ), this));
+				++count;
+			}
+		}
+	}	
+	
+	private void InsertParticles(ParticlePropertiesArray props, int count, int partId)
+	{
+		m_ToxicClouds.Reserve(count);
 		
 		ParticleManager gPM = ParticleManager.GetInstance();
 		
-		array<ParticleSource> createdParticles = gPM.CreateParticlesByIdArr(partId, props, partCounter);
-		if (createdParticles.Count() != partCounter)
+		array<ParticleSource> createdParticles = gPM.CreateParticlesByIdArr(partId, props, count);
+		if (createdParticles.Count() != count)
 		{
 			if (gPM.IsFinishedAllocating())
 			{
@@ -387,15 +450,17 @@ class EffectArea : House
 			OnParticleAllocation(gPM, createdParticles);
 		}
 		
-		//Debug.Log("Emitter count : " + partCounter );
-	}
-	
+		// Debug.Log("Emitter count: " + count);
+	}	
+		
 	void OnParticleAllocation(ParticleManager pm, array<ParticleSource> particles)
 	{
 		foreach (ParticleSource p : particles)
 		{
 			if (p.GetOwner() == this) // Safety, since it can be unrelated particles when done through event
+			{
 				m_ToxicClouds.Insert(p);
+			}
 		}
 	}
 	
@@ -414,23 +479,59 @@ class EffectArea : House
 	// ----------------------------------------------
 	// 				TRIGGER SETUP
 	// ----------------------------------------------
-	
-	void CreateTrigger( vector pos, int radius )
+	void CreateTrigger(vector pos, int radius)
 	{
-		// The trigger pos is based on lwer end, but we want to stretch downwards
-		pos[1] = pos[1] - m_NegativeHeight;
+		#ifdef DIAG_DEVELOPER
+		#ifdef EFFECT_AREA_VISUAL_DEBUG 
+		Shape dbgShape;
+		CleanupDebugShapes(m_DebugTargets);
+		#endif
+		#endif
 		
 		// Create new trigger of specified type
-		if ( Class.CastTo( m_Trigger, GetGame().CreateObjectEx( m_TriggerType, pos, ECE_NONE ) ) )
+		if (Class.CastTo(m_Trigger, GetGame().CreateObjectEx(m_TriggerType, pos, ECE_NONE)))
 		{
 			// We finalize trigger dimension setup
-			m_Trigger.SetCollisionCylinder( radius, ( m_NegativeHeight + m_PositiveHeight ) );
+			float centerHeightCorrection = (m_PositiveHeight - m_NegativeHeight) * 0.5;
+			
+			m_Trigger.SetCollisionCylinderTwoWay(radius, -(m_NegativeHeight + centerHeightCorrection), (m_PositiveHeight - centerHeightCorrection));
+			m_Trigger.SetPosition(pos);
+			m_Trigger.Update();
+			
+			#ifdef DIAG_DEVELOPER
+			#ifdef EFFECT_AREA_VISUAL_DEBUG
+			/*
+			vector cubePos = pos;
+			cubePos[0] = cubePos[0] + radius;
+			cubePos[1] = cubePos[1] + (m_PositiveHeight - centerHeightCorrection);
+			cubePos[2] = cubePos[2] + radius;
+			m_DebugTargets.Insert(Debug.DrawCube(cubePos, 0.5, 0x1fff0000));
+			*/
+			
+			vector colliderPosDebug = pos;
+			//! upper limit
+			colliderPosDebug[1] = pos[1] + (m_PositiveHeight - centerHeightCorrection);
+			m_DebugTargets.Insert(Debug.DrawSphere(colliderPosDebug, 0.15, 0x1f0000ff, ShapeFlags.NOZWRITE));
+			//m_DebugTargets.Insert(Debug.DrawLine(cubePos, colliderPosDebug, 0x1fff0000, ShapeFlags.NOZWRITE)); // connector
+			//! center
+			m_DebugTargets.Insert(Debug.DrawSphere(pos, 0.15, 0x1fff0000, ShapeFlags.NOZWRITE));
+			//m_DebugTargets.Insert(Debug.DrawLine(cubePos, pos, 0x1fff0000, ShapeFlags.NOZWRITE)); // connector
+			
+			//! bottom limit
+			colliderPosDebug[1] = pos[1] - (m_NegativeHeight + centerHeightCorrection);
+			m_DebugTargets.Insert(Debug.DrawSphere(colliderPosDebug, 0.15, 0x1f00ff00, ShapeFlags.NOZWRITE));
+			//m_DebugTargets.Insert(Debug.DrawLine(cubePos, colliderPosDebug, 0x1fff0000, ShapeFlags.NOZWRITE)); // connector
+			
+			float triggerHeight = (m_PositiveHeight + m_NegativeHeight);
+			m_DebugTargets.Insert(Debug.DrawCylinder(pos, radius, triggerHeight, 0x1f0000ff, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE));
+			#endif
+			#endif
 			
 			// If the trigger is lower in hierarchy and can see it's local effects customized, we pass the new parameters
-			if ( m_Trigger.IsInherited( EffectTrigger ) )
+			if ( m_Trigger.IsInherited(EffectTrigger))
 			{
 				//Debug.Log("We override area local effects");
-				EffectTrigger.Cast( m_Trigger ).SetLocalEffects( m_AroundParticleID, m_TinyParticleID, m_PPERequesterIdx );
+				EffectTrigger.Cast(m_Trigger).SetLocalEffects(m_AroundParticleID, m_TinyParticleID, m_PPERequesterIdx);
 			}
 			m_Trigger.Init(this, m_EffectsPriority);
 			//Debug.Log("We created the trigger at : " + m_Trigger.GetWorldPosition() );
@@ -468,4 +569,18 @@ class EffectArea : House
 	{
 		player.DecreaseEffectAreaCount();
 	}
+	
+	#ifdef DIAG_DEVELOPER
+	#ifdef EFFECT_AREA_VISUAL_DEBUG
+	protected ref array<Shape> m_DebugTargets = new array<Shape>();
+	
+	protected void CleanupDebugShapes(array<Shape> shapes)
+	{
+		foreach (Shape shape : shapes)
+			Debug.RemoveShape(shape);
+
+		shapes.Clear();
+	}
+	#endif
+	#endif
 }

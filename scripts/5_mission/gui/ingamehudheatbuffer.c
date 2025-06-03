@@ -257,10 +257,11 @@ class IngameHudHeatBuffer
 	    float baseAlpha = hbw.GetAlpha();
 	    float opacity;
 
+		 m_EffectDuration = duration;
+
 	    // Initialize the effect if it's not already active
 	    if (!m_IsActive)
 	    {
-	        m_EffectDuration = duration;
 	        m_EffectTime = 0;
 	        m_FadeIn = true;
 	        m_IsActive = true;

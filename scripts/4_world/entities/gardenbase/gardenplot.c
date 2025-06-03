@@ -8,12 +8,7 @@ class GardenPlot extends GardenBase
 	{
 		SetBaseFertility(0.5);
 	}
-	
-	override void EEInit()
-	{	
-		super.EEInit();
-	}	
-	
+
 	override bool OnStoreLoad( ParamsReadContext ctx, int version )
 	{				
 		if ( !super.OnStoreLoad(ctx, version) )
@@ -88,26 +83,21 @@ class GardenPlot extends GardenBase
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		super.OnPlacementComplete( player, position, orientation );
-				
-		PlayerBase player_base = PlayerBase.Cast( player );
-		//vector pos = player_base.GetLocalProjectionPosition();
-		//vector ori = player_base.GetLocalProjectionOrientation();
-			
-		if ( GetGame().IsServer() )
+	
+		// To properly move the clutter cutter from spawn position, it must be deleted and created again.
+		if (m_ClutterCutter)
 		{
-			// To properly move the clutter cutter from spawn position, it must be deleted and created again.
-			if (m_ClutterCutter)
-			{
-				GetGame().ObjectDelete(m_ClutterCutter);
-				m_ClutterCutter = NULL;
-			}
-			
-			if (!m_ClutterCutter)
-			{		
-				m_ClutterCutter = GetGame().CreateObjectEx( "ClutterCutter6x6", GetPosition(), ECE_PLACE_ON_SURFACE );
-				m_ClutterCutter.SetOrientation( orientation );
-			}
+			GetGame().ObjectDelete(m_ClutterCutter);
+			m_ClutterCutter = NULL;
 		}
+		
+		if (!m_ClutterCutter)
+		{		
+			m_ClutterCutter = GetGame().CreateObjectEx( "ClutterCutter6x6", GetPosition(), ECE_PLACE_ON_SURFACE );
+			m_ClutterCutter.SetOrientation( orientation );
+		}
+			
+		SyncSlots();
 	}
 	
 	override bool CanBePlaced( Man player, vector position )
@@ -151,6 +141,14 @@ class GardenPlotPolytunnel : GardenPlot
 		return POLYTUNNEL_SLOT_COUNT;
 	}
 	
+	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	{
+		if ( g_Game.IsServer() || !g_Game.IsMultiplayer() )
+		{
+			SyncSlots();
+		}
+	}
+	
 	override void RefreshSlots()
 	{
 		HideSelection("SeedBase_1");
@@ -168,7 +166,16 @@ class GardenPlotPolytunnel : GardenPlot
 		HideSelection("SeedBase_13");
 	}
 }
-class GardenPlotGreenhouse : GardenPlot {}
+class GardenPlotGreenhouse : GardenPlot 
+{
+	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	{
+		if ( g_Game.IsServer() || !g_Game.IsMultiplayer() )
+		{
+			SyncSlots();
+		}
+	}
+}
 
 class GardenPlotPlacing extends GardenPlot
 {

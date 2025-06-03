@@ -12,11 +12,12 @@ class ActionForceConsumeSingle : ActionSingleUseBase
 	
 	void ActionForceConsumeSingle()
 	{
-		m_CallbackClass = ActionForceConsumeSingleCB;
-		m_CommandUID 	= DayZPlayerConstants.CMD_ACTIONFB_INJECTIONTARGET;
-		m_StanceMask 	= DayZPlayerConstants.STANCEIDX_ERECT | DayZPlayerConstants.STANCEIDX_CROUCH;
-		m_FullBody 		= true;
-		m_Text			= "#feed";
+		m_CallbackClass 	= ActionForceConsumeSingleCB;
+		m_CommandUID 		= DayZPlayerConstants.CMD_ACTIONFB_INJECTIONTARGET;
+		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_PRONE;
+
+		m_FullBody 	= true;
+		m_Text		= "#feed";
 	}
 	
 	override void CreateConditionComponents()  

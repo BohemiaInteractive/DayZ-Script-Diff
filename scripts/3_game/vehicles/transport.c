@@ -142,7 +142,75 @@ class Transport extends EntityAI
 	
 	//! Handles death of player in vehicle and awakes its physics if needed
 	proto native void CrewDeath( int posIdx );
+
+	/*!
+		Is called when the crew member enters the driver seat
+		\param[in] player The player that entered the driver seat
+	*/
+	void OnDriverEnter(Human player) {}
+
+	/*!
+		Is called when the crew member leaves the driver seat
+		\param[in] player The player that left the driver seat
+	*/
+	void OnDriverExit(Human player) {}
 	
+	//! ---------------- deterministic random numbers ------------------------
+
+	/*!
+		\brief Random number in range of <0,0xffffffff> - !!! use this only during deterministic simulation (EOnSimulate/EOnPostSimulate)
+		\return int value in range of <0,0xffffffff>
+	*/
+	proto native int Random();
+		
+	/*!
+		\brief Random number in range of <0,pRange-1> - !!! use this only during deterministic simulation (EOnSimulate/EOnPostSimulate)
+		@param pRange upper bounds of random number
+		\return int value in range of <0,pRange-1>
+	*/
+	proto native float RandomRange(int pRange);
+
+	/*!
+		\brief Random number in range of <0,1> - !!! use this only during deterministic simulation (EOnSimulate/EOnPostSimulate)
+		\return float value in range of <0,1>
+	*/
+	proto native float Random01();
+
+	/*!
+		\brief Random number in range of <min,max> - !!! use this only during deterministic simulation (EOnSimulate/EOnPostSimulate)
+		\return float value in range of <min,max>
+	*/
+	float RandomFloat(float min, float max)
+	{
+		return Random01() * (max - min) + min;
+	}
+
+	/*!
+		Is called every time when vehicle collides with other object.
+
+		\param[in] zoneName configured vehicle's zone that was hit
+		\param[in] localPos position where the vehicle was hit in vehicle's space
+		\param[in] other object with which the vehicle is colliding
+		\param[in] data contact properties
+	*/
+	void OnContact(string zoneName, vector localPos, IEntity other, Contact data) {}
+
+	/*!
+		Called after every input simulation step.
+
+		Note that the player character and other systems can always change the internal state.
+		It is highly recommended to store state of custom inputs elsewhere and call Setters here.
+
+		\param[in] dt delta time since last called in seconds
+	*/
+	void OnInput(float dt) {}
+
+	/*!
+		Is called every game frame on client, fixed rate on server
+		\param[in] dt delta time since last called in seconds
+	*/
+	void OnUpdate(float dt) {}
+
 	override bool IsTransport()
 	{
 		return true;
@@ -327,24 +395,8 @@ class Transport extends EntityAI
 		return 4.0;
 	}
 	
-	void MarkCrewMemberUnconscious(int crewMemberIndex)
-	{
-		set<int> crewMemberIndicesCopy = new set<int>();
-		crewMemberIndicesCopy.Copy(m_UnconsciousCrewMemberIndices);
-		crewMemberIndicesCopy.Insert(crewMemberIndex);
-
-		m_UnconsciousCrewMemberIndices = crewMemberIndicesCopy;
-	}
-	
-	void MarkCrewMemberDead(int crewMemberIndex)
-	{
-		set<int> crewMemberIndicesCopy = new set<int>();
-		crewMemberIndicesCopy.Copy(m_DeadCrewMemberIndices);
-		crewMemberIndicesCopy.Insert(crewMemberIndex);
-
-		m_DeadCrewMemberIndices = crewMemberIndicesCopy;
-	}
-	protected void HandleByCrewMemberState(ECrewMemberState state);
+	void MarkCrewMemberUnconscious(int crewMemberIndex);	
+	void MarkCrewMemberDead(int crewMemberIndex);
 
 	vector GetTransportCameraOffset()
 	{
@@ -474,6 +526,48 @@ class Transport extends EntityAI
 	bool HasEngineZoneReceivedHit()
 	{
 		return m_EngineZoneReceivedHit;
+	}
+
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	{
+		super.GetDebugActions(outputList);
+		
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
+		if (Gizmo_IsSupported())
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_OBJECT, "Gizmo Object", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_PHYSICS, "Gizmo Physics (SP Only)", FadeColors.LIGHT_GREY)); // intentionally allowed for testing physics desync
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+	}
+	
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+
+		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		{
+			switch (action_id)
+			{
+				case EActions.GIZMO_OBJECT:
+					GetGame().GizmoSelectObject(this);
+					return true;
+				case EActions.GIZMO_PHYSICS:
+					GetGame().GizmoSelectPhysics(GetPhysics());
+					return true;
+			}
+		}
+
+		if (GetGame().IsServer())
+		{
+			switch (action_id)
+			{
+				case EActions.DELETE:
+					Delete();
+					return true;
+			}
+		}
+	
+		return false;
 	}
 	
 	bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight, inout vector extents, out vector transform[4] )
@@ -613,4 +707,7 @@ class VehicleFlippedContext
 		return m_bIsDebug;
 	}
 #endif
+	
+	[Obsolete("no replacement")]
+	protected void HandleByCrewMemberState(ECrewMemberState state);
 };

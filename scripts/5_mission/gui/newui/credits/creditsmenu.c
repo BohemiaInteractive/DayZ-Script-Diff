@@ -53,14 +53,41 @@ class CreditsMenu extends UIScriptedMenu
 		return layoutRoot;
 	}
 	
+	override void OnShow()
+	{
+		super.OnShow();
+		
+		MissionMainMenu mainMenu = MissionMainMenu.Cast(g_Game.GetMission());
+	
+		DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+		playbackData.m_Category = EDynamicMusicPlayerCategory.CREDITS;
+		playbackData.m_Forced 	= true;
+		playbackData.m_FadeOut 	= true;
+		mainMenu.GetDynamicMusicPlayer().SetCategory(playbackData);
+	}
+
+	override void OnHide()
+	{
+		super.OnHide();
+		
+		MissionMainMenu mainMenu = MissionMainMenu.Cast(g_Game.GetMission());
+		
+		DynamicMusicPlayerCategoryPlaybackData playbackData = new DynamicMusicPlayerCategoryPlaybackData();
+		playbackData.m_Category = EDynamicMusicPlayerCategory.MENU;
+		playbackData.m_Forced 	= true;
+		playbackData.m_FadeOut 	= true;
+		mainMenu.GetDynamicMusicPlayer().SetCategory(playbackData);
+	}
+	
 	void LoadDataAsync()
 	{
 		m_CreditsData = CreditsLoader.GetData();
-		for( int i = 1; i <= m_CreditsData.Departments.Count(); i++ )
+		for(int i = 1; i <= m_CreditsData.Departments.Count(); ++i)
 		{
-			ref CreditsDepartmentElement e = new CreditsDepartmentElement( i, m_Content, m_CreditsData.Departments.Get( i - 1 ) );
-			m_CreditsEntries.Insert( e );
+			CreditsDepartmentElement e = new CreditsDepartmentElement( i, m_Content, m_CreditsData.Departments.Get( i - 1 ) );
+			m_CreditsEntries.Insert(e);
 		}
+
 		m_Content.Update();
 	}
 	

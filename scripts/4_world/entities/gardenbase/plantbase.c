@@ -41,7 +41,7 @@ class PlantBase extends ItemBase
 	
 	private PluginHorticulture m_ModuleHorticulture;
 	
-	private const float SPOIL_AFTER_MATURITY_TIME = 14400; //The time it takes for a fully grown plant to spoil, in seconds
+	private const float SPOIL_AFTER_MATURITY_TIME = 14400.0; //The time it takes for a fully grown plant to spoil, in seconds (4 hours)
 	private const int TICK_FREQUENCY = 1; // seconds
 	
 	// debug
@@ -93,7 +93,7 @@ class PlantBase extends ItemBase
 		if (m_TimeTicker)
 			m_TimeTicker.Stop();
 		
-		if (!m_MarkForDeletion)
+		if (!m_MarkForDeletion && !IsPendingDeletion())
 		{
 			DestroyPlant();
 		}
@@ -318,6 +318,12 @@ class PlantBase extends ItemBase
 			m_StateChangeTime = m_FullMaturityTime / (m_GrowthStagesCount - 2);
 			ErrorEx("[Warning] A plant loaded from storage had a corrupted state change time. Time was now adjusted! Position: " + GetPosition(), ErrorExSeverity.INFO);
 		}
+		
+		if (version >= 142)
+		{
+			if (!ctx.Read(m_HasCrops))
+				return false;
+		}
 
 		UpdatePlant();
 		return true;
@@ -368,6 +374,8 @@ class PlantBase extends ItemBase
 			saveFloat = m_TimeTracker;
 		}
 		ctx.Write( saveFloat );
+		
+		ctx.Write(m_HasCrops);
 	}
 	
 	void PrintValues()
@@ -569,8 +577,11 @@ class PlantBase extends ItemBase
 		}
 		
 		m_HasCrops = false;
+
 		SetSynchDirty();
+
 		UpdatePlant();
+		m_GardenBase.SyncSlots();
 	}
 	
 	void SetPlantState(int state)
@@ -645,6 +656,11 @@ class PlantBase extends ItemBase
 	Slot GetSlot()
 	{
 		return m_Slot;
+	}
+	
+	void SetGarden(GardenBase gardenBase)
+	{
+		m_GardenBase = gardenBase;
 	}
 	
 	GardenBase GetGarden()

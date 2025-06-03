@@ -237,7 +237,7 @@ class FireplaceBase : ItemBase
 		//STATIC: define kindling types
 		if (!m_FireConsumableTypes)
 		{
-			m_FireConsumableTypes = new ref map<typename, ref FireConsumableType>();
+			m_FireConsumableTypes = new map<typename, ref FireConsumableType>();
 			m_FireConsumableTypes.Insert(ATTACHMENT_RAGS, 				new FireConsumableType(ATTACHMENT_RAGS, 				8, 	true,	"Rags"));
 			m_FireConsumableTypes.Insert(ATTACHMENT_BANDAGE, 			new FireConsumableType(ATTACHMENT_BANDAGE, 				8, 	true,	"MedicalBandage"));
 			m_FireConsumableTypes.Insert(ATTACHMENT_BOOK, 				new FireConsumableType(ATTACHMENT_BOOK, 				20, 	true,	"Book"));
@@ -363,6 +363,8 @@ class FireplaceBase : ItemBase
 				m_UnderObjectDecalSpawnComponent.RemoveDecal();
 				m_UnderObjectDecalSpawnComponent = null;
 			}
+			
+			DestroyAreaDamage();
 		}
 		
 		m_SurfaceUnderWetnessModifier = GetSurfaceWetnessOnHeatModifier(this);
@@ -567,7 +569,7 @@ class FireplaceBase : ItemBase
 	
 	override bool IsSelfAdjustingTemperature()
 	{
-		return m_IsBurning || (m_CoolingTimer && m_CoolingTimer.IsRunning())); //FireplaceFireState.NO_FIRE?
+		return m_IsBurning || (m_CoolingTimer && m_CoolingTimer.IsRunning()); //FireplaceFireState.NO_FIRE?
 	}
 	
 	protected void InitializeTemperatureSources()
@@ -1638,6 +1640,12 @@ class FireplaceBase : ItemBase
 	{
 		m_HasAshes = has_ashes;
 	}
+	
+	//! returns true when FP is heating or cooling
+	bool IsProcessing()
+	{
+		return ((m_HeatingTimer && m_HeatingTimer.IsRunning()) || (m_CoolingTimer && m_CoolingTimer.IsRunning()));
+	}
 
 	//Is in oven state
 	bool IsOven()
@@ -1982,8 +1990,7 @@ class FireplaceBase : ItemBase
 			return;
 		}
 		
-		//float target = g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this);
-		float target = 10;
+		float target = Math.Max(g_Game.GetMission().GetWorldData().GetBaseEnvTemperatureAtObject(this),10);
 		
 		if (temperature > target)
 		{
@@ -2507,6 +2514,16 @@ class FireplaceBase : ItemBase
 		}
 		return true;
 	}
+	
+	override bool CanPutIntoHands(EntityAI parent)
+	{
+		if (!super.CanPutIntoHands(parent))
+		{
+			return false;
+		}
+		
+		return GetTemperature() <= GameConstants.STATE_HOT_LVL_ONE; //say 'no' to 3rd degree burns!
+	}
 
 	//Action condition for building oven
 	bool CanBuildOven()
@@ -2783,7 +2800,7 @@ class FireplaceBase : ItemBase
 	{
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.ACTIVATE_ENTITY, "Ignite", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DEACTIVATE_ENTITY, "Extinguish", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
 		super.GetDebugActions(outputList);
 	}

@@ -45,7 +45,7 @@ class PumpShotgunLoaded extends WeaponStableState
 	override bool IsRepairEnabled () { return true; }
 	override void InitMuzzleArray () { m_muzzleHasBullet = {MuzzleState.L}; }
 };
-class PumpShotgunJammed extends WeaponStateJammed
+class PumpShotgunJammed extends WeaponStableState
 {
 	override void OnEntry (WeaponEventBase e) { if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " { Jammed L_J"); } super.OnEntry(e); }
 	override void OnExit (WeaponEventBase e) { super.OnExit(e); if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " } Jammed L_J"); } }

@@ -15,7 +15,7 @@ class FALRecoil: RecoilBase
 		m_HandsCurvePoints.Insert(point_3);
 		m_HandsCurvePoints.Insert(point_4);
 		m_HandsCurvePoints.Insert("0 0 0");
-		m_HandsOffsetRelativeTime = 1;
+		m_HandsOffsetRelativeTime = 0.5;
 		
 		m_MouseOffsetRangeMin = 65;//in degrees min
 		m_MouseOffsetRangeMax = 145;//in degrees max

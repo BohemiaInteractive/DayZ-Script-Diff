@@ -363,7 +363,7 @@ class Plastic_Explosive : ExplosivesBase
 	
 	override string GetArmSoundset()
 	{
-		return "plasticexplosive_deploy_SoundSet";
+		return "ImprovisedExplosive_disarm_SoundSet";
 	}
 	
 	override string GetDisarmSoundset()

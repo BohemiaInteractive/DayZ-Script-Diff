@@ -47,7 +47,7 @@ class ZombieBase extends DayZInfected
 	
 	void Init()
 	{
-		SetEventMask(EntityEvent.INIT);
+		SetEventMask(EntityEvent.INIT | EntityEvent.CONTACT);
 		
 		m_IsCrawling = false;
 		

@@ -126,9 +126,12 @@ class WeatherPhenomenon
 	{
 		// check if mission forces use of custom weather
 		Weather weather = g_Game.GetWeather();
-		
+				
 		if ( weather.GetMissionWeather() )
 			return false;
+		
+		if (weather.GetWeatherUpdateFrozen())
+			return true;
 		
 		// check for active worlddata with custom onbeforechange behaviour
 		Mission currentMission = g_Game.GetMission();
@@ -164,6 +167,7 @@ typedef WeatherPhenomenon WindMagnitude;
 class Weather
 {
 	protected bool m_missionWeather;
+	protected bool m_UpdateFrozen;
 	
 	private void Weather()
 	{
@@ -384,6 +388,16 @@ class Weather
 	bool GetMissionWeather()
 	{
 		return m_missionWeather;
+	}
+	
+	void SetWeatherUpdateFreeze(bool state)
+	{
+		m_UpdateFrozen = state;
+	}
+	
+	bool GetWeatherUpdateFrozen()
+	{
+		return m_UpdateFrozen;
 	}
 	
 	// Noise reduction due to environmental conditions, used for AI noise evaluation

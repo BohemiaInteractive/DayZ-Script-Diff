@@ -28,6 +28,8 @@ class Trap_FishNet extends TrapSpawnBase
 			Param2<EntityAI,int> par = new Param2<EntityAI,int>(this,updateCount);
 			m_CatchingContext = new CatchingContextTrapFishLarge(par);
 		}
+		
+		super.InitCatchingComponent();
 	}
 	
 	//========================================================

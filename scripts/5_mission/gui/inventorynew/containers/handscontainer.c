@@ -241,17 +241,18 @@ class HandsContainer: Container
 				ItemBase item_in_hands = ItemBase.Cast( GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
 				if ( item_in_hands )
 				{
-					if ( GetGame().GetPlayer().GetHumanInventory().CanRemoveEntityInHands() && !GetGame().GetPlayer().GetInventory().HasInventoryReservation(item_in_hands, null)  )
+					DayZPlayer player = GetGame().GetPlayer();
+					if (player && player.GetHumanInventory().CanRemoveEntityInHands() && !player.GetInventory().HasInventoryReservation(item_in_hands, null))
 					{
-						bool res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment( item_in_hands );
-						if(!res)
+						bool res = player.PredictiveTakeOrSwapAttachment(item_in_hands);
+						if (!res)
 						{
-							res = GetGame().GetPlayer().PredictiveTakeEntityToInventory(FindInventoryLocationType.ATTACHMENT, item_in_hands);
+							res = player.PredictiveTakeEntityToInventory(FindInventoryLocationType.ATTACHMENT, item_in_hands);
 						}
-						if(res)
+						if (res)
 						{
-							m_MainWidget.FindAnyWidget("Cursor").Show( false );
-							m_MainWidget.FindAnyWidget("hands_preview_root").SetAlpha( 0.7 );
+							m_MainWidget.FindAnyWidget("Cursor").Show(false);
+							m_MainWidget.FindAnyWidget("hands_preview_root").SetAlpha(0.7);
 							return true;
 						}
 					}

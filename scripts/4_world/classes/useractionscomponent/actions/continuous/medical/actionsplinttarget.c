@@ -45,7 +45,7 @@ class ActionSplintTarget: ActionContinuousBase
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
 		PlayerBase ntarget = PlayerBase.Cast( target.GetObject() );
-		if (ntarget.GetBrokenLegs() != eBrokenLegs.BROKEN_LEGS || IsWearingSplint(ntarget))
+		if (ntarget.GetBrokenLegs() != eBrokenLegs.BROKEN_LEGS || IsWearingSplint(ntarget) || ntarget.IsInVehicle())
 		{
 			return false;
 		}

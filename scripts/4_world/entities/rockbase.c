@@ -111,6 +111,10 @@ class RockBase : Object
 	class Static_rock_stone9_moss: RockBase{};
 	class Static_rock_stone10: RockBase{};
 	class Static_rock_stone10_moss: RockBase{};
+	class Static_stone5_Trail_B: RockBase {};
+	class Static_stone5_Trail_G: RockBase {};
+	class Static_stone5_Trail_R: RockBase {};
+	class Static_stone5_Trail_Y: RockBase {};
 	
 	//Moved from Bliss folder
 	class Static_rock_wallh4: RockBase {};
@@ -126,13 +130,12 @@ class RockBase : Object
 	class Static_stone8_moss: RockBase {};
 	class Static_stone9: RockBase {};
 	class Static_stone9_moss: RockBase {};
+	class Static_stone7_Trail_B: RockBase {};
+	class Static_stone7_Trail_G: RockBase {};
+	class Static_stone7_Trail_R: RockBase {};
+	class Static_stone7_Trail_Y: RockBase {};
 // 	currently unused rocks
 /*
-	
-	class Static_stone5_Trail_B: RockBase {};
-	class Static_stone5_Trail_G: RockBase {};
-	class Static_stone5_Trail_R: RockBase {};
-	class Static_stone5_Trail_Y: RockBase {};
 	class Static_stones_erosion: RockBase {};
 */
 

@@ -1315,7 +1315,7 @@ class DayZPlayer extends Human
 	
 	//! returns true if player is currently in one of the stances specified by stance mask 
 	//! IsPlayerInStance(STANCEMASK_ERECT | STANCEMASK_CROUCH) returns true if player is standing or crouching and not raised (aimed)
-	//! IsPlayerInStance(STANCEMASK_PRONE | STANCEIDX_RAISEDPRONE) returns true if player is in or in prone (both raised or nonraised)
+	//! IsPlayerInStance(STANCEMASK_PRONE | STANCEMASK_RAISEDPRONE) returns true if player is in prone (both raised or nonraised)
 	//! IsPlayerInStance(STANCEMASK_ALL) returns true always 
 	//! IsPlayerInStance(STANCEMASK_RAISEDERECT | STANCEMASK_RAISEDCROUCH | STANCEMASK_RAISEDPRONE) returns true if player has raised hands
 	proto native 	bool	IsPlayerInStance(int pStanceMask);		// STANCEMASK_ERECT | STANCEMASK_CROUCH 

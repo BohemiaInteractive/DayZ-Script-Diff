@@ -1,3 +1,10 @@
+/**
+ * \brief Keeps track of agents and their simulation
+ *		- adding/reducing of agents
+ *		- autoinfection
+ *		- temporary resistance for agents
+ *		- reaction on drugs
+ */
 class PlayerAgentPool
 {
 	const int STORAGE_VERSION = 137;
@@ -20,35 +27,31 @@ class PlayerAgentPool
 		m_VirusPool 		= new map<int,float>();
 		
 		m_AgentTemporaryResistance = new map<int,float>();
-		
-		//! DEPRECATED
-		m_VirusPoolArray 	= new array<int>();
 	}
 	
 	int GetStorageVersion()
 	{
 		return STORAGE_VERSION;
 	}
-	
-	void PrintAgents()
-	{
-		if (m_VirusPool)
-		{
-			for (int i = 0; i < m_VirusPool.Count(); ++i)
-			{
-				Debug.Log("Agent: "+ m_VirusPool.GetKey(i).ToString(), "Agents");
-				Debug.Log("Count: "+ m_VirusPool.GetElement(i).ToString(), "Agents");
-			}
-		}
-	}
 
+	/**
+	 * \brief Agent pool simulation entry point
+	 * @param value Immunity value (deprecated, used in previous versions)
+	 * @param deltaT tick
+	 */
 	void ImmuneSystemTick(float value, float deltaT)//this is a regular tick induced in the the player's immune system
 	{
 		ProcessTemporaryResistance(deltaT);
 		SpawnAgents(deltaT);
 		GrowAgents(deltaT);
 	}
-	
+
+	/**
+	 * \brief Agent's growth/death simulation
+	 *		- based on the potency, invasibility
+	 * 		- takes into account the temporary resistance
+	 * @param deltaT tick
+	 */
 	void GrowAgents(float deltaT)
 	{
 		if (!IsPluginManagerExists())
@@ -95,7 +98,10 @@ class PlayerAgentPool
 			SetAgentCount(agentId, newCount);
 		}
 	}
-	
+
+	/**
+	 * \brief Temporary resistance simulation
+	 */
 	protected void ProcessTemporaryResistance(float deltaTime)
 	{
 		foreach (int agentId, float timeResistance : m_AgentTemporaryResistance)
@@ -162,11 +168,22 @@ class PlayerAgentPool
 	
 		return true;
 	}
+	
+	/**
+	 * \brief Digest (add) agent from food/drink in PlayerStomach into Agent Pool
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param count Amount of agents to add
+	 */
 	void DigestAgent(int agent_id, float count)
 	{
 		AddAgent(agent_id, m_PluginTransmissionAgents.GetAgentDigestibilityEx(agent_id, m_Player) * count);
 	}	
-	
+
+	/**
+	 * \brief Add agent into Agent Pool
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param count Amount of agents to add
+	 */
 	void AddAgent(int agent_id, float count)
 	{
 		if (GetTemporaryResistance(agent_id) > 0)
@@ -185,11 +202,19 @@ class PlayerAgentPool
 		}
 	}
 
+	/**
+	 * \brief Remove agent from Agent Pool
+	 * @param agent_id Id of agent (see eAgents enum)
+	 */
 	void RemoveAgent(int agent_id)
 	{
 		SetAgentCount(agent_id, 0);
 	}
-	
+
+	/**
+	 * \brief Remove all agents from Agent Pool
+	 * @param agent_id Id of agent (see eAgents enum)
+	 */	
 	void RemoveAllAgents()
 	{
 		m_AgentMask = 0;
@@ -197,7 +222,12 @@ class PlayerAgentPool
 
 		ResetTemporaryResistance();
 	}
-	
+
+	/**
+	 * \brief Reduce count of specified agent by a given percentage from Agent Pool
+	 * @param agent_id Id of agent (see eAgents enum)
+	 * @param percent How many percents of the agents should be reduced
+	 */	
 	void ReduceAgent(int id, float percent)
 	{
 		percent = Math.Clamp(percent, 0, 100);
@@ -208,12 +238,19 @@ class PlayerAgentPool
 		
 		SetAgentCount(id, agentCount);
 	}
-	
+	/**
+	 * \brief Reduce bitmask of currently active agents
+	 */		
 	int GetAgents()
 	{
 		return m_AgentMask;
 	}
 
+	/**
+	 * \brief Number of agents of specified id
+	 * @param agent_id Id of agent to add into pool (see eAgents)
+	 * \return Count of agents specified in param
+	 */	
 	int GetSingleAgentCount(int agent_id)
 	{
 		if (m_VirusPool.Contains(agent_id))
@@ -221,7 +258,11 @@ class PlayerAgentPool
 
 		return 0;
 	}
-	
+
+	/**
+	 * \brief Total number of agents active
+	 * \return Agents count
+	 */	
 	float GetTotalAgentCount()
 	{
 		float agentCount;
@@ -230,7 +271,11 @@ class PlayerAgentPool
 
 		return agentCount;
 	}
-	
+
+	/**
+	 * \brief Autoinfection mechanism for agents with that attribute enabled
+	 * @param deltaT tick
+	 */	
 	void SpawnAgents(float deltaT)
 	{
 		int count = m_PluginTransmissionAgents.GetAgentList().Count();
@@ -244,6 +289,11 @@ class PlayerAgentPool
 		}
 	}
 
+	/**
+	 * \brief Directly set the count of agents for give id in pool
+	 * @param agent_id Id of agent to add into pool (see eAgents)
+	 * @param count Number of agents to be set
+	 */	
 	void SetAgentCount(int agent_id, float count)
 	{
 		if (count > 0)
@@ -266,6 +316,10 @@ class PlayerAgentPool
 		}
 	}
 
+	/**
+	 * \brief Antibiotics treatment agains agents which are not resistent to it (see agent attributes)
+	 * @param attack_value Strength of the anitibiotics attack
+	 */	
 	void AntibioticsAttack(float attack_value)
 	{
 		for (int i = 0; i < m_VirusPool.Count(); ++i)
@@ -279,6 +333,11 @@ class PlayerAgentPool
 		}
 	}
 
+	/**
+	 * \brief Drugs treatment logic
+	 * @param drugType Type of drug used (see EMedicalDrugsType enum)
+	 * @param attack_value Strength of the drug attack
+	 */	
 	void DrugsAttack(EMedicalDrugsType drugType, float attackValue)
 	{
 		switch (drugType)
@@ -296,12 +355,22 @@ class PlayerAgentPool
 				}		
 		}
 	}
-	
+
+	/**
+	 * \brief Sets temporary resistance time against specified agent contraction
+	 * @param @param agent_id Id of agent to add into pool (see eAgents)
+	 * @param time Length of resistance in seconds
+	 */	
 	void SetTemporaryResistance(int agentId, float time)
 	{
 		m_AgentTemporaryResistance[agentId] = Math.Clamp(time, 0.0, int.MAX);
 	}
-	
+
+	/**
+	 * \brief Returns remaining temporary resistance time for specified agent
+	 * @param @param agent_id Id of agent to add into pool (see eAgents)
+	 * \return time in seconds
+	 */	
 	float GetTemporaryResistance(int agentId)
 	{
 		if (m_AgentTemporaryResistance.Contains(agentId))
@@ -309,7 +378,10 @@ class PlayerAgentPool
 		
 		return 0.0;
 	}
-	
+
+	/**
+	 * \brief Resets temporary resistance for all agents (internal usage only)
+	 */
 	private void ResetTemporaryResistance()
 	{
 		foreach (int agentId, float value : m_AgentTemporaryResistance)
@@ -347,7 +419,19 @@ class PlayerAgentPool
 
 		object_out.InsertAt(new Param1<int>(count) ,0);
 	}
+	
+	void PrintAgents()
+	{
+		if (m_VirusPool)
+		{
+			for (int i = 0; i < m_VirusPool.Count(); ++i)
+			{
+				Debug.Log("Agent: "+ m_VirusPool.GetKey(i).ToString(), "Agents");
+				Debug.Log("Count: "+ m_VirusPool.GetElement(i).ToString(), "Agents");
+			}
+		}
+	}
 
 	//! DEPRECATED
-	ref array<int> m_VirusPoolArray;
+	ref array<int> m_VirusPoolArray = new array<int>();
 }

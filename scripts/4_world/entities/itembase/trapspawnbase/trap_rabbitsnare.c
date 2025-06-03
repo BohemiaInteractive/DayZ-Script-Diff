@@ -66,6 +66,8 @@ class Trap_RabbitSnare extends TrapSpawnBase
 			Param2<EntityAI,int> par = new Param2<EntityAI,int>(this,updateCount);
 			m_CatchingContext = new CatchingContextTrapLandSnare(par);
 		}
+		
+		super.InitCatchingComponent();
 	}
 	
 	//================================================================
@@ -97,7 +99,7 @@ class Trap_RabbitSnare extends TrapSpawnBase
 	{
 		super.SetActions();
 		
-		// We remove the hunting trap deploy action in order to all advanced placement
+		// We remove the hunting trap deploy action in order to allow advanced placement
 		RemoveAction(ActionDeployHuntingTrap);
 		
 		AddAction(ActionTogglePlaceObject);

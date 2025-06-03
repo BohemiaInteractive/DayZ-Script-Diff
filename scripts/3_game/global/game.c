@@ -2,7 +2,7 @@
  *  Game Class provide most "world" or global engine API functions.
  */
 
-static int GAME_STORAGE_VERSION = 141;
+static int GAME_STORAGE_VERSION = 142;
 
 class CGame
 {
@@ -794,6 +794,61 @@ class CGame
 	//! If physics extrapolation is enabled, always true on retail release builds
 	proto native bool		IsPhysicsExtrapolationEnabled();
 	
+	/**
+	 * Return the number of gizmos
+	 */
+	proto native int GizmoGetCount();
+
+	/**
+	 * Return the instance passed in for the gizmo
+	 */
+	proto native Class GizmoGetInstance(int index);
+
+	/**
+	 * Return the tracker passed in for the gizmo
+	 */
+	proto native Managed GizmoGetTracker(int index);
+
+	/**
+	 * Returned index is invalid if any other Gizmo function is called
+	 */
+	proto native int GizmoFindByTracker(Managed tracker);
+
+	/**
+	 * Clear the gizmo
+	 */
+	proto native void GizmoClear(int index);
+	
+	/**
+	 * Clear all gizmos 
+	 */
+	proto native void GizmoClearAll();
+
+	/**
+	 * Applies impulses to set the position when dynamic, otherwise sets the transform in the physics scene
+	 * 
+	 * Tracker for 'GizmoFind' is the passed in object
+	 */
+	proto native void GizmoSelectObject(Object object);
+
+	/**
+	 * Applies impulses to set the position when dynamic, otherwise sets the transform in the physics scene. Doesn't work in multiplayer
+	 * 
+	 * Tracker for 'GizmoFind' is the owned Entity
+	 * 
+	 * Note: GizmoGet doesn't work due as 'Physics' can't be compared against 'Class'
+	 */
+	proto native void GizmoSelectPhysics(Physics physics);
+
+	/**
+	 * Scripted controls, requires the following methods to be implemented in the class
+	 * 	void Gizmo_SetWorldTransform(vector[4] transform, bool finalize)
+	 * 	void Gizmo_GetWorldTransform(vector[4] transform)
+	 * 
+	 * Tracker for 'GizmoFind' is the passed in instance
+	 */
+	proto native void GizmoSelectUser(Managed instance);
+
 	/**
 	\brief Returns average FPS of last 16 frames
 	@return fps in milliseconds

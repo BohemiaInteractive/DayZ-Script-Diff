@@ -173,6 +173,48 @@ class ItemOptics extends InventoryItemSuper
 	 **/
 	proto native void SetZeroingClampDist(float dist);
 	
+	/**
+	 * @fn		OnDraw2D
+	 * @brief	Callback raised before 2D optics are drawn. (Only for optics where ItemOpticsType::IsUsingOptics2DModel)
+	 **/
+	protected void OnDrawOptics2D()
+	{
+		if (m_reddot_index == -1)
+			return;
+	
+		ItemOpticsType opticsType = GetItemOpticsType();
+		if (m_reddot_displayed)
+		{
+			if (m_optic_sight_texture != "")
+				opticsType.SetOptics2DTexture(m_reddot_index, m_optic_sight_texture);
+			if (m_optic_sight_material != "")
+				opticsType.SetOptics2DMaterial(m_reddot_index, m_optic_sight_material);
+		}
+		else
+		{
+			opticsType.SetOptics2DTexture(m_reddot_index, "");
+			opticsType.SetOptics2DMaterial(m_reddot_index, "");
+		}
+	}
+	
+	//! Returns the `ItemOpticsType` of this `ItemOptics` instance.
+	protected ItemOpticsType GetItemOpticsType()
+	{
+		return ItemOpticsType.Cast(GetInventoryItemType());
+	}
+	
+	//! Returns whether this `ItemOptics` uses the 2D optics model.
+	bool IsUsingOptics2DModel()
+	{
+		ItemOpticsType type = GetItemOpticsType();
+		return type.IsUsingOptics2DModel();
+	}
+	
+	bool IsSightOnly()
+	{
+		return false;
+	}
+	
 	override void OnWorkStart()
 	{
 		if (!GetGame().IsDedicatedServer())
@@ -297,12 +339,26 @@ class ItemOptics extends InventoryItemSuper
 	
 	void InitReddotData()
 	{
-		string path = "cfgVehicles " + GetType() + " OpticsInfo";
+		bool isUsing2D = IsUsingOptics2DModel();
+		
+		string path;
+		if (isUsing2D)
+		{
+			path = "cfgVehicles " + GetType() + " OpticsModelInfo";
+		}
+		else
+		{
+			path = "cfgVehicles " + GetType() + " OpticsInfo";
+		}
 		string temp;
 		
 		if (GetGame().ConfigIsExisting(path))
 		{
-			m_reddot_index = GetHiddenSelectionIndex("reddot");
+			if (isUsing2D)
+				m_reddot_index = GetItemOpticsType().FindOptics2DSelection("reddot");
+			else
+				m_reddot_index = GetHiddenSelectionIndex("reddot");
+			
 			if (GetGame().ConfigIsExisting(path + " opticSightTexture"))
 			{
 				GetGame().ConfigGetText(path + " opticSightTexture", temp);
@@ -338,17 +394,21 @@ class ItemOptics extends InventoryItemSuper
 			return;
 		}
 		
-		if (state)
+		// 2D model has special handling in `OnDrawOptics2D`
+		if (!IsUsingOptics2DModel())
 		{
-			if (m_optic_sight_texture != "")
-				SetObjectTexture(m_reddot_index, m_optic_sight_texture);
-			if (m_optic_sight_material != "")
-				SetObjectMaterial(m_reddot_index, m_optic_sight_material);
-		}
-		else
-		{
-			SetObjectTexture(m_reddot_index, "");
-			SetObjectMaterial(m_reddot_index, "");
+			if (state)
+			{
+				if (m_optic_sight_texture != "")
+					SetObjectTexture(m_reddot_index, m_optic_sight_texture);
+				if (m_optic_sight_material != "")
+					SetObjectMaterial(m_reddot_index, m_optic_sight_material);
+			}
+			else
+			{
+				SetObjectTexture(m_reddot_index, "");
+				SetObjectMaterial(m_reddot_index, "");
+			}
 		}
 		m_reddot_displayed = state;
 	}

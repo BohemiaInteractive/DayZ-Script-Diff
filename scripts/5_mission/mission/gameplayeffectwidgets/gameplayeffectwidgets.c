@@ -46,26 +46,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		m_TimeProgBreath = 0.0;
 		m_BreathMultStamina = 1.0;
 		
-		PairIDToTypes();
-		
-		RegisterLayouts("gui/layouts/gameplay/CameraEffects.layout",CompileEffectListing());
-		RegisterLayouts("gui/layouts/gameplay/BleedingEffects.layout",{EffectWidgetsTypes.BLEEDING_LAYER});
-		
-		InitWidgetSet(EffectWidgetsTypes.MASK_BREATH,true,WIDGETSET_BREATH);
-		InitWidgetSet(EffectWidgetsTypes.HELMET_BREATH,true,WIDGETSET_BREATH);
-		InitWidgetSet(EffectWidgetsTypes.MOTO_BREATH,true,WIDGETSET_BREATH);
-		
-		InitWidgetSet(EffectWidgetsTypes.MASK_OCCLUDER,false,EffectWidgetsTypes.MASK_OCCLUDER);
-		InitWidgetSet(EffectWidgetsTypes.HELMET_OCCLUDER);
-		InitWidgetSet(EffectWidgetsTypes.HELMET2_OCCLUDER);
-		InitWidgetSet(EffectWidgetsTypes.MOTO_OCCLUDER);
-		InitWidgetSet(EffectWidgetsTypes.NVG_OCCLUDER,false,EffectWidgetsTypes.NVG_OCCLUDER);
-		InitWidgetSet(EffectWidgetsTypes.PUMPKIN_OCCLUDER,false,EffectWidgetsTypes.NVG_OCCLUDER);
-		InitWidgetSet(EffectWidgetsTypes.EYEPATCH_OCCLUDER);
-		
-		InitWidgetSet(EffectWidgetsTypes.COVER_FLASHBANG);
-		
-		InitWidgetSet(EffectWidgetsTypes.BLEEDING_LAYER,true);
+		Init();
 		
 		UpdateVisibility();
 	}
@@ -78,6 +59,49 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 				m_Layouts.GetElement(i).Unlink();
 		}
 	}
+	
+////////////////////////////////////
+//inits
+	
+	protected void Init()
+	{
+		PairIDToTypes();
+		InitLayouts();
+		InitWidgetSets();
+	}
+	
+	//! Links types to unique handler types, if needed. Vanilla stuff was already handled in the generic update, left that as it was. (naming!)
+	protected void PairIDToTypes()
+	{
+		m_IDToTypeMap.Insert(EffectWidgetsTypes.BLEEDING_LAYER,GameplayEffectsDataBleeding);
+	}
+	
+	protected void InitLayouts()
+	{
+		RegisterLayouts("gui/layouts/gameplay/CameraEffects.layout",CompileEffectListing());
+		RegisterLayouts("gui/layouts/gameplay/BleedingEffects.layout",{EffectWidgetsTypes.BLEEDING_LAYER});
+	}
+	
+	protected void InitWidgetSets()
+	{
+		InitWidgetSet(EffectWidgetsTypes.MASK_BREATH,true,WIDGETSET_BREATH);
+		InitWidgetSet(EffectWidgetsTypes.HELMET_BREATH,true,WIDGETSET_BREATH);
+		InitWidgetSet(EffectWidgetsTypes.MOTO_BREATH,true,WIDGETSET_BREATH);
+		
+		InitWidgetSet(EffectWidgetsTypes.MASK_OCCLUDER);
+		InitWidgetSet(EffectWidgetsTypes.HELMET_OCCLUDER);
+		InitWidgetSet(EffectWidgetsTypes.HELMET2_OCCLUDER);
+		InitWidgetSet(EffectWidgetsTypes.MOTO_OCCLUDER);
+		InitWidgetSet(EffectWidgetsTypes.NVG_OCCLUDER);
+		InitWidgetSet(EffectWidgetsTypes.PUMPKIN_OCCLUDER,false,EffectWidgetsTypes.NVG_OCCLUDER);
+		InitWidgetSet(EffectWidgetsTypes.EYEPATCH_OCCLUDER);
+		
+		InitWidgetSet(EffectWidgetsTypes.COVER_FLASHBANG);
+		
+		InitWidgetSet(EffectWidgetsTypes.BLEEDING_LAYER,true);
+	}
+	
+////////////////////////////////////	
 	
 	/**
 	\brief Registers new layout and ties effect IDs to it
@@ -92,11 +116,6 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		{
 			m_Layouts.Set(i,w);
 		}
-	}
-	
-	protected void PairIDToTypes()
-	{
-		m_IDToTypeMap.Insert(EffectWidgetsTypes.BLEEDING_LAYER,GameplayEffectsDataBleeding);
 	}
 	
 	protected typename TranslateIDToType(int typeID)
@@ -304,9 +323,10 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		{
 			m_RunningEffectsPrevious.Copy(m_RunningEffects);
 			
+			int count = effects.Count();
 			int value;
 			int idx;
-			for (int i = 0; i < effects.Count(); i++)
+			for (int i = 0; i < count; ++i)
 			{
 				value = effects.Get(i);
 				idx = m_RunningEffects.Find(value);
@@ -549,7 +569,6 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		hdr_mult = Math.Lerp(BREATH_COLOR_MULT_MAX,BREATH_COLOR_MULT_MIN,hdr_mult);
 		m_BreathColor = ARGBF(0.0,1.0 * hdr_mult,1.0 * hdr_mult,1.0 * hdr_mult); //grayscaling of the image
 		
-		
 		m_BreathAlphaVal = Math.Lerp(m_BreathAlphaVal, residue_final, timeSlice);
 	}
 	
@@ -603,7 +622,6 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 				if (par)
 				{
 					float alpha_mod = Math.Clamp(par.param1,0.0,1.0);
-					//Print(alpha_mod);
 					m_Root.SetAlpha(alpha_mod);
 				}
 			}

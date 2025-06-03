@@ -68,9 +68,10 @@ void ejectBulletAndStoreInMagazine(Weapon_Base weapon, int muzzleIndex, Magazine
 	else
 		Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot eject chambered cartridge!");
 
-	if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+
+	if (mag == null)
 	{
-		if (mag == null)
+		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
 		{
 			//! no magazine configured in parent state, looking in inventory
 			if (DayZPlayerUtils.HandleStoreCartridge(p, weapon, muzzleIndex, damage, type, magazineTypeName))
@@ -80,18 +81,19 @@ void ejectBulletAndStoreInMagazine(Weapon_Base weapon, int muzzleIndex, Magazine
 			}
 			else
 				Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot store cartridge!");
+			if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+		}
+	}
+	else
+	{
+		if (mag.LocalStoreCartridge(damage, type))
+		{
+			mag.SetSynchDirty();
+			if (LogManager.IsWeaponLogEnable())
+				wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ok - cartridge stored in user defined magazine");
 		}
 		else
-		{
-			if (mag.ServerStoreCartridge(damage, type))
-			{
-				mag.SetSynchDirty();
-				if (LogManager.IsWeaponLogEnable())
-					wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, ok - cartridge stored in user defined magazine");
-			}
-			else
-				Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot store cartridge in magazine");
-		}
+			Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot store cartridge in magazine");
 	}
 }
 

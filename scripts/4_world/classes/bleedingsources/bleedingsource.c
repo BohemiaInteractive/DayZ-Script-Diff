@@ -24,6 +24,10 @@ class BleedingSource
 	bool m_DeleteRequested;
 	eBleedingSourceType m_Type = eBleedingSourceType.NORMAL;
 	
+	#ifdef DIAG_DEVELOPER
+	float m_DiagTimeStart; //for debug purposes only
+	#endif
+	
 	void BleedingSource(PlayerBase player, int bit, string bone, vector orientation, vector offset,int max_time, float flow_modifier, string particle_name)
 	{
 		//m_Position = position;
@@ -86,7 +90,7 @@ class BleedingSource
 		m_BleedingEffect = EffectParticle.Cast(m_ParticleName.ToType().Spawn());
 		if (m_BleedingEffect)
 		{
-			SEffectManager.PlayInWorld( m_BleedingEffect, "0 0 0" );
+			SEffectManager.PlayInWorld(m_BleedingEffect, "0 0 0");
 			m_BloodParticle = m_BleedingEffect.GetParticle();
 			m_BloodParticle.SetOrientation(m_Orientation);
 			vector pos;
@@ -111,7 +115,7 @@ class BleedingSource
 		SEffectManager.DestroyEffect(m_BleedingEffect);
 	}
 
-	void OnUpdateServer(float deltatime, float blood_scale, bool no_blood_loss )
+	void OnUpdateServer(float deltatime, float blood_scale, bool no_blood_loss)
 	{
 		m_ActiveTime += deltatime;
 		
@@ -123,10 +127,10 @@ class BleedingSource
 				m_DeleteRequested = true;
 			}
 		}
-		if ( !no_blood_loss )
+		if (!no_blood_loss)
 		{
 			float flow = m_FlowModifier;
-			switch ( m_Type )
+			switch (m_Type)
 			{
 				case eBleedingSourceType.NORMAL:
 				{
@@ -138,7 +142,7 @@ class BleedingSource
 					flow *= PlayerConstants.BLEEDING_SOURCE_BURN_MODIFIER;
 				}
 			}
-			m_Player.AddHealth("GlobalHealth","Blood", (PlayerConstants.BLEEDING_SOURCE_BLOODLOSS_PER_SEC * blood_scale * deltatime * flow) );
+			m_Player.AddHealth("GlobalHealth","Blood", (PlayerConstants.BLEEDING_SOURCE_BLOODLOSS_PER_SEC * blood_scale * deltatime * flow));
 		}
 	}
 	
@@ -161,7 +165,7 @@ class BleedingSource
 	
 	void StopSourceBleedingIndication(bool instant = false)
 	{
-		if ( m_Player && m_Player.IsControlledPlayer() && GetGame() && (!GetGame().IsDedicatedServer()) )
+		if (m_Player && m_Player.IsControlledPlayer() && GetGame() && (!GetGame().IsDedicatedServer()))
 		{
 			Param4<bool,int,vector,bool> par = new Param4<bool,int,vector,bool>(false,m_Bit,"0 0 0",instant);
 			GetGame().GetMission().GetEffectWidgets().UpdateWidgets(EffectWidgetsTypes.BLEEDING_LAYER,0,par);

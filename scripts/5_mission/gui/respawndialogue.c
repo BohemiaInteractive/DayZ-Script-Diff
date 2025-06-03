@@ -33,6 +33,14 @@ class RespawnDialogue extends UIScriptedMenu
 	{
 		super.Update(timeslice);
 		
+		Man player = GetGame().GetPlayer();
+		bool playerAlive = player && player.GetPlayerState() == EPlayerStates.ALIVE;
+		if (playerAlive && !player.IsUnconscious())
+		{
+			Close();
+			return;
+		}
+		
 		if (GetUApi().GetInputByID(UAUIBack).LocalPress() || GetUApi().GetInputByID(UAUIMenu).LocalPress())
 			Close();
 	}
@@ -135,7 +143,7 @@ class RespawnDialogue extends UIScriptedMenu
 	{
 		if (w)
 		{
-			if (w.GetUserID() == IDC_CANCEL || w.GetUserID() == ID_RESPAWN_CUSTOM || w.GetUserID() == ID_RESPAWN_RANDOM);
+			if (w.GetUserID() == IDC_CANCEL || w.GetUserID() == ID_RESPAWN_CUSTOM || w.GetUserID() == ID_RESPAWN_RANDOM)
 				return true;
 		}
 

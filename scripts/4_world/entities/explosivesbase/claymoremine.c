@@ -261,7 +261,7 @@ class ClaymoreMine : ExplosivesBase
 	
 	override string GetArmSoundset()
 	{
-		return "claymore_deploy_Soundset";
+		return "claymore_disarm_SoundSet";
 	}
 	
 	override string GetDisarmSoundset()

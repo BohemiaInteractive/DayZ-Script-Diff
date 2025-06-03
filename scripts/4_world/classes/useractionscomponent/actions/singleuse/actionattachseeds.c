@@ -5,7 +5,7 @@ class ActionAttachSeeds : ActionAttach
 		EntityAI targetEntity = EntityAI.Cast(target.GetObject());
 		if (targetEntity && !GardenBase.Cast(targetEntity) && item)
 		{
-			return targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item) && !targetEntity.CanUseConstruction());
+			return targetEntity.GetInventory() && targetEntity.GetInventory().CanAddAttachment(item) && !targetEntity.CanUseConstruction();
 		}
 
 		return false;

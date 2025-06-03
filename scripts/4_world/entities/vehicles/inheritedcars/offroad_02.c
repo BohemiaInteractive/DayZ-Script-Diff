@@ -12,6 +12,7 @@ class Offroad_02 extends CarScript
 		m_EngineStartBattery	= "Offroad_02_engine_failed_start_battery_SoundSet";
 		m_EngineStartPlug		= "Offroad_02_engine_failed_start_sparkplugs_SoundSet";
 		m_EngineStartFuel		= "Offroad_02_engine_failed_start_fuel_SoundSet";
+		m_EngineStop			= "Offroad_02_engine_stop_SoundSet";
 		m_EngineStopFuel		= "offroad_engine_stop_fuel_SoundSet";
 
 		m_CarDoorOpenSound		= "offroad_02_door_open_SoundSet";

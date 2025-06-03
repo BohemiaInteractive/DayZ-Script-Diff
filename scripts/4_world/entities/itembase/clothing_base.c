@@ -75,7 +75,7 @@ class Clothing extends Clothing_Base
 		EntityAI hp = hierarchyParent.GetHierarchyParent();
 		if (hp)
 		{
-			if (!hp.IsMan())
+			if (!hp.IsMan() && !hp.IsZombie())
 				return false;
 		}
 		
@@ -97,7 +97,7 @@ class Clothing extends Clothing_Base
 		if ( parent && parent.IsInherited( UndergroundStash ) )
 			return true;
 				
-		return !parent || parent.IsMan() || SmershException(parent);
+		return !parent || parent.IsMan() || parent.IsZombie() || SmershException(parent);
 	}
 	
 	//Method used to specify if a piece of eyeware can be worn under a gas mask

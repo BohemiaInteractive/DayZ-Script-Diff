@@ -12,8 +12,8 @@ class UniversalTemperatureSourceLambdaBase
 	void ~UniversalTemperatureSourceLambdaBase();
 	void Execute(UniversalTemperatureSourceSettings pSettings, UniversalTemperatureSourceResult resultValues);
 	void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings);
-	void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<Object> nearestObjects);
-	void WarmAndCoolItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<Object> nearestObjects);
+	void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<EntityAI> nearestObjects);
+	void WarmAndCoolItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position, out notnull array<EntityAI> nearestObjects);
 	
 	void OnBeforeExecute()
 	{

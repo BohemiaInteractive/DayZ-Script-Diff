@@ -141,7 +141,10 @@ enum NetworkMoveStrategy
 	NONE,
 
 	//! Places the move as the last input inside 'NetworkInput' and simulates with the input message
-	LATEST
+	LATEST,
+
+	//! Sends over a fixed buffer of moves and re-simulates the physics steps on correction as a static scene
+	PHYSICS,
 };
 
 /**

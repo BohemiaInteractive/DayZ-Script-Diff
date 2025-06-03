@@ -64,7 +64,6 @@ class Surface
 		else
 		{
 			int liquidType = SurfaceInfo.GetByName(pSurface).GetLiquidType();
-
 			success = allowedWaterSourceMask & liquidType;
 		}
 

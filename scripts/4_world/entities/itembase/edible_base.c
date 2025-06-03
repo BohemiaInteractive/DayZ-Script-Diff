@@ -969,14 +969,15 @@ class Edible_Base : ItemBase
 	
 	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
 	{
-		super.GetDebugActions(outputList);
-		
 		if (GetFoodStage())
 		{
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_NUTRITIONS_DATA, "Food Nutritions Data", FadeColors.WHITE));
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_PREV, "Food Stage Prev", FadeColors.WHITE));
 			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.FOOD_STAGE_NEXT, "Food Stage Next", FadeColors.WHITE));
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		}
+
+		super.GetDebugActions(outputList);
 	}
 	
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)

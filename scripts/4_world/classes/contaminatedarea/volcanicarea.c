@@ -5,6 +5,13 @@ class VolcanicArea : EffectArea
 	protected ref UniversalTemperatureSourceSettings m_UTSSettings;
 	protected ref UniversalTemperatureSourceLambdaConstant m_UTSLConstant;
 	
+	override void DeferredInit()
+	{
+		super.DeferredInit();
+		
+		InitZone();		
+	}
+	
 	override void InitZoneServer()
 	{
 		super.InitZoneServer();
@@ -23,7 +30,7 @@ class VolcanicArea : EffectArea
 		m_UTSource 		= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLConstant);
 		
 		if ( m_TriggerType != "" )
-			CreateTrigger( m_Position, m_Radius );
+			CreateTrigger(m_PositionTrigger, m_Radius);
 		
 		m_UTSource.SetActive(true);
 	}
