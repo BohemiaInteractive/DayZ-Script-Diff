@@ -13,4 +13,9 @@ class SurrenderDummyItem extends DummyItem
 		if (old_owner)
 			DeleteSafe();
 	}
+	
+	override bool CanSwapEntities(EntityAI otherItem, InventoryLocation otherDestination, InventoryLocation destination)
+	{
+		return false;
+	}
 }

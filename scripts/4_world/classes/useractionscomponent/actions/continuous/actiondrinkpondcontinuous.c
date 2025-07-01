@@ -10,7 +10,6 @@ class ActionDrinkPondContinuous : ActionContinuousBase
 {
 	private const float WATER_DRANK_PER_SEC = 35;
 	protected const string ALLOWED_WATER_SURFACES = string.Format("%1|%2", UAWaterType.FRESH, UAWaterType.STILL);
-	protected int m_AllowedLiquidMask;
 	
 	void ActionDrinkPondContinuous()
 	{
@@ -19,10 +18,6 @@ class ActionDrinkPondContinuous : ActionContinuousBase
 		m_FullBody 			= true;
 		m_StanceMask 		= DayZPlayerConstants.STANCEMASK_CROUCH;
 		m_Text 				= "#drink";
-		
-		m_AllowedLiquidMask = LIQUID_GROUP_DRINKWATER;
-		m_AllowedLiquidMask &= ~LIQUID_SNOW;
-		m_AllowedLiquidMask &= ~LIQUID_HOTWATER;
 	}
 	
 	override bool IsDrink()
@@ -42,8 +37,8 @@ class ActionDrinkPondContinuous : ActionContinuousBase
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINone();
-		m_ConditionTarget = new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, m_AllowedLiquidMask);
+		m_ConditionItem 	= new CCINone();
+		m_ConditionTarget 	= new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, LIQUID_GROUP_DRINKWATER - LIQUID_SNOW - LIQUID_HOTWATER);
 	}
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
@@ -51,10 +46,7 @@ class ActionDrinkPondContinuous : ActionContinuousBase
 		if (item && item.IsHeavyBehaviour())
 			return false;
 		
-		int liquidType = LIQUID_NONE;
-		liquidType = target.GetSurfaceLiquidType();
-
-		return liquidType & m_AllowedLiquidMask && player.CanEatAndDrink();
+		return player.CanEatAndDrink();
 	}
 
 	override void OnStart(ActionData action_data)
@@ -75,12 +67,7 @@ class ActionDrinkPondContinuous : ActionContinuousBase
 		if (nacdata)
 		{
 			EConsumeType consumeType;
-			
-			CCTWaterSurfaceEx waterCheck = CCTWaterSurfaceEx.Cast(m_ConditionTarget);
-			if (!waterCheck)
-				return;
-			
-			int liquidSource = waterCheck.GetLiquidType();
+			int liquidSource = GetLiquidSource(action_data.m_Target);
 			switch (liquidSource)
 			{
 				case LIQUID_CLEANWATER:
@@ -133,13 +120,6 @@ class ActionDrinkPondContinuous : ActionContinuousBase
 		return true;
 	}
 	
-	override bool IsLockTargetOnUse()
-	{
-		return false;
-	}
-	
-	// DEPRECATED
-	[Obsolete("CCTWaterSurfaceEx::GetSurfaceLiquidType can be used instead")]
 	protected int GetLiquidSource(ActionTarget target)
 	{
 		vector hitPosition = target.GetCursorHitPos();

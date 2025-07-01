@@ -2855,6 +2855,10 @@ class PlayerBase extends ManBase
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(TogglePlacingLocal);
 		}
 		
+		SurrenderDummyItem dummyItem;
+		if (Class.CastTo(dummyItem, item) && GetEmoteManager())
+			GetEmoteManager().ForceSurrenderState(false);
+		
 		OnItemInHandsChanged();
 	}
 	

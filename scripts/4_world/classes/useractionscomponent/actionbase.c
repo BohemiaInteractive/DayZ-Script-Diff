@@ -439,7 +439,6 @@ class ActionBase : ActionBase_Basic
 
 		Object targetObject = null;
 		Object targetParent = null;
-		string surfaceName;
 		
 		if (UseMainItem())
 		{
@@ -457,10 +456,8 @@ class ActionBase : ActionBase_Basic
 			ctx.Write(componentIndex);
 			cursorHitPos = action_data.m_Target.GetCursorHitPos();
 			ctx.Write(cursorHitPos);
-			surfaceName = action_data.m_Target.GetSurfaceName();
-			ctx.Write(surfaceName);
 		}
-		else if (HasTarget() && IsUsingProxies())
+		else if( HasTarget() && IsUsingProxies() )
 		{
 			//! get proxy bone idx from parent and selection we are looking at
 			//! ID is used for synchronisation to server where it's translated back to object
@@ -485,16 +482,15 @@ class ActionBase : ActionBase_Basic
 			ctx.Write(componentIndex);
 			cursorHitPos = action_data.m_Target.GetCursorHitPos();
 			ctx.Write(cursorHitPos);
-			surfaceName = action_data.m_Target.GetSurfaceName();
-			ctx.Write(surfaceName);
 		}
 	}
 	
 	bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
 	{
-		if (!action_recive_data)
+		if ( !action_recive_data )
+		{
 			action_recive_data = new ActionReciveData;
-		
+		}
 		Object actionTargetObject = null;
 		Object actionTargetParent = null;
 		int componentIndex = -1;
@@ -502,55 +498,48 @@ class ActionBase : ActionBase_Basic
 		vector cursorHitPos = vector.Zero;
 		ItemBase mainItem = null;
 		
-		ActionTarget target;
-		string surfaceName;
+		ref ActionTarget target;
 		
-		if (UseMainItem())
+		if ( UseMainItem() )
 		{
-			if (!ctx.Read(mainItem))
+			if ( !ctx.Read(mainItem) )
 				return false;
 		}
 
-		if (HasTarget() && !IsUsingProxies())
+		if ( HasTarget() && !IsUsingProxies() )
 		{			
-			if (!ctx.Read(actionTargetObject))
+			if ( !ctx.Read(actionTargetObject) )
 				return false;
 							
-			if (!ctx.Read(actionTargetParent))
+			if ( !ctx.Read(actionTargetParent))
 				return false;
 
-			if (!ctx.Read(componentIndex))
+			if ( !ctx.Read(componentIndex) )
 				return false;
 			
-			if (!ctx.Read(cursorHitPos))
+			if ( !ctx.Read(cursorHitPos) )
 				return false;
 			
-			if (!ctx.Read(surfaceName))
-				return false;
-			
-			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0, surfaceName);
+			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0);
 			
 			action_recive_data.m_Target = target;
 		}
-		else if (HasTarget() && IsUsingProxies())
+		else if( HasTarget() && IsUsingProxies() )
 		{
-			if (!ctx.Read(proxyBoneIdx))
+			if ( !ctx.Read(proxyBoneIdx) )
 				return false;
 							
-			if (!ctx.Read(actionTargetParent))
+			if ( !ctx.Read(actionTargetParent))
 				return false;
 
-			if (!ctx.Read(componentIndex))
+			if ( !ctx.Read(componentIndex) )
 				return false;
 			
-			if (!ctx.Read(cursorHitPos))
-				return false;
-			
-			if (!ctx.Read(surfaceName))
+			if ( !ctx.Read(cursorHitPos) )
 				return false;
 
 			//! create target object from proxyBoneIdx synced from client
-			if (proxyBoneIdx > -1)
+			if ( proxyBoneIdx > -1 )
 			{
 				Entity entParent = Entity.Cast(actionTargetParent);
 
@@ -563,33 +552,14 @@ class ActionBase : ActionBase_Basic
 			{
 				return false;
 			}
-						
-			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0, surfaceName);
 			
+			target = new ActionTarget(actionTargetObject, actionTargetParent, componentIndex, cursorHitPos, 0);
+						
 			action_recive_data.m_Target = target;
 		}
 
 		action_recive_data.m_MainItem = mainItem;
 		return true;
-	}
-	
-	SurfaceInfo GetTargetSurfaceInfo(vector cursorHitPos)
-	{
-		SurfaceInfo surfaceInfo;
-		SurfaceDetectionParameters surfaceParams = new SurfaceDetectionParameters();
-		surfaceParams.type = SurfaceDetectionType.Roadway;
-		surfaceParams.position = cursorHitPos;
-		surfaceParams.includeWater = true;
-		surfaceParams.syncMode = UseObjectsMode.NoWait;
-		surfaceParams.rsd = RoadSurfaceDetection.ABOVE;
-		
-		SurfaceDetectionResult surfaceResult = new SurfaceDetectionResult();
-		if (g_Game.GetSurface(surfaceParams, surfaceResult) && surfaceResult.surface)
-		{
-			surfaceInfo = surfaceResult.surface;
-		}
-		
-		return surfaceInfo;
 	}
 	
 	void HandleReciveData(ActionReciveData action_recive_data, ActionData action_data)

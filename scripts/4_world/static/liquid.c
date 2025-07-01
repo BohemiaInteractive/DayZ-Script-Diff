@@ -236,32 +236,33 @@ class Liquid
 		if (!container) 
 			return false;
 		
-		bool isContainerFull = container.IsFullQuantity();
-		if (isContainerFull && !ignore_fullness_check)
+		bool is_container_full = container.IsFullQuantity();
+		
+		if (is_container_full && !ignore_fullness_check)
 		{
 			//Debug.Log("container is full", "LiquidTransfer");
 			return false;
 			
 		}
+		int container_mask = container.GetLiquidContainerMask();
 		
-		int containerMask = container.GetLiquidContainerMask();
-		if (containerMask == 0)
+		if (container_mask == 0)
 		{
 			//Debug.Log("target is not a container", "LiquidTransfer");
 			return false;//if the target liquidContainerType is set to 0
 		}
 		
-		if ((liquid_type & containerMask) == 0)
+		if ((liquid_type & container_mask) == 0)
 		{
 			//Debug.Log("target liquidContainerType does not support this liquid type", "LiquidTransfer");
 			return false;
 		}
 		
-		float containerQuantity = container.GetQuantity();
+		float container_quantity 	= container.GetQuantity();
 		
-		int containerLiquidType = container.GetLiquidType();
+		int container_liquid_type 	= container.GetLiquidType();
 		
-		if (containerQuantity > 0 && containerLiquidType != TranslateLiquidType(liquid_type)) 
+		if (container_quantity > 0 && container_liquid_type != liquid_type) 
 		{
 			//Debug.Log("target is not empty AND is of different liquid type than liquid_type added in", "LiquidTransfer");
 			return false;

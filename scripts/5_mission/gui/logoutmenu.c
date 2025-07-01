@@ -28,6 +28,12 @@ class LogoutMenu extends UIScriptedMenu
 
 		m_FullTime = null;
 		
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		if (player && player.GetEmoteManager()) 
+		{
+			player.GetEmoteManager().SetClientLoggingOut(false);
+		}
+		
 		#ifdef PLATFORM_CONSOLE
 		if (GetGame().GetMission())
 		{
@@ -61,8 +67,7 @@ class LogoutMenu extends UIScriptedMenu
 		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 		if (player.GetEmoteManager() && !player.IsRestrained() && !player.IsUnconscious()) 
 		{
-			player.GetEmoteManager().CreateEmoteCBFromMenu(EmoteConstants.ID_EMOTE_SITA);
-			player.GetEmoteManager().GetEmoteLauncher().SetForced(EmoteLauncher.FORCE_DIFFERENT);
+			player.GetEmoteManager().SetClientLoggingOut(true);
 		}
 
 		#ifdef PLATFORM_CONSOLE

@@ -943,6 +943,31 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				return true;
 			}
 		}
+		// Check whether the juncture for the related player and items has been acquired.
+		else if (validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)		
+		{
+			bool hasJuncture = false;
+						
+			EntityAI itemSrc = src.GetItem();
+			EntityAI itemDst = dst.GetItem();
+			if (itemSrc != null && itemDst != null)
+			{
+				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc) && GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);
+			}
+			else if (itemSrc != null)
+			{
+				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc);
+			}
+			else if (itemDst != null)
+			{
+				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);		
+			}
+
+			if (!hasJuncture) 
+			{
+				success = false;
+			}		
+		}
 
 		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
@@ -1209,7 +1234,30 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				return true;
 			}
 		}
-		
+		// Check whether the juncture for the related player and items has been acquired.
+		else if (validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)		
+		{
+			bool hasJuncture = false;
+			
+			if (itemSrc != null && itemDst != null)
+			{
+				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc) && GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);
+			}
+			else if (itemSrc != null)
+			{
+				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc);
+			}
+			else if (itemDst != null)
+			{
+				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);		
+			}
+
+			if (!hasJuncture) 
+			{
+				success = false;
+			}		
+		}
+
 		//! Is called twice unfortunately... but it works so won't change
 		if (success && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
@@ -1480,6 +1528,53 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				validation.m_Reason = InventoryValidationReason.JUNCTURE_DENIED;
 				return true;
 			}
+		}
+		// Check whether the juncture for the related player and items has been acquired.
+		else if (validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)		
+		{
+			bool hasJuncture = false;
+			int nonNullCount = 0;
+			bool failed = false;
+
+			EntityAI srcItem1 = src1.GetItem();
+			EntityAI srcItem2 = src2.GetItem();
+			EntityAI dstItem1 = dst1.GetItem();
+			EntityAI dstItem2 = dst2.GetItem();
+
+			if (srcItem1 != null)
+			{
+			    nonNullCount++;
+			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), srcItem1))
+			        failed = true;
+			}
+			
+			if (!failed && srcItem2 != null)
+			{
+			    nonNullCount++;
+			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), srcItem2))
+			        failed = true;
+			}
+			
+			if (!failed && dstItem1 != null)
+			{
+			    nonNullCount++;
+			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), dstItem1))
+			        failed = true;
+			}
+			
+			if (!failed && dstItem2 != null)
+			{
+			    nonNullCount++;
+			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), dstItem2))
+			        failed = true;
+			}
+			
+			hasJuncture = (nonNullCount > 0 && !failed);
+
+			if (!hasJuncture) 
+			{
+				success = false;
+			}		
 		}
 			
 		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT )
