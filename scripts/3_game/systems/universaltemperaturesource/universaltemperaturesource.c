@@ -83,7 +83,11 @@ class UniversalTemperatureSource
 		Init(pParent);
 	}
 	
-	void ~UniversalTemperatureSource() {};
+	void ~UniversalTemperatureSource() 
+	{
+		if (m_Timer)
+			m_Timer.Stop();
+	};
 	
 	void Init(EntityAI pParent)
 	{
@@ -95,7 +99,7 @@ class UniversalTemperatureSource
 			m_Settings.m_Position	= pParent.GetPosition();
 		}
 		
-		if (!m_Settings.m_ManualUpdate)
+		if (m_Settings && !m_Settings.m_ManualUpdate)
 		{
 			auto params = new Param2<UniversalTemperatureSourceSettings, UniversalTemperatureSourceLambdaBase>(m_Settings, m_Lambda);
 	
@@ -103,7 +107,7 @@ class UniversalTemperatureSource
 			SetActive(false);
 		}
 		
-		if (m_Settings.m_IsWorldOverriden)
+		if (m_Settings && m_Settings.m_IsWorldOverriden)
 			m_Settings.m_TemperatureCap += g_Game.GetMission().GetWorldData().GetUniversalTemperatureSourceCapModifier();
 	}
 	
@@ -149,7 +153,7 @@ class UniversalTemperatureSource
 	
 	bool IsActive()
 	{
-		if (m_Settings.m_ManualUpdate)
+		if (m_Settings && m_Settings.m_ManualUpdate)
 		{
 			return m_Active;
 		}
@@ -164,7 +168,7 @@ class UniversalTemperatureSource
 		else
 			m_Lambda.OnUTSDeactivate();
 		
-		if (m_Settings.m_ManualUpdate)
+		if (m_Settings && m_Settings.m_ManualUpdate)
 		{
 			m_Active = pActive;
 			return;
@@ -182,16 +186,21 @@ class UniversalTemperatureSource
 	
 	void SetDefferedActive(bool pActive, float pSeconds)
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLaterByName(this, "SetActive", pSeconds * 1000, false, new Param1<bool>(pActive));
+		if (m_Settings)
+			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLaterByName(this, "SetActive", pSeconds * 1000, false, new Param1<bool>(pActive));
 	}
 	
 	void ChangeSettings(UniversalTemperatureSourceSettings pSettings)
 	{
-		m_Timer.SetParams(new Param2<UniversalTemperatureSourceSettings, UniversalTemperatureSourceLambdaBase>(m_Settings, m_Lambda));
+		if (m_Settings)
+			m_Timer.SetParams(new Param2<UniversalTemperatureSourceSettings, UniversalTemperatureSourceLambdaBase>(m_Settings, m_Lambda));
 	}
 
 	void Update(UniversalTemperatureSourceSettings settings, UniversalTemperatureSourceLambdaBase lambda)
 	{
+		if (!settings)
+			return;
+		
 		if (settings.m_EnableOnTemperatureControl)
 		{
 			float parentTemperature = GetParent().GetTemperature();

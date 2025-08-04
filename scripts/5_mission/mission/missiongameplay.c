@@ -53,6 +53,8 @@ class MissionGameplay extends MissionBase
 	protected bool 					m_InputBufferFull;
 	UIScriptedMenu					m_ConnectionMenu;
 	
+	private float					m_ExitButtonDisabledRemainingTime;
+	
 	void MissionGameplay()
 	{
 		DestroyAllMenus();
@@ -441,6 +443,11 @@ class MissionGameplay extends MissionBase
 				
 				manualInputUnlockProcessed = true;
 			}
+		}
+		
+		if (m_ExitButtonDisabledRemainingTime > 0) 
+		{
+			m_ExitButtonDisabledRemainingTime -= timeslice;
 		}
 #endif
 		
@@ -1741,5 +1748,15 @@ class MissionGameplay extends MissionBase
 				}
 			}
 		}
+	}
+	
+	float GetExitButtonDisabledRemainingTime() 
+	{
+		return m_ExitButtonDisabledRemainingTime;
+	}
+	
+	void SetExitButtonDisabledRemainingTime(float value)
+	{
+		m_ExitButtonDisabledRemainingTime = value;
 	}
 }

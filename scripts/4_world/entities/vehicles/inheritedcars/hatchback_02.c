@@ -23,6 +23,13 @@ class Hatchback_02 extends CarScript
 		
 		SetEnginePos("0 0.7 1.4");
 	}
+	
+	void ~Hatchback_02()
+	{
+		m_UTSource = null;
+		m_UTSSettings = null;
+		m_UTSLEngine = null;
+	}
 
 	override void EEInit()
 	{		
@@ -48,7 +55,8 @@ class Hatchback_02 extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			m_UTSource.SetDefferedActive(true, 20.0);
+			if (m_UTSource)
+				m_UTSource.SetDefferedActive(true, 20.0);
 		}
 	}
 	
@@ -58,7 +66,8 @@ class Hatchback_02 extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			m_UTSource.SetDefferedActive(false, 10.0);
+			if (m_UTSource)
+				m_UTSource.SetDefferedActive(false, 10.0);
 		}
 	}
 	
@@ -66,7 +75,7 @@ class Hatchback_02 extends CarScript
 	{
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource.IsActive())
+			if (m_UTSource && m_UTSource.IsActive())
 			{
 				m_UTSource.Update(m_UTSSettings, m_UTSLEngine);
 			}

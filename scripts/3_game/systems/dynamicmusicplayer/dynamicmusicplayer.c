@@ -448,6 +448,9 @@ class DynamicMusicPlayer
 			(int)waitTime,
 			track.m_SoundSet),
 		);
+		#endif
+		
+		#ifdef DIAG_DEVELOPER
 		m_DebugWaitTime = waitTime;
 		#endif
 
@@ -1018,6 +1021,7 @@ class DynamicMusicPlayer
 		
 		m_DebugShapesLocationsVertices.Insert(Debug.DrawLine(current, first, COLOR_WHITE, ShapeFlags.TRANSP|ShapeFlags.NOZWRITE|ShapeFlags.ONCE));
 	}
+	#endif
 	
 	#ifdef ENABLE_LOGGING
 	private void DMPDebugPrint(string message)
@@ -1026,7 +1030,6 @@ class DynamicMusicPlayer
 		Debug.Log(message);
 		#endif
 	}
-	#endif
 	#endif
 	
 	//!DEPRECATED

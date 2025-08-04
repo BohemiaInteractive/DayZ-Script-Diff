@@ -15,6 +15,9 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	protected bool 							m_PlayerAlive;
 	
+	private float							m_ExitButtonUpdateTimerSum;
+	private bool							m_ExitOnCooldown;
+	
 	protected ref PlayerListScriptedWidget	m_ServerInfoPanel;
 	
 	protected Widget						m_OnlineMenu;
@@ -31,6 +34,8 @@ class InGameMenuXbox extends UIScriptedMenu
 	protected ButtonWidget					m_OnlineButton;
 	protected ButtonWidget					m_TutorialsButton;	
 	protected TextWidget					m_Version;
+	protected TextWidget					m_ExitButtonLabel;
+	protected TextWidget					m_ExitButtonTime;
 
 	protected ButtonWidget					m_ShowFeedback;
 	protected ImageWidget					m_FeedbackQRCode;
@@ -135,6 +140,8 @@ class InGameMenuXbox extends UIScriptedMenu
 		m_FeedbackClose 		= ButtonWidget.Cast(layoutRoot.FindAnyWidget("close_button"));
 		m_FeedbackCloseLabel 	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("close_button_label"));
 		m_DialogPanel 			= layoutRoot.FindAnyWidget("ingame_menu_dialog");
+		m_ExitButtonLabel		= TextWidget.Cast(layoutRoot.FindAnyWidget("exitbtn_label"));
+		m_ExitButtonTime		= TextWidget.Cast(layoutRoot.FindAnyWidget("exitbtn_time"));
 		
 		m_SelectAvailable = true;
 		m_MuteAvailable = false;
@@ -202,6 +209,7 @@ class InGameMenuXbox extends UIScriptedMenu
 					m_MuteAvailable = false;
 				}
 			}
+			UpdateExitButtonState();
 		}
 		else
 		{
@@ -380,17 +388,30 @@ class InGameMenuXbox extends UIScriptedMenu
 	{
 		super.OnModalResult(w, x, y, code, result);
 		
+		CGame game;
 		if (code == IDC_INT_EXIT && result == DBB_YES)
 		{
-			if (GetGame().IsMultiplayer())
+			game = GetGame();
+			if (game.IsMultiplayer())
 			{
-				GetGame().LogoutRequestTime();
-				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().CreateLogoutMenu, this);
+				MissionGameplay mission = MissionGameplay.Cast(game.GetMission());		
+				ScriptCallQueue scQueue = game.GetCallQueue(CALL_CATEGORY_GUI);
+				
+				game.LogoutRequestTime();
+				scQueue.Call(mission.CreateLogoutMenu, this);
+							
+				int logoutAfterCancelTimeout = game.GetLogoutAfterCancelTimeout();		
+				if (logoutAfterCancelTimeout > 0)
+				{
+					mission.SetExitButtonDisabledRemainingTime(logoutAfterCancelTimeout);
+					UpdateExitButtonState();
+					SetFocus(m_ContinueButton);
+				}
 			}
 			else
 			{
 				// skip logout screen in singleplayer
-				GetGame().GetMission().AbortMission();
+				game.GetMission().AbortMission();
 			}
 			g_Game.CancelLoginTimeCountdown();
 			
@@ -405,9 +426,10 @@ class InGameMenuXbox extends UIScriptedMenu
 		{
 			if (result == DBB_YES)
 			{
-				if (GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
+				game = GetGame();
+				if (game.GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
 				{
-					GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
+					game.GetCallQueue(CALL_CATEGORY_GUI).Call(game.GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
 				}
 				else
 				{
@@ -426,19 +448,20 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	void GameRetry(bool random)
 	{
-		if (GetGame().IsMultiplayer())
+		CGame game = GetGame();
+		if (game.IsMultiplayer())
 		{
-			GetGame().GetMenuDefaultCharacterData(false).SetRandomCharacterForced(random);
-			GetGame().RespawnPlayer();
+			game.GetMenuDefaultCharacterData(false).SetRandomCharacterForced(random);
+			game.RespawnPlayer();
 
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(game.GetPlayer());
 			if (player)
 			{
 				player.SimulateDeath(true);
-				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(player.ShowDeadScreen, true, 0);
+				game.GetCallQueue(CALL_CATEGORY_GUI).Call(player.ShowDeadScreen, true, 0);
 			}
 			
-			MissionGameplay missionGP = MissionGameplay.Cast(GetGame().GetMission());
+			MissionGameplay missionGP = MissionGameplay.Cast(game.GetMission());
 			missionGP.DestroyAllMenus();
 			missionGP.SetPlayerRespawning(true);
 			missionGP.Continue();
@@ -447,7 +470,7 @@ class InGameMenuXbox extends UIScriptedMenu
 		}
 		else
 		{
-			GetGame().RestartMission();
+			game.RestartMission();
 		}
 	}
 	
@@ -487,9 +510,51 @@ class InGameMenuXbox extends UIScriptedMenu
 		return player_list;
 	}
 	
+	private void UpdateExitButtonState() 
+	{
+		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		float remainingTime = mission.GetExitButtonDisabledRemainingTime();
+		if (remainingTime > 0) 
+		{
+			m_ExitOnCooldown = true;
+			
+			m_ExitButtonTime.Show(true);
+			layoutRoot.FindAnyWidget("exitbtn_label1").Show(true);
+			layoutRoot.FindAnyWidget("spacer1").Show(true);
+			layoutRoot.FindAnyWidget("spacer2").Show(true);
+			
+			m_ExitButtonLabel.SetColor(ARGB(128, 255, 255, 255));
+			m_ExitButtonLabel.SetText("#main_menu_exit (");
+			m_ExitButtonTime.SetText("" + Math.Round(remainingTime) + "s");
+			m_ExitButton.Enable(false);
+		}
+		else
+		{
+			m_ExitButton.Enable(true);
+			m_ExitButtonLabel.SetColor(ARGB(255, 255, 255, 255));
+			m_ExitButtonLabel.SetText("#main_menu_exit");	
+			m_ExitButtonTime.SetText("");
+			
+			m_ExitButtonTime.Show(false);
+			layoutRoot.FindAnyWidget("exitbtn_label1").Show(false);
+			layoutRoot.FindAnyWidget("spacer1").Show(false);
+			layoutRoot.FindAnyWidget("spacer2").Show(false);
+			
+			m_ExitOnCooldown = false;
+		}
+	}
+	
 	override void Update(float timeslice)
 	{
 		super.Update(timeslice);
+		
+		m_ExitButtonUpdateTimerSum += timeslice;
+
+		if (m_ExitButtonUpdateTimerSum >= 1) 
+		{
+			UpdateExitButtonState();
+			m_ExitButtonUpdateTimerSum -= 1;
+		}
 		
 		if (GetUApi().GetInputByID(UAUIThumbRight).LocalPress() && !IsOnlineOpen() || FeedbackDialogVisible() && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
@@ -634,6 +699,9 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	override bool OnMouseEnter(Widget w, int x, int y)
 	{
+		if (w == m_ExitButton && m_ExitOnCooldown)
+			return false;
+		
 		if (IsFocusable(w))
 		{
 			ColorHighlight(w);
@@ -644,6 +712,9 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{
+		if (w == m_ExitButton && m_ExitOnCooldown)
+			return false;
+		
 		if (IsFocusable(w))
 		{
 			ColorNormal(w);
@@ -654,6 +725,9 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	override bool OnFocus(Widget w, int x, int y)
 	{
+		if (w == m_ExitButton && m_ExitOnCooldown)
+			return false;
+		
 		if (IsFocusable(w))
 		{
 			ColorHighlight(w);
@@ -664,6 +738,9 @@ class InGameMenuXbox extends UIScriptedMenu
 	
 	override bool OnFocusLost(Widget w, int x, int y)
 	{
+		if (w == m_ExitButton && m_ExitOnCooldown)
+			return false;
+		
 		if (IsFocusable(w))
 		{
 			ColorNormal(w);

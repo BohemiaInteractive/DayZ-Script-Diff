@@ -35,12 +35,12 @@ class ContaminatedArea_Local : ContaminatedArea_DynamicBase
 
 	override void DeferredInit()
 	{
-		super.DeferredInit();
-		
 		if (!m_ToxicClouds)
 			m_ToxicClouds = new array<Particle>();
 
 		SetupZoneData(new EffectAreaParams);
+
+		super.DeferredInit();
 	}
 	
 	override void SpawnParticles(ParticlePropertiesArray props, vector centerPos, vector partPos, inout int count)

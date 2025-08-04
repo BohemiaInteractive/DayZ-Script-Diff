@@ -9,6 +9,13 @@ class Van_01 extends CarScript
 		//m_dmgContactCoef = 0.070; //TODO::Set proper value
 	}
 	
+	void ~Van_01()
+	{
+		m_UTSource = null;
+		m_UTSSettings = null;
+		m_UTSLEngine = null;
+	}
+	
 	override void EEInit()
 	{		
 		super.EEInit();
@@ -33,7 +40,8 @@ class Van_01 extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			m_UTSource.SetDefferedActive(true, 20.0);
+			if (m_UTSource)
+				m_UTSource.SetDefferedActive(true, 20.0);
 		}
 	}
 	
@@ -43,7 +51,8 @@ class Van_01 extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			m_UTSource.SetDefferedActive(false, 10.0);
+			if (m_UTSource)
+				m_UTSource.SetDefferedActive(false, 10.0);
 		}
 	}
 	
@@ -51,7 +60,7 @@ class Van_01 extends CarScript
 	{
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource.IsActive())
+			if (m_UTSource && m_UTSource.IsActive())
 			{
 				m_UTSource.Update(m_UTSSettings, m_UTSLEngine);
 			}

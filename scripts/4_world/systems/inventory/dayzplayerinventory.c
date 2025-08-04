@@ -961,7 +961,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			else if (itemDst != null)
 			{
 				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);		
-			}
+			}	
 
 			if (!hasJuncture) 
 			{
@@ -975,7 +975,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		
 		//! Is called twice unfortunately...
-		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+		if (success && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
 			CheckForRope(src, dst);
 		}
@@ -1020,9 +1020,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		#endif
 
-		LocationSyncMoveEntity(src, dst);
+		if (success) 
+		{
+			LocationSyncMoveEntity(src, dst);
+			validation.m_Result = InventoryValidationResult.SUCCESS;
+		}
 
-		validation.m_Result = InventoryValidationResult.SUCCESS;
 		return true;
 	}
 

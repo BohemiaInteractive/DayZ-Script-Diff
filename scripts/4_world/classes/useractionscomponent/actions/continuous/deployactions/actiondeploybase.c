@@ -119,7 +119,6 @@ class ActionDeployBase : ActionContinuousBase
 		}
 		
 		MoveEntityToFinalPosition(poActionData, position, orientation);			
-		GetGame().ClearJunctureEx(poActionData.m_Player, entity_for_placing);
 		poActionData.m_MainItem.SetIsBeingPlaced(false);
 		poActionData.m_AlreadyPlaced = true;
 		
