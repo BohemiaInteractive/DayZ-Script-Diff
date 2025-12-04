@@ -24,13 +24,6 @@ class Truck_01_Base extends CarScript
 		
 		SetEnginePos("0 1.4 2.25");
 	}
-	
-	void ~Truck_01_Base()
-	{
-		m_UTSource = null;
-		m_UTSSettings = null;
-		m_UTSLEngine = null;
-	}
 
 	override void EEInit()
 	{		
@@ -56,8 +49,7 @@ class Truck_01_Base extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource)
-				m_UTSource.SetDefferedActive(true, 20.0);
+			m_UTSource.SetDefferedActive(true, 20.0);
 		}
 	}
 	
@@ -67,8 +59,7 @@ class Truck_01_Base extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource)
-				m_UTSource.SetDefferedActive(false, 10.0);
+			m_UTSource.SetDefferedActive(false, 10.0);
 		}
 	}
 	
@@ -76,7 +67,7 @@ class Truck_01_Base extends CarScript
 	{
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource && m_UTSource.IsActive())
+			if (m_UTSource.IsActive())
 			{
 				m_UTSource.Update(m_UTSSettings, m_UTSLEngine);
 			}

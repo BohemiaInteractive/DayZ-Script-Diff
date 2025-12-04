@@ -68,6 +68,7 @@ class OpenCan extends RecipeBase
 		InsertIngredient(1,"BaseballBat");
 		InsertIngredient(1,"NailedBaseballBat");
 		InsertIngredient(1,"BarbedBaseballBat");
+		InsertIngredient(1,"XmasBaseballBat");
 		InsertIngredient(1,"PipeWrench");
 		InsertIngredient(1,"Pickaxe");
 		InsertIngredient(1,"WoodAxe");

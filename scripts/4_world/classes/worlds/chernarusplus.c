@@ -1,5 +1,5 @@
 //#define WEATHER_DATA_LOGGING
-class ChernarusPlusData : WorldData
+class ChernarusPlusData extends WorldData
 {
 	//-------test variables & methods ------
 	#ifdef WEATHER_DATA_LOGGING
@@ -67,7 +67,6 @@ class ChernarusPlusData : WorldData
 		
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{			
-			m_Weather.GetSnowfall().SetLimits(0, 0);
 			m_Weather.SetDynVolFogHeightBias(m_WeatherDefaultSettings.m_DefaultHeigthBias);
 		
 			if (GetGame().IsMultiplayer())
@@ -104,7 +103,6 @@ class ChernarusPlusData : WorldData
 		float phmnValue = 0;
 
 		m_Weather.SetStorm( 1.0, m_WeatherDefaultSettings.m_StormThreshold, 45 );
-		m_Weather.GetSnowfall().SetLimits(0, 0);
 
 		m_Weather.SetRainThresholds( m_WeatherDefaultSettings.m_RainThreshold, 1.0, 60 );
 		m_Weather.SetWindMaximumSpeed( 20 );

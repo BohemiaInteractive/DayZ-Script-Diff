@@ -138,6 +138,8 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 	
 	override void DeferredInit()
 	{
+		super.DeferredInit();
+
 		// We make sure we have the particle array
 		if (!m_ToxicClouds)
 			m_ToxicClouds = new array<Particle>();
@@ -152,9 +154,9 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 		if (m_DecayState == eAreaDecayStage.INIT)
 			PlayFlareVFX();
 		
-		if (m_DecayState >= eAreaDecayStage.LIVE)
+		if ( m_DecayState == eAreaDecayStage.LIVE )
 			InitZone(); // If it has already been created, we simply do the normal setup, no cool effects, force the LIVE state
-
+		
 		super.DeferredInit();
 	}
 	
@@ -180,7 +182,7 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 				vector mat[4];
 				Math3D.MatrixIdentity4(mat);
 				mat[3] = spawnPos;
-				il.SetGround(null, mat);
+				il.SetGround(NULL, mat);
 				//Print("Spawning item:"+ type + " at position:" + il.GetPos());
 				GetGame().CreateObjectEx(type, il.GetPos(), ECE_PLACE_ON_SURFACE);
 			}

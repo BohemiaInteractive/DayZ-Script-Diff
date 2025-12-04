@@ -5692,19 +5692,11 @@ class PlayerBase extends ManBase
 	void UpdateCorpseState()
 	{
 		UpdateCorpseStateVisual();
-		if (m_CorpseState > 0 && !GetIsFrozen() && AllowDecayEffects())
+		if (m_CorpseState > 0 && !GetIsFrozen())
 			SetDecayEffects(Math.AbsInt(m_CorpseState));
 		else
 			SetDecayEffects();//no params means remove the effects
 		m_CorpseStateLocal = m_CorpseState;
-	}
-	
-	protected bool AllowDecayEffects()
-	{
-		float min,max;
-		g_Game.GetWeather().GetSnowfall().GetLimits(min,max);
-		
-		return max <= 0;
 	}
 
 	// -------------------------------------------------------------------------

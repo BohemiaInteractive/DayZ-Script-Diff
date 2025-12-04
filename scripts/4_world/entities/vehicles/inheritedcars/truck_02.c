@@ -10,13 +10,6 @@ class Truck_02 extends CarScript
 		m_enginePtcPos = "0 1.346 2.205";
 	}
 	
-	void ~Truck_02()
-	{
-		m_UTSource = null;
-		m_UTSSettings = null;
-		m_UTSLEngine = null;
-	}
-	
 	override void EEInit()
 	{
 		super.EEInit();
@@ -41,8 +34,7 @@ class Truck_02 extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource)
-				m_UTSource.SetDefferedActive(true, 20.0);
+			m_UTSource.SetDefferedActive(true, 20.0);
 		}
 	}
 	
@@ -52,8 +44,7 @@ class Truck_02 extends CarScript
 
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource)
-				m_UTSource.SetDefferedActive(false, 10.0);
+			m_UTSource.SetDefferedActive(false, 10.0);
 		}
 	}
 	
@@ -61,7 +52,7 @@ class Truck_02 extends CarScript
 	{
 		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
 		{
-			if (m_UTSource && m_UTSource.IsActive())
+			if (m_UTSource.IsActive())
 			{
 				m_UTSource.Update(m_UTSSettings, m_UTSLEngine);
 			}

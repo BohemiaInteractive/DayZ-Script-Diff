@@ -1569,9 +1569,4 @@ class CGame
 	{
 		return m_AnalyticsManagerClient;
 	}
-	
-	/*
-	Returns the value set in server config for the length of the exit button timeout after cancelling the previous logout attempt (consoles only)
-	*/
-	proto native int GetLogoutAfterCancelTimeout();
 };

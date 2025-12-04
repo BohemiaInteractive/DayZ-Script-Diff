@@ -21,6 +21,7 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new PokeHolesBarrel);
 		RegisterRecipe(new CraftBaseBallBatNailed);
 		RegisterRecipe(new CraftBaseBallBatBarbed);
+		RegisterRecipe(new CraftChristmasLightsHeadband);
 		RegisterRecipe(new CraftGhillieHood);
 		RegisterRecipe(new DeCraftGhillieHood);
 		RegisterRecipe(new CraftGhillieAttachment);
