@@ -37,7 +37,7 @@ class AttachmentCategoriesRow: ClosableContainer
 	
 	override bool Select()
 	{
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		SlotsIcon focused_icon = GetFocusedSlotsIcon();
 		EntityAI focused_item = GetFocusedItem();
 		Container focused_cont = GetFocusedContainer();
@@ -105,7 +105,7 @@ class AttachmentCategoriesRow: ClosableContainer
 		{
 			if( focused_item && focused_item.GetInventory().CanRemoveEntity() && (!focused_icon || !focused_icon.IsOutOfReach()) )
 			{
-				EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+				EntityAI item_in_hands = g_Game.GetPlayer().GetEntityInHands();
 				if( item_in_hands && item_in_hands.GetInventory().CanRemoveEntity() )
 				{
 					if( GameInventory.CanSwapEntitiesEx( item_in_hands, focused_item ) )
@@ -136,8 +136,8 @@ class AttachmentCategoriesRow: ClosableContainer
 			SlotsIcon focused_icon = GetFocusedSlotsIcon();
 			if( entity && !entity.IsLockedInSlot() && (!focused_icon || !focused_icon.IsOutOfReach()) )
 			{
-				PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-				GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
+				PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+				g_Game.GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
 				return true;
 			}
 		}
@@ -149,7 +149,7 @@ class AttachmentCategoriesRow: ClosableContainer
 		if (CanDrop())
 		{
 			ItemBase item = ItemBase.Cast(GetFocusedItem());
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			SlotsIcon focused_icon = GetFocusedSlotsIcon();
 			
 			if (item && !item.IsLockedInSlot() && (focused_icon && !focused_icon.IsOutOfReach()))
@@ -168,9 +168,9 @@ class AttachmentCategoriesRow: ClosableContainer
 	{
 		if (CanCombine())
 		{
-			Man player = GetGame().GetPlayer();
+			Man player = g_Game.GetPlayer();
 			ItemBase prev_item = ItemBase.Cast( GetFocusedItem() );
-			ItemBase selected_item = ItemBase.Cast( player.GetHumanInventory().GetEntityInHands() );
+			ItemBase selected_item = ItemBase.Cast( player.GetEntityInHands() );
 			SlotsIcon focused_icon = GetFocusedSlotsIcon();
 			
 			if( selected_item )
@@ -235,9 +235,9 @@ class AttachmentCategoriesRow: ClosableContainer
 	
 	override bool CanCombine()
 	{
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		ItemBase prev_item = ItemBase.Cast( GetFocusedItem() );
-		ItemBase selected_item = ItemBase.Cast( player.GetHumanInventory().GetEntityInHands() );
+		ItemBase selected_item = ItemBase.Cast( player.GetEntityInHands() );
 		SlotsIcon focused_icon = GetFocusedSlotsIcon();
 		
 		if( selected_item )
@@ -324,7 +324,7 @@ class AttachmentCategoriesRow: ClosableContainer
 		}
 		ItemBase item_base	= ItemBase.Cast( item );
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if( !item.GetInventory().CanRemoveEntity() || !player.CanManipulateInventory() )
 			return;
 		
@@ -348,7 +348,7 @@ class AttachmentCategoriesRow: ClosableContainer
 			{
 				if( !receiver_item.GetInventory().CanRemoveEntity() )
 					return;
-				GetGame().GetPlayer().PredictiveSwapEntities( receiver_item, item );
+				g_Game.GetPlayer().PredictiveSwapEntities( receiver_item, item );
 			}
 			else if( receiver_item.GetInventory().CanAddAttachment( item ) )
 			{
@@ -385,7 +385,7 @@ class AttachmentCategoriesRow: ClosableContainer
 		}
 		/*else if( ( m_Entity.GetInventory().CanAddEntityInCargo( item, item.GetInventory().GetFlipCargo() ) && ( !player.GetInventory().HasEntityInInventory( item ) || !m_Entity.GetInventory().HasEntityInCargo( item )) ) )
 		{
-			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_Entity, item );
+			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( g_Game.GetPlayer() ), m_Entity, item );
 		}*/
 	}
 
@@ -586,7 +586,7 @@ class AttachmentCategoriesRow: ClosableContainer
 			
 		if( c_x > x && c_y > y && target_entity.GetInventory().LocationCanAddEntity(dst))
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 
 			SplitItemUtils.TakeOrSplitToInventoryLocation( player, dst);
 
@@ -722,7 +722,7 @@ class AttachmentCategoriesRow: ClosableContainer
 			string slot_name_ 			= InventorySlots.GetSlotName(slot_id_);
 			bool draggable				= true;
 			bool can_be_removed			= item.GetInventory().CanRemoveEntity();
-			bool in_hands_condition		= m_Entity.GetHierarchyRoot() == GetGame().GetPlayer();
+			bool in_hands_condition		= m_Entity.GetHierarchyRoot() == g_Game.GetPlayer();
 			bool in_vicinity_condition	= AttachmentsOutOfReach.IsAttachmentReachable( m_Entity, slot_name_ );
 			if( m_Entity.GetInventory().GetSlotLock( slot_id_ ) && ItemManager.GetInstance().GetDraggedItem() != item )
 			{
@@ -790,7 +790,7 @@ class AttachmentCategoriesRow: ClosableContainer
 				if (!item.GetInventory().CanRemoveEntity())
 					return;
 				
-				PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+				PlayerBase controlledPlayer = PlayerBase.Cast(g_Game.GetPlayer());
 				if (controlledPlayer.GetInventory().HasEntityInInventory(item) && controlledPlayer.GetHumanInventory().CanAddEntityInHands(item))
 				{
 					controlledPlayer.PredictiveTakeEntityToHands(item);
@@ -855,7 +855,7 @@ class AttachmentCategoriesRow: ClosableContainer
 					break;
 				
 				case MouseState.LEFT:
-					PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+					PlayerBase controlledPlayer = PlayerBase.Cast(g_Game.GetPlayer());
 					if (g_Game.IsLeftCtrlDown())
 					{
 						if (icon.IsOutOfReach())
@@ -898,8 +898,8 @@ class AttachmentCategoriesRow: ClosableContainer
 		
 		m_RowConfigPath = config_path_attachment_categories + " " + attachment_category + " attachmentSlots";
 		string config_path_category_name = config_path_attachment_categories + " " + attachment_category + " name";
-		GetGame().ConfigGetTextArray(m_RowConfigPath, player_ghosts_slots2);
-		GetGame().ConfigGetText(config_path_category_name, categoryName);
+		g_Game.ConfigGetTextArray(m_RowConfigPath, player_ghosts_slots2);
+		g_Game.ConfigGetText(config_path_category_name, categoryName);
 		header.SetName(categoryName);
 		
 		m_AttachmentsContainer.SetHeader(header);
@@ -917,8 +917,8 @@ class AttachmentCategoriesRow: ClosableContainer
 			
 			int slotId	= InventorySlots.GetSlotIdFromString(slotName);
 				
-			GetGame().ConfigGetText(path + " ghostIcon", iconName);
-			GetGame().ConfigGetText(path + " name", slotName);
+			g_Game.ConfigGetText(path + " ghostIcon", iconName);
+			g_Game.ConfigGetText(path + " name", slotName);
 				
 			int row = j / ITEMS_IN_ROW;
 			int column = j % ITEMS_IN_ROW;

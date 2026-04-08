@@ -12,10 +12,10 @@ class BleedingSourcesManagerRemote extends BleedingSourcesManagerBase
 	{
 		super.Init();
 		
-		if (GetGame().GetMission().GetEffectWidgets()/* && m_Player.IsControlledPlayer()*/)
+		if (g_Game.GetMission().GetEffectWidgets()/* && m_Player.IsControlledPlayer()*/)
 		{
 			Param3<bool,int,float> par = new Param3<bool,int,float>(true,0,0);
-			GetGame().GetMission().GetEffectWidgets().RegisterGameplayEffectData(EffectWidgetsTypes.BLEEDING_LAYER,par);
+			g_Game.GetMission().GetEffectWidgets().RegisterGameplayEffectData(EffectWidgetsTypes.BLEEDING_LAYER,par);
 		}
 	}
 	
@@ -23,10 +23,11 @@ class BleedingSourcesManagerRemote extends BleedingSourcesManagerBase
 	{
 		super.RegisterBleedingZoneEx(name,max_time,bone,orientation,offset,flow_modifier,particle_name,inv_location);
 		
-		if (GetGame().GetMission().GetEffectWidgets()/* && m_Player.IsControlledPlayer()*/)
+		GameplayEffectWidgets_base widgets = g_Game.GetMission().GetEffectWidgets();
+		if (widgets/* && m_Player.IsControlledPlayer()*/)
 		{
 			Param3<bool,int,float> par = new Param3<bool,int,float>(false,m_Bit,flow_modifier);
-			GetGame().GetMission().GetEffectWidgets().RegisterGameplayEffectData(EffectWidgetsTypes.BLEEDING_LAYER,par);
+			widgets.RegisterGameplayEffectData(EffectWidgetsTypes.BLEEDING_LAYER,par);
 		}
 	}
 	
@@ -71,9 +72,9 @@ class BleedingSourcesManagerRemote extends BleedingSourcesManagerBase
 	{
 		super.AddBleedingSource(bit);
 		#ifdef DIAG_DEVELOPER
-		m_BleedingSources.Get(bit).m_DiagTimeStart = GetGame().GetTickTime();
+		m_BleedingSources.Get(bit).m_DiagTimeStart = g_Game.GetTickTime();
 		#endif
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 			m_Player.OnBleedingSourceAdded();
 	}
 	
@@ -81,7 +82,7 @@ class BleedingSourcesManagerRemote extends BleedingSourcesManagerBase
 	{
 		if (super.RemoveBleedingSource(bit))
 		{
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 				m_Player.OnBleedingSourceRemovedEx(m_Item);
 			return true;
 		}
@@ -177,7 +178,7 @@ class BleedingSourcesManagerRemote extends BleedingSourcesManagerBase
 				
 				#ifdef DIAG_DEVELOPER
 				BleedingSource bsi = m_BleedingSources.Get(bit);
-				timeRemaining = bsz.GetMaxTime() + bsi.m_DiagTimeStart - GetGame().GetTickTime();
+				timeRemaining = bsz.GetMaxTime() + bsi.m_DiagTimeStart - g_Game.GetTickTime();
 				timeRemaining = Math.Round(timeRemaining);
 				#endif
 				

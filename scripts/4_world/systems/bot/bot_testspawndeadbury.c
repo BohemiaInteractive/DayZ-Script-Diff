@@ -19,7 +19,7 @@ class BotSpawnDead extends BotStateBase
 
 		if (m_Owner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
-			EntityAI Z = EntityAI.Cast(GetGame().CreateObject(m_Type, m_Owner.GetPosition()));
+			EntityAI Z = EntityAI.Cast(g_Game.CreateObject(m_Type, m_Owner.GetPosition()));
 			Z.SetHealth( "", "", 0 );
 			Error("TODO");
 			//m_Bot.PostEvent(new BotEventEntitySpawned(m_Owner, Z));

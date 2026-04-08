@@ -12,9 +12,9 @@ class AlarmClock_ColorBase: ClockBase
 	override void Init()
 	{
 		super.Init();
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
-			m_NoiseSystem = GetGame().GetNoiseSystem();
+			m_NoiseSystem = g_Game.GetNoiseSystem();
 			if ( m_NoiseSystem && !m_NoisePar )
 			{
 				// Create and load noise parameters
@@ -78,7 +78,7 @@ class AlarmClock_ColorBase: ClockBase
 	{
 		if (super.OnAction(action_id, player, ctx))
 			return true;
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			if (action_id == EActions.ACTIVATE_ENTITY)
 			{
@@ -93,7 +93,7 @@ class AlarmClock_ColorBase: ClockBase
 	{
 		string debug_output;
 		
-		if( GetGame().IsDedicatedServer())
+		if( g_Game.IsDedicatedServer())
 		{
 			debug_output = "alarm in: " + GetAlarmInMin().ToString() + " mins" + "\n";
 			debug_output +=  "current state: " +  typename.EnumToString(EAlarmClockState, m_State) + "\n";;
@@ -115,7 +115,7 @@ class AlarmClock_ColorBase: ClockBase
 			int alarm_hand_in_minutes = ConvertAlarmHand01ToMins12h(m_AlarmTime01);
 		
 			int pass, hour, minute;
-			GetGame().GetWorld().GetDate(pass, pass, pass, hour, minute);
+			g_Game.GetWorld().GetDate(pass, pass, pass, hour, minute);
 			
 			int curr_time_in_minutes = ConvertTimeToMins12h(hour, minute);
 			
@@ -137,7 +137,7 @@ class AlarmClock_ColorBase: ClockBase
 			}
 			else if ( m_NoiseSystem )
 			{
-				m_NoiseSystem.AddNoiseTarget( GetPosition(), UPDATE_TICK_RATE, m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+				m_NoiseSystem.AddNoiseTarget( GetPosition(), UPDATE_TICK_RATE, m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
 			}
 		}
 	}

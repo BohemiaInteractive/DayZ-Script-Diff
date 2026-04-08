@@ -2,7 +2,7 @@ class SyncEvents
 {
 	static void RegisterEvents()
 	{
-		DayZGame dz_game = DayZGame.Cast( GetGame() );
+		DayZGame dz_game = DayZGame.Cast( g_Game );
 		
 		dz_game.Event_OnRPC.Insert( Event_OnRPC );
 		Print("SyncEvents -> RegisterEvents");
@@ -10,7 +10,7 @@ class SyncEvents
 	
 	static void Event_OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)
 	{		
-		if ( rpc_type == ERPCs.RPC_SYNC_EVENT && GetGame() && GetGame().IsMultiplayer() && GetGame().IsClient() )
+		if ( rpc_type == ERPCs.RPC_SYNC_EVENT && g_Game && g_Game.IsMultiplayer() && g_Game.IsClient() )
 		{			
 			Param2<ESyncEvent, ref SyncData> event_data = new Param2<ESyncEvent, ref SyncData>( -1, null );
 			
@@ -93,11 +93,11 @@ class SyncEvents
 		Param2<ESyncEvent, ref SyncData> event_data = new Param2<ESyncEvent, ref SyncData>( sync_event_type, data );
 		if ( !player_target )
 		{
- 			GetGame().RPCSingleParam( null, rpc_event_id, event_data, guaranteed );
+ 			g_Game.RPCSingleParam( null, rpc_event_id, event_data, guaranteed );
 		}
 		else
 		{
-			GetGame().RPCSingleParam( null, rpc_event_id, event_data, guaranteed, player_target );
+			g_Game.RPCSingleParam( null, rpc_event_id, event_data, guaranteed, player_target );
 		}
 	}
 	

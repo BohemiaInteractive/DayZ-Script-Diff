@@ -82,9 +82,9 @@ class RainProcurementHandler : Managed
 	{
 		bool ret = false;
 		int count = m_ActiveComponents.Count();
-		int target = (int)Math.Clamp(m_NextToProcessIdx + UPDATE_BATCH_SIZE,0,count);
+		int target = (int)Math.Clamp(m_NextToProcessIdx + UPDATE_BATCH_SIZE, 0, count);
 		
-		for (m_NextToProcessIdx; m_NextToProcessIdx < target; m_NextToProcessIdx++)
+		for (m_NextToProcessIdx; m_NextToProcessIdx < target; ++m_NextToProcessIdx)
 		{
 			if (m_ActiveComponents[m_NextToProcessIdx])
 				m_ActiveComponents[m_NextToProcessIdx].OnUpdate(m_UpdateTimer, m_LiquidAmountCoef);
@@ -123,13 +123,12 @@ class RainProcurementHandler : Managed
 	
 	protected void HandleChangedComponents()
 	{
-		RainProcurementComponentBase component;
+		
 		int count = m_ChangedQueue.Count();
 		int idx;
 		
-		for (int  i = 0; i < count; i++)
+		foreach (RainProcurementComponentBase component : m_ChangedQueue)
 		{
-			component = m_ChangedQueue[i];
 			if (!component)
 				continue;
 			
@@ -160,6 +159,6 @@ class RainProcurementHandler : Managed
 	//! scalable on handler level. Now also handles SNOW, total value can exceed 1.0
 	float DetermineAmountCoef()
 	{
-		return GetGame().GetWeather().GetRain().GetActual() + GetGame().GetWeather().GetSnowfall().GetActual();
+		return g_Game.GetWeather().GetRain().GetActual() + g_Game.GetWeather().GetSnowfall().GetActual();
 	}
 };

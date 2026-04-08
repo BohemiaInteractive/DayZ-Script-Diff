@@ -73,8 +73,8 @@ class PPEffects
 			delete m_ColorEffect;
 		}
 		
-		m_MatColors = GetGame().GetWorld().GetMaterial("graphics/materials/postprocess/glow");
-		m_RadialBlur = GetGame().GetWorld().GetMaterial("graphics/materials/postprocess/radialblur");
+		m_MatColors = g_Game.GetWorld().GetMaterial("graphics/materials/postprocess/glow");
+		m_RadialBlur = g_Game.GetWorld().GetMaterial("graphics/materials/postprocess/radialblur");
 		m_BlurValues = new array<float>;
 		m_ChromAbbValues = new array<float>;
 		m_VignetteEffects = new array<int>;
@@ -155,7 +155,7 @@ class PPEffects
 	//! sets blur effect to an absolute value between 0..1
 	static void SetRadialBlur(float powerX, float powerY, float offsetX, float offsetY )
 	{
-		if (GetGame())
+		if (g_Game)
 		{
 			m_RadialBlur.SetParam("PowerX", powerX);
 			m_RadialBlur.SetParam("PowerY", powerY);
@@ -167,9 +167,9 @@ class PPEffects
 	//! sets blur effect to an absolute value between 0..1
 	static void SetBlur(float value)
 	{
-		if (GetGame())
+		if (g_Game)
 		{
-			Material mat_blur = GetGame().GetWorld().GetMaterial("graphics/materials/postprocess/gauss");
+			Material mat_blur = g_Game.GetWorld().GetMaterial("graphics/materials/postprocess/gauss");
 		
 			if (mat_blur)
 			{
@@ -283,7 +283,7 @@ class PPEffects
 	
 	static void SetChromAbb(float value)
 	{
-		if (GetGame())
+		if (g_Game)
 		{
 			if (m_MatColors)
 			{
@@ -328,7 +328,7 @@ class PPEffects
 	/*
 	static void SetOverlayColor(float r, float g, float b, float a)
 	{
-		Material matColors = GetGame().GetWorld().GetMaterial("graphics/materials/postprocess/glow");
+		Material matColors = g_Game.GetWorld().GetMaterial("graphics/materials/postprocess/glow");
 		
 		m_Color[0] = r;
 		m_Color[1] = g;
@@ -380,7 +380,7 @@ class PPEffects
 		m_MatColors.ResetParam("OverlayColor");
 		m_MatColors.ResetParam("OverlayFactor");
 		*/
-		if( !GetGame() || !GetGame().GetWorld() )
+		if( !g_Game || !g_Game.GetWorld() )
 		{
 			return;
 		}
@@ -502,17 +502,17 @@ class PPEffects
 
 	static void OverrideDOF(bool enable, float focusDistance, float focusLength, float focusLengthNear, float blur, float focusDepthOffset)
 	{
-		GetGame().OverrideDOF(enable, focusDistance, focusLength, focusLengthNear, blur, focusDepthOffset);
+		g_Game.OverrideDOF(enable, focusDistance, focusLength, focusLengthNear, blur, focusDepthOffset);
 	}
 
 	static void AddPPMask(float ndcX, float ndcY, float ndcRadius, float ndcBlur)
 	{
-		GetGame().AddPPMask(ndcX, ndcY, ndcRadius, ndcBlur);
+		g_Game.AddPPMask(ndcX, ndcY, ndcRadius, ndcBlur);
 	}
 	
 	static void ResetPPMask()
 	{
-		if( GetGame() ) GetGame().ResetPPMask();
+		if( g_Game ) g_Game.ResetPPMask();
 	}
 	
 	static void ResetDOFOverride()
@@ -723,7 +723,7 @@ class PPEffects
 	// added other parameters for filmgrainNV.emat, sharpness and grain size
 	static void SetNVParams(float light_mult, float noise_intensity, float sharpness, float grain_size)
 	{
-		Material matHDR = GetGame().GetWorld().GetMaterial("Graphics/Materials/postprocess/filmgrainNV");
+		Material matHDR = g_Game.GetWorld().GetMaterial("Graphics/Materials/postprocess/filmgrainNV");
 /*#ifdef PLATFORM_CONSOLE
 //worst-case scenario console fix!
 		noise_intensity = 0.0;

@@ -75,6 +75,8 @@ class ActionDeployBase : ActionContinuousBase
 
 		if (!poActionData.m_MainItem)
 			return;
+
+		ClearActionJuncture(action_data);
 		
 		EntityAI entity_for_placing = poActionData.m_MainItem;
 		vector position = vector.Zero;
@@ -89,12 +91,12 @@ class ActionDeployBase : ActionContinuousBase
 				orientation = poActionData.m_Orientation;
 				
 				poActionData.m_Player.GetHologramServer().EvaluateCollision(poActionData.m_MainItem);
-				if (GetGame().IsMultiplayer() && poActionData.m_Player.GetHologramServer().IsColliding())
+				if (g_Game.IsMultiplayer() && poActionData.m_Player.GetHologramServer().IsColliding())
 					return;
 				
 				poActionData.m_Player.GetHologramServer().PlaceEntity(entity_for_placing);
 				
-				if (GetGame().IsMultiplayer())
+				if (g_Game.IsMultiplayer())
 					poActionData.m_Player.GetHologramServer().CheckPowerSource();
 				
 				#ifdef DEVELOPER
@@ -119,7 +121,6 @@ class ActionDeployBase : ActionContinuousBase
 		}
 		
 		MoveEntityToFinalPosition(poActionData, position, orientation);			
-		GetGame().ClearJunctureEx(poActionData.m_Player, entity_for_placing);
 		poActionData.m_MainItem.SetIsBeingPlaced(false);
 		poActionData.m_AlreadyPlaced = true;
 		
@@ -133,7 +134,7 @@ class ActionDeployBase : ActionContinuousBase
 	{
 		super.OnItemLocationChanged(item);
 		
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			if (m_MovedItems)
 				m_MovedItems.Insert(item);
@@ -157,6 +158,29 @@ class ActionDeployBase : ActionContinuousBase
 		
 		m_MovedItems.Clear();
 	}
+
+	override bool AddActionJuncture(ActionData action_data)
+	{
+		bool accepted = super.AddActionJuncture(action_data);
+
+		EntityAI targetEntity = action_data.m_MainItem;
+
+		InventoryLocation targetIl = new InventoryLocation();
+		targetEntity.GetInventory().GetCurrentInventoryLocation(targetIl);
+		
+		//Lock target
+		if (!g_Game.AddActionJuncture(action_data.m_Player, targetEntity, 10000, action_data))
+		{
+			accepted = false;
+			ClearActionJuncture(action_data);
+		}
+		else
+		{
+			action_data.m_ReservedInventoryLocations.Insert(targetIl);
+		}
+
+		return accepted;
+	}
 	
 	void DropDuringPlacing(PlayerBase player)
 	{
@@ -167,7 +191,16 @@ class ActionDeployBase : ActionContinuousBase
 		if (item.IsBasebuildingKit())
 			return;
 		
-		player.PredictiveDropEntity(item);
+		if (g_Game.IsDedicatedServer())
+		{
+			player.LocalDropEntity(item);
+
+			player.SyncDeferredEventToRemotes();
+		}
+		else
+		{
+			player.LocalDropEntity(item);
+		}
 	}
 	
 	void MoveEntityToFinalPosition(ActionData action_data, vector position, vector orientation)
@@ -188,7 +221,7 @@ class ActionDeployBase : ActionContinuousBase
 		{
 			destination.SetGroundEx(entity_for_placing, position, direction);
 			
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 				action_data.m_Player.ServerTakeToDst(source, destination);
 			else // singleplayer
 				MoveEntityToFinalPositionSinglePlayer(action_data, source, destination);

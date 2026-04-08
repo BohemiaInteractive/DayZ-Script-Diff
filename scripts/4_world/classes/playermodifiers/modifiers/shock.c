@@ -61,7 +61,7 @@ class ShockMdfr: ModifierBase
 	override void OnTick(PlayerBase player, float deltaT)
 	{	
 		//Print("m_UnconRefillModifier" + player.m_UnconRefillModifier);
-		if ( GetGame().GetTime() > player.m_LastShockHitTime + PlayerConstants.SHOCK_REFILL_COOLDOWN_AFTER_HIT && player.GetPulseType() == EPulseType.REGULAR)
+		if ( g_Game.GetTime() > player.m_LastShockHitTime + PlayerConstants.SHOCK_REFILL_COOLDOWN_AFTER_HIT && player.GetPulseType() == EPulseType.REGULAR)
 		{
 			if (!player.IsUnconscious())
 				player.m_UnconRefillModifier = 1;//reset this UnconRefillModifier some time after the player has been hit(we want the UnconRefillModifier to only apply to uncon induced by a projectile)

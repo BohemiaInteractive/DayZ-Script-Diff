@@ -41,10 +41,10 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 	
 	void PluginAdminLog()
 	{
-		m_HitFilter = GetGame().ServerConfigGetInt("adminLogPlayerHitsOnly");  //  1 - log player hits only / 0 - log all hits ( animals/infected )
-		m_PlacementFilter = GetGame().ServerConfigGetInt("adminLogPlacement"); //  1 - log placement ( traps, tents )
-		m_ActionsFilter = GetGame().ServerConfigGetInt("adminLogBuildActions"); //  1 - log basebuilding actions ( build, dismantle, destroy )
-		m_PlayerListFilter = GetGame().ServerConfigGetInt("adminLogPlayerList"); // 1 - log periodic player list with position every 5 minutes
+		m_HitFilter = g_Game.ServerConfigGetInt("adminLogPlayerHitsOnly");  //  1 - log player hits only / 0 - log all hits ( animals/infected )
+		m_PlacementFilter = g_Game.ServerConfigGetInt("adminLogPlacement"); //  1 - log placement ( traps, tents )
+		m_ActionsFilter = g_Game.ServerConfigGetInt("adminLogBuildActions"); //  1 - log basebuilding actions ( build, dismantle, destroy )
+		m_PlayerListFilter = g_Game.ServerConfigGetInt("adminLogPlayerList"); // 1 - log periodic player list with position every 5 minutes
 		
 		m_PlayerArray = new array<Man>;
 		
@@ -61,7 +61,7 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 			
 	void LogPrint( string message )
 	{
-		GetGame().AdminLog( message );
+		g_Game.AdminLog( message );
 	}
 			
 	string GetPlayerPrefix( PlayerBase player, PlayerIdentity identity )  // player name + id + position prefix for log prints
@@ -413,7 +413,7 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 	
 	void PlayerList()
 	{
-		GetGame().GetPlayers( m_PlayerArray );
+		g_Game.GetPlayers( m_PlayerArray );
 		
 		if ( m_PlayerArray.Count() != 0 )
 		{	

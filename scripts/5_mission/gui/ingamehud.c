@@ -234,9 +234,9 @@ class IngameHud extends Hud
 		if (!g_Game.GetProfileOption(EDayZProfilesOptions.HUD_VEHICLE))
 			SetVehicleHudDisabled(true);
 		
-		MissionGameplay.Cast(GetGame().GetMission()).GetConnectivityInvoker().Insert(OnConnectionIconsSettingsChanged);
+		MissionGameplay.Cast(g_Game.GetMission()).GetConnectivityInvoker().Insert(OnConnectionIconsSettingsChanged);
 		m_GameStatusIconsPanel.Show(g_Game.GetProfileOption(EDayZProfilesOptions.CONNECTIVITY_INFO));
-		//ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR)); //unreliable
+		//ShowQuickBar(g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() && g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR)); //unreliable
 	}
 	
 	void InitBadgesAndNotifiers()
@@ -345,7 +345,7 @@ class IngameHud extends Hud
 	
 	override void OnPlayerLoaded()
 	{
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		if (!player)
 			Error("OnPlayerLoaded: Cannot retreive player");
 	
@@ -696,12 +696,12 @@ class IngameHud extends Hud
  		m_StaminaBackground.SetSize(1 - percentage, sy);
 
 		// set health & blood values
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 		{
-			if (GetGame().GetPlayer())
+			if (g_Game.GetPlayer())
 			{
 				PlayerBase player;
-				Class.CastTo(player, GetGame().GetPlayer());
+				Class.CastTo(player, g_Game.GetPlayer());
 
 				if (player)
 				{
@@ -731,7 +731,7 @@ class IngameHud extends Hud
 	override void DisplayStance( int stance )
 	{
 		PlayerBase player;
-		Class.CastTo(player,  GetGame().GetPlayer() );
+		Class.CastTo(player,  g_Game.GetPlayer() );
 		Car car;
 		if ( !Class.CastTo(car, player.GetDrivingVehicle()) )
 		{
@@ -774,7 +774,7 @@ class IngameHud extends Hud
 	{
 		PlayerBase player;
 
-		if ( Class.CastTo(player, GetGame().GetPlayer()) )
+		if ( Class.CastTo(player, g_Game.GetPlayer()) )
 		{
 			int presence_level = player.GetNoisePresenceInAI();
 			m_PresenceLevel0.Show( false );
@@ -808,7 +808,7 @@ class IngameHud extends Hud
 		
 	override void ShowVehicleInfo()
 	{	
-		PlayerBase currentPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase currentPlayer = PlayerBase.Cast(g_Game.GetPlayer());
 		if (!currentPlayer)
 			return;
 		
@@ -840,7 +840,7 @@ class IngameHud extends Hud
 	
 	void RefreshVehicleHud(float timeslice)
 	{			
-		DayZPlayer currentPlayer = GetGame().GetPlayer();
+		DayZPlayer currentPlayer = g_Game.GetPlayer();
 		if (!currentPlayer)
 			return;
 			
@@ -878,7 +878,7 @@ class IngameHud extends Hud
 	override void UpdateQuickbarGlobalVisibility()
 	{
 		#ifdef PLATFORM_CONSOLE
-			ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+			ShowQuickBar(g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 		#else
 			ShowQuickBar(g_Game.GetProfileOption(EDayZProfilesOptions.QUICKBAR));
 		#endif
@@ -998,10 +998,10 @@ class IngameHud extends Hud
 				
 		if ( itemChanged )
 		{
-			UIManager manager = GetGame().GetUIManager();
+			UIManager manager = g_Game.GetUIManager();
 		
 			InventoryMenu inventory = InventoryMenu.Cast(manager.FindMenu( MENU_INVENTORY ));
-			MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+			MissionGameplay mission = MissionGameplay.Cast(g_Game.GetMission());
 			
 			if ( mission )
 			{
@@ -1028,7 +1028,7 @@ class IngameHud extends Hud
 	override void UpdateBloodName()
 	{
 		PlayerBase player;
-		Class.CastTo(player, GetGame().GetPlayer() );
+		Class.CastTo(player, g_Game.GetPlayer() );
 		
 		if( player )
 		{
@@ -1055,10 +1055,10 @@ class IngameHud extends Hud
 	
 	void RefreshPlayerTags()
 	{
-		if( GetGame().GetPlayer() )
+		if( g_Game.GetPlayer() )
 		{
 			bool found = false;
-			vector head_pos = GetGame().GetCurrentCameraPosition();
+			vector head_pos = g_Game.GetCurrentCameraPosition();
 			float distance;
 			foreach( Man player : ClientData.m_PlayerBaseList )
 			{
@@ -1067,11 +1067,11 @@ class IngameHud extends Hud
 				
 				target_player[1] = target_player[1] + 1.2;
 				
-				if( distance <= 15 && player != GetGame().GetPlayer() )
+				if( distance <= 15 && player != g_Game.GetPlayer() )
 				{
-					vector screen_pos = GetGame().GetScreenPosRelative( target_player );
-					vector end_pos = head_pos + GetGame().GetCurrentCameraDirection() * 25;
-					RaycastRVParams params = new RaycastRVParams( head_pos, end_pos, GetGame().GetPlayer(), 0 );
+					vector screen_pos = g_Game.GetScreenPosRelative( target_player );
+					vector end_pos = head_pos + g_Game.GetCurrentCameraDirection() * 25;
+					RaycastRVParams params = new RaycastRVParams( head_pos, end_pos, g_Game.GetPlayer(), 0 );
 					params.sorted = true;
 					
 					array<ref RaycastRVResult> results = new array<ref RaycastRVResult>;
@@ -1099,12 +1099,12 @@ class IngameHud extends Hud
 		{
 			if ( !m_PlayerTag )
 			{
-				m_PlayerTag = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/hud/hud_player_tag.layout");
+				m_PlayerTag = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/hud/hud_player_tag.layout");
 				m_PlayerTagText = TextWidget.Cast( m_PlayerTag.FindAnyWidget( "TagText" ) );
 			}
 			m_PlayerSpineIndex = m_CurrentTaggedPlayer.GetBoneIndex( "Spine2" );
 			vector player_pos = m_CurrentTaggedPlayer.GetBonePositionWS( m_PlayerSpineIndex );
-			vector screen_pos = GetGame().GetScreenPosRelative( player_pos );
+			vector screen_pos = g_Game.GetScreenPosRelative( player_pos );
 			
 			if ( screen_pos[2] > 0 )
 			{
@@ -1205,7 +1205,7 @@ class IngameHud extends Hud
 		
 		RefreshVehicleHud(timeslice);
 		
-		if (!m_HudVisibility.IsContextFlagActive(IngameHudVisibility.HUD_HIDE_FLAGS) && m_HeatBufferUI && m_HeatBufferUI.CanUpdate())
+		if (m_HeatBufferUI && m_HeatBufferUI.CanUpdate())
 			m_HeatBufferUI.Update(timeslice);
 
 		#ifdef PLATFORM_PS4

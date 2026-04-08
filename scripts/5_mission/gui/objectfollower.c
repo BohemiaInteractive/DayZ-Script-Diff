@@ -9,12 +9,12 @@ class ObjectFollower extends ScriptedWidgetEventHandler
 	void ObjectFollower()
 	{
 		m_Visible = false;
-		//GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
+		//g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
 	}
 	
 	void ~ObjectFollower()
 	{
-		//GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Remove(Update);
+		//g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Remove(Update);
 	}
 
 	protected void OnWidgetScriptInit(Widget w)
@@ -107,7 +107,7 @@ class ObjectFollower extends ScriptedWidgetEventHandler
 			}
 			else
 			{
-				vector screen_pos = GetGame().GetScreenPos( objectPos );
+				vector screen_pos = g_Game.GetScreenPos( objectPos );
 				x = screen_pos[0];
 				y = screen_pos[1];
 			}

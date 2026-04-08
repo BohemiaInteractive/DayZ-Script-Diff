@@ -11,6 +11,8 @@ class NerveAgent extends AgentBase
 		m_MaxCount 				= 500;
 		m_Potency 				= EStatLevels.CRITICAL;
 		m_DieOffSpeed 			= 0.1;
+		
+		m_DrugResistances.Set(EMedicalDrugsType.ANTIBIOTICS, 0.5);
 	}
 	
 

@@ -20,11 +20,11 @@ class PluginCameraTools extends PluginBase
 	{
 		if( !m_IsOpen )
 		{
-			GetGame().GetUIManager().EnterScriptedMenu( MENU_CAMERA_TOOLS, null );
+			g_Game.GetUIManager().EnterScriptedMenu( MENU_CAMERA_TOOLS, null );
 		}
 		else
 		{
-			GetGame().GetUIManager().Back();
+			g_Game.GetUIManager().Back();
 		}
 		m_IsOpen = !m_IsOpen;
 	}
@@ -34,8 +34,8 @@ class PluginCameraTools extends PluginBase
 	//===========================================
 	void CursorHide()
 	{
-		if( GetGame().GetUIManager().GetMenu() )
-			GetGame().GetUIManager().GetMenu().OnHide();
+		if( g_Game.GetUIManager().GetMenu() )
+			g_Game.GetUIManager().GetMenu().OnHide();
 	}
 	
 	//===========================================
@@ -43,31 +43,31 @@ class PluginCameraTools extends PluginBase
 	//===========================================
 	void CursorShow()
 	{
-		if( GetGame().GetUIManager().GetMenu() )
-			GetGame().GetUIManager().GetMenu().OnShow();
+		if( g_Game.GetUIManager().GetMenu() )
+			g_Game.GetUIManager().GetMenu().OnShow();
 	}
 	
 	void Save()
 	{
-		if( GetGame().GetUIManager().GetMenu() )
-			GetGame().GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_S );
+		if( g_Game.GetUIManager().GetMenu() )
+			g_Game.GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_S );
 	}
 	
 	void PlayPause()
 	{
-		if( GetGame().GetUIManager().GetMenu() )
-			GetGame().GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_P );
+		if( g_Game.GetUIManager().GetMenu() )
+			g_Game.GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_P );
 	}
 	
 	void AddKeyframe()
 	{
-		if( GetGame().GetUIManager().GetMenu() )
-			GetGame().GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_Q );
+		if( g_Game.GetUIManager().GetMenu() )
+			g_Game.GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_Q );
 	}
 	
 	void DeleteKeyframe()
 	{
-		if( GetGame().GetUIManager().GetMenu() )
-			GetGame().GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_E );
+		if( g_Game.GetUIManager().GetMenu() )
+			g_Game.GetUIManager().GetMenu().OnKeyPress( null, 0, 0, KeyCode.KC_E );
 	}
 }

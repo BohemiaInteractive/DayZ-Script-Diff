@@ -111,7 +111,7 @@ class ActionFillBottleBase: ActionContinuousBase
 		{
 			string surfaceType;
 			vector hit_pos = target.GetCursorHitPos();
-			GetGame().SurfaceGetType3D(hit_pos[0], hit_pos[1], hit_pos[2], surfaceType);
+			g_Game.SurfaceGetType3D(hit_pos[0], hit_pos[1], hit_pos[2], surfaceType);
 			if (surfaceType == "")
 			{
 				if ( hit_pos[1] <= g_Game.SurfaceGetSeaLevel() + 0.001 )

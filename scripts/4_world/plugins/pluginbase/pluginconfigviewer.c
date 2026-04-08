@@ -55,7 +55,7 @@ class PluginConfigViewer extends PluginBase
 		string class_path_without_config_class = GetOnlyChildPath( config_class_path, class_path );
 		
 		ref TStringArray full_path = new TStringArray;
-		GetGame().ConfigGetFullPath( config_class_path, full_path );
+		g_Game.ConfigGetFullPath( config_class_path, full_path );
 		
 		if ( full_path.Count() > 1 && class_path_without_config_class != "" )
 		{
@@ -98,7 +98,7 @@ class PluginConfigViewer extends PluginBase
 		else 
 		{
 			ref TStringArray full_path = new TStringArray;
-			GetGame().ConfigGetFullPath( config_class_path, full_path );
+			g_Game.ConfigGetFullPath( config_class_path, full_path );
 		
 			if ( full_path.Count() > 1 )
 			{
@@ -120,17 +120,17 @@ class PluginConfigViewer extends PluginBase
 			name = class_path.Substring(0, start );
 		}
 		
-		int cfg_class_count = GetGame().ConfigGetChildrenCount( config_class_path );
+		int cfg_class_count = g_Game.ConfigGetChildrenCount( config_class_path );
 		
 		for ( int i = 0; i < cfg_class_count; i++ )
 		{
 			string cfg_class_name = "";
-			GetGame().ConfigGetChildName( config_class_path, i, cfg_class_name );
+			g_Game.ConfigGetChildName( config_class_path, i, cfg_class_name );
 			
 			if ( cfg_class_name == name )
 			{
 				string full_name = config_class_path + " " + name;
-				int type = GetGame().ConfigGetType( full_name );
+				int type = g_Game.ConfigGetType( full_name );
 				
 				if ( type == CT_CLASS )
 				{
@@ -154,7 +154,7 @@ class PluginConfigViewer extends PluginBase
 	{
 		string tabs = MakeTabs( depth + 1 );
 		string child_path = path;
-		int count = GetGame().ConfigGetChildrenCount( child_path );
+		int count = g_Game.ConfigGetChildrenCount( child_path );
 		int i = 0;
 	  
 		bool name_printed = false;
@@ -164,7 +164,7 @@ class PluginConfigViewer extends PluginBase
 		for ( i = 0; i < count; i++ )
 		{
 			string child_name = "";
-			GetGame().ConfigGetChildName( child_path, i, child_name );
+			g_Game.ConfigGetChildName( child_path, i, child_name );
 			string c_child_path = child_path + " " + child_name;
 
 			string child_name_lower = child_name;
@@ -179,20 +179,20 @@ class PluginConfigViewer extends PluginBase
 				}
 				overridden.Insert( child_name_lower );
 					
-				int type = GetGame().ConfigGetType( c_child_path );
+				int type = g_Game.ConfigGetType( c_child_path );
 				
 				if ( type != CT_CLASS )
 				{
 					if ( type != CT_ARRAY )
 					{
-						result.Insert( "-" + tabs + "!" + child_name + " = " + GetGame().ConfigGetTextOut(c_child_path) );
+						result.Insert( "-" + tabs + "!" + child_name + " = " + g_Game.ConfigGetTextOut(c_child_path) );
 					}
 					else
 					{
 						result.Insert( "-" + tabs + "!" + child_name + "[] = {" );
 						
 						TStringArray strs = new TStringArray;
-						GetGame().ConfigGetTextArray( c_child_path, strs );
+						g_Game.ConfigGetTextArray( c_child_path, strs );
 						string tabs_array = MakeTabs( depth + 2 );
 						int j;
 						for ( j = 0; j < strs.Count(); j++ )
@@ -207,7 +207,7 @@ class PluginConfigViewer extends PluginBase
 				{
 					array<string> overridden_sub = new array<string>;
 					
-					if ( GetGame().ConfigGetChildrenCount(c_child_path) > 0 )
+					if ( g_Game.ConfigGetChildrenCount(c_child_path) > 0 )
 					{
 						TStringArray config1 = GetConfigRecursive( c_child_path, child_name, config_class_path, config_class, overridden_sub, depth + 1 );
 						result.InsertAll( config1 );
@@ -227,7 +227,7 @@ class PluginConfigViewer extends PluginBase
 					{
 						string base_class = "";
 					
-						GetGame().ConfigGetBaseName( cc_child_path, base_class );
+						g_Game.ConfigGetBaseName( cc_child_path, base_class );
 					
 						int start = c_config_class_path.Length() + 1;
 						int len = cc_child_path.Length();
@@ -283,7 +283,7 @@ class PluginConfigViewer extends PluginBase
 		if ( !check_base_class_of_class )
 		{
 			TStringArray full_path = new TStringArray;
-			GetGame().ConfigGetFullPath( child_path, full_path );
+			g_Game.ConfigGetFullPath( child_path, full_path );
 
 			if ( full_path.Count() > 1 )
 			{
@@ -294,7 +294,7 @@ class PluginConfigViewer extends PluginBase
 		else
 		{
 			string class_base_class = "";
-			GetGame().ConfigGetBaseName( child_path, class_base_class );
+			g_Game.ConfigGetBaseName( child_path, class_base_class );
 			
 			if ( class_base_class != "" )
 			{
@@ -504,12 +504,12 @@ class PluginConfigViewer extends PluginBase
 			}
 			else if ( filter_char == ":" )
 			{
-				int cnt_config = GetGame().ConfigGetChildrenCount( class_path );
+				int cnt_config = g_Game.ConfigGetChildrenCount( class_path );
 				
 				for ( i = 0; i < cnt_config; i++ )
 				{
 					string config_name = "";
-					GetGame().ConfigGetChildName( class_path, i, config_name );
+					g_Game.ConfigGetChildName( class_path, i, config_name );
 					filtered.Insert( config_name );
 				}
 				
@@ -545,7 +545,7 @@ class PluginConfigViewer extends PluginBase
 		{
 			//Print("checking for path:'" + adjustedPath +"'");
 			string baseClass = "";
-			run = GetGame().ConfigGetBaseName( adjustedPath, baseClass );
+			run = g_Game.ConfigGetBaseName( adjustedPath, baseClass );
 			if (baseClass)
 			{
 				TStringArray strs = new TStringArray;

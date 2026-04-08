@@ -22,7 +22,7 @@ class ComponentEntityDebug extends Component
 		
 		m_DebugShapeBBox = Debug.DrawBox(min_max[0], min_max[1]);
 		
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(OnDrawing, 0, true);
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(OnDrawing, 0, true);
 		
 		m_ThisEntityAI.SetEventMask(EntityEvent.FRAME);
 
@@ -53,7 +53,7 @@ class ComponentEntityDebug extends Component
 		
 		if ( !m_DebugShapeDirection && !m_DebugShapeBBox )
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(OnDrawing);
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).Remove(OnDrawing);
 		}
 	}
 
@@ -74,7 +74,7 @@ class ComponentEntityDebug extends Component
 		m_DebugShapeDirectionDist = distance;
 		m_DebugShapeDirection = Debug.DrawArrow(p1, p2);
 		
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(OnDrawing, 0, true);
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(OnDrawing, 0, true);
 		
 		m_ThisEntityAI.SetEventMask(EntityEvent.FRAME);
 		return null;
@@ -95,7 +95,7 @@ class ComponentEntityDebug extends Component
 		
 		if ( !m_DebugShapeDirection && !m_DebugShapeBBox )
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(OnDrawing);
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).Remove(OnDrawing);
 		}
 	}
 

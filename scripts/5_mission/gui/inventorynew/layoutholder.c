@@ -25,7 +25,7 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 	void OnSelectAction(ItemBase item, int actionId)
 	{
 		#ifdef DIAG_DEVELOPER 
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase m_player = PlayerBase.Cast( g_Game.GetPlayer() );
 		m_player.GetActionManager().OnInstantAction(ActionDebug,new Param2<ItemBase,int>(item,actionId));
 		#endif
 	}
@@ -33,18 +33,18 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 	void OnSelectActionEx(EntityAI item, int actionId)
 	{
 		#ifdef DIAG_DEVELOPER 
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase m_player = PlayerBase.Cast( g_Game.GetPlayer() );
 		m_player.GetActionManager().OnInstantAction(ActionDebug,new Param2<EntityAI,int>(item,actionId));
 		#endif
 	}
 	
 	void ShowActionMenu(InventoryItem item)
 	{
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase m_player = PlayerBase.Cast( g_Game.GetPlayer() );
 		HideOwnedTooltip();
 		m_am_entity1 = item;
 		m_am_entity2 = null;
-		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
+		ContextMenu cmenu = ContextMenu.Cast(g_Game.GetUIManager().GetMenu().GetContextMenu());
 
 		cmenu.Hide();
 		cmenu.Clear();
@@ -98,7 +98,7 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 		
 		if ( m_LayoutName != "" )
 		{
-			m_MainWidget = GetGame().GetWorkspace().CreateWidgets( m_LayoutName, null, false );
+			m_MainWidget = g_Game.GetWorkspace().CreateWidgets( m_LayoutName, null, false );
 			m_MainWidget.Show( true, false );
 		}
 		
@@ -206,12 +206,13 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 	
 	void InspectItem( EntityAI item )
 	{
-		InventoryMenu menu = InventoryMenu.Cast( GetGame().GetUIManager().FindMenu(MENU_INVENTORY) );
+		InventoryMenu menu = InventoryMenu.Cast( g_Game.GetUIManager().FindMenu(MENU_INVENTORY) );
 		InspectMenuNew inspect_menu = InspectMenuNew.Cast( menu.EnterScriptedMenu(MENU_INSPECT) );
 		if ( inspect_menu )
 		{
-			GetGame().GetMission().GetHud().ShowHudUI( false );
-			GetGame().GetMission().GetHud().ShowQuickbarUI( false );
+			Hud hud = g_Game.GetMission().GetHud();
+			hud.ShowHudUI( false );
+			hud.ShowQuickbarUI( false );
 			inspect_menu.SetItem( item );
 		}
 	}

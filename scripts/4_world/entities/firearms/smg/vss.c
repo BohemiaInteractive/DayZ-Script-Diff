@@ -11,6 +11,7 @@ class VSS_Base : RifleBoltFree_Base
 		if ( Class.CastTo(entity, this) )
 		{
 			entity.GetInventory().CreateInInventory( "PSO1Optic" );	
+			entity.GetInventory().CreateInInventory( "Battery9V" );
 			SpawnAttachedMagazine("Mag_Vikhr_30Rnd");
 		}
 	}

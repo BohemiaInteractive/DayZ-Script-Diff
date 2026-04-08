@@ -35,7 +35,7 @@ class ControlsXbox extends UIScriptedMenu
 	
 	void Back()
 	{
-		GetGame().GetUIManager().Back();
+		g_Game.GetUIManager().Back();
 	}
 	
 	void DrawConnectingLines(int index)
@@ -105,11 +105,15 @@ class ControlsXbox extends UIScriptedMenu
 		
 		Widget controls_image;
 		// hide all button markers
+		#ifdef PLATFORM_MSSTORE
+		controls_image = layoutRoot.FindAnyWidget("XboxControlsImage");
+		#else
 		#ifdef PLATFORM_XBOX
 		controls_image = layoutRoot.FindAnyWidget("XboxControlsImage");
 		#else
 		#ifdef PLATFORM_PS4
 		controls_image = layoutRoot.FindAnyWidget("PSControlsImage");
+		#endif
 		#endif
 		#endif
 		
@@ -132,11 +136,15 @@ class ControlsXbox extends UIScriptedMenu
 				TextWidget text_widget = TextWidget.Cast(panel_widget.FindAnyWidget("TextWidget" + l));
 
 				string key_prefix;
+				#ifdef PLATFORM_MSSTORE
+				key_prefix = "xb_button_marker_";
+				#else
 				#ifdef PLATFORM_XBOX
 				key_prefix = "xb_button_marker_";
 				#else
 				#ifdef PLATFORM_PS4
 				key_prefix = "ps_button_marker_";
+				#endif
 				#endif
 				#endif
 
@@ -185,11 +193,16 @@ class ControlsXbox extends UIScriptedMenu
 			
 			ref array<int> element = button_marker_groups.GetElement(l);
 			string key_name = button_marker_groups.GetKey(l);
+			
+			#ifdef PLATFORM_MSSTORE
+			key_prefix = "xb_button_marker_";
+			#else
 			#ifdef PLATFORM_XBOX
 			key_prefix = "xb_button_marker_";
 			#else
 			#ifdef PLATFORM_PS4
 			key_prefix = "ps_button_marker_";
+			#endif
 			#endif
 			#endif
 			button_marker_widget = layoutRoot.FindAnyWidget(key_prefix + key_name);
@@ -309,7 +322,7 @@ class ControlsXbox extends UIScriptedMenu
 	//============================================
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/xbox/control_mapping_info_screen.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/xbox/control_mapping_info_screen.layout");
 		
 		layoutRoot.FindAnyWidget("Tabber").GetScript(m_TabScript);
 		
@@ -350,13 +363,13 @@ class ControlsXbox extends UIScriptedMenu
 	{
 		super.OnShow();
 		#ifdef PLATFORM_CONSOLE
-		//layoutRoot.FindAnyWidget("toolbar_bg").Show(!GetGame().GetInput().IsEnabledMouseAndKeyboard());
+		//layoutRoot.FindAnyWidget("toolbar_bg").Show(!g_Game.GetInput().IsEnabledMouseAndKeyboard());
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(true);//TODO: temporarily always on for preset switching
 		
 		string preset_text;
 		UAInputAPI inputAPI = GetUApi();
 		TextWidget nameWidget;
-		if (Class.CastTo(nameWidget,layoutRoot.FindAnyWidget("PresetText")));
+		if (Class.CastTo(nameWidget,layoutRoot.FindAnyWidget("PresetText")))
 		{
 			preset_text = inputAPI.PresetName(inputAPI.PresetCurrent());
 			nameWidget.SetText(preset_text);
@@ -440,8 +453,8 @@ class ControlsXbox extends UIScriptedMenu
 			nameWidget.SetText(preset_text);
 		}
 		
-		GetGame().GetInput().SetProfile(index);		
+		g_Game.GetInput().SetProfile(index);		
 		GetUApi().Export();
-		GetGame().GetMission().GetOnInputPresetChanged().Invoke();
+		g_Game.GetMission().GetOnInputPresetChanged().Invoke();
 	}
 }

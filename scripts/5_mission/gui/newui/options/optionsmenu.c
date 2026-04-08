@@ -24,6 +24,11 @@ class OptionsMenu extends UIScriptedMenu
 	protected bool 						m_CanApplyOrReset;
 	protected bool 						m_CanToggle;
 	
+	#ifdef PLATFORM_MSSTORE
+	protected ButtonWidget					m_GamepadControls;
+	protected ButtonWidget					m_KeyboardBindings;
+	#endif
+	
 	void OptionsMenu()
 	{
 		
@@ -33,16 +38,20 @@ class OptionsMenu extends UIScriptedMenu
 	{
 		m_Options		= new GameOptions();
 		
-		#ifdef PLATFORM_XBOX
-		layoutRoot		= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/xbox/options_menu.layout", null);
+		#ifdef PLATFORM_MSSTORE
+			layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/msstore/options_menu.layout", null);
 		#else
-		#ifdef PLATFORM_PS4
-		layoutRoot		= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/ps/options_menu.layout", null);
-		#else
-		#ifdef PLATFORM_WINDOWS
-		layoutRoot		= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/pc/options_menu.layout", null);
-		#endif
-		#endif
+			#ifdef PLATFORM_XBOX
+				layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/xbox/options_menu.layout", null);
+			#else
+				#ifdef PLATFORM_PS4
+					layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/ps/options_menu.layout", null);
+				#else
+					#ifdef PLATFORM_WINDOWS
+						layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/pc/options_menu.layout", null);
+					#endif
+				#endif
+			#endif
 		#endif
 		
 		layoutRoot.FindAnyWidget("Tabber").GetScript(m_Tabber);
@@ -53,11 +62,18 @@ class OptionsMenu extends UIScriptedMenu
 		m_GameTab		= new OptionsMenuGame(layoutRoot.FindAnyWidget("Tab_0"), m_Details, m_Options, this);
 		m_SoundsTab		= new OptionsMenuSounds(layoutRoot.FindAnyWidget("Tab_1"), m_Details, m_Options, this);
 		
-		#ifdef PLATFORM_XBOX
-		m_ControlsTab	= new OptionsMenuControls(layoutRoot.FindAnyWidget("Tab_2"), m_Details, m_Options, this);
+		#ifdef PLATFORM_MSSTORE
+			m_VideoTab		= new OptionsMenuVideo(layoutRoot.FindAnyWidget("Tab_2"), m_Details, m_Options, this);
+			m_ControlsTab	= new OptionsMenuControls(layoutRoot.FindAnyWidget("Tab_3"), m_Details, m_Options, this);
+			m_GamepadControls = ButtonWidget.Cast(layoutRoot.FindAnyWidget("gamepad_controls"));
+			m_KeyboardBindings = ButtonWidget.Cast(layoutRoot.FindAnyWidget("keyboard_bindings"));
 		#else
-		m_VideoTab		= new OptionsMenuVideo(layoutRoot.FindAnyWidget("Tab_2"), m_Details, m_Options, this);
-		m_ControlsTab	= new OptionsMenuControls(layoutRoot.FindAnyWidget("Tab_3"), m_Details, m_Options, this);
+			#ifdef PLATFORM_XBOX
+				m_ControlsTab	= new OptionsMenuControls(layoutRoot.FindAnyWidget("Tab_2"), m_Details, m_Options, this);
+			#else
+				m_VideoTab		= new OptionsMenuVideo(layoutRoot.FindAnyWidget("Tab_2"), m_Details, m_Options, this);
+				m_ControlsTab	= new OptionsMenuControls(layoutRoot.FindAnyWidget("Tab_3"), m_Details, m_Options, this);
+			#endif
 		#endif
 		
 		m_Apply			= ButtonWidget.Cast(layoutRoot.FindAnyWidget("apply"));
@@ -70,7 +86,7 @@ class OptionsMenu extends UIScriptedMenu
 		m_CanToggle = false;
 		
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
@@ -87,8 +103,8 @@ class OptionsMenu extends UIScriptedMenu
 		m_Tabber.m_OnTabSwitch.Insert(OnTabSwitch);
 		m_Tabber.m_OnAttemptTabSwitch.Insert(OnAttemptTabSwitch);
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		OnChanged();
 		
 		return layoutRoot;
@@ -108,22 +124,22 @@ class OptionsMenu extends UIScriptedMenu
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
 		#ifdef PLATFORM_CONSOLE
-		bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
-		bool mkServer = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		bool mk = g_Game.GetInput().IsEnabledMouseAndKeyboard();
+		bool mkServer = g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
 		
 		switch (pInputDeviceType)
 		{
 		case EInputDeviceType.CONTROLLER:
 			if (mk && mkServer)
 			{
-				GetGame().GetUIManager().ShowUICursor(false);
+				g_Game.GetUIManager().ShowUICursor(false);
 			}
 		break;
 
 		default:
 			if (mk && mkServer)
 			{
-				GetGame().GetUIManager().ShowUICursor(true);
+				g_Game.GetUIManager().ShowUICursor(true);
 			}
 		break;
 		}
@@ -138,6 +154,20 @@ class OptionsMenu extends UIScriptedMenu
 		{
 			switch (w)
 			{
+				#ifdef PLATFORM_MSSTORE
+				case m_GamepadControls:
+				{
+					EnterScriptedMenu(MENU_XBOX_CONTROLS);
+					return true;
+				}
+
+				case m_KeyboardBindings:
+				{
+					EnterScriptedMenu( MENU_KEYBINDINGS );
+					return true;
+				}
+				#endif
+
 				case m_Apply:
 				{
 					Apply();
@@ -219,7 +249,7 @@ class OptionsMenu extends UIScriptedMenu
 		// save input configuration
 		GetUApi().Export();
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard()) //useless on consoles
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard()) //useless on consoles
 		{
 			m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
 			ColorDisable(m_Apply);
@@ -233,9 +263,9 @@ class OptionsMenu extends UIScriptedMenu
 		UpdateControlsElementVisibility();
 		
 		IngameHud hud;
-		if (GetGame().GetMission() && Class.CastTo(hud,GetGame().GetMission().GetHud()))
+		if (g_Game.GetMission() && Class.CastTo(hud,g_Game.GetMission().GetHud()))
 		{
-			hud.ShowQuickBar(GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+			hud.ShowQuickBar(g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 		}
 		#endif
 		
@@ -257,8 +287,8 @@ class OptionsMenu extends UIScriptedMenu
 			else
 			{
 				m_Options.Revert();
-				GetGame().EndOptionsVideo();
-				GetGame().GetUIManager().Back();
+				g_Game.EndOptionsVideo();
+				g_Game.GetUIManager().Back();
 			}
 		}
 	}
@@ -299,7 +329,7 @@ class OptionsMenu extends UIScriptedMenu
 	{
 		bool changed = IsAnyTabChanged();
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 		{
 			if (changed)
 			{
@@ -340,7 +370,7 @@ class OptionsMenu extends UIScriptedMenu
 		if (m_Options.IsChanged())
 			m_Options.Revert();
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 		{
 			m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
 			ColorDisable(m_Apply);
@@ -397,7 +427,7 @@ class OptionsMenu extends UIScriptedMenu
 			m_Options.Revert();
 		}
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 		{
 			m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
 			ColorDisable(m_Apply);
@@ -419,6 +449,34 @@ class OptionsMenu extends UIScriptedMenu
 		if (!g_Game.GetUIManager().IsDialogVisible() && !g_Game.GetUIManager().IsModalVisible())
 		{
 			g_Game.GetUIManager().ShowDialog("#menu_default_cap", "TODO - reset options to default", MODAL_ID_DEFAULT, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
+		}
+	}
+
+	void FocusLastActiveTab()
+	{
+		switch (m_ActiveTabIdx)
+		{
+			case 0:
+				m_GameTab.Focus();
+				break;
+
+			case 1:
+				m_SoundsTab.Focus();
+				break;
+
+			case 2:
+				#ifdef PLATFORM_XBOX
+				m_ControlsTab.Focus();
+				#else
+				m_VideoTab.Focus();
+				#endif
+				break;
+
+			case 3:
+				#ifndef PLATFORM_XBOX
+				m_ControlsTab.Focus();
+				#endif
+				break;
 		}
 	}
 	
@@ -449,7 +507,7 @@ class OptionsMenu extends UIScriptedMenu
 				break;
 		}
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 		{
 			m_Reset.ClearFlags(WidgetFlags.IGNOREPOINTER);
 			ColorNormal(m_Reset);
@@ -525,8 +583,8 @@ class OptionsMenu extends UIScriptedMenu
 			if (result == 2)
 			{
 				m_Options.Revert();
-				GetGame().EndOptionsVideo();
-				GetGame().GetUIManager().Back();
+				g_Game.EndOptionsVideo();
+				g_Game.GetUIManager().Back();
 			}
 			ret = true;
 		}
@@ -618,7 +676,7 @@ class OptionsMenu extends UIScriptedMenu
 	override void Refresh()
 	{
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
@@ -628,7 +686,7 @@ class OptionsMenu extends UIScriptedMenu
 		m_Version.SetText(version);
 		
 		#ifdef PLATFORM_CONSOLE
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 		UpdateControlsElementVisibility();
 		#endif
 	}
@@ -636,7 +694,13 @@ class OptionsMenu extends UIScriptedMenu
 	override void OnShow()
 	{
 		super.OnShow();
+		#ifdef PLATFORM_MSSTORE
+	 	// MSStore: When going back from keybindings/gamepad controls, game tab somehow gained focus.
+		// Focus last active tab
+		FocusLastActiveTab();
+		#else
 		m_GameTab.Focus();
+		#endif
 		Refresh();
 	}
 	
@@ -842,15 +906,6 @@ class OptionsMenu extends UIScriptedMenu
 		}
 		text += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		toolbar_text.SetText(text);
-		
-		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
-		RichTextWidget toolbar_x2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ApplyIcon0"));
-		RichTextWidget toolbar_y2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("ResetIcon0"));
-		RichTextWidget toolbar_def2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("DefaultIcon0"));
-		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_x2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlX", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_y2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "", EUAINPUT_DEVICE_CONTROLLER));
-		toolbar_def2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "", EUAINPUT_DEVICE_CONTROLLER));
 		#endif
 	}
 	
@@ -858,7 +913,7 @@ class OptionsMenu extends UIScriptedMenu
 	{
 		bool toolbarShow = false;
 		#ifdef PLATFORM_CONSOLE
-		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		toolbarShow = !g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
 		#endif
 		
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);

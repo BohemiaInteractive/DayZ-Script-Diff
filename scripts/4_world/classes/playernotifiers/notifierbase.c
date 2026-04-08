@@ -1,6 +1,5 @@
 class NotifierBase
 {
-	
 	float				m_DeltaT; // time in seconds since the last tick
 	ref Timer 			m_Timer1; // timer which can be used for whatever
 	PlayerBase			m_Player; //the player this Notifier belongs to
@@ -32,7 +31,19 @@ class NotifierBase
 
 	bool IsTimeToTick(int current_time)
 	{
-		return (current_time > m_TickIntervalLastTick + m_TickInterval);
+		int tickTime = (m_TickIntervalLastTick + m_TickInterval);
+		bool tick = (current_time >= tickTime);
+		#ifdef DIAG_NOTIFIER_LOGS
+		ErrorEx(string.Format("Tick time for notifier %1 is %2 | Current time= %3.", this, tickTime, current_time), ErrorExSeverity.INFO);
+		if (tick)
+		{
+			float timePassed = (current_time - m_TickIntervalLastTick) / 1000.0;
+			float expectedInterval = m_TickInterval / 1000.0;
+			float drift = (current_time - tickTime) / 1000.0;
+			ErrorEx(string.Format("Notifier %1 updated after %2s (expected: %3s, drift: +%4s)", this, timePassed, expectedInterval, drift), ErrorExSeverity.INFO);
+		}
+		#endif
+		return tick;
 	}
 
 	VirtualHud GetVirtualHud()
@@ -59,9 +70,7 @@ class NotifierBase
 	{
 		m_Active = state;
 		if (!state)
-			HideBadge();
-
-		
+			HideBadge();		
 	}
 
 	void DisplayTendency(float delta);
@@ -69,7 +78,7 @@ class NotifierBase
 	void AddToCyclicBuffer(float value)//for tendency
 	{
 		m_TendencyBuffer[m_TendencyBufferWriteIterator] = value;
-		m_TendencyBufferWriteIterator++;
+		++m_TendencyBufferWriteIterator;
 		if (m_TendencyBufferWriteIterator == m_TendencyBufferSize)
 		{
 			m_TendencyBufferWriteIterator = 0;
@@ -91,17 +100,17 @@ class NotifierBase
 	float GetDeltaAvaraged() //for tendency
 	{
 		array<float> values = new array<float>();
-		for (int i = 0; i < m_TendencyBufferSize; i++)
+		for (int i = 0; i < m_TendencyBufferSize; ++i)
 		{
 			values.Insert(ReadFromCyclicBuffer(i));
 		}
 		
 		float valuesSum = 0;
 
-		for (i = 0; i < values.Count(); i++)
+		int nValues = values.Count();
+		for (i = 0; i < nValues; ++i)
 		{
-			float value = values.Get(i);
-			valuesSum += value;
+			valuesSum += values.Get(i);
 		}
 		
 		float sma = valuesSum / m_TendencyBufferSize;
@@ -121,7 +130,8 @@ class NotifierBase
 	{
 		float value1;
 		float value2;
-		for (int i = 0; i < values.Count() - 1; i++)
+		int nValues = values.Count();
+		for (int i = 0; i < nValues - 1; i++)
 		{
 			value1 = values.Get(i);
 			value2 = values.Get(i + 1);
@@ -130,37 +140,44 @@ class NotifierBase
 			values.Set(i + 1, average);
 		}
 
-		int index = values.Count() - 1;
+		int index = nValues - 1;
 		values.Set(index, value2);
 	}
 
-	void OnTick(float current_time)
+	void OnTick(float current_Time)
 	{
-		m_TickIntervalLastTick = current_time;
+		OnTick((int)current_Time);
+	}
+	
+	void OnTick(int currentTime)
+	{
+		#ifdef DIAG_NOTIFIER_LOGS
+		ErrorEx(string.Format("Set last tick interval time on notifier %1 | Time= %2.", m_TickIntervalLastTick, currentTime), ErrorExSeverity.INFO);
+		#endif	
+		m_TickIntervalLastTick = currentTime;
 		
 		DisplayBadge();
 		AddToCyclicBuffer(GetObservedValue());
 
 		if (m_ShowTendency)
 			DisplayTendency(GetDeltaAvaraged());
-
 	}
 	
 	protected int CalculateTendency(float delta, float inctresholdlow, float inctresholdmed, float inctresholdhigh, float dectresholdlow, float dectresholdmed, float dectresholdhigh)
 	{                                        	
 		int tendency = TENDENCY_STABLE;
-		if (delta > inctresholdlow)
-			tendency = TENDENCY_INC_LOW;
-		if (delta > inctresholdmed)
-			tendency = TENDENCY_INC_MED;
 		if (delta > inctresholdhigh)
 			tendency = TENDENCY_INC_HIGH;	
-		if (delta < dectresholdlow)
-			tendency = TENDENCY_DEC_LOW;
-		if (delta < dectresholdmed)
+		else if (delta > inctresholdmed)
+			tendency = TENDENCY_INC_MED;
+		else if (delta > inctresholdlow)
+			tendency = TENDENCY_INC_LOW;
+		else if (delta < dectresholdhigh)
+			tendency = TENDENCY_DEC_HIGH;		
+		else if (delta < dectresholdmed)
 			tendency = TENDENCY_DEC_MED;
-		if (delta < dectresholdhigh)
-			tendency = TENDENCY_DEC_HIGH;
+		else if (delta < dectresholdlow)
+			tendency = TENDENCY_DEC_LOW;
 
 		return tendency;
 	}
@@ -169,12 +186,12 @@ class NotifierBase
 	protected eBadgeLevel DetermineBadgeLevel(float value, float lvl_1, float lvl_2, float lvl_3)
 	{
 		eBadgeLevel level = eBadgeLevel.NONE;
-		if (value >= lvl_1)
-			level = eBadgeLevel.FIRST;
-		if (value >= lvl_2)
-			level = eBadgeLevel.SECOND;
 		if (value >= lvl_3)
 			level = eBadgeLevel.THIRD;
+		else if (value >= lvl_2)
+			level = eBadgeLevel.SECOND;
+		else if (value >= lvl_1)
+			level = eBadgeLevel.FIRST;
 
 		return 	level;
 	}

@@ -42,9 +42,6 @@ class Land_WarheadStorage_Main : House
 		RegisterNetSyncVariableInt("m_IsLowEnergy");
 		
 		Land_WarheadStorage_PowerStation.RegisterBunker(this);
-		#ifndef SERVER
-		SpawnTriggers(5);
-		#endif
 	}
 	
 	void ~Land_WarheadStorage_Main()
@@ -60,16 +57,19 @@ class Land_WarheadStorage_Main : House
 		
 	override void DeferredInit()
 	{
-		GetGame().RegisterNetworkStaticObject(this);
+		g_Game.RegisterNetworkStaticObject(this);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			UpdateDoorStateServer();	// init closed state - code randomization? of opened state messes with doors in general
 			for (int i = 0; i < 12; i++)
 			{
 				if (IsBunkerDoor(i))
 					AutoCloseDoor(i);
+				
 			}
+
+			JsonUndergroundTriggers.SpawnParentedTriggers(this);
 		}
 	}
 	
@@ -174,6 +174,41 @@ class Land_WarheadStorage_Main : House
 			}
 		}
 		#endif
+	}
+	
+	override void OnSpawnByObjectSpawner(ITEM_SpawnerObject item)
+	{
+		super.OnSpawnByObjectSpawner(item);
+		
+		if (item.customString == string.Empty)
+			return;
+		
+		JsonUndergroundTriggers jsonData = UndergroundAreaLoader.GetData();
+		if (jsonData && jsonData.Triggers)
+		{
+			foreach (int index, auto triggerData : jsonData.Triggers)
+			{
+				if (triggerData.CustomSpawn)
+				{
+					//JSON: "customString": "undergroundTriggerTag=TAG_NAME"
+					TStringArray customStringData = new TStringArray();
+					item.customString.Split(";", customStringData);
+					
+					foreach (string entry : customStringData)
+					{
+						TStringArray optionValuePair = new TStringArray();
+						entry.Split("=", optionValuePair);
+						if (optionValuePair[0] == "undergroundTriggerTag")
+						{
+							if (optionValuePair[1] == triggerData.Tag)
+							{
+								JsonUndergroundTriggers.SpawnTriggerCarrier(this, index, triggerData);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	protected void RemoveDoorTimer(int doorIndex)
@@ -362,70 +397,12 @@ class Land_WarheadStorage_Main : House
 		
 		return super.CanDoorBeClosed(doorIndex);
 	}
-	
-	protected array<ref UndergroundBunkerTriggerData> GetTriggersData(int count)
-	{
-		array<ref UndergroundBunkerTriggerData> dataArr = new array<ref UndergroundBunkerTriggerData>();
-		//memory point naming start at 1
-		for (int i = 1; i < count + 1; ++i)
-		{
-			UndergroundBunkerTriggerData data = new UndergroundBunkerTriggerData();
-			string memoryPointNameMin = "darkness_" +i+"_min";
-			string memoryPointNameMax = "darkness_" +i+"_max";
-			vector memPosMin = GetMemoryPointPos(memoryPointNameMin);
-			vector memPosMax = GetMemoryPointPos(memoryPointNameMax);
-			vector triggerSize = memPosMax - memPosMin;
-			vector triggerPosLocal = memPosMin + (triggerSize * 0.5);
-			EUndergroundTriggerType type = EUndergroundTriggerType.INNER;
-			string linkedDoorSelection = "";
-			if (i == 4)
-			{
-				type = EUndergroundTriggerType.TRANSITIONING;
-				linkedDoorSelection = MAIN_DOOR_SELECTION1;
-			}
-			else if (i == 5)
-			{
-				type = EUndergroundTriggerType.TRANSITIONING;
-				linkedDoorSelection = MAIN_DOOR_SELECTION2;
-			}
-			
-			data.m_Position = triggerPosLocal;
-			data.m_Size = triggerSize;
-			data.m_Type = type;
-			data.m_LinkedDoorSelection = linkedDoorSelection;
-			
-			dataArr.Insert(data);
-		}
-		return dataArr;
-	}
 
-	protected void SpawnTriggers(int count)
-	{
-		array<ref UndergroundBunkerTriggerData> dataArr 	= GetTriggersData(count);
-		
-		foreach (UndergroundBunkerTriggerData data:dataArr)
-		{
-			//Debug.DrawSphere(pos , 0.1,Colors.GREEN, ShapeFlags.NOZBUFFER);
-			UndergroundBunkerTrigger trigger = UndergroundBunkerTrigger.Cast(GetGame().CreateObjectEx(WARHEAD_BUNKER_TRIGGER, data.m_Position, ECE_LOCAL ));
-			if (trigger)
-			{
-				vector extMax = data.m_Size * 0.5;
-				vector extMin = -extMax;
-				#ifdef DIAG_DEVELOPER
-				trigger.m_Local = true;
-				#endif
-				AddChild(trigger,-1);
-				trigger.SetExtents(extMin, extMax);
-				trigger.Init(data);
-			}
-		}
-	}
-	
 	override string GetDebugText()
 	{
 		string debug_output;
 		
-		if( GetGame().IsServer())
+		if( g_Game.IsServer())
 		{
 			debug_output = "IsDoorOpen(4) " + IsDoorOpen(4)+ "\n";
 			debug_output +=  "IsDoorOpen(5) " + IsDoorOpen(5)+ "\n";

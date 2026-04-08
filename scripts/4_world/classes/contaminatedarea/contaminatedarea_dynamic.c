@@ -53,7 +53,7 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 			vector closestPoint = areaPos;
 			
 			// play artillery sound, sent to be played for everyone on server
-			array<vector> artilleryPoints = GetGame().GetMission().GetWorldData().GetArtyFiringPos();
+			array<vector> artilleryPoints = g_Game.GetMission().GetWorldData().GetArtyFiringPos();
 			int index = 0;
 			foreach (int i, vector artilleryPoint : artilleryPoints)
 			{
@@ -77,7 +77,7 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 			array<ref Param> params = new array<ref Param>();
 			// We send the message with this set of coords
 			params.Insert(pos);
-			GetGame().RPC(null, ERPCs.RPC_SOUND_ARTILLERY_SINGLE, params, true);
+			g_Game.RPC(null, ERPCs.RPC_SOUND_ARTILLERY_SINGLE, params, true);
 			
 			m_FXTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
 			m_FXTimer.Run(delay, this, "PlayFX");	
@@ -138,8 +138,6 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 	
 	override void DeferredInit()
 	{
-		super.DeferredInit();
-
 		// We make sure we have the particle array
 		if (!m_ToxicClouds)
 			m_ToxicClouds = new array<Particle>();
@@ -154,9 +152,9 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 		if (m_DecayState == eAreaDecayStage.INIT)
 			PlayFlareVFX();
 		
-		if ( m_DecayState == eAreaDecayStage.LIVE )
+		if (m_DecayState >= eAreaDecayStage.LIVE)
 			InitZone(); // If it has already been created, we simply do the normal setup, no cool effects, force the LIVE state
-		
+
 		super.DeferredInit();
 	}
 	
@@ -182,9 +180,9 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 				vector mat[4];
 				Math3D.MatrixIdentity4(mat);
 				mat[3] = spawnPos;
-				il.SetGround(NULL, mat);
+				il.SetGround(null, mat);
 				//Print("Spawning item:"+ type + " at position:" + il.GetPos());
-				GetGame().CreateObjectEx(type, il.GetPos(), ECE_PLACE_ON_SURFACE);
+				g_Game.CreateObjectEx(type, il.GetPos(), ECE_PLACE_ON_SURFACE);
 			}
 		}
 	}
@@ -204,7 +202,7 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 	
 	void PlayFX()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			Param1<vector> pos = new Param1<vector>(vector.Zero); 	// The value to be sent through RPC
 			array<ref Param> params = new array<ref Param>(); 		// The RPC params
@@ -212,7 +210,7 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 			// We send the message with this set of coords
 			pos.param1 = m_OffsetPos;
 			params.Insert(pos);
-			GetGame().RPC(null, ERPCs.RPC_SOUND_CONTAMINATION, params, true);
+			g_Game.RPC(null, ERPCs.RPC_SOUND_CONTAMINATION, params, true);
 			
 			// We go to the next stage
 			SetDecayState(eAreaDecayStage.START);
@@ -227,10 +225,10 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 	
 	void PlayFlareVFX()
 	{
-		if ( GetGame().IsClient() || ( GetGame().IsServer() && !GetGame().IsMultiplayer() ) )
+		if ( g_Game.IsClient() || ( g_Game.IsServer() && !g_Game.IsMultiplayer() ) )
 		{
 			// We spawn locally the dummy object which will be used to move and manage the particle
-			DynamicArea_Flare dummy = DynamicArea_Flare.Cast( GetGame().CreateObjectEx( "DynamicArea_Flare", m_OffsetPos, ECE_SETUP | ECE_LOCAL ) );
+			DynamicArea_Flare dummy = DynamicArea_Flare.Cast( g_Game.CreateObjectEx( "DynamicArea_Flare", m_OffsetPos, ECE_SETUP | ECE_LOCAL ) );
 			
 			// We add some light to reinforce the effect
 			m_FlareLight = FlareLightContamination.Cast(ScriptedLightBase.CreateLight( FlareLightContamination, m_OffsetPos ));

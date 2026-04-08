@@ -68,9 +68,9 @@ class ActionDigWorms: ActionContinuousBase
 			MiscGameplayFunctions.GetHeadBonePos(action_data.m_Player,posHead);
 			vector posRandom = MiscGameplayFunctions.GetRandomizedPositionVerified(posHead,action_data.m_Target.GetCursorHitPos(),UAItemsSpreadRadius.NARROW,action_data.m_Player);
 			
-			GetGame().CreateObjectEx("Worm", posRandom, ECE_PLACE_ON_SURFACE);
+			g_Game.CreateObjectEx("Worm", posRandom, ECE_PLACE_ON_SURFACE);
 			*/
-			GetGame().CreateObjectEx("Worm", action_data.m_Target.GetCursorHitPos(), ECE_PLACE_ON_SURFACE);
+			g_Game.CreateObjectEx("Worm", action_data.m_Target.GetCursorHitPos(), ECE_PLACE_ON_SURFACE);
 		}
 		
 		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 4);
@@ -84,9 +84,9 @@ class ActionDigWorms: ActionContinuousBase
 			vector position;
 			position = target.GetCursorHitPos();
 			
-			GetGame().SurfaceGetType(position[0], position[2], surface_type);
+			g_Game.SurfaceGetType(position[0], position[2], surface_type);
 			
-			if (GetGame().IsSurfaceFertile(surface_type))
+			if (g_Game.IsSurfaceFertile(surface_type))
 			{
 				return true;
 			}
@@ -98,7 +98,7 @@ class ActionDigWorms: ActionContinuousBase
 	bool IsPlayerOnGround(PlayerBase player)
 	{
 		vector position = player.GetPosition();
-		float heightDiff = GetGame().SurfaceY(position[0], position[2]);
+		float heightDiff = g_Game.SurfaceY(position[0], position[2]);
 		heightDiff = position[1] - heightDiff;
 		
 		return heightDiff <= 0.4; // Player is considered on ground

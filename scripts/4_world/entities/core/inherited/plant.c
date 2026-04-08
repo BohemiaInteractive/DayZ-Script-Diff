@@ -18,7 +18,7 @@ class TreeHard : PlantSuper
 {
 	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
-		GetGame().RPCSingleParam(cutting_entity, PlantType.TREE_HARD, null, true);
+		g_Game.RPCSingleParam(cutting_entity, PlantType.TREE_HARD, null, true);
 	}
 	
 	override bool IsTree()
@@ -43,7 +43,7 @@ class TreeSoft : PlantSuper
 {
 	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
-		GetGame().RPCSingleParam(cutting_entity, PlantType.TREE_SOFT, null, true);
+		g_Game.RPCSingleParam(cutting_entity, PlantType.TREE_SOFT, null, true);
 	}
 	
 	override bool IsTree()
@@ -70,7 +70,7 @@ class BushHard : PlantSuper
 	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
 	
-		GetGame().RPCSingleParam(cutting_entity, PlantType.BUSH_HARD, null, true);
+		g_Game.RPCSingleParam(cutting_entity, PlantType.BUSH_HARD, null, true);
 	}
 	
 	override bool IsBush()
@@ -90,7 +90,7 @@ class BushSoft : PlantSuper
 {
 	override void OnTreeCutDown(EntityAI cutting_entity)
 	{
-		GetGame().RPCSingleParam(cutting_entity, PlantType.BUSH_SOFT, null, true);
+		g_Game.RPCSingleParam(cutting_entity, PlantType.BUSH_SOFT, null, true);
 	}
 	
 	override bool IsBush()

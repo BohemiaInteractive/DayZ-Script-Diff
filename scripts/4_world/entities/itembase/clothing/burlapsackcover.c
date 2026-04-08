@@ -1,7 +1,7 @@
 class BurlapSackCover extends HeadGear_Base
 {
-	PlayerBase m_Player;
-
+	protected PlayerBase m_Player;
+		
 	void ~BurlapSackCover()
 	{
 		if (m_Player)
@@ -14,35 +14,23 @@ class BurlapSackCover extends HeadGear_Base
 	{
 		super.EEItemLocationChanged(oldLoc,newLoc);
 		
-		if (GetGame().IsDedicatedServer() && newLoc.GetType() == InventoryLocationType.GROUND)
+		if (g_Game.IsDedicatedServer() && newLoc.GetType() == InventoryLocationType.GROUND)
 		{
-			EntityAI newItem = EntityAI.Cast(GetGame().CreateObjectEx("BurlapSack",newLoc.GetPos(),ECE_PLACE_ON_SURFACE,RF_DEFAULT));
+			EntityAI newItem = EntityAI.Cast(g_Game.CreateObjectEx("BurlapSack",newLoc.GetPos(),ECE_PLACE_ON_SURFACE,RF_DEFAULT));
 			MiscGameplayFunctions.TransferItemProperties(this,newItem);
 			DeleteSafe();
 		}
 	}
-
+	
 	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
 		super.OnWasAttached(parent, slot_id);
 		
-		Class.CastTo(m_Player, parent.GetHierarchyRootPlayer());
-
-		if ((!GetGame().IsDedicatedServer()) && m_Player && m_Player.IsControlledPlayer() && slot_id == InventorySlots.HEADGEAR)
-		{
-			PPERequesterBank.GetRequester(PPERequester_BurlapSackEffects).Start();
-			m_Player.SetInventorySoftLock(true);
-			m_Player.SetMasterAttenuation("BurlapSackAttenuation");
-			
-			if (GetGame().GetUIManager().IsMenuOpen(MENU_INVENTORY))
-			{
-				GetGame().GetMission().HideInventory();
-			}
-		}
-		SetInvisibleRecursive(true,m_Player,{InventorySlots.MASK,InventorySlots.EYEWEAR});
+		if (slot_id == InventorySlots.HEADGEAR)
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(HandleAttachedToHead, 0);
 	}
 
-	override bool CanPutInCargo( EntityAI parent )
+	override bool CanPutInCargo(EntityAI parent)
 	{
 		if (!super.CanPutInCargo(parent))
 			return false;
@@ -53,20 +41,22 @@ class BurlapSackCover extends HeadGear_Base
 		return false;
 	}
 
-	override bool CanDetachAttachment( EntityAI parent )
+	override bool CanDetachAttachment(EntityAI parent)
 	{
 		return false;
 	}
 
-	void OnRemovedFromHead(PlayerBase player)
+	protected void OnRemovedFromHead(PlayerBase player)
 	{
-		if (player.IsControlledPlayer())
+		if ((!g_Game.IsServer() || !g_Game.IsMultiplayer()) && PlayerBase.Cast(g_Game.GetPlayer()) == player) // Client side
 		{
 			PPERequesterBank.GetRequester(PPERequester_BurlapSackEffects).Stop();
 			player.SetInventorySoftLock(false);
 			player.SetMasterAttenuation("");
 		}
-		SetInvisibleRecursive(false,player,{InventorySlots.MASK,InventorySlots.EYEWEAR});
+		
+		if (g_Game.IsServer() || g_Game.IsMultiplayer()) // Server side or single player
+			SetInvisibleRecursive(false, player, {InventorySlots.MASK, InventorySlots.EYEWEAR});
 	}
 	
 	override protected set<int> GetAttachmentExclusionInitSlotValue(int slotId)
@@ -77,5 +67,31 @@ class BurlapSackCover extends HeadGear_Base
 			ret.Insert(EAttExclusions.SHAVING_HEADGEAR_ATT_0);
 		}
 		return ret;
+	}
+	
+	protected void HandleAttachedToHead()
+	{
+		Class.CastTo(m_Player, GetHierarchyRootPlayer());
+		if (!m_Player)
+			return;
+		
+		if (!g_Game.IsServer() || !g_Game.IsMultiplayer()) // Client side
+		{
+			if (m_Player && PlayerBase.Cast(g_Game.GetPlayer()) == m_Player)
+			{
+				PPERequesterBase ppeRB = PPERequesterBank.GetRequester(PPERequester_BurlapSackEffects);
+				if (ppeRB)
+					ppeRB.Start();
+				
+				m_Player.SetInventorySoftLock(true);
+				m_Player.SetMasterAttenuation("BurlapSackAttenuation");
+				
+				if (g_Game.GetUIManager().IsMenuOpen(MENU_INVENTORY))
+					g_Game.GetMission().HideInventory();
+			}
+		}
+		
+		if (g_Game.IsServer() || g_Game.IsMultiplayer()) // Server side or single player
+			SetInvisibleRecursive(true, m_Player, {InventorySlots.MASK, InventorySlots.EYEWEAR});
 	}
 }

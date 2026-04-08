@@ -39,9 +39,9 @@ class ActionBuryBody: ActionContinuousBase
 		{
 			int liquidType;
 			string surfaceType;
-			GetGame().SurfaceUnderObject(bodyEAI, surfaceType, liquidType);
+			g_Game.SurfaceUnderObject(bodyEAI, surfaceType, liquidType);
 			
-			if (GetGame().IsSurfaceDigable(surfaceType))
+			if (g_Game.IsSurfaceDigable(surfaceType))
 			{
 				return true;
 			}

@@ -904,6 +904,8 @@ enum WeaponActionChamberingTypes
 	CHAMBERING_CROSSBOW_OPENED			= 21,		// chambering crossbow
 	CHAMBERING_CROSSBOW_CLOSED			= 22,		// chambering crossbow
 	CHAMBERING_CROSSBOW_FULL			= 23,		// chambering crossbow
+	
+	CHAMBERING_DOUBLE_FIREOUT_EJECT		= 24,		// For manual ejecting during reload
 };
 
 enum WeaponActionChamberingLoaderTypes
@@ -1320,10 +1322,14 @@ enum HumanMoveCommandID
 	CommandActionAdditive = 8192
 }
 
+class HumanType : ManType
+{
+};
+
 // *************************************************************************************
 // ! Human - human script interface 
 // *************************************************************************************
-class Human extends Man
+class Human : Man
 {
 	//! world space - local space - heading space
 

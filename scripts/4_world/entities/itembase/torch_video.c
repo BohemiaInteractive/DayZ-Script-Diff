@@ -18,14 +18,14 @@ class Torch_Video : LongTorch
 	
 	override void OnWorkStart()
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SetEnablePtc, PARTICLE_DELAY);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SetEnablePtc, PARTICLE_DELAY);
 		
 		super.OnWorkStart();
 	}
 	
 	override void OnWorkStop()
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(SetEnablePtc);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(SetEnablePtc);
 		m_EnablePtc = false;
 		
 		super.OnWorkStop();

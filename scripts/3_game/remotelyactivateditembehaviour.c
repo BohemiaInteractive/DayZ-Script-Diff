@@ -100,7 +100,7 @@ class RemotelyActivatedItemBehaviour
 	
 	void Pair()
 	{
-		EntityAI device = EntityAI.Cast(GetGame().GetObjectByNetworkId(GetPairDeviceNetIdLow(), GetPairDeviceNetIdHigh()));
+		EntityAI device = EntityAI.Cast(g_Game.GetObjectByNetworkId(GetPairDeviceNetIdLow(), GetPairDeviceNetIdHigh()));
 		if (device)
 		{
 			Pair(device);

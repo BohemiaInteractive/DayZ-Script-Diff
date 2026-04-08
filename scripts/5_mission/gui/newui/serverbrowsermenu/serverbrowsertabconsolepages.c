@@ -27,7 +27,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	protected override void Construct(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/xbox/server_browser_tab_console_pages.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/xbox/server_browser_tab_console_pages.layout", parent);
 		
 		m_ServerListScroller = ScrollWidget.Cast( m_Root.FindAnyWidget("server_list_scroller"));
 		m_ServerList = SpacerBaseWidget.Cast(m_ServerListScroller.FindAnyWidget("server_list_content"));
@@ -60,6 +60,13 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		m_LoadingText = TextWidget.Cast( m_Root.FindAnyWidget("loading_servers_info"));
 		m_WidgetNavFilters = m_Root.FindAnyWidget("filters_root_nav_wrapper");
 		m_WidgetNavServers = m_Root.FindAnyWidget("server_list_root_nav_wrapper");
+				
+		#ifdef PLATFORM_MSSTORE
+		// Find M&K filter and disable it
+		Widget keyboard_button = m_Root.FindAnyWidget("keyboard_button");
+		if (keyboard_button)
+			keyboard_button.Show(false);
+		#endif
 		
 		m_BtnPagePrev = ButtonWidget.Cast(m_Root.FindAnyWidget("servers_navigation_prev"));
 		m_BtnPageNext = ButtonWidget.Cast(m_Root.FindAnyWidget("servers_navigation_next"));
@@ -99,9 +106,9 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		m_Root.SetHandler(this);
 		m_FilterSearchTextBox.SetHandler(this);
 		
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 
 		m_Details = new ServerBrowserDetailsContainer(m_Root.FindAnyWidget("details_content"), this);
 	}
@@ -148,7 +155,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		break;
 
 		default:
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+			if (g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
 			{
 				bool isFavoriteTab = m_TabType == TabType.FAVORITE;	
 				m_WidgetNavFilters.Show(false);
@@ -193,6 +200,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		string msg = "#servers_found: " + m_TotalLoadedServers;
 		if (m_TotalLoadedServers == 0)
 		{
+			
 			msg = "#server_browser_tab_unable_to_get_server";
 		}
 
@@ -375,10 +383,11 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	void RefreshServerList()
 	{
-		if (m_TabType != TabType.FAVORITE && (GetGame().GetTime() - m_TimeLastServerRefresh) < 1000)
+		int currentTime = g_Game.GetTime();
+		if (m_TabType != TabType.FAVORITE && (currentTime - m_TimeLastServerRefresh) < 1000)
 			return;
 			
-		m_TimeLastServerRefresh = GetGame().GetTime();
+		m_TimeLastServerRefresh = currentTime;
 		if (m_IsFilterChanged)
 		{
 			SetCurrentPage(1);
@@ -433,9 +442,10 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	{
 		if (!m_IsFilterFocused && !m_IsDetailsFocused)
 		{
-			if ( (GetGame().GetTime() - m_TimeLastServerRefreshHoldButton) > 100 )
+			int currentTime = g_Game.GetTime();
+			if ( (currentTime - m_TimeLastServerRefreshHoldButton) > 100 )
 			{
-				m_TimeLastServerRefreshHoldButton = GetGame().GetTime();
+				m_TimeLastServerRefreshHoldButton = currentTime;
 				Left();
 			}
 		}		
@@ -467,9 +477,10 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	{
 		if (!m_IsFilterFocused && !m_IsDetailsFocused)
 		{
-			if ( (GetGame().GetTime() - m_TimeLastServerRefreshHoldButton) > 100 )
+			int currentTime = g_Game.GetTime();
+			if ( (currentTime - m_TimeLastServerRefreshHoldButton) > 100 )
 			{				
-				m_TimeLastServerRefreshHoldButton = GetGame().GetTime();
+				m_TimeLastServerRefreshHoldButton = currentTime;
 				Right();
 			}
 		}

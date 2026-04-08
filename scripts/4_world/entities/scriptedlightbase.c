@@ -46,7 +46,7 @@ class ScriptedLightBase extends EntityLightSource
 	//! Constructor. Everything here is executed before the constructor of all children.
 	void ScriptedLightBase()
 	{
-		m_LifetimeStart = GetGame().GetTime();
+		m_LifetimeStart = g_Game.GetTime();
 		SetEnabled(true);
 		SetEventMask(EntityEvent.FRAME);
 		SetEventMask(EntityEvent.INIT);
@@ -68,7 +68,7 @@ class ScriptedLightBase extends EntityLightSource
 	{
 		if (!IsVisibleDuringDaylight())
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			if (player && player.m_UndergroundPresence)
 				SetVisibleDuringDaylight(true);
 			m_NightTimeOnlyLights.Insert(this);
@@ -107,7 +107,7 @@ class ScriptedLightBase extends EntityLightSource
 	{
 		DetachFromParent(); // This is the reason for the delay
 		
-		if (GetGame())
+		if (g_Game)
 		{
 			if (!m_DeleteTimer)
 				m_DeleteTimer = new Timer( CALL_CATEGORY_SYSTEM );
@@ -120,7 +120,7 @@ class ScriptedLightBase extends EntityLightSource
 	// Deletes light now. Do not call this directly. Call Destroy() instead. Otherwise you might get errors related to hierarchy.
 	private void DeleteLightNow()
 	{
-		GetGame().ObjectDelete(this);
+		g_Game.ObjectDelete(this);
 	}
 	
 	//! Attaches this light on the parent entity, with optional position and orientation offset.
@@ -225,9 +225,9 @@ class ScriptedLightBase extends EntityLightSource
 	{
 		ScriptedLightBase light_instance;
 		
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if ( !g_Game.IsServer()  ||  !g_Game.IsMultiplayer() ) // Client side
 		{
-			light_instance = ScriptedLightBase.Cast( GetGame().CreateObject(name.ToString(), global_pos, true) );
+			light_instance = ScriptedLightBase.Cast( g_Game.CreateObject(name.ToString(), global_pos, true) );
 			
 			if (!light_instance)
 			{
@@ -242,7 +242,7 @@ class ScriptedLightBase extends EntityLightSource
 		}
 		else // Server side
 		{
-			if ( GetGame().IsDebug() )
+			if ( g_Game.IsDebug() )
 			{
 				Error("An instance of ScriptedLightBase was attempted to spawn on server side! Lights are CLIENT SIDE ONLY!");
 			}
@@ -333,8 +333,8 @@ class ScriptedLightBase extends EntityLightSource
 	//! Makes the light destroy itself after the given time in seconds. The light will fade out if it's set to do so with SetFadeOutTime(...)
 	void SetLifetime(float life_in_s)
 	{
-		if(GetGame())
-			m_LifetimeEnd = GetGame().GetTime() + life_in_s * 1000;
+		if(g_Game)
+			m_LifetimeEnd = g_Game.GetTime() + life_in_s * 1000;
 	}
 	
 	//! Sets the fade out time in seconds. Fade out begins automatically as the light nears the end of its life time, or when method FadeOut() is called.
@@ -388,7 +388,7 @@ class ScriptedLightBase extends EntityLightSource
 	override void EOnFrame(IEntity other, float timeSlice)
 	{
 		// Control lifetime of the light
-		int current_time = GetGame().GetTime();
+		int current_time = g_Game.GetTime();
 		
 		if ( CheckLifetime(current_time) )
 		{
@@ -565,7 +565,7 @@ class ScriptedLightBase extends EntityLightSource
 	{
 		if (m_OptimizeShadowsRadius > 0)
 		{
-			float distance_to_camera = vector.Distance( GetPosition(), GetGame().GetCurrentCameraPosition() );
+			float distance_to_camera = vector.Distance( GetPosition(), g_Game.GetCurrentCameraPosition() );
 			
 			if (distance_to_camera < m_OptimizeShadowsRadius)
 			{

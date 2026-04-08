@@ -67,7 +67,7 @@ class CAContinuousMineWood : CAContinuousBase
 			}
 			else
 			{
-				if ( GetGame().IsServer() )
+				if ( g_Game.IsServer() )
 				{
 					float damage = 0;
 					if (m_AmountOfDrops > 0)
@@ -161,7 +161,7 @@ class CAContinuousMineWood : CAContinuousBase
 				
 				if ( !m_MinedItem[i] )
 				{
-					m_MinedItem[i] = ItemBase.Cast(GetGame().CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+					m_MinedItem[i] = ItemBase.Cast(g_Game.CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 					m_MinedItem[i].SetQuantity(increment);
 				}
 				else if (m_MinedItem[i].HasQuantity())
@@ -173,7 +173,7 @@ class CAContinuousMineWood : CAContinuousBase
 						increment -= stack_max - m_MinedItem[i].GetQuantity();
 						if (increment >= 1.0)
 						{
-							m_MinedItem[i] = ItemBase.Cast(GetGame().CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+							m_MinedItem[i] = ItemBase.Cast(g_Game.CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 							m_MinedItem[i].SetQuantity(increment,false);
 						}
 					}
@@ -184,7 +184,7 @@ class CAContinuousMineWood : CAContinuousBase
 				}
 				else
 				{
-					m_MinedItem[i] = ItemBase.Cast(GetGame().CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+					m_MinedItem[i] = ItemBase.Cast(g_Game.CreateObjectEx(material,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 				}
 			}
 		}
@@ -197,7 +197,7 @@ class CAContinuousMineWood : CAContinuousBase
 			return;
 		}
 		
-		m_SecondaryItem = ItemBase.Cast(GetGame().CreateObjectEx(material_secondary,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+		m_SecondaryItem = ItemBase.Cast(g_Game.CreateObjectEx(material_secondary,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 		if ( !m_SecondaryItem.HasQuantity() )
 		{
 			CreateSecondaryItems(action_data,material_secondary,quantity_secondary - 1);
@@ -216,7 +216,7 @@ class CAContinuousMineWood : CAContinuousBase
 			{
 				m_SecondaryItem.SetQuantity(stack_max);
 				increment -= stack_max;
-				m_SecondaryItem = ItemBase.Cast(GetGame().CreateObjectEx(material_secondary,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
+				m_SecondaryItem = ItemBase.Cast(g_Game.CreateObjectEx(material_secondary,action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE));
 			}
 			else
 			{

@@ -86,6 +86,7 @@ class SoundEventHandler
 	//void OnTick(float delta_time) {}
 	bool PlayRequest(EPlayerSoundEventID id, bool sent_from_server = false) { return true; }
 	bool PlayRequestEx(EPlayerSoundEventID id, bool sent_from_server = false, int param = 0){ return true; };
+	bool StopRequest(EPlayerSoundEventID id, bool sent_from_server = false, int param = 0){ return true; };
 	int GetCurrentStateEventID() { return -1; }
 	int GetCurrentStateEventType() { return -1; }
 }

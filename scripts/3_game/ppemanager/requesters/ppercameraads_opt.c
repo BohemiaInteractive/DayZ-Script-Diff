@@ -3,12 +3,12 @@ class PPERequester_CameraADS extends PPERequester_GameplayBase
 	void SetValuesOptics(out array<float> mask_array, out array<float> lens_array, float gauss = 0.0)
 	{
 		//mask
-		GetGame().ResetPPMask();
+		g_Game.ResetPPMask();
 		if (mask_array.Count() != 4)
 		{
 			mask_array = {0.0,0.0,0.0,0.0};
 		}
-		GetGame().AddPPMask(mask_array[0], mask_array[1], mask_array[2], mask_array[3]);
+		g_Game.AddPPMask(mask_array[0], mask_array[1], mask_array[2], mask_array[3]);
 		
 		//lens
 		if (lens_array.Count() != 4)
@@ -30,7 +30,7 @@ class PPERequester_CameraADS extends PPERequester_GameplayBase
 	void SetValuesIronsights(out array<float> DOF_array)
 	{
 		//mask - no mask
-		GetGame().ResetPPMask();
+		g_Game.ResetPPMask();
 		
 		//lens - no lens
 		SetTargetValueFloatDefault(PostProcessEffectType.Glow,PPEGlow.PARAM_LENSDISTORT);
@@ -54,10 +54,10 @@ class PPERequester_CameraADS extends PPERequester_GameplayBase
 	{
 		super.OnStop(par);
 		
-		if ( !GetGame() )
+		if ( !g_Game )
 			return;
 		
-		GetGame().ResetPPMask();
+		g_Game.ResetPPMask();
 		//material parameter values reset by default on stop
 	}
 }

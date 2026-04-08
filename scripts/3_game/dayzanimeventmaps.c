@@ -17,19 +17,19 @@ class SoundLookupTable
 		string path = "CfgSoundTables " + m_tableCategoryName + " " + soundLookupTableName;
 		
 		//load all classes names
-		int soundCount = GetGame().ConfigGetChildrenCount(path);
+		int soundCount = g_Game.ConfigGetChildrenCount(path);
 
 		for(int i = 0; i < soundCount; i++)
 		{
 			string soundClassName;
-			GetGame().ConfigGetChildName(path, i, soundClassName);
+			g_Game.ConfigGetChildName(path, i, soundClassName);
 			string soundClassPath = path + " " + soundClassName + " ";
 
 			string parameter;
-			GetGame().ConfigGetText(soundClassPath + m_parameterName, parameter);
+			g_Game.ConfigGetText(soundClassPath + m_parameterName, parameter);
 
 			array<string> soundSetNames = new array<string>;
-			GetGame().ConfigGetTextArray(soundClassPath + "soundSets", soundSetNames);
+			g_Game.ConfigGetTextArray(soundClassPath + "soundSets", soundSetNames);
 
 			//TODO create SoundObject for every entry, save in Game?
 			array<SoundObjectBuilder> soundObjectBuilders = new array<SoundObjectBuilder>;

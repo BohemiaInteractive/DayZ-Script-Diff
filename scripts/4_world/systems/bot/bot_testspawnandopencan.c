@@ -28,7 +28,7 @@ class BotSpawnEntityInHands extends BotStateBase
 	{
 		super.OnUpdate(dt);
 
-		EntityAI inHands = m_Owner.GetHumanInventory().GetEntityInHands();
+		EntityAI inHands = m_Owner.GetEntityInHands();
 		if (inHands)
 		{
 			botDebugPrint("[bot] + " + m_Owner + " hand item=" + inHands + " bot=" + m_Owner);
@@ -74,7 +74,7 @@ class BotOpenEntityInHands extends BotStateBase
 	{
 		super.OnUpdate(dt);
 
-		EntityAI inHands = m_Owner.GetHumanInventory().GetEntityInHands();
+		EntityAI inHands = m_Owner.GetEntityInHands();
 		botDebugSpam("[bot] + " + m_Owner + " wait for opened item inHands=" + inHands + " bot=" + m_Owner);
 		if (inHands)
 		{
@@ -135,7 +135,7 @@ class BotWaitForEmptyHands extends BotStateBase
 	{
 		super.OnUpdate(dt);
 
-		EntityAI inHands = m_Owner.GetHumanInventory().GetEntityInHands();
+		EntityAI inHands = m_Owner.GetEntityInHands();
 		botDebugSpam("[bot] + " + m_Owner + " waiting for empty hands, inHands=" + inHands + " bot=" + m_Owner);
 		if (!inHands)
 		{
@@ -164,7 +164,7 @@ class BotDropEntityInHands extends BotWaitForChangeInHands
 		super.OnEntry(e);
 		
 
-		EntityAI inHands = m_Owner.GetHumanInventory().GetEntityInHands();
+		EntityAI inHands = m_Owner.GetEntityInHands();
 		if (inHands)
 		{
 			botDebugPrint("[bot] + " + m_Owner + " dropping item=" + inHands + " bot=" + m_Owner);
@@ -187,7 +187,7 @@ class BotEatEntityInHands extends BotWaitForChangeInHands
 	{
 		super.OnEntry(e);
 		
-		EntityAI inHands = m_Owner.GetHumanInventory().GetEntityInHands();
+		EntityAI inHands = m_Owner.GetEntityInHands();
 		if (inHands)
 		{
 			botDebugPrint("[bot] + " + m_Owner + " eating item=" + inHands + " bot=" + m_Owner);
@@ -222,7 +222,7 @@ class BotDestroyEntityInHands extends BotWaitForChangeInHands
 	{
 		super.OnEntry(e);
 		
-		EntityAI inHands = m_Owner.GetHumanInventory().GetEntityInHands();
+		EntityAI inHands = m_Owner.GetEntityInHands();
 		if (inHands)
 		{
 			botDebugPrint("[bot] + " + m_Owner + " deleting item=" + inHands + " bot=" + m_Owner);

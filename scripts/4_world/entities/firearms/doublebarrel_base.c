@@ -134,6 +134,8 @@ class DoubleBarrel_Base : Rifle_Base
 		m_abilities.Insert(new AbilityRecord(WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_2));
 		m_abilities.Insert(new AbilityRecord(WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_3));
 		m_abilities.Insert(new AbilityRecord(WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_4));
+		m_abilities.Insert(new AbilityRecord(WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_FIREOUT_EJECT));
+		
 		// setup abilities
 		m_abilities.Insert(new AbilityRecord(WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_CLOSED));
 		m_abilities.Insert(new AbilityRecord(WeaponActions.UNJAMMING, WeaponActionUnjammingTypes.UNJAMMING_START));
@@ -158,6 +160,8 @@ class DoubleBarrel_Base : Rifle_Base
 		WeaponStateBase		Mech = new WeaponCharging(this, NULL, WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_CLOSED);
 
 		ChamberMultiBullet	Chamber_E = new ChamberMultiBullet(this, NULL, WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_2,WeaponActionChamberingTypes.CHAMBERING_END);
+		ChamberMultiBullet	Chamber_F = new ChamberMultiBullet(this, NULL, WeaponActions.CHAMBERING, GetAnimationForChamberingWithEjection(),WeaponActionChamberingTypes.CHAMBERING_END);
+		
 		ChamberMultiBullet	Chamber_L_E = new ChamberMultiBullet(this, NULL, WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_3,WeaponActionChamberingTypes.CHAMBERING_END);
 		ChamberMultiBullet	Chamber_F_L = new ChamberMultiBullet(this, NULL, WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_4,WeaponActionChamberingTypes.CHAMBERING_END);
 		ChamberMultiBullet	Chamber_E_L = new ChamberMultiBullet(this, NULL, WeaponActions.CHAMBERING, WeaponActionChamberingTypes.CHAMBERING_DOUBLE_1,WeaponActionChamberingTypes.CHAMBERING_END);
@@ -204,19 +208,27 @@ class DoubleBarrel_Base : Rifle_Base
 		m_fsm.AddTransition(new WeaponTransition(  Mech,		_abt_,	E_L, NULL, new GuardAnd( new WeaponGuardChamberEmpty(this, MuzzleIndex.First), new WeaponGuardChamberFull(this, MuzzleIndex.Second))));
 		m_fsm.AddTransition(new WeaponTransition(  Mech,		_abt_,	E_E));
 		
-		m_fsm.AddTransition(new WeaponTransition( F_F,			__L__,	Chamber_E));
-		m_fsm.AddTransition(new WeaponTransition( F_E,			__L__,	Chamber_E));
-		m_fsm.AddTransition(new WeaponTransition( E_F,			__L__,	Chamber_E));
 		m_fsm.AddTransition(new WeaponTransition( E_E,			__L__,	Chamber_E));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_fin_,	L_E, NULL, new WeaponGuardChamberEmpty(this, MuzzleIndex.Second)));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_fin_,	L_L));
 		
-		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	F_F, NULL, new GuardAnd( new WeaponGuardChamberFiredOut(this, MuzzleIndex.First), new WeaponGuardChamberFiredOut(this, MuzzleIndex.Second))));
-		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	F_E, NULL, new GuardAnd( new WeaponGuardChamberFiredOut(this, MuzzleIndex.First), new WeaponGuardChamberEmpty(this, MuzzleIndex.Second))));
-		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	E_F, NULL, new GuardAnd( new WeaponGuardChamberEmpty(this, MuzzleIndex.First), new WeaponGuardChamberFiredOut(this, MuzzleIndex.Second))));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	L_L, NULL, new GuardAnd( new WeaponGuardChamberFull(this, MuzzleIndex.First), new WeaponGuardChamberFull(this, MuzzleIndex.Second))));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	L_E, NULL, new GuardAnd( new WeaponGuardChamberFull(this, MuzzleIndex.First), new WeaponGuardChamberEmpty(this, MuzzleIndex.Second))));
 		m_fsm.AddTransition(new WeaponTransition(  Chamber_E,	_abt_,	E_E));
+		
+		m_fsm.AddTransition(new WeaponTransition( F_F,			__L__,	Chamber_F));
+		m_fsm.AddTransition(new WeaponTransition( F_E,			__L__,	Chamber_F));
+		m_fsm.AddTransition(new WeaponTransition( E_F,			__L__,	Chamber_F));
+		
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	L_E, NULL, new WeaponGuardChamberEmpty(this, MuzzleIndex.Second)));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_fin_,	L_L));
+		
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	F_F, NULL, new GuardAnd( new WeaponGuardChamberFiredOut(this, MuzzleIndex.First), new WeaponGuardChamberFiredOut(this, MuzzleIndex.Second))));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	F_E, NULL, new GuardAnd( new WeaponGuardChamberFiredOut(this, MuzzleIndex.First), new WeaponGuardChamberEmpty(this, MuzzleIndex.Second))));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	E_F, NULL, new GuardAnd( new WeaponGuardChamberEmpty(this, MuzzleIndex.First), new WeaponGuardChamberFiredOut(this, MuzzleIndex.Second))));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	L_L, NULL, new GuardAnd( new WeaponGuardChamberFull(this, MuzzleIndex.First), new WeaponGuardChamberFull(this, MuzzleIndex.Second))));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	L_E, NULL, new GuardAnd( new WeaponGuardChamberFull(this, MuzzleIndex.First), new WeaponGuardChamberEmpty(this, MuzzleIndex.Second))));
+		m_fsm.AddTransition(new WeaponTransition(  Chamber_F,	_abt_,	E_E));
 		
 		
 		m_fsm.AddTransition(new WeaponTransition( L_E,			__L__,	Chamber_L_E));
@@ -322,5 +334,10 @@ class DoubleBarrel_Base : Rifle_Base
 		{
 			SetNextMuzzleMode(i);
 		}
+	}
+	
+	int GetAnimationForChamberingWithEjection()
+	{
+		return  WeaponActionChamberingTypes.CHAMBERING_DOUBLE_2;
 	}
 };

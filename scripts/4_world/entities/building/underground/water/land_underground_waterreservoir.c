@@ -150,6 +150,10 @@ class Land_Underground_WaterReservoir : BuildingBase
 	protected ref ParticleSourceArray	m_ValveParticles;
 	protected ref ParticleSourceArray	m_PipeBrokenParticles;	
 	
+	
+	private ref Timer m_TempHotfixTimer;
+	private const float TEMP_HOTIX_TIMESLICE = 0.01;
+	
 	void Land_Underground_WaterReservoir()
 	{
 		SetEventMask(EntityEvent.POSTSIMULATE);
@@ -161,6 +165,12 @@ class Land_Underground_WaterReservoir : BuildingBase
 	{
 		CleanSoundEffects();
 		CleanVisualEffects();
+		
+		if (m_TempHotfixTimer)
+		{
+			m_TempHotfixTimer.Stop();
+			m_TempHotfixTimer = null;
+		}
 	}
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
@@ -170,7 +180,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 		HandleVisualEffects();
 		#endif
 		
-		if (!GetGame().IsServer())
+		if (!g_Game.IsServer())
 		{
 			return;
 		}
@@ -236,8 +246,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 					AdvanceToNextWaterLevelStageSettings(valve);
 					SetSynchDirty();
 				}
-
-				m_WaterLevelTimesAccumulated[valve] = m_WaterLevelTimesAccumulated[valve] + AdjustTime(timeSlice);
+				m_WaterLevelTimesAccumulated[valve] = m_WaterLevelTimesAccumulated[valve] + AdjustTime(TEMP_HOTIX_TIMESLICE);
 			}
 			else
 			{
@@ -289,7 +298,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 					}
 				}
 	
-				m_PressureTimesAccumulated[valve] = m_PressureTimesAccumulated[valve] + AdjustTime(timeSlice);
+				m_PressureTimesAccumulated[valve] = m_PressureTimesAccumulated[valve] + AdjustTime(TEMP_HOTIX_TIMESLICE);
 			}
 			else
 			{
@@ -382,7 +391,11 @@ class Land_Underground_WaterReservoir : BuildingBase
 		RegisterNetSyncVariableInt("m_WaterLevelActual", WL_MIN, WL_MAX);
 		RegisterNetSyncVariableInt("m_WaterLevelPrev", WL_MIN, WL_MAX);
 
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(LateInit, 250);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(LateInit, 250);
+		
+		//! Temporary hotfix for EOnPostSimulate/EOnFrame methods not beeing called on static objects
+		m_TempHotfixTimer = new Timer();
+		m_TempHotfixTimer.Run(TEMP_HOTIX_TIMESLICE, this, "EOnPostSimulate", null, true);
 	}
 	
 	protected void LateInit()
@@ -396,14 +409,14 @@ class Land_Underground_WaterReservoir : BuildingBase
 		
 		m_WaterLevelDefault	= m_WaterLevelsAvailable[WATER_LEVEL_AVERAGE];
 
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
-			m_SpawnedWaterObject = GetGame().CreateObjectEx(OBJECT_NAME_WATER_PLANE, m_WaterLevelDefault, ECE_CREATEPHYSICS);
+			m_SpawnedWaterObject = g_Game.CreateObjectEx(OBJECT_NAME_WATER_PLANE, m_WaterLevelDefault, ECE_CREATEPHYSICS);
 			m_SpawnedWaterObject.SetOrientation(GetOrientation());
 			SetWaterLevelHeight(m_WaterLevelDefault[1]);
 		}
 		
-		GetGame().RegisterNetworkStaticObject(this);
+		g_Game.RegisterNetworkStaticObject(this);
 		SetSynchDirty();
 	}
 	
@@ -481,7 +494,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	void OnValveManipulationStart(int pValveIndex)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			AnimateValve(pValveIndex, 1);
 			m_ValveManipulatedIndex = pValveIndex;
@@ -491,7 +504,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	void OnValveManipulationEnd(int pValveIndex)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			switch (pValveIndex)
 			{
@@ -519,7 +532,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	void OnValveManipulationCanceled(int pValveIndex)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			AnimateValve(pValveIndex, 0);
 			m_ValveManipulatedIndex = -1;
@@ -559,7 +572,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	protected void SetWaterLevelHeight(float pHeight)
 	{
-		if (GetGame() && GetGame().IsServer())
+		if (g_Game && g_Game.IsServer())
 		{
 			vector pos 					= Vector(m_WaterLevelDefault[0], pHeight, m_WaterLevelDefault[2]);
 			m_WaterLevelHeightActual	= pHeight;
@@ -957,7 +970,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 			{
 				m_PipeCreakingSoundRequested = true;
 				int randomDelay = Math.RandomInt(PIPE_CREAKING_MIN_TIME_DELAY_MS, PIPE_CREAKING_MAX_TIME_DELAY_MS);
-				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(PlayPipeCreakingSoundOnLocation, randomDelay, false);
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(PlayPipeCreakingSoundOnLocation, randomDelay, false);
 			}
 		}
 		else
@@ -976,6 +989,8 @@ class Land_Underground_WaterReservoir : BuildingBase
 		{
 			return;
 		}
+		
+		EffectSound snd;
 
 		EffectSound sndDrain, sndFill;
 		float drainPressureLevel = GetValvePressureLevelGauge(VALVE_INDEX_DRAIN);
@@ -985,7 +1000,8 @@ class Land_Underground_WaterReservoir : BuildingBase
 			{
 				PlaySoundSetAtMemoryPoint(sndDrain, SOUND_NAME_PIPE_SPRINKLING_START, VALVE_NAME_DRAIN, false, 0.0, 0.5);
 				m_PipeSounds[VALVE_INDEX_DRAIN] = sndDrain;
-				StopSoundSet(m_PipeSounds[VALVE_INDEX_DRAIN]);
+				snd = m_PipeSounds[VALVE_INDEX_DRAIN];
+				StopSoundSet(snd);
 				m_PipeSounds[VALVE_INDEX_DRAIN] = null;
 				PlaySoundSetAtMemoryPointLooped(sndDrain, SOUND_NAME_PIPE_SPRINKLING_LOOP1, VALVE_NAME_DRAIN, 0.5, 0.5);
 				m_PipeSounds[VALVE_INDEX_DRAIN] = sndDrain;
@@ -996,7 +1012,8 @@ class Land_Underground_WaterReservoir : BuildingBase
 		{
 			if (m_PipeSounds[VALVE_INDEX_DRAIN] != null)
 			{
-				StopSoundSet(m_PipeSounds[VALVE_INDEX_DRAIN]);
+				snd = m_PipeSounds[VALVE_INDEX_DRAIN];
+				StopSoundSet(snd);
 				m_PipeSounds[VALVE_INDEX_DRAIN] = null;
 			}
 		}
@@ -1009,7 +1026,8 @@ class Land_Underground_WaterReservoir : BuildingBase
 			if (m_PipeSounds[VALVE_INDEX_FILL] == null)
 			{
 				PlaySoundSetAtMemoryPoint(sndFill, SOUND_NAME_PIPE_SPRINKLING_START, VALVE_NAME_FILL, false, 0.0, 0.5);
-				StopSoundSet(m_PipeSounds[VALVE_INDEX_FILL]);
+				snd = m_PipeSounds[VALVE_INDEX_FILL];
+				StopSoundSet(snd);
 				m_PipeSounds[VALVE_INDEX_FILL] = null;
 				PlaySoundSetAtMemoryPointLooped(sndFill, SOUND_NAME_PIPE_SPRINKLING_LOOP2, VALVE_NAME_FILL, 0.5, 0.5);
 				m_PipeSounds[VALVE_INDEX_FILL] = sndFill;
@@ -1020,7 +1038,8 @@ class Land_Underground_WaterReservoir : BuildingBase
 		{
 			if (m_PipeSounds[VALVE_INDEX_FILL] != null)
 			{
-				StopSoundSet(m_PipeSounds[VALVE_INDEX_FILL]);
+				snd = m_PipeSounds[VALVE_INDEX_FILL];
+				StopSoundSet(snd);
 				m_PipeSounds[VALVE_INDEX_FILL] = null;
 			}
 		}
@@ -1220,7 +1239,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	
 	protected void SyncValveVariables()
 	{
-		if (GetGame())
+		if (g_Game)
 		{
 			m_ValveStatesPacked = PackArrayOfBoolStatesIntoBits(m_ValveStates);
 			if (m_ValveStatesPacked != m_ValveStatesPackedPrev)
@@ -1295,7 +1314,7 @@ class Land_Underground_WaterReservoir : BuildingBase
 	{
 		if (super.OnAction(action_id, player, ctx))
 			return true;
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			if (action_id == EActions.SPECIALIZED_ACTION1)
 			{

@@ -7,7 +7,7 @@ class Watermark
 
 	void Watermark(Widget parent = null)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_hud_watermark.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_hud_watermark.layout", parent);
 		
 		m_WatermarkImage = ImageWidget.Cast(m_Root.FindAnyWidget("WatermarkLogo"));
 		m_WatermarkLabel = TextWidget.Cast(m_Root.FindAnyWidget("WatermarkLabel"));
@@ -16,7 +16,7 @@ class Watermark
 		m_WatermarkLabel.SetText("EXPERIMENTAL BUILD");
 
 		string buildVersion;
-		GetGame().GetVersion(buildVersion);
+		g_Game.GetVersion(buildVersion);
 		m_WatermarkBuild.SetText(buildVersion);
 	}
 }

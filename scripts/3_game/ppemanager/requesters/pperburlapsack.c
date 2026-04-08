@@ -9,9 +9,9 @@ class PPERequester_BurlapSackEffects extends PPERequester_GameplayBase
 		SetTargetValueFloat(PostProcessEffectType.Glow,PPEGlow.PARAM_VIGNETTE,false,2.0,PPEGlow.L_25_BURLAP,PPOperators.SET);
 		SetTargetValueColor(PostProcessEffectType.Glow,PPEGlow.PARAM_VIGNETTECOLOR,{0.0,0.0,0.0,0.0},PPEGlow.L_26_BURLAP,PPOperators.LOWEST);
 		
-		if (GetGame() && GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+		if (g_Game && g_Game.GetMission() && g_Game.GetMission().GetEffectWidgets())
 		{
-			GetGame().GetMission().GetEffectWidgets().AddSuspendRequest(EffectWidgetSuspends.BURLAPSACK);//these should probably be elsewhere, PPEs are mission independent
+			g_Game.GetMission().GetEffectWidgets().AddSuspendRequest(EffectWidgetSuspends.BURLAPSACK);//these should probably be elsewhere, PPEs are mission independent
 		}
 	}
 	
@@ -19,9 +19,9 @@ class PPERequester_BurlapSackEffects extends PPERequester_GameplayBase
 	{
 		super.OnStop();
 		
-		if (GetGame() && GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+		if (g_Game && g_Game.GetMission() && g_Game.GetMission().GetEffectWidgets())
 		{
-			GetGame().GetMission().GetEffectWidgets().RemoveSuspendRequest(EffectWidgetSuspends.BURLAPSACK);//these should probably be elsewhere, PPEs are mission independent
+			g_Game.GetMission().GetEffectWidgets().RemoveSuspendRequest(EffectWidgetSuspends.BURLAPSACK);//these should probably be elsewhere, PPEs are mission independent
 		}
 	}
 }

@@ -1,8 +1,37 @@
 class JsonUndergroundTriggers
 {
 	ref array<ref JsonUndergroundAreaTriggerData> Triggers;
+	
+	static void SpawnParentedTriggers(EntityAI parent)
+	{
+		int networkIdLow, networkIdHigh;
+		parent.GetNetworkID(networkIdLow, networkIdHigh);
+		
+		JsonUndergroundTriggers jsonData = UndergroundAreaLoader.GetData();
+		if (jsonData && jsonData.Triggers)
+		{
+			foreach (int index, auto data : jsonData.Triggers)
+			{
+				if (data.CustomSpawn)
+				{
+					if (data.ParentNetworkId.Count() == 2 && data.ParentNetworkId[0] == networkIdLow && data.ParentNetworkId[1] == networkIdHigh)
+						SpawnTriggerCarrier(parent, index, data);
+				}
+			}
+		}
+	}
+	
+	static void SpawnTriggerCarrier(EntityAI parent, int index, JsonUndergroundAreaTriggerData data)
+	{
+		UndergroundTriggerCarrierBase carrier = UndergroundTriggerCarrierBase.Cast(g_Game.CreateObjectEx("UndergroundTriggerCarrier", data.GetPosition(), ECE_NONE));
+		if (carrier)
+		{
+			carrier.SetParent(parent);
+			carrier.SetIndex(index);
+			carrier.SetOrientation(data.GetOrientation());
+		}
+	}
 }
-
 
 class JsonUndergroundAreaBreadcrumb
 {
@@ -16,6 +45,24 @@ class JsonUndergroundAreaBreadcrumb
 	bool 				UseRaycast;
 	float 				Radius;
 	bool 				LightLerp;	// only used in LinePointFade
+
+	ref BreadcrumbExternalValueController ExternalValueController;
+}
+
+class BreadcrumbExternalValueController
+{
+	string Type;
+	ref TStringArray Params;
+}
+
+class BreadcrumbDoorStateController
+{
+	string SelectionName;
+
+	void BreadcrumbDoorStateController(TStringArray params)
+	{
+		SelectionName = params[0];
+	}
 }
 
 class JsonUndergroundAreaTriggerData
@@ -34,6 +81,10 @@ class JsonUndergroundAreaTriggerData
 		return Vector(Size[0],Size[1],Size[2]);
 	}
 	
+	bool CustomSpawn;
+	string Tag;						//! used for ObjectSpawner/Manual(custom) spawn
+	ref TIntArray ParentNetworkId;	//! used on map placed objects
+
 	ref array<float> Position;
 	ref array<float> Orientation;
 	ref array<float> Size;
@@ -41,6 +92,7 @@ class JsonUndergroundAreaTriggerData
 	float  InterpolationSpeed;
 	bool UseLinePointFade;		// simple fade between points which are defined using existing breadcrumbs array 
 	string AmbientSoundType;	// type of ambient sound which will be played by sound controller
+	string AmbientSoundSet;		// manual playback of ambient sound
 	
 	ref array<ref JsonUndergroundAreaBreadcrumb> Breadcrumbs;
 	
@@ -51,8 +103,7 @@ class UndergroundAreaLoader
 {
 	private static string m_Path = "$mission:cfgundergroundtriggers.json";
 	
-	static ref JsonUndergroundTriggers m_JsonData;
-	
+	static ref JsonUndergroundTriggers m_JsonData;	
 	
 	static JsonUndergroundTriggers GetData()
 	{
@@ -62,7 +113,7 @@ class UndergroundAreaLoader
 			PrintToRPT("[WARNING] :: [UndergroundAreaLoader GetData()] :: file not found in MISSION folder, your path is " + m_Path + " Attempting DATA folder");
 			
 			string worldName;
-			GetGame().GetWorldName(worldName);
+			g_Game.GetWorldName(worldName);
 			m_Path = string.Format("dz/worlds/%1/ce/cfgundergroundtriggers.json", worldName);
 			
 			if (!FileExist(m_Path))
@@ -80,7 +131,6 @@ class UndergroundAreaLoader
 		return data;
 	}
 	
-	
 	static void SpawnAllTriggerCarriers()
 	{
 		if (!m_JsonData)
@@ -95,26 +145,34 @@ class UndergroundAreaLoader
 		
 		foreach (int i, auto data:m_JsonData.Triggers)
 		{
-			SpawnTriggerCarrier(i, data);
+			if (data.CustomSpawn)
+				continue;
+			
+			SpawnTriggerCarrierEx(i, data);
 		}
 	}
 	
-	static void SpawnTriggerCarrier(int index, JsonUndergroundAreaTriggerData data)
+	static UndergroundTriggerCarrierBase SpawnTriggerCarrierEx(int index, JsonUndergroundAreaTriggerData data)
 	{
-		
-		UndergroundTriggerCarrierBase carrier = UndergroundTriggerCarrierBase.Cast(GetGame().CreateObjectEx( "UndergroundTriggerCarrier", data.GetPosition(), ECE_NONE ));
-		//Print("spawning trigger carrier at pos :" +data.GetPosition());
+		UndergroundTriggerCarrierBase carrier = UndergroundTriggerCarrierBase.Cast(g_Game.CreateObjectEx("UndergroundTriggerCarrier", data.GetPosition(), ECE_NONE));
 		if (carrier)
 		{
 			carrier.SetIndex(index);
 			carrier.SetOrientation(data.GetOrientation());
 		}
+		
+		return carrier;
+	}
+	
+	static void SpawnTriggerCarrier(int index, JsonUndergroundAreaTriggerData data)
+	{
+		SpawnTriggerCarrierEx(index, data);
 	}
 	
 	//---------------------------------------------------------------------------------------
 	static void SyncDataSend(PlayerIdentity identity)
 	{
-		GetGame().RPCSingleParam(null, ERPCs.RPC_UNDERGROUND_SYNC, new Param1<JsonUndergroundTriggers>(m_JsonData), true, identity);
+		g_Game.RPCSingleParam(null, ERPCs.RPC_UNDERGROUND_SYNC, new Param1<JsonUndergroundTriggers>(m_JsonData), true, identity);
 	}
 	
 	//---------------------------------------------------------------------------------------

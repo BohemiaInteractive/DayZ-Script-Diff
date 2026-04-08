@@ -74,11 +74,11 @@ class ActionOpenDoors: ActionInteractBase
 		
 		m_NoisePar = new NoiseParams();
 		m_NoisePar.LoadFromPath("CfgVehicles SurvivorBase NoiseActionDefault");
-		NoiseSystem noise = GetGame().GetNoiseSystem();
+		NoiseSystem noise = g_Game.GetNoiseSystem();
 		if (noise && CreatesNoise())
 		{
 			if (action_data.m_Player)
-				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
 		}
 	}
 	

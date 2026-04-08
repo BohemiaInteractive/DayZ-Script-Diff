@@ -12,7 +12,7 @@ class CTActor extends CTObjectFollower
 	
 	void CTActor( int index, vector pos, vector orient, string type, array<string> items, string hands_item, CameraToolsMenu parent )
 	{
-		m_FollowerRoot		= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/event_tracker.layout", null );
+		m_FollowerRoot		= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/event_tracker.layout", null );
 		m_FollowerButton	= m_FollowerRoot.FindAnyWidget( "IconPanel" );
 		m_IndexWidget		= TextWidget.Cast( m_FollowerRoot.FindAnyWidget( "Text" ) );
 		m_Index				= index;
@@ -70,7 +70,7 @@ class CTActor extends CTObjectFollower
 		if ( m_HandsItemObj && m_FollowedObject)
 		{
 			HumanInventory.Cast( m_FollowedObject.GetInventory() ).LocalDestroyEntity( m_HandsItemObj );
-			GetGame().ObjectDelete( m_HandsItemObj );
+			g_Game.ObjectDelete( m_HandsItemObj );
 		}
 		if (item)
 		{

@@ -31,7 +31,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 	
 	void GameplayEffectWidgets()
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidget(FrameWidgetTypeID,0,0,1.0,1.0,WidgetFlags.VISIBLE | WidgetFlags.HEXACTPOS | WidgetFlags.VEXACTPOS, 0xffffffff, 0);
+		m_Root = g_Game.GetWorkspace().CreateWidget(FrameWidgetTypeID,0,0,1.0,1.0,WidgetFlags.VISIBLE | WidgetFlags.HEXACTPOS | WidgetFlags.VEXACTPOS, 0xffffffff, 0);
 		m_Layouts = new map<int,ref Widget>;
 		m_UniqueLayouts = new set<ref Widget>;
 		m_WidgetDataMap = new GameplayEffectDataMap;
@@ -109,7 +109,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 	*/
 	protected void RegisterLayouts(string path, array<int> types)
 	{
-		Widget w = GetGame().GetWorkspace().CreateWidgets(path,m_Root,false);
+		Widget w = g_Game.GetWorkspace().CreateWidgets(path,m_Root,false);
 		m_UniqueLayouts.Insert(w);
 		w.Show(false);
 		foreach (int i : types)

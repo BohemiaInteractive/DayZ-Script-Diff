@@ -1,4 +1,4 @@
-class DayZCreatureAIType
+class DayZCreatureAIType : DayZCreatureType
 {
 	string m_CfgPath;
 	string m_AnimEventsCfgPath;
@@ -8,7 +8,7 @@ class DayZCreatureAIType
 	private ref map<int, ref AnimSoundVoiceEvent> 	m_AnimSoundVoiceEvents;
 	private ref map<int, ref AnimDamageEvent> 	m_AnimDamageEvents;
 
-	private void DayZCreatureAIType()
+	void DayZCreatureAIType()
 	{
 		m_CfgPath = "CfgVehicles " + GetName() + " ";
 		m_AnimEventsCfgPath = m_CfgPath	+ "AnimEvents ";
@@ -21,11 +21,11 @@ class DayZCreatureAIType
 		
 		string soundsCfgPath = m_AnimEventsCfgPath + "Sounds ";
 
-		int soundCount = GetGame().ConfigGetChildrenCount(soundsCfgPath);
+		int soundCount = g_Game.ConfigGetChildrenCount(soundsCfgPath);
 		for (int i = 0; i < soundCount; i++)
 		{
 			string soundName;
-			GetGame().ConfigGetChildName(soundsCfgPath, i, soundName);			
+			g_Game.ConfigGetChildName(soundsCfgPath, i, soundName);			
 			string soundPath = soundsCfgPath + soundName + " ";
 			AnimSoundEvent soundEvent = new AnimSoundEvent(soundPath);
 			if (soundEvent.IsValid())
@@ -39,11 +39,11 @@ class DayZCreatureAIType
 		
 		string soundsCfgPath = m_AnimEventsCfgPath + "SoundVoice ";
 
-		int soundCount = GetGame().ConfigGetChildrenCount(soundsCfgPath);
+		int soundCount = g_Game.ConfigGetChildrenCount(soundsCfgPath);
 		for (int i = 0; i < soundCount; i++)
 		{
 			string soundName;
-			GetGame().ConfigGetChildName(soundsCfgPath, i, soundName);			
+			g_Game.ConfigGetChildName(soundsCfgPath, i, soundName);			
 			string soundPath = soundsCfgPath + soundName + " ";
 			AnimSoundVoiceEvent soundEvent = new AnimSoundVoiceEvent(soundPath);
 			if (soundEvent.IsValid())
@@ -55,12 +55,12 @@ class DayZCreatureAIType
 	{
 		m_AnimStepEvents = new map<int, ref AnimStepEvent>();
 		string stepsCfgPath = m_AnimEventsCfgPath + "Steps ";
-		int stepsCount = GetGame().ConfigGetChildrenCount(stepsCfgPath);
+		int stepsCount = g_Game.ConfigGetChildrenCount(stepsCfgPath);
 
 		for (int i = 0; i < stepsCount; i++)
 		{
 			string stepName;
-			GetGame().ConfigGetChildName(stepsCfgPath, i, stepName);			
+			g_Game.ConfigGetChildName(stepsCfgPath, i, stepName);			
 			string stepPath = stepsCfgPath + stepName + " ";
 			AnimStepEvent stepEvent = new AnimStepEvent(stepPath);
 			m_AnimStepEvents.Set(stepEvent.m_iID, stepEvent);
@@ -72,12 +72,12 @@ class DayZCreatureAIType
 		m_AnimDamageEvents = new map<int, ref AnimDamageEvent>();
 
 		string damagesCfgPath = m_AnimEventsCfgPath + "Damages ";
-		int damagesCount = GetGame().ConfigGetChildrenCount(damagesCfgPath);
+		int damagesCount = g_Game.ConfigGetChildrenCount(damagesCfgPath);
 
 		for (int i = 0; i < damagesCount; i++)
 		{
 			string damageName;
-			GetGame().ConfigGetChildName(damagesCfgPath, i, damageName);			
+			g_Game.ConfigGetChildName(damagesCfgPath, i, damageName);			
 			string damagePath = damagesCfgPath + damageName + " ";
 			AnimDamageEvent damageEvent = new AnimDamageEvent(damagePath);
 			m_AnimDamageEvents.Set(damageEvent.m_iID, damageEvent);
@@ -111,8 +111,6 @@ class DayZCreatureAIType
 	{
 		return m_AnimDamageEvents.Get(event_id);
 	}
-
-	proto native owned string GetName();
 
 	//! DEPRECATED
 	ref array<ref AnimSoundEvent> 		m_animSoundEvents;

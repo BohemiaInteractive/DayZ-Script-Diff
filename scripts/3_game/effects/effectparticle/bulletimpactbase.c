@@ -80,7 +80,7 @@ class EffBulletImpactBase : EffectParticle
 		m_InSpeed 			= inSpeed;
 		m_OutSpeed 			= outSpeed;
 		m_AmmoType 			= ammoType;
-		m_Weight			= GetGame().ConfigGetFloat("CfgAmmo " + ammoType + " weight");
+		m_Weight			= g_Game.ConfigGetFloat("CfgAmmo " + ammoType + " weight");
 		
 		m_StoppingForce 	= CalculateStoppingForce(m_InSpeed.Length(), m_OutSpeed.Length(), ammoType, m_Weight);
 	}
@@ -310,7 +310,7 @@ class EffBulletImpactBase : EffectParticle
 		
 		if ( Type() != Hit_MeatBones )
 		{
-			vector camera_pos = GetGame().GetCurrentCameraPosition();
+			vector camera_pos = g_Game.GetCurrentCameraPosition();
 			float distance = vector.Distance(camera_pos, m_Pos);
 						
 			// Additional size increase by distance from camera

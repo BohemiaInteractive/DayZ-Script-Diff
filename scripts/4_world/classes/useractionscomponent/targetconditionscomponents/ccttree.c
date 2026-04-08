@@ -16,7 +16,7 @@ class CCTTree : CCTBase
 		if ( !player || !targetObject || targetObject.IsDamageDestroyed() )
 			return false;
 		
-		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+		if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 			return true;
 
 		return ( vector.DistanceSq(target.GetCursorHitPos(), player.GetPosition()) <= m_MaximalActionDistanceSq );

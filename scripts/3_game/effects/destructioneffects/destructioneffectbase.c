@@ -57,7 +57,7 @@ class DestructionEffectBase
 		m_Entity = entity;
 		Init();
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			entity.SetTakeable(m_EntityIsTakeable);
 			
@@ -65,7 +65,7 @@ class DestructionEffectBase
 			{
 				if (m_ReplaceWithEntity)
 				{
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ReplaceEntityServer, m_ReplaceDelay, false);
+					g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ReplaceEntityServer, m_ReplaceDelay, false);
 				}
 				if (HasExplosionDamage())
 				{
@@ -109,7 +109,7 @@ class DestructionEffectBase
 	
 	private void ReplaceEntityServer()
 	{
-		EntityAI dead_entity = EntityAI.Cast(GetGame().CreateObjectEx(m_ReplaceWithEntity, m_Entity.GetPosition(), ECE_OBJECT_SWAP, RF_ORIGINAL));
+		EntityAI dead_entity = EntityAI.Cast(g_Game.CreateObjectEx(m_ReplaceWithEntity, m_Entity.GetPosition(), ECE_OBJECT_SWAP, RF_ORIGINAL));
 		dead_entity.SetOrientation(m_Entity.GetOrientation());
 		if (m_KeepHealthOnReplace)
 		{

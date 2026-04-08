@@ -8,7 +8,7 @@ class ParticleTest extends ItemBase
 	// Constructor
 	void ParticleTest()
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if ( !g_Game.IsServer()  ||  !g_Game.IsMultiplayer() ) // Client side
 		{
 			string path = ParticleList.GetPathToParticles();
 			
@@ -36,10 +36,10 @@ class ParticleTest extends ItemBase
 	{
 		super.EEDelete(parent);
 		
-		if (m_Particle  &&  GetGame()) // GetGame() is null when the game is being shut down
+		if (m_Particle  &&  g_Game) // g_Game is null when the game is being shut down
 		{
 			m_Particle.Stop();
-			GetGame().ObjectDelete(m_Particle);
+			g_Game.ObjectDelete(m_Particle);
 		}
 	}
 }

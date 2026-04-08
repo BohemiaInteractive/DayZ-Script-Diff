@@ -6,7 +6,7 @@ class PrepareFox extends PrepareAnimal
 
 		//----------------------------------------------------------------------------------------------------------------------
 		//ingredient 1
-		InsertIngredient(0,"DeadFox");//you can insert multiple ingredients this way
+		InsertIngredient(0,"DeadFox", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, false);//you can insert multiple ingredients this way
 
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing

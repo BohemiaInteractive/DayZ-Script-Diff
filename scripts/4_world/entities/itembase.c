@@ -1,4 +1,5 @@
 typedef ItemBase Inventory_Base;
+typedef ItemBaseType Inventory_BaseType;
 typedef map<typename,ref ActionOverrideData>	TActionAnimOverrideMap;
 
 class DummyItem extends ItemBase
@@ -7,6 +8,11 @@ class DummyItem extends ItemBase
 	{
 		return true;
 	}
+};
+
+class ItemBaseType : InventoryItemType
+{
+
 };
 
 //const bool QUANTITY_DEBUG_REMOVE_ME = false;
@@ -127,10 +133,12 @@ class ItemBase extends InventoryItem
 	protected ref EffectSound 	m_LockingSound;
 	protected string 			m_LockSoundSet;
 	
-	// ItemSoundHandler 
-	protected const int ITEM_SOUNDS_MAX = 63;	// optimize network synch  
-	protected int m_SoundSyncPlay;				// id for sound to play
-	protected int m_SoundSyncStop;				// id for sound to stop
+	// ItemSoundHandler variables
+	protected const int ITEM_SOUNDS_MAX = 63;					// optimize network synch  
+	protected int m_SoundSyncPlay;								// id for sound to play
+	protected int m_SoundSyncStop;								// id for sound to stop
+	protected int m_SoundSyncSlotID = InventorySlots.INVALID;		// slot id for attach/detach sound based on slot
+	
 	private ref ItemSoundHandler m_ItemSoundHandler;
 	
 	//temperature
@@ -144,7 +152,7 @@ class ItemBase extends InventoryItem
 		m_ContinuousActions = new TIntArray;
 		m_InteractActions = new TIntArray;
 		
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			if (HasMuzzle())
 			{
@@ -162,7 +170,7 @@ class ItemBase extends InventoryItem
 		
 		m_OldLocation = null;
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_AdminLog = PluginAdminLog.Cast(GetPlugin(PluginAdminLog));
 		}
@@ -261,11 +269,12 @@ class ItemBase extends InventoryItem
 		RegisterNetSyncVariableBool("m_IsTakeable");
 		RegisterNetSyncVariableBool("m_IsHologram");
 		
-		InitItemSounds();		
+		InitItemSounds();
 		if (m_ItemSoundHandler)
 		{
 			RegisterNetSyncVariableInt("m_SoundSyncPlay", 0, ITEM_SOUNDS_MAX);
 			RegisterNetSyncVariableInt("m_SoundSyncStop", 0, ITEM_SOUNDS_MAX);
+			RegisterNetSyncVariableInt("m_SoundSyncSlotID", int.MIN, int.MAX);
 		}
 		
 		m_LockSoundSet = ConfigGetString("lockSoundSet");
@@ -273,7 +282,8 @@ class ItemBase extends InventoryItem
 		m_TemperaturePerQuantityWeight = 1.0;;
 		if (ConfigIsExisting("temperaturePerQuantityWeight"))
 			m_TemperaturePerQuantityWeight = ConfigGetFloat("temperaturePerQuantityWeight");
-			
+		
+		m_SoundSyncSlotID = -1;
 	}
 	
 	override int GetQuickBarBonus()
@@ -355,7 +365,7 @@ class ItemBase extends InventoryItem
 	
 	void RemoveAction(typename actionName)
 	{
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		ActionBase action = player.GetActionManager().GetAction(actionName);
 		typename ai = action.GetInputType();
 		array<ActionBase_Basic> action_array = m_InputActionMap.Get(ai);
@@ -411,7 +421,7 @@ class ItemBase extends InventoryItem
 			
 			string config_OnFire_class = muzzle_owner_config + "Particles " + "OnFire ";
 			
-			int config_OnFire_subclass_count = GetGame().ConfigGetChildrenCount(config_OnFire_class);
+			int config_OnFire_subclass_count = g_Game.ConfigGetChildrenCount(config_OnFire_class);
 			
 			if (config_OnFire_subclass_count > 0)
 			{
@@ -420,7 +430,7 @@ class ItemBase extends InventoryItem
 				for (int i = 0; i < config_OnFire_subclass_count; i++)
 				{
 					string particle_class = "";
-					GetGame().ConfigGetChildName(config_OnFire_class, i, particle_class);
+					g_Game.ConfigGetChildName(config_OnFire_class, i, particle_class);
 					string config_OnFire_entry = config_OnFire_class + particle_class;
 					WeaponParticlesOnFire WPOF = new WeaponParticlesOnFire(this, config_OnFire_entry);
 					WPOF_array.Insert(WPOF);
@@ -438,7 +448,7 @@ class ItemBase extends InventoryItem
 			
 			string config_OnBulletCasingEject_class = muzzle_owner_config + "Particles " + "OnBulletCasingEject ";
 			
-			int config_OnBulletCasingEject_count = GetGame().ConfigGetChildrenCount(config_OnBulletCasingEject_class);
+			int config_OnBulletCasingEject_count = g_Game.ConfigGetChildrenCount(config_OnBulletCasingEject_class);
 			
 			if (config_OnBulletCasingEject_count > 0  &&  IsInherited(Weapon))
 			{
@@ -447,7 +457,7 @@ class ItemBase extends InventoryItem
 				for (i = 0; i < config_OnBulletCasingEject_count; i++)
 				{
 					string particle_class2 = "";
-					GetGame().ConfigGetChildName(config_OnBulletCasingEject_class, i, particle_class2);
+					g_Game.ConfigGetChildName(config_OnBulletCasingEject_class, i, particle_class2);
 					string config_OnBulletCasingEject_entry = config_OnBulletCasingEject_class + particle_class2;
 					WeaponParticlesOnBulletCasingEject WPOBE = new WeaponParticlesOnBulletCasingEject(this, config_OnBulletCasingEject_entry);
 					WPOBE_array.Insert(WPOBE);
@@ -475,10 +485,10 @@ class ItemBase extends InventoryItem
 			string muzzle_owner_config = config_to_search + " " + GetType() + " ";
 			string config_OnOverheating_class = muzzle_owner_config + "Particles " + "OnOverheating ";
 			
-			if (GetGame().ConfigIsExisting(config_OnOverheating_class))
+			if (g_Game.ConfigIsExisting(config_OnOverheating_class))
 			{
 				
-				m_ShotsToStartOverheating = GetGame().ConfigGetFloat(config_OnOverheating_class + "shotsToStartOverheating");
+				m_ShotsToStartOverheating = g_Game.ConfigGetFloat(config_OnOverheating_class + "shotsToStartOverheating");
 				
 				if (m_ShotsToStartOverheating == 0)
 				{
@@ -488,20 +498,20 @@ class ItemBase extends InventoryItem
 					return;
 				}
 				
-				m_OverheatingDecayInterval = GetGame().ConfigGetFloat(config_OnOverheating_class + "overheatingDecayInterval");
-				m_MaxOverheatingValue = GetGame().ConfigGetFloat(config_OnOverheating_class + "maxOverheatingValue");
+				m_OverheatingDecayInterval = g_Game.ConfigGetFloat(config_OnOverheating_class + "overheatingDecayInterval");
+				m_MaxOverheatingValue = g_Game.ConfigGetFloat(config_OnOverheating_class + "maxOverheatingValue");
 				
 				
 				
-				int config_OnOverheating_subclass_count = GetGame().ConfigGetChildrenCount(config_OnOverheating_class);
+				int config_OnOverheating_subclass_count = g_Game.ConfigGetChildrenCount(config_OnOverheating_class);
 				array<ref WeaponParticlesOnOverheating> WPOOH_array = new array<ref WeaponParticlesOnOverheating>;
 				
 				for (int i = 0; i < config_OnOverheating_subclass_count; i++)
 				{
 					string particle_class = "";
-					GetGame().ConfigGetChildName(config_OnOverheating_class, i, particle_class);
+					g_Game.ConfigGetChildName(config_OnOverheating_class, i, particle_class);
 					string config_OnOverheating_entry = config_OnOverheating_class + particle_class;
-					int  entry_type = GetGame().ConfigGetType(config_OnOverheating_entry);
+					int  entry_type = g_Game.ConfigGetType(config_OnOverheating_entry);
 					
 					if (entry_type == CT_CLASS)
 					{
@@ -739,9 +749,9 @@ class ItemBase extends InventoryItem
 	// -------------------------------------------------------------------------
 	void ~ItemBase()
 	{
-		if (GetGame() && GetGame().GetPlayer() && (!GetGame().IsDedicatedServer()))
+		if (g_Game && g_Game.GetPlayer() && (!g_Game.IsDedicatedServer()))
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			int r_index = player.GetHumanInventory().FindUserReservedLocationIndex(this);
 
 			if (r_index >= 0)
@@ -868,11 +878,11 @@ class ItemBase extends InventoryItem
 	{
 		/*
 		ref Param1<EntityAI> item = new Param1<EntityAI>(entity2);
-		RPCSingleParam(ERPCs.RPC_ITEM_COMBINE, item, GetGame().GetPlayer());
+		RPCSingleParam(ERPCs.RPC_ITEM_COMBINE, item, g_Game.GetPlayer());
 		*/
 		ItemBase item2 = ItemBase.Cast(entity2);
 		
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
@@ -888,11 +898,11 @@ class ItemBase extends InventoryItem
 				
 				if (IsCombineAll(item2, use_stack_max))
 				{
-					GetGame().GetPlayer().GetInventory().AddInventoryReservationEx(item2,null,GameInventory.c_InventoryReservationTimeoutShortMS);
+					g_Game.GetPlayer().GetInventory().AddInventoryReservationEx(item2,null,GameInventory.c_InventoryReservationTimeoutShortMS);
 				}
 			}
 		}
-		else if (!GetGame().IsMultiplayer())
+		else if (!g_Game.IsMultiplayer())
 		{
 			CombineItems(item2, use_stack_max);
 		}
@@ -1051,64 +1061,63 @@ class ItemBase extends InventoryItem
 	
 	override void EEItemLocationChanged(notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc)
 	{
-		super.EEItemLocationChanged(oldLoc,newLoc);
+		super.EEItemLocationChanged(oldLoc, newLoc);
 		
-		PlayerBase new_player = null;
-		PlayerBase old_player = null;
+		PlayerBase newPlayer = null;
+		PlayerBase oldPlayer = null;
 		
 		if (newLoc.GetParent())
-			new_player = PlayerBase.Cast(newLoc.GetParent().GetHierarchyRootPlayer());
+			newPlayer = PlayerBase.Cast(newLoc.GetParent().GetHierarchyRootPlayer());
 		
 		if (oldLoc.GetParent())
-			old_player = PlayerBase.Cast(oldLoc.GetParent().GetHierarchyRootPlayer());
+			oldPlayer = PlayerBase.Cast(oldLoc.GetParent().GetHierarchyRootPlayer());
 		
-		if (old_player && oldLoc.GetType() == InventoryLocationType.HANDS)
+		if (oldPlayer && oldLoc.GetType() == InventoryLocationType.HANDS)
 		{
-			int r_index = old_player.GetHumanInventory().FindUserReservedLocationIndex(this);
+			int rIndex = oldPlayer.GetHumanInventory().FindUserReservedLocationIndex(this);
 
-			if (r_index >= 0)
+			if (rIndex >= 0)
 			{
-					InventoryLocation r_il = new InventoryLocation;
-					old_player.GetHumanInventory().GetUserReservedLocation(r_index,r_il);
+					InventoryLocation rIl = new InventoryLocation;
+					oldPlayer.GetHumanInventory().GetUserReservedLocation(rIndex, rIl);
 
-					old_player.GetHumanInventory().ClearUserReservedLocationAtIndex(r_index);
-					int r_type = r_il.GetType();
-					if (r_type == InventoryLocationType.CARGO || r_type == InventoryLocationType.PROXYCARGO)
+					oldPlayer.GetHumanInventory().ClearUserReservedLocationAtIndex(rIndex);
+					int rType = rIl.GetType();
+					if (rType == InventoryLocationType.CARGO || rType == InventoryLocationType.PROXYCARGO)
 					{
-						r_il.GetParent().GetOnReleaseLock().Invoke(this);
+						rIl.GetParent().GetOnReleaseLock().Invoke(this);
 					}
-					else if (r_type == InventoryLocationType.ATTACHMENT)
+					else if (rType == InventoryLocationType.ATTACHMENT)
 					{
-						r_il.GetParent().GetOnAttachmentReleaseLock().Invoke(this, r_il.GetSlot());
+						rIl.GetParent().GetOnAttachmentReleaseLock().Invoke(this, rIl.GetSlot());
 					}
 			
 			}
 		}
 		
-		if (newLoc.GetType() == InventoryLocationType.HANDS)
+		if (newLoc.GetType() == InventoryLocationType.HANDS && oldLoc.GetType() != InventoryLocationType.TEMP)
 		{
-			if (new_player)
-				new_player.ForceStandUpForHeavyItems(newLoc.GetItem());
+			if (newPlayer)
+				newPlayer.ForceStandUpForHeavyItems(newLoc.GetItem());
 			
-			if (new_player == old_player)
+			if (newPlayer == oldPlayer)
 			{
-				
-				if (oldLoc.GetParent() && new_player.GetHumanInventory().LocationGetEntity(oldLoc) == NULL)
+				if (oldLoc.GetParent() && newPlayer.GetHumanInventory().LocationGetEntity(oldLoc) == NULL)
 				{
 					if (oldLoc.GetType() == InventoryLocationType.CARGO)
 					{
 						if (oldLoc.GetParent().GetInventory().TestAddEntityInCargoExLoc(oldLoc, false, false, false, true, false, false))
 						{
-							new_player.GetHumanInventory().SetUserReservedLocation(this,oldLoc);
+							newPlayer.GetHumanInventory().SetUserReservedLocation(this,oldLoc);
 						}
 					}
 					else
 					{
-						new_player.GetHumanInventory().SetUserReservedLocation(this,oldLoc);
+						newPlayer.GetHumanInventory().SetUserReservedLocation(this,oldLoc);
 					}
 				}
 				
-				if (new_player.GetHumanInventory().FindUserReservedLocationIndex(this) >= 0)
+				if (newPlayer.GetHumanInventory().FindUserReservedLocationIndex(this) >= 0)
 				{
 					int type = oldLoc.GetType();
 					if (type == InventoryLocationType.CARGO || type == InventoryLocationType.PROXYCARGO)
@@ -1134,19 +1143,19 @@ class ItemBase extends InventoryItem
 				}
 			}
 			
-			GetGame().GetAnalyticsClient().OnItemAttachedAtPlayer(this,"Hands");	
+			g_Game.GetAnalyticsClient().OnItemAttachedAtPlayer(this,"Hands");	
 		}
 		else
 		{
-			if (new_player)
+			if (newPlayer)
 			{
-				int res_index = new_player.GetHumanInventory().FindCollidingUserReservedLocationIndex(this, newLoc);
-				if (res_index >= 0)
+				int resIndex = newPlayer.GetHumanInventory().FindCollidingUserReservedLocationIndex(this, newLoc);
+				if (resIndex >= 0)
 				{
 					InventoryLocation il = new InventoryLocation;
-					new_player.GetHumanInventory().GetUserReservedLocation(res_index,il);
+					newPlayer.GetHumanInventory().GetUserReservedLocation(resIndex, il);
 					ItemBase it = ItemBase.Cast(il.GetItem());
-					new_player.GetHumanInventory().ClearUserReservedLocationAtIndex(res_index);
+					newPlayer.GetHumanInventory().ClearUserReservedLocationAtIndex(resIndex);
 					int rel_type = il.GetType();
 					if (rel_type == InventoryLocationType.CARGO || rel_type == InventoryLocationType.PROXYCARGO)
 					{
@@ -1159,9 +1168,9 @@ class ItemBase extends InventoryItem
 					//it.GetOnReleaseLock().Invoke(it);
 				}
 			}
-			else if (old_player && newLoc.GetType() == InventoryLocationType.GROUND && m_ThrowItemOnDrop)
+			else if (oldPlayer && newLoc.GetType() == InventoryLocationType.GROUND && m_ThrowItemOnDrop)
 			{
-				//ThrowPhysically(old_player, vector.Zero);
+				//ThrowPhysically(oldPlayer, vector.Zero);
 				m_ThrowItemOnDrop = false;
 			}
 		
@@ -1169,6 +1178,16 @@ class ItemBase extends InventoryItem
 			{
 				m_OldLocation.Reset();
 			}
+		}
+
+		if (oldLoc.GetType() == InventoryLocationType.TEMP)
+		{
+			PluginInventoryRepair.Cast(GetPlugin(PluginInventoryRepair)).Remove(oldLoc.GetItem());
+		}
+	
+		if (newLoc.GetType() == InventoryLocationType.TEMP)
+		{
+			PluginInventoryRepair.Cast(GetPlugin(PluginInventoryRepair)).Add(oldLoc.GetItem());
 		}
 	}
 	
@@ -1255,7 +1274,7 @@ class ItemBase extends InventoryItem
 				
 				if (!action || !playerNew || playerNew.GetPerformedActionID() != action.GetID())
 				{
-    				GetCompEM().UnplugThis();
+    					GetCompEM().UnplugThis();
 				}
 			}
 		}
@@ -1375,7 +1394,7 @@ class ItemBase extends InventoryItem
 			}
 		}
 	}
-	
+		
 	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
 		MiscGameplayFunctions.RemoveAllAttachedChildrenByTypename(this, {Bolt_Base});
@@ -1385,7 +1404,8 @@ class ItemBase extends InventoryItem
 		if (HasQuantity())
 			UpdateNetSyncVariableFloat("m_VarQuantity", GetQuantityMin(), m_VarQuantityMax);
 		
-		PlayAttachSound(InventorySlots.GetSlotName(slot_id));
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer()) // single player or server side multiplayer
+			StartItemSoundServer(SoundConstants.ITEM_ATTACH, slot_id);
 	}
 	
 	override void OnWasDetached(EntityAI parent, int slot_id)
@@ -1394,6 +1414,9 @@ class ItemBase extends InventoryItem
 		
 		if (HasQuantity())
 			UpdateNetSyncVariableFloat("m_VarQuantity", GetQuantityMin(), m_VarQuantityMax);
+		
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer()) // single player or server side multiplayer
+			StartItemSoundServer(SoundConstants.ITEM_DETACH, slot_id);
 	}
 	
 	override string ChangeIntoOnAttach(string slot)
@@ -1481,7 +1504,7 @@ class ItemBase extends InventoryItem
 		//play sound
 		int sound_idx = Math.RandomInt(0, pop_sounds_count - 1);
 		string sound_name = pop_sounds[ sound_idx ];
-		GetGame().CreateSoundOnObject(this, sound_name, 20, false);
+		g_Game.CreateSoundOnObject(this, sound_name, 20, false);
 		
 		//remove ammo count
 		magazine.ServerAddAmmoCount(-1);
@@ -1539,13 +1562,14 @@ class ItemBase extends InventoryItem
 	
 	bool DamageItemInCargo(float damage)
 	{
-		if (GetInventory().GetCargo())
+		CargoBase cargo = GetInventory().GetCargo();
+		if (cargo)
 		{
-			int item_count = GetInventory().GetCargo().GetItemCount();
+			int item_count = cargo.GetItemCount();
 			if (item_count > 0)
 			{
 				int random_pick = Math.RandomInt(0, item_count);
-				ItemBase item = ItemBase.Cast(GetInventory().GetCargo().GetItem(random_pick));
+				ItemBase item = ItemBase.Cast(cargo.GetItem(random_pick));
 				if (!item.IsExplosive())
 				{
 					item.AddHealth("","",damage);
@@ -1558,11 +1582,12 @@ class ItemBase extends InventoryItem
 	
 	bool DamageItemAttachments(float damage)
 	{
-		int attachment_count = GetInventory().AttachmentCount();
+		GameInventory inventory = GetInventory();
+		int attachment_count = inventory.AttachmentCount();
 		if (attachment_count > 0)
 		{
 			int random_pick = Math.RandomInt(0, attachment_count);
-			ItemBase attachment = ItemBase.Cast(GetInventory().GetAttachmentFromIndex(random_pick));
+			ItemBase attachment = ItemBase.Cast(inventory.GetAttachmentFromIndex(random_pick));
 			if (!attachment.IsExplosive())
 			{
 				attachment.AddHealth("","",damage);
@@ -1607,7 +1632,7 @@ class ItemBase extends InventoryItem
 	
 	override void SplitIntoStackMaxClient(EntityAI destination_entity, int slot_id )
 	{		
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
@@ -1622,9 +1647,9 @@ class ItemBase extends InventoryItem
 				ctx.Send();
 			}
 		}
-		else if (!GetGame().IsMultiplayer())
+		else if (!g_Game.IsMultiplayer())
 		{
-			SplitIntoStackMax(destination_entity, slot_id, PlayerBase.Cast(GetGame().GetPlayer()));
+			SplitIntoStackMax(destination_entity, slot_id, PlayerBase.Cast(g_Game.GetPlayer()));
 		}
 	}
 
@@ -1664,9 +1689,10 @@ class ItemBase extends InventoryItem
 			
 			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				if (destination_entity.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
+				GameInventory destinationInventory = destination_entity.GetInventory();
+				if (destinationInventory.FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
 				{
-					Object o = destination_entity.GetInventory().LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
+					Object o = destinationInventory.LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
 					new_item = ItemBase.Cast(o);
 				}
 
@@ -1690,7 +1716,7 @@ class ItemBase extends InventoryItem
 				
 				if (split_quantity_new == 0)
 				{
-					if (!GetGame().IsMultiplayer())
+					if (!g_Game.IsMultiplayer())
 						player.PhysicalPredictiveDropItem(this);
 					else
 						player.ServerDropEntity(this);
@@ -1699,7 +1725,7 @@ class ItemBase extends InventoryItem
 				
 				if (ShouldSplitQuantity(split_quantity_new))
 				{
-					new_item = ItemBase.Cast(GetGame().CreateObjectEx(GetType(), player.GetWorldPosition(), ECE_PLACE_ON_SURFACE));
+					new_item = ItemBase.Cast(g_Game.CreateObjectEx(GetType(), player.GetWorldPosition(), ECE_PLACE_ON_SURFACE));
 					
 					if (new_item)
 					{
@@ -1750,9 +1776,10 @@ class ItemBase extends InventoryItem
 			
 			if (ShouldSplitQuantity(split_quantity_new))
 			{
-				if (destination_entity.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
+				GameInventory destinationInventory = destination_entity.GetInventory();
+				if (destinationInventory.FindFreeLocationFor(this, FindInventoryLocationType.ANY, loc))
 				{
-					Object o = destination_entity.GetInventory().LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
+					Object o = destinationInventory.LocationCreateEntity(loc, GetType(), ECE_IN_INVENTORY, RF_DEFAULT);
 					new_item = ItemBase.Cast(o);
 				}
 
@@ -1776,7 +1803,7 @@ class ItemBase extends InventoryItem
 				
 				if (ShouldSplitQuantity(split_quantity_new))
 				{
-					new_item = ItemBase.Cast(GetGame().CreateObjectEx(GetType(),GetWorldPosition(), ECE_PLACE_ON_SURFACE));
+					new_item = ItemBase.Cast(g_Game.CreateObjectEx(GetType(),GetWorldPosition(), ECE_PLACE_ON_SURFACE));
 					
 					if (new_item)
 					{
@@ -1793,7 +1820,7 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxToInventoryLocationClient(notnull InventoryLocation dst)
 	{
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
@@ -1806,7 +1833,7 @@ class ItemBase extends InventoryItem
 				ctx.Send();
 			}
 		}
-		else if (!GetGame().IsMultiplayer())
+		else if (!g_Game.IsMultiplayer())
 		{
 			SplitIntoStackMaxToInventoryLocation(dst);
 		}
@@ -1814,7 +1841,7 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxCargoClient(EntityAI destination_entity, int idx, int row, int col)
 	{
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
@@ -1831,7 +1858,7 @@ class ItemBase extends InventoryItem
 				ctx.Send();
 			}
 		}
-		else if (!GetGame().IsMultiplayer())
+		else if (!g_Game.IsMultiplayer())
 		{
 			SplitIntoStackMaxCargo(destination_entity, idx, row, col);
 		}
@@ -1905,7 +1932,7 @@ class ItemBase extends InventoryItem
 	
 	void SplitIntoStackMaxHandsClient(PlayerBase player)
 	{
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
@@ -1921,7 +1948,7 @@ class ItemBase extends InventoryItem
 				ctx.Send();
 			}
 		}
-		else if (!GetGame().IsMultiplayer())
+		else if (!g_Game.IsMultiplayer())
 		{
 			SplitIntoStackMaxHands(player);
 		}
@@ -2042,7 +2069,6 @@ class ItemBase extends InventoryItem
 				SetLiquidType(GetLiquidTypeInit());
 			}
 		}
-			
 	}
 	
 	//! Called on server side when some attachment's quantity is changed. Call super.OnAttachmentQuantityChanged(item); first when overriding this event.
@@ -2061,7 +2087,7 @@ class ItemBase extends InventoryItem
 	{
 		super.EEHealthLevelChanged(oldLevel,newLevel,zone);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (newLevel == GameConstants.STATE_RUINED)
 			{
@@ -2099,9 +2125,9 @@ class ItemBase extends InventoryItem
 	{
 		super.OnRightClick();
 		
-		if (CanBeSplit() && !GetDayZGame().IsLeftCtrlDown() && !GetGame().GetPlayer().GetInventory().HasInventoryReservation(this,null))
+		if (CanBeSplit() && !GetDayZGame().IsLeftCtrlDown() && !g_Game.GetPlayer().GetInventory().HasInventoryReservation(this,null))
 		{
-			if (GetGame().IsClient())
+			if (g_Game.IsClient())
 			{
 				if (ScriptInputUserData.CanStoreInputUserData())
 				{
@@ -2120,7 +2146,7 @@ class ItemBase extends InventoryItem
 						GetInventory().GetCurrentInventoryLocation(dst);
 						if (!dst.GetParent() || dst.GetParent() && !dst.GetParent().GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.CARGO, dst))
 						{
-							PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+							PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 							if (!player.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.CARGO, dst) || !playerOwner)
 							{
 								SetInventoryLocationToVicinityOrCurrent(root, dst);
@@ -2130,13 +2156,13 @@ class ItemBase extends InventoryItem
 								dst.SetCargo(dst.GetParent(), this, dst.GetIdx(), dst.GetRow(), dst.GetCol(), dst.GetFlip());
 								/*	hacky solution to check reservation of "this" item instead of null since the gamecode is checking null against null and returning reservation=true incorrectly
 									this shouldnt cause issues within this scope*/
-								if (GetGame().GetPlayer().GetInventory().HasInventoryReservation(this, dst))
+								if (g_Game.GetPlayer().GetInventory().HasInventoryReservation(this, dst))
 								{
 									SetInventoryLocationToVicinityOrCurrent(root, dst);
 								}
 								else
 								{
-									GetGame().GetPlayer().GetInventory().AddInventoryReservationEx(null, dst, GameInventory.c_InventoryReservationTimeoutShortMS);
+									g_Game.GetPlayer().GetInventory().AddInventoryReservationEx(null, dst, GameInventory.c_InventoryReservationTimeoutShortMS);
 								}
 							}
 						}
@@ -2152,9 +2178,9 @@ class ItemBase extends InventoryItem
 					ctx.Send();
 				}
 			}
-			else if (!GetGame().IsMultiplayer())
+			else if (!g_Game.IsMultiplayer())
 			{
-				SplitItem(PlayerBase.Cast(GetGame().GetPlayer()));
+				SplitItem(PlayerBase.Cast(g_Game.GetPlayer()));
 			}
 		}
 	}
@@ -2321,7 +2347,7 @@ class ItemBase extends InventoryItem
 		PluginRecipesManager moduleRecipesManager = PluginRecipesManager.Cast(GetPlugin(PluginRecipesManager));
 		if (moduleRecipesManager)
 		{
-			EntityAI itemInHands = player.GetHumanInventory().GetEntityInHands();
+			EntityAI itemInHands = player.GetEntityInHands();
 			moduleRecipesManager.GetValidRecipes(ItemBase.Cast(this), ItemBase.Cast(itemInHands), recipesIds, p);
 		}
 
@@ -2398,20 +2424,22 @@ class ItemBase extends InventoryItem
 	{
 		super.OnAction(action_id, player, ctx);
 
-		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		if (g_Game.IsClient() || !g_Game.IsMultiplayer())
 		{
 			switch (action_id)
 			{
 				case EActions.GIZMO_OBJECT:
-					GetGame().GizmoSelectObject(this);
+					if (GetGizmoApi())
+						GetGizmoApi().SelectObject(this);
 					return true;
 				case EActions.GIZMO_PHYSICS:
-					GetGame().GizmoSelectPhysics(GetPhysics());
+					if (GetGizmoApi())
+						GetGizmoApi().SelectPhysics(GetPhysics());
 					return true;
 			}
 		}
 
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			switch (action_id)
 			{
@@ -2438,7 +2466,7 @@ class ItemBase extends InventoryItem
 			PluginDeveloper.SetDeveloperItemClientEx(player);
 		}
 		#endif
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (action_id >= EActions.DEBUG_ITEM_WATCH_BUTTON_RANGE_START && action_id < EActions.DEBUG_ITEM_WATCH_BUTTON_RANGE_END)
 			{
@@ -2626,7 +2654,7 @@ class ItemBase extends InventoryItem
 	bool HasFoodStage()
 	{
 		string config_path = string.Format("CfgVehicles %1 Food FoodStages", GetType());
-		return GetGame().ConfigIsExisting(config_path);
+		return g_Game.ConfigIsExisting(config_path);
 	}
 	
 	//! overridden on Edible_Base; so we don't have to parse configs all the time
@@ -2774,7 +2802,7 @@ class ItemBase extends InventoryItem
 		bool found = false;
 		string item_name = this.GetType();
 		ref TStringArray item_tag_array = new TStringArray;
-		GetGame().ConfigGetTextArray("cfgVehicles " + item_name + " itemInfo", item_tag_array);	
+		g_Game.ConfigGetTextArray("cfgVehicles " + item_name + " itemInfo", item_tag_array);	
 		
 		int array_size = item_tag_array.Count();
 		for (int i = 0; i < array_size; i++)
@@ -3262,7 +3290,7 @@ class ItemBase extends InventoryItem
 			//bruteforce it is
 			if (IsSplitable())
 			{
-				UIScriptedMenu menu = GetGame().GetUIManager().FindMenu(MENU_INVENTORY);
+				UIScriptedMenu menu = g_Game.GetUIManager().FindMenu(MENU_INVENTORY);
 				if (menu)
 				{
 					menu.Refresh();
@@ -3290,12 +3318,16 @@ class ItemBase extends InventoryItem
 		
 		if (m_SoundSyncPlay != 0)
 		{
-			m_ItemSoundHandler.PlayItemSoundClient(m_SoundSyncPlay);
+			if (m_ItemSoundHandler)
+				m_ItemSoundHandler.PlayItemSoundClient(m_SoundSyncPlay, m_SoundSyncSlotID);
+			
 			m_SoundSyncPlay = 0;
+			m_SoundSyncSlotID = -1;
 		}
 		if (m_SoundSyncStop != 0)
 		{
-			m_ItemSoundHandler.StopItemSoundClient(m_SoundSyncStop);
+			if (m_ItemSoundHandler)
+				m_ItemSoundHandler.StopItemSoundClient(m_SoundSyncStop);
 			m_SoundSyncStop = 0;
 		}
 			
@@ -3343,6 +3375,25 @@ class ItemBase extends InventoryItem
 		
 		float delta = m_VarQuantity;
 		m_VarQuantity = Math.Clamp(value, min, max);
+		
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer()) // single player or server side multiplayer
+		{
+			EntityAI parent = GetHierarchyRoot();
+			InventoryLocation iLoc = new InventoryLocation();
+			GetInventory().GetCurrentInventoryLocation(iLoc);
+			if (iLoc && iLoc.IsValid() && delta != m_VarQuantity)
+			{
+				int iLocSlot = iLoc.GetSlot();
+				if (delta < m_VarQuantity && iLoc.GetType() != InventoryLocationType.GROUND)
+				{
+					StartItemSoundServer(SoundConstants.ITEM_ATTACH, iLocSlot);
+				}
+				if (delta > m_VarQuantity && m_VarQuantity != 0 && !IsPrepareToDelete() && iLoc.GetType() == InventoryLocationType.ATTACHMENT)
+				{
+					StartItemSoundServer(SoundConstants.ITEM_DETACH, iLocSlot);
+				}
+			}
+		}
 		
 		if (GetStoreLoadedQuantity() == float.LOWEST)//any other value means we are setting quantity from storage
 		{
@@ -3408,10 +3459,11 @@ class ItemBase extends InventoryItem
 	override int GetQuantityMax()
 	{
 		int slot = -1;
-		if (GetInventory())
+		GameInventory inventory = GetInventory();
+		if (inventory)
 		{
 			InventoryLocation il = new InventoryLocation;
-			GetInventory().GetCurrentInventoryLocation(il);
+			inventory.GetCurrentInventoryLocation(il);
 			slot = il.GetSlot();
 		}
 		
@@ -3522,14 +3574,17 @@ class ItemBase extends InventoryItem
 		int item_count = 0;
 		ItemBase item;
 		
-		if (GetInventory().GetCargo() != NULL)
+		GameInventory inventory = GetInventory();
+		CargoBase cargo = inventory.GetCargo();
+		if (cargo != NULL)
 		{
-			item_count = GetInventory().GetCargo().GetItemCount();
+			item_count = cargo.GetItemCount();
 		}
 		
-		for (int i = 0; i < GetInventory().AttachmentCount(); i++)
+		int nAttachments = inventory.AttachmentCount();
+		for (int i = 0; i < nAttachments; ++i)
 		{
-			Class.CastTo(item,GetInventory().GetAttachmentFromIndex(i));
+			Class.CastTo(item, inventory.GetAttachmentFromIndex(i));
 			if (item)
 				item_count += item.GetNumberOfItems();
 		}
@@ -3558,17 +3613,17 @@ class ItemBase extends InventoryItem
 	
 	override void ClearInventory()
 	{
-		if ((GetGame().IsServer() || !GetGame().IsMultiplayer()) && GetInventory())
+		GameInventory inventory = GetInventory();
+		if ((g_Game.IsServer() || !g_Game.IsMultiplayer()) && inventory)
 		{
-			GameInventory inv = GetInventory();
 			array<EntityAI> items = new array<EntityAI>;
-			inv.EnumerateInventory(InventoryTraversalType.INORDER, items);
-			for (int i = 0; i < items.Count(); i++)
+			inventory.EnumerateInventory(InventoryTraversalType.INORDER, items);
+			for (int i = 0; i < items.Count(); ++i)
 			{
 				ItemBase item = ItemBase.Cast(items.Get(i));
 				if (item)
 				{
-					GetGame().ObjectDelete(item);
+					g_Game.ObjectDelete(item);
 				}
 			}
 		}
@@ -3605,7 +3660,7 @@ class ItemBase extends InventoryItem
 	// Converts energy (from Energy Manager) to quantity, if enabled.
 	void ConvertEnergyToQuantity()
 	{
-		if (GetGame().IsServer() && HasEnergyManager() && GetCompEM().HasConversionOfEnergyToQuantity())
+		if (g_Game.IsServer() && HasEnergyManager() && GetCompEM().HasConversionOfEnergyToQuantity())
 		{
 			if (HasQuantity())
 			{
@@ -3629,8 +3684,8 @@ class ItemBase extends InventoryItem
 	float GetDryingIncrement(string pIncrementName)
 	{
 		string paramPath = string.Format("CfgVehicles %1 EnvironmentWetnessIncrements Drying %2", GetType(), pIncrementName);
-		if (GetGame().ConfigIsExisting(paramPath))
-			return GetGame().ConfigGetFloat(paramPath);
+		if (g_Game.ConfigIsExisting(paramPath))
+			return g_Game.ConfigGetFloat(paramPath);
 		
 		return 0.0;
 	}
@@ -3638,8 +3693,8 @@ class ItemBase extends InventoryItem
 	float GetSoakingIncrement(string pIncrementName)
 	{
 		string paramPath = string.Format("CfgVehicles %1 EnvironmentWetnessIncrements Soaking %2", GetType(), pIncrementName);
-		if (GetGame().ConfigIsExisting(paramPath))
-			return GetGame().ConfigGetFloat(paramPath);
+		if (g_Game.ConfigIsExisting(paramPath))
+			return g_Game.ConfigGetFloat(paramPath);
 		
 		return 0.0;
 	}
@@ -3871,8 +3926,7 @@ class ItemBase extends InventoryItem
 		if (PlayerBase.CastTo(nplayer, player))
 		{
 			m_CanPlayImpactSound = true;
-			//nplayer.OnItemInventoryEnter(this);
-			nplayer.SetEnableQuickBarEntityShortcut(this,!GetHierarchyParent() || GetHierarchyParent().GetInventory().AreChildrenAccessible());	
+			nplayer.SetEnableQuickBarEntityShortcut(this,!GetHierarchyParent() || GetHierarchyParent().GetInventory().AreChildrenAccessible());
 		}
 	}
 	
@@ -3883,19 +3937,15 @@ class ItemBase extends InventoryItem
 		PlayerBase nplayer;
 		if (PlayerBase.CastTo(nplayer,player))
 		{		
-			//nplayer.OnItemInventoryExit(this);
-			nplayer.SetEnableQuickBarEntityShortcut(this,false);
-
+			nplayer.SetEnableQuickBarEntityShortcut(this, false);
 		}
 		
-		//if (!GetGame().IsDedicatedServer())
 		player.GetHumanInventory().ClearUserReservedLocationForContainer(this);
-		
-		
+
 		if (HasEnergyManager())
 		{
 			GetCompEM().UpdatePlugState(); // Unplug the el. device if it's necesarry.
-		}
+		}	
 	}
 
 	// ADVANCED PLACEMENT EVENTS
@@ -4032,7 +4082,7 @@ class ItemBase extends InventoryItem
 	{
 		super.CheckForRoofLimited(timeTresholdMS);
 		
-		float time = GetGame().GetTime();
+		float time = g_Game.GetTime();
 		if ((time - m_PreviousRoofTestTime) >= timeTresholdMS)
 		{
 			m_PreviousRoofTestTime = time;
@@ -4074,7 +4124,7 @@ class ItemBase extends InventoryItem
 		
 		subclassPath = "CfgVehicles " + this.GetType() + " Protection ";
 		
-		return GetGame().ConfigGetFloat(subclassPath + entryName);
+		return g_Game.ConfigGetFloat(subclassPath + entryName);
 	}
 	
 	
@@ -4397,9 +4447,9 @@ class ItemBase extends InventoryItem
 	// override to initialize sounds
 	protected void InitItemSounds()
 	{
-		if (GetPlaceSoundset() == string.Empty && GetDeploySoundset() == string.Empty && GetLoopDeploySoundset() == string.Empty)
+		if (GetPlaceSoundset() == string.Empty && GetDeploySoundset() == string.Empty && GetLoopDeploySoundset() == string.Empty && !GetInventoryItemType().SetDetachSoundEvent() && !GetInventoryItemType().SetAttachSoundEvent())
 			return;
-
+		
 		ItemSoundHandler handler = GetItemSoundHandler();
 
 		if (GetPlaceSoundset() != string.Empty)
@@ -4413,83 +4463,49 @@ class ItemBase extends InventoryItem
 		if (GetLoopDeploySoundset() != string.Empty)
 			handler.AddSound(SoundConstants.ITEM_DEPLOY_LOOP, GetLoopDeploySoundset(), params);
 	}
-	
+		
 	// Start sound using ItemSoundHandler
+	void StartItemSoundServer(int id, int slotId)
+	{
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer()) // single player or server side multiplayer
+		{
+			m_SoundSyncSlotID = slotId;
+			m_SoundSyncPlay = id;
+						
+			SetSynchDirty();
+			
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(ClearStartItemSoundServer);	// in case one is queued already
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearStartItemSoundServer, 100);
+		}
+	}
+	
 	void StartItemSoundServer(int id)
 	{
-		if (!GetGame().IsServer())
-			return;
-		
-		m_SoundSyncPlay = id;
-		SetSynchDirty();
-		
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(ClearStartItemSoundServer);	// in case one is queued already
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearStartItemSoundServer, 100);
+		StartItemSoundServer(id, InventorySlots.INVALID);
 	}
 	
 	// Stop sound using ItemSoundHandler
 	void StopItemSoundServer(int id)
 	{
-		if (!GetGame().IsServer())
+		if (!g_Game.IsServer())
 			return;
 		
 		m_SoundSyncStop = id;
 		SetSynchDirty();
 		
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(ClearStopItemSoundServer);	// in case one is queued already
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearStopItemSoundServer, 100);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(ClearStopItemSoundServer);	// in case one is queued already
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearStopItemSoundServer, 100);
 	}
 	
 	protected void ClearStartItemSoundServer()
 	{
 		m_SoundSyncPlay = 0;
+		m_SoundSyncSlotID = InventorySlots.INVALID;
 	}
 	
 	protected void ClearStopItemSoundServer()
 	{
 		m_SoundSyncStop = 0;
-	}
-				
-	//! Plays sound on item attach. Be advised, the config structure may slightly change in 1.11 update to allow for more complex use.
-	void PlayAttachSound(string slot_type)
-	{
-		if (!GetGame().IsDedicatedServer())
-		{
-			if (ConfigIsExisting("attachSoundSet"))
-			{
-				string cfg_path = "";
-				string soundset = "";
-				string type_name = GetType();
-				
-				TStringArray cfg_soundset_array = new TStringArray;
-				TStringArray cfg_slot_array = new TStringArray;
-				ConfigGetTextArray("attachSoundSet",cfg_soundset_array);
-				ConfigGetTextArray("attachSoundSlot",cfg_slot_array);
-				
-				if (cfg_soundset_array.Count() > 0 && cfg_soundset_array.Count() == cfg_slot_array.Count())
-				{
-					for (int i = 0; i < cfg_soundset_array.Count(); i++)
-					{
-						if (cfg_slot_array[i] == slot_type)
-						{
-							soundset = cfg_soundset_array[i];
-							break;
-						}
-					}
-				}
-				
-				if (soundset != "")
-				{
-					EffectSound sound =	SEffectManager.PlaySound(soundset, GetPosition());
-					sound.SetAutodestroy(true);
-				}
-			}
-		}
-	}
-	
-	void PlayDetachSound(string slot_type)
-	{
-		//TODO - evaluate if needed and devise universal config structure if so
 	}
 	
 	void OnApply(PlayerBase player);
@@ -4760,7 +4776,7 @@ class ItemBase extends InventoryItem
 	
 	bool PairWithDevice(notnull ItemBase otherDevice)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			ItemBase explosive = otherDevice;
 			RemoteDetonatorTrigger trg = RemoteDetonatorTrigger.Cast(this);
@@ -4850,6 +4866,46 @@ class ItemBase extends InventoryItem
 	bool IsDeploySound(){return m_IsDeploySound;}
 	void SetIsPlaceSound(bool is_place_sound);
 	void SetIsDeploySound(bool is_deploy_sound);
+	
+	[Obsolete("Use ItemSoundHandler instead")]
+	//! Plays sound on item attach. Be advised, the config structure may slightly change in 1.11 update to allow for more complex use.
+	void PlayAttachSound(string slot_type)
+	{
+		if (!g_Game.IsDedicatedServer())
+		{
+			if (ConfigIsExisting("attachSoundSet"))
+			{
+				string cfg_path = "";
+				string soundset = "";
+				string type_name = GetType();
+				
+				TStringArray cfg_soundset_array = new TStringArray;
+				TStringArray cfg_slot_array = new TStringArray;
+				ConfigGetTextArray("attachSoundSet",cfg_soundset_array);
+				ConfigGetTextArray("attachSoundSlot",cfg_slot_array);
+				
+				if (cfg_soundset_array.Count() > 0 && cfg_soundset_array.Count() == cfg_slot_array.Count())
+				{
+					for (int i = 0; i < cfg_soundset_array.Count(); i++)
+					{
+						if (cfg_slot_array[i] == slot_type)
+						{
+							soundset = cfg_soundset_array[i];
+							break;
+						}
+					}
+				}
+				
+				if (soundset != "")
+				{
+					EffectSound sound =	SEffectManager.PlaySound(soundset, GetPosition());
+					sound.SetAutodestroy(true);
+				}
+			}
+		}
+	}
+	
+	void PlayDetachSound(string slot_type) {}
 }
 
 EntityAI SpawnItemOnLocation(string object_name, notnull InventoryLocation loc, bool full_quantity)
@@ -4901,7 +4957,7 @@ void SetupSpawnedItem(ItemBase item, float health, float quantity)
 		{
 			Magazine mag = Magazine.Cast(item);
 			if (quantity >= 0)
-			{		
+			{
 				mag.ServerSetAmmoCount(mag.GetAmmoMax() * quantity);
 			}
 			else

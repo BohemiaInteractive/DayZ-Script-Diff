@@ -64,7 +64,7 @@ class ActionDetach: ActionInteractBase
 	
 	override void OnExecute( ActionData action_data )
 	{
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 		{
 			ClearActionJuncture(action_data);
 			return;

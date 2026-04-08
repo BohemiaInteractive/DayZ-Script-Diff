@@ -54,7 +54,7 @@ class RecoilBase
 		m_ReloadTime = weapon.GetReloadTime(muzzleIndex);
 		m_MouseOffsetTarget = vector.YawToVector(m_Angle);
 		m_MouseOffsetTarget = m_MouseOffsetTarget * m_MouseOffsetDistance;
-		m_IsClient = !GetGame().IsDedicatedServer();
+		m_IsClient = !g_Game.IsDedicatedServer();
 		m_CamOffsetDistance *= m_RecoilModifier[2];
 	}
 	

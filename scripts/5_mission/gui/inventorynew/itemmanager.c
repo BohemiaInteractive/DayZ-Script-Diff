@@ -51,11 +51,11 @@ class ItemManager
 		m_SlotInfoShown				= false;
 		
 		#ifdef PLATFORM_CONSOLE
-			m_TooltipWidget			= GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip_xbox.layout", root );
-			m_TooltipSlotWidget		= GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip_slot_xbox.layout", root );
+			m_TooltipWidget			= g_Game.GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip_xbox.layout", root );
+			m_TooltipSlotWidget		= g_Game.GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip_slot_xbox.layout", root );
 		#else
-			m_TooltipWidget			= GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip.layout", root );
-			m_TooltipSlotWidget		= GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip_slot.layout", root );
+			m_TooltipWidget			= g_Game.GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip.layout", root );
+			m_TooltipSlotWidget		= g_Game.GetWorkspace().CreateWidgets("gui/layouts/inventory_new/day_z_inventory_new_tooltip_slot.layout", root );
 		#endif
 		m_TooltipWidget.Show( false );
 		m_TooltipSlotWidget.Show( false );
@@ -179,14 +179,14 @@ class ItemManager
 	{
 		m_HandsDefaultOpenState = is_opened;
 		int hands_default_open_state = m_HandsDefaultOpenState; //from bool to int for easier parsing
-		GetGame().SetProfileString( "defaultOpenStateHands", hands_default_open_state.ToString() );
-		GetGame().SaveProfile();
+		g_Game.SetProfileString( "defaultOpenStateHands", hands_default_open_state.ToString() );
+		g_Game.SaveProfile();
 	}
 
 	bool GetDefaultOpenStateHands( )
 	{
 		string value;
-		GetGame().GetProfileString( "defaultOpenStateHands", value );
+		g_Game.GetProfileString( "defaultOpenStateHands", value );
 		m_HandsDefaultOpenState = value.ToInt();
 		return m_HandsDefaultOpenState;
 	}
@@ -203,7 +203,7 @@ class ItemManager
 
 		if( serialized_types.Count() > 0 )
 		{
-			GetGame().SetProfileStringList( "defaultHeaderOpenStates", serialized_types );
+			g_Game.SetProfileStringList( "defaultHeaderOpenStates", serialized_types );
 		}
 	}
 
@@ -212,7 +212,7 @@ class ItemManager
 		ClearDefaultHeaderOpenStates();
 
 		TStringArray serialized_types = new TStringArray;
-		GetGame().GetProfileStringList( "defaultHeaderOpenStates", serialized_types );
+		g_Game.GetProfileStringList( "defaultHeaderOpenStates", serialized_types );
 
 		for( int i = 0; i < serialized_types.Count(); i++ )
 		{
@@ -235,7 +235,7 @@ class ItemManager
 
 		if( serialized_types.Count() > 0 )
 		{
-			GetGame().SetProfileStringList( "defaultOpenStates", serialized_types );
+			g_Game.SetProfileStringList( "defaultOpenStates", serialized_types );
 		}
 	}
 
@@ -244,7 +244,7 @@ class ItemManager
 		ClearDefaultOpenStates();
 
 		TStringArray serialized_types = new TStringArray;
-		GetGame().GetProfileStringList( "defaultOpenStates", serialized_types );
+		g_Game.GetProfileStringList( "defaultOpenStates", serialized_types );
 
 		for( int i = 0; i < serialized_types.Count(); i++ )
 		{
@@ -302,7 +302,7 @@ class ItemManager
 	void ShowSourceDropzone( EntityAI item )
 	{
 		EntityAI owner = item.GetHierarchyParent();
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 		if (item == player)
 		{
@@ -545,7 +545,7 @@ class ItemManager
 				m_RootWidget.FindAnyWidget("InventoryFrameWidget").GetScreenPos(x1,y1); //allign to the same height
 				y = y1;
 			}
-			else if (x == 0 && y == 0 && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+			else if (x == 0 && y == 0 && g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
 			{
 				GetMousePos(x,y);
 			}
@@ -682,9 +682,9 @@ class ItemManager
 			return false;
 		
 		bool draggable;
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		draggable = !player.GetInventory().HasInventoryReservation( entity, null ) && !player.IsItemsToDelete();
-		draggable = draggable && entity.CanPutIntoHands( GetGame().GetPlayer() );
+		draggable = draggable && entity.CanPutIntoHands( g_Game.GetPlayer() );
 		draggable = draggable && entity.GetInventory().CanRemoveEntity();
 		
 		return draggable;
@@ -718,7 +718,7 @@ class ItemManager
 	
 	static int GetChosenCombinationFlag( EntityAI selectedEntity, EntityAI targetEntity, int relevantFlags, out InventoryLocation dst = null)
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		if (!selectedEntity || !targetEntity)
 			return InventoryCombinationFlags.NONE;
@@ -726,7 +726,7 @@ class ItemManager
 		ItemBase selectedItem = ItemBase.Cast(selectedEntity);
 		ItemBase targetItem = ItemBase.Cast(targetEntity);
 		
-		//EntityAI itemInHands = m_player.GetHumanInventory().GetEntityInHands();
+		//EntityAI itemInHands = m_player.GetEntityInHands();
 		ActionManagerClient amc = ActionManagerClient.Cast(player.GetActionManager());
 		
 		if (relevantFlags & InventoryCombinationFlags.PERFORM_ACTION)
@@ -800,7 +800,7 @@ class ItemManager
 	static int GetCombinationFlags( EntityAI entity1, EntityAI entity2 )
 	{
 		int flags = 0;
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 
 		if (!entity1 || !entity2)
 			return flags;
@@ -825,11 +825,11 @@ class ItemManager
 		}
 		if (!entity1.GetInventory().HasEntityInInventory(entity2) && entity1.GetInventory().CanAddEntityInCargo( entity2, entity2.GetInventory().GetFlipCargo() )) flags = flags | InventoryCombinationFlags.ADD_AS_CARGO;
 
-		if (entity1 == player.GetHumanInventory().GetEntityInHands() || entity2 == player.GetHumanInventory().GetEntityInHands())
+		if (entity1 == player.GetEntityInHands() || entity2 == player.GetEntityInHands())
 		{
 			ActionManagerClient amc;
 			Class.CastTo(amc, player.GetActionManager());
-			if (entity1 == player.GetHumanInventory().GetEntityInHands())
+			if (entity1 == player.GetEntityInHands())
 			{
 				if (amc.CanPerformActionFromInventory( ItemBase.Cast(entity1), ItemBase.Cast(entity2) ))
 				{
@@ -858,7 +858,7 @@ class ItemManager
 	static int GetRecipeCount(bool recipe_anywhere, EntityAI entity1, EntityAI entity2)
 	{
 		PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast(GetPlugin( PluginRecipesManager ));
-		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), NULL, PlayerBase.Cast( GetGame().GetPlayer() ) );
+		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), NULL, PlayerBase.Cast( g_Game.GetPlayer() ) );
 	}
 	
 	ScrollWidget GetLeftSlotsScroller()

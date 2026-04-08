@@ -60,10 +60,10 @@ class RenderTarget: GenericEntity
 		int posY = (float)(screenH * Y);
 		int widthPix = (float)(screenW * Width);
 		int heightPix = (float)(screenH * Height);
-		if (Class.CastTo(m_RenderWidget, GetGame().GetWorkspace().CreateWidget(RenderTargetWidgetTypeID, posX, posY, widthPix, heightPix, WidgetFlags.VISIBLE | WidgetFlags.HEXACTSIZE | WidgetFlags.VEXACTSIZE | WidgetFlags.HEXACTPOS | WidgetFlags.VEXACTPOS, 0xffffffff, Sort)))
+		if (Class.CastTo(m_RenderWidget, g_Game.GetWorkspace().CreateWidget(RenderTargetWidgetTypeID, posX, posY, widthPix, heightPix, WidgetFlags.VISIBLE | WidgetFlags.HEXACTSIZE | WidgetFlags.VEXACTSIZE | WidgetFlags.HEXACTPOS | WidgetFlags.VEXACTPOS, 0xffffffff, Sort)))
 		{	
 			m_RenderWidget.Show(m_Show);	
-			SetWidgetWorld(m_RenderWidget, GetGame().GetWorldEntity(), CameraIndex);
+			SetWidgetWorld(m_RenderWidget, g_Game.GetWorldEntity(), CameraIndex);
 		}
 	}
 	override void EOnInit(IEntity other, int extra) //!EntityEvent.INIT

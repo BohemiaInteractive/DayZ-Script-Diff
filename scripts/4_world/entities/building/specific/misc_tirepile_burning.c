@@ -37,7 +37,7 @@ class Misc_TirePile_Burning_DE : BuildingSuper
 			PlaySoundSetLoop(m_SoundFireLoop, "HeavyFire_SoundSet", 1.0, 2.0);
 		#endif
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
  			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_UpdateInterval		= TIMER_HEATING_UPDATE_INTERVAL;
@@ -70,7 +70,7 @@ class Misc_TirePile_Burning_DE : BuildingSuper
 			m_SoundFireLoop.SoundStop();
 		#endif
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			m_UTSource.SetActive(false);
 			DestroyAreaDamage();
@@ -79,7 +79,7 @@ class Misc_TirePile_Burning_DE : BuildingSuper
 	
 	override void DeferredInit()
 	{
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			if (!m_AreaDamage)
 				CreateAreaDamage();

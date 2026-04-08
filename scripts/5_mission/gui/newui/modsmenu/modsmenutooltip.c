@@ -5,7 +5,7 @@ class ModsMenuTooltip extends ScriptedWidgetEventHandler
 
 	void ModsMenuTooltip(Widget parent)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_tooltip.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_tooltip.layout", parent);
 		m_Text = RichTextWidget.Cast(m_Root.FindAnyWidget("TooltipText"));
 	}
 	

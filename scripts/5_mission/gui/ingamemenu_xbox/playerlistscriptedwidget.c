@@ -10,7 +10,7 @@ class PlayerListScriptedWidget extends ScriptedWidgetEventHandler
 	
 	void PlayerListScriptedWidget( Widget parent, string header_text = "" )
 	{
-		m_Root				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/xbox/ingamemenu_xbox/players_info_panel.layout", parent );
+		m_Root				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/xbox/ingamemenu_xbox/players_info_panel.layout", parent );
 		m_ScrollContainer	= ScrollWidget.Cast( m_Root.FindAnyWidget( "ScrollFrame" ) );
 		m_Content			= m_Root.FindAnyWidget( "Content" );
 		
@@ -279,8 +279,8 @@ class PlayerListScriptedWidget extends ScriptedWidgetEventHandler
 		m_SelectedEntry.Focus();
 		#endif
 
-		if (GetGame().GetUIManager().GetMenu())
-			GetGame().GetUIManager().GetMenu().Refresh();
+		if (g_Game.GetUIManager().GetMenu())
+			g_Game.GetUIManager().GetMenu().Refresh();
 		ScrollToEntry(m_SelectedEntry);
 	}
 	

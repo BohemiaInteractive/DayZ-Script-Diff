@@ -9,7 +9,7 @@ class ManBase extends DayZPlayerImplement // PSOVIS originaly extends Man
 	// ! On Client, 'true' if this instance of a character is controlled by the player(ie. not a remote player)
 	bool IsControlledPlayer()
 	{
-		return( GetGame().GetPlayer() == this );
+		return( g_Game.GetPlayer() == this );
 	}
 
 	// -------------------------------------------------------------------------

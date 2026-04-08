@@ -9,10 +9,11 @@ class WoundAgent : AgentBase
 		m_Invasibility 			= 0.208;//to reach 250 in 20 mins
 		m_TransferabilityIn		= 1;
 		m_TransferabilityOut	= 0;
-		m_AntibioticsResistance = 0.5;//override in a func. GetAntiboticsResistance()
+		m_AntibioticsResistance = 0.5; //deprecated, use m_DrugResistances to initialize this agents resistance to a specific drug, as seen on lines 16
 		m_MaxCount 				= 500;
 		m_Potency 				= EStatLevels.GREAT;
 		m_DieOffSpeed 			= 1;
+		m_DrugResistances.Set(EMedicalDrugsType.ANTIBIOTICS, 0.5);	
 	}
 	
 	override float GetAntibioticsResistanceEx(PlayerBase player)

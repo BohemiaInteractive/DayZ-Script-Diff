@@ -113,7 +113,7 @@ class MeleeTargeting
 		params.SetParams(boxCenter, xzDir.VectorToAngles(), boxSize, ObjIntersect.Fire, ObjIntersect.Fire, true);
 		array<ref BoxCollidingResult> results = new array<ref BoxCollidingResult>;
 		array<Object> toIgnore = { pToIgnore };
-		if (GetGame().IsBoxCollidingGeometryProxy(params, toIgnore, results))
+		if (g_Game.IsBoxCollidingGeometryProxy(params, toIgnore, results))
 		{
 			//
 			float 	retVal 	= float.MAX;

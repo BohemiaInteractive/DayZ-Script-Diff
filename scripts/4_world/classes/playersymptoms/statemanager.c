@@ -100,7 +100,7 @@ class SymptomManager
 	
 	void AutoactivateSymptoms()
 	{
-		if ( GetGame().IsClient() ) 
+		if ( g_Game.IsClient() ) 
 		{
 			return;
 		}
@@ -147,7 +147,7 @@ class SymptomManager
 	
 	void RegisterSymptom(SymptomBase Symptom)
 	{
-		Symptom.Init(this, m_Player,0);
+		Symptom.Init(this, m_Player, 0);
 		int id = Symptom.GetType();
 		
 		if (m_AvailableSymptoms.Contains(id))
@@ -319,37 +319,37 @@ class SymptomManager
 			}
 		}
 	}
-	
+
 	void UpdateActiveSymptoms(float deltatime)
-	{	
-		//if( GetGame().IsClient() && !m_Player.IsPlayer() ) return;
-		//primary
-		if ( GetCurrentPrimaryActiveSymptom() )
-		{ 
-			if ( !GetCurrentPrimaryActiveSymptom().IsActivated() )
-			{
-				if ( GetCurrentPrimaryActiveSymptom().CanActivate() ) 
-					GetCurrentPrimaryActiveSymptom().Activate();
-			}
-			if ( GetCurrentPrimaryActiveSymptom().IsActivated() )
-			{
-				GetCurrentPrimaryActiveSymptom().Update(deltatime);
-			}
-		}
-		//secondary
-		for (int i = 0; i < m_SymptomQueueSecondary.Count(); i++)
+	{
+		SymptomBase primarySymptom = GetCurrentPrimaryActiveSymptom();
+		if (primarySymptom)
 		{
-			if ( m_SymptomQueueSecondary.Get(i) && !m_SymptomQueueSecondary.Get(i).IsActivated() )
-			{
-				m_SymptomQueueSecondary.Get(i).Activate();
-			}
+			if (!primarySymptom.IsActivated() && primarySymptom.CanActivate())
+				primarySymptom.Activate();
+
+			if (primarySymptom.IsActivated() && CanUpdateSymptom(primarySymptom))
+				primarySymptom.Update(deltatime);
 			else
-			{
-				if (m_SymptomQueueSecondary.Get(i)) m_SymptomQueueSecondary.Get(i).Update(deltatime);
-			}
+				primarySymptom.Destroy();
 		}
-	}
+
+		int nSecondarySymptoms = m_SymptomQueueSecondary.Count();
+		for (int i = nSecondarySymptoms - 1; i >= 0; --i)
+		{
+			SymptomBase secondarySymptom = m_SymptomQueueSecondary[i];
+			if (secondarySymptom) 
+			{
+				if (!secondarySymptom.IsActivated())
+					secondarySymptom.Activate();
 	
+				if (secondarySymptom.IsActivated() && CanUpdateSymptom(secondarySymptom))
+					secondarySymptom.Update(deltatime);
+				else
+					secondarySymptom.Destroy();
+			}
+		}		
+	}
 	
 	void OnSymptomExit(SymptomBase Symptom, int uid)
 	{
@@ -391,7 +391,7 @@ class SymptomManager
 		m_Player.SetActivePrimarySymptomID(0);
 		
 		#ifdef DIAG_DEVELOPER
-		if ( GetGame() ) SendServerDebugToClient();
+		if ( g_Game ) SendServerDebugToClient();
 		#endif
 	}
 	
@@ -521,7 +521,7 @@ class SymptomManager
 		if (m_Player.IsUnconscious() && !m_AvailableSymptoms.Get(symptom_id).AllowInUnconscious())
 			return null;
 		
-		SymptomBase Symptom = SpawnSymptom( symptom_id, uid);
+		SymptomBase Symptom = SpawnSymptom(symptom_id, uid);
 		
 		m_SymptomQueueSecondary.Insert(Symptom);
 		return Symptom;
@@ -542,14 +542,14 @@ class SymptomManager
 	
 	SymptomBase GetCurrentPrimaryActiveSymptom()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{ 
 			if ( m_ActiveSymptomIndexPrimary >= 0 && m_ActiveSymptomIndexPrimary < m_SymptomQueuePrimary.Count() )
 			{
 				if ( m_SymptomQueuePrimary.Get(m_ActiveSymptomIndexPrimary) ) return m_SymptomQueuePrimary.Get(m_ActiveSymptomIndexPrimary);
 			}
 		}
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			if ( m_SymptomQueuePrimary.Count() > 0 ) 
 				return m_SymptomQueuePrimary.Get(0);
@@ -670,6 +670,14 @@ class SymptomManager
 		}				
 	}
 	
+	protected bool CanUpdateSymptom(SymptomBase symptom)
+	{
+		if (m_Player.IsUnconscious() && !symptom.AllowInUnconscious())
+			return false;
+		
+		return true;
+	}
+	
 #ifdef DIAG_DEVELOPER
 	void OnRPCDebug(int rpc_type, ParamsReadContext ctx)
 	{
@@ -788,14 +796,14 @@ class SymptomManager
 			debug_list.Insert(p);
 		}
 		
-		GetGame().RPC(GetPlayer(), ERPCs.DIAG_PLAYER_SYMPTOMS_DEBUG, debug_list, true);
+		g_Game.RPC(GetPlayer(), ERPCs.DIAG_PLAYER_SYMPTOMS_DEBUG, debug_list, true);
 	}
 	
 	void DebugRequestExitSymptom(int SYMPTOM_uid)
 	{		
 		CachedObjectsParams.PARAM1_INT.param1 = SYMPTOM_uid;
 		if (GetPlayer())
-			GetGame().RPCSingleParam(GetPlayer(), ERPCs.DIAG_PLAYER_SYMPTOMS_DEBUG_OFF, CachedObjectsParams.PARAM1_INT, true, GetPlayer().GetIdentity());
+			g_Game.RPCSingleParam(GetPlayer(), ERPCs.DIAG_PLAYER_SYMPTOMS_DEBUG_OFF, CachedObjectsParams.PARAM1_INT, true, GetPlayer().GetIdentity());
 	}
 	
 	array<ref Param> PrepareClientDebug(array<ref SymptomBase> Symptoms)
@@ -957,7 +965,7 @@ class SymptomManager
 	{
 		CachedObjectsParams.PARAM1_INT.param1 = symptom_id;
 		if (GetPlayer())
-			GetGame().RPCSingleParam(GetPlayer(), ERPCs.DIAG_PLAYER_SYMPTOMS_DEBUG_ON, CachedObjectsParams.PARAM1_INT, true, GetPlayer().GetIdentity());		
+			g_Game.RPCSingleParam(GetPlayer(), ERPCs.DIAG_PLAYER_SYMPTOMS_DEBUG_ON, CachedObjectsParams.PARAM1_INT, true, GetPlayer().GetIdentity());		
 	}
 	
 #endif

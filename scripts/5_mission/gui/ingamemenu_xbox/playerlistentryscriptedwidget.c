@@ -21,7 +21,7 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 		m_UID				= uid;
 		m_Tab				= tab;
 		
-		m_Root				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/xbox/ingamemenu_xbox/player_info_entry.layout", parent );
+		m_Root				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/xbox/ingamemenu_xbox/player_info_entry.layout", parent );
 		m_PlayerName		= TextWidget.Cast( m_Root.FindAnyWidget( "Name" ) );
 		m_PlayerAvatar		= ImageWidget.Cast( m_Root.FindAnyWidget( "Avatar" ) );
 		m_MicrophoneIcon	= ImageWidget.Cast( m_Root.FindAnyWidget( "Microphone" ) );
@@ -86,7 +86,7 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 	
 	void ToggleMute()
 	{
-		if( !IsLocalPlayer() && !GetGame().GetWorld().IsDisabledReceivingVoN() )
+		if( !IsLocalPlayer() && !g_Game.GetWorld().IsDisabledReceivingVoN() )
 		{
 			m_Mute = !m_Mute;
 			if ( ScriptInputUserData.CanStoreInputUserData() && !m_GlobalMute )
@@ -167,7 +167,7 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 	
 	override bool OnDoubleClick( Widget w, int x, int y, int button )
 	{
-		if( button == MouseState.LEFT && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
+		if( button == MouseState.LEFT && g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
 		{
 			if( !IsLocalPlayer() )
 			{
@@ -179,7 +179,7 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 	
 	override bool OnMouseButtonUp( Widget w, int x, int y, int button )
 	{
-		if( button == MouseState.LEFT && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
+		if( button == MouseState.LEFT && g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
 		{
 			if( w == m_MicrophoneIcon && !m_GlobalMute )
 			{
@@ -193,9 +193,9 @@ class PlayerListEntryScriptedWidget extends ScriptedWidgetEventHandler
 	bool IsLocalPlayer()
 	{
 		string local_uid;
-		if( GetGame().GetUserManager() )
+		if( g_Game.GetUserManager() )
 		{
-			return GetGame().GetUserManager().GetSelectedUser().GetUid() == m_UID;
+			return g_Game.GetUserManager().GetSelectedUser().GetUid() == m_UID;
 		}
 		return false;
 	}

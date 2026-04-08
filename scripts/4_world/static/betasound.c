@@ -17,15 +17,15 @@ class BetaSound
 				path_sound = path_sound_female;
 			}
 			
-			GetGame().ConfigGetTextArray(path_sound,CachedObjectsArrays.ARRAY_STRING);
+			g_Game.ConfigGetTextArray(path_sound,CachedObjectsArrays.ARRAY_STRING);
 			int rnd_index = Math.RandomInt(0,CachedObjectsArrays.ARRAY_STRING.Count());
 			string sound_class = CachedObjectsArrays.ARRAY_STRING.Get(rnd_index);
-			SoundOnVehicle sound_object = GetGame().CreateSoundOnObject(source, sound_class, distance, looped);
+			SoundOnVehicle sound_object = g_Game.CreateSoundOnObject(source, sound_class, distance, looped);
 			return sound_object;
 		}
 		else
 		{
-			return GetGame().CreateSoundOnObject(source, sound_name, distance, looped);
+			return g_Game.CreateSoundOnObject(source, sound_name, distance, looped);
 		}
 	}
 

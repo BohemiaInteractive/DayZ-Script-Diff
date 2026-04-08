@@ -6,7 +6,7 @@ class DeveloperTeleport
 	{
 		if ( !DeveloperFreeCamera.IsFreeCameraEnabled() )
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			vector pos_player = player.GetPosition();
 			
 			Object ignore;
@@ -15,8 +15,8 @@ class DeveloperTeleport
 				ignore = player;
 			}
 
-			vector rayStart = GetGame().GetCurrentCameraPosition();
-			vector rayEnd = rayStart + GetGame().GetCurrentCameraDirection() * 1000;		
+			vector rayStart = g_Game.GetCurrentCameraPosition();
+			vector rayEnd = rayStart + g_Game.GetCurrentCameraDirection() * 1000;		
 			vector hitPos;
 			vector hitNormal;
 			int hitComponentIndex;		
@@ -44,9 +44,9 @@ class DeveloperTeleport
 	protected static const float TELEPORT_DISTANCE_MAX_EX = 500;
 	static void TeleportAtCursorEx()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		vector rayStart = GetGame().GetCurrentCameraPosition();
-		vector rayEnd = rayStart + GetGame().GetCurrentCameraDirection() * TELEPORT_DISTANCE_MAX_EX;		
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		vector rayStart = g_Game.GetCurrentCameraPosition();
+		vector rayEnd = rayStart + g_Game.GetCurrentCameraDirection() * TELEPORT_DISTANCE_MAX_EX;		
 		vector hitPos;
 		vector hitNormal;
 		float hitFraction;
@@ -117,7 +117,7 @@ class DeveloperTeleport
 		Object playerRoot = GetPlayerRootForTeleporting(player);
 		
 #ifdef DIAG_DEVELOPER
-		if (GetGame().IsMultiplayer() && breakSync)
+		if (g_Game.IsMultiplayer() && breakSync)
 		{
 			vector v;
 			v[0] = Math.RandomFloat(-Math.PI, Math.PI);
@@ -133,12 +133,12 @@ class DeveloperTeleport
 		}
 #endif
 
-		if (position[1] < GetGame().SurfaceGetSeaLevel())
+		if (position[1] < g_Game.SurfaceGetSeaLevel())
 		{
-			position[1] = GetGame().SurfaceGetSeaLevel();
+			position[1] = g_Game.SurfaceGetSeaLevel();
 		}
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			playerRoot.SetPosition(position);
 		}
@@ -154,7 +154,7 @@ class DeveloperTeleport
 	{
 		Object playerRoot = GetPlayerRootForTeleporting(player);
 
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			playerRoot.SetDirection(direction);
 		}

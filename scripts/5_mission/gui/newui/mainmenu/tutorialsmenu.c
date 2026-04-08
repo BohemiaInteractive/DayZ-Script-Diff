@@ -24,9 +24,9 @@ class TutorialsMenu extends UIScriptedMenu
 	override Widget Init()
 	{
 		#ifdef PLATFORM_CONSOLE
-		layoutRoot	= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/tutorials.layout");
+		layoutRoot	= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/tutorials.layout");
 		#else
-		layoutRoot	= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/pc/tutorials.layout");
+		layoutRoot	= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/pc/tutorials.layout");
 		#endif
 		
 		m_InfoTextLeft	= layoutRoot.FindAnyWidget("InfoTextLeft");
@@ -38,7 +38,7 @@ class TutorialsMenu extends UIScriptedMenu
 		m_TabScript.m_OnTabSwitch.Insert(DrawConnectingLines);
 		
 		#ifdef PLATFORM_CONSOLE
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 		{
 			m_KeybindsTab = new TutorialKeybinds(layoutRoot.FindAnyWidget("Tab_6"), this);
 			m_TabScript.EnableTabControl(6, true);
@@ -56,8 +56,8 @@ class TutorialsMenu extends UIScriptedMenu
 		PPERequesterBank.GetRequester(PPERequester_TutorialMenu).Start(new Param1<float>(0.6));
 		DrawConnectingLines(0);
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
 		return layoutRoot;
 	}
@@ -78,22 +78,22 @@ class TutorialsMenu extends UIScriptedMenu
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
-		bool mkServer = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		bool mk = g_Game.GetInput().IsEnabledMouseAndKeyboard();
+		bool mkServer = g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
 
 		switch (pInputDeviceType)
 		{
 		case EInputDeviceType.CONTROLLER:
 			if (mk && mkServer)
 			{
-				GetGame().GetUIManager().ShowUICursor(false);
+				g_Game.GetUIManager().ShowUICursor(false);
 			}
 		break;
 
 		default:
 			if (mk && mkServer)
 			{
-				GetGame().GetUIManager().ShowUICursor(true);
+				g_Game.GetUIManager().ShowUICursor(true);
 			}
 		break;
 		}
@@ -106,12 +106,12 @@ class TutorialsMenu extends UIScriptedMenu
 		super.OnShow();
 		
 		SetFocus(null);
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 	}
 	
 	void Back()
 	{
-		GetGame().GetUIManager().Back();
+		g_Game.GetUIManager().Back();
 	}
 	
 	void DrawConnectingLines(int index)
@@ -317,10 +317,10 @@ class TutorialsMenu extends UIScriptedMenu
 		array<ref JsonControlMappingInfo> control_mapping_info = new array<ref JsonControlMappingInfo>;
 		string file_path = PATH_MOUSEKEY; //remains set for PC vatiant
 		string profile_name = "";
-		GetGame().GetInput().GetProfileName(GetGame().GetInput().GetCurrentProfile(),profile_name);
+		g_Game.GetInput().GetProfileName(g_Game.GetInput().GetCurrentProfile(),profile_name);
 		
 #ifdef PLATFORM_CONSOLE
-		if (!GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+		if (!g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
 		{
 			if (profile_name == "#STR_UAPRESET_0")
 			{
@@ -581,9 +581,6 @@ class TutorialsMenu extends UIScriptedMenu
 			string text = string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 			toolbar_text.SetText(text);
 		}
-		
-		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
-		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		#endif
 	}
 	
@@ -591,7 +588,7 @@ class TutorialsMenu extends UIScriptedMenu
 	{
 		bool toolbarShow = false;
 		#ifdef PLATFORM_CONSOLE
-		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		toolbarShow = !g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
 		#endif
 		
 		#ifdef PLATFORM_CONSOLE

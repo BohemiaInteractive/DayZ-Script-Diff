@@ -49,7 +49,7 @@ class VicinityItemManager
 			return;
 		}
 		
-		if (GameInventory.CheckManipulatedObjectsDistances(entity, GetGame().GetPlayer(), VICINITY_CONE_REACH_DISTANCE + 1.0) == false)
+		if (GameInventory.CheckManipulatedObjectsDistances(entity, g_Game.GetPlayer(), VICINITY_CONE_REACH_DISTANCE + 1.0) == false)
 		{
 			if (!FreeDebugCamera.GetInstance() || FreeDebugCamera.GetInstance().IsActive() == false)
 			{
@@ -95,7 +95,7 @@ class VicinityItemManager
 		if (!Class.CastTo(entity, actor_in_radius))
 			return true;
 
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		if (entity == player)
 			return true;
 		if (entity.IsParticle())
@@ -156,7 +156,7 @@ class VicinityItemManager
 
 		if (!Class.CastTo(entity, object_in_radius))
 			return true;
-		if (entity == PlayerBase.Cast(GetGame().GetPlayer()))
+		if (entity == PlayerBase.Cast(g_Game.GetPlayer()))
 			return true;
 		if (entity.IsParticle())
 			return true;
@@ -177,7 +177,7 @@ class VicinityItemManager
 	bool ExcludeFromContainer_Phase3(Object object_in_cone)
 	{
 		EntityAI entity;
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 
 		//Print("---object in cone: " + object_in_cone);
 		if (!Class.CastTo(entity, object_in_cone))
@@ -208,7 +208,7 @@ class VicinityItemManager
 	//per frame call
 	void RefreshVicinityItems()
 	{
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 		array<Object> objectsInVicinity 	= new array<Object>();
 		array<CargoBase> proxyCargos 		= new array<CargoBase>();
@@ -242,7 +242,7 @@ class VicinityItemManager
 		
 		//1. GetAll actors in VICINITY_ACTOR_DISTANCE
 		//DebugActorsSphereDraw(VICINITY_ACTOR_DISTANCE);
-		GetGame().GetObjectsAtPosition3D(playerPosition, VICINITY_ACTOR_DISTANCE, objectsInVicinity, proxyCargos);
+		g_Game.GetObjectsAtPosition3D(playerPosition, VICINITY_ACTOR_DISTANCE, objectsInVicinity, proxyCargos);
 		
 		// no filtering for cargo (initial implementation)		
 		foreach (CargoBase cargoObject : proxyCargos)
@@ -265,7 +265,7 @@ class VicinityItemManager
 			objectsInVicinity.Clear();
 		
 		//2. GetAll Objects in VICINITY_DISTANCE
-		GetGame().GetObjectsAtPosition3D(playerPosition, VICINITY_DISTANCE, objectsInVicinity, proxyCargos);
+		g_Game.GetObjectsAtPosition3D(playerPosition, VICINITY_DISTANCE, objectsInVicinity, proxyCargos);
 		//DebugObjectsSphereDraw(VICINITY_DISTANCE);
 		
 		//filter unnecessary and duplicate objects beforehand
@@ -346,7 +346,7 @@ class VicinityItemManager
 
 		params.SetParams(playerPosition, headingDirection.VectorToAngles(), boxEdgeLength * 2, ObjIntersect.View, ObjIntersect.Fire, true);
 		array<ref BoxCollidingResult> results = new array<ref BoxCollidingResult>();
-		if (GetGame().IsBoxCollidingGeometryProxy(params, {player}, results))
+		if (g_Game.IsBoxCollidingGeometryProxy(params, {player}, results))
 		{
 			foreach (BoxCollidingResult bResult : results)
 			{
@@ -436,12 +436,12 @@ class VicinityItemManager
 	{
 		CleanupDebugShapes(rayShapes);
 		
-		rayShapes.Insert(Debug.DrawSphere( GetGame().GetPlayer().GetPosition(), radius, COLOR_GREEN, ShapeFlags.TRANSP|ShapeFlags.WIREFRAME));
+		rayShapes.Insert(Debug.DrawSphere( g_Game.GetPlayer().GetPosition(), radius, COLOR_GREEN, ShapeFlags.TRANSP|ShapeFlags.WIREFRAME));
 	}
 	
 	private void DebugObjectsSphereDraw(float radius)
 	{		
-		rayShapes.Insert(Debug.DrawSphere(GetGame().GetPlayer().GetPosition(), radius, COLOR_GREEN, ShapeFlags.TRANSP|ShapeFlags.WIREFRAME));
+		rayShapes.Insert(Debug.DrawSphere(g_Game.GetPlayer().GetPosition(), radius, COLOR_GREEN, ShapeFlags.TRANSP|ShapeFlags.WIREFRAME));
 	}
 	
 	private void DebugRaycastDraw(vector start, vector end)
@@ -455,7 +455,7 @@ class VicinityItemManager
 		float playerAngle;
 		float xL,xR,zL,zR;
 		
-		playerAngle = MiscGameplayFunctions.GetHeadingAngle(PlayerBase.Cast(GetGame().GetPlayer()));
+		playerAngle = MiscGameplayFunctions.GetHeadingAngle(PlayerBase.Cast(g_Game.GetPlayer()));
 
 		endL = start;
 		endR = start;

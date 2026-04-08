@@ -35,7 +35,7 @@ class InGameMenu extends UIScriptedMenu
 
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_ingamemenu.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_ingamemenu.layout");
 				
 		m_ContinueButton			= layoutRoot.FindAnyWidget("continuebtn");
 		m_SeparatorPanel			= layoutRoot.FindAnyWidget("separator_red");
@@ -56,7 +56,7 @@ class InGameMenu extends UIScriptedMenu
 		m_CopyInfoButton 			= layoutRoot.FindAnyWidget("copy_button");
 		m_FeedbackButton			= layoutRoot.FindAnyWidget("feedbackbtn");
 		
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			ButtonSetText(m_RestartButton, "#main_menu_respawn");
 		}
@@ -81,7 +81,7 @@ class InGameMenu extends UIScriptedMenu
 	{
 		TextWidget version_widget = TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		version_widget.SetText("#main_menu_version" + " " + version);
 
 		#ifdef PREVIEW_BUILD
@@ -91,7 +91,7 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected bool SetServerInfo()
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			MenuData menu_data = g_Game.GetMenuData();
 			GetServersResultRow info = OnlineServices.GetCurrentServerInfo();
@@ -134,7 +134,7 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void HudShow(bool show)
 	{
-		Mission mission = GetGame().GetMission();
+		Mission mission = g_Game.GetMission();
 		if (mission)
 		{
 			IngameHud hud = IngameHud.Cast(mission.GetHud());
@@ -170,7 +170,7 @@ class InGameMenu extends UIScriptedMenu
 		else if (w == m_RestartButton)
 		{
 			#ifdef DEVELOPER
-			if (GetGame().IsMultiplayer() || (GetGame().GetPlayer() && GetGame().GetPlayer().IsUnconscious()))
+			if (g_Game.IsMultiplayer() || (g_Game.GetPlayer() && g_Game.GetPlayer().IsUnconscious()))
 				OnClick_Restart();
 			else
 			{
@@ -200,7 +200,7 @@ class InGameMenu extends UIScriptedMenu
 		}
 		else if (w == m_CopyInfoButton)
 		{
-			GetGame().CopyToClipboard(m_ServerInfoText);
+			g_Game.CopyToClipboard(m_ServerInfoText);
 		}
 		else if (w == m_FeedbackButton)
 		{
@@ -212,14 +212,14 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void OnClick_Continue()
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().Continue);
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetMission().Continue);
 	}
 	
 	protected void OnClick_Restart()
 	{
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().RestartMission);
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.RestartMission);
 		}
 		else
 		{
@@ -229,17 +229,17 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void OnClick_Respawn()
 	{
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		
 		if (player && player.IsUnconscious() && !player.IsDamageDestroyed())
 		{
-			GetGame().GetUIManager().ShowDialog("#main_menu_respawn", "#main_menu_respawn_question", IDC_INT_RETRY, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
+			g_Game.GetUIManager().ShowDialog("#main_menu_respawn", "#main_menu_respawn_question", IDC_INT_RETRY, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
 		}
 		else
 		{
-			if (GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
+			if (g_Game.GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
 			{
-				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
+				g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
 			}
 			else
 			{
@@ -255,8 +255,8 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void OnClick_Exit()
 	{
-		GetGame().LogoutRequestTime();
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().CreateLogoutMenu, this);
+		g_Game.LogoutRequestTime();
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetMission().CreateLogoutMenu, this);
 	}
 	
 	override bool OnModalResult(Widget w, int x, int y, int code, int result)
@@ -264,15 +264,15 @@ class InGameMenu extends UIScriptedMenu
 		super.OnModalResult(w, x, y, code, result);
 		if (code == IDC_INT_EXIT && result == DBB_YES)
 		{
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 			{
-				GetGame().LogoutRequestTime();
-				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().CreateLogoutMenu, this);
+				g_Game.LogoutRequestTime();
+				g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetMission().CreateLogoutMenu, this);
 			}
 			else
 			{
 				// skip logout screen in singleplayer
-				GetGame().GetMission().AbortMission();
+				g_Game.GetMission().AbortMission();
 			}	
 			g_Game.CancelLoginTimeCountdown();
 			return true;
@@ -281,18 +281,18 @@ class InGameMenu extends UIScriptedMenu
 		{
 			g_Game.CancelLoginTimeCountdown();
 		}
-		else if (code == IDC_INT_RETRY && result == DBB_YES && GetGame().IsMultiplayer())
+		else if (code == IDC_INT_RETRY && result == DBB_YES && g_Game.IsMultiplayer())
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			//! We dont want players to see the respawn dialog when they are still alive and not unconscious anymore (edge case).
 			if (player && player.IsAlive() && !player.IsUnconscious())
 			{
 				return true;
 			}
 			
-			if (GetGame().GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
+			if (g_Game.GetMission().GetRespawnModeClient() == GameConstants.RESPAWN_MODE_CUSTOM)
 			{
-				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
+				g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetUIManager().EnterScriptedMenu,MENU_RESPAWN_DIALOGUE,this);
 			} 
 			else
 			{
@@ -317,10 +317,10 @@ class InGameMenu extends UIScriptedMenu
 		m_RestartButton.Show(false);
 		m_RespawnButton.Show(false);
 		#else
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		bool playerAlive = player && player.GetPlayerState() == EPlayerStates.ALIVE;
 
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			m_RestartButton.Show(playerAlive && player.IsUnconscious() && !CfgGameplayHandler.GetDisableRespawnInUnconsciousness());
 			m_RespawnButton.Show(!playerAlive);
@@ -344,17 +344,17 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void GameRespawn(bool random)
 	{
-		GetGame().GetMenuDefaultCharacterData(false).SetRandomCharacterForced(random);
-		GetGame().RespawnPlayer();
+		g_Game.GetMenuDefaultCharacterData(false).SetRandomCharacterForced(random);
+		g_Game.RespawnPlayer();
 		
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		if (player)
 		{
 			player.SimulateDeath(true);
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(player.ShowDeadScreen, true, 0);
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(player.ShowDeadScreen, true, 0);
 		}
 		
-		MissionGameplay missionGP = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay missionGP = MissionGameplay.Cast(g_Game.GetMission());
 		missionGP.DestroyAllMenus();
 		missionGP.SetPlayerRespawning(true);
 		missionGP.Continue();
@@ -421,7 +421,7 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void OpenFeedback()
 	{
-		GetGame().OpenURL("https://feedback.bistudio.com/project/view/2/");
+		g_Game.OpenURL("https://feedback.bistudio.com/project/view/2/");
 	}
 	
 	//! DEPRECATED

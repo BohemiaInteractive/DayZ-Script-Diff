@@ -30,7 +30,7 @@ class ContextMenu extends ScriptedWidgetEventHandler
 		m_builtIn = builtIn;
 		if (!m_context_menu_root_widget)
 		{
-			m_context_menu_root_widget = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_inventory_context_menu.layout", layoutRoot);
+			m_context_menu_root_widget = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_inventory_context_menu.layout", layoutRoot);
 			m_context_menu_panel_widget = m_context_menu_root_widget.FindAnyWidget("PanelWidget");
 			m_context_menu_root_widget.Show(false);
 			m_context_menu_root_widget.SetHandler(this);
@@ -162,9 +162,9 @@ class ContextMenu extends ScriptedWidgetEventHandler
 			if (actionId == EActions.DELETE)
 				Hide();
 			
-			UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
+			UIScriptedMenu menu = g_Game.GetUIManager().GetMenu();
 			if (menu)
-				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(menu.Refresh);
+				g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(menu.Refresh);
 			
 			ctx.Call();
 

@@ -9,7 +9,7 @@ class VolcanicTrigger : EffectTrigger
 		
 	override void EEInit()
 	{
-		if (GetGame().IsServer() && !m_SourceDamageInstance)
+		if (g_Game.IsServer() && !m_SourceDamageInstance)
 			m_SourceDamageInstance = this;
 		
 		super.EEInit();
@@ -83,7 +83,7 @@ class VolcanicTrigger : EffectTrigger
 	protected void SpawnVaporEffect()
 	{
 		vector pos = GetPosition();
-		pos[1] = GetGame().SurfaceY(pos[0], pos[2]) + 0.5;	// Snap to terrain surface
+		pos[1] = g_Game.SurfaceY(pos[0], pos[2]) + 0.5;	// Snap to terrain surface
 		
 		m_VaporParticle = ParticleManager.GetInstance().PlayInWorld(ParticleList.VOLCANO, pos);
 		

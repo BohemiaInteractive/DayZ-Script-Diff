@@ -70,7 +70,7 @@ class ActionDialCombinationLockOnTarget: ActionContinuousBase
 			//check for unlock state
 			if (!combination_lock.IsLockedOnGate())
 			{
-				if (GetGame().IsMultiplayer())
+				if (g_Game.IsMultiplayer())
 					ClearActionJuncture(action_data);
 				else 
 					ClearInventoryReservationEx(action_data);

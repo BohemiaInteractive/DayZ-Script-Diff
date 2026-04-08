@@ -103,7 +103,7 @@ class ActionSwitchSeats: ActionBase
 			il.SetVehicle(transport, action_data.m_Player, nextSeat);
 		
 			//Lock target
-			if (GetGame().AddInventoryJunctureEx(action_data.m_Player, action_data.m_Player, il, true, 10000))
+			if (g_Game.AddInventoryJunctureEx(action_data.m_Player, action_data.m_Player, il, true, 10000, action_data))
 			{
 				accepted = true;
 				action_data.m_ReservedInventoryLocations.Insert(il);
@@ -113,7 +113,7 @@ class ActionSwitchSeats: ActionBase
 			{
 				il.SetVehicle(transport, action_data.m_Player, currSeat);
 			
-				if (GetGame().AddInventoryJunctureEx(action_data.m_Player, action_data.m_Player, il, true, 10000))
+				if (g_Game.AddInventoryJunctureEx(action_data.m_Player, action_data.m_Player, il, true, 10000, action_data))
 				{
 					action_data.m_ReservedInventoryLocations.Insert(il);
 				}

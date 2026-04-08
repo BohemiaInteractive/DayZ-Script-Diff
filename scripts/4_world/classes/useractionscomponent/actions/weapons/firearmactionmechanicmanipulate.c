@@ -35,7 +35,7 @@ class FirearmActionMechanicManipulate : FirearmActionBase
 		Weapon_Base wpn = Weapon_Base.Cast(item);
 		if ( player.GetWeaponManager().CanEjectBullet(wpn))
 		{
-			if( GetGame().IsServer() && GetGame().IsMultiplayer() )
+			if( g_Game.IsServer() && g_Game.IsMultiplayer() )
 			{
 				result = true;
 			}

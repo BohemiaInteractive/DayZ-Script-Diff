@@ -71,7 +71,7 @@ void ejectBulletAndStoreInMagazine(Weapon_Base weapon, int muzzleIndex, Magazine
 
 	if (mag == null)
 	{
-		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+		if (!g_Game.IsMultiplayer() || g_Game.IsServer())
 		{
 			//! no magazine configured in parent state, looking in inventory
 			if (DayZPlayerUtils.HandleStoreCartridge(p, weapon, muzzleIndex, damage, type, magazineTypeName))
@@ -81,7 +81,7 @@ void ejectBulletAndStoreInMagazine(Weapon_Base weapon, int muzzleIndex, Magazine
 			}
 			else
 				Error("[wpnfsm] " + Object.GetDebugName(weapon) + " ejectBulletAndStoreInMagazine, error - cannot store cartridge!");
-			if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+			if (!g_Game.IsMultiplayer() || g_Game.IsServer())
 		}
 	}
 	else
@@ -100,9 +100,9 @@ void ejectBulletAndStoreInMagazine(Weapon_Base weapon, int muzzleIndex, Magazine
 bool magazinesHaveEqualSizes(notnull Magazine mag, notnull Magazine mag2)
 {
 	int w, h;
-	GetGame().GetInventoryItemSize(mag, w, h);
+	g_Game.GetInventoryItemSize(mag, w, h);
 	int w2, h2;
-	GetGame().GetInventoryItemSize(mag2, w2, h2);
+	g_Game.GetInventoryItemSize(mag2, w2, h2);
 	if (w == w2 && h == h2)
 	{
 		if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] guard - same inventory sizes"); }

@@ -41,7 +41,7 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 	{
 		for (int i = 0; i < MAX_SIMULTANEOUS_UTS; i++)
 		{
-			m_RootWidget[i] = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_debug_remoteinfo.layout");
+			m_RootWidget[i] = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_debug_remoteinfo.layout");
 			m_StatListWidgets[i] = TextListboxWidget.Cast(m_RootWidget[i].FindAnyWidget("TextListboxWidget0"));
 			m_HeaderWidget[i] = TextWidget.Cast(m_RootWidget[i].FindAnyWidget("TextWidget0"));
 		}
@@ -160,8 +160,8 @@ class PluginUniversalTemperatureSourceClient extends PluginBase
 		{
 			UTemperatureSourceDebug utsd = m_UTemperatureSourceDebugs[i];
 			vector pos = utsd.GetValue(0).ToVector();
-			vector screen_pos_stats = GetGame().GetScreenPos(pos + "0 0 0");
-			vector screen_pos_damage = GetGame().GetScreenPos(pos + "0 2 0");
+			vector screen_pos_stats = g_Game.GetScreenPos(pos + "0 0 0");
+			vector screen_pos_damage = g_Game.GetScreenPos(pos + "0 2 0");
 			m_RootWidget[i].SetPos(screen_pos_stats[0], screen_pos_stats[1]);
 			
 			if (screen_pos_stats[2] > 0 && screen_pos_stats[0] > 0 && screen_pos_stats[1] > 0)

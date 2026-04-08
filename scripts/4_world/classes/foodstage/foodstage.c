@@ -117,21 +117,21 @@ class FoodStage
 				// Insert visual properties
 				array<float> visual_properties = new array<float>;
 				string path = string.Format("CfgVehicles %1 Food FoodStages %2 visual_properties", foodType, GetFoodStageName(i));
-				GetGame().ConfigGetFloatArray( path, visual_properties);
+				g_Game.ConfigGetFloatArray( path, visual_properties);
 				
 				stagePropertiesMap.Insert( VISUAL_PROPERTIES_HASH , visual_properties );
 				
 				// Insert nutrition properties
 				array<float> nutrition_properties = new array<float>;
 				path = string.Format("CfgVehicles %1 Food FoodStages %2 nutrition_properties", foodType, GetFoodStageName(i));
-				GetGame().ConfigGetFloatArray( path, nutrition_properties);
+				g_Game.ConfigGetFloatArray( path, nutrition_properties);
 				
 				stagePropertiesMap.Insert( NUTRITION_PROPERTIES_HASH, nutrition_properties );
 				
 				// Insert cooking properties
 				array<float> cooking_properties = new array<float>;
 				path = string.Format("CfgVehicles %1 Food FoodStages %2 cooking_properties", foodType, GetFoodStageName(i));
-				GetGame().ConfigGetFloatArray( path, cooking_properties);
+				g_Game.ConfigGetFloatArray( path, cooking_properties);
 				
 				stagePropertiesMap.Insert( COOKING_PROPERTIES_HASH , cooking_properties );
 				
@@ -166,18 +166,18 @@ class FoodStage
 				map<int, ref array<int>> stageTransitionsMap = new map<int, ref array<int>>;
 				string config_path = string.Format("CfgVehicles %1 Food FoodStageTransitions %2", foodType, GetFoodStageName( i ) );
 				
-				for ( int j = 0; j < GetGame().ConfigGetChildrenCount( config_path ); ++j )
+				for ( int j = 0; j < g_Game.ConfigGetChildrenCount( config_path ); ++j )
 				{
 					array<int> stageTransition = new array<int>;
 					string classCheck; // Used to get any existing transition class
-					GetGame().ConfigGetChildName( config_path, j, classCheck );
+					g_Game.ConfigGetChildName( config_path, j, classCheck );
 					
 					string transition_path = string.Format("%1 %2", config_path, classCheck );
-					if ( GetGame().ConfigIsExisting( transition_path ) ) //TODO: we already know that from 'ConfigGetChildName', redundant?
+					if ( g_Game.ConfigIsExisting( transition_path ) ) //TODO: we already know that from 'ConfigGetChildName', redundant?
 					{
 						int transitionClassHash = classCheck.Hash();
-						stageTransition.Insert( GetGame().ConfigGetInt( string.Format("%1 transition_to", transition_path) ) );
-						stageTransition.Insert( GetGame().ConfigGetInt( string.Format("%1 cooking_method", transition_path) ) );
+						stageTransition.Insert( g_Game.ConfigGetInt( string.Format("%1 transition_to", transition_path) ) );
+						stageTransition.Insert( g_Game.ConfigGetInt( string.Format("%1 cooking_method", transition_path) ) );
 						stageTransitionsMap.Insert( transitionClassHash, stageTransition);
 						
 						// We only want one entry per key
@@ -282,23 +282,23 @@ class FoodStage
 			//get modifiers class for nutrition values
 			string config_path = string.Format("CfgVehicles %1 Food nutrition_modifiers_class", classname);
 			
-			if ( GetGame().ConfigIsExisting( config_path ) )
+			if ( g_Game.ConfigIsExisting( config_path ) )
 			{
 				string nutr_mod_class;
-				GetGame().ConfigGetText( config_path, nutr_mod_class );
+				g_Game.ConfigGetText( config_path, nutr_mod_class );
 				
 				config_path = string.Format("CfgVehicles NutritionModifiers %1 base_stage", nutr_mod_class);
 				string nutr_base_stage;
-				GetGame().ConfigGetText( config_path, nutr_base_stage );
+				g_Game.ConfigGetText( config_path, nutr_base_stage );
 				
 				//get nutrition values for food stage and modifiers 
 				config_path = string.Format("CfgVehicles %1 Food FoodStages %2 nutrition_properties", classname, nutr_base_stage);
 				array<float> base_nutr_properties = new array<float>;
-				GetGame().ConfigGetFloatArray( config_path, base_nutr_properties );
+				g_Game.ConfigGetFloatArray( config_path, base_nutr_properties );
 				
 				config_path = string.Format("CfgVehicles NutritionModifiers %1 %2 nutrition_properties", nutr_mod_class, food_stage_name);
 				array<float> nutr_mod_properties = new array<float>;
-				GetGame().ConfigGetFloatArray( config_path, nutr_mod_properties );
+				g_Game.ConfigGetFloatArray( config_path, nutr_mod_properties );
 				
 				//base nutrition * food stage nutrition modifier
 				if ( base_nutr_properties.Count() > 0 && nutr_mod_properties.Count() > 0 )

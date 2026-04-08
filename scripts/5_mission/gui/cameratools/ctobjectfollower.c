@@ -20,7 +20,7 @@ class CTObjectFollower extends ScriptedWidgetEventHandler
 	
 	void CreateFollowedObject( string type )
 	{
-		m_FollowedObject = EntityAI.Cast( GetGame().CreateObject( type, m_Position, true ) );
+		m_FollowedObject = EntityAI.Cast( g_Game.CreateObject( type, m_Position, true ) );
 		SetPosition( m_Position );
 		SetRotation( m_Orientation );
 	}
@@ -29,7 +29,7 @@ class CTObjectFollower extends ScriptedWidgetEventHandler
 	{
 		if( m_FollowedObject )
 		{
-			GetGame().ObjectDelete( m_FollowedObject );
+			g_Game.ObjectDelete( m_FollowedObject );
 		}
 	}
 	
@@ -91,7 +91,7 @@ class CTObjectFollower extends ScriptedWidgetEventHandler
 	{
 		vector relativePos;
 			
-		relativePos		=	GetGame().GetScreenPosRelative( GetPosition() );
+		relativePos		=	g_Game.GetScreenPosRelative( GetPosition() );
 		
 		if( relativePos[0] >= 1 || relativePos[0] == 0 || relativePos[1] >= 1 || relativePos[1] == 0 )
 		{

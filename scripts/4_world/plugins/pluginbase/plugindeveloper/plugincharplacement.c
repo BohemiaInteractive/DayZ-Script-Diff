@@ -37,7 +37,7 @@ class PluginCharPlacement extends PluginBase
 			m_Character.Delete();
 		
 		m_Initialized = true;
-		m_Character = PlayerBase.Cast( GetGame().CreateObject("SurvivorF_Judy", FreeDebugCamera.GetInstance().GetPosition(), false, false/*ai*/) );
+		m_Character = PlayerBase.Cast( g_Game.CreateObject("SurvivorF_Judy", FreeDebugCamera.GetInstance().GetPosition(), false, false/*ai*/) );
 		
 		FreeDebugCamera.GetInstance().SetFOV(FOV); //default scene FOV
 		m_demoRot = "0 0 0";
@@ -73,7 +73,7 @@ class PluginCharPlacement extends PluginBase
 		Math3D.DirectionAndUpMatrix(m_camera_dir/* - SnapToGround(cam_pos)*/, "0 1 0", m_cameraTrans);
 		m_cameraTrans[3] = cam_pos;
 		m_demoPos = Vector(/*0.685547, -0.988281,*/0,0, 3.68823).Multiply4(m_cameraTrans);
-		m_demoPos[1] = GetGame().SurfaceY(m_demoPos[0], m_demoPos[2]);
+		m_demoPos[1] = g_Game.SurfaceY(m_demoPos[0], m_demoPos[2]);
 		
 		return m_demoPos;
 	}

@@ -30,7 +30,7 @@ class DayZSpectator : Camera
 		vector forwardChange = forward * timeSlice * direction * speed;
 		vector strafeChange = strafe * timeSlice * directionAside * speed;
 		vector newPos = oldPos + forwardChange + strafeChange;
-		float yMin = GetGame().SurfaceRoadY(newPos[0], newPos[2]);
+		float yMin = g_Game.SurfaceRoadY(newPos[0], newPos[2]);
 		if (newPos[1] < yMin)
 			newPos[1] = yMin;
 		
@@ -51,7 +51,7 @@ class DayZSpectator : Camera
 		
 		if (m_SendUpdateAcc > 0.5)
 		{
-			GetGame().UpdateSpectatorPosition(newPos);
+			g_Game.UpdateSpectatorPosition(newPos);
 			m_SendUpdateAcc = 0;
 		}
 		

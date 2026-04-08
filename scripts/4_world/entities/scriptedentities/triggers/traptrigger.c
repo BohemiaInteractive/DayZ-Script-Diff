@@ -17,7 +17,7 @@ class TrapTrigger : Trigger
 	
 	void SetParentObject( TrapBase obj )
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_ParentObj = obj;
 		}

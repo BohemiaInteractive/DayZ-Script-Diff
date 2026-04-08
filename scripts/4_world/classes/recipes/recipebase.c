@@ -131,7 +131,7 @@ class RecipeBase
 					if (m_Items[z] != NULL)
 					{
 						ItemBase item = m_Items[z];
-						if (tempArray.Get(x) == item.GetType() || GetGame().IsKindOf(item.GetType(),tempArray.Get(x)))
+						if (tempArray.Get(x) == item.GetType() || g_Game.IsKindOf(item.GetType(),tempArray.Get(x)))
 						{
 							found = true;//we found a match
 							//m_IngredientsSorted.Insert(item);
@@ -173,7 +173,7 @@ class RecipeBase
 			int animationIndex;
 			for(animationIndex = 0; animationIndex < m_AnimationInfos.Count(); animationIndex++)
 			{
-				if(GetGame().IsKindOf(ingredient, m_AnimationInfos[animationIndex].m_IngredientName))
+				if(g_Game.IsKindOf(ingredient, m_AnimationInfos[animationIndex].m_IngredientName))
 					break;
 			}
 			m_AnimationInfos.InsertAt(rai, animationIndex);
@@ -596,7 +596,7 @@ class RecipeBase
 		
 		for (int x = 0; x < ptr.Count(); x++)
 		{
-			if (GetGame().IsKindOf(itemType, ptr.Get(x)))
+			if (g_Game.IsKindOf(itemType, ptr.Get(x)))
 			{
 				return m_SoundCategories[ingredientIndex].Get(x);
 			}
@@ -652,7 +652,7 @@ class RecipeBase
 		for(int i = 0; i < m_AnimationInfos.Count();i++)
 		{
 			recipeAnimationInfo = m_AnimationInfos[i];
-			if(GetGame().IsKindOf(mainItem.GetType(), recipeAnimationInfo.m_IngredientName))
+			if(g_Game.IsKindOf(mainItem.GetType(), recipeAnimationInfo.m_IngredientName))
 			{
 				found = true;
 				break;

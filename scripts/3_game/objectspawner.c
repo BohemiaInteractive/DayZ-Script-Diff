@@ -41,7 +41,7 @@ class ObjectSpawnerHandler
 		if (item.name.Contains("\\") || item.name.Contains("/"))
 		{
 			if (ValidatePath(item.name))
-				object = GetGame().CreateStaticObjectUsingP3D(item.name, vector.ArrayToVec(item.pos), vector.ArrayToVec(item.ypr),scale);
+				object = g_Game.CreateStaticObjectUsingP3D(item.name, vector.ArrayToVec(item.pos), vector.ArrayToVec(item.ypr),scale);
 		}
 		else
 		{
@@ -53,7 +53,7 @@ class ObjectSpawnerHandler
 				flags &= ~ECE_NOLIFETIME;
 			}
 			
-			object = GetGame().CreateObjectEx(item.name, vector.ArrayToVec(item.pos), flags, RF_IGNORE);
+			object = g_Game.CreateObjectEx(item.name, vector.ArrayToVec(item.pos), flags, RF_IGNORE);
 			if (object)
 			{
 				object.SetOrientation( vector.ArrayToVec(item.ypr));
@@ -73,7 +73,7 @@ class ObjectSpawnerHandler
 		if (g_Game && g_Game.IsServer())
 		{
 			SpawnObjects();
-			GetGame().GetWorld().ProcessMarkedObjectsForPathgraphUpdate();
+			g_Game.GetWorld().ProcessMarkedObjectsForPathgraphUpdate();
 		}
 	}
 	

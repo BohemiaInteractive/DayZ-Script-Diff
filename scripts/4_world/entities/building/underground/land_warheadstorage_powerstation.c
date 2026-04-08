@@ -27,10 +27,10 @@ class Land_WarheadStorage_PowerStation : House
 	
 	override void DeferredInit()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 			LinkPowerGeneratorServer();
 		
-		GetGame().RegisterNetworkStaticObject(this);
+		g_Game.RegisterNetworkStaticObject(this);
 	}
 	
 	override void OnVariablesSynchronized()
@@ -65,13 +65,13 @@ class Land_WarheadStorage_PowerStation : House
 			int flags = ECE_SETUP | ECE_CREATEPHYSICS | ECE_UPDATEPATHGRAPH | ECE_NOLIFETIME;
 
 			vector thisOrientation = GetOrientation();
-			m_PowerGenerator = PowerGeneratorStatic.Cast(GetGame().CreateObjectEx("PowerGeneratorStatic", GetPowerGeneratorSpawnPos(), flags, RF_IGNORE));
+			m_PowerGenerator = PowerGeneratorStatic.Cast(g_Game.CreateObjectEx("PowerGeneratorStatic", GetPowerGeneratorSpawnPos(), flags, RF_IGNORE));
 			m_PowerGenerator.SetOrientation(thisOrientation + "180 0 0");
 		}
 
 		m_PowerGenerator.SetParent(this);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 			OnAfterLoadUpdate();
 		
 		//DebugPrepareGenerator();
@@ -91,7 +91,7 @@ class Land_WarheadStorage_PowerStation : House
 	{
 		string leverName = GetLeverComponentNameByLeverIndex(index);
 				
-		if (!GetGame().IsServer())
+		if (!g_Game.IsServer())
 			return;
 
 		StartTimer();
@@ -257,7 +257,7 @@ class Land_WarheadStorage_PowerStation : House
 	
 	void OnGeneratorStart()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_IsPowerGeneratorRunning = true;
 			
@@ -272,7 +272,7 @@ class Land_WarheadStorage_PowerStation : House
 	
 	void OnGeneratorStop()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_IsPowerGeneratorRunning = false;
 			
@@ -329,7 +329,7 @@ class Land_WarheadStorage_PowerStation : House
 		{
 			m_InitBunkerState = true;
 			
-			if (GetGame().IsServer() && m_PowerGenerator && m_PowerGenerator.GetCompEM().IsWorking())
+			if (g_Game.IsServer() && m_PowerGenerator && m_PowerGenerator.GetCompEM().IsWorking())
 				closestBunker.SetPowerServer(true);
 		}
 		
@@ -365,7 +365,7 @@ class Land_WarheadStorage_PowerStation : House
 	
 	protected void DebugPrepareGenerator()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_PowerGenerator.GetCompEM().SetEnergy(10000);
 			m_PowerGenerator.GetInventory().CreateInInventory("GlowPlug");

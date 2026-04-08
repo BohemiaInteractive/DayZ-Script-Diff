@@ -65,7 +65,7 @@ class ActionCreateIndoorFireplace: ActionSingleUseBase
 		BuildingWithFireplace building = BuildingWithFireplace.Cast(action_data.m_Target.GetObject());
 		int index = action_data.m_Player.GetLastFirePointIndex();
 		//action_data
-		Object obj = GetGame().CreateObjectEx(building.GetFireplaceType(index), action_data.m_Player.GetLastFirePoint(), ECE_PLACE_ON_SURFACE);
+		Object obj = g_Game.CreateObjectEx(building.GetFireplaceType(index), action_data.m_Player.GetLastFirePoint(), ECE_PLACE_ON_SURFACE);
 		
 		int m_FirePointIndex = action_data.m_Player.GetLastFirePointIndex();
 		float m_FireplaceRot = action_data.m_Player.GetLastFirePointRot();
@@ -86,7 +86,7 @@ class ActionCreateIndoorFireplace: ActionSingleUseBase
 			fp_indoor.Synchronize();
 			
 			//move item to target fireplace
-			if (!GetGame().IsMultiplayer())
+			if (!g_Game.IsMultiplayer())
 			{
 				ClearInventoryReservationEx(action_data);
 				action_data.m_Player.LocalTakeEntityToTargetAttachment(fp_indoor, action_data.m_MainItem);

@@ -257,9 +257,9 @@ class Math
 		\param i \p int Value
 		\return \p int - Sign of given value
 		@code
-			Print( Math.SignFloat(-12) );
-			Print( Math.SignFloat(0) );
-			Print( Math.SignFloat(12) );
+			Print( Math.SignInt(-12) );
+			Print( Math.SignInt(0) );
+			Print( Math.SignInt(12) );
 
 			>> -1
 			>> 0

@@ -33,10 +33,10 @@ class FreezingSoundHandlerClient extends FreezingSoundHandlerBase
 			//return;
 		}
 		
-		if( GetGame().GetTime() > m_SoundTime )
+		if( g_Game.GetTime() > m_SoundTime )
 		{
 			float offset_time = Math.RandomFloatInclusive(SOUND_INTERVALS_LIGHT_MIN, SOUND_INTERVALS_LIGHT_MAX) * 1000;
-			m_SoundTime = GetGame().GetTime() + offset_time;
+			m_SoundTime = g_Game.GetTime() + offset_time;
 			PlaySound();
 		}
 	}

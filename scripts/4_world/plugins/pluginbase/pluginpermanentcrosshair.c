@@ -5,7 +5,7 @@ class PluginPermanentCrossHair extends PluginBase
 	void SwitchPermanentCrossHair(bool state)
 	{
 		if (!m_Hud)
-			m_Hud = GetGame().GetMission().GetHud();
+			m_Hud = g_Game.GetMission().GetHud();
 		m_Hud.SetPermanentCrossHair(state);
 	}
 }

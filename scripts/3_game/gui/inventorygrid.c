@@ -383,7 +383,7 @@ class InventoryGrid extends ScriptedWidgetEventHandler
 	{
 		for (int i = 0; i < count; i++)
 		{
-			Widget root_widget = GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory/inventoryGridBackground.layout", m_Root);
+			Widget root_widget = g_Game.GetWorkspace().CreateWidgets("gui/layouts/inventory/inventoryGridBackground.layout", m_Root);
 			TextWidget label_widget = TextWidget.Cast( root_widget.FindAnyWidget( "Label1" ) );
 			TextWidget label_widget2 = TextWidget.Cast( root_widget.FindAnyWidget( "Label2" ) );
 			label_widget.SetText( (i+1).ToString() );
@@ -656,7 +656,7 @@ class InventoryGrid extends ScriptedWidgetEventHandler
 		int height = Math.Round(data[2]);
 				
 		Widget bck = GetItemBackground(index);
-		Widget item_w_bck = GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory/inventoryGridItem.layout", bck);
+		Widget item_w_bck = g_Game.GetWorkspace().CreateWidgets("gui/layouts/inventory/inventoryGridItem.layout", bck);
 		Widget item_w = item_w_bck.FindAnyWidget("GridItem");
 		
 		bck.FindAnyWidget("LabelTR").Show( true );

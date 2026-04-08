@@ -73,7 +73,7 @@ class PMTCreationAndCleanup : PMTF
 			m_OwnershipTestManagerID = InsertManager(pm);
 			OwnershipTestDummyClass dummy = new OwnershipTestDummyClass();
 			
-			ParticleProperties pp = new ParticleProperties(GetGame().GetPlayer().GetPosition(), ParticlePropertiesFlags.NONE, null, vector.Zero, dummy);
+			ParticleProperties pp = new ParticleProperties(g_Game.GetPlayer().GetPosition(), ParticlePropertiesFlags.NONE, null, vector.Zero, dummy);
 			string particlePath = ParticleList.GetParticleFullPath(ParticleList.EXPLOSION_LANDMINE);
 			
 			bool result = Assert(pm.CreateParticleByPath(particlePath, pp) != null);
@@ -155,7 +155,7 @@ class PMTCreationAndCleanup : PMTF
 		
 		TFResult res = CTFR();
 		
-		GetGame().GameScript.CallFunction(this, f, res, p1);
+		g_Game.GameScript.CallFunction(this, f, res, p1);
 
 		int pmTotalPost = ParticleManager.GetStaticActiveCount();
 		int psTotalPost = ParticleSource.GetStaticActiveCount();

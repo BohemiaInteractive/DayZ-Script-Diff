@@ -75,13 +75,13 @@ class Object extends IEntity
 	 * @return \p void
 	 *
 	 * @code
-	 *			ItemBase item = GetGame().GetPlayer().CreateInInventory("GrenadeRGD5");
+	 *			ItemBase item = g_Game.GetPlayer().CreateInInventory("GrenadeRGD5");
 	 *			item.Delete();
 	 * @endcode
 	**/
 	void Delete()
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().ObjectDelete, this);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(g_Game.ObjectDelete, this);
 	}
 	
 	proto native void AddProxyPhysics(string proxySelectionName);	
@@ -149,7 +149,7 @@ class Object extends IEntity
 		if (ammoType == "")
 			ammoType = "Dummy_Heavy";
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			SynchExplosion();
 			DamageSystem.ExplosionDamage(EntityAI.Cast(this), null, ammoType, GetPosition(), damageType);
@@ -158,12 +158,12 @@ class Object extends IEntity
 	
 	void SynchExplosion()
 	{
-		if ( GetGame().IsDedicatedServer() ) // Multiplayer server
+		if ( g_Game.IsDedicatedServer() ) // Multiplayer server
 		{
 			Param1<EntityAI> p = new Param1<EntityAI>(null);			
-			GetGame().RPCSingleParam( this, ERPCs.RPC_EXPLODE_EVENT, p, true);
+			g_Game.RPCSingleParam( this, ERPCs.RPC_EXPLODE_EVENT, p, true);
 		}
-		else if ( !GetGame().IsMultiplayer() ) // Singleplayer
+		else if ( !g_Game.IsMultiplayer() ) // Singleplayer
 		{
 			OnExplodeClient();
 		}
@@ -356,7 +356,7 @@ class Object extends IEntity
 	\return radius of bounding box
 	@code
 	vector minMax[2];
-	float radius = GetGame().GetPlayer().ClippingInfo(minMax);
+	float radius = g_Game.GetPlayer().ClippingInfo(minMax);
 	Print(minMax);
 	Print(radius);
 	@endcode
@@ -369,7 +369,7 @@ class Object extends IEntity
 	\return true if collision box exists, false otherwise
 	@code
 	vector minMax[2];
-	if(GetGame().GetPlayer().GetCollisionBox(minMax))
+	if(g_Game.GetPlayer().GetCollisionBox(minMax))
 		Print("has box");
 	@endcode
 	*/
@@ -391,7 +391,7 @@ class Object extends IEntity
 	float GetSurfaceNoise()
 	{
 		vector position = GetPosition();
-		return GetGame().SurfaceGetNoiseMultiplier(NULL, position, -1);
+		return g_Game.SurfaceGetNoiseMultiplier(NULL, position, -1);
 	}
 	
 	//! Returns type of surface under object
@@ -400,7 +400,7 @@ class Object extends IEntity
 		string surface_type;
 		int liquid_type;
 		
-		GetGame().SurfaceUnderObject(this, surface_type,liquid_type);
+		g_Game.SurfaceUnderObject(this, surface_type,liquid_type);
 //		Print(surface_type);
 //		Print(liquid_type);
 		
@@ -428,19 +428,19 @@ class Object extends IEntity
 	bool HasAnimation( string anim_name )
 	{
 		string cfg_path_vehicles = "CfgVehicles " + GetType() + " ";
-		if ( GetGame().ConfigIsExisting (cfg_path_vehicles)  &&  GetGame().ConfigIsExisting (cfg_path_vehicles + "AnimationSources " + anim_name) )
+		if ( g_Game.ConfigIsExisting (cfg_path_vehicles)  &&  g_Game.ConfigIsExisting (cfg_path_vehicles + "AnimationSources " + anim_name) )
 		{
 			return true;
 		}
 		
 		string cfg_path_weapons = "CfgWeapons " + GetType() + " ";
-		if ( GetGame().ConfigIsExisting (cfg_path_weapons)  &&  GetGame().ConfigIsExisting (cfg_path_weapons + "AnimationSources " + anim_name) )
+		if ( g_Game.ConfigIsExisting (cfg_path_weapons)  &&  g_Game.ConfigIsExisting (cfg_path_weapons + "AnimationSources " + anim_name) )
 		{
 			return true;
 		}
 		
 		string cfg_path_magazines = "CfgMagazines " + GetType() + " ";
-		if ( GetGame().ConfigIsExisting (cfg_path_magazines)  &&  GetGame().ConfigIsExisting (cfg_path_magazines + "AnimationSources " + anim_name) )
+		if ( g_Game.ConfigIsExisting (cfg_path_magazines)  &&  g_Game.ConfigIsExisting (cfg_path_magazines + "AnimationSources " + anim_name) )
 		{
 			return true;
 		}
@@ -465,12 +465,15 @@ class Object extends IEntity
 
 	//! Called when tree is chopped down. 'cutting_entity' can be tool, or player, if cutting bush with bare hands
 	void OnTreeCutDown(EntityAI cutting_entity);
+
+	//! Returns shared EntityType, can be null for some internal/static types
+	proto native EntityType GetEntityType();
 	
 	//! Get config class of object
 	string GetType()
 	{
 		string ret;
-		GetGame().ObjectGetType(this, ret);
+		g_Game.ObjectGetType(this, ret);
 	
 		return ret;
 	}
@@ -485,7 +488,7 @@ class Object extends IEntity
 		}
 		else
 		{
-			GetGame().ObjectGetDisplayName(this, tmp);
+			g_Game.ObjectGetDisplayName(this, tmp);
 		}
 		return tmp;
 	}
@@ -499,7 +502,7 @@ class Object extends IEntity
 	//! Returns name of the model of this object without the '.p3d' suffix
 	string GetModelName()
 	{
-		return GetGame().GetModelName(GetType());
+		return g_Game.GetModelName(GetType());
 	}
 
 	//! Return path and name of the model
@@ -507,13 +510,13 @@ class Object extends IEntity
 
 	int Release()
 	{
-		return GetGame().ObjectRelease(this);
+		return g_Game.ObjectRelease(this);
 	}
 	
 	//! Check config class name of the object
 	bool IsKindOf(string type)
 	{
-		return GetGame().ObjectIsKindOf(this, type);
+		return g_Game.ObjectIsKindOf(this, type);
 	}
 		
 	// Check alive state
@@ -836,13 +839,13 @@ class Object extends IEntity
 	//! Remote procedure call shortcut, see CGame.RPC / CGame.RPCSingleParam
 	void RPC(int rpc_type, array<ref Param> params, bool guaranteed, PlayerIdentity recipient = NULL)
 	{
-		GetGame().RPC(this, rpc_type, params, guaranteed, recipient);
+		g_Game.RPC(this, rpc_type, params, guaranteed, recipient);
 	}
 	
 	//! Remote procedure call shortcut, see CGame.RPCSingleParam / CGame.RPC
 	void RPCSingleParam(int rpc_type, Param param, bool guaranteed, PlayerIdentity recipient = NULL)
 	{
-		GetGame().RPCSingleParam(this, rpc_type, param, guaranteed, recipient);
+		g_Game.RPCSingleParam(this, rpc_type, param, guaranteed, recipient);
 	}
 	
 	/**
@@ -924,7 +927,6 @@ class Object extends IEntity
 	//! Compares config class name to given string
 	bool KindOf( string tag )
 	{
-		bool found = false;
 		string item_name = this.GetType();	
 		TStringArray item_tag_array = new TStringArray;
 		ConfigGetTextArray("cfgVehicles " + item_name + " itemInfo", item_tag_array);	
@@ -934,21 +936,23 @@ class Object extends IEntity
 		{
 			if ( item_tag_array.Get(i) == tag )
 			{
-				found = true;
-				break;
+				return true;
 			}
 		}
-		return found;
+		return false;
 	}
 	
 	bool IsAnyInherited( array<typename> typenames )
 	{
-		bool ret;
-		for( int i = 0; i < typenames.Count(); i++ )
+		int nTypenames = typenames.Count();
+		for( int i = 0; i < nTypenames; ++i )
 		{
-			ret = ret || this.IsInherited( typenames.Get(i) );
+			if (IsInherited(typenames.Get(i))) 
+			{
+				return true;
+			}
 		}
-		return ret;
+		return false;
 	}
 		
 	/**
@@ -1046,7 +1050,7 @@ class Object extends IEntity
 		{
 			float result_health = GetHealth(zoneName, healthType);
 			if (result_health <= 0)
-				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().ObjectDelete, this); 
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(g_Game.ObjectDelete, this); 
 		}
 	}
 	
@@ -1226,19 +1230,19 @@ class Object extends IEntity
 	//! Plays the given sound once on this object's instance. Range is in meters. Created sound is only local, unless create_local is set to false. Returns the sound itself.
 	SoundOnVehicle PlaySound(string sound_name, float range, bool create_local = true)
 	{
-		return GetGame().CreateSoundOnObject(this, sound_name, range, false, create_local);
+		return g_Game.CreateSoundOnObject(this, sound_name, range, false, create_local);
 	}
 	
 	//! Plays the given sound in loop on this object's instance. Range is in meters. Created sound is only local, unless create_local is set to false. Returns the sound itself.
 	SoundOnVehicle PlaySoundLoop(string sound_name, float range, bool create_local = true)
 	{
-		return GetGame().CreateSoundOnObject(this, sound_name, range, true, create_local);
+		return g_Game.CreateSoundOnObject(this, sound_name, range, true, create_local);
 	}
 	
 	//! EffectSound - plays soundset on this object and returns state of the sound (true - played, false - not played)
 	bool PlaySoundSet( out EffectSound sound, string sound_set, float fade_in, float fade_out, bool loop = false )
 	{
-		if ( GetGame() && !GetGame().IsDedicatedServer() )
+		if ( g_Game && !g_Game.IsDedicatedServer() )
 		{
 			if ( sound )
 			{
@@ -1305,7 +1309,7 @@ class Object extends IEntity
 	//! EffectSound - stops soundset and returns state of the sound (true - stopped, false - not playing)
 	bool StopSoundSet( out EffectSound sound )
 	{
-		if ( sound && GetGame() && ( !GetGame().IsDedicatedServer() ) )
+		if ( sound && g_Game && ( !g_Game.IsDedicatedServer() ) )
 		{
 			sound.SoundStop();
 			sound = null;
@@ -1409,12 +1413,11 @@ class Object extends IEntity
 		return false;
 	}
 	
-	void OnSpawnByObjectSpawner(ITEM_SpawnerObject item)
-	{}
+	void OnSpawnByObjectSpawner(ITEM_SpawnerObject item);
 
 	bool Gizmo_IsSupported()
 	{
-		return !GetGame().IsMultiplayer();
+		return !g_Game.IsMultiplayer();
 	}
 
 	void Gizmo_SetWorldTransform(vector transform[4], bool finalize)
@@ -1430,6 +1433,16 @@ class Object extends IEntity
 	void Gizmo_GetWorldTransform(vector transform[4])
 	{
 		GetTransform(transform);
+	}
+
+	bool Gizmo_IsAllowedTransformMode(GizmoTransformMode mode)
+	{
+		return true;
+	}
+
+	bool Gizmo_IsAllowedSpaceMode(GizmoSpaceMode mode)
+	{
+		return true;
 	}
 
 	//Debug

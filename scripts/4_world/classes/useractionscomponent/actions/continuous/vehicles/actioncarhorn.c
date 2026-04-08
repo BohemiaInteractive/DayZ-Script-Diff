@@ -274,6 +274,13 @@ class ActionCarHornLong : ActionContinuousBase
 
 		CarHornActionData carHornData = CarHornActionData.Cast(action_data);
 		ActionCarHornBase.SetCarHornState(carHornData, ECarHornState.OFF);
+		
+		ActionContinuousBaseCB callback;
+		if (Class.CastTo(callback, action_data.m_Callback))
+		{
+			carHornData.m_State = UA_FINISHED;
+			callback.EndActionComponent();
+		}
 	}
 	
 	override void OnStart(ActionData action_data)

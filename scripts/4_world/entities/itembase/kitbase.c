@@ -25,9 +25,9 @@ class KitBase extends ItemBase
 		UpdateVisuals();
 		UpdatePhysics();
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleKit );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleKit );
 		}
 	}
 	
@@ -46,7 +46,7 @@ class KitBase extends ItemBase
 		
 		if (item && slot_name == "Rope")
 		{
-			if (GetGame().IsServer() && !m_DeployedRegularly)
+			if (g_Game.IsServer() && !m_DeployedRegularly)
 			{
 				DisassembleKit(ItemBase.Cast(item));
 				Delete();
@@ -135,7 +135,7 @@ class KitBase extends ItemBase
 			return;
 		}
 		
-		EntityAI newRope = EntityAI.Cast(GetGame().CreateObjectEx(rope.GetType(), GetPosition(), ECE_PLACE_ON_SURFACE));
+		EntityAI newRope = EntityAI.Cast(g_Game.CreateObjectEx(rope.GetType(), GetPosition(), ECE_PLACE_ON_SURFACE));
 		
 		if (newRope)
 			MiscGameplayFunctions.TransferItemProperties(this, newRope);

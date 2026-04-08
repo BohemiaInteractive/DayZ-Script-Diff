@@ -183,7 +183,7 @@ class PlayerRestrictedAreaInstance
 		
 		foreach (array<float> arr2d : safePositions2D)
 		{
-			m_TranslatedSafePositions3D.Insert(Vector(arr2d[0],GetGame().SurfaceY(arr2d[0],arr2d[1]),arr2d[1]));
+			m_TranslatedSafePositions3D.Insert(Vector(arr2d[0],g_Game.SurfaceY(arr2d[0],arr2d[1]),arr2d[1]));
 		}
 		
 		foreach (array<float> arr3d : safePositions3D)

@@ -11,14 +11,14 @@ class ScriptConsoleRenamePresetDialog extends UIScriptedMenu
 
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_dialog_preset.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_dialog_preset.layout");
 		m_Editbox = EditBoxWidget.Cast( layoutRoot.FindAnyWidget("PrimaryEditBox") );
 		m_Label = TextWidget.Cast( layoutRoot.FindAnyWidget("WindowLabel") );
 		m_Message = TextWidget.Cast( layoutRoot.FindAnyWidget("MessageText") );
 
-		MissionBase mission = MissionBase.Cast( GetGame().GetMission() );
+		MissionBase mission = MissionBase.Cast( g_Game.GetMission() );
 
-		UIScriptedMenu ui_menu = GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE);
+		UIScriptedMenu ui_menu = g_Game.GetUIManager().FindMenu(MENU_SCRIPTCONSOLE);
 		if ( ui_menu != NULL )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
@@ -40,7 +40,7 @@ class ScriptConsoleRenamePresetDialog extends UIScriptedMenu
 
 		if (w.GetUserID() == IDC_OK)
 		{
-			UIScriptedMenu ui_menu = GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE);
+			UIScriptedMenu ui_menu = g_Game.GetUIManager().FindMenu(MENU_SCRIPTCONSOLE);
 			if ( ui_menu != NULL )
 			{
 				ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );

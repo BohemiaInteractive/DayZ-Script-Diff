@@ -30,7 +30,7 @@ class ActionRepairCarChassis : ActionRepairVehiclePartBase
 			return false;
 		}
 		
-		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+		if (g_Game.IsMultiplayer() && g_Game.IsServer())
 		{
 			return true;
 		}

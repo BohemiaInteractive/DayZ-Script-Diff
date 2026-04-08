@@ -759,7 +759,7 @@ class EmoteVomit extends EmoteBase
 	
 	override bool EmoteStartOverride(typename callbacktype, int id, int mask, bool fullbody)
 	{
-		if ( m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !GetGame().IsMultiplayer() )
+		if ( m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !g_Game.IsMultiplayer() )
 		{
 			SymptomBase symptom = m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_VOMIT);
 			

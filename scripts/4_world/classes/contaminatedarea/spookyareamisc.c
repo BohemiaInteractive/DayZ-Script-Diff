@@ -259,7 +259,7 @@ class SpookyTriggerEventsHandler
 		foreach (vector pos : positions)
 		{
 			string surfaceType;
-			GetGame().SurfaceGetType3D(pos[0],pos[1], pos[2], surfaceType);
+			g_Game.SurfaceGetType3D(pos[0],pos[1], pos[2], surfaceType);
 			
 			if (!gatheredGurfaces.Contains(surfaceType))
 				gatheredGurfaces.Insert(surfaceType, pos);
@@ -294,7 +294,7 @@ class SpookyTriggerEventsHandler
 		#endif
 		
 		array<ref SpookyEventBase> validEvents = new array<ref SpookyEventBase>();
-		float currentTime = GetGame().GetTime();
+		float currentTime = g_Game.GetTime();
 		foreach (SpookyEventBase spookyEvent:m_SoundEvents)
 		{
 			if (spookyEvent.CanPerform(m_Player, currentTime, gatheredSurfaces))
@@ -333,7 +333,7 @@ class SpookyPlayerStalker : ScriptedEntity
 	{		
 		super.EEInit();
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
  			m_UTSSettings 							= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_Updateable				= true;

@@ -59,15 +59,15 @@ class ActionViewOptics : ActionContinuousBase
 	{
 		super.OnStartClient(action_data);
 		
-		GetGame().GetMission().AddActiveInputExcludes({"actonViewOpticExcl"});
+		g_Game.GetMission().AddActiveInputExcludes({"actonViewOpticExcl"});
 	}
 	
 	override void OnStartServer(ActionData action_data)
 	{
 		super.OnStartServer(action_data);
 		
-		if (!GetGame().IsMultiplayer())
-			GetGame().GetMission().AddActiveInputExcludes({"actonViewOpticExcl"});
+		if (!g_Game.IsMultiplayer())
+			g_Game.GetMission().AddActiveInputExcludes({"actonViewOpticExcl"});
 	}
 	
 	override void OnStartAnimationLoopServer(ActionData action_data)
@@ -101,7 +101,7 @@ class ActionViewOptics : ActionContinuousBase
 		{
 			ExitOptics(optic, action_data.m_Player);
 		}
-		GetGame().GetMission().RemoveActiveInputExcludes({"actonViewOpticExcl"});
+		g_Game.GetMission().RemoveActiveInputExcludes({"actonViewOpticExcl"});
 	}
 	
 	override void OnEndServer(ActionData action_data)
@@ -114,8 +114,8 @@ class ActionViewOptics : ActionContinuousBase
 			ExitOptics(optic, action_data.m_Player);
 		}
 		
-		if (!GetGame().IsMultiplayer())
-			GetGame().GetMission().RemoveActiveInputExcludes({"actonViewOpticExcl"});
+		if (!g_Game.IsMultiplayer())
+			g_Game.GetMission().RemoveActiveInputExcludes({"actonViewOpticExcl"});
 	}
 	
 	override void OnEndAnimationLoopClient(ActionData action_data)

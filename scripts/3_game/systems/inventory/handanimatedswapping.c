@@ -49,7 +49,7 @@ class HandAnimatedSwapping extends HandStateBase
 			m_Hide.m_ActionType = es.m_AnimationID;
 			m_Show.m_ActionType = es.m_Animation2ID;
 			
-			if (!GetGame().IsDedicatedServer())
+			if (!g_Game.IsDedicatedServer())
 			{
 				m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst2.GetItem(), m_Dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
 				m_Player.GetHumanInventory().AddInventoryReservationEx(m_Dst1.GetItem(), m_Dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
@@ -61,7 +61,7 @@ class HandAnimatedSwapping extends HandStateBase
 
 	override void OnAbort(HandEventBase e)
 	{
-		if ( !GetGame().IsDedicatedServer())
+		if ( !g_Game.IsDedicatedServer())
 		{
 			if (m_Dst2)
 			{
@@ -76,11 +76,11 @@ class HandAnimatedSwapping extends HandStateBase
 		{
 			if (m_Dst2)
 			{
-				GetGame().ClearJunctureEx(m_Player, m_Dst2.GetItem());
+				g_Game.ClearJunctureEx(m_Player, m_Dst2.GetItem());
 			}
 			if (m_Dst1)
 			{
-				GetGame().ClearJunctureEx(m_Player, m_Dst1.GetItem());
+				g_Game.ClearJunctureEx(m_Player, m_Dst1.GetItem());
 			}
 		}
 		
@@ -94,7 +94,7 @@ class HandAnimatedSwapping extends HandStateBase
 
 	override void OnExit(HandEventBase e)
 	{
-		if ( !GetGame().IsDedicatedServer())
+		if ( !g_Game.IsDedicatedServer())
 		{
 			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst2.GetItem(), m_Dst2);
 			m_Player.GetHumanInventory().ClearInventoryReservationEx(m_Dst1.GetItem(), m_Dst1);		

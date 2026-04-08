@@ -10,7 +10,7 @@ class LoadingMenu extends UIScriptedMenu
 	
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/loading.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/loading.layout");
 		
 		m_label = TextWidget.Cast( layoutRoot.FindAnyWidget("TextWidget") );
 		m_progressBar = ProgressBarWidget.Cast( layoutRoot.FindAnyWidget("ProgressBarWidget") );

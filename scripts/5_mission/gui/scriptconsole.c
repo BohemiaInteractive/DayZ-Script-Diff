@@ -37,10 +37,10 @@ class ScriptConsole extends UIScriptedMenu
 	void ScriptConsole()
 	{
 		#ifndef SERVER
-		if (GetGame() && GetGame().GetMission() && GetGame().GetMission().GetHud())
+		if (g_Game && g_Game.GetMission() && g_Game.GetMission().GetHud())
 		{
-			GetGame().GetMission().GetHud().ShowHudPlayer(false);
-			GetGame().GetMission().GetHud().ShowQuickbarPlayer(false);
+			g_Game.GetMission().GetHud().ShowHudPlayer(false);
+			g_Game.GetMission().GetHud().ShowQuickbarPlayer(false);
 		}
 		#endif
 		PluginItemDiagnostic plugin = PluginItemDiagnostic.Cast(GetPlugin(PluginItemDiagnostic));
@@ -51,10 +51,10 @@ class ScriptConsole extends UIScriptedMenu
 	void ~ScriptConsole()
 	{
 		#ifndef SERVER
-		if (GetGame() && GetGame().GetMission() && GetGame().GetMission().GetHud())
+		if (g_Game && g_Game.GetMission() && g_Game.GetMission().GetHud())
 		{
-			GetGame().GetMission().GetHud().ShowHudPlayer(true);
-			GetGame().GetMission().GetHud().ShowQuickbarPlayer(true);
+			g_Game.GetMission().GetHud().ShowHudPlayer(true);
+			g_Game.GetMission().GetHud().ShowQuickbarPlayer(true);
 		}
 		if (m_HintWidgetRoot)
 			m_HintWidgetRoot.Unlink();
@@ -63,9 +63,9 @@ class ScriptConsole extends UIScriptedMenu
 		if (plugin)
 			plugin.OnScriptMenuOpened(false);
 		
-		if (GetGame() && GetGame().GetMission())
+		if (g_Game && g_Game.GetMission())
 		{
-			GetGame().GetMission().EnableAllInputs(true);
+			g_Game.GetMission().EnableAllInputs(true);
 		}
 	}
 	
@@ -121,8 +121,8 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		m_ConfigDebugProfile = PluginConfigDebugProfile.Cast(GetPlugin(PluginConfigDebugProfile));
 
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console.layout");
-		m_EditTooltipRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_tooltip_edit.layout", layoutRoot);
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console.layout");
+		m_EditTooltipRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_tooltip_edit.layout", layoutRoot);
 		m_EditTooltipRoot.Show(false);
 		m_HintOkButton = ButtonWidget.Cast(m_EditTooltipRoot.FindAnyWidget("ButtonOk"));
 		m_HintCancelButton = ButtonWidget.Cast(m_EditTooltipRoot.FindAnyWidget("ButtonCancel"));
@@ -139,9 +139,11 @@ class ScriptConsole extends UIScriptedMenu
 		RegisterTab(new ScriptConsoleGeneralTab(layoutRoot.FindAnyWidget("GeneralPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("GeneralButtonWidget"))));
 		RegisterTab(new ScriptConsoleOutputTab(layoutRoot.FindAnyWidget("OutputPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("OutputButtonWidget"))));
 		RegisterTab(new ScriptConsoleVicinityTab(layoutRoot.FindAnyWidget("VicinityPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("VicinityWidget"))));
-		RegisterTab(new ScriptConsoleSoundsTab(layoutRoot.FindAnyWidget("SoundsPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("SoundsWidget"))));
+		if (!g_Game.IsDedicatedServer()) // TODO(kumarjac): actually hide the panel - not important though since this is an internal tool
+			RegisterTab(new ScriptConsoleSoundsTab(layoutRoot.FindAnyWidget("SoundsPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("SoundsWidget"))));
 		RegisterTab(new ScriptConsoleWeatherTab(layoutRoot.FindAnyWidget("WeatherPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("WeatherButtonWidget"))));
-		RegisterTab(new ScriptConsoleCameraTab(layoutRoot.FindAnyWidget("CameraPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("CameraButtonWidget"))));
+		if (!g_Game.IsDedicatedServer()) // TODO(kumarjac): actually hide the panel - not important though since this is an internal tool
+			RegisterTab(new ScriptConsoleCameraTab(layoutRoot.FindAnyWidget("CameraPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("CameraButtonWidget"))));
 
 		m_CloseConsoleButton = ButtonWidget.Cast(layoutRoot.FindAnyWidget("CloseConsoleButtonWidget"));
 
@@ -205,6 +207,13 @@ class ScriptConsole extends UIScriptedMenu
 		HideHint();
 	}
 
+	override void OnHide()
+	{
+		super.OnHide();
+		
+		HoverInterrupt();
+	}
+
 	override bool OnKeyPress(Widget w, int x, int y, int key)
 	{
 		super.OnKeyPress(w, x, y, key);
@@ -247,13 +256,13 @@ class ScriptConsole extends UIScriptedMenu
 		if(dist > 1 && m_HoverSuccessTriggered)
 			HoverInterrupt();
 		
-		if (GetGame() && GetUApi().GetInputByID(UAUIBack).LocalPress())
+		if (g_Game && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
-			GetGame().GetUIManager().Back();
+			g_Game.GetUIManager().Back();
 			return;
 		}
 	
-		if (!GetGame().IsMultiplayer() && KeyState(KeyCode.KC_RCONTROL) && KeyState(KeyCode.KC_NUMPAD0) && m_HintWidgetRoot && m_HintWidgetRoot.IsVisible())
+		if (!g_Game.IsMultiplayer() && KeyState(KeyCode.KC_RCONTROL) && KeyState(KeyCode.KC_NUMPAD0) && m_HintWidgetRoot && m_HintWidgetRoot.IsVisible())
 		{
 			ClearKey(KeyCode.KC_NUMPAD0);
 			m_EditTooltipRoot.Show(true);
@@ -291,7 +300,7 @@ class ScriptConsole extends UIScriptedMenu
 		if (w == m_CloseConsoleButton)
 		{		
 			Close();
-			GetGame().GetMission().EnableAllInputs(true);
+			g_Game.GetMission().EnableAllInputs(true);
 			return true;
 		}
 		else if (w == m_HintOkButton)
@@ -415,13 +424,13 @@ class ScriptConsole extends UIScriptedMenu
 		{
 			// Remove alpha background for camera tab
 			ShowMenuBackground(false);
-			GetGame().GetMission().RemoveActiveInputExcludes({"movement"}, true);
+			g_Game.GetMission().RemoveActiveInputExcludes({"movement"}, true);
 		}
 		else
 		{
 			// Add back alpha background
 			ShowMenuBackground(true);
-			GetGame().GetMission().AddActiveInputExcludes({"movement"});
+			g_Game.GetMission().AddActiveInputExcludes({"movement"});
 		}
 		
 		m_SelectedHandler = selectedHandler;
@@ -444,7 +453,7 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		if (message)
 		{
-			m_HintWidgetRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_hint.layout");
+			m_HintWidgetRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_hint.layout");
 			m_HintWidgetBackground = ImageWidget.Cast(m_HintWidgetRoot.FindAnyWidget("Background"));
 			m_HintWidget = RichTextWidget.Cast(m_HintWidgetRoot.FindAnyWidget("HintText"));
 		
@@ -589,7 +598,7 @@ class ScriptConsole extends UIScriptedMenu
 			inputExcludes.Remove(0);
 		}
 				
-		GetGame().GetMission().AddActiveInputExcludes(inputExcludes);
+		g_Game.GetMission().AddActiveInputExcludes(inputExcludes);
 	}
 
 	PluginConfigDebugProfile m_ConfigDebugProfile;
@@ -652,7 +661,7 @@ class ScriptConsoleToolTipEventHandler : ScriptedWidgetEventHandler
 	{
 		if (message)
 		{
-			m_HintWidgetRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_hint.layout");
+			m_HintWidgetRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_hint.layout");
 			m_HintWidgetBackground = ImageWidget.Cast(m_HintWidgetRoot.FindAnyWidget("Background"));
 			m_HintWidget = RichTextWidget.Cast(m_HintWidgetRoot.FindAnyWidget("HintText"));
 			

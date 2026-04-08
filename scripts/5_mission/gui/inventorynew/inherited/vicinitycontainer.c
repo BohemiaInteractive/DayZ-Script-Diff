@@ -7,19 +7,38 @@ class VicinityContainer: CollapsibleContainer
 	ref map<CargoBase, ref Container>	m_ShowedCargos				= new map<CargoBase, ref Container>;
 	protected bool						m_IsProcessing = false; // Prevents refreshing every time a child is added while it is still processing
 	
+	#ifndef PLATFORM_CONSOLE
+	protected ScrollWidget				m_CargoScrollWidget;
+	#endif
+		
 	const float DISTANCE_TO_ENTITIES 	= 1.0;
 	const float DISTANCE_TO_THE_REST 	= 0.5;
+	
+	const int ITEMS_PER_COLUMN_MAX = 8;
+	const float VICINITY_CARGO_SCROLLER_HEIGHT_MIN = 0.77;
+	const float VICINITY_CARGO_SCROLLER_HEIGHT_MID = 0.78;
+	const float VICINITY_CARGO_SCROLLER_HEIGHT_MAX = 0.87;
 	
 	void VicinityContainer( LayoutHolder parent, int sort = -1 )
 	{
 		m_VicinityIconsContainer = new VicinitySlotsContainer( this );
 		m_Body.Insert( m_VicinityIconsContainer );
 		m_VicinityIconsContainer.GetRootWidget().SetColor(166 << 24 | 120 << 16 | 120 << 8 | 120);
-		
+				
 		#ifndef PLATFORM_CONSOLE
 		LeftArea leftArea = LeftArea.Cast(GetParent());
 		if (leftArea)
 		{
+			m_CargoScrollWidget = leftArea.GetScrollWidget();
+			if (m_CargoScrollWidget)
+			{
+				bool hasScrollerExactSize = m_CargoScrollWidget.GetFlags() & WidgetFlags.EXACTSIZE;
+				if (!hasScrollerExactSize)
+				{
+					m_CargoScrollWidget.SetFlags(WidgetFlags.IGNOREPOINTER);
+				}
+			}
+			
 			leftArea.GetSlotsHeader().AddChild(GetHeader().GetRootWidget());
 			leftArea.GetSlotsArea().AddChild(m_VicinityIconsContainer.GetRootWidget());
 		}
@@ -119,7 +138,7 @@ class VicinityContainer: CollapsibleContainer
 			return;
 		}
 
-		if ( ipw.GetItem() && GetGame().GetPlayer().CanDropEntity( ipw.GetItem() ) && ipw.GetItem().GetInventory().CanRemoveEntity() && m_ShowedItemIcons.Find( ipw.GetItem() ) == -1 )
+		if ( ipw.GetItem() && g_Game.GetPlayer().CanDropEntity( ipw.GetItem() ) && ipw.GetItem().GetInventory().CanRemoveEntity() && m_ShowedItemIcons.Find( ipw.GetItem() ) == -1 )
 		{
 			ColorManager.GetInstance().SetColor( w, ColorManager.GREEN_COLOR );
 			ItemManager.GetInstance().HideDropzones();
@@ -186,7 +205,7 @@ class VicinityContainer: CollapsibleContainer
 				ItemManager.GetInstance().GetLeftDropzone().SetAlpha( 1 );
 				return;
 			}
-			/*else if( GetGame().GetPlayer().CanDropEntity( ipw.GetItem() ) )
+			/*else if( g_Game.GetPlayer().CanDropEntity( ipw.GetItem() ) )
 			{
 				ColorManager.GetInstance().SetColor( w, ColorManager.GREEN_COLOR );
 				ItemManager.GetInstance().HideDropzones();
@@ -226,7 +245,7 @@ class VicinityContainer: CollapsibleContainer
 			return;
 		}
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 
 		if ( !item.GetInventory().CanRemoveEntity() )
 			return;
@@ -251,7 +270,7 @@ class VicinityContainer: CollapsibleContainer
 		ItemManager.GetInstance().SetIsDragging( false );
 		PrepareOwnedTooltip(item);
 
-		InventoryMenu menu = InventoryMenu.Cast( GetGame().GetUIManager().FindMenu( MENU_INVENTORY ) );
+		InventoryMenu menu = InventoryMenu.Cast( g_Game.GetUIManager().FindMenu( MENU_INVENTORY ) );
 		if ( menu )
 		{
 			menu.RefreshQuickbar();
@@ -299,7 +318,7 @@ class VicinityContainer: CollapsibleContainer
 		if (!item.GetInventory().CanRemoveEntity() || m_ShowedItemIcons.Find(item) > -1)
 			return;
 		
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());		
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());		
 		if (player.CanDropEntity(item))
 		{
 			ItemBase itemBase = ItemBase.Cast(item);
@@ -312,7 +331,7 @@ class VicinityContainer: CollapsibleContainer
 			}
 		}
 
-		InventoryMenu menu = InventoryMenu.Cast( GetGame().GetUIManager().FindMenu( MENU_INVENTORY ) );
+		InventoryMenu menu = InventoryMenu.Cast( g_Game.GetUIManager().FindMenu( MENU_INVENTORY ) );
 		if ( menu )
 		{
 			menu.RefreshQuickbar();
@@ -321,7 +340,7 @@ class VicinityContainer: CollapsibleContainer
 
 	override void UpdateInterval()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		if (!player)
 			return;
@@ -431,7 +450,7 @@ class VicinityContainer: CollapsibleContainer
 				{
 					string config = "CfgVehicles " + entity.GetType() + " GUIInventoryAttachmentsProps";
 
-					if ( GetGame().ConfigIsExisting( config ) )
+					if ( g_Game.ConfigIsExisting( config ) )
 					{
 						AttachmentCategoriesContainer ac = new AttachmentCategoriesContainer( m_Parent, -1 );
 						ac.SetEntity( entity );
@@ -604,6 +623,27 @@ class VicinityContainer: CollapsibleContainer
 			if ( in )
 				in.UpdateConsoleToolbar();	
 		}
+		
+		#ifndef PLATFORM_CONSOLE
+		//! Adjust left cargo container scroller height depending on visible items in the vicinity
+		if (m_CargoScrollWidget)
+		{
+			float width, height;
+			m_CargoScrollWidget.GetSize(width, height);
+			if (showable_items.Count() >= ITEMS_PER_COLUMN_MAX * 2)
+			{
+				m_CargoScrollWidget.SetSize(width, VICINITY_CARGO_SCROLLER_HEIGHT_MIN);
+			}
+			else if (showable_items.Count() >= ITEMS_PER_COLUMN_MAX)
+			{
+				m_CargoScrollWidget.SetSize(width, VICINITY_CARGO_SCROLLER_HEIGHT_MID);
+			}
+			else
+			{
+				m_CargoScrollWidget.SetSize(width, VICINITY_CARGO_SCROLLER_HEIGHT_MAX);
+			}
+		}
+		#endif
 	}
 	
 	void ToggleContainer( Widget w, EntityAI item )

@@ -37,7 +37,7 @@ class PluginKeyBinding extends PluginBase
 		m_MouseButtons.Insert ( new MouseButtonInfo( MouseState.LEFT ) );
 		m_MouseButtons.Insert ( new MouseButtonInfo( MouseState.RIGHT ) );
 		m_MouseButtons.Insert ( new MouseButtonInfo( MouseState.MIDDLE ) );
-		GetGame().GetUpdateQueue(CALL_CATEGORY_SYSTEM).Insert(this.OnFrame);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_SYSTEM).Insert(this.OnFrame);
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//Keyboard Binds	|UI_ID							|Key1					|Key2				|Callback Plugin		|Callback Function				|Info Shrtcut					|Info Description
@@ -117,7 +117,7 @@ class PluginKeyBinding extends PluginBase
 	//==========================================
 	override void OnDestroy()
 	{
-		GetGame().GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnFrame);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnFrame);
 	}
 	
 	//============================================
@@ -172,7 +172,7 @@ class PluginKeyBinding extends PluginBase
 				//Log( "Call Method -> key press: " + itoa(key) + " " + key_binding.GetInfoDescription() );
 				
 				PluginBase m = GetPlugin(key_binding.GetCallbackTarget().ToType());
-				GetGame().GameScript.CallFunction(m, key_binding.GetCallbackFunction(), NULL, 0);
+				g_Game.GameScript.CallFunction(m, key_binding.GetCallbackFunction(), NULL, 0);
 				
 				break;
 			}
@@ -208,7 +208,7 @@ class PluginKeyBinding extends PluginBase
 	{
 		MouseButtonInfo button_info = GetMouseButtonInfo( button );
 		if (button_info == NULL) return;
-		int time_curr			= GetGame().GetTime();
+		int time_curr			= g_Game.GetTime();
 		int time_last_press		= button_info.GetTimeLastPress();
 		int time_last_release	= button_info.GetTimeLastRelease();	
 		int time_delta_press	= time_curr - time_last_press;
@@ -245,7 +245,7 @@ class PluginKeyBinding extends PluginBase
 			
 			if ( info.IsButtonDown() )
 			{		
-				int time_curr = GetGame().GetTime();
+				int time_curr = g_Game.GetTime();
 				int time_hold = info.GetTimeLastPress() + HOLD_CLICK_TIME_MIN;
 				
 				if ( time_hold < time_curr )
@@ -305,9 +305,9 @@ class PluginKeyBinding extends PluginBase
 	{
 		int ui_page_current = MENU_NONE;
 		
-		if ( GetGame().GetUIManager().GetMenu() )
+		if ( g_Game.GetUIManager().GetMenu() )
 		{
-			ui_page_current = GetGame().GetUIManager().GetMenu().GetID();
+			ui_page_current = g_Game.GetUIManager().GetMenu().GetID();
 		}
 		
 		if ( ui_page_current < MENU_ANY || !CheckMask( ui_page_request, ui_page_current ) )
@@ -345,7 +345,7 @@ class PluginKeyBinding extends PluginBase
 				if ( IsCurrentUIPageValid( mouse_binding.GetUIMenuID() ) )
 				{
 					PluginBase m = GetPlugin(mouse_binding.GetCallbackTarget().ToType());
-					GetGame().GameScript.CallFunction(m, mouse_binding.GetCallbackFunction(), NULL, 0);
+					g_Game.GameScript.CallFunction(m, mouse_binding.GetCallbackFunction(), NULL, 0);
 				}
 			}			
 		}

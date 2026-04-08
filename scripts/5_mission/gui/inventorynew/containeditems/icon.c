@@ -148,7 +148,7 @@ class Icon: LayoutHolder
 
 	void RefreshQuickbar()
 	{
-		InventoryMenu menu = InventoryMenu.Cast(GetGame().GetUIManager().FindMenu(MENU_INVENTORY));
+		InventoryMenu menu = InventoryMenu.Cast(g_Game.GetUIManager().FindMenu(MENU_INVENTORY));
 		HideOwnedTooltip();
 		if (menu)
 		{
@@ -160,7 +160,7 @@ class Icon: LayoutHolder
 	{
 		if (button == MouseState.LEFT && !g_Game.IsLeftCtrlDown())
 		{
-			PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase controlledPlayer = PlayerBase.Cast(g_Game.GetPlayer());
 			if (controlledPlayer.GetInventory().HasInventoryReservation(m_Obj, null) || controlledPlayer.GetInventory().IsInventoryLocked() || controlledPlayer.IsItemsToDelete())
 				return;
 			
@@ -191,7 +191,7 @@ class Icon: LayoutHolder
 					return;
 				}
 		
-				EntityAI entityInHands = controlledPlayer.GetHumanInventory().GetEntityInHands();
+				EntityAI entityInHands = controlledPlayer.GetEntityInHands();
 				EntityAI entityRootParent = targetEntity.GetHierarchyRoot();
 				
 				if (controlledPlayer.GetInventory().HasEntityInInventory(targetEntity) && controlledPlayer.GetHumanInventory().CanAddEntityInHands(targetEntity))
@@ -291,7 +291,7 @@ class Icon: LayoutHolder
 		}
 		
 		InventoryLocation il = new InventoryLocation();
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		int index = player.GetHumanInventory().FindUserReservedLocationIndex(m_Item);
 		
 		if (index >= 0)
@@ -337,7 +337,7 @@ class Icon: LayoutHolder
 			return;
 		}
 		EntityAI selectedEntity = selectedIpw.GetItem();
-		EntityAI targetEntity = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+		EntityAI targetEntity = g_Game.GetPlayer().GetEntityInHands();
 
 		static int testedFlags = InventoryCombinationFlags.SET_ACTION | InventoryCombinationFlags.PERFORM_ACTION | InventoryCombinationFlags.COMBINE_QUANTITY2 | InventoryCombinationFlags.ADD_AS_CARGO | InventoryCombinationFlags.ADD_AS_ATTACHMENT;
 		
@@ -393,7 +393,7 @@ class Icon: LayoutHolder
 			return;
 		}
 
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		InventoryItem targetEntity = InventoryItem.Cast(targetIpw.GetItem());
 		InventoryItem selectedEntity = InventoryItem.Cast(selectedIpw.GetItem());
 		InventoryLocation ilDst;
@@ -453,7 +453,7 @@ class Icon: LayoutHolder
 
 	void OnPerformCombination( int combinationFlags )
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if (m_am_entity1 == null || m_am_entity2 == null) return;
 
 		if (combinationFlags == InventoryCombinationFlags.NONE) return;
@@ -466,7 +466,7 @@ class Icon: LayoutHolder
 			ActionManagerClient amc;
 			Class.CastTo(amc, player.GetActionManager());
 
-			if (m_am_entity1 == player.GetHumanInventory().GetEntityInHands())
+			if (m_am_entity1 == player.GetEntityInHands())
 			{
 				amc.PerformActionFromInventory(ItemBase.Cast( m_am_entity1 ),ItemBase.Cast( m_am_entity2 ));
 			}
@@ -480,7 +480,7 @@ class Icon: LayoutHolder
 			ActionManagerClient amc2;
 			Class.CastTo(amc2, player.GetActionManager());
 
-			if (m_am_entity1 == player.GetHumanInventory().GetEntityInHands())
+			if (m_am_entity1 == player.GetEntityInHands())
 			{
 				amc2.SetActionFromInventory(ItemBase.Cast( m_am_entity1 ), ItemBase.Cast( m_am_entity2 ));
 			}
@@ -517,7 +517,7 @@ class Icon: LayoutHolder
 	
 	bool PerformCombination(EntityAI selectedEntity, EntityAI targetEntity, int combinationFlag, InventoryLocation ilSwapDst = null)
 	{
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		ActionManagerClient amc;
 		
 		switch (combinationFlag)
@@ -532,7 +532,7 @@ class Icon: LayoutHolder
 				return true;
 			case InventoryCombinationFlags.SET_ACTION:
 				Class.CastTo(amc, player.GetActionManager());
-				if (targetEntity == player.GetHumanInventory().GetEntityInHands())
+				if (targetEntity == player.GetEntityInHands())
 				{
 					amc.SetActionFromInventory(ItemBase.Cast(targetEntity), ItemBase.Cast(selectedEntity));
 				}
@@ -543,7 +543,7 @@ class Icon: LayoutHolder
 				return true;
 			case InventoryCombinationFlags.PERFORM_ACTION:
 				Class.CastTo(amc, player.GetActionManager());
-				if (targetEntity == player.GetHumanInventory().GetEntityInHands())
+				if (targetEntity == player.GetEntityInHands())
 				{
 					amc.PerformActionFromInventory(ItemBase.Cast(targetEntity), ItemBase.Cast(selectedEntity));
 				}
@@ -616,7 +616,7 @@ class Icon: LayoutHolder
 	void ShowActionMenuCombine( EntityAI entity1, EntityAI entity2, int combinationFlags, Widget w , bool color_test )
 	{
 		int lastFlag = 0;
-		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
+		ContextMenu cmenu = ContextMenu.Cast(g_Game.GetUIManager().GetMenu().GetContextMenu());
 		m_am_entity1 = entity1;
 		m_am_entity2 = entity2;
 		cmenu.Hide();
@@ -697,7 +697,7 @@ class Icon: LayoutHolder
 		if ( m_am_entity1 == null || m_am_entity2 == null ) return;
 
 		Debug.Log("OnPerformRecipe called for id:"+id.ToString(),"recipes");
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		player.GetCraftingManager().SetInventoryCraft( id, ItemBase.Cast(m_am_entity1), ItemBase.Cast(m_am_entity2));
 	}
 
@@ -721,7 +721,7 @@ class Icon: LayoutHolder
 			return;
 		}
 		EntityAI selectedEntity = selectedIpw.GetItem();
-		EntityAI targetEntity = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+		EntityAI targetEntity = g_Game.GetPlayer().GetEntityInHands();
 		static int testedFlags = InventoryCombinationFlags.SET_ACTION | InventoryCombinationFlags.PERFORM_ACTION | InventoryCombinationFlags.COMBINE_QUANTITY2 | InventoryCombinationFlags.ADD_AS_CARGO | InventoryCombinationFlags.ADD_AS_ATTACHMENT;
 		
 		int chosenInventoryAction = ItemManager.GetChosenCombinationFlag(selectedEntity, targetEntity, testedFlags);
@@ -737,7 +737,7 @@ class Icon: LayoutHolder
 	bool FlagAction( EntityAI entity1, EntityAI entity2, int combinationFlags )
 	{
 		int current_flag;
-		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
+		ContextMenu cmenu = ContextMenu.Cast(g_Game.GetUIManager().GetMenu().GetContextMenu());
 		m_am_entity1 = entity1;
 		m_am_entity2 = entity2;
 		cmenu.Hide();
@@ -805,7 +805,7 @@ class Icon: LayoutHolder
 		m_am_Pos_x -= 5;
 		m_am_Pos_y -= 5;
 
-		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
+		MissionGameplay mission = MissionGameplay.Cast( g_Game.GetMission() );
 		/*if (combinationFlags & InventoryCombinationFlags.RECIPE_HANDS ||  combinationFlags & InventoryCombinationFlags.RECIPE_ANYWHERE )
 		{
 			OnPerformRecipe( id );
@@ -829,7 +829,7 @@ class Icon: LayoutHolder
 		{
 			if (m_Lock)
 			{
-				GetGame().GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced(m_Item);
+				g_Game.GetPlayer().GetHumanInventory().ClearUserReservedLocationSynced(m_Item);
 			}
 			else if (m_Item)
 			{
@@ -856,7 +856,7 @@ class Icon: LayoutHolder
 					break;
 				
 				case MouseState.LEFT:
-					PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+					PlayerBase controlledPlayer = PlayerBase.Cast(g_Game.GetPlayer());
 					if (g_Game.IsLeftCtrlDown())
 					{
 						if (controlledPlayer.CanDropEntity(m_Item))
@@ -890,7 +890,7 @@ class Icon: LayoutHolder
 		ItemManager.GetInstance().SetIsDragging(false);
 		string name = w.GetName();
 		name.Replace("PanelWidget", "Render");
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		ItemPreviewWidget targetIpw = ItemPreviewWidget.Cast(receiver.FindAnyWidget( "Render" ));
 		if (m_HandsIcon)
@@ -1003,8 +1003,8 @@ class Icon: LayoutHolder
 			return;
 		}
 
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		EntityAI itemInHands = player.GetHumanInventory().GetEntityInHands();
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		EntityAI itemInHands = player.GetEntityInHands();
 
 		InventoryLocation ilDst = new InventoryLocation();
 		InventoryLocation ilSrc = new InventoryLocation();
@@ -1020,7 +1020,7 @@ class Icon: LayoutHolder
 			{
 				if (m_HandsIcon && !player.GetInventory().HasInventoryReservation(itemInHands, null) && !player.IsItemsToDelete())
 				{
-					GetGame().GetPlayer().PredictiveForceSwapEntities(selectedEntity, targetEntity, ilDst);
+					g_Game.GetPlayer().PredictiveForceSwapEntities(selectedEntity, targetEntity, ilDst);
 					return;
 				}
 			}
@@ -1108,7 +1108,7 @@ class Icon: LayoutHolder
 		m_CursorWidget.SetColor( ARGBF( 1, 1, 1, 1 ) );
 		m_CursorWidget.Show( false );
 
-		InventoryMenu menu = InventoryMenu.Cast(GetGame().GetUIManager().FindMenu( MENU_INVENTORY ));
+		InventoryMenu menu = InventoryMenu.Cast(g_Game.GetUIManager().FindMenu( MENU_INVENTORY ));
 		
 		if (menu)
 			menu.RefreshQuickbar();
@@ -1122,7 +1122,7 @@ class Icon: LayoutHolder
 		m_IsDragged = true;
 		ItemManager.GetInstance().SetIsDragging(true);
 		int ww, hh;
-		GetGame().GetInventoryItemSize(m_Item, ww, hh);
+		g_Game.GetInventoryItemSize(m_Item, ww, hh);
 		if (m_Item.GetInventory().GetFlipCargo())
 			SetSize(hh, ww);
 		else
@@ -1149,7 +1149,7 @@ class Icon: LayoutHolder
 		ItemManager.GetInstance().HideDropzones();
 		EntityAI entity = EntityAI.Cast( m_Obj );
 		EntityAI parent = entity.GetHierarchyParent();
-		if (parent && parent.GetHierarchyRootPlayer() == GetGame().GetPlayer())
+		if (parent && parent.GetHierarchyRootPlayer() == g_Game.GetPlayer())
 		{
 			ItemManager.GetInstance().GetRightDropzone().SetAlpha(1);
 		}
@@ -1202,7 +1202,7 @@ class Icon: LayoutHolder
 		{
 			m_Item.GetInventory().SetFlipCargo(m_PreviousFlipOrientation);
 			int ww, hh;
-			GetGame().GetInventoryItemSize(m_Item, ww, hh);
+			g_Game.GetInventoryItemSize(m_Item, ww, hh);
 			
 			if (m_PreviousFlipOrientation)
 				SetSize(hh, ww);
@@ -1399,7 +1399,7 @@ class Icon: LayoutHolder
 		m_ItemSizeWidget.Show(true, refresh);
 		
 		int sizeX, sizeY;
-		GetGame().GetInventoryItemSize(m_Item, sizeX, sizeY);
+		g_Game.GetInventoryItemSize(m_Item, sizeX, sizeY);
 		int capacity = sizeX * sizeY;
 		m_ItemSizeWidget.SetText(capacity.ToString());
 		#endif
@@ -1413,7 +1413,7 @@ class Icon: LayoutHolder
 	void UpdateFlip(bool flipped)
 	{
 		int sizeX, sizeY;
-		GetGame().GetInventoryItemSize(m_Item, sizeX, sizeY);
+		g_Game.GetInventoryItemSize(m_Item, sizeX, sizeY);
 		
 		if (flipped)
 			SetSize(sizeY, sizeX);
@@ -1519,7 +1519,7 @@ class Icon: LayoutHolder
 				}
 				posX += width;
 				
-				Widget ammoIcon = Widget.Cast(GetGame().GetWorkspace().CreateWidgets("gui/layouts/inventory_new/ammo_icon.layout", GetMainWidget()));
+				Widget ammoIcon = Widget.Cast(g_Game.GetWorkspace().CreateWidgets("gui/layouts/inventory_new/ammo_icon.layout", GetMainWidget()));
 				ammoIcon.SetPos(posX, 0.0, false);
 				
 				ImageWidget ammoIconImg = ImageWidget.Cast(ammoIcon.GetChildren());				

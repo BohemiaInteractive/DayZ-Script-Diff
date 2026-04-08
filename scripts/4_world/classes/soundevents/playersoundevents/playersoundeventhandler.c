@@ -194,7 +194,17 @@ class PlayerSoundEventHandler extends SoundEventHandler
 		}
 		return true;
 	}
-	
+
+	override bool StopRequest(EPlayerSoundEventID id, bool sent_from_server = false, int param = 0)
+	{
+		if (m_CurrentState)
+		{
+			//Debug.Log(string.Format("Stopping sound event id=%1", m_CurrentState.GetSoundEventID()), this.ClassName(), "", "", "StopRequest");
+			m_CurrentState.Stop();
+		}
+		
+		return true;
+	}
 	
 	override bool PlayRequest(EPlayerSoundEventID id, bool sent_from_server = false)
 	{

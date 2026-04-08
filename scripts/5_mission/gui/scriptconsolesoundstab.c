@@ -73,11 +73,11 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		
 		ChangeFilterSound();
 		
-		if (GetGame().GetPlayer())
+		if (g_Game.GetPlayer())
 		{
 			m_DebugMapWidget.SetScale(DEBUG_MAP_ZOOM);
-			m_DebugMapWidget.SetMapPos(GetGame().GetPlayer().GetWorldPosition());
-			SetMapPos(GetGame().GetPlayer().GetWorldPosition());
+			m_DebugMapWidget.SetMapPos(g_Game.GetPlayer().GetWorldPosition());
+			SetMapPos(g_Game.GetPlayer().GetWorldPosition());
 		}
 		
 		// reopen update
@@ -121,7 +121,7 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 	
 	void UpdateMousePos()
 	{
-		if(!GetGame().GetPlayer())
+		if(!g_Game.GetPlayer())
 			return;
 		int x,y;
 		GetMousePos(x,y);
@@ -129,16 +129,16 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		mousePos[0] = x;
 		mousePos[1] = y;
 		worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
-		vector playerPos = GetGame().GetPlayer().GetWorldPosition();
+		vector playerPos = g_Game.GetPlayer().GetWorldPosition();
 		if (GetMapPos() != playerPos)
 			worldPos = GetMapPos();
-		worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
+		worldPos[1] = g_Game.SurfaceY(worldPos[0], worldPos[2]);
 		
 		if (m_MouseCurPos)
 		{
 			m_MouseCurPos.SetText("Mouse: "+ MiscGameplayFunctions.TruncateToS(worldPos[0]) +", "+ MiscGameplayFunctions.TruncateToS(worldPos[1]) +", "+ MiscGameplayFunctions.TruncateToS(worldPos[2]));
 		}
-		if (m_MapDistWidget && GetGame().GetPlayer())
+		if (m_MapDistWidget && g_Game.GetPlayer())
 		{
 			float dst = (worldPos - playerPos).Length();
 
@@ -146,7 +146,7 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		}
 		if (m_MapHeadingWidget)
 		{
-			vector playerCamDir = GetGame().GetCurrentCameraDirection();
+			vector playerCamDir = g_Game.GetCurrentCameraDirection();
 			float heading = Math3D.AngleFromPosition(playerPos, playerCamDir, worldPos) * Math.RAD2DEG;
 			m_MapHeadingWidget.SetText("Heading:" +heading.ToString());
 		}
@@ -184,12 +184,12 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		{
 			string config_path = classes.Get(i);
 
-			int objects_count = GetGame().ConfigGetChildrenCount(config_path);
+			int objects_count = g_Game.ConfigGetChildrenCount(config_path);
 			for (int j = 0; j < objects_count; j++)
 			{
 				string child_name;
 				bool add = false;
-				GetGame().ConfigGetChildName(config_path, j, child_name);
+				g_Game.ConfigGetChildName(config_path, j, child_name);
 
 				if (!filters.Count())
 				{
@@ -253,7 +253,7 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		HandleKeys();
 		m_DebugMapWidget.ClearUserMarks();
 		
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 		if (player)
 		{
@@ -302,7 +302,7 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		if (m_SelectedID == 0)
 			return;
 		
-		DayZPlayerImplement player = DayZPlayerImplement.Cast(GetGame().GetPlayer());
+		DayZPlayerImplement player = DayZPlayerImplement.Cast(g_Game.GetPlayer());
 		
 		if (m_SelectedSoundEventType == "SoundAttachment")
 			player.OnSoundEvent(m_SelectedSoundEventType, m_SelectedAttachments, m_SelectedID);
@@ -348,13 +348,13 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 				mousePos[0] = mouseX;
 				mousePos[1] = mouseY;
 				worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
-				worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
+				worldPos[1] = g_Game.SurfaceY(worldPos[0], worldPos[2]);
 				
 				SetMapPos(worldPos);
 			}
-			else if (button == 1 && GetGame().GetPlayer())
+			else if (button == 1 && g_Game.GetPlayer())
 			{
-				SetMapPos(GetGame().GetPlayer().GetWorldPosition());
+				SetMapPos(g_Game.GetPlayer().GetWorldPosition());
 			}
 		}
 		return true;

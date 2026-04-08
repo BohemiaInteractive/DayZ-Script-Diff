@@ -12,23 +12,23 @@ class PluginHorticulture extends PluginBase
 	void LoadFromCfg()
 	{
 		string cfg_access = "CfgHorticulture"; // it is stored in dz\gear\cultivation\cfgHorticulture.hpp
-		int cfg_horticulture_count = GetGame().ConfigGetChildrenCount( cfg_access );
+		int cfg_horticulture_count = g_Game.ConfigGetChildrenCount( cfg_access );
 
 		for ( int i = 0; i < cfg_horticulture_count; i++ )
 		{
 			string cfg_class_name = "";
-			GetGame().ConfigGetChildName( cfg_access, i, cfg_class_name );
+			g_Game.ConfigGetChildName( cfg_access, i, cfg_class_name );
 			string cfg_class_access = cfg_access + " " + cfg_class_name;
 
-			int cfg_class_count = GetGame().ConfigGetChildrenCount( cfg_class_access );
+			int cfg_class_count = g_Game.ConfigGetChildrenCount( cfg_class_access );
 		
 			for ( int j = 0; j < cfg_class_count; j++ )
 			{
 				string cfg_subclass_name = "";
-				GetGame().ConfigGetChildName( cfg_class_access, j, cfg_subclass_name );
+				g_Game.ConfigGetChildName( cfg_class_access, j, cfg_subclass_name );
 				string cfg_subclass_access = cfg_class_access + " " + cfg_subclass_name;
 		
-				int cfg_subclass_count = GetGame().ConfigGetChildrenCount( cfg_subclass_access );
+				int cfg_subclass_count = g_Game.ConfigGetChildrenCount( cfg_subclass_access );
 				
 				PlantMaterialHealth plantMaterialHealth = NULL;
 				
@@ -41,13 +41,13 @@ class PluginHorticulture extends PluginBase
 				for ( int k = 0; k < cfg_subclass_count; k++ )
 				{
 					string cfg_variable_name = "";
-					GetGame().ConfigGetChildName( cfg_subclass_access, k, cfg_variable_name );
+					g_Game.ConfigGetChildName( cfg_subclass_access, k, cfg_variable_name );
 					string cfg_variable_access = cfg_subclass_access + " " + cfg_variable_name;
 					
 					if ( cfg_class_name == "Plants" )
 					{
 						string string_param = "";
-						GetGame().ConfigGetText( cfg_variable_access, string_param );
+						g_Game.ConfigGetText( cfg_variable_access, string_param );
 						
 						if ( cfg_variable_name == "infestedTex" )
 						{
@@ -76,7 +76,7 @@ class PluginHorticulture extends PluginBase
 		string seed_type = obj.GetType();
 		
 		string plant_type = "";
-		GetGame().ConfigGetText( "cfgVehicles " + seed_type + " Horticulture PlantType", plant_type );
+		g_Game.ConfigGetText( "cfgVehicles " + seed_type + " Horticulture PlantType", plant_type );
 		
 		return plant_type;
 	}

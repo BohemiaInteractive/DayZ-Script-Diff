@@ -8,7 +8,7 @@ class HandStartReplacingItemInHands extends HandStateBase
 		super.OnEntry(e);
 		
 		Man player = e.m_Player;
-		EntityAI itemInHands = player.GetHumanInventory().GetEntityInHands();
+		EntityAI itemInHands = player.GetEntityInHands();
 
 		InventoryLocation src = new InventoryLocation;
 		if (itemInHands.GetInventory().GetCurrentInventoryLocation(src))

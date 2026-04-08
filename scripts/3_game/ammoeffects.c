@@ -27,7 +27,7 @@ class AmmoEffects
 		{
 			// Load it in when we can't find it
 			string particleFileName;
-			GetGame().ConfigGetText(string.Format("cfgAmmo %1 particle", ammoType), particleFileName);
+			g_Game.ConfigGetText(string.Format("cfgAmmo %1 particle", ammoType), particleFileName);
 			
 			// If we found a valid entry, try looking for it in ParticleList
 			if ( particleFileName != "" )
@@ -74,7 +74,7 @@ class AmmoEffects
 		{
 			// Load it in when we can't find it
 			string effectName;
-			GetGame().ConfigGetText(string.Format("cfgAmmo %1 effect", ammoType), effectName);
+			g_Game.ConfigGetText(string.Format("cfgAmmo %1 effect", ammoType), effectName);
 			
 			// If we found a valid entry, try looking for it in ParticleList
 			if ( effectName != "" )

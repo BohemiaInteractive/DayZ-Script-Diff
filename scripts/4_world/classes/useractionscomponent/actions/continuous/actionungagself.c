@@ -21,7 +21,7 @@ class ActionUngagSelf: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{	
-		if ( IsWearingGag(player) && null == player.GetHumanInventory().GetEntityInHands()) 
+		if ( IsWearingGag(player) && null == player.GetEntityInHands()) 
 			return true;
 
 		return false;

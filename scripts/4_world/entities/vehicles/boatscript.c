@@ -113,13 +113,13 @@ class BoatScript : Boat
 		m_SoundEngineStartNoFuel = "boat_01_engine_start_no_fuel_SoundSet";
 		m_SoundEngineStopNoFuel = "boat_01_engine_stop_no_fuel_SoundSet";
 				
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_DecayTimer = new Timer( CALL_CATEGORY_SYSTEM );
 			m_DecayTimer.Run(DECAY_TICK_FREQUENCY, this, "DecayHealthTick", NULL, true);
 		}
 		
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 			return;
 		
 		m_WaterEffects[EBoatEffects.PTC_FRONT] 	= new EffectBoatWaterFront();
@@ -152,7 +152,7 @@ class BoatScript : Boat
 	
 	override void EEDelete(EntityAI parent)
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 			CleanupEffects();
 	}
 
@@ -191,7 +191,7 @@ class BoatScript : Boat
 	
 	override bool IsInventoryVisible()
 	{
-		return (GetGame().GetPlayer() && (!GetGame().GetPlayer().GetCommand_Vehicle() || GetGame().GetPlayer().GetCommand_Vehicle().GetTransport() == this));
+		return (g_Game.GetPlayer() && (!g_Game.GetPlayer().GetCommand_Vehicle() || g_Game.GetPlayer().GetCommand_Vehicle().GetTransport() == this));
 	}
 
 	override float GetTransportCameraDistance()
@@ -303,7 +303,7 @@ class BoatScript : Boat
 	{
 		super.OnEngineStart();
 
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 			return;
 		
 		FadeEngineSound(true);
@@ -315,7 +315,7 @@ class BoatScript : Boat
 	{
 		super.OnEngineStop();
 		
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 			return;
 		
 		FadeEngineSound(false);
@@ -325,10 +325,10 @@ class BoatScript : Boat
 		dBodyGetWorldTransform(this, mat);
 		vector pos = mat[3] + VectorToParent(PropellerGetPosition());
 		
-		if (GetGame().GetWaterDepth(pos) < 0) // stop instantly
+		if (g_Game.GetWaterDepth(pos) < 0) // stop instantly
 			StopParticleUpdate();
 		else
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StopParticleUpdate, 3000);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StopParticleUpdate, 3000);
 	}
 	
 	override void EEOnCECreate()
@@ -352,7 +352,7 @@ class BoatScript : Boat
 			{
 				if (GetFluidFraction(BoatFluid.FUEL) <= 0)
 				{	
-					if (GetGame().IsServer())
+					if (g_Game.IsServer())
 					{	
 						m_PlaySoundEngineStopNoFuel = true;
 						SetSynchDirty();
@@ -364,14 +364,14 @@ class BoatScript : Boat
 			}
 		}
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			CheckContactCache();
 			m_VelocityPrevTick = GetVelocity(this);
 			m_MomentumPrevTick = GetMomentum();
 		}
 		
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			if (EngineIsOn())
 				m_UpdateParticles = true;
@@ -392,7 +392,7 @@ class BoatScript : Boat
 				dBodyGetWorldTransform(this, mat);
 				vector pos = mat[3] + VectorToParent(PropellerGetPosition());
 				
-				if (GetGame().GetWaterDepth(pos) < -0.2)
+				if (g_Game.GetWaterDepth(pos) < -0.2)
 					EngineStop();
 			}
 		}
@@ -400,7 +400,7 @@ class BoatScript : Boat
 	
 	override void EOnFrame(IEntity other, float timeSlice)
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			if (m_UpdateParticles)
 				UpdateParticles(timeSlice);
@@ -417,7 +417,7 @@ class BoatScript : Boat
 	//! WARNING: Can be called very frequently in one frame, use with caution
 	override void OnContact(string zoneName, vector localPos, IEntity other, Contact data)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (m_ContactData)
 				return;
@@ -541,7 +541,7 @@ class BoatScript : Boat
 	
 	protected bool IsInFlagRange()
 	{
-		array<vector> locations = GetGame().GetMission().GetActiveRefresherLocations();
+		array<vector> locations = g_Game.GetMission().GetActiveRefresherLocations();
 		if (!locations)
 			return false;
 		
@@ -597,7 +597,7 @@ class BoatScript : Boat
 	
 	protected void HandleEngineSound(EBoatEngineSoundState state)
 	{
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 			return;
 		
 		string soundset;
@@ -661,7 +661,7 @@ class BoatScript : Boat
 	
 	protected void HandleBoatSplashSound()
 	{
-		float propPosRelative = GetGame().SurfaceGetSeaLevel() - CoordToParent(PropellerGetPosition())[1];
+		float propPosRelative = g_Game.SurfaceGetSeaLevel() - CoordToParent(PropellerGetPosition())[1];
 		if (propPosRelative < SPLASH_THRESHOLD_CONDITION)
 			m_SplashIncoming = true;
 		
@@ -786,7 +786,7 @@ class BoatScript : Boat
 	
 	void RemoveAction(typename actionName)
 	{
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		ActionBase action = player.GetActionManager().GetAction(actionName);
 		typename ai = action.GetInputType();
 		array<ActionBase_Basic> actionArray = m_InputActionMap.Get(ai);
@@ -813,7 +813,7 @@ class BoatScript : Boat
 	
 	protected void ClearWaterEffects()
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(StopParticleUpdate);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(StopParticleUpdate);
 		
 		for (int i; i < 4; i++)
 		{
@@ -857,7 +857,7 @@ class BoatScript : Boat
 		if (super.OnAction(action_id, player, ctx))
 			return true;
 
-		if (!GetGame().IsServer())
+		if (!g_Game.IsServer())
 		{
 			return false;
 		}
@@ -887,7 +887,7 @@ class BoatScript : Boat
 	{
 		super.FixEntity();
 
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 			Fill(BoatFluid.FUEL, GetFluidCapacity(BoatFluid.FUEL));
 		
 		

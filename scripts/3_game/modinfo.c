@@ -20,4 +20,29 @@ class ModInfo
 	static const string DEFAULT_LOGO_SMALL = "Gui/textures/modlogo_default_co.edds";
 	static const string DEFAULT_LOGO_OVER = "Gui/textures/modlogo_default_hover_co.edds";
 	static const string DEFAULT_OVERVIEW = "";
+	
+	static string GetDLCImage(string name)
+	{
+		string imagePath;
+		switch (name)
+		{
+			case "badlands":
+			{
+				imagePath = "gui/textures/dlc_panel_badlands.edds";
+				break;
+			}
+			case "frostline":
+			{
+				imagePath = "gui/textures/dlc_panel_frostline.edds";
+				break;
+			}
+			default:
+			{
+				imagePath = "set:dayz_gui image:ProgressDayZFull";
+				break;
+			}
+		}
+		
+		return imagePath;
+	}
 }

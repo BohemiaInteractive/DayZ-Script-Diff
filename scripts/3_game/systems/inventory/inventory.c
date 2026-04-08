@@ -48,6 +48,8 @@ class InventoryValidation
 	InventoryValidationResult m_Result = InventoryValidationResult.FAILED;
 	InventoryValidationReason m_Reason = InventoryValidationReason.UNKNOWN;
 
+	InventoryMode m_Mode = InventoryMode.JUNCTURE;
+
 	bool IsAuthoritative()
 	{
 		return !m_IsJuncture && !m_IsRemote;
@@ -297,7 +299,7 @@ class GameInventory
 	 *
 	 * Example:
 	 * @code
-	 *   Entity bino = GetGame().CreateObject("Binoculars", "3312 0 854");
+	 *   Entity bino = g_Game.CreateObject("Binoculars", "3312 0 854");
 	 *   EntityAI bino2;
 	 *   if (Class.CastTo(bino2, bino))
 	 *   {
@@ -484,7 +486,7 @@ class GameInventory
 
 				src.ReadFromContext(ctx);
 				dst.ReadFromContext(ctx);
-				if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
+				if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + g_Game.GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 
 				if (!src.GetItem() || !dst.GetItem())
 				{
@@ -499,7 +501,7 @@ class GameInventory
 			case InventoryCommandType.HAND_EVENT:
 			{
 				HandEventBase e = HandEventBase.CreateHandEventFromContext(ctx);
-				if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " event=" + e.DumpToString());
+				if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + g_Game.GetTime() + "ms ServerInventoryCommand cmd=" + typename.EnumToString(InventoryCommandType, type) + " event=" + e.DumpToString());
 				
 				if (!e.GetSrcEntity())
 				{
@@ -524,7 +526,7 @@ class GameInventory
 		
 				if (src1.IsValid() && src2.IsValid() && dst1.IsValid() && dst2.IsValid())
 				{
-					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms ServerInventoryCommand Swap src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+					if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + g_Game.GetTime() + "ms ServerInventoryCommand Swap src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 
 					LocationSwap(src1, src2, dst1, dst2);
 				}
@@ -715,20 +717,20 @@ class GameInventory
 	static proto native bool AddInventoryReservation(EntityAI item, InventoryLocation dst, int timeout_ms);
 	bool AddInventoryReservationEx(EntityAI item, InventoryLocation dst, int timeout_ms)
 	{
-		if (GetGame().IsMultiplayer() && GetGame().IsServer() )
+		if (g_Game.IsMultiplayer() && g_Game.IsServer() )
 			return true;
 		
 		bool ret_val = AddInventoryReservation(item, dst, timeout_ms);
 		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
-			DayZPlayer player = GetGame().GetPlayer();
+			DayZPlayer player = g_Game.GetPlayer();
 			if ( player )
 			{
 				if (item)
-					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "AddInventoryReservation", player.ToString() );
+					Debug.InventoryReservationLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "AddInventoryReservation", player.ToString() );
 				else
-					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "AddInventoryReservation", player.ToString() );
+					Debug.InventoryReservationLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "AddInventoryReservation", player.ToString() );
 			}
 		}
 		#endif
@@ -738,20 +740,20 @@ class GameInventory
 	static proto native bool ExtendInventoryReservation(EntityAI item, InventoryLocation dst, int timeout_ms);
 	bool ExtendInventoryReservationEx(EntityAI item, InventoryLocation dst, int timeout_ms)
 	{ 
-		if (GetGame().IsMultiplayer() && GetGame().IsServer() )
+		if (g_Game.IsMultiplayer() && g_Game.IsServer() )
 			return true;
 		
 		bool ret_val = ExtendInventoryReservation(item,dst,timeout_ms);
 		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
-			DayZPlayer player = GetGame().GetPlayer();
+			DayZPlayer player = g_Game.GetPlayer();
 			if ( player )
 			{
 				if (item)
-					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ExtendInventoryReservation", player.ToString() );
+					Debug.InventoryReservationLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ExtendInventoryReservation", player.ToString() );
 				else
-					Debug.InventoryMoveLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ExtendInventoryReservation", player.ToString() );
+					Debug.InventoryReservationLog("Reservation result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ExtendInventoryReservation", player.ToString() );
 			}
 		}
 		#endif
@@ -761,20 +763,20 @@ class GameInventory
 	static proto native bool ClearInventoryReservation(EntityAI item, InventoryLocation dst);
 	bool ClearInventoryReservationEx(EntityAI item, InventoryLocation dst)
 	{
-		if (GetGame().IsMultiplayer() && GetGame().IsServer() )
+		if (g_Game.IsMultiplayer() && g_Game.IsServer() )
 			return true;
 		
 		bool ret_val = ClearInventoryReservation(item,dst);
 		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
-			DayZPlayer player = GetGame().GetPlayer();
+			DayZPlayer player = g_Game.GetPlayer();
 			if ( player )
 			{
 				if (item)
-					Debug.InventoryMoveLog("Reservation cleared result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ClearInventoryReservation", player.ToString() );
+					Debug.InventoryReservationLog("Reservation cleared result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / " + item.ToString() + " / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ClearInventoryReservation", player.ToString() );
 				else
-					Debug.InventoryMoveLog("Reservation cleared result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ClearInventoryReservation", player.ToString() );
+					Debug.InventoryReservationLog("Reservation cleared result: " + ret_val + " - STS = " + player.GetSimulationTimeStamp() + " / null / " + InventoryLocation.DumpToStringNullSafe(dst), "n/a" , "n/a", "ClearInventoryReservation", player.ToString() );
 			}
 		}
 		#endif
@@ -981,7 +983,6 @@ class GameInventory
 	///@{ synchronization
 	bool OnInputUserDataProcess(ParamsReadContext ctx);
 	bool OnInventoryJunctureFromServer(ParamsReadContext ctx);
-	bool OnInventoryJunctureRepairFromServer(ParamsReadContext ctx);
 	void OnInventoryJunctureFailureFromServer(ParamsReadContext ctx);
 	void OnServerInventoryCommand(ParamsReadContext ctx);
 	///@} synchronization
@@ -1098,10 +1099,11 @@ class GameInventory
 	{
 		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
 		InventoryLocation src = new InventoryLocation();
-		if (item.GetInventory().GetCurrentInventoryLocation(src))
+		GameInventory itemInventory = item.GetInventory();
+		if (itemInventory.GetCurrentInventoryLocation(src))
 		{
 			InventoryLocation dst = new InventoryLocation();
-			dst.SetCargo(GetInventoryOwner(), item, idx, row, col, item.GetInventory().GetFlipCargo());
+			dst.SetCargo(GetInventoryOwner(), item, idx, row, col, itemInventory.GetFlipCargo());
 
 			return TakeToDst(mode, src, dst);
 		}
@@ -1350,7 +1352,7 @@ class GameInventory
 			if (src.GetType() == InventoryLocationType.HANDS)
 				Error("[inv] Source location == HANDS, player has to handle this");
 
-			GetGame().ObjectDelete(src.GetItem());
+			g_Game.ObjectDelete(src.GetItem());
 			return true;
 		}
 

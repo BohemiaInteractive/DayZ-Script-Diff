@@ -17,7 +17,7 @@ class PluginDoorRuler extends PluginBase
 			m_Ruler.Delete();
 		
 		m_Initialized = true;
-		m_Ruler = ItemBase.Cast( GetGame().CreateObject("DoorTestCamera", FreeDebugCamera.GetInstance().GetPosition(), false, false/*ai*/) );
+		m_Ruler = ItemBase.Cast( g_Game.CreateObject("DoorTestCamera", FreeDebugCamera.GetInstance().GetPosition(), false, false/*ai*/) );
 	}
 	
 	override void OnUpdate(float delta_time)

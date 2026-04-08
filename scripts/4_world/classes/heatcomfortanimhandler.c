@@ -1,22 +1,31 @@
 class HeatComfortAnimHandler
 {
 	const float TICK_INTERVAL  = 2;
+	
 	float m_TimeSinceLastTick;
 	float m_ProcessTimeAccuFreeze;
 	float m_ProcessTimeAccuFreezeRattle;
 	float m_ProcessTimeAccuHot;
 	
 	PlayerBase m_Player;
-	float m_EventTimeFreeze = -1;
-	float m_EventTimeFreezeRattle = -1;
-	float m_EventTimeHot = -1;
+	
+	float m_EventTimeFreezeRattle = -1;			// -1 = symptom effect needs to be triggered for first time
+	float m_EventTimeFreeze = -1;			
+	float m_EventTimeHot = -1;	
+	
 	protected ref HumanMovementState m_MovementState = new HumanMovementState();
 	
-	const float TIME_INTERVAL_HC_MINUS_LOW_MIN 	= 12; 	const float TIME_INTERVAL_HC_MINUS_LOW_MAX 	= 20;
-	const float TIME_INTERVAL_HC_MINUS_HIGH_MIN = 25; 	const float TIME_INTERVAL_HC_MINUS_HIGH_MAX = 40;
+	const float TIME_INTERVAL_HC_MINUS_LOW_MIN 	= 12; 	// Freezing and rattle symptoms interval minimum, lerped according to heat confort
+	const float TIME_INTERVAL_HC_MINUS_HIGH_MIN = 25; 
 	
-	const float TIME_INTERVAL_HC_PLUS_LOW_MIN 	= 5; 	const float TIME_INTERVAL_HC_PLUS_LOW_MAX 	= 12;
-	const float TIME_INTERVAL_HC_PLUS_HIGH_MIN 	= 15;	const float TIME_INTERVAL_HC_PLUS_HIGH_MAX 	= 25;
+	const float TIME_INTERVAL_HC_MINUS_LOW_MAX 	= 20;	// Interval maximum, lerped according to heat confort
+	const float TIME_INTERVAL_HC_MINUS_HIGH_MAX = 40;
+	
+	const float TIME_INTERVAL_HC_PLUS_LOW_MIN 	= 12; 	// Ditto for heat symptoms
+	const float TIME_INTERVAL_HC_PLUS_HIGH_MIN 	= 25;
+	
+	const float TIME_INTERVAL_HC_PLUS_LOW_MAX 	= 20;
+	const float TIME_INTERVAL_HC_PLUS_HIGH_MAX 	= 40;
 	
 	void HeatComfortAnimHandler(PlayerBase player)
 	{
@@ -27,76 +36,92 @@ class HeatComfortAnimHandler
 	{
 		m_TimeSinceLastTick += delta_time;
 
-		if( m_TimeSinceLastTick > TICK_INTERVAL )
+		if (m_TimeSinceLastTick > TICK_INTERVAL)
 		{
-			Process(m_TimeSinceLastTick);
+			if (g_Game.IsServer())
+				Process(m_TimeSinceLastTick);
+			
 			m_TimeSinceLastTick = 0;
 		}
 	}
-	
-	float GetEventTime(float hc_value, float threshold_low, float threshold_high, float low_min, float high_min, float low_max, float high_max)
-	{
-		float inv_value = Math.InverseLerp(threshold_low, threshold_high, hc_value);
-		float value_min = Math.Lerp(low_min, high_min, inv_value);
-		float value_max = Math.Lerp(low_max, high_max, inv_value);
 
-		return Math.RandomFloatInclusive(value_min, value_max);
-	}
-	
-	
 	void Process(float delta_time)
 	{
-		if( GetGame().IsServer() )
+		float hc = m_Player.GetStatHeatComfort().Get();
+
+		if (hc >= PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING)			// Yellow zone
 		{
-			float hc = m_Player.GetStatHeatComfort().Get();
+			m_ProcessTimeAccuHot += delta_time;
 			
-			if ( hc <= PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL )		// Deep blue zone, rattling sounds are layerd on top of freezing sounds
-			{
-				m_ProcessTimeAccuFreezeRattle++;
-				
-				if (m_EventTimeFreezeRattle < 0)
-					m_EventTimeFreezeRattle = GetEventTime(hc, -1, PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL, TIME_INTERVAL_HC_MINUS_LOW_MIN, TIME_INTERVAL_HC_MINUS_HIGH_MIN, TIME_INTERVAL_HC_MINUS_LOW_MAX, TIME_INTERVAL_HC_MINUS_HIGH_MAX);
-				
-				if( m_ProcessTimeAccuFreezeRattle > m_EventTimeFreezeRattle )
-				{
-					m_ProcessTimeAccuFreezeRattle = 0;
-					m_EventTimeFreezeRattle = -1;
-					m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_FREEZE_RATTLE);
-				}
-			}
-			
-			if ( hc <= PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING )		// Light blue zone
-			{
-				m_ProcessTimeAccuFreeze++;
-				
-				if(m_EventTimeFreeze < 0)	//if not set
-				{
-					m_EventTimeFreeze = GetEventTime(hc, PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_EMPTY, PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING, TIME_INTERVAL_HC_MINUS_LOW_MIN, TIME_INTERVAL_HC_MINUS_HIGH_MIN, TIME_INTERVAL_HC_MINUS_LOW_MAX, TIME_INTERVAL_HC_MINUS_HIGH_MAX);
-				}
-				
-				if( m_ProcessTimeAccuFreeze > m_EventTimeFreeze )
-				{
-					m_ProcessTimeAccuFreeze = 0;
-					m_EventTimeFreeze = -1;
-					m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_FREEZE);
-				}	
-			}
-			else if ( hc >= PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING )	// Yellow zone
-			{
-				m_ProcessTimeAccuHot++;
-				
-				if(m_EventTimeHot < 0)	//if not set
-				{
-					m_EventTimeHot = GetEventTime(hc, PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_EMPTY,PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING, TIME_INTERVAL_HC_PLUS_LOW_MIN, TIME_INTERVAL_HC_PLUS_LOW_MIN, TIME_INTERVAL_HC_PLUS_LOW_MAX, TIME_INTERVAL_HC_PLUS_HIGH_MAX);
-				}
-				
-				if( m_ProcessTimeAccuHot > m_EventTimeHot )
-				{
-					m_ProcessTimeAccuHot = 0;
-					m_EventTimeHot = -1;
-					m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_HOT);					
-				}	
-			}
+			if (m_EventTimeHot < 0 || m_ProcessTimeAccuHot >= m_EventTimeHot)
+				ProcessHot(hc);
 		}
+		else if (Math.IsInRange(hc, PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING, PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING))
+		{
+			// White zone, reset the timers
+			
+			if (m_EventTimeHot > -1 && hc <= 0)
+				m_EventTimeHot = -1;
+			
+			if (m_EventTimeFreeze > -1 && hc >= 0)
+				m_EventTimeFreeze = -1;
+			
+			if (m_EventTimeFreezeRattle > -1)
+				m_EventTimeFreezeRattle = -1;
+	
+		}
+		else if (hc <= PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING)	// Light blue zone
+		{
+			if (hc <= PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL)	// Deep blue blinking zone, rattling is layerd on top of freezing
+			{
+				m_ProcessTimeAccuFreezeRattle += delta_time;
+				
+				if (m_EventTimeFreezeRattle < 0 || m_ProcessTimeAccuFreezeRattle >= m_EventTimeFreezeRattle)
+					ProcessFreezeRattle(hc);	
+			}
+			
+			m_ProcessTimeAccuFreeze += delta_time;
+			
+			if (m_EventTimeFreeze < 0 || m_ProcessTimeAccuFreeze >= m_EventTimeFreeze)	
+				ProcessFreeze(hc);	
+		}
+		
+	//	Debug.Log("HeatComfort: " + hc);
+	}
+
+	private void ProcessHot(float hcValue)
+	{
+		m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_HOT);		
+		m_EventTimeHot = GetEventTime(hcValue, PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_EMPTY, PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING, TIME_INTERVAL_HC_PLUS_LOW_MIN, TIME_INTERVAL_HC_PLUS_HIGH_MIN, TIME_INTERVAL_HC_PLUS_LOW_MAX, TIME_INTERVAL_HC_PLUS_HIGH_MAX);
+		m_ProcessTimeAccuHot = 0;
+		
+	//	Debug.Log("HeatComfort: " + hcValue + ", HOT in: " + m_EventTimeHot + "s");	
+	}
+	
+	private void ProcessFreeze(float hcValue)
+	{
+		m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_FREEZE);	
+		m_EventTimeFreeze = GetEventTime(hcValue, PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_EMPTY, PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING, TIME_INTERVAL_HC_MINUS_LOW_MIN, TIME_INTERVAL_HC_MINUS_HIGH_MIN, TIME_INTERVAL_HC_MINUS_LOW_MAX, TIME_INTERVAL_HC_MINUS_HIGH_MAX);
+		m_ProcessTimeAccuFreeze = 0;	
+	
+	//	Debug.Log("HeatComfort: " + hcValue + ", FREEZE in: " + m_EventTimeFreeze + "s");
+	}
+	
+	private void ProcessFreezeRattle(float hcValue)
+	{
+		m_Player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_FREEZE_RATTLE);
+		m_EventTimeFreezeRattle = GetEventTime(hcValue, -1, PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL, TIME_INTERVAL_HC_MINUS_LOW_MIN, TIME_INTERVAL_HC_MINUS_HIGH_MIN, TIME_INTERVAL_HC_MINUS_LOW_MAX, TIME_INTERVAL_HC_MINUS_HIGH_MAX);
+		m_ProcessTimeAccuFreezeRattle = 0;	
+		
+	//	Debug.Log("HeatComfort: " + hcValue + ", RATTLE in: " + m_EventTimeFreezeRattle + "s");
+	}
+
+	private float GetEventTime(float hcValue, float threshold_low, float thresholdHigh, float lowMin, float highMin, float lowMax, float highMax)
+	{
+		float inv_value = Math.Clamp(Math.InverseLerp(threshold_low, thresholdHigh, hcValue), 0, 1);
+		float valueMin = Math.Lerp(lowMin, highMin, inv_value);
+		float value_max = Math.Lerp(lowMax, highMax, inv_value);
+		
+		return Math.RandomFloatInclusive(valueMin, value_max);
 	}
 }

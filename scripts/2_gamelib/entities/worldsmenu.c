@@ -21,7 +21,7 @@ class WorldsMenu: GenericEntity
 		SetFlags(EntityFlags.ACTIVE, false);
 		SetEventMask(EntityEvent.POSTFRAME);
 		
-		Class.CastTo(m_MouseWidget, GetGame().GetWorkspace().CreateWidgets("gui/layouts/mouse.layout"));
+		Class.CastTo(m_MouseWidget, g_Game.GetWorkspace().CreateWidgets("gui/layouts/mouse.layout"));
 		m_MouseWidget.SetSort(1024);
 		SetCursorWidget(m_MouseWidget);
 		
@@ -40,7 +40,7 @@ class WorldsMenu: GenericEntity
 
 	override void EOnPostFrame(IEntity other, int extra) //EntityEvent.POSTFRAME
 	{
-		InputManager im = GetGame().GetInputManager();
+		InputManager im = g_Game.GetInputManager();
 		im.ActivateContext("MenuContext");
 		bool menuSelect = im.GetActionTriggered("MenuSelect");
 		bool menuBack = im.GetActionTriggered("MenuBack");
@@ -55,12 +55,12 @@ class WorldsMenu: GenericEntity
 			if (DbgUI.Button("Start") || menuSelect)
 			{
 				string worldToLoad = m_DbgOptions.Get(m_DbgListSelection);
-				GetGame().SetWorldFile(worldToLoad, true);
+				g_Game.SetWorldFile(worldToLoad, true);
 			}
 		}
 		if (DbgUI.Button("Exit") || menuBack)
 		{
-			GetGame().RequestClose();
+			g_Game.RequestClose();
 		}		
 		DbgUI.End();
 	}

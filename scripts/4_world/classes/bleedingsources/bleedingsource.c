@@ -41,7 +41,7 @@ class BleedingSource
 		m_ParticleName = particle_name;
 		
 		//CreateBleedSymptom();
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{	
 			CreateParticle();
 			StartSourceBleedingIndication();
@@ -155,8 +155,9 @@ class BleedingSource
 			{
 			#endif
 				Param4<bool,int,vector,bool> par = new Param4<bool,int,vector,bool>(true,m_Bit,"0 0 0",false);
-				GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.BLEEDING_LAYER});
-				GetGame().GetMission().GetEffectWidgets().UpdateWidgets(EffectWidgetsTypes.BLEEDING_LAYER,0,par);
+				GameplayEffectWidgets_base widgets = g_Game.GetMission().GetEffectWidgets();
+				widgets.AddActiveEffects({EffectWidgetsTypes.BLEEDING_LAYER});
+				widgets.UpdateWidgets(EffectWidgetsTypes.BLEEDING_LAYER,0,par);
 			#ifdef DIAG_DEVELOPER
 			}
 			#endif
@@ -165,10 +166,10 @@ class BleedingSource
 	
 	void StopSourceBleedingIndication(bool instant = false)
 	{
-		if (m_Player && m_Player.IsControlledPlayer() && GetGame() && (!GetGame().IsDedicatedServer()))
+		if (m_Player && m_Player.IsControlledPlayer() && g_Game && (!g_Game.IsDedicatedServer()))
 		{
 			Param4<bool,int,vector,bool> par = new Param4<bool,int,vector,bool>(false,m_Bit,"0 0 0",instant);
-			GetGame().GetMission().GetEffectWidgets().UpdateWidgets(EffectWidgetsTypes.BLEEDING_LAYER,0,par);
+			g_Game.GetMission().GetEffectWidgets().UpdateWidgets(EffectWidgetsTypes.BLEEDING_LAYER,0,par);
 		}
 	}
 	

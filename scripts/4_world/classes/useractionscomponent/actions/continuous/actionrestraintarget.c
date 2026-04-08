@@ -66,14 +66,14 @@ class ActionRestrainTarget: ActionContinuousBase
 	{
 		PlayerBase target_player = PlayerBase.Cast(action_data.m_Target.GetObject());
 		
-		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+		if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 		{
 			if ( target_player.IsSurrendered() || !target_player.CanBeRestrained() )
 			{
 				return false;
 			}
 		}
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			ActionRestrainTargetCB callback = ActionRestrainTargetCB.Cast(action_data.m_Callback);
 			
@@ -82,7 +82,7 @@ class ActionRestrainTarget: ActionContinuousBase
 				target_player.SetRestrainPrelocked(true);
 			}
 			
-			return !GetGame().GetMission().IsPlayerDisconnecting(target_player);
+			return !g_Game.GetMission().IsPlayerDisconnecting(target_player);
 			
 		}
 		return true;
@@ -125,8 +125,8 @@ class ActionRestrainTarget: ActionContinuousBase
 		
 		if (CanReceiveAction(action_data.m_Target) && !target_player.IsRestrained())
 		{
-			EntityAI item_in_hands_target = target_player.GetHumanInventory().GetEntityInHands();
-			EntityAI item_in_hands_source = source_player.GetHumanInventory().GetEntityInHands();
+			EntityAI item_in_hands_target = target_player.GetEntityInHands();
+			EntityAI item_in_hands_source = source_player.GetEntityInHands();
 			
 			if ( !item_in_hands_source )
 			{
@@ -152,7 +152,7 @@ class ActionRestrainTarget: ActionContinuousBase
 	{
 		super.OnFinishProgressClient( action_data );
 		
-		GetGame().GetAnalyticsClient().OnActionRestrain();
+		g_Game.GetAnalyticsClient().OnActionRestrain();
 	}
 };
 
@@ -179,7 +179,7 @@ class ChainedDropAndRestrainLambda : DestroyItemInCorpsesHandsAndCreateNewOnGndL
 		}
 		
 		// as soon as previous op is finish, start another one
-		EntityAI item_in_hands_source = m_SourcePlayer.GetHumanInventory().GetEntityInHands();
+		EntityAI item_in_hands_source = m_SourcePlayer.GetEntityInHands();
 		if (item_in_hands_source)
 		{
 			string new_item_name = MiscGameplayFunctions.ObtainRestrainItemTargetClassname(item_in_hands_source);

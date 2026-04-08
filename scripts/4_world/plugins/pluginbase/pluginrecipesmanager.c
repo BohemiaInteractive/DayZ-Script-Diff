@@ -172,7 +172,7 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 
 	protected void GenerateRecipeCache()
 	{
-		GetGame().ProfilerStart("m_RecipeCache");
+		g_Game.ProfilerStart("m_RecipeCache");
 		
 		//m_CacheBasesMap.Clear();
 		m_CachedItems.Clear();
@@ -192,21 +192,21 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 		for (int i = 0; i < all_config_paths.Count(); i++)
 		{
 			config_path = all_config_paths.Get(i);
-			int children_count = GetGame().ConfigGetChildrenCount(config_path);
+			int children_count = g_Game.ConfigGetChildrenCount(config_path);
 			
 			for (int x = 0; x < children_count; x++)
 			{
-				GetGame().ConfigGetChildName(config_path, x, child_name);
-				scope = GetGame().ConfigGetInt( config_path + " " + child_name + " scope" );
+				g_Game.ConfigGetChildName(config_path, x, child_name);
+				scope = g_Game.ConfigGetInt( config_path + " " + child_name + " scope" );
 
 				if ( scope == 2 )
 				{
-					GetGame().ConfigGetFullPath(config_path +" "+ child_name,/*out*/ full_path);
+					g_Game.ConfigGetFullPath(config_path +" "+ child_name,/*out*/ full_path);
 					MatchItems(full_path);
 				}
 			}
 		}
-		GetGame().ProfilerStop("m_RecipeCache");
+		g_Game.ProfilerStop("m_RecipeCache");
 	}
 
 	void WalkRecipes()

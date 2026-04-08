@@ -39,7 +39,7 @@ class InfectedSoundEventBase extends SoundEventBase
 			m_SoundSetCallback = null;
 		}
 
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).RemoveByName(this, "PosUpdate");
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).RemoveByName(this, "PosUpdate");
 	}
 	
 	void PosUpdate()
@@ -58,7 +58,7 @@ class InfectedSoundEventBase extends SoundEventBase
 		m_SoundSetCallback = m_Infected.ProcessVoiceFX(soundset_name);
 		if ( m_SoundSetCallback )
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLaterByName(this, "PosUpdate", 0, true);
+			g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLaterByName(this, "PosUpdate", 0, true);
 			return true;
 		}
 		string error = "[%1] No sound callback for : \'%2\' in state: \'%3\' Please define relevant SoundSet in %4";

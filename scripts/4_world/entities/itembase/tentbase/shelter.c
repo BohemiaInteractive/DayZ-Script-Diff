@@ -48,7 +48,7 @@ class ShelterBase extends TentBase
 	
 	void SpawnKit()
 	{
-		ItemBase constructionKit = ItemBase.Cast(GetGame().CreateObjectEx("ShelterKit", GetPosition(), ECE_PLACE_ON_SURFACE));
+		ItemBase constructionKit = ItemBase.Cast(g_Game.CreateObjectEx("ShelterKit", GetPosition(), ECE_PLACE_ON_SURFACE));
 		constructionKit.SetHealth01("", "", GetHealth01());
 	}
 	

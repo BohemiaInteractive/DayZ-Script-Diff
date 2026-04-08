@@ -30,9 +30,9 @@ class DigSoundEventBase extends ReplaceSoundEventBase
 		else if (m_ID == EReplaceSoundEventID.DIG_SECONDARY)
 			cfg_path = cfg_path + " DigSecondary";
 		
-		m_ReplacedSoundAnimID = GetGame().ConfigGetInt(cfg_path + " " + m_Player.GetSurfaceType());
+		m_ReplacedSoundAnimID = g_Game.ConfigGetInt(cfg_path + " " + m_Player.GetSurfaceType());
 		if (m_ReplacedSoundAnimID == 0)
-			m_ReplacedSoundAnimID = GetGame().ConfigGetInt(cfg_path + " default");	
+			m_ReplacedSoundAnimID = g_Game.ConfigGetInt(cfg_path + " default");	
 	}
 };
 
@@ -69,8 +69,8 @@ class CleanHandsSoundEventBase extends ReplaceSoundEventBase
 		else if (m_ID == EReplaceSoundEventID.CLEANHANDS_SECONDARY)
 			cfg_path = cfg_path + " CleanHandsSecondary";
 		
-		m_ReplacedSoundAnimID = GetGame().ConfigGetInt(cfg_path + " " + m_Player.GetSurfaceType());
+		m_ReplacedSoundAnimID = g_Game.ConfigGetInt(cfg_path + " " + m_Player.GetSurfaceType());
 		if (m_ReplacedSoundAnimID == 0)
-			m_ReplacedSoundAnimID = GetGame().ConfigGetInt(cfg_path + " default");	
+			m_ReplacedSoundAnimID = g_Game.ConfigGetInt(cfg_path + " default");	
 	}
 };

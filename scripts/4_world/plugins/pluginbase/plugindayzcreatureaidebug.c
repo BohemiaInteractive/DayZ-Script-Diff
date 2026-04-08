@@ -126,7 +126,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	override void OnUpdate(float delta_time)
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			CheckShowMode();
 		}
@@ -499,7 +499,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 				DbgUI.Check("ShowAnimEvents", m_bShowAnimEvents);
 				
 				#ifdef _DAYZ_CREATURE_DEBUG_SHADOW
-				if (!GetGame().IsMultiplayer())
+				if (!g_Game.IsMultiplayer())
 				{
 					DbgUI.SameLine();
 					if (DbgUI.Button("CreateShadow"))
@@ -509,7 +509,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 				}
 				#endif
 				
-				if (!GetGame().IsMultiplayer())
+				if (!g_Game.IsMultiplayer())
 				{
 					const int simLODInputSize = 20;
 					int simLOD;
@@ -556,7 +556,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	{
 		OnGUI(m_IsActive);
 		
-		if (GetGame().IsMultiplayer() && GetGame().IsClient())
+		if (g_Game.IsMultiplayer() && g_Game.IsClient())
 		{
 			SendSyncMessages();
 		}	
@@ -600,8 +600,8 @@ class PluginDayZCreatureAIDebug extends PluginBase
 		const float MAX_RAYCAST_RANGE = 1000;
 		if (m_bIsCaptureMode)
 		{	
-			vector dir = GetGame().GetPointerDirection();
-			vector pos = GetGame().GetCurrentCameraPosition();		
+			vector dir = g_Game.GetPointerDirection();
+			vector pos = g_Game.GetCurrentCameraPosition();		
 			
 			// Raycast
 			vector from = pos;
@@ -611,7 +611,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 			int contact_component;
 			set<Object> objects = new set<Object>;
 			
-			if (DayZPhysics.RaycastRV(from, to, contact_pos, contact_dir, contact_component, objects, NULL, GetGame().GetPlayer()))
+			if (DayZPhysics.RaycastRV(from, to, contact_pos, contact_dir, contact_component, objects, NULL, g_Game.GetPlayer()))
 			{
 				for ( int i = 0; i < objects.Count(); i++ )
 				{
@@ -634,7 +634,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	void GUIAction_InitDebugObject(Object obj)
 	{
 		InitDebugObject(obj);
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			SyncInitDebugObject(obj);
 		}
@@ -643,7 +643,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	#ifdef _DAYZ_CREATURE_DEBUG_SHADOW
 	void GUIAction_CreateShadow()
 	{
-		auto shadowEntity = GetGame().CreateObject(m_sDebugEntityName, m_DebugEntity.GetPosition(), false, true);
+		auto shadowEntity = g_Game.CreateObject(m_sDebugEntityName, m_DebugEntity.GetPosition(), false, true);
 		m_DebugEntity.DebugSetShadow(shadowEntity);
 	}
 	#endif
@@ -656,7 +656,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	void GUIAction_ReleaseDebugObject()
 	{
 		ReleaseDebugObject();		
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			SyncReleaseDebugObject();
 		}
@@ -668,7 +668,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 		{
 			case DayZCreatureAnimScriptDebugVarType.INT:
 				int intValue = strVal.ToInt();
-				if (GetGame().IsMultiplayer())
+				if (g_Game.IsMultiplayer())
 				{
 					SyncSetValueInt(index, intValue);
 				}
@@ -679,7 +679,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 				break;
 			case DayZCreatureAnimScriptDebugVarType.FLOAT:
 				float floatValue = strVal.ToFloat();
-				if (GetGame().IsMultiplayer())
+				if (g_Game.IsMultiplayer())
 				{
 					SyncSetValueFloat(index, floatValue);
 				}
@@ -704,7 +704,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 					boolValue = (bool)strVal.ToInt();
 				}
 			
-				if (GetGame().IsMultiplayer())
+				if (g_Game.IsMultiplayer())
 				{
 					SyncSetValueBool(index, boolValue);
 				}
@@ -718,7 +718,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void GUIAction_ActivateCommand(int commandIdx, int userInt, float userFloat)
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			SyncActivateCommand(commandIdx, userInt, userFloat);
 		}
@@ -731,7 +731,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 	
 	void GUIAction_EnableAI(bool enable)
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			SyncEnableAI(enable);
 		}
@@ -753,7 +753,7 @@ class PluginDayZCreatureAIDebug extends PluginBase
 			Param1<int> paramCount = new Param1<int>(count);
 			m_SyncMessages.InsertAt(paramCount, 0);
 			
-			GetGame().GetPlayer().RPC(ERPCs.DEV_RPC_PLUGIN_DZCREATURE_DEBUG, m_SyncMessages, true);
+			g_Game.GetPlayer().RPC(ERPCs.DEV_RPC_PLUGIN_DZCREATURE_DEBUG, m_SyncMessages, true);
 			
 			m_SyncMessages.Clear();
 		}

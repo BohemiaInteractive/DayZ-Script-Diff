@@ -141,7 +141,7 @@ class WeaponChambering_Base extends WeaponStateBase
 	
 	bool DropBullet(WeaponEventBase e)
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if(m_magazineType.Length() > 0 && m_type.Length() > 0)
 			{

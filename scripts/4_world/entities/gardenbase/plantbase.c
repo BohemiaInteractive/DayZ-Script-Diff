@@ -60,9 +60,9 @@ class PlantBase extends ItemBase
 		m_SpoiledRemoveTime = (60 * 20) + Math.RandomInt(0, 60 * 5);
 				
 		string plant_type = this.GetType();
-		m_GrowthStagesCount = GetGame().ConfigGetInt( "cfgVehicles " + plant_type + " Horticulture GrowthStagesCount" );
-		m_CropsCount = GetGame().ConfigGetInt( "cfgVehicles " + plant_type + " Horticulture CropsCount" );
-		GetGame().ConfigGetText( "cfgVehicles " + plant_type + " Horticulture CropsType", m_CropsType );
+		m_GrowthStagesCount = g_Game.ConfigGetInt( "cfgVehicles " + plant_type + " Horticulture GrowthStagesCount" );
+		m_CropsCount = g_Game.ConfigGetInt( "cfgVehicles " + plant_type + " Horticulture CropsCount" );
+		g_Game.ConfigGetText( "cfgVehicles " + plant_type + " Horticulture CropsType", m_CropsType );
 		
 		if (m_GrowthStagesCount == 0)
 			m_GrowthStagesCount = 1;
@@ -81,7 +81,7 @@ class PlantBase extends ItemBase
 		RegisterNetSyncVariableInt("m_PlantState");
 		RegisterNetSyncVariableInt("m_PlantStateIndex");
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_TimeTicker = new Timer( CALL_CATEGORY_SYSTEM );
 			m_TimeTicker.Run(TICK_FREQUENCY, this, "Tick", NULL, true);
@@ -126,7 +126,7 @@ class PlantBase extends ItemBase
 
 		m_PlantMaterialMultiplier = 0.1 * harvesting_efficiency;
 		
-		float rain_intensity = GetGame().GetWeather().GetRain().GetActual();
+		float rain_intensity = g_Game.GetWeather().GetRain().GetActual();
 		
 		if (m_PlantState < EPlantState.MATURE  &&  !NeedsWater())		
 		{
@@ -213,7 +213,7 @@ class PlantBase extends ItemBase
 		else
 		{
 			ErrorEx("[Warning] A plant existed without a garden. Therefore it was deleted from the world to prevent issues! Position: " + GetPosition(), ErrorExSeverity.INFO);
-			GetGame().ObjectDelete(this); // Plants that exist without a garden must be deleted. Otherwise they might cause problems.
+			g_Game.ObjectDelete(this); // Plants that exist without a garden must be deleted. Otherwise they might cause problems.
 		}
 	}
 	
@@ -540,13 +540,13 @@ class PlantBase extends ItemBase
 
 	void RemovePlantEx( vector pos )
 	{
-		if ( GetGame() && GetGame().IsServer() )
+		if ( g_Game && g_Game.IsServer() )
 		{
 			UnlockFromParent();
 			
 			if ( m_CurrentPlantMaterialQuantity > 0.0 )
 			{
-				ItemBase item = ItemBase.Cast( GetGame().CreateObjectEx( "PlantMaterial", pos, ECE_PLACE_ON_SURFACE ) );
+				ItemBase item = ItemBase.Cast( g_Game.CreateObjectEx( "PlantMaterial", pos, ECE_PLACE_ON_SURFACE ) );
 				item.SetQuantity( m_CurrentPlantMaterialQuantity * 1000.0 );
 			}
 			
@@ -556,7 +556,7 @@ class PlantBase extends ItemBase
 	
 	void DestroyPlant()
 	{
-		if ( GetGame() && GetGame().IsServer() )
+		if ( g_Game && g_Game.IsServer() )
 		{
 			UnlockFromParent();
 			
@@ -571,7 +571,7 @@ class PlantBase extends ItemBase
 			for ( int i = 0; i < m_CropsCount; i++ )
 			{
 				vector pos = player.GetPosition();
-				ItemBase item = ItemBase.Cast( GetGame().CreateObjectEx( m_CropsType, pos, ECE_PLACE_ON_SURFACE ) );
+				ItemBase item = ItemBase.Cast( g_Game.CreateObjectEx( m_CropsType, pos, ECE_PLACE_ON_SURFACE ) );
 				item.SetQuantity( item.GetQuantityMax() );
 			}
 		}

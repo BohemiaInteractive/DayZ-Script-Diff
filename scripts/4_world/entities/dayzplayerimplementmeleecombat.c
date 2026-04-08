@@ -232,7 +232,7 @@ class DayZPlayerImplementMeleeCombat
 		SetFinisherType(TrySelectFinisherType(weapon, GetTargetEntity()));
 
 		//! Store target into input packet
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			ScriptInputUserData ctx = new ScriptInputUserData();
 			ctx.Write(INPUT_UDT_MELEE_TARGET);
@@ -557,7 +557,7 @@ class DayZPlayerImplementMeleeCombat
 		else
 		{ // What the player himself is looking at
 			playerDir = MiscGameplayFunctions.GetHeadingVector(player);
-			dir = GetGame().GetCurrentCameraDirection();
+			dir = g_Game.GetCurrentCameraDirection();
 			MiscGameplayFunctions.GetHeadBonePos(player, pos);
 		}
 		
@@ -606,7 +606,7 @@ class DayZPlayerImplementMeleeCombat
 
 		// ray properties 
 		vector pos;
-		vector cameraDirection = GetGame().GetCurrentCameraDirection();
+		vector cameraDirection = g_Game.GetCurrentCameraDirection();
 
 		MiscGameplayFunctions.GetHeadBonePos(player, pos);
 		m_RayStart = pos;
@@ -732,7 +732,7 @@ class DayZPlayerImplementMeleeCombat
 		if (!DiagMenu.GetBool(DiagMenuIDs.MELEE_DEBUG))
 			return;
 
-		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_CONTINUOUS) && (!GetGame().IsMultiplayer() || !GetGame().IsServer()))
+		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_CONTINUOUS) && (!g_Game.IsMultiplayer() || !g_Game.IsServer()))
 			Update(weapon, hitType);
 
 		if (DiagMenu.GetBool(DiagMenuIDs.MELEE_SHOW_TARGETS))
@@ -860,7 +860,7 @@ class DayZPlayerImplementMeleeCombat
 		float dist = 3;
 		vector start = m_DZPlayer.GetPosition();
 					
-		vector dir = GetGame().GetCurrentCameraDirection();
+		vector dir = g_Game.GetCurrentCameraDirection();
 		dir[1] = 0;
 		dir.Normalize();
 		float playerAngle = -Math.Atan2(dir[0], dir[2]);
@@ -878,7 +878,10 @@ class DayZPlayerImplementMeleeCombat
 	protected void CleanupDebugShapes(array<Shape> shapes)
 	{
 		for ( int it = 0; it < shapes.Count(); ++it )
-			Debug.RemoveShape( shapes[it] );
+		{
+			Shape shape = shapes[it];
+			Debug.RemoveShape( shape );
+		}
 
 		shapes.Clear();
 	}

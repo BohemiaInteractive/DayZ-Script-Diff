@@ -501,5 +501,16 @@ class Math3D
 		\param outWeights Output weights for individual nodes 1:1 to inPositions
 	*/
 	proto static void BlendCartesian(vector samplePosition, notnull array<vector> inPositions, notnull array<float> outWeights);
+	
+	
+    static vector BoxCenter(vector a, vector b)
+    {
+        return (a + b) * 0.5;
+    }
+
+    static vector BoxSize(vector a, vector b)
+    {
+        return Vector(Math.AbsFloat(a[0] - b[0]), Math.AbsFloat(a[1] - b[1]), Math.AbsFloat(a[2] - b[2]));
+    }
 };
 //@}

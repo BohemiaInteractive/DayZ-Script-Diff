@@ -34,7 +34,7 @@ class CatchingContextBase
 	protected void Init(Param par)
 	{
 		m_IsValid = true;
-		m_YieldsMapAll = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldsMap();
+		m_YieldsMapAll = g_Game.GetMission().GetWorldData().GetCatchYieldBank().GetYieldsMap();
 		DeserializeData(par);
 		CreateResultDataStructure();
 		InitCatchingItemData();

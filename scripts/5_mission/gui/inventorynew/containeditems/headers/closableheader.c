@@ -87,7 +87,7 @@ class ClosableHeader: Header
 				item_preview_drag.Show( true );
 			
 			int ww, hh;
-			GetGame().GetInventoryItemSize( InventoryItem.Cast( m_Entity ), ww, hh );
+			g_Game.GetInventoryItemSize( InventoryItem.Cast( m_Entity ), ww, hh );
 			if( item_preview_drag )
 			{
 				m_Entity.GetOnItemFlipped().Insert( UpdateFlip );
@@ -109,7 +109,7 @@ class ClosableHeader: Header
 		if( InventoryItem.Cast( m_Entity ) && item_preview_drag )
 		{
 			int ww, hh;
-			GetGame().GetInventoryItemSize( InventoryItem.Cast( m_Entity ), ww, hh );
+			g_Game.GetInventoryItemSize( InventoryItem.Cast( m_Entity ), ww, hh );
 			if( flipped )
 			{
 				item_preview_drag.SetSize( hh * m_SquareSize, ww * m_SquareSize );
@@ -153,7 +153,7 @@ class ClosableHeader: Header
 		if( m_IsInLocalEquipment && !GetDragWidget() )
 		{
 			#ifdef PLATFORM_CONSOLE
-			m_MovePanel.Show( GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() );
+			m_MovePanel.Show( g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() );
 			#else
 			m_MovePanel.Show( true );
 			#endif

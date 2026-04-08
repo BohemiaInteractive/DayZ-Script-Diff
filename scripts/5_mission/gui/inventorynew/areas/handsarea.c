@@ -140,7 +140,7 @@ class HandsArea: Container
 			return;
 		}
 		
-		if( ipw.GetItem() && GetGame().GetPlayer().GetHumanInventory().CanAddEntityIntoHands( ipw.GetItem() ) )
+		if( ipw.GetItem() && g_Game.GetPlayer().GetHumanInventory().CanAddEntityIntoHands( ipw.GetItem() ) )
 		{
 			ColorManager.GetInstance().SetColor( w, ColorManager.GREEN_COLOR );
 			ItemManager.GetInstance().HideDropzones();
@@ -177,18 +177,18 @@ class HandsArea: Container
 		if( !ipw.GetItem().GetInventory().CanRemoveEntity() )
 			return;
 		
-		if( GetGame().GetPlayer().GetHumanInventory().CanAddEntityIntoHands( ipw.GetItem() ) )
+		if( g_Game.GetPlayer().GetHumanInventory().CanAddEntityIntoHands( ipw.GetItem() ) )
 		{
 			ItemBase item_base = ItemBase.Cast( ipw.GetItem() );
 			float stackable = item_base.GetTargetQuantityMax(-1);
 			
 			if( stackable == 0 || item_base.GetQuantity() <= stackable )
 			{
-				GetGame().GetPlayer().PredictiveTakeEntityToHands( item_base );		
+				g_Game.GetPlayer().PredictiveTakeEntityToHands( item_base );		
 			}
 			else if( stackable != 0 && stackable <= item_base.GetQuantity() )
 			{
-				item_base.SplitIntoStackMaxHandsClient( PlayerBase.Cast( GetGame().GetPlayer() ) );
+				item_base.SplitIntoStackMaxHandsClient( PlayerBase.Cast( g_Game.GetPlayer() ) );
 			}
 		}
 	}

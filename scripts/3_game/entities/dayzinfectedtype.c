@@ -59,11 +59,11 @@ class DayZInfectedType extends DayZCreatureAIType
 		string chaseAttPath = string.Format("cfgVehicles %1 AttackActions AttackRun ammoType", GetName());
 		
 		string lightAttAmmo;
-		GetGame().ConfigGetText(lightAttPath, lightAttAmmo);
+		g_Game.ConfigGetText(lightAttPath, lightAttAmmo);
 		string heavyAttAmmo;
-		GetGame().ConfigGetText(heavyAttPath, heavyAttAmmo);
+		g_Game.ConfigGetText(heavyAttPath, heavyAttAmmo);
 		string chaseAttAmmo;
-		GetGame().ConfigGetText(chaseAttPath, chaseAttAmmo);
+		g_Game.ConfigGetText(chaseAttPath, chaseAttAmmo);
 		
 		//! chase group
 		m_ChaseAttacksGroup = new array<ref DayZInfectedAttackType>;

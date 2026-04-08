@@ -66,11 +66,11 @@ class HudDebugWinCharAgents extends HudDebugWinBase
 	override void SetUpdate( bool state )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param1<bool> params = new Param1<bool>( state );
 			if ( player )
@@ -175,20 +175,20 @@ class HudDebugWinCharAgents extends HudDebugWinBase
 		}
 		
 		ref Param1<int> p1 = new Param1<int>( agent_id );
-		Man man = GetGame().GetPlayer();
+		Man man = g_Game.GetPlayer();
 		man.RPCSingleParam(ERPCs.DEV_AGENT_GROW, p1, true, man.GetIdentity());
 	}
 	
 	void DebugRemoveAgentsRequest()
 	{
 		ref Param1<bool> p1 = new Param1<bool>( false );
-		Man man = GetGame().GetPlayer();
+		Man man = g_Game.GetPlayer();
 		man.RPCSingleParam(ERPCs.DEV_RPC_AGENT_RESET, p1, true, man.GetIdentity());
 	}
 				
 	void AddAgent(string title, string value, int id, float temporaryResistance)
 	{
-		Widget widget = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug_agent.layout", m_WgtAgents);
+		Widget widget = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug_agent.layout", m_WgtAgents);
 		ButtonWidget btn = ButtonWidget.Cast( widget.FindAnyWidget( "TextAgentName" ) );
 		TextWidget countWidget = TextWidget.Cast(widget.FindAnyWidget("TextWidgetAgentCount"));
 		TextWidget tempResistanceWidget = TextWidget.Cast(widget.FindAnyWidget("TextWidgetAgentTempResistanceTime"));

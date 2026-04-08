@@ -111,7 +111,7 @@ class Clothing extends Clothing_Base
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
 		super.EEHealthLevelChanged(oldLevel, newLevel, zone);
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			PlayerBase player_owner = PlayerBase.Cast(GetHierarchyParent());
 			
@@ -119,7 +119,7 @@ class Clothing extends Clothing_Base
 			{
 				if( player_owner.m_CorpseState != 0 )
 				{
-					GetGame().GetCallQueue( CALL_CATEGORY_GUI ).CallLater( player_owner.UpdateCorpseState, 0, false);
+					g_Game.GetCallQueue( CALL_CATEGORY_GUI ).CallLater( player_owner.UpdateCorpseState, 0, false);
 				}
 			}
 		}

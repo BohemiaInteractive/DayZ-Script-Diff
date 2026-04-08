@@ -35,8 +35,8 @@ class PluginTargetTemperature extends PluginBase
 	EntityAI GetTargetEntity()
 	{
 		float hitFraction;
-		vector start = GetGame().GetCurrentCameraPosition();
-		vector end = start + (GetGame().GetCurrentCameraDirection() * 5.0);	
+		vector start = g_Game.GetCurrentCameraPosition();
+		vector end = start + (g_Game.GetCurrentCameraDirection() * 5.0);	
 
 		vector hitPos, hitNormal;
 		Object hitObj;

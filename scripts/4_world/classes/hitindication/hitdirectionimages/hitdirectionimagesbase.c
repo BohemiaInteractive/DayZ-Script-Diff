@@ -39,7 +39,7 @@ class HitDirectionImagesBase
 	//! Layout should be sufficient for generic manipulation of the hit image
 	void GetCurrentImageData(out Widget layout, out Widget image)
 	{
-		layout = GetGame().GetWorkspace().CreateWidgets(GetTypeLayoutPathArray()[m_ImageIndex]);
+		layout = g_Game.GetWorkspace().CreateWidgets(GetTypeLayoutPathArray()[m_ImageIndex]);
 		image = layout.FindAnyWidget(GetTypeImagePathArray()[m_ImageIndex]);
 	}
 }

@@ -8,6 +8,11 @@ class NVGoggles extends PoweredOptic_Base
 		RotateGoggles(true);
 	}
 	
+	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
+	{
+		return ECachedEquipmentItemCategory.NVG;
+	}
+	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -76,7 +81,7 @@ class NVGoggles extends PoweredOptic_Base
 			if (!m_IsLowered)
 				RotateGoggles(false);
 			
-			if (!GetGame().IsServer() || !GetGame().IsMultiplayer())
+			if (!g_Game.IsServer() || !g_Game.IsMultiplayer())
 			{
 				if ((headgear == m_Strap || glasses == m_Strap))
 					m_Strap.UpdateNVGStatus(player);
@@ -96,7 +101,7 @@ class NVGoggles extends PoweredOptic_Base
 			headgear = player.FindAttachmentBySlotName("Headgear");
 			glasses = player.FindAttachmentBySlotName("Eyewear");
 			
-			if (!GetGame().IsServer() || !GetGame().IsMultiplayer())
+			if (!g_Game.IsServer() || !g_Game.IsMultiplayer())
 			{
 				if ((headgear == m_Strap || glasses == m_Strap))
 					m_Strap.UpdateNVGStatus(player);
@@ -118,7 +123,7 @@ class NVGoggles extends PoweredOptic_Base
 			headgear = player.FindAttachmentBySlotName("Headgear");
 			glasses = player.FindAttachmentBySlotName("Eyewear");
 			
-			if (!GetGame().IsServer() || !GetGame().IsMultiplayer()) // Client side
+			if (!g_Game.IsServer() || !g_Game.IsMultiplayer()) // Client side
 			{
 				if ((headgear == m_Strap || glasses == m_Strap) && player.IsControlledPlayer())
 					player.AddActiveNV(GetCurrentNVType());

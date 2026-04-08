@@ -161,7 +161,7 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 
 	int GetAttachmentCategoriesCount( string config_path )
 	{
-		return GetGame().ConfigGetChildrenCount( config_path );
+		return g_Game.ConfigGetChildrenCount( config_path );
 	}
 
 	SlotsContainer GetSlotsContainer( int icons_row )
@@ -226,7 +226,7 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 	string GetAttachmentCategory( string config_path_attachment_categories, int i )
 	{
 		string attachment_category;
-		GetGame().ConfigGetChildName(config_path_attachment_categories, i, attachment_category);
+		g_Game.ConfigGetChildName(config_path_attachment_categories, i, attachment_category);
 		return attachment_category;
 	}
 
@@ -234,14 +234,14 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 	{
 		string icon_path = config_path_attachment_categories+ " " + attachment_category + " icon";
 		string icon_name;
-		GetGame().ConfigGetText(icon_path, icon_name);
+		g_Game.ConfigGetText(icon_path, icon_name);
 		return icon_name;
 	}
 	
 	int GetViewIndex( string config_path_attachment_categories, string attachment_category )
 	{
 		string preview_path = config_path_attachment_categories+ " " + attachment_category + " view_index";
-		return GetGame().ConfigGetInt( preview_path );;
+		return g_Game.ConfigGetInt( preview_path );;
 	}
 
 	void MouseClick(Widget w)
@@ -346,7 +346,7 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 				string config = config_path_attachment_categories + " " + attachment_category + " name";
 				string name;
 		
-				GetGame().ConfigGetText(config,name);
+				g_Game.ConfigGetText(config,name);
 				icon.SetSlotDisplayName(name);
 				
 				AttachmentCategoriesRow ar;
@@ -411,11 +411,11 @@ class AttachmentCategoriesContainer: CollapsibleContainer
 			return;
 		if( m_Entity.GetInventory().CanAddAttachment( iw.GetItem() ) && iw.GetItem().GetInventory().CanRemoveEntity() )
 		{
-			GetGame().GetPlayer().PredictiveTakeEntityToTargetAttachment( m_Entity, iw.GetItem() );
+			g_Game.GetPlayer().PredictiveTakeEntityToTargetAttachment( m_Entity, iw.GetItem() );
 		}
 		else if( m_Entity.GetInventory().CanAddEntityToInventory( iw.GetItem() ) && iw.GetItem().GetInventory().CanRemoveEntity() )
 		{
-			GetGame().GetPlayer().PredictiveTakeEntityToTargetInventory( m_Entity, FindInventoryLocationType.ANY, iw.GetItem() );
+			g_Game.GetPlayer().PredictiveTakeEntityToTargetInventory( m_Entity, FindInventoryLocationType.ANY, iw.GetItem() );
 		}
 	}
 	

@@ -277,7 +277,7 @@ class TreeEffecter : EffecterBase
 	
 	void TreeEffecter()
 	{
-		if (!GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (!g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			m_Effects = new array<EffectParticleGeneral>;
 		}
@@ -313,7 +313,7 @@ class TreeEffecter : EffecterBase
 			
 			m_Effects.Clear();
 		
-			GetGame().GetObjectsAtPosition(GetWorldPosition(), m_RadiusSync, objects, proxies);
+			g_Game.GetObjectsAtPosition(GetWorldPosition(), m_RadiusSync, objects, proxies);
 
 			for (int i = 0; i < objects.Count(); i++)
 			{
@@ -323,7 +323,7 @@ class TreeEffecter : EffecterBase
 					string particle;
 					int particleID;
 					string configPath = "CfgNonAIVehicles " + plant.GetType() + " FxFallingParticleEffect particle";
-					GetGame().ConfigGetText(configPath, particle);
+					g_Game.ConfigGetText(configPath, particle);
 					
 					if (particle != "")
 					{

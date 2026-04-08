@@ -333,7 +333,7 @@ class ModItemRegisterCallbacks
 
 void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 {
-	GetGame().ProfilerStart("DayZPlayerTypeRegisterItems");
+	g_Game.ProfilerStart("DayZPlayerTypeRegisterItems");
 	
 	ModItemRegisterCallbacks modCallbacks = new ModItemRegisterCallbacks();
 		
@@ -986,6 +986,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("TortillaBag",						"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/tortilla_g.anm");	
 		pType.AddItemInHandsProfileIK("HuntingBag",							"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/hunting_g.anm");
 		pType.AddItemInHandsProfileIK("AssaultBag_ColorBase",				"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/assault_g.anm");
+		pType.AddItemInHandsProfileIK("Attack2Bag_ColorBase",					"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/Attack2Backpack.anm");
 		pType.AddItemInHandsProfileIK("MountainBag_ColorBase",				"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/mountain_g.anm");
 		pType.AddItemInHandsProfileIK("CoyoteBag_ColorBase",				"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/coyote_g.anm");
 		pType.AddItemInHandsProfileIK("AliceBag_ColorBase",					"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					"dz/anims/anm/player/ik/two_handed/alice_g.anm");
@@ -1271,6 +1272,11 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("TorsoCover_Improvised",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/CombatGloves.anm");
 		pType.AddItemInHandsProfileIK("Chestplate",						"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,						"dz/anims/anm/player/ik/two_handed/chestplate.anm");
 		pType.AddItemInHandsProfileIK("BushlatPoliceJacket_ColorBase",	"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,						"dz/anims/anm/player/ik/two_handed/BushlatPoliceJacket.anm");
+		pType.AddItemInHandsProfileIK("Kameez_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/clothing/Chainmail.anm");
+		pType.AddItemInHandsProfileIK("WinterMilitaryCoat_ColorBase",	"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,						"dz/anims/anm/player/ik/two_handed/BushlatPoliceJacket.anm");
+		pType.AddItemInHandsProfileIK("MilitarySweater_ColorBase",		"dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,						"dz/anims/anm/player/ik/two_handed/BushlatPoliceJacket.anm");
+		pType.AddItemInHandsProfileIK("GulagJacket_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/clothing/Chainmail.anm");
+		pType.AddItemInHandsProfileIK("PilotJacket_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/clothing/HuntingVest.anm");
 		
 	
 	//! Headgear
@@ -1362,6 +1368,8 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("SherpaHat_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/sherpahat.anm");
 		pType.AddItemInHandsProfileIK("SkiGoggles_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/ski_goggles.anm");
 		pType.AddItemInHandsProfileIK("Headdress_Wolf",			        "dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/wolfheaddress.anm");
+		pType.AddItemInHandsProfileIK("Headdress_Bear",			        "dz/anims/workspaces/player/player_main/weapons/player_main_2h_extinguisher.asi",	twoHanded,					    "dz/anims/anm/player/ik/gear/headdress_bear.anm");
+		pType.AddItemInHandsProfileIK("Headdress_Fox",			        "dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,					"dz/anims/anm/player/ik/gear/headdress_fox.anm");
 	}
 
 	//! Belts
@@ -1548,7 +1556,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 	//
 	pType.DebugPreloadAnimationInstances();
 	
-	GetGame().ProfilerStop("DayZPlayerTypeRegisterItems");
+	g_Game.ProfilerStop("DayZPlayerTypeRegisterItems");
 
 }
 

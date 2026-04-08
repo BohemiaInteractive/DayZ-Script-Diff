@@ -3,7 +3,6 @@
  * @{
  */
 
-typedef int[] dGeom;
 typedef int[] dJoint;
 typedef int[] dBlock;
 
@@ -27,25 +26,6 @@ proto native void dSetTimeSlice(notnull IEntity worldEntity, float timeSlice);
 //proto native int dMaterialClone(string target, string source, int material_index)
 //proto native int dMaterialGetType(string source)
 //proto native int dMaterialSetType(string source, int material_index)
-
-class PhysicsGeomDef: Managed
-{
-	string	Name;
-	dGeom		Geometry;
-	vector	Frame[4] = {Vector(1, 0, 0), Vector(0, 1, 0), Vector(0, 0, 1), Vector(0, 0, 0)};
-	int			ParentNode = -1;
-	string	MaterialName;
-	int			LayerMask; //<Bit mask of layers we are in
-
-	
-	void PhysicsGeomDef(string name, dGeom geom, string materialName, int layerMask)
-	{
-		Name = name;
-		Geometry = geom;
-		MaterialName = materialName;
-		LayerMask = layerMask;	
-	}	
-};
 
 /*!
 Creates RigidBody from custom made geometries. The geometries are deleted when rigid body is destroyed
@@ -80,14 +60,6 @@ proto native void dBodySetInteractionLayer(notnull IEntity ent, int mask);
 proto native int dBodyGetInteractionLayer(notnull IEntity ent);
 proto native void dBodySetGeomInteractionLayer(notnull IEntity ent, int index, int mask);
 proto native int dBodyGetGeomInteractionLayer(notnull IEntity ent, int index);
-
-//! state of a rigidbody
-enum ActiveState
-{
-	ACTIVE,
-	INACTIVE,
-	ALWAYS_ACTIVE
-};
 	
 proto native void dBodyActive(notnull IEntity ent, ActiveState activeState);
 proto native void dBodyDynamic(notnull IEntity ent, bool dynamic);
@@ -301,67 +273,4 @@ proto native float dJointSliderGetAngularPos(dJoint joint);
 //-----------------------------------------------------------------
 typedef int[] dMaterial;
 
-typedef int[] Physics;
-class Physics
-{
-	protected void Physics() {};
-	protected void ~Physics() {};
-
-	// PHYSICS_TODO: Duplicate above functions into here
-
-	proto int GetNumBones();
-	proto Physics GetBone(int index);
-
-};
-
-typedef int[] SurfaceProperties;
-class SurfaceProperties
-{
-	protected void SurfaceProperties() {};
-	protected void ~SurfaceProperties() {};
-
-};
-
-sealed class Contact
-{
-	private void Contact() {}
-	private void ~Contact() {}
-
-	Physics Physics1;
-	Physics Physics2;
-	//! Surface properties of Object1
-	SurfaceProperties Material1; 
-	//! Surface properties of Object2
-	SurfaceProperties Material2;
-	//! Impulse applied to resolve the collision
-	float Impulse;
-	//! Index of collider on Object1
-	int ShapeIndex1;
-	//! Index of collider on Object2
-	int ShapeIndex2;
-	//! Collision axis at the contact point
-	vector	Normal;
-	//! Position of the contact point (world space)
-	vector	Position;
-	//! Penetration depth on Object1
-	float PenetrationDepth;
-
-	float		RelativeNormalVelocityBefore;
-	float		RelativeNormalVelocityAfter;
-	vector		RelativeVelocityBefore;
-	vector		RelativeVelocityAfter;
-	
-	//! Velocity of Object1 before collision (world space)
-	vector	VelocityBefore1;
-	//! Velocity of Object2 before collision (world space)
-	vector	VelocityBefore2;
-	//! Velocity of Object1 after collision (world space)
-	vector	VelocityAfter1;
-	//! Velocity of Object2 after collision (world space)
-	vector	VelocityAfter2;
-
-	proto native vector GetNormalImpulse();
-	proto native float GetRelativeVelocityBefore(vector vel);
-	proto native float GetRelativeVelocityAfter(vector vel);
-};
 //@}

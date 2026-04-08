@@ -151,10 +151,12 @@
 	
 	#define PLATFORM_XBOX
 	
+	#define PLATFORM_MSSTORE
+	
 	#define PLATFORM_PS4
 	
 	/*!
-		\brief PLATFORM_XBOX || PLATFORM_PS4
+		\brief PLATFORM_XBOX || PLATFORM_PS4 || PLATFORM_MSSTORE
 	*/
 	#define PLATFORM_CONSOLE
 

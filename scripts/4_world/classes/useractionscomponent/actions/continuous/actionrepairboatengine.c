@@ -31,7 +31,7 @@ class ActionRepairBoatEngine : ActionRepairVehiclePartBase
 		if (!boat || boat.EngineIsOn())
 			return false;
 	
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 			return true;
 			
 		string damageZone = "";

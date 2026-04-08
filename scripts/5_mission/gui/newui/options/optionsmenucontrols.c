@@ -78,7 +78,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	{
 		array<string> opt							= { "#options_controls_disabled", "#options_controls_enabled" };
 
-		m_Root										= GetGame().GetWorkspace().CreateWidgets( GetLayoutName(), parent );
+		m_Root										= g_Game.GetWorkspace().CreateWidgets( GetLayoutName(), parent );
 		m_Options 									= options;
 		m_Menu										= menu;
 		
@@ -128,7 +128,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 
 		// controller (consoles only)
 		#ifdef PLATFORM_CONSOLE
-			m_MaKOptionAvailable = g_Game.GetGameState() != DayZGameState.IN_GAME || GetGame().GetWorld().IsMouseAndKeyboardEnabledOnServer();
+			m_MaKOptionAvailable = g_Game.GetGameState() != DayZGameState.IN_GAME || g_Game.GetWorld().IsMouseAndKeyboardEnabledOnServer();
 			m_ConsoleControllerSensitivityWidget = m_Root.FindAnyWidget( "controller_settings_root" );
 			m_ConsoleMouseSensitivityWidget = m_Root.FindAnyWidget( "mouse_settings_root" );
 		
@@ -220,8 +220,8 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		
 			ShowConsoleSensitivityOptions(m_KeyboardOption.GetIndex());
 		
-			bool MaKState = m_KeyboardSelector.IsEnabled() && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(m_Menu.ToggleDependentOptions,EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,MaKState);
+			bool MaKState = m_KeyboardSelector.IsEnabled() && g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(m_Menu.ToggleDependentOptions,EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,MaKState);
 		#endif
 				
 		FillTextMap();
@@ -237,10 +237,14 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	
 	string GetLayoutName()
 	{
+		#ifdef PLATFORM_MSSTORE
+			return "gui/layouts/new_ui/options/msstore/controls_tab.layout";
+		#else
 		#ifdef PLATFORM_CONSOLE
 			return "gui/layouts/new_ui/options/xbox/controls_tab.layout";
 		#else
 			return "gui/layouts/new_ui/options/pc/controls_tab.layout";
+		#endif
 		#endif
 	}
 	
@@ -252,6 +256,9 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	//! Focuses the first viable item
 	void Focus()
 	{
+		#ifdef PLATFORM_MSSTORE
+		m_Mouse_InvertSelector.Focus();
+		#else
 		#ifdef PLATFORM_CONSOLE
 		if (m_KeyboardSelector && m_KeyboardSelector.IsSelectorEnabled())
 		{
@@ -261,6 +268,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		{
 			m_AimHelperSelector.Focus();
 		}
+		#endif
 		#endif
 	}
 	
@@ -291,12 +299,14 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	{
 		if( button == MouseState.LEFT )
 		{
-			#ifndef PLATFORM_CONSOLE
-			if( w == m_Keybindings )
+			#ifndef PLATFORM_XBOX
+			#ifndef PLATFORM_PS4
+			if(w == m_Keybindings)
 			{
 				EnterKeybindingMenu();
 				return true;
 			}
+			#endif
 			#endif
 		}
 		return false;
@@ -304,7 +314,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	
 	override bool OnFocus( Widget w, int x, int y )
 	{
-		OptionsMenu menu = OptionsMenu.Cast( GetGame().GetUIManager().GetMenu() );
+		OptionsMenu menu = OptionsMenu.Cast( g_Game.GetUIManager().GetMenu() );
 		if( menu )
 		{
 			menu.OnFocus( w, x, y );
@@ -328,6 +338,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 				ColorRed( w );
 				return true;
 			}
+			
 			
 			if( IsFocusable( w ) )
 			{
@@ -384,6 +395,9 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	
 	bool IsChanged()
 	{
+		#ifdef PLATFORM_MSSTORE
+			return IsConsoleOptionChanged();
+		#else
 		#ifdef PLATFORM_CONSOLE
 			if (m_MaKOptionAvailable)
 			{
@@ -395,6 +409,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 			}
 		#else
 			return IsOptionChanged();
+		#endif
 		#endif
 	}
 	
@@ -422,6 +437,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	{
 		#ifdef PLATFORM_CONSOLE
 		bool changed = false;
+		#ifndef PLATFORM_MSSTORE
 		if (m_MaKOptionAvailable)
 		{
 			//on change
@@ -431,11 +447,14 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 				changed = true;
 			}
 		}
+		#endif
 		
 		Focus();
-		GetGame().GetUIManager().ShowUICursor( m_MaKOptionAvailable && m_KeyboardOption.GetIndex() );
+		#ifndef PLATFORM_MSSTORE
+		g_Game.GetUIManager().ShowUICursor( m_MaKOptionAvailable && m_KeyboardOption.GetIndex() );
 		if (changed)
 			g_Game.UpdateInputDeviceDisconnectWarning();
+		#endif
 		
 		m_Menu.Refresh();
 		m_ControllerLS_VSensitivitySelector.Refresh();
@@ -680,7 +699,9 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 #ifdef PLATFORM_CONSOLE
 	void ShowConsoleSensitivityOptions(int index)
 	{
+		#ifndef PLATFORM_MSSTORE
 		m_ConsoleMouseSensitivityWidget.Show(index == 1 && m_MaKOptionAvailable);
+		#endif
 	}
 	
 	void UpdateKeyboard( int index )
@@ -688,7 +709,7 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		Focus();
 		ShowConsoleSensitivityOptions(index);
 		m_Menu.OnChanged();
-		//m_Menu.ToggleDependentOptions(EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,index == 1 && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
+		//m_Menu.ToggleDependentOptions(EDependentOptions.MOUSEANDKEYBOARD_QUICKBAR,index == 1 && g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer());
 	}
 	
 	void UpdateAimHelper( int index )

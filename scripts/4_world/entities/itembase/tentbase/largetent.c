@@ -133,11 +133,11 @@ class LargeTent extends TentBase
 			
 		PlayerBase pb = PlayerBase.Cast( player );
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( !m_ClutterCutter )
 			{
-				m_ClutterCutter = GetGame().CreateObjectEx( "LargeTentClutterCutter", pb.GetLocalProjectionPosition(), ECE_PLACE_ON_SURFACE );
+				m_ClutterCutter = g_Game.CreateObjectEx( "LargeTentClutterCutter", pb.GetLocalProjectionPosition(), ECE_PLACE_ON_SURFACE );
 				m_ClutterCutter.SetOrientation( pb.GetLocalProjectionOrientation() );	
 			}
 		}	

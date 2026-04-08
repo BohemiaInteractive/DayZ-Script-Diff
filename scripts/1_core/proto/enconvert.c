@@ -69,6 +69,19 @@ class int
 	}
 	
 	/**
+	\brief Integer to hex (as string)
+		\return \p string Converted integer as hexadecimal value
+		@code
+			int num = 10;
+			string s = num.ToHex();
+			Print(s);
+
+			>> s = '0xA'
+		@endcode
+	*/
+	proto string ToHex();
+	
+	/**
 	\brief Check whether integer falls into an inclusive range
 		\param min \p int low end of range
 		\param max \p int high end of range

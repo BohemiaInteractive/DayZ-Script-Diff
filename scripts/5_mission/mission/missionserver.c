@@ -54,9 +54,16 @@ class MissionServer extends MissionBase
 	PlayerBase m_player;
 	MissionBase m_mission;
 	
+#ifndef NO_GUI
+	protected int 					m_ControlDisabledMode;
+	protected ref array<string> 	m_ActiveInputExcludeGroups; //exclude groups defined in 'specific.xml' file
+	protected ref array<int> 		m_ActiveInputRestrictions; //additional scripted restrictions
+	protected bool					m_ProcessInputExcludes;
+#endif
+
 	void MissionServer()
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.UpdatePlayersStats, 30000, true);
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.UpdatePlayersStats, 30000, true);
 
 		m_DeadPlayersArray = new array<ref CorpseData>;
 		UpdatePlayersStats();
@@ -70,7 +77,7 @@ class MissionServer extends MissionBase
 	
 	void ~MissionServer()
 	{
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdatePlayersStats);
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdatePlayersStats);
 	}
 	
 	override void OnInit()
@@ -94,6 +101,16 @@ class MissionServer extends MissionBase
 	
 	override void OnUpdate(float timeslice)
 	{
+#ifndef NO_GUI
+#ifdef FEATURE_CURSOR
+		if (GetTimeStamp() == 0)
+		{
+			//! Only once the game is loaded should we take control of the cursor
+			g_Game.GetUIManager().ShowUICursor(false);
+		}
+#endif
+#endif
+
 		UpdateDummyScheduler();
 		TickScheduler(timeslice);
 		UpdateLogoutPlayers();		
@@ -103,12 +120,41 @@ class MissionServer extends MissionBase
 		RandomArtillery(timeslice);
 		
 		super.OnUpdate(timeslice);
+
+#ifndef NO_GUI
+		UIManager uiManager = g_Game.GetUIManager();
+		UIScriptedMenu menu = uiManager.GetMenu();
+		Input input = g_Game.GetInput();
+		
+		if (menu && !menu.UseKeyboard() && menu.UseMouse())
+		{
+			int i;
+			for (i = 0; i < 5; i++)
+			{
+				input.DisableKey(i | INPUT_DEVICE_MOUSE);
+				input.DisableKey(i | INPUT_ACTION_TYPE_DOWN_EVENT | INPUT_DEVICE_MOUSE);
+				input.DisableKey(i | INPUT_ACTION_TYPE_DOUBLETAP | INPUT_DEVICE_MOUSE);
+			}
+			
+			for (i = 0; i < 6; i++)
+			{
+				input.DisableKey(i | INPUT_DEVICE_MOUSE_AXIS);
+			}
+		}
+
+		if (m_ProcessInputExcludes)
+		{
+			PerformRefreshExcludes();
+			m_ProcessInputExcludes = false;
+		}
+#endif
+
 	}
 	
 	override void OnGameplayDataHandlerLoad()
 	{
 		m_RespawnMode = CfgGameplayHandler.GetDisableRespawnDialog();
-		GetGame().SetDebugMonitorEnabled(GetGame().ServerConfigGetInt("enableDebugMonitor"));
+		g_Game.SetDebugMonitorEnabled(g_Game.ServerConfigGetInt("enableDebugMonitor"));
 		
 		InitialiseWorldData();
 	}
@@ -138,7 +184,7 @@ class MissionServer extends MissionBase
 					pos = new Param1<vector>(m_FiringPos[randPos]);
 					params = new array<ref Param>;
 					params.Insert(pos);
-					GetGame().RPC(null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
+					g_Game.RPC(null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
 				}
 				else
 				{
@@ -163,7 +209,7 @@ class MissionServer extends MissionBase
 							
 							// We send the message with this set of coords
 							params.Insert(pos);
-							GetGame().RPC(null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
+							g_Game.RPC(null, ERPCs.RPC_SOUND_ARTILLERY, params, true);
 							
 							// We store the last used value
 							usedIndices.Insert(randPos);
@@ -194,7 +240,7 @@ class MissionServer extends MissionBase
 		PluginLifespan moduleLifespan;
 		Class.CastTo(moduleLifespan, GetPlugin(PluginLifespan));
 		array<Man> players = new array<Man>();
-		GetGame().GetPlayers(players);
+		g_Game.GetPlayers(players);
 			
 		foreach (Man man : players)
 		{
@@ -224,7 +270,7 @@ class MissionServer extends MissionBase
 		{
 			LogoutInfo info = m_LogoutPlayers.GetElement(i);
 			
-			if (GetGame().GetTime() >= info.param1)
+			if (g_Game.GetTime() >= info.param1)
 			{
 				PlayerIdentity identity;
 				PlayerBase player = m_LogoutPlayers.GetKey(i);
@@ -239,7 +285,7 @@ class MissionServer extends MissionBase
 				}
 				
 				// disable reconnecting to old char
-				// GetGame().RemoveFromReconnectCache(info.param2);
+				// g_Game.RemoveFromReconnectCache(info.param2);
 	
 				PlayerDisconnected(player, identity, info.param2);						
 			}
@@ -360,7 +406,7 @@ class MissionServer extends MissionBase
 			if (identity)
 			{
 				// disable reconnecting to old char
-				// GetGame().RemoveFromReconnectCache(identity.GetId());
+				// g_Game.RemoveFromReconnectCache(identity.GetId());
 				Print("[Logout]: Player " + identity.GetId() + " cancelled"); 
 			}
 			else
@@ -408,9 +454,9 @@ class MissionServer extends MissionBase
 	{
 		if (player)
 		{
-			bool is_personal_light = ! GetGame().ServerConfigGetInt("disablePersonalLight");
+			bool is_personal_light = ! g_Game.ServerConfigGetInt("disablePersonalLight");
 			Param1<bool> personal_light_toggle = new Param1<bool>(is_personal_light);
-			GetGame().RPCSingleParam(player, ERPCs.RPC_TOGGLE_PERSONAL_LIGHT, personal_light_toggle, true, player.GetIdentity());
+			g_Game.RPCSingleParam(player, ERPCs.RPC_TOGGLE_PERSONAL_LIGHT, personal_light_toggle, true, player.GetIdentity());
 		}
 		else
 		{
@@ -423,9 +469,9 @@ class MissionServer extends MissionBase
 	{
 		if (player)
 		{
-			int lightingID = GetGame().ServerConfigGetInt("lightingConfig");
+			int lightingID = g_Game.ServerConfigGetInt("lightingConfig");
 			Param1<int> lightID = new Param1<int>(lightingID);
-			GetGame().RPCSingleParam(player, ERPCs.RPC_SEND_LIGHTING_SETUP, lightID, true, player.GetIdentity());
+			g_Game.RPCSingleParam(player, ERPCs.RPC_SEND_LIGHTING_SETUP, lightID, true, player.GetIdentity());
 		}
 	}
 	
@@ -433,17 +479,17 @@ class MissionServer extends MissionBase
 	bool ProcessLoginData(ParamsReadContext ctx)
 	{
 		//creates temporary server-side structure for handling default character spawn
-		return GetGame().GetMenuDefaultCharacterData(false).DeserializeCharacterData(ctx);
+		return g_Game.GetMenuDefaultCharacterData(false).DeserializeCharacterData(ctx);
 	}
 	
 	//
 	PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)
 	{
 		Entity playerEnt;
-		playerEnt = GetGame().CreatePlayer(identity, characterName, pos, 0, "NONE");//Creates random player
+		playerEnt = g_Game.CreatePlayer(identity, characterName, pos, 0, "NONE");//Creates random player
 		Class.CastTo(m_player, playerEnt);
 		
-		GetGame().SelectPlayer(identity, m_player);
+		g_Game.SelectPlayer(identity, m_player);
 	
 		return m_player;
 	}
@@ -489,14 +535,14 @@ class MissionServer extends MissionBase
 	
 	PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)
 	{
-		string characterType = GetGame().CreateRandomPlayer();
+		string characterType = g_Game.CreateRandomPlayer();
 		bool generateRandomEquip = false;
 		
 		// get login data for new character
-		if (ProcessLoginData(ctx) && (m_RespawnMode == GameConstants.RESPAWN_MODE_CUSTOM) && !GetGame().GetMenuDefaultCharacterData(false).IsRandomCharacterForced())
+		if (ProcessLoginData(ctx) && (m_RespawnMode == GameConstants.RESPAWN_MODE_CUSTOM) && !g_Game.GetMenuDefaultCharacterData(false).IsRandomCharacterForced())
 		{
-			if (GetGame().ListAvailableCharacters().Find(GetGame().GetMenuDefaultCharacterData().GetCharacterType()) > -1)
-				characterType = GetGame().GetMenuDefaultCharacterData().GetCharacterType();
+			if (g_Game.ListAvailableCharacters().Find(g_Game.GetMenuDefaultCharacterData().GetCharacterType()) > -1)
+				characterType = g_Game.GetMenuDefaultCharacterData().GetCharacterType();
 		}
 		else
 		{
@@ -530,8 +576,8 @@ class MissionServer extends MissionBase
 		if (CreateCharacter(identity, pos, ctx, characterType))
 		{
 			if (generateRandomEquip)
-				GetGame().GetMenuDefaultCharacterData().GenerateRandomEquip();
-			EquipCharacter(GetGame().GetMenuDefaultCharacterData());
+				g_Game.GetMenuDefaultCharacterData().GenerateRandomEquip();
+			EquipCharacter(g_Game.GetMenuDefaultCharacterData());
 		}
 		
 		return m_player;
@@ -539,12 +585,12 @@ class MissionServer extends MissionBase
 	
 	void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)
 	{
-		GetGame().SelectPlayer(identity, player);
+		g_Game.SelectPlayer(identity, player);
 		
 		#ifdef DIAG_DEVELOPER
 		if (FeatureTimeAccel.m_CurrentTimeAccel)
 		{
-			GetGame().RPCSingleParam(player, ERPCs.DIAG_TIMEACCEL_CLIENT_SYNC, FeatureTimeAccel.m_CurrentTimeAccel, true, identity);
+			g_Game.RPCSingleParam(player, ERPCs.DIAG_TIMEACCEL_CLIENT_SYNC, FeatureTimeAccel.m_CurrentTimeAccel, true, identity);
 		}
 		#endif
 	}	
@@ -566,7 +612,7 @@ class MissionServer extends MissionBase
 		#ifdef DIAG_DEVELOPER
 		if (FeatureTimeAccel.m_CurrentTimeAccel)
 		{
-			GetGame().RPCSingleParam(player, ERPCs.DIAG_TIMEACCEL_CLIENT_SYNC, FeatureTimeAccel.m_CurrentTimeAccel, true, identity);
+			g_Game.RPCSingleParam(player, ERPCs.DIAG_TIMEACCEL_CLIENT_SYNC, FeatureTimeAccel.m_CurrentTimeAccel, true, identity);
 		}
 		#endif
 	}
@@ -597,18 +643,18 @@ class MissionServer extends MissionBase
 					player.StatSyncToClient();
 					
 					// inform client about logout time
-					GetGame().SendLogoutTime(player, logoutTime);
+					g_Game.SendLogoutTime(player, logoutTime);
 			
 					// wait for some time before logout and save
-					LogoutInfo params = new LogoutInfo(GetGame().GetTime() + logoutTime * 1000, identity.GetId());
+					LogoutInfo params = new LogoutInfo(g_Game.GetTime() + logoutTime * 1000, identity.GetId());
 					
 					m_NewLogoutPlayers.Insert(player, params);
-					GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(AddNewPlayerLogout, 0, false, player, params);
+					g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(AddNewPlayerLogout, 0, false, player, params);
 					
 					// allow reconnecting to old char only if not in cars, od ladders etc. as they cannot be properly synchronized for reconnect
 					//if (!player.GetCommand_Vehicle() && !player.GetCommand_Ladder())
 					//{
-					//	GetGame().AddToReconnectCache(identity);
+					//	g_Game.AddToReconnectCache(identity);
 					//}
 					// wait until logout timer runs out
 					disconnectNow = false;
@@ -622,7 +668,7 @@ class MissionServer extends MissionBase
 			Print("[Logout]: New player " + identity.GetId() + " with instant logout");
 			
 			// inform client about instant logout
-			GetGame().SendLogoutTime(player, 0);
+			g_Game.SendLogoutTime(player, 0);
 			
 			PlayerDisconnected(player, identity, identity.GetId());
 		}
@@ -638,7 +684,7 @@ class MissionServer extends MissionBase
 		}
 		
 		// disable reconnecting to old char
-		//GetGame().RemoveFromReconnectCache(uid);
+		//g_Game.RemoveFromReconnectCache(uid);
 
 		// now player can't cancel logout anymore, so call everything needed upon disconnect
 		InvokeOnDisconnect(player);
@@ -659,9 +705,9 @@ class MissionServer extends MissionBase
 		HandleBody(player);
 		
 		// remove player from server
-		GetGame().DisconnectPlayer(identity, uid);
+		g_Game.DisconnectPlayer(identity, uid);
 		// Send list of players at all clients
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SyncEvents.SendPlayerList, 1000);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SyncEvents.SendPlayerList, 1000);
 	}
 	
 	bool ShouldPlayerBeKilled(PlayerBase player)
@@ -706,11 +752,11 @@ class MissionServer extends MissionBase
 	
 	void TickScheduler(float timeslice)
 	{
-		GetGame().GetWorld().GetPlayerList(m_Players);
+		g_Game.GetWorld().GetPlayerList(m_Players);
 		int players_count = m_Players.Count();
 		int tick_count_max = Math.Min(players_count, SCHEDULER_PLAYERS_PER_TICK);
 		
-		for (int i = 0; i < tick_count_max; i++)
+		for (int i = 0; i < tick_count_max; ++i)
 		{
 			if (m_currentPlayer >= players_count)
 			{
@@ -718,29 +764,29 @@ class MissionServer extends MissionBase
 			}
 			
 			PlayerBase currentPlayer = PlayerBase.Cast(m_Players.Get(m_currentPlayer));
-			
 			if (currentPlayer)
 				currentPlayer.OnTick();
-			m_currentPlayer++;
+			++m_currentPlayer;
 		}
 	}
 	
 	//--------------------------------------------------
 	override bool InsertCorpse(Man player)
 	{
-		CorpseData corpse_data = new CorpseData(PlayerBase.Cast(player),GetGame().GetTime());
+		CorpseData corpse_data = new CorpseData(PlayerBase.Cast(player),g_Game.GetTime());
 		return m_DeadPlayersArray.Insert(corpse_data) >= 0;
 	}
 	
 	void UpdateCorpseStatesServer()
 	{
-		if (m_DeadPlayersArray.Count() == 0)//nothing to process, abort
+		int nDeadPlayers = m_DeadPlayersArray.Count();
+		if (nDeadPlayers == 0)//nothing to process, abort
 			return;
-		int current_time = GetGame().GetTime();
+		int current_time = g_Game.GetTime();
 		array<int> invalid_corpses = new array<int>;
 		CorpseData corpse_data;
 		
-		for (int i = 0; i < m_DeadPlayersArray.Count(); i++)
+		for (int i = 0; i < nDeadPlayers; ++i)
 		{
 			corpse_data = m_DeadPlayersArray.Get(i);
 			if (!corpse_data || (corpse_data && (!corpse_data.m_Player || !corpse_data.m_bUpdate)))
@@ -755,9 +801,10 @@ class MissionServer extends MissionBase
 		}
 		
 		//cleanup
-		if (invalid_corpses.Count() > 0)
+		int nInvalidCorpses = invalid_corpses.Count();
+		if (nInvalidCorpses > 0)
 		{
-			for (i = invalid_corpses.Count() - 1; i > -1; i--)
+			for (i = nInvalidCorpses - 1; i >= 0; --i)
 			{
 				m_DeadPlayersArray.Remove(invalid_corpses.Get(i));
 			}
@@ -781,6 +828,207 @@ class MissionServer extends MissionBase
 	{
 		return m_ActiveRefresherLocations;
 	}
+
+#ifndef NO_GUI
+	//! Removes one or more exclude groups and refreshes excludes
+	override void RemoveActiveInputExcludes(array<string> excludes, bool bForceSupress = false)
+	{
+		super.RemoveActiveInputExcludes(excludes,bForceSupress);
+		
+		if (excludes.Count() != 0)
+		{
+			bool changed = false;
+			
+			if (m_ActiveInputExcludeGroups)
+			{
+				foreach (string excl : excludes)
+				{
+					if (m_ActiveInputExcludeGroups.Find(excl) != -1)
+					{
+						m_ActiveInputExcludeGroups.RemoveItem(excl);
+						changed = true;
+					}
+				}
+				
+				if (changed)
+				{
+					RefreshExcludes();
+				}
+			}
+			
+			// supress control for next frame
+			GetUApi().SupressNextFrame(bForceSupress);
+		}
+	}
+	
+	//! Removes one restriction (specific behaviour oudside regular excludes, defined below)
+	override void RemoveActiveInputRestriction(int restrictor)
+	{
+		//unique behaviour outside regular excludes
+		if (restrictor > -1)
+		{
+			switch (restrictor)
+			{
+				case EInputRestrictors.INVENTORY:
+				{
+					GetUApi().GetInputByID(UAWalkRunForced).ForceEnable(false); // force walk off!
+					break;
+				}
+				case EInputRestrictors.MAP:
+				{
+					GetUApi().GetInputByID(UAWalkRunForced).ForceEnable(false); // force walk off!
+					break;
+				}
+			}
+			
+			if (m_ActiveInputRestrictions && m_ActiveInputRestrictions.Find(restrictor) != -1)
+			{
+				m_ActiveInputRestrictions.RemoveItem(restrictor);
+			}
+		}
+	}
+	
+	//! Adds one or more exclude groups to disable and refreshes excludes
+	override void AddActiveInputExcludes(array<string> excludes)
+	{
+		super.AddActiveInputExcludes(excludes);
+		
+		if (excludes.Count() != 0)
+		{
+			bool changed = false;
+			if (!m_ActiveInputExcludeGroups)
+			{
+				m_ActiveInputExcludeGroups = new array<string>;
+			}
+			
+			foreach (string excl : excludes)
+			{
+				if (m_ActiveInputExcludeGroups.Find(excl) == -1)
+				{
+					m_ActiveInputExcludeGroups.Insert(excl);
+					changed = true;
+				}
+			}
+			
+			if (changed)
+			{
+				RefreshExcludes();
+				#ifdef BULDOZER
+					GetUApi().SupressNextFrame(true);
+				#endif
+			}
+		}
+	}
+	
+	//! Adds one input restriction (specific behaviour oudside regular excludes, defined below)
+	override void AddActiveInputRestriction(int restrictor)
+	{
+		//unique behaviour outside regular excludes
+		if (restrictor > -1)
+		{
+			switch (restrictor)
+			{
+				case EInputRestrictors.INVENTORY:
+				{
+					GetUApi().GetInputByID(UAWalkRunForced).ForceEnable(true); // force walk on!
+					PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+					if ( player )
+					{
+						ItemBase item = player.GetItemInHands();
+						if (item && item.IsWeapon())
+							player.RequestResetADSSync();
+					}
+					break;
+				}
+				case EInputRestrictors.MAP:
+				{
+					GetUApi().GetInputByID(UAWalkRunForced).ForceEnable(true); // force walk on!
+					break;
+				}
+			}
+			
+			if (!m_ActiveInputRestrictions)
+			{
+				m_ActiveInputRestrictions = new array<int>;
+			}
+			if (m_ActiveInputRestrictions.Find(restrictor) == -1)
+			{
+				m_ActiveInputRestrictions.Insert(restrictor);
+			}
+		}
+	}
+	
+	//! queues refresh of input excludes
+	override void RefreshExcludes()
+	{
+		m_ProcessInputExcludes = true;
+	}
+	
+	//! applies queued excludes (0 == clear excludes)
+	protected void PerformRefreshExcludes()
+	{
+		if (m_ActiveInputExcludeGroups)
+		{
+			foreach (string excl : m_ActiveInputExcludeGroups)
+			{
+				GetUApi().ActivateExclude(excl);
+			}
+		}
+		
+		GetUApi().UpdateControls();
+	}
+	
+	//! Removes all active input excludes and restrictions
+	override void EnableAllInputs(bool bForceSupress = false)
+	{
+		m_ControlDisabledMode = -1;
+		
+		if (m_ActiveInputRestrictions)
+		{
+			int count = m_ActiveInputRestrictions.Count();
+			for (int i = 0; i < count; i++)
+			{
+				RemoveActiveInputRestriction(m_ActiveInputRestrictions[0]);
+			}
+			m_ActiveInputRestrictions.Clear(); //redundant?
+		}
+		if (m_ActiveInputExcludeGroups)
+		{
+			m_ActiveInputExcludeGroups.Clear();
+		}
+		
+		GetUApi().UpdateControls(); //it is meant to happen instantly, does not wait for update to process
+		GetUApi().SupressNextFrame(bForceSupress); // supress control for next frame
+	}
+	
+	//! returns if ANY exclude groups, restriction (or deprecated disable, if applicable) is active
+	override bool IsControlDisabled()
+	{
+		bool active = false;
+		if (m_ActiveInputExcludeGroups)
+		{
+			active |= m_ActiveInputExcludeGroups.Count() > 0;
+		}
+		if (m_ActiveInputRestrictions)
+		{
+			active |= m_ActiveInputRestrictions.Count() > 0;
+		}
+		active |= m_ControlDisabledMode >= INPUT_EXCLUDE_ALL; //legacy stuff, Justin case
+		return active;
+	}
+	
+	//! Returns true if the particular input exclude group had been activated via script and is active
+	override bool IsInputExcludeActive(string exclude)
+	{
+		return m_ActiveInputExcludeGroups && m_ActiveInputExcludeGroups.Find(exclude) != -1;
+	}
+	
+	//! Returns true if the particular 'restriction' (those govern special behaviour outside regular input excludes, *EInputRestrictors*) is active
+	override bool IsInputRestrictionActive(int restriction)
+	{
+		return m_ActiveInputRestrictions && m_ActiveInputRestrictions.Find(restriction) != -1;
+	}
+#endif
 	
 	//! DEPRECATED
 	PluginAdditionalInfo m_moduleDefaultCharacter;

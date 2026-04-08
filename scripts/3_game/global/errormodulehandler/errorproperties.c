@@ -67,7 +67,7 @@ class DialogueErrorProperties : ErrorProperties
 		else
 			message = m_Message;
 		
-		GetGame().GetUIManager().ShowDialog(
+		g_Game.GetUIManager().ShowDialog(
 			string.Format(EP_HEADER_FORMAT_STRING, m_Header, ErrorModuleHandler.GetErrorHex(errorCode)),
 			message, errorCode, m_DialogButtonType, m_DefaultButton, m_DialogMeaningType, m_Handler);
 #endif

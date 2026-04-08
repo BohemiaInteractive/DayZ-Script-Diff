@@ -89,8 +89,8 @@ class AnniversaryFireworksLauncherClientEventSecondary : AnniversaryFireworksLau
 	
 	override void OnExplode()
 	{
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayExplosionSound, GetSoundDelay(), false);
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnLight, GetLightDelay(), false);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayExplosionSound, GetSoundDelay(), false);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnLight, GetLightDelay(), false);
 		m_ParticleExplosion = ParticleManager.GetInstance().PlayInWorld(GetExplParticleFromSequence(), GetExplosionPosition());
 	}
 }

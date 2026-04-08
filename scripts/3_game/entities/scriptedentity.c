@@ -5,7 +5,11 @@ enum TriggerShape
 	CYLINDER,
 }
 
-class ScriptedEntity extends EntityAI
+class ScriptedEntityType : EntityAIType
+{
+};
+
+class ScriptedEntity : EntityAI
 {
 	/**
 	\brief Sets collision properties for object
@@ -81,7 +85,7 @@ class ScriptedEntity extends EntityAI
 	{
 		if (radius <=0)
 		{
-			ErrorEx("Radius has to >= 0");
+			ErrorEx("Radius has to be > 0");
 			return;
 		}
 

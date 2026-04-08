@@ -448,7 +448,8 @@ class array<Class T>
 	*/
 	void InsertAll(notnull array<T> from)
 	{
-		for ( int i = 0; i < from.Count(); i++ )
+		int nFrom = from.Count();
+		for ( int i = 0; i < nFrom; ++i )
 		{
 			Insert( from.Get(i) );
 		}
@@ -596,7 +597,8 @@ class array<Class T>
 	
 	void InsertArray(array<T> other)
 	{
-		for (int i = 0; i < other.Count(); i++)
+		int nOther = other.Count();
+		for (int i = 0; i < nOther; ++i)
 		{
 			T item = other.Get(i);
 			Insert(item);
@@ -693,7 +695,8 @@ class array<Class T>
 			return -1;
 		}
 
-		for (int i = 0; i < pOtherArray.Count(); ++i)
+		int nOther = pOtherArray.Count();
+		for (int i = 0; i < nOther; ++i)
 		{
 			if (Get(i) != pOtherArray.Get(i))
 			{
@@ -906,21 +909,19 @@ class map<Class TKey,Class TValue>
 	
 	array<TKey> GetKeyArray()
 	{
-		array<TKey> keys = new array<TKey>;
-		for (int i = 0; i < Count(); i++)
-		{
-			keys.Insert( GetKey( i ) );
-		}
+		array<TKey> keys = new array<TKey>();
+		for (int i = 0; i < Count(); ++i)
+			keys.Insert(GetKey(i));
+
 		return keys;
 	}
 	
 	array<TValue> GetValueArray()
 	{
-		array<TValue> elements = new array<TValue>;
-		for (int i = 0; i < Count(); i++)
-		{
-			elements.Insert( GetElement( i ) );
-		}
+		array<TValue> elements = new array<TValue>();
+		for (int i = 0; i < Count(); ++i)
+			elements.Insert(GetElement(i));
+
 		return elements;
 	}
 	

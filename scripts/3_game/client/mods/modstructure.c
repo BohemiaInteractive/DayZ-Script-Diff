@@ -19,15 +19,15 @@ class ModStructure
 	
 	void LoadData()
 	{
-		if( GetGame().ConfigIsExisting( m_ModPath ) )
+		if( g_Game.ConfigIsExisting( m_ModPath ) )
 		{
-			GetGame().ConfigGetText( m_ModPath + " name", m_ModName );
-			GetGame().ConfigGetText( m_ModPath + " picture", m_ModLogo );
-			GetGame().ConfigGetText( m_ModPath + " logo", m_ModLogoSmall );
-			GetGame().ConfigGetText( m_ModPath + " logoSmall", m_ModLogoOver );
-			GetGame().ConfigGetText( m_ModPath + " logoOver", m_ModActionURL );
-			GetGame().ConfigGetText( m_ModPath + " tooltip", m_ModTooltip );
-			GetGame().ConfigGetText( m_ModPath + " overview", m_ModOverview );
+			g_Game.ConfigGetText( m_ModPath + " name", m_ModName );
+			g_Game.ConfigGetText( m_ModPath + " picture", m_ModLogo );
+			g_Game.ConfigGetText( m_ModPath + " logo", m_ModLogoSmall );
+			g_Game.ConfigGetText( m_ModPath + " logoSmall", m_ModLogoOver );
+			g_Game.ConfigGetText( m_ModPath + " logoOver", m_ModActionURL );
+			g_Game.ConfigGetText( m_ModPath + " tooltip", m_ModTooltip );
+			g_Game.ConfigGetText( m_ModPath + " overview", m_ModOverview );
 		}
 	}
 	

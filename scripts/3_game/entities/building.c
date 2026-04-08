@@ -2,7 +2,12 @@ typedef Param1<int> DoorStartParams;
 typedef Param2<int, bool> DoorFinishParams;
 typedef Param1<int> DoorLockParams;
 
-class Building extends EntityAI
+class BuildingType : EntityAIType
+{
+
+};
+
+class Building : EntityAI
 {
 	proto native int GetLaddersCount();
 	proto native vector GetLadderPosTop(int ladderIndex);
@@ -176,6 +181,12 @@ class Building extends EntityAI
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.BUILDING_UNLOCK_DOOR, "Unlock Door", FadeColors.LIGHT_GREY));
 		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
 		
+		if (Gizmo_IsSupported())
+		{
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_OBJECT, "Gizmo Object", FadeColors.LIGHT_GREY));
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+		}
+		
 		super.GetDebugActions(outputList);
 	}
 	
@@ -184,6 +195,17 @@ class Building extends EntityAI
 		if (super.OnAction(action_id, player, ctx))
 			return true;
 
+		if (g_Game.IsClient() || !g_Game.IsMultiplayer())
+		{
+			switch (action_id)
+			{
+				case EActions.GIZMO_OBJECT:
+					if (GetGizmoApi())
+						GetGizmoApi().SelectObject(this);
+					return true;
+			}
+		}
+		
 		switch (action_id)
 		{
 		case EActions.BUILDING_PLAY_DOOR_SOUND:
@@ -191,7 +213,7 @@ class Building extends EntityAI
 			return true;
 		}
 
-		if (!GetGame().IsServer())
+		if (!g_Game.IsServer())
 			return false;
 
 		switch (action_id)
@@ -249,3 +271,15 @@ class Building extends EntityAI
 		return EMeleeTargetType.NONALIGNABLE;
 	}
 };
+
+//-----------------------------------------------------------------------------
+class WindSockType : EntityType
+{
+};
+
+//-----------------------------------------------------------------------------
+/*
+class WindSock : Entity
+{
+};
+*/

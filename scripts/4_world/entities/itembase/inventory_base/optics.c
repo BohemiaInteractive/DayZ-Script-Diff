@@ -1,5 +1,5 @@
-class Crossbow_RedpointOptic : ItemOptics {};
-class LongrangeOptic : ItemOptics {};
+//class Crossbow_RedpointOptic : ItemOptics {};		//! Unused?!
+class LongrangeOptic : ItemOptics {};				//! Not ready yet.
 class SportingOptic : ItemOptics {};
 class PistolOptic : ItemOptics {};
 class GrozaOptic : ItemOptics {};
@@ -9,7 +9,7 @@ class KashtanOptic : ItemOptics {};
 
 class M68Optic : ItemOptics
 {
-	override bool IsSightOnly()
+	override bool IsUsableWithNV()
 	{
 		return true;
 	}
@@ -17,7 +17,7 @@ class M68Optic : ItemOptics
 
 class M4_T3NRDSOptic : ItemOptics
 {
-	override bool IsSightOnly()
+	override bool IsUsableWithNV()
 	{
 		return true;
 	}
@@ -25,7 +25,7 @@ class M4_T3NRDSOptic : ItemOptics
 
 class FNP45_MRDSOptic : ItemOptics
 {
-	override bool IsSightOnly()
+	override bool IsUsableWithNV()
 	{
 		return true;
 	}
@@ -33,7 +33,7 @@ class FNP45_MRDSOptic : ItemOptics
 
 class ReflexOptic : ItemOptics
 {
-	override bool IsSightOnly()
+	override bool IsUsableWithNV()
 	{
 		return true;
 	}
@@ -104,7 +104,7 @@ class KazuarOptic: ItemOptics
 			
 			case GameConstants.OPTICS_STATE_DAY:
 				ShowSelection("hide_cover");
-				if ( !GetGame().IsDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
+				if ( !g_Game.IsDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
 				{
 					ShowSelection("hide_cover_pilot");
 				}
@@ -177,7 +177,7 @@ class StarlightOptic: ItemOptics
 			
 			case GameConstants.OPTICS_STATE_DAY:
 				ShowSelection("hide_cover");
-				if ( !GetGame().IsDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
+				if ( !g_Game.IsDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
 				{
 					ShowSelection("hide_cover_pilot");
 				}

@@ -161,7 +161,7 @@ class DayZPhysics
 		int iType;
 		float radius;
 
-		if ( GetGame().Raycast(begPos, endPos, contactPos, contactDir, contactComponent, results, with, ignore, sorted, ground_only, iType, radius) )
+		if ( g_Game.Raycast(begPos, endPos, contactPos, contactDir, contactComponent, results, with, ignore, sorted, ground_only, iType, radius) )
 		{	
 			Print(begPos);
 			Print(endPos);
@@ -176,7 +176,7 @@ class DayZPhysics
 			Print(iType);
 			Print(radius);
 
-			Print( GetGame().Raycast(begPos, endPos, contactPos, contactDir, contactComponent, results, with, ignore, sorted, ground_only, iType, radius) );
+			Print( g_Game.Raycast(begPos, endPos, contactPos, contactDir, contactComponent, results, with, ignore, sorted, ground_only, iType, radius) );
 		}
 	}
 

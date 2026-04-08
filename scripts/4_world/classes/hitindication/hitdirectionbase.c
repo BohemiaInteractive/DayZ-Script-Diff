@@ -126,7 +126,7 @@ class HitDirectionEffectBase
 		
 		float angle_direction = m_Player.GetOrientation()[0];
 		angle_direction = Math.NormalizeAngle(angle_direction);
-		float camera_angle = GetGame().GetCurrentCameraDirection().VectorToAngles()[0];
+		float camera_angle = g_Game.GetCurrentCameraDirection().VectorToAngles()[0];
 		camera_angle = Math.NormalizeAngle(camera_angle);
 		
 		float angle_camera_diff = angle_direction - camera_angle;

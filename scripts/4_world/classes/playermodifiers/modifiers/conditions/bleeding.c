@@ -12,7 +12,7 @@ class BleedingCheckMdfr: ModifierBase
 		m_TickIntervalInactive 	= DEFAULT_TICK_TIME_INACTIVE;
 		m_TickIntervalActive 	= DEFAULT_TICK_TIME_ACTIVE;
 		
-		if( GetGame().IsServer() )
+		if( g_Game.IsServer() )
 		{
 			m_AdminLog 				= PluginAdminLog.Cast( GetPlugin(PluginAdminLog) );
 		}

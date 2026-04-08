@@ -30,7 +30,7 @@ class UIManager
 	\n usage :
 	@code
 	const int QUIT_DIALOG_ID = 76;
-	GetGame().GetUIManager().ShowDialog("Quit", "Do You really want to quit?", QUIT_DIALOG_ID, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
+	g_Game.GetUIManager().ShowDialog("Quit", "Do You really want to quit?", QUIT_DIALOG_ID, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
 	...
 	// after user pass dialog, callback on menu/event handler is called
 	ScriptedWidgetEventHandler::OnModalResult( Widget  w,	int  x,	int  y,	int  code,	int  result	)
@@ -191,7 +191,7 @@ class UIManager
 		switch( id )
 		{
 			case GUI_WINDOW_MISSION_LOADER: 
-				window = GetGame().GetMission().CreateScriptedWindow( id );
+				window = g_Game.GetMission().CreateScriptedWindow( id );
 				break;
 				
 			default: {};
@@ -216,7 +216,7 @@ class UIManager
 			window.HideWindow();
 			
 			//delete window;
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this.DeleteWindow, window );
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this.DeleteWindow, window );
 			/*
 			wtf? leak			
 			Timer delete_timer = new Timer ( CALL_CATEGORY_SYSTEM );

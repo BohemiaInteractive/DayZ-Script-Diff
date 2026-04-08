@@ -42,31 +42,31 @@ class ActionDisarmMine: ActionContinuousBase
 	
 	override void OnStartAnimationLoop(ActionData action_data)
 	{
-		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+		if (!g_Game.IsMultiplayer() || g_Game.IsServer())
 		{
 			LandMineTrap targetMine = LandMineTrap.Cast(action_data.m_Target.GetObject());
 			Param1<bool> play = new Param1<bool>(true);
-			GetGame().RPCSingleParam(targetMine, SoundTypeMine.DISARMING, play, true);
+			g_Game.RPCSingleParam(targetMine, SoundTypeMine.DISARMING, play, true);
 		}
 	}
 	
 	override void OnExecute(ActionData action_data)
 	{
-		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+		if (!g_Game.IsMultiplayer() || g_Game.IsServer())
 		{
 			LandMineTrap targetMine = LandMineTrap.Cast(action_data.m_Target.GetObject());
 			Param1<bool> play = new Param1<bool>(true);
-			GetGame().RPCSingleParam(targetMine, SoundTypeMine.DISARMING, play, true);
+			g_Game.RPCSingleParam(targetMine, SoundTypeMine.DISARMING, play, true);
 		}
 	}
 	
 	override void OnEndAnimationLoop( ActionData action_data )
 	{
-		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+		if (!g_Game.IsMultiplayer() || g_Game.IsServer())
 		{
 			LandMineTrap targetMine = LandMineTrap.Cast(action_data.m_Target.GetObject());
 			Param1<bool> play = new Param1<bool>(false);
-			GetGame().RPCSingleParam(targetMine, SoundTypeMine.DISARMING, play, true);
+			g_Game.RPCSingleParam(targetMine, SoundTypeMine.DISARMING, play, true);
 		}
 	}
 	

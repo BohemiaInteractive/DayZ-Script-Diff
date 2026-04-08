@@ -57,7 +57,7 @@ class TFCaller
 	
 	TFResult Run(float dt)
 	{
-		bool callResult = GetGame().GameScript.CallFunction(m_Instance, m_Test, m_Result, dt);
+		bool callResult = g_Game.GameScript.CallFunction(m_Instance, m_Test, m_Result, dt);
 		if (!callResult)
 		{
 			ErrorEx(string.Format("Failed to call function \'%1\' on \'%2\'", m_Test, m_Instance.GetDebugName()));
@@ -240,7 +240,7 @@ class TestFramework : ScriptedEntity
 	protected override void EOnFrame(IEntity other, float timeSlice)
 	{
 		if (m_OnFrameModule.Run(false, timeSlice))
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(Delete);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(Delete);
 	}
 	
 	//---------------------------------------------------------------------------

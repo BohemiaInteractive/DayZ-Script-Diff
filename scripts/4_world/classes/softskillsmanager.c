@@ -303,7 +303,7 @@ class SoftSkillsManager
 	{	
 		#ifdef SERVER
 		Param1<float> specialty_level = new Param1<float>( m_SpecialtyLevel );
-		GetGame().RPCSingleParam( m_Player, ERPCs.RPC_SOFT_SKILLS_SPECIALTY_SYNC, specialty_level, true, m_Player.GetIdentity() );
+		g_Game.RPCSingleParam( m_Player, ERPCs.RPC_SOFT_SKILLS_SPECIALTY_SYNC, specialty_level, true, m_Player.GetIdentity() );
 		#endif		
 	}
 
@@ -392,10 +392,10 @@ class SoftSkillsManager
 	// ----------------------------------------------------------------------------------------
 	void SynchDebugStats()
 	{	
-		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+		if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 		{
 			Param5<float, float, float, float, bool> debug_stats = new Param5<float, float, float, float, bool>( m_GeneralBonusBefore, m_GeneralBonusAfter, m_LastUAValue, m_CoolDownValue, m_IsCoolDown );
-			GetGame().RPCSingleParam( m_Player, ERPCs.RPC_SOFT_SKILLS_STATS_SYNC, debug_stats, true, m_Player.GetIdentity() );
+			g_Game.RPCSingleParam( m_Player, ERPCs.RPC_SOFT_SKILLS_STATS_SYNC, debug_stats, true, m_Player.GetIdentity() );
 		}		
 	}
 
@@ -570,9 +570,9 @@ class SoftSkillManagerDebug
 	void SoftSkillManagerDebug( SoftSkillsManager softskill_manager )
 	{					
 		m_SoftSkillManager = softskill_manager;
-		m_PanelSoftSkills = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug_softskills.layout");
+		m_PanelSoftSkills = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug_softskills.layout");
 		
-		GetGame().GetUpdateQueue(CALL_CATEGORY_SYSTEM).Insert(this.OnUpdate);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_SYSTEM).Insert(this.OnUpdate);
 
 		Class.CastTo(SpecialtyTotal,  m_PanelSoftSkills.FindWidget("SpecialtyTotal"));
 		Class.CastTo(SpecialtyChange,  m_PanelSoftSkills.FindWidget("SpecialtyChange"));
@@ -596,9 +596,9 @@ class SoftSkillManagerDebug
 	
 	void ~SoftSkillManagerDebug()
 	{		
-		if ( GetGame() )
+		if ( g_Game )
 		{
-			GetGame().GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnUpdate);
+			g_Game.GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnUpdate);
 		}
 		
 		delete m_PanelSoftSkills;

@@ -61,9 +61,9 @@ class HescoBox extends Inventory_Base
 	bool CanBeFilledAtPosition( vector position )
 	{
 		string surface_type;
-		GetGame().SurfaceGetType( position[0], position[2], surface_type );
+		g_Game.SurfaceGetType( position[0], position[2], surface_type );
 		
-		return GetGame().IsSurfaceDigable(surface_type);
+		return g_Game.IsSurfaceDigable(surface_type);
 	}
 
 	bool CanBeManipulated()
@@ -87,7 +87,7 @@ class HescoBox extends Inventory_Base
 		SetState( FOLDED );
 		RefreshPhysics();
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			SetAllowDamage(true);
 			Synchronize();
@@ -105,7 +105,7 @@ class HescoBox extends Inventory_Base
 		SetState( UNFOLDED );
 		RefreshPhysics();
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			SetAllowDamage(true);
 			Synchronize();
@@ -161,7 +161,7 @@ class HescoBox extends Inventory_Base
 		SetState( FILLED );
 		RefreshPhysics();
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			Synchronize();
 			DecreaseHealth( "", "", 5 ); //TODO Daniel implement soft skill bonus via useraction
@@ -216,7 +216,7 @@ class HescoBox extends Inventory_Base
 	{
 		super.OnPlacementComplete( player, position, orientation );
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			Unfold();
 		}

@@ -633,8 +633,7 @@ const int DMT_QUESTION = 3;
 const int DMT_EXCLAMATION = 4;
 */
 
-proto native CGame GetGame();
-
+DayZGame GetGame() { return g_Game; }
 class Hud : Managed
 {
 	ref Timer m_Timer;
@@ -932,7 +931,7 @@ class MenuData: Managed
 	//! Actual DefaultCharacter saving
 	void OnSetDefaultCharacter(ParamsWriteContext ctx)
 	{
-		if (!GetMenuDefaultCharacterDataInstance()/* || GetGame().IsServer()*/)
+		if (!GetMenuDefaultCharacterDataInstance()/* || g_Game.IsServer()*/)
 		{
 			Error("MenuData | OnSetDefaultCharacter - failed to get data class!");
 			return;
@@ -972,7 +971,7 @@ class MenuData: Managed
 	
 	MenuDefaultCharacterData GetMenuDefaultCharacterDataInstance()
 	{
-		return GetGame().GetMenuDefaultCharacterData();
+		return g_Game.GetMenuDefaultCharacterData();
 	}
 	
 	//proto native void	GetCharacterStringList(int characterID, string name, out TStringArray values);
@@ -997,9 +996,9 @@ class MenuDefaultCharacterData
 	
 	void Init()
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
-			GetGame().GetMenuData().LoadCharactersLocal();
+			g_Game.GetMenuData().LoadCharactersLocal();
 		}
 		m_AttachmentsMap = new map<int,string>;
 	}
@@ -1045,13 +1044,14 @@ class MenuDefaultCharacterData
 		string current_attachment_type;
 		EntityAI current_attachment_object;
 		
-		for (int i = 0; i < m_AttachmentsMap.Count(); i++)
+		GameInventory playerInventory = player.GetInventory();
+		for (int i = 0; i < m_AttachmentsMap.Count(); ++i)
 		{
 			attachment_type = "";
 			current_attachment_type = "";
 			slot_ID = m_AttachmentsMap.GetKey(i);
 			attachment_type = m_AttachmentsMap.GetElement(i); //Get(i)
-			current_attachment_object = player.GetInventory().FindAttachment(slot_ID);
+			current_attachment_object = playerInventory.FindAttachment(slot_ID);
 			
 			if (current_attachment_object)
 			{
@@ -1062,7 +1062,7 @@ class MenuDefaultCharacterData
 				if (current_attachment_object)
 					g_Game.ObjectDelete(current_attachment_object);
 				if (attachment_type != "")
-					player.GetInventory().CreateAttachmentEx(attachment_type,slot_ID);
+					playerInventory.CreateAttachmentEx(attachment_type,slot_ID);
 			}
 		}
 	}
@@ -1194,7 +1194,7 @@ class DefaultCharacterCreationMethods
 	static int GetConfigArrayCountFromSlotID(int slot_ID)
 	{
 		TStringArray types = new TStringArray;
-		GetGame().ConfigGetTextArray(GetPathFromSlotID(slot_ID),types);
+		g_Game.ConfigGetTextArray(GetPathFromSlotID(slot_ID),types);
 		return types.Count();
 	}
 	
@@ -1202,7 +1202,7 @@ class DefaultCharacterCreationMethods
 	static array<string> GetConfigAttachmentTypes(int slot_ID)
 	{
 		TStringArray types = new TStringArray;
-		GetGame().ConfigGetTextArray(GetPathFromSlotID(slot_ID),types);
+		g_Game.ConfigGetTextArray(GetPathFromSlotID(slot_ID),types);
 		return types;
 	}
 	

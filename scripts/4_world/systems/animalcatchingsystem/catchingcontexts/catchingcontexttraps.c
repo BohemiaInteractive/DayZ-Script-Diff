@@ -42,14 +42,14 @@ class CatchingContextTrapsBase : CatchingContextBase
 			return;
 		
 		string path = "" + CFG_VEHICLESPATH + " " + item.GetType() + " Trapping";
-		if (GetGame().ConfigIsExisting(path))
+		if (g_Game.ConfigIsExisting(path))
 		{
-			if (GetGame().ConfigIsExisting(path + " baitTypes") && GetGame().ConfigIsExisting(path + " baitTypeChances"))
+			if (g_Game.ConfigIsExisting(path + " baitTypes") && g_Game.ConfigIsExisting(path + " baitTypeChances"))
 			{
 				CachedObjectsArrays.ARRAY_INT.Clear();
 				CachedObjectsArrays.ARRAY_FLOAT.Clear();
-				GetGame().ConfigGetIntArray(path + " baitTypes",CachedObjectsArrays.ARRAY_INT);
-				GetGame().ConfigGetFloatArray(path + " baitTypeChances",CachedObjectsArrays.ARRAY_FLOAT);
+				g_Game.ConfigGetIntArray(path + " baitTypes",CachedObjectsArrays.ARRAY_INT);
+				g_Game.ConfigGetFloatArray(path + " baitTypeChances",CachedObjectsArrays.ARRAY_FLOAT);
 				int count = CachedObjectsArrays.ARRAY_INT.Count();
 				if (count == CachedObjectsArrays.ARRAY_FLOAT.Count())
 				{
@@ -70,12 +70,12 @@ class CatchingContextTrapsBase : CatchingContextBase
 					ErrorEx("'baitTypes' and 'baitTypeChances' arrray counts of " + item.GetType() + " do not match!",ErrorExSeverity.INFO);
 				}
 			}
-			if (GetGame().ConfigIsExisting(path + " resultQuantityBaseMod"))
-				m_QualityBaseMod += GetGame().ConfigGetFloat(path + " resultQuantityBaseMod");
-			if (GetGame().ConfigIsExisting(path + " resultQuantityDispersionMin"))
-				m_QualityDispersionMinMod += GetGame().ConfigGetFloat(path + " resultQuantityDispersionMin");
-			if (GetGame().ConfigIsExisting(path + " resultQuantityDispersionMax"))
-				m_QualityDispersionMaxMod += GetGame().ConfigGetFloat(path + " resultQuantityDispersionMax");
+			if (g_Game.ConfigIsExisting(path + " resultQuantityBaseMod"))
+				m_QualityBaseMod += g_Game.ConfigGetFloat(path + " resultQuantityBaseMod");
+			if (g_Game.ConfigIsExisting(path + " resultQuantityDispersionMin"))
+				m_QualityDispersionMinMod += g_Game.ConfigGetFloat(path + " resultQuantityDispersionMin");
+			if (g_Game.ConfigIsExisting(path + " resultQuantityDispersionMax"))
+				m_QualityDispersionMaxMod += g_Game.ConfigGetFloat(path + " resultQuantityDispersionMax");
 		}
 	}
 	
@@ -95,9 +95,9 @@ class CatchingContextTrapsBase : CatchingContextBase
 	override protected void InitCatchEnviroMask()
 	{
 		vector pos = m_MainItem.GetPosition();
-		if (GetGame().SurfaceIsSea(pos[0], pos[2]))
+		if (g_Game.SurfaceIsSea(pos[0], pos[2]))
 			m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_SEA;
-		else if (GetGame().SurfaceIsPond( pos[0], pos[2]))
+		else if (g_Game.SurfaceIsPond( pos[0], pos[2]))
 			m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_POND;
 		else
 			m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_LAND_ALL;

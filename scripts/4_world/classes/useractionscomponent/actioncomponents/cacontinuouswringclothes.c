@@ -51,7 +51,7 @@ class CAContinuousWringClothes : CAContinuousQuantityRepeat
 				}
 					
 				
-				if ( GetGame().IsServer() )
+				if ( g_Game.IsServer() )
 				{
 					if ( m_SpentUnits )
 					{

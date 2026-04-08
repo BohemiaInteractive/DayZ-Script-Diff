@@ -10,7 +10,7 @@ class Wreck_SantasSleigh extends CrashBase
 
 	void Wreck_SantasSleigh()
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			//particles - Aurora trail
 			m_ParticleEfx = ParticleManager.GetInstance().PlayOnObject(ParticleList.AURORA_SANTA_WRECK,this,vector.Zero,vector.Zero,true);
@@ -37,7 +37,7 @@ class Wreck_SantasSleigh extends CrashBase
 	{
 		super.EEDelete(parent);
 		
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			if ( m_SleighLight )
 				m_SleighLight.Destroy();
@@ -47,7 +47,7 @@ class Wreck_SantasSleigh extends CrashBase
 	void SpawnRandomDeerLater()
 	{
 		//SpawnRandomDeers();
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( SpawnRandomDeers, 0);
+		g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( SpawnRandomDeers, 0);
 	}
 	
 	//Spawn a random amount of (dead) deers around the sleigh
@@ -61,7 +61,7 @@ class Wreck_SantasSleigh extends CrashBase
 		for (int i = 0; i < m_MaxDeersAmount; i++)
 		{
 			vector deer_pos = RandomizePosition(crash_pos);
-			deer = EntityAI.Cast(GetGame().CreateObject("Animal_RangiferTarandus", deer_pos,false, true));
+			deer = EntityAI.Cast(g_Game.CreateObject("Animal_RangiferTarandus", deer_pos,false, true));
 			deer.SetHealth01("","", 0);
 			vector orientation = deer.GetOrientation();
 			deer.SetOrientation(Vector(Math.RandomIntInclusive(0,360),orientation[1],orientation[2]));
@@ -69,7 +69,7 @@ class Wreck_SantasSleigh extends CrashBase
 		
 		//spawns xmas reindeer
 		deer_pos = RandomizePosition(crash_pos);
-		deer = EntityAI.Cast(GetGame().CreateObject("Animal_RangiferTarandus_Xmas", deer_pos,false, true));
+		deer = EntityAI.Cast(g_Game.CreateObject("Animal_RangiferTarandus_Xmas", deer_pos,false, true));
 		deer.SetHealth01("","", 0);
 		vector redorientation = deer.GetOrientation();
 		deer.SetOrientation(Vector(Math.RandomIntInclusive(0,360),redorientation[1],redorientation[2]));

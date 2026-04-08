@@ -67,7 +67,7 @@ class ActionStripCarrierVest: ActionContinuousBase
 
 			for ( int i = 0; i < results.Count(); i++ )
 			{
-				object = EntityAI.Cast( GetGame().CreateObjectEx(results.Get(i), action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE) );
+				object = EntityAI.Cast( g_Game.CreateObjectEx(results.Get(i), action_data.m_Player.GetPosition(), ECE_PLACE_ON_SURFACE) );
 				object.SetHealth("","",action_data.m_MainItem.GetHealth("",""));
 			}
 			action_data.m_MainItem.Delete();

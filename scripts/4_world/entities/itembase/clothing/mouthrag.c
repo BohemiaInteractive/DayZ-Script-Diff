@@ -26,7 +26,7 @@ class MouthRag extends Mask_Base
 	{
 		super.EEItemLocationChanged(oldLoc,newLoc);
 		
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 		{
 			PlayerBase playerOld;
 			PlayerBase playerNew;
@@ -38,7 +38,7 @@ class MouthRag extends Mask_Base
 			if (newLoc.GetType() == InventoryLocationType.GROUND)
 			{
 				ItemBase newItem;
-				if (Class.CastTo(newItem,GetGame().CreateObjectEx("Rag",newLoc.GetPos(),ECE_PLACE_ON_SURFACE,RF_DEFAULT)))
+				if (Class.CastTo(newItem,g_Game.CreateObjectEx("Rag",newLoc.GetPos(),ECE_PLACE_ON_SURFACE,RF_DEFAULT)))
 				{
 					MiscGameplayFunctions.TransferItemProperties(this,newItem);
 					newItem.SetQuantity(1);

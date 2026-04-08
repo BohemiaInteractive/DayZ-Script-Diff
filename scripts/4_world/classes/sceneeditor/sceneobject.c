@@ -23,7 +23,7 @@ class SceneObject
 		{
 			m_ObjectNameOrigin = obj_name;
 			
-			bool is_ai = GetGame().IsKindOf(obj_name, "DZ_LightAI");
+			bool is_ai = g_Game.IsKindOf(obj_name, "DZ_LightAI");
 			
 			PluginDeveloper module_dev = PluginDeveloper.Cast(GetPlugin(PluginDeveloper));
 			EntityAI e = module_dev.SpawnEntityOnGroundPos(PluginSceneManager.PLAYER, obj_name, 100, 0.0, pos);
@@ -355,9 +355,9 @@ class SceneObject
 	//========================================
 	void ~SceneObject()
 	{
-		if (m_ObjectPtr && m_ObjectPtr != GetGame().GetPlayer())
+		if (m_ObjectPtr && m_ObjectPtr != g_Game.GetPlayer())
 		{
-			GetGame().ObjectDelete(m_ObjectPtr);
+			g_Game.ObjectDelete(m_ObjectPtr);
 			m_ObjectPtr = NULL;
 		}
 		
@@ -384,7 +384,7 @@ class SceneObject
 	{
 		if (m_ObjectPtr)
 		{
-			if (GetGame().IsClient() && GetGame().IsMultiplayer())
+			if (g_Game.IsClient() && g_Game.IsMultiplayer())
 			{
 				Param par = new Param3<string, EntityAI, Param>("PlaceOnSurface" , m_ObjectPtr, NULL);
 				SceneObjectSynch(par);			
@@ -403,7 +403,7 @@ class SceneObject
 	{
 		if (m_ObjectPtr) 
 		{
-			if (GetGame().IsClient() && GetGame().IsMultiplayer())
+			if (g_Game.IsClient() && g_Game.IsMultiplayer())
 			{
 				Param par = new Param3<string, EntityAI, Param>("SetPosition" , m_ObjectPtr, new Param1<vector>(pos));
 				SceneObjectSynch(par);			
@@ -454,7 +454,7 @@ class SceneObject
 	{
 		if (m_ObjectPtr)
 		{
-			if (GetGame().IsClient() && GetGame().IsMultiplayer())
+			if (g_Game.IsClient() && g_Game.IsMultiplayer())
 			{
 				Param par = new Param3<string, EntityAI, Param>("SetHealth" , m_ObjectPtr, new Param1<float>(value));
 				SceneObjectSynch(par);			
@@ -514,7 +514,7 @@ class SceneObject
 	
 	void SceneObjectSynch(Param p)
 	{
-		GetGame().RPCSingleParam(GetGame().GetPlayer(), ERPCs.RPC_SYNC_SCENE_OBJECT, p, true, NULL);
+		g_Game.RPCSingleParam(g_Game.GetPlayer(), ERPCs.RPC_SYNC_SCENE_OBJECT, p, true, NULL);
 	}
 	
 	//========================================
@@ -524,7 +524,7 @@ class SceneObject
 	{
 		if (m_ObjectPtr)
 		{
-			if (GetGame().IsClient() && GetGame().IsMultiplayer())
+			if (g_Game.IsClient() && g_Game.IsMultiplayer())
 			{
 				Param par = new Param3<string, EntityAI, Param>("AddRotation" , m_ObjectPtr, new Param1<float>(add_rot));
 				SceneObjectSynch(par);			
@@ -561,7 +561,7 @@ class SceneObject
 	//========================================
 	void RemoveAttachment(EntityAI e)
 	{
-		GetGame().ObjectDelete(e);
+		g_Game.ObjectDelete(e);
 	}
 	
 	//========================================
@@ -589,20 +589,20 @@ class SceneObject
 		
 		string cfg_path;
 		
-		if (GetGame().ConfigIsExisting(CFG_VEHICLESPATH+" "+type_name))
+		if (g_Game.ConfigIsExisting(CFG_VEHICLESPATH+" "+type_name))
 		{
 			cfg_path = CFG_VEHICLESPATH+" "+type_name+" attachments";
 		}
-		else if (GetGame().ConfigIsExisting(CFG_WEAPONSPATH+" "+type_name))
+		else if (g_Game.ConfigIsExisting(CFG_WEAPONSPATH+" "+type_name))
 		{
 			cfg_path = CFG_WEAPONSPATH+" "+type_name+" attachments";
 		}
-		else if (GetGame().ConfigIsExisting(CFG_MAGAZINESPATH+" "+type_name))
+		else if (g_Game.ConfigIsExisting(CFG_MAGAZINESPATH+" "+type_name))
 		{
 			cfg_path = CFG_MAGAZINESPATH+" "+type_name+" attachments";
 		}
 		
-		GetGame().ConfigGetTextArray(cfg_path, cfg_attachments);
+		g_Game.ConfigGetTextArray(cfg_path, cfg_attachments);
 		
 		return cfg_attachments;
 	}

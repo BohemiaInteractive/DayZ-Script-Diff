@@ -83,7 +83,7 @@ class RefuelTorch extends RecipeBase
 		Rag rag = Rag.Cast(ingredients[0]);
 		Torch torch = Torch.Cast(ingredients[1]);
 		
-		if ( !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsMultiplayer() )
 		{
 			InventoryLocation loc = new InventoryLocation;
 			rag.GetInventory().GetCurrentInventoryLocation( loc );
@@ -98,7 +98,7 @@ class RefuelTorch extends RecipeBase
 		}
 		else
 		{
-			if ( GetGame().IsServer()  &&  GetGame().IsMultiplayer() )
+			if ( g_Game.IsServer()  &&  g_Game.IsMultiplayer() )
 			{
 				player.ServerTakeEntityToTargetAttachment(torch, rag); // multiplayer server side
 			}

@@ -21,7 +21,7 @@ class BoatHud : VehicleHudBase
 	{	
 		super.Init(vehicleHudPanels);
 		
-		m_VehiclePanel = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_hud_boats.layout", vehicleHudPanels);
+		m_VehiclePanel = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_hud_boats.layout", vehicleHudPanels);
 		
 		m_SpeedPointer				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("SpeedPointer") );
 		m_EngineLight				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("EngineLight"));

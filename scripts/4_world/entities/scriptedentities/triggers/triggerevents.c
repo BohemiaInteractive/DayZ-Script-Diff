@@ -34,7 +34,7 @@ class TriggerEvents : ScriptedEntity
 		if (m_OnEnterInvoker)
 			m_OnEnterInvoker.Invoke(insider);
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 			OnEnterServerEvent(insider);
 		else
 			OnEnterClientEvent(insider);
@@ -59,7 +59,7 @@ class TriggerEvents : ScriptedEntity
 		
 		OnStayStartBeginEvent(nrOfInsiders);
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 			OnStayStartServerEvent(nrOfInsiders);
 		else
 			OnStayStartClientEvent(nrOfInsiders);
@@ -84,7 +84,7 @@ class TriggerEvents : ScriptedEntity
 		
 		OnStayBeginEvent(insider, deltaTime);
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 			OnStayServerEvent(insider, deltaTime);
 		else
 			OnStayClientEvent(insider, deltaTime);
@@ -109,7 +109,7 @@ class TriggerEvents : ScriptedEntity
 		
 		OnStayFinishBeginEvent();
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 			OnStayFinishServerEvent();
 		else
 			OnStayFinishClientEvent();
@@ -137,7 +137,7 @@ class TriggerEvents : ScriptedEntity
 		if (m_OnLeaveInvoker)
 			m_OnLeaveInvoker.Invoke(insider);
 		
-		if ( GetGame() && GetGame().IsServer() )
+		if ( g_Game && g_Game.IsServer() )
 			OnLeaveServerEvent(insider);
 		else
 			OnLeaveClientEvent(insider);

@@ -72,7 +72,7 @@ class PumpkinHelmet : HelmetBase
 	
 	override void UpdateNVGStatus(PlayerBase player, bool attaching = false, bool force_disable = false)
 	{
-		if ( !GetGame().IsDedicatedServer() ) //SP only
+		if ( !g_Game.IsDedicatedServer() ) //SP only
 		{
 			if (force_disable)
 			{

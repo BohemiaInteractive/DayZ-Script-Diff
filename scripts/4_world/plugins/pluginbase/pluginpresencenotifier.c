@@ -114,7 +114,7 @@ class PluginPresenceNotifier : PluginBase
 	void Init(PlayerBase player)
 	{
 		m_pPlayer = player;
-		m_Weather = GetGame().GetWeather();
+		m_Weather = g_Game.GetWeather();
 	}
 
 	void EnableDebug(bool pEnabled)
@@ -222,7 +222,7 @@ class PluginPresenceNotifier : PluginBase
 		float reduction = 0;
 		if (m_pPlayer)
 		{
-			noise = NoiseAIEvaluate.GetNoiseMultiplier(m_pPlayer) * NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather());
+			noise = NoiseAIEvaluate.GetNoiseMultiplier(m_pPlayer) * NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather());
 			noise = Math.Round(noise * NOISE_LEVEL_MAX);
 		}
 		

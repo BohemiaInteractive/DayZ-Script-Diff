@@ -6,7 +6,7 @@ class CreditsDepartmentElement extends CreditsElement
 	
 	void CreditsDepartmentElement( int index, Widget parent, JsonDataCreditsDepartment department_data )
 	{
-		m_Root					= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/credits/department_element/department_element.layout", parent );
+		m_Root					= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/credits/department_element/department_element.layout", parent );
 		m_DepartmentTitle		= TextWidget.Cast( m_Root.FindAnyWidget( "department_title" ) );
 		m_DepartmentSections	= GridSpacerWidget.Cast( m_Root.FindAnyWidget( "department_sections" ) );
 		
@@ -44,7 +44,7 @@ class CreditsDepartmentSection extends CreditsElement
 	
 	void CreditsDepartmentSection( int index, Widget parent, JsonDataCreditsSection section_data )
 	{
-		m_Root				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/credits/department_element/department_section.layout", parent );
+		m_Root				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/credits/department_element/department_section.layout", parent );
 		m_SectionTitle		= TextWidget.Cast( m_Root.FindAnyWidget( "section_title" ) );
 		m_SectionSections	= WrapSpacerWidget.Cast( m_Root.FindAnyWidget( "section_elements" ) );
 		
@@ -66,7 +66,7 @@ class CreditsDepartmentSection extends CreditsElement
 	{
 		for( int i = 1; i <= section_data.Count(); i++ )
 		{
-			TextWidget w = TextWidget.Cast( GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/credits/department_element/department_section_element.layout", m_SectionSections ) );
+			TextWidget w = TextWidget.Cast( g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/credits/department_element/department_section_element.layout", m_SectionSections ) );
 			w.SetText( section_data.Get( i - 1 ) + " \n" );
 			w.Update();
 			m_Root.SetSort( i );

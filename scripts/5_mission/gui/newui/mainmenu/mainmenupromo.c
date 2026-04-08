@@ -29,10 +29,10 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		Init();
 		
 		#ifdef PLATFORM_CONSOLE
-		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
-		if (GetGame().GetMission())
+		g_Game.GetContentDLCService().m_OnChange.Insert(OnDLCChange);
+		if (g_Game.GetMission())
 		{
-			GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+			g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		}
 		#endif
 	}
@@ -40,8 +40,8 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	void ~MainMenuDlcHandlerBase()
 	{
 		#ifdef PLATFORM_CONSOLE
-		if (GetGame().GetContentDLCService())
-			GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
+		if (g_Game.GetContentDLCService())
+			g_Game.GetContentDLCService().m_OnChange.Remove(OnDLCChange);
 		#endif
 	}
 	
@@ -67,7 +67,7 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	
 	void CreateRootWidget(Widget parent)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/dlc_panels/DLC_Panel.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/dlc_panels/DLC_Panel.layout", parent);
 	}
 	
 	void ShowInfoPanel(bool show)
@@ -200,7 +200,7 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	protected void UpdateIconVisibility()
 	{
 		#ifdef PLATFORM_CONSOLE
-		m_GamepadStoreImage.Show(!GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER);
+		m_GamepadStoreImage.Show(!g_Game.GetInput().IsEnabledMouseAndKeyboard() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER);
 		#endif
 	}
 	

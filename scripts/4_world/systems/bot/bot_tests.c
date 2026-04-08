@@ -13,9 +13,10 @@ class BotTestSwapInternal : BotStateBase
 	override void OnEntry (BotEventBase e)
 	{
 		super.OnEntry(e);
-		EntityAI j = m_Owner.GetInventory().CreateAttachment("Jeans_Blue");
+		GameInventory ownerInventory = m_Owner.GetInventory();
+		EntityAI j = ownerInventory.CreateAttachment("Jeans_Blue");
 		m_Entity1 = j.GetInventory().CreateEntityInCargo("Rag");
-		EntityAI s = m_Owner.GetInventory().CreateInInventory("TacticalShirt_Grey");
+		EntityAI s = ownerInventory.CreateInInventory("TacticalShirt_Grey");
 		m_Entity2 = s.GetInventory().CreateEntityInCargo("Roadflare");
 	}
 

@@ -208,8 +208,8 @@ class ActionTargets
 		vector playerPos = m_Player.GetPosition();
 		vector headingDirection = MiscGameplayFunctions.GetHeadingVector(m_Player);
 
-		m_RayStart = GetGame().GetCurrentCameraPosition();
-		m_RayEnd = m_RayStart + GetGame().GetCurrentCameraDirection() * c_RayDistance;
+		m_RayStart = g_Game.GetCurrentCameraPosition();
+		m_RayEnd = m_RayStart + g_Game.GetCurrentCameraDirection() * c_RayDistance;
 
 		RaycastRVParams rayInput = new RaycastRVParams(m_RayStart, m_RayEnd, m_Player);
 		rayInput.flags = CollisionFlags.ALLOBJECTS;
@@ -324,7 +324,7 @@ class ActionTargets
 			float 		hitFraction;
 			Object 		hitObject;
 			
-			m_RayEnd = m_RayStart + GetGame().GetCurrentCameraDirection() * c_RayDistance * 3;
+			m_RayEnd = m_RayStart + g_Game.GetCurrentCameraDirection() * c_RayDistance * 3;
 			
 			PhxInteractionLayers collisionLayerMask = PhxInteractionLayers.ROADWAY|PhxInteractionLayers.TERRAIN|PhxInteractionLayers.WATERLAYER;
 			DayZPhysics.RayCastBullet(m_RayStart,m_RayEnd,collisionLayerMask,null,hitObject,contact_pos,hitNormal,hitFraction);
@@ -697,7 +697,8 @@ class ActionTargets
 	{
 		for ( int it = 0; it < shapesArr.Count(); ++it )
 		{
-			Debug.RemoveShape( shapesArr[it] );
+			Shape shape = shapesArr[it];
+			Debug.RemoveShape( shape );
 		}
 		
 		shapesArr.Clear();

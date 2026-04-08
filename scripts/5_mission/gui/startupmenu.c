@@ -10,7 +10,7 @@ class StartupMenu extends UIScriptedMenu
 
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/startup.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/startup.layout");
 		
 		m_label = TextWidget.Cast( layoutRoot.FindAnyWidget("TextWidget") );
 

@@ -9,7 +9,7 @@ class OptionSelectorLevelMarker extends OptionSelectorSliderSetup
 	
 	void OptionSelectorLevelMarker(Widget parent, float value, ScriptedWidgetEventHandler parentMenu, bool disabled, float min, float max)
 	{
-		m_Root					= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_level_marker.layout", parent);
+		m_Root					= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_level_marker.layout", parent);
 		#ifdef PLATFORM_CONSOLE
 			m_Parent				= parent.GetParent().GetParent();
 		#else

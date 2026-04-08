@@ -70,22 +70,22 @@ class ControlsXboxNew extends UIScriptedMenu
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		bool mk = GetGame().GetInput().IsEnabledMouseAndKeyboard();
-		bool mkServer = GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		bool mk = g_Game.GetInput().IsEnabledMouseAndKeyboard();
+		bool mkServer = g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
 		
 		switch (pInputDeviceType)
 		{
 		case EInputDeviceType.CONTROLLER:
 			if (mk && mkServer)
 			{
-				GetGame().GetUIManager().ShowUICursor(false);
+				g_Game.GetUIManager().ShowUICursor(false);
 			}
 		break;
 
 		default:
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 			{
-				GetGame().GetUIManager().ShowUICursor(true);
+				g_Game.GetUIManager().ShowUICursor(true);
 			}
 		break;
 		}
@@ -95,7 +95,7 @@ class ControlsXboxNew extends UIScriptedMenu
 	
 	void Back()
 	{
-		GetGame().GetUIManager().Back();
+		g_Game.GetUIManager().Back();
 	}
 	
 	void UpdateTabContent(int tab_index)
@@ -180,12 +180,16 @@ class ControlsXboxNew extends UIScriptedMenu
 		m_CategoryStructure = new map<int,Widget>;
 		m_ImageMarkerStructure = new map<int,Widget>;
 		
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/xbox/Controls_Screen.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/xbox/Controls_Screen.layout");
 		#ifdef PLATFORM_XBOX
+			m_ControlsImage = layoutRoot.FindAnyWidget("XboxControlsImage");
+		#else
+		#ifdef PLATFORM_MSSTORE
 			m_ControlsImage = layoutRoot.FindAnyWidget("XboxControlsImage");
 		#else
 		#ifdef PLATFORM_PS4
 			m_ControlsImage = layoutRoot.FindAnyWidget("PSControlsImage");
+		#endif
 		#endif
 		#endif
 		m_ControlsImage.Show(true);
@@ -206,8 +210,8 @@ class ControlsXboxNew extends UIScriptedMenu
 		ComposeData();
 		UpdateTabContent(0);
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
 		return layoutRoot;
 	}
@@ -217,7 +221,7 @@ class ControlsXboxNew extends UIScriptedMenu
 		super.OnShow();
 		
 		SetFocus(null);
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 	}
 	
 	override bool OnClick(Widget w, int x, int y, int button)
@@ -328,10 +332,14 @@ class ControlsXboxNew extends UIScriptedMenu
 		
 		InputUtils.UpdateConsolePresetID();
 		
-		#ifdef PLATFORM_XBOX
+		#ifdef PLATFORM_MSSTORE
 			m_PlatformHolder = FindChildByID(layoutRoot,PLATFORM_ADJUST_X1);
 		#else
-			m_PlatformHolder = FindChildByID(layoutRoot,PLATFORM_ADJUST_PS);
+			#ifdef PLATFORM_XBOX
+				m_PlatformHolder = FindChildByID(layoutRoot,PLATFORM_ADJUST_X1);
+			#else
+				m_PlatformHolder = FindChildByID(layoutRoot,PLATFORM_ADJUST_PS);
+			#endif
 		#endif
 		
 		//categories
@@ -362,7 +370,7 @@ class ControlsXboxNew extends UIScriptedMenu
 		inputAPI.PresetSelect(index);
 		UpdateToolbarText();
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Invoke();
+		g_Game.GetMission().GetOnInputPresetChanged().Invoke();
 		
 		#ifdef PLATFORM_WINDOWS
 			GetUApi().Export(); //works on emulated consoles (-xbox,-ps4)
@@ -532,16 +540,13 @@ class ControlsXboxNew extends UIScriptedMenu
 		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
 		string text = string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#STR_settings_menu_root_toolbar_bg_ConsoleToolbar_Back_BackText0", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 		toolbar_text.SetText(text);
-		
-		RichTextWidget toolbar_b2	= RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon0"));
-		toolbar_b2.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 	}
 	
 	protected void UpdateControlsElementVisibility()
 	{
 		bool toolbarShow = false;
 		#ifdef PLATFORM_CONSOLE
-		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		toolbarShow = !g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
 		#endif
 		
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);

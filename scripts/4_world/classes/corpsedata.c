@@ -38,7 +38,7 @@ class CorpseData
 				m_iMaxLifetime = m_Player.GetLifetime();
 				if (m_iMaxLifetime <= 0) //cleanup time not initialized yet!
 				{
-					m_iTriesToGetLifetime++;
+					++m_iTriesToGetLifetime;
 					m_iMaxLifetime = -1;
 					if (m_iTriesToGetLifetime >= GET_LIFETIME_TRIES_MAX)
 					{
@@ -79,7 +79,10 @@ class CorpseData
 		#endif
 		
 		m_LifetimeAdjusted += delta;
-		float corpseFreshness = m_LifetimeAdjusted/m_iMaxLifetime;
+		
+		float corpseFreshness = 0.0;
+		if (m_iMaxLifetime != 0)
+			corpseFreshness = m_LifetimeAdjusted / m_iMaxLifetime;
 		
 		if (corpseFreshness > PlayerConstants.CORPSE_THRESHOLD_MEDIUM)
 		{

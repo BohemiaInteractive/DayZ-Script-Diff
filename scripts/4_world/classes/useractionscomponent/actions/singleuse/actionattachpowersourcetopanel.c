@@ -47,7 +47,7 @@ class ActionAttachPowerSourceToPanel: ActionSingleUseBase
 	
 	override void OnExecuteServer( ActionData action_data )
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 			return; // multiplayer handled on client side via OnExecuteClient
 		else
 			OnExecuteImpl(action_data); // single player

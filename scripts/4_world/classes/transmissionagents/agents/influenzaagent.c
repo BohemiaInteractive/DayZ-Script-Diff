@@ -23,7 +23,7 @@ class InfluenzaAgent : AgentBase
 	};
 
 	protected int m_ElapsedTime;
-
+	
 	override void Init()
 	{
 		m_Type 					= eAgents.INFLUENZA;
@@ -32,13 +32,13 @@ class InfluenzaAgent : AgentBase
 		m_TransferabilityOut	= 1;
 		m_MaxCount 				= 1200;
 		m_Digestibility			= 0.1;
-		m_AntibioticsResistance = 0;
+		m_AntibioticsResistance = 0; //deprecated, use m_DrugResistances to initialize this agents resistance to a specific drug, as seen on lines 42
 		m_AutoinfectCount		= CommonColdMdfr.AGENT_THRESHOLD_ACTIVATE+10;
 		m_TransferabilityAirOut = 1;
 		m_Potency 				= EStatLevels.MEDIUM;
 		m_DieOffSpeed 			= 0.30;
-		
 		m_ElapsedTime			= 0.0;
+		m_DrugResistances.Set(EMedicalDrugsType.ANTIBIOTICS, 0.0);
 	}
 
 	override bool AutoinfectCheck(float deltaT, PlayerBase player)

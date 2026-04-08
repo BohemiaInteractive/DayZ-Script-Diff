@@ -63,6 +63,6 @@ class ChelationMdfr : ModifierBase
 
 	override void OnTick(PlayerBase player, float deltaT)
 	{
-		player.m_AgentPool.DrugsAttack(EMedicalDrugsType.ANTIBIOTICS, CHELATION_STRENGTH * deltaT);
+		player.m_AgentPool.DrugsAttack(EMedicalDrugsType.CHELATION, CHELATION_STRENGTH * deltaT);
 	}
 }

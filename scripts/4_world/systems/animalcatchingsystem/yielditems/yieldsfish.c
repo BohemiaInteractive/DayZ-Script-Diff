@@ -13,7 +13,7 @@ class FishYieldItemBase : YieldItemBase
 	
 	float GetCycleTimeForYieldItem(CatchingContextFishingRodAction ctx)
 	{
-		int hour = Math.Floor(GetGame().GetDayTime());
+		int hour = Math.Floor(g_Game.GetDayTime());
 		float res = Math.Lerp(UAFishingConstants.CYCLE_LENGTH_MIN,UAFishingConstants.CYCLE_LENGTH_MAX,m_HourlyCycleLengthCoefs[hour]);
 		return res;
 	}

@@ -221,13 +221,13 @@ class PlayerStomach
 		for(int i = 0; i < all_paths.Count(); i++)
 		{
 			config_path = all_paths.Get(i);
-			int children_count = GetGame().ConfigGetChildrenCount(config_path);
+			int children_count = g_Game.ConfigGetChildrenCount(config_path);
 			
 			for(int x = 0; x < children_count; x++)
 			{
-				GetGame().ConfigGetChildName(config_path, x, child_name);
+				g_Game.ConfigGetChildName(config_path, x, child_name);
 				path = config_path + " " + child_name;
-				scope = GetGame().ConfigGetInt(config_path + " " + child_name + " scope");
+				scope = g_Game.ConfigGetInt(config_path + " " + child_name + " scope");
 				bool should_check = 1;
 				if (config_path == "CfgVehicles" && scope == 0)
 				{
@@ -236,8 +236,8 @@ class PlayerStomach
 				
 				if (should_check)
 				{
-					bool has_nutrition = GetGame().ConfigIsExisting(path + " Nutrition");
-					bool has_stages = GetGame().ConfigIsExisting(path + " Food");
+					bool has_nutrition = g_Game.ConfigIsExisting(path + " Nutrition");
+					bool has_stages = g_Game.ConfigIsExisting(path + " Food");
 					
 					if (has_nutrition || has_stages)
 					{

@@ -20,7 +20,7 @@ class CTKeyframe extends ScriptedWidgetEventHandler
 	{
 		m_Menu				= parent;
 		
-		m_Root				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/keyframe_entry.layout", root );
+		m_Root				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/keyframe_entry.layout", root );
 		
 		m_IndexWidget		= TextWidget.Cast( m_Root.FindAnyWidget( "keyframe_id" ) );
 		m_InterpTimeWidget	= EditBoxWidget.Cast( m_Root.FindAnyWidget( "keyframe_time_edit" ) );

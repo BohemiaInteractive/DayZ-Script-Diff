@@ -33,7 +33,7 @@ class TabberUI extends ScriptedWidgetEventHandler
 		break;
 
 		default:
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+			if (g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
 			{
 				m_TabControlsRoot.FindAnyWidget("ConsoleControls").Show(false);
 			}
@@ -86,10 +86,10 @@ class TabberUI extends ScriptedWidgetEventHandler
 			m_InitTimer.Run(0.01, this, "AlignTabbers");
 		}
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 	}
 
 	void OnWidgetScriptInit( Widget w )
@@ -161,8 +161,8 @@ class TabberUI extends ScriptedWidgetEventHandler
 	int AddTab( string name )
 	{
 		int new_index = m_Tabs.Count();
-		Widget tab = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/tabber_prefab/tab.layout", m_Root );
-		Widget control = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/tabber_prefab/tab_control.layout", m_Root.FindAnyWidget( "Tab_Control_Container" ) );
+		Widget tab = g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/tabber_prefab/tab.layout", m_Root );
+		Widget control = g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/tabber_prefab/tab_control.layout", m_Root.FindAnyWidget( "Tab_Control_Container" ) );
 		TextWidget control_text = TextWidget.Cast( control.FindAnyWidget( "Tab_Control_x_Title" ) );
 		
 		tab.SetName( "Tab_" + new_index );

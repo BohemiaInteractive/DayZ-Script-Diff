@@ -45,7 +45,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 			#endif
 		}
 		
-		UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu menu = g_Game.GetUIManager().GetMenu();
 		
 		if (menu && menu.IsInherited(CharacterCreationMenu))
 		{
@@ -81,7 +81,7 @@ class OptionSelectorBase extends ScriptedWidgetEventHandler
 			#endif
 		}
 		
-		UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu menu = g_Game.GetUIManager().GetMenu();
 		
 		if (menu && menu.IsInherited(CharacterCreationMenu))
 		{

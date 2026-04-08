@@ -68,7 +68,7 @@ class PluginDayzPlayerDebugUIHandler extends ScriptedWidgetEventHandler
 	override bool OnMouseEnter(Widget w, int x, int y)
 	{
 		super.OnMouseEnter(w,x,y);
-		GetGame().GetMission().AddActiveInputExcludes({"menu"});
+		g_Game.GetMission().AddActiveInputExcludes({"menu"});
 		return true;
 
 	}
@@ -76,7 +76,7 @@ class PluginDayzPlayerDebugUIHandler extends ScriptedWidgetEventHandler
 	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{
 		super.OnMouseLeave(w,enterW, x,y);
-		GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+		g_Game.GetMission().RemoveActiveInputExcludes({"menu"},true);
 		return true;
 	}
 
@@ -364,8 +364,8 @@ class PluginDayzPlayerDebug extends PluginBase
 	{
 		if (!m_HasFocus)
 		{
-			GetGame().GetInput().ChangeGameFocus(1);
-			GetGame().GetUIManager().ShowUICursor(true);
+			g_Game.GetInput().ChangeGameFocus(1);
+			g_Game.GetUIManager().ShowUICursor(true);
 			m_HasFocus = true;
 		}
 	}
@@ -375,8 +375,8 @@ class PluginDayzPlayerDebug extends PluginBase
 	{
 		if (m_HasFocus)
 		{
-			GetGame().GetInput().ChangeGameFocus(-1);
-			GetGame().GetUIManager().ShowUICursor(false);
+			g_Game.GetInput().ChangeGameFocus(-1);
+			g_Game.GetUIManager().ShowUICursor(false);
 			m_HasFocus = false;
 		}	
 	}
@@ -455,7 +455,7 @@ class PluginDayzPlayerDebug extends PluginBase
 
 		if (!m_MainWnd)
 		{
-			m_MainWnd = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_playerdebug.layout");
+			m_MainWnd = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_playerdebug.layout");
 			m_MainWnd.SetHandler(m_pUIHandler);
 			m_MainWnd.Show(false);
 		}
@@ -544,7 +544,7 @@ class PluginDayzPlayerDebug extends PluginBase
 	
 	void Tick()
 	{
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if (!player)
 		{
 			return;
@@ -749,7 +749,7 @@ class PluginDayzPlayerDebug extends PluginBase
 		}
 
 		//!
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if (!player)
 		{
 			return;
@@ -782,7 +782,7 @@ class PluginDayzPlayerDebug extends PluginBase
 	void	Actions_DoInternalCommand(int pCommandId)
 	{
 		//!
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if (!player)
 		{
 			return;
@@ -805,7 +805,7 @@ class PluginDayzPlayerDebug extends PluginBase
 	void	Actions_DoCancel()
 	{
 		//!
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if (!player)
 		{
 			return;
@@ -844,11 +844,11 @@ class PluginDayzPlayerDebug extends PluginBase
 	{
 		PlayerSyncDelete();
 
-		vector item_position = 	GetGame().GetPlayer().GetPosition() + ( GetGame().GetPlayer().GetDirection() * 2.0);
+		vector item_position = 	g_Game.GetPlayer().GetPosition() + ( g_Game.GetPlayer().GetDirection() * 2.0);
 
-		m_pPlayerShadow = Entity.Cast( GetGame().CreateObject("SurvivorM_Mirek", item_position, false, false) );
+		m_pPlayerShadow = Entity.Cast( g_Game.CreateObject("SurvivorM_Mirek", item_position, false, false) );
 
-		DayZPlayer 	pl = DayZPlayer.Cast( GetGame().GetPlayer() );		
+		DayZPlayer 	pl = DayZPlayer.Cast( g_Game.GetPlayer() );		
 		pl.DebugSyncShadowSetup( DayZPlayer.Cast( m_pPlayerShadow ) );
 	}
 
@@ -856,11 +856,11 @@ class PluginDayzPlayerDebug extends PluginBase
 	{
 		if (m_pPlayerShadow)
 		{
-			GetGame().ObjectDelete(m_pPlayerShadow);
+			g_Game.ObjectDelete(m_pPlayerShadow);
 			m_pPlayerShadow = NULL;
 		}
 
-		DayZPlayer 	pl = DayZPlayer.Cast( GetGame().GetPlayer() );		
+		DayZPlayer 	pl = DayZPlayer.Cast( g_Game.GetPlayer() );		
 		if (pl)
 		{
 			pl.DebugSyncShadowSetup(NULL);
@@ -963,7 +963,7 @@ class PluginDayzPlayerDebug extends PluginBase
 			m_HasServerWalk = !m_HasServerWalk;
 #ifdef DEVELOPER
 			Param1<bool> rp = new Param1<bool>(m_HasServerWalk);
-			GetGame().RPCSingleParam(GetGame().GetPlayer(), ERPCs.RPC_DAYZPLAYER_DEBUGSERVERWALK, rp, true);
+			g_Game.RPCSingleParam(g_Game.GetPlayer(), ERPCs.RPC_DAYZPLAYER_DEBUGSERVERWALK, rp, true);
 #endif
 		}
 		else if (w == m_ActionTypeLA)
@@ -1125,6 +1125,7 @@ class PluginDayzPlayerDebug extends PluginBase
 		RegisterAnimation("CODRIVER OPEN DOOR", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_CODRIVER_DOOROPEN, false);
 		RegisterAnimation("CODRIVER CLOSE DOOR", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_CODRIVER_DOORCLOSE, false);
 		RegisterAnimation("BLOODTEST", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTEST, false);
+		RegisterAnimation("BLOODTESTOTHER", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTESTOTHER, false);
 		RegisterAnimation("BLOODTESTOTHER", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTESTOTHER, false);
 		//! one time
 		RegisterAnimation("PICK UP HANDS", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_PICKUP_HANDS, false);

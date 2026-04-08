@@ -12,18 +12,18 @@ class Surface
 	
 	static int GetParamInt(string surface_name, string param_name)
 	{
-		return GetGame().ConfigGetInt("CfgSurfaces " + surface_name + " " + param_name);
+		return g_Game.ConfigGetInt("CfgSurfaces " + surface_name + " " + param_name);
 	}
 	
 	static float GetParamFloat(string surface_name, string param_name)
 	{
-		return GetGame().ConfigGetFloat("CfgSurfaces " + surface_name + " " + param_name);
+		return g_Game.ConfigGetFloat("CfgSurfaces " + surface_name + " " + param_name);
 	}
 	
 	static string GetParamText(string surfaceName, string paramName)
 	{
 		string output = "";
-		GetGame().ConfigGetText("CfgSurfaces " + surfaceName + " " + paramName, output);
+		g_Game.ConfigGetText("CfgSurfaces " + surfaceName + " " + paramName, output);
 		return output;
 		
 	}
@@ -58,7 +58,7 @@ class Surface
 		{
 			if ( allowedWaterSourceMask & LIQUID_SALTWATER )
 			{
-				success = pHeight <= (g_Game.SurfaceGetSeaLevel() + 0.25); //MaxWave_default
+				success = true;
 			}
 		}
 		else

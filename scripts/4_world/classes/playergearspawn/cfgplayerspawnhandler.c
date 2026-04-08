@@ -293,7 +293,7 @@ class PlayerSpawnHandler
 		}
 		
 		//weapon magazine exception
-		if (GetGame().ConfigIsExisting(CFG_MAGAZINESPATH + " " + type) && parent.IsWeapon())
+		if (g_Game.ConfigIsExisting(CFG_MAGAZINESPATH + " " + type) && parent.IsWeapon())
 		{
 			Weapon_Base wep
 			if (Class.CastTo(wep,parent) && wep.SpawnAmmo(type) && !wep.HasInternalMagazine(-1)) //assuming weps with internal magazine don't attach external magazines
@@ -353,6 +353,6 @@ class PlayerSpawnHandler
 	//! Used for exceptions in the system
 	private static bool IsWeaponAndMagazineType(EntityAI parent, string type)
 	{
-		return (GetGame().ConfigIsExisting(CFG_MAGAZINESPATH + " " + type) && parent.IsWeapon());
+		return (g_Game.ConfigIsExisting(CFG_MAGAZINESPATH + " " + type) && parent.IsWeapon());
 	}
 }

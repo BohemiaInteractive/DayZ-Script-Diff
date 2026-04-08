@@ -130,7 +130,7 @@ class FryingPan : Inventory_Base
 
 	void Synchronize()
 	{
-		if ( GetGame() && GetGame().IsServer() )
+		if ( g_Game && g_Game.IsServer() )
 		{
 			SetSynchDirty();
 		}
@@ -212,7 +212,7 @@ class FryingPan : Inventory_Base
 			ParticleCookingStop();
 			
 			//create new
-			if ( GetGame() && ( !GetGame().IsDedicatedServer() ) )
+			if ( g_Game && ( !g_Game.IsDedicatedServer() ) )
 			{
 				vector local_pos = MiscGameplayFunctions.GetSteamPosition( GetHierarchyParent() );
 				//TODO set steam position to pot (proxy) memory point (new hierarchy needed)
@@ -224,7 +224,7 @@ class FryingPan : Inventory_Base
 	}
 	void ParticleCookingStop()
 	{
-		if ( m_ParticleCooking && GetGame() && ( !GetGame().IsDedicatedServer() ) )
+		if ( m_ParticleCooking && g_Game && ( !g_Game.IsDedicatedServer() ) )
 		{
 			m_ParticleCooking.Stop();
 			m_ParticleCooking = NULL;

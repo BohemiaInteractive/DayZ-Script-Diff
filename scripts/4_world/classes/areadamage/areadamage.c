@@ -47,7 +47,7 @@ class AreaDamageBase : AreaDamageManager
 	//! events
 	void OnEnter(Object object)
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			OnEnterServer(object);
 		}
@@ -61,7 +61,7 @@ class AreaDamageBase : AreaDamageManager
 	
 	void OnLeave(Object object)
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			OnLeaveServer(object);
 		}
@@ -235,7 +235,7 @@ class AreaDamageBase : AreaDamageManager
 	
 	void EnableDebug(bool pState = false)
 	{
-		//if (GetGame() && (!GetGame().IsClient() || GetGame().IsMultiplayer()))
+		//if (g_Game && (!g_Game.IsClient() || g_Game.IsMultiplayer()))
 			//return;
 
 		if ( pState )
@@ -260,7 +260,8 @@ class AreaDamageBase : AreaDamageManager
 	{
 		for ( int it = 0; it < shapesArr.Count(); ++it )
 		{
-			Debug.RemoveShape( shapesArr[it] );
+			Shape shape = shapesArr[it];
+			Debug.RemoveShape( shape );
 		}
 		
 		shapesArr.Clear();

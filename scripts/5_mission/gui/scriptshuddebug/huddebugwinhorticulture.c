@@ -104,9 +104,9 @@ class HudDebugWinHorticulture : HudDebugWinBase
 		multiplier =  Math.Clamp(multiplier, 0.1, 1000);
 		Param1<float> param = new Param1<float>(multiplier);
 
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 			PlantBase.DebugSetTickSpeedMultiplier(multiplier);
 		else
 			player.RPCSingleParam(ERPCs.DEV_RPC_HORTICULTURE_SPEED, param, true);
@@ -122,7 +122,7 @@ class HudDebugWinHorticulture : HudDebugWinBase
 		int dryRemove = m_DryRemoveEditBox.GetText().ToInt();
 		
 		Param6<int, GardenBase, int, int, int, int> params;
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 		if (isTarget && player && player.GetActionManager())
 		{
@@ -149,7 +149,7 @@ class HudDebugWinHorticulture : HudDebugWinBase
 				
 		params = new Param6<int, GardenBase, int, int, int, int>(slotID, garden, maturity, spoil, spoilRemove, dryRemove);
 		
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 		{
 			if (slotID != -1 && garden)
 			{

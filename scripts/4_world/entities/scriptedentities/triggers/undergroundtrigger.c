@@ -1,6 +1,6 @@
-//! This entity exists both client andserver side
+//! This entity exists both client and server side
 //! when it enters into player's bubble and gets instantiated client-side, it will locally spawn UndergroundTrigger, which is the actual trigger
-class UndergroundTriggerCarrier extends UndergroundTriggerCarrierBase
+class UndergroundTriggerCarrier : UndergroundTriggerCarrierBase
 {
 	ref JsonUndergroundAreaTriggerData m_Data;
 	UndergroundTrigger m_Trigger;
@@ -8,13 +8,14 @@ class UndergroundTriggerCarrier extends UndergroundTriggerCarrierBase
 	void UndergroundTriggerCarrier()
 	{
 		RegisterNetSyncVariableInt("m_TriggerIndex", -1, 255);
+		RegisterNetSyncVariableInt("m_ParentObjectNetIdLow");
+		RegisterNetSyncVariableInt("m_ParentObjectNetIdHigh");
 	}
 	
 	void ~UndergroundTriggerCarrier()
 	{
-		if (m_Trigger && !m_Trigger.IsSetForDeletion() && GetGame())
+		if (m_Trigger && !m_Trigger.IsSetForDeletion() && g_Game)
 		{
-			//RemoveChild(m_Trigger);
 			m_Trigger.Delete();
 		}
 	}
@@ -22,10 +23,12 @@ class UndergroundTriggerCarrier extends UndergroundTriggerCarrierBase
 	override void OnVariablesSynchronized()
 	{
 		super.OnVariablesSynchronized();
+
+		if (g_Game.IsMultiplayer())
+			m_ParentObject = g_Game.GetObjectByNetworkId(m_ParentObjectNetIdLow, m_ParentObjectNetIdHigh);
+		
 		if (!m_Trigger)
-		{
 			SpawnTrigger();
-		}
 	}
 		
 	bool CanSpawnTrigger()
@@ -35,13 +38,11 @@ class UndergroundTriggerCarrier extends UndergroundTriggerCarrierBase
 	
 	void RequestDelayedTriggerSpawn()
 	{
-		//Print("RequestDelayedTriggerSpawn() " + this);
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnTrigger, 100);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnTrigger, 100);
 	}
 	
 	void SpawnTrigger()
 	{
-		
 		if (!CanSpawnTrigger())
 		{
 			RequestDelayedTriggerSpawn();
@@ -51,21 +52,21 @@ class UndergroundTriggerCarrier extends UndergroundTriggerCarrierBase
 		if (UndergroundAreaLoader.m_JsonData.Triggers && UndergroundAreaLoader.m_JsonData.Triggers.IsValidIndex(m_TriggerIndex))
 		{
 			JsonUndergroundAreaTriggerData data = UndergroundAreaLoader.m_JsonData.Triggers[m_TriggerIndex];
-			UndergroundTrigger trigger = UndergroundTrigger.Cast(GetGame().CreateObjectEx( "UndergroundTrigger", GetPosition(), ECE_LOCAL ));
+			UndergroundTrigger trigger = UndergroundTrigger.Cast(g_Game.CreateObjectEx("UndergroundTrigger", GetPosition(), ECE_LOCAL));
 			if (trigger)
 			{
 				#ifdef DIAG_DEVELOPER
 				trigger.m_Local = true;
 				#endif
 				trigger.SetPosition(vector.Zero);
-				AddChild(trigger,-1);
+				AddChild(trigger, -1);
 				trigger.Init(data);
+				trigger.SetTriggerParentObject(m_ParentObject);
 				
 				m_Trigger = trigger;
 			}
 		}
 	}
-
 }
 
 enum EUndergroundTriggerType
@@ -83,6 +84,8 @@ class UndergroundTrigger : ManTrigger
 	EUndergroundTriggerType m_Type;
 	float m_Accommodation;
 	float m_InterpolationSpeed;
+	
+	protected Object m_ParentObject;
 	
 	void Init(JsonUndergroundAreaTriggerData data)
 	{
@@ -104,7 +107,7 @@ class UndergroundTrigger : ManTrigger
 		}
 		else
 		{
-			if (m_Accommodation == 1)
+			if (m_Accommodation == 1.0)
 			{
 				m_Type = EUndergroundTriggerType.OUTER;
 			}
@@ -113,6 +116,17 @@ class UndergroundTrigger : ManTrigger
 				m_Type = EUndergroundTriggerType.INNER;
 			}
 		}
+	}
+	
+	//! sets parent "virtual" parent object that trigger is registered to, eg. building
+	void SetTriggerParentObject(Object parent)
+	{
+		m_ParentObject = parent;
+	}
+	
+	Object GetTriggerParentObject()
+	{
+		return m_ParentObject;
 	}
 
 	override protected bool CanAddObjectAsInsider(Object object)
@@ -131,9 +145,6 @@ class UndergroundTrigger : ManTrigger
 		//disable parent behaviour
 	}
 	
-	
-	
-	
 	#ifdef DEVELOPER
 	override protected void OnEnterServerEvent(TriggerInsider insider) 
 	{
@@ -151,8 +162,6 @@ class UndergroundTrigger : ManTrigger
 	
 	override protected void OnEnterClientEvent(TriggerInsider insider) 
 	{
-		//Print("OnEnterClientEvent " + this);
-		//return;
 		PlayerBase player = PlayerBase.Cast(insider.GetObject());
 		if (player)
 		{
@@ -166,8 +175,6 @@ class UndergroundTrigger : ManTrigger
 	
 	override protected void OnLeaveClientEvent(TriggerInsider insider) 
 	{
-		//Print("OnLeaveClientEvent " + this);
-		//return;
 		PlayerBase player = PlayerBase.Cast(insider.GetObject());
 		if (player)
 		{

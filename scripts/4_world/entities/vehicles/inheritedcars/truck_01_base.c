@@ -24,12 +24,19 @@ class Truck_01_Base extends CarScript
 		
 		SetEnginePos("0 1.4 2.25");
 	}
+	
+	void ~Truck_01_Base()
+	{
+		m_UTSource = null;
+		m_UTSSettings = null;
+		m_UTSLEngine = null;
+	}
 
 	override void EEInit()
 	{		
 		super.EEInit();
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
  			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_ManualUpdate 		= true;
@@ -47,9 +54,10 @@ class Truck_01_Base extends CarScript
 	{
 		super.OnEngineStart();
 
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
-			m_UTSource.SetDefferedActive(true, 20.0);
+			if (m_UTSource)
+				m_UTSource.SetDefferedActive(true, 20.0);
 		}
 	}
 	
@@ -57,17 +65,18 @@ class Truck_01_Base extends CarScript
 	{
 		super.OnEngineStop();
 
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
-			m_UTSource.SetDefferedActive(false, 10.0);
+			if (m_UTSource)
+				m_UTSource.SetDefferedActive(false, 10.0);
 		}
 	}
 	
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
-			if (m_UTSource.IsActive())
+			if (m_UTSource && m_UTSource.IsActive())
 			{
 				m_UTSource.Update(m_UTSSettings, m_UTSLEngine);
 			}
@@ -377,22 +386,23 @@ class Truck_01_Base extends CarScript
 		SpawnAdditionalItems();
 		FillUpCarFluids();
 
-		GetInventory().CreateInInventory("Truck_01_Wheel");
-		GetInventory().CreateInInventory("Truck_01_Wheel");
+		GameInventory inventory = GetInventory();
+		inventory.CreateInInventory("Truck_01_Wheel");
+		inventory.CreateInInventory("Truck_01_Wheel");
 
-		GetInventory().CreateInInventory("Truck_01_WheelDouble");
-		GetInventory().CreateInInventory("Truck_01_WheelDouble");
-		GetInventory().CreateInInventory("Truck_01_WheelDouble");
-		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+		inventory.CreateInInventory("Truck_01_WheelDouble");
+		inventory.CreateInInventory("Truck_01_WheelDouble");
+		inventory.CreateInInventory("Truck_01_WheelDouble");
+		inventory.CreateInInventory("Truck_01_WheelDouble");
 
-		GetInventory().CreateInInventory("Truck_01_Door_1_1");
-		GetInventory().CreateInInventory("Truck_01_Door_2_1");
-		GetInventory().CreateInInventory("Truck_01_Hood");
+		inventory.CreateInInventory("Truck_01_Door_1_1");
+		inventory.CreateInInventory("Truck_01_Door_2_1");
+		inventory.CreateInInventory("Truck_01_Hood");
 			
 		//-----IN CAR CARGO
-		GetInventory().CreateInInventory("Truck_01_Wheel");
-		GetInventory().CreateInInventory("Truck_01_Wheel");
-		GetInventory().CreateInInventory("Truck_01_WheelDouble");
-		GetInventory().CreateInInventory("Truck_01_WheelDouble");
+		inventory.CreateInInventory("Truck_01_Wheel");
+		inventory.CreateInInventory("Truck_01_Wheel");
+		inventory.CreateInInventory("Truck_01_WheelDouble");
+		inventory.CreateInInventory("Truck_01_WheelDouble");
 	}
 };

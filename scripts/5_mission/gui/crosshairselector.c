@@ -70,12 +70,12 @@ class CrossHairSelector extends ScriptedWidgetEventHandler
 		m_AM 			= null;
 		m_CrossHairs 	= new set<ref CrossHair>;
 
-		GetGame().GetPostUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
+		g_Game.GetPostUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
 	}
 		
 	void ~CrossHairSelector()
 	{
-		GetGame().GetPostUpdateQueue(CALL_CATEGORY_GUI).Remove(Update);
+		g_Game.GetPostUpdateQueue(CALL_CATEGORY_GUI).Remove(Update);
 	}
 	
 	protected void Init()
@@ -126,7 +126,7 @@ class CrossHairSelector extends ScriptedWidgetEventHandler
 	// getters
  	protected void GetPlayer()
 	{
-		Class.CastTo(m_Player, GetGame().GetPlayer());
+		Class.CastTo(m_Player, g_Game.GetPlayer());
 	}
 
 	protected void GetActionManager()
@@ -184,7 +184,7 @@ class CrossHairSelector extends ScriptedWidgetEventHandler
 				ShowCrossHair(null);
 		}
 		//! raised hands(bare + non-firearm) + melee cmd
-		else if ( m_Player.IsRaised() || m_Player.GetCommand_Melee2() || GetGame().GetUIManager().GetMenu() != null )
+		else if ( m_Player.IsRaised() || m_Player.GetCommand_Melee2() || g_Game.GetUIManager().GetMenu() != null )
 		{
 			ShowCrossHair(null);
 		}
@@ -327,7 +327,7 @@ class CrossHairSelector extends ScriptedWidgetEventHandler
 		Shape.CreateLines(0xFF00FF00, ShapeFlags.ONCE, lines, 2);
 		*/
 		
-		vector screenSpace = GetGame().GetScreenPos(position);
+		vector screenSpace = g_Game.GetScreenPos(position);
 
 		float sx, sy;
 		widget.GetScreenSize(sx, sy);

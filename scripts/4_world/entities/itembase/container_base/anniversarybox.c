@@ -65,7 +65,7 @@ class AnniversaryBox extends Container_Base
 	
 	void EmtpyInventory()
 	{
-		if (GetGame().IsServer())//server or single player
+		if (g_Game.IsServer())//server or single player
 		{		
 			for ( int j = 0; j < GetInventory().GetCargo().GetItemCount(); j++ )
 			{
@@ -76,7 +76,7 @@ class AnniversaryBox extends Container_Base
 	
 	void FillInventory()
 	{
-		if (GetGame().IsServer())//server or single player
+		if (g_Game.IsServer())//server or single player
 		{		
 			EntityAI ent = GetInventory().CreateInInventory("TShirt_10thAnniversary");
 			

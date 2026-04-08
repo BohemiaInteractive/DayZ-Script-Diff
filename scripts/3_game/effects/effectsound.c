@@ -170,7 +170,7 @@ class EffectSound : Effect
 				if ( m_SoundObject )
 				{
 					SetCurrentLocalPosition(position, false);
-					m_SoundWaveObject = GetGame().GetSoundScene().Play3D( m_SoundObject, m_SoundObjectBuilder );
+					m_SoundWaveObject = g_Game.GetSoundScene().Play3D( m_SoundObject, m_SoundObjectBuilder );
 					if ( !m_SoundWaveObject )
 						return false;
 

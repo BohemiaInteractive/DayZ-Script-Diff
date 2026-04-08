@@ -378,12 +378,12 @@ class AreaDamageManager : AreaDamageEvents
 	{
 		int flags;
 
-		if ( GetGame().IsMultiplayer() && GetGame().IsServer() )
+		if ( g_Game.IsMultiplayer() && g_Game.IsServer() )
 			flags = ECE_CREATEPHYSICS;
 		else
 			flags = ECE_LOCAL;
 
-		if (Class.CastTo(m_AreaDamageTrigger, GetGame().CreateObjectEx( m_TriggerBaseClass, m_AreaPosition, flags )))
+		if (Class.CastTo(m_AreaDamageTrigger, g_Game.CreateObjectEx( m_TriggerBaseClass, m_AreaPosition, flags )))
 		{
 			m_AreaDamageTrigger.SetOrientation( m_AreaOrientation );
 			m_AreaDamageTrigger.SetExtents( m_ExtentMin, m_ExtentMax );
@@ -405,9 +405,9 @@ class AreaDamageManager : AreaDamageEvents
 	///@{
 	protected bool DestroyDamageTriggerEx()
 	{
-		if ( GetGame() && m_AreaDamageTrigger ) // It's necesarry to check if the game exists. Otherwise a crash occurs while quitting.
+		if ( g_Game && m_AreaDamageTrigger ) // It's necesarry to check if the game exists. Otherwise a crash occurs while quitting.
 		{
-			GetGame().ObjectDelete( m_AreaDamageTrigger );
+			g_Game.ObjectDelete( m_AreaDamageTrigger );
 			m_AreaDamageTrigger = null;
 			return true;
 		}

@@ -77,7 +77,7 @@ class Hit_MeatBones : EffBulletImpactBase
 		{
 			pos = pos + ( speed_vector * 0.001 );
 			pos = pos + Vector( rnd_offset_2 - Math.RandomFloat( 0, rnd_offset ), 0, rnd_offset_2 - Math.RandomFloat( 0, rnd_offset ) );
-			pos[1] = GetGame().SurfaceY(pos[0], pos[2]);
+			pos[1] = g_Game.SurfaceY(pos[0], pos[2]);
 			
 			EffectParticle eff = new BloodSplatter();
 			eff.SetAutodestroy(true);
@@ -85,7 +85,7 @@ class Hit_MeatBones : EffBulletImpactBase
 			
 			Particle blood = eff.GetParticle(); // TO DO: Handle particle changes inside the Effect instance itself! Not here!
 
-			vector ori = GetGame().GetSurfaceOrientation(pos[0], pos[2]);
+			vector ori = g_Game.GetSurfaceOrientation(pos[0], pos[2]);
 						
 			blood.SetOrientation(ori);
 			blood.ScaleParticleParam(EmitorParam.SIZE, upscale);
@@ -141,7 +141,7 @@ class Hit_MeatBones : EffBulletImpactBase
 		}
 		
 		// Additional size increase by distance from camera
-		vector camera_pos = GetGame().GetCurrentCameraPosition();
+		vector camera_pos = g_Game.GetCurrentCameraPosition();
 		float distance = vector.Distance(camera_pos, m_Pos);
 		float scaling_by_distance = (distance*1.2) * m_ScalingByDistance;
 		

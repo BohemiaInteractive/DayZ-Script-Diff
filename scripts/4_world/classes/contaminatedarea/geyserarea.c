@@ -30,7 +30,7 @@ class GeyserArea : EffectArea
 	
 	override void EEDelete( EntityAI parent )
 	{		
-		if (GetGame().IsClient() && m_GeyserTrigger)
+		if (g_Game.IsClient() && m_GeyserTrigger)
 			m_GeyserTrigger.StopEffects();
 		
 		super.EEDelete( parent );
@@ -46,7 +46,7 @@ class GeyserArea : EffectArea
 			m_GeyserTrigger = GeyserTrigger.Cast(m_Trigger);
 		}
 		
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TickState, UPDATE_RATE, true);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TickState, UPDATE_RATE, true);
 		
 		RandomizeIntervals();
 	}	
@@ -141,7 +141,7 @@ class GeyserArea : EffectArea
 	void KillEntitiesInArea()
 	{
 		array<Object> nearestObjects = new array<Object>();
-		GetGame().GetObjectsAtPosition(m_Position, m_Radius, nearestObjects, null);
+		g_Game.GetObjectsAtPosition(m_Position, m_Radius, nearestObjects, null);
 		
 		foreach (Object obj : nearestObjects)
 		{

@@ -16,7 +16,7 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 
 	void ModsMenuDetailed(array<ref ModInfo> data, Widget parent, ModsMenuTooltip tooltip, UIScriptedMenu menu_parent)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_detailed.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_detailed.layout", parent);
 		m_Content = m_Root.FindAnyWidget("ModsDetailedContent");
 		m_Scroll = ScrollWidget.Cast(m_Root.FindAnyWidget("ModsDetailedScroller"));
 		m_CloseButton = m_Root.FindAnyWidget("ModsDetailedHeaderButton");
@@ -40,14 +40,14 @@ class ModsMenuDetailed extends ScriptedWidgetEventHandler
 		if ( !m_Root.IsVisible() )
 			m_Scroll.VScrollToPos( 0 );
 		m_Root.Show( true );
-		GetGame().GetMission().GetOnModMenuVisibilityChanged().Invoke(false);
+		g_Game.GetMission().GetOnModMenuVisibilityChanged().Invoke(false);
 	}
 	
 	void Close()
 	{
 		Highlight( null );
 		m_Root.Show( false );
-		GetGame().GetMission().GetOnModMenuVisibilityChanged().Invoke(true);
+		g_Game.GetMission().GetOnModMenuVisibilityChanged().Invoke(true);
 	}
 	
 	bool IsOpen()

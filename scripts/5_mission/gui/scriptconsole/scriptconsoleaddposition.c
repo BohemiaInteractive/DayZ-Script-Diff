@@ -17,7 +17,7 @@ class ScriptConsoleAddLocation extends UIScriptedMenu
 	override Widget Init()
 	{
 		m_ConfigDebugProfile = PluginConfigDebugProfile.Cast( GetPlugin(PluginConfigDebugProfile) );
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_add_location_dialogue.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_add_location_dialogue.layout");
 		m_EditboxName = EditBoxWidget.Cast( layoutRoot.FindAnyWidget("LocationName") );
 		m_EditboxPos = EditBoxWidget.Cast( layoutRoot.FindAnyWidget("Position") );
 		m_Label = TextWidget.Cast( layoutRoot.FindAnyWidget("WindowLabel") );
@@ -34,7 +34,7 @@ class ScriptConsoleAddLocation extends UIScriptedMenu
 		if (w.GetUserID() == IDC_OK)
 		{
 			string name = m_EditboxName.GetText();
-			ScriptConsole console = ScriptConsole.Cast(GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE));
+			ScriptConsole console = ScriptConsole.Cast(g_Game.GetUIManager().FindMenu(MENU_SCRIPTCONSOLE));
 			ScriptConsoleGeneralTab tab = ScriptConsoleGeneralTab.Cast(console.GetTabHandler(ScriptConsoleGeneralTab));
 			if (tab)
 			{

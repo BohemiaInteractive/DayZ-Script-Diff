@@ -45,8 +45,8 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 				}
 				
 				string itemType = action_data.m_MainItem.GetType();
-				float consumedQuantity = GetGame().ConfigGetFloat("cfgVehicles " + itemType + " Horticulture ConsumedQuantity");
-				float actionLength = GetGame().ConfigGetFloat("cfgVehicles " + itemType + " Horticulture FertilizeLength");
+				float consumedQuantity = g_Game.ConfigGetFloat("cfgVehicles " + itemType + " Horticulture ConsumedQuantity");
+				float actionLength = g_Game.ConfigGetFloat("cfgVehicles " + itemType + " Horticulture FertilizeLength");
 				if (actionLength == 0)
 					actionLength = 1;
 
@@ -94,7 +94,7 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 				
 				FertilizeSlot(action_data.m_MainItem, gardenBase, m_SpentQuantity);
 
-				if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+				if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 				{
 					action_data.m_MainItem.AddQuantity(-m_SpentQuantity);
 				}
@@ -119,8 +119,8 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 			{
 				m_Slot.SetFertilityType(itemType);
 				
-				float addEnergyToSlot = GetGame().ConfigGetFloat(string.Format("cfgVehicles %1 Horticulture AddEnergyToSlot", itemType));
-				m_Slot.m_FertilizerUsage = GetGame().ConfigGetFloat(string.Format("cfgVehicles %1 Horticulture ConsumedQuantity", itemType));
+				float addEnergyToSlot = g_Game.ConfigGetFloat(string.Format("cfgVehicles %1 Horticulture AddEnergyToSlot", itemType));
+				m_Slot.m_FertilizerUsage = g_Game.ConfigGetFloat(string.Format("cfgVehicles %1 Horticulture ConsumedQuantity", itemType));
 				
 				float coef = Math.Clamp(consumedQuantity / m_Slot.m_FertilizerUsage, 0.0, 1.0);
 				addEnergyToSlot = coef * addEnergyToSlot;

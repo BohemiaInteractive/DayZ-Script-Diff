@@ -42,15 +42,15 @@ class ActionUnpackBox: ActionContinuousBase
 			int count;
 			array<string> resources = new array<string>;
 			
-			if( GetGame().ConfigIsExisting( path ) && GetGame().ConfigIsExisting( path + " Resources") )
+			if( g_Game.ConfigIsExisting( path ) && g_Game.ConfigIsExisting( path + " Resources") )
 			{
 				path = path + " Resources";
-				count = GetGame().ConfigGetChildrenCount ( path );
+				count = g_Game.ConfigGetChildrenCount ( path );
 				for (int i = 0; i < count; i++)
 				{
-					GetGame().ConfigGetChildName ( path, i, child_name );
+					g_Game.ConfigGetChildName ( path, i, child_name );
 					
-					if ( GetGame().ConfigGetInt( path + " " + child_name + " value" ) )
+					if ( g_Game.ConfigGetInt( path + " " + child_name + " value" ) )
 					{
 						resources.Insert( child_name );
 					}
@@ -58,7 +58,7 @@ class ActionUnpackBox: ActionContinuousBase
 
 				//TODO modify to allow for multiple ammo types spawning (if needed??)
 				string itemType = resources.Get(0);
-				int itemCount = GetGame().ConfigGetInt( path + " " + itemType + " value" );
+				int itemCount = g_Game.ConfigGetInt( path + " " + itemType + " value" );
 				
 				UnboxLambda lambda = new UnboxLambda(action_data.m_MainItem, itemType, action_data.m_Player, itemCount);
 				action_data.m_Player.ServerReplaceItemInHandsWithNew(lambda);
@@ -76,7 +76,7 @@ class UnboxLambda : ReplaceItemWithNewLambdaBase
 	{
 		super.CopyOldPropertiesToNew(old_item, new_item);
 
-		if ( GetGame().ConfigIsExisting( "CfgMagazines " + m_NewItemType ) )
+		if ( g_Game.ConfigIsExisting( "CfgMagazines " + m_NewItemType ) )
 		{
 			Magazine pile;
 			Class.CastTo(pile, new_item);
@@ -95,7 +95,7 @@ class UnboxLambda : ReplaceItemWithNewLambdaBase
 		super.OnSuccess(new_item);
 		
 		//spawns wrapping Paper
-		ItemBase paper = ItemBase.Cast( GetGame().CreateObjectEx("Paper", new_item.GetHierarchyRoot().GetPosition(), ECE_PLACE_ON_SURFACE) );
+		ItemBase paper = ItemBase.Cast( g_Game.CreateObjectEx("Paper", new_item.GetHierarchyRoot().GetPosition(), ECE_PLACE_ON_SURFACE) );
 	}
 };
 

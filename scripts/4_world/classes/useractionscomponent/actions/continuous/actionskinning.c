@@ -251,58 +251,91 @@ class ActionSkinning: ActionContinuousBase
 		EntityAI body = EntityAI.Cast(action_data.m_Target.GetObject());
 		
 		// Get config path to the animal
-		string cfg_animal_class_path = "cfgVehicles " + body.GetType() + " " + "Skinning ";
+		string cfgAnimalClassPath = "cfgVehicles " + body.GetType() + " " + "Skinning ";
 		vector bodyPosition = body.GetPosition();
 		
-		if (!g_Game.ConfigIsExisting(cfg_animal_class_path))
+		if (!g_Game.ConfigIsExisting(cfgAnimalClassPath))
 		{
 			Debug.Log("Failed to find class 'Skinning' in the config of: " + body.GetType());
 			return;
 		}
 		
 		// Getting item type from the config
-		int child_count = g_Game.ConfigGetChildrenCount(cfg_animal_class_path);
+		int childCount = g_Game.ConfigGetChildrenCount(cfgAnimalClassPath);
 		
-		string item_to_spawn;
-		string cfg_skinning_organ_class;
+		string itemToSpawn;
+		string cfgSkinningOrganClass;
 		// Parsing of the 'Skinning' class in the config of the dead body
-		for (int i1 = 0; i1 < child_count; i1++)
+		for (int i1 = 0; i1 < childCount; i1++)
 		{
 			// To make configuration as convenient as possible, all classes are parsed and parameters are read
-			g_Game.ConfigGetChildName(cfg_animal_class_path, i1, cfg_skinning_organ_class); // out cfg_skinning_organ_class
-			cfg_skinning_organ_class = cfg_animal_class_path + cfg_skinning_organ_class + " ";
-			g_Game.ConfigGetText(cfg_skinning_organ_class + "item", item_to_spawn); // out item_to_spawn
+			g_Game.ConfigGetChildName(cfgAnimalClassPath, i1, cfgSkinningOrganClass); // out cfgSkinningOrganClass
+			cfgSkinningOrganClass = cfgAnimalClassPath + cfgSkinningOrganClass + " ";
+			g_Game.ConfigGetText(cfgSkinningOrganClass + "item", itemToSpawn); // out itemToSpawn
 			
-			if (item_to_spawn != "") // Makes sure to ignore incompatible parameters in the Skinning class of the agent
+			if (itemToSpawn != "") // Makes sure to ignore incompatible parameters in the Skinning class of the agent
 			{
 				// Spawning items in action_data.m_Player's inventory
-				int item_count = g_Game.ConfigGetInt(cfg_skinning_organ_class + "count");
+				int itemSpawnCount = g_Game.ConfigGetInt(cfgSkinningOrganClass + "count");
 				
 				array<string> itemZones = new array<string>;
 				array<float> itemCount = new array<float>;
 				float zoneDmg = 0;
 				
-				GetGame().ConfigGetTextArray(cfg_skinning_organ_class + "itemZones", itemZones);
-				GetGame().ConfigGetFloatArray(cfg_skinning_organ_class + "countByZone", itemCount);
+				GetGame().ConfigGetTextArray(cfgSkinningOrganClass + "itemZones", itemZones);
+				GetGame().ConfigGetFloatArray(cfgSkinningOrganClass + "countByZone", itemCount);
+				float transferedPartDmgCoef = GetGame().ConfigGetFloat(cfgSkinningOrganClass + "transferPartDamageCoef");
 				
 				if (itemCount.Count() > 0)
 				{
-					item_count = 0;
+					itemSpawnCount = 0;
 					for (int z = 0; z < itemZones.Count(); z++)
 					{
 						zoneDmg = body.GetHealth01(itemZones[z], "Health");
 						zoneDmg *= itemCount[z]; //just re-using variable
-						item_count += Math.Floor(zoneDmg);
+						itemSpawnCount += Math.Floor(zoneDmg);
 					}
 				}
 				
-				for (int i2 = 0; i2 < item_count; i2++)
+				if (transferedPartDmgCoef > 0 && itemSpawnCount <= 0) // Special behavior for headdress
+					itemSpawnCount = 1;
+								
+				for (int i2 = 0; i2 < itemSpawnCount; i2++)
 				{
-					ItemBase spawn_result = CreateOrgan(action_data.m_Player, bodyPosition, item_to_spawn, cfg_skinning_organ_class, action_data.m_MainItem);
+					ItemBase spawnResult = CreateOrgan(action_data.m_Player, bodyPosition, itemToSpawn, cfgSkinningOrganClass, action_data.m_MainItem);
+					if (!spawnResult)
+						continue;
+										
+					// Damage spawned result item based on the average health value of the body part
+					// It only works if the "transferPartDamageCoef" value in the config is higher than 0 and result item is from type Headdress
+					if (transferedPartDmgCoef > 0)
+					{
+						float partHealth = 0;
+						float partMaxHealth = 0;
+						for (int z2 = 0; z2 < itemZones.Count(); z2++)
+						{
+							partHealth = body.GetHealth(itemZones[z2], "Health");
+							partMaxHealth = body.GetMaxHealth(itemZones[z2], "Health");
+							break;
+						}
+						
+						if (partMaxHealth > 0)
+						{				
+							float itemMaxHealth = spawnResult.GetMaxHealth("", "Health");
+							float partHealthPercent = (partHealth / partMaxHealth) * 100;	
+							float itemHealth = (itemMaxHealth / 100) * partHealthPercent;
+													
+							if (transferedPartDmgCoef > 1) // Makes sure to adjust incompatible parameter in the Skinning class of the agent
+								transferedPartDmgCoef = 1;
+							
+							float itemHealthCoef = itemHealth * transferedPartDmgCoef;
+							spawnResult.SetHealth("", "Health", itemHealthCoef);
+						}
+					}
 					
 					//Damage pelts based on the average values on itemZones
 					//It only works if the "quantityCoef" in the config is more than 0 
-					float qtCoeff = GetGame().ConfigGetFloat(cfg_skinning_organ_class + "quantityCoef");
+					float qtCoeff = GetGame().ConfigGetFloat(cfgSkinningOrganClass + "quantityCoef");
 					if (qtCoeff > 0)
 					{
 						float avgDmgZones = 0;
@@ -312,24 +345,22 @@ class ActionSkinning: ActionContinuousBase
 						}
 						
 						avgDmgZones = avgDmgZones/itemZones.Count(); // Evaluate the average Health
-						
-						if (spawn_result)
-							spawn_result.SetHealth01("","", avgDmgZones);
+						spawnResult.SetHealth01("","", avgDmgZones);
 					}
 					
 					// inherit temperature
-					if (body.CanHaveTemperature() && spawn_result.CanHaveTemperature())
+					if (body.CanHaveTemperature() && spawnResult.CanHaveTemperature())
 					{
-						spawn_result.SetTemperatureDirect(body.GetTemperature());
-						spawn_result.SetFrozen(body.GetIsFrozen());
+						spawnResult.SetTemperatureDirect(body.GetTemperature());
+						spawnResult.SetFrozen(body.GetIsFrozen());
 					}
 					
 					// handle fat/guts from human bodies
-					if ((item_to_spawn == "Lard") || (item_to_spawn == "Guts"))
+					if ((itemToSpawn == "Lard") || (itemToSpawn == "Guts"))
 					{
 						if (body.IsKindOf("SurvivorBase"))
 						{
-							spawn_result.InsertAgent(eAgents.BRAIN, 1);
+							spawnResult.InsertAgent(eAgents.BRAIN, 1);
 						}
 					}
 				}

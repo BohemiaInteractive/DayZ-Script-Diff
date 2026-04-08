@@ -35,7 +35,7 @@ class AutoTestFixture
 	static void SetWorldName()
 	{
 		string worldName = "empty";
-		GetGame().GetWorldName(worldName);
+		g_Game.GetWorldName(worldName);
 		worldName.ToLower();
 
 		m_WorldName = worldName;

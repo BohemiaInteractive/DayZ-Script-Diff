@@ -72,9 +72,9 @@ class HumanInventory : GameInventory
 	
 	void ClearUserReservedLocationSynced(notnull EntityAI eai)
 	{
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 			m_syncClearUserReservationindex = FindUserReservedLocationIndex(eai);
-		else if (!GetGame().IsMultiplayer())
+		else if (!g_Game.IsMultiplayer())
 		{
 			ClearUserReservedLocation(eai);
 			eai.GetOnReleaseLock().Invoke(eai);
@@ -84,9 +84,9 @@ class HumanInventory : GameInventory
 	
 	void ClearUserReservedLocationAtIndexSynced(int index)
 	{
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 			m_syncClearUserReservationindex = index;
-		else if (!GetGame().IsMultiplayer())
+		else if (!g_Game.IsMultiplayer())
 		{
 			ClearUserReservedLocationAtIndex(index);
 			
@@ -139,17 +139,21 @@ class HumanInventory : GameInventory
 	override bool DropEntity(InventoryMode mode, EntityAI owner, notnull EntityAI item)
 	{
 		InventoryLocation src = new InventoryLocation();
-		if (item && item.GetInventory() && item.GetInventory().GetCurrentInventoryLocation(src))
+		if (item)
 		{
-			switch (src.GetType())
+			GameInventory itemInventory = item.GetInventory();
+			if (itemInventory && itemInventory.GetCurrentInventoryLocation(src))
 			{
-				case InventoryLocationType.HANDS:
-					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::DropEntity(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
-					HandEvent(mode, new HandEventDrop(GetManOwner(), src));
-					return true;
-
-				default:
-					return super.DropEntity(mode, owner, item);
+				switch (src.GetType())
+				{
+					case InventoryLocationType.HANDS:
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::DropEntity(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+						HandEvent(mode, new HandEventDrop(GetManOwner(), src));
+						return true;
+	
+					default:
+						return super.DropEntity(mode, owner, item);
+				}
 			}
 		}
 
@@ -159,7 +163,7 @@ class HumanInventory : GameInventory
 	
 	bool ThrowEntity(EntityAI item, vector dir, float force)
 	{
-		if (GetGame().IsServer() && GetGame().IsMultiplayer())
+		if (g_Game.IsServer() && g_Game.IsMultiplayer())
 			return false;
 		
 		DayZPlayer player = DayZPlayer.Cast(item.GetHierarchyRootPlayer());
@@ -169,20 +173,24 @@ class HumanInventory : GameInventory
 			invMode = InventoryMode.JUNCTURE;
 		
 		InventoryLocation src = new InventoryLocation();
-		if (item && item.GetInventory() && item.GetInventory().GetCurrentInventoryLocation(src))
+		if (item)
 		{
-			switch (src.GetType())
+			GameInventory itemInventory = item.GetInventory();
+			if (itemInventory && itemInventory.GetCurrentInventoryLocation(src))
 			{
-				case InventoryLocationType.HANDS:
-					if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::ThrowEntity item=" + item);
-					HandEventThrow throwEvent = new HandEventThrow(GetManOwner(), src);
-					throwEvent.SetForce(dir * force);
-					HandEvent(invMode, throwEvent);
-					return true;
-
-				default:
-					DropEntity(invMode, player, item);
-					return true;
+				switch (src.GetType())
+				{
+					case InventoryLocationType.HANDS:
+						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::ThrowEntity item=" + item);
+						HandEventThrow throwEvent = new HandEventThrow(GetManOwner(), src);
+						throwEvent.SetForce(dir * force);
+						HandEvent(invMode, throwEvent);
+						return true;
+	
+					default:
+						DropEntity(invMode, player, item);
+						return true;
+				}
 			}
 		}
 		Error("No inventory location");
@@ -269,16 +277,18 @@ class HumanInventory : GameInventory
 	override bool TakeEntityToCargoEx(InventoryMode mode, notnull EntityAI item, int idx, int row, int col)
 	{
 		InventoryLocation src = new InventoryLocation();
-		if (item.GetInventory().GetCurrentInventoryLocation(src))
+		GameInventory itemInventory = item.GetInventory();
+		if (itemInventory.GetCurrentInventoryLocation(src))
 		{
 			switch (src.GetType())
 			{
 				case InventoryLocationType.HANDS:
-					if (GetInventoryOwner().IsAlive())
+					EntityAI inventoryOwner = GetInventoryOwner();
+					if (inventoryOwner.IsAlive())
 					{
 						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
 						InventoryLocation dst = new InventoryLocation();
-						dst.SetCargo(GetInventoryOwner(), item, idx, row, col, item.GetInventory().GetFlipCargo());
+						dst.SetCargo(inventoryOwner, item, idx, row, col, itemInventory.GetFlipCargo());
 
 						HandEvent(mode, new HandEventMoveTo(GetManOwner(), src, dst));
 						return true;
@@ -303,12 +313,12 @@ class HumanInventory : GameInventory
 			switch (src.GetType())
 			{
 				case InventoryLocationType.HANDS:
-					if (GetInventoryOwner().IsAlive())
+					EntityAI inventoryOwner = GetInventoryOwner();
+					if (inventoryOwner.IsAlive())
 					{
 						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
 						InventoryLocation dst = new InventoryLocation();
-						EntityAI src_entity = GetInventoryOwner();
-						dst.SetAttachment(src_entity, item, slot);
+						dst.SetAttachment(inventoryOwner, item, slot);
 
 						HandEvent(mode, new HandEventMoveTo(GetManOwner(), src, dst));
 						return true;
@@ -459,7 +469,8 @@ class HumanInventory : GameInventory
 	
 	bool ReplaceItemElsewhereWithNewInHands(InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
 	{
-		return ReplaceItemInElsewhereWithNewinHandsImpl(mode, new HandEventDestroyElsewhereAndReplaceWithNewInHands(GetManOwner(), null, lambda));
+		HandEventBase heb = new HandEventDestroyElsewhereAndReplaceWithNewInHands(GetManOwner(), null, lambda);
+		return ReplaceItemInElsewhereWithNewinHandsImpl(mode, heb);
 	}
 	
 	protected bool ReplaceItemInElsewhereWithNewinHandsImpl(InventoryMode mode, HandEventBase e)
@@ -529,12 +540,14 @@ class HumanInventory : GameInventory
 
 	bool ReplaceItemInHandsWithNew(InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
 	{
-		return ReplaceItemInHandsWithNewImpl(mode, new HandEventDestroyAndReplaceWithNew(GetManOwner(), null, lambda));
+		HandEventBase heb = new HandEventDestroyAndReplaceWithNew(GetManOwner(), null, lambda);
+		return ReplaceItemInHandsWithNewImpl(mode, heb);
 	}
 
 	bool ReplaceItemInHandsWithNewElsewhere(InventoryMode mode, ReplaceItemWithNewLambdaBase lambda)
 	{
-		return ReplaceItemInHandsWithNewImpl(mode, new HandEventDestroyAndReplaceWithNewElsewhere(GetManOwner(), null, lambda));
+		HandEventBase heb = new HandEventDestroyAndReplaceWithNewElsewhere(GetManOwner(), null, lambda);
+		return ReplaceItemInHandsWithNewImpl(mode, heb);
 	}
 	
 	bool SwappingToPreviousLocation(EntityAI item1, EntityAI item2, out InventoryLocation dst)
@@ -543,18 +556,19 @@ class HumanInventory : GameInventory
 		InventoryLocation src1 = new InventoryLocation();
 		InventoryLocation src2 = new InventoryLocation();
 		dst = new InventoryLocation();
-		if (item1.GetInventory().GetCurrentInventoryLocation(src1) && item2.GetInventory().GetCurrentInventoryLocation(src2))
+		GameInventory item1Inventory = item1.GetInventory();
+		if (item1Inventory.GetCurrentInventoryLocation(src1) && item2.GetInventory().GetCurrentInventoryLocation(src2))
 		{
 			if (item1.m_OldLocation && item1.m_OldLocation.IsValid() && !item1.m_OldLocation.CollidesWith(src2) && item1.m_OldLocation.GetParent() && item1.m_OldLocation.GetParent().GetHierarchyRootPlayer())	
 			{
 				dst.Copy(item1.m_OldLocation);
 				
-				int count = item1.GetInventory().GetSlotIdCount();
-				if (count > 0 && src2.GetType() == InventoryLocationType.ATTACHMENT) //item2 is currently attached somewhere
+				if (src2.GetType() == InventoryLocationType.ATTACHMENT) //item2 is currently attached somewhere
 				{
-					for (int i = 0; i < count; i++)
+					int count = item1Inventory.GetSlotIdCount();
+					for (int i = 0; i < count; ++i)
 					{
-						int slotID = item1.GetInventory().GetSlotId(i);
+						int slotID = item1Inventory.GetSlotId(i);
 						if (src2.GetSlot() == slotID) //can be attached into the same slot. And will be.
 							return false;
 					}
@@ -623,5 +637,10 @@ class HumanInventory : GameInventory
 	bool PostDeferredForceSwapEntities(InventoryMode mode, notnull EntityAI item1, notnull EntityAI item2, notnull InventoryLocation dst1, notnull InventoryLocation dst2)
 	{
 		return true;
+	}
+	
+	bool OnInventoryCheck(int userDataType, ParamsReadContext ctx)
+	{
+		return false;
 	}
 }

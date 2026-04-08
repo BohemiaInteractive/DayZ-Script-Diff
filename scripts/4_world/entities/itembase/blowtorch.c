@@ -80,7 +80,7 @@ class Blowtorch extends ItemBase
 	
 	override void OnIgnitedTarget(EntityAI target_item)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (GetGasCanister())
 			{

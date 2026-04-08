@@ -34,7 +34,7 @@ class UiHintPanel extends ScriptedWidgetEventHandler
 	// Constructor
 	void UiHintPanel(Widget parent_widget)
 	{		
-		DayZGame game = DayZGame.Cast(GetGame());
+		DayZGame game = DayZGame.Cast(g_Game);
 		m_ParentWidget = parent_widget;
 		Init(game);
 	}
@@ -50,7 +50,7 @@ class UiHintPanel extends ScriptedWidgetEventHandler
 	
 	void Init(DayZGame game)
 	{
-		//as this class is now also being instantiated from within the DayZGame CTOR, where GetGame() does not work yet, we need a way to pass the game instance from DayZGame CTOR
+		//as this class is now also being instantiated from within the DayZGame CTOR, where g_Game does not work yet, we need a way to pass the game instance from DayZGame CTOR
 		//however for modding legacy support purposes, this was done without modifying the CTOR signature with the addition of the Init method, 
 		//in order to keep compatibility with existing MODs, there is still a way to instantiate this class properly even without calling Init from the outside
 		

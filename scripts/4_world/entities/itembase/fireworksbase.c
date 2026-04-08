@@ -55,7 +55,7 @@ class FireworksBase: Inventory_Base
 	
 	protected void SetState(EFireworksState state)
 	{
-		if (state != m_StatePrev && GetGame().IsServer())
+		if (state != m_StatePrev && g_Game.IsServer())
 		{
 			m_State = state;
 			SetSynchDirty();
@@ -151,7 +151,7 @@ class FireworksBase: Inventory_Base
 	{
 		if (super.OnAction(action_id, player, ctx))
 			return true;
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			if (action_id == EActions.ACTIVATE_ENTITY)
 			{

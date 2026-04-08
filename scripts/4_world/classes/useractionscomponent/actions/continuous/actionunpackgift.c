@@ -47,7 +47,7 @@ class ActionUnpackGift: ActionContinuousBase
 		
 		if( dmg > 0.25 )
 		{
-			Object paper = GetGame().CreateObjectEx("GiftWrapPaper",action_data.m_Player.GetPosition(),ECE_PLACE_ON_SURFACE,RF_DEFAULT);
+			Object paper = g_Game.CreateObjectEx("GiftWrapPaper",action_data.m_Player.GetPosition(),ECE_PLACE_ON_SURFACE,RF_DEFAULT);
 			paper.SetHealth01("","", dmg - 0.25 );
 		}
 		
@@ -58,7 +58,7 @@ class ActionUnpackGift: ActionContinuousBase
 			GameInventory.SetGroundPosByOwner(action_data.m_Player,cargo_item,il_dst);
 			cargo_item.GetInventory().GetCurrentInventoryLocation(il_src);
 
-			if(GetGame().IsDedicatedServer())
+			if(g_Game.IsDedicatedServer())
 				action_data.m_Player.ServerTakeToDst( il_src, il_dst );
 			else
 				action_data.m_Player.LocalTakeToDst( il_src, il_dst );

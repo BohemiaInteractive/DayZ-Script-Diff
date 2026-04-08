@@ -9,7 +9,7 @@ class BannerHandlerBase extends ScriptedWidgetEventHandler
 	void BannerHandlerBase(Widget parent)
 	{
 		m_Parent = parent;
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/dlc_panels/BannerTemplate.layout", m_Parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/dlc_panels/BannerTemplate.layout", m_Parent);
 		m_Root.SetHandler(this);
 		
 		m_BannerBody = m_Root.FindAnyWidget("BadgeBody");

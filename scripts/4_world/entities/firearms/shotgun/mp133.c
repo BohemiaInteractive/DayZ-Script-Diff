@@ -228,7 +228,8 @@ class Mp133Shotgun_Base : Rifle_Base
 	//Debug menu Spawn Ground Special
 	override void OnDebugSpawn()
 	{
-		super.OnDebugSpawn();
+		//super.OnDebugSpawn();
+		SpawnAmmo("Ammo_12gaPellets",SAMF_DEFAULT);
 		GameInventory inventory = GetInventory();
 		inventory.CreateInInventory( "FNP45_MRDSOptic" );
 		inventory.CreateInInventory( "Battery9V" );

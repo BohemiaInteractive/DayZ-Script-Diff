@@ -42,7 +42,7 @@ class SmptAnimMetaBase
 		
 		if( type == eAnimFinishType.FAILURE)//   <--------------- FAILED
 		{
-			if( m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !GetGame().IsMultiplayer())
+			if( m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !g_Game.IsMultiplayer())
 			{
 				if( Symptom ) 
 				{
@@ -52,7 +52,7 @@ class SmptAnimMetaBase
 		}
 		else if( type == eAnimFinishType.SUCCESS)//   <--------------- SUCCESS
 		{
-			if( m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !GetGame().IsMultiplayer())
+			if( m_Player.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER || !g_Game.IsMultiplayer())
 			{
 				if( Symptom )
 				{

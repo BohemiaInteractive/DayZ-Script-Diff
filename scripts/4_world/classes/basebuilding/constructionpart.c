@@ -56,7 +56,7 @@ class ConstructionPart
 	void SetRequestBuiltState( bool req_built )
 	{
 		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] SetRequestBuiltState=" + req_built + " part=" + m_PartName);
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 			SetBuiltState(req_built);
 		else
 			; // skip set to true in single player - will be synced later

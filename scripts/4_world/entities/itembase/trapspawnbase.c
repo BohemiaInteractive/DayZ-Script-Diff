@@ -205,15 +205,15 @@ class TrapSpawnBase extends ItemBase
 	bool IsPlaceableAtPosition( vector position )
 	{
 		string surface_type;
-		GetGame().SurfaceGetType3D( position[0], position[1], position[2], surface_type);
+		g_Game.SurfaceGetType3D( position[0], position[1], position[2], surface_type);
 
 		// check surface
-		return GetGame().IsSurfaceDigable(surface_type);
+		return g_Game.IsSurfaceDigable(surface_type);
 	}
 
 	void SetupTrap()
 	{ 
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( GetHierarchyRootPlayer() && GetHierarchyRootPlayer().CanDropEntity( this ) )
 			{
@@ -224,12 +224,12 @@ class TrapSpawnBase extends ItemBase
 
 	void SetupTrapPlayer( PlayerBase player, bool set_position = true )
 	{ 
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( set_position )
 			{
 				vector trapPos = player.GetPosition() + ( player.GetDirection() * 0.5 );
-				trapPos[1] = GetGame().SurfaceRoadY( trapPos[0], trapPos[2] );
+				trapPos[1] = g_Game.SurfaceRoadY( trapPos[0], trapPos[2] );
 				SetPosition( trapPos );
 			}
 			
@@ -246,7 +246,7 @@ class TrapSpawnBase extends ItemBase
 	
 	void Fold()
 	{
-		if ( GetGame().IsServer() && m_IsFoldable == true )
+		if ( g_Game.IsServer() && m_IsFoldable == true )
 		{
 			SetInactive();
 		}
@@ -255,7 +255,7 @@ class TrapSpawnBase extends ItemBase
 	// Deal damage to trap on specific events
 	void AddDefect()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			DecreaseHealth( "", "", m_DefectRate );
 		}
@@ -289,7 +289,7 @@ class TrapSpawnBase extends ItemBase
 	
 	void ResetActiveProgress()
 	{
-		m_ActivationTime = GetGame().GetTickTime();
+		m_ActivationTime = g_Game.GetTickTime();
 		m_ElapsedTime = 0;
 		m_CurrentMinimalDistance = m_MinimalDistanceFromPlayersToCatch;
 		
@@ -339,7 +339,7 @@ class TrapSpawnBase extends ItemBase
 	{
 		UpdatePreyPos();
 		
-		if ( GetGame().IsServer() && !IsActive() )
+		if ( g_Game.IsServer() && !IsActive() )
 		{
 			SetCatchSuccessful(false);
 			m_IsActive = true;
@@ -381,7 +381,7 @@ class TrapSpawnBase extends ItemBase
 
 	void SetInactive()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			// We stop timers as the trap is no longer active, then update visuals
 			m_IsActive = false;
@@ -403,7 +403,7 @@ class TrapSpawnBase extends ItemBase
 
 	void SetUsed()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			// We updated state, visuals and stop timers
 			m_IsActive = false;
@@ -574,7 +574,7 @@ class TrapSpawnBase extends ItemBase
 	void SpawnCatch()
 	{
 		// Only server side, let's make sure
-		if (GetGame().IsMultiplayer() && GetGame().IsClient())
+		if (g_Game.IsMultiplayer() && g_Game.IsClient())
 			return;
 		
 		UpdatePreyPos();
@@ -615,7 +615,7 @@ class TrapSpawnBase extends ItemBase
 		if (m_YieldItemIdx == -1)
 			return;
 		
-		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
+		YieldItemBase yItem = g_Game.GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
 		
 		PlayCatchNoise(yItem);
 		PlayCatchParticleSynced(yItem);
@@ -626,7 +626,7 @@ class TrapSpawnBase extends ItemBase
 		if (m_YieldItemIdx == -1)
 			return;
 		
-		YieldItemBase yItem = GetGame().GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
+		YieldItemBase yItem = g_Game.GetMission().GetWorldData().GetCatchYieldBank().GetYieldItemByIdx(m_YieldItemIdx);
 		PlayCatchSound(yItem);
 	}
 	
@@ -645,8 +645,8 @@ class TrapSpawnBase extends ItemBase
 		NoiseParams m_NoisePar = new NoiseParams();
 		m_NoisePar.Load(noiseType);
 		float noiseMultiplier = yItem.GetCatchAINoiseBaseStrength();
-		noiseMultiplier *= NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather());
-		GetGame().GetNoiseSystem().AddNoiseTarget(m_PreyPos, 5, m_NoisePar, noiseMultiplier);
+		noiseMultiplier *= NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather());
+		g_Game.GetNoiseSystem().AddNoiseTarget(m_PreyPos, 5, m_NoisePar, noiseMultiplier);
 	}
 	
 	protected void PlayCatchParticleSynced(YieldItemBase yItem)
@@ -676,7 +676,7 @@ class TrapSpawnBase extends ItemBase
 	{
 		super.OnItemLocationChanged( old_owner, new_owner );
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			// throw trap from vicinity if the trap does not need installation ( action required )
 			if ( new_owner == NULL && m_NeedInstalation == false )
@@ -707,7 +707,7 @@ class TrapSpawnBase extends ItemBase
 	bool IsSurfaceWater(vector position)
 	{
 		string surfaceType;
-		GetGame().SurfaceGetType3D(position[0], position[1], position[2], surfaceType);
+		g_Game.SurfaceGetType3D(position[0], position[1], position[2], surfaceType);
 		
 		return Surface.AllowedWaterSurface(position[1] + 0.1, surfaceType, m_PlaceableWaterSurfaceList);
 	}
@@ -729,7 +729,7 @@ class TrapSpawnBase extends ItemBase
 	{
 		super.EEItemAttached( item, slot_name );
 		
-		if (IsActive() && GetGame().IsServer())
+		if (IsActive() && g_Game.IsServer())
 		{
 			ResetActiveProgress();
 			m_CatchingContext.UpdateDataAndMasks();
@@ -742,7 +742,7 @@ class TrapSpawnBase extends ItemBase
 	{
 		super.EEItemDetached( item, slot_name );
 		
-		if (IsActive() && GetGame().IsServer())
+		if (IsActive() && g_Game.IsServer())
 		{
 			ResetActiveProgress();
 			m_CatchingContext.UpdateDataAndMasks();
@@ -803,7 +803,7 @@ class TrapSpawnBase extends ItemBase
 	{
 		super.OnPlacementComplete(player, position, orientation);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			vector rotation_matrix[3];
 			float direction[4];
@@ -815,7 +815,7 @@ class TrapSpawnBase extends ItemBase
 			if (GetInventory().GetCurrentInventoryLocation(source))
 			{		
 				destination.SetGroundEx(this, position, direction);
-				if (GetGame().IsMultiplayer())
+				if (g_Game.IsMultiplayer())
 				{
 					player.ServerTakeToDst(source, destination);
 					SetupTrapPlayer(PlayerBase.Cast(player), false);
@@ -823,7 +823,7 @@ class TrapSpawnBase extends ItemBase
 				else // singleplayer
 				{
 					PlayerBase.Cast(player).GetDayZPlayerInventory().RedirectToHandEvent(InventoryMode.LOCAL, source, destination);
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SetupTrapPlayer, 100, false, PlayerBase.Cast(player), false);
+					g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SetupTrapPlayer, 100, false, PlayerBase.Cast(player), false);
 				}
 			}
 			
@@ -836,7 +836,7 @@ class TrapSpawnBase extends ItemBase
 	
 	bool IsPlaceable()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			InventoryLocation loc = new InventoryLocation();
 			GetInventory().GetCurrentInventoryLocation(loc);

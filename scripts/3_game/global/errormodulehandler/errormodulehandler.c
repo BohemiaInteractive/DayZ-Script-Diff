@@ -107,7 +107,7 @@ class ErrorModuleHandler
 			>> formattedCode = '0x0002FFFF'
 		@endcode
 	*/
-	static proto owned string				GetErrorHex(int errorCode);
+	static proto string						GetErrorHex(int errorCode);
 	
 	
 	

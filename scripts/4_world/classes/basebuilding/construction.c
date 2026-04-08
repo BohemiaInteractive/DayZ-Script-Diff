@@ -238,28 +238,28 @@ class Construction
 		
 		string construction_path = "cfgVehicles" + " " + GetParent().GetType() + " " + "Construction";
 		
-		if ( GetGame().ConfigIsExisting( construction_path ) )
+		if ( g_Game.ConfigIsExisting( construction_path ) )
 		{
 			//main parts
-			for ( int i = 0; i < GetGame().ConfigGetChildrenCount( construction_path ); ++i )
+			for ( int i = 0; i < g_Game.ConfigGetChildrenCount( construction_path ); ++i )
 			{
 				string main_part_name;
-				GetGame().ConfigGetChildName( construction_path, i, main_part_name );
+				g_Game.ConfigGetChildName( construction_path, i, main_part_name );
 				string part_path = construction_path + " " + main_part_name;
 				
 				//parts
-				for ( int j = 0; j < GetGame().ConfigGetChildrenCount( part_path ); ++j )
+				for ( int j = 0; j < g_Game.ConfigGetChildrenCount( part_path ); ++j )
 				{
 					string part_name;
-					GetGame().ConfigGetChildName( part_path, j, part_name );
+					g_Game.ConfigGetChildName( part_path, j, part_name );
 					
 					string name;
-					GetGame().ConfigGetTextRaw( part_path + " " + part_name + " " + "name", name );							//name
-					GetGame().FormatRawConfigStringKeys(name);
-					bool show_on_init = GetGame().ConfigGetInt( part_path + " " + part_name + " " + "show_on_init" );		//show on init
-					int id = GetGame().ConfigGetInt( part_path + " " + part_name + " " + "id" );							//part id
-					bool is_base = GetGame().ConfigGetInt( part_path + " " + part_name + " " + "is_base" );					//is base (part)
-					bool is_gate = GetGame().ConfigGetInt( part_path + " " + part_name + " " + "is_gate" );					//is gate (part)
+					g_Game.ConfigGetTextRaw( part_path + " " + part_name + " " + "name", name );							//name
+					g_Game.FormatRawConfigStringKeys(name);
+					bool show_on_init = g_Game.ConfigGetInt( part_path + " " + part_name + " " + "show_on_init" );		//show on init
+					int id = g_Game.ConfigGetInt( part_path + " " + part_name + " " + "id" );							//part id
+					bool is_base = g_Game.ConfigGetInt( part_path + " " + part_name + " " + "is_base" );					//is base (part)
+					bool is_gate = g_Game.ConfigGetInt( part_path + " " + part_name + " " + "is_gate" );					//is gate (part)
 					
 					m_ConstructionParts.Insert( part_name, new ConstructionPart( name, part_name, main_part_name, id, show_on_init, is_base, is_gate, GetRequiredParts(part_name,main_part_name) ) );
 					
@@ -308,24 +308,24 @@ class Construction
 		string main_part_name = GetConstructionPart( part_name ).GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "Materials";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
-			int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 			
 			for ( int i = 0; i < child_count; i++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( cfg_path, i, child_name );
+				g_Game.ConfigGetChildName( cfg_path, i, child_name );
 				
 				//get type, quantity from material
 				string config_path;
 				string slot_name;
 				config_path = cfg_path + " " + child_name + " " + "slot_name";
-				GetGame().ConfigGetText( config_path, slot_name );
+				g_Game.ConfigGetText( config_path, slot_name );
 				config_path = cfg_path + " " + child_name + " " + "quantity";
-				float quantity = GetGame().ConfigGetFloat( config_path );
+				float quantity = g_Game.ConfigGetFloat( config_path );
 				config_path = cfg_path + " " + child_name + " " + "lockable";
-				bool lockable = GetGame().ConfigGetInt( config_path );
+				bool lockable = g_Game.ConfigGetInt( config_path );
 				
 				ItemBase attachment = ItemBase.Cast( GetParent().FindAttachmentBySlotName( slot_name ) );
 				if (attachment.IsRuined())
@@ -415,7 +415,7 @@ class Construction
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "required_parts";
 		
 		ref array<string> required_parts = new array<string>;
-		GetGame().ConfigGetTextArray( cfg_path, required_parts );
+		g_Game.ConfigGetTextArray( cfg_path, required_parts );
 		
 		//check if parts are already built
 		for ( int i = 0; i < required_parts.Count(); ++i )
@@ -440,7 +440,7 @@ class Construction
 		string main_part_name = GetConstructionPart( part_name ).GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "conflicted_parts";
 		ref array<string> conflict_parts = new array<string>;
-		GetGame().ConfigGetTextArray( cfg_path, conflict_parts );
+		g_Game.ConfigGetTextArray( cfg_path, conflict_parts );
 
 		//check if parts are already built
 		for ( int i = 0; i < conflict_parts.Count(); i++ )
@@ -547,7 +547,7 @@ class Construction
 	{
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " " + "Construction" + " " + main_part_name + " " + part_name + " " + "required_parts";
 		ref array<string> required_parts = new array<string>;
-		GetGame().ConfigGetTextArray( cfg_path, required_parts );
+		g_Game.ConfigGetTextArray( cfg_path, required_parts );
 		
 		return required_parts;
 	}
@@ -619,23 +619,23 @@ class Construction
 		string main_part_name = GetConstructionPart( part_name ).GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "Materials";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
-			int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 			
 			for ( int i = 0; i < child_count; i++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( cfg_path, i, child_name );
+				g_Game.ConfigGetChildName( cfg_path, i, child_name );
 				
 				//get type, quantity from material
 				string material_path;
 				string slot_name;
 				float quantity;
 				material_path = cfg_path + " " + child_name + " " + "slot_name";
-				GetGame().ConfigGetText( material_path, slot_name );
+				g_Game.ConfigGetText( material_path, slot_name );
 				material_path = cfg_path + " " + child_name + " " + "quantity";
-				quantity = GetGame().ConfigGetFloat( material_path );
+				quantity = g_Game.ConfigGetFloat( material_path );
 				
 				if (repairing)
 				{
@@ -673,24 +673,24 @@ class Construction
 		string main_part_name = GetConstructionPart( part_name ).GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "Materials";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
-			int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 			
 			for ( int i = 0; i < child_count; i++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( cfg_path, i, child_name );
+				g_Game.ConfigGetChildName( cfg_path, i, child_name );
 				
 				//get type, quantity from material
 				string config_path;
 				string slot_name;
 				config_path = cfg_path + " " + child_name + " " + "slot_name";
-				GetGame().ConfigGetText( config_path, slot_name );
+				g_Game.ConfigGetText( config_path, slot_name );
 				config_path = cfg_path + " " + child_name + " " + "quantity";
-				float quantity = GetGame().ConfigGetFloat( config_path );
+				float quantity = g_Game.ConfigGetFloat( config_path );
 				config_path = cfg_path + " " + child_name + " " + "lockable";
-				bool lockable = GetGame().ConfigGetInt( config_path );
+				bool lockable = g_Game.ConfigGetInt( config_path );
 				
 				ItemBase attachment = ItemBase.Cast( GetParent().FindAttachmentBySlotName( slot_name ) );
 				if ( lockable )
@@ -715,7 +715,7 @@ class Construction
 					}
 					else										//-1 - deletes the object
 					{
-						GetGame().ObjectDelete( attachment );
+						g_Game.ObjectDelete( attachment );
 					}
 				}
 			}
@@ -730,7 +730,7 @@ class Construction
 		string main_part_name = construction_part.GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "Materials";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
 			StaticConstructionMethods.SpawnConstructionMaterialPiles(GetParent(),player,cfg_path,part_name,damagezone_name,is_base);
 		}
@@ -743,27 +743,27 @@ class Construction
 		string main_part_name = cPart.GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "Materials";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
-			int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 			
 			for ( int i = 0; i < child_count; i++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( cfg_path, i, child_name );
+				g_Game.ConfigGetChildName( cfg_path, i, child_name );
 				
 				//get type, quantity from material
 				string config_path;
 				string type;
 				string slot_name;
 				config_path = cfg_path + " " + child_name + " " + "type";
-				GetGame().ConfigGetText( config_path, type );
+				g_Game.ConfigGetText( config_path, type );
 				config_path = cfg_path + " " + child_name + " " + "slot_name";
-				GetGame().ConfigGetText( config_path, slot_name );
+				g_Game.ConfigGetText( config_path, slot_name );
 				config_path = cfg_path + " " + child_name + " " + "quantity";
-				float quantity = GetGame().ConfigGetFloat( config_path );
+				float quantity = g_Game.ConfigGetFloat( config_path );
 				config_path = cfg_path + " " + child_name + " " + "lockable";
-				bool lockable = GetGame().ConfigGetInt( config_path );
+				bool lockable = g_Game.ConfigGetInt( config_path );
 				
 				//get material
 				ItemBase attachment = ItemBase.Cast( GetParent().FindAttachmentBySlotName( slot_name ) );
@@ -778,7 +778,7 @@ class Construction
 						if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + Object.GetDebugName(GetParent()) + " DestroyMaterialsServer unlock slot=" + inventory_location.GetSlot());
 						
 						GetParent().GetInventory().SetSlotLock( inventory_location.GetSlot() , false );
-						GetGame().ObjectDelete( attachment );		//delete object
+						g_Game.ObjectDelete( attachment );		//delete object
 					}
 				}
 			}
@@ -792,29 +792,29 @@ class Construction
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " " + "Construction" + " " + construction_part.GetMainPartName() + " " + construction_part.GetPartName() + " " + "platform_support";
 		string platform_support;
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{		
-			GetGame().ConfigGetText( cfg_path, platform_support );
+			g_Game.ConfigGetText( cfg_path, platform_support );
 		}
 		
 		if ( platform_support.Length() > 0 || construction_part.IsBase() )
 		{
 			string at_cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "GUIInventoryAttachmentsProps";
 			
-			if ( GetGame().ConfigIsExisting( at_cfg_path ) )
+			if ( g_Game.ConfigIsExisting( at_cfg_path ) )
 			{
-				int	child_count = GetGame().ConfigGetChildrenCount( at_cfg_path );
+				int	child_count = g_Game.ConfigGetChildrenCount( at_cfg_path );
 				
 				for ( int i = 0; i < child_count; i++ )
 				{
 					string child_name;
-					GetGame().ConfigGetChildName( at_cfg_path, i, child_name );
+					g_Game.ConfigGetChildName( at_cfg_path, i, child_name );
 					child_name.ToLower();
 					
 					if ( child_name.Contains( platform_support ) )
 					{
 						ref array<string> attachment_slots = new array<string>;
-						GetGame().ConfigGetTextArray( at_cfg_path + " " + child_name + " " + "attachmentSlots", attachment_slots );
+						g_Game.ConfigGetTextArray( at_cfg_path + " " + child_name + " " + "attachmentSlots", attachment_slots );
 						
 						for ( int j = 0; j < attachment_slots.Count(); ++j )
 						{
@@ -843,7 +843,7 @@ class Construction
 								if ( parent.MemoryPointExists("" + part_name + "_materials") )
 								{
 									vector destination = parent.GetMemoryPointPos("" + part_name + "_materials");
-									destination = GetGame().ObjectModelToWorld(parent,destination);
+									destination = g_Game.ObjectModelToWorld(parent,destination);
 									float health = attachment.GetHealth("","Health");
 									float quantity = attachment.GetQuantity() - 1;
 									if (quantity < 1.0)
@@ -886,7 +886,7 @@ class Construction
 								//drop
 								if (attachment.GetQuantity() > 0)
 								{
-									if ( GetGame().IsMultiplayer() )
+									if ( g_Game.IsMultiplayer() )
 									{
 										parent.ServerTakeToDst( inventory_location, dst );
 									}
@@ -913,27 +913,27 @@ class Construction
 		string main_part_name = GetConstructionPart( part_name ).GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "Materials";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
-			int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 			
 			for ( int i = 0; i < child_count; i++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( cfg_path, i, child_name );
+				g_Game.ConfigGetChildName( cfg_path, i, child_name );
 				
 				//get type, quantity from material
 				string config_path;
 				string type;
 				string slot_name;
 				config_path = cfg_path + " " + child_name + " " + "type";
-				GetGame().ConfigGetText( config_path, type );
+				g_Game.ConfigGetText( config_path, type );
 				config_path = cfg_path + " " + child_name + " " + "slot_name";
-				GetGame().ConfigGetText( config_path, slot_name );
+				g_Game.ConfigGetText( config_path, slot_name );
 				config_path = cfg_path + " " + child_name + " " + "quantity";
-				float quantity = GetGame().ConfigGetFloat( config_path );
+				float quantity = g_Game.ConfigGetFloat( config_path );
 				config_path = cfg_path + " " + child_name + " " + "lockable";
-				bool lockable = GetGame().ConfigGetInt( config_path );
+				bool lockable = g_Game.ConfigGetInt( config_path );
 				
 				//get material
 				ItemBase attachment = ItemBase.Cast( GetParent().FindAttachmentBySlotName( slot_name ) );
@@ -960,14 +960,14 @@ class Construction
 	{
 		ConstructionPart construction_part = GetConstructionPart( part_name );
 		string part_cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + construction_part.GetMainPartName() + " " + construction_part.GetPartName() + " " + "build_action_type";
-		if ( GetGame().ConfigIsExisting( part_cfg_path ) )
+		if ( g_Game.ConfigIsExisting( part_cfg_path ) )
 		{
-			int part_build_action_type = GetGame().ConfigGetInt( part_cfg_path );
+			int part_build_action_type = g_Game.ConfigGetInt( part_cfg_path );
 			string tool_cfg_path = "cfgVehicles" + " " + tool.GetType() + " " + "build_action_type";
 			
-			if ( GetGame().ConfigIsExisting( tool_cfg_path ) )
+			if ( g_Game.ConfigIsExisting( tool_cfg_path ) )
 			{
-				int tool_build_action_type = GetGame().ConfigGetInt( tool_cfg_path );
+				int tool_build_action_type = g_Game.ConfigGetInt( tool_cfg_path );
   
 				if ( ( part_build_action_type & tool_build_action_type ) > 0 )
 				{
@@ -983,14 +983,14 @@ class Construction
 	{
 		ConstructionPart construction_part = GetConstructionPart( part_name );
 		string part_cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + construction_part.GetMainPartName() + " " + construction_part.GetPartName() + " " + "dismantle_action_type";
-		if ( GetGame().ConfigIsExisting( part_cfg_path ) )
+		if ( g_Game.ConfigIsExisting( part_cfg_path ) )
 		{
-			int part_dismantle_action_type = GetGame().ConfigGetInt( part_cfg_path );
+			int part_dismantle_action_type = g_Game.ConfigGetInt( part_cfg_path );
 			string tool_cfg_path = "cfgVehicles" + " " + tool.GetType() + " " + "dismantle_action_type";
 			
-			if ( GetGame().ConfigIsExisting( tool_cfg_path ) )
+			if ( g_Game.ConfigIsExisting( tool_cfg_path ) )
 			{
-				int tool_dismantle_action_type = GetGame().ConfigGetInt( tool_cfg_path );
+				int tool_dismantle_action_type = g_Game.ConfigGetInt( tool_cfg_path );
   
 				if ( ( part_dismantle_action_type & tool_dismantle_action_type ) > 0 )
 				{
@@ -1006,9 +1006,9 @@ class Construction
 	{
 		ConstructionPart construction_part = GetConstructionPart( part_name );
 		string part_cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + construction_part.GetMainPartName() + " " + construction_part.GetPartName() + " " + "material_type";
-		if ( GetGame().ConfigIsExisting( part_cfg_path ) )
+		if ( g_Game.ConfigIsExisting( part_cfg_path ) )
 		{
-			return GetGame().ConfigGetInt( part_cfg_path );
+			return g_Game.ConfigGetInt( part_cfg_path );
 		}
 		
 		return ConstructionMaterialType.MATERIAL_NONE;
@@ -1047,7 +1047,7 @@ class Construction
 			
 			//check collision on box trigger and collision box
 			//IsTrigger colliding was turned off (for now) for easier way to build something with other players around
-			if ( /* IsTriggerColliding() || */ GetGame().IsBoxCollidingGeometry( Vector( center[0], center[1] + absolute_ofset, center[2] ), GetParent().GetOrientation(), edge_length, ObjIntersectView, ObjIntersectGeom, excluded_objects, collided_objects ) )
+			if ( /* IsTriggerColliding() || */ g_Game.IsBoxCollidingGeometry( Vector( center[0], center[1] + absolute_ofset, center[2] ), GetParent().GetOrientation(), edge_length, ObjIntersectView, ObjIntersectGeom, excluded_objects, collided_objects ) )
 			{
 				//Debug
 //				DrawDebugCollisionBox( min_max, ARGB( 150, 255, 0, 0 ) );
@@ -1093,7 +1093,7 @@ class Construction
 			center = GetParent().ModelToWorld( center );		//convert to world coordinates
 			edge_length = GetCollisionBoxSize( min_max );
 			
-			if ( GetGame().IsBoxCollidingGeometry( Vector( center[0], center[1] + absolute_ofset, center[2] ), GetParent().GetOrientation(), edge_length, check_data.m_PrimaryGeometry, check_data.m_SecondaryGeometry, excluded_objects, collided_objects ) )
+			if ( g_Game.IsBoxCollidingGeometry( Vector( center[0], center[1] + absolute_ofset, center[2] ), GetParent().GetOrientation(), edge_length, check_data.m_PrimaryGeometry, check_data.m_SecondaryGeometry, excluded_objects, collided_objects ) )
 			{
 				//Debug
 				//DrawDebugCollisionBox( min_max, ARGB( 150, 255, 0, 0 ) );
@@ -1127,7 +1127,7 @@ class Construction
 		string main_part_name = GetConstructionPart( part_name ).GetMainPartName();
 		string cfg_path = "cfgVehicles" + " " + GetParent().GetType() + " "+ "Construction" + " " + main_part_name + " " + part_name + " " + "collision_data";
 		ref array<string> collision_data = new array<string>;
-		GetGame().ConfigGetTextArray( cfg_path, collision_data );
+		g_Game.ConfigGetTextArray( cfg_path, collision_data );
 		
 		if ( collision_data.Count() > 0 )
 		{
@@ -1206,7 +1206,7 @@ class Construction
 		GetTriggerExtents( min_max, extents );
 		
 		//create trigger
-		m_ConstructionBoxTrigger = ConstructionBoxTrigger.Cast( GetGame().CreateObject( "ConstructionBoxTrigger", center, false, false, false ) );
+		m_ConstructionBoxTrigger = ConstructionBoxTrigger.Cast( g_Game.CreateObject( "ConstructionBoxTrigger", center, false, false, false ) );
 		m_ConstructionBoxTrigger.SetPosition( center );
 		m_ConstructionBoxTrigger.SetOrientation( GetParent().GetOrientation() );	
 		m_ConstructionBoxTrigger.SetExtents( extents[0], extents[1] );
@@ -1217,7 +1217,7 @@ class Construction
 	
 	void DestroyCollisionTrigger()
 	{
-		GetGame().ObjectDelete( m_ConstructionBoxTrigger );
+		g_Game.ObjectDelete( m_ConstructionBoxTrigger );
 		m_ConstructionBoxTrigger = NULL;
 	}
 	
@@ -1232,25 +1232,25 @@ class StaticConstructionMethods
 	//! spawns material from any construction; 'player' parameter optional
 	static void SpawnConstructionMaterialPiles(notnull EntityAI entity, Man player, string cfg_path, string main_part_name, string damagezone_name = "", bool is_base = false )
 	{
-		int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+		int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 		
 		for ( int i = 0; i < child_count; i++ )
 		{
 			string child_name;
-			GetGame().ConfigGetChildName( cfg_path, i, child_name );
+			g_Game.ConfigGetChildName( cfg_path, i, child_name );
 			
 			//get type, quantity from material
 			string config_path;
 			string type;
 			string slot_name;
 			config_path = cfg_path + " " + child_name + " " + "type";
-			GetGame().ConfigGetText( config_path, type );
+			g_Game.ConfigGetText( config_path, type );
 			config_path = cfg_path + " " + child_name + " " + "slot_name";
-			GetGame().ConfigGetText( config_path, slot_name );
+			g_Game.ConfigGetText( config_path, slot_name );
 			config_path = cfg_path + " " + child_name + " " + "quantity";
-			float quantity = GetGame().ConfigGetFloat( config_path );
+			float quantity = g_Game.ConfigGetFloat( config_path );
 			config_path = cfg_path + " " + child_name + " " + "lockable";
-			bool lockable = GetGame().ConfigGetInt( config_path );
+			bool lockable = g_Game.ConfigGetInt( config_path );
 			
 			//receive material quantity
 			ItemBase attachment = ItemBase.Cast( entity.FindAttachmentBySlotName( slot_name ) );
@@ -1269,7 +1269,7 @@ class StaticConstructionMethods
 					//detach if base
 					if ( is_base )
 					{
-						if ( GetGame().IsMultiplayer() && player )
+						if ( g_Game.IsMultiplayer() && player )
 						{
 							InventoryLocation dst = new InventoryLocation;
 							GameInventory.SetGroundPosByOwner( player, src.GetItem(), dst );
@@ -1291,12 +1291,12 @@ class StaticConstructionMethods
 				if ( entity.MemoryPointExists("" + main_part_name + "_materials") )
 				{
 					destination = entity.GetMemoryPointPos("" + main_part_name + "_materials");
-					destination = GetGame().ObjectModelToWorld(entity,destination);
+					destination = g_Game.ObjectModelToWorld(entity,destination);
 				}
 				else if ( entity.MemoryPointExists(main_part_name) )
 				{
 					destination = entity.GetMemoryPointPos(main_part_name);
-					destination = GetGame().ObjectModelToWorld(entity,destination);
+					destination = g_Game.ObjectModelToWorld(entity,destination);
 				}
 				pile_health = entity.GetHealth01(damagezone_name,"Health") * MiscGameplayFunctions.GetTypeMaxGlobalHealth(type);
 				qty_coef =  1 - (entity.GetHealthLevel(damagezone_name) * Construction.DECONSTURCT_MATERIAL_LOSS) - Construction.DECONSTURCT_MATERIAL_LOSS;

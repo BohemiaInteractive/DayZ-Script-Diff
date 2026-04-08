@@ -379,9 +379,9 @@ class Trigger : TriggerEvents
 		data.param6 = m_DebugAreaType;
 		data.param7 = m_insiders;
 		
-		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+		if (g_Game.IsMultiplayer() && g_Game.IsServer())
 			PluginDiagMenuServer.SendDataToSubscribersServer(this, ESubscriberSystems.TRIGGERS, ERPCs.DIAG_TRIGGER_DEBUG, data, false);
-		else if (!GetGame().IsMultiplayer() || m_Local)
+		else if (!g_Game.IsMultiplayer() || m_Local)
 			DebugDmgTrigger(data.param1, data.param2, data.param3, data.param4, data.param5, data.param6, data.param7);
 	}
 	
@@ -394,7 +394,7 @@ class Trigger : TriggerEvents
 		bool enableDebug = DiagMenu.GetBool(DiagMenuIDs.TRIGGER_DEBUG);
 		if (enableDebug)
 		{
-			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			if (g_Game.IsMultiplayer() && g_Game.IsServer())
 			{
 				return;
 			}
@@ -426,7 +426,7 @@ class Trigger : TriggerEvents
 				break;
 			}
 			
-			if (GetGame().IsMultiplayer() || GetGame().IsServer())
+			if (g_Game.IsMultiplayer() || g_Game.IsServer())
 				m_dbgInsiders = insiders;
 		
 			if (m_dbgInsiders.Count() > 0)

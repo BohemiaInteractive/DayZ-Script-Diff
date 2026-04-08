@@ -1,6 +1,32 @@
 // ip, name, connection port, queryPort
 typedef Param4<string, string, int, int> CachedServerInfo;
 
+// JSON struct data for news articles
+class JsonDataNewsArticle: Managed
+{
+	[NonSerialized()]
+	int categoryID;
+	
+	[NonSerialized()]
+	string dlcName;
+	
+	[NonSerialized()]
+	string qrCodeImageUrl;
+	
+	string date;
+	string excerpt;
+	string category;
+	string title;
+	string slug;
+	string coverImage;
+	string fullUrl;
+};
+
+class JsonDataNewsList: Managed
+{
+	ref array<ref JsonDataNewsArticle> News = new array<ref JsonDataNewsArticle>();	 
+};
+
 // Script File
 
 enum ESortType

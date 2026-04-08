@@ -1,10 +1,19 @@
 //-----------------------------------------------------------------------------
-class Fountain extends BuildingSuper
+class FountainType : BuildingSuperType
 {
 };
 
 //-----------------------------------------------------------------------------
-class Church extends BuildingSuper
+class Fountain : BuildingSuper
 {
 };
 
+//-----------------------------------------------------------------------------
+class ChurchType : BuildingSuperType
+{
+};
+
+//-----------------------------------------------------------------------------
+class Church : BuildingSuper
+{
+};

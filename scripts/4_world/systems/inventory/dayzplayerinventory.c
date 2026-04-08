@@ -141,7 +141,6 @@ class DeferredHandEvent: DeferredEvent
 	}
 }
 
-
 /**
  * @class		DayZPlayerInventory
  **/
@@ -452,7 +451,8 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		
 		if (hcw)
 		{
-			m_FSM.GetCurrentState().OnUpdate(dt);
+			HandStateBase fsmState = m_FSM.GetCurrentState();
+			fsmState.OnUpdate(dt);
 
 			#ifdef ENABLE_LOGGING
 			if (LogManager.IsInventoryHFSMLogEnable())
@@ -461,7 +461,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			}
 			#endif
 			
-			if ( !m_FSM.GetCurrentState().IsIdle() || !m_FSM.IsRunning())
+			if ( !fsmState.IsIdle() || !m_FSM.IsRunning())
 			{
 				while (true)
 				{
@@ -489,12 +489,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 
 				if (hcw.IsActionFinished())
 				{
-					if (m_FSM.GetCurrentState().IsWaitingForActionFinish())
+					if (fsmState.IsWaitingForActionFinish())
 					{
 						#ifdef ENABLE_LOGGING
 						if (LogManager.IsInventoryHFSMLogEnable())
 						{
-							hndDebugPrint("[hndfsm] Hand-Weapon event: finished! notifying waiting state=" + m_FSM.GetCurrentState());
+							hndDebugPrint("[hndfsm] Hand-Weapon event: finished! notifying waiting state=" + fsmState);
 						}
 						#endif
 
@@ -507,7 +507,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 						#ifdef ENABLE_LOGGING
 						if (LogManager.IsInventoryHFSMLogEnable())
 						{
-							hndDebugPrint("[hndfsm] Hand-Weapon event: ABORT! notifying running state=" + m_FSM.GetCurrentState());
+							hndDebugPrint("[hndfsm] Hand-Weapon event: ABORT! notifying running state=" + fsmState);
 						}
 						#endif
 
@@ -547,31 +547,6 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 	}
 	
 	///@{ juncture
-	/**@fn			OnInventoryJunctureFromServer
-	 * @brief		reaction to engine callback
-	 *	originates in:
-	 *				engine - DayZPlayer::OnSyncJuncture
-	 *				script - PlayerBase.OnSyncJuncture
-	 **/
-	override bool OnInventoryJunctureRepairFromServer (ParamsReadContext ctx)
-	{
-/*		InventoryLocation il = new InventoryLocation;
-		if (!il.ReadFromContext(ctx) )
-			return false;
-		
-		InventoryLocation il_current = new InventoryLocation;
-		
-		EntityAI item = il.GetItem();
-		item.GetInventory().GetCurrentInventoryLocation(il_current);
-		
-		if( !il_current.CompareLocationOnly(il))
-		{
-			LocationMoveEntity(il_current,il);
-		}*/
-		return true;
-	}
-	
-	///@{ juncture
 	/**@fn			OnInventoryJunctureFailureFromServer
 	 * @brief		reaction to engine callback
 	 *	originates in:
@@ -593,7 +568,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		 * 
 		 */
 
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 		{
 			return;
 		}
@@ -787,7 +762,10 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		#endif
 		
-		if (validation.m_IsRemote && (!src.GetItem() || !dst.GetItem()))
+		EntityAI itemSrc = src.GetItem();
+		EntityAI itemDst = dst.GetItem();
+
+		if (validation.m_IsRemote && (!itemSrc || !itemDst))
 		{
 			//! kumarjac: This indicates a failure in replication relationships as player full inventory should be synchronized always if player exists on the remote
 			
@@ -806,7 +784,31 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			return true;
 		}
 
-		EnableMovableOverride(src.GetItem());
+		if (success && !validation.m_IsRemote && !validation.m_IsJuncture && itemSrc != itemDst)
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed - src and dst are for different items", "SYNC_MOVE" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+			}
+
+			if (LogManager.IsSyncLogEnable())
+			{
+				syncDebugPrint("[syncinv] HandleInputData Failed - src and dst are for different items src item =" + itemSrc + " dst item =" + itemDst);
+			}
+			#endif
+
+			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+			{
+				success = false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		EnableMovableOverride(itemSrc);
 
 		//! Do not check for action validity on remotes or when performing through juncture. 
 		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
@@ -827,11 +829,27 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			}
 #endif
 			
-			RemoveMovableOverride(src.GetItem());
+			RemoveMovableOverride(itemSrc);
 			
 			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 			{
 				success = false;
+				#ifdef DIAG_DEVELOPER
+				if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsDesyncRepairEnable())
+				{
+				#endif
+					array<EntityAI> itemsToRepair = new array<EntityAI>;
+					InventoryLocation realIl = new InventoryLocation();
+					src.GetItem().GetInventory().GetCurrentInventoryLocation(realIl);
+					
+					if(src != realIl)
+					{
+						itemsToRepair.Insert(src.GetItem());
+						InventoryInputUserData.SendServerInventoryCheck(itemsToRepair, GetDayZPlayerOwner());
+					}	
+				#ifdef DIAG_DEVELOPER
+				}
+				#endif
 			}
 			else
 			{
@@ -856,10 +874,11 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			}
 #endif
 			
-			RemoveMovableOverride(src.GetItem());
+			RemoveMovableOverride(itemSrc);
 			
 			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 			{
+				SendRepairToClientDst(dst);
 				success = false;
 			}
 			else
@@ -868,12 +887,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			}
 		}
 		
-		RemoveMovableOverride(src.GetItem());
+		RemoveMovableOverride(itemSrc);
 		
 #ifdef ENABLE_LOGGING
 		if (LogManager.IsSyncLogEnable())
 		{
-			syncDebugPrint("[syncinv] " + Object.GetDebugName(GetDayZPlayerOwner()) + " STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " HandleInputData t=" + GetGame().GetTime() + "ms received cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
+			syncDebugPrint("[syncinv] " + Object.GetDebugName(GetDayZPlayerOwner()) + " STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " HandleInputData t=" + g_Game.GetTime() + "ms received cmd=" + typename.EnumToString(InventoryCommandType, type) + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 		}
 #endif
 	
@@ -926,7 +945,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 				
 				validation.m_Result = InventoryValidationResult.JUNCTURE;
-				EnableMovableOverride(src.GetItem());
+				EnableMovableOverride(itemSrc);
 				return true;
 			}
 			else
@@ -947,21 +966,18 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		else if (validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)		
 		{
 			bool hasJuncture = false;
-						
-			EntityAI itemSrc = src.GetItem();
-			EntityAI itemDst = dst.GetItem();
 			if (itemSrc != null && itemDst != null)
 			{
-				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc) && GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);
+				hasJuncture = g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc) && g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);
 			}
 			else if (itemSrc != null)
 			{
-				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc);
+				hasJuncture = g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc);
 			}
 			else if (itemDst != null)
 			{
-				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);		
-			}
+				hasJuncture = g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);		
+			}	
 
 			if (!hasJuncture) 
 			{
@@ -971,11 +987,11 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 
 		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
-			ClearInventoryReservationEx(dst.GetItem(), dst);
+			ClearInventoryReservationEx(itemDst, dst);
 		}
 		
 		//! Is called twice unfortunately...
-		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+		if (success && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
 			CheckForRope(src, dst);
 		}
@@ -1020,9 +1036,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		#endif
 
-		LocationSyncMoveEntity(src, dst);
+		if (success) 
+		{
+			LocationSyncMoveEntity(src, dst);
+			validation.m_Result = InventoryValidationResult.SUCCESS;
+		}
 
-		validation.m_Result = InventoryValidationResult.SUCCESS;
 		return true;
 	}
 
@@ -1106,6 +1125,35 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 			{
 				success = false;
+				#ifdef DIAG_DEVELOPER
+				if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsDesyncRepairEnable())
+				{
+				#endif
+					array<EntityAI> itemsToRepair = new array<EntityAI>;
+					InventoryLocation repairIl = new InventoryLocation();
+					itemSrc.GetInventory().GetCurrentInventoryLocation(repairIl);
+					
+					if(e.GetSrc() != repairIl)
+					{
+						itemsToRepair.Insert(itemSrc);
+					}
+	
+					if(itemDst && itemSrc != itemDst )
+					{
+						itemDst.GetInventory().GetCurrentInventoryLocation(repairIl);
+						if(e.GetSecondSrc() != repairIl)
+						{
+							itemsToRepair.Insert(itemDst);
+						}
+					}
+	
+					if (itemsToRepair.Count())
+					{
+						InventoryInputUserData.SendServerInventoryCheck(itemsToRepair, GetDayZPlayerOwner());
+					}
+				#ifdef DIAG_DEVELOPER
+				}
+				#endif
 			}
 			else
 			{
@@ -1175,6 +1223,14 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			
 			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 			{
+				InventoryLocation ilDst = e.GetDst();
+				if (ilDst)
+					SendRepairToClientDst(ilDst);
+
+				ilDst = e.GetSecondDst();
+				if (ilDst)
+					SendRepairToClientDst(ilDst);
+
 				success = false;
 			}
 			else
@@ -1230,6 +1286,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				}
 				#endif
 
+				validation.m_Result = InventoryValidationResult.FAILED;
 				validation.m_Reason = InventoryValidationReason.JUNCTURE_DENIED;
 				return true;
 			}
@@ -1241,15 +1298,15 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			
 			if (itemSrc != null && itemDst != null)
 			{
-				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc) && GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);
+				hasJuncture = g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc) && g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);
 			}
 			else if (itemSrc != null)
 			{
-				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc);
+				hasJuncture = g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemSrc);
 			}
 			else if (itemDst != null)
 			{
-				hasJuncture = GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);		
+				hasJuncture = g_Game.HasInventoryJuncture(GetDayZPlayerOwner(), itemDst);		
 			}
 
 			if (!hasJuncture) 
@@ -1283,318 +1340,398 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 
 		return true;
 	}
-
+	
 	bool ValidateSwap(inout Serializer ctx, InventoryValidation validation)
 	{
-		InventoryCommandType type = InventoryCommandType.SWAP;
+		DayZPlayer playerOwner = GetDayZPlayerOwner();
+		InventoryJunctureSwapValidation swapValidation = new InventoryJunctureSwapValidation(ctx);
+		if (!swapValidation)
+			return false;
 
-		InventoryLocation src1 = new InventoryLocation;
-		InventoryLocation src2 = new InventoryLocation;
+		array<EntityAI> itemsToRepair;
+		InventoryLocation repairIl;
 
-		InventoryLocation dst1 = new InventoryLocation;
-		InventoryLocation dst2 = new InventoryLocation;
-
-		bool skippedSwap = false;
-		bool success = true;
-		
-		src1.ReadFromContext(ctx);
-		src2.ReadFromContext(ctx);
-		dst1.ReadFromContext(ctx);
-		dst2.ReadFromContext(ctx);
-		ctx.Read(skippedSwap);
-		
 		#ifdef ENABLE_LOGGING
 		if (LogManager.IsInventoryMoveLogEnable())
 		{
-			Debug.InventoryMoveLog("STS = " + GetDayZPlayerOwner().GetSimulationTimeStamp() + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2), "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );	
+			Debug.InventoryMoveLog("STS = " + playerOwner.GetSimulationTimeStamp() + " src1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src1) + " dst1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst1) + " src2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src2) + " dst2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst2), "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString() );	
 		}
 		#endif
-
-		if (validation.m_IsRemote && (!src1.GetItem() || !src2.GetItem()))
+						
+		if (validation.m_IsRemote && (!swapValidation.m_SrcItem1 || !swapValidation.m_SrcItem2))
 		{
-			if (skippedSwap)
+			if (!swapValidation.m_SrcItem2 && swapValidation.m_SrcItem1) 
 			{
-				#ifdef ENABLE_LOGGING
-				if (LogManager.IsInventoryMoveLogEnable())
-				{
-					Debug.InventoryMoveLog("Remote - skipped", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
-				}
-				#endif
-/*
-				if (LogManager.IsSyncLogEnable())
-				{
-					syncDebugPrint("[syncinv] HandleInputData remote input (cmd=SWAP) dropped, swap is skipped");
-				}
-*/
+				// Treat as a simple move of srcItem1 to dst1 on remote clients
+				LocationSyncMoveEntity(swapValidation.m_Src1, swapValidation.m_Dst1);
+				validation.m_Result = InventoryValidationResult.SUCCESS;
+				return true;
+			}
+			else if (!swapValidation.m_SrcItem1 && swapValidation.m_SrcItem2) 
+			{
+				// Treat as a simple move of srcItem2 to dst2 on remote clients
+				LocationSyncMoveEntity(swapValidation.m_Src2, swapValidation.m_Dst2);
+				validation.m_Result = InventoryValidationResult.SUCCESS;
+				return true;
 			}
 			else
 			{
-				//! kumarjac: This indicates a failure in replication relationships as player full inventory should be synchronized always if player exists on the remote
-			
-				#ifdef ENABLE_LOGGING
-				if (LogManager.IsInventoryMoveLogEnable())
+				if (swapValidation.m_SkippedSwap)
 				{
-					Debug.InventoryMoveLog("Failed - item1 or item2 not exist", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+					#ifdef ENABLE_LOGGING
+					if (LogManager.IsInventoryMoveLogEnable())
+					{
+						Debug.InventoryMoveLog("Remote - skipped", "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString() );
+					}
+					#endif
 				}
-				#endif
-
-				Error("[syncinv] HandleInputData remote input (cmd=SWAP) dropped, item not in bubble");
+				else
+				{
+					//! kumarjac: This indicates a failure in replication relationships as player full inventory should be synchronized always if player exists on the remote
+					#ifdef ENABLE_LOGGING
+					if (LogManager.IsInventoryMoveLogEnable())
+					{
+						Debug.InventoryMoveLog("Failed - item1 or item2 not exist", "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString() );
+					}
+					#endif
+	
+					Error("[syncinv] HandleInputData remote input (cmd=SWAP) dropped, item not in bubble");
+				}
 			}
 
 			return true;
 		}
 				
-		EnableMovableOverride(src1.GetItem());
-		EnableMovableOverride(src2.GetItem());
-		
-		//! Do not check for action validity on remotes or when performing through juncture. 
-		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
-		//! Checking at this point is both wasteful and can result in a failure which leads to desync
-		if (success && !validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckRequestSrc(src1, GameInventory.c_MaxItemDistanceRadius))
-		{
-#ifdef ENABLE_LOGGING
-			if (LogManager.IsInventoryMoveLogEnable())
-			{
-				Debug.InventoryMoveLog("Failed - CheckRequestSrc1", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
-			}
-			
-			if (LogManager.IsSyncLogEnable())
-			{
-				syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " failed src1 check with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src1=" + InventoryLocation.DumpToStringNullSafe(src1));
-			}
-#endif
-			
-			RemoveMovableOverride(src1.GetItem());
-			RemoveMovableOverride(src2.GetItem());
-			
-			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
-			{
-				success = false;
-			}
-			else
-			{
-				return true;
-			}
-		}
+		EnableMovableOverride(swapValidation.m_SrcItem1);
+		EnableMovableOverride(swapValidation.m_SrcItem2);
 
-		//! Do not check for action validity on remotes or when performing through juncture. 
-		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
-		//! Checking at this point is both wasteful and can result in a failure which leads to desync
-		if (success && !validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckRequestSrc(src2, GameInventory.c_MaxItemDistanceRadius))
-		{
-#ifdef ENABLE_LOGGING
-			if (LogManager.IsInventoryMoveLogEnable())
-			{
-				Debug.InventoryMoveLog("Failed - CheckRequestSrc2", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
-			}
-			
-			if (LogManager.IsSyncLogEnable())
-			{
-				syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " failed src2 check with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2));
-			}
-#endif
-			
-			RemoveMovableOverride(src1.GetItem());
-			RemoveMovableOverride(src2.GetItem());
-			
-			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
-			{
-				success = false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-
-		//! Do not check for action validity on remotes or when performing through juncture. 
-		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
-		//! Checking at this point is both wasteful and can result in a failure which leads to desync
-		if (success && !validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckSwapItemsRequest(src1, src2, dst1, dst2, GameInventory.c_MaxItemDistanceRadius))
-		{
-#ifdef ENABLE_LOGGING
-			if (LogManager.IsInventoryMoveLogEnable())
-			{
-				Debug.InventoryMoveLog("Failed - CheckSwapItemsRequest", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
-			}
-			
-			if (LogManager.IsSyncLogEnable())
-			{
-				syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " is cheating with cmd=" + typename.EnumToString(InventoryCommandType, type) + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
-			}
-#endif
-			
-			RemoveMovableOverride(src1.GetItem());
-			RemoveMovableOverride(src2.GetItem());
-			
-			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
-			{
-				success = false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-				
-		RemoveMovableOverride(src1.GetItem());
-		RemoveMovableOverride(src2.GetItem());
-		
-		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
-		{
-			ClearInventoryReservationEx(dst1.GetItem(), dst1);
-			ClearInventoryReservationEx(dst2.GetItem(), dst2);
-		}				
-		
-		//! Do not check for action validity on remotes or when performing through juncture. 
-		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
-		//! Checking at this point is both wasteful and can result in a failure which leads to desync
-		if (success && !validation.m_IsRemote && !validation.m_IsJuncture && !GameInventory.CanForceSwapEntitiesEx(src1.GetItem(), dst1, src2.GetItem(), dst2))
+		if (swapValidation.m_Success && !validation.m_IsRemote && !validation.m_IsJuncture && (swapValidation.m_SrcItem1 != swapValidation.m_DstItem1 || swapValidation.m_SrcItem2 != swapValidation.m_DstItem2) )
 		{
 			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				if(swapValidation.m_SrcItem1 != swapValidation.m_DstItem1)
+					Debug.InventoryMoveLog("Failed - src and dst are for different for first item", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+				if(swapValidation.m_SrcItem2 != swapValidation.m_DstItem2)
+					Debug.InventoryMoveLog("Failed - src and dst are for different for second item", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+			}
+
+			if (LogManager.IsSyncLogEnable())
+			{
+				if(swapValidation.m_SrcItem1 != swapValidation.m_DstItem1)
+					syncDebugPrint("[syncinv] HandleInputData Failed - first src and dst are for different items src item =" + swapValidation.m_SrcItem1 + " dst item =" + swapValidation.m_DstItem1);
+				if(swapValidation.m_SrcItem2 != swapValidation.m_DstItem2)
+					syncDebugPrint("[syncinv] HandleInputData Failed - second src and dst are for different items src item =" + swapValidation.m_SrcItem1 + " dst item =" + swapValidation.m_DstItem1);
+			}
+			#endif
+
+			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+			{
+				swapValidation.m_Success = false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		
+		//! Do not check for action validity on remotes or when performing through juncture. 
+		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
+		//! Checking at this point is both wasteful and can result in a failure which leads to desync
+		if (swapValidation.m_Success && !validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckRequestSrc(swapValidation.m_Src1, GameInventory.c_MaxItemDistanceRadius))
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed - CheckRequestSrc1", "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString() );
+			}
+			
+			if (LogManager.IsSyncLogEnable())
+			{
+				syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " failed src1 check with cmd=" + typename.EnumToString(InventoryCommandType, InventoryCommandType.SWAP) + " src1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src1));
+			}
+			#endif
+			
+			RemoveMovableOverride(swapValidation.m_SrcItem1);
+			RemoveMovableOverride(swapValidation.m_SrcItem2);
+			
+			if (playerOwner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+			{
+				swapValidation.m_Success = false;
+				#ifdef DIAG_DEVELOPER
+				if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsDesyncRepairEnable())
+				{
+				#endif
+					itemsToRepair = new array<EntityAI>;
+					repairIl = new InventoryLocation;
+	
+					swapValidation.m_SrcItem1.GetInventory().GetCurrentInventoryLocation(repairIl);
 					
+					if(swapValidation.m_Src1 != repairIl)
+					{
+						itemsToRepair.Insert(swapValidation.m_SrcItem1);
+					}
+	
+					swapValidation.m_SrcItem2.GetInventory().GetCurrentInventoryLocation(repairIl);
+					if(swapValidation.m_Src2 != repairIl)
+					{
+						itemsToRepair.Insert(swapValidation.m_SrcItem2);
+					}
+	
+					if (itemsToRepair.Count())
+					{
+						InventoryInputUserData.SendServerInventoryCheck(itemsToRepair, GetDayZPlayerOwner());
+					}
+				#ifdef DIAG_DEVELOPER
+				}
+				#endif
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		//! Do not check for action validity on remotes or when performing through juncture. 
+		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
+		//! Checking at this point is both wasteful and can result in a failure which leads to desync
+		if (swapValidation.m_Success && !validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckRequestSrc(swapValidation.m_Src2, GameInventory.c_MaxItemDistanceRadius))
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed - CheckRequestSrc2", "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString() );
+			}
+			
+			if (LogManager.IsSyncLogEnable())
+			{
+				syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " failed src2 check with cmd=" + typename.EnumToString(InventoryCommandType, InventoryCommandType.SWAP) + " src2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src2));
+			}
+			#endif
+			
+			RemoveMovableOverride(swapValidation.m_SrcItem1);
+			RemoveMovableOverride(swapValidation.m_SrcItem2);
+			
+			if (playerOwner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+			{
+				swapValidation.m_Success = false;
+				#ifdef DIAG_DEVELOPER
+				if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsDesyncRepairEnable())
+				{
+				#endif
+					itemsToRepair = new array<EntityAI>;
+					repairIl = new InventoryLocation;
+	
+					swapValidation.m_SrcItem2.GetInventory().GetCurrentInventoryLocation(repairIl);
+					if(swapValidation.m_Src2 != repairIl)
+					{
+						itemsToRepair.Insert(swapValidation.m_SrcItem2);
+					}
+	
+					if (itemsToRepair.Count())
+					{
+						InventoryInputUserData.SendServerInventoryCheck(itemsToRepair, GetDayZPlayerOwner());
+					}
+				#ifdef DIAG_DEVELOPER
+				}
+				#endif
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		//! Do not check for action validity on remotes or when performing through juncture. 
+		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
+		//! Checking at this point is both wasteful and can result in a failure which leads to desync
+		if (swapValidation.m_Success && !validation.m_IsRemote && !validation.m_IsJuncture && !PlayerCheckSwapItemsRequest(swapValidation.m_Src1, swapValidation.m_Src2, swapValidation.m_Dst1, swapValidation.m_Dst2, GameInventory.c_MaxItemDistanceRadius))
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed - CheckSwapItemsRequest", "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString());
+			}
+			
+			if (LogManager.IsSyncLogEnable())
+			{
+				syncDebugPrint("[cheat] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " is cheating with cmd=" + typename.EnumToString(InventoryCommandType, InventoryCommandType.SWAP) + " src1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst2));
+			}
+			#endif
+			
+			RemoveMovableOverride(swapValidation.m_SrcItem1);
+			RemoveMovableOverride(swapValidation.m_SrcItem2);
+			
+			if (playerOwner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+			{
+				swapValidation.m_Success = false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		RemoveMovableOverride(swapValidation.m_SrcItem1);
+		RemoveMovableOverride(swapValidation.m_SrcItem2);
+		
+		if (playerOwner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
+		{
+			ClearInventoryReservationEx(swapValidation.m_DstItem1, swapValidation.m_Dst1);
+			ClearInventoryReservationEx(swapValidation.m_DstItem2, swapValidation.m_Dst2);
+		}
+		
+		//! Do not check for action validity on remotes or when performing through juncture. 
+		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
+		//! Checking at this point is both wasteful and can result in a failure which leads to desync
+		if (swapValidation.m_Success && !validation.m_IsRemote && !validation.m_IsJuncture && !GameInventory.CanForceSwapEntitiesEx(swapValidation.m_SrcItem1, swapValidation.m_Dst1, swapValidation.m_SrcItem2, swapValidation.m_Dst2))
+		{
+		#ifdef ENABLE_LOGGING	
 			#ifdef DEVELOPER
 			DumpInventoryDebug();
 			#endif
 				
 			if (LogManager.IsInventoryMoveLogEnable())
 			{
-				Debug.InventoryMoveLog("Failed - CanForceSwapEntitiesEx", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+				Debug.InventoryMoveLog("Failed - CanForceSwapEntitiesEx", "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString());
 			}
-			#endif
+		#endif
 			
-			if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+			if (playerOwner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 			{
-				success = false;
+				if (swapValidation.m_Dst1)
+					SendRepairToClientDst(swapValidation.m_Dst1);
+
+				if (swapValidation.m_Dst2)
+					SendRepairToClientDst(swapValidation.m_Dst2);
+				swapValidation.m_Success = false;
 			}
 			else
 			{
-				Error("[desync] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " CANNOT swap cmd=" + typename.EnumToString(InventoryCommandType, type) + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) +" | src2=" + InventoryLocation.DumpToStringNullSafe(src2) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+				Error("[desync] HandleInputData man=" + Object.GetDebugName(GetManOwner()) + " CANNOT swap cmd=" + typename.EnumToString(InventoryCommandType, InventoryCommandType.SWAP) + " src1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src1) + " dst1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst1) +" | src2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src2) + " dst2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst2));
 				return true;
 			}
 		}
 	
-		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
+		if (playerOwner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
-			AddInventoryReservationEx(dst1.GetItem(), dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
-			AddInventoryReservationEx(dst2.GetItem(), dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
+			AddInventoryReservationEx(swapValidation.m_DstItem1, swapValidation.m_Dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
+			AddInventoryReservationEx(swapValidation.m_DstItem2, swapValidation.m_Dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
 		}
 
-		if (!(src1.IsValid() && src2.IsValid() && dst1.IsValid() && dst2.IsValid()))
+		if (!(swapValidation.m_Src1.IsValid() && swapValidation.m_Src2.IsValid() && swapValidation.m_Dst1.IsValid() && swapValidation.m_Dst2.IsValid()))
 		{
-			Error("HandleInputData: cmd=" + typename.EnumToString(InventoryCommandType, type) + " invalid input(s): src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+			Error("HandleInputData: cmd=" + typename.EnumToString(InventoryCommandType, InventoryCommandType.SWAP) + " invalid input(s): src1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(swapValidation.m_Dst2));
 			return true;
 		}
-
-		//! Check if this this is being executed on the server and not by a juncture or AI
-		if (!validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
+		
+		if (playerOwner.GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)
 		{
-			JunctureRequestResult result_sw = TryAcquireTwoInventoryJuncturesFromServer(GetDayZPlayerOwner(), src1, src2, dst1, dst2);
-			if (result_sw == JunctureRequestResult.JUNCTURE_NOT_REQUIRED)
+			//! Check if this this is being executed on the server and not by a juncture or AI
+			if (!validation.m_IsJuncture)
 			{
-				#ifdef ENABLE_LOGGING
-				if (LogManager.IsInventoryMoveLogEnable())
+				JunctureRequestResult resultSwap = TryAcquireTwoInventoryJuncturesFromServer(playerOwner, swapValidation.m_Src1, swapValidation.m_Src2, swapValidation.m_Dst1, swapValidation.m_Dst2);
+				if (resultSwap == JunctureRequestResult.JUNCTURE_NOT_REQUIRED)
 				{
-					Debug.InventoryMoveLog("Juncture not required", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+					#ifdef ENABLE_LOGGING
+					if (LogManager.IsInventoryMoveLogEnable())
+					{
+						Debug.InventoryMoveLog("Juncture not required", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString());
+					}
+					#endif
+	
+					//! Continuing on with execution of rest of the function
 				}
-				#endif
-
-				//! Continuing on with execution of rest of the function
+				else if (swapValidation.m_Success && resultSwap == JunctureRequestResult.JUNCTURE_ACQUIRED)
+				{
+					#ifdef ENABLE_LOGGING
+					if (LogManager.IsInventoryMoveLogEnable())
+					{
+						Debug.InventoryMoveLog("Juncture sended", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+					}
+					#endif
+					
+					validation.m_Result = InventoryValidationResult.JUNCTURE;
+					EnableMovableOverride(swapValidation.m_SrcItem1);
+					EnableMovableOverride(swapValidation.m_SrcItem2);
+					return true;
+				}
+				else
+				{
+					#ifdef ENABLE_LOGGING
+					if (LogManager.IsInventoryMoveLogEnable())
+					{
+						Debug.InventoryMoveLog("Juncture denied", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+					}
+					#endif
+					
+					validation.m_Result = InventoryValidationResult.FAILED;
+					validation.m_Reason = InventoryValidationReason.JUNCTURE_DENIED;
+					return true;
+				}
 			}
-			else if (success && result_sw == JunctureRequestResult.JUNCTURE_ACQUIRED)
+			//! Check whether the juncture for the related player and items has been acquired.
+			else if (validation.m_IsJuncture)
 			{
-				#ifdef ENABLE_LOGGING
-				if (LogManager.IsInventoryMoveLogEnable())
+				bool hasJuncture = false;
+				int nonNullCount = 0;
+				bool failed = false;
+				
+				if (swapValidation.m_SrcItem1 != null)
 				{
-					Debug.InventoryMoveLog("Juncture sended", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+				    nonNullCount++;
+				    if (!g_Game.HasInventoryJuncture(playerOwner, swapValidation.m_SrcItem1))
+				        failed = true;
 				}
-				#endif
-
-				validation.m_Result = InventoryValidationResult.JUNCTURE;
-				EnableMovableOverride(src1.GetItem());
-				EnableMovableOverride(src2.GetItem());
-				return true;
-			}
-			else
-			{
-				#ifdef ENABLE_LOGGING
-				if (LogManager.IsInventoryMoveLogEnable())
+				
+				if (!failed && swapValidation.m_SrcItem2 != null)
 				{
-					Debug.InventoryMoveLog("Juncture denied", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+				    nonNullCount++;
+				    if (!g_Game.HasInventoryJuncture(playerOwner, swapValidation.m_SrcItem2))
+				        failed = true;
 				}
-				#endif
-
-				validation.m_Result = InventoryValidationResult.FAILED;
-				validation.m_Reason = InventoryValidationReason.JUNCTURE_DENIED;
-				return true;
+				
+				if (!failed && swapValidation.m_DstItem1 != null)
+				{
+				    nonNullCount++;
+				    if (!g_Game.HasInventoryJuncture(playerOwner, swapValidation.m_DstItem1))
+				        failed = true;
+				}
+				
+				if (!failed && swapValidation.m_DstItem2 != null)
+				{
+				    nonNullCount++;
+				    if (!g_Game.HasInventoryJuncture(playerOwner, swapValidation.m_DstItem2))
+				        failed = true;
+				}
+				
+				hasJuncture = (nonNullCount > 0 && !failed);
+	
+				if (!hasJuncture) 
+				{
+					swapValidation.m_Success = false;
+				}		
 			}
 		}
-		// Check whether the juncture for the related player and items has been acquired.
-		else if (validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER)		
+		
+		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT)
 		{
-			bool hasJuncture = false;
-			int nonNullCount = 0;
-			bool failed = false;
-
-			EntityAI srcItem1 = src1.GetItem();
-			EntityAI srcItem2 = src2.GetItem();
-			EntityAI dstItem1 = dst1.GetItem();
-			EntityAI dstItem2 = dst2.GetItem();
-
-			if (srcItem1 != null)
-			{
-			    nonNullCount++;
-			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), srcItem1))
-			        failed = true;
-			}
-			
-			if (!failed && srcItem2 != null)
-			{
-			    nonNullCount++;
-			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), srcItem2))
-			        failed = true;
-			}
-			
-			if (!failed && dstItem1 != null)
-			{
-			    nonNullCount++;
-			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), dstItem1))
-			        failed = true;
-			}
-			
-			if (!failed && dstItem2 != null)
-			{
-			    nonNullCount++;
-			    if (!GetGame().HasInventoryJuncture(GetDayZPlayerOwner(), dstItem2))
-			        failed = true;
-			}
-			
-			hasJuncture = (nonNullCount > 0 && !failed);
-
-			if (!hasJuncture) 
-			{
-				success = false;
-			}		
-		}
-			
-		if (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_CLIENT )
-		{
-			ClearInventoryReservationEx(dst1.GetItem(), dst1);
-			ClearInventoryReservationEx(dst2.GetItem(), dst2);
+			ClearInventoryReservationEx(swapValidation.m_DstItem1, swapValidation.m_Dst1);
+			ClearInventoryReservationEx(swapValidation.m_DstItem2, swapValidation.m_Dst2);
 		}
 		else
 		{
-			GetGame().ClearJunctureEx(GetDayZPlayerOwner(), dst1.GetItem());
-			GetGame().ClearJunctureEx(GetDayZPlayerOwner(), dst2.GetItem());
+			g_Game.ClearJunctureEx(playerOwner, swapValidation.m_DstItem1);
+			g_Game.ClearJunctureEx(playerOwner, swapValidation.m_DstItem2);
 		}
 		
 		//TODO: hotfix solution
-		if (!validation.m_IsRemote && validation.m_IsJuncture && !SwapCheckExclusionMaskLocal(src1,src2,dst1,dst2))
+		if (!validation.m_IsRemote && validation.m_IsJuncture && !SwapCheckExclusionMaskLocal(swapValidation.m_Src1, swapValidation.m_Src2, swapValidation.m_Dst1, swapValidation.m_Dst2))
 		{
 			#ifdef ENABLE_LOGGING
 			if (LogManager.IsInventoryMoveLogEnable())
 			{
-				Debug.InventoryMoveLog("Failed - !SwapCheckExclusionMaskLocal - condition failed locally", "SYNC_MOVE" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+				Debug.InventoryMoveLog("Failed - !SwapCheckExclusionMaskLocal - condition failed locally", "SYNC_MOVE" , "n/a", "ProcessInputData", playerOwner.ToString() );
 			}
 			#endif
 			return false;
@@ -1603,18 +1740,18 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		#ifdef ENABLE_LOGGING
 		if (LogManager.IsInventoryMoveLogEnable())
 		{
-			Debug.InventoryMoveLog("Success - item swap", "SWAP" , "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+			Debug.InventoryMoveLog("Success - item swap", "SWAP" , "n/a", "ProcessInputData", playerOwner.ToString() );
 		}
 		#endif
-		if (success)
-		{
-			bool isNotSkipped = LocationSwap(src1, src2, dst1, dst2);
-		
-			ctx = new ScriptInputUserData();
-			InventoryInputUserData.SerializeSwap(ctx, src1, src2, dst1, dst2, !isNotSkipped);
 
+		if (swapValidation.m_Success)
+		{
+			bool isNotSkipped = LocationSwap(swapValidation.m_Src1, swapValidation.m_Src2, swapValidation.m_Dst1, swapValidation.m_Dst2);
+			ctx = new ScriptInputUserData();
+			InventoryInputUserData.SerializeSwap(ctx, swapValidation.m_Src1, swapValidation.m_Src2, swapValidation.m_Dst1, swapValidation.m_Dst2, !isNotSkipped);
 			validation.m_Result = InventoryValidationResult.SUCCESS;
 		}
+		
 		return true;
 	}
 
@@ -1639,6 +1776,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		InventoryValidation validation = new InventoryValidation();
 		validation.m_IsJuncture = isJuncture;
 		validation.m_IsRemote = isRemote;
+		validation.m_Mode = InventoryMode.JUNCTURE;
 
 		//! Serializer can be updated and re-written to when we may want to only correct the client instead of denying the inventory command
 		Serializer serializer = ctx;
@@ -1736,7 +1874,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 	
 	bool IsServerOrLocalPlayer()
 	{
-		return (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER) || (GetDayZPlayerOwner() == GetGame().GetPlayer());
+		return (GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER) || (GetDayZPlayerOwner() == g_Game.GetPlayer());
 	}
 	
 	bool StoreInputForRemotes (bool handling_juncture, bool remote, ParamsReadContext ctx)
@@ -1787,7 +1925,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 
 				if (GetDayZPlayerOwner().NeedInventoryJunctureFromServer(src.GetItem(), src.GetParent(), dst.GetParent()))
 				{
-					if (GetGame().AddInventoryJunctureEx(GetDayZPlayerOwner(), src.GetItem(), dst, true, GameInventory.c_InventoryReservationTimeoutMS))
+					if (g_Game.AddInventoryJunctureEx(GetDayZPlayerOwner(), src.GetItem(), dst, true, GameInventory.c_InventoryReservationTimeoutMS))
 					{
 #ifdef ENABLE_LOGGING
 						if (LogManager.IsSyncLogEnable())
@@ -1895,8 +2033,19 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				
 					if (LocationCanMoveEntity(deferred_take_to_dst.m_src,deferred_take_to_dst.m_dst))
 					{
+						#ifdef DIAG_DEVELOPER
+						if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+						{
+							LocationSyncMoveEntity(deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+						}
+						else
+						{
+						#endif
 						InventoryInputUserData.SendInputUserDataMove(InventoryCommandType.SYNC_MOVE, deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
 						LocationSyncMoveEntity(deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+						#ifdef DIAG_DEVELOPER
+						}
+						#endif
 					}
 					else
 					{
@@ -1918,10 +2067,21 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				
 					if (LocationCanMoveEntity(deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst))
 					{
-						DayZPlayer player = GetGame().GetPlayer();
+						#ifdef DIAG_DEVELOPER
+						if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+						{
+							LocationSyncMoveEntity(deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+						}
+						else
+						{
+						#endif
+						DayZPlayer player = g_Game.GetPlayer();
 						player.GetHumanInventory().AddInventoryReservationEx(deferred_take_to_dst.m_dst.GetItem(), deferred_take_to_dst.m_dst, GameInventory.c_InventoryReservationTimeoutShortMS);
 						EnableMovableOverride(deferred_take_to_dst.m_dst.GetItem());	
 						InventoryInputUserData.SendInputUserDataMove(InventoryCommandType.SYNC_MOVE, deferred_take_to_dst.m_src, deferred_take_to_dst.m_dst);
+						#ifdef DIAG_DEVELOPER
+						}
+						#endif
 					}
 					else
 					{
@@ -2020,8 +2180,21 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					case InventoryMode.PREDICTIVE:
 						if (CanSwapEntitiesEx(deferred_swap_entities.m_dst1.GetItem(),deferred_swap_entities.m_dst2.GetItem()) )
 						{
+							#ifdef DIAG_DEVELOPER
+							if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+							{
+								LocationSwap(src1, src2, deferred_swap_entities.m_dst1, deferred_swap_entities.m_dst2);
+							}
+							else
+							{
+							#endif
+
 							InventoryInputUserData.SendInputUserDataSwap(src1, src2, deferred_swap_entities.m_dst1, deferred_swap_entities.m_dst2);
 							LocationSwap(src1, src2, deferred_swap_entities.m_dst1, deferred_swap_entities.m_dst2);
+
+							#ifdef DIAG_DEVELOPER
+							}
+							#endif
 						}
 						else
 						{
@@ -2037,12 +2210,25 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					case InventoryMode.JUNCTURE:
 						if (CanSwapEntitiesEx(deferred_swap_entities.m_dst1.GetItem(),deferred_swap_entities.m_dst2.GetItem()) )
 						{
-							DayZPlayer player = GetGame().GetPlayer();
+							#ifdef DIAG_DEVELOPER
+							if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+							{
+								LocationSwap(src1, src2, deferred_swap_entities.m_dst1, deferred_swap_entities.m_dst2);
+							}
+							else
+							{
+							#endif
+
+							DayZPlayer player = g_Game.GetPlayer();
 							player.GetHumanInventory().AddInventoryReservationEx(deferred_swap_entities.m_dst1.GetItem(), deferred_swap_entities.m_dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
 							player.GetHumanInventory().AddInventoryReservationEx(deferred_swap_entities.m_dst2.GetItem(), deferred_swap_entities.m_dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
 							EnableMovableOverride(deferred_swap_entities.m_dst1.GetItem());
 							EnableMovableOverride(deferred_swap_entities.m_dst2.GetItem());
 							InventoryInputUserData.SendInputUserDataSwap(src1, src2, deferred_swap_entities.m_dst1, deferred_swap_entities.m_dst2);
+
+							#ifdef DIAG_DEVELOPER
+							}
+							#endif
 						}
 						else
 						{
@@ -2109,7 +2295,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			deferred_force_swap_entities.m_item1.GetInventory().GetCurrentInventoryLocation(src1);
 			deferred_force_swap_entities.m_item2.GetInventory().GetCurrentInventoryLocation(src2);
 
-			DayZPlayer player = GetGame().GetPlayer();
+			DayZPlayer player = g_Game.GetPlayer();
 
 			if (LogManager.IsInventoryMoveLogEnable())
 			{
@@ -2121,8 +2307,19 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				case InventoryMode.PREDICTIVE:
 					if (CanForceSwapEntitiesEx(deferred_force_swap_entities.m_dst1.GetItem(),deferred_force_swap_entities.m_dst1,deferred_force_swap_entities.m_dst2.GetItem(), deferred_force_swap_entities.m_dst2))
 					{
-						InventoryInputUserData.SendInputUserDataSwap(src1, src2, deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2);
-						LocationSwap(src1, src2, deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2);
+						#ifdef DIAG_DEVELOPER
+						if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+						{
+							LocationSwap(src1, src2, deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2);
+						}
+						else
+						{
+						#endif
+							InventoryInputUserData.SendInputUserDataSwap(src1, src2, deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2);
+							LocationSwap(src1, src2, deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2);
+						#ifdef DIAG_DEVELOPER
+						}
+						#endif
 					}
 					else
 					{
@@ -2137,11 +2334,24 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 
 				case InventoryMode.JUNCTURE:
 					if (CanForceSwapEntitiesEx(deferred_force_swap_entities.m_dst1.GetItem(), deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2.GetItem(), deferred_force_swap_entities.m_dst2))
-					{	
+					{
+						#ifdef DIAG_DEVELOPER
+						if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+						{
+							LocationSwap(src1, src2, deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2);
+						}
+						else
+						{
+						#endif
+
+	
 						player.GetHumanInventory().AddInventoryReservationEx(deferred_force_swap_entities.m_item1, deferred_force_swap_entities.m_dst1, GameInventory.c_InventoryReservationTimeoutShortMS);
 						player.GetHumanInventory().AddInventoryReservationEx(deferred_force_swap_entities.m_item2, deferred_force_swap_entities.m_dst2, GameInventory.c_InventoryReservationTimeoutShortMS);
 				
 						InventoryInputUserData.SendInputUserDataSwap(src1, src2, deferred_force_swap_entities.m_dst1, deferred_force_swap_entities.m_dst2);
+						#ifdef DIAG_DEVELOPER
+						}
+						#endif
 					}
 					else
 					{
@@ -2165,7 +2375,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 	
 	static void SendServerHandEventViaJuncture (notnull DayZPlayer player, HandEventBase e)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (e.IsServerSideOnly())
 			{
@@ -2187,7 +2397,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 						}
 #endif
 
-						if (GetGame().AddInventoryJunctureEx(player, src.GetItem(), dst, true, GameInventory.c_InventoryReservationTimeoutMS))
+						if (g_Game.AddInventoryJunctureEx(player, src.GetItem(), dst, true, GameInventory.c_InventoryReservationTimeoutMS))
 						{
 #ifdef ENABLE_LOGGING
 							if (LogManager.IsSyncLogEnable())
@@ -2402,6 +2612,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			il.SetHands(GetInventoryOwner(), itemInHands);
 			
 			InventoryValidation validation = new InventoryValidation();
+			validation.m_Mode = mode;
 			if (e.CanPerformEventEx(validation))
 			{
 				m_DeferredEvent = new DeferredHandEvent(mode, e);
@@ -2414,7 +2625,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			m_DeferredEvent = null;
 
 			//! Let the client know a failure happened
-			if (!GetGame().IsMultiplayer() || GetGame().IsClient())
+			if (!g_Game.IsMultiplayer() || g_Game.IsClient())
 			{
 				//! If singleplayer or the client is executing this
 				OnInventoryFailure(InventoryCommandType.HAND_EVENT, validation.m_Reason, e.GetSrc(), e.GetDst());
@@ -2433,6 +2644,14 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		return false;
 	}
 	
+	void SyncDeferredEventToRemotes()
+	{
+		DeferredHandEvent deferred_hand_event = DeferredHandEvent.Cast(m_DeferredEvent);
+		if (!deferred_hand_event)
+			return;
+
+		SyncHandEventToRemote(deferred_hand_event.m_event);
+	}
 	
 	void HandleHandEvent(DeferredEvent deferred_event)
 	{
@@ -2454,6 +2673,8 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 				hndDebugPrint("[inv] HumanInventory::HandEvent(" + typename.EnumToString(InventoryMode, deferred_hand_event.m_mode) + ") ev=" + deferred_hand_event.m_event.DumpToString());
 			}
 
+			validation.m_Mode = deferred_hand_event.m_mode;
+
 			switch (deferred_hand_event.m_mode)
 			{
 				case InventoryMode.PREDICTIVE:
@@ -2467,8 +2688,19 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					deferred_hand_event.ClearInventoryReservation(this);
 					if (deferred_hand_event.m_event.CanPerformEventEx(validation))
 					{
+						#ifdef DIAG_DEVELOPER
+						if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+						{
+							ProcessHandEvent(deferred_hand_event.m_event);
+						}
+						else
+						{
+						#endif
 						InventoryInputUserData.SendInputUserDataHandEvent(deferred_hand_event.m_event);
 						ProcessHandEvent(deferred_hand_event.m_event);
+						#ifdef DIAG_DEVELOPER
+						}
+						#endif
 					}
 					break;
 
@@ -2483,6 +2715,14 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					deferred_hand_event.ClearInventoryReservation(this);
 					if (deferred_hand_event.m_event.CanPerformEventEx(validation))
 					{
+						#ifdef DIAG_DEVELOPER
+						if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsLocalOnlyMoveEnable())
+						{
+							ProcessHandEvent(deferred_hand_event.m_event);
+						}
+						else
+						{
+						#endif
 						deferred_hand_event.ReserveInventory(this);
 						InventoryInputUserData.SendInputUserDataHandEvent(deferred_hand_event.m_event);
 					
@@ -2495,6 +2735,9 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 							EnableMovableOverride(itemSrc);
 						if (itemDst)
 							EnableMovableOverride(itemDst);
+						#ifdef DIAG_DEVELOPER
+						}
+						#endif
 					}
 					break;
 
@@ -2595,6 +2838,13 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		{
 			result = CheckRequestSrc( GetManOwner(), src, radius);
 		}
+
+		if (result)
+		{
+			EntityAI item = src.GetItem().GetHierarchyRoot();
+			EntityAI root = item.GetHierarchyRoot();
+			result = vector.Distance(GetManOwner().GetPosition(), item.GetPosition()) < (radius + root.GetCollisionRadius());
+		}
 		
 		return result;
 	}
@@ -2615,20 +2865,84 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 					{
 						if (!player.IsRestrained() && !player.IsUnconscious())
 						{
-							return false;
+							result = false;
 						}
 					}
 				}
 			}
 		}
+
+		if (!LocationCanMoveEntity(src, dst))
+		{
+			result = false;
+		}
+
 		
 		if ( result )
 		{
 			result = CheckMoveToDstRequest( GetManOwner(), src, dst, radius);
 		}
+
+		if (result)
+		{
+			EntityAI item = dst.GetItem().GetHierarchyRoot();
+			EntityAI root = item.GetHierarchyRoot();
+			result = vector.Distance(GetManOwner().GetPosition(), item.GetPosition()) < (radius + root.GetCollisionRadius());
+		}
 		
 		return result;
 	}	
+
+	void SendRepairToClientDst(notnull InventoryLocation dst)
+	{
+		#ifdef DIAG_DEVELOPER
+		if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsDesyncRepairEnable())
+		{
+		#endif
+			array<EntityAI> itemsToRepair = new array<EntityAI>;
+			switch(dst.GetType())
+			{
+				case InventoryLocationType.CARGO:
+					InventoryLocation ilCargoItem = new InventoryLocation;
+					CargoBase cargo = dst.GetParent().GetInventory().GetCargo();
+					for(int i = cargo.GetItemCount() - 1; i >= 0 ; --i)
+					{
+						EntityAI itemInCargo = cargo.GetItem(i);
+						itemInCargo.GetInventory().GetCurrentInventoryLocation(ilCargoItem);
+						if (dst.CollidesWith(ilCargoItem))
+						{
+							itemsToRepair.Insert(itemInCargo);
+						}
+					}
+					break;
+				case InventoryLocationType.ATTACHMENT:
+					EntityAI entityInAttachment = dst.GetParent().GetInventory().FindAttachment(dst.GetSlot());
+			
+					if(entityInAttachment)
+					{
+						itemsToRepair.Insert(entityInAttachment);
+					}
+					break;
+				case InventoryLocationType.HANDS:
+					EntityAI entityInHands = GetEntityInHands();
+					if(entityInHands)
+					{
+						itemsToRepair.Insert(entityInHands);
+					}
+			
+					break;
+				default:
+					break;
+			}					
+	
+			if(itemsToRepair.Count() > 0)
+			{
+				InventoryInputUserData.SendServerInventoryCheck(itemsToRepair, GetDayZPlayerOwner());
+			}	
+		#ifdef DIAG_DEVELOPER
+		}
+		#endif
+	}
 	
 	bool PlayerCheckSwapItemsRequest( notnull InventoryLocation src1,  notnull InventoryLocation src2, notnull InventoryLocation dst1, notnull InventoryLocation dst2, float radius)
 	{
@@ -2677,6 +2991,25 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		if ( result )
 		{
 			result = CheckSwapItemsRequest( GetManOwner(), src1, src2, dst1, dst2, GameInventory.c_MaxItemDistanceRadius);
+		}
+
+		EntityAI item;
+		EntityAI root;
+
+		if (result)
+		{
+			item = dst1.GetItem().GetHierarchyRoot();
+			root = item.GetHierarchyRoot();
+			
+			result = vector.Distance(GetManOwner().GetPosition(), item.GetPosition()) < (radius + root.GetCollisionRadius());
+		}
+
+		if (result)
+		{
+			item = dst2.GetItem().GetHierarchyRoot();
+			root = item.GetHierarchyRoot();
+			
+			result = vector.Distance(GetManOwner().GetPosition(), item.GetPosition()) < (radius + root.GetCollisionRadius());
 		}
 		
 		return result;
@@ -2742,7 +3075,7 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		return !failed;
 	}
 	
-	//! DEPRECATED
+	[Obsolete("No replacement")]
 	bool ValidateDestroy(inout Serializer ctx, InventoryValidation validation)
 	{
 		InventoryCommandType type = InventoryCommandType.DESTROY;
@@ -2812,6 +3145,18 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 			return true;
 		}
 
+		if (GetInventoryOwner() != src.GetParent())		
+		{
+			#ifdef ENABLE_LOGGING
+			if (LogManager.IsInventoryMoveLogEnable())
+			{
+				Debug.InventoryMoveLog("Failed PlayerDoesNotOwnItem", "DESTROY", "n/a", "ProcessInputData", GetDayZPlayerOwner().ToString() );
+			}
+			#endif
+
+			return true;
+		}
+
 		#ifdef ENABLE_LOGGING
 		if (LogManager.IsInventoryMoveLogEnable())
 		{
@@ -2819,9 +3164,57 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		}
 		#endif
 
-		GetGame().ObjectDelete(src.GetItem());
+		g_Game.ObjectDelete(src.GetItem());
 
 		validation.m_Result = InventoryValidationResult.SUCCESS;
 		return true;
+	}
+
+	override bool OnInventoryCheck(int userDataType, ParamsReadContext ctx)
+	{
+		if (userDataType == INPUT_UDT_INVENTORY_CHECK)
+		{
+			bool correct = true;
+		
+			int count;
+			array<EntityAI> itemsToRepair = new array<EntityAI>;
+			InventoryLocation clientIl = new InventoryLocation;
+			InventoryLocation realIl = new InventoryLocation;
+			
+		
+			if(!ctx.Read(count))
+				return false;
+		
+			for (int i = 0; i < count; i++)
+			{	
+				if(!clientIl.ReadFromContext(ctx))
+				{
+					return false;
+				}
+			
+				clientIl.GetItem().GetInventory().GetCurrentInventoryLocation(realIl);
+				
+				if(clientIl != realIl)
+				{
+					itemsToRepair.Insert(clientIl.GetItem());
+					correct = false;
+				}
+			}
+			
+			if (itemsToRepair.Count())
+			{
+				#ifdef DIAG_DEVELOPER
+				if (PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug)).IsDesyncRepairEnable())
+				{
+				#endif
+					InventoryInputUserData.SendServerInventoryCheck(itemsToRepair, GetDayZPlayerOwner());
+				#ifdef DIAG_DEVELOPER
+				}
+				#endif
+			}
+			
+			return correct;
+		}
+		return false;
 	}
 }

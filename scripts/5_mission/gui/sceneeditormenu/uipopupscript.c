@@ -36,7 +36,7 @@ class UIPopupScript
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	protected UIPopupScript PopupBack()
 	{
-		SceneEditorMenu menu = SceneEditorMenu.Cast( GetGame().GetUIManager().GetMenu() );
+		SceneEditorMenu menu = SceneEditorMenu.Cast( g_Game.GetUIManager().GetMenu() );
 		return menu.PopupBack();
 	}
 
@@ -45,7 +45,7 @@ class UIPopupScript
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
 	protected UIPopupScript PopupOpen(int popup_id, Param param)
 	{
-		SceneEditorMenu menu = SceneEditorMenu.Cast( GetGame().GetUIManager().GetMenu() );
+		SceneEditorMenu menu = SceneEditorMenu.Cast( g_Game.GetUIManager().GetMenu() );
 		return menu.PopupOpen(popup_id, param);
 	}
 

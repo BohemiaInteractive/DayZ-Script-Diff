@@ -28,7 +28,7 @@ class ActionWorldLiquidActionSwitch: ActionSingleUseBase
 		if (Barrel_ColorBase.Cast(target_item) && !target_item.IsOpen())
 			return false;
 		
-		if ( target_item && item && Liquid.CanFillContainer( item, target_item.GetLiquidType(),true ) && Liquid.CanFillContainer( target_item, item.GetLiquidType(), true ) && !GetGame().IsInventoryOpen() ) //TODO find better condition than IsKindOf
+		if ( target_item && item && Liquid.CanFillContainer( item, target_item.GetLiquidType(),true ) && Liquid.CanFillContainer( target_item, item.GetLiquidType(), true ) && !g_Game.IsInventoryOpen() ) //TODO find better condition than IsKindOf
 		{
 			if ( target_item.GetQuantity() > target_item.GetQuantityMin() && item.GetQuantity() < item.GetQuantityMax() && !player.GetLiquidTendencyDrain() && Liquid.CanFillContainer( item, target_item.GetLiquidType() ) )
 			{

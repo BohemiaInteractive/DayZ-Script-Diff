@@ -42,8 +42,8 @@ class DebugMonitorValues
 	
 	void OnScheduledTick(float deltatime)
 	{
-		if ( GetGame().IsClient() ) return;
-		if ( !GetGame().IsDebugMonitor() ) return; // turned off in server config
+		if ( g_Game.IsClient() ) return;
+		if ( !g_Game.IsDebugMonitor() ) return; // turned off in server config
 		
 		m_TimeSinceLastTick += deltatime;
 		
@@ -135,7 +135,7 @@ class DebugMonitorValues
 				CachedObjectsParams.PARAM2_INT_FLOAT.param1 = value_type;
 				CachedObjectsParams.PARAM2_INT_FLOAT.param2 = value_float.param1;
 				//Print("SendingValue type " + value_type.ToString() + " value "  + value_float.ToString());
-				GetGame().RPCSingleParam(m_Player, ERPCs.RPC_DEBUG_MONITOR_FLT, CachedObjectsParams.PARAM2_INT_FLOAT, true, m_Player.GetIdentity());
+				g_Game.RPCSingleParam(m_Player, ERPCs.RPC_DEBUG_MONITOR_FLT, CachedObjectsParams.PARAM2_INT_FLOAT, true, m_Player.GetIdentity());
 			}
 			break;
 		case DebugMonitorValues.TYPE_LAST_DAMAGE:
@@ -145,7 +145,7 @@ class DebugMonitorValues
 				CachedObjectsParams.PARAM2_INT_STRING.param1 = value_type;
 				CachedObjectsParams.PARAM2_INT_STRING.param2 = value_string.param1;
 				//Print("SendingValue type " + value_type.ToString() + " value "  + value_string);
-				GetGame().RPCSingleParam(m_Player, ERPCs.RPC_DEBUG_MONITOR_STR, CachedObjectsParams.PARAM2_INT_STRING, true, m_Player.GetIdentity());
+				g_Game.RPCSingleParam(m_Player, ERPCs.RPC_DEBUG_MONITOR_STR, CachedObjectsParams.PARAM2_INT_STRING, true, m_Player.GetIdentity());
 			}
 			break;
 		}
@@ -153,7 +153,7 @@ class DebugMonitorValues
 
 	void ReceiveValue(int value_type, Param param)
 	{	
-		GetGame().GetMission().CreateDebugMonitor();
+		g_Game.GetMission().CreateDebugMonitor();
 		
 		switch (value_type)
 		{

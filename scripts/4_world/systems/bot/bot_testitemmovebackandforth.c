@@ -23,8 +23,9 @@ class BotTestItemMoveBackAndForth extends BotStateBase
 	{
 		//m_Entity = m_Owner.GetInventory().CreateAttachment("TaloonBag_Orange");
 		//m_Entity = m_Owner.GetInventory().FindAttachment();
-		EntityAI hgear = m_Owner.GetInventory().FindAttachment( InventorySlots.GetSlotIdFromString("Headgear") );
-		EntityAI mask = m_Owner.GetInventory().FindAttachment( InventorySlots.GetSlotIdFromString("Mask") );
+		GameInventory ownerInventory = m_Owner.GetInventory();
+		EntityAI hgear = ownerInventory.FindAttachment( InventorySlots.GetSlotIdFromString("Headgear") );
+		EntityAI mask = ownerInventory.FindAttachment( InventorySlots.GetSlotIdFromString("Mask") );
 
 		if (hgear)
 			m_Entity = hgear;

@@ -141,7 +141,7 @@ class ExplosivesBase : ItemBase
 	{
 		super.OnPlacementComplete(player, position, orientation);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			SetOrientation(orientation);
 			SetPosition(position);
@@ -159,6 +159,11 @@ class ExplosivesBase : ItemBase
 		return string.Empty;
 	}
 	
+	string GetDisarmSoundsetUnpaired()
+	{
+		return string.Empty;
+	}
+	
 	override void InitItemSounds()
 	{
 		super.InitItemSounds();
@@ -170,6 +175,9 @@ class ExplosivesBase : ItemBase
 	
 		if (GetDisarmSoundset() != string.Empty)
 			handler.AddSound(SoundConstants.ITEM_EXPLOSIVE_DISARM, GetDisarmSoundset());
+		
+		if (GetDisarmSoundsetUnpaired() != string.Empty)
+			handler.AddSound(SoundConstants.ITEM_EXPLOSIVE_DISARM_UNPAIRED, GetDisarmSoundsetUnpaired());
 	}
 	
 	protected void CreateLight()
@@ -200,7 +208,7 @@ class ExplosivesBase : ItemBase
 
 	protected void OnExplode()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			m_DeleteTimer.Run(0.25, this, "DeleteSafe");
 		}

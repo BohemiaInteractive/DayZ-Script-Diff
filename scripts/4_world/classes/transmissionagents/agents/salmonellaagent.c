@@ -6,7 +6,7 @@ class SalmonellaAgent extends AgentBase
 		m_Invasibility 			= 0.75;
 		m_TransferabilityIn		= 0.1;
 		m_TransferabilityOut	= 0.1;
-		m_AntibioticsResistance = 1;
+		m_AntibioticsResistance = 1; //deprecated, use m_DrugResistances to initialize this agents resistance to a specific drug				
 		m_MaxCount 				= 300;
 		m_Potency 				= EStatLevels.HIGH;
 		m_DieOffSpeed 			= 1;

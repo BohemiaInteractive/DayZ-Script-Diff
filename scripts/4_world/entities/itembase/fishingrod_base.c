@@ -44,7 +44,7 @@ class FishingRod_Base_New : ItemBase
 		ItemBase hook;
 		for (int i = 0; i < 6; ++i)
 		{
-			if (Class.CastTo(hook,GetGame().CreateObjectEx("Hook", GetPosition(), ECE_PLACE_ON_SURFACE)))
+			if (Class.CastTo(hook,g_Game.CreateObjectEx("Hook", GetPosition(), ECE_PLACE_ON_SURFACE)))
 				hook.GetInventory().CreateAttachment("Worm");
 		}
 		
@@ -109,7 +109,7 @@ class FishingRod_Base : ItemBase
 	
 	void Init()
 	{
-		m_Player = PlayerBase.Cast( GetGame().GetPlayer() );
+		m_Player = PlayerBase.Cast( g_Game.GetPlayer() );
 		m_Pull = INIT_LINE_STRETCH;
 		m_IsFishPulling = false;
 		//TIMERDEPRECATED - randomized time of fishing

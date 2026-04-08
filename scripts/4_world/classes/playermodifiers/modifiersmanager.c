@@ -212,7 +212,7 @@ class ModifiersManager
 	
 	void DeactivateAllModifiers()
 	{
-		foreach (ModifierBase modifier : m_ModifierList)
+		foreach (ModifierBase modifier : m_ModifierListArray)
 			modifier.Deactivate();
 	}
 	
@@ -231,7 +231,7 @@ class ModifiersManager
 		CachedObjectsArrays.ARRAY_INT.Clear();
 		
 		int modifierCount;
-		foreach (ModifierBase modifier : m_ModifierList)
+		foreach (ModifierBase modifier : m_ModifierListArray)
 		{
 			if (modifier.IsActive() && modifier.IsPersistent())
 			{

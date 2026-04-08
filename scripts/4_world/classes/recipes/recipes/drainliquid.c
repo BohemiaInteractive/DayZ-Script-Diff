@@ -79,7 +79,7 @@ class DrainLiquid extends RecipeBase
 		ItemBase source = NULL;
 		ItemBase target = NULL;
 		
-		ItemBase entity_in_hands = ItemBase.Cast(player.GetHumanInventory().GetEntityInHands());
+		ItemBase entity_in_hands = ItemBase.Cast(player.GetEntityInHands());
 		
 		//condition always true for any bottle, another recipe needed for pouring TO handheld bottle
 		if( entity_in_hands == ingredient1 )
@@ -97,7 +97,7 @@ class DrainLiquid extends RecipeBase
 		ItemBase ingredient1 = ingredients[0];
 		ItemBase ingredient2 = ingredients[1];
 		
-		ItemBase entity_in_hands = ItemBase.Cast(player.GetHumanInventory().GetEntityInHands());
+		ItemBase entity_in_hands = ItemBase.Cast(player.GetEntityInHands());
 		
 		if( entity_in_hands == ingredient1 )
 		{

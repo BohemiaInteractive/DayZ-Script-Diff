@@ -35,7 +35,7 @@ class PPEClassBase
 	protected void CreateMaterial()
 	{
 		if (m_MaterialPath != "")
-			m_Material = GetGame().GetWorld().GetMaterial(m_MaterialPath);
+			m_Material = g_Game.GetWorld().GetMaterial(m_MaterialPath);
 	}
 	
 	Material GetMaterial()

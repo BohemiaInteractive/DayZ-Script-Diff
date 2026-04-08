@@ -370,9 +370,9 @@ class Fence extends BaseBuildingBase
 			return false;
 		
 		//manage action initiator (AT_ATTACH_TO_CONSTRUCTION)
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			if ( player )
 			{
 				ConstructionActionData construction_action_data = player.GetConstructionActionData();
@@ -447,7 +447,7 @@ class Fence extends BaseBuildingBase
 	void OpenFence()
 	{
 		//server or single player
-		if ( GetGame().IsServer() )
+		if (g_Game.IsServer())
 		{
 			float value = GATE_ROTATION_ANGLE_DEG;
 			SetAnimationPhase( "Wall_Interact_Rotate", 				value );
@@ -465,14 +465,14 @@ class Fence extends BaseBuildingBase
 			SetOpenedState( true );
 			
 			//regenerate navmesh
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( UpdateNavmesh, GATE_ROTATION_TIME_APPROX, false );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( UpdateNavmesh, GATE_ROTATION_TIME_APPROX, false );
 			
 			//synchronize
 			SynchronizeBaseState();
 		}
 		
 		//client or single player
-		if ( !GetGame().IsDedicatedServer() )
+		if (!g_Game.IsDedicatedServer())
 		{
 			//play sound
 			SoundGateOpenStart();
@@ -482,14 +482,14 @@ class Fence extends BaseBuildingBase
 		UpdateBarbedWireAreaDamagePos(0,true);
 		
 		//add check
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Remove(CheckFenceClosed);
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( CheckFenceOpened, 0, true );
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(CheckFenceClosed);
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(CheckFenceOpened, 0, true);
 	}
 	
 	void CloseFence()
 	{
 		//server or single player
-		if ( GetGame().IsServer() )
+		if (g_Game.IsServer())
 		{
 			float value = 0;
 			SetAnimationPhase( "Wall_Interact_Rotate", 				value );
@@ -507,14 +507,14 @@ class Fence extends BaseBuildingBase
 			SetOpenedState( false );
 			
 			//regenerate navmesh
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( UpdateNavmesh, GATE_ROTATION_TIME_APPROX, false );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( UpdateNavmesh, GATE_ROTATION_TIME_APPROX, false );
 			
 			//synchronize
 			SynchronizeBaseState();
 		}
 		
 		//client or single player
-		if ( !GetGame().IsDedicatedServer() )
+		if (!g_Game.IsDedicatedServer())
 		{
 			//play sound
 			SoundGateCloseStart();
@@ -524,8 +524,8 @@ class Fence extends BaseBuildingBase
 		UpdateBarbedWireAreaDamagePos(0,true);
 		
 		//add check
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Remove(CheckFenceOpened);
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( CheckFenceClosed, 0, true );
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(CheckFenceOpened);
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(CheckFenceClosed, 0, true);
 	}
 	
 	protected void CheckFenceOpened()
@@ -534,7 +534,7 @@ class Fence extends BaseBuildingBase
 		{
 			UpdateBarbedWireAreaDamagePos(GetAnimationPhase( "Wall_Gate_Rotate" ));
 			//remove check
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Remove( CheckFenceOpened );
+			g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(CheckFenceOpened);
 		}
 	}
 	
@@ -543,14 +543,14 @@ class Fence extends BaseBuildingBase
 		if ( GetAnimationPhase( "Wall_Gate_Rotate" ) == 0 )			//animation finished - closed
 		{
 			//client or single player
-			if ( !GetGame().IsDedicatedServer() )
+			if ( !g_Game.IsDedicatedServer() )
 			{
 				//play sound
 				if ( this ) SoundGateCloseEnd();
 			}
 			UpdateBarbedWireAreaDamagePos(GetAnimationPhase( "Wall_Gate_Rotate" ));
 			//remove check
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Remove( CheckFenceClosed );
+			g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(CheckFenceClosed);
 		}
 	}
 	
@@ -678,9 +678,9 @@ class Fence extends BaseBuildingBase
 	override bool IsFacingCamera( string selection )
 	{
 		vector ref_dir = GetDirection();
-		vector cam_dir = GetGame().GetCurrentCameraDirection();
+		vector cam_dir = g_Game.GetCurrentCameraDirection();
 		
-		//ref_dir = GetGame().GetCurrentCameraPosition() - GetPosition();
+		//ref_dir = g_Game.GetCurrentCameraPosition() - GetPosition();
 		ref_dir.Normalize();
 		ref_dir[1] = 0;		//ignore height
 		
@@ -726,7 +726,7 @@ class Fence extends BaseBuildingBase
 	protected void SoundGateOpenStart()
 	{
 		//client or single player
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			PlaySoundSet( m_SoundGate_Start, SOUND_GATE_OPEN_START, 0.1, 0.1 );
 		}
@@ -735,7 +735,7 @@ class Fence extends BaseBuildingBase
 	protected void SoundGateCloseStart()
 	{
 		//client or single player
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			PlaySoundSet( m_SoundGate_Start, SOUND_GATE_CLOSE_START, 0.1, 0.1 );
 		}
@@ -744,7 +744,7 @@ class Fence extends BaseBuildingBase
 	protected void SoundGateCloseEnd()
 	{
 		//client or single player
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			PlaySoundSet( m_SoundGate_End, SOUND_GATE_CLOSE_END, 0.1, 0.1 );
 		}

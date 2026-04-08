@@ -95,10 +95,10 @@ class Watchtower extends BaseBuildingBase
 		//because CanReceiveAttachment() method can be called on all clients in the vicinity, vertical distance check needs to be skipped on clients that don't
 		//interact with the object through attach action (AT_ATTACH_TO_CONSTRUCTION)
 		PlayerBase player;
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			//check action initiator (AT_ATTACH_TO_CONSTRUCTION)
-			player = PlayerBase.Cast( GetGame().GetPlayer() );
+			player = PlayerBase.Cast( g_Game.GetPlayer() );
 			if ( player )
 			{
 				ConstructionActionData construction_action_data = player.GetConstructionActionData();
@@ -180,7 +180,7 @@ class Watchtower extends BaseBuildingBase
 		edge_length[1] = min_max[1][1] - min_max[0][1];
 		
 		result = false;
-		/*result = */GetGame().IsBoxCollidingGeometry( center, orientation, edge_length, ObjIntersectView, ObjIntersectGeom, excluded_objects, collided_objects );
+		/*result = */g_Game.IsBoxCollidingGeometry( center, orientation, edge_length, ObjIntersectView, ObjIntersectGeom, excluded_objects, collided_objects );
 		if ( collided_objects.Count() > 0 )
 		{
 			foreach ( Object o : collided_objects )
@@ -203,7 +203,7 @@ class Watchtower extends BaseBuildingBase
 
 		string slot_name = InventorySlots.GetSlotName(slot_id);
 		slot_name.ToLower();
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		//base attachments
 		if ( slot_name.Contains( "material_l1" ) || slot_name.Contains( "level_1_" ) )
 		{
@@ -250,7 +250,7 @@ class Watchtower extends BaseBuildingBase
 		//
 	
 		category_name.ToLower();
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		//level 1
 		if ( category_name.Contains( "level_1" ) )
 		{
@@ -479,7 +479,7 @@ class Watchtower extends BaseBuildingBase
 	{
 		vector ref_pos;
 		vector ref_dir;
-		vector cam_dir = GetGame().GetCurrentCameraDirection();
+		vector cam_dir = g_Game.GetCurrentCameraDirection();
 		
 		if ( MemoryPointExists( selection ) )
 		{

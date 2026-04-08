@@ -44,7 +44,7 @@ class PMTPlayback : PMTF
 		ParticleManager pm = CreatePMFixedBlocking(1);
 		m_OnePlayingManagerID = InsertManager(pm);
 
-		DayZPlayer player = GetGame().GetPlayer();
+		DayZPlayer player = g_Game.GetPlayer();
 		
 		ParticleSource p = pm.CreateParticleById(ParticleList.EXPLOSION_LANDMINE, new ParticleProperties(player.GetPosition() + player.GetDirection() * 3, true));
 		p.GetEvents().Event_OnParticleEnd.Insert(PassOnePlaying);
@@ -58,7 +58,7 @@ class PMTPlayback : PMTF
 	// Test one standalone particle playing which will auto destroy
 	TFResult TestOnePlayingStandAloneAutoDestroy()
 	{
-		DayZPlayer player = GetGame().GetPlayer();
+		DayZPlayer player = g_Game.GetPlayer();
 		
 		ParticleSource p = ParticleSource.CreateParticle(ParticleList.EXPLOSION_LANDMINE, player.GetPosition() + player.GetDirection() * 3 + player.GetDirectionAside() * 3, true);
 		p.GetEvents().Event_OnParticleEnd.Insert(OnePlayingSAADEnded);
@@ -74,7 +74,7 @@ class PMTPlayback : PMTF
 	// Test one standalone particle playing which will not auto destroy
 	TFResult TestOnePlayingStandAlone()
 	{
-		DayZPlayer player = GetGame().GetPlayer();
+		DayZPlayer player = g_Game.GetPlayer();
 		
 		ParticleSource p = ParticleSource.CreateParticle(ParticleList.EXPLOSION_LANDMINE, player.GetPosition() + player.GetDirection() * 3 - player.GetDirectionAside() * 3, true);
 		p.GetEvents().Event_OnParticleEnd.Insert(OnePlayingSAEnded);
@@ -91,7 +91,7 @@ class PMTPlayback : PMTF
 	// Test wiggling
 	TFResult TestWiggleStress()
 	{
-		DayZPlayer player = GetGame().GetPlayer();
+		DayZPlayer player = g_Game.GetPlayer();
 		
 		ParticleSource p = ParticleSource.CreateParticle(ParticleList.ROADFLARE_BURNING_MAIN, player.GetPosition() + player.GetDirection() * 4, true);
 		p.SetWiggle(90, 0.1);
@@ -103,7 +103,7 @@ class PMTPlayback : PMTF
 	// Test stop
 	TFResult TestStopping()
 	{
-		DayZPlayer player = GetGame().GetPlayer();
+		DayZPlayer player = g_Game.GetPlayer();
 		
 		//ParticleSource p = ParticleSource.CreateParticle(ParticleList.EXPLOSION_LANDMINE, player.GetPosition() + player.GetDirection() * 4, true);
 		ParticleSource p = ParticleSource.CreateParticle(ParticleList.EXPLOSION_LANDMINE, vector.Zero, true, player);
@@ -201,7 +201,7 @@ class PMTPlayback : PMTF
 				else
 				{
 					// Clean up the Particle, no leaking from tests!
-					GetGame().ObjectDelete(p);
+					g_Game.ObjectDelete(p);
 					// Make sure the particle ended, if it did, then success!
 					return BTFR(m_bOnePlayingSAEnded);
 				}
@@ -255,7 +255,7 @@ class PMTPlayback : PMTF
 					else if (m_bStopEnded)
 					{
 						// Clean up the Particle, no leaking from tests!
-						GetGame().ObjectDelete(p);
+						g_Game.ObjectDelete(p);
 						return BTFR(true);
 					}	
 					

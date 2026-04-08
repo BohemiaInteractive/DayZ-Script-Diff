@@ -185,7 +185,7 @@ class PluginDayzPlayerDebug_Weapons
 		CreateModuleWidgets();
 
 		//! 
-		DayZPlayer			player 	= DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer			player 	= DayZPlayer.Cast( g_Game.GetPlayer() );
 		if (player)
 		{
 			HumanCommandWeapons hcw 	= player.GetCommandModifier_Weapons();
@@ -235,7 +235,7 @@ class PluginDayzPlayerDebug_Weapons
 	
 	void Tick()
 	{
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if (!player)
 		{
 			return;
@@ -243,7 +243,7 @@ class PluginDayzPlayerDebug_Weapons
 		
 		if (player)
 		{
-			EntityAI entityInHands = player.GetHumanInventory().GetEntityInHands();
+			EntityAI entityInHands = player.GetEntityInHands();
 			Weapon_Base w;
 			if (Class.CastTo(w, entityInHands))
 			{
@@ -363,7 +363,7 @@ class PluginDayzPlayerDebug_Weapons
 		{
 			int frameI = m_SetInitStateI.GetText().ToInt();
 			
-			DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+			DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 
 			HumanCommandWeapons 	hcw = player.GetCommandModifier_Weapons();
 			hcw.SetInitState(frameI);			
@@ -448,7 +448,7 @@ class PluginDayzPlayerDebug_Weapons
 			m_CH_LastWeapActionType = m_CH_WeapActionType;
 				
 			//!
-			DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+			DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 			if (player != NULL)
 			{
 				HumanCommandWeapons 	hcw = player.GetCommandModifier_Weapons();

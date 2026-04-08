@@ -1,10 +1,30 @@
 class ActionDropItemCB : ActionSingleUseBaseCB
-{
+{	
+	override void CreateActionComponent()
+	{
+		super.CreateActionComponent();
+		EnableCancelCondition(true);
+	}
+		
 	override void EndActionComponent()
 	{
 		SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
 		m_ActionData.m_State = UA_FINISHED;
 	}
+	
+	bool CancelCondition()
+	{
+		HumanMovementState ms = new HumanMovementState();
+		m_ActionData.m_Player.GetMovementState(ms);
+		if (ms.m_CommandTypeId == DayZPlayerConstants.COMMANDID_MOVE)
+		{
+			// Cancel action, if hands are raised
+			if (ms.IsRaised())
+				return true;
+		}
+		
+		return false;
+	}	
 }
 
 class ActionDropItem : ActionSingleUseBase
@@ -71,7 +91,7 @@ class ActionDropItem : ActionSingleUseBase
 		
 		ClearInventoryReservationEx(action_data);
 		
-		if (GetGame().IsServer() && GetGame().IsMultiplayer())
+		if (g_Game.IsServer() && g_Game.IsMultiplayer())
 		{
 			action_data.m_Player.ServerDropEntity(action_data.m_Player.GetItemInHands()); // multiplayer server side
 		}

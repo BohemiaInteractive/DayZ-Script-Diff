@@ -48,7 +48,7 @@ class DrowningMdfr: ModifierBase
 		player.SetDrowning(true);
 		player.GetStaminaHandler().ActivateRecoveryModifier(EStaminaMultiplierTypes.DROWNING);
 		player.RequestSoundEventEx(EPlayerSoundEventID.DROWNING_BREATH, false, EPlayerSoundEventParam.HIGHEST_PRIORITY);
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayDrowningSound, 3000 ,false, 1);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayDrowningSound, 3000 ,false, 1);
 	}
 	
 	

@@ -63,7 +63,7 @@ class PlayerStat<Class T> extends PlayerStatBase
 	
 	override bool IsSynced()
 	{
-		return m_Flags & EPSstatsFlags.SYNCED == EPSstatsFlags.SYNCED;
+		return m_Flags & EPSstatsFlags.SYNCED;
 	}
 	
 	override void OnRPC(ParamsReadContext ctx)
@@ -163,7 +163,7 @@ class PlayerStat<Class T> extends PlayerStatBase
 	
 	void CreateRecord(float value, string system)
 	{
-		m_Records.Insert( new PlayerStatRecord(value, GetGame().GetTime(), system ) );
+		m_Records.Insert( new PlayerStatRecord(value, g_Game.GetTime(), system ) );
 	}
 	
 	override void OnStoreSave(ParamsWriteContext ctx)

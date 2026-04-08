@@ -18,7 +18,7 @@ class PluginDrawCheckerboard extends PluginBase
 #ifndef NO_GUI
 		if (!m_MainWindow)
 		{
-			m_MainWindow = GetGame().GetWorkspace().CreateWidgets("gui/layouts/camera_checkerboard.layout");
+			m_MainWindow = g_Game.GetWorkspace().CreateWidgets("gui/layouts/camera_checkerboard.layout");
 			m_MainWindow.Show(false);
 			int childId = 0;
 			int row = 0;

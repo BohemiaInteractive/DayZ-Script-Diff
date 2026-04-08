@@ -146,7 +146,8 @@ class PluginTransmissionAgents extends PluginBase
 	 */	
 	float GetAgentDieOffSpeedEx(int agent_id, PlayerBase player)
 	{
-		if( !m_AgentList.Get(agent_id) ) return true;
+		if( !m_AgentList.Get(agent_id) ) 
+			return true;
 		return m_AgentList.Get(agent_id).GetDieOffSpeedEx(player);
 	}
 
@@ -168,7 +169,8 @@ class PluginTransmissionAgents extends PluginBase
 	 */	
 	EStatLevels GetAgentPotencyEx(int agent_id, PlayerBase player)
 	{
-		if( !m_AgentList.Get(agent_id) ) return true;
+		if( !m_AgentList.Get(agent_id) ) 
+			return true;
 		return m_AgentList.Get(agent_id).GetPotencyEx(player);
 	}
 
@@ -180,17 +182,29 @@ class PluginTransmissionAgents extends PluginBase
 	 */	
 	float GetAgentInvasibilityEx(int agent_id, PlayerBase player)
 	{
-		if( !m_AgentList.Get(agent_id) ) return true;
+		if( !m_AgentList.Get(agent_id) ) 
+			return true;
 		return m_AgentList.Get(agent_id).GetInvasibilityEx(player);
 	}
-
+	
+	/**
+	* Returns the resistance to the specific drug 
+	*/
+	int GetAgentSpecificDrugResistance(int agent_id, EMedicalDrugsType drugType, PlayerBase player)
+	{
+		if(!m_AgentList.Get(agent_id)) 
+			return 0;
+		return m_AgentList.Get(agent_id).GetDrugResistance(drugType, player);
+	}
+	
 
 	/**
 	 * \brief Returns antibiotics resistance attribute for given agent see GetAgentAntiboticsResistanceEx()
 	 */
 	float GetAgentAntiboticsResistance( int agent_id )
 	{
-		if( !m_AgentList.Get(agent_id) ) return 0;
+		if( !m_AgentList.Get(agent_id) ) 
+			return 0;
 		return m_AgentList.Get(agent_id).GetAntiboticsResistance();
 	}
 
@@ -202,7 +216,8 @@ class PluginTransmissionAgents extends PluginBase
 	 */	
 	float GetAgentAntiboticsResistanceEx( int agent_id , PlayerBase player)
 	{
-		if( !m_AgentList.Get(agent_id) ) return 0;
+		if( !m_AgentList.Get(agent_id) ) 
+			return 0;
 		return m_AgentList.Get(agent_id).GetAntibioticsResistanceEx(player);
 	}
 
@@ -213,7 +228,8 @@ class PluginTransmissionAgents extends PluginBase
 	 */		
 	protected float GetAgentTransferabilityOut( int agent_id )
 	{
-		if(!m_AgentList.Get(agent_id)) return 0;
+		if(!m_AgentList.Get(agent_id)) 
+			return 0;
 		return m_AgentList.Get(agent_id).GetTransferabilityOut();
 	}	
 
@@ -224,7 +240,8 @@ class PluginTransmissionAgents extends PluginBase
 	 */	
 	protected float GetAgentTransferabilityAirOut( int agent_id )
 	{
-		if(!m_AgentList.Get(agent_id)) return 0;
+		if(!m_AgentList.Get(agent_id)) 
+			return 0;
 		return m_AgentList.Get(agent_id).GetTransferabilityAirOut();
 	}
 
@@ -260,7 +277,6 @@ class PluginTransmissionAgents extends PluginBase
 	{
 		if (!m_AgentList.Get(agent_id))
 			return 0;
-
 		return m_AgentList.Get(agent_id).GetDigestibilityEx(player);
 	}
 
@@ -271,7 +287,8 @@ class PluginTransmissionAgents extends PluginBase
 	 */	
 	static int GetAgentMaxCount( int agent_id )
 	{
-		if( !m_AgentList.Get(agent_id) ) return 0;
+		if( !m_AgentList.Get(agent_id) ) 
+			return 0;
 		return m_AgentList.Get(agent_id).GetMaxCount();
 	}
 
@@ -291,7 +308,7 @@ class PluginTransmissionAgents extends PluginBase
 		int targetAgents;
 		if(!sourceAgents && source) sourceAgents = source.GetAgents();//do not set sourceAgents again if already set
 		if(target) targetAgents = target.GetAgents();
-		int pollution = GetGame().GetMission().GetWorldData().GetPollution();
+		int pollution = g_Game.GetMission().GetWorldData().GetPollution();
 		
 		float count = 0;
 		

@@ -58,7 +58,7 @@ class LoadMagazine extends RecipeBase
 
 	override void OnSelected(ItemBase item1, ItemBase item2, PlayerBase player)
 	{
-		/*if( GetGame().IsServer() && GetGame().IsMultiplayer() ) return;
+		/*if( g_Game.IsServer() && g_Game.IsMultiplayer() ) return;
 		ItemBase ammo;
 		ActionTarget actionTarget;	
 		if( item1.IsKindOf("Ammunition_Base") )

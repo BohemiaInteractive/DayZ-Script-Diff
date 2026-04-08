@@ -66,12 +66,12 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	override void SetUpdate( bool state )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param1<bool> params = new Param1<bool>( state );
 			if ( player )
@@ -165,7 +165,7 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	
 	void AddValue(string title, string value)
 	{
-		Widget widget = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_stat.layout", m_WgtPanel );
+		Widget widget = g_Game.GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_stat.layout", m_WgtPanel );
 		
 		TextWidget tw = TextWidget.Cast(widget.FindAnyWidget("StatName"));
 		tw.SetText(title);
@@ -221,7 +221,7 @@ class HudDebugWinCharStats extends HudDebugWinBase
 			m_ChangingSlider = true;
 			string stat_name = m_SliderWidgets.Get(SliderWidget.Cast(w));
 			SliderWidget sw = SliderWidget.Cast(w);
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			for ( int i = 0; i < player.m_PlayerStats.GetPCO().Get().Count(); i++ ) 
 			{
 				string label = player.m_PlayerStats.GetPCO().Get().Get( i ).GetLabel();
@@ -246,7 +246,7 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	
 	void ResetStats()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
 
@@ -259,7 +259,7 @@ class HudDebugWinCharStats extends HudDebugWinBase
 	
 	void RPCChangeStat(string stat, float value)
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
 

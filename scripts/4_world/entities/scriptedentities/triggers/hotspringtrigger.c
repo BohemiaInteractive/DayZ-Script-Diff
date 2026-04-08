@@ -9,7 +9,7 @@ class HotSpringTrigger : EffectTrigger
 		
 	override void EEInit()
 	{
-		if (GetGame().IsServer() && !m_SourceDamageInstance)
+		if (g_Game.IsServer() && !m_SourceDamageInstance)
 			m_SourceDamageInstance = this;
 		
 		super.EEInit();
@@ -83,7 +83,7 @@ class HotSpringTrigger : EffectTrigger
 	protected void SpawnVaporEffect()
 	{
 		vector pos = GetPosition();
-		pos[1] = GetGame().SurfaceRoadY(pos[0], pos[2], RoadSurfaceDetection.UNDER); 	// Snap to water volume surface or terrain
+		pos[1] = g_Game.SurfaceRoadY(pos[0], pos[2], RoadSurfaceDetection.UNDER); 	// Snap to water volume surface or terrain
 
 		m_VaporParticle = ParticleManager.GetInstance().PlayInWorld(ParticleList.HOTPSRING_WATERVAPOR, pos);
 		

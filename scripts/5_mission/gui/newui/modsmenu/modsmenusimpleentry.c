@@ -10,7 +10,7 @@ class ModsMenuSimpleEntry extends ScriptedWidgetEventHandler
 
 	void ModsMenuSimpleEntry(ModInfo data, int index, Widget parent, ModsMenuSimple parent_menu)
 	{
-		m_ModButton		= ButtonWidget.Cast(GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_simple_entry.layout", parent));
+		m_ModButton		= ButtonWidget.Cast(g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_simple_entry.layout", parent));
 		m_Icon			= ImageWidget.Cast(m_ModButton.FindAnyWidget("Icon"));
 		m_Hover			= m_ModButton.FindAnyWidget("Overlay");
 		m_Data			= data;

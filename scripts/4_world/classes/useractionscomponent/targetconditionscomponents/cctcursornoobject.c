@@ -12,7 +12,7 @@ class CCTCursorNoObject : CCTBase
 		if ( !target )
 			return false;
 			
-		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+		if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 			return true;
 		
 		vector playerHeadPos;

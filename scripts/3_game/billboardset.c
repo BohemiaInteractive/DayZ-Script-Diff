@@ -33,7 +33,7 @@ class BillboardSetHandler
 		for (int setIndex = 0; setIndex < setCount; setIndex++)
 		{
 			string setName;
-			GetGame().ConfigGetChildName(ROOT_CLASS, setIndex, setName);
+			g_Game.ConfigGetChildName(ROOT_CLASS, setIndex, setName);
 			string path = ROOT_CLASS + " " + setName;
 			m_BillboardSets.Insert(new BillboardSet(path));
 		}
@@ -52,7 +52,7 @@ class BillboardSetHandler
 			for (int setIndex = 0; setIndex < setCount; setIndex++)
 			{
 				string setName;
-				GetGame().ConfigGetChildName(ROOT_CLASS, setIndex, setName);
+				g_Game.ConfigGetChildName(ROOT_CLASS, setIndex, setName);
 				
 				if (setName == setClassName)
 				{
@@ -65,7 +65,7 @@ class BillboardSetHandler
 		if (m_SetIndexCached != -1)
 		{
 			auto param = new Param1<int>(m_SetIndexCached);
-			GetGame().RPCSingleParam( identity.GetPlayer(), ERPCs.RPC_SET_BILLBOARDS, param, true, identity );
+			g_Game.RPCSingleParam( identity.GetPlayer(), ERPCs.RPC_SET_BILLBOARDS, param, true, identity );
 			return true;
 		}
 		return false;
@@ -93,17 +93,17 @@ class BillboardSet
 		for ( int i = 0; i < count; i++ )
 		{
 			string itemName;
-			GetGame().ConfigGetChildName(path, i, itemName);
+			g_Game.ConfigGetChildName(path, i, itemName);
 			
 			string typesPath = path + " " + itemName + " types";
 			string texturePath = path + " " + itemName + " texture";
 			
-			if (GetGame().ConfigIsExisting(typesPath) && GetGame().ConfigIsExisting(texturePath))
+			if (g_Game.ConfigIsExisting(typesPath) && g_Game.ConfigIsExisting(texturePath))
 			{
 				TStringArray types = new TStringArray();
 				string texture;
-				GetGame().ConfigGetText(texturePath, texture);
-				GetGame().ConfigGetTextArray(typesPath, types);
+				g_Game.ConfigGetText(texturePath, texture);
+				g_Game.ConfigGetTextArray(typesPath, types);
 				
 				foreach (string s: types)
 				{

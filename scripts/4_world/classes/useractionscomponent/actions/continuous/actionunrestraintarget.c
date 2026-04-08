@@ -40,7 +40,7 @@ class ActionUnrestrainTargetCB : ActionContinuousBaseCB
 				if((i % 2) == 0)
 				{
 					string class_name = CachedObjectsArrays.ARRAY_STRING.Get(i);
-					if(	GetGame().IsKindOf(item_in_hands_name, class_name) )
+					if(	g_Game.IsKindOf(item_in_hands_name, class_name) )
 					{
 						float value = CachedObjectsArrays.ARRAY_STRING.Get(i+1).ToFloat();
 						return value;
@@ -93,7 +93,7 @@ class ActionUnrestrainTarget: ActionContinuousBase
 					if((i % 2) == 0)
 					{
 						string class_name = CachedObjectsArrays.ARRAY_STRING.Get(i);
-						if(	GetGame().IsKindOf(item_in_hands_name, class_name) )
+						if(	g_Game.IsKindOf(item_in_hands_name, class_name) )
 						{
 							return true;
 						}
@@ -129,7 +129,7 @@ class ActionUnrestrainTarget: ActionContinuousBase
 			for(int i = 0; i < CachedObjectsArrays.ARRAY_STRING.Count(); i++)
 			{
 				string class_name = CachedObjectsArrays.ARRAY_STRING.Get(i);
-				if(	GetGame().IsKindOf(item_in_hands_name, class_name) )
+				if(	g_Game.IsKindOf(item_in_hands_name, class_name) )
 				{
 					damageToTool = CachedObjectsArrays.ARRAY_FLOAT.Get(i/2);
 					break;
@@ -181,7 +181,7 @@ class ReplaceAndDestroyLambdaEx : ReplaceAndDestroyLambda
 		
 		if (!newItem && m_Drop)
 		{
-			newItem = EntityAI.Cast(GetGame().CreateObjectEx(m_NewItemType, m_TargetPlayer.GetPosition(), ECE_PLACE_ON_SURFACE|ECE_LOCAL));
+			newItem = EntityAI.Cast(g_Game.CreateObjectEx(m_NewItemType, m_TargetPlayer.GetPosition(), ECE_PLACE_ON_SURFACE|ECE_LOCAL));
 		}
 		
 		return newItem;

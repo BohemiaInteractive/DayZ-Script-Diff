@@ -73,7 +73,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	
 	void ScriptConsoleGeneralTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
-		m_MissionGameplay			= MissionGameplay.Cast(GetGame().GetMission());
+		m_MissionGameplay			= MissionGameplay.Cast(g_Game.GetMission());
 		
 		m_DiagToggleTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("DiagToggle"));
 		m_DiagToggleButton = ButtonWidget.Cast(root.FindAnyWidget("DiagToggleButton"));
@@ -134,9 +134,9 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	{
 		DEBUG_MAP_ZOOM = m_DebugMapWidget.GetScale();
 
-		PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPlugin(PluginRemotePlayerDebugClient));
-		if (SHOW_OTHERS && plugin_remote_client && GetGame().GetPlayer())
-			plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(GetGame().GetPlayer()), 0);
+		PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPluginSafe(PluginRemotePlayerDebugClient));
+		if (SHOW_OTHERS && plugin_remote_client && g_Game.GetPlayer())
+			plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(g_Game.GetPlayer()), 0);
 	}
 
 	protected void Init()
@@ -158,14 +158,14 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_LogsEnabled.SetChecked(m_ConfigDebugProfile.GetLogsEnabled());
 		
 		TStringArray diag_names = new TStringArray;
-		GetGame().GetDiagModeNames(diag_names);
+		g_Game.GetDiagModeNames(diag_names);
 		int i;
 		for (i = 0; i < diag_names.Count(); i++)
 		{
 			m_DiagToggleTextListbox.AddItem(diag_names.Get(i), NULL, 0);
 		}
 
-		GetGame().GetDiagDrawModeNames(diag_names);
+		g_Game.GetDiagDrawModeNames(diag_names);
 		for (i = 0; i < diag_names.Count(); i++)
 		{
 			m_DiagDrawmodeTextListbox.AddItem(diag_names.Get(i), NULL, 0);
@@ -174,10 +174,10 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		
 		UpdateHudDebugSetting();
 
-		if (GetGame().GetPlayer())
+		if (g_Game.GetPlayer())
 		{
 			m_DebugMapWidget.SetScale(DEBUG_MAP_ZOOM);
-			m_DebugMapWidget.SetMapPos(GetGame().GetPlayer().GetWorldPosition());
+			m_DebugMapWidget.SetMapPos(g_Game.GetPlayer().GetWorldPosition());
 		}
 		if (m_LastEditPos != vector.Zero)
 			m_TeleportXYZ.SetText(m_LastEditPos.ToString(true));
@@ -187,7 +187,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_LateInit.Run(0.05, this, "LateInit", null, false);
 		
 		int year,month,day,hour,minute;
-		GetGame().GetWorld().GetDate(year,month, day, hour, minute);
+		g_Game.GetWorld().GetDate(year,month, day, hour, minute);
 		RefreshDateWidgets(year,month, day, hour, minute);
 	}
 	
@@ -226,11 +226,19 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 				m_PositionsListbox.SelectRow(prevRow);
 			
 		}
-		PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPlugin(PluginRemotePlayerDebugClient));
-		if (SHOW_OTHERS && plugin_remote_client && GetGame().GetPlayer())
+		PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPluginSafe(PluginRemotePlayerDebugClient));
+		if (SHOW_OTHERS && plugin_remote_client && g_Game.GetPlayer())
 		{
-			plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(GetGame().GetPlayer()), 1);
+			plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(g_Game.GetPlayer()), 1);
 			m_UpdatePlayerPositions = 1;
+		}
+
+		PluginRemotePlayerDebugServer plugin_remote_server	= PluginRemotePlayerDebugServer.Cast(GetPluginSafe(PluginRemotePlayerDebugServer));
+		if (plugin_remote_server)
+		{
+			SHOW_OTHERS = true;
+			m_UpdatePlayerPositions = 1;
+			m_PlayerDebugStats = plugin_remote_server.m_PlayerDebugStats;
 		}
 		
 	}
@@ -238,7 +246,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	void Teleport(PlayerBase player, vector position)
 	{
 		if (position[1] == 0)
-			position[1] = GetGame().SurfaceY(position[0], position[2]);
+			position[1] = g_Game.SurfaceY(position[0], position[2]);
 		m_Developer.Teleport(player, position);
 	}
 	
@@ -258,7 +266,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			}
 			else if (numbersPos.Count() == 2)
 			{
-				pos = Vector(numbersPos[0], GetGame().SurfaceY(numbersPos[0], numbersPos[1]), numbersPos[1]);
+				pos = Vector(numbersPos[0], g_Game.SurfaceY(numbersPos[0], numbersPos[1]), numbersPos[1]);
 			}
 			else if (numbersPos.Count() <= 5)
 			{
@@ -434,15 +442,15 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	
 	void RefreshPlayerPosEditBoxes()
 	{
-		if (!GetGame().GetPlayer())
+		if (!g_Game.GetPlayer())
 		{
 			return;
 		}
 
-		vector playerPos = GetGame().GetPlayer().GetPosition();
+		vector playerPos = g_Game.GetPlayer().GetPosition();
 		SetMapPos(playerPos);
 		
-		vector playerDir = GetGame().GetPlayer().GetDirection();
+		vector playerDir = g_Game.GetPlayer().GetDirection();
 		SetDir(playerDir);
 	}
 
@@ -474,13 +482,13 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		p5.param5 = minute;
 		
 		RefreshDateWidgets(year, month, day, hour, minute);
-		GetGame().GetWorld().SetDate(year, month, day, hour, minute);
+		g_Game.GetWorld().SetDate(year, month, day, hour, minute);
 		
 		g_Game.GetMission().GetOnTimeChanged().Invoke();
 
-		if (GetGame().GetPlayer())
+		if (g_Game.GetPlayer())
 		{
-			GetGame().GetPlayer().RPCSingleParam(ERPCs.DEV_RPC_SET_TIME, p5, true);
+			g_Game.GetPlayer().RPCSingleParam(ERPCs.DEV_RPC_SET_TIME, p5, true);
 		}
 	}
 
@@ -492,15 +500,15 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		mousePos[0] = x;
 		mousePos[1] = y;
 		worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
-		worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
+		worldPos[1] = g_Game.SurfaceY(worldPos[0], worldPos[2]);
 		
 		if (m_MouseCurPos)
 		{
 			m_MouseCurPos.SetText("Mouse: "+ MiscGameplayFunctions.TruncateToS(worldPos[0]) +", "+ MiscGameplayFunctions.TruncateToS(worldPos[1]) +", "+ MiscGameplayFunctions.TruncateToS(worldPos[2]));
 		}
-		if (m_PlayerMouseDiff && GetGame().GetPlayer())
+		if (m_PlayerMouseDiff && g_Game.GetPlayer())
 		{
-			vector playerPos = GetGame().GetPlayer().GetWorldPosition();
+			vector playerPos = g_Game.GetPlayer().GetWorldPosition();
 			//playerPos[1] = 0;
 			float dst = (worldPos - playerPos).Length();
 
@@ -556,16 +564,16 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 					mousePos[0] = mouseX;
 					mousePos[1] = mouseY;
 					worldPos = m_DebugMapWidget.ScreenToMap(mousePos);
-					worldPos[1] = GetGame().SurfaceY(worldPos[0], worldPos[2]);
+					worldPos[1] = g_Game.SurfaceY(worldPos[0], worldPos[2]);
 					SetMapPos(worldPos);
 				}
 			}
-			else if (button == 1 && GetGame().GetPlayer())
+			else if (button == 1 && g_Game.GetPlayer())
 			{
 				if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
 					SetMapCameraPos(m_FreeDebugCamera.GetWorldPosition());
 				else
-					SetMapPos(GetGame().GetPlayer().GetWorldPosition());
+					SetMapPos(g_Game.GetPlayer().GetWorldPosition());
 			}
 		}
 		return true;
@@ -581,18 +589,25 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	{
 		super.OnChange(w, x, y, finished);
 		
-		if (w == m_ShowOthers && GetGame().GetPlayer())
+		if (w == m_ShowOthers && g_Game.GetPlayer())
 		{
-			PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPlugin(PluginRemotePlayerDebugClient));
+			if (g_Game.IsDedicatedServer())
+			{
+				m_UpdatePlayerPositions = 1;
+				SHOW_OTHERS = true;
+				return true;
+			}
+
+			PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPluginSafe(PluginRemotePlayerDebugClient));
 			if (m_ShowOthers.IsChecked())
 			{
-				plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(GetGame().GetPlayer()), 1);
+				plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(g_Game.GetPlayer()), 1);
 				m_UpdatePlayerPositions = 1;
 				SHOW_OTHERS = true;
 			}
 			else
 			{
-				plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(GetGame().GetPlayer()), 0);
+				plugin_remote_client.RequestPlayerInfo(PlayerBase.Cast(g_Game.GetPlayer()), 0);
 				m_UpdatePlayerPositions = 0;
 				SHOW_OTHERS = false;
 			}
@@ -633,13 +648,13 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	override bool OnDoubleClick(Widget w, int x, int y, int button)
 	{
 		super.OnDoubleClick(w, x, y, button);
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 		if (w ==  m_DebugMapWidget)
 		{
 			vector screen_to_map = m_DebugMapWidget.ScreenToMap(Vector(x,y, 0));
-			float pos_y_a = GetGame().SurfaceY(screen_to_map[0], screen_to_map[2]);
-			float pos_y_b = GetGame().SurfaceRoadY(screen_to_map[0], screen_to_map[2]);
+			float pos_y_a = g_Game.SurfaceY(screen_to_map[0], screen_to_map[2]);
+			float pos_y_b = g_Game.SurfaceRoadY(screen_to_map[0], screen_to_map[2]);
 			float pos_y = Math.Max(pos_y_a, pos_y_b);
 			screen_to_map[1] = pos_y;
 			
@@ -691,7 +706,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		super.OnClick(w, x, y, button);
 		
 		int i;
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 
 		PluginDeveloper module_dev = PluginDeveloper.Cast(GetPlugin(PluginDeveloper));
 
@@ -716,12 +731,12 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		{
 			if (m_IsShiftDown)
 			{
-				GetGame().CopyToClipboard(GetMapPos().ToString(false));	
+				g_Game.CopyToClipboard(GetMapPos().ToString(false));	
 				return true;
 			}
 			
 			
-			GetGame().CopyToClipboard(GetMapPos().ToString() + " " + GetGame().GetPlayer().GetDirection().ToString());
+			g_Game.CopyToClipboard(GetMapPos().ToString() + " " + g_Game.GetPlayer().GetDirection().ToString());
 			return true;
 		}
 		else if (w == m_LogsEnabled)
@@ -866,7 +881,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 			// Refresh UI by new settings
 			m_MissionGameplay.GetHudDebug().RefreshByLocalProfile();
 
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().GetMission().RefreshCrosshairVisibility);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(g_Game.GetMission().RefreshCrosshairVisibility);
 
 			return true;
 		}
@@ -874,14 +889,14 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		else if (w == m_DiagToggleButton)
 		{
 			int toggle_row_index = m_DiagToggleTextListbox.GetSelectedRow();
-			bool toggle_state = GetGame().GetDiagModeEnable(toggle_row_index);
-			GetGame().SetDiagModeEnable(toggle_row_index, !toggle_state);
+			bool toggle_state = g_Game.GetDiagModeEnable(toggle_row_index);
+			g_Game.SetDiagModeEnable(toggle_row_index, !toggle_state);
 			return true;
 		}
 		else if (w == m_DiagDrawButton)
 		{
 			int draw_row_index = m_DiagDrawmodeTextListbox.GetSelectedRow();
-			GetGame().SetDiagDrawMode(draw_row_index);
+			g_Game.SetDiagDrawMode(draw_row_index);
 			return true;
 		}
 		// TOUCHED THIS
@@ -919,37 +934,53 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	{
 		super.Update(timeslice);
 		
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 		m_DebugMapWidget.ClearUserMarks();
 
+		vector playerPos = vector.Zero;
+		if (player)
+		{
+			playerPos = player.GetWorldPosition();
+		}
+		
 		if (m_UpdatePlayerPositions)
 		{
+			PluginRemotePlayerDebugServer plugin_remote_server	= PluginRemotePlayerDebugServer.Cast(GetPluginSafe(PluginRemotePlayerDebugServer));
+			if (plugin_remote_server)
+			{
+				plugin_remote_server.GatherPlayerInfo();
+		
+				if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
+				{
+					playerPos = m_FreeDebugCamera.GetWorldPosition();
+				}
+			}
+			
 			foreach (RemotePlayerStatDebug rpd: m_PlayerDebugStats)
 			{
-				if (rpd.m_Player != player)
+				if (player && rpd.m_Player != player)
 				{
-					vector dir = rpd.m_Pos - player.GetWorldPosition();
+					vector dir = rpd.m_Pos - playerPos;
 					dir[1] = 0;
 					string dist = ((int)dir.Length()).ToString();
-					string text = rpd.m_Name + " " +dist +"m.";
-					m_DebugMapWidget.AddUserMark(rpd.m_Pos, text , COLOR_BLUE,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+					string text = rpd.m_Name + " " +dist + "m";
+					m_DebugMapWidget.AddUserMark(rpd.m_Pos, text, COLOR_BLUE, "\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
 				}
 			}
 		}
 
 		if (player)
 		{
-			vector playerPos = player.GetWorldPosition();
-			m_DebugMapWidget.AddUserMark(playerPos,"You", COLOR_RED,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+			m_DebugMapWidget.AddUserMark(playerPos, "You", COLOR_RED, "\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
 			if (playerPos != GetMapPos())
-				m_DebugMapWidget.AddUserMark(GetMapPos(),"Pos", COLOR_BLUE,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+				m_DebugMapWidget.AddUserMark(GetMapPos(), "Pos", COLOR_BLUE, "\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
 		}
 		
 		if (m_FreeDebugCamera && m_FreeDebugCamera.IsActive())
 		{
 			vector cameraPos = m_FreeDebugCamera.GetWorldPosition();
-			m_DebugMapWidget.AddUserMark(cameraPos,"Camera", COLOR_GREEN,"\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
+			m_DebugMapWidget.AddUserMark(cameraPos, "Camera", COLOR_GREEN, "\\dz\\gear\\navigation\\data\\map_tree_ca.paa");
 		}
 		
 		UpdateMousePos();
@@ -958,7 +989,7 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		
 		foreach (MapMarker marker: ScriptConsole.m_MarkedEntities)
 		{
-			m_DebugMapWidget.AddUserMark(marker.GetMarkerPos(),marker.GetMarkerText(), marker.GetMarkerColor(), MapMarkerTypes.GetMarkerTypeFromID(marker.GetMarkerIcon()));
+			m_DebugMapWidget.AddUserMark(marker.GetMarkerPos(), marker.GetMarkerText(), marker.GetMarkerColor(), MapMarkerTypes.GetMarkerTypeFromID(marker.GetMarkerIcon()));
 		}
 	}
 }

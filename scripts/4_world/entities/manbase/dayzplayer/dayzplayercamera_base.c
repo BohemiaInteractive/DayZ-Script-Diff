@@ -377,11 +377,11 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_TRANSITIVE) );
 		}
 		
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(SetCameraPP,m_CameraPPDelay*1000,false,true,this); // this takes care of weapon/optics postprocessing
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(SetCameraPP,m_CameraPPDelay*1000,false,true,this); // this takes care of weapon/optics postprocessing
 		DayZPlayerCameraOptics optic_camera;
 		if (DayZPlayerCamera.CastTo(optic_camera,pPrevCamera))
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(PlayerBase.Cast(m_pPlayer).HideClothing,null,false);
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(PlayerBase.Cast(m_pPlayer).HideClothing,null,false);
 		}
 	}
 	
@@ -446,7 +446,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			SetNVPostprocess(NVTypes.NONE);
 		}
 		
-		m_weaponUsed = Weapon_Base.Cast(m_pPlayer.GetHumanInventory().GetEntityInHands());
+		m_weaponUsed = Weapon_Base.Cast(m_pPlayer.GetEntityInHands());
 		if (m_weaponUsed)
 		{
 			m_weaponUsed.HideWeaponBarrel(false);
@@ -478,8 +478,9 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	void SetNVPostprocess(int NVtype)
 	{
 		//remove ALL conflicting NV occluders first
-		if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-			GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER,EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+		Mission mission = g_Game.GetMission();
+		if (mission && mission.GetEffectWidgets())
+			mission.GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER,EffectWidgetsTypes.PUMPKIN_OCCLUDER});
 		
 		switch (NVtype)
 		{
@@ -516,8 +517,8 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_GOGGLES:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DEFAULT_GLASSES) );
-				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-					GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
 			}
 			break;
 			
@@ -530,8 +531,8 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_PUMPKIN:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_PUMPKIN) );
-				if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-					GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
 			}
 			break;
 		}

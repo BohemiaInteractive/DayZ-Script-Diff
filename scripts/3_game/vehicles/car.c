@@ -82,6 +82,10 @@ enum CarWheelWaterState
 	UNDER_WATER		//!< if the wheel is under a water plane
 };
 
+class CarType : TransportType
+{
+};
+
 class CarOwnerState : TransportOwnerState
 {
 };

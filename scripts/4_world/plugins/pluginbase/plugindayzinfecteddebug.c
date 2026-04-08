@@ -142,8 +142,8 @@ class PluginDayZInfectedDebug extends PluginBase
 	{
 		if (!m_HasFocus)
 		{
-			GetGame().GetInput().ChangeGameFocus(1);
-			GetGame().GetUIManager().ShowUICursor(true);
+			g_Game.GetInput().ChangeGameFocus(1);
+			g_Game.GetUIManager().ShowUICursor(true);
 			m_HasFocus = true;
 		}
 	}
@@ -153,8 +153,8 @@ class PluginDayZInfectedDebug extends PluginBase
 	{
 		if (m_HasFocus)
 		{
-			GetGame().GetInput().ChangeGameFocus(-1);
-			GetGame().GetUIManager().ShowUICursor(false);
+			g_Game.GetInput().ChangeGameFocus(-1);
+			g_Game.GetUIManager().ShowUICursor(false);
 			m_HasFocus = false;
 		}	
 	}
@@ -221,7 +221,7 @@ class PluginDayZInfectedDebug extends PluginBase
 
 		if (!m_MainWnd)
 		{
-			m_MainWnd = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_infecteddebug.layout");
+			m_MainWnd = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_infecteddebug.layout");
 			m_MainWnd.SetHandler(m_pUIHandler);
 			m_MainWnd.Show(false);
 		}
@@ -364,7 +364,7 @@ class PluginDayZInfectedDebug extends PluginBase
 	//!
 	void SpawnNewInfectedEntity()
 	{
-		m_ControlledInfected = DayZInfected.Cast(GetGame().CreateObjectEx("ZmbF_JournalistNormal_Blue", GetGame().GetPlayer().GetPosition(), ECE_PLACE_ON_SURFACE|ECE_INITAI|ECE_EQUIP_ATTACHMENTS));
+		m_ControlledInfected = DayZInfected.Cast(g_Game.CreateObjectEx("ZmbF_JournalistNormal_Blue", g_Game.GetPlayer().GetPosition(), ECE_PLACE_ON_SURFACE|ECE_INITAI|ECE_EQUIP_ATTACHMENTS));
 		m_ControlledInfected.GetAIAgent().SetKeepInIdle(true);
 	}
 	
@@ -478,7 +478,8 @@ class PluginDayZInfectedDebug extends PluginBase
 	{
 		for ( int it = 0; it < shapesArr.Count(); ++it )
 		{
-			Debug.RemoveShape( shapesArr[it] );
+			Shape shape = shapesArr[it];
+			Debug.RemoveShape( shape );
 		}
 		
 		shapesArr.Clear();

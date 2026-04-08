@@ -239,7 +239,7 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 		//Print("------------------------------------------------");
 		foreach (string s:m_BaseConfigClasses) 
 		{
-			Widget w = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/config_class_item.layout", m_WgtClassesConfig);
+			Widget w = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/config_class_item.layout", m_WgtClassesConfig);
 			CheckBoxWidget cbw = CheckBoxWidget.Cast(w.FindAnyWidget("Item"));
 			//cbw.SetColor(Colors.RED);
 			cbw.SetText(s);
@@ -269,28 +269,28 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 		{
 			string config_path = m_BaseConfigClassesToggled.Get(i);
 		
-			int objects_count = GetGame().ConfigGetChildrenCount( config_path );
+			int objects_count = g_Game.ConfigGetChildrenCount( config_path );
 			
 			for ( int j = 0; j < objects_count; j++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( config_path, j, child_name );
+				g_Game.ConfigGetChildName( config_path, j, child_name );
 		
 				
 				//string dispName; 
-						//GetGame().ConfigGetText( config_path + " " + child_name + " displayName",dispName );
+						//g_Game.ConfigGetText( config_path + " " + child_name + " displayName",dispName );
 				string value; 
 				string path = config_path + " " + child_name + relativePath + " " + param;
-				if (GetGame().ConfigIsExisting(path))
+				if (g_Game.ConfigIsExisting(path))
 				{
-					GetGame().ConfigGetText( path , value);
+					g_Game.ConfigGetText( path , value);
 					if (value)
 						Print(child_name + "," + param + "," + value);
 				}
 				
 				
 				/*
-				int scope = GetGame().ConfigGetInt( config_path + " " + child_name + " scope" );
+				int scope = g_Game.ConfigGetInt( config_path + " " + child_name + " scope" );
 				{
 					if ( scope == 2)
 					{

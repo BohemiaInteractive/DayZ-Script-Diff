@@ -34,7 +34,7 @@ class ConstructionActionData
 		m_Attachments = new array<EntityAI>;
 		m_AttachmentsIndex = 0;
 
-		if ( GetGame().IsClient() || !GetGame().IsMultiplayer() )
+		if ( g_Game.IsClient() || !g_Game.IsMultiplayer() )
 		{
 			m_ActionVariantManager = ActionManagerClient.GetVariantManager( ActionBuildPart );
 			m_ActionVariantManager.GetOnUpdateInvoker().Clear();
@@ -48,7 +48,7 @@ class ConstructionActionData
 	
 	void ~ConstructionActionData()
 	{
-		if (GetGame() && (GetGame().IsClient() || !GetGame().IsMultiplayer()))
+		if (g_Game && (g_Game.IsClient() || !g_Game.IsMultiplayer()))
 		{
 			if (m_ActionVariantManager)
 			{
@@ -251,22 +251,22 @@ class ConstructionActionData
 	{
 		string cfg_path = "cfgVehicles" + " " + target.GetType() + " "+ "GUIInventoryAttachmentsProps";
 		
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
-			int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 			
 			for ( int i = 0; i < child_count; i++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( cfg_path, i, child_name );
+				g_Game.ConfigGetChildName( cfg_path, i, child_name );
 				
 				string child_selection;
-				GetGame().ConfigGetText( cfg_path + " " + child_name + " " + "selection", child_selection );
+				g_Game.ConfigGetText( cfg_path + " " + child_name + " " + "selection", child_selection );
 				
 				if ( selection == child_selection )
 				{
 					ref array<string> attachment_slots = new array<string>;
-					GetGame().ConfigGetTextArray( cfg_path + " " + child_name + " " + "attachmentSlots", attachment_slots );
+					g_Game.ConfigGetTextArray( cfg_path + " " + child_name + " " + "attachmentSlots", attachment_slots );
 					
 					for ( int j = 0; j < attachment_slots.Count(); ++j )
 					{
@@ -302,22 +302,22 @@ class ConstructionActionData
 		attachments.Clear();		//clear output
 		
 		string cfg_path = "cfgVehicles" + " " + target.GetType() + " "+ "GUIInventoryAttachmentsProps";
-		if ( GetGame().ConfigIsExisting( cfg_path ) )
+		if ( g_Game.ConfigIsExisting( cfg_path ) )
 		{
-			int	child_count = GetGame().ConfigGetChildrenCount( cfg_path );
+			int	child_count = g_Game.ConfigGetChildrenCount( cfg_path );
 			
 			for ( int i = 0; i < child_count; i++ )
 			{
 				string child_name;
-				GetGame().ConfigGetChildName( cfg_path, i, child_name );
+				g_Game.ConfigGetChildName( cfg_path, i, child_name );
 				
 				string child_selection;
-				GetGame().ConfigGetText( cfg_path + " " + child_name + " " + "selection", child_selection );
+				g_Game.ConfigGetText( cfg_path + " " + child_name + " " + "selection", child_selection );
 				
 				if ( selection == child_selection )
 				{
 					ref array<string> attachment_slots = new array<string>;
-					GetGame().ConfigGetTextArray( cfg_path + " " + child_name + " " + "attachmentSlots", attachment_slots );
+					g_Game.ConfigGetTextArray( cfg_path + " " + child_name + " " + "attachmentSlots", attachment_slots );
 					
 					for ( int j = 0; j < attachment_slots.Count(); ++j )
 					{

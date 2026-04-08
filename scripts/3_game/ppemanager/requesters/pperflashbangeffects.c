@@ -9,8 +9,8 @@ class PPERequester_FlashbangEffects extends PPERequester_GameplayBase
 	{
 		if (!m_IsRunning)
 		{
-			if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-				GetGame().GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.COVER_FLASHBANG});
+			if (g_Game.GetMission() && g_Game.GetMission().GetEffectWidgets())
+				g_Game.GetMission().GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.COVER_FLASHBANG});
 		}
 		
 		super.OnStart();
@@ -23,18 +23,18 @@ class PPERequester_FlashbangEffects extends PPERequester_GameplayBase
 		m_Intensity = 0.0;
 		m_Exposure = 0.0;
 		
-		if (GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
-			GetGame().GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.COVER_FLASHBANG});
+		if (g_Game.GetMission() && g_Game.GetMission().GetEffectWidgets())
+			g_Game.GetMission().GetEffectWidgets().RemoveActiveEffects({EffectWidgetsTypes.COVER_FLASHBANG});
 	}
 	
 	override protected void OnUpdate(float delta)
 	{
 		super.OnUpdate(delta);
 		
-		if (GetGame() && GetGame().GetMission() && GetGame().GetMission().GetEffectWidgets())
+		if (g_Game && g_Game.GetMission() && g_Game.GetMission().GetEffectWidgets())
 		{
 			Param1<float> par = new Param1<float>(1 - m_Intensity);
-			GetGame().GetMission().GetEffectWidgets().UpdateWidgets(EffectWidgetsTypes.COVER_FLASHBANG,0,par,EffectWidgetHandles.FLASHBANG);
+			g_Game.GetMission().GetEffectWidgets().UpdateWidgets(EffectWidgetsTypes.COVER_FLASHBANG,0,par,EffectWidgetHandles.FLASHBANG);
 		}
 	}
 	

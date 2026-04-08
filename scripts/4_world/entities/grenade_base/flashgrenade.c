@@ -6,19 +6,19 @@ class FlashGrenade extends Grenade_Base
 	{
 		super.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
 
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 
 		if (player)
 		{
 			vector headPos 			= player.GetDamageZonePos("Head"); // animated position in the middle of the zone
-			float ammoRangeKill	 	= GetGame().ConfigGetFloat(string.Format("CfgAmmo %1 indirectHitRange", ammoType));
+			float ammoRangeKill	 	= g_Game.ConfigGetFloat(string.Format("CfgAmmo %1 indirectHitRange", ammoType));
 			float ammoRangeMaxMult 	= 4.0;
 			
 			string indirectHitRangeMultiplier = string.Format("CfgAmmo %1 indirectHitRangeMultiplier", ammoType);
-			if (GetGame().ConfigIsExisting(indirectHitRangeMultiplier))
+			if (g_Game.ConfigIsExisting(indirectHitRangeMultiplier))
 			{
 				//! values less than 1.0 make no sense
-				ammoRangeMaxMult = Math.Clamp(GetGame().ConfigGetFloat(indirectHitRangeMultiplier), 1.0, float.MAX);
+				ammoRangeMaxMult = Math.Clamp(g_Game.ConfigGetFloat(indirectHitRangeMultiplier), 1.0, float.MAX);
 			}
 
 			float ammoRangeMax = ammoRangeKill * ammoRangeMaxMult;

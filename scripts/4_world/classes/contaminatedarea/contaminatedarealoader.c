@@ -14,7 +14,7 @@ class EffectAreaLoader
 			PrintToRPT("[WARNING] :: [EffectAreaLoader CreateZones] :: No contaminated area file found in MISSION folder, your path is " + m_Path + " Attempting DATA folder"); // If the path is invalid, we warn the user
 			
 			m_Path = "";
-			GetGame().GetWorldName(m_Path);
+			g_Game.GetWorldName(m_Path);
 			m_Path = string.Format("dz/worlds/%1/ce/cfgeffectarea.json", m_Path);
 			
 			if (!FileExist(m_Path))
@@ -89,11 +89,11 @@ class EffectAreaLoader
 				// We snap item position to ground before creating if specified Y is 0
 				if (pos[1] == 0)
 				{
-					pos[1] = GetGame().SurfaceRoadY(pos[0], pos[2]);
-					newZone = EffectArea.Cast(GetGame().CreateObjectEx(areaType, pos, ECE_PLACE_ON_SURFACE));
+					pos[1] = g_Game.SurfaceRoadY(pos[0], pos[2]);
+					newZone = EffectArea.Cast(g_Game.CreateObjectEx(areaType, pos, ECE_PLACE_ON_SURFACE));
 				}
 				else
-					newZone = EffectArea.Cast(GetGame().CreateObjectEx(areaType, pos, ECE_NONE));
+					newZone = EffectArea.Cast(g_Game.CreateObjectEx(areaType, pos, ECE_NONE));
 				
 				// We created a new zone, we feed in the data to finalize setup
 				if (newZone)

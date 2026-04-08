@@ -28,7 +28,7 @@ class ActionAttach : ActionSingleUseBase
 	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = null)
 	{
 		InventoryLocation il = new InventoryLocation();
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			EntityAI targetEntity;
 			if (target.IsProxy())
@@ -71,7 +71,7 @@ class ActionAttach : ActionSingleUseBase
 
 	override void OnExecuteServer(ActionData action_data)
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 			return;
 		
 		ClearInventoryReservationEx(action_data);

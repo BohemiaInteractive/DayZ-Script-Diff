@@ -131,7 +131,7 @@ class ImprovisedExplosive : ExplosivesBase
 	{
 		super.OnPlacementComplete(player, position, orientation);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			SetOrientation(vector.Up);
 		}
@@ -246,7 +246,7 @@ class ImprovisedExplosive : ExplosivesBase
 	{
 		super.EEHealthLevelChanged(oldLevel, newLevel, zone);
 
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (newLevel == GameConstants.STATE_RUINED)
 			{
@@ -268,7 +268,7 @@ class ImprovisedExplosive : ExplosivesBase
 	
 	override void OnActivatedByItem(notnull ItemBase item)
 	{
-		if (GetGame().IsServer() && GetArmed())
+		if (g_Game.IsServer() && GetArmed())
 		{
 			bool isTimeTriggered = false;
 
@@ -313,7 +313,7 @@ class ImprovisedExplosive : ExplosivesBase
 			{
 				delayFor = TIME_TRIGGER_INITIAL_DELAY_SECS + TIME_TRIGGER_TIMER_BASED_DELAY_SECS;
 				//! defer delete to allow ringing
-				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeleteSafe, delayFor * 1000, false);
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeleteSafe, delayFor * 1000, false);
 			}
 			else
 			{
@@ -326,13 +326,13 @@ class ImprovisedExplosive : ExplosivesBase
 				if (attachment4.IsAnyInherited({RemoteDetonator, ClockBase}))
 				{
 					//! defer damage to trigger attachments to allow ringing
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment4.DeleteSafe, delayFor * 1000, false);
+					g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(attachment4.DeleteSafe, delayFor * 1000, false);
 				}
 
 				if (attachment4 && !attachment4.IsAnyInherited({RemoteDetonator, ClockBase}))
 				{
 					Param1<ItemBase> params = new Param1<ItemBase>(attachment4);
-					GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLaterByName(attachment4, "OnActivatedByItem", delayFor * 1000, false, params);
+					g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLaterByName(attachment4, "OnActivatedByItem", delayFor * 1000, false, params);
 					delayFor += TIME_TRIGGER_DELAY_SECS;					
 				}
 			}

@@ -282,7 +282,7 @@ class SceneEditorMenu extends UIScriptedMenu
 				m_ConfigDebugProfile.GetPresetItems( preset_name, preset_array );
 			}
 
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			if ( clear_inventory )
 			{
 				m_Developer.ClearInventory(player);
@@ -392,7 +392,7 @@ class SceneEditorMenu extends UIScriptedMenu
 	override Widget Init()
 	{
 		// Create Main layout menu
-		layoutRoot				= GetGame().GetWorkspace().CreateWidgets("gui/layouts/scene_editor/day_z_scene_editor.layout");
+		layoutRoot				= g_Game.GetWorkspace().CreateWidgets("gui/layouts/scene_editor/day_z_scene_editor.layout");
 		m_WgtPnlWrapper			= layoutRoot.FindAnyWidget("pnl_presets_wrapper_outer");
 		m_SlWgtLoadedScene		= TextWidget.Cast( layoutRoot.FindAnyWidget("txt_left_label_loaded_scene") );
 		// Find ListTextBoxWidget for objects list
@@ -505,7 +505,7 @@ class SceneEditorMenu extends UIScriptedMenu
 					health = m_ConfigDebugProfile.GetItemHealth( GetCurrentPresetName(), GetCurrentItemIndex() );
 					quantity = m_ConfigDebugProfile.GetItemQuantity( GetCurrentPresetName(), GetCurrentItemIndex() );
 				}
-				m_Developer.SpawnEntityInPlayerInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_SelectedObject, health, quantity);
+				m_Developer.SpawnEntityInPlayerInventory( PlayerBase.Cast( g_Game.GetPlayer() ), m_SelectedObject, health, quantity);
 				return true;
 			}
 		}
@@ -559,7 +559,7 @@ class SceneEditorMenu extends UIScriptedMenu
 		}
 		else if( w == m_CopyToClipboardButton )
 		{
-			GetGame().CopyToClipboard( m_SelectedObject );
+			g_Game.CopyToClipboard( m_SelectedObject );
 			return true;
 		}
 		else if ( w == m_PresetDeleteButton )
@@ -593,16 +593,16 @@ class SceneEditorMenu extends UIScriptedMenu
 						;//SetPreset( true, m_SelectedObject, spawn_type, distance );
 					}
 					else
-						m_Developer.SpawnEntityOnCursorDir( PlayerBase.Cast( GetGame().GetPlayer() ), m_SelectedObject, quantity, distance, health );
+						m_Developer.SpawnEntityOnCursorDir( PlayerBase.Cast( g_Game.GetPlayer() ), m_SelectedObject, quantity, distance, health );
 					break;
 				}
 
 				case m_SpawnAsAttachmentButton:
 				{
-					Man player = GetGame().GetPlayer();
+					Man player = g_Game.GetPlayer();
 					
-					vector rayStart = GetGame().GetCurrentCameraPosition();
-					vector rayEnd = rayStart + GetGame().GetCurrentCameraDirection() * 1.5;		
+					vector rayStart = g_Game.GetCurrentCameraPosition();
+					vector rayEnd = rayStart + g_Game.GetCurrentCameraDirection() * 1.5;		
 					vector hitPos;
 					vector hitNormal;
 					int hitComponentIndex;		
@@ -627,7 +627,7 @@ class SceneEditorMenu extends UIScriptedMenu
 
 				case m_SpawnInInventoryButton:
 				{
-					m_Developer.SpawnEntityInPlayerInventory( PlayerBase.Cast( GetGame().GetPlayer() ), m_SelectedObject, health, quantity);
+					m_Developer.SpawnEntityInPlayerInventory( PlayerBase.Cast( g_Game.GetPlayer() ), m_SelectedObject, health, quantity);
 					break;
 				}
 			}
@@ -799,12 +799,12 @@ class SceneEditorMenu extends UIScriptedMenu
 	
 	override void OnShow()
 	{
-		GetGame().GetMission().AddActiveInputExcludes({"menu"});
+		g_Game.GetMission().AddActiveInputExcludes({"menu"});
 	}
 	
 	override void OnHide()
 	{
-		GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+		g_Game.GetMission().RemoveActiveInputExcludes({"menu"},true);
 	}
 
 	//============================================

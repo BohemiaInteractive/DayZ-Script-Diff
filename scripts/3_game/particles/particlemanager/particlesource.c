@@ -216,7 +216,7 @@ class ParticleSource : Particle
 		if (parent)
 			pos = parent.GetPosition();
 		
-		ParticleSource p = ParticleSource.Cast( GetGame().CreateObjectEx("ParticleSource", pos, ECE_LOCAL) );
+		ParticleSource p = ParticleSource.Cast( g_Game.CreateObjectEx("ParticleSource", pos, ECE_LOCAL) );
 		p.SetParticle(particlePath);
 		ParticleProperties props = new ParticleProperties(localPos, flags, parent, ori, owner);
 		p.ApplyProperties(props);

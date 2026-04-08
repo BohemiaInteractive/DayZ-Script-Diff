@@ -28,7 +28,7 @@ class RainProcurementManager
 	// ----------------------------------------------------------------------------------------
 	void RainProcurementCheck()
 	{		
-		float rain_intensity = GetGame().GetWeather().GetRain().GetActual();
+		float rain_intensity = g_Game.GetWeather().GetRain().GetActual();
 		float fill_per_update = RAIN_COEFFICIENT * rain_intensity;
 
 		if ( rain_intensity > 0 ) 

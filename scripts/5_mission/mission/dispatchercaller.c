@@ -12,7 +12,7 @@ class DispatcherCaller extends Dispatcher
 	
 	private void ScriptConsoleAddPrint(Param1<string> p)
 	{
-		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu ui_menu = g_Game.GetUIManager().GetMenu();
 		if ( ui_menu && ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scripted_console = ScriptConsole.Cast( ui_menu );
@@ -24,7 +24,7 @@ class DispatcherCaller extends Dispatcher
 	
 	private void ScriptConsoleHistoryBack()
 	{
-		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu ui_menu = g_Game.GetUIManager().GetMenu();
 		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scriptConsole = ScriptConsole.Cast( ui_menu );
@@ -38,7 +38,7 @@ class DispatcherCaller extends Dispatcher
 	
 	private void ScriptConsoleHistoryForward()
 	{
-		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu ui_menu = g_Game.GetUIManager().GetMenu();
 		if ( ui_menu.GetID() == MENU_SCRIPTCONSOLE )
 		{
 			ScriptConsole scriptConsole = ScriptConsole.Cast( ui_menu );
@@ -53,7 +53,7 @@ class DispatcherCaller extends Dispatcher
 
 	private void SceneEditorCommand(Param params)
 	{
-		UIScriptedMenu ui_menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu ui_menu = g_Game.GetUIManager().GetMenu();
 		if ( ui_menu && ui_menu.GetID() == MENU_SCENE_EDITOR )
 		{
 			SceneEditorMenu editor_menu = SceneEditorMenu.Cast( ui_menu );
@@ -63,7 +63,7 @@ class DispatcherCaller extends Dispatcher
 
 	private void MissionGameplayHideInventory()
 	{
-		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
+		MissionGameplay mission = MissionGameplay.Cast( g_Game.GetMission() );
 		if ( mission )
 		{
 			mission.HideInventory();

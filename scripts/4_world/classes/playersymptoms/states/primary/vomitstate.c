@@ -59,7 +59,7 @@ class VomitSymptom : SymptomBase
 	override void OnAnimationFinish()
 	{
 		//! deplete stamina
-		m_Player.GetStaminaHandler().DepleteStamina(EStaminaModifiers.OVERALL_DRAIN);
+		m_Player.GetStaminaHandler().DepleteStaminaEx(EStaminaModifiers.OVERALL_DRAIN);
 		
 		if (IsContaminationActive())
 		{

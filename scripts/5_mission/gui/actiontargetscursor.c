@@ -111,8 +111,8 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		
 		m_UseActionWrapper 		= GetUApi().GetInputByID(UAAction).GetPersistentWrapper();
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 	}
 	
 	void ~ActionTargetsCursor() {}
@@ -184,7 +184,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	{
 		bool showConsoleIcons = false;
 		#ifdef PLATFORM_CONSOLE
-		showConsoleIcons = GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER || !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		showConsoleIcons = g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER || !g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
 		#endif
 		
 		ShowXboxHidePCIcons("interact", showConsoleIcons);
@@ -315,6 +315,9 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 
 		if (!m_AM)
 			GetActionManager();
+
+		if (!m_Player || !m_AM)
+			return;
 		
 		if (m_Player.IsInVehicle() || m_AM.GetRunningAction())
 			m_Hidden = true;
@@ -396,7 +399,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 					if (!m_FixedOnPosition)
 					{
 						//Print(">> cached widget");
-						BuildFloatingCursor(false);
+						BuildFloatingCursor(true);
 						m_Root.Show(true);
 						m_Hidden = false;
 						return;
@@ -458,7 +461,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		vector transformed_pos, screen_pos;
 		
 		//! get relative pos for screen from world pos vector
-		screen_pos = GetGame().GetScreenPosRelative(pWorldPos);
+		screen_pos = g_Game.GetScreenPosRelative(pWorldPos);
 		//! get size of parent widget
 		m_Root.GetParent().GetScreenSize(parent_width, parent_height);
 		
@@ -683,7 +686,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 
  	protected void GetPlayer()
 	{
-		Class.CastTo(m_Player, GetGame().GetPlayer());
+		Class.CastTo(m_Player, g_Game.GetPlayer());
 	}
 
 	protected void GetActionManager()
@@ -1328,7 +1331,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	
 	protected IngameHud GetHud()
 	{
-		Mission mission = GetGame().GetMission();
+		Mission mission = g_Game.GetMission();
 		if (mission)
 		{
 			IngameHud hud = IngameHud.Cast(mission.GetHud());

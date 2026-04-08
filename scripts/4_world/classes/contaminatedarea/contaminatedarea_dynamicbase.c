@@ -56,7 +56,7 @@ class ContaminatedArea_DynamicBase : ContaminatedArea_Base
 			SetSynchDirty();
 		}
 	}
-	
+
 	// We spawn particles and setup trigger
 	override void InitZone()
 	{		
@@ -68,7 +68,7 @@ class ContaminatedArea_DynamicBase : ContaminatedArea_Base
 	override void InitZoneClient()
 	{
 		super.InitZoneClient();
-		
+
 		// We spawn VFX on client
 		PlaceParticles(m_Position, m_Radius, m_InnerRings, m_InnerSpacing, m_OuterRingToggle, m_OuterSpacing, m_OuterRingOffset, m_ParticleID);		
 	}
@@ -109,11 +109,11 @@ class ContaminatedArea_DynamicBase : ContaminatedArea_Base
 		super.CreateTrigger(pos, radius);
 		
 		// This handles the specific case of dynamic triggers as some additionnal parameters are present
-		ContaminatedTrigger_Dynamic dynaTrigger = ContaminatedTrigger_Dynamic.Cast( m_Trigger );
+		ContaminatedTrigger_Dynamic dynaTrigger = ContaminatedTrigger_Dynamic.Cast(m_Trigger);
 		if (dynaTrigger)
 		{
-			dynaTrigger.SetLocalEffects( m_AroundParticleID, m_TinyParticleID, m_PPERequesterIdx );
-			dynaTrigger.SetAreaState( m_DecayState );
+			dynaTrigger.SetLocalEffects(m_AroundParticleID, m_TinyParticleID, m_PPERequesterIdx);
+			dynaTrigger.SetAreaState(m_DecayState);
 		}
 	}
 	
@@ -124,13 +124,13 @@ class ContaminatedArea_DynamicBase : ContaminatedArea_Base
 		if (!m_ToxicClouds)
 			m_ToxicClouds = new array<Particle>();
 		
-		switch ( m_DecayState )
+		switch (m_DecayState)
 		{
 			case eAreaDecayStage.LIVE:
 				InitZoneClient();
 				break;
+
 			case eAreaDecayStage.DECAY_START:
-			{
 				// We go through all the particles bound to this area and update relevant parameters
 				//Debug.Log("We start decay");
 				foreach ( Particle p : m_ToxicClouds )
@@ -140,9 +140,8 @@ class ContaminatedArea_DynamicBase : ContaminatedArea_Base
 				}
 				
 				break;
-			}
+
 			case eAreaDecayStage.DECAY_END:
-			{
 				// We go through all the particles bound to this area and update relevant parameters
 				//Debug.Log("We finish decay");
 				foreach ( Particle prt : m_ToxicClouds )
@@ -152,9 +151,9 @@ class ContaminatedArea_DynamicBase : ContaminatedArea_Base
 				}
 				
 				break;
-			}
+
 			default:
-			break;
+				break;
 		}
 	}
 }

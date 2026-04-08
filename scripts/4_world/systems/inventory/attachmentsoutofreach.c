@@ -6,7 +6,7 @@ class AttachmentsOutOfReach
 	{
 		if( !e.IgnoreOutOfReachCondition() )
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			if( player.IsInVehicle() )
 			{
 				return false;
@@ -86,35 +86,35 @@ class AttachmentsOutOfReach
 		
 		string cfg_path;
 		
-		if ( GetGame().ConfigIsExisting(CFG_VEHICLESPATH+" "+type_name) )
+		if ( g_Game.ConfigIsExisting(CFG_VEHICLESPATH+" "+type_name) )
 		{
 			cfg_path = CFG_VEHICLESPATH+" "+type_name+" attachments";
 		}
-		else if ( GetGame().ConfigIsExisting(CFG_WEAPONSPATH+" "+type_name) )
+		else if ( g_Game.ConfigIsExisting(CFG_WEAPONSPATH+" "+type_name) )
 		{
 			cfg_path = CFG_WEAPONSPATH+" "+type_name+" attachments";
 		}
-		else if ( GetGame().ConfigIsExisting(CFG_MAGAZINESPATH+" "+type_name) )
+		else if ( g_Game.ConfigIsExisting(CFG_MAGAZINESPATH+" "+type_name) )
 		{
 			cfg_path = CFG_MAGAZINESPATH+" "+type_name+" attachments";
 		}
 		
-		GetGame().ConfigGetTextArray(cfg_path, cfg_attachments);
+		g_Game.ConfigGetTextArray(cfg_path, cfg_attachments);
 		
-		int child_count = GetGame().ConfigGetChildrenCount("CfgNonAIVehicles");
+		int child_count = g_Game.ConfigGetChildrenCount("CfgNonAIVehicles");
 		
 		for ( int x = 0; x < child_count; ++x )
 		{
 			string child_name;
-			GetGame().ConfigGetChildName("CfgNonAIVehicles",x ,	child_name);
+			g_Game.ConfigGetChildName("CfgNonAIVehicles",x ,	child_name);
 			
 			string inventory_slot_name;
-			GetGame().ConfigGetText("CfgNonAIVehicles "+ child_name +" inventorySlot", inventory_slot_name);
+			g_Game.ConfigGetText("CfgNonAIVehicles "+ child_name +" inventorySlot", inventory_slot_name);
 			
 			if ( cfg_attachments.Find( inventory_slot_name ) > 0 )
 			{
 				string model_path;
-				GetGame().ConfigGetText("CfgNonAIVehicles "+ child_name +" model", model_path);
+				g_Game.ConfigGetText("CfgNonAIVehicles "+ child_name +" model", model_path);
 				
 				if ( model_path.Length() > 5 )
 				{										

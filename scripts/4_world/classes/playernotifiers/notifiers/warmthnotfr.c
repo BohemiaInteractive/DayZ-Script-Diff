@@ -19,10 +19,66 @@ class WarmthNotfr: NotifierBase
 		return eNotifiers.NTF_WARMTH;
 	}	
 	
+	protected DSLevelsTemp DetermineLevelEx()
+	{
+		float value = m_Player.GetStatHeatComfort().Get();
+		DSLevelsTemp level = DSLevelsTemp.NORMAL;
+		
+		if (value < 0)
+		{
+			if (value < PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING)
+				level = DSLevelsTemp.WARNING_MINUS;
+			if (value < PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL)
+				level = DSLevelsTemp.CRITICAL_MINUS;
+			if (value <= PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_EMPTY)
+				level = DSLevelsTemp.BLINKING_MINUS;
+		}
+		else
+		{
+			if (value > PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING)
+				level = DSLevelsTemp.WARNING_PLUS;
+			if (value > PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_CRITICAL)
+				level = DSLevelsTemp.CRITICAL_PLUS;
+			if (value >= PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_EMPTY)
+				level = DSLevelsTemp.BLINKING_PLUS;
+		}
+
+		return level;
+	}
+
+	override void DisplayTendency(float delta)
+	{
+		int tendency = CalculateTendency(
+			GetObservedValue(),
+			INC_TRESHOLD_LOW,
+			INC_TRESHOLD_MED,
+			INC_TRESHOLD_HIGH,
+			DEC_TRESHOLD_LOW,
+			DEC_TRESHOLD_MED,
+			DEC_TRESHOLD_HIGH,
+		);
+		
+		DSLevelsTemp level = DetermineLevelEx();
+		
+		DisplayElementTendency displayElement = DisplayElementTendency.Cast(GetVirtualHud().GetElement(eDisplayElements.DELM_TDCY_TEMPERATURE));
+		
+		if (displayElement)
+		{
+			displayElement.SetTendency(tendency);
+			displayElement.SetSeriousnessLevel(level);
+		}
+	}
+
+	override protected float GetObservedValue()
+	{
+		return m_AverageHeatComfortDeltaBuffer.Add(m_Player.m_Environment.GetTargetHeatComfort() - m_Player.GetStatHeatComfort().Get());
+	}
+	
+	[Obsolete("replaced by DetermineLevelEx")]
 	protected DSLevelsTemp DetermineLevel(float value, float m_warning_treshold, float m_critical_treshold, float m_empty_treshold, float p_warning_treshold, float p_critical_treshold, float p_empty_treshold )
 	{
 		DSLevelsTemp level = DSLevelsTemp.NORMAL;
-		
+
 		if (value < 0)
 		{
 			if (value < m_warning_treshold)
@@ -43,41 +99,5 @@ class WarmthNotfr: NotifierBase
 		}
 
 		return level;
-	}
-
-	override void DisplayTendency(float delta)
-	{
-		int tendency = CalculateTendency(
-			GetObservedValue(),
-			INC_TRESHOLD_LOW,
-			INC_TRESHOLD_MED,
-			INC_TRESHOLD_HIGH,
-			DEC_TRESHOLD_LOW,
-			DEC_TRESHOLD_MED,
-			DEC_TRESHOLD_HIGH,
-		);
-		
-		DSLevelsTemp level = DetermineLevel(
-			m_Player.GetStatHeatComfort().Get(),
-			PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_WARNING, 
-			PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL,
-			PlayerConstants.THRESHOLD_HEAT_COMFORT_MINUS_EMPTY,
-			PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING,
-			PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_CRITICAL,
-			PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_EMPTY,
-		);
-		
-		DisplayElementTendency displayElement = DisplayElementTendency.Cast(GetVirtualHud().GetElement(eDisplayElements.DELM_TDCY_TEMPERATURE));
-		
-		if (displayElement)
-		{
-			displayElement.SetTendency(tendency);
-			displayElement.SetSeriousnessLevel(level);
-		}
-	}
-
-	override protected float GetObservedValue()
-	{
-		return m_AverageHeatComfortDeltaBuffer.Add(m_Player.m_Environment.GetTargetHeatComfort() - m_Player.GetStatHeatComfort().Get());
 	}
 }

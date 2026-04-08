@@ -38,7 +38,7 @@ class PluginUniversalTemperatureSourceServer extends PluginBase
 		vector playerPos				= player.GetPosition();
 		array<Object> nearestObjects	= new array<Object>();
 
-		GetGame().GetObjectsAtPosition(playerPos, LOOKUP_RADIUS, nearestObjects, null);
+		g_Game.GetObjectsAtPosition(playerPos, LOOKUP_RADIUS, nearestObjects, null);
 
 		UTemperatureSource uts;
 		UTemperatureSourceDebug utsd;

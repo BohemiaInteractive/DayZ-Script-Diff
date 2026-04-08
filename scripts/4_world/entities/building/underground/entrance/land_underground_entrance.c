@@ -62,6 +62,11 @@ class Land_Underground_EntranceBase : House
 	EntranceLight 							m_InteriorLight2;
 	EntranceLight 							m_InteriorLight3;
 	
+	#ifndef SERVER
+	private ref Timer m_TempHotfixTimer;
+	#endif
+	private const float TEMP_HOTIX_TIMESLICE = 0.01;
+	
 	void Land_Underground_EntranceBase()
 	{
 		m_DoorType = EUndegroundDoorType.MAIN;
@@ -70,7 +75,11 @@ class Land_Underground_EntranceBase : House
 		RegisterNetSyncVariableInt("m_DoorState", 0, EnumTools.GetLastEnumValue(EUndegroundEntranceState));
 		
 		#ifndef SERVER
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( CreateLights, 250);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( CreateLights, 250);
+		
+		//! Temporary hotfix for EOnPostSimulate/EOnFrame methods not beeing called on static objects
+		m_TempHotfixTimer = new Timer();
+		m_TempHotfixTimer.Run(TEMP_HOTIX_TIMESLICE, this, "EOnPostSimulate", null, true);
 		#endif
 	}
 	
@@ -81,6 +90,12 @@ class Land_Underground_EntranceBase : House
 		Land_Underground_Panel.UnregisterEntrance(this);
 		#ifndef SERVER
 		CleanUpOnDeleteClient();
+		
+		if (m_TempHotfixTimer)
+		{
+			m_TempHotfixTimer.Stop();
+			m_TempHotfixTimer = null;
+		}
 		#endif
 	}
 	//---------------------
@@ -114,7 +129,7 @@ class Land_Underground_EntranceBase : House
 	override void EOnPostSimulate(IEntity other, float timeSlice)
 	{
 		#ifndef SERVER
-		OnUpdateClient(timeSlice);
+		OnUpdateClient(TEMP_HOTIX_TIMESLICE);
 		#endif
 	}
 	
@@ -123,7 +138,7 @@ class Land_Underground_EntranceBase : House
 		m_AnimPhase = m_AnimTimerDoorServer.GetValue() / AdjustTime(GetOpeningTime());// make 0..1
 		SetAnimationPhaseNow("EntranceDoor",m_AnimPhase);
 
-		GetGame().GetWorld().UpdatePathgraphDoorByAnimationSourceName(this, "EntranceDoor");
+		g_Game.GetWorld().UpdatePathgraphDoorByAnimationSourceName(this, "EntranceDoor");
 
 		SetSynchDirty();
 	}
@@ -180,7 +195,7 @@ class Land_Underground_EntranceBase : House
 		{
 			targetState = m_DoorState + 1;
 		}
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SetDoorStateServer, time * 1000, false, targetState);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SetDoorStateServer, time * 1000, false, targetState);
 	}
 	
 	void SetDoorStateServer(EUndegroundEntranceState newState)
@@ -220,7 +235,7 @@ class Land_Underground_EntranceBase : House
 	
 	void OpenServer(bool force = false)
 	{
-		GetGame().RegisterNetworkStaticObject(this);
+		g_Game.RegisterNetworkStaticObject(this);
 		if (m_DoorState == EUndegroundEntranceState.CLOSED || force)
 		{
 			SetDoorStateServer(EUndegroundEntranceState.OPENING_A);
@@ -254,12 +269,12 @@ class Land_Underground_EntranceBase : House
 	{
 		string debug_output;
 		
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 		{
 			debug_output +=  "current state: " +  typename.EnumToString(EUndegroundEntranceState, m_DoorState) + "\n";
 			/*
-			if(GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ))
-				debug_output +=  "next stage timer: " + GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).GetRemainingTimeByName(this, "SetDoorStateServer").ToString();
+			if(g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ))
+				debug_output +=  "next stage timer: " + g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).GetRemainingTimeByName(this, "SetDoorStateServer").ToString();
 			*/
 		}
 		else
@@ -282,7 +297,7 @@ class Land_Underground_EntranceBase : House
 	{
 		if (super.OnAction(action_id, player, ctx))
 			return true;
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			if (action_id == EActions.ACTIVATE_ENTITY)
 			{
@@ -297,7 +312,7 @@ class Land_Underground_EntranceBase : House
 		
 				if (m_DoorState == EUndegroundEntranceState.OPENING_G)
 				{
-					GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).Remove(SetDoorStateServer);
+					g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).Remove(SetDoorStateServer);
 					SetDoorStateServer(EUndegroundEntranceState.CLOSING_A);
 				}
 			}
@@ -354,7 +369,7 @@ class Land_Underground_Entrance : Land_Underground_EntranceBase
 		SEffectManager.DestroySound(m_DoorEngineSoundOut);
 		SEffectManager.DestroySound(m_DoorEngineSoundLoop);
 		
-		if (m_AlarmLight && GetGame())
+		if (m_AlarmLight && g_Game)
 		{
 			m_AlarmLight.Destroy();
 		}

@@ -1,9 +1,9 @@
 enum TabType
 {
+	FAVORITE,
 	OFFICIAL,
 	COMMUNITY,
 	LAN,
-	FAVORITE,
 	NONE
 }
 
@@ -121,6 +121,11 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	bool GetIsServerLoadingFinished()
 	{
 		return m_LoadingFinished;
+	}
+	
+	bool IsLoadingServers()
+	{
+		return m_Loading;
 	}
 
 	void OnDLCChange(EDLCId dlcId)
@@ -252,24 +257,29 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 			
 		#ifdef PLATFORM_CONSOLE
 			string aButtonLabel;
-			if (w == m_RefreshList || w == m_ApplyFilter || w == m_ResetFilters || w == m_BtnShowDetails || w == m_BtnShowFilters)
+			if (w == m_RefreshList || w == m_ApplyFilter || w == m_ResetFilters)
 			{
 			#ifdef PLATFORM_PS4
 				aButtonLabel = "#ps4_ingame_menu_select";
 			#else
 				aButtonLabel = "#layout_xbox_ingame_menu_select";
 			#endif
+				m_Menu.UpdateAButtonLabel(aButtonLabel);
+			}
+			else if (w != m_BtnShowFilters && w != m_BtnShowDetails)
+			{
+				aButtonLabel = "#dialog_change";
+				m_Menu.UpdateAButtonLabel(aButtonLabel);
 			}
 			else
 			{
-				aButtonLabel = "#dialog_change";
+				m_Menu.ShowAButton(false);
 			}
-			
-			m_Menu.UpdateAButtonLabel(aButtonLabel);
 		#endif
 			
 			return true;
 		}
+		
 		return false;
 	}
 	
@@ -602,15 +612,21 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		return -1;
 	}
 	
-	void Unfavorite( string uid )
+	void Unfavorite(string uid)
 	{
 		ServerBrowserEntry entry;
-		if ( m_EntryWidgets.Find( uid, entry ) )
+		if (m_EntryWidgets.Find(uid, entry))
 		{
-			entry.SetFavorite( false );
+			entry.SetFavorite(false);
+			
+			// If this is an entry in favorites tab, hide it
+			if (m_TabType == TabType.FAVORITE)
+			{
+				entry.Show(false);
+			}
 		}
 	}
-	
+		
 	TabType GetTabType()
 	{
 		return m_TabType;

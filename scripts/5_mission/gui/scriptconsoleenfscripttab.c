@@ -130,11 +130,11 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 		string code;
 		m_EnfScriptEdit.GetText(code);
 		string codeNoReplace = code;
-		_player = PlayerBase.Cast(GetGame().GetPlayer());
+		_player = PlayerBase.Cast(g_Game.GetPlayer());
 		m_AllowScriptOutput = true;
 		code.Replace("Print(","ScriptConsoleEnfScriptTab.PrintS(");
 		code.Replace("Print (","ScriptConsoleEnfScriptTab.PrintS(");
-		bool success = GetGame().ExecuteEnforceScript("void scConsMain() \n{\n" + code + "\n}\n", "scConsMain");
+		bool success = g_Game.ExecuteEnforceScript("void scConsMain() \n{\n" + code + "\n}\n", "scConsMain");
 		m_AllowScriptOutput = false;
 		ColorRunButton(success);
 		
@@ -153,7 +153,7 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 		{
 			m_EnfScriptRun.SetColor(ARGB(255,255,0,0));
 		}
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ResetRunButtonColor,600);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ResetRunButtonColor,600);
 	}
 	
 	protected void ResetRunButtonColor()
@@ -168,7 +168,7 @@ class ScriptConsoleEnfScriptTab : ScriptConsoleTabBase
 		m_EnscriptConsoleHistoryServer.Insert(code);
 		m_ModuleLocalEnscriptHistoryServer.AddNewLine(code);
 		CachedObjectsParams.PARAM1_STRING.param1 = code;
-		GetGame().RPCSingleParam(GetGame().GetPlayer(), ERPCs.DEV_RPC_SERVER_SCRIPT, CachedObjectsParams.PARAM1_STRING, true, GetGame().GetPlayer().GetIdentity());
+		g_Game.RPCSingleParam(g_Game.GetPlayer(), ERPCs.DEV_RPC_SERVER_SCRIPT, CachedObjectsParams.PARAM1_STRING, true, g_Game.GetPlayer().GetIdentity());
 	}
 	
 	protected void EnscriptHistoryBack()

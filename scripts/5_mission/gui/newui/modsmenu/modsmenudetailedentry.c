@@ -24,7 +24,7 @@ class ModsMenuDetailedEntry extends ScriptedWidgetEventHandler
 
 	void ModsMenuDetailedEntry(ModInfo data, Widget parent, ModsMenuDetailed parent_menu)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_detailed_entry.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_detailed_entry.layout", parent);
 		m_Detail = m_Root.FindAnyWidget("DetailContainer");
 		
 		m_IconSmall = ImageWidget.Cast(m_Root.FindAnyWidget("IconSmall"));
@@ -185,7 +185,7 @@ class ModsMenuDetailedEntry extends ScriptedWidgetEventHandler
 		}
 		else if (w == m_ActionWebsite)
 		{
-			GetGame().OpenURL(m_Data.GetAction());
+			g_Game.OpenURL(m_Data.GetAction());
 		}
 		else if (w == m_ActionPurchase)
 		{

@@ -29,7 +29,7 @@ class SawOffMagnum extends RecipeBase
 		m_IngredientDestroy[0]			= false;	// true = destroy, false = do nothing
 
 		//ingredient 2
-		InsertIngredient(1,"Hacksaw");
+		InsertIngredient(1,"Hacksaw", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 
 		m_IngredientAddHealth[1]		= -10;
 		m_IngredientSetHealth[1]		= -1;
@@ -49,6 +49,19 @@ class SawOffMagnum extends RecipeBase
 	//gets called upon recipe's completion
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
 	{
+		Magnum oldIngredient;
+
+		if(Class.CastTo(oldIngredient, ingredients[0]))
+		{
+			GameInventory ingredientInventory = oldIngredient.GetInventory();
+			
+			EntityAI ejector = ingredientInventory.FindAttachmentByName(oldIngredient.ATT_SLOT_EJECTOR);
+			ejector.Delete();
+				
+			EntityAI cylinder = ingredientInventory.FindAttachmentByName(oldIngredient.ATT_SLOT_CYLINDER);
+			cylinder.Delete();
+		}
+		
 		MiscGameplayFunctions.TurnItemIntoItemEx(player, new TurnItemIntoItemLambda(ingredients[0], "SawedoffMagnum", player));
 	}
 };

@@ -13,7 +13,7 @@ class DynamicArea_Flare : ScriptedEntity
 		m_Particle = ParticleManager.GetInstance().PlayOnObject( ParticleList.FLAREPROJ_ACTIVATE_RED, this );
 		
 		// We specify we will delete this object after set time
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater( GetGame().ObjectDeleteOnClient, LIFETIME, false, this );
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater( g_Game.ObjectDeleteOnClient, LIFETIME, false, this );
 	}
 	
 	// We slowly fall

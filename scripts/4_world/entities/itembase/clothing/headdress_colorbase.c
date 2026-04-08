@@ -9,3 +9,4 @@ class Headdress_Colorbase extends HeadGear_Base
 	}
 };
 class Headdress_Wolf extends Headdress_Colorbase {};
+class Headdress_Bear extends Headdress_Colorbase {};

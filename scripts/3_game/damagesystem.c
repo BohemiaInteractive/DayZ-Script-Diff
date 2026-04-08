@@ -44,7 +44,7 @@ class DamageSystem
 		
 		path_base = string.Format("%1 %2 DamageSystem DamageZones", path_base, entity.GetType());
 		
-		if (!GetGame().ConfigIsExisting(path_base))
+		if (!g_Game.ConfigIsExisting(path_base))
 		{
 			return false;
 		}
@@ -61,9 +61,9 @@ class DamageSystem
 				zone = zone_names.Get(i);
 				
 				path =  string.Format("%1 %2 componentNames ", path_base, zone);
-				if (GetGame().ConfigIsExisting(path))
+				if (g_Game.ConfigIsExisting(path))
 				{
-					GetGame().ConfigGetTextArray(path,component_names);
+					g_Game.ConfigGetTextArray(path,component_names);
 				}
 				zoneMap.Insert(zone,component_names);
 			}
@@ -119,9 +119,9 @@ class DamageSystem
 		}
 		
 		path = string.Format("%1 %2 DamageSystem DamageZones %3 componentNames", path, entity.GetType(), damageZone);
-		if (GetGame().ConfigIsExisting(path))
+		if (g_Game.ConfigIsExisting(path))
 		{
-			GetGame().ConfigGetTextArray(path,componentNames);
+			g_Game.ConfigGetTextArray(path,componentNames);
 			return true;
 		}
 		

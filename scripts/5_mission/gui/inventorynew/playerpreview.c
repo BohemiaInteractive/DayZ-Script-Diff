@@ -16,7 +16,7 @@ class PlayerPreview: LayoutHolder
 		WidgetEventHandler.GetInstance().RegisterOnMouseWheel( m_Parent.GetMainWidget().FindAnyWidget( "CharacterPanel" ),  this, "MouseWheel" );
 		
 		m_CharacterScaleDelta = 1;
-		m_CharacterPanelWidget.SetPlayer( GetGame().GetPlayer() );
+		m_CharacterPanelWidget.SetPlayer( g_Game.GetPlayer() );
 		m_CharacterPanelWidget.SetModelPosition( "0 0 0.605" );
 		m_CharacterPanelWidget.SetSize( 1.34, 1.34 );  // default scale
 		UpdateScale();
@@ -83,9 +83,9 @@ class PlayerPreview: LayoutHolder
 	override void UpdateInterval()
 	{
 		// item in hands update
-		m_CharacterPanelWidget.UpdateItemInHands(GetGame().GetPlayer().GetHumanInventory().GetEntityInHands());
+		m_CharacterPanelWidget.UpdateItemInHands(g_Game.GetPlayer().GetEntityInHands());
 		
-		PlayerBase realPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase realPlayer = PlayerBase.Cast(g_Game.GetPlayer());
 		DayZPlayer dummyPlayer = m_CharacterPanelWidget.GetDummyPlayer();
 		if ( realPlayer && dummyPlayer )
 		{

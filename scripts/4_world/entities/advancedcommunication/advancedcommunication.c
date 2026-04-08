@@ -6,9 +6,9 @@ class AdvancedCommunication extends EntityAI
 	
 	void AdvancedCommunication()
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
-			if(GetGame().GetPlayer())
+			if(g_Game.GetPlayer())
 			{
 				m_ActionsInitialize = false;
 			}
@@ -118,7 +118,7 @@ class AdvancedCommunication extends EntityAI
 	
 	void RemoveAction(typename actionName)
 	{
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		ActionBase action = player.GetActionManager().GetAction(actionName);
 		typename ai = action.GetInputType();
 		array<ActionBase_Basic> action_array = m_InputActionMap.Get( ai );

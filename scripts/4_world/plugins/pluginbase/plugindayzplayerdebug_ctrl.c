@@ -55,7 +55,7 @@ class PluginDayzPlayerDebug_Ctrl
 	
 	/* void Tick()
 	{
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if (!player)
 		{
 			return;
@@ -108,7 +108,7 @@ class PluginDayzPlayerDebug_Ctrl
 	{
 		if (m_ApplyStanceChange != -2)
 		{
-			DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+			DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 			if (!player)
 			{	
 				return;
@@ -125,7 +125,7 @@ class PluginDayzPlayerDebug_Ctrl
 		{
 			m_OverrideMovementChange = false;
 			
-			player = DayZPlayer.Cast( GetGame().GetPlayer() );
+			player = DayZPlayer.Cast( g_Game.GetPlayer() );
 			if (!player)
 				return;
 						

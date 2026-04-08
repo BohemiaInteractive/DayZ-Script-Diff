@@ -49,7 +49,7 @@ class ActionHandsPartSwitch: ActionSingleUseBase
 	{
 		super.OnStartServer( action_data );
 		
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 			SetNextIndex(action_data);
 	}
 	

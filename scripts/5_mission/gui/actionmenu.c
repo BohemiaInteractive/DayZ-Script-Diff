@@ -48,7 +48,7 @@ class ActionMenu
 		bool newATSelection = DiagMenu.GetBool( DiagMenuIDs.MISC_ACTION_TARGETS_NEW, true );
 
 		// read the action manager
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		TSelectableActionInfoArray actions = player.GetActionManager().GetSelectableActions();
 		int selectedActionIndex = player.GetActionManager().GetSelectedActionIndex();
 
@@ -101,7 +101,7 @@ class ActionMenu
 
 	void NextAction()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		player.GetActionManager().SelectNextAction();
 		
 		UpdateWidgets();
@@ -111,7 +111,7 @@ class ActionMenu
 
 	void PrevAction()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		player.GetActionManager().SelectPrevAction();
 		
 		UpdateWidgets();
@@ -121,7 +121,7 @@ class ActionMenu
 	
 	void NextActionCategory()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		player.GetActionManager().SelectNextActionCategory();
 		
 		UpdateWidgets();
@@ -131,7 +131,7 @@ class ActionMenu
 
 	void PrevActionCategory()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		player.GetActionManager().SelectPrevActionCategory();
 		
 		UpdateWidgets();
@@ -153,7 +153,7 @@ class ActionMenu
 		if( !m_visible )
 			Show();
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if( player.GetActionManager().IsSelectableActionsChanged() )
 			UpdateWidgets();
 	}

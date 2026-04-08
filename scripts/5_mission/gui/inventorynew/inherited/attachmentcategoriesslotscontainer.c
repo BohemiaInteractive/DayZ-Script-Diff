@@ -132,7 +132,7 @@ class AttachmentCategoriesSlotsContainer: Container
 	string GetAttachmentCategory( string config_path_attachment_categories, int i )
 	{
 		string attachment_category;
-		GetGame().ConfigGetChildName(config_path_attachment_categories, i, attachment_category);
+		g_Game.ConfigGetChildName(config_path_attachment_categories, i, attachment_category);
 		return attachment_category;
 	}
 
@@ -140,7 +140,7 @@ class AttachmentCategoriesSlotsContainer: Container
 	{
 		string icon_path = config_path_attachment_categories+ " " + attachment_category + " icon";
 		string icon_name;
-		GetGame().ConfigGetText(icon_path, icon_name);
+		g_Game.ConfigGetText(icon_path, icon_name);
 		return icon_name;
 	}
 }

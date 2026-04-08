@@ -129,7 +129,7 @@ class CAContinuousFillOil : CAContinuousBase
 		}
 		
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( action_data.m_MainItem ) // Item EngineOil gets deleted after full consumption
 				action_data.m_MainItem.AddQuantity( -m_SpentQuantity );

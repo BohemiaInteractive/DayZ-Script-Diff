@@ -54,9 +54,9 @@ class ComponentAnimalBleeding : Component
 		InflictWoundDamage( damage_result, zone_name, ammo );
 		//Print( "GetHealth Health after creating wood@: " + zone_name + " " + m_ThisEntityAI.GetHealth( zone_name, "Health" ));
 		
-		float can_bleed = false; //= GetGame().ConfigGetFloat( "CfgVehicles " + m_ThisEntityAI.GetType() + " DamageSystem " + "DamageZones " + zone_name + " canBleed" );
+		float can_bleed = false; //= g_Game.ConfigGetFloat( "CfgVehicles " + m_ThisEntityAI.GetType() + " DamageSystem " + "DamageZones " + zone_name + " canBleed" );
 		//Print("can_bleed: " + can_bleed );
-		float bleed_treshold = 0; //= GetGame().ConfigGetFloat( "CfgAmmo " + ammo + " DamageApplied " + "bleedThreshold" );
+		float bleed_treshold = 0; //= g_Game.ConfigGetFloat( "CfgAmmo " + ammo + " DamageApplied " + "bleedThreshold" );
 		//Print("bleed_treshold: " + bleed_treshold );
 		float chance = -1; //Math.RandomFloat01();
 		//Print("chance: " + chance );

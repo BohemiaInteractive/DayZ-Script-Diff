@@ -9,14 +9,14 @@ class HandsPreview: Container
 
 	void HandsPreview( LayoutHolder parent )
 	{
-		GetGame().GetPlayer().GetOnItemAddedToHands().Insert( CreateNewIcon );
-		GetGame().GetPlayer().GetOnItemRemovedFromHands().Insert( DeleteIcon );
+		g_Game.GetPlayer().GetOnItemAddedToHands().Insert( CreateNewIcon );
+		g_Game.GetPlayer().GetOnItemRemovedFromHands().Insert( DeleteIcon );
 	}
 	
 	void ~HandsPreview()
 	{
-		GetGame().GetPlayer().GetOnItemAddedToHands().Remove( CreateNewIcon );
-		GetGame().GetPlayer().GetOnItemRemovedFromHands().Remove( DeleteIcon );
+		g_Game.GetPlayer().GetOnItemAddedToHands().Remove( CreateNewIcon );
+		g_Game.GetPlayer().GetOnItemRemovedFromHands().Remove( DeleteIcon );
 	}
 
 	void RefreshQuantity( EntityAI m_Item_to_refresh )
@@ -79,7 +79,7 @@ class HandsPreview: Container
 		bool show_combine_swap = ItemManager.GetInstance().IsDragging();
 
 		#ifdef PLATFORM_CONSOLE
-		if ( m_Icon && !m_Icon.IsDragged() && GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
+		if ( m_Icon && !m_Icon.IsDragged() && g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() )
 		#else
 		if ( m_Icon && !m_Icon.IsDragged() )
 		#endif
@@ -150,7 +150,7 @@ class HandsPreview: Container
 	
 	override bool Select()
 	{
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		EntityAI item_in_hands = m_Item;
 		if( ItemManager.GetInstance().IsMicromanagmentMode() )
 		{
@@ -173,12 +173,12 @@ class HandsPreview: Container
 						float stackable = item_base.GetTargetQuantityMax();
 						if (stackable == 0 || item_base.GetQuantity() <= stackable)
 						{
-							GetGame().GetPlayer().PredictiveTakeEntityToHands( item_base );		
+							g_Game.GetPlayer().PredictiveTakeEntityToHands( item_base );		
 							return true;
 						}
 						else if( stackable != 0 && stackable <= item_base.GetQuantity() )
 						{
-							item_base.SplitIntoStackMaxHandsClient(PlayerBase.Cast( GetGame().GetPlayer() ));
+							item_base.SplitIntoStackMaxHandsClient(PlayerBase.Cast( g_Game.GetPlayer() ));
 							return true;
 						}
 					}

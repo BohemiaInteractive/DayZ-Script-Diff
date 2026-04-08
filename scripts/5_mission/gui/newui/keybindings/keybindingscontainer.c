@@ -17,7 +17,7 @@ class KeybindingsContainer extends ScriptedWidgetEventHandler
 		m_KeyWidgetElements	= new map<int, ref ElementArray>;
 		m_Menu			= menu;
 		
-		m_Root	= GetGame().GetWorkspace().CreateWidgets( GetLayoutName(), parent );
+		m_Root	= g_Game.GetWorkspace().CreateWidgets( GetLayoutName(), parent );
 		m_Scroll = ScrollWidget.Cast(m_Root.FindAnyWidget("group_scroll"));
 		Widget container	= m_Root.FindAnyWidget( "group_scroll" );
 		
@@ -54,7 +54,7 @@ class KeybindingsContainer extends ScriptedWidgetEventHandler
 	
 	void AddSubgroup( int sort_index, Widget parent, Input input )
 	{
-		Widget subgroup				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/options/keybindings_selectors/keybinding_subgroup.layout", parent );
+		Widget subgroup				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/options/keybindings_selectors/keybinding_subgroup.layout", parent );
 		Widget subgroup_content 	= subgroup.FindAnyWidget( "subgroup_content" );
 		
 		TIntArray input_actions;

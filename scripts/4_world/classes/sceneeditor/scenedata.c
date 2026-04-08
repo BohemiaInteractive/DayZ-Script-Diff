@@ -131,7 +131,7 @@ class SceneData
 	void SetInitYear(int value)
 	{
 		m_DateInitYear = value;
-		GetGame().GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
+		g_Game.GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
 	}
 	
 	//========================================
@@ -148,7 +148,7 @@ class SceneData
 	void SetInitMonth(int value)
 	{
 		m_DateInitMonth = value;
-		GetGame().GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
+		g_Game.GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
 	}
 	
 	//========================================
@@ -165,7 +165,7 @@ class SceneData
 	void SetInitDay(int value)
 	{
 		m_DateInitDay = value;
-		GetGame().GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
+		g_Game.GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
 	}
 	
 	//========================================
@@ -182,7 +182,7 @@ class SceneData
 	void SetInitHour(int value)
 	{
 		m_DateInitHour = value;
-		GetGame().GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
+		g_Game.GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
 	}
 	
 	//========================================
@@ -199,7 +199,7 @@ class SceneData
 	void SetInitMinute(int value)
 	{
 		m_DateInitMinute = value;
-		GetGame().GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
+		g_Game.GetWorld().SetDate( m_DateInitYear, m_DateInitMonth, m_DateInitDay, m_DateInitHour, m_DateInitMinute );
 	}
 	
 	//========================================
@@ -216,7 +216,7 @@ class SceneData
 	void SetInitOvercast(float value)
 	{
 		m_WeaterInitOvercast = value;
-		GetGame().GetWeather().GetOvercast().Set( value, 0, 1000 );
+		g_Game.GetWeather().GetOvercast().Set( value, 0, 1000 );
 	}
 	
 	//========================================
@@ -233,7 +233,7 @@ class SceneData
 	void SetInitRain(float value)
 	{
 		m_WeaterInitRain = value;
-		GetGame().GetWeather().GetRain().Set( value, 0, 1000 );
+		g_Game.GetWeather().GetRain().Set( value, 0, 1000 );
 	}
 	
 	//========================================
@@ -250,7 +250,7 @@ class SceneData
 	void SetInitFog(float value)
 	{
 		m_WeaterInitFog = value;
-		GetGame().GetWeather().GetFog().Set( value, 0, 1000 );
+		g_Game.GetWeather().GetFog().Set( value, 0, 1000 );
 	}
 	
 	//========================================
@@ -276,7 +276,7 @@ class SceneData
 			m_WeaterInitWindForce = 0.1;
 		}
 		
-		GetGame().GetWeather().SetWindSpeed( m_WeaterInitWindForce );
+		g_Game.GetWeather().SetWindSpeed( m_WeaterInitWindForce );
 	}
 	
 	//========================================

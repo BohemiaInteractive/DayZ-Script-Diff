@@ -55,7 +55,7 @@ class RifleReChambering extends WeaponStateBase
 			string type;
 			if (m_weapon.GetCartridgeInfo(mi, damage, type))
 			{
-				bool is_single_or_server = !GetGame().IsMultiplayer() || GetGame().IsServer();
+				bool is_single_or_server = !g_Game.IsMultiplayer() || g_Game.IsServer();
 				if (is_single_or_server)
 				{
 					m_dstMagazine = DayZPlayerUtils.SelectStoreCartridge(e.m_player, m_weapon, mi, m_srcMagazine, damage, magazineTypeName);

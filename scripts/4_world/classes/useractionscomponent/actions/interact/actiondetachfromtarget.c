@@ -53,14 +53,14 @@ class ActionDetachFromTarget: ActionInteractBase
 	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
 	{
 		int attSlotId = InventorySlots.INVALID;
-		if (!GetGame().IsDedicatedServer() )
+		if (!g_Game.IsDedicatedServer() )
 		{
 			attSlotId = FindSlotIdToDetach(player, target, item);
 		}
 		
 		if ( super.SetupAction( player, target, item, action_data, extra_data))
 		{
-			if (!GetGame().IsDedicatedServer())
+			if (!g_Game.IsDedicatedServer())
 			{
 				if(attSlotId != InventorySlots.INVALID)
 				{
@@ -77,7 +77,7 @@ class ActionDetachFromTarget: ActionInteractBase
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		if ( GetGame().IsMultiplayer() && GetGame().IsServer() ) return true;
+		if ( g_Game.IsMultiplayer() && g_Game.IsServer() ) return true;
 		
 		return FindSlotIdToDetach(player, target, item) != InventorySlots.INVALID;
 	}
@@ -96,7 +96,7 @@ class ActionDetachFromTarget: ActionInteractBase
 	
 	override void OnExecute(ActionData action_data)
 	{
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 		{
 			ClearActionJuncture(action_data);
 			return;

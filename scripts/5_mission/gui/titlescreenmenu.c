@@ -15,7 +15,7 @@ class TitleScreenMenu extends UIScriptedMenu
 	
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_title_screen.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/xbox/day_z_title_screen.layout");
 		
 		MissionMainMenu mission = MissionMainMenu.Cast(g_Game.GetMission());
 		
@@ -24,9 +24,9 @@ class TitleScreenMenu extends UIScriptedMenu
 		{
 			string gamertag;
 			string text = Widget.TranslateString("#console_start_game");
-			GetGame().GetPlayerName(gamertag);
+			g_Game.GetPlayerName(gamertag);
 			#ifdef PLATFORM_XBOX
-				BiosUserManager user_manager = GetGame().GetUserManager();
+				BiosUserManager user_manager = g_Game.GetUserManager();
 				if (user_manager && user_manager.GetSelectedUser())
 					m_TextPress.SetText(string.Format(text, "<image set=\"xbox_buttons\" name=\"A\" />"));
 				else
@@ -35,7 +35,7 @@ class TitleScreenMenu extends UIScriptedMenu
 					
 			#ifdef PLATFORM_PS4
 				string confirm = "cross";
-				if (GetGame().GetInput().GetEnterButton() == GamepadButton.A)
+				if (g_Game.GetInput().GetEnterButton() == GamepadButton.A)
 				{
 					confirm = "cross";
 				}

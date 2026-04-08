@@ -56,7 +56,7 @@ class ActionPickBerry: ActionInteractLoopBase
 		
 		targetObject.DecreaseHealth( "", "", (1 / Math.Max(1,ntarget.GetAmountOfDrops(action_data.m_MainItem)))*100, true );
 				
-		ItemBase drop = ItemBase.Cast( GetGame().CreateObject(drop_name, action_data.m_Player.GetPosition(), false) );
+		ItemBase drop = ItemBase.Cast( g_Game.CreateObject(drop_name, action_data.m_Player.GetPosition(), false) );
 		drop.SetQuantity(drop_quantity, false);
 
 		action_data.m_Player.GetSoftSkillManager().AddSpecialty( m_SpecialtyWeight );*/

@@ -79,7 +79,7 @@ class GardenBase extends ItemBase //BuildingSuper
 		InitializeSlots();
 		SetMaxWaterStateVal();
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			CheckRainStart();
 		}
@@ -87,7 +87,7 @@ class GardenBase extends ItemBase //BuildingSuper
 	
 	void ~GardenBase()
 	{
-		if (GetGame() && m_CheckRainTimer)
+		if (g_Game && m_CheckRainTimer)
 		{
 			m_CheckRainTimer.Stop();
 			m_CheckRainTimer = null;
@@ -243,7 +243,7 @@ class GardenBase extends ItemBase //BuildingSuper
 	{
 		super.EEOnAfterLoad();
 
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SyncSlots, 500, false, this);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SyncSlots, 500, false, this);
 	}
 	
 	void SyncSlots()
@@ -384,7 +384,7 @@ class GardenBase extends ItemBase //BuildingSuper
 		super.EEItemAttached(item, slot_name);
 		
 		string path = string.Format("CfgVehicles %1 Horticulture PlantType", item.GetType());
-		bool IsItemSeed = GetGame().ConfigIsExisting(path); // Is this item a seed?
+		bool IsItemSeed = g_Game.ConfigIsExisting(path); // Is this item a seed?
 		
 		if (IsItemSeed) 
 		{
@@ -423,7 +423,7 @@ class GardenBase extends ItemBase //BuildingSuper
 		slot_name.ToLower();
 
 		string path = string.Format("CfgVehicles %1 Horticulture PlantType", item.GetType());
-		bool IsItemSeed = GetGame().ConfigIsExisting(path); // Is this item a seed?
+		bool IsItemSeed = g_Game.ConfigIsExisting(path); // Is this item a seed?
 		
 		string converted_slot_name = ConvertAttSlotToPlantSlot(slot_name);
 		Slot slot = GetSlotBySelection(converted_slot_name);
@@ -465,7 +465,7 @@ class GardenBase extends ItemBase //BuildingSuper
 				
 				seed.LockToParent();
 				//Take some small amount of time before making a plant out of seeds
-				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CreatePlant, CREATE_PLANT_DELAY, false, slot);
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CreatePlant, CREATE_PLANT_DELAY, false, slot);
 			}
 		}
 	}
@@ -479,7 +479,7 @@ class GardenBase extends ItemBase //BuildingSuper
 			if (seed)
 			{
 				seed.UnlockFromParent();
-				GetGame().ObjectDelete(seed);
+				g_Game.ObjectDelete(seed);
 	
 				PlantBase plant = PlantBase.Cast( GetInventory().CreateAttachmentEx(slot.m_PlantType, slot.GetSlotId()));
 				int slot_index = slot.GetSlotIndex();
@@ -615,7 +615,7 @@ class GardenBase extends ItemBase //BuildingSuper
 	{
 		TStringArray textures = GetHiddenSelectionsTextures();
 		
-		int tex_id = GetGame().ConfigGetInt( string.Format("cfgVehicles %1 Horticulture TexId", item_type) );
+		int tex_id = g_Game.ConfigGetInt( string.Format("cfgVehicles %1 Horticulture TexId", item_type) );
 		
 		string str_show = SLOT_SELECTION_DIGGED_PREFIX + (slot_index + 1).ToStringLen(2);
 		
@@ -823,7 +823,7 @@ class GardenBase extends ItemBase //BuildingSuper
 	
 	void CheckRainTick()
 	{
-		float rainIntensity = GetGame().GetWeather().GetRain().GetActual();
+		float rainIntensity = g_Game.GetWeather().GetRain().GetActual();
 		float wetness = rainIntensity * 20 * CHECK_RAIN_INTERVAL;
 
 		if (rainIntensity > 1  || rainIntensity < 0)
@@ -1045,8 +1045,8 @@ class GardenBase extends ItemBase //BuildingSuper
 			{
 				slot.SetFertilityType(item_type);
 				
-				float add_energy_to_slot = GetGame().ConfigGetFloat( string.Format("cfgVehicles %1 Horticulture AddEnergyToSlot", item_type) );
-				slot.m_FertilizerUsage = GetGame().ConfigGetFloat( string.Format("cfgVehicles %1 Horticulture ConsumedQuantity", item_type) );
+				float add_energy_to_slot = g_Game.ConfigGetFloat( string.Format("cfgVehicles %1 Horticulture AddEnergyToSlot", item_type) );
+				slot.m_FertilizerUsage = g_Game.ConfigGetFloat( string.Format("cfgVehicles %1 Horticulture ConsumedQuantity", item_type) );
 				
 				float coef = Math.Clamp( consumed_quantity / slot.m_FertilizerUsage, 0.0, 1.0 );
 				add_energy_to_slot = coef * add_energy_to_slot;

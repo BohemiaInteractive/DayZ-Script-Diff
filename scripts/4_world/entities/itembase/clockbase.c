@@ -55,7 +55,7 @@ class ClockBase : Inventory_Base
 		int alarm_hand_in_mins = ConvertAlarmHand01ToMins12h(m_AlarmTime01);
 		
 		int pass, hour, minute;
-		GetGame().GetWorld().GetDate(pass, pass, pass, hour, minute);
+		g_Game.GetWorld().GetDate(pass, pass, pass, hour, minute);
 		
 		int curr_time_in_minutes = ConvertTimeToMins12h(hour, minute);
 		int ring_in_mins = GetTimeDiffInMins12h(curr_time_in_minutes, alarm_hand_in_mins);
@@ -135,7 +135,7 @@ class ClockBase : Inventory_Base
 	{
 		super.OnDamageDestroyed(oldLevel);
 		
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{
 			OnRingingStopClient();
 
@@ -171,7 +171,7 @@ class ClockBase : Inventory_Base
 	void SetAlarmInXMins(int in_mins)
 	{
 		int pass, hour, minute;
-		GetGame().GetWorld().GetDate(pass, pass, pass, hour, minute);
+		g_Game.GetWorld().GetDate(pass, pass, pass, hour, minute);
 		int mins12h = ConvertTimeToMins12h(hour, minute) + in_mins;
 		float time01 = ConvertMins12hToAlarmHand01(mins12h);
 		SetAlarmTimeServer(time01);

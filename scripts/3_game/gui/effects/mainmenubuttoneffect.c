@@ -10,9 +10,9 @@ class MainMenuButtonEffect : ScriptedWidgetEventHandler
 	// -----------------------------------------------------------
 	void MainMenuButtonEffect()
 	{
-		if ( GetGame() )
+		if ( g_Game )
 		{
-			GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(this.Update);
+			g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Insert(this.Update);
 		}
 		m_anim = new AnimatorTimer();
 	}
@@ -20,9 +20,9 @@ class MainMenuButtonEffect : ScriptedWidgetEventHandler
 	// -----------------------------------------------------------
 	void ~MainMenuButtonEffect()
 	{
-		if ( GetGame() && GetGame().GetUpdateQueue(CALL_CATEGORY_GUI) )
+		if ( g_Game && g_Game.GetUpdateQueue(CALL_CATEGORY_GUI) )
 		{
-			GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Remove(this.Update);
+			g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Remove(this.Update);
 		}
 	}
 	

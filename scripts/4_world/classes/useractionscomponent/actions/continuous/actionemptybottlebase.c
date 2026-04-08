@@ -56,7 +56,7 @@ class ActionEmptyBottleBase: ActionContinuousBase
 
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+		if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 			return true;
 		
 		return item.IsLiquidPresent() && item.GetQuantity() > item.GetQuantityMin() && !item.GetIsFrozen();
@@ -86,7 +86,7 @@ class ActionEmptyBottleBase: ActionContinuousBase
 
 	protected void SendRPC(ActionData actionData, bool enable)
 	{
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			ActionEmptyBottleBaseCB comp = ActionEmptyBottleBaseCB.Cast(actionData.m_Callback);
 			if (comp.m_RPCStopAlreadySent)
@@ -94,7 +94,7 @@ class ActionEmptyBottleBase: ActionContinuousBase
 			
 			Bottle_Base target_vessel = Bottle_Base.Cast( actionData.m_MainItem );
 			Param1<bool> play = new Param1<bool>( enable );
-			GetGame().RPCSingleParam( target_vessel, SoundTypeBottle.EMPTYING, play, true );
+			g_Game.RPCSingleParam( target_vessel, SoundTypeBottle.EMPTYING, play, true );
 			if (!enable)
 				comp.m_RPCStopAlreadySent = true;
 		}

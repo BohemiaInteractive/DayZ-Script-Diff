@@ -31,7 +31,7 @@ class ActionForceConsume : ActionContinuousBase
 		
 		PlayerBase player = PlayerBase.Cast(action_data.m_Target.GetObject());
 		if (player)
-			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(PlaySound, SOUND_REPEAT_INTERVAL * 1000, true, player); 
+			g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(PlaySound, SOUND_REPEAT_INTERVAL * 1000, true, player); 
 	}
 			
 	override void OnEndServer(ActionData action_data)
@@ -43,7 +43,7 @@ class ActionForceConsume : ActionContinuousBase
 			action_data.m_MainItem.SetQuantity(0);
 		}
 	
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(PlaySound);	
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(PlaySound);	
 	}
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)

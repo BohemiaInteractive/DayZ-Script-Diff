@@ -129,7 +129,7 @@ class PluginMessageManager extends PluginBase
 	
 	void UnsubscribeAll(MessageReceiverBase receiver)//REWORK.V: this is slow, should be made quicker(by registering all subscribers in a separate array upon their subscription and then going through this array instead)
 	{
-		//GetGame().ProfilerStart("UnsubscribeAll");
+		//g_Game.ProfilerStart("UnsubscribeAll");
 		for (int i = 0; i <= channelsUsed; i++)
 		{
 			array<ref MessageReceiverBase> chan = channelList[i];
@@ -139,6 +139,6 @@ class PluginMessageManager extends PluginBase
 				chan.Remove(c);
 			}
 		}
-		//GetGame().ProfilerStop("UnsubscribeAll");
+		//g_Game.ProfilerStop("UnsubscribeAll");
 	}
 }

@@ -55,7 +55,7 @@ class ActionCreateGreenhouseGardenPlot: ActionContinuousBase
 			ref array<CargoBase> proxy_cargos = new array<CargoBase>;
 			vector pos = target_object.GetPosition();
 			pos[1] = pos[1] - 1; //Lower by one meter for check if plot already present
-			GetGame().GetObjectsAtPosition3D( pos, 2, nearest_objects, proxy_cargos );
+			g_Game.GetObjectsAtPosition3D( pos, 2, nearest_objects, proxy_cargos );
 	
 			for ( int i = 0; i < nearest_objects.Count(); ++i )
 			{
@@ -94,16 +94,16 @@ class ActionCreateGreenhouseGardenPlot: ActionContinuousBase
 		vector orientation = targetObject.GetOrientation();
 		
 		Land_Misc_Polytunnel tunnel;
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{		
 			tunnel = Land_Misc_Polytunnel.Cast(action_data.m_Target.GetObject());
 			if (tunnel)
 			{
-				m_GardenPlot = GardenPlot.Cast(GetGame().CreateObjectEx("GardenPlotPolytunnel", position, ECE_KEEPHEIGHT));
+				m_GardenPlot = GardenPlot.Cast(g_Game.CreateObjectEx("GardenPlotPolytunnel", position, ECE_KEEPHEIGHT));
 			}
 			else
 			{
-				m_GardenPlot = GardenPlot.Cast(GetGame().CreateObjectEx("GardenPlotGreenhouse", position, ECE_KEEPHEIGHT));
+				m_GardenPlot = GardenPlot.Cast(g_Game.CreateObjectEx("GardenPlotGreenhouse", position, ECE_KEEPHEIGHT));
 			}
 			
 			m_GardenPlot.SetOrientation(orientation);
@@ -111,16 +111,16 @@ class ActionCreateGreenhouseGardenPlot: ActionContinuousBase
 		}
 		
 		//local singleplayer
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 		{
 			tunnel = Land_Misc_Polytunnel.Cast(action_data.m_Target.GetObject());
 			if (tunnel)
 			{
-				m_GardenPlot = GardenPlot.Cast(GetGame().CreateObjectEx("GardenPlotPolytunnel", position, ECE_KEEPHEIGHT));
+				m_GardenPlot = GardenPlot.Cast(g_Game.CreateObjectEx("GardenPlotPolytunnel", position, ECE_KEEPHEIGHT));
 			}
 			else
 			{
-				m_GardenPlot = GardenPlot.Cast(GetGame().CreateObjectEx("GardenPlotGreenhouse", position, ECE_KEEPHEIGHT));
+				m_GardenPlot = GardenPlot.Cast(g_Game.CreateObjectEx("GardenPlotGreenhouse", position, ECE_KEEPHEIGHT));
 			}
 			
 			m_GardenPlot.SetOrientation(orientation);			

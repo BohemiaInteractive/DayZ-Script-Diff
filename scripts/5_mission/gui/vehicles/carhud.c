@@ -32,7 +32,7 @@ class CarHud : VehicleHudBase
 	{		
 		super.Init(vehicleHudPanels);
 		
-		m_VehiclePanel = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_hud_cars.layout", vehicleHudPanels);
+		m_VehiclePanel = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_hud_cars.layout", vehicleHudPanels);
 		
 		m_VehicleRPMPointer				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("RPMPointer") );
 		m_VehicleRPMDial				= ImageWidget.Cast( m_VehiclePanel.FindAnyWidget("RPMDial") );

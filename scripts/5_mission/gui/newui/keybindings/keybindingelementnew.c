@@ -21,7 +21,7 @@ class KeybindingElementNew extends ScriptedWidgetEventHandler
 	
 	void KeybindingElementNew( int key_index, Widget parent, KeybindingsContainer group )
 	{
-		m_Root					= GetGame().GetWorkspace().CreateWidgets( GetLayoutName(), parent );
+		m_Root					= g_Game.GetWorkspace().CreateWidgets( GetLayoutName(), parent );
 		m_ElementName			= TextWidget.Cast( m_Root.FindAnyWidget( "setting_label" ) );
 		m_ElementModifier		= TextWidget.Cast( m_Root.FindAnyWidget( "modifier_label" ) );
 		m_PrimaryBindButton		= ButtonWidget.Cast( m_Root.FindAnyWidget( "primary_bind" ) );
@@ -160,7 +160,7 @@ class KeybindingElementNew extends ScriptedWidgetEventHandler
 		string option_text;
 		string name;
 		
-		GetGame().GetInput().GetActionDesc( m_ElementIndex, option_text );
+		g_Game.GetInput().GetActionDesc( m_ElementIndex, option_text );
 		m_ElementName.SetText( option_text );
 		
 		// column #1 :: keyboard + mouse

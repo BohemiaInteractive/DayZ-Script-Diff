@@ -55,7 +55,7 @@ class MainMenuStats extends ScriptedWidgetEventHandler
 	void UpdateStats()
 	{
 		PlayerBase player;
-		MissionMainMenu missionMainMenu = MissionMainMenu.Cast(GetGame().GetMission());
+		MissionMainMenu missionMainMenu = MissionMainMenu.Cast(g_Game.GetMission());
 
 		if (missionMainMenu && missionMainMenu.GetIntroScenePC())
 		{

@@ -24,7 +24,7 @@ class Chemlight_ColorBase : ItemBase
 	{
 		super.OnEnergyConsumed();
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			float energy_coef = GetCompEM().GetEnergy0To1();
 			
@@ -67,7 +67,7 @@ class Chemlight_ColorBase : ItemBase
 	{
 		SetObjectMaterial( 0, GetMaterialForDamageState(true) ); // must be server side!
 		
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // client side
+		if ( !g_Game.IsServer()  ||  !g_Game.IsMultiplayer() ) // client side
 		{
 			m_Light = ChemlightLight.Cast( ScriptedLightBase.CreateLight( ChemlightLight, "0 0 0") );
 			m_Light.AttachOnMemoryPoint(this, "light");
@@ -112,7 +112,7 @@ class Chemlight_ColorBase : ItemBase
 	
 	void StandUp()
 	{
-		if ( GetGame().IsServer()  &&  GetCompEM().IsWorking() )
+		if ( g_Game.IsServer()  &&  GetCompEM().IsWorking() )
 		{
 			vector ori_rotate = "0 0 0";
 			SetOrientation(ori_rotate);
@@ -128,7 +128,7 @@ class Chemlight_ColorBase : ItemBase
 			m_Light.FadeOut();
 		}
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			//Safeguard if item is turned off by another event than running out of energy
 			if (GetCompEM().GetEnergy() > 0)

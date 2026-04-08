@@ -53,7 +53,7 @@ class ActionTakeMaterialToHands: ActionInteractBase
 			string main_part_name = target_entity.GetActionComponentName( target.GetComponentIndex() );
 			//Print(main_part_name);
 			
-			if ( GetGame().IsMultiplayer() || GetGame().IsServer() )
+			if ( g_Game.IsMultiplayer() || g_Game.IsServer() )
 			{
 				construction_action_data.RefreshAttachmentsToDetach( target_entity, main_part_name );
 			}
@@ -75,7 +75,7 @@ class ActionTakeMaterialToHands: ActionInteractBase
 	
 	override void OnExecute( ActionData action_data )
 	{
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 		{
 			ClearActionJuncture(action_data);
 			return;

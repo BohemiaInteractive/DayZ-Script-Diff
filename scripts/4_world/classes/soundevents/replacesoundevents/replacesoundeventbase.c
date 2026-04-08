@@ -29,7 +29,12 @@ class ReplaceSoundEventBase
 	
 	bool Play()
 	{	
+		m_ReplacedSoundAnimID = -1; //invalidate ID before selecting
 		SelectSoundID();
+		
+		//fail if no valid alternative found. Should return to regular flow.
+		if (m_ReplacedSoundAnimID == -1)
+			return false;
 		
 		switch (m_EventType)
 		{
@@ -39,6 +44,10 @@ class ReplaceSoundEventBase
 			
 			case ESoundEventType.SOUND_WEAPON:
 				m_Player.ProcessWeaponEvent("", m_UserString, m_ReplacedSoundAnimID);	
+				break;
+			
+			case ESoundEventType.SOUND_VOICE:
+				m_Player.ProcessVoiceEvent("", m_UserString, m_ReplacedSoundAnimID);	
 				break;
 			
 			default:

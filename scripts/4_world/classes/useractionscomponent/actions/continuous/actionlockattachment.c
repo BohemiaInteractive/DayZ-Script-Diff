@@ -105,21 +105,21 @@ class ActionLockAttachment: ActionContinuousBase
 	{
 		super.OnStartAnimationLoop( action_data );
 
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			ItemBase target_IB = ItemBase.Cast( action_data.m_Target.GetObject() );
 			Param2<bool, string> play = new Param2<bool, string>( true, action_data.m_MainItem.GetLockSoundSet() );
-			GetGame().RPCSingleParam( target_IB, ERPCs.RPC_SOUND_LOCK_ATTACH, play, true );
+			g_Game.RPCSingleParam( target_IB, ERPCs.RPC_SOUND_LOCK_ATTACH, play, true );
 		}
 	}
 	
 	override void OnEnd( ActionData action_data )
 	{
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			ItemBase target_IB = ItemBase.Cast( action_data.m_Target.GetObject() );
 			Param2<bool, string> play = new Param2<bool, string>( false, action_data.m_MainItem.GetLockSoundSet() );
-			GetGame().RPCSingleParam( target_IB, ERPCs.RPC_SOUND_LOCK_ATTACH, play, true );
+			g_Game.RPCSingleParam( target_IB, ERPCs.RPC_SOUND_LOCK_ATTACH, play, true );
 		}
 	}
 	
@@ -127,11 +127,11 @@ class ActionLockAttachment: ActionContinuousBase
 	{
 		super.OnEndAnimationLoop( action_data );
 
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			ItemBase target_IB = ItemBase.Cast( action_data.m_Target.GetObject() );
 			Param2<bool, string> play = new Param2<bool, string>( false, action_data.m_MainItem.GetLockSoundSet() );
-			GetGame().RPCSingleParam( target_IB, ERPCs.RPC_SOUND_LOCK_ATTACH, play, true );
+			g_Game.RPCSingleParam( target_IB, ERPCs.RPC_SOUND_LOCK_ATTACH, play, true );
 		}
 	}
 	

@@ -45,7 +45,7 @@ class ActionTransferLiquid: ActionContinuousBase
 	
 	override string GetText()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if ( player.GetLiquidTendencyDrain() )
 			return "#drain_liquid";
 		else
@@ -67,7 +67,7 @@ class ActionTransferLiquid: ActionContinuousBase
 			}
 			else if (!can_pour && can_drain)
 			{
-				if ( (!GetGame().IsDedicatedServer()) && !player.GetLiquidTendencyDrain() )
+				if ( (!g_Game.IsDedicatedServer()) && !player.GetLiquidTendencyDrain() )
 				{
 					player.SetLiquidTendencyDrain(true);
 					return false;
@@ -79,7 +79,7 @@ class ActionTransferLiquid: ActionContinuousBase
 			}
 			else if (!can_drain && can_pour)
 			{
-				if ( (!GetGame().IsDedicatedServer()) && player.GetLiquidTendencyDrain() )
+				if ( (!g_Game.IsDedicatedServer()) && player.GetLiquidTendencyDrain() )
 				{
 					player.SetLiquidTendencyDrain(false);
 					return false;
@@ -102,7 +102,7 @@ class ActionTransferLiquid: ActionContinuousBase
 	{
 		super.OnStartServer(action_data);
 		
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 			TransferLiquidActionData.Cast(action_data).m_Tendency = action_data.m_Player.GetLiquidTendencyDrain();
 	}
 	
@@ -146,30 +146,30 @@ class ActionTransferLiquid: ActionContinuousBase
 	
 	override void OnStartAnimationLoop( ActionData action_data )
 	{
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			Bottle_Base vessel_in_hands = Bottle_Base.Cast( action_data.m_Target.GetObject() );
 			Param1<bool> play = new Param1<bool>( true );
 			if (TransferLiquidActionData.Cast(action_data))
 			{
 				if (TransferLiquidActionData.Cast(action_data).m_Tendency == true)
-					GetGame().RPCSingleParam( vessel_in_hands, SoundTypeBottle.EMPTYING, play, true );
+					g_Game.RPCSingleParam( vessel_in_hands, SoundTypeBottle.EMPTYING, play, true );
 				else if (!TransferLiquidActionData.Cast(action_data).m_Tendency == false)
-					GetGame().RPCSingleParam( vessel_in_hands, SoundTypeBottle.POURING, play, true );
+					g_Game.RPCSingleParam( vessel_in_hands, SoundTypeBottle.POURING, play, true );
 			}
 		}
 	}
 	
 	override void OnEndAnimationLoop( ActionData action_data )
 	{
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			Bottle_Base target_vessel = Bottle_Base.Cast( action_data.m_Target.GetObject());
 			Param1<bool> play = new Param1<bool>( false );
 			if (TransferLiquidActionData.Cast(action_data).m_Tendency)
-				GetGame().RPCSingleParam( target_vessel, SoundTypeBottle.EMPTYING, play, true );
+				g_Game.RPCSingleParam( target_vessel, SoundTypeBottle.EMPTYING, play, true );
 			else
-				GetGame().RPCSingleParam( target_vessel, SoundTypeBottle.POURING, play, true );
+				g_Game.RPCSingleParam( target_vessel, SoundTypeBottle.POURING, play, true );
 		}
 	}
 };

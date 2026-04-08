@@ -42,7 +42,7 @@ class ActionActivateTrap : ActionContinuousBase
 	{
 		return true;
 	}
-
+	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		ItemBase targetItem = ItemBase.Cast(target.GetObject());
@@ -77,26 +77,26 @@ class ActionActivateTrap : ActionContinuousBase
 	{
 		super.OnStartAnimationLoop( action_data );
 
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			TrapBase trap = TrapBase.Cast( action_data.m_Target.GetObject() );
 			if ( trap )
 			{
 				Param1<bool> play = new Param1<bool>( true );
-				GetGame().RPCSingleParam( trap, SoundTypeTrap.ACTIVATING, play, true );
+				g_Game.RPCSingleParam( trap, SoundTypeTrap.ACTIVATING, play, true );
 			}
 		}
 	}
 	
 	override void OnEnd( ActionData action_data )
 	{
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			TrapBase trap = TrapBase.Cast( action_data.m_Target.GetObject());
 			if ( trap )
 			{
 				Param1<bool> play = new Param1<bool>( false );
-				GetGame().RPCSingleParam( trap, SoundTypeTrap.ACTIVATING, play, true );
+				g_Game.RPCSingleParam( trap, SoundTypeTrap.ACTIVATING, play, true );
 			}
 		}
 	}
@@ -105,17 +105,34 @@ class ActionActivateTrap : ActionContinuousBase
 	{
 		super.OnEndAnimationLoop(action_data);
 
-		if (!GetGame().IsMultiplayer() || GetGame().IsServer())
+		if (!g_Game.IsMultiplayer() || g_Game.IsServer())
 		{
 			TrapBase trap = TrapBase.Cast( action_data.m_Target.GetObject());
 			Param1<bool> play = new Param1<bool>(false);
-			GetGame().RPCSingleParam(trap, SoundTypeTrap.ACTIVATING, play, true);
+			g_Game.RPCSingleParam(trap, SoundTypeTrap.ACTIVATING, play, true);
+		}
+	}
+	
+	override void OnStartServer(ActionData action_data)
+	{
+		super.OnStartServer(action_data);
+		
+		ItemBase targetItem = ItemBase.Cast(action_data.m_Target.GetObject());
+		if (targetItem)
+		{
+			if (targetItem.GetPlaceSoundset() != string.Empty)
+				targetItem.StartItemSoundServer(SoundConstants.ITEM_PLACE);
+			
+			if (targetItem.GetLoopDeploySoundset() != string.Empty)
+				targetItem.StartItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
 		}
 	}
 
 	override void OnFinishProgressServer(ActionData action_data)
 	{
-		Object targetObject = action_data.m_Target.GetObject();
+		super.OnFinishProgressServer(action_data);
+
+		ItemBase targetObject = ItemBase.Cast(action_data.m_Target.GetObject());
 		if (targetObject != null)
 		{
 			vector orientation = action_data.m_Player.GetOrientation();
@@ -132,6 +149,12 @@ class ActionActivateTrap : ActionContinuousBase
 				TrapSpawnBase spawnTrap = TrapSpawnBase.Cast( targetObject );
 				spawnTrap.OnPlacementComplete(action_data.m_Player, position, orientation);
 			}
+
+			if (targetObject.GetDeploySoundset() != string.Empty)
+				targetObject.StartItemSoundServer(SoundConstants.ITEM_DEPLOY);
+	
+			if (targetObject.GetLoopDeploySoundset() != string.Empty)
+				targetObject.StopItemSoundServer(SoundConstants.ITEM_DEPLOY_LOOP);
 		}
 	}
 }

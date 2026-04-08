@@ -202,10 +202,10 @@ class EffectArea : House
 		m_PositionTrigger		= m_Position;
 		m_PositionTrigger[1] 	= m_Position[1] + ((m_PositiveHeight - m_NegativeHeight) * 0.5); // Cylinder trigger pivot correction
 		
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 			InitZoneClient();
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 			InitZoneServer();
 		
 	//	Debug.Log("------------------------------------------");
@@ -410,7 +410,7 @@ class EffectArea : House
 	
 	protected void SpawnParticles(ParticlePropertiesArray props, vector centerPos, vector partPos, inout int count)
 	{
-		partPos[1] = GetGame().SurfaceY(partPos[0], partPos[2]);	// Snap particles to ground
+		partPos[1] = g_Game.SurfaceY(partPos[0], partPos[2]);	// Snap particles to ground
 		
 		// We also populate vertically, layer 0 will be snapped to ground, subsequent layers will see particles floating by m_VerticalOffset
 		for (int layer = 0; layer <= m_VerticalLayers; ++layer)
@@ -420,7 +420,7 @@ class EffectArea : House
 			// We check that spawned particle is inside the trigger	
 			if (count < PARTICLES_MAX && Math.IsInRange(partPos[1], centerPos[1] - m_NegativeHeight, centerPos[1] + m_PositiveHeight))
 			{
-				props.Insert(ParticleProperties(partPos, ParticlePropertiesFlags.PLAY_ON_CREATION, null, GetGame().GetSurfaceOrientation( partPos[0], partPos[2] ), this));
+				props.Insert(ParticleProperties(partPos, ParticlePropertiesFlags.PLAY_ON_CREATION, null, g_Game.GetSurfaceOrientation( partPos[0], partPos[2] ), this));
 				++count;
 			}
 		}
@@ -489,7 +489,7 @@ class EffectArea : House
 		#endif
 		
 		// Create new trigger of specified type
-		if (Class.CastTo(m_Trigger, GetGame().CreateObjectEx(m_TriggerType, pos, ECE_NONE)))
+		if (Class.CastTo(m_Trigger, g_Game.CreateObjectEx(m_TriggerType, pos, ECE_NONE)))
 		{
 			// We finalize trigger dimension setup
 			float centerHeightCorrection = (m_PositiveHeight - m_NegativeHeight) * 0.5;
@@ -546,11 +546,11 @@ class EffectArea : House
 	{
 		if ( m_Trigger )
 		{
-			GetGame().ObjectDelete( m_Trigger );
+			g_Game.ObjectDelete( m_Trigger );
 		}
 		
 		// We stop playing particles on this client when the base object is deleted ( out of range for example )
-		if ( (GetGame().IsClient() || !GetGame().IsMultiplayer())  && m_ToxicClouds )
+		if ( (g_Game.IsClient() || !g_Game.IsMultiplayer())  && m_ToxicClouds )
 		{
 			foreach ( Particle p : m_ToxicClouds )
 			{

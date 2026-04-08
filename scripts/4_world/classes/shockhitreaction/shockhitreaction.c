@@ -22,12 +22,12 @@ class ShockDealtEffect
 		
 		m_EffectParam = new Param3<float,float,float>(0,0,0);
 		//Print(intensity_max);
-		//Print("HitSyncDebug | ShockDealtEffect: " + GetGame().GetPlayer().GetSimulationTimeStamp());
+		//Print("HitSyncDebug | ShockDealtEffect: " + g_Game.GetPlayer().GetSimulationTimeStamp());
 	}
 	
 	void ~ShockDealtEffect()
 	{
-		if (GetGame())
+		if (g_Game)
 			PPERequesterBank.GetRequester(PPERequester_ShockHitReaction).Stop();
 	}
 	

@@ -59,7 +59,7 @@ class Fireplace extends FireplaceBase
 	
 	void ContactEvent( IEntity other, vector position )
 	{		
-		if (GetGame().IsServer() && !m_ContactEventProcessing && dBodyIsActive(this) && !IsSetForDeletion())
+		if (g_Game.IsServer() && !m_ContactEventProcessing && dBodyIsActive(this) && !IsSetForDeletion())
 			m_ContactEventProcessing = true;
 	}
 	
@@ -226,7 +226,7 @@ class Fireplace extends FireplaceBase
 		if (item_base.IsCookware())
 			SetCookingEquipment(item_base);
 		
-		if (GetGame().IsServer() && !IsOven())
+		if (g_Game.IsServer() && !IsOven())
 		{
 			if (item_base.Type() == ATTACHMENT_COOKING_POT)
 				item_base.SetAnimationPhase(ANIMATION_COOKWARE_HANDLE, 0);
@@ -296,7 +296,7 @@ class Fireplace extends FireplaceBase
 		if (item_base.IsLiquidContainer()) //boiling bottle effects stop
 			item_base.RemoveAudioVisualsOnClient();
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (item_base.Type() == ATTACHMENT_COOKING_POT)
 				item_base.SetAnimationPhase(ANIMATION_COOKWARE_HANDLE, 1);
@@ -462,7 +462,7 @@ class Fireplace extends FireplaceBase
 	
 	void DestroyClutterCutter( Object clutter_cutter )
 	{
-		GetGame().ObjectDelete( clutter_cutter );
+		g_Game.ObjectDelete( clutter_cutter );
 	}
 	
 	override void RefreshPhysics()
@@ -502,7 +502,7 @@ class Fireplace extends FireplaceBase
 	{   
 		super.OnStoreSave(ctx);
 		
-		if ( GetGame().SaveVersion() >= 110 )
+		if ( g_Game.SaveVersion() >= 110 )
 		{
 			// save stone circle state
 			ctx.Write( m_HasStoneCircle );
@@ -543,7 +543,7 @@ class Fireplace extends FireplaceBase
 		{
 			if ( !m_ClutterCutter )
 			{
-				m_ClutterCutter = GetGame().CreateObjectEx( OBJECT_CLUTTER_CUTTER, GetPosition(), ECE_PLACE_ON_SURFACE );
+				m_ClutterCutter = g_Game.CreateObjectEx( OBJECT_CLUTTER_CUTTER, GetPosition(), ECE_PLACE_ON_SURFACE );
 				m_ClutterCutter.SetOrientation( GetOrientation() );
 			}
 		}
@@ -581,9 +581,9 @@ class Fireplace extends FireplaceBase
 	override void OnIgnitedThis( EntityAI fire_source )
 	{	
 		//remove grass
-		Object cc_object = GetGame().CreateObjectEx( OBJECT_CLUTTER_CUTTER , GetPosition(), ECE_PLACE_ON_SURFACE );
+		Object cc_object = g_Game.CreateObjectEx( OBJECT_CLUTTER_CUTTER , GetPosition(), ECE_PLACE_ON_SURFACE );
 		cc_object.SetOrientation ( GetOrientation() );
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( DestroyClutterCutter, 200, false, cc_object );
+		g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( DestroyClutterCutter, 200, false, cc_object );
 		
 		//start fire
 		StartFire();
@@ -647,7 +647,7 @@ class Fireplace extends FireplaceBase
 			SetIgniteFailure( true );
 			
 			failure = new Param1<bool>( GetIgniteFailure() );
-			GetGame().RPCSingleParam( this, FirePlaceFailure.WET, failure, true );
+			g_Game.RPCSingleParam( this, FirePlaceFailure.WET, failure, true );
 			return false;
 		}
 
@@ -662,7 +662,7 @@ class Fireplace extends FireplaceBase
 				SetIgniteFailure( true );
 				
 				failure = new Param1<bool>( GetIgniteFailure() );
-				GetGame().RPCSingleParam( this, FirePlaceFailure.WET, failure, true );
+				g_Game.RPCSingleParam( this, FirePlaceFailure.WET, failure, true );
 				return false;
 			}
 			
@@ -671,7 +671,7 @@ class Fireplace extends FireplaceBase
 				SetIgniteFailure( true );
 				
 				failure = new Param1<bool>( GetIgniteFailure() );
-				GetGame().RPCSingleParam( this, FirePlaceFailure.WIND, failure, true );
+				g_Game.RPCSingleParam( this, FirePlaceFailure.WIND, failure, true );
 				return false;
 			}
 		}
@@ -688,17 +688,17 @@ class Fireplace extends FireplaceBase
 		PlayerBase player = PlayerBase.Cast( fire_source.GetHierarchyRootPlayer() );
 		
 		//create fireplace
-		Fireplace fireplace = Fireplace.Cast( GetGame().CreateObjectEx( "Fireplace" , entity.GetPosition(), ECE_PLACE_ON_SURFACE ) );
+		Fireplace fireplace = Fireplace.Cast( g_Game.CreateObjectEx( "Fireplace" , entity.GetPosition(), ECE_PLACE_ON_SURFACE ) );
 		
 		//attach
-		if ( !GetGame().IsMultiplayer() )		//clear inventory reservation (single player)
+		if ( !g_Game.IsMultiplayer() )		//clear inventory reservation (single player)
 		{
 			InventoryLocation loc = new InventoryLocation;
 			entity.GetInventory().GetCurrentInventoryLocation( loc );
 			player.GetInventory().ClearInventoryReservationEx( entity, loc );
 		}
 		
-		if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+		if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 		{
 			player.ServerTakeEntityToTargetAttachment( fireplace, entity ); // multiplayer server side
 		}

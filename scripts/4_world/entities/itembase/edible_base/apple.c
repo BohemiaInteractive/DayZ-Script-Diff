@@ -33,7 +33,7 @@ class Apple : Edible_Base
 	override void EEOnCECreate()
 	{
 		int rand = Math.RandomInt(0,10);
-		float baseTemp = GetGame().GetMission().GetWorldData().GetBaseEnvTemperature();
+		float baseTemp = g_Game.GetMission().GetWorldData().GetBaseEnvTemperature();
 
 		if ( baseTemp <= GameConstants.COLD_AREA_TEMPERATURE_THRESHOLD )
 		{

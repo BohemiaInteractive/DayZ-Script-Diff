@@ -216,7 +216,7 @@ class VegetationSound
 //! class that configures static data for DayZPlayer
 //! on each mission start DayZPlayerTypeCreate(DayZPlayerType pType) is called - can call methods
 
-class DayZPlayerType
+class DayZPlayerType : HumanType
 {
 	//!----------------------------------------------------
 	// item in hands config
@@ -409,11 +409,11 @@ class DayZPlayerType
 		
 		m_animSoundEventsAttack = new array<ref AnimSoundEvent>;
 
-		int soundCount = GetGame().ConfigGetChildrenCount(cfgPath);
+		int soundCount = g_Game.ConfigGetChildrenCount(cfgPath);
 		for(int i = 0; i < soundCount; i++)
 		{
 			string soundName;
-			GetGame().ConfigGetChildName(cfgPath, i, soundName);
+			g_Game.ConfigGetChildName(cfgPath, i, soundName);
 			string soundPath = cfgPath + soundName + " ";
 			AnimSoundEvent soundEvent = new AnimSoundEvent(soundPath);
 			if(soundEvent.IsValid())
@@ -426,18 +426,18 @@ class DayZPlayerType
 		m_pVegetationSounds = new array<ref VegetationSound>;
 
 		string vegSoundsCfgPath = "CfgVehicles SurvivorBase VegetationSounds ";
-		int vegSoundsCount = GetGame().ConfigGetChildrenCount(vegSoundsCfgPath);
+		int vegSoundsCount = g_Game.ConfigGetChildrenCount(vegSoundsCfgPath);
 
 		for (int v = 0; v < vegSoundsCount; ++v)
 		{
 			string vegSoundParamName;
-			GetGame().ConfigGetChildName(vegSoundsCfgPath, v, vegSoundParamName);
+			g_Game.ConfigGetChildName(vegSoundsCfgPath, v, vegSoundParamName);
 			
 			string soundSet = "";
-			GetGame().ConfigGetText(vegSoundsCfgPath + vegSoundParamName + " soundSet", soundSet);
+			g_Game.ConfigGetText(vegSoundsCfgPath + vegSoundParamName + " soundSet", soundSet);
 
 			TIntArray animEventIds = new TIntArray;
-			GetGame().ConfigGetIntArray(vegSoundsCfgPath + vegSoundParamName + " animEventIds", animEventIds);
+			g_Game.ConfigGetIntArray(vegSoundsCfgPath + vegSoundParamName + " animEventIds", animEventIds);
 
 			SoundParams soundParams = new SoundParams(soundSet);
 
@@ -509,7 +509,7 @@ class DayZPlayerType
 		return m_SuitableFinisherHitComponents;
 	}
 	
-	private void DayZPlayerType()
+	void DayZPlayerType()
 	{
 		string cfgPath = "CfgVehicles SurvivorBase ";
 	
@@ -541,7 +541,7 @@ class DayZPlayerType
 		LoadVegetationSounds();
 	}
 	
-	private void ~DayZPlayerType();
+	void ~DayZPlayerType();
 
 	//!----------------------------------------------------
 	// global settings
@@ -806,6 +806,7 @@ enum DayZPlayerConstants
 
     //! --------------------------
     //! fb (full body)
+
     CMD_ACTIONFB_DRINK							= 0,		// pne				[end, end2]
 	CMD_ACTIONFB_EAT							= 1,		// pne				[end, end2]
 	CMD_ACTIONFB_CATCHRAIN						= 3,		// pne				[end]
@@ -883,6 +884,8 @@ enum DayZPlayerConstants
 	CMD_ACTIONFB_EATING_SNOW	        		= 126,		// cro              [end]
 	CMD_ACTIONFB_FILLING_CONTAINER_SNOW			= 127,		// cro              [end]
 	CMD_ACTIONFB_DIGGIN_WORMS	        		= 128,		// erc,cro              [end]
+
+
 	
 	// onetime 
 	CMD_ACTIONFB_PICKUP_HANDS					= 500,		// pne

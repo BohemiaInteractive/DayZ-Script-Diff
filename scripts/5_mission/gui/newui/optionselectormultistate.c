@@ -150,7 +150,7 @@ class OptionSelectorMultistateCharacterMenu extends OptionSelectorMultistate
 	void SetDisplayNameText(string value, string appendix)
 	{
 		path = "cfgVehicles " + class_name + " displayName";
-		GetGame().ConfigGetText(path, displayname);
+		g_Game.ConfigGetText(path, displayname);
 		if (value == "Male")
 		{
 			m_SelectedOption.SetText("#str_cfgvehicles_survivorM0");
@@ -207,7 +207,7 @@ class OptionSelectorMultistateCharacterMenu extends OptionSelectorMultistate
 	{
 		string child = value;
 		string parent;
-		while (GetGame().ConfigGetBaseName("cfgVehicles " + child, parent))
+		while (g_Game.ConfigGetBaseName("cfgVehicles " + child, parent))
 		{
 			if (parent == baseclass)
 			{

@@ -26,11 +26,11 @@ class AmmoData
 	
 	void AmmoData( string init_type )
 	{
-		m_IsValid = GetGame().ConfigIsExisting( "CfgMagazines " + init_type );
+		m_IsValid = g_Game.ConfigIsExisting( "CfgMagazines " + init_type );
 		if ( m_IsValid )
 		{
-			m_CartridgeType = GetGame().ConfigGetInt( "CfgMagazines " + init_type + " iconCartridge" );
-			m_ProjectileType = GetGame().ConfigGetInt( "CfgMagazines " + init_type + " iconType" );
+			m_CartridgeType = g_Game.ConfigGetInt( "CfgMagazines " + init_type + " iconCartridge" );
+			m_ProjectileType = g_Game.ConfigGetInt( "CfgMagazines " + init_type + " iconType" );
 		}
 	}
 }
@@ -49,7 +49,7 @@ class Magazine : InventoryItemSuper
 		m_ManipulationDamage = ConfigGetFloat("manipulationDamage");
 		m_CompatiableAmmo = new array<string>;
 		ConfigGetTextArray("ammoItems", m_CompatiableAmmo);
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			if ( !m_AmmoData )
 				m_AmmoData = new map<string, ref AmmoData>;
@@ -185,9 +185,9 @@ class Magazine : InventoryItemSuper
 	
 	bool InitReliability(out array<float> reliability_array)
 	{
-		if (GetGame().ConfigIsExisting("cfgMagazines " + GetType() + " Reliability ChanceToJam"))
+		if (g_Game.ConfigIsExisting("cfgMagazines " + GetType() + " Reliability ChanceToJam"))
 		{
-			GetGame().ConfigGetFloatArray("cfgMagazines " + GetType() + " Reliability ChanceToJam",reliability_array);
+			g_Game.ConfigGetFloatArray("cfgMagazines " + GetType() + " Reliability ChanceToJam",reliability_array);
 			return true;
 		}
 		return false;
@@ -314,7 +314,7 @@ class Magazine : InventoryItemSuper
 					++numberOfTransferredBullets;
 			}
 			
-			if (GetGame().IsServer())
+			if (g_Game.IsServer())
 			{
 				float resultingHealth = (currentAmount * GetHealth() + numberOfTransferredBullets * other_magazine.GetHealth()) / GetAmmoCount();
 				SetHealth("", "", resultingHealth);
@@ -404,7 +404,7 @@ class Magazine : InventoryItemSuper
 	
 	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (action_id == EActions.PRINT_BULLETS)
 			{

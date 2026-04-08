@@ -58,10 +58,10 @@ class ComponentBodyStaging : Component
 	// Synchronizes properties
 	protected void SynchSkinnedState()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			Param1<bool> p = new Param1<bool>( IsSkinned() );
-			GetGame().RPCSingleParam( m_ThisEntityAI, ERPCs.RPC_BS_SKINNED_STATE, p, true );
+			g_Game.RPCSingleParam( m_ThisEntityAI, ERPCs.RPC_BS_SKINNED_STATE, p, true );
 		}
 	}
 }

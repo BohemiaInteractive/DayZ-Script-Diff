@@ -63,9 +63,9 @@ class Land_Underground_Panel: House
 		Land_Underground_EntranceBase door = GetLinkedDoor();
 		if (door)
 		{
-			GetGame().RegisterNetworkStaticObject(this);
+			g_Game.RegisterNetworkStaticObject(this);
 			Land_Underground_EntranceBase.Cast(door).Manipulate();
-			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( ResetPanelUsed, 500);
+			g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( ResetPanelUsed, 500);
 			m_PanelWasUsed = true;
 			SetSynchDirty();
 		}

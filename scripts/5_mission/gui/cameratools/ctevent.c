@@ -22,7 +22,7 @@ class CTEvent extends ScriptedWidgetEventHandler
 		m_Index				= index;
 		m_ActorIndex		= actor;
 		
-		m_Root				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/event_entry.layout", root );
+		m_Root				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/event_entry.layout", root );
 		m_IndexWidget		= TextWidget.Cast( m_Root.FindAnyWidget( "event_id" ) );
 		m_EventActorWidget	= EditBoxWidget.Cast( m_Root.FindAnyWidget( "event_actor_edit" ) );
 		m_EventTimeWidget	= EditBoxWidget.Cast( m_Root.FindAnyWidget( "event_time_edit" ) );

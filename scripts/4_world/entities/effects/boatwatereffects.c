@@ -101,7 +101,7 @@ class EffectBoatWaterFront : EffectBoatWaterBase
 			{
 				if (m_SpeedState > EBoatSpeed.SLOW)
 				{				
-					if (GetGame().GetWaterDepth(m_Boat.CoordToParent(m_MemPointPos)) < -0.1)	// when the front of the boat is above water, disable the emitor
+					if (g_Game.GetWaterDepth(m_Boat.CoordToParent(m_MemPointPos)) < -0.1)	// when the front of the boat is above water, disable the emitor
 						EnableEmitor(ptc, i, false);
 					else 
 						EnableEmitor(ptc, i, true);
@@ -340,7 +340,7 @@ class EffectBoatWaterBase : EffectParticle
 			m_PosUpdateTimer = 0;
 			
 			vector posAdjusted = m_Boat.CoordToParent(m_MemPointPos);
-			posAdjusted[1] = GetGame().SurfaceGetSeaLevel() + surfaceOffset;
+			posAdjusted[1] = g_Game.SurfaceGetSeaLevel() + surfaceOffset;
 			posAdjusted = m_Boat.CoordToLocal(posAdjusted);
 			SetCurrentLocalPosition(posAdjusted);
 		}

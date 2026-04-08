@@ -18,7 +18,7 @@ class KeybindingsGroup extends ScriptedWidgetEventHandler
 		string group_name;
 		input.GetActionGroupName( index, group_name );
 		
-		m_Root	= GetGame().GetWorkspace().CreateWidgets( GetLayoutName(), parent );
+		m_Root	= g_Game.GetWorkspace().CreateWidgets( GetLayoutName(), parent );
 		Widget subgroup	= m_Root.FindAnyWidget( "group_content" );
 		
 //		for( int i = 0; i < 1; i++ )
@@ -61,9 +61,9 @@ class KeybindingsGroup extends ScriptedWidgetEventHandler
 	void OnSelectKBPreset( int index )
 	{
 		string profile_text;
-		GetGame().GetInput().GetProfileName( index, profile_text );
+		g_Game.GetInput().GetProfileName( index, profile_text );
 		m_KBDropdown.SetText( profile_text );
-		GetGame().GetInput().SetProfile( index );
+		g_Game.GetInput().SetProfile( index );
 		ReloadProfiles();
 		m_KBDropdown.Close();
 	}
@@ -71,8 +71,8 @@ class KeybindingsGroup extends ScriptedWidgetEventHandler
 	void OnSelectConsolePreset( int index )
 	{
 		string profile_text;
-		GetGame().GetInput().GetProfileName( index, profile_text );
-		GetGame().GetInput().SetProfile( index );
+		g_Game.GetInput().GetProfileName( index, profile_text );
+		g_Game.GetInput().SetProfile( index );
 		ReloadProfiles();
 	}
 	
@@ -86,7 +86,7 @@ class KeybindingsGroup extends ScriptedWidgetEventHandler
 	
 	void AddSubgroup( /*int index, */Widget parent, Input input )
 	{
-		Widget subgroup				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/options/keybindings_selectors/keybinding_subgroup.layout", parent );
+		Widget subgroup				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/options/keybindings_selectors/keybinding_subgroup.layout", parent );
 		TextWidget subgroup_name	= TextWidget.Cast( subgroup.FindAnyWidget( "subgroup_text" ) );
 		
 		subgroup_name.SetText( "TestSubgroup" );

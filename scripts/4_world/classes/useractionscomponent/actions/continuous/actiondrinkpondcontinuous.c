@@ -128,7 +128,7 @@ class ActionDrinkPondContinuous : ActionContinuousBase
 		
 		g_Game.SurfaceGetType3D(hitPosition[0], hitPosition[1], hitPosition[2], surfaceType);
 		string path = "CfgSurfaces " + surfaceType + " liquidType";
-		liquidSource = GetGame().ConfigGetInt(path);
+		liquidSource = g_Game.ConfigGetInt(path);
 		
 		return liquidSource;
 	}

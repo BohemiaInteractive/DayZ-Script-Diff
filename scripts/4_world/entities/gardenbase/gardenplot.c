@@ -16,7 +16,7 @@ class GardenPlot extends GardenBase
 
 		if ( !m_ClutterCutter )
 		{		
-			m_ClutterCutter = GetGame().CreateObjectEx( "ClutterCutter6x6", GetPosition(), ECE_PLACE_ON_SURFACE );
+			m_ClutterCutter = g_Game.CreateObjectEx( "ClutterCutter6x6", GetPosition(), ECE_PLACE_ON_SURFACE );
 			m_ClutterCutter.SetOrientation( GetOrientation() );
 		}
 
@@ -27,9 +27,9 @@ class GardenPlot extends GardenBase
 	{
 		super.EEDelete(parent);
 		
-		if (m_ClutterCutter  &&  GetGame())
+		if (m_ClutterCutter  &&  g_Game)
 		{
-			GetGame().ObjectDelete(m_ClutterCutter);
+			g_Game.ObjectDelete(m_ClutterCutter);
 			m_ClutterCutter = NULL;
 		}
 	}
@@ -87,13 +87,13 @@ class GardenPlot extends GardenBase
 		// To properly move the clutter cutter from spawn position, it must be deleted and created again.
 		if (m_ClutterCutter)
 		{
-			GetGame().ObjectDelete(m_ClutterCutter);
+			g_Game.ObjectDelete(m_ClutterCutter);
 			m_ClutterCutter = NULL;
 		}
 		
 		if (!m_ClutterCutter)
 		{		
-			m_ClutterCutter = GetGame().CreateObjectEx( "ClutterCutter6x6", GetPosition(), ECE_PLACE_ON_SURFACE );
+			m_ClutterCutter = g_Game.CreateObjectEx( "ClutterCutter6x6", GetPosition(), ECE_PLACE_ON_SURFACE );
 			m_ClutterCutter.SetOrientation( orientation );
 		}
 			
@@ -103,11 +103,11 @@ class GardenPlot extends GardenBase
 	override bool CanBePlaced( Man player, vector position )
 	{
 		string surface_type;
-		float surfaceHeight = GetGame().SurfaceGetType3D( position[0], position[1], position[2], surface_type );
+		float surfaceHeight = g_Game.SurfaceGetType3D( position[0], position[1], position[2], surface_type );
 		if ((position[1] - surfaceHeight) > PLACEMENT_HEIGHT_LIMIT)
 			return false;
 		
-		return GetGame().IsSurfaceFertile(surface_type);
+		return g_Game.IsSurfaceFertile(surface_type);
 	}
 	
 	override bool IsTakeable()

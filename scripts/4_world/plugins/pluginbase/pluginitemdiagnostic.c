@@ -5,7 +5,7 @@ class PluginItemDiagnosticEventHandler extends ScriptedWidgetEventHandler
 	{
 		if( ButtonWidget.Cast(w))
 		{
-			GetGame().GetMission().AddActiveInputExcludes({"menu"});
+			g_Game.GetMission().AddActiveInputExcludes({"menu"});
 		}
 		return true;
 
@@ -15,7 +15,7 @@ class PluginItemDiagnosticEventHandler extends ScriptedWidgetEventHandler
 	{
 		if( ButtonWidget.Cast(w))
 		{
-			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+			g_Game.GetMission().RemoveActiveInputExcludes({"menu"},true);
 		}
 		
 		return true;
@@ -215,20 +215,20 @@ class PluginItemDiagnostic extends PluginDeveloper
 	void OnSelectAction(EntityAI ent, int actionId)
 	{
 		#ifdef DIAG_DEVELOPER 
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		player.GetActionManager().OnInstantAction(ActionDebug,new Param2<EntityAI,int>(ent,actionId));
 		#endif
 	}
 
 	void ReleaseFocus()
 	{
-		GetGame().GetInput().ResetGameFocus();
-		GetGame().GetUIManager().ShowUICursor(false);
-		if (GetGame().GetUIManager()) 	
+		g_Game.GetInput().ResetGameFocus();
+		g_Game.GetUIManager().ShowUICursor(false);
+		if (g_Game.GetUIManager()) 	
 		{
-			if (GetGame().GetUIManager().IsDialogVisible())
+			if (g_Game.GetUIManager().IsDialogVisible())
 			{
-				GetGame().GetUIManager().CloseDialog();
+				g_Game.GetUIManager().CloseDialog();
 			}
 		}
 	}
@@ -237,12 +237,12 @@ class PluginItemDiagnostic extends PluginDeveloper
 	{
 		if (m_IsActive)
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-			GetGame().RPCSingleParam(player, ERPCs.RPC_ITEM_DIAG_CLOSE,null, true);
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
+			g_Game.RPCSingleParam(player, ERPCs.RPC_ITEM_DIAG_CLOSE,null, true);
 			ShowWidgets(false);
 			ClearWidgets();
 			
-			GetGame().GetCallQueue( CALL_CATEGORY_GUI ).CallLater( ReleaseFocus, 100);
+			g_Game.GetCallQueue( CALL_CATEGORY_GUI ).CallLater( ReleaseFocus, 100);
 			//m_IsActive = false;
 			SetDragging(false);
 		}
@@ -299,9 +299,9 @@ class PluginItemDiagnostic extends PluginDeveloper
 	{
 		Param1<Object> p1 = new Param1<Object>(item);
 		m_Properties.InsertAt(p1,0);
-		GetGame().RPC(player,ERPCs.RPC_ITEM_DIAG,m_Properties,true,player.GetIdentity());
+		g_Game.RPC(player,ERPCs.RPC_ITEM_DIAG,m_Properties,true,player.GetIdentity());
 		
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 		{
 			m_Entity = item;
 		}
@@ -318,7 +318,7 @@ class PluginItemDiagnostic extends PluginDeveloper
 	void OnRPC(Object entity, ParamsReadContext ctx)
 	{
 		
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 		{
 			entity = m_Entity;
 		}
@@ -362,7 +362,7 @@ class PluginItemDiagnostic extends PluginDeveloper
 			DisplayAll(EntityAI.Cast(entity), vars_server, vars_client, debug_output_server );
 		}
 
-		if (GetDayZGame().IsInventoryOpen() || GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE))
+		if (GetDayZGame().IsInventoryOpen() || g_Game.GetUIManager().FindMenu(MENU_SCRIPTCONSOLE))
 		{
 			m_DebugRootWidget.SetSort(-1);
 		}
@@ -396,7 +396,7 @@ class PluginItemDiagnostic extends PluginDeveloper
 		m_EventHandler.m_Owner = this;
 		
 		if(!m_DebugRootWidget) 
-			m_DebugRootWidget = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/debug_item.layout");
+			m_DebugRootWidget = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/debug_item.layout");
 
 		m_DebugRootWidget.SetHandler(m_EventHandler);
 
@@ -434,7 +434,7 @@ class PluginItemDiagnostic extends PluginDeveloper
 		}
 
 		vector pts[2];
-		pts[0] = GetGame().GetPlayer().GetPosition();
+		pts[0] = g_Game.GetPlayer().GetPosition();
 		pts[1] = m_Entity.GetPosition();
 		if (m_ItemLine)
 		{

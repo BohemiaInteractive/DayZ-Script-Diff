@@ -46,14 +46,14 @@ class CfgGameplayHandler
 		if (!FileExist(m_Path))
 		{
 			m_Path = "";
-			GetGame().GetWorldName(m_Path);
+			g_Game.GetWorldName(m_Path);
 			m_Path = string.Format("dz/worlds/%1/ce/cfggameplay.json", m_Path);
 		}
 
-		bool cfgGameplayFileEnabled = GetGame().ServerConfigGetInt( "enableCfgGameplayFile" );
+		bool cfgGameplayFileEnabled = g_Game.ServerConfigGetInt( "enableCfgGameplayFile" );
 
 		#ifdef DIAG_DEVELOPER
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			cfgGameplayFileEnabled = true;
 		}
@@ -80,21 +80,21 @@ class CfgGameplayHandler
 	//---------------------------------------------------------------------------------------
 	static void OnLoaded()
 	{
-		GetGame().GetMission().OnGameplayDataHandlerLoad();
-		DayZGame.Cast(GetGame()).OnGameplayDataHandlerLoad();
+		g_Game.GetMission().OnGameplayDataHandlerLoad();
+		DayZGame.Cast(g_Game).OnGameplayDataHandlerLoad();
 	}
 	
 	//---------------------------------------------------------------------------------------
 	static void SyncDataSend(notnull Man player)
 	{
-		GetGame().RPCSingleParam(player, ERPCs.RPC_CFG_GAMEPLAY_SYNC, new Param1<CfgGameplayJson>(m_Data), true, player.GetIdentity());
+		g_Game.RPCSingleParam(player, ERPCs.RPC_CFG_GAMEPLAY_SYNC, new Param1<CfgGameplayJson>(m_Data), true, player.GetIdentity());
 	}
 	
 	//---------------------------------------------------------------------------------------
 	static void SyncDataSendEx(notnull PlayerIdentity identity)
 	{
 		//Debug.Log("SyncDataSendEx");
-		GetGame().RPCSingleParam(null, ERPCs.RPC_CFG_GAMEPLAY_SYNC, new Param1<CfgGameplayJson>(m_Data), true, identity);
+		g_Game.RPCSingleParam(null, ERPCs.RPC_CFG_GAMEPLAY_SYNC, new Param1<CfgGameplayJson>(m_Data), true, identity);
 	}
 	
 	//---------------------------------------------------------------------------------------

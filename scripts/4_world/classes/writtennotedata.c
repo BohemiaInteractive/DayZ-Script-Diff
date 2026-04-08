@@ -22,7 +22,7 @@ class WrittenNoteData
 				SetNoteText(param.param1);
 			}
 			
-			g_Game.GetMission().SetNoteMenu(g_Game.GetUIManager().EnterScriptedMenu(MENU_NOTE, GetGame().GetUIManager().GetMenu())); //NULL means no parent
+			g_Game.GetMission().SetNoteMenu(g_Game.GetUIManager().EnterScriptedMenu(MENU_NOTE, g_Game.GetUIManager().GetMenu())); //NULL means no parent
 			
 			ItemBase pen;
 			ItemBase paper;
@@ -50,7 +50,7 @@ class WrittenNoteData
 				SetNoteText(param.param1);
 			}
 			
-			g_Game.GetMission().SetNoteMenu(g_Game.GetUIManager().EnterScriptedMenu(MENU_NOTE, GetGame().GetUIManager().GetMenu())); //NULL means no parent
+			g_Game.GetMission().SetNoteMenu(g_Game.GetUIManager().EnterScriptedMenu(MENU_NOTE, g_Game.GetUIManager().GetMenu())); //NULL means no parent
 			g_Game.GetMission().GetNoteMenu().InitNoteRead(m_SimpleText);
 		}
 	}

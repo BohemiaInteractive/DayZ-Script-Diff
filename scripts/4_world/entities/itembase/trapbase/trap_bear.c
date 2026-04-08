@@ -31,7 +31,7 @@ class BearTrap extends TrapBase
 	{
 		super.EEHealthLevelChanged(oldLevel, newLevel, zone);
 
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (newLevel == GameConstants.STATE_RUINED)
 			{
@@ -66,7 +66,7 @@ class BearTrap extends TrapBase
 	
 	override void OnSteppedOn(EntityAI victim)
 	{
-		if (GetGame().IsServer() && victim)
+		if (g_Game.IsServer() && victim)
 		{
 			if (!victim.GetAllowDamage())
 				return;
@@ -108,7 +108,7 @@ class BearTrap extends TrapBase
 				OnServerSteppedOn(victim, "zone_leg_random");
 			}
 		}
-		else if (!GetGame().IsDedicatedServer()) //! this is also called on client (OnRPC->SnapOn->OnSteppedOn chain)
+		else if (!g_Game.IsDedicatedServer()) //! this is also called on client (OnRPC->SnapOn->OnSteppedOn chain)
 		{
 			if (victim)
 			{
@@ -229,7 +229,7 @@ class BearTrap extends TrapBase
 	{
 		super.OnPlacementComplete(player, position, orientation);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			PlayerBase player_PB = PlayerBase.Cast(player);
 			StartActivate(player_PB);
@@ -279,7 +279,7 @@ class BearTrap extends TrapBase
 	{
 		if (super.OnAction(action_id, player, ctx))
 			return true;
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			if (action_id == EActions.ACTIVATE_ENTITY)
 			{

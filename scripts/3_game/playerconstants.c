@@ -85,9 +85,9 @@ class PlayerConstants
 	static const float METABOLIC_SPEED_WATER_SPRINT		= 0.6;		//water loss per second
 	//--------------------------------------------------------
 	
-	static const float	THRESHOLD_HEAT_COMFORT_PLUS_WARNING		= 0.15;	//yellow zone
-	static const float	THRESHOLD_HEAT_COMFORT_PLUS_CRITICAL 	= 0.45;	//red zone
-	static const float	THRESHOLD_HEAT_COMFORT_PLUS_EMPTY		= 0.75;	//flashing red zone
+	static const float	THRESHOLD_HEAT_COMFORT_PLUS_WARNING		= 0.15;		//yellow zone
+	static const float	THRESHOLD_HEAT_COMFORT_PLUS_CRITICAL 	= 0.45;		//red zone
+	static const float	THRESHOLD_HEAT_COMFORT_PLUS_EMPTY		= 0.75;		//flashing red zone
 
 	static const float	THRESHOLD_HEAT_COMFORT_MINUS_WARNING	= -0.15;	//light blue zone
 	static const float	THRESHOLD_HEAT_COMFORT_MINUS_CRITICAL	= -0.45;	//dark blue zone

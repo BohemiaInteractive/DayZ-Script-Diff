@@ -51,7 +51,7 @@ class WeaponFire extends WeaponStartAction
 	{
 		if (e)
 		{
-			if (GetGame().IsServer())
+			if (g_Game.IsServer())
 			{
 				PlayerBase playerOwner;
 				Class.CastTo(playerOwner, m_weapon.GetHierarchyParent());
@@ -93,7 +93,7 @@ class WeaponFire extends WeaponStartAction
 		if (e)
 			m_dtAccumulator = 0;
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			PlayerBase playerOwner;
 			Class.CastTo(playerOwner, m_weapon.GetHierarchyParent());

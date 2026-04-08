@@ -116,7 +116,7 @@ class Particle : ParticleBase
 	*/
 	static Particle CreateInWorld( int particle_id, vector global_pos, vector global_ori = "0 0 0", bool force_world_rotation = false )
 	{
-		Particle p = Particle.Cast( GetGame().CreateObjectEx("Particle", global_pos, ECE_LOCAL) );
+		Particle p = Particle.Cast( g_Game.CreateObjectEx("Particle", global_pos, ECE_LOCAL) );
 		p.SetSource(particle_id);
 		p.SetOrientation(global_ori);
 		p.m_ForceOrientationRelativeToWorld = force_world_rotation;
@@ -439,7 +439,7 @@ class Particle : ParticleBase
 	*/
 	private void CreateParticleEffect()
 	{
-		if ( !GetGame().IsServer() || !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsServer() || !g_Game.IsMultiplayer() )
 		{
 			string fullPath = ParticleList.GetParticleFullPath(m_ParticleID);
 			if (fullPath == "")
@@ -451,7 +451,7 @@ class Particle : ParticleBase
 			
 			if ( m_ParticleEffect == null )
 			{
-				m_ParticleEffect = GetGame().CreateObjectEx("#particlesourceenf", vector.Zero, ECE_LOCAL); // particle source must be lowercase!
+				m_ParticleEffect = g_Game.CreateObjectEx("#particlesourceenf", vector.Zero, ECE_LOCAL); // particle source must be lowercase!
 			}
 			
 			AddChild(m_ParticleEffect, -1, m_ForceOrientationRelativeToWorld);
@@ -473,7 +473,7 @@ class Particle : ParticleBase
 	*/
 	private void DestroyParticleEffect()
 	{
-		if ( m_ParticleEffect && GetGame() )
+		if ( m_ParticleEffect && g_Game )
 		{
 			SetParameter(-1, EmitorParam.LIFETIME, 0);
 			SetParameter(-1, EmitorParam.LIFETIME_RND, 0);

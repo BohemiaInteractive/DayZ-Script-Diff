@@ -22,7 +22,7 @@ class BaitBase : ItemBase
 		super.EEItemLocationChanged(oldLoc,newLoc);
 		
 		string hookType = ConfigGetString("hookType");
-		if (GetGame().IsDedicatedServer() && hookType != string.Empty)
+		if (g_Game.IsDedicatedServer() && hookType != string.Empty)
 		{
 			DeleteSafe();
 			vector spawnPos;
@@ -31,7 +31,7 @@ class BaitBase : ItemBase
 			else
 				spawnPos = newLoc.GetParent().GetHierarchyRoot().GetPosition();
 			
-			EntityAI newItem = EntityAI.Cast(GetGame().CreateObjectEx(hookType,spawnPos,ECE_PLACE_ON_SURFACE,RF_DEFAULT));
+			EntityAI newItem = EntityAI.Cast(g_Game.CreateObjectEx(hookType,spawnPos,ECE_PLACE_ON_SURFACE,RF_DEFAULT));
 			EntityAI worm = newItem.GetInventory().CreateAttachment("Worm");
 			MiscGameplayFunctions.TransferItemProperties(this,newItem);
 			MiscGameplayFunctions.TransferItemProperties(this,worm);

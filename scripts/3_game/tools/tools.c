@@ -36,11 +36,11 @@ class CallQueueContext
 	{
 		if (params)
 		{
-			GetGame().GameScript.CallFunctionParams(m_target, m_function, NULL, params);
+			g_Game.GameScript.CallFunctionParams(m_target, m_function, NULL, params);
 		}
 		else
 		{
-			GetGame().GameScript.CallFunction(m_target, m_function, NULL, 0);
+			g_Game.GameScript.CallFunction(m_target, m_function, NULL, 0);
 		}
 	}
 	
@@ -58,9 +58,9 @@ class CallQueueContext
  \brief CallQueue Class provide "lazy" calls - when we don't want to execute function immediately but later during frame update (used mainly in UI)
  \n usage:
  @code
- GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(this, "Refresh"); // calls "Refresh" function on "this" with no arguments
- GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(this, "Show", new Param1<bool>(true)); // calls "Show" function on "this" with one bool argument
- GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(this, "SetPos", new Param2<float, float>(0.2, 0.5)); // calls "SetPos" function on "this" with two float arguments
+ g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(this, "Refresh"); // calls "Refresh" function on "this" with no arguments
+ g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(this, "Show", new Param1<bool>(true)); // calls "Show" function on "this" with one bool argument
+ g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(this, "SetPos", new Param2<float, float>(0.2, 0.5)); // calls "SetPos" function on "this" with two float arguments
  @endcode
  */
 class CallQueue extends array<ref CallQueueContext>
@@ -146,7 +146,7 @@ class CallQueue extends array<ref CallQueueContext>
 	void UpdateDrag(int mouse_x, int mouse_y, bool is_dragging);
  }
 ...
- GetGame().GetDragQueue().Call(this, "UpdateDrag"); // calls "UpdateDrag" function on "this" 
+ g_Game.GetDragQueue().Call(this, "UpdateDrag"); // calls "UpdateDrag" function on "this" 
 
  @endcode
  */
@@ -331,10 +331,10 @@ class TimerBase: Managed
 		m_loop = false;
 		m_time = 0;
 		m_running = false;
-		if (GetGame())
-			m_timerQueue = GetGame().GetTimerQueue(category);
+		if (g_Game)
+			m_timerQueue = g_Game.GetTimerQueue(category);
 		else
-			ErrorEx("Attempting to Init a timer when the game does not exist (GetGame() == null)");
+			ErrorEx("Attempting to Init a timer when the game does not exist (g_Game == null)");
 	}
 		
 	protected void OnStart(float duration, bool loop)
@@ -410,12 +410,10 @@ class TimerQueue extends array<TimerBase>
 	
 		m_processing = true;
 	
-		if (Count())
+		int count = Count();
+		for (int i = count - 1; i >= 0; i--)
 		{
-			for (int i = Count() - 1; i >= 0; i--)
-			{
-				Get(i).Tick(timeslice);
-			}
+			Get(i).Tick(timeslice);
 		}
 	
 		m_processing = false;
@@ -607,12 +605,12 @@ class Timer extends TimerBase
 	{
 		if (m_params)
 		{
-			GetGame().GameScript.CallFunctionParams(m_target, m_function, NULL, m_params);
+			g_Game.GameScript.CallFunctionParams(m_target, m_function, NULL, m_params);
 			m_params = NULL;
 		}
 		else
 		{
-			GetGame().GameScript.CallFunction(m_target, m_function, NULL, 0);
+			g_Game.GameScript.CallFunction(m_target, m_function, NULL, 0);
 		}
 	}
 		
@@ -727,7 +725,7 @@ class AnimationTimer : TimerBase
 				}
 				
 			}
-			GetGame().GameScript.CallFunction(m_TargetObject, m_FinishedFunction, NULL, m_Params);
+			g_Game.GameScript.CallFunction(m_TargetObject, m_FinishedFunction, NULL, m_Params);
 		}
 		else
 		{
@@ -741,7 +739,7 @@ class AnimationTimer : TimerBase
 			}
 		}
 		
-		GetGame().GameScript.CallFunction(m_TargetObject, m_UpdateFunction, NULL, m_Params);
+		g_Game.GameScript.CallFunction(m_TargetObject, m_UpdateFunction, NULL, m_Params);
 	}
 };
 
@@ -1021,7 +1019,7 @@ int GetTemperatureColor(int temperature)
 bool GetProfileValueBool(string name, bool def = false)
 {
 	string value;
-	if (GetGame().GetProfileString(name, value))
+	if (g_Game.GetProfileString(name, value))
 	{
 		if (value == "true" || value == "1")
 		{
@@ -1043,11 +1041,11 @@ void SetProfileValueBool(string name, bool value)
 {
 	if (value)
 	{
-		GetGame().SetProfileString(name, "1");
+		g_Game.SetProfileString(name, "1");
 	}
 	else
 	{
-		GetGame().SetProfileString(name, "0");
+		g_Game.SetProfileString(name, "0");
 	}
 }
 

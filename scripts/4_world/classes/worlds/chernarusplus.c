@@ -1,5 +1,5 @@
 //#define WEATHER_DATA_LOGGING
-class ChernarusPlusData extends WorldData
+class ChernarusPlusData : WorldData
 {
 	//-------test variables & methods ------
 	#ifdef WEATHER_DATA_LOGGING
@@ -65,11 +65,12 @@ class ChernarusPlusData extends WorldData
 		
 		m_UniversalTemperatureSourceCapModifier = -1.0;		
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{			
+			m_Weather.GetSnowfall().SetLimits(0, 0);
 			m_Weather.SetDynVolFogHeightBias(m_WeatherDefaultSettings.m_DefaultHeigthBias);
 		
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 			{
 				float startingOvercast = Math.RandomFloat(0.2,0.75);
 				m_Weather.GetOvercast().Set(startingOvercast,0,5); //forcing a random weather at a clean server start and an instant change for overcast
@@ -93,7 +94,7 @@ class ChernarusPlusData extends WorldData
 		#ifdef WEATHER_DATA_LOGGING	
 		if ( !dayInit )
 		{
-			GetGame().GetWorld().GetDate(startYear, startMonth, startDay, startHour, startMinute);
+			g_Game.GetWorld().GetDate(startYear, startMonth, startDay, startHour, startMinute);
 			dayInit = true;
 		}
 		#endif
@@ -103,6 +104,7 @@ class ChernarusPlusData extends WorldData
 		float phmnValue = 0;
 
 		m_Weather.SetStorm( 1.0, m_WeatherDefaultSettings.m_StormThreshold, 45 );
+		m_Weather.GetSnowfall().SetLimits(0, 0);
 
 		m_Weather.SetRainThresholds( m_WeatherDefaultSettings.m_RainThreshold, 1.0, 60 );
 		m_Weather.SetWindMaximumSpeed( 20 );
@@ -230,7 +232,7 @@ class ChernarusPlusData extends WorldData
 				int testDay = 0;
 				int testHour = 0;
 				int testMinute = 0;
-				GetGame().GetWorld().GetDate(testYear, testMonth, testDay, testHour, testMinute);
+				g_Game.GetWorld().GetDate(testYear, testMonth, testDay, testHour, testMinute);
 					
 				if ( testDay - startDay > currentDay && testHour - startHour >= 0 && testMinute - startMinute >= 0 )
 				{
@@ -467,7 +469,7 @@ class ChernarusPlusData extends WorldData
 	{				
 		float distanceDensity, heigthDensity, heightBias;
 		int year, month, day, hour, minute;
-		GetGame().GetWorld().GetDate(year, month, day, hour, minute);
+		g_Game.GetWorld().GetDate(year, month, day, hour, minute);
 				
 		if ( hour < 9 && hour >= 5 )
 		{			

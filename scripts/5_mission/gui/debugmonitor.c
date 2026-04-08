@@ -22,7 +22,7 @@ class DebugMonitor
 		
 	void DebugMonitor()
 	{		
-		m_WidgetRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_debug_monitor.layout");
+		m_WidgetRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_debug_monitor.layout");
 		m_WidgetRoot.Show(false);
 		
 		m_VersionValue = TextWidget.Cast(m_WidgetRoot.FindAnyWidget("VersionValue"));
@@ -47,8 +47,8 @@ class DebugMonitor
 		g_Game.GetVersion(version);
 		m_VersionValue.SetText(" " + version);
 		
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
-		if (GetGame().GetInput().IsKeyboardConnected())
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		if (g_Game.GetInput().IsKeyboardConnected())
 			m_IsUsingKBM = true;
 		
 		m_WidgetRoot.Show(true);
@@ -126,7 +126,7 @@ class DebugMonitor
 		if (GetUApi().GetInputByID(UAUICopyDebugMonitorPos).LocalPress())
 		{
 			string adjusted = (value[0] + 200000).ToString() + " " + value[2].ToString();
-			GetGame().CopyToClipboard(adjusted);
+			g_Game.CopyToClipboard(adjusted);
 		}
 		
 		if (m_IsUsingKBM)
@@ -148,7 +148,7 @@ class DebugMonitor
 	string CalculateMapTile(vector pos)
 	{
 		string tile;
-		float worldSize = GetGame().GetWorld().GetWorldSize();
+		float worldSize = g_Game.GetWorld().GetWorldSize();
 		
 		float tileX = Math.InverseLerp(0, worldSize, pos[0]);
 		float tileY = Math.InverseLerp(0, worldSize, pos[2]);

@@ -1,9 +1,5 @@
-class ActionToggleNVG: ActionBase
+class ActionToggleNVG : ActionBase
 {
-	void ActionToggleNVG()
-	{
-	}
-	
 	override bool IsInstant()
 	{
 		return true;
@@ -11,8 +7,8 @@ class ActionToggleNVG: ActionBase
 	
 	override void CreateConditionComponents()  
 	{	
-		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTNonRuined(UAMaxDistances.DEFAULT);
+		m_ConditionItem 	= new CCINone();
+		m_ConditionTarget 	= new CCTNonRuined(UAMaxDistances.DEFAULT);
 	}
 	
 	override typename GetInputType()
@@ -30,30 +26,32 @@ class ActionToggleNVG: ActionBase
 		return false;
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		NVGoggles goggles;
-		Clothing NVmount;
-		NVmount = Clothing.Cast(target.GetObject());
-		if ( !NVmount )
-			return false;
-		goggles = NVGoggles.Cast(NVmount.FindAttachmentBySlotName("NVG"));
-		if ( goggles )
+		if (target.GetObject() != null)
 			return true;
 		
 		return false;
 	}
 
-	override void Start( ActionData action_data )
+	override void Start(ActionData action_data)
 	{
-		super.Start( action_data );
-		
-		NVGoggles goggles;
-		Clothing NVmount;
+		super.Start(action_data);
 
-		NVmount = Clothing.Cast(action_data.m_Target.GetObject());
-		goggles = NVGoggles.Cast(NVmount.FindAttachmentBySlotName("NVG"));
+		CachedEquipmentStorageQuery query = new CachedEquipmentStorageQuery();
+		query.m_Category = ECachedEquipmentItemCategory.NVG;
+		query.m_Placement = ECachedEquipmentPlacement.ATTACHMENT;
+		query.m_MaximumDepth = 2;
 		
-		goggles.RotateGoggles(goggles.m_IsLowered);
+		array<Entity> nvgs = action_data.m_Player.GetCachedEquipment().GetEntitiesByCategory(query);
+		foreach (Entity nvg : nvgs)
+		{
+			NVGoggles goggles;
+			if (NVGoggles.CastTo(goggles, nvg))
+			{
+				goggles.RotateGoggles(goggles.m_IsLowered);
+				break;
+			}
+		}
 	}
-};
+}

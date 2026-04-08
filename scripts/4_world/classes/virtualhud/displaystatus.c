@@ -59,7 +59,7 @@ class VirtualHud
 		RegisterElement(new BadgeBleeding(m_Player));// client only
 		
 
-		mission = GetGame().GetMission();
+		mission = g_Game.GetMission();
 		if ( mission )
 		{
 			m_Hud = mission.GetHud();
@@ -70,15 +70,16 @@ class VirtualHud
 	
 	void OnScheduledTick()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
-			if (GetGame().GetTime() > (m_LastTick + VIRTUAL_HUD_UPDATE_INTERVAL))
+			int currentTime = g_Game.GetTime();
+			if (currentTime > (m_LastTick + VIRTUAL_HUD_UPDATE_INTERVAL))
 			{
 				SendRPC();
-				m_LastTick = GetGame().GetTime();
+				m_LastTick = currentTime;
 			}
 		}
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			ImmediateUpdate();
 			//DisplayPresence();

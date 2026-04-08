@@ -14,7 +14,7 @@ bool TryAcquireInventoryJunctureFromServer (notnull Man player, notnull Inventor
 		}
 		
 		bool test_dst_occupancy = true;
-		if (GetGame().AddInventoryJunctureEx(player, src.GetItem(), dst, test_dst_occupancy, GameInventory.c_InventoryReservationTimeoutMS))
+		if (g_Game.AddInventoryJunctureEx(player, src.GetItem(), dst, test_dst_occupancy, GameInventory.c_InventoryReservationTimeoutMS))
 		{
 			if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] juncture needed and acquired, player=" + Object.GetDebugName(player) + " STS = " + player.GetSimulationTimeStamp() + " src=" + InventoryLocation.DumpToStringNullSafe(src) + " dst=" + InventoryLocation.DumpToStringNullSafe(dst));
 			return JunctureRequestResult.JUNCTURE_ACQUIRED; // ok
@@ -41,26 +41,34 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 	}
 	#endif
 	
-	//if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + GetGame().GetTime() + "ms TryAcquireTwoInventoryJuncturesFromServer src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
+	//if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] t=" + g_Game.GetTime() + "ms TryAcquireTwoInventoryJuncturesFromServer src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 
-	bool need_j1 = player.NeedInventoryJunctureFromServer(src1.GetItem(), src1.GetParent(), dst1.GetParent());
-	bool need_j2 = player.NeedInventoryJunctureFromServer(src2.GetItem(), src2.GetParent(), dst2.GetParent());
+	EntityAI srcItem1 = src1.GetItem();
+	EntityAI srcItem2 = src2.GetItem();
+	EntityAI srcParent1 = src1.GetParent();
+	EntityAI srcParent2 = src2.GetParent();
+	EntityAI dstParent1 = dst1.GetParent();
+	EntityAI dstParent2 = dst2.GetParent();
+	
+	
+	bool need_j1 = player.NeedInventoryJunctureFromServer(srcItem1, srcParent1, dstParent1);
+	bool need_j2 = player.NeedInventoryJunctureFromServer(srcItem2, srcParent2, dstParent2);
 	if (need_j1 || need_j2)
 	{
 		if (need_j1)
 		{
-			if ( ( src1.GetItem() && src1.GetItem().IsSetForDeletion() ) || ( src1.GetParent() && src1.GetParent().IsSetForDeletion() ) || ( dst1.GetParent() && dst1.GetParent().IsSetForDeletion() ) )
+			if ( ( srcItem1 && srcItem1.IsSetForDeletion() ) || ( srcParent1 && srcParent1.IsSetForDeletion() ) || ( dstParent1 && dstParent1.IsSetForDeletion() ) )
 			{
 				return JunctureRequestResult.JUNCTURE_DENIED;
 			}
 			
 			
-			if (src1.GetItem() && !src1.GetItem().CanPutIntoHands(player))
+			if (srcItem1 && !srcItem1.CanPutIntoHands(player))
 			{
 				return JunctureRequestResult.JUNCTURE_DENIED;
 			}
 			
-			if (!GetGame().AddInventoryJunctureEx(player, src1.GetItem(), dst1, false, GameInventory.c_InventoryReservationTimeoutMS))
+			if (!g_Game.AddInventoryJunctureEx(player, srcItem1, dst1, false, GameInventory.c_InventoryReservationTimeoutMS))
 			{
 				/*#ifdef ENABLE_LOGGING
 				if ( LogManager.IsInventoryReservationLogEnable() )
@@ -74,26 +82,26 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 //Need add log and change chanel to print
 		if (need_j2)
 		{
-			if ( ( src2.GetItem() && src2.GetItem().IsSetForDeletion() ) || ( src2.GetParent() && src2.GetParent().IsSetForDeletion() ) || ( dst2.GetParent() && dst2.GetParent().IsSetForDeletion() ) )
+			if ( ( srcItem2 && srcItem2.IsSetForDeletion() ) || ( srcParent2 && srcParent2.IsSetForDeletion() ) || ( dstParent2 && dstParent2.IsSetForDeletion() ) )
 			{
 				if (need_j1)
 				{
-					GetGame().ClearJunctureEx(player, src1.GetItem()); // release already acquired juncture for item1
+					g_Game.ClearJunctureEx(player, srcItem1); // release already acquired juncture for item1
 				}
 				return JunctureRequestResult.JUNCTURE_DENIED;
 			}
 			
-			if (src2.GetItem() && !src2.GetItem().CanPutIntoHands(player))
+			if (srcItem2 && !srcItem2.CanPutIntoHands(player))
 			{
 				return JunctureRequestResult.JUNCTURE_DENIED;
 			}
 			
-			if (!GetGame().AddInventoryJunctureEx(player, src2.GetItem(), dst2, false, GameInventory.c_InventoryReservationTimeoutMS))
+			if (!g_Game.AddInventoryJunctureEx(player, srcItem2, dst2, false, GameInventory.c_InventoryReservationTimeoutMS))
 			{
 				//if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] item2 juncture request DENIED, player=" + Object.GetDebugName(player) + " STS = " + player.GetSimulationTimeStamp() + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 				if (need_j1)
 				{
-					GetGame().ClearJunctureEx(player, src1.GetItem()); // release already acquired juncture for item1
+					g_Game.ClearJunctureEx(player, srcItem1); // release already acquired juncture for item1
 					//if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] item2 juncture request DENIED, cleaning acquired juncture for item1, , player=" + Object.GetDebugName(player) + " STS = " + player.GetSimulationTimeStamp() + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 				}
 				return JunctureRequestResult.JUNCTURE_DENIED; // permission to perform juncture denied
@@ -104,12 +112,12 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 	}
 	else
 	{
-		#ifdef ENABLE_LOGGING
+		/*#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryReservationLogEnable() )
 		{
-			Debug.InventoryMoveLog("Remote - skipped", "SWAP" , "n/a", "ProcessInputData", player.ToString() );
+			Debug.InventoryReservationLog("Remote - skipped", "SWAP" , "n/a", "ProcessInputData", player.ToString() );
 		}
-		#endif
+		#endif*/
 		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[syncinv] junctures not required, player=" + Object.GetDebugName(player) + " STS = " + player.GetSimulationTimeStamp() + " src1=" + InventoryLocation.DumpToStringNullSafe(src1) + " src2=" + InventoryLocation.DumpToStringNullSafe(src2) +  " dst1=" + InventoryLocation.DumpToStringNullSafe(dst1) + " dst2=" + InventoryLocation.DumpToStringNullSafe(dst2));
 		return JunctureRequestResult.JUNCTURE_NOT_REQUIRED; // juncture not necessary
 	}

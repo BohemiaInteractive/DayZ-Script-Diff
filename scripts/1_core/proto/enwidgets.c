@@ -537,23 +537,29 @@ enum VideoCallback
 	ON_SEEK,
 	ON_BUFFERING_START,
 	ON_BUFFERING_END,
+	ON_ERROR,
 };
 
 class VideoWidget extends Widget
 {
 	//! Load a video file
+	//! Return is deprecated, treat as void and use 'VideoCallback.ON_ERROR'
 	proto native bool Load(string name, bool looping = false, int startTime = 0);
 	//! Unload the video, freeing up all resources
 	proto native void Unload();
 	
 	//! Starts video playback
+	//! Return is deprecated, treat as void and use 'VideoCallback.ON_ERROR'
 	proto native bool Play();
 	//! Pauses video playback
+	//! Return is deprecated, treat as void and use 'VideoCallback.ON_ERROR'
 	proto native bool Pause();
 	//! Stop video playback (cancels everything and sets it back at time 0)
+	//! Return is deprecated, treat as void and use 'VideoCallback.ON_ERROR'
 	proto native bool Stop();
 	
 	//! Set the desired time for the video (preload decides whether it will already load the next frames too)
+	//! Return is deprecated, treat as void and use 'VideoCallback.ON_ERROR'
 	proto native bool SetTime(int time, bool preload);	
 	//! Get the current time of the video
 	proto native int GetTime();

@@ -82,6 +82,6 @@ class TakeFireplaceFromBarrelLambda : ReplaceItemWithNewLambdaBase
 	override protected void CreateNetworkObjectInfo (EntityAI new_item)
 	{
 		super.CreateNetworkObjectInfo(new_item);
-		GetGame().RemoteObjectTreeCreate(m_OldItem); // re-create network for old item 
+		g_Game.RemoteObjectTreeCreate(m_OldItem); // re-create network for old item 
 	}
 }

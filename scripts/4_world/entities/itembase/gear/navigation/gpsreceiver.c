@@ -1,8 +1,11 @@
 class GPSReceiver : ItemGPS
 {
 
-	const string DISPLAY_TEXTURE_PATH_FORMAT 	= "dz\\gear\\navigation\\data\\GPS_%1_ca.paa";
-	const string ANIM_PHASE_DISPLAY_HIDE 		= "DisplayState";
+	protected const string DISPLAY_TEXTURE_PATH_FORMAT 	= "dz\\gear\\navigation\\data\\GPS_%1_ca.paa";
+	protected const string ANIM_PHASE_DISPLAY_HIDE 		= "DisplayState";
+	
+	protected const int PHASE_OFF = 1;
+	protected const int PHASE_ON = 0;
 
 	protected ref set<string> 		m_DisplayGridSelections;
 	protected ref set<string> 		m_DisplayAltSelections;
@@ -11,6 +14,8 @@ class GPSReceiver : ItemGPS
 	//! cache
 	protected ref array<int> 		m_OrderedPositionNumbersLast;
 	protected ref array<int> 		m_AltitudeNumbersLast;
+	
+	protected bool 					m_InitGPS;
 	
 	void GPSReceiver()
 	{
@@ -62,10 +67,10 @@ class GPSReceiver : ItemGPS
 	{
 		UpdateDisplayPosition();
 		UpdateDisplayElevation();
+		
+		if (!m_InitGPS)
+			m_InitGPS = true;
 	}
-	
-	//! need to be overriden, otherwise the item will be turned off when moved to cargo
-	override void OnMovedInsideCargo(EntityAI container);
 	
 	override void SetActions()
 	{
@@ -80,10 +85,9 @@ class GPSReceiver : ItemGPS
 		return GetCompEM() && GetCompEM().IsWorking();
 	}
 	
-	//------------------------------------------------------------------------------
 	override void OnWorkStart()
 	{
-		UpdateDisplayState(true);
+		UpdateDisplayState(PHASE_ON);
 		
 		if (GetHierarchyRoot())
 		{
@@ -97,7 +101,7 @@ class GPSReceiver : ItemGPS
 	
 	override void OnWorkStop()
 	{
-		UpdateDisplayState(false);
+		UpdateDisplayState(PHASE_OFF);
 
 		if (GetHierarchyRoot())
 		{
@@ -113,26 +117,29 @@ class GPSReceiver : ItemGPS
 	{
 		PositionalUpdate();
 	}
-	//------------------------------------------------------------------------------
 	
-	protected void UpdateDisplayState(bool pIsTurnedOn)
+	protected void UpdateDisplayState(int animPhase)
 	{
-		SetAnimationPhaseNow(ANIM_PHASE_DISPLAY_HIDE, !pIsTurnedOn);
+		ResetAnimationPhase(ANIM_PHASE_DISPLAY_HIDE, PHASE_OFF);
+		SetAnimationPhaseNow(ANIM_PHASE_DISPLAY_HIDE, animPhase);
 	}
-	
+		
 	protected void UpdateDisplayPosition()
 	{
 		int selectionIndex;
 		string selectionName;
+		string textureName;
 		array<int> orderedPositionNumbers = MapNavigationBehaviour.OrderedPositionNumbersFromGridCoords(this);
 		
-		if (orderedPositionNumbers.DifferentAtPosition(m_OrderedPositionNumbersLast) != INDEX_NOT_FOUND)
+		bool isArrayDifferent = orderedPositionNumbers.DifferentAtPosition(m_OrderedPositionNumbersLast) != INDEX_NOT_FOUND;
+		if (isArrayDifferent || !m_InitGPS)
 		{
 			for (int i = 0; i < m_DisplayGridSelections.Count(); ++i)
 			{
 				selectionName 	= m_DisplayGridSelections.Get(i);
 				selectionIndex 	= GetHiddenSelection(selectionName);
-				SetObjectTexture(selectionIndex, m_DisplayNumericSignTextureMap.Get(orderedPositionNumbers.Get(i)));
+				textureName 	= m_DisplayNumericSignTextureMap.Get(orderedPositionNumbers.Get(i));
+				SetObjectTexture(selectionIndex, textureName);
 			}
 			
 			m_OrderedPositionNumbersLast = orderedPositionNumbers;
@@ -144,8 +151,9 @@ class GPSReceiver : ItemGPS
 		int selectionIndex;
 		string selectionName;
 		array<int> altitudeNumbers = MapNavigationBehaviour.OrderedAltitudeNumbersPosition(this);
-
-		if (altitudeNumbers.DifferentAtPosition(m_AltitudeNumbersLast) != INDEX_NOT_FOUND)
+		
+		bool isArrayDifferent = altitudeNumbers.DifferentAtPosition(m_AltitudeNumbersLast) != INDEX_NOT_FOUND;
+		if (isArrayDifferent || !m_InitGPS)
 		{
 			for (int i = 0; i < m_DisplayAltSelections.Count(); ++i)
 			{
@@ -179,5 +187,21 @@ class GPSReceiver : ItemGPS
 	override void OnDebugSpawn()
 	{
 		Battery9V.Cast(GetInventory().CreateInInventory("Battery9V"));
+	}
+	
+	//================================================================
+	// DEPRECATED BELOW
+	//================================================================
+	[Obsolete("1.29: Use the overloaded function GPSReceiver::UpdateDisplayState instead")]
+	protected void UpdateDisplayState(bool pIsTurnedOn)
+	{
+		if (pIsTurnedOn)
+		{
+			UpdateDisplayState(PHASE_ON);
+		}
+		else
+		{
+			UpdateDisplayState(PHASE_OFF);
+		}
 	}
 }

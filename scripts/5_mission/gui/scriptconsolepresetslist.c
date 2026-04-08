@@ -12,7 +12,7 @@ class ScriptConsolePresetsList extends ScriptedWidgetEventHandler
 		m_Parent = parent;
 		m_Tab = tab;
 
-		m_Root = GetGame().GetWorkspace().CreateWidgets(GetLayoutFile(), parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets(GetLayoutFile(), parent);
 		m_PresetsList = TextListboxWidget.Cast(m_Root);
 		
 		m_Root.SetHandler(this);

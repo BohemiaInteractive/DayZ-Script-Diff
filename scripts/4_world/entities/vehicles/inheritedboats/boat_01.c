@@ -1,9 +1,5 @@
 class Boat_01_ColorBase : BoatScript
 {
-	void Boat_01()
-	{
-	}
-	
 	override void EEInit()
 	{		
 		super.EEInit();

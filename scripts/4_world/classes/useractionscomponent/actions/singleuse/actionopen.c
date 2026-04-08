@@ -44,7 +44,7 @@ class ActionOpen: ActionSingleUseBase
 
 	override void OnExecuteServer( ActionData action_data )
 	{
-		if( !GetGame().IsMultiplayer() )
+		if( !g_Game.IsMultiplayer() )
 			ClearInventoryReservationEx(action_data);
 		
 		action_data.m_MainItem.Open();

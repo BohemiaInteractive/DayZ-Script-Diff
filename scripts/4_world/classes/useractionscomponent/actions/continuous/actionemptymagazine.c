@@ -88,7 +88,7 @@ class ActionEmptyMagazine: ActionContinuousBase
 		mag.ApplyManipulationDamage();
 					
 		string magazineTypeName;
-		GetGame().ConfigGetText( "CfgAmmo " + ammoType + " spawnPileType" , magazineTypeName);
+		g_Game.ConfigGetText( "CfgAmmo " + ammoType + " spawnPileType" , magazineTypeName);
 					
 		if (!DayZPlayerUtils.HandleStoreCartridge(action_data.m_Player, NULL, -1, dmg, ammoType, magazineTypeName, false))
 		{

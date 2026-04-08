@@ -13,7 +13,7 @@ class MiscEffects : Managed
 		int particleID;
 		string particleName;
 		string configPath = "CfgNonAIVehicles " + object.GetType() + " collisionParticle";
-		GetGame().ConfigGetText(configPath, particleName);
+		g_Game.ConfigGetText(configPath, particleName);
 		if (particleName == string.Empty)	// no ptc assigned
 			return;
 		

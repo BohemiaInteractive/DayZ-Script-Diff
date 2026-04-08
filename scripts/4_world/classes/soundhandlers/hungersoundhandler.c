@@ -27,10 +27,11 @@ class HungerSoundHandlerClient extends HungerSoundHandlerBase
 	
 	void ProcessSound()
 	{
-		if ( GetGame().GetTime() > m_SoundTime)
+		int currentTime = g_Game.GetTime();
+		if ( currentTime > m_SoundTime)
 		{
 			float offset_time = Math.RandomFloatInclusive(SOUND_INTERVALS_LIGHT_MIN, SOUND_INTERVALS_LIGHT_MAX) * 1000;
-			m_SoundTime = GetGame().GetTime() + offset_time;
+			m_SoundTime = currentTime + offset_time;
 			PlaySound();
 		}
 	}

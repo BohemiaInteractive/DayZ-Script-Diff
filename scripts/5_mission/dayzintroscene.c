@@ -41,7 +41,7 @@ class DayZIntroScene : Managed
 			world.SetDate(date.Get(0), date.Get(1), date.Get(2), date.Get(3), date.Get(4));
 		}
 	
-		GetGame().ObjectDelete( m_Camera );
+		g_Game.ObjectDelete( m_Camera );
 		Class.CastTo(m_Camera, g_Game.CreateObject("staticcamera", SnapToGround(position), true)); //Vector(position[0] , position[1] + 1, position[2])
 		
 		Math3D.MatrixIdentity4(m_CameraTrans);
@@ -61,7 +61,7 @@ class DayZIntroScene : Managed
 
 			float pos_x = m_CharacterPos[0];
 			float pos_z = m_CharacterPos[2];
-			float pos_y = GetGame().SurfaceY(pos_x, pos_z);
+			float pos_y = g_Game.SurfaceY(pos_x, pos_z);
 			vector ground_demo_pos = Vector(pos_x, pos_y, pos_z);
 			m_CharacterPos = ground_demo_pos;
 
@@ -97,7 +97,7 @@ class DayZIntroScene : Managed
 		
 		PPEffects.Init(); //Deprecated, left in for legacy purposes only
 		
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(SetInitPostprocesses);
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(SetInitPostprocesses);
 	}
 	
 	void ~DayZIntroScene()
@@ -130,7 +130,7 @@ class DayZIntroScene : Managed
 		if ( GetIntroCharacter().GetCharacterObj() )
 		{
 			GetIntroCamera().LookAt( GetIntroCharacter().GetPosition() + Vector( 0, 1, 0 ) );
-			//GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater( SceneCharacterSetPos, 250 );			
+			//g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater( SceneCharacterSetPos, 250 );			
 		}
 	}
 	
@@ -143,7 +143,7 @@ class DayZIntroScene : Managed
 	protected void GetSelectedUserName()
 	{
 		string name;
-		BiosUserManager user_manager = GetGame().GetUserManager();
+		BiosUserManager user_manager = g_Game.GetUserManager();
 		if( user_manager )
 		{
 			BiosUser user = user_manager.GetSelectedUser();
@@ -172,7 +172,7 @@ class DayZIntroScene : Managed
 	{
 		float pos_x = pos[0];
 		float pos_z = pos[2];
-		float pos_y = GetGame().SurfaceY(pos_x, pos_z);
+		float pos_y = g_Game.SurfaceY(pos_x, pos_z);
 		vector tmp_pos = Vector(pos_x, pos_y, pos_z);
 		tmp_pos[1] = tmp_pos[1] + pos[1];
 	

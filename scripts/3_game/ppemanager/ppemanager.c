@@ -92,7 +92,7 @@ class PPEManager extends Managed
 			m_UpdatingRequests = new array<ref PPERequesterBase>;
 			InitPPEManagerClassMap();
 			
-			GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(this.Update); //can be safely and easily 'disabled' here
+			g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Insert(this.Update); //can be safely and easily 'disabled' here
 			m_ManagerInitialized = true;
 		}
 	}

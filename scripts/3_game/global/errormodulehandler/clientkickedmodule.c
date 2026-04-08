@@ -149,17 +149,21 @@ enum EClientKicked
 };
 
 #ifdef PLATFORM_WINDOWS
-const string AUTH_PREFIX = "#STR_MP_STEAM_AUTH_FAILED\n";
+	const string AUTH_PREFIX = "#STR_MP_STEAM_AUTH_FAILED\n";
 #else
-#ifdef PLATFORM_XBOX
-const string AUTH_PREFIX = "#STR_xbox_authentification_fail\n";
-#else
-#ifdef PLATFORM_PS4
-const string AUTH_PREFIX = "#STR_ps4_authentification_fail\n";
-#else
-const string AUTH_PREFIX = "#STR_authentification_fail\n";
-#endif
-#endif
+	#ifdef PLATFORM_MSSTORE
+	const string AUTH_PREFIX = "#STR_xbox_authentification_fail\n";
+	#else
+		#ifdef PLATFORM_XBOX
+		const string AUTH_PREFIX = "#STR_xbox_authentification_fail\n";
+		#else
+			#ifdef PLATFORM_PS4
+			const string AUTH_PREFIX = "#STR_ps4_authentification_fail\n";
+			#else
+			const string AUTH_PREFIX = "#STR_authentification_fail\n";
+			#endif
+		#endif
+	#endif
 #endif
 
 const string LOGIN_PREFIX = "#STR_LOGIN_PREFIX"+"\n";

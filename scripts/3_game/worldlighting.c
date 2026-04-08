@@ -13,15 +13,15 @@ class WorldLighting
 		switch ( lightingID )
 		{
 			case 0:
-				GetGame().GetWorld().LoadNewLightingCfg( lighting_default );
+				g_Game.GetWorld().LoadNewLightingCfg( lighting_default );
 				break;
 				
 			case 1:
-				GetGame().GetWorld().LoadNewLightingCfg( lighting_darknight );
+				g_Game.GetWorld().LoadNewLightingCfg( lighting_darknight );
 				break;
 				
 			case 2:
-				GetGame().GetWorld().LoadNewLightingCfg( lighting_sakhal );
+				g_Game.GetWorld().LoadNewLightingCfg( lighting_sakhal );
 				break;
 		}
 	}
@@ -36,7 +36,7 @@ class WorldLighting
 		switch ( lightingID )
 		{
 			case 3:
-				GetGame().GetWorld().LoadNewLightingCfg( lighting_modded );
+				g_Game.GetWorld().LoadNewLightingCfg( lighting_modded );
 				break;
 		}
 	}

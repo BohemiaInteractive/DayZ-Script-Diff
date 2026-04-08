@@ -15,7 +15,7 @@ class ActionUncoverHeadBase: ActionContinuousBase
 		if (Class.CastTo(attachment, target.GetInventory().FindAttachment(InventorySlots.HEADGEAR)) && attachment.GetType() == "BurlapSackCover")
 		{
 			ItemBase new_item = null;
-			if (!source.GetHumanInventory().GetEntityInHands())
+			if (!source.GetEntityInHands())
 			{
 				new_item = ItemBase.Cast(HumanInventory.Cast(source.GetInventory()).CreateInHands("BurlapSack"));
 			}

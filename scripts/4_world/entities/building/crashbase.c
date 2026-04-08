@@ -19,7 +19,7 @@ class CrashBase extends House
 	void RequestSoundEvent()
 	{
 		Param3<bool, vector, int> playSound = new Param3<bool, vector, int>(true, GetPosition(), GetSoundSet().Hash());
-		GetGame().RPCSingleParam( null, ERPCs.RPC_SOUND_HELICRASH, playSound, true );
+		g_Game.RPCSingleParam( null, ERPCs.RPC_SOUND_HELICRASH, playSound, true );
 	}
 	
 	// needs to have the soundset registered in CrashBase.Init()
@@ -33,7 +33,7 @@ class CrashBase extends House
 		super.EEInit();
 		//Setup for local sound tests
 		#ifdef DEVELOPER
-		if ( !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsMultiplayer() )
 		{
 			EffectSound eff = SEffectManager.PlaySound( GetSoundSet(), GetPosition(), 0.1, 0.1 );
 			eff.SetAutodestroy(true);
@@ -43,7 +43,7 @@ class CrashBase extends House
 
 	override void EEDelete(EntityAI parent)
 	{
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			if ( m_ParticleEfx )
 				m_ParticleEfx.Stop();

@@ -111,7 +111,7 @@ class OvenIndoor extends FireplaceBase
 		//check if there is any FireplaceIndoor objects near selected fire point
 		ref array<Object> nearest_objects = new array<Object>;
 		ref array<CargoBase> proxy_cargos = new array<CargoBase>;
-		GetGame().GetObjectsAtPosition3D( fire_point_pos_world, 1, nearest_objects, proxy_cargos );
+		g_Game.GetObjectsAtPosition3D( fire_point_pos_world, 1, nearest_objects, proxy_cargos );
 
 		for ( int i = 0; i < nearest_objects.Count(); ++i )
 		{

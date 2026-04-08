@@ -9,11 +9,11 @@ class OptionSelectorSlider extends OptionSelectorSliderSetup
 	{
 		if (!showEditbox)
 		{
-			m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_slider.layout", parent);
+			m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_slider.layout", parent);
 		}
 		else
 		{
-			m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_slider_editbox.layout", parent);
+			m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_slider_editbox.layout", parent);
 			m_ValueText	= EditBoxWidget.Cast(m_Root.FindAnyWidget("option_value_text"));
 			m_ValueText.Enable(false);
 			#ifdef PLATFORM_CONSOLE
@@ -29,17 +29,17 @@ class OptionSelectorSlider extends OptionSelectorSliderSetup
 		#endif
 		#endif
 		
+		m_MinValue = min;
+		m_MaxValue = max;
+		
 		m_SelectorType = 1;
 		m_ParentClass = parent_menu;
 		m_Slider = SliderWidget.Cast(m_Root.FindAnyWidget("option_value"));
-		m_Slider.SetCurrent(value);
+		SetValue(value);
+		m_LastValue = GetValue();
 		
-		m_MinValue = min;
-		m_MaxValue = max;
-		m_LastValue = value;
 		m_ShowEditbox = showEditbox;
 		
-		SetValue(value);
 		Enable();
 		
 		if (showEditbox)

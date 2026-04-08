@@ -80,7 +80,7 @@ class ActionCheckPulse: ActionInteractBase
 			if (pulse_type == EPulseType.IRREGULAR)
 				CachedObjectsParams.PARAM1_INT.param1 = CachedObjectsParams.PARAM1_INT.param1 | (1 << TARGET_IRREGULAR_PULSE_BIT);
 
-			GetGame().RPCSingleParam( player ,ERPCs.RPC_CHECK_PULSE, CachedObjectsParams.PARAM1_INT, true, player.GetIdentity() );
+			g_Game.RPCSingleParam( player ,ERPCs.RPC_CHECK_PULSE, CachedObjectsParams.PARAM1_INT, true, player.GetIdentity() );
 		}
 	}
 	

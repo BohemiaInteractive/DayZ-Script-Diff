@@ -102,7 +102,7 @@ class PlayerSoundManagerClient extends PlayerSoundManagerBase
 	void PlayerSoundManagerClient(PlayerBase player)
 	{
 		
-		if( !GetGame().IsDedicatedServer() ) 
+		if( !g_Game.IsDedicatedServer() ) 
 		{
 			m_ClientCharacterDistanceCheck.Run(2, this, "CheckAllowUpdate", null, true);
 		}
@@ -140,9 +140,9 @@ class PlayerSoundManagerClient extends PlayerSoundManagerBase
 	
 	void CheckAllowUpdate()
 	{
-		if( GetGame().GetPlayer() )
+		if( g_Game.GetPlayer() )
 		{
-			bool is_at_hearing_distance = vector.Distance(GetGame().GetPlayer().GetPosition(), m_Player.GetPosition()) < SOUNDS_HEARING_DISTANCE;
+			bool is_at_hearing_distance = vector.Distance(g_Game.GetPlayer().GetPosition(), m_Player.GetPosition()) < SOUNDS_HEARING_DISTANCE;
 			
 			if( m_UpdateTimerRunning && !is_at_hearing_distance )
 			{
@@ -152,7 +152,7 @@ class PlayerSoundManagerClient extends PlayerSoundManagerBase
 			{
 				SetAllowUpdate(true);
 			}
-			//PrintString("distance:" + vector.Distance(GetGame().GetPlayer().GetPosition(), m_Player.GetPosition()).ToString());
+			//PrintString("distance:" + vector.Distance(g_Game.GetPlayer().GetPosition(), m_Player.GetPosition()).ToString());
 		}
 	}
 }

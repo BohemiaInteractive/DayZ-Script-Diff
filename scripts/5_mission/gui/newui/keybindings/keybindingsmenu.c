@@ -28,9 +28,13 @@ class KeybindingsMenu extends UIScriptedMenu
 	
 	override Widget Init()
 	{
-		Input input = GetGame().GetInput();
-		layoutRoot			= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/pc/keybinding_menu.layout", null);
-		
+		Input input = g_Game.GetInput();
+		#ifdef PLATFORM_MSSTORE
+		layoutRoot			= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/msstore/keybinding_menu.layout", null);
+		#else
+		layoutRoot			= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/options/pc/keybinding_menu.layout", null);
+		#endif
+
 		m_Version			= TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
 		m_Apply				= ButtonWidget.Cast(layoutRoot.FindAnyWidget("apply"));
 		m_Back				= ButtonWidget.Cast(layoutRoot.FindAnyWidget("back"));
@@ -41,7 +45,7 @@ class KeybindingsMenu extends UIScriptedMenu
 		layoutRoot.FindAnyWidget("Tabber").GetScript(m_Tabber);
 		
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
@@ -51,7 +55,7 @@ class KeybindingsMenu extends UIScriptedMenu
 
 		#ifdef PLATFORM_PS4
 		string back = "circle";
-		if (GetGame().GetInput().GetEnterButton() != GamepadButton.A)
+		if (g_Game.GetInput().GetEnterButton() != GamepadButton.A)
 			back = "cross";
 
 		ImageWidget toolbar_b = ImageWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
@@ -75,7 +79,7 @@ class KeybindingsMenu extends UIScriptedMenu
 		m_Undo.SetFlags(WidgetFlags.IGNOREPOINTER);
 		ColorWhite(m_Defaults, null);
 		m_Defaults.ClearFlags(WidgetFlags.IGNOREPOINTER);
-		
+
 		return layoutRoot;
 	}
 	
@@ -101,7 +105,7 @@ class KeybindingsMenu extends UIScriptedMenu
 	
 	void CreateGroupContainer()
 	{
-		m_GroupsContainer = new KeybindingsContainer(-1,GetGame().GetInput(),layoutRoot.FindAnyWidget("TabContentsHolder"),this);
+		m_GroupsContainer = new KeybindingsContainer(-1,g_Game.GetInput(),layoutRoot.FindAnyWidget("TabContentsHolder"),this);
 	}
 	
 	void UpdateTabContent(int tab_index)
@@ -169,6 +173,16 @@ class KeybindingsMenu extends UIScriptedMenu
 	
 	override void Update(float timeslice)
 	{
+		if (GetUApi().GetInputByID(UAUITabLeft).LocalPress())
+		{
+			m_Tabber.PreviousTab();
+		}
+		
+		if (GetUApi().GetInputByID(UAUITabRight).LocalPress())
+		{
+			m_Tabber.NextTab();
+		}
+		
 		if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Back();
@@ -182,7 +196,9 @@ class KeybindingsMenu extends UIScriptedMenu
 	
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
+		#ifndef PLATFORM_MSSTORE
 		if (button == MouseState.LEFT)
+		#endif
 		{
 			if (w == m_Apply)
 			{
@@ -250,7 +266,7 @@ class KeybindingsMenu extends UIScriptedMenu
 		}
 		else
 		{
-			GetGame().GetUIManager().Back();
+			g_Game.GetUIManager().Back();
 		}
 	}
 	
@@ -292,7 +308,7 @@ class KeybindingsMenu extends UIScriptedMenu
 		m_Apply.SetFlags(WidgetFlags.IGNOREPOINTER);
 		ColorDisabled(m_Undo);
 		m_Undo.SetFlags(WidgetFlags.IGNOREPOINTER);
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(GetGame().GetMission().RefreshExcludes);
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.GetMission().RefreshExcludes);
 		m_GroupsContainer.Reset(true);
 	}
 	
@@ -303,7 +319,7 @@ class KeybindingsMenu extends UIScriptedMenu
 			if (result == DBB_YES)
 			{
 				Reset();
-				GetGame().GetUIManager().Back();
+				g_Game.GetUIManager().Back();
 			}
 			return true;
 		}
@@ -338,7 +354,7 @@ class KeybindingsMenu extends UIScriptedMenu
 	override void Refresh()
 	{
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
@@ -507,9 +523,9 @@ class KeybindingsMenu extends UIScriptedMenu
 		m_OriginalPresetIndex = index;
 		m_GroupsContainer.OnSelectKBPreset(index);
 		string profile_text;
-		GetGame().GetInput().GetProfileName(index, profile_text);
+		g_Game.GetInput().GetProfileName(index, profile_text);
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Invoke();
+		g_Game.GetMission().GetOnInputPresetChanged().Invoke();
 	}
 	
 //////////////////////////////////////////////////

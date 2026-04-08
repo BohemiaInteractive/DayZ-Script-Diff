@@ -57,9 +57,9 @@ class Slot
 
 	void ~Slot()
 	{
-		if (m_Plant  &&  GetGame()) // GetGame() returns NULL when the game is being quit!
+		if (m_Plant  &&  g_Game) // g_Game returns NULL when the game is being quit!
 		{
-			GetGame().ObjectDelete( GetPlant() );
+			g_Game.ObjectDelete( GetPlant() );
 		}
 	}
 	

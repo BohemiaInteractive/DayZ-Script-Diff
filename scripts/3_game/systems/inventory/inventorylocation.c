@@ -8,7 +8,8 @@ enum InventoryLocationType
 	CARGO, ///< cargo of another entity
 	HANDS, ///< hands of another entity
 	PROXYCARGO, ///< cargo of a large object (building,...)
-	VEHICLE,
+	VEHICLE, ///< player in vehicle, index of vehicle seat is save here
+	TEMP, ///< temporary location for client side only, items are here temporary during inventory desynchronization until server send correct location
 };
 
 //@NOTE: DO NOT EDIT! enum values are overwritten from c++
@@ -178,6 +179,12 @@ class InventoryLocation
 	proto native void SetVehicle(notnull EntityAI parent, EntityAI e, int idx);
 	
 	/**
+	 * @fn		SetTemporary
+	 * brief	sets current inventory location's GetParent
+	 **/	
+	proto native void SetTemporary(notnull EntityAI parent, EntityAI e);
+	
+	/**
 	 * @fn		SetParent
 	 * brief	sets current inventory location's GetParent
 	 **/
@@ -281,6 +288,13 @@ class InventoryLocation
 				res = res + " item=" + Object.GetDebugName(GetItem());
 				res = res + " parent=" + Object.GetDebugName(GetParent());
 				res = res + " idx=" + GetIdx();
+				break;
+			}
+	
+			case InventoryLocationType.TEMP:
+			{
+				res = res + " item=" + Object.GetDebugName(GetItem());
+				res = res + " parent=" + Object.GetDebugName(GetParent());
 				break;
 			}
 			default:
@@ -457,6 +471,30 @@ class InventoryLocation
 				SetVehicle(parent, item, idx);
 				break;
 			}
+	
+			case InventoryLocationType.TEMP:
+			{
+				if (!ctx.Read(parent))
+					return false;
+				if (!ctx.Read(item))
+					return false;
+	
+				int tmp;
+				if (!ctx.Read(tmp))
+					return false;
+	
+				if (!parent || !item)
+				{
+#ifdef ENABLE_LOGGING
+#ifdef SERVER
+					Debug.Log(string.Format("Parent=%1 or Item=%2 does not exist on server!", Object.GetDebugName(parent), Object.GetDebugName(item)), "TEMP" , "n/a", "ReadFromContext", this.ToString() );
+#endif
+#endif
+					break;
+				}
+				SetAttachment(parent, item, -1);
+				//SetTemporary(parent, item);
+			}
 			default:
 			{
 				ErrorEx("ReadFromContext - really unknown location type, this should not happen, type=" + type);
@@ -468,7 +506,16 @@ class InventoryLocation
 
 	bool WriteToContext(ParamsWriteContext ctx)
 	{
-		if (!ctx.Write(GetType()))
+		if (GetType() == InventoryLocationType.TEMP)
+		{
+			int type = InventoryLocationType.ATTACHMENT;
+			if (!ctx.Write(type))
+			{
+				Error("InventoryLocation::WriteToContext - cannot write to context! failed to write temp type");
+				return false;
+			}
+		}
+		else if (!ctx.Write(GetType()))
 		{
 			Error("InventoryLocation::WriteToContext - cannot write to context! failed to write type");
 			return false;
@@ -625,6 +672,29 @@ class InventoryLocation
 					Error("InventoryLocation::WriteToContext - cannot write to context! failed VHC, arg=idx");
 					return false;
 				}
+				break;
+			}
+	
+			case InventoryLocationType.TEMP:
+			{
+				if (!ctx.Write(GetParent()))
+				{
+					Error("InventoryLocation::WriteToContext - cannot write to context! failed TMP, arg=parent");
+					return false;
+				}
+	
+				if (!ctx.Write(GetItem()))
+				{
+					Error("InventoryLocation::WriteToContext - cannot write to context! failed TMP, arg=item");
+					return false;
+				}
+	
+				if (!ctx.Write(-1))
+				{
+					Error("InventoryLocation::WriteToContext - cannot write to context! failed TMP, idx=-1");
+					return false;
+				}
+	
 				break;
 			}
 			default:

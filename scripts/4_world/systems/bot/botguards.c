@@ -62,7 +62,7 @@ class BotGuardHasItemInHands extends HandGuardBase
 
 	override bool GuardCondition (HandEventBase e)
 	{
-		if (m_Player.GetHumanInventory().GetEntityInHands())
+		if (m_Player.GetEntityInHands())
 		{
 			if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[botfsm] guard - has valid entity in hands");
 			return true;

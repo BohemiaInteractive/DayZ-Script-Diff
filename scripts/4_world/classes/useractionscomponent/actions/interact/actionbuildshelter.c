@@ -27,7 +27,7 @@ class ActionBuildShelter: ActionContinuousBase
 	
 	override string GetText()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if ( player )
 		{
 			ConstructionActionData construction_action_data = player.GetConstructionActionData();
@@ -116,7 +116,7 @@ class ActionBuildShelter: ActionContinuousBase
 		if ( player.IsPlacingLocal() || player.IsPlacingServer() )
 			return false;
 		
-		if ( (!GetGame().IsDedicatedServer()) )
+		if ( (!g_Game.IsDedicatedServer()) )
 		{
 			if ( MiscGameplayFunctions.ComplexBuildCollideCheckClient(player, target, item, m_VariantID ) )
 			{
@@ -132,7 +132,7 @@ class ActionBuildShelter: ActionContinuousBase
 	{	
 		if ( super.SetupAction( player, target, item, action_data, extra_data ) )
 		{
-			if ( !GetGame().IsDedicatedServer() )
+			if ( !g_Game.IsDedicatedServer() )
 			{
 				ConstructionActionData construction_action_data = action_data.m_Player.GetConstructionActionData();
 				BuildPartActionData.Cast(action_data).m_PartType = construction_action_data.GetBuildPartNoToolAtIndex(m_VariantID).GetPartName();

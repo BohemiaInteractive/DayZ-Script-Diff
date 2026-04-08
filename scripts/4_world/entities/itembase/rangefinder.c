@@ -21,12 +21,12 @@ class Rangefinder extends PoweredOptic_Base
 	protected void InitRangeFinderData()
 	{
 		string path = "cfgVehicles " + GetType();
-		if (GetGame().ConfigIsExisting(path))
+		if (g_Game.ConfigIsExisting(path))
 		{
 			string layout;
-			if (GetGame().ConfigIsExisting(path + " rangeFinderLayout"))
+			if (g_Game.ConfigIsExisting(path + " rangeFinderLayout"))
 			{
-				GetGame().ConfigGetText(path + " rangeFinderLayout", layout);
+				g_Game.ConfigGetText(path + " rangeFinderLayout", layout);
 			}
 			
 			if (layout != "" && layout.Length() > 0)
@@ -48,12 +48,12 @@ class Rangefinder extends PoweredOptic_Base
 	
 	override void OnWorkStart()
 	{
-		if (GetGame().IsServer() && !m_IsActionActive)	// incorrectly synchronized state from EM
+		if (g_Game.IsServer() && !m_IsActionActive)	// incorrectly synchronized state from EM
 			StopWorkServer();
 		
-		if( !GetGame().IsDedicatedServer())
+		if( !g_Game.IsDedicatedServer())
 		{
-			PlayerBase player_this = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player_this = PlayerBase.Cast( g_Game.GetPlayer() );
 			PlayerBase player_owner = PlayerBase.Cast( GetHierarchyRootPlayer() );
 			
 			if ( player_this == player_owner )
@@ -65,9 +65,9 @@ class Rangefinder extends PoweredOptic_Base
 	
 	override void OnWorkStop()
 	{
-		if( !GetGame().IsDedicatedServer())
+		if( !g_Game.IsDedicatedServer())
 		{
-			PlayerBase player_this = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player_this = PlayerBase.Cast( g_Game.GetPlayer() );
 			PlayerBase player_owner = PlayerBase.Cast( GetHierarchyRootPlayer() );
 			
 			if ( player_this == player_owner )
@@ -84,7 +84,7 @@ class Rangefinder extends PoweredOptic_Base
 			m_Timer = new Timer( CALL_CATEGORY_GAMEPLAY );
 		}
 		
-		m_Root = GetGame().GetWorkspace().CreateWidgets( m_LayoutPath );
+		m_Root = g_Game.GetWorkspace().CreateWidgets( m_LayoutPath );
 		
 		// Either use root as text widget directly or find the text as children, arbitrary layout is supported now.
 		m_RangeText = TextWidget.Cast(m_Root);
@@ -138,8 +138,8 @@ class Rangefinder extends PoweredOptic_Base
 		
 		if ( player )
 		{
-			vector 		from 			= GetGame().GetCurrentCameraPosition();
-			vector      fromDirection   = GetGame().GetCurrentCameraDirection();
+			vector 		from 			= g_Game.GetCurrentCameraPosition();
+			vector      fromDirection   = g_Game.GetCurrentCameraDirection();
 			vector 		to 				= from + (fromDirection * RANGEFINDER_MAX_DISTANCE);
 			vector 		contact_pos;
 			vector 		contact_dir;

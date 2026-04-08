@@ -180,13 +180,13 @@ class CargoContainer extends Container
 	void SetLock( EntityAI item )
 	{
 		#ifndef PLATFORM_CONSOLE
-		if( GetGame().GetPlayer() )
+		if( g_Game.GetPlayer() )
 		{
 			InventoryLocation il = new InventoryLocation;
-			int index = GetGame().GetPlayer().GetHumanInventory().FindUserReservedLocationIndex( item );
+			int index = g_Game.GetPlayer().GetHumanInventory().FindUserReservedLocationIndex( item );
 			if( index >= 0 )
 			{
-				GetGame().GetPlayer().GetHumanInventory().GetUserReservedLocation( index, il );
+				g_Game.GetPlayer().GetHumanInventory().GetUserReservedLocation( index, il );
 				
 				ref Icon icon = new Icon( this, false );
 				m_Icons.Insert( icon );
@@ -563,7 +563,7 @@ class CargoContainer extends Container
 			icon.SetPosEx( refresh );
 		#else
 			int size_x, size_y;
-			GetGame().GetInventoryItemSize( InventoryItem.Cast( item ), size_x, size_y );
+			g_Game.GetInventoryItemSize( InventoryItem.Cast( item ), size_x, size_y );
 		
 			if ( item.GetInventory().GetFlipCargo() )
 				icon.SetSize( size_y, size_x );
@@ -592,7 +592,7 @@ class CargoContainer extends Container
 	{
 		if (CanDrop())
 		{
-			Man player = GetGame().GetPlayer();
+			Man player = g_Game.GetPlayer();
 			if( GetFocusedIcon() )
 			{
 				ItemBase item = ItemBase.Cast( GetFocusedIcon().GetObject() );
@@ -807,10 +807,10 @@ class CargoContainer extends Container
 	{
 		if( GetFocusedIcon() )
 		{
-			ActionManagerClient amc	= ActionManagerClient.Cast( PlayerBase.Cast( GetGame().GetPlayer() ).GetActionManager() );
+			ActionManagerClient amc	= ActionManagerClient.Cast( PlayerBase.Cast( g_Game.GetPlayer() ).GetActionManager() );
 			
 			ItemBase entity			= ItemBase.Cast( GetFocusedIcon().GetObject() );
-			ItemBase item_in_hands	= ItemBase.Cast( GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+			ItemBase item_in_hands	= ItemBase.Cast( g_Game.GetPlayer().GetEntityInHands() );
 			
 			return ( amc.CanPerformActionFromInventory( item_in_hands, entity ) || amc.CanSetActionFromInventory( item_in_hands, entity ) );
 		}
@@ -826,7 +826,7 @@ class CargoContainer extends Container
 				EntityAI entity = EntityAI.Cast( GetFocusedIcon().GetObject() );
 				if (entity)
 				{
-					GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
+					g_Game.GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
 					return true;
 				}
 			}
@@ -853,7 +853,7 @@ class CargoContainer extends Container
 	{
 		EntityAI focused_item = GetFocusedItem();
 		EntityAI selected_item = ItemManager.GetInstance().GetSelectedItem();
-		DayZPlayer player = GetGame().GetPlayer();
+		DayZPlayer player = g_Game.GetPlayer();
 		
 		
 		if( focused_item != selected_item )
@@ -892,7 +892,7 @@ class CargoContainer extends Container
 			}
 			else if ( focused_item && focused_item.GetInventory().CanRemoveEntity() )
 			{
-				EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+				EntityAI item_in_hands = g_Game.GetPlayer().GetEntityInHands();
 				if( item_in_hands )
 				{
 					if( GameInventory.CanSwapEntitiesEx( item_in_hands, focused_item ) )
@@ -923,7 +923,7 @@ class CargoContainer extends Container
 				Icon icon = GetFocusedIcon();
 				if( icon )
 				{
-					EntityAI item_in_hands	= GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+					EntityAI item_in_hands	= g_Game.GetPlayer().GetEntityInHands();
 					EntityAI prev_item		= EntityAI.Cast( icon.GetObject() );
 					if( item_in_hands && prev_item )
 					{

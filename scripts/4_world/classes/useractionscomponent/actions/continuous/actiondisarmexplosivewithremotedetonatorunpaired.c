@@ -70,6 +70,24 @@ class ActionDisarmExplosiveWithRemoteDetonatorUnpaired : ActionDisarmExplosiveWi
 		return false;
 	}
 	
+	override void OnStartServer(ActionData action_data)
+	{
+		super.OnStartServer(action_data);
+		
+		ExplosivesBase item = ExplosivesBase.Cast(action_data.m_Target.GetObject());
+		if (item.GetDisarmSoundsetUnpaired() != string.Empty)
+			item.StartItemSoundServer(SoundConstants.ITEM_EXPLOSIVE_DISARM_UNPAIRED);
+	}
+	
+	override void OnEndServer(ActionData action_data)
+	{
+		super.OnEndServer(action_data);
+		
+		ExplosivesBase item = ExplosivesBase.Cast(action_data.m_Target.GetObject());
+		if (item.GetDisarmSoundsetUnpaired() != string.Empty)
+			item.StopItemSoundServer(SoundConstants.ITEM_EXPLOSIVE_DISARM_UNPAIRED);
+	}
+	
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		ExplosivesBase target = ExplosivesBase.Cast(action_data.m_Target.GetObject());

@@ -208,6 +208,12 @@ class Pawn : EntityAI
 	//! Returns the identity that is in possession of the Pawn
 	proto native PlayerIdentity GetOwnerIdentity();
 	
+	//! Get the last recorded state
+	proto native PawnOwnerState GetOwnerState();
+	
+	//! Get the next move that is yet to be enqueued
+	proto native PawnMove GetNextMove();
+	
 	//! Returns the strategy with which the pawn is reconciled on the Owner
 	proto native NetworkMoveStrategy GetNetworkMoveStrategy();
 	

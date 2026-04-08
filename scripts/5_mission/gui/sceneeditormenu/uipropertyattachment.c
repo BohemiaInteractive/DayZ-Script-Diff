@@ -16,7 +16,7 @@ class UIPropertyAttachment
 		
 		m_ComboItems = new TStringArray;
 		
-		m_WgtThis = GetGame().GetWorkspace().CreateWidgets("gui/layouts/scene_editor/day_z_scene_editor_attachment.layout", m_WgtRoot);
+		m_WgtThis = g_Game.GetWorkspace().CreateWidgets("gui/layouts/scene_editor/day_z_scene_editor_attachment.layout", m_WgtRoot);
 		m_WgtComboBox	= XComboBoxWidget.Cast( m_WgtThis.FindAnyWidget("combo_box") );
 		m_WgtSlotName	= TextWidget.Cast( m_WgtThis.FindAnyWidget("txt_slot_name") );
 	}
@@ -36,7 +36,7 @@ class UIPropertyAttachment
 			if ( m_PrevIndex != 0 )
 			{
 				EntityAI attachment = m_Obj.GetInventory().FindAttachment(m_SlotID);
-				GetGame().ObjectDelete(attachment);
+				g_Game.ObjectDelete(attachment);
 			}
 			
 			int curr_index = m_WgtComboBox.GetCurrentItem();

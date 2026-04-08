@@ -18,7 +18,7 @@ class SymptomCB extends HumanCommandActionCallback
 	{
 		EnableCancelCondition(true);
 		m_RunTime = run_time * 1000;
-		m_StartingTime = GetGame().GetTime();
+		m_StartingTime = g_Game.GetTime();
 		m_Player = player;
 		
 		if( m_Player && m_Player.GetSymptomManager())
@@ -29,14 +29,7 @@ class SymptomCB extends HumanCommandActionCallback
 	
 	bool CancelCondition()
 	{
-		if(m_RunTime > 0 && (GetGame().GetTime() > m_StartingTime + m_RunTime))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return m_RunTime > 0 && (g_Game.GetTime() > m_StartingTime + m_RunTime);
 	}
 
 	override bool IsSymptomCallback()

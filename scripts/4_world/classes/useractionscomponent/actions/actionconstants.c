@@ -192,7 +192,9 @@ class UAFishingConstants
 	const float SIGNAL_CYCLE_HARD_TARGET_DEFAULT = 30; //! hard cycle target
 	const float SIGNAL_HARD_TARGET_CHANCE_DEFAULT = 0.9; //! chance at HARD_TARGET (we probably want close to 100% here, randomness being random..)
 	const float SIGNAL_FISHING_CHANCE_COEF = 1.0; //! modifies chance for every signal roll
-	
+	#ifdef DEVELOPER
+	const float DEBUG_FISHING_CHANCE_PROBABILITY = 1.0; //! Used to always catch a fish in autotests
+	#endif
 	const float DAMAGE_HOOK = 1.5;
 	
 	const int EVENT_SPLASH_SIGNAL = 100;

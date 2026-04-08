@@ -220,7 +220,7 @@ Man BotSelectNearestTarget (EntityAI bot)
 
 	array<Object> objects = new array<Object>;
 	array<CargoBase> proxyCargos = new array<CargoBase>;
-	GetGame().GetObjectsAtPosition(pos, 100.0, objects, proxyCargos);
+	g_Game.GetObjectsAtPosition(pos, 100.0, objects, proxyCargos);
 
 	float min_dist = 1234567.0;
 	int min_index = -1;

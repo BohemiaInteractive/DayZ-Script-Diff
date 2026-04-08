@@ -52,7 +52,7 @@ class WeaponDebug
 	Weapon GetWeaponInHands()
 	{
 		Weapon weapon_in_hands;
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		if( player && player.GetItemInHands() ) Class.CastTo(weapon_in_hands,  player.GetItemInHands());
 		
 		return weapon_in_hands;
@@ -159,8 +159,8 @@ class WeaponDebug
 		{
 			RemoveAllShapes();
 			Weapon weapon = GetWeaponInHands();
-			vector cameraDirection = GetGame().GetCurrentCameraDirection();
-			vector cameraPosition = GetGame().GetCurrentCameraPosition();
+			vector cameraDirection = g_Game.GetCurrentCameraDirection();
+			vector cameraPosition = g_Game.GetCurrentCameraPosition();
 			vector usti_hlavne_position = weapon.GetSelectionPositionMS( "usti hlavne" );//usti hlavne
 			vector konec_hlavne_position = weapon.GetSelectionPositionMS( "konec hlavne" );//konec hlavne
 			usti_hlavne_position = weapon.ModelToWorld(usti_hlavne_position);
@@ -285,7 +285,7 @@ class WeaponDebug
 	void DisplayGeneralInfo()
 	{
 		DbgUI.Begin("sway weight", 50, 50);
-		DayZPlayerImplement player = DayZPlayerImplement.Cast(GetGame().GetPlayer());
+		DayZPlayerImplement player = DayZPlayerImplement.Cast(g_Game.GetPlayer());
 		float sway_weight = player.GetAimingModel().GetSwayWeight();
 		DbgUI.Text("value: " + sway_weight.ToString());
 		DbgUI.Text("Hold LWIN to draw debug line");
@@ -319,7 +319,7 @@ class WeaponDebug
 		int contact_component_muzzle;
 		
 		vector end_point = camera_pos + camera_dir * 1000;
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		Object player_o;
 		Class.CastTo(player_o, player);
 		
@@ -373,7 +373,7 @@ class WeaponDebug
 		vector weapon_aim_direction = usti_hlavne_position - konec_hlavne_position;
 		weapon_aim_direction.Normalize();
 		
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		Object player_o;
 		Class.CastTo(player_o, player);
 

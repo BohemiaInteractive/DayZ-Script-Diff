@@ -40,9 +40,9 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 	void ServerBrowserEntry(Widget parent, int index, ServerBrowserTab tab)
 	{
 	#ifdef PLATFORM_CONSOLE
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/xbox/server_browser_list_entry.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/xbox/server_browser_list_entry.layout", parent);
 	#else
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/pc/server_browser_list_entry_pages.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/pc/server_browser_list_entry_pages.layout", parent);
 	#endif
 		
 		m_Root.Enable(true);
@@ -129,7 +129,7 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 					}
 				}
 	
-				GetGame().GetUIManager().ShowDialog("#main_menu_mods", mods_text, 0, 0, 0, 0, GetGame().GetUIManager().GetMenu());
+				g_Game.GetUIManager().ShowDialog("#main_menu_mods", mods_text, 0, 0, 0, 0, g_Game.GetUIManager().GetMenu());
 				return true;
 			}
 		}
@@ -459,7 +459,7 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 	{
 		if (m_ServerData.m_IsDLC)
 		{
-			bool own = GetGame().VerifyWorldOwnership(GetMapToRun());
+			bool own = g_Game.VerifyWorldOwnership(GetMapToRun());
 			m_ServerModIcon.Show(true);
 			m_ServerModIcon.FindWidget("Owned").Show(own);
 			m_ServerModIcon.FindWidget("Unowned").Show(!own);
@@ -618,7 +618,7 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 		string ip = m_ServerData.GetIP();
 #ifdef PLATFORM_WINDOWS	
 		//Save Data PC
-		m_Tab.GetRootMenu().AddFavorite(ip, m_ServerData.m_SteamQueryPort, m_IsFavorited);
+		m_Tab.GetRootMenu().AddFavorite(ip, m_ServerData.m_HostPort, m_IsFavorited);
 	
 	#ifdef PLATFORM_CONSOLE
 		OnlineServices.SetServerFavorited(ip, 0, m_ServerData.m_SteamQueryPort, m_IsFavorited);
@@ -628,13 +628,6 @@ class ServerBrowserEntry extends ScriptedWidgetEventHandler
 #else
 		//Save Data Console		
 		m_IsFavorited = m_Tab.GetRootMenu().SetFavoriteConsoles(ip, m_ServerData.m_HostPort, m_IsFavorited);
-		//Refresh favorites server list when entry is unfavorited
-		ServerBrowserFavoritesTabConsolePages sbf = ServerBrowserFavoritesTabConsolePages.Cast(m_Tab);
-		if (!m_IsFavorited && sbf)
-		{
-			sbf.SetFavoriteChanged(true);
-			sbf.RefreshServerList();
-		}
 #endif
 		
 		m_Root.FindAnyWidget("unfavorite_image").Show(!m_IsFavorited);

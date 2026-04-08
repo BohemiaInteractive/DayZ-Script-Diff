@@ -86,7 +86,7 @@ class Weapon_Base extends Weapon
 		m_ButtstockAttachmentIdx = -1;
 		m_BurstCount = 0;
 		m_DOFProperties = new array<float>;
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{
 			m_DelayedValidationTimer = new Timer();
 		}
@@ -123,7 +123,7 @@ class Weapon_Base extends Weapon
 		InitShoulderDistance();
 		InitObstructionDistance();
 		InitDOFProperties(m_DOFProperties);
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			InitReliability(m_ChanceToJam);
 		}
@@ -136,9 +136,9 @@ class Weapon_Base extends Weapon
 	{
 		super.EEInit();
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleGun );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).Call( AssembleGun );
 		}
 	}
 	
@@ -340,7 +340,7 @@ class Weapon_Base extends Weapon
 
 	void EEFired(int muzzleType, int mode, string ammoType)
 	{		
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			ItemBase suppressor = GetAttachedSuppressor();
 			
@@ -357,7 +357,7 @@ class Weapon_Base extends Weapon
 		
 		//obsolete, replaced by C++ solution!
 /*
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			AddHealth("","Health",-m_DmgPerShot); //damages weapon
 			if (suppressor)
@@ -727,7 +727,7 @@ class Weapon_Base extends Weapon
 	 **/
 	static Weapon_Base CreateWeaponWithAmmo( string weaponType, string magazineType = "", int flags = WeaponWithAmmoFlags.CHAMBER )
     {   
-        Weapon_Base wpn = Weapon_Base.Cast(GetGame().CreateObjectEx( weaponType, vector.Zero, ECE_PLACE_ON_SURFACE ));
+        Weapon_Base wpn = Weapon_Base.Cast(g_Game.CreateObjectEx( weaponType, vector.Zero, ECE_PLACE_ON_SURFACE ));
     
         if ( !wpn )
 		{
@@ -962,7 +962,7 @@ class Weapon_Base extends Weapon
 					
 				if (chamber)
 				{
-					if (FillSpecificChamber(m))
+					if (FillSpecificChamber(m, 0, ammoType))
 					{
 						didSomething = true;
 						amountToChamber--;	
@@ -1029,7 +1029,7 @@ class Weapon_Base extends Weapon
 	{
 /*
 		array<Man> players();
-		GetGame().GetPlayers(players);
+		g_Game.GetPlayers(players);
 		
 		Man root = GetHierarchyRootPlayer();
 		
@@ -1055,7 +1055,7 @@ class Weapon_Base extends Weapon
 	
 	void OnFireModeChange(int fireMode)
 	{
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			EffectSound eff;
 			
@@ -1093,7 +1093,7 @@ class Weapon_Base extends Weapon
 	{
 		m_PropertyModifierObject = null;
 
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 		    // The server knows about all of its attachments
 		    ValidateAndRepair();
@@ -1166,7 +1166,7 @@ class Weapon_Base extends Weapon
 			InventoryLocation invLoc = new InventoryLocation();
 			mag.GetInventory().GetCurrentInventoryLocation(invLoc);
 				
-			GetGame().AddInventoryJunctureEx(null, this, invLoc, true, 1000);
+			g_Game.AddInventoryJunctureEx(null, this, invLoc, true, 1000);
 		}
 		*/
 			
@@ -1284,9 +1284,9 @@ class Weapon_Base extends Weapon
 	//! Initializes DOF properties for weapon's ironsight/optics cameras
 	bool InitDOFProperties(out array<float> temp_array)
 	{
-		if (GetGame().ConfigIsExisting("cfgWeapons " + GetType() + " PPDOFProperties"))
+		if (g_Game.ConfigIsExisting("cfgWeapons " + GetType() + " PPDOFProperties"))
 		{
-			GetGame().ConfigGetFloatArray("cfgWeapons " + GetType() + " PPDOFProperties", temp_array);
+			g_Game.ConfigGetFloatArray("cfgWeapons " + GetType() + " PPDOFProperties", temp_array);
 			return true;
 		}
 		return false;
@@ -1294,9 +1294,9 @@ class Weapon_Base extends Weapon
 	
 	bool InitReliability(out array<float> reliability_array)
 	{
-		if (GetGame().ConfigIsExisting("cfgWeapons " + GetType() + " Reliability ChanceToJam"))
+		if (g_Game.ConfigIsExisting("cfgWeapons " + GetType() + " Reliability ChanceToJam"))
 		{
-			GetGame().ConfigGetFloatArray("cfgWeapons " + GetType() + " Reliability ChanceToJam", reliability_array);
+			g_Game.ConfigGetFloatArray("cfgWeapons " + GetType() + " Reliability ChanceToJam", reliability_array);
 			return true;
 		}
 		return false;
@@ -1734,7 +1734,7 @@ class Weapon_Base extends Weapon
 			}
 			else
 			{
-				direction = GetGame().GetCurrentCameraDirection(); // exception for freelook. Much better this way!
+				direction = g_Game.GetCurrentCameraDirection(); // exception for freelook. Much better this way!
 			}
 		}
 		
@@ -2125,7 +2125,7 @@ class Weapon_Base extends Weapon
 	
 	void HideWeaponBarrel(bool state)
 	{
-		if ( !GetGame().IsDedicatedServer() )//hidden for client only
+		if ( !g_Game.IsDedicatedServer() )//hidden for client only
 		{
 			ItemOptics optics = GetAttachedOptics();
 			if ( optics && !optics.AllowsDOF() && m_weaponHideBarrelIdx != -1 )
@@ -2232,7 +2232,7 @@ class Weapon_Base extends Weapon
 		InventoryLocation il = new InventoryLocation();
 		if (mag)
 		{
-			return GetGame().AddInventoryJunctureEx(player, mag, il, false, timeoutMS);
+			return g_Game.AddInventoryJunctureEx(player, mag, il, false, timeoutMS);
 		}
 		
 		return true;
@@ -2243,7 +2243,7 @@ class Weapon_Base extends Weapon
 		Magazine mag = GetMagazine(GetCurrentMuzzle());
 		if (mag)
 		{
-			GetGame().ClearJunctureEx(player, mag);
+			g_Game.ClearJunctureEx(player, mag);
 		}
 	}
 	
@@ -2275,7 +2275,7 @@ class Weapon_Base extends Weapon
 		m_SyncStable = value;
 		if (!value)
 		{
-			m_SyncStableTime = GetGame().GetTickTime();
+			m_SyncStableTime = g_Game.GetTickTime();
 		}
 	}
 	

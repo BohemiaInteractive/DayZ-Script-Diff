@@ -34,7 +34,7 @@ class BatteryCharger extends ItemBase
 	
 	void BatteryCharger()
 	{
-		m_ChargeEnergyPerSecond = GetGame().ConfigGetFloat ("CfgVehicles " + GetType() + " ChargeEnergyPerSecond");
+		m_ChargeEnergyPerSecond = g_Game.ConfigGetFloat ("CfgVehicles " + GetType() + " ChargeEnergyPerSecond");
 		m_UpdateStatusLightsTimer = new Timer( CALL_CATEGORY_SYSTEM );
 		SwitchLightOff();
 		RegisterNetSyncVariableInt("m_BatteryEnergy0To100");
@@ -52,7 +52,7 @@ class BatteryCharger extends ItemBase
 		
 		if ( battery )
 		{
-			if ( GetGame().IsServer() )
+			if ( g_Game.IsServer() )
 			{
 				float battery_capacity = battery.GetCompEM().GetEnergyMax();
 				
@@ -94,7 +94,7 @@ class BatteryCharger extends ItemBase
 
 	override void OnWorkStart()
 	{
-		if ( GetGame().IsClient()  ||  !GetGame().IsMultiplayer() )
+		if ( g_Game.IsClient()  ||  !g_Game.IsMultiplayer() )
 		{
 			UpdateStatusLights();
 			m_UpdateStatusLightsTimer.Run( m_BlinkingStatusLightInterval/2 , this, "UpdateStatusLights", NULL, true);
@@ -103,7 +103,7 @@ class BatteryCharger extends ItemBase
 		
 	override void OnWorkStop()
 	{
-		if ( GetGame().IsClient()  ||  !GetGame().IsMultiplayer() )
+		if ( g_Game.IsClient()  ||  !g_Game.IsMultiplayer() )
 		{
 			UpdateStatusLights();
 			m_UpdateStatusLightsTimer.Stop();
@@ -112,7 +112,7 @@ class BatteryCharger extends ItemBase
 	
 	void UpdateStatusLights()
 	{
-		if ( GetGame().IsClient()  ||  !GetGame().IsMultiplayer() )
+		if ( g_Game.IsClient()  ||  !g_Game.IsMultiplayer() )
 		{
 			if (GetCompEM().IsWorking())
 			{
@@ -395,7 +395,7 @@ class BatteryCharger extends ItemBase
 		PlayerBase playerPB = PlayerBase.Cast(player);
 		foreach (string selection : selections)
 		{		
-			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			if (g_Game.IsMultiplayer() && g_Game.IsServer())
 				playerPB.GetHologramServer().SetSelectionToRefresh(selection);		
 			else
 				playerPB.GetHologramLocal().SetSelectionToRefresh(selection);

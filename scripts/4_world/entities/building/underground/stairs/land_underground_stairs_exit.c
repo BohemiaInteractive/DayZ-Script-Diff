@@ -52,7 +52,7 @@ class Land_Underground_Stairs_Exit : Land_Underground_EntranceBase
 				SetAnimationPhase("EntranceDoor",1);
 			break;
 			case EUndegroundEntranceState.OPENING_B:
-				GetGame().UpdatePathgraphRegionByObject(this);
+				g_Game.UpdatePathgraphRegionByObject(this);
 				RequestLatentTransition(AdjustTime(6), EUndegroundEntranceState.CLOSING_A);
 			break;
 			case EUndegroundEntranceState.CLOSING_A:
@@ -62,7 +62,7 @@ class Land_Underground_Stairs_Exit : Land_Underground_EntranceBase
 			break;
 			case EUndegroundEntranceState.CLOSING_B:
 				RequestLatentTransition(AdjustTime(1), EUndegroundEntranceState.CLOSED);
-				GetGame().UpdatePathgraphRegionByObject(this);	
+				g_Game.UpdatePathgraphRegionByObject(this);	
 			break;
 		}
 	}

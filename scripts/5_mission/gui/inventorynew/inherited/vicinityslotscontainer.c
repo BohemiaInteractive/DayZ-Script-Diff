@@ -75,9 +75,9 @@ class VicinitySlotsContainer: Container
 	
 	override bool CanCombineAmmo()
 	{
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase m_player = PlayerBase.Cast( g_Game.GetPlayer() );
 		ItemBase ent = ItemBase.Cast(  GetFocusedItem() );
-		ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+		ItemBase item_in_hands = ItemBase.Cast(	g_Game.GetPlayer().GetEntityInHands() );
 		ActionManagerClient amc;
 		Class.CastTo(amc, m_player.GetActionManager());
 
@@ -106,14 +106,14 @@ class VicinitySlotsContainer: Container
 				if (ent.IsTakeable())
 				{
 					InventoryLocation il = new InventoryLocation;
-					GetGame().GetPlayer().GetInventory().FindFreeLocationFor( ent, FindInventoryLocationType.CARGO, il );
-					if (il.IsValid() && GetGame().GetPlayer().GetInventory().LocationCanAddEntity( il ))
+					g_Game.GetPlayer().GetInventory().FindFreeLocationFor( ent, FindInventoryLocationType.CARGO, il );
+					if (il.IsValid() && g_Game.GetPlayer().GetInventory().LocationCanAddEntity( il ))
 					{
-						SplitItemUtils.TakeOrSplitToInventoryLocation( PlayerBase.Cast( GetGame().GetPlayer() ), il );
+						SplitItemUtils.TakeOrSplitToInventoryLocation( PlayerBase.Cast( g_Game.GetPlayer() ), il );
 						#ifdef PLATFORM_CONSOLE
-						if (GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER)
+						if (g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER)
 						{
-							GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(PrepareOwnedTooltipAfterItemTransfer, 100); //update item tooltip after vicinity item has been transfered and the current selected row gets populated with a new item						
+							g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(PrepareOwnedTooltipAfterItemTransfer, 100); //update item tooltip after vicinity item has been transfered and the current selected row gets populated with a new item						
 						}
 						#endif
 						return true;
@@ -128,7 +128,7 @@ class VicinitySlotsContainer: Container
 	{
 		ItemBase ent = ItemBase.Cast( GetFocusedItem() );
 		
-		ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+		ItemBase item_in_hands = ItemBase.Cast(	g_Game.GetPlayer().GetEntityInHands() );
 		
 		Icon hands_icon = ItemManager.GetInstance().GetHandsPreview().GetIcon();
 		
@@ -151,11 +151,11 @@ class VicinitySlotsContainer: Container
 			{
 				if( ent != selected_item)
 				{
-					if( selected_item && GetGame().GetPlayer().CanDropEntity( selected_item ) )
+					if( selected_item && g_Game.GetPlayer().CanDropEntity( selected_item ) )
 					{
 						bool draggable = false;
 		
-						PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+						PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 						draggable = !player.GetInventory().HasInventoryReservation( selected_item, null ) && !player.IsItemsToDelete();
 						draggable = draggable && selected_item.GetInventory().CanRemoveEntity();
 						
@@ -175,20 +175,20 @@ class VicinitySlotsContainer: Container
 			{
 				if( ent && ent.GetInventory().CanRemoveEntity())
 				{
-					EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+					EntityAI item_in_hands = g_Game.GetPlayer().GetEntityInHands();
 					if( item_in_hands )
 					{
 						if( GameInventory.CanSwapEntitiesEx( item_in_hands, ent ) )
 						{
-							GetGame().GetPlayer().PredictiveSwapEntities( item_in_hands, ent );
+							g_Game.GetPlayer().PredictiveSwapEntities( item_in_hands, ent );
 							return true;
 						}
 					}
 					else
 					{
-						if( GetGame().GetPlayer().GetHumanInventory().CanAddEntityInHands( ent ) )
+						if( g_Game.GetPlayer().GetHumanInventory().CanAddEntityInHands( ent ) )
 						{
-							GetGame().GetPlayer().PredictiveTakeEntityToHands( ent );
+							g_Game.GetPlayer().PredictiveTakeEntityToHands( ent );
 							return true;
 						}
 					}
@@ -360,7 +360,7 @@ class VicinitySlotsContainer: Container
 				return;
 			}
 			
-			if( GetGame().GetPlayer().GetInventory().HasInventoryReservation( item, null ) )
+			if( g_Game.GetPlayer().GetInventory().HasInventoryReservation( item, null ) )
 			{
 				return;
 			}
@@ -368,9 +368,9 @@ class VicinitySlotsContainer: Container
 			if( !item.GetInventory().CanRemoveEntity() )
 				return;
 			
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 					
-			if ( player.GetInventory().HasEntityInInventory( item ) && GetGame().GetPlayer().GetHumanInventory().CanAddEntityInHands( item ) )
+			if ( player.GetInventory().HasEntityInInventory( item ) && g_Game.GetPlayer().GetHumanInventory().CanAddEntityInHands( item ) )
 			{
 				player.PredictiveTakeEntityToHands( item );
 			}
@@ -385,9 +385,9 @@ class VicinitySlotsContainer: Container
 			}
 			
 			HideOwnedTooltip();
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(PrepareOwnedTooltipAfterItemTransferClick, 300); //update item tooltip after vicinity item has been transfered and the current selected row gets populated with a new item
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(PrepareOwnedTooltipAfterItemTransferClick, 300); //update item tooltip after vicinity item has been transfered and the current selected row gets populated with a new item
 			
-			InventoryMenu menu = InventoryMenu.Cast( GetGame().GetUIManager().FindMenu( MENU_INVENTORY ) );
+			InventoryMenu menu = InventoryMenu.Cast( g_Game.GetUIManager().FindMenu( MENU_INVENTORY ) );
 			if( menu )
 			{
 				menu.RefreshQuickbar();
@@ -555,7 +555,7 @@ class VicinitySlotsContainer: Container
 			return;	
 		}
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		ItemBase item = ItemBase.Cast(ipw.GetItem());
 		
 		if( item )

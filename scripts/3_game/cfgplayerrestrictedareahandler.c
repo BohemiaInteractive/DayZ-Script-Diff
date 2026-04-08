@@ -15,7 +15,7 @@ class CfgPlayerRestrictedAreaHandler
 		
 		m_Initialized = false;
 		
-		if (GetGame().ServerConfigGetInt( "enableCfgGameplayFile" )) //only reach into the CfgGameplayHandler if properly loaded!
+		if (g_Game.ServerConfigGetInt( "enableCfgGameplayFile" )) //only reach into the CfgGameplayHandler if properly loaded!
 			m_PRAFiles = CfgGameplayHandler.GetPlayerRestrictedAreaFiles();
 		else
 			m_PRAFiles = g_Game.GetMission().GetWorldData().GetDefaultPRAPaths();
@@ -24,7 +24,7 @@ class CfgPlayerRestrictedAreaHandler
 			return true;
 
 		string worldName;
-		GetGame().GetWorldName(worldName);
+		g_Game.GetWorldName(worldName);
 	
 		foreach (string filename : m_PRAFiles)
 		{
@@ -64,7 +64,7 @@ class CfgPlayerRestrictedAreaHandler
 	
 	static void SyncDataSend(notnull PlayerIdentity identity)
 	{
-		GetGame().RPCSingleParam(null, ERPCs.RPC_PLAYERRESTRICTEDAREAS_SYNC, new Param1<CfgPlayerRestrictedAreaJsonData>(m_Data), true, identity);
+		g_Game.RPCSingleParam(null, ERPCs.RPC_PLAYERRESTRICTEDAREAS_SYNC, new Param1<CfgPlayerRestrictedAreaJsonData>(m_Data), true, identity);
 	}
 	
 	static void OnRPC(ParamsReadContext ctx)
@@ -231,7 +231,7 @@ class CfgPlayerRestrictedAreaHandler
 					
 					foreach (array<float> vertexPos : polygonData)
 					{
-						polygonVectors.Insert(Vector(vertexPos[0],GetGame().SurfaceY(vertexPos[0],vertexPos[1]) + 2,vertexPos[1]));
+						polygonVectors.Insert(Vector(vertexPos[0],g_Game.SurfaceY(vertexPos[0],vertexPos[1]) + 2,vertexPos[1]));
 					}
 					
 					int count = polygonVectors.Count();

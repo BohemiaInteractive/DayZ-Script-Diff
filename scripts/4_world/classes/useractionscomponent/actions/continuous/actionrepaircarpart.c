@@ -48,7 +48,7 @@ class ActionRepairCarPart : ActionContinuousBase
 		if (!carDoor || !player)
 			return false;	
 		
-		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+		if (g_Game.IsMultiplayer() && g_Game.IsServer())
 			return true;
 			
 		if (carDoor)
@@ -80,7 +80,7 @@ class ActionRepairCarPart : ActionContinuousBase
 		Object tgObject	= action_data.m_Target.GetObject();
 		
 		string damageZone = RepairCarPartActionData.Cast(action_data).m_DamageZone;
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 			damageZone = m_CurrentDamageZone;
 		
 		if (tgObject)

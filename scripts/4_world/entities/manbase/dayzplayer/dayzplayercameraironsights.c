@@ -61,7 +61,7 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 	
 	void SetupSightEntities()
 	{		
-		EntityAI inHands = m_pPlayer.GetHumanInventory().GetEntityInHands();
+		EntityAI inHands = m_pPlayer.GetEntityInHands();
 		if (inHands)
 		{
 			m_weaponUsed = Weapon_Base.Cast(inHands);
@@ -137,7 +137,7 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 	{
 		//! update angles from input 
 		float min;
-		DayZPlayerImplement player = DayZPlayerImplement.Cast(GetGame().GetPlayer());
+		DayZPlayerImplement player = DayZPlayerImplement.Cast(g_Game.GetPlayer());
 		if (player && player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_RAISEDPRONE))
 			min = CONST_UD_MIN_BACK;
 		else
@@ -404,7 +404,7 @@ class DayZPlayerCameraOptics : DayZPlayerCameraIronsights
 		PlayerBase player = PlayerBase.Cast(m_pPlayer);
 		if (player && m_opticsUsed)
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(player.HideClothing,m_CameraPPDelay*1000,false,m_opticsUsed,true);
+			g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(player.HideClothing,m_CameraPPDelay*1000,false,m_opticsUsed,true);
 		}
 	}
 	

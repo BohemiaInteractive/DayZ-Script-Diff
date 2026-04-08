@@ -550,14 +550,14 @@ class EnProfilerTests : TestFramework
 		
 		// - CallFunction
 		int previousCountCF = EnProfiler.GetCountOfFunc("TestFuncCountDataHelper", Type(), true);
-		GetGame().GameScript.CallFunction(this, "TestFuncCountDataHelper", null, 0);
+		g_Game.GameScript.CallFunction(this, "TestFuncCountDataHelper", null, 0);
 		int postCountCF = EnProfiler.GetCountOfFunc("TestFuncCountDataHelper", Type(), true);
 		
 		int callCountCF = postCountCF - previousCountCF;
 		
 		// - CallFunctionParams
 		int previousCountCFP = EnProfiler.GetCountOfFunc("TestFuncCountDataHelper", Type(), true);
-		GetGame().GameScript.CallFunctionParams(this, "TestFuncCountDataHelper", null, null);
+		g_Game.GameScript.CallFunctionParams(this, "TestFuncCountDataHelper", null, null);
 		int postCountCFP =  EnProfiler.GetCountOfFunc("TestFuncCountDataHelper", Type(), true);
 		
 		int callCountCFP = postCountCFP - previousCountCFP;
@@ -571,7 +571,7 @@ class EnProfilerTests : TestFramework
 		
 		// - Call
 		int previousCountC = EnProfiler.GetCountOfFunc("TestFuncCountDataHelper", Type(), true);
-		GetGame().GameScript.Call(this, "TestFuncCountDataHelper", 0);
+		g_Game.GameScript.Call(this, "TestFuncCountDataHelper", 0);
 		int postCountC =  EnProfiler.GetCountOfFunc("TestFuncCountDataHelper", Type(), true);
 		
 		int callCountC = postCountC - previousCountC;
@@ -604,13 +604,13 @@ class EnProfilerTests : TestFramework
 		
 		// - proto
 		// Not tracked, so don't need to compare before and after, should always be 0
-		GetGame().GetHostName();
-		int callCountP = EnProfiler.GetCountOfFunc("GetHostName", GetGame().Type(), true);
+		g_Game.GetHostName();
+		int callCountP = EnProfiler.GetCountOfFunc("GetHostName", g_Game.Type(), true);
 		
 		// - proto native
 		// Not tracked, so don't need to compare before and after, should always be 0
-		GetGame().IsServer();
-		int callCountPN = EnProfiler.GetCountOfFunc("IsServer", GetGame().Type(), true);
+		g_Game.IsServer();
+		int callCountPN = EnProfiler.GetCountOfFunc("IsServer", g_Game.Type(), true);
 		
 		// - static proto native
 		// Not tracked, so don't need to compare before and after, should always be 0
@@ -706,41 +706,41 @@ class EnProfilerTests : TestFramework
 	// Snore
 	float Sleep(float timeS)
 	{		
-		float startTime = GetGame().GetTickTime();
-		while (GetGame().GetTickTime() - startTime < timeS)
+		float startTime = g_Game.GetTickTime();
+		while (g_Game.GetTickTime() - startTime < timeS)
 		{
 			// Zzz
 		}		
 		
-		return GetGame().GetTickTime() - startTime;
+		return g_Game.GetTickTime() - startTime;
 	}
 	
 	//---------------------------------------------------------------------------
 	// Example stress method
 	float StringFormat()
 	{		
-		float startTime = GetGame().GetTickTime();
+		float startTime = g_Game.GetTickTime();
 		
 		for (int i = 0; i < 1000; ++i)
 		{
 			string example = string.Format("This %1 is %2 just %3 an %4 example %5", i, Type(), this, startTime, "lorem ipsum 1 2 3");
 		}	
 		
-		return GetGame().GetTickTime() - startTime;
+		return g_Game.GetTickTime() - startTime;
 	}
 	
 	//---------------------------------------------------------------------------
 	// Example stress method 2
 	float StringConcat()
 	{		
-		float startTime = GetGame().GetTickTime();
+		float startTime = g_Game.GetTickTime();
 		
 		for (int i = 0; i < 1000; ++i)
 		{
 			string example = "This " + i + " is " + Type() + " just " + this + " an " + startTime + " example " + "lorem ipsum 1 2 3";
 		}
 		
-		return GetGame().GetTickTime() - startTime;
+		return g_Game.GetTickTime() - startTime;
 	}
 	
 	//---------------------------------------------------------------------------
@@ -762,32 +762,32 @@ class EPTHelperClass
 {
 	float Sleep2(float timeS)
 	{		
-		float startTime = GetGame().GetTickTime();
-		while (GetGame().GetTickTime() - startTime < timeS)
+		float startTime = g_Game.GetTickTime();
+		while (g_Game.GetTickTime() - startTime < timeS)
 		{
 			// Zzz
 		}		
 		
-		return GetGame().GetTickTime() - startTime;
+		return g_Game.GetTickTime() - startTime;
 	}
 	float SleepAgain(float timeS)
 	{		
-		float startTime = GetGame().GetTickTime();
-		while (GetGame().GetTickTime() - startTime < timeS)
+		float startTime = g_Game.GetTickTime();
+		while (g_Game.GetTickTime() - startTime < timeS)
 		{
 			// Zzz
 		}		
 		
-		return GetGame().GetTickTime() - startTime;
+		return g_Game.GetTickTime() - startTime;
 	}
 	
 	float DoEverything()
 	{
-		float startTime = GetGame().GetTickTime();
+		float startTime = g_Game.GetTickTime();
 		
 		Sleep2(3);
 		SleepAgain(3);
 		
-		return GetGame().GetTickTime() - startTime;
+		return g_Game.GetTickTime() - startTime;
 	}
 }

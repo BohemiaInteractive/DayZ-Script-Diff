@@ -4,10 +4,10 @@ class AmmoCamParams
 	{
 		string cfgPath = "CfgAmmo " + ammoType + " Effects" + " CameraShake ";
 		
-		m_Radius				= GetGame().ConfigGetFloat(cfgPath + "radius");
-		m_Strength				= GetGame().ConfigGetFloat(cfgPath + "strength");
-		m_ModifierClose			= GetGame().ConfigGetFloat(cfgPath + "modifierClose");
-		m_ModifierFar			= GetGame().ConfigGetFloat(cfgPath + "modifierFar");
+		m_Radius				= g_Game.ConfigGetFloat(cfgPath + "radius");
+		m_Strength				= g_Game.ConfigGetFloat(cfgPath + "strength");
+		m_ModifierClose			= g_Game.ConfigGetFloat(cfgPath + "modifierClose");
+		m_ModifierFar			= g_Game.ConfigGetFloat(cfgPath + "modifierFar");
 	}
 	
 	float m_Radius = 40;//the max distance at which the cam shake is triggered

@@ -22,7 +22,7 @@ class ClientData
 	
 	static void AddPlayerBase( Man player )
 	{
-		if ( m_PlayerBaseList && player != GetGame().GetPlayer() )
+		if ( m_PlayerBaseList && player != g_Game.GetPlayer() )
 			m_PlayerBaseList.Insert( player );
 	}
 	

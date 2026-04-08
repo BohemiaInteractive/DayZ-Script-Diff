@@ -86,7 +86,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 
 	void ~UIPopupScriptSceneManager()
 	{
-		GetGame().GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnUpdate);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnUpdate);
 	}
 	
 	//================================================
@@ -101,9 +101,9 @@ class UIPopupScriptSceneManager extends UIPopupScript
 		
 		if ( w == m_BtnCancel )
 		{
-			GetGame().GetWorld().SetDate( m_OrigYear, m_OrigMonth, m_OrigDay, m_OrigHour, m_OrigMinute );
+			g_Game.GetWorld().SetDate( m_OrigYear, m_OrigMonth, m_OrigDay, m_OrigHour, m_OrigMinute );
 
-			Weather weather = GetGame().GetWeather();
+			Weather weather = g_Game.GetWeather();
 			weather.GetOvercast().Set( m_OrigOvercast, 0, 1000 );
 			weather.GetRain().Set( m_OrigRain, 0, 1000 );
 			weather.GetFog().Set( m_OrigFog, 0, 1000 );
@@ -214,7 +214,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 			
 			UpdateSliderStartTime( m_CurrHour, m_CurrMinute );
 			
-			GetGame().GetWorld().SetDate( m_CurrYear, m_CurrMonth, m_CurrDay, m_CurrHour, m_CurrMinute );
+			g_Game.GetWorld().SetDate( m_CurrYear, m_CurrMonth, m_CurrDay, m_CurrHour, m_CurrMinute );
 			
 			return true;
 		}
@@ -241,14 +241,14 @@ class UIPopupScriptSceneManager extends UIPopupScript
 			
 			UpdateSliderStartDay( m_CurrMonth, m_CurrDay );
 			
-			GetGame().GetWorld().SetDate( m_CurrYear, m_CurrMonth, m_CurrDay, m_CurrHour, m_CurrMinute );
+			g_Game.GetWorld().SetDate( m_CurrYear, m_CurrMonth, m_CurrDay, m_CurrHour, m_CurrMinute );
 			
 			return true;
 		}
 		else if ( w == m_SldOvercast )
 		{		
 			m_CurrOvercast = m_SldOvercast.GetCurrent() * 0.01;		
-			GetGame().GetWeather().GetOvercast().Set( m_CurrOvercast, 0, 1000 );
+			g_Game.GetWeather().GetOvercast().Set( m_CurrOvercast, 0, 1000 );
 
 			UpdateSliderOvercast();
 			
@@ -257,7 +257,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 		else if ( w == m_SldRain )
 		{		
 			m_CurrRain = m_SldRain.GetCurrent() * 0.01;		
-			GetGame().GetWeather().GetRain().Set( m_CurrRain, 0, 1000 );
+			g_Game.GetWeather().GetRain().Set( m_CurrRain, 0, 1000 );
 			
 			UpdateSliderRain();
 			
@@ -266,7 +266,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 		else if ( w == m_SldFog )
 		{		
 			m_CurrFog = m_SldFog.GetCurrent() * 0.01;		
-			GetGame().GetWeather().GetFog().Set( m_CurrFog, 0, 1000 );
+			g_Game.GetWeather().GetFog().Set( m_CurrFog, 0, 1000 );
 
 			UpdateSliderFog();
 			
@@ -275,8 +275,8 @@ class UIPopupScriptSceneManager extends UIPopupScript
 		else if ( w == m_SldWindForce )
 		{		
 			float wind_slider = m_SldWindForce.GetCurrent() * 0.01;
-			m_CurrWindForce = GetGame().GetWeather().GetWindMaximumSpeed() * wind_slider;
-			GetGame().GetWeather().SetWindSpeed( m_CurrWindForce );
+			m_CurrWindForce = g_Game.GetWeather().GetWindMaximumSpeed() * wind_slider;
+			g_Game.GetWeather().SetWindSpeed( m_CurrWindForce );
 
 			UpdateSliderWindForce();
 			
@@ -319,9 +319,9 @@ class UIPopupScriptSceneManager extends UIPopupScript
 		//Log("Poup Scene Manager OnOpen");
 		
 		UpdateSceneList();
-		GetGame().GetWorld().GetDate( m_OrigYear, m_OrigMonth, m_OrigDay, m_OrigHour, m_OrigMinute );
+		g_Game.GetWorld().GetDate( m_OrigYear, m_OrigMonth, m_OrigDay, m_OrigHour, m_OrigMinute );
 
-		Weather weather = GetGame().GetWeather();
+		Weather weather = g_Game.GetWeather();
 		m_OrigOvercast = weather.GetOvercast().GetActual();
 		m_OrigRain = weather.GetRain().GetActual();
 		m_OrigFog = weather.GetFog().GetActual();
@@ -340,7 +340,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 		Print( "Year" );
 		Print( m_CurrYear );
 		
-		GetGame().GetUpdateQueue(CALL_CATEGORY_SYSTEM).Insert(this.OnUpdate);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_SYSTEM).Insert(this.OnUpdate);
 				
 		ResetSliders();
 	}
@@ -350,7 +350,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 	//================================================	
 	override void OnClose()
 	{		
-		GetGame().GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnUpdate);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.OnUpdate);
 	}
 	
 	//================================================
@@ -358,7 +358,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 	//================================================	
 	void OnUpdate()
 	{
-		m_TxtWeatherTime.SetText(GetGame().GetWeather().GetTime().ToString());
+		m_TxtWeatherTime.SetText(g_Game.GetWeather().GetTime().ToString());
 	}
 	
 	//================================================
@@ -367,7 +367,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 	void ResetSliders()
 	{
 		int year, month, day, hour, minute;
-		GetGame().GetWorld().GetDate( year, month, day, hour, minute );
+		g_Game.GetWorld().GetDate( year, month, day, hour, minute );
 		m_SldStartTime.SetCurrent( ((hour * 60) + minute) / 14.39 );
 		UpdateSliderStartTime( hour, minute );
 		
@@ -381,7 +381,7 @@ class UIPopupScriptSceneManager extends UIPopupScript
 		m_SldStartDay.SetCurrent( start_day / 3.64 );
 		UpdateSliderStartDay( month, day );
 
-		Weather weather = GetGame().GetWeather();
+		Weather weather = g_Game.GetWeather();
 
 		m_SldOvercast.SetCurrent(weather.GetOvercast().GetActual() * 100);
 		UpdateSliderOvercast();

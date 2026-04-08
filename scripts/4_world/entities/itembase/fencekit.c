@@ -20,11 +20,11 @@ class FenceKit extends KitBase
 	{
 		super.OnPlacementComplete( player, position, orientation );
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			//Create fence
 			
-			Fence fence = Fence.Cast( GetGame().CreateObjectEx( "Fence", GetPosition(), ECE_PLACE_ON_SURFACE ) );
+			Fence fence = Fence.Cast( g_Game.CreateObjectEx( "Fence", GetPosition(), ECE_PLACE_ON_SURFACE ) );
 			fence.SetPosition( position );
 			fence.SetOrientation( orientation );
 			
@@ -47,7 +47,7 @@ class FenceKit extends KitBase
 	{
 		if (!IsHologram())
 		{
-			ItemBase stick = ItemBase.Cast(GetGame().CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
+			ItemBase stick = ItemBase.Cast(g_Game.CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
 			MiscGameplayFunctions.TransferItemProperties(this, stick);
 			stick.SetQuantity(2);
 			Rope rope = Rope.Cast(item);

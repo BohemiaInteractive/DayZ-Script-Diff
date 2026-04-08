@@ -23,7 +23,7 @@ class InventoryQuickbar extends InventoryGridController
 			return;
 		}
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if ( !player )
 			return;
 		
@@ -65,7 +65,7 @@ class InventoryQuickbar extends InventoryGridController
 
 	void Remove(InventoryItem itemToRemove)
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 
 		for ( int i = 0; i < m_Grid.GetGridSize(); i++ )
 		{
@@ -161,7 +161,7 @@ class InventoryQuickbar extends InventoryGridController
 
 	override void OnItemDropReceived(InventoryGrid grid, Widget w, int row, int col)
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		ItemBase dragged_item = ItemBase.Cast( ItemManager.GetInstance().GetDraggedItem() );
 		
@@ -176,7 +176,7 @@ class InventoryQuickbar extends InventoryGridController
 		if(!dragged_item && iw)
 			dragged_item = ItemBase.Cast( iw.GetItem() );
 		
-		if(dragged_item && dragged_item.GetHierarchyRootPlayer()!= GetGame().GetPlayer())
+		if(dragged_item && dragged_item.GetHierarchyRootPlayer()!= g_Game.GetPlayer())
 			return;
 		
 		ItemBase quickbar_item = ItemBase.Cast( player.GetQuickBarEntity(col) );
@@ -196,7 +196,7 @@ class InventoryQuickbar extends InventoryGridController
 			}
 		}
 		m_DraggingIndex = INDEX_NOT_FOUND;
-		InventoryMenu menu = InventoryMenu.Cast( GetGame().GetUIManager().FindMenu(MENU_INVENTORY) );
+		InventoryMenu menu = InventoryMenu.Cast( g_Game.GetUIManager().FindMenu(MENU_INVENTORY) );
 		if ( menu )
 		{
 			menu.RefreshQuickbar();
@@ -207,13 +207,13 @@ class InventoryQuickbar extends InventoryGridController
 	{
 		if (m_DraggingIndex != INDEX_NOT_FOUND)
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			InventoryItem dragged_item = InventoryItem.Cast( player.GetQuickBarEntity(m_DraggingIndex) );
 			Remove(dragged_item);
 			m_DraggingIndex = INDEX_NOT_FOUND;
 		}
 		
-		InventoryMenu menu = InventoryMenu.Cast( GetGame().GetUIManager().FindMenu(MENU_INVENTORY) );
+		InventoryMenu menu = InventoryMenu.Cast( g_Game.GetUIManager().FindMenu(MENU_INVENTORY) );
 		if ( menu )
 		{
 			menu.RefreshQuickbar();
@@ -223,7 +223,7 @@ class InventoryQuickbar extends InventoryGridController
 
 	override void OnItemDrag(InventoryGrid grid, Widget w, int row, int col)
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );		
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );		
 		InventoryItem item = InventoryItem.Cast( player.GetQuickBarEntity(col) );
 		if (item)
 		{	
@@ -235,8 +235,8 @@ class InventoryQuickbar extends InventoryGridController
 	override int GetQuickbarItemColor( InventoryGrid grid, InventoryItem item )
 	{
 		int color = 0x0AFFFFFF;
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		EntityAI itemInHand = player.GetHumanInventory().GetEntityInHands();
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		EntityAI itemInHand = player.GetEntityInHands();
 		if ( player && itemInHand == item )
 		{
 			if ( player.GetHumanInventory().FindUserReservedLocationIndex(item) != -1 || grid.CanAddItemInHandToInventory() )
@@ -282,8 +282,8 @@ class InventoryQuickbar extends InventoryGridController
 	
 	override bool CanAddItemInHandToInventory()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		EntityAI itemInHand = player.GetHumanInventory().GetEntityInHands();
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		EntityAI itemInHand = player.GetEntityInHands();
 		return itemInHand && player.GetInventory().CanAddEntityToInventory(itemInHand);
 	}
 }

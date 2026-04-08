@@ -6,10 +6,10 @@ class MainMenuVideo extends UIScriptedMenu
 	
 	override Widget Init()
 	{
-		layoutRoot 				= GetGame().GetWorkspace().CreateWidgets("gui/layouts/xbox/video_menu.layout");
+		layoutRoot 				= g_Game.GetWorkspace().CreateWidgets("gui/layouts/xbox/video_menu.layout");
 		m_Video					= VideoWidget.Cast(layoutRoot.FindAnyWidget("video"));
 		
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		
 		m_Video.Load("video\\DayZ_onboarding_MASTER.mp4");
 			
@@ -28,8 +28,8 @@ class MainMenuVideo extends UIScriptedMenu
 	override void OnShow()
 	{
 		super.OnShow();
-		GetGame().GetUIManager().ShowUICursor(false);
-		GetGame().GetSoundScene().SetSoundVolume(0.0,0.0);
+		g_Game.GetUIManager().ShowUICursor(false);
+		g_Game.GetSoundScene().SetSoundVolume(0.0,0.0);
 		
 		UpdateControlsElements();
 	}
@@ -38,8 +38,8 @@ class MainMenuVideo extends UIScriptedMenu
 	override void OnHide()
 	{
 		super.OnHide();
-		GetGame().GetUIManager().ShowUICursor(true);
-		GetGame().GetSoundScene().SetSoundVolume(1.0,1.0);
+		g_Game.GetUIManager().ShowUICursor(true);
+		g_Game.GetSoundScene().SetSoundVolume(1.0,1.0);
 	}
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
@@ -52,7 +52,7 @@ class MainMenuVideo extends UIScriptedMenu
 		if (m_Video)
 		{
 			m_Video.Unload();
-			GetGame().GetUIManager().Back();
+			g_Game.GetUIManager().Back();
 		}
 	}
 	
@@ -102,7 +102,7 @@ class MainMenuVideo extends UIScriptedMenu
 		RichTextWidget toolbar_text = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
 		string text;
 		
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard() && GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.MOUSE_AND_KEYBOARD)
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard() && g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.MOUSE_AND_KEYBOARD)
 		{
 			text = "ESC " + "#menu_back";
 		}

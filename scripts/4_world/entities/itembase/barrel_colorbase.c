@@ -312,27 +312,27 @@ class Barrel_ColorBase : DeployableContainer_Base
 			item = GetInventory().GetCargo().GetItem(i);
 			if ( item.IsClothing() )
 			{	
-				if ( GetGame().ObjectIsKindOf (item, "LeatherSack_Natural") ) 
+				if ( g_Game.ObjectIsKindOf (item, "LeatherSack_Natural") ) 
 				{
 					item_name = "Bag_LeatherSack_"+color;
 				}
-				else if ( GetGame().ObjectIsKindOf (item, "LeatherStorageVest_Natural") )
+				else if ( g_Game.ObjectIsKindOf (item, "LeatherStorageVest_Natural") )
 				{
 					item_name = "Vest_LeatherStorage_"+color;
 				}
-				else if ( GetGame().ObjectIsKindOf (item, "LeatherJacket_Natural") ) 
+				else if ( g_Game.ObjectIsKindOf (item, "LeatherJacket_Natural") ) 
 				{
 					item_name = "Top_LeatherJacket_"+color;
 				}
-				else if ( GetGame().ObjectIsKindOf (item, "LeatherPants_Natural") ) 
+				else if ( g_Game.ObjectIsKindOf (item, "LeatherPants_Natural") ) 
 				{
 					item_name = "Pants_LeatherPants_"+color;
 				}
-				else if ( GetGame().ObjectIsKindOf (item, "LeatherMoccasinsShoes_Natural") ) 
+				else if ( g_Game.ObjectIsKindOf (item, "LeatherMoccasinsShoes_Natural") ) 
 				{
 					item_name = "Shoes_LeatherMoccasins_"+color;
 				}
-				else if ( GetGame().ObjectIsKindOf (item, "LeatherHat_Natural") ) 
+				else if ( g_Game.ObjectIsKindOf (item, "LeatherHat_Natural") ) 
 				{
 					item_name = "Hat_Leather_"+color;
 				}
@@ -365,7 +365,7 @@ class Barrel_ColorBase : DeployableContainer_Base
 			{	
 				if ( bleach_amount >= GameConstants.BAREL_BLEACH_PER_CLOTH )
 				{
-					if ( ( GetGame().ObjectIsKindOf (item, "TShirt_ColorBase") && !GetGame().ObjectIsKindOf (item, "TShirt_White") ) || ( GetGame().ObjectIsKindOf (item, "Armband_ColorBase") && !GetGame().ObjectIsKindOf (item, "Armband_White") ) ) //cannot bleach white items...?
+					if ( ( g_Game.ObjectIsKindOf (item, "TShirt_ColorBase") && !g_Game.ObjectIsKindOf (item, "TShirt_White") ) || ( g_Game.ObjectIsKindOf (item, "Armband_ColorBase") && !g_Game.ObjectIsKindOf (item, "Armband_White") ) ) //cannot bleach white items...?
 					{	
 						int index = item.GetType().IndexOf("_");
 						string itemtype = item.GetType().Substring( 0, index + 1 );
@@ -374,27 +374,27 @@ class Barrel_ColorBase : DeployableContainer_Base
 						
 						bleach_amount -= GameConstants.BAREL_BLEACH_PER_CLOTH;
 					}
-					if ( GetGame().IsKindOf (item.GetDisplayName(), "LeatherSack_ColorBase") ) 
+					if ( g_Game.IsKindOf (item.GetDisplayName(), "LeatherSack_ColorBase") ) 
 					{
 						item_name = "LeatherSack_Natural";
 					}
-					else if ( GetGame().IsKindOf (item.GetDisplayName(), "LeatherStorageVest_ColorBase") ) 
+					else if ( g_Game.IsKindOf (item.GetDisplayName(), "LeatherStorageVest_ColorBase") ) 
 					{
 						item_name = "LeatherStorageVest_Natural";
 					}
-					else if ( GetGame().IsKindOf (item.GetDisplayName(), "LeatherJacket_ColorBase") )
+					else if ( g_Game.IsKindOf (item.GetDisplayName(), "LeatherJacket_ColorBase") )
 					{
 						item_name = "LeatherJacket_Natural";
 					}
-					else if ( GetGame().IsKindOf (item.GetDisplayName(), "LeatherPants_ColorBase") ) 
+					else if ( g_Game.IsKindOf (item.GetDisplayName(), "LeatherPants_ColorBase") ) 
 					{
 						item_name = "LeatherPants_Natural";
 					}
-					else if ( GetGame().IsKindOf (item.GetDisplayName(), "LeatherMoccasinsShoes_ColorBase") ) 
+					else if ( g_Game.IsKindOf (item.GetDisplayName(), "LeatherMoccasinsShoes_ColorBase") ) 
 					{
 						item_name = "LeatherMoccasinsShoes_Natural";
 					}
-					else if ( GetGame().IsKindOf (item.GetDisplayName(), "LeatherHat_ColorBase") ) 
+					else if ( g_Game.IsKindOf (item.GetDisplayName(), "LeatherHat_ColorBase") ) 
 					{
 						item_name = "LeatherHat_Natural";
 					}
@@ -452,7 +452,7 @@ class Barrel_ColorBase : DeployableContainer_Base
 			item = GetInventory().GetCargo().GetItem(i);
 			if ( item.IsClothing() )
 			{
-				if ( GetGame().ObjectIsKindOf (item, "TShirt_White") || GetGame().ObjectIsKindOf (item, "Armband_White") )
+				if ( g_Game.ObjectIsKindOf (item, "TShirt_White") || g_Game.ObjectIsKindOf (item, "Armband_White") )
 				{
 					ItemBase itemIB = ItemBase.Cast(item);
 					int index = itemIB.GetType().IndexOf("_");
@@ -489,7 +489,7 @@ class Barrel_ColorBase : DeployableContainer_Base
 
 	override bool CanPutInCargo( EntityAI parent )
 	{
-		if ( !super.CanPutInCargo( parent ))
+		if ( !super.CanPutInCargo( parent ) || parent.Type().IsInherited(Barrel_ColorBase) || parent.Type().IsInherited(BarrelHoles_ColorBase))
 			return false;
 
 		if ( GetNumberOfItems() == 0 && !IsOpen() )

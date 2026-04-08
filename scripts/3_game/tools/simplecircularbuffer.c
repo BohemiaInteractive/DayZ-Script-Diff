@@ -9,14 +9,12 @@ class SimpleCircularBuffer<Class T>
 		\param pSize \p size of the buffer
 		\param pDefaultValue \p initial value stored in buffer
 	*/
-	void SimpleCircularBuffer(int pSize, T pDefaultValue = 0)
+	void SimpleCircularBuffer(int pSize, T pDefaultValue)
 	{
 		m_Size = pSize;
 
-		for (int i = 0; i < m_Size; i++)
-		{
+		for (int i = 0; i < m_Size; ++i)
 			m_Samples.Insert(pDefaultValue);
-		}
 	}
 
 	/**
@@ -32,16 +30,14 @@ class SimpleCircularBuffer<Class T>
     {
         m_Samples[m_Pointer++] = newSample;
         if (m_Pointer == m_Size)
-		{
             m_Pointer = 0;
-		}
     }
 
 	/**
 	\brief Returns value from given index
 		\param pIndex \p size of the buffer
 	*/
-	T Get(T pIndex)
+	T Get(int pIndex)
 	{
 		return m_Samples[pIndex];
 	}

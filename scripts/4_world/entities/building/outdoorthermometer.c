@@ -74,7 +74,7 @@ class OutdoorThermometer : House
 	{
 		OutdoorThermometerManager.Add(this);
 
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(LateInit, 250);
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(LateInit, 250);
 	}
 	
 	void ~OutdoorThermometer()
@@ -94,7 +94,7 @@ class OutdoorThermometer : House
 	
 	private void LateInit()
 	{
-		GetGame().RegisterNetworkStaticObject(this);
+		g_Game.RegisterNetworkStaticObject(this);
 		UpdateTemperature();
 	}
 }

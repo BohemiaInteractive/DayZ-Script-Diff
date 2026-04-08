@@ -35,31 +35,31 @@ class WeaponParticlesBase // This class represents every particle effect you see
 		m_Name = config_OnFire_entry;
 		
 		// ignoreIfSuppressed
-		m_IgnoreIfSuppressed = GetGame().ConfigGetFloat(string.Format("%1 ignoreIfSuppressed", m_Name));
+		m_IgnoreIfSuppressed = g_Game.ConfigGetFloat(string.Format("%1 ignoreIfSuppressed", m_Name));
 		
 		// onlyIfBoltIsOpen
-		m_OnlyIfBoltIsOpen = GetGame().ConfigGetFloat(string.Format("%1 onlyIfBoltIsOpen", m_Name));
+		m_OnlyIfBoltIsOpen = g_Game.ConfigGetFloat(string.Format("%1 onlyIfBoltIsOpen", m_Name));
 		
 		// illuminateWorld
-		m_IlluminateWorld = GetGame().ConfigGetFloat(string.Format("%1 illuminateWorld", m_Name));
+		m_IlluminateWorld = g_Game.ConfigGetFloat(string.Format("%1 illuminateWorld", m_Name));
 		
 		m_MuzzleIndex = -1;
-		if (GetGame().ConfigIsExisting(string.Format("%1 muzzleIndex", m_Name)))
+		if (g_Game.ConfigIsExisting(string.Format("%1 muzzleIndex", m_Name)))
 		{
-			m_MuzzleIndex = GetGame().ConfigGetInt(string.Format("%1 muzzleIndex", m_Name));
+			m_MuzzleIndex = g_Game.ConfigGetInt(string.Format("%1 muzzleIndex", m_Name));
 		}
 		
 		// onlyIfWeaponIs
 		m_OnlyIfWeaponIs = "";
-		GetGame().ConfigGetText(string.Format("%1 onlyIfWeaponIs", m_Name), m_OnlyIfWeaponIs);
+		g_Game.ConfigGetText(string.Format("%1 onlyIfWeaponIs", m_Name), m_OnlyIfWeaponIs);
 		
 		// onlyIfBulletIs
 		m_OnlyIfBulletIs = "";
-		GetGame().ConfigGetText(string.Format("%1 onlyIfBulletIs", m_Name), m_OnlyIfBulletIs);
+		g_Game.ConfigGetText(string.Format("%1 onlyIfBulletIs", m_Name), m_OnlyIfBulletIs);
 		
 		// onlyWithinHealthLabel[]
 		array<float> health_limit = new array<float>;
-		GetGame().ConfigGetFloatArray(string.Format("%1 onlyWithinHealthLabel", m_Name), health_limit);
+		g_Game.ConfigGetFloatArray(string.Format("%1 onlyWithinHealthLabel", m_Name), health_limit);
 		
 		if (health_limit.Count() == 2)
 		{
@@ -75,7 +75,7 @@ class WeaponParticlesBase // This class represents every particle effect you see
 		
 		// onlyWithinOverheatLimits[]
 		array<float> overheat_limit = new array<float>;
-		GetGame().ConfigGetFloatArray(string.Format("%1 onlyWithinOverheatLimits", m_Name), overheat_limit);
+		g_Game.ConfigGetFloatArray(string.Format("%1 onlyWithinOverheatLimits", m_Name), overheat_limit);
 		
 		if (overheat_limit.Count() == 2)
 		{
@@ -91,7 +91,7 @@ class WeaponParticlesBase // This class represents every particle effect you see
 		
 		// onlyWithinRainLimits[]
 		array<float> rain_limit = new array<float>;
-		GetGame().ConfigGetFloatArray(string.Format("%1 onlyWithinRainLimits", m_Name), rain_limit);
+		g_Game.ConfigGetFloatArray(string.Format("%1 onlyWithinRainLimits", m_Name), rain_limit);
 		
 		if (rain_limit.Count() == 2)
 		{
@@ -107,14 +107,14 @@ class WeaponParticlesBase // This class represents every particle effect you see
 		
 		// overridePoint
 		m_OverridePoint = "";
-		GetGame().ConfigGetText(string.Format("%1 overridePoint", m_Name), m_OverridePoint);
+		g_Game.ConfigGetText(string.Format("%1 overridePoint", m_Name), m_OverridePoint);
 		
 		if (m_OverridePoint == "")
 			m_OverridePoint = "Usti hlavne"; // default memory point name
 		
 		// overrideParticle
 		string particle_name = "";
-		GetGame().ConfigGetText( string.Format("%1 overrideParticle", m_Name), particle_name);
+		g_Game.ConfigGetText( string.Format("%1 overrideParticle", m_Name), particle_name);
 		
 		if (particle_name != "")
 		{
@@ -129,12 +129,12 @@ class WeaponParticlesBase // This class represents every particle effect you see
 		
 		// overrideDirectionPoint
 		m_OverrideDirectionPoint = "";
-		GetGame().ConfigGetText(string.Format("%1 overrideDirectionPoint", m_Name), m_OverrideDirectionPoint);
+		g_Game.ConfigGetText(string.Format("%1 overrideDirectionPoint", m_Name), m_OverrideDirectionPoint);
 		
 		if (m_OverrideDirectionPoint == "")
 		{
 			// overrideDirectionVector
-			vector test_ori = GetGame().ConfigGetVector(string.Format("%1 overrideDirectionVector", m_Name));
+			vector test_ori = g_Game.ConfigGetVector(string.Format("%1 overrideDirectionVector", m_Name));
 			
 			if (test_ori != vector.Zero)
 			{
@@ -144,7 +144,7 @@ class WeaponParticlesBase // This class represents every particle effect you see
 		
 		// positionOffset[]
 		array<float> v = new array<float>;
-		GetGame().ConfigGetFloatArray(string.Format("%1 positionOffset", m_Name), v);
+		g_Game.ConfigGetFloatArray(string.Format("%1 positionOffset", m_Name), v);
 		
 		if (v.Count() == 3)
 		{
@@ -164,7 +164,7 @@ class WeaponParticlesBase // This class represents every particle effect you see
 	// Thus weapon == muzzle_owner when this is called for a weapon, and weapon != muzzle_owner when this is called for a suppressor.
 	void OnActivate(ItemBase weapon, int muzzle_index, string ammoType, ItemBase muzzle_owner, ItemBase suppressor, string config_to_search)
 	{
-		if ( !GetGame().IsServer() || !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsServer() || !g_Game.IsMultiplayer() )
 		{
 			// Handle effect's parameters
 			if ( PrtTest.m_GunParticlesState ) // Check if particles are enabled by debug
@@ -179,7 +179,7 @@ class WeaponParticlesBase // This class represents every particle effect you see
 							{
 								if ( CheckOverheatingCondition( muzzle_owner.GetOverheatingCoef() ) ) // onlyWithinOverheatLimits
 								{
-									if ( CheckRainCondition( GetGame().GetWeather().GetRain().GetActual() ) ) // onlyWithinRainLimits
+									if ( CheckRainCondition( g_Game.GetWeather().GetRain().GetActual() ) ) // onlyWithinRainLimits
 									{
 										if ( m_OnlyIfBulletIs == ""  ||  m_OnlyIfBulletIs == ammoType ) // onlyIfBulletIs
 										{
@@ -289,7 +289,7 @@ class WeaponParticlesBase // This class represents every particle effect you see
 		
 		string particle_file = "";
 		string cfg_path = "CfgAmmo " + ammoType + " muzzleFlashParticle";
-		if (GetGame().ConfigGetText( cfg_path, particle_file))
+		if (g_Game.ConfigGetText( cfg_path, particle_file))
 			particle_id = ParticleList.GetParticleIDByName(particle_file);
 		
 		// Config is accessed only once because the data is saved into a map for repeated access.
@@ -366,7 +366,7 @@ class WeaponParticlesOnOverheating: WeaponParticlesBase
 	
 	override void OnDeactivate(ItemBase weapon, string ammoType, ItemBase muzzle_owner, ItemBase suppressor, string config_to_search)
 	{
-		if ( !GetGame().IsServer() || !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsServer() || !g_Game.IsMultiplayer() )
 		{
 			weapon.KillAllOverheatingParticles();
 		}

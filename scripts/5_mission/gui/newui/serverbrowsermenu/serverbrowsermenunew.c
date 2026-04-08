@@ -29,12 +29,12 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	override Widget Init()
 	{
 		#ifdef PLATFORM_CONSOLE
-		layoutRoot 		= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/xbox/server_browser.layout");
+		layoutRoot 		= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/xbox/server_browser.layout");
 		m_FavoritesTab  = new ServerBrowserFavoritesTabConsolePages(layoutRoot.FindAnyWidget("Tab_0"), this, TabType.FAVORITE);
 		m_OfficialTab	= new ServerBrowserTabConsolePages(layoutRoot.FindAnyWidget("Tab_1"), this, TabType.OFFICIAL);
 		m_CommunityTab	= new ServerBrowserTabConsolePages(layoutRoot.FindAnyWidget("Tab_2"), this, TabType.COMMUNITY);
 		#else
-		layoutRoot 		= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/pc/server_browser.layout");
+		layoutRoot 		= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/server_browser/pc/server_browser.layout");
 		m_FavoritesTab  = new ServerBrowserFavoritesTabPc(layoutRoot.FindAnyWidget("Tab_0"), this, TabType.FAVORITE);
 		m_OfficialTab	= new ServerBrowserTabPc(layoutRoot.FindAnyWidget("Tab_1"), this, TabType.OFFICIAL);
 		m_CommunityTab	= new ServerBrowserTabPc(layoutRoot.FindAnyWidget("Tab_2"), this, TabType.COMMUNITY);
@@ -59,11 +59,11 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		Refresh();
 		
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		
 		#ifdef PLATFORM_CONSOLE
 		version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
-		if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+		if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 		{
 			layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
 		}
@@ -94,11 +94,11 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		
 		PPERequesterBank.GetRequester(PPERequester_ServerBrowserBlur).Start(new Param1<float>(0.5));
 		
-		GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-		GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		g_Game.GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 
 		#ifdef PLATFORM_WINDOWS
-		GetGame().GetInput().EnableGamepad(false);
+		g_Game.GetInput().EnableGamepad(false);
 		#endif
 		
 		return layoutRoot;
@@ -111,7 +111,7 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		#endif
 
 		#ifdef PLATFORM_WINDOWS
-		GetGame().GetInput().EnableGamepad(true);
+		g_Game.GetInput().EnableGamepad(true);
 		#endif
 
 		OnlineServices.m_ServersAsyncInvoker.Remove(OnLoadServersAsync);
@@ -141,24 +141,34 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			UpdateControlsElements();
 			layoutRoot.FindAnyWidget("toolbar_bg").Show(true);
 			layoutRoot.FindAnyWidget("ConsoleControls").Show(true);
+			#ifdef PLATFORM_MSSTORE
+			layoutRoot.FindAnyWidget("PlayIcon0").Show(true);
+			layoutRoot.FindAnyWidget("BackIcon0").Show(true);
+			#else
 			layoutRoot.FindAnyWidget("PlayIcon0").Show(false);
 			layoutRoot.FindAnyWidget("BackIcon0").Show(false);
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+			#endif
+			if (g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
 			{
-				GetGame().GetUIManager().ShowUICursor(false);
+				g_Game.GetUIManager().ShowUICursor(false);
 			}
 			#endif
 		break;
 
 		default:
 			#ifdef PLATFORM_CONSOLE
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+			if (g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
 			{
 				layoutRoot.FindAnyWidget("toolbar_bg").Show(false);
 				layoutRoot.FindAnyWidget("ConsoleControls").Show(false);
+				#ifdef PLATFORM_MSSTORE
+				layoutRoot.FindAnyWidget("PlayIcon0").Show(false); // Not sure why these are inverted on consoles. Let's keep it safe per-platform.
+				layoutRoot.FindAnyWidget("BackIcon0").Show(false);
+				#else
 				layoutRoot.FindAnyWidget("PlayIcon0").Show(true);
 				layoutRoot.FindAnyWidget("BackIcon0").Show(true);
-				GetGame().GetUIManager().ShowUICursor(true);
+				#endif
+				g_Game.GetUIManager().ShowUICursor(true);
 			}
 			#endif
 		break;
@@ -276,15 +286,15 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			m_OfficialTab.Unfavorite(serverId);
 			m_CommunityTab.Unfavorite(serverId);
 			m_FavoritesTab.Unfavorite(serverId);
-#ifndef PLATFORM_CONSOLE
+			#ifndef PLATFORM_CONSOLE
 			m_LANTab.Unfavorite(serverId);
-#endif
+			#endif
 		}
 	}
 	
 	void Back()
 	{
-		GetGame().GetUIManager().Back();
+		g_Game.GetUIManager().Back();
 	}
 	
 	void ShowYButton(bool show)
@@ -472,9 +482,9 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		string name;
 		
 		#ifdef PLATFORM_CONSOLE
-			if (GetGame().GetUserManager() && GetGame().GetUserManager().GetSelectedUser())
+			if (g_Game.GetUserManager() && g_Game.GetUserManager().GetSelectedUser())
 			{
-				name = GetGame().GetUserManager().GetSelectedUser().GetName();
+				name = g_Game.GetUserManager().GetSelectedUser().GetName();
 				if (name.LengthUtf8() > 18)
 				{
 					name = name.SubstringUtf8(0, 18);
@@ -489,7 +499,7 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			m_PlayerName.SetText(name);
 		
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		#ifdef PLATFORM_CONSOLE
 			version = "#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")";
 		#else
@@ -499,7 +509,7 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	
 	override void Update(float timeslice)
 	{
-		if (!GetGame().GetUIManager().IsDialogVisible() && !GetDayZGame().IsConnecting())
+		if (!g_Game.GetUIManager().IsDialogVisible() && !GetDayZGame().IsConnecting())
 		{
 			if (GetUApi().GetInputByID(UAUIThumbRight).LocalPress())
 			{
@@ -607,10 +617,10 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	{		
 		m_Favorites = new TStringArray;
 		
-#ifdef PLATFORM_WINDOWS
+	#ifdef PLATFORM_WINDOWS
 		OnlineServices.GetFavoriteServers(m_Favorites);
-#else
-		GetGame().GetProfileStringList("SB_Favorites", m_Favorites);
+	#else
+		g_Game.GetProfileStringList("SB_Favorites", m_Favorites);
 		
 		// ignore any ids that do not follow correct IP:PORT format
 		for (int i = 0; i < m_Favorites.Count(); ++i)
@@ -635,13 +645,19 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 			m_Favorites.Resize(MAX_FAVORITES);
 			m_Favorites.Invert();
 		}
-#endif
+	#endif
+	}
+	
+	protected void SwitchToOfficalTab()
+	{
+		if (GetTabberUI())
+			GetTabberUI().PerformSwitchTab(TabType.OFFICIAL);
 	}
 	
 	void SaveFavoriteServersConsoles()
 	{
-		GetGame().SetProfileStringList("SB_Favorites", m_Favorites);
-		GetGame().SaveProfile();
+		g_Game.SetProfileStringList("SB_Favorites", m_Favorites);
+		g_Game.SaveProfile();
 	}
 	
 	void SelectServer(ServerBrowserEntry server)
@@ -699,7 +715,7 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 					//info.GoToStore();
 				}*/
 		
-				GetGame().GetUIManager().ShowDialog("#server_browser_connect_label", "#mod_detail_info_warning", 232, DBT_OK, DBB_NONE, DMT_INFO, GetGame().GetUIManager().GetMenu());
+				g_Game.GetUIManager().ShowDialog("#server_browser_connect_label", "#mod_detail_info_warning", 232, DBT_OK, DBB_NONE, DMT_INFO, g_Game.GetUIManager().GetMenu());
 				g_Game.GoBuyWorldDLC(mapNM);
 				return;
 			}
@@ -762,11 +778,7 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		LoadFavoriteServers();
 		SetServersLoadingTab(TabType.NONE);
 		
-		if (GetSelectedTab().IsNotInitialized())
-		{
-			GetSelectedTab().RefreshList();
-		}
-		
+		GetSelectedTab().RefreshList();
 		GetSelectedTab().Focus();
 		
 	#ifdef PLATFORM_CONSOLE
@@ -902,12 +914,22 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	override void OnShow()
 	{
 		super.OnShow();
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 	}
 	
 	override void OnHide()
 	{
 		super.OnHide();
 		PPERequesterBank.GetRequester(PPERequester_ServerBrowserBlur).Stop();
+	}
+	
+	TabberUI GetTabberUI()
+	{
+		return m_Tabber;
+	}
+	
+	ServerBrowserTab GetOfficalTab()
+	{
+		return m_OfficialTab;
 	}
 }

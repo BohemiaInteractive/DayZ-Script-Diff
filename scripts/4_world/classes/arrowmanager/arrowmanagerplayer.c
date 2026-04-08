@@ -158,7 +158,7 @@ class ArrowManagerPlayer : ArrowManagerBase
 					#endif
 					
 					typename arrowType = GetArrowTypeFromHash(hash);
-					EntityAI arrow = EntityAI.Cast(GetGame().CreateObjectEx(arrowType.ToString(), pos, spawnFlags));
+					EntityAI arrow = EntityAI.Cast(g_Game.CreateObjectEx(arrowType.ToString(), pos, spawnFlags));
 					if (arrow)
 					{
 						arrow.SetQuantityToMinimum();

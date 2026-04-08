@@ -89,7 +89,7 @@ class SlotsIcon: LayoutHolder
 		m_RadialIconClosed		= m_MainWidget.FindAnyWidget( "RadialIconClosed" + index );
 		m_RadialIcon			= m_MainWidget.FindAnyWidget( "RadialIcon" + index );
 		
-		m_ReservedWidget = Widget.Cast( GetGame().GetWorkspace().CreateWidgets( "gui/layouts/inventory_new/reserved_icon.layout", m_MainWidget ) );
+		m_ReservedWidget = Widget.Cast( g_Game.GetWorkspace().CreateWidgets( "gui/layouts/inventory_new/reserved_icon.layout", m_MainWidget ) );
 		m_ReservedWidget.Show(false);
 		
 		WidgetEventHandler.GetInstance().RegisterOnMouseEnter( m_PanelWidget,  this, "MouseEnter" );
@@ -481,7 +481,7 @@ class SlotsIcon: LayoutHolder
 		if( m_HasItemSize )
 		{
 			int size_x, size_y;
-			GetGame().GetInventoryItemSize( InventoryItem.Cast( m_Obj ), size_x, size_y );
+			g_Game.GetInventoryItemSize( InventoryItem.Cast( m_Obj ), size_x, size_y );
 			
 			m_ItemSizePanel.Show( true );
 			m_ItemSizeWidget.SetText( ( size_x * size_y ).ToString() );
@@ -720,7 +720,7 @@ class SlotsIcon: LayoutHolder
 	{
 		#ifdef PLATFORM_CONSOLE
 		string config = "CfgVehicles " + m_Obj.GetType() + " GUIInventoryAttachmentsProps";
-		m_HasItemSize = ( InventoryItem.Cast( m_Obj ) && !GetGame().ConfigIsExisting( config ) );
+		m_HasItemSize = ( InventoryItem.Cast( m_Obj ) && !g_Game.ConfigIsExisting( config ) );
 		#else
 		m_HasItemSize = false;
 		#endif
@@ -810,7 +810,7 @@ class SlotsIcon: LayoutHolder
 			return;
 		}
 		ItemManager.GetInstance().HideDropzones();
-		if( m_Obj.GetHierarchyRootPlayer() == GetGame().GetPlayer() )
+		if( m_Obj.GetHierarchyRootPlayer() == g_Game.GetPlayer() )
 		{
 			ItemManager.GetInstance().GetRightDropzone().SetAlpha( 1 );
 		}
@@ -826,7 +826,7 @@ class SlotsIcon: LayoutHolder
 
 		if( m_Item )
 		{
-			GetGame().GetInventoryItemSize( m_Item, icon_x, icon_y );
+			g_Game.GetInventoryItemSize( m_Item, icon_x, icon_y );
 			
 			CargoContainer c_parent = CargoContainer.Cast( m_Parent );
 			HandsPreview h_parent = HandsPreview.Cast( m_Parent );

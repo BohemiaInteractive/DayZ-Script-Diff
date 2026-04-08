@@ -411,7 +411,7 @@ class PluginConfigScene extends PluginConfigHandler
 		scene.SetInitTime(cfg_time.GetValue());
 		
 		int year, month, day, hour, minute;
-		GetGame().GetWorld().GetDate( year, month, day, hour, minute );
+		g_Game.GetWorld().GetDate( year, month, day, hour, minute );
 		
 		// Load Year
 		if ( ParamExist(PARAM_YEAR) )
@@ -509,7 +509,7 @@ class PluginConfigScene extends PluginConfigHandler
 	void LoadScenePlayer(SceneData scene)
 	{
 		// Only in local game (without server, (GetGame.GetPlayer is null on server! -> by design)
-		if ( GetGame().GetPlayer() != NULL )
+		if ( g_Game.GetPlayer() != NULL )
 		{
 			CfgParamArray 	cfg_player 		= CfgParamArray.Cast( GetParamByName(PARAM_PLAYER, CFG_TYPE_ARRAY) );			
 			CfgParamString	cfg_ply_pos		= CfgParamString.Cast( cfg_player.GetValueByName(PARAM_OBJ_POS, CFG_TYPE_STRING) );
@@ -518,7 +518,7 @@ class PluginConfigScene extends PluginConfigHandler
 			CfgParamString	cfg_ply_iscr	= CfgParamString.Cast( cfg_player.GetValueByName(PARAM_OBJ_ISCR, CFG_TYPE_STRING) );
 			
 			ScenePlayer scn_player = scene.CreateScenePlayer();
-			scn_player.LinkEntityAI(GetGame().GetPlayer());
+			scn_player.LinkEntityAI(g_Game.GetPlayer());
 			
 			if ( PluginSceneManager.GetInstance().GetLoadPlayerPos() )
 			{

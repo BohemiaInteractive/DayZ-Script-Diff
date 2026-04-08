@@ -11,7 +11,7 @@ class RainProcurementComponentBase : Managed
 	{
 		m_ProcuringItem = procuringItem;
 		Reset();
-		m_Handler = MissionBaseWorld.Cast(GetGame().GetMission()).GetRainProcurementHandler();
+		m_Handler = MissionBaseWorld.Cast(g_Game.GetMission()).GetRainProcurementHandler();
 	}
 	
 	//! Called on server to queue rain procurement (on next cycle end)

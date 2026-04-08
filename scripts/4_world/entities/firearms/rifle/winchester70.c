@@ -9,7 +9,8 @@ class Winchester70_Base : BoltActionRifle_InnerMagazine_Base
 	//Debug menu Spawn Ground Special
 	override void OnDebugSpawn()
 	{
-		super.OnDebugSpawn();
+		SpawnAmmo("Ammo_308Win",SAMF_DEFAULT);
+		
 		EntityAI entity;
 		if ( Class.CastTo(entity, this) )
 		{

@@ -8,9 +8,9 @@ class HiddenSelectionsData
 	
 	void HiddenSelectionsData(string type)
 	{
-		GetGame().ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelections", 			type), m_HiddenSelections );
-		GetGame().ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsTextures", 	type), m_HiddenSelectionsTextures );
-		GetGame().ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsMaterials", type), m_HiddenSelectionsMaterials );
+		g_Game.ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelections", 			type), m_HiddenSelections );
+		g_Game.ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsTextures", 	type), m_HiddenSelectionsTextures );
+		g_Game.ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsMaterials", type), m_HiddenSelectionsMaterials );
 		
 		for (int i = 0; i < m_HiddenSelections.Count(); ++i)
 			m_HiddenSelectionNameToIndex.Insert(m_HiddenSelections[i], i);
@@ -38,21 +38,21 @@ class HiddenSelectionsData
 	static array<string> GetHiddenSelectionsConfig(string type)
 	{
 		array<string> hiddenSelections = new array<string>;
-		GetGame().ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelections", type), hiddenSelections );
+		g_Game.ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelections", type), hiddenSelections );
 		return hiddenSelections;
 	}
 	
 	static array<string> GetHiddenSelectionsTexturesConfig(string type)
 	{
 		array<string> hiddenSelectionsTextures = new array<string>;
-		GetGame().ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsTextures", type), hiddenSelectionsTextures );
+		g_Game.ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsTextures", type), hiddenSelectionsTextures );
 		return hiddenSelectionsTextures;
 	}
 	
 	static array<string> GetHiddenSelectionsMaterialsConfig(string type)
 	{
 		array<string> hiddenSelectionsMaterials = new array<string>;
-		GetGame().ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsMaterials", type), hiddenSelectionsMaterials );
+		g_Game.ConfigGetTextArray( string.Format("CfgVehicles %1 hiddenSelectionsMaterials", type), hiddenSelectionsMaterials );
 		return hiddenSelectionsMaterials;
 	}
 }

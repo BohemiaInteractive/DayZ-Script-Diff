@@ -10,7 +10,7 @@ class BookMenu extends UIScriptedMenu
 
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_book.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_book.layout");
 		Class.CastTo(m_content, layoutRoot.FindAnyWidget("HtmlWidget"));
 		Class.CastTo(m_author, layoutRoot.FindAnyWidget("Author")); 
 		Class.CastTo(m_title, layoutRoot.FindAnyWidget("Title"));

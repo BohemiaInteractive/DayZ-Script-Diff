@@ -183,8 +183,8 @@ class FireworksLauncherClientEvent : FireworksLauncherClientEventBase
 		#endif
 		m_ParticleAfterBurnEnd.Stop();
 
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayExplosionSound, GetSoundDelay(), false);
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnLight, GetLightDelay(), false);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayExplosionSound, GetSoundDelay(), false);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnLight, GetLightDelay(), false);
 		m_ParticleExplosion = ParticleManager.GetInstance().PlayInWorld(GetExplParticleFromSequence(), GetExplosionPosition());
 		
 		RequestSecondaryExplosion();
@@ -196,7 +196,7 @@ class FireworksLauncherClientEvent : FireworksLauncherClientEventBase
 		if (m_RemainingExplosions> 0)
 		{
 			m_RemainingExplosions--;
-			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnSecondaryExplosion, GetSecondaryExplosionDelay(), false);
+			g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnSecondaryExplosion, GetSecondaryExplosionDelay(), false);
 		}
 	}
 	
@@ -310,8 +310,8 @@ class FireworksLauncherClientEventSecondary : FireworksLauncherClientEvent
 	
 	override void OnExplode()
 	{
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayExplosionSound, GetSoundDelay(), false);
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnLight, GetLightDelay(), false);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( PlayExplosionSound, GetSoundDelay(), false);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SpawnLight, GetLightDelay(), false);
 		m_ParticleExplosion = ParticleManager.GetInstance().PlayInWorld(GetExplParticleFromSequence(), GetExplosionPosition());
 	}
 }
@@ -392,7 +392,7 @@ class FireworksLauncher: FireworksBase
 	override protected void OnPlacementComplete(Man player, vector position = "0 0 0", vector orientation = "0 0 0")
 	{
 		super.OnPlacementComplete(player, position, orientation);
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (GetState() == EFireworksState.DEFAULT)
 			{
@@ -503,7 +503,7 @@ class FireworksLauncher: FireworksBase
 	protected void OnFuseIgnitedServer()
 	{
 		int state = EFireworksState.FIRING;
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SetState, GetFuseDelay()*1000, false, state);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( SetState, GetFuseDelay()*1000, false, state);
 	}
 	
 	protected void OnFuseIgnitedClient()
@@ -678,7 +678,7 @@ class FireworksLauncher: FireworksBase
 	{
 		string debug_output;
 		
-		if( GetGame().IsDedicatedServer())
+		if( g_Game.IsDedicatedServer())
 		{
 			debug_output+= EnumTools.EnumToString(EFireworksState, m_State) +"\n";
 			debug_output+= "m_Index:" + m_Index +"\n";

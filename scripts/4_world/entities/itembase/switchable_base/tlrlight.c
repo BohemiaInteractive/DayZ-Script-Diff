@@ -28,7 +28,7 @@ class TLRLight extends Switchable_Base
 
 	override void OnWorkStart()
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if ( !g_Game.IsServer()  ||  !g_Game.IsMultiplayer() ) // Client side
 		{
 			m_Light = PistollightLight.Cast(  ScriptedLightBase.CreateLight(PistollightLight, "0 0 0", 0.08)  ); // Position is zero because light is attached on parent immediately.
 			m_Light.AttachOnMemoryPoint(this, "beamStart", "beamEnd");
@@ -39,7 +39,7 @@ class TLRLight extends Switchable_Base
 
 	override void OnWork( float consumed_energy )
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if ( !g_Game.IsServer()  ||  !g_Game.IsMultiplayer() ) // Client side
 		{
 			Battery9V battery = Battery9V.Cast( GetCompEM().GetEnergySource() );
 			
@@ -61,7 +61,7 @@ class TLRLight extends Switchable_Base
 	
 	override void OnWorkStop()
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // Client side
+		if ( !g_Game.IsServer()  ||  !g_Game.IsMultiplayer() ) // Client side
 		{
 			if (m_Light)
 				m_Light.FadeOut();

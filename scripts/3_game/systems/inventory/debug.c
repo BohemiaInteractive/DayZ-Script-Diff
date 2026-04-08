@@ -30,3 +30,20 @@ void inventoryDebugPrint (string s)
 	Print(string.Format("%1", s));
 #endif
 }
+
+#ifdef DIAG_DEVELOPER
+class InventoryDebug
+{
+	static bool m_IsHandAckEnable;
+	
+	static void SetHandAckEnable(bool enable)
+	{
+		m_IsHandAckEnable = enable;
+	}
+	
+	static bool IsHandAckEnable()
+	{
+		return m_IsHandAckEnable;
+	}
+}
+#endif

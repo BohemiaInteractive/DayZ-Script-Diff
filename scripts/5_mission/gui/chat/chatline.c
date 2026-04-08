@@ -22,7 +22,7 @@ class ChatLine
 
 	void ChatLine(Widget root_widget)
 	{
-		m_RootWidget	= GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_chat_item.layout", root_widget);
+		m_RootWidget	= g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_chat_item.layout", root_widget);
 	
 		m_NameWidget	= TextWidget.Cast( m_RootWidget.FindAnyWidget( "ChatItemSenderWidget" ) );
 		m_TextWidget	= TextWidget.Cast( m_RootWidget.FindAnyWidget( "ChatItemTextWidget" ) );

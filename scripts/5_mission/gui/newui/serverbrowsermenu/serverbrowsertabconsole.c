@@ -9,7 +9,7 @@ class ServerBrowserTabConsole extends ServerBrowserTab
 	
 	protected override void Construct( Widget parent, ServerBrowserMenuNew menu, TabType type )
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/new_ui/server_browser/xbox/server_browser_tab.layout", parent );
+		m_Root = g_Game.GetWorkspace().CreateWidgets( "gui/layouts/new_ui/server_browser/xbox/server_browser_tab.layout", parent );
 		
 		m_ServerListScroller	= ScrollWidget.Cast( m_Root.FindAnyWidget( "server_list_scroller" ) );
 		m_ServerList			= SpacerBaseWidget.Cast( m_ServerListScroller.FindAnyWidget( "server_list_content" ) );

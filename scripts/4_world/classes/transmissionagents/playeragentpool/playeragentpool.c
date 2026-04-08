@@ -75,7 +75,7 @@ class PlayerAgentPool
 				if (temporaryResistance > 1.0)
 					continue;
 
-				if (m_Player.IsAntibioticsActive() && !m_PluginTransmissionAgents.GrowDuringMedicalDrugsAttack(agentId, EMedicalDrugsType.CHELATION, m_Player))
+				if (m_Player.IsAntibioticsActive() && !m_PluginTransmissionAgents.GrowDuringMedicalDrugsAttack(agentId, EMedicalDrugsType.ANTIBIOTICS, m_Player))
 					continue;
 				
 				if (m_Player.IsChelationActive() && !m_PluginTransmissionAgents.GrowDuringMedicalDrugsAttack(agentId, EMedicalDrugsType.CHELATION, m_Player))
@@ -322,10 +322,15 @@ class PlayerAgentPool
 	 */	
 	void AntibioticsAttack(float attack_value)
 	{
+		AntibioticsAttackEx(attack_value, EMedicalDrugsType.ANTIBIOTICS);
+	}
+	
+	void AntibioticsAttackEx(float attack_value, EMedicalDrugsType drugType)
+	{
 		for (int i = 0; i < m_VirusPool.Count(); ++i)
 		{
 			int agentId = m_VirusPool.GetKey(i);
-			float resistance = 1 - m_PluginTransmissionAgents.GetAgentAntiboticsResistanceEx(agentId, m_Player);
+			float resistance = 1 - m_PluginTransmissionAgents.GetAgentSpecificDrugResistance(agentId, drugType, m_Player);
 			float delta = attack_value * resistance;
 			float actualAgentCount = m_VirusPool.Get(agentId);
 			float newAgentCount = actualAgentCount - delta;
@@ -334,25 +339,21 @@ class PlayerAgentPool
 	}
 
 	/**
-	 * \brief Drugs treatment logic
+	 * \brief Drugs attack calculation
 	 * @param drugType Type of drug used (see EMedicalDrugsType enum)
-	 * @param attack_value Strength of the drug attack
+	 * @param attackValue Strength of the drug attack
 	 */	
 	void DrugsAttack(EMedicalDrugsType drugType, float attackValue)
 	{
-		switch (drugType)
+		for (int i = 0; i < m_VirusPool.Count(); ++i)
 		{
-			case EMedicalDrugsType.ANTIBIOTICS:
-				AntibioticsAttack(attackValue);
-				break;
-			default:
-				for (int i = 0; i < m_VirusPool.Count(); ++i)
-				{
-					int agentId = m_VirusPool.GetKey(i);
-					float actualAgentCount = m_VirusPool.Get(agentId);
-					float newAgentCount = actualAgentCount - attackValue;
-					SetAgentCount(agentId, newAgentCount);
-				}		
+			//getting the immunity of the agent and exiting the function early if that agent is immune to the drug
+			int agentId = m_VirusPool.GetKey(i);	
+			float resistance = 1 - m_PluginTransmissionAgents.GetAgentSpecificDrugResistance(agentId, drugType, m_Player);
+			float delta = attackValue * resistance;
+			float actualAgentCount = m_VirusPool.Get(agentId);
+			float newAgentCount = actualAgentCount - delta;
+			SetAgentCount(agentId, newAgentCount);
 		}
 	}
 

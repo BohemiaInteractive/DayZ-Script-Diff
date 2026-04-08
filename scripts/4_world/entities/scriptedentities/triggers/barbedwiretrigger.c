@@ -18,7 +18,7 @@ class BarbedWireTrigger : Trigger
 				{
 					// When a player touches the barbed wire
 					string cfg = "CfgVehicles BarbedWire barbedWireShockEnergyConsumption";
-					float needed_energy = GetGame().ConfigGetFloat(cfg);
+					float needed_energy = g_Game.ConfigGetFloat(cfg);
 					bool energy_consumed = m_ParentBarbedWire.GetCompEM().ConsumeEnergy(needed_energy);
 					PlayerBase player = PlayerBase.Cast( obj );
 					

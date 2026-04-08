@@ -2,7 +2,7 @@ class PileOfWoodenPlanks extends ItemBase
 {	
 	void PileOfWoodenPlanks()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			SetAllowDamage(false);
 		}

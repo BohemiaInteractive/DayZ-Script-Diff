@@ -38,7 +38,7 @@ class MissionBase extends MissionBaseWorld
 			#endif
 		AmmoTypesAPI.Init();
 		#endif
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			OutdoorThermometerManager.Init();
 		}
@@ -59,13 +59,13 @@ class MissionBase extends MissionBaseWorld
 		
 		PluginManagerDelete();
 		
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			GetDayZGame().GetAnalyticsClient().UnregisterEvents();	
 		}
 		TriggerEffectManager.DestroyInstance();
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			OutdoorThermometerManager.Cleanup();
 		}
@@ -88,7 +88,7 @@ class MissionBase extends MissionBaseWorld
 		#ifndef SERVER
 		m_DynamicMusicPlayer.OnUpdate(timeslice);
 		#endif
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			OutdoorThermometerManager.Update(timeslice);
 		}
@@ -104,7 +104,7 @@ class MissionBase extends MissionBaseWorld
 	void InitialiseWorldData()
 	{
 		string worldName = "empty";
-		GetGame().GetWorldName(worldName);
+		g_Game.GetWorldName(worldName);
 		worldName.ToLower();
 		
 		switch (worldName)
@@ -356,7 +356,7 @@ class MissionBase extends MissionBaseWorld
 	
 	void DumpCurrentUILayout()
 	{
-		UIScriptedMenu current_menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu current_menu = g_Game.GetUIManager().GetMenu();
 		
 		if ( current_menu )
 		{
@@ -422,7 +422,7 @@ class MissionBase extends MissionBaseWorld
 	{
 		super.OnKeyRelease(key);
 		
-		if ( GetGame().IsDebug() )
+		if ( g_Game.IsDebug() )
 		{
 			if ( PluginKeyBinding.instance != NULL )
 			{
@@ -435,7 +435,7 @@ class MissionBase extends MissionBaseWorld
 	{
 		super.OnMouseButtonPress(button);
 		
-		if ( GetGame().IsDebug() )
+		if ( g_Game.IsDebug() )
 		{
 			if ( PluginKeyBinding.instance != NULL )
 			{
@@ -448,7 +448,7 @@ class MissionBase extends MissionBaseWorld
 	{
 		super.OnMouseButtonRelease(button);
 		
-		if ( GetGame().IsDebug() )
+		if ( g_Game.IsDebug() )
 		{
 			if ( PluginKeyBinding.instance != NULL )
 			{
@@ -461,11 +461,11 @@ class MissionBase extends MissionBaseWorld
 	{
 		if ( PluginDeveloper.GetInstance() )
 		{
-			if ( GetGame().IsServer() && !GetGame().IsMultiplayer() )
+			if ( g_Game.IsServer() && !g_Game.IsMultiplayer() )
 			{
 				PluginDeveloper.GetInstance().PrintLogClient(msg_log);
 			}
-			else if ( GetGame().IsMultiplayer() && GetGame().IsClient() )
+			else if ( g_Game.IsMultiplayer() && g_Game.IsClient() )
 			{
 				PluginDeveloper.GetInstance().PrintLogClient(msg_log);
 			}

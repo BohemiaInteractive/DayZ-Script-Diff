@@ -126,7 +126,7 @@ class PluginDayzPlayerDebug_OtherCmds
 
 	void Death_Start()
 	{
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if( !player )
 			return;
 
@@ -142,7 +142,7 @@ class PluginDayzPlayerDebug_OtherCmds
 
 	void Hit_Start()
 	{
-		DayZPlayer player = DayZPlayer.Cast( GetGame().GetPlayer() );
+		DayZPlayer player = DayZPlayer.Cast( g_Game.GetPlayer() );
 		if( !player )
 			return;
 
@@ -160,7 +160,7 @@ class PluginDayzPlayerDebug_OtherCmds
 
 	void Uncon_Start()
 	{
-		DayZPlayerImplement player = DayZPlayerImplement.Cast( GetGame().GetPlayer() );
+		DayZPlayerImplement player = DayZPlayerImplement.Cast( g_Game.GetPlayer() );
 		if( !player )
 			return;
 		
@@ -172,7 +172,7 @@ class PluginDayzPlayerDebug_OtherCmds
 	
 	void Uncon_End()
 	{
-		DayZPlayerImplement player = DayZPlayerImplement.Cast( GetGame().GetPlayer() );
+		DayZPlayerImplement player = DayZPlayerImplement.Cast( g_Game.GetPlayer() );
 		if( !player )
 			return;
 		

@@ -23,7 +23,7 @@ class RightArea: Container
 		m_MainWidget		= m_MainWidget.FindAnyWidget("Content");
 		//m_ContentParent	= m_RootWidget.FindAnyWidget("ContentParent");
 		m_PlayerContainer	= new PlayerContainer(this, false);
-		m_PlayerContainer.SetPlayer(PlayerBase.Cast(GetGame().GetPlayer()));
+		m_PlayerContainer.SetPlayer(PlayerBase.Cast(g_Game.GetPlayer()));
 		m_Body.Insert(m_PlayerContainer);
 		m_ActiveIndex = 0;
 		m_ProcessGridMovement = false;

@@ -20,7 +20,7 @@ class OptionSelector extends OptionSelectorBase
 			m_SelectedOptionIndex = current_index;
 		}
 		
-		m_Root						= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_selector.layout", parent);
+		m_Root						= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_selector.layout", parent);
 		#ifdef PLATFORM_CONSOLE
 			m_Parent				= parent.GetParent().GetParent();
 		#else

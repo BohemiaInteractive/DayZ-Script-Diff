@@ -11,7 +11,7 @@ class CAContinuousQuantityExtinguish : CAContinuousQuantityRepeat
 	
 	override void CalcAndSetQuantity(ActionData action_data)
 	{	
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if ( m_SpentUnits )
 			{

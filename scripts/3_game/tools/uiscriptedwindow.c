@@ -73,7 +73,7 @@ class UIScriptedWindow
 	
 	void CloseWindow()
 	{
-		GetGame().GetUIManager().CloseWindow( m_Id );
+		g_Game.GetUIManager().CloseWindow( m_Id );
 	}
 	
 	//--- EVENTS

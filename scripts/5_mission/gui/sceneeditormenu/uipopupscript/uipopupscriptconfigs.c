@@ -45,7 +45,7 @@ class UIPopupScriptConfigs extends UIPopupScript
 		{
 			string item_name;
 			text_listbox_widget.GetItemText( selected_row_index, 0, item_name );
-			GetGame().CopyToClipboard( item_name );
+			g_Game.CopyToClipboard( item_name );
 		}
 	}
 	

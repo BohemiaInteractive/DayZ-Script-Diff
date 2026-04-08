@@ -7,10 +7,6 @@ class BloodNotfr: NotifierBase
 	protected const float 	INC_TRESHOLD_MED 	= 3;
 	protected const float 	INC_TRESHOLD_HIGH	= 6;
 
-	void BloodNotfr(NotifiersManager manager)
-	{
-	}
-
 	override int GetNotifierType()
 	{
 		return eNotifiers.NTF_BLOOD;
@@ -28,15 +24,12 @@ class BloodNotfr: NotifierBase
 		if( dis_elm )
 		{
 			dis_elm.SetTendency(tendency);
-			dis_elm.SetSeriousnessLevel(blood_level);
-			
-		}
-		
+			dis_elm.SetSeriousnessLevel(blood_level);		
+		}	
 	}
 
 	override float GetObservedValue()
 	{
-		float blood = m_Player.GetHealth("GlobalHealth","Blood");
-		return blood;
+		return m_Player.GetHealth("GlobalHealth", "Blood");
 	}
 };

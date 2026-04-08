@@ -16,7 +16,7 @@ class UIPopupScriptPresetRename extends UIPopupScript
 	
 	override void OnOpen( Param param )
 	{
-		SceneEditorMenu menu = SceneEditorMenu.Cast( GetGame().GetUIManager().GetMenu() );
+		SceneEditorMenu menu = SceneEditorMenu.Cast( g_Game.GetUIManager().GetMenu() );
 		m_Editbox.SetText( menu.GetCurrentPresetName() );	
 	}
 
@@ -30,7 +30,7 @@ class UIPopupScriptPresetRename extends UIPopupScript
 		if ( w == m_BtnOk )
 		{
 			EditBoxWidget wgt_text = EditBoxWidget.Cast( m_WgtRoot.FindAnyWidget("fld_ppp_pr_new_name") );		
-			SceneEditorMenu menu = SceneEditorMenu.Cast( GetGame().GetUIManager().GetMenu() );
+			SceneEditorMenu menu = SceneEditorMenu.Cast( g_Game.GetUIManager().GetMenu() );
 			menu.RenamePreset( wgt_text.GetText() );
 			menu.RefreshLists();
 			

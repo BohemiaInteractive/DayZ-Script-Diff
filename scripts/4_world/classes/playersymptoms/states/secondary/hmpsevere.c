@@ -23,7 +23,7 @@ class HMP3Symptom extends SymptomBase
 		m_SyncToClient = true;
 		m_MaxCount = 1;
 		
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			Class.CastTo(m_Requester,PPERequesterBank.GetRequester(PPERequesterBank.REQ_HMP_GHOST));
 		}

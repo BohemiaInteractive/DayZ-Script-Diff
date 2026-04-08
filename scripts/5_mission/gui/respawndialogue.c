@@ -18,7 +18,7 @@ class RespawnDialogue extends UIScriptedMenu
 	
 	override Widget Init()
 	{
-		layoutRoot 					= GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_respawn_dialogue.layout");
+		layoutRoot 					= g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_respawn_dialogue.layout");
 		m_DetailsRoot 				= layoutRoot.FindAnyWidget("menu_details_tooltip");
 		m_DetailsLabel				= TextWidget.Cast(m_DetailsRoot.FindAnyWidget("menu_details_label"));
 		m_DetailsText				= RichTextWidget.Cast(m_DetailsRoot.FindAnyWidget("menu_details_tooltip_content"));
@@ -33,7 +33,7 @@ class RespawnDialogue extends UIScriptedMenu
 	{
 		super.Update(timeslice);
 		
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		bool playerAlive = player && player.GetPlayerState() == EPlayerStates.ALIVE;
 		if (playerAlive && !player.IsUnconscious())
 		{
@@ -204,15 +204,15 @@ class RespawnDialogue extends UIScriptedMenu
 	
 	bool RequestRespawn(bool random)
 	{
-		IngameHud.Cast(GetGame().GetMission().GetHud()).InitBadgesAndNotifiers();
-		Man player = GetGame().GetPlayer();
+		IngameHud.Cast(g_Game.GetMission().GetHud()).InitBadgesAndNotifiers();
+		Man player = g_Game.GetPlayer();
 		if (player && (player.GetPlayerState() == EPlayerStates.ALIVE && !player.IsUnconscious()))
 			return false;
 		
 		#ifdef PLATFORM_CONSOLE
-		InGameMenuXbox menu_ingame = InGameMenuXbox.Cast(GetGame().GetUIManager().FindMenu(MENU_INGAME));
+		InGameMenuXbox menu_ingame = InGameMenuXbox.Cast(g_Game.GetUIManager().FindMenu(MENU_INGAME));
 		#else
-		InGameMenu menu_ingame = InGameMenu.Cast(GetGame().GetUIManager().FindMenu(MENU_INGAME));
+		InGameMenu menu_ingame = InGameMenu.Cast(g_Game.GetUIManager().FindMenu(MENU_INGAME));
 		#endif
 		
 		if (!menu_ingame)

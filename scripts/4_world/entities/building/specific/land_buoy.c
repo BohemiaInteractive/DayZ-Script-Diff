@@ -6,7 +6,7 @@ class Land_Buoy extends House
 	{
 		super.DeferredInit();
 		
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			m_Light = BuoyLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(BuoyLight, this, "light_01"));
 			m_Light.SetSelectionID(GetHiddenSelectionIndex("Glass"));
@@ -29,7 +29,7 @@ class Land_MooringBuoy extends House
 	{
 		super.DeferredInit();
 		
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			m_Light = MooringBuoyLight.Cast(ScriptedLightBase.CreateLightAtObjMemoryPoint(MooringBuoyLight, this, "light_01"));
 			m_Light.SetSelectionID(GetHiddenSelectionIndex("Glass"));

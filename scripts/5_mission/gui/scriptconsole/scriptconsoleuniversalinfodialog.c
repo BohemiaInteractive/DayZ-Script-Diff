@@ -12,7 +12,7 @@ class ScriptConsoleUniversalInfoDialog extends UIScriptedMenu
 
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_universal_info_dialog.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/script_console/script_console_universal_info_dialog.layout");
 		m_Label = TextWidget.Cast(layoutRoot.FindAnyWidget("Label"));
 		m_ContentScroll = ScrollWidget.Cast(layoutRoot.FindAnyWidget("ContentScroll"));
 		m_ContentScroll.VScrollToPos(0);
@@ -28,7 +28,7 @@ class ScriptConsoleUniversalInfoDialog extends UIScriptedMenu
 		
 		if (w.GetUserID() == IDC_OK)
 		{
-			UIScriptedMenu consoleMenu = GetGame().GetUIManager().FindMenu(MENU_SCRIPTCONSOLE);
+			UIScriptedMenu consoleMenu = g_Game.GetUIManager().FindMenu(MENU_SCRIPTCONSOLE);
 			if (consoleMenu != null)
 			{
 				ScriptConsole scriptedConsole = ScriptConsole.Cast(consoleMenu);

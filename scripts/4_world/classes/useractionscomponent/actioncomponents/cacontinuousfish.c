@@ -14,7 +14,7 @@ class CAContinuousFish : CAContinuousBase
 			return UA_ERROR;
 		}
 		
-		if ( GetGame().IsServer() ) 
+		if ( g_Game.IsServer() ) 
 		{
 			m_Rod.AddPull(action_data.m_Player.GetDeltaT());
 		}

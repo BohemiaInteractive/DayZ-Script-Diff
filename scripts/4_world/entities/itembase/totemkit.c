@@ -35,10 +35,10 @@ class TerritoryFlagKit extends KitBase
 	{
 		super.OnPlacementComplete( player, position, orientation );
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			//Create TerritoryFlag
-			TerritoryFlag totem = TerritoryFlag.Cast( GetGame().CreateObjectEx( "TerritoryFlag", GetPosition(), ECE_PLACE_ON_SURFACE ) );
+			TerritoryFlag totem = TerritoryFlag.Cast( g_Game.CreateObjectEx( "TerritoryFlag", GetPosition(), ECE_PLACE_ON_SURFACE ) );
 			totem.SetPosition( position );
 			totem.SetOrientation( orientation );
 			
@@ -51,7 +51,7 @@ class TerritoryFlagKit extends KitBase
 	{
 		if (!IsHologram())
 		{
-			ItemBase stick = ItemBase.Cast(GetGame().CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
+			ItemBase stick = ItemBase.Cast(g_Game.CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
 			MiscGameplayFunctions.TransferItemProperties(this, stick);
 			stick.SetQuantity(3);
 			Rope rope = Rope.Cast(item);

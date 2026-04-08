@@ -37,7 +37,7 @@ class ActionRepairVehiclePartBase : ActionContinuousBase
 		Object tgObject = action_data.m_Target.GetObject();
 		
 		string damageZone = RepairVehiclePartActionData.Cast(action_data).m_DamageZone;
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 			damageZone = m_CurrentDamageZone;
 
 		if (tgObject && damageZone != "")

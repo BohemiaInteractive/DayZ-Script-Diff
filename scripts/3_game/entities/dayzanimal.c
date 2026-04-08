@@ -138,20 +138,22 @@ class DayZCreature extends EntityAI
 		if (super.OnAction(action_id, player, ctx))
 			return true;
 
-		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		if (g_Game.IsClient() || !g_Game.IsMultiplayer())
 		{
 			switch (action_id)
 			{
 				case EActions.GIZMO_OBJECT:
-					GetGame().GizmoSelectObject(this);
+					if (GetGizmoApi())
+						GetGizmoApi().SelectObject(this);
 					return true;
 				case EActions.GIZMO_PHYSICS:
-					GetGame().GizmoSelectPhysics(GetPhysics());
+					if (GetGizmoApi())
+						GetGizmoApi().SelectPhysics(GetPhysics());
 					return true;
 			}
 		}
 	
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			switch (action_id)
 			{
@@ -251,7 +253,7 @@ class DayZCreatureAI extends DayZCreature
 		}
 		
 		so.SetPosition(GetPosition());
-		AbstractWave wave = GetGame().GetSoundScene().Play3D(so, sob);
+		AbstractWave wave = g_Game.GetSoundScene().Play3D(so, sob);
 		return wave;
 	}
 	
@@ -303,7 +305,7 @@ class DayZCreatureAI extends DayZCreature
 			Print("Error registering anim. event (SoundVoice)");
 		}
 
-		if(!GetGame().IsDedicatedServer())
+		if(!g_Game.IsDedicatedServer())
 		{
 			if(!RegisterAnimationEvent("Step", "OnStepEvent"))
 			{
@@ -319,7 +321,7 @@ class DayZCreatureAI extends DayZCreature
 	
 	private void ProcessSoundEvent(AnimSoundEvent sound_event)
 	{
-		if(!GetGame().IsDedicatedServer())
+		if(!g_Game.IsDedicatedServer())
 		{
 			SoundObjectBuilder objectBuilder = sound_event.GetSoundBuilder();
 			if(NULL != objectBuilder)
@@ -330,16 +332,16 @@ class DayZCreatureAI extends DayZCreature
 			}
 		}
 		
-		if(GetGame().IsServer())
+		if(g_Game.IsServer())
 		{
 			if(sound_event.m_NoiseParams != NULL)
-				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, GetGame().GetWeather().GetNoiseReductionByWeather());
+				g_Game.GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, g_Game.GetWeather().GetNoiseReductionByWeather());
 		}
 	}
 
 	private void ProcessSoundVoiceEvent(AnimSoundVoiceEvent sound_event)
 	{
-		if(!GetGame().IsDedicatedServer())
+		if(!g_Game.IsDedicatedServer())
 		{
 			SoundObjectBuilder objectBuilder = sound_event.GetSoundBuilder();
 			if(NULL != objectBuilder)
@@ -351,10 +353,10 @@ class DayZCreatureAI extends DayZCreature
 			}
 		}
 		
-		if(GetGame().IsServer())
+		if(g_Game.IsServer())
 		{
 			if(sound_event.m_NoiseParams != NULL)
-				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, GetGame().GetWeather().GetNoiseReductionByWeather());
+				g_Game.GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, g_Game.GetWeather().GetNoiseReductionByWeather());
 		}
 	}
 
@@ -379,7 +381,7 @@ class DayZCreatureAI extends DayZCreature
 	
 	protected void AttenuateSoundIfNecessary(SoundObject soundObject)
 	{
-		if (GetGame().GetPlayer() != NULL && (IsSoundInsideBuilding() != GetGame().GetPlayer().IsSoundInsideBuilding() || GetGame().GetPlayer().IsCameraInsideVehicle()))
+		if (g_Game.GetPlayer() != NULL && (IsSoundInsideBuilding() != g_Game.GetPlayer().IsSoundInsideBuilding() || g_Game.GetPlayer().IsCameraInsideVehicle()))
 		{
 			soundObject.SetKind(WaveKind.WAVEATTALWAYS);
 		}
@@ -438,7 +440,7 @@ class DayZCreatureAI extends DayZCreature
 		UAInterface input = m_CinematicPlayer.GetInputInterface();
 			
 		DayZCreatureAIInputController controller;
-		GetGame().GameScript.CallFunction(this, "GetInputController", controller, 0);
+		g_Game.GameScript.CallFunction(this, "GetInputController", controller, 0);
 			
 		if (!input || !controller)
 		{
@@ -945,7 +947,7 @@ class DayZAnimal extends DayZCreatureAI
 		Transport transport = Transport.Cast(other);
 		if( transport )
 		{
-			if ( GetGame().IsServer() )
+			if ( g_Game.IsServer() )
 			{
 				RegisterTransportHit(transport);
 			}			

@@ -33,7 +33,7 @@ class PortableGasLamp extends ItemBase
 	
 	override void OnWorkStart()
 	{
-		if ( !GetGame().IsServer()  ||  !GetGame().IsMultiplayer() ) // client side
+		if ( !g_Game.IsServer()  ||  !g_Game.IsMultiplayer() ) // client side
 		{
 			m_Light = PortableGasLampLight.Cast( ScriptedLightBase.CreateLight( PortableGasLampLight, "0 0 0") );
 			m_Light.AttachOnMemoryPoint(this, "light");

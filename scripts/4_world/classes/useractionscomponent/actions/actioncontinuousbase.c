@@ -126,7 +126,7 @@ class ActionContinuousBase : AnimatedActionBase
 		m_CallbackClass = ActionContinuousBaseCB;
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_EAT;
 		
-		if( GetGame() && GetGame().IsServer() )
+		if( g_Game && g_Game.IsServer() )
 		{
 			m_AdminLog = PluginAdminLog.Cast( GetPlugin(PluginAdminLog) );
 		}
@@ -212,7 +212,7 @@ class ActionContinuousBase : AnimatedActionBase
 			Debug.ActionLog("Time stamp: " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnStartAnimationLoop", action_data.m_Player.ToString() );
 		}
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			OnStartAnimationLoopServer(action_data);
 		}
@@ -229,7 +229,7 @@ class ActionContinuousBase : AnimatedActionBase
 		{
 			Debug.ActionLog("Time stamp: " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnEndAnimationLoop", action_data.m_Player.ToString() );
 		}
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			OnEndAnimationLoopServer(action_data);
 		}
@@ -246,7 +246,7 @@ class ActionContinuousBase : AnimatedActionBase
 		{
 			Debug.ActionLog("Time stamp: " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnFinishProgress", action_data.m_Player.ToString() );
 		}	
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			OnFinishProgressServer(action_data);
 			

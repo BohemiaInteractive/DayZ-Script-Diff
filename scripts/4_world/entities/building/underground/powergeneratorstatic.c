@@ -81,7 +81,7 @@ class PowerGeneratorStatic : PowerGeneratorBase
 			m_Parent.OnGeneratorStart();
 		}
 		
-		if (!GetGame().IsServer())
+		if (!g_Game.IsServer())
 			return;
 		
 		for (int i = 1; i <= SWITCH_COUNT; i++)
@@ -99,7 +99,7 @@ class PowerGeneratorStatic : PowerGeneratorBase
 			m_Parent.OnGeneratorStop();
 		}
 		
-		if (!GetGame().IsServer())
+		if (!g_Game.IsServer())
 			return;
 		
 		for (int i = 1; i <= SWITCH_COUNT; i++)
@@ -112,7 +112,7 @@ class PowerGeneratorStatic : PowerGeneratorBase
 	{
 		super.SetLowEnergyState(state);
 		
-		if (GetGame().IsServer() && m_Parent)
+		if (g_Game.IsServer() && m_Parent)
 		{
 			Land_WarheadStorage_Main bunker = m_Parent.GetClosestBunker();
 			if (bunker)
@@ -197,7 +197,7 @@ class PowerGeneratorStatic : PowerGeneratorBase
 	override void EEOnAfterLoad()
 	{
 		// Does this part actually do anything?
-		Land_WarheadStorage_PowerStation powerStation = Land_WarheadStorage_PowerStation.Cast(GetGame().GetEntityByPersitentID(m_ParentID1, m_ParentID2, m_ParentID3, m_ParentID4));
+		Land_WarheadStorage_PowerStation powerStation = Land_WarheadStorage_PowerStation.Cast(g_Game.GetEntityByPersitentID(m_ParentID1, m_ParentID2, m_ParentID3, m_ParentID4));
 		if (powerStation)
 		{
 			PowerGeneratorStatic otherGenerator = powerStation.GetPowerGenerator();

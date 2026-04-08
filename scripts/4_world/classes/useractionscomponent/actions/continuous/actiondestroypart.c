@@ -101,7 +101,7 @@ class ActionDestroyPart: ActionContinuousBase
 					//Camera check (client-only)
 					if ( camera_check )
 					{
-						if ( GetGame() && ( !GetGame().IsDedicatedServer() ) )
+						if ( g_Game && ( !g_Game.IsDedicatedServer() ) )
 						{
 							if ( !base_building.IsFacingCamera( part_name ) )
 							{

@@ -79,7 +79,7 @@ class FilteringBottle: Bottle_Base
 	
 	override void AffectLiquidContainerOnFill(int liquid_type, float amount)
 	{
-		float liquidTemperature = GetGame().GetMission().GetWorldData().GetLiquidTypeEnviroTemperature(liquid_type);
+		float liquidTemperature = g_Game.GetMission().GetWorldData().GetLiquidTypeEnviroTemperature(liquid_type);
 		if (liquidTemperature >= GetTemperatureMax())
 		{
 			float temperatureDiff = liquidTemperature - GetTemperature();

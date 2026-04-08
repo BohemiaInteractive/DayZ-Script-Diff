@@ -1,44 +1,44 @@
-class CarWheelType extends InventoryItemType
+class CarWheelType : ItemBaseType
 {
 };
 
-class ClothingType extends InventoryItemType
+class ClothingType : ItemBaseType
 {
 };
 
-class ItemWatchType extends InventoryItemType
+class ItemWatchType : ItemBaseType
 {
 };
 
-class ItemRadioType extends InventoryItemType
+class ItemRadioType : ItemBaseType
 {
 };
 
-class ItemTransmitterType extends ClothingType
+class ItemTransmitterType : ClothingType
 {
 };
 
-class ItemMegaphoneType extends InventoryItemType
+class ItemMegaphoneType : ItemBaseType
 {
 };
 
-class ItemCompassType extends InventoryItemType
+class ItemCompassType : ItemBaseType
 {
 };
 
-class ItemGPSType extends InventoryItemType
+class ItemGPSType : ItemBaseType
 {
 };
 
-class ItemMapType extends InventoryItemType
+class ItemMapType : ItemBaseType
 {
 };
 
-class ItemBookType extends InventoryItemType
+class ItemBookType : ItemBaseType
 {
 };
 
-class ItemOpticsType extends InventoryItemType
+class ItemOpticsType : ItemBaseType
 {
 	/*
 		Optics2D or in other words the model provided by `modelOptics` when `useModelOptics` is
@@ -70,22 +70,26 @@ class ItemOpticsType extends InventoryItemType
 	proto native bool IsUsingOptics2DModel();
 };
 
-class ItemBarrelType extends InventoryItemType
+class ItemBarrelType : ItemBaseType
 {
 };
 
-class ItemSuppressorType extends InventoryItemType
+class ItemSuppressorType : ItemBaseType
 {
 };
 
-class ItemGrenadeType extends InventoryItemType
+class ItemGrenadeType : ItemBaseType
 {
 };
 
-class WeaponType extends InventoryItemType
+class WeaponType : ItemBaseType
 {
 };
 
-class MagazineType extends InventoryItemType
+class UnderSlugLauncherType : WeaponType
+{
+};
+
+class MagazineType : ItemBaseType
 {
 };

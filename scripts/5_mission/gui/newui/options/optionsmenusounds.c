@@ -36,7 +36,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	
 	void OptionsMenuSounds(Widget parent, Widget details_root, GameOptions options, OptionsMenu menu)
 	{
-		m_Root					= GetGame().GetWorkspace().CreateWidgets(GetLayoutName(), parent);
+		m_Root					= g_Game.GetWorkspace().CreateWidgets(GetLayoutName(), parent);
 		m_DetailsRoot			= details_root;
 		m_DetailsBodyDefault 		= m_DetailsRoot.FindAnyWidget("settings_details_body");
 		m_DetailsBodyConnectivity 	= m_DetailsRoot.FindAnyWidget("settings_details_body_connectivity");
@@ -52,7 +52,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		m_VOIPThresholdOption	= NumericOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_VON_THRESHOLD_SLIDER));
 		m_InputModeOption		= ListOptionsAccess.Cast(m_Options.GetOptionByType(OptionAccessType.AT_OPTIONS_VON_INPUT_MODE));
 		
-		m_MissionGameplay		= MissionGameplay.Cast(GetGame().GetMission());
+		m_MissionGameplay		= MissionGameplay.Cast(g_Game.GetMission());
 		m_VonManager 			= VONManager.GetInstance();
 		m_AudioLevelTimer = new Timer();
 		m_AudioLevelTimer.Run(0.1, this, "UpdateAudioLevel", null, true); 
@@ -109,13 +109,12 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		
 		m_Root.SetHandler(this);
 		
-		CGame game = GetGame();
-		m_WasMicCapturing = game.IsMicCapturing();
+		m_WasMicCapturing = g_Game.IsMicCapturing();
 
 		// do not enable mic capture if user in party chat
-		if (!game.IsInPartyChat())
+		if (!g_Game.IsInPartyChat())
 		{
-			game.EnableMicCapture(true);
+			g_Game.EnableMicCapture(true);
 		}
 	}
 	
@@ -127,7 +126,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		if (m_MissionGameplay)
 		{
 			// reset mic to previous capturing state
-			GetGame().EnableMicCapture(m_WasMicCapturing);		
+			g_Game.EnableMicCapture(m_WasMicCapturing);		
 		}
 
 		m_AudioLevelTimer.Stop();
@@ -176,7 +175,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	
 	override bool OnFocus(Widget w, int x, int y)
 	{
-		OptionsMenu menu = OptionsMenu.Cast(GetGame().GetUIManager().GetMenu());
+		OptionsMenu menu = OptionsMenu.Cast(g_Game.GetUIManager().GetMenu());
 		if (menu)
 		{
 			menu.OnFocus(w, x, y);
@@ -226,10 +225,10 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	{		
 		// changing VON mode may disable mic capture,
 		// but mic should capture the entire time this menu is open (unless user in party chat)
-		if (!GetGame().IsInPartyChat())
+		if (!g_Game.IsInPartyChat())
 		{
 			// force enable mic capture
-			GetGame().EnableMicCapture(true);
+			g_Game.EnableMicCapture(true);
 		}
 		
 		UpdateWasMicCapturing();
@@ -237,10 +236,9 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	
 	void OnPartyChatChangedEvent()
 	{
-		auto game = GetGame();
-		if (!game.IsInPartyChat())
+		if (!g_Game.IsInPartyChat())
 		{
-			game.EnableMicCapture(true);
+			g_Game.EnableMicCapture(true);
 		}
 		
 		UpdateWasMicCapturing();
@@ -250,7 +248,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	void UpdateWasMicCapturing()
 	{
 		// if user is in party chat, then mic should not capture
-		if (GetGame().IsInPartyChat())
+		if (g_Game.IsInPartyChat())
 		{
 			m_WasMicCapturing = false;
 		}
@@ -407,7 +405,7 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	
 	void UpdateAudioLevel()
 	{	
-		m_VOIPThresholdSelector.SetSlider2Value(GetGame().GetSoundScene().GetAudioLevel());
+		m_VOIPThresholdSelector.SetSlider2Value(g_Game.GetSoundScene().GetAudioLevel());
 	}
 	
 	

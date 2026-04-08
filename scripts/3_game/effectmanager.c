@@ -524,7 +524,7 @@ class SEffectManager
 		m_IsCleanup = true;
 		
 		// There should not be anything in here on server
-		if (GetGame() && GetGame().IsDedicatedServer())
+		if (g_Game && g_Game.IsDedicatedServer())
 		{
 			if (m_ParamsMap.Count() > 0)
 				ErrorEx(string.Format("SEffectManager containing SoundParams on server."), ErrorExSeverity.WARNING);
@@ -577,7 +577,7 @@ class SEffectManager
 	static int CreateParticleServer(vector pos, EffecterParameters parameters)
 	{
 		EffecterBase eff;
-		eff = EffecterBase.Cast(GetGame().CreateObjectEx(parameters.m_EffecterType, pos, ECE_PLACE_ON_SURFACE));
+		eff = EffecterBase.Cast(g_Game.CreateObjectEx(parameters.m_EffecterType, pos, ECE_PLACE_ON_SURFACE));
 		
 		if (eff)
 		{
@@ -742,7 +742,7 @@ class EffecterBase : EntityAI
 	
 	void Process()
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 		{
 			SetSynchDirty();
 		}

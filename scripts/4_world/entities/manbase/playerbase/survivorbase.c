@@ -1,4 +1,9 @@
-class SurvivorBase extends PlayerBaseClient
+class SurvivorBaseType : PlayerBaseType
+{
+
+};
+
+class SurvivorBase : PlayerBaseClient
 {
 	void SurvivorBase()
 	{

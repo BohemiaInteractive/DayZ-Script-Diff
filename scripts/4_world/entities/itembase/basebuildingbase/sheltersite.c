@@ -93,9 +93,9 @@ class ShelterSite extends BaseBuildingBase
 	override bool IsFacingCamera( string selection )
 	{
 		vector ref_dir = GetDirection();
-		vector cam_dir = GetGame().GetCurrentCameraDirection();
+		vector cam_dir = g_Game.GetCurrentCameraDirection();
 		
-		//ref_dir = GetGame().GetCurrentCameraPosition() - GetPosition();
+		//ref_dir = g_Game.GetCurrentCameraPosition() - GetPosition();
 		ref_dir.Normalize();
 		ref_dir[1] = 0;		//ignore height
 		

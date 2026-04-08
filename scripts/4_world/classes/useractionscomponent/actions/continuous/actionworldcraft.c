@@ -19,10 +19,10 @@ class ActionWorldCraftCB : ActionContinuousBaseCB
 	/*override void OnFinish(bool pCanceled)	
 	{
 		super.OnFinish(pCanceled);
-		if( !GetGame().IsDedicatedServer() )
+		if( !g_Game.IsDedicatedServer() )
 		{
 			PlayerBase player;
-			if( Class.CastTo(player, GetGame().GetPlayer()) )
+			if( Class.CastTo(player, g_Game.GetPlayer()) )
 			{
 				if( player.GetCraftingManager().IsInventoryCraft() )
 					player.GetCraftingManager().CancelInventoryCraft();
@@ -65,7 +65,7 @@ class ActionWorldCraft: ActionContinuousBase
 	override string GetText()
 	{
 		PlayerBase player;
-		if( Class.CastTo(player, GetGame().GetPlayer()) )
+		if( Class.CastTo(player, g_Game.GetPlayer()) )
 		{
 			PluginRecipesManager moduleRecipesManager;
 			Class.CastTo(moduleRecipesManager,  GetPlugin(PluginRecipesManager) );
@@ -77,7 +77,7 @@ class ActionWorldCraft: ActionContinuousBase
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{					
 			if (!target.GetObject() || !item)
 				return false;
@@ -88,7 +88,7 @@ class ActionWorldCraft: ActionContinuousBase
 	
 	override bool ActionConditionContinue(ActionData action_data)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{					
 			if (!action_data.m_Target.GetObject() || !action_data.m_MainItem)
 				return false;
@@ -129,7 +129,7 @@ class ActionWorldCraft: ActionContinuousBase
 		{
 			WorldCraftActionData action_data_wc = WorldCraftActionData.Cast(action_data);
 			
-			if (!GetGame().IsDedicatedServer())	// server synchs the recipe id through HandleReceiveData before this
+			if (!g_Game.IsDedicatedServer())	// server synchs the recipe id through HandleReceiveData before this
 				action_data_wc.m_RecipeID = player.GetCraftingManager().GetRecipeID(m_VariantID);
 
 			PluginRecipesManager moduleRecipesManager;
@@ -179,14 +179,14 @@ class ActionWorldCraft: ActionContinuousBase
 		
 		if (action_data.m_MainItem && item2)
 		{
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 				ClearActionJuncture(action_data);
 			else
 				ClearInventoryReservationEx(action_data);
 			
 			module_recipes_manager.PerformRecipeServer(action_data_wc.m_RecipeID, action_data.m_MainItem, item2, action_data.m_Player);
 			
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 				AddActionJuncture(action_data);
 			else
 				InventoryReservation(action_data);

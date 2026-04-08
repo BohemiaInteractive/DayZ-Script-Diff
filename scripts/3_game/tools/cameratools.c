@@ -15,7 +15,7 @@ class CameraToolsMenuServer
 					{
 						if (p)
 						{
-							GetGame().RPCSingleParam(p, ERPCs.DIAG_CAMERATOOLS_CAM_DATA, p4, true, p.GetIdentity());
+							g_Game.RPCSingleParam(p, ERPCs.DIAG_CAMERATOOLS_CAM_DATA, p4, true, p.GetIdentity());
 						}
 						else
 						{
@@ -73,7 +73,7 @@ class CameraToolsMenuClient
 	
 	void DelayedDestroy()
 	{
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( DestroyNow, 2000);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( DestroyNow, 2000);
 	}
 	
 	void DestroyNow()

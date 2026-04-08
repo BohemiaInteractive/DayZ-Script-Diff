@@ -32,12 +32,12 @@ class ContinuousActionProgress extends ScriptedWidgetEventHandler
 		m_FadeTimer = new WidgetFadeTimer;
 		m_Faded = true;
 
-		GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
 	}
 	
 	void ~ContinuousActionProgress()
 	{
-		GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Remove(Update);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Remove(Update);
 	}
 
 	protected void OnWidgetScriptInit(Widget w)
@@ -56,7 +56,7 @@ class ContinuousActionProgress extends ScriptedWidgetEventHandler
 	protected void Update()
 	{
 		//! don't show continuous action progressif it's disabled in profile OR soft-disabled by the '~' keyhold
-		Mission mission = GetGame().GetMission();
+		Mission mission = g_Game.GetMission();
 		IngameHud hud = IngameHud.Cast(mission.GetHud());
 		if (hud && hud.GetHudVisibility().IsContextFlagActive(IngameHudVisibility.HUD_HIDE_FLAGS))
 		{
@@ -74,7 +74,7 @@ class ContinuousActionProgress extends ScriptedWidgetEventHandler
 
 		GetActions();
 
-		if(m_Action && m_Action.HasProgress() && m_ActionState != UA_NONE && GetGame().GetUIManager().GetMenu() == null)
+		if(m_Action && m_Action.HasProgress() && m_ActionState != UA_NONE && g_Game.GetUIManager().GetMenu() == null)
 		{
 			if(m_ActionState == UA_INITIALIZE || m_ActionState == UA_AM_PENDING)
 			{
@@ -110,7 +110,7 @@ class ContinuousActionProgress extends ScriptedWidgetEventHandler
 	// getters
   	private void GetPlayer()
 	{
-		Class.CastTo(m_Player, GetGame().GetPlayer());
+		Class.CastTo(m_Player, g_Game.GetPlayer());
 	}
 
 	private void GetActionManager()

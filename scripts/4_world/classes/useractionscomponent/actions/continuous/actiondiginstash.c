@@ -69,7 +69,7 @@ class ActionDigInStash: ActionContinuousBase
 			excludedObjects.Insert(targetIB);
 			array<Object> nearbyObjects = new array<Object>();
 			// For now we exclude an area of 2 X 2 X 2 meters
-			if (GetGame().IsBoxColliding(entityToCheck.GetPosition(), entityToCheck.GetOrientation(), "2 2 2", excludedObjects, nearbyObjects))
+			if (g_Game.IsBoxColliding(entityToCheck.GetPosition(), entityToCheck.GetOrientation(), "2 2 2", excludedObjects, nearbyObjects))
 			{
 				foreach (Object nearbyObject : nearbyObjects)
 				{
@@ -81,8 +81,8 @@ class ActionDigInStash: ActionContinuousBase
 			// Check surface
 			int liquidType;
 			string surfaceType;
-			GetGame().SurfaceUnderObject(entityToCheck, surfaceType, liquidType);
-			if (!GetGame().IsSurfaceDigable(surfaceType))
+			g_Game.SurfaceUnderObject(entityToCheck, surfaceType, liquidType);
+			if (!g_Game.IsSurfaceDigable(surfaceType))
 			{
 				return false;
 			}
@@ -97,7 +97,7 @@ class ActionDigInStash: ActionContinuousBase
 				positions.Insert(position + "0.5 0 -0.5");
 				positions.Insert(position + "-0.5 0 -0.5");
 				
-				float difference = GetGame().GetHighestSurfaceYDifference(positions);
+				float difference = g_Game.GetHighestSurfaceYDifference(positions);
 				
 				return difference < m_DigStashSlopeTolerance;
 			}
@@ -117,7 +117,7 @@ class ActionDigInStash: ActionContinuousBase
 	{
 		super.OnExecuteServer(action_data);
 		
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 		{
 			SpawnParticleShovelRaise(action_data);
 		}
@@ -150,15 +150,15 @@ class ActionDigInStash: ActionContinuousBase
 		
 		int liquidType;
 		string surfaceType;
-		GetGame().SurfaceUnderObject(entityToCheck, surfaceType, liquidType);
+		g_Game.SurfaceUnderObject(entityToCheck, surfaceType, liquidType);
 		string undergroundStashType;
 		
-		GetGame().GetSurfaceDigPile(surfaceType, undergroundStashType);
+		g_Game.GetSurfaceDigPile(surfaceType, undergroundStashType);
 		
 		if (undergroundStashType == "")
 			undergroundStashType =  "UndergroundStash";
 		
-		UndergroundStash stash = UndergroundStash.Cast(GetGame().CreateObjectEx(undergroundStashType, targetEntity.GetPosition(), ECE_PLACE_ON_SURFACE));  
+		UndergroundStash stash = UndergroundStash.Cast(g_Game.CreateObjectEx(undergroundStashType, targetEntity.GetPosition(), ECE_PLACE_ON_SURFACE));  
 		if (stash)
 		{
 			ClearActionJuncture(action_data);
@@ -167,11 +167,8 @@ class ActionDigInStash: ActionContinuousBase
 			stash.GetInventory().GetCurrentInventoryLocation(ilj);
 		
 			if (GameInventory.LocationCanRemoveEntity(targetIL))
-			{
-				GetGame().AddInventoryJunctureEx(action_data.m_Player, targetEntity, ilj, true, 10000);
-				GetGame().ClearJunctureEx(action_data.m_Player, targetEntity);
-			
-				if (!GetGame().IsMultiplayer())
+			{			
+				if (!g_Game.IsMultiplayer())
 				{
 					ClearInventoryReservationEx(action_data);
 					action_data.m_Player.LocalTakeEntityToTargetCargo(stash, targetEntity);

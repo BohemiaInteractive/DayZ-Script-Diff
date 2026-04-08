@@ -48,6 +48,9 @@ class ActionBreakLongWoodenStick: ActionContinuousBase
 	{
 		ItemBase startingItem = action_data.m_MainItem;
 		
+		//singleplayer
+		ClearInventoryReservationEx(action_data);
+		
 		BreakLongWoodenStick lambda = new BreakLongWoodenStick(action_data.m_MainItem, "WoodenStick", action_data.m_Player, 3);
 		action_data.m_Player.ServerReplaceItemInHandsWithNew(lambda);
 		

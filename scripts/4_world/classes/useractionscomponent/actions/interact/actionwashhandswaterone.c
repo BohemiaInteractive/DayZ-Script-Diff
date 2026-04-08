@@ -27,7 +27,7 @@ class ActionWashHandsWaterOne extends ActionInteractLoopBase
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
 		// Other conditions are in CCTWaterSurface
-		return ( GetGame().IsMultiplayer() && GetGame().IsServer() ) || ( player.HasBloodyHands() && !player.GetItemInHands() && !player.GetItemOnSlot("Gloves") );
+		return ( g_Game.IsMultiplayer() && g_Game.IsServer() ) || ( player.HasBloodyHands() && !player.GetItemInHands() && !player.GetItemOnSlot("Gloves") );
 	}
 
 	override void OnEndServer( ActionData action_data )

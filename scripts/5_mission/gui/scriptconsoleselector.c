@@ -4,7 +4,7 @@ class ScriptConsoleSelector: OptionSelectorSliderSetup
 	
 	void ScriptConsoleSelector(Widget parent, float value, ScriptConsoleTabBase parent_tab, bool disabled, float min, float max)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets(GetLayoutFile(), parent);		
+		m_Root = g_Game.GetWorkspace().CreateWidgets(GetLayoutFile(), parent);		
 		m_Parent = parent;
 		m_SelectorType = 1;
 		m_ParentTab	= parent_tab;

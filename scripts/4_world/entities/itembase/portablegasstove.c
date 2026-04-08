@@ -55,7 +55,7 @@ class PortableGasStove extends ItemBase
 	void DestroyFireplace()
 	{
 		//delete object
-		GetGame().ObjectDelete(this);
+		g_Game.ObjectDelete(this);
 	}
 	
 	override void EEInit()
@@ -66,7 +66,7 @@ class PortableGasStove extends ItemBase
 			m_CookingProcess = new Cooking();
 		m_CookingProcess.SetCookingUpdateTime(GetCompEM().GetUpdateInterval());
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
  			m_UTSSettings 						= new UniversalTemperatureSourceSettings();
 			m_UTSSettings.m_ManualUpdate		= true;
@@ -115,7 +115,7 @@ class PortableGasStove extends ItemBase
 	{
 		super.OnSwitchOn();
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			m_UTSource.SetDefferedActive(true, 3.0);
 		}
@@ -128,7 +128,7 @@ class PortableGasStove extends ItemBase
 	{
 		super.OnSwitchOff();
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			m_UTSource.SetDefferedActive(false, 5.0);
 		}
@@ -177,7 +177,7 @@ class PortableGasStove extends ItemBase
 	//on update 
 	override void OnWork(float consumed_energy)
 	{
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			m_UTSource.Update(m_UTSSettings, m_UTSLConst);
 		}
@@ -186,7 +186,7 @@ class PortableGasStove extends ItemBase
 		ItemBase item = ItemBase.Cast(GetCookingEquipment());
 		if (item && item.CanHaveTemperature())
 		{
-			if (GetGame() && GetGame().IsServer())
+			if (g_Game && g_Game.IsServer())
 			{
 				float cook_equip_temp = item.GetTemperature();
 				float target; //makes sense here, since gas stove does not heat itself, and we need some target

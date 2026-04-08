@@ -12,7 +12,7 @@ class NoteMenu extends UIScriptedMenu
 
 	void NoteMenu()
 	{
-		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay mission = MissionGameplay.Cast(g_Game.GetMission());
 		if (mission)
 		{
 			IngameHud hud = IngameHud.Cast(mission.GetHud());
@@ -25,7 +25,7 @@ class NoteMenu extends UIScriptedMenu
 
 	void ~NoteMenu()
 	{
-		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay mission = MissionGameplay.Cast(g_Game.GetMission());
 		if (mission)
 		{
 			IngameHud hud = IngameHud.Cast(mission.GetHud());
@@ -87,7 +87,7 @@ class NoteMenu extends UIScriptedMenu
 
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_inventory_note.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_inventory_note.layout");
 		m_edit = MultilineEditBoxWidget.Cast(layoutRoot.FindAnyWidget("EditWidget"));
 		m_html = HtmlWidget.Cast(layoutRoot.FindAnyWidget("HtmlWidget"));
 		m_confirm_button = ButtonWidget.Cast(layoutRoot.FindAnyWidgetById(IDC_OK));
@@ -131,7 +131,7 @@ class NoteMenu extends UIScriptedMenu
 	{
 		super.Update(timeslice);
 		
-		if (GetGame() && GetUApi().GetInputByID(UAUIBack).LocalPress())
+		if (g_Game && GetUApi().GetInputByID(UAUIBack).LocalPress())
 		{
 			Close();
 		}

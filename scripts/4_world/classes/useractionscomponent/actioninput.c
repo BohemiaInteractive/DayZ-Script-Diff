@@ -851,27 +851,31 @@ class ToggleNVGActionInput : DefaultActionInput
 			m_SelectAction = m_ForcedActionData.m_Action;
 			return;
 		}
-		//ForceActionTarget(player.m_PlayerLightManager.
 		
-		m_SelectAction = NULL;
+		m_SelectAction = null;
 		array<ActionBase_Basic> possible_actions;
 		ActionBase action;
 		int i;
 
-		m_MainItem = NULL;
-		if ( player ) 
+		m_MainItem = null;
+		if (player) 
 		{
-			Mich2001Helmet helmet = Mich2001Helmet.Cast(player.FindAttachmentBySlotName("Headgear"));
-			NVGHeadstrap headstrap = NVGHeadstrap.Cast(player.FindAttachmentBySlotName("Eyewear"));
-			if ( helmet )
+			CachedEquipmentStorageQuery query = new CachedEquipmentStorageQuery();
+			query.m_Category = ECachedEquipmentItemCategory.NVG;
+			query.m_Placement = ECachedEquipmentPlacement.ATTACHMENT;
+			query.m_MaximumDepth = 2;
+			
+			array<Entity> nvgs = player.GetCachedEquipment().GetEntitiesByCategory(query);
+			Object nvgParent = null;
+			foreach (Entity nvg : nvgs)
 			{
-				//m_MainItem = Headtorch_ColorBase.Cast(player.FindAttachmentBySlotName("Headgear"));
-				target_new = new ActionTarget(helmet, null, -1, vector.Zero, -1);
-				ForceActionTarget(target_new);
+				nvgParent = EntityAI.Cast(nvg).GetHierarchyParent();
+				break;
 			}
-			else if ( headstrap )
+
+			if (nvgParent)
 			{
-				target_new = new ActionTarget(headstrap, null, -1, vector.Zero, -1);
+				target_new = new ActionTarget(nvgParent, null, -1, vector.Zero, -1);
 				ForceActionTarget(target_new);
 			}
 			else

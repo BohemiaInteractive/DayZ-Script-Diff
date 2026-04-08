@@ -15,17 +15,17 @@ class ActionUnfoldMapCB : ActionBaseCB
 	
 	void ~ActionUnfoldMapCB()
 	{
-		if (GetGame() && GetGame().GetMission())
+		if (g_Game && g_Game.GetMission())
 		{
 			if (!CfgGameplayHandler.GetUse3DMap())
 			{
-				GetGame().GetMission().RemoveActiveInputExcludes({"map"}, false);
+				g_Game.GetMission().RemoveActiveInputExcludes({"map"}, false);
 			}
 			else
 			{
-				GetGame().GetMission().RemoveActiveInputExcludes({"loopedactions"}, false);
+				g_Game.GetMission().RemoveActiveInputExcludes({"loopedactions"}, false);
 			}
-			GetGame().GetMission().RemoveActiveInputRestriction(EInputRestrictors.MAP);
+			g_Game.GetMission().RemoveActiveInputRestriction(EInputRestrictors.MAP);
 		}
 		
 		if (!m_ActionData || !m_ActionData.m_Player)
@@ -91,9 +91,9 @@ class ActionUnfoldMapCB : ActionBaseCB
 			if (m_ActionData && m_ActionData.m_ActionComponent)
 				m_ActionData.m_State = m_ActionData.m_ActionComponent.Interrupt(m_ActionData);
 			
-			if ((!GetGame().IsDedicatedServer()) && GetGame().GetUIManager() && GetGame().GetUIManager().IsMenuOpen(MENU_MAP))
+			if ((!g_Game.IsDedicatedServer()) && g_Game.GetUIManager() && g_Game.GetUIManager().IsMenuOpen(MENU_MAP))
 			{
-				GetGame().GetUIManager().FindMenu(MENU_MAP).Close();
+				g_Game.GetUIManager().FindMenu(MENU_MAP).Close();
 			}
 			
 			ActionUnfoldMap action = ActionUnfoldMap.Cast(m_ActionData.m_Action);
@@ -127,31 +127,27 @@ class ActionUnfoldMapCB : ActionBaseCB
 					return;
 				
 				chernomap.SetMapStateOpen(true, m_ActionData.m_Player);
-		
-				if (!GetGame().IsMultiplayer() || GetGame().IsServer())
-				{
-					//chernomap.SyncMapMarkers();
-				}
 	
-				if (!GetGame().IsDedicatedServer())
+				if (!g_Game.IsDedicatedServer())
 				{
+					Mission mission = g_Game.GetMission();
 					UIManager 	m_UIManager;
 					UIScriptedMenu 	mapMenu;
-					m_UIManager = GetGame().GetUIManager();
+					m_UIManager = g_Game.GetUIManager();
 					m_UIManager.CloseAll();
 					if (!CfgGameplayHandler.GetUse3DMap())
 					{
 						mapMenu = m_UIManager.EnterScriptedMenu(MENU_MAP, null);
 						mapMenu.InitMapItem(chernomap);
 						mapMenu.LoadMapMarkers();
-						GetGame().GetMission().AddActiveInputExcludes({"map"});
+						mission.AddActiveInputExcludes({"map"});
 					}
 					else
 					{
-						GetGame().GetMission().AddActiveInputExcludes({"loopedactions"});
+						mission.AddActiveInputExcludes({"loopedactions"});
 					}
 	
-					GetGame().GetMission().AddActiveInputRestriction(EInputRestrictors.MAP);
+					mission.AddActiveInputRestriction(EInputRestrictors.MAP);
 				}			
 			}
 			else if (m_ActionData.m_Player.IsMapOpen())

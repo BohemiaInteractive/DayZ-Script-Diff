@@ -7,7 +7,7 @@ class TutorialKeybinds extends ScriptedWidgetEventHandler
 	
 	void TutorialKeybinds(Widget parent, TutorialsMenu menu)
 	{
-		m_Root							= GetGame().GetWorkspace().CreateWidgets(GetLayoutName(), parent);
+		m_Root							= g_Game.GetWorkspace().CreateWidgets(GetLayoutName(), parent);
 		
 		m_Menu							= menu;
 		
@@ -31,11 +31,11 @@ class TutorialKeybinds extends ScriptedWidgetEventHandler
 				{
 					output = "";
 					option_text = "";
-					GetGame().GetInput().GetActionDesc(actions.Get(i), option_text);
+					g_Game.GetInput().GetActionDesc(actions.Get(i), option_text);
 					if (SetElementTitle(input, EUAINPUT_DEVICE_KEYBOARDMOUSE, output))
 					{
 						column_index		= Math.Floor(item_index / 21);
-						Widget w			= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/keybindings_panels/keybinding_panel.layout", m_Root.FindAnyWidget("container" + column_index));
+						Widget w			= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/keybindings_panels/keybinding_panel.layout", m_Root.FindAnyWidget("container" + column_index));
 						Widget spacer		= w.FindWidget("Spacer");
 						TextWidget name		= TextWidget.Cast(w.FindWidget("KeybindName"));
 						TextWidget mod		= TextWidget.Cast(spacer.FindWidget("KeybindModifier"));
@@ -61,7 +61,7 @@ class TutorialKeybinds extends ScriptedWidgetEventHandler
 				else
 				{
 					option_text = "";
-					GetGame().GetInput().GetActionDesc(actions[i], option_text);
+					g_Game.GetInput().GetActionDesc(actions[i], option_text);
 					ErrorEx("input action " + option_text + " index out of bounds!",ErrorExSeverity.INFO);
 				}
 			}

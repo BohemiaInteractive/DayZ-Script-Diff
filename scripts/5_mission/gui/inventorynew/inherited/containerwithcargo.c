@@ -248,7 +248,7 @@ class ContainerWithCargo extends ClosableContainer
 			return false;
 		}
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if( !player.CanManipulateInventory() )
 		{
 			return false;
@@ -297,7 +297,7 @@ class ContainerWithCargo extends ClosableContainer
 		#endif
 		{
 			ItemManager.GetInstance().HideDropzones();
-			if( m_Entity.GetHierarchyRootPlayer() == GetGame().GetPlayer() )
+			if( m_Entity.GetHierarchyRootPlayer() == g_Game.GetPlayer() )
 			{
 				ItemManager.GetInstance().GetRightDropzone().SetAlpha( 1 );
 			}
@@ -389,7 +389,7 @@ class ContainerWithCargo extends ClosableContainer
 		if( c_x > x && c_y > y && m_Entity.GetInventory().LocationCanAddEntityEx(dst))
 		#endif
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			
 			SplitItemUtils.TakeOrSplitToInventoryLocation( player, dst );
 			
@@ -439,12 +439,12 @@ class ContainerWithCargo extends ClosableContainer
 		if( !item )
 			return;
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if( item.GetInventory().CanRemoveEntity() && player.CanManipulateInventory() && m_Entity.GetInventory().CanAddEntityInCargo( item, item.GetInventory().GetFlipCargo() ) && !m_Entity.GetInventory().HasEntityInCargo( item ) )
 		{
 			ColorManager.GetInstance().SetColor( w, ColorManager.GREEN_COLOR );
 			ItemManager.GetInstance().HideDropzones();
-			if( m_Entity.GetHierarchyRootPlayer() == GetGame().GetPlayer() )
+			if( m_Entity.GetHierarchyRootPlayer() == g_Game.GetPlayer() )
 			{
 				ItemManager.GetInstance().GetRightDropzone().SetAlpha( 1 );
 			}
@@ -468,7 +468,7 @@ class ContainerWithCargo extends ClosableContainer
 			return;
 		}
 
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		InventoryLocation src = new InventoryLocation();
 		if( GetEntity() && item.GetInventory().GetCurrentInventoryLocation(src))
 		{

@@ -62,7 +62,7 @@ class SakhalData : WorldData
 		m_ClearWeatherChance 	= m_WeatherDefaultSettings.m_ClearWeatherChance;
 		m_BadWeatherChance 		= m_WeatherDefaultSettings.m_BadWeatherChance;
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer()) 
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer()) 
 		{
 			m_Weather.SetDynVolFogHeightDensity( 1, 0 );
 			m_Weather.SetDynVolFogHeightBias( 0, 0 );
@@ -70,7 +70,7 @@ class SakhalData : WorldData
 			m_Weather.GetFog().SetLimits(0,0);
 			m_Weather.GetOvercast().SetLimits(0.07, 1);
 			
-			if (GetGame().IsMultiplayer()) 
+			if (g_Game.IsMultiplayer()) 
 			{
 				m_Weather.GetOvercast().Set(Math.RandomFloat(0,0.75),0,5); //forcing a random weather at a clean server start and an instant change for overcast
 				CalculateVolFog(m_Weather.GetSnowfall().GetActual(),m_Weather.GetWindSpeed(),0);
@@ -137,7 +137,7 @@ class SakhalData : WorldData
 		#ifdef WEATHER_DATA_LOGGING	
 		if ( !dayInit )
 		{
-			GetGame().GetWorld().GetDate(startYear, startMonth, startDay, startHour, startMinute);
+			g_Game.GetWorld().GetDate(startYear, startMonth, startDay, startHour, startMinute);
 			dayInit = true;
 		}
 		#endif
@@ -348,7 +348,7 @@ class SakhalData : WorldData
 				int testDay = 0;
 				int testHour = 0;
 				int testMinute = 0;
-				GetGame().GetWorld().GetDate(testYear, testMonth, testDay, testHour, testMinute);
+				g_Game.GetWorld().GetDate(testYear, testMonth, testDay, testHour, testMinute);
 					
 				if ( testDay - startDay > currentDay && testHour - startHour >= 0 && testMinute - startMinute >= 0 )
 				{

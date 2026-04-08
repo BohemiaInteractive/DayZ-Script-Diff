@@ -20,9 +20,9 @@ class Grenade_ChemGas : Grenade_Base
 	{
 		m_Exploded = true;
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
-			GetGame().CreateObject("ContaminatedArea_Local", GetPosition());
+			g_Game.CreateObject("ContaminatedArea_Local", GetPosition());
 		}
 	}
 	
@@ -33,7 +33,7 @@ class Grenade_ChemGas : Grenade_Base
 	
 	override void EOnContact(IEntity other, Contact extra)
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (!m_Exploded)
 			{
@@ -49,9 +49,9 @@ class Grenade_ChemGas : Grenade_Base
 	
 	override void OnDamageDestroyed(int oldLevel)
 	{
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Delete, 1000);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Delete, 1000);
 		}
 		#ifndef SERVER
 		ClearFlags(EntityFlags.VISIBLE, false);

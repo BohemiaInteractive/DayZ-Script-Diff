@@ -35,7 +35,7 @@ class ActionBaseCB : HumanCommandActionCallback
 		}
 		if ( m_SoundObject ) 
 		{
-			GetGame().ObjectDelete(m_SoundObject);
+			g_Game.ObjectDelete(m_SoundObject);
 		}
 		if ( m_ActionData && m_ActionData.m_Player )
 		{
@@ -82,13 +82,13 @@ class ActionBaseCB : HumanCommandActionCallback
 	//// THIS Interrupt is use for initialize interrupt - WARNING Interrupt with parametr is used for handling interrupt
 	void Interrupt()
 	{
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( LogManager.IsActionLogEnable() )
 			{
 				Debug.ActionLog("n/a", this.ToString() , "n/a", "Interrupt", m_ActionData.m_Player.ToString() );	
 			}
-			if ( GetGame().IsMultiplayer() )
+			if ( g_Game.IsMultiplayer() )
 			{
 				DayZPlayerSyncJunctures.SendActionInterrupt(m_ActionData.m_Player);
 			}
@@ -193,7 +193,7 @@ class AnimatedActionBase : ActionBase
 				{	
 					OnExecute(action_data);
 				
-					if (GetGame().IsServer())
+					if (g_Game.IsServer())
 						OnExecuteServer(action_data);
 					else
 						OnExecuteClient(action_data);
@@ -446,7 +446,7 @@ class AnimatedActionBase : ActionBase
 	{
 		if ( action_data.m_Player ) 
 		{
-			if ( GetGame().IsServer() )
+			if ( g_Game.IsServer() )
 			{
 				OnEndServer(action_data);
 				action_data.m_Player.SetSoundCategoryHash(0);
@@ -462,11 +462,11 @@ class AnimatedActionBase : ActionBase
 			{
 				if ( IsEat() )
 				{
-					GetGame().GetAnalyticsClient().OnActionEat();
+					g_Game.GetAnalyticsClient().OnActionEat();
 				}
 				else if ( IsDrink() )
 				{
-					GetGame().GetAnalyticsClient().OnActionDrink();
+					g_Game.GetAnalyticsClient().OnActionDrink();
 				}
 				
 				action_data.m_WasActionStarted = false;

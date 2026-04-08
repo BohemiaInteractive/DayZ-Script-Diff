@@ -14,12 +14,12 @@ class ModLoader
 	{
 		m_Mods = new array<ref ModStructure>;
 		
-		int mod_count = GetGame().ConfigGetChildrenCount( "CfgMods" );
+		int mod_count = g_Game.ConfigGetChildrenCount( "CfgMods" );
 		
 		for( int i = 2; i < mod_count; i++ )
 		{
 			string mod_name;
-			GetGame().ConfigGetChildName( "CfgMods", i, mod_name );
+			g_Game.ConfigGetChildName( "CfgMods", i, mod_name );
 			m_Mods.Insert( new ModStructure( i, "CfgMods " + mod_name ) );
 		}
 	}

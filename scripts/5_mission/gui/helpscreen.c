@@ -18,7 +18,7 @@ class HelpScreen extends UIScriptedMenu
 	{
 		PluginKeyBinding module_keybinding = PluginKeyBinding.Cast( GetPlugin(PluginKeyBinding) );
 		
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/help_screen.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/help_screen.layout");
 		m_KeyBindingsTextListboxWidget = TextListboxWidget.Cast( layoutRoot.FindAnyWidget("KeyBindingsTextListboxWidget") );
 		m_MouseBindingsTextListboxWidget = TextListboxWidget.Cast( layoutRoot.FindAnyWidget("MouseBindingsTextListboxWidget") );
 		

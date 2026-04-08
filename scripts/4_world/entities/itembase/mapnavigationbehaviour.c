@@ -124,9 +124,9 @@ class MapNavigationBehaviour
 	
 	static array<int> OrderedPositionNumbersFromGridCoords(EntityAI pEntity)
 	{
-		float gridSize = GetGame().ConfigGetFloat(string.Format(GRID_SIZE_CFG_PATH, GetGame().GetWorldName()));
+		float gridSize = g_Game.ConfigGetFloat(string.Format(GRID_SIZE_CFG_PATH, g_Game.GetWorldName()));
 		int gridX, gridZ;
-		GetGame().GetWorld().GetGridCoords(pEntity.GetPosition(), gridSize, gridX, gridZ);
+		g_Game.GetWorld().GetGridCoords(pEntity.GetPosition(), gridSize, gridX, gridZ);
 		
 		gridX = Math.AbsInt(gridX);
 		gridZ = Math.AbsInt(gridZ);
@@ -181,7 +181,7 @@ class MapNavigationBehaviour
 	{
 		vector worldPos = pEntity.GetPosition();
 
-		if (worldPos[0] < 0 || worldPos[0] > GetGame().GetWorld().GetWorldSize() || worldPos[2] < 0 || worldPos[2] > GetGame().GetWorld().GetWorldSize())
+		if (worldPos[0] < 0 || worldPos[0] > g_Game.GetWorld().GetWorldSize() || worldPos[2] < 0 || worldPos[2] > g_Game.GetWorld().GetWorldSize())
 		{
 			return true;
 		}

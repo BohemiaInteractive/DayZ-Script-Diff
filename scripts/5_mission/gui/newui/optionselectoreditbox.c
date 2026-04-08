@@ -4,7 +4,7 @@ class OptionSelectorEditbox extends OptionSelectorBase
 	
 	void OptionSelectorEditbox(Widget parent, string value, ScriptedWidgetEventHandler parent_menu, bool disabled)
 	{
-		m_Root					= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_editbox.layout", parent);
+		m_Root					= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/option_editbox.layout", parent);
 		#ifdef PLATFORM_CONSOLE
 			m_Parent				= parent.GetParent().GetParent();
 		#else
@@ -53,7 +53,7 @@ class OptionSelectorEditbox extends OptionSelectorBase
 			m_ParentClass.OnMouseEnter(m_Root.GetParent().GetParent(), x, y);
 		}
 		
-		UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu menu = g_Game.GetUIManager().GetMenu();
 		
 		if (menu && menu.IsInherited(CharacterCreationMenu))
 		{
@@ -77,7 +77,7 @@ class OptionSelectorEditbox extends OptionSelectorBase
 			m_ParentClass.OnMouseLeave(m_Root.GetParent().GetParent(), enterW, x, y);
 		}
 		
-		UIScriptedMenu menu = GetGame().GetUIManager().GetMenu();
+		UIScriptedMenu menu = g_Game.GetUIManager().GetMenu();
 		
 		if (menu && menu.IsInherited(CharacterCreationMenu))
 		{

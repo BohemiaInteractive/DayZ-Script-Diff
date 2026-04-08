@@ -140,7 +140,7 @@ class Attachments
 		EntityAI selected_item = ItemManager.GetInstance().GetSelectedItem();
 		SlotsIcon focused_slot = GetFocusedSlotsIcon();
 		EntityAI focused_item = GetFocusedItem();
-		Man player = GetGame().GetPlayer();
+		Man player = g_Game.GetPlayer();
 		
 		if( focused_slot.IsReserved() || focused_item != selected_item && !(selected_slot && selected_slot.IsOutOfReach() ) )
 		{
@@ -167,7 +167,7 @@ class Attachments
 			{
 				if ( focused_item && !focused_slot.IsOutOfReach() )
 				{
-					EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+					EntityAI item_in_hands = g_Game.GetPlayer().GetEntityInHands();
 					InventoryLocation il = new InventoryLocation;
 					focused_item.GetInventory().GetCurrentInventoryLocation( il );
 					bool reachable = AttachmentsOutOfReach.IsAttachmentReachable( m_Entity, "", il.GetSlot() );
@@ -199,22 +199,22 @@ class Attachments
 	int GetRecipeCount( bool recipe_anywhere, EntityAI entity1, EntityAI entity2 )
 	{
 		PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast( GetPlugin( PluginRecipesManager ) );
-		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), null, PlayerBase.Cast( GetGame().GetPlayer() ) );
+		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), null, PlayerBase.Cast( g_Game.GetPlayer() ) );
 	}
 	
 	bool CanCombine()
 	{
 		ItemBase ent = ItemBase.Cast( GetFocusedItem() );
-		ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+		ItemBase item_in_hands = ItemBase.Cast(	g_Game.GetPlayer().GetEntityInHands() );
 		
 		return ( ItemManager.GetCombinationFlags( item_in_hands, ent ) != 0 );
 	}
 	
 	bool CanCombineAmmo()
 	{
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase m_player = PlayerBase.Cast( g_Game.GetPlayer() );
 		ItemBase ent = ItemBase.Cast(  GetFocusedItem() );
-		ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+		ItemBase item_in_hands = ItemBase.Cast(	g_Game.GetPlayer().GetEntityInHands() );
 		ActionManagerClient amc;
 		Class.CastTo(amc, m_player.GetActionManager());
 
@@ -229,13 +229,13 @@ class Attachments
 		{
 			return false;
 		}
-		return GetGame().GetPlayer().GetInventory().FindFreeLocationFor( entity, FindInventoryLocationType.ATTACHMENT, il );
+		return g_Game.GetPlayer().GetInventory().FindFreeLocationFor( entity, FindInventoryLocationType.ATTACHMENT, il );
 	}
 	
 	bool Combine()
 	{
 		ItemBase ent = ItemBase.Cast( GetFocusedItem() );
-		ItemBase item_in_hands = ItemBase.Cast(	GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+		ItemBase item_in_hands = ItemBase.Cast(	g_Game.GetPlayer().GetEntityInHands() );
 		Icon hands_icon = ItemManager.GetInstance().GetHandsPreview().GetIcon();
 		
 		if ( item_in_hands && ent && hands_icon )
@@ -265,7 +265,7 @@ class Attachments
 		ItemBase entity = ItemBase.Cast( GetFocusedItem() );
 		if( entity && !entity.IsInherited( Magazine ) && !GetFocusedSlotsIcon().IsOutOfReach() )
 		{
-			GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, entity );
+			g_Game.GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.ATTACHMENT, entity );
 			return true;
 		}
 		return false;
@@ -276,7 +276,7 @@ class Attachments
 		EntityAI entity = GetFocusedItem();
 		if( entity && !GetFocusedSlotsIcon().IsOutOfReach() )
 		{
-			GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
+			g_Game.GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
 			return true;
 		}
 		return false;
@@ -296,7 +296,7 @@ class Attachments
 	bool TransferItemToVicinity()
 	{
 		ItemBase item = ItemBase.Cast(GetFocusedItem());
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer());
 		if (item && !GetFocusedSlotsIcon().IsOutOfReach() )
 		{
 			if (item.GetTargetQuantityMax() < item.GetQuantity())
@@ -382,7 +382,7 @@ class Attachments
 					icon.GetMountedWidget().Show( false );
 				}
 				
-				PlayerBase p = PlayerBase.Cast( GetGame().GetPlayer() );
+				PlayerBase p = PlayerBase.Cast( g_Game.GetPlayer() );
 				bool in_hands_condition		= m_Entity.GetHierarchyRoot() && item.GetInventory().CanRemoveEntity();
 				bool in_vicinity_condition	= !m_Entity.GetHierarchyRoot() && AttachmentsOutOfReach.IsAttachmentReachable( m_Entity, m_AttachmentSlotDisplayable[i] );
 				if( in_hands_condition || in_vicinity_condition )
@@ -517,7 +517,7 @@ class Attachments
 			}
 			
 			string icon_name = ""; //icon_name must be in format "set:<setname> image:<imagename>"
-			if( GetGame().ConfigGetText( path + " ghostIcon", icon_name ) && icon_name != "" )
+			if( g_Game.ConfigGetText( path + " ghostIcon", icon_name ) && icon_name != "" )
 				icon.GetGhostSlot().LoadImageFile( 0, StaticGUIUtils.VerifyIconImageString(StaticGUIUtils.IMAGESETGROUP_INVENTORY,icon_name) );
 			int slot_id = InventorySlots.GetSlotIdFromString( m_AttachmentSlotNames[i] );
 			m_AttachmentSlots.Insert( slot_id, icon );
@@ -574,9 +574,9 @@ class Attachments
 			string cfg_name = searching_in.Get( s );
 			string path = cfg_name + " " + e.GetType();
 
-			if ( GetGame().ConfigIsExisting( path ) )
+			if ( g_Game.ConfigIsExisting( path ) )
 			{
-				GetGame().ConfigGetTextArray( path + " attachments", attachments_slots );
+				g_Game.ConfigGetTextArray( path + " attachments", attachments_slots );
 				if ( e.IsWeapon() && (!e.ConfigIsExisting("DisplayMagazine") || e.ConfigGetBool("DisplayMagazine")) )
 				{
 					attachments_slots.Insert( "magazine" );

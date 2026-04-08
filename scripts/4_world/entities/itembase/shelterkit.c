@@ -19,10 +19,10 @@ class ShelterKit extends KitBase
 	{
 		super.OnPlacementComplete( player, position, orientation );
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			//Create shelter site
-			ShelterSite site = ShelterSite.Cast( GetGame().CreateObjectEx( "ShelterSite", GetPosition(), ECE_PLACE_ON_SURFACE ) );
+			ShelterSite site = ShelterSite.Cast( g_Game.CreateObjectEx( "ShelterSite", GetPosition(), ECE_PLACE_ON_SURFACE ) );
 			site.SetPosition( position );
 			site.SetOrientation( orientation );
 			
@@ -55,7 +55,7 @@ class ShelterKit extends KitBase
 	{
 		if (!IsHologram())
 		{
-			ItemBase stick = ItemBase.Cast(GetGame().CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
+			ItemBase stick = ItemBase.Cast(g_Game.CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
 			MiscGameplayFunctions.TransferItemProperties(this, stick);
 			stick.SetQuantity(4);
 			Rope rope = Rope.Cast(item);

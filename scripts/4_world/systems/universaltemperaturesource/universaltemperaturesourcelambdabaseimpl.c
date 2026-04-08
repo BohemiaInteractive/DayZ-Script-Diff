@@ -7,20 +7,23 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 		foreach (Object nearestObject : nearestObjects)
 		{
 			ItemBase nearestItem = ItemBase.Cast(nearestObject);
+			ItemBase temperatureSource = ItemBase.Cast(pSettings.m_Parent);
 
 			//! heat transfer to items (not in player possession)
 			if (nearestItem && nearestItem.HasWetness() && nearestItem != pSettings.m_Parent && !nearestItem.IsInherited(Man) && !nearestItem.IsUniversalTemperatureSource())
 			{
-				distanceToTemperatureSource = vector.Distance(nearestItem.GetPosition(), position);
-				distanceToTemperatureSource = Math.Max(distanceToTemperatureSource, 0.3);	//min distance cannot be 0 (division by zero)
+				distanceToTemperatureSource = vector.Distance(nearestItem.GetPosition(), position); //!getting the actual distance
+				distanceToTemperatureSource = Math.Max(distanceToTemperatureSource, 0.001); //! min distance cannot be 0 (division by zero)
+				distanceToTemperatureSource = 1 / distanceToTemperatureSource; //! calculating the coefficient we will use to deterimne strength of drying
+				distanceToTemperatureSource = Math.Clamp(distanceToTemperatureSource, 0.0, 1.0); //! making sure it is between 0.0 and 1.0
 				
-				float dryModifier = 0;				
+				float dryValue = 0;
 				
 				if (nearestItem.GetWet() >= GameConstants.STATE_DAMP)
 				{
-					dryModifier = (-1 * m_ExecuteInterval * nearestItem.GetDryingIncrement("groundHeatSource")) / distanceToTemperatureSource;
-					Math.Clamp(dryModifier, nearestItem.GetWetMin(), nearestItem.GetWetMax());
-					nearestItem.AddWet(dryModifier);
+					dryValue = (-1 * m_ExecuteInterval * nearestItem.GetDryingIncrement("groundHeatSource")) * pSettings.m_ItemDryModifier * distanceToTemperatureSource;
+					Math.Clamp(dryValue, nearestItem.GetWetMin(), nearestItem.GetWetMax());
+					nearestItem.AddWet(dryValue);
 				}
 				
 				array<EntityAI> cargoEntities = new array<EntityAI>();
@@ -30,12 +33,12 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 					ItemBase cargoItem = ItemBase.Cast(cargoEntity);
 					if (cargoItem)
 					{
-						dryModifier = 0;
+						dryValue = 0;
 						if (cargoItem.GetWet() >= GameConstants.STATE_DAMP)
 						{
-							dryModifier = (-1 * m_ExecuteInterval * cargoItem.GetDryingIncrement("groundHeatSource")) / distanceToTemperatureSource;
-							Math.Clamp(dryModifier, cargoItem.GetWetMin(), cargoItem.GetWetMax());
-							cargoItem.AddWet(dryModifier);
+							dryValue = (-1 * m_ExecuteInterval * cargoItem.GetDryingIncrement("groundHeatSource")) *  pSettings.m_ItemDryModifier * distanceToTemperatureSource;
+							Math.Clamp(dryValue, cargoItem.GetWetMin(), cargoItem.GetWetMax());
+							cargoItem.AddWet(dryValue);
 						}
 					}
 				}
@@ -106,30 +109,25 @@ class UniversalTemperatureSourceLambdaBaseImpl : UniversalTemperatureSourceLambd
 		
 		// go through any attachments and cargo, recursive
 		int inventoryAttCount = ent.GetInventory().AttachmentCount();
-		if (inventoryAttCount > 0)
+		for (int inAttIdx = 0; inAttIdx < inventoryAttCount; ++inAttIdx)
 		{
 			EntityAI attachmentEnt;
-			for (int inAttIdx = 0; inAttIdx < inventoryAttCount; ++inAttIdx)
+			if (Class.CastTo(attachmentEnt,ent.GetInventory().GetAttachmentFromIndex(inAttIdx)))
 			{
-				if (Class.CastTo(attachmentEnt,ent.GetInventory().GetAttachmentFromIndex(inAttIdx)))
-				{
-					UpdateVicinityTemperatureRecursive(attachmentEnt,dta,heatPermCoef);
-				}
+				UpdateVicinityTemperatureRecursive(attachmentEnt,dta,heatPermCoef);
 			}
 		}
 		
-		if (ent.GetInventory().GetCargo())
+		CargoBase cargo = ent.GetInventory().GetCargo();
+		if (cargo)
 		{
-			int inventoryItemCount = ent.GetInventory().GetCargo().GetItemCount();
-			if (inventoryItemCount > 0)
+			int inventoryItemCount = cargo.GetItemCount();
+			for (int j = 0; j < inventoryItemCount; ++j)
 			{
 				EntityAI cargoEnt;
-				for (int j = 0; j < inventoryItemCount; ++j)
+				if (Class.CastTo(cargoEnt, cargo.GetItem(j)))
 				{
-					if (Class.CastTo(cargoEnt,ent.GetInventory().GetCargo().GetItem(j)))
-					{
-						UpdateVicinityTemperatureRecursive(cargoEnt,dta,heatPermCoef);
-					}
+					UpdateVicinityTemperatureRecursive(cargoEnt, dta, heatPermCoef);
 				}
 			}
 		}

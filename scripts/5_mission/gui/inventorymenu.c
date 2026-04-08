@@ -114,7 +114,7 @@ class InventoryMenu extends UIScriptedMenu
 		
 		SetFocus( layoutRoot );
 		
-		MissionGameplay mission = MissionGameplay.Cast( GetGame().GetMission() );
+		MissionGameplay mission = MissionGameplay.Cast( g_Game.GetMission() );
 		if( mission )
 		{
 			mission.MoveHudForInventory( true );
@@ -146,7 +146,7 @@ class InventoryMenu extends UIScriptedMenu
 		PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR).Stop();
 		if(m_Inventory)
 			m_Inventory.OnHide();
-		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay mission = MissionGameplay.Cast(g_Game.GetMission());
 		if(mission)
 		{
 			mission.MoveHudForInventory( false );
@@ -170,7 +170,7 @@ class InventoryMenu extends UIScriptedMenu
 	override void OnPlayerDeath()
 	{
 		super.OnPlayerDeath();
-		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay mission = MissionGameplay.Cast(g_Game.GetMission());
 		if (mission)
 		{
 			mission.HideInventory();

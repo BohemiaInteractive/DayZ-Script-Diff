@@ -13,7 +13,7 @@ class RestrainingToolLocked extends ItemBase
 	{
 		super.EEItemLocationChanged(oldLoc, newLoc);
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( oldLoc.IsValid() && oldLoc.GetParent() )
 			{
@@ -48,7 +48,7 @@ class RestrainingToolLocked extends ItemBase
 			}
 		}
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( newLoc.GetType() != InventoryLocationType.HANDS )
 			{

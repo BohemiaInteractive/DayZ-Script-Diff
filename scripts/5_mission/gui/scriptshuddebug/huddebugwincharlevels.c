@@ -59,12 +59,12 @@ class HudDebugWinCharLevels extends HudDebugWinBase
 	override void SetUpdate( bool state )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param1<bool> params = new Param1<bool>( state );
 			if ( player )

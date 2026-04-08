@@ -104,7 +104,7 @@ class ActionRepairTentPart: ActionContinuousBase
 		ItemBase usedItem = action_data.m_MainItem;
 		
 		string damageZone = RepairTentPartActionData.Cast(action_data).m_DamageZone;
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 			damageZone = m_CurrentDamageZone;
 		
 		if ( targetParent && targetParent.IsInherited(TentBase) && damageZone != "" ) 

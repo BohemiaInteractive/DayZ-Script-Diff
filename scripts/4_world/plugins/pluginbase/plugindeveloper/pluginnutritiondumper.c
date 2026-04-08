@@ -15,7 +15,7 @@ class PluginNutritionDumper extends PluginBase
 	{
 		m_AllPaths.Insert("CfgVehicles");
 		m_AllPaths.Insert("cfgLiquidDefinitions");
-		m_Player = PlayerBase.Cast(GetGame().GetPlayer());
+		m_Player = PlayerBase.Cast(g_Game.GetPlayer());
 	}
 	
 	void CheckInit()
@@ -27,13 +27,13 @@ class PluginNutritionDumper extends PluginBase
 		for(int i = 0; i < m_AllPaths.Count(); i++)
 		{
 			config_path = m_AllPaths.Get(i);
-			int children_count = GetGame().ConfigGetChildrenCount(config_path);
+			int children_count = g_Game.ConfigGetChildrenCount(config_path);
 			
 			for(int x = 0; x < children_count; x++)
 			{
-				GetGame().ConfigGetChildName(config_path, x, child_name);
+				g_Game.ConfigGetChildName(config_path, x, child_name);
 				path = config_path + " " + child_name;
-				scope = GetGame().ConfigGetInt( config_path + " " + child_name + " scope" );
+				scope = g_Game.ConfigGetInt( config_path + " " + child_name + " scope" );
 				bool should_check = 1;
 				if( config_path == "CfgVehicles" && scope == 0)
 				{
@@ -42,11 +42,11 @@ class PluginNutritionDumper extends PluginBase
 				
 				if ( should_check )
 				{
-					bool has_nutrition = GetGame().ConfigIsExisting(path + " Nutrition");
-					bool has_stages = GetGame().ConfigIsExisting(path + " Food");
+					bool has_nutrition = g_Game.ConfigIsExisting(path + " Nutrition");
+					bool has_stages = g_Game.ConfigIsExisting(path + " Food");
 					if(has_nutrition || has_stages)
 					{
-						EntityAI item = PlayerBase.Cast(GetGame().GetPlayer()).SpawnEntityOnGroundOnCursorDir(child_name,1);
+						EntityAI item = PlayerBase.Cast(g_Game.GetPlayer()).SpawnEntityOnGroundOnCursorDir(child_name,1);
 						Edible_Base edible = Edible_Base.Cast(item);
 						if(edible)
 						{

@@ -10,7 +10,7 @@ class ModsMenuSimple extends ScriptedWidgetEventHandler
 	
 	void ModsMenuSimple(array<ref ModInfo> data, Widget parent, ModsMenuDetailed detail_menu)
 	{
-		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_simple.layout", parent);
+		m_Root = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/mods_menu/mods_menu_simple.layout", parent);
 		m_MoreButton = m_Root.FindAnyWidget("ModMore");
 		m_MoreHighlight = m_Root.FindAnyWidget("ModMoreOverlay");
 		m_Data = new map<ModInfo, ref ModsMenuSimpleEntry>;

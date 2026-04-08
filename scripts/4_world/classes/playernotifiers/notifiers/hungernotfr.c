@@ -6,10 +6,6 @@ class HungerNotfr: NotifierBase
 	protected const float 	INC_TRESHOLD_LOW 			= 0;
 	protected const float 	INC_TRESHOLD_MED 			= 0.35;
 	protected const float 	INC_TRESHOLD_HIGH			= 0.57;
-	
-	void HungerNotfr(NotifiersManager manager)
-	{
-	}
 
 	override int GetNotifierType()
 	{
@@ -42,16 +38,6 @@ class HungerNotfr: NotifierBase
 		Print("blood:"+ typename.EnumToString(EStatLevels,m_Player.GetStatLevelBlood()));
 		*/
 	}
-
-	override void DisplayBadge()
-	{
-		
-	}
-
-	override void HideBadge()
-	{
-	}
-
 	
 	override float GetObservedValue()
 	{

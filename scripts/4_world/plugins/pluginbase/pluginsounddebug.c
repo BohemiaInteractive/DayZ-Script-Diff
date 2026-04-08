@@ -68,7 +68,7 @@ class PluginSoundDebug extends PluginBase
 			m_soundParams = new SoundParams(soundsetName);
 			m_soundBuilder = new SoundObjectBuilder(m_soundParams);
 			m_soundObject = m_soundBuilder.BuildSoundObject();
-			m_soundObject.SetPosition(GetGame().GetPlayer().GetPosition() + posOffset);
+			m_soundObject.SetPosition(g_Game.GetPlayer().GetPosition() + posOffset);
 		}
 		
 		DbgUI.Text("SoundObjectBuilder: ");
@@ -128,10 +128,10 @@ class PluginSoundDebug extends PluginBase
 					
 			if(DbgUI.Button("Create and play"))
 			{
-				m_wave = GetGame().GetSoundScene().Play3D(m_soundObject, m_soundBuilder);
+				m_wave = g_Game.GetSoundScene().Play3D(m_soundObject, m_soundBuilder);
 				m_wave.SetFadeInFactor(fadeInVolume);
 				m_wave.Skip(skip);
-				m_wave.SetPosition(GetGame().GetPlayer().GetPosition() + posOffset2);
+				m_wave.SetPosition(g_Game.GetPlayer().GetPosition() + posOffset2);
 			}
 		}
 		
@@ -162,7 +162,7 @@ class PluginSoundDebug extends PluginBase
 			if(DbgUI.Button("StopRepeat"))
 				m_wave.Loop(false);
 			if(DbgUI.Button("Set position"))
-				m_wave.SetPosition(GetGame().GetPlayer().GetPosition() + posOffset2);
+				m_wave.SetPosition(g_Game.GetPlayer().GetPosition() + posOffset2);
 		}
 		
 		DbgUI.End();

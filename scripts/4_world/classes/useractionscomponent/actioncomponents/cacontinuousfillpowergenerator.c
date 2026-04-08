@@ -75,7 +75,7 @@ class CAContinuousFillPowerGenerator : CAContinuousFill
 		}
 		
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			PowerGeneratorBase pg = PowerGeneratorBase.Cast(action_data.m_Target.GetObject()); // get power generator
 			int consumed_fuel = pg.AddFuel( m_SpentQuantity );

@@ -141,7 +141,7 @@ class HandGuardIsSameItemInHands extends HandGuardBase
 	override bool GuardCondition(HandEventBase e)
 	{
 		bool result = false;
-		if (e.GetSrcEntity() == m_Player.GetHumanInventory().GetEntityInHands())
+		if (e.GetSrcEntity() == m_Player.GetEntityInHands())
 		{
 			result = true;
 		}
@@ -149,7 +149,7 @@ class HandGuardIsSameItemInHands extends HandGuardBase
 		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
-			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - srcItem = " + e.GetSrcEntity() + " hnd= " + m_Player.GetHumanInventory().GetEntityInHands(), "HandGuardIsSameItemInHands" , "n/a", "GuardCondition", e.m_Player.ToString() );
+			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - srcItem = " + e.GetSrcEntity() + " hnd= " + m_Player.GetEntityInHands(), "HandGuardIsSameItemInHands" , "n/a", "GuardCondition", e.m_Player.ToString() );
 		}
 		#endif
 		return result;
@@ -163,7 +163,7 @@ class HandGuardHasDestroyedItemInHands extends HandGuardBase
 
 	override bool GuardCondition(HandEventBase e)
 	{
-		EntityAI hnd = m_Player.GetHumanInventory().GetEntityInHands();
+		EntityAI hnd = m_Player.GetEntityInHands();
 		if (e.GetSrcEntity())
 		{
 			if (e.GetSrcEntity() == hnd)
@@ -216,7 +216,7 @@ class HandGuardHasItemInHands extends HandGuardBase
 	override bool GuardCondition(HandEventBase e)
 	{
 		bool result = false;
-		if (m_Player.GetHumanInventory().GetEntityInHands())
+		if (m_Player.GetEntityInHands())
 		{
 			result = true;
 		}
@@ -224,7 +224,7 @@ class HandGuardHasItemInHands extends HandGuardBase
 		#ifdef ENABLE_LOGGING
 		if ( LogManager.IsInventoryHFSMLogEnable() )
 		{	
-			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - " + m_Player.GetHumanInventory().GetEntityInHands(), "HandGuardHasItemInHands" , "n/a", "GuardCondition", m_Player.ToString() );
+			Debug.InventoryHFSMLog("GuardCondition result: " + result + " - " + m_Player.GetEntityInHands(), "HandGuardHasItemInHands" , "n/a", "GuardCondition", m_Player.ToString() );
 		}
 		#endif
 		return result;
@@ -241,7 +241,7 @@ class HandGuardHasRoomForItem extends HandGuardBase
 	{
 		if (e.GetDst() && e.GetDst().IsValid())
 		{
-			if ( !GetGame().IsDedicatedServer())
+			if ( !g_Game.IsDedicatedServer())
 			{
 				if (m_Player)
 					m_Player.GetHumanInventory().ClearInventoryReservationEx(e.GetDst().GetItem(),e.GetDst());
@@ -261,7 +261,7 @@ class HandGuardHasRoomForItem extends HandGuardBase
 			}
 				
 			
-			if ( !GetGame().IsDedicatedServer())
+			if ( !g_Game.IsDedicatedServer())
 			{
 				if (m_Player)
 					m_Player.GetHumanInventory().AddInventoryReservationEx(e.GetDst().GetItem(), e.GetDst(), GameInventory.c_InventoryReservationTimeoutShortMS);

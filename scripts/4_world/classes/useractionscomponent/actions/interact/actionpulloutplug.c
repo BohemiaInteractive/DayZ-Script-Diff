@@ -34,7 +34,7 @@ class ActionPullOutPlug : ActionInteractBase
 		{
 			string selection = targetEntity.GetActionComponentName(target.GetComponentIndex());
 			
-			if (GetGame().IsServer())
+			if (g_Game.IsServer())
 				return targetEntity.GetCompEM().GetPlugOwner(selection) != null;
 			else
 				return targetEntity.GetCompEM().IsSelectionAPlug(selection);

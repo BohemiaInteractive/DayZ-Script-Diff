@@ -21,16 +21,16 @@ class LiquidInfo
 	{
 		string path = "cfgLiquidDefinitions " + className;
 		m_LiquidClassName = className;
-		GetGame().ConfigGetTextRaw(string.Format("%1 displayName", path), m_LiquidDisplayName);
-		GetGame().FormatRawConfigStringKeys(m_LiquidDisplayName);
-		m_LiquidType = GetGame().ConfigGetInt(string.Format("%1 type", path));
-		if (GetGame().ConfigIsExisting(string.Format("%1 liquidFreezeThreshold", path)))
-			m_TemperatureLiquidFreezeThreshold = GetGame().ConfigGetFloat(string.Format("%1 liquidFreezeThreshold", path));
-		if (GetGame().ConfigIsExisting(string.Format("%1 liquidThawThreshold", path)))
-			m_TemperatureLiquidThawThreshold = GetGame().ConfigGetFloat(string.Format("%1 liquidThawThreshold", path));
-		if (GetGame().ConfigIsExisting(string.Format("%1 liquidBoilingThreshold", path)))
-			m_TemperatureLiquidBoilThreshold = GetGame().ConfigGetFloat(string.Format("%1 liquidBoilingThreshold", path));
-		m_Flammability = GetGame().ConfigGetFloat(string.Format("%1 flammability", path));
+		g_Game.ConfigGetTextRaw(string.Format("%1 displayName", path), m_LiquidDisplayName);
+		g_Game.FormatRawConfigStringKeys(m_LiquidDisplayName);
+		m_LiquidType = g_Game.ConfigGetInt(string.Format("%1 type", path));
+		if (g_Game.ConfigIsExisting(string.Format("%1 liquidFreezeThreshold", path)))
+			m_TemperatureLiquidFreezeThreshold = g_Game.ConfigGetFloat(string.Format("%1 liquidFreezeThreshold", path));
+		if (g_Game.ConfigIsExisting(string.Format("%1 liquidThawThreshold", path)))
+			m_TemperatureLiquidThawThreshold = g_Game.ConfigGetFloat(string.Format("%1 liquidThawThreshold", path));
+		if (g_Game.ConfigIsExisting(string.Format("%1 liquidBoilingThreshold", path)))
+			m_TemperatureLiquidBoilThreshold = g_Game.ConfigGetFloat(string.Format("%1 liquidBoilingThreshold", path));
+		m_Flammability = g_Game.ConfigGetFloat(string.Format("%1 flammability", path));
 	}
 }
 
@@ -65,9 +65,9 @@ class Liquid
 		for (int i = 0; i < cfg_item_count; i++)
 		{
 			string liquid_class_name;
-			GetGame().ConfigGetChildName(cfg_classname, i, liquid_class_name);
+			g_Game.ConfigGetChildName(cfg_classname, i, liquid_class_name);
 			string liquid_full_path = string.Format("%1 %2",cfg_classname, liquid_class_name);
-			int config_liquid_type = GetGame().ConfigGetInt(string.Format("%1 type", liquid_full_path));
+			int config_liquid_type = g_Game.ConfigGetInt(string.Format("%1 type", liquid_full_path));
 			
 			NutritionalProfile profile = SetUpNutritionalProfile(config_liquid_type, liquid_class_name);
 			LiquidInfo info = new LiquidInfo(liquid_class_name, profile);
@@ -276,7 +276,7 @@ class Liquid
 	*/
 	static float GetLiquidTypeEnviroTemperature(int liquidType)
 	{
-		float ret = GetGame().GetMission().GetWorldData().GetLiquidTypeEnviroTemperature(liquidType);
+		float ret = g_Game.GetMission().GetWorldData().GetLiquidTypeEnviroTemperature(liquidType);
 		//ret = Math.Max(ret,GetLiquidFreezeThreshold(liquidType));
 		
 		return ret;
@@ -294,20 +294,20 @@ class Liquid
 		for (int i = 0; i < cfg_item_count; i++)
 		{
 			string liquid_class_name;
-			GetGame().ConfigGetChildName(cfg_classname, i, liquid_class_name);
+			g_Game.ConfigGetChildName(cfg_classname, i, liquid_class_name);
 			string liquid_full_path = string.Format("%1 %2", cfg_classname, liquid_class_name);
-			int config_liquid_type = GetGame().ConfigGetInt(string.Format("%1 type", liquid_full_path));
+			int config_liquid_type = g_Game.ConfigGetInt(string.Format("%1 type", liquid_full_path));
 			
 			if (config_liquid_type == liquid_type)// found the specific class, now lets extract the values
 			{
 				if (!is_nutrition_property) 
 				{
-					GetGame().ConfigGetText(string.Format("%1 %2", liquid_full_path, property_name), property_value);
+					g_Game.ConfigGetText(string.Format("%1 %2", liquid_full_path, property_name), property_value);
 					return property_value;
 				}
 				else
 				{
-					GetGame().ConfigGetText(string.Format("%1 Nutrition %2", liquid_full_path, property_name), property_value);
+					g_Game.ConfigGetText(string.Format("%1 Nutrition %2", liquid_full_path, property_name), property_value);
 					return property_value;
 				}
 			}

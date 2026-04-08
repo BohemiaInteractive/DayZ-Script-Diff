@@ -15,12 +15,12 @@ class ProjectedCrosshair extends ScriptedWidgetEventHandler
 		m_Visible = false;
 		m_Debug = false;
 
-		GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(this.Update);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Insert(this.Update);
 	}
 
 	void ~ProjectedCrosshair()
 	{
-		GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Remove(this.Update);
+		g_Game.GetUpdateQueue(CALL_CATEGORY_GUI).Remove(this.Update);
 	}
 	
 	void OnWidgetScriptInit(Widget w)
@@ -39,12 +39,12 @@ class ProjectedCrosshair extends ScriptedWidgetEventHandler
 		if (!m_Debug) return;
 		if (!m_Player) GetPlayer();
 
-		if ( m_Player && m_Player.IsPlayerSelected() && m_Player.IsRaised() && !m_Player.IsInIronsights() && !GetGame().IsInventoryOpen() )
+		if ( m_Player && m_Player.IsPlayerSelected() && m_Player.IsRaised() && !m_Player.IsInIronsights() && !g_Game.IsInventoryOpen() )
 		{
 			float sx, sy;
 
 			GetCrosshairPosition();
-			vector screenSpace = GetGame().GetScreenPos(m_Position);
+			vector screenSpace = g_Game.GetScreenPos(m_Position);
 
 			m_Root.GetSize(sx, sy);
 			screenSpace[0] = screenSpace[0] - sx/2;
@@ -63,7 +63,7 @@ class ProjectedCrosshair extends ScriptedWidgetEventHandler
 	// getters
   	protected void GetPlayer()
 	{
-		Class.CastTo(m_Player, GetGame().GetPlayer());
+		Class.CastTo(m_Player, g_Game.GetPlayer());
 	}
 
 	protected void GetCrosshairPosition()

@@ -55,7 +55,7 @@ class CombinationLock extends ItemBase
 	{
 		super.EEInit();
 		
-		GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( SetInitialized, 1000, false );
+		g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( SetInitialized, 1000, false );
 		//SetInitialized();
 		
 		//set visual on init
@@ -77,7 +77,7 @@ class CombinationLock extends ItemBase
 		super.OnItemLocationChanged( old_owner, new_owner );
 		
 		//Check combination lock
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( IsInitialized() && new_owner && new_owner.IsInherited( BaseBuildingBase ) )
 			{
@@ -134,7 +134,7 @@ class CombinationLock extends ItemBase
 		super.AfterStoreLoad();		
 		
 		//Check combination lock
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			EntityAI parent = GetHierarchyParent();
 			if ( parent && parent.IsInherited( BaseBuildingBase ) )
@@ -151,10 +151,10 @@ class CombinationLock extends ItemBase
 	void Synchronize()
 	{
 		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] CombinationLock.Synchronize " + " m_Combination=" + m_Combination + " m_CombinationLocked=" + m_CombinationLocked);
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			SetSynchDirty();
-			GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( ResetActionVar, 1000);//synced var used to trigger client sound needs to be reset after triggering the sound
+			g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( ResetActionVar, 1000);//synced var used to trigger client sound needs to be reset after triggering the sound
 			UpdateVisuals();
 		}
 	}
@@ -309,7 +309,7 @@ class CombinationLock extends ItemBase
 			fence.GetInventory().SetSlotLock( inventory_location.GetSlot(), false );			
 	
 			//drop entity from attachment slot
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 			{
 				if (player)
 					player.ServerDropEntity(this);
@@ -400,7 +400,7 @@ class CombinationLock extends ItemBase
 	//destroy lock
 	void DestroyLock()
 	{
-		GetGame().ObjectDelete( this );
+		g_Game.ObjectDelete( this );
 	}
 		
 	// --- VISUALS
@@ -409,13 +409,13 @@ class CombinationLock extends ItemBase
 		//Client/Server
 		if ( IsLockedOnGate() )
 		{
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( HideItem, 		0, false );
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( ShowAttached, 	0, false );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( HideItem, 		0, false );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( ShowAttached, 	0, false );
 		}
 		else
 		{
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( ShowItem, 		0, false );
-			GetGame().GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( HideAttached, 	0, false );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( ShowItem, 		0, false );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( HideAttached, 	0, false );
 		}
 	}
 	

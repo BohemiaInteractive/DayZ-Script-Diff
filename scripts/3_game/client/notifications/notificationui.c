@@ -19,7 +19,7 @@ class NotificationUI
 	
 	void NotificationUI()
 	{
-		m_Root					= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/notifications/notifications.layout");
+		m_Root					= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/notifications/notifications.layout");
 		m_Spacer				= m_Root.FindAnyWidget( "NotificationSpacer" );
 		m_VoiceContent			= m_Root.FindAnyWidget( "VoiceContent" );
 		m_NotificationContent	= m_Root.FindAnyWidget( "NotificationContent" );
@@ -47,7 +47,7 @@ class NotificationUI
 	
 	void AddNotification( NotificationRuntimeData data )
 	{
-		Widget notification			= GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/notifications/notification_element.layout", m_NotificationContent);
+		Widget notification			= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/notifications/notification_element.layout", m_NotificationContent);
 		
 		ImageWidget icon			= ImageWidget.Cast( notification.FindAnyWidget( "Image" ) );
 		RichTextWidget title		= RichTextWidget.Cast( notification.FindAnyWidget( "Title" ) );
@@ -89,7 +89,7 @@ class NotificationUI
 			Widget notification;
 			if (!m_WidgetTimers.Contains(player))
 			{
-				notification = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/notifications/notification_voice_element.layout", m_VoiceContent);
+				notification = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/notifications/notification_voice_element.layout", m_VoiceContent);
 			}
 			else
 			{
@@ -147,7 +147,7 @@ class NotificationUI
 	
 	void UpdateOffset()
 	{
-		UIScriptedMenu menu = UIScriptedMenu.Cast(GetGame().GetUIManager().GetMenu());
+		UIScriptedMenu menu = UIScriptedMenu.Cast(g_Game.GetUIManager().GetMenu());
 		if (menu)
 		{
 			Widget expNotification = menu.GetLayoutRoot().FindAnyWidget("notification_root");

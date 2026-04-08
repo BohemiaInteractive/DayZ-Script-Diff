@@ -28,7 +28,7 @@ class SawOFFB95 extends RecipeBase
 		m_IngredientDestroy[0] = false;			// true = destroy, false = do nothing
 
 		//ingredient 2
-		InsertIngredient(1,"Hacksaw");
+		InsertIngredient(1,"Hacksaw", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 
 		m_IngredientAddHealth[1] = -10;
 		m_IngredientSetHealth[1] = -1;

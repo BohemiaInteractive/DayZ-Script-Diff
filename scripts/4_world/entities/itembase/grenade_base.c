@@ -96,7 +96,7 @@ class Grenade_Base : ExplosivesBase
 	{
 		float delay = Math.RandomFloat(1, 20);
 		delay *= 1000; //! to millis
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(ActivateImmediate, delay, false);
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(ActivateImmediate, delay, false);
 	}
 	
 	void SetPinnable(bool state)
@@ -176,7 +176,7 @@ class Grenade_Base : ExplosivesBase
 	protected void OnPin()
 	{
 		m_Pinned = true;
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			ForceFarBubble(false);
 			SetSynchDirty();
@@ -188,7 +188,7 @@ class Grenade_Base : ExplosivesBase
 	protected void OnUnpin()
 	{
 		m_Pinned = false;
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			ForceFarBubble(true);
 			SetSynchDirty();
@@ -200,7 +200,7 @@ class Grenade_Base : ExplosivesBase
 	protected void OnActivateStarted();
 	protected void OnActivateFinished()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			SetHealth("", "", 0.0); // causes explosion when grenade is destroyed
 			SetTakeable(false);
@@ -209,7 +209,7 @@ class Grenade_Base : ExplosivesBase
 	
 	protected void OnActivateImmediate()
 	{
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			SetHealth("", "", 0.0); // causes explosion when grenade is destroyed
 			SetTakeable(false);
@@ -222,7 +222,7 @@ class Grenade_Base : ExplosivesBase
 	{
 		super.OnStoreSave(ctx);
 		
-		if (GetGame().SaveVersion() >= 107)
+		if (g_Game.SaveVersion() >= 107)
 		{
 			ctx.Write(m_Pinned);
 		}

@@ -27,7 +27,7 @@ class UnconsciousnessMdfr: ModifierBase
 	
 	override void OnDeactivate(PlayerBase player)
 	{
-		player.m_UnconsciousEndTime = GetGame().GetTime();
+		player.m_UnconsciousEndTime = g_Game.GetTime();
 		DayZPlayerSyncJunctures.SendPlayerUnconsciousness(player, false);
 	}
 	

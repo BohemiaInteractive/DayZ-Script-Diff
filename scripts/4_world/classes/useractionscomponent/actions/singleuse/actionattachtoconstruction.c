@@ -111,7 +111,7 @@ class ActionAttachToConstruction: ActionSingleUseBase
 	
 	override void OnExecuteServer( ActionData action_data )
 	{
-		if ( !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsMultiplayer() )
 		{
 			ClearInventoryReservationEx(action_data);
 			

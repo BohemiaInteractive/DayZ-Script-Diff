@@ -34,7 +34,7 @@
 			
 			if (m_cnt > 10)
 			{
-				ScriptCallQueue queue = GetGame().GetCallQueue();
+				ScriptCallQueue queue = g_Game.GetCallQueue();
 				queue.Remove(Test);
 			}
 		}
@@ -42,7 +42,7 @@
 
 	void Test(MyObject obj)
 	{
-		ScriptCallQueue queue = GetGame().GetCallQueue(); 
+		ScriptCallQueue queue = g_Game.GetCallQueue(); 
 		queue.CallLater(obj.Hello, 5000, false, 65, "world"); // adds call 'obj.Hello(65, "world")' into queue, and it will be executed once after 5s
 		queue.CallLater(obj.Test, 3000, true); // adds call 'obj.Test()' into queue, and it will be executed each 3s
 		queue.Call(obj.Hello, 72, "world 2"); // adds call 'obj.Hello(72, "world 2")' into queue, and it will be executed next frame (on next call of ScriptCallQueue.Tick)
@@ -105,7 +105,7 @@ class ScriptCallQueue
 
 	void OnPlayerSpaned(Player p)
 	{
-		Game game = GetGame();
+		Game game = g_Game;
 		p.m_DeathInvoker.Insert(LogPlayerDeath);
 		p.m_DeathInvoker.Insert(game.RemovePlayer);
 		p.m_DeathInvoker.Insert(game.GameOver);

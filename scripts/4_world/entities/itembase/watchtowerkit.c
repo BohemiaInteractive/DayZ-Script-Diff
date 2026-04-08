@@ -17,10 +17,10 @@ class WatchtowerKit extends KitBase
 	{
 		super.OnPlacementComplete( player, position, orientation );
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			//Create watchtower
-			Watchtower watchtower = Watchtower.Cast( GetGame().CreateObjectEx( "Watchtower", GetPosition(), ECE_PLACE_ON_SURFACE ) );
+			Watchtower watchtower = Watchtower.Cast( g_Game.CreateObjectEx( "Watchtower", GetPosition(), ECE_PLACE_ON_SURFACE ) );
 			watchtower.SetPosition( position );
 			watchtower.SetOrientation( orientation );
 			
@@ -43,7 +43,7 @@ class WatchtowerKit extends KitBase
 	{
 		if (!IsHologram())
 		{
-			ItemBase stick = ItemBase.Cast(GetGame().CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
+			ItemBase stick = ItemBase.Cast(g_Game.CreateObjectEx("WoodenStick",GetPosition(),ECE_PLACE_ON_SURFACE));
 			MiscGameplayFunctions.TransferItemProperties(this, stick);
 			stick.SetQuantity(4);
 			Rope rope = Rope.Cast(item);

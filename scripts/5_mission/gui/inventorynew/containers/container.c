@@ -419,10 +419,10 @@ class Container extends LayoutHolder
 			
 			if (ent)
 			{
-				res = GetGame().GetPlayer().PredictiveTakeOrSwapAttachment(ent);
+				res = g_Game.GetPlayer().PredictiveTakeOrSwapAttachment(ent);
 				if(!res)
 				{
-					res = GetGame().GetPlayer().PredictiveTakeEntityToInventory(FindInventoryLocationType.ATTACHMENT, ent);
+					res = g_Game.GetPlayer().PredictiveTakeEntityToInventory(FindInventoryLocationType.ATTACHMENT, ent);
 				}
 			}
 			return res;
@@ -503,7 +503,7 @@ class Container extends LayoutHolder
 		
 		if (focusedEntity)
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 			if (player)
 			{
@@ -534,7 +534,7 @@ class Container extends LayoutHolder
 		
 		if (focusedEntity)
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			EntityAI entityInHands = player.GetItemInHands();
 			if (entityInHands)
 			{
@@ -580,7 +580,7 @@ class Container extends LayoutHolder
 		if (focusedEntity)
 		{
 			InventoryLocation il = new InventoryLocation;
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			found = player.GetInventory().FindFreeLocationFor(focusedEntity,FindInventoryLocationType.ATTACHMENT, il);
 			
 			if (found && il.GetParent().GetInventory().FindAttachment(il.GetSlot()))
@@ -626,7 +626,7 @@ class Container extends LayoutHolder
 		
 		if (focusedEntity)
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			return player.GetInventory().CanAddEntityToInventory(focusedEntity,FindInventoryLocationType.CARGO);
 		}
 		return false;
@@ -653,7 +653,7 @@ class Container extends LayoutHolder
 		
 		if (focusedEntity)
 		{
-			EntityAI entityInHands = PlayerBase.Cast(GetGame().GetPlayer()).GetItemInHands();
+			EntityAI entityInHands = PlayerBase.Cast(g_Game.GetPlayer()).GetItemInHands();
 			if (focusedEntity != entityInHands)
 			{
 				return (ItemManager.GetCombinationFlags(entityInHands, focusedEntity) != 0);
@@ -676,7 +676,7 @@ class Container extends LayoutHolder
 		
 		if (focusedEntity)
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			if (focusedEntity.GetHierarchyRootPlayer() == player)
 			{
 				return true;
@@ -690,7 +690,7 @@ class Container extends LayoutHolder
 	{
 		if ( CanAddToQuickbarEx(itemToAssign) )
 		{
-			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 			DayZPlayerInventory dpi;
 			dpi = player.GetDayZPlayerInventory();
 			
@@ -699,9 +699,9 @@ class Container extends LayoutHolder
 				RadialQuickbarMenu.SetItemToAssign(itemToAssign);
 				
 				//open radial quickbar menu
-				if (!GetGame().GetUIManager().IsMenuOpen(MENU_RADIAL_QUICKBAR))
+				if (!g_Game.GetUIManager().IsMenuOpen(MENU_RADIAL_QUICKBAR))
 				{
-					RadialQuickbarMenu.OpenMenu(GetGame().GetUIManager().FindMenu(MENU_INVENTORY));
+					RadialQuickbarMenu.OpenMenu(g_Game.GetUIManager().FindMenu(MENU_INVENTORY));
 				}				
 			}
 			return true;

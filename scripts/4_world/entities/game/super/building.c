@@ -1,10 +1,3 @@
-class House : BuildingBase
-{
-	void House()
-	{
-	}
-}
-
 class BuildingBase : Building
 {
 	static ref map<typename, ref TInputActionMap> m_BuildingTypeActionsMap = new map<typename, ref TInputActionMap>;
@@ -77,7 +70,7 @@ class BuildingBase : Building
 	
 	void RemoveAction(typename actionName)
 	{
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		ActionBase action = player.GetActionManager().GetAction(actionName);
 		typename ai = action.GetInputType();
 		ref array<ActionBase_Basic> action_array = m_InputActionMap.Get( ai );
@@ -86,6 +79,13 @@ class BuildingBase : Building
 		{
 			action_array.RemoveItem(action);
 		}
+	}
+};
+
+class House : BuildingBase
+{
+	void House()
+	{
 	}
 };
 

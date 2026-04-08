@@ -55,6 +55,7 @@ class FireplaceBase : ItemBase
 	const float PARAM_FULL_HEAT_RADIUS 				= 2.0;		//! radius in which objects are fully heated by fire
 	const float PARAM_HEAT_RADIUS 					= 4.0;		//! radius in which objects are heated by fire
 	const float PARAM_MAX_TRANSFERED_TEMPERATURE	= 20;		//! maximum value for temperature that will be transfered to player (environment)
+	const float PARAM_DRY_MODIFIER					= 1.3;
 	
 	//staging constants
 	const int 	MIN_STONES_TO_BUILD_CIRCLE			= 8;		//! minimum amount of stones for circle
@@ -84,7 +85,7 @@ class FireplaceBase : ItemBase
 	const float IGNITE_WIND_THRESHOLD				= 0.8; 		//fireplace can not be ignited above this multiple of max wind
 	
 	protected const float RAIN_EFFECT_LIMIT 		= 0.4;		//! rain level that triggers fireplace to start soaking
-	protected const float SNOWFALL_EFFECT_LIMIT 	= 1.3;		//! snowfall level that triggers fireplace to start soaking
+	protected const float SNOWFALL_EFFECT_LIMIT 	= 1.5;		//! snowfall level that triggers fireplace to start soaking
 	protected const float RAIN_WETNESS_INCREASE 	= 0.02;		//! value for calculating of  wetness that fireplace gain when raining
 	protected const float SNOWFALL_WETNESS_INCREASE	= 0.01;		//! value for calculating of  wetness that fireplace gain when raining
 
@@ -281,6 +282,7 @@ class FireplaceBase : ItemBase
 		m_UTSSettings.m_TemperatureCap		= PARAM_MAX_TRANSFERED_TEMPERATURE;
 		m_UTSSettings.m_RangeFull			= PARAM_FULL_HEAT_RADIUS;
 		m_UTSSettings.m_RangeMax			= PARAM_HEAT_RADIUS;
+		m_UTSSettings.m_ItemDryModifier			= PARAM_DRY_MODIFIER;
 		
 		m_UTSSettings.m_EnableOnTemperatureControl		= true;
 		m_UTSSettings.m_ActiveTemperatureThreshold 		= 250.0;
@@ -315,7 +317,7 @@ class FireplaceBase : ItemBase
 		if (m_CookingProcess == null)
 			m_CookingProcess = new Cooking();
 		
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			InitializeTemperatureSources();
 		}
@@ -341,7 +343,7 @@ class FireplaceBase : ItemBase
 		super.OnItemLocationChanged(old_owner, new_owner);
 		
 		//refresh physics after location change (with delay)
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplacePhysics);
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplacePhysics);
 		
 		InventoryLocation loc = new InventoryLocation();
 		GetInventory().GetCurrentInventoryLocation(loc);
@@ -473,7 +475,7 @@ class FireplaceBase : ItemBase
 		//start fire
 		if (IsBurning())
 		{
-			if (GetGame() && GetGame().IsServer()) 
+			if (g_Game && g_Game.IsServer()) 
 			{
 				StartFire(true);			//will be auto-synchronized when starting fire
 			}
@@ -485,14 +487,14 @@ class FireplaceBase : ItemBase
 	//================================================================	
 	void Synchronize()
 	{
-		if (GetGame() && GetGame().IsServer())
+		if (g_Game && g_Game.IsServer())
 		{
 			SetSynchDirty();
 			
-			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			if (g_Game.IsMultiplayer() && g_Game.IsServer())
 			{
 				//Refresh visuals (on server)
-				GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplaceVisuals);
+				g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplaceVisuals);
 			}
 		}
 	}
@@ -683,7 +685,7 @@ class FireplaceBase : ItemBase
 			if (GetLightEntity() && GetLightEntity().GetBrightness() > 0)
 			{
 				// change brightness based on the distance of player to the fireplace
-				Object player 	= GetGame().GetPlayer();
+				Object player 	= g_Game.GetPlayer();
 				float lightDist = m_LightDistance;
 
 				if (IsOven())
@@ -758,7 +760,7 @@ class FireplaceBase : ItemBase
 		
 		//VISUAL STATES
 		//Fuel state
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			// Sticks state
 			if (IsItemTypeAttached(ATTACHMENT_STICKS))
@@ -831,13 +833,13 @@ class FireplaceBase : ItemBase
 		}
 		
 		//refresh physics (with delay)
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplacePhysics);
+		g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).Call(RefreshFireplacePhysics);
 	}
 
 	//! DEPRECATED
 	protected void SetBurntFirewood()
 	{
-		if (GetGame().IsServer() && IsInAnimPhase(ANIMATION_WOOD))
+		if (g_Game.IsServer() && IsInAnimPhase(ANIMATION_WOOD))
 		{
 			SetAnimationPhase(ANIMATION_WOOD, 1);
 			SetAnimationPhase(ANIMATION_BURNT_WOOD, 0);
@@ -1091,7 +1093,7 @@ class FireplaceBase : ItemBase
 	//returns true if particle started, false if not
 	protected bool PlayParticle(out Particle particle, int particle_type, vector pos, bool worldpos = false)
 	{
-		if (!particle && GetGame() && (!GetGame().IsDedicatedServer()))
+		if (!particle && g_Game && (!g_Game.IsDedicatedServer()))
 		{
 			if (!worldpos)
 			{
@@ -1111,7 +1113,7 @@ class FireplaceBase : ItemBase
 	//returns true if particle stopped, false if not
 	protected bool StopParticle(out Particle particle)
 	{
-		if (particle && GetGame() && (!GetGame().IsDedicatedServer()))
+		if (particle && g_Game && (!g_Game.IsDedicatedServer()))
 		{
 			particle.Stop();
 			particle = NULL;
@@ -1762,7 +1764,7 @@ class FireplaceBase : ItemBase
 			if (!IsFireplaceIndoor())
 			{
 				SetAffectPathgraph(false, true);
-				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(GetGame().UpdatePathgraphRegionByObject, 100, false, this);
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(g_Game.UpdatePathgraphRegionByObject, 100, false, this);
 			}
 		}
 		
@@ -1832,7 +1834,7 @@ class FireplaceBase : ItemBase
 		SpendFireConsumable(amount);
 		
 		//set wetness and alter temperature modifier (which will lower temperature increase because of soaking)
-		float rain = GetGame().GetWeather().GetRain().GetActual();
+		float rain = g_Game.GetWeather().GetRain().GetActual();
 		float combinedWindAndSnowfall = MiscGameplayFunctions.GetCombinedSnowfallWindValue();
 
 		if ((rain >= RAIN_EFFECT_LIMIT || combinedWindAndSnowfall >= SNOWFALL_EFFECT_LIMIT) && !IsRoofAbove() && IsOpen() && !IsOven())
@@ -1911,12 +1913,12 @@ class FireplaceBase : ItemBase
 		}
 		
 		//Make noise for AI, only at night
-		if (GetGame().GetWorld().IsNight() && m_CanNoise)
+		if (g_Game.GetWorld().IsNight() && m_CanNoise)
 		{
-			NoiseSystem noise = GetGame().GetNoiseSystem();
+			NoiseSystem noise = g_Game.GetNoiseSystem();
 			if (noise && m_NoisePar)
 			{
-				noise.AddNoisePos(this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+				noise.AddNoisePos(this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
 			}
 			m_CanNoise = false;
 		}
@@ -1946,7 +1948,7 @@ class FireplaceBase : ItemBase
 		if (!IsFireplaceIndoor())
 		{
 			SetAffectPathgraph(false, false);
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(GetGame().UpdatePathgraphRegionByObject, 100, false, this);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(g_Game.UpdatePathgraphRegionByObject, 100, false, this);
 		}
 		
 		Synchronize();
@@ -1995,7 +1997,7 @@ class FireplaceBase : ItemBase
 		if (temperature > target)
 		{
 			//set wetness and alter temperature modifier (which will lower temperature increase because of soaking)
-			float rain = GetGame().GetWeather().GetRain().GetActual();
+			float rain = g_Game.GetWeather().GetRain().GetActual();
 			float combinedWindAndSnowfall = MiscGameplayFunctions.GetCombinedSnowfallWindValue();
 	
 			if ((rain >= RAIN_EFFECT_LIMIT || combinedWindAndSnowfall >= SNOWFALL_EFFECT_LIMIT) && !IsRoofAbove() && IsOpen() && !IsOven())
@@ -2372,8 +2374,8 @@ class FireplaceBase : ItemBase
 	static bool IsWindy()
 	{
 		//check wind
-		float wind_speed = GetGame().GetWeather().GetWindSpeed();
-		float wind_speed_threshold = GetGame().GetWeather().GetWindMaximumSpeed() * FireplaceBase.IGNITE_WIND_THRESHOLD;
+		float wind_speed = g_Game.GetWeather().GetWindSpeed();
+		float wind_speed_threshold = g_Game.GetWeather().GetWindMaximumSpeed() * FireplaceBase.IGNITE_WIND_THRESHOLD;
 
 		return (wind_speed >= wind_speed_threshold);
 	}
@@ -2414,7 +2416,7 @@ class FireplaceBase : ItemBase
 	//Check if it's raining and there is only sky above fireplace
 	static bool IsRainingAboveEntity(notnull EntityAI entity_ai)
 	{
-		return (GetGame() && (GetGame().GetWeather().GetRain().GetActual() >= FireplaceBase.PARAM_IGNITE_RAIN_THRESHOLD));
+		return (g_Game && (g_Game.GetWeather().GetRain().GetActual() >= FireplaceBase.PARAM_IGNITE_RAIN_THRESHOLD));
 	}
 	
 	bool IsRainingAbove()
@@ -2460,8 +2462,8 @@ class FireplaceBase : ItemBase
 	{
 		string surfaceType;
 		vector fireplacePosition = entity_ai.GetPosition();
-		GetGame().SurfaceGetType3D(fireplacePosition[0], fireplacePosition[1] + 1.0, fireplacePosition[2], surfaceType);
-		return (GetGame().ConfigGetInt("CfgSurfaces " + surfaceType + " interior") == 1);
+		g_Game.SurfaceGetType3D(fireplacePosition[0], fireplacePosition[1] + 1.0, fireplacePosition[2], surfaceType);
+		return (g_Game.ConfigGetInt("CfgSurfaces " + surfaceType + " interior") == 1);
 	}
 	bool IsOnInteriorSurface()
 	{
@@ -2494,7 +2496,7 @@ class FireplaceBase : ItemBase
 	bool IsSpaceFor(vector size)
 	{
 		array<Object> objs = {};
-		if (GetGame().IsBoxCollidingGeometry(GetWorldPosition() + Vector(0, size[1] * 0.5 + 0.1, 0), GetDirection().VectorToAngles(), size, ObjIntersect.View, ObjIntersect.Geom, {this}, objs))
+		if (g_Game.IsBoxCollidingGeometry(GetWorldPosition() + Vector(0, size[1] * 0.5 + 0.1, 0), GetDirection().VectorToAngles(), size, ObjIntersect.View, ObjIntersect.Geom, {this}, objs))
 		{
 			foreach (Object obj : objs)
 			{
@@ -2586,7 +2588,7 @@ class FireplaceBase : ItemBase
 	override bool CanBePlaced( Man player, vector position )
 	{
 		string surfaceType;
-		float surfaceHeight = GetGame().SurfaceGetType3D( position[0], position[1], position[2], surfaceType );
+		float surfaceHeight = g_Game.SurfaceGetType3D( position[0], position[1], position[2], surfaceType );
 		if ((position[1] - surfaceHeight) > PLACEMENT_HEIGHT_LIMIT)
 			return false;
 		
@@ -2597,12 +2599,12 @@ class FireplaceBase : ItemBase
 	{
 		super.OnPlacementComplete(player, position, orientation);
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			//remove grass
-			Object cc_object = GetGame().CreateObjectEx(OBJECT_CLUTTER_CUTTER , position, ECE_PLACE_ON_SURFACE);
+			Object cc_object = g_Game.CreateObjectEx(OBJECT_CLUTTER_CUTTER , position, ECE_PLACE_ON_SURFACE);
 			cc_object.SetOrientation(orientation);
-			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(GetGame().ObjectDelete, 1000, false, cc_object);
+			g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(g_Game.ObjectDelete, 1000, false, cc_object);
 		}
 	}
 		
@@ -2617,7 +2619,7 @@ class FireplaceBase : ItemBase
 	// calculates and sets total energy based on possible (fuel/kinidling) item attachments
 	protected void CalcAndSetTotalEnergy()
 	{
-		if (GetGame() && GetGame().IsServer())
+		if (g_Game && g_Game.IsServer())
 		{
 			m_TotalEnergy = 0;
 			
@@ -2625,14 +2627,14 @@ class FireplaceBase : ItemBase
 			{
 				string quantityConfigPath = string.Format("CfgVehicles %1 varQuantityMax", fireConsumableType.GetItemType().ToString());
 				string stackMaxConfigPath = string.Format("CfgSlots Slot_%1 stackMax", fireConsumableType.GetAttSlot());
-				if (GetGame().ConfigIsExisting(quantityConfigPath))
+				if (g_Game.ConfigIsExisting(quantityConfigPath))
 				{
-					float quantityMax = GetGame().ConfigGetFloat(quantityConfigPath);
+					float quantityMax = g_Game.ConfigGetFloat(quantityConfigPath);
 				}
 				
-				if (GetGame().ConfigIsExisting(stackMaxConfigPath))
+				if (g_Game.ConfigIsExisting(stackMaxConfigPath))
 				{
-					float stackMax = GetGame().ConfigGetFloat(stackMaxConfigPath);
+					float stackMax = g_Game.ConfigGetFloat(stackMaxConfigPath);
 				}			
 				
 				//debug
@@ -2656,7 +2658,7 @@ class FireplaceBase : ItemBase
 	// calculates and sets current quantity based on actual (fuel/kinidling) item attachments
 	protected void CalcAndSetQuantity()
 	{
-		if (GetGame() && GetGame().IsServer())
+		if (g_Game && g_Game.IsServer())
 		{
 			float remainingEnergy;
 			
@@ -2707,12 +2709,12 @@ class FireplaceBase : ItemBase
 		string path_cooking_equipment = string.Format("%1 %2 GUIInventoryAttachmentsProps CookingEquipment attachmentSlots", CFG_VEHICLESPATH, GetType());
 		//string path_direct_cooking = "" + CFG_VEHICLESPATH + " " + GetType() + " GUIInventoryAttachmentsProps DirectCooking attachmentSlots";
 		string path_direct_cooking = string.Format("%1 %2 GUIInventoryAttachmentsProps DirectCooking attachmentSlots", CFG_VEHICLESPATH, GetType());
-		if (GetGame().ConfigIsExisting(path_cooking_equipment) && GetGame().ConfigIsExisting(path_direct_cooking))
+		if (g_Game.ConfigIsExisting(path_cooking_equipment) && g_Game.ConfigIsExisting(path_direct_cooking))
 		{
 			array<string> arr_cooking_equipment = new array<string>;
 			array<string> arr_direct_cooking = new array<string>;
-			GetGame().ConfigGetTextArray(path_cooking_equipment,arr_cooking_equipment);
-			GetGame().ConfigGetTextArray(path_direct_cooking,arr_direct_cooking);
+			g_Game.ConfigGetTextArray(path_cooking_equipment,arr_cooking_equipment);
+			g_Game.ConfigGetTextArray(path_direct_cooking,arr_direct_cooking);
 			for (int i = 0; i < arr_cooking_equipment.Count(); i++)
 			{
 				if (lock != GetInventory().GetSlotLock(InventorySlots.GetSlotIdFromString(arr_cooking_equipment[i])))
@@ -2809,7 +2811,7 @@ class FireplaceBase : ItemBase
 	{
 		if (super.OnAction(action_id, player, ctx))
 			return true;
-		if (GetGame().IsServer() || !GetGame().IsMultiplayer())
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
 			if (action_id == EActions.ACTIVATE_ENTITY)
 			{

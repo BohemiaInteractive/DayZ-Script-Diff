@@ -104,7 +104,7 @@ class CatchingResultBasic
 			return null;
 		
 		yItemIdx = m_YItem.GetRegistrationIdx();
-		EntityAI ret = EntityAI.Cast(GetGame().CreateObjectEx(m_YItem.GetType(), pos, ECE_PLACE_ON_SURFACE));
+		EntityAI ret = EntityAI.Cast(g_Game.CreateObjectEx(m_YItem.GetType(), pos, ECE_PLACE_ON_SURFACE));
 		if (ret)
 			m_YItem.OnEntityYieldSpawned(ret);
 		

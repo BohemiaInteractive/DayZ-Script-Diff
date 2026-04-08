@@ -86,7 +86,7 @@ class PluginLifespan extends PluginBase
 		//	survivor_lifespan_beard_material_path = 'CfgVehicles SurvivorMale_Base Lifespan Beard mat'
 
 		string config_name = "CfgVehicles";
-		int config_count = GetGame().ConfigGetChildrenCount( config_name );
+		int config_count = g_Game.ConfigGetChildrenCount( config_name );
 			
 		int i, j, k, l, m;
 		
@@ -94,48 +94,48 @@ class PluginLifespan extends PluginBase
 		for ( i = 0; i < config_count; i++ )
 		{
 			string survivor_name = "";
-			GetGame().ConfigGetChildName( config_name, i, survivor_name );
+			g_Game.ConfigGetChildName( config_name, i, survivor_name );
 			
 			if ( survivor_name != "" && survivor_name != "access" )
 			{
-				if ( GetGame().IsKindOf(survivor_name, "SurvivorMale_Base")  ||  GetGame().IsKindOf(survivor_name, "SurvivorFemale_Base") )
+				if ( g_Game.IsKindOf(survivor_name, "SurvivorMale_Base")  ||  g_Game.IsKindOf(survivor_name, "SurvivorFemale_Base") )
 				{
 					string survivor_path = config_name + " " + survivor_name;
-					int survivor_lifespan_count = GetGame().ConfigGetChildrenCount( survivor_path );
+					int survivor_lifespan_count = g_Game.ConfigGetChildrenCount( survivor_path );
 
 					//Print( "survivor_path: " + survivor_path );
 					for ( j = 0; j < survivor_lifespan_count; j++ )
 					{
 						string survivor_lifespan_name = "";
-						GetGame().ConfigGetChildName( survivor_path, j, survivor_lifespan_name );
+						g_Game.ConfigGetChildName( survivor_path, j, survivor_lifespan_name );
 						
 						string survivor_lifespan_path = survivor_path + " " + survivor_lifespan_name;
 
 						if ( survivor_lifespan_name == "Lifespan" )
 						{
-							int survivor_lifespan_beard_count = GetGame().ConfigGetChildrenCount( survivor_lifespan_path );
+							int survivor_lifespan_beard_count = g_Game.ConfigGetChildrenCount( survivor_lifespan_path );
 							
 							for ( k = 0; k < survivor_lifespan_beard_count; k++ )
 							{
 								string survivor_lifespan_beard_name = "";
-								GetGame().ConfigGetChildName( survivor_lifespan_path, k, survivor_lifespan_beard_name );
+								g_Game.ConfigGetChildName( survivor_lifespan_path, k, survivor_lifespan_beard_name );
 								
 								string survivor_lifespan_beard_path = survivor_lifespan_path + " " + survivor_lifespan_beard_name;
 																
 								if ( survivor_lifespan_beard_name == "Beard" )
 								{									
 									TStringArray materials = new TStringArray;
-									int cfg_class_member_member_variable_count = GetGame().ConfigGetChildrenCount( survivor_lifespan_beard_path );
+									int cfg_class_member_member_variable_count = g_Game.ConfigGetChildrenCount( survivor_lifespan_beard_path );
 									
 									for ( l = 0; l < cfg_class_member_member_variable_count; l++ )
 									{
 										string survivor_lifespan_beard_material_name = "";
-										GetGame().ConfigGetChildName( survivor_lifespan_beard_path, l, survivor_lifespan_beard_material_name );
+										g_Game.ConfigGetChildName( survivor_lifespan_beard_path, l, survivor_lifespan_beard_material_name );
 										string survivor_lifespan_beard_material_path = survivor_lifespan_beard_path + " " + survivor_lifespan_beard_material_name;
 										
 										if ( survivor_lifespan_beard_material_name == "mat" )
 										{
-											GetGame().ConfigGetTextArray( survivor_lifespan_beard_material_path, materials );
+											g_Game.ConfigGetTextArray( survivor_lifespan_beard_material_path, materials );
 											
 											array<ref LifespanLevel> lifespan_levels = new array< ref LifespanLevel>;
 
@@ -166,8 +166,8 @@ class PluginLifespan extends PluginBase
 							string bloody_material, normal_material;
 							string path_normal = survivor_lifespan_path + " mat_normal";
 							string path_bloody = survivor_lifespan_path + " mat_blood";
-							GetGame().ConfigGetText(path_normal, normal_material);
-							GetGame().ConfigGetText(path_bloody, bloody_material);
+							g_Game.ConfigGetText(path_normal, normal_material);
+							g_Game.ConfigGetText(path_bloody, bloody_material);
 							m_BloodyHands.Set( survivor_name, new BloodyHands(normal_material, bloody_material) );
 						}
 					}
@@ -206,7 +206,7 @@ class PluginLifespan extends PluginBase
 	
 	void ChangeFakePlaytime( PlayerBase player, int change )
 	{
-		if ( !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsMultiplayer() )
 		{
 			m_FakePlaytime = change;
 			UpdateLifespan( player, true );
@@ -223,7 +223,7 @@ class PluginLifespan extends PluginBase
 		{
 			float playerPlaytime = m_FakePlaytime;
 
-			if (GetGame().IsMultiplayer() && GetGame().IsServer())
+			if (g_Game.IsMultiplayer() && g_Game.IsServer())
 				playerPlaytime = player.StatGet(AnalyticsManagerServer.STAT_PLAYTIME);
 						
 			float playerBeard = playerPlaytime - player.GetLastShavedSeconds();

@@ -31,7 +31,7 @@ class ActionAttachWithSwitch: ActionAttach
 	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = NULL)
 	{
 		ref InventoryLocation il = new InventoryLocation;
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			EntityAI target_entity;
 			
@@ -50,7 +50,7 @@ class ActionAttachWithSwitch: ActionAttach
 			
 		if ( super.SetupAction( player, target, item, action_data, extra_data))
 		{
-			if (!GetGame().IsDedicatedServer())
+			if (!g_Game.IsDedicatedServer())
 			{
 				AttachActionData action_data_a = AttachActionData.Cast(action_data);
 				action_data_a.m_AttSlot = il.GetSlot();
@@ -79,7 +79,7 @@ class ActionAttachWithSwitch: ActionAttach
 
 	override void OnExecuteServer( ActionData action_data )
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 			return;
 		
 		ClearInventoryReservationEx(action_data);

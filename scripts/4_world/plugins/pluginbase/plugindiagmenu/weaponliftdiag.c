@@ -334,9 +334,9 @@ class WeaponLiftDiag
 			DbgUI.End();
 			
 			// Override input! Extremely helpful!!
-			if (m_bForceRaised && GetGame().GetPlayer())
+			if (m_bForceRaised && g_Game.GetPlayer())
 			{
-				DayZPlayer ply = GetGame().GetPlayer();
+				DayZPlayer ply = g_Game.GetPlayer();
 				HumanInputController hic = ply.GetInputController();
 				hic.OverrideRaise( HumanInputControllerOverrideType.ONE_FRAME, true );
 			}
@@ -452,7 +452,7 @@ class WeaponLiftDiag
 					}
 				}
 				
-				WorkspaceWidget ww = GetGame().GetWorkspace();
+				WorkspaceWidget ww = g_Game.GetWorkspace();
 				if (ww)
 				{
 					Widget cw = ww.FindAnyWidget("CrossHairs");

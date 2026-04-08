@@ -61,10 +61,10 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	override void SetUpdate( bool state )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param1<bool> params = new Param1<bool>( state );
 			if ( player )
@@ -185,7 +185,7 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 		if (!widget)
 		{
 			//create widget
-			widget = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_modifier.layout", m_WgtModifiersContent );
+			widget = g_Game.GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_modifier.layout", m_WgtModifiersContent );
 			
 			//add to widget array (for clearing purposes)
 			m_ModifierWidgets.Insert( id, widget );
@@ -259,7 +259,7 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 				else
 				{
 					if(!m_WgtDetailedInfo)
-						m_WgtDetailedInfo = GetGame().GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_modifier_detailed.layout");
+						m_WgtDetailedInfo = g_Game.GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_modifier_detailed.layout");
 					if(!m_WgtDetailedInfo.IsVisible())
 					{
 						m_WgtDetailedInfo.Show(true);
@@ -329,7 +329,7 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	
 	void ResetModifiers()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
 
@@ -346,10 +346,10 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
   	void RequestDetailedInfo( int id )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param1<int> params = new Param1<int>( id );
 			if ( player )
@@ -367,10 +367,10 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	void ActivateModifier( int id )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param1<int> params = new Param1<int>( id );
 			if ( player )
@@ -388,10 +388,10 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	void DeactivateModifier( int id )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param1<int> params = new Param1<int>( id );
 			if ( player )
@@ -409,10 +409,10 @@ class HudDebugWinCharModifiers extends HudDebugWinBase
 	void LockModifier( int id, bool state )
 	{
 		//Disable update on server (PluginDeveloperSync)
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		
 		//if client, send RPC
-		if ( GetGame().IsClient() )
+		if ( g_Game.IsClient() )
 		{
 			ref Param2<int, bool> params = new Param2<int, bool>( id, state );
 			if ( player )

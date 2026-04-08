@@ -252,7 +252,7 @@ class ZmbM_Mummy extends ZombieMaleBase
 		if (m_EyeLight)
 			m_EyeLight.FadeOut(15);
 		
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( ChangeVisual, 1000);
+		g_Game.GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( ChangeVisual, 1000);
 	}
 	
 	void ChangeVisual()

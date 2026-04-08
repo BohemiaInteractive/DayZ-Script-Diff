@@ -43,7 +43,7 @@ class ActionPickupChicken: ActionInteractBase
 				deadChicken = DeadChicken_ColorBase.Cast( action_data.m_Player.GetHumanInventory().CreateInInventory( targetChicken.GetDeadItemName() ) );
 			
 				if ( deadChicken == null )
-					deadChicken = DeadChicken_ColorBase.Cast( GetGame().CreateObjectEx( targetChicken.GetDeadItemName(), targetChicken.GetPosition(), ECE_PLACE_ON_SURFACE, RF_ORIGINAL ) );
+					deadChicken = DeadChicken_ColorBase.Cast( g_Game.CreateObjectEx( targetChicken.GetDeadItemName(), targetChicken.GetPosition(), ECE_PLACE_ON_SURFACE, RF_ORIGINAL ) );
 			}
 			targetChicken.Delete();
 		}

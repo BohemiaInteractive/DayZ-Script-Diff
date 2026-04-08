@@ -251,7 +251,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		RenderPresets();
 		//RenderPresetItems();
 		
-		m_MissionGameplay			= MissionGameplay.Cast(GetGame().GetMission());
+		m_MissionGameplay			= MissionGameplay.Cast(g_Game.GetMission());
 		
 		if (!m_SelectedObjectIsPreset == 1 && ITEMS_SELECTED_ROW <  m_ObjectsTextListbox.GetNumItems() && m_ObjectsTextListbox.GetNumItems() > 0 && ITEMS_SELECTED_ROW > -1)
 		{
@@ -299,7 +299,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		array<Object> objects = new array<Object>;
 		array<CargoBase> proxies = new array<CargoBase>;
 		
-		GetGame().GetObjectsAtPosition(GetGame().GetPlayer().GetPosition(), distance, objects, proxies);
+		g_Game.GetObjectsAtPosition(g_Game.GetPlayer().GetPosition(), distance, objects, proxies);
 		int i = 0;
 		foreach (Object o: objects)
 		{
@@ -318,7 +318,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		}
 		
 		//! need better logic for cleaning
-		//GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLaterByName(this, "DrawItemsClear", 5000);
+		//g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLaterByName(this, "DrawItemsClear", 5000);
 		Debug.Log(string.Format("found %1 instances of type %1", i, type));
 	}
 	
@@ -565,7 +565,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	void SpawnPreset(EntityAI target, bool clear_inventory, string preset_name, InventoryLocationType location = InventoryLocationType.ATTACHMENT, float distance = 0)
 	{
 		// spawn preset items into inventory
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		if (GetCurrentPresetIndex() != -1)
 		{
 			bool is_preset_fixed = IsCurrentPresetFixed();
@@ -611,7 +611,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 					m_Developer.SpawnEntityOnCursorDir(player, preset_array.Get(i), quantity, distance, health, false, preset_name, with_physics);
 				}
 			}
-			if (GetGame().IsMultiplayer())
+			if (g_Game.IsMultiplayer())
 			{
 				ScriptRPC rpc = new ScriptRPC();
 				rpc.Write(preset_name);
@@ -688,11 +688,11 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		
 		m_SelectedObjectLocalized.SetText("");
 		
-		if (!GetGame().IsKindOf(object, "DZ_LightAI") && !GetGame().IsKindOf(object, "Man"))
+		if (!g_Game.IsKindOf(object, "DZ_LightAI") && !g_Game.IsKindOf(object, "Man"))
 		{
 			DayZGame.m_IsPreviewSpawn = true;
 			//! Don't use ECE_UPDATEPATHGRAPH !!!
-			m_PreviewEntity = EntityAI.Cast(GetGame().CreateObjectEx(object, "0 0 0", ECE_LOCAL | ECE_CREATEPHYSICS | ECE_TRACE));
+			m_PreviewEntity = EntityAI.Cast(g_Game.CreateObjectEx(object, "0 0 0", ECE_LOCAL | ECE_CREATEPHYSICS | ECE_TRACE));
 			DayZGame.m_IsPreviewSpawn = false;		
 			if (m_PreviewEntity)
 			{
@@ -740,7 +740,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		{
 			string item_name;
 			text_listbox_widget.GetItemText(selected_row_index, 0, item_name);
-			GetGame().CopyToClipboard(item_name);
+			g_Game.CopyToClipboard(item_name);
 		}
 	}*/
 
@@ -951,18 +951,18 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 		{
 			string config_path = classes.Get(i);
 
-			int objects_count = GetGame().ConfigGetChildrenCount(config_path);
+			int objects_count = g_Game.ConfigGetChildrenCount(config_path);
 			for (int j = 0; j < objects_count; j++)
 			{
 				string child_name;
 				
-				GetGame().ConfigGetChildName(config_path, j, child_name);
+				g_Game.ConfigGetChildName(config_path, j, child_name);
 
-				int scope = GetGame().ConfigGetInt(config_path + " " + child_name + " scope");
+				int scope = g_Game.ConfigGetInt(config_path + " " + child_name + " scope");
 				
 				if (scope >= m_ObjectsScope || ignoreScope)
 				{
-					int category_bit = GetGame().ConfigGetInt(config_path + " " + child_name + " debug_ItemCategory") - 1;
+					int category_bit = g_Game.ConfigGetInt(config_path + " " + child_name + " debug_ItemCategory") - 1;
 					category_bit = (1 << category_bit);
 					
 					bool display = false;
@@ -1187,7 +1187,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
 		super.OnClick(w,x,y,button);
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		int objects_row_index;
 		if (w == m_CategoryMergeType)
 		{
@@ -1222,8 +1222,8 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 
 			objects_row_index = m_ObjectsTextListbox.GetSelectedRow();
 			
-			vector rayStart = GetGame().GetCurrentCameraPosition();
-			vector rayEnd = rayStart + GetGame().GetCurrentCameraDirection() * 50;		
+			vector rayStart = g_Game.GetCurrentCameraPosition();
+			vector rayEnd = rayStart + g_Game.GetCurrentCameraDirection() * 50;		
 			vector hitPos;
 			vector hitNormal;
 			int hitComponentIndex;		
@@ -1413,7 +1413,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 			Object obj = m_ItemPreviewWidget.GetItem();
 			if (obj)
 			{
-				GetGame().ReloadShape(obj);
+				g_Game.ReloadShape(obj);
 			}
 #endif
 		}
@@ -1450,7 +1450,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 
 		int i;
 		int objects_row_index;
-		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 		
 		if (w == m_ObjectsTextListbox)
 		{
@@ -1469,8 +1469,8 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 
 			objects_row_index = m_ObjectsTextListbox.GetSelectedRow();
 			
-			vector rayStart = GetGame().GetCurrentCameraPosition();
-			vector rayEnd = rayStart + GetGame().GetCurrentCameraDirection() * 1.5;		
+			vector rayStart = g_Game.GetCurrentCameraPosition();
+			vector rayEnd = rayStart + g_Game.GetCurrentCameraDirection() * 1.5;		
 			vector hitPos;
 			vector hitNormal;
 			int hitComponentIndex;		
@@ -1492,7 +1492,7 @@ class ScriptConsoleItemsTab : ScriptConsoleTabBase
 				}
 				else if (button == 1)		//RMB
 				{
-					if (GetGame().IsMultiplayer())
+					if (g_Game.IsMultiplayer())
 					{
 						m_Developer.SpawnEntityInPlayerInventory(player, m_SelectedObject, -1, -1);
 					}

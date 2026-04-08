@@ -1,5 +1,10 @@
 class World: Managed
 {
+	// exposed from native, do not touch
+	#ifdef DIAG_DEVELOPER
+	const int DM_GAME_WORLD_SIMUL_ACCELERATION;
+	#endif
+
 	//proto private void ~World();
 	//proto private void World();
 
@@ -22,7 +27,7 @@ class World: Managed
 		\param minute in range <0, 59>
 		@code
 			int year, month, day, hour, minute;
-			GetGame().GetWorld().GetDate(year, month, day, hour, minute);
+			g_Game.GetWorld().GetDate(year, month, day, hour, minute);
 		@endcode
 	*/
 	proto void			GetDate(out int year, out int month, out int day, out int hour, out int minute);
@@ -40,7 +45,7 @@ class World: Managed
 			int day = 4;
 			int hour = 14;
 			int minute = 57;
-			GetGame().GetWorld().SetDate(year, month, day, hour, minute);
+			g_Game.GetWorld().SetDate(year, month, day, hour, minute);
 		@endcode
 	*/
 	proto native void	SetDate(int year, int month, int day, int hour, int minute);
@@ -87,7 +92,7 @@ class World: Managed
 		\param z grid position result [out]
 		@code
 			int x,z;
-			GetGame().GetWorld().GetGridCoords(GetGame().GetPlayer().GetPosition(), 100, x, z);
+			g_Game.GetWorld().GetGridCoords(g_Game.GetPlayer().GetPosition(), 100, x, z);
 		@endcode
 	*/	
 	proto void GetGridCoords(vector pos, float gridSize, out int gridX, out int gridZ);
@@ -125,7 +130,7 @@ class World: Managed
 	
 	/*!
 	@code
-	Material matColors = GetGame().GetWorld().GetMaterial("postprocess/glow");
+	Material matColors = g_Game.GetWorld().GetMaterial("postprocess/glow");
 	SetMaterialParam(matColors, "Saturation", 0.8);
 	float color[4];
 	color[0] = 0.5;

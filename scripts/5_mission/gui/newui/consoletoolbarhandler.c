@@ -11,9 +11,9 @@ class ConsoleToolbarWidgetHandlerBase : ScriptedWidgetEventHandler
 		
 		m_ToolbarText = RichTextWidget.Cast(m_ToolbarWidget.FindAnyWidget("ContextToolbarText"));
 		#ifdef PLATFORM_CONSOLE
-		if (GetGame().GetMission())
+		if (g_Game.GetMission())
 		{
-			GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+			g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		}
 		#endif
 		UpdateControlsElements();
@@ -48,7 +48,7 @@ class PasswordMenuToolbarHandler : ConsoleToolbarWidgetHandlerBase
 		bool toolbarShow = false;
 		if (pInputDeviceType == EInputDeviceType.UNKNOWN)
 		{
-			toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+			toolbarShow = !g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
 		}
 		else
 		{

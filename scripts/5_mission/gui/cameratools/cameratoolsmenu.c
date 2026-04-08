@@ -68,8 +68,8 @@ class CameraToolsMenu extends UIScriptedMenu
 		m_Events	= new array<ref CTEvent>();
 		m_Actors	= new array<ref CTActor>();
 		
-		m_Camera1	= Camera.Cast(GetGame().CreateObject("staticcamera", GetGame().GetPlayer().GetPosition(), true));
-		m_Camera2	= Camera.Cast(GetGame().CreateObject("staticcamera", GetGame().GetPlayer().GetPosition(), true));
+		m_Camera1	= Camera.Cast(g_Game.CreateObject("staticcamera", g_Game.GetPlayer().GetPosition(), true));
+		m_Camera2	= Camera.Cast(g_Game.CreateObject("staticcamera", g_Game.GetPlayer().GetPosition(), true));
 		
 		m_Instance	= this;
 	}
@@ -80,8 +80,8 @@ class CameraToolsMenu extends UIScriptedMenu
 		{
 			Stop();
 			layoutRoot.Show( false );
-			GetGame().GetUIManager().ShowUICursor(false);
-			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+			g_Game.GetUIManager().ShowUICursor(false);
+			g_Game.GetMission().RemoveActiveInputExcludes({"menu"},true);
 		}
 		
 		SaveData();
@@ -89,9 +89,9 @@ class CameraToolsMenu extends UIScriptedMenu
 		m_Camera1.SetActive(false);
 		m_Camera2.SetActive(false);
 		
-		DeveloperFreeCamera.DisableFreeCamera(PlayerBase.Cast(GetGame().GetPlayer()), false);
+		DeveloperFreeCamera.DisableFreeCamera(PlayerBase.Cast(g_Game.GetPlayer()), false);
 		
-		MissionGameplay ms = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay ms = MissionGameplay.Cast(g_Game.GetMission());
 		if (ms)
 			ms.GetHud().Show(true);
 	}
@@ -102,7 +102,7 @@ class CameraToolsMenu extends UIScriptedMenu
 
 		if (!m_IsPlaying)
 		{
-			GetGame().GetMission().AddActiveInputExcludes({"menu"});
+			g_Game.GetMission().AddActiveInputExcludes({"menu"});
 		}
 	}
 	
@@ -110,10 +110,10 @@ class CameraToolsMenu extends UIScriptedMenu
 	{
 		super.OnHide();
 
-		if (!m_IsPlaying && GetGame() && GetGame().GetMission() && GetGame().GetUIManager())
+		if (!m_IsPlaying && g_Game && g_Game.GetMission() && g_Game.GetUIManager())
 		{
-			GetGame().GetUIManager().ShowUICursor(false);
-			GetGame().GetMission().RemoveActiveInputExcludes({"menu"},true);
+			g_Game.GetUIManager().ShowUICursor(false);
+			g_Game.GetMission().RemoveActiveInputExcludes({"menu"},true);
 		}
 	}
 	
@@ -138,7 +138,7 @@ class CameraToolsMenu extends UIScriptedMenu
 	
 	override Widget Init()
 	{
-		layoutRoot				= GetGame().GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/camera_tools.layout" );
+		layoutRoot				= g_Game.GetWorkspace().CreateWidgets( "gui/layouts/camera_tools/camera_tools.layout" );
 		
 		m_KeyframeContent		= layoutRoot.FindAnyWidget( "keyframe_list_content" );
 		m_EventContent			= layoutRoot.FindAnyWidget( "events_list_content" );
@@ -173,9 +173,9 @@ class CameraToolsMenu extends UIScriptedMenu
 		m_CameraEditbox			= EditBoxWidget.Cast( layoutRoot.FindAnyWidget( "CameraEditbox" ) );
 		m_CameraValues			= TextWidget.Cast( layoutRoot.FindAnyWidget( "CameraValues" ) );
 		
-		MissionGameplay ms		= MissionGameplay.Cast( GetGame().GetMission() );
+		MissionGameplay ms		= MissionGameplay.Cast( g_Game.GetMission() );
 		ms.GetHud().Show( false );
-		DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( GetGame().GetPlayer() ) );
+		DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( g_Game.GetPlayer() ) );
 		
 		m_BlurEditWidget.SetText( "0.0" );
 		
@@ -452,7 +452,7 @@ class CameraToolsMenu extends UIScriptedMenu
 		if ( m_Cameras.Count() > 0 )
 		{
 			layoutRoot.Show( false );
-			GetGame().GetUIManager().ShowUICursor( false );
+			g_Game.GetUIManager().ShowUICursor( false );
 			m_CameraLines = new array<ref Param6<vector, vector, float, float, float, int>>;
 			
 			foreach ( CTKeyframe keyframe : m_Cameras )
@@ -472,7 +472,7 @@ class CameraToolsMenu extends UIScriptedMenu
 				ev.GetEventTime();
 			}
 			
-			DeveloperFreeCamera.DisableFreeCamera( PlayerBase.Cast( GetGame().GetPlayer() ), false );
+			DeveloperFreeCamera.DisableFreeCamera( PlayerBase.Cast( g_Game.GetPlayer() ), false );
 			
 			float time					= SetCameraData( GetCameraLine( 0 ), GetCameraLine( 1 ) );
 			
@@ -500,7 +500,7 @@ class CameraToolsMenu extends UIScriptedMenu
 	void Stop()
 	{
 		layoutRoot.Show( true );
-		GetGame().GetUIManager().ShowUICursor( true );
+		g_Game.GetUIManager().ShowUICursor( true );
 		
 		m_Camera1.StopInterpolation();
 		m_Camera1.SetActive( false );
@@ -545,7 +545,7 @@ class CameraToolsMenu extends UIScriptedMenu
 	
 	vector GetMouseLookDir()
 	{
-		vector dir = GetGame().GetPointerDirection();
+		vector dir = g_Game.GetPointerDirection();
 		vector from = FreeDebugCamera.GetInstance().GetPosition(); 
 		vector to = from + ( dir * 10000 );   
 		vector contact_pos;
@@ -578,8 +578,8 @@ class CameraToolsMenu extends UIScriptedMenu
 				cam = m_Camera1; 
 			if (cam)
 			{
-				Param4<vector, vector,float,float> p4 = new Param4<vector, vector,float,float>(GetGame().GetCurrentCameraPosition(),GetGame().GetCurrentCameraDirection(), cam.GetNearPlane(), cam.GetCurrentFOV());
-				GetGame().RPCSingleParam(null, ERPCs.DIAG_CAMERATOOLS_CAM_DATA, p4, false);
+				Param4<vector, vector,float,float> p4 = new Param4<vector, vector,float,float>(g_Game.GetCurrentCameraPosition(),g_Game.GetCurrentCameraDirection(), cam.GetNearPlane(), cam.GetCurrentFOV());
+				g_Game.RPCSingleParam(null, ERPCs.DIAG_CAMERATOOLS_CAM_DATA, p4, false);
 			}
 		
 		}
@@ -632,7 +632,7 @@ class CameraToolsMenu extends UIScriptedMenu
 			if ( m_NextCameraIndex + 1 == m_CameraLines.Count() )
 			{
 				Stop();
-				DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( GetGame().GetPlayer() ) );
+				DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( g_Game.GetPlayer() ) );
 				foreach ( CTEvent ev2 : m_Events )
 				{
 					ev2.Stop();
@@ -672,7 +672,7 @@ class CameraToolsMenu extends UIScriptedMenu
 				else
 				{
 					Stop();
-					DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( GetGame().GetPlayer() ) );
+					DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( g_Game.GetPlayer() ) );
 					FreeDebugCamera.GetInstance().SetOrientation( "0 0 0" );
 					foreach( CTEvent ev3 : m_Events )
 					{
@@ -685,7 +685,7 @@ class CameraToolsMenu extends UIScriptedMenu
 		{
 			if ( m_Camera1.GetPosition() == m_NextCamPosition )
 			{
-				DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( GetGame().GetPlayer() ) );
+				DeveloperFreeCamera.EnableFreeCameraSceneEditor( PlayerBase.Cast( g_Game.GetPlayer() ) );
 			}
 			
 			for ( int i = 0; i < ( m_Cameras.Count() - 1 ); i++ )
@@ -794,10 +794,10 @@ class CameraToolsMenu extends UIScriptedMenu
 	{
 		if ( w == layoutRoot && button == MouseState.RIGHT && !m_IsPlaying )
 		{
-			GetGame().GetInput().ResetGameFocus();
-			GetGame().GetInput().ChangeGameFocus(-1);
-			GetGame().GetUIManager().ShowUICursor(false);
-			GetGame().GetMission().RemoveActiveInputExcludes({"menu"});
+			g_Game.GetInput().ResetGameFocus();
+			g_Game.GetInput().ChangeGameFocus(-1);
+			g_Game.GetUIManager().ShowUICursor(false);
+			g_Game.GetMission().RemoveActiveInputExcludes({"menu"});
 			SetFocus( layoutRoot );
 			return true;
 		}
@@ -902,7 +902,7 @@ class CameraToolsMenu extends UIScriptedMenu
 			else if ( w == m_CopyButton )
 			{
 				string clipboardIn = FreeDebugCamera.GetInstance().GetPosition().ToString(false)+"|"+ FreeDebugCamera.GetInstance().GetOrientation().ToString(false);
-				GetGame().CopyToClipboard( clipboardIn );
+				g_Game.CopyToClipboard( clipboardIn );
 				
 				//Print(clipboardIn);
 			}

@@ -25,7 +25,7 @@ class AnimalBase extends DayZAnimal
 	
 	override void DeathUpdate()
 	{
-		EntityAI dead_entity = EntityAI.Cast( GetGame().CreateObjectEx( GetDeadItemName(), GetPosition(), ECE_OBJECT_SWAP, RF_ORIGINAL ) );
+		EntityAI dead_entity = EntityAI.Cast( g_Game.CreateObjectEx( GetDeadItemName(), GetPosition(), ECE_OBJECT_SWAP, RF_ORIGINAL ) );
 		dead_entity.SetOrientation(GetOrientation());
 		MiscGameplayFunctions.TransferItemProperties(this,dead_entity,true,true,true,true);
 		if (!KeepHealthOnReplace())

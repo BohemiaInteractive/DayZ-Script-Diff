@@ -25,7 +25,7 @@ class UIPopupScriptPresetNew extends UIPopupScript
 			PluginConfigDebugProfile m_ConfigDebugProfile = PluginConfigDebugProfile.Cast( GetPlugin(PluginConfigDebugProfile) );
 			m_ConfigDebugProfile.PresetAdd( wgt_text.GetText() );
 			
-			SceneEditorMenu menu = SceneEditorMenu.Cast( GetGame().GetUIManager().GetMenu() );
+			SceneEditorMenu menu = SceneEditorMenu.Cast( g_Game.GetUIManager().GetMenu() );
 			menu.RefreshLists();
 			PopupBack();
 			

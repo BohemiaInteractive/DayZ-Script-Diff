@@ -185,7 +185,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, int, int, int>( w, x, y, button );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -204,7 +204,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, int, int, int>( w, x, y, button );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -223,7 +223,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, Widget, int, int>( w, enterW, x, y );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -242,7 +242,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param3<Widget, int, int>( w, x, y );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -261,7 +261,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, int, int, int>( w, x, y, button );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -280,7 +280,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, int, int, int>( w, x, y, button );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -299,7 +299,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param3<Widget, int, int>( w, x, y );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -318,7 +318,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param3<Widget, int, int>( w, x, y );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -337,7 +337,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, int, int, Widget>( w, x, y, reciever );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -361,7 +361,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, int, int, Widget>( w, x, y, reciever );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -380,7 +380,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param3<Widget, int, int>( w, x, y );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -399,7 +399,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param3<Widget, int, int>( w, x, y );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -418,7 +418,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param4<Widget, int, int, int>( w, x, y, wheel );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -437,7 +437,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param2<Widget, Widget>( w, child );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}
@@ -456,7 +456,7 @@ class WidgetEventHandler: ScriptedWidgetEventHandler
 		}
 
 		Param param2 = new Param2<Widget, Widget>( w, child );
-		GetGame().GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
+		g_Game.GameScript.CallFunctionParams( param.param1, param.param2, NULL, param2 );
 
 		return true;
 	}

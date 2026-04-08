@@ -14,16 +14,16 @@ class ConnectionDialogue extends UIScriptedMenu
 	void ~ConnectionDialogue()
 	{
 		#ifdef PLATFORM_CONSOLE
-		if (GetGame().GetMission())
+		if (g_Game.GetMission())
 		{
-			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
+			g_Game.GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
 		}
 		#endif
 	}
 	
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_connection_dialogue.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/day_z_connection_dialogue.layout");
 		m_DisconnectBtn = ButtonWidget.Cast(layoutRoot.FindAnyWidget("DCButton"));
 		#ifdef PLATFORM_CONSOLE
 		m_DisconnectBtnLabel = RichTextWidget.Cast(layoutRoot.FindAnyWidget("DCButtonLabel"));
@@ -31,9 +31,9 @@ class ConnectionDialogue extends UIScriptedMenu
 		#endif
 		
 		#ifdef PLATFORM_CONSOLE
-		if (GetGame().GetMission())
+		if (g_Game.GetMission())
 		{
-			GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+			g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		}
 		#endif
 		
@@ -42,7 +42,7 @@ class ConnectionDialogue extends UIScriptedMenu
 		toolbar_text.SetText(context);
 		
 		#ifdef PLATFORM_CONSOLE
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 		#endif
 		
 		return layoutRoot;
@@ -55,16 +55,16 @@ class ConnectionDialogue extends UIScriptedMenu
 		{
 			case EInputDeviceType.CONTROLLER:
 			{
-				GetGame().GetUIManager().ShowUICursor(false);
+				g_Game.GetUIManager().ShowUICursor(false);
 				m_DisconnectBtnLabel.SetText("#main_menu_exit");
 				SetFocus(m_DisconnectBtn);
 			}
 			break;
 			default:
 			{
-				if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+				if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 				{
-					GetGame().GetUIManager().ShowUICursor(true);
+					g_Game.GetUIManager().ShowUICursor(true);
 					m_DisconnectBtnLabel.SetText(string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#main_menu_exit", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_NORMAL)));
 					SetFocus(null);
 				}
@@ -77,7 +77,7 @@ class ConnectionDialogue extends UIScriptedMenu
 
 	protected void UpdateControlsElementVisibility()
 	{
-		bool toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		bool toolbarShow = !g_Game.GetInput().IsEnabledMouseAndKeyboard() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
 		m_ConsoleToolbar.Show(toolbarShow);
 	}
 
@@ -140,7 +140,7 @@ class ConnectionDialogue extends UIScriptedMenu
 
 		SetFocus(null);
 		PPERequesterBank.GetRequester(PPERequester_LatencyBlur).Start();
-		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay mission = MissionGameplay.Cast(g_Game.GetMission());
 		if (mission)
 		{
 			mission.GetHud().ShowHud(false);
@@ -172,7 +172,7 @@ class ConnectionDialogue extends UIScriptedMenu
 		super.OnHide();
 
 		PPERequesterBank.GetRequester(PPERequester_LatencyBlur).Stop();
-		MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
+		MissionGameplay mission = MissionGameplay.Cast(g_Game.GetMission());
 		if (mission)
 		{
 			// make sure certain input restrictions are removed if present
@@ -215,10 +215,10 @@ class ConnectionDialogue extends UIScriptedMenu
 	
 	void CloseDialog()
 	{
-		if (GetGame())
+		if (g_Game)
 		{
-			GetGame().GetUIManager().CloseMenu(MENU_CONNECTION_DIALOGUE);
-			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(GetGame().DisconnectSessionForce);
+			g_Game.GetUIManager().CloseMenu(MENU_CONNECTION_DIALOGUE);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(g_Game.DisconnectSessionForce);
 		}
 	}
 }

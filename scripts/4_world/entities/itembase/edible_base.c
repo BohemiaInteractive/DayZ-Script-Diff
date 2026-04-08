@@ -400,7 +400,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetFullnessIndex(null, food_stage, classname);
 		}
 		string class_path = string.Format("cfgVehicles %1 Nutrition", classname);
-		return GetGame().ConfigGetFloat( class_path + " fullnessIndex" );
+		return g_Game.ConfigGetFloat( class_path + " fullnessIndex" );
 
 	}
 	
@@ -416,7 +416,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetEnergy(null, food_stage, classname);
 		}
 		string class_path = string.Format("cfgVehicles %1 Nutrition", classname);
-		return GetGame().ConfigGetFloat( class_path + " energy" );			
+		return g_Game.ConfigGetFloat( class_path + " energy" );			
 	}
 	
 	static float GetFoodWater(ItemBase item, string classname = "", int food_stage = 0)
@@ -431,7 +431,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetWater(null, food_stage, classname);
 		}
 		string class_path = string.Format("cfgVehicles %1 Nutrition", classname);
-		return GetGame().ConfigGetFloat( class_path + " water" );			
+		return g_Game.ConfigGetFloat( class_path + " water" );			
 	}
 	
 	static float GetFoodNutritionalIndex(ItemBase item, string classname = "", int food_stage = 0)
@@ -446,7 +446,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetNutritionalIndex(null, food_stage, classname);
 		}
 		string class_path = string.Format("cfgVehicles %1 Nutrition", classname);
-		return GetGame().ConfigGetFloat( class_path + " nutritionalIndex" );		
+		return g_Game.ConfigGetFloat( class_path + " nutritionalIndex" );		
 		
 	}
 	
@@ -462,7 +462,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetToxicity(null, food_stage, classname);
 		}
 		string class_path = string.Format("cfgVehicles %1 Nutrition", classname);
-		return GetGame().ConfigGetFloat( class_path + " toxicity" );			
+		return g_Game.ConfigGetFloat( class_path + " toxicity" );			
 	}
 	
 	static int GetFoodAgents(ItemBase item, string classname = "", int food_stage = 0)
@@ -477,7 +477,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetAgents(null, food_stage, classname);
 		}
 		string class_path = string.Format("cfgVehicles %1 Nutrition", classname);
-		return GetGame().ConfigGetInt( class_path + " agents" );
+		return g_Game.ConfigGetInt( class_path + " agents" );
 	}
 	
 	static float GetFoodDigestibility(ItemBase item, string classname = "", int food_stage = 0)
@@ -492,7 +492,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetDigestibility(null, food_stage, classname);
 		}
 		string class_path = string.Format("cfgVehicles %1 Nutrition", classname);
-		return GetGame().ConfigGetInt( class_path + " digestibility" );
+		return g_Game.ConfigGetInt( class_path + " digestibility" );
 	}
 	
 	static float GetAgentsPerDigest(ItemBase item, string className = "", int foodStage = 0)
@@ -507,7 +507,7 @@ class Edible_Base : ItemBase
 			return FoodStage.GetAgentsPerDigest(null, foodStage, className);
 		}
 		string classPath = string.Format("cfgVehicles %1 Nutrition", className);
-		return GetGame().ConfigGetInt(classPath + " agentsPerDigest");
+		return g_Game.ConfigGetInt(classPath + " agentsPerDigest");
 	}
 	
 	static NutritionalProfile GetNutritionalProfile(ItemBase item, string classname = "", int food_stage = 0)
@@ -741,7 +741,7 @@ class Edible_Base : ItemBase
 	{
 		m_DecayDelta = 0.0;
 		
-		delta *= DayZGame.Cast(GetGame()).GetFoodDecayModifier();
+		delta *= DayZGame.Cast(g_Game).GetFoodDecayModifier();
 		m_DecayDelta += ( 1 + ( 1 - GetHealth01( "", "" ) ) );
 		if ( hasRootAsPlayer )
 			m_DecayDelta += GameConstants.DECAY_RATE_ON_PLAYER;
@@ -929,7 +929,7 @@ class Edible_Base : ItemBase
 	
 	protected void UpdateVaporParticle()
 	{
-		if (GetGame().IsDedicatedServer())
+		if (g_Game.IsDedicatedServer())
 			return;
 		
 		if (m_VarTemperature >= GameConstants.STATE_HOT_LVL_TWO && !m_HotVaporParticle)
@@ -984,7 +984,7 @@ class Edible_Base : ItemBase
 	{
 		super.OnAction(action_id, player, ctx);
 		
-		if ( GetGame().IsServer() )
+		if ( g_Game.IsServer() )
 		{
 			if ( action_id == EActions.FOOD_STAGE_PREV )
 			{

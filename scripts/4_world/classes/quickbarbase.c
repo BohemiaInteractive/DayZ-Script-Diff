@@ -146,7 +146,7 @@ class QuickBarBase
 	void SetEntityShortcut(EntityAI entity, int index, bool force = false)
 	{	
 		//Client	
-		if (GetGame().IsClient())
+		if (g_Game.IsClient())
 		{		
 			if (ScriptInputUserData.CanStoreInputUserData())
 			{
@@ -161,7 +161,7 @@ class QuickBarBase
 			}
 		}
 		//Server
-		else if (GetGame().IsMultiplayer() && GetGame().IsServer())
+		else if (g_Game.IsMultiplayer() && g_Game.IsServer())
 		{
 			DayZPlayerSyncJunctures.SendQuickbarSetShortcut(_player, entity, index, force);
 		}

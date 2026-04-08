@@ -46,7 +46,7 @@ class SpookyArea23 : SpookyArea
 	{
 		super.OnPlayerEnterServer(player, trigger);
 		
-		EntityAI spookyEntity = EntityAI.Cast(GetGame().CreateObjectEx("SpookyPlayerStalker","0 0 0",ECE_SETUP));
+		EntityAI spookyEntity = EntityAI.Cast(g_Game.CreateObjectEx("SpookyPlayerStalker","0 0 0",ECE_SETUP));
 		int boneIdx = player.GetBoneIndexByName("Head");
 		player.AddChild(spookyEntity,boneIdx,true);
 	}

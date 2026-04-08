@@ -41,6 +41,7 @@ class ImpactMaterials
 	//@{
 	static int PLASTIC	 					= RegisterSurface("Hit_Plastic");
 	static int SAND 						= RegisterSurface("Hit_Sand");
+	static int DESERT_SAND 					= RegisterSurface("Hit_Desert_Sand");
 	static int TEXTILE 						= RegisterSurface("Hit_Textile");
 	static int CONCRETE 					= RegisterSurface("Hit_Concrete");
 	static int GRAVEL 						= RegisterSurface("Hit_Gravel");

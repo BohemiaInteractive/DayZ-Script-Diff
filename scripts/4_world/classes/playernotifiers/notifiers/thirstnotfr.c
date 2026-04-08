@@ -10,16 +10,11 @@ class ThirstNotfr: NotifierBase
 	private const float 	INC_TRESHOLD_LOW 			= 0;
 	private const float 	INC_TRESHOLD_MED 			= 0.2;
 	private const float 	INC_TRESHOLD_HIGH			= 0.85;
-		
-	void ThirstNotfr(NotifiersManager manager)
-	{
-	}
 
 	override int GetNotifierType()
 	{
 		return eNotifiers.NTF_THIRSTY;
 	}
-
 	
 	override void DisplayTendency(float delta)
 	{
@@ -34,36 +29,8 @@ class ThirstNotfr: NotifierBase
 		if( dis_elm )
 		{
 			dis_elm.SetTendency(tendency);
-			dis_elm.SetSeriousnessLevel(water_level);
-			
+			dis_elm.SetSeriousnessLevel(water_level);		
 		}
-	}
-	
-	override void DisplayBadge()
-	{
-		float water = m_Player.GetStatWater().Get();
-		if (water >= HYDRATED_TRESHOLD)
-		{
-			//GetVirtualHud().SetStatus(eDisplayElements.DELM_NTFR_THIRST,DELM_LVL_1);
-		}
-		else if (water <= THIRSTY_TRESHOLD)
-		{
-			//GetVirtualHud().SetStatus(eDisplayElements.DELM_NTFR_THIRST,DELM_LVL_2);
-		}
-		else if (water <= VERY_THIRSTY_TRESHOLD)
-		{
-			//GetVirtualHud().SetStatus(eDisplayElements.DELM_NTFR_THIRST,DELM_LVL_3);
-		}
-		else if (water <= FATALLY_THIRSTY_TRESHOLD)
-		{
-			//GetVirtualHud().SetStatus(eDisplayElements.DELM_NTFR_THIRST,DELM_LVL_4);
-		}
-	}
-
-	override void HideBadge()
-	{
-		
-		//GetVirtualHud().SetStatus(eDisplayElements.DELM_NTFR_THIRST,DELM_LVL_0);
 	}
 	
 	override protected float GetObservedValue()

@@ -67,14 +67,14 @@ class ActionAttachOnSelection: ActionSingleUseBase
 	override bool SetupAction(PlayerBase player, ActionTarget target, ItemBase item, out ActionData action_data, Param extra_data = null)
 	{
 		int attSlotId = InventorySlots.INVALID;
-		if (!GetGame().IsDedicatedServer() )
+		if (!g_Game.IsDedicatedServer() )
 		{
 			attSlotId = FindSlotIdToAttachOrCombine(player, target, item);
 		}
 		
 		if (super.SetupAction( player, target, item, action_data, extra_data))
 		{
-			if (!GetGame().IsDedicatedServer())
+			if (!g_Game.IsDedicatedServer())
 			{
 				if (attSlotId != InventorySlots.INVALID)
 				{
@@ -95,7 +95,7 @@ class ActionAttachOnSelection: ActionSingleUseBase
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if (GetGame().IsMultiplayer() && GetGame().IsServer())
+		if (g_Game.IsMultiplayer() && g_Game.IsServer())
 			return true;
 		
 		if (target.GetObject() && target.GetObject().CanUseConstruction())
@@ -106,7 +106,7 @@ class ActionAttachOnSelection: ActionSingleUseBase
 
 	override void OnExecuteServer( ActionData action_data )
 	{
-		if (GetGame().IsMultiplayer())
+		if (g_Game.IsMultiplayer())
 			return;
 		
 		ClearInventoryReservationEx(action_data);

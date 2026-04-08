@@ -60,7 +60,7 @@ class ZombieBase extends DayZInfected
 		m_DefaultHitPosition = SetDefaultHitPosition(GetDayZInfectedType().GetDefaultHitPositionComponent());
 
 		//! client only
-		if ( !GetGame().IsDedicatedServer() )
+		if ( !g_Game.IsDedicatedServer() )
 		{
 			m_LastSoundVoiceAW 			= null;
 			m_InfectedSoundEventHandler = new InfectedSoundEventHandler(this);
@@ -91,7 +91,7 @@ class ZombieBase extends DayZInfected
 	//-------------------------------------------------------------
 	override void EOnInit(IEntity other, int extra)
 	{
-		if ( !GetGame().IsMultiplayer() || GetGame().IsServer() )
+		if ( !g_Game.IsMultiplayer() || g_Game.IsServer() )
 		{
 			m_StanceVariation = Math.RandomInt(0, 4);
 	
@@ -370,7 +370,7 @@ class ZombieBase extends DayZInfected
 	bool EvaluateDeathAnimation(EntityAI pSource, string pComponent, string pAmmoType, out int pAnimType, out float pAnimHitDir)
 	{
 		//! 
-		bool doPhxImpulse = GetGame().ConfigGetInt("cfgAmmo " + pAmmoType + " doPhxImpulse") > 0;
+		bool doPhxImpulse = g_Game.ConfigGetInt("cfgAmmo " + pAmmoType + " doPhxImpulse") > 0;
 		
 		//! anim type
 		pAnimType = doPhxImpulse;
@@ -528,7 +528,7 @@ class ZombieBase extends DayZInfected
 		SoundParams			soundParams;
 		SoundObjectBuilder	soundObjectBuilder;
 		SoundObject			soundObject;
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			soundParams = new SoundParams( pSoundSetName );
 			if ( !soundParams.IsValid() )
@@ -576,7 +576,7 @@ class ZombieBase extends DayZInfected
 	
 	protected void ProcessSoundVoiceEvent(AnimSoundVoiceEvent sound_event, out AbstractWave aw)
 	{
-		if (!GetGame().IsDedicatedServer())
+		if (!g_Game.IsDedicatedServer())
 		{
 			SoundObjectBuilder objectBuilder = sound_event.GetSoundBuilder();
 			if (NULL != objectBuilder)
@@ -588,10 +588,10 @@ class ZombieBase extends DayZInfected
 			}
 		}
 		
-		if (GetGame().IsServer())
+		if (g_Game.IsServer())
 		{
 			if (sound_event.m_NoiseParams != NULL)
-				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, NoiseAIEvaluate.GetNoiseReduction(GetGame().GetWeather()));
+				g_Game.GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
 		}
 	}
 	
@@ -892,8 +892,8 @@ class ZombieBase extends DayZInfected
 		int invertHitDir = 0; //Used to flip the heavy hit animation direction
 		
 		//! heavy hit
-		pHeavyHit = ((GetGame().ConfigGetInt("cfgAmmo " + pAmmoType + " hitAnimation") > 0) || m_HeavyHitOverride);
-		invertHitDir = GetGame().ConfigGetInt("cfgAmmo " + pAmmoType + " invertHitDir");
+		pHeavyHit = ((g_Game.ConfigGetInt("cfgAmmo " + pAmmoType + " hitAnimation") > 0) || m_HeavyHitOverride);
+		invertHitDir = g_Game.ConfigGetInt("cfgAmmo " + pAmmoType + " invertHitDir");
 		
 		//! anim type
 		pAnimType = 0; // belly
@@ -910,7 +910,7 @@ class ZombieBase extends DayZInfected
 		//pAnimHitDir = ComputeHitDirectionAngle(pSource);
 		pAnimHitDir = ComputeHitDirectionAngleEx(pSource, invertHitDir);
 		//! shock GetDamage
-		//m_ShockDamage = GetGame().ConfigGetFloat( "CfgAmmo " + pAmmoType + " DamageApplied " + "Shock " + "damage");
+		//m_ShockDamage = g_Game.ConfigGetFloat( "CfgAmmo " + pAmmoType + " DamageApplied " + "Shock " + "damage");
 		return true;
 	}
 	
@@ -1023,7 +1023,7 @@ class ZombieBase extends DayZInfected
 		Transport transport = Transport.Cast(other);
 		if ( transport )
 		{
-			if ( GetGame().IsServer() )
+			if ( g_Game.IsServer() )
 			{
 				RegisterTransportHit(transport);
 			}			

@@ -1,3 +1,7 @@
+#ifndef BUILD_EXPERIMENTAL
+	#define ENABLE_CAROUSEL
+#endif
+
 class MainMenuConsole extends UIScriptedMenu
 {
 	protected ref MainMenuVideo		m_Video;
@@ -15,6 +19,7 @@ class MainMenuConsole extends UIScriptedMenu
 	protected Widget				m_PlayVideo;
 	protected Widget				m_Tutorials;
 	protected Widget				m_Options;
+	protected Widget				m_Exit;
 	protected Widget				m_Controls;
 	protected Widget				m_Play;
 	protected Widget				m_MessageButton;
@@ -26,17 +31,24 @@ class MainMenuConsole extends UIScriptedMenu
 	
 	protected ref Widget			m_LastFocusedButton;
 	
-	protected ref array<ref ModInfo> 				m_AllDLCs;
-	protected Widget 								m_DlcFrame;
-	protected ref map<string,ref ModInfo> 			m_AllDlcsMap;
-	protected ref JsonDataDLCList 					m_DlcData;
-	protected ref array<ref MainMenuDlcHandlerBase> m_DlcHandlers;
-	protected ref MainMenuDlcHandlerBase 			m_DisplayedDlcHandler;
+	protected Widget 				m_DlcFrame;
+		
+	protected ref NewsCarousel      m_NewsCarousel;
+
+	protected Widget 				m_NewsCarouselFrame;
+	protected Widget				m_DisplayCarousel;
+	
+	protected ScreenWidthType		m_WidthType;
+	protected int					m_Width, m_Height;
 
 	override Widget Init()
 	{
-		layoutRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/main_menu_console.layout");
-		
+		#ifdef PLATFORM_MSSTORE
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/main_menu_msstore.layout");
+		#else
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/main_menu_console.layout");
+		#endif
+
 		m_MainMenuPanel = layoutRoot.FindAnyWidget("main_menu_panel");
 		m_PlayerName = TextWidget.Cast(layoutRoot.FindAnyWidget("character_name_xbox"));
 		m_ChangeAccount	= layoutRoot.FindAnyWidget("choose_account");
@@ -44,52 +56,83 @@ class MainMenuConsole extends UIScriptedMenu
 		m_PlayVideo	= layoutRoot.FindAnyWidget("play_video");
 		m_Tutorials	= layoutRoot.FindAnyWidget("tutorials");
 		m_Options = layoutRoot.FindAnyWidget("options");
+		m_Exit = layoutRoot.FindAnyWidget("exit");
 		m_Controls = layoutRoot.FindAnyWidget("controls");
 		m_Play = layoutRoot.FindAnyWidget("play");
 		m_MessageButton = layoutRoot.FindAnyWidget("message_button");
 		
 		m_DlcFrame = layoutRoot.FindAnyWidget("dlc_Frame");
 		m_Version = TextWidget.Cast(layoutRoot.FindAnyWidget("version"));
-		m_Mission = MissionMainMenu.Cast(GetGame().GetMission());
+		m_Mission = MissionMainMenu.Cast(g_Game.GetMission());
 		m_ShowFeedback = layoutRoot.FindAnyWidget("feedback");
 		m_FeedbackQRCode = ImageWidget.Cast(layoutRoot.FindAnyWidget("qr_image"));
 		m_FeedbackClose = ButtonWidget.Cast(layoutRoot.FindAnyWidget("close_button"));
 		m_FeedbackCloseLabel = RichTextWidget.Cast(layoutRoot.FindAnyWidget("close_button_label"));
 		m_DialogPanel = layoutRoot.FindAnyWidget("main_menu_dialog");
+		m_NewsCarouselFrame = layoutRoot.FindAnyWidget("carousel_Frame");
 		
 		m_LastFocusedButton	= m_Play;
 				
-		GetGame().GetUIManager().ScreenFadeOut(1);
+		g_Game.GetUIManager().ScreenFadeOut(1);
 
 		string launch_done;
-		if (!GetGame().GetProfileString("FirstLaunchDone", launch_done) || launch_done != "true")
+		if (!g_Game.GetProfileString("FirstLaunchDone", launch_done) || launch_done != "true")
 		{
-			GetGame().SetProfileString("FirstLaunchDone", "true");
-			GetGame().GetUIManager().ShowDialog("#main_menu_tutorial", "#main_menu_tutorial_desc", 555, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
-			GetGame().SaveProfile();
+			g_Game.SetProfileString("FirstLaunchDone", "true");
+			g_Game.GetUIManager().ShowDialog("#main_menu_tutorial", "#main_menu_tutorial_desc", 555, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
+			g_Game.SaveProfile();
 		}
 		
 		UpdateControlsElementVisibility();
 		LoadMods();
 		Refresh();
 		
-		if (GetGame().GetMission())
+		CheckWidth();
+
+		#ifdef ENABLE_CAROUSEL
+		m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
+		#else
+		m_NewsCarousel = null;
+		#endif
+		
+		if (g_Game.GetMission())
 		{
-			GetGame().GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
-			GetGame().GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+			g_Game.GetMission().GetOnInputPresetChanged().Insert(OnInputPresetChanged);
+			g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
 		}
 		
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 		
-		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
+		g_Game.GetContentDLCService().m_OnChange.Insert(OnDLCChange);
+
+		#ifdef PLATFORM_MSSTORE
+		// Enable exit button
+		m_Exit.Show(true);
+		#endif
 		
 		#ifdef PLATFORM_CONSOLE
 		#ifndef PLATFORM_PS4
+		#ifdef PLATFORM_MSSTORE
+		m_ChangeAccount.Show(false);
+		#else
 		m_ChangeAccount.Show(GetGame().GetInput().IsEnabledMouseAndKeyboard());
+		#endif
 		m_FeedbackQRCode.LoadImageFile(0, "gui/textures/feedback_qr_xbox.edds");
 		#else
 		m_FeedbackQRCode.LoadImageFile(0, "gui/textures/feedback_qr_ps.edds");
 		#endif
+		#endif
+		
+		#ifdef PLATFORM_CONSOLE
+		#ifdef PLATFORM_XBOX
+		m_ChangeAccount.Show(false);
+		#endif
+		#endif
+		m_DlcFrame.Show(false);
+
+		#ifdef PLATFORM_MSSTORE
+		// Disable controls button on MS Store by default	
+		m_Controls.Show(false);
 		#endif
 
 		return layoutRoot;
@@ -97,90 +140,37 @@ class MainMenuConsole extends UIScriptedMenu
 	
 	void ~MainMenuConsole()
 	{
-		if (GetGame().GetMission())
+		if (g_Game.GetMission())
 		{
-			GetGame().GetMission().GetOnInputPresetChanged().Remove(OnInputPresetChanged);
-			GetGame().GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
+			g_Game.GetMission().GetOnInputPresetChanged().Remove(OnInputPresetChanged);
+			g_Game.GetMission().GetOnInputDeviceChanged().Remove(OnInputDeviceChanged);
 		}
 		
-		if (GetGame().GetContentDLCService())
-			GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
+		if (g_Game.GetContentDLCService())
+			g_Game.GetContentDLCService().m_OnChange.Remove(OnDLCChange);
 	}
 	
 	void OnDLCChange(EDLCId dlcId)
 	{
-		m_AllDLCs = null;
+		MainMenuData.ClearAllDLCs();
 		LoadMods();
+		
+		#ifdef ENABLE_CAROUSEL
+		if (m_NewsCarousel)
+		{
+			m_NewsCarousel.Destroy();
+			m_NewsCarousel = null;
+			m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
+		}
+		#endif
 	}
 	
 	void LoadMods()
 	{
-		if (m_AllDLCs != null)
-			return;
-		
-		m_AllDLCs = new array<ref ModInfo>;
-		
-		GetGame().GetModInfos(m_AllDLCs);
-		if (m_AllDLCs.Count() > 0)
-		{
-			m_AllDLCs.Remove(m_AllDLCs.Count() - 1);
-			m_AllDLCs.Invert();
-		}
-		
-		FilterDLCs(m_AllDLCs);
-		PopulateDlcFrame();
-		
+		MainMenuData.LoadMods();	
 		UpdateControlsElements();
 	}
 	
-	//! leaves ONLY DLCs
-	void FilterDLCs(inout array<ref ModInfo> modArray)
-	{
-		if (!m_AllDlcsMap)
-			m_AllDlcsMap = new map<string,ref ModInfo>;
-		
-		m_AllDlcsMap.Clear();
-		ModInfo info;
-		int count = modArray.Count();
-		for (int i = count - 1; i >= 0; i--)
-		{
-			info = modArray[i];
-			if (!info.GetIsDLC())
-				modArray.Remove(i);
-			else
-				m_AllDlcsMap.Set(info.GetName(), info);
-		}
-	}
-	
-	void PopulateDlcFrame()
-	{
-		if (!m_DlcHandlers)
-			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>();
-		else
-		{
-			// TODO: Would be better to update the parts that need updating instead of full recreation
-			// Destroying and then reloading the same video is quite wasteful
-			m_DlcHandlers.Clear();
-		}
-		
-		m_DlcData = DlcDataLoader.GetData();
-		int count = m_DlcData.DLCs.Count();
-		JsonDataDLCInfo data;
-		ModInfo info;
-		
-		for (int i = 0; i < count; i++)
-		{
-			data = m_DlcData.DLCs[i];
-			info = m_AllDlcsMap.Get(data.Name);
-			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(info, m_DlcFrame, data);
-			
-			handler.ShowInfoPanel(true);
-			m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
-			
-			m_DlcHandlers.Insert(handler);
-		}
-	}
-
 	protected void OnInputPresetChanged()
 	{
 		#ifdef PLATFORM_CONSOLE
@@ -190,12 +180,13 @@ class MainMenuConsole extends UIScriptedMenu
 
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
+		#ifndef PLATFORM_MSSTORE // No feedback or account switching on MS Store
 		switch (pInputDeviceType)
 		{
 		case EInputDeviceType.CONTROLLER:
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 			{
-				GetGame().GetUIManager().ShowUICursor(false);
+				g_Game.GetUIManager().ShowUICursor(false);
 				#ifdef PLATFORM_CONSOLE
 				if (m_LastFocusedButton == m_ShowFeedback || !GetFocus() || GetFocus() == m_FeedbackClose)
 				{
@@ -205,6 +196,7 @@ class MainMenuConsole extends UIScriptedMenu
 				m_FeedbackClose.Show(false);
 				m_ShowFeedback.Show(false);
 				#ifndef PLATFORM_PS4
+				#ifndef PLATFORM_XBOX
 				m_ChangeAccount.Show(false);
 				if (m_LastFocusedButton == m_ChangeAccount)
 				{
@@ -212,24 +204,53 @@ class MainMenuConsole extends UIScriptedMenu
 				}
 				#endif
 				#endif
+				#endif
 			}
+				
+			#ifdef PLATFORM_MSSTORE
+			// Enable controls button on MS Store by default	
+			m_Controls.Show(true);
+			#endif
 		break;
 
 		default:
-			if (GetGame().GetInput().IsEnabledMouseAndKeyboard())
+			if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
 			{
-				GetGame().GetUIManager().ShowUICursor(true);
+				g_Game.GetUIManager().ShowUICursor(true);
 				#ifdef PLATFORM_CONSOLE
 				m_ShowFeedback.Show(true);
 				m_FeedbackClose.Show(true);
 				m_FeedbackCloseLabel.SetText(string.Format("%1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_NORMAL)));
 				#ifndef PLATFORM_PS4
+				#ifndef PLATFORM_MSSTORE
+				#ifndef PLATFORM_XBOX
 				m_ChangeAccount.Show(true);
 				#endif
+				#endif
+				#endif
+				#endif
+
+				#ifdef PLATFORM_MSSTORE
+				// Disable controls button on MS Store
+				m_Controls.Show(false);
 				#endif
 			}
 		break;
 		}
+		#else
+		switch (pInputDeviceType)
+		{
+		case EInputDeviceType.CONTROLLER:
+			// Enable controls button on MS Store by default	
+			m_Controls.Show(true);
+		break;
+
+		default:
+			// Disable controls button on MS Store
+			m_Controls.Show(false);
+		break;
+		}
+		#endif
 
 		UpdateControlsElements();
 		UpdateControlsElementVisibility();
@@ -251,10 +272,10 @@ class MainMenuConsole extends UIScriptedMenu
 				OpenMenuOptions();					
 				return true;
 			}
-			else if (w == m_PlayVideo)
+			else if (w == m_Exit)
 			{
-				m_LastFocusedButton = m_PlayVideo;
-				OpenMenuPlayVideo();
+				m_LastFocusedButton = m_Exit;
+				Exit();
 				return true;
 			}
 			else if (w == m_Tutorials)
@@ -275,12 +296,16 @@ class MainMenuConsole extends UIScriptedMenu
 				OpenMenuCustomizeCharacter();
 				return true;
 			}
+			#ifndef PLATFORM_MSSTORE // No account switching on MS Store
+			#ifndef PLATFORM_XBOX
 			else if (w == m_ChangeAccount)
 			{
 				m_LastFocusedButton = m_ChangeAccount;
 				ChangeAccount();
 				return true;
 			}
+			#endif
+			#endif
 			else if (w == m_MessageButton)
 			{
 				OpenCredits();
@@ -337,9 +362,9 @@ class MainMenuConsole extends UIScriptedMenu
 	{
 		string name;
 		
-		if (GetGame().GetUserManager() && GetGame().GetUserManager().GetSelectedUser())
+		if (g_Game.GetUserManager() && g_Game.GetUserManager().GetSelectedUser())
 		{
-			name = GetGame().GetUserManager().GetSelectedUser().GetName();
+			name = g_Game.GetUserManager().GetSelectedUser().GetName();
 			if (name.LengthUtf8() > 18)
 			{
 				name = name.SubstringUtf8(0, 18);
@@ -349,7 +374,7 @@ class MainMenuConsole extends UIScriptedMenu
 		m_PlayerName.SetText(name);		
 		
 		string version;
-		GetGame().GetVersion(version);
+		g_Game.GetVersion(version);
 		m_Version.SetText("#main_menu_version" + " " + version + " (" + g_Game.GetDatabaseID() + ")");
 		
 		if (m_DisplayedDlcHandler)
@@ -358,6 +383,18 @@ class MainMenuConsole extends UIScriptedMenu
 	
 	override void OnShow()
 	{
+		#ifdef PLATFORM_MSSTORE
+			#ifdef ENABLE_CAROUSEL
+			// Hack: Recreate NewsCarousel to refresh it on menu show after applying options
+			if (m_NewsCarousel)
+			{
+				m_NewsCarousel.Destroy();
+				m_NewsCarousel = null;
+				m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
+			}
+			#endif
+		#endif
+
 		GetDayZGame().GetBacklit().MainMenu_OnShow();
 	
 		SetFocus(m_LastFocusedButton);
@@ -374,8 +411,8 @@ class MainMenuConsole extends UIScriptedMenu
 		
 		super.OnShow();
 		#ifdef PLATFORM_CONSOLE
-		layoutRoot.FindAnyWidget("ButtonHolderCredits").Show(GetGame().GetInput().IsEnabledMouseAndKeyboard());
-		OnInputDeviceChanged(GetGame().GetInput().GetCurrentInputDevice());
+		layoutRoot.FindAnyWidget("ButtonHolderCredits").Show(g_Game.GetInput().IsEnabledMouseAndKeyboard());
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 		#endif
 	}
 	
@@ -390,12 +427,14 @@ class MainMenuConsole extends UIScriptedMenu
 	{
 		super.Update(timeslice);
 		
-		if (g_Game.GetLoadState() != DayZGameState.CONNECTING && !GetGame().GetUIManager().IsDialogVisible())
+		CheckWidth();
+		
+		if (g_Game.GetLoadState() != DayZGameState.CONNECTING && !g_Game.GetUIManager().IsDialogVisible())
 		{
 		#ifndef PLATFORM_CONSOLE
 			if (GetUApi().GetInputByID(UAUIBack).LocalPress())
 			{
-				if (!GetGame().GetUIManager().IsDialogHiding())
+				if (!g_Game.GetUIManager().IsDialogHiding())
 					Exit();
 			}
 		#else
@@ -416,11 +455,6 @@ class MainMenuConsole extends UIScriptedMenu
 		#endif
 		}
 
-		#ifdef PLATFORM_XBOX
-		if (GetUApi().GetInputByID(UAUICtrlY).LocalPress())
-			ChangeAccount();
-		#endif
-
 		if (GetUApi().GetInputByID(UAUICtrlX).LocalPress())
 		{
 			if (CanStoreBeOpened())
@@ -431,6 +465,28 @@ class MainMenuConsole extends UIScriptedMenu
 		{
 			ToggleFeedbackDialog();
 		}
+		
+		#ifdef ENABLE_CAROUSEL
+		if (m_NewsCarousel)
+		{
+			if (GetUApi().GetInputByID(UAUICtrlX).LocalHold())
+			{
+				m_NewsCarousel.ShowPromotion();
+			}
+			
+			if (GetUApi().GetInputByID(UAUIPadRight).LocalPress())
+			{
+				m_NewsCarousel.OnClickNextArticle();
+			}
+			
+			if (GetUApi().GetInputByID(UAUIPadLeft).LocalPress())
+			{
+				m_NewsCarousel.OnClickPreviousArticle();
+			}
+			
+			m_NewsCarousel.Update(timeslice);
+		}
+		#endif
 	}
 	
 	protected void ToggleFeedbackDialog()
@@ -500,20 +556,20 @@ class MainMenuConsole extends UIScriptedMenu
 
 	void ChangeAccount()
 	{
-		BiosUserManager user_manager = GetGame().GetUserManager();
+		BiosUserManager user_manager = g_Game.GetUserManager();
 		if (user_manager)
 		{
 			g_Game.SetLoadState(DayZLoadState.MAIN_MENU_START);
 			#ifndef PLATFORM_WINDOWS
 			user_manager.SelectUserEx(null);
 			#endif
-			GetGame().GetUIManager().Back();
+			g_Game.GetUIManager().Back();
 		}
 	}
 	
 	void Exit()
 	{
-		GetGame().GetUIManager().ShowDialog("#main_menu_exit", "#main_menu_exit_desc", IDC_MAIN_QUIT, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
+		g_Game.GetUIManager().ShowDialog("#main_menu_exit", "#main_menu_exit_desc", IDC_MAIN_QUIT, DBT_YESNO, DBB_YES, DMT_QUESTION, this);
 	}
 		
 	//Coloring functions (Until WidgetStyles are useful)
@@ -549,7 +605,7 @@ class MainMenuConsole extends UIScriptedMenu
 		{
 			if (result == 2)
 			{
-				GetGame().GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.RequestExit, IDC_MAIN_QUIT);
+				g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(g_Game.RequestExit, IDC_MAIN_QUIT);
 			}
 			
 			return true;
@@ -636,8 +692,12 @@ class MainMenuConsole extends UIScriptedMenu
 		if (!FeedbackDialogVisible())
 		{
 			context = InputUtils.GetRichtextButtonIconFromInputAction("UAUICredits", "#menu_credits", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
+			#ifndef PLATFORM_MSSTORE
 			#ifndef PLATFORM_PS4
+			#ifndef PLATFORM_XBOX
 			context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUICtrlY", "#layout_xbox_main_menu_toolbar_account", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+			#endif
+			#endif
 			#endif
 			context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUISelect", "#layout_xbox_main_menu_toolbar_select", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
 			context += string.Format(" %1",InputUtils.GetRichtextButtonIconFromInputAction("UAUIThumbRight", "#layout_main_menu_feedback", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
@@ -654,9 +714,99 @@ class MainMenuConsole extends UIScriptedMenu
 	{
 		bool toolbarShow = false;
 		#ifdef PLATFORM_CONSOLE
-		toolbarShow = !GetGame().GetInput().IsEnabledMouseAndKeyboard() || GetGame().GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		toolbarShow = !g_Game.GetInput().IsEnabledMouseAndKeyboard() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
 		#endif
 		
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
+	}
+	
+	void CheckWidth()
+	{
+		int w, h;
+		ScreenWidthType widthType; 
+		GetScreenSize(w, h);
+		
+		if(h > 0)
+		{
+			float ratio = w / h;
+			if(ratio > 1.75)
+				widthType = ScreenWidthType.WIDE;
+			else if(ratio > 1.5)
+				widthType = ScreenWidthType.MEDIUM;
+			else
+				widthType = ScreenWidthType.NARROW;
+		}
+		
+		m_Width = w;
+		m_Height = h;
+		
+		if (widthType != m_WidthType)
+		{
+			m_WidthType = widthType;
+			#ifdef ENABLE_CAROUSEL
+			if (m_NewsCarousel)
+			{
+				m_NewsCarousel.Destroy();
+				m_NewsCarousel = null;
+				m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
+			}
+			#endif
+		}
+	}
+	
+	//! DEPRICATED
+	protected ref JsonDataDLCList 					m_DlcData;
+	protected ref array<ref MainMenuDlcHandlerBase> m_DlcHandlers;
+	protected ref MainMenuDlcHandlerBase 			m_DisplayedDlcHandler;
+	protected ref array<ref ModInfo> 				m_AllDLCs;
+	protected ref map<string, ref ModInfo> 			m_AllDlcsMap;
+	
+	[Obsolete("No replacement")]
+	void PopulateDlcFrame()
+	{
+		if (!m_DlcHandlers)
+			m_DlcHandlers = new array<ref MainMenuDlcHandlerBase>();
+		else
+		{
+			// TODO: Would be better to update the parts that need updating instead of full recreation
+			// Destroying and then reloading the same video is quite wasteful
+			m_DlcHandlers.Clear();
+		}
+		
+		m_DlcData = DlcDataLoader.GetData();
+		int count = m_DlcData.DLCs.Count();
+		JsonDataDLCInfo data;
+		ModInfo info;
+		
+		for (int i = 0; i < count; i++)
+		{
+			data = m_DlcData.DLCs[i];
+			info = m_AllDlcsMap.Get(data.Name);
+			MainMenuDlcHandlerBase handler = new MainMenuDlcHandlerBase(info, m_DlcFrame, data);
+			
+			handler.ShowInfoPanel(true);
+			m_DisplayedDlcHandler = handler;//TODO: carousel will take care of this later
+			
+			m_DlcHandlers.Insert(handler);
+		}
+	}
+	
+	[Obsolete("No replacement")]
+	void FilterDLCs(inout array<ref ModInfo> modArray)
+	{
+		if (!m_AllDlcsMap)
+			m_AllDlcsMap = new map<string,ref ModInfo>;
+		
+		m_AllDlcsMap.Clear();
+		ModInfo info;
+		int count = modArray.Count();
+		for (int i = count - 1; i >= 0; i--)
+		{
+			info = modArray[i];
+			if (!info.GetIsDLC())
+				modArray.Remove(i);
+			else
+				m_AllDlcsMap.Set(info.GetName(), info);
+		}
 	}
 }

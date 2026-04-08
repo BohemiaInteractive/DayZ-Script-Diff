@@ -28,7 +28,7 @@ class HudDebugWinCharDebug extends HudDebugWinBase
 	{
 		super.Update();
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if ( player != NULL )
 		{
 			vector pos = player.GetPosition();
@@ -37,7 +37,7 @@ class HudDebugWinCharDebug extends HudDebugWinBase
 		}
 		
 		string clipboard;
-		GetGame().CopyFromClipboard(clipboard);
+		g_Game.CopyFromClipboard(clipboard);
 		clipboard = clipboard.Substring( 0, Math.Min( clipboard.Length(), 128 ) );	//max 128 chars
 		clipboard = "Clipboard: " + clipboard;
 		m_ClipboardTextWidget.SetText(clipboard);

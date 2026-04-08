@@ -53,6 +53,7 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftImprovisedLeatherBag);
 		RegisterRecipe(new CraftImprovisedExplosive);
 		RegisterRecipe(new CraftLeatherSack);
+		RegisterRecipe(new CraftFoxHeaddress);
 		RegisterRecipe(new DeCraftLeatherCourierBag);
 		RegisterRecipe(new DeCraftCourierBag);
 		RegisterRecipe(new DeCraftImprovisedBag);
@@ -68,7 +69,7 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftSpearStone);
 		RegisterRecipe(new DeCraftHandDrillKit);
 		RegisterRecipe(new DeCraftSpear);
-		RegisterRecipe(new PatchItem);
+		//RegisterRecipe(new PatchItem); //we split this recipe to three for adding specific animations
 		RegisterRecipe(new CutOutZucchiniSeeds);
 		RegisterRecipe(new CutOutPepperSeeds);
 		RegisterRecipe(new CutOutPumpkinSeeds);
@@ -150,6 +151,9 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftDrysackBag);
 		RegisterRecipe(new OpenScientificBriefcase);
 		RegisterRecipe(new CloseScientificBriefcase);
+		RegisterRecipe(new RepairWithTireKit);
+		RegisterRecipe(new RepairWithSewingKit);
+		RegisterRecipe(new RepairWithLeatherSewingKit);
 		
 		//"paint" recipes
 		/*RegisterRecipe(new PaintFirefighterAxe);

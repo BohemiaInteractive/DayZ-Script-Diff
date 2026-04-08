@@ -32,7 +32,7 @@ class HandsContainer: Container
 		ItemManager.GetInstance().SetHandsPreview( m_HandsPreview );
 		m_Body.Insert( m_HandsPreview );
 		
-		ItemBase hands_item = ItemBase.Cast( GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+		ItemBase hands_item = ItemBase.Cast( g_Game.GetPlayer().GetEntityInHands() );
 		if ( hands_item )
 			m_HandsPreview.CreateNewIcon( hands_item );
 		
@@ -190,10 +190,10 @@ class HandsContainer: Container
 		{
 			if (CanTakeToInventory())
 			{
-				EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
-				if (item_in_hands && GetGame().GetPlayer().GetHumanInventory().CanRemoveEntityInHands() && !GetGame().GetPlayer().GetInventory().HasInventoryReservation(item_in_hands, null))
+				EntityAI item_in_hands = g_Game.GetPlayer().GetEntityInHands();
+				if (item_in_hands && g_Game.GetPlayer().GetHumanInventory().CanRemoveEntityInHands() && !g_Game.GetPlayer().GetInventory().HasInventoryReservation(item_in_hands, null))
 				{
-					if (GetGame().GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, item_in_hands ))
+					if (g_Game.GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, item_in_hands ))
 					{
 						m_MainWidget.FindAnyWidget("Cursor").Show( false );
 						m_MainWidget.FindAnyWidget("hands_preview_root").SetAlpha( 0.7 );
@@ -215,7 +215,7 @@ class HandsContainer: Container
 		{
 			if (m_ActiveIndex == 0)
 			{
-				ItemBase item_in_hands = ItemBase.Cast( GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+				ItemBase item_in_hands = ItemBase.Cast( g_Game.GetPlayer().GetEntityInHands() );
 				if ( item_in_hands )
 				{
 					if ( item_in_hands.CanBeSplit() )
@@ -238,10 +238,10 @@ class HandsContainer: Container
 		{	
 			if (m_ActiveIndex == 0)
 			{
-				ItemBase item_in_hands = ItemBase.Cast( GetGame().GetPlayer().GetHumanInventory().GetEntityInHands() );
+				ItemBase item_in_hands = ItemBase.Cast( g_Game.GetPlayer().GetEntityInHands() );
 				if ( item_in_hands )
 				{
-					DayZPlayer player = GetGame().GetPlayer();
+					DayZPlayer player = g_Game.GetPlayer();
 					if (player && player.GetHumanInventory().CanRemoveEntityInHands() && !player.GetInventory().HasInventoryReservation(item_in_hands, null))
 					{
 						bool res = player.PredictiveTakeOrSwapAttachment(item_in_hands);
@@ -269,8 +269,8 @@ class HandsContainer: Container
 	override void SetActive( bool active )
 	{
 		super.SetActive(active);
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		EntityAI item_in_hands = player.GetHumanInventory().GetEntityInHands();
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		EntityAI item_in_hands = player.GetEntityInHands();
 
 		if( item_in_hands )
 		{
@@ -298,8 +298,8 @@ class HandsContainer: Container
 	override void SetLastActive()
 	{
 		super.SetLastActive();
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		EntityAI item_in_hands = player.GetHumanInventory().GetEntityInHands();
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		EntityAI item_in_hands = player.GetEntityInHands();
 
 		if( item_in_hands )
 		{
@@ -329,8 +329,8 @@ class HandsContainer: Container
 	
 	override bool IsItemActive()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		ItemBase item = ItemBase.Cast( player.GetHumanInventory().GetEntityInHands() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		ItemBase item = ItemBase.Cast( player.GetEntityInHands() );
 		if( item == null )
 		{
 			return false;
@@ -340,8 +340,8 @@ class HandsContainer: Container
 	
 	override bool IsItemWithQuantityActive()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		ItemBase item = ItemBase.Cast( player.GetHumanInventory().GetEntityInHands() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		ItemBase item = ItemBase.Cast( player.GetEntityInHands() );
 		if( item == null )
 		{
 			return false;
@@ -351,8 +351,8 @@ class HandsContainer: Container
 	
 	override bool IsEmpty()
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		return player.GetHumanInventory().GetEntityInHands() == null;
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		return player.GetEntityInHands() == null;
 	}
 	
 	override bool TransferItemToVicinity()
@@ -361,9 +361,9 @@ class HandsContainer: Container
 		{
 			if (m_ActiveIndex == 0)
 			{
-				PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-				ItemBase item_in_hands = ItemBase.Cast(player.GetHumanInventory().GetEntityInHands());
-				if ( item_in_hands && player.CanDropEntity( item_in_hands ) && GetGame().GetPlayer().GetHumanInventory().CanRemoveEntityInHands() && !player.GetInventory().HasInventoryReservation(item_in_hands, null) )
+				PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+				ItemBase item_in_hands = ItemBase.Cast(player.GetEntityInHands());
+				if ( item_in_hands && player.CanDropEntity( item_in_hands ) && g_Game.GetPlayer().GetHumanInventory().CanRemoveEntityInHands() && !player.GetInventory().HasInventoryReservation(item_in_hands, null) )
 				{
 					if ( item_in_hands.GetTargetQuantityMax() < item_in_hands.GetQuantity() )
 						item_in_hands.SplitIntoStackMaxClient( null, -1 );
@@ -386,8 +386,8 @@ class HandsContainer: Container
 	{
 		if(m_ActiveIndex == 0)
 		{
-			PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-			EntityAI item_in_hands = player.GetHumanInventory().GetEntityInHands();
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+			EntityAI item_in_hands = player.GetEntityInHands();
 			if( item_in_hands )
 			{
 				InspectItem( item_in_hands );
@@ -491,8 +491,8 @@ class HandsContainer: Container
 		}
 		
 
-		PlayerBase p = PlayerBase.Cast( GetGame().GetPlayer() );
-		InventoryItem receiver_entity = InventoryItem.Cast( p.GetHumanInventory().GetEntityInHands() );
+		PlayerBase p = PlayerBase.Cast( g_Game.GetPlayer() );
+		InventoryItem receiver_entity = InventoryItem.Cast( p.GetEntityInHands() );
 		InventoryItem w_entity = InventoryItem.Cast( w_ipw.GetItem() );
 		if( !w_entity )
 		{
@@ -508,7 +508,7 @@ class HandsContainer: Container
 				if( receiver_itemIB && itemIB && receiver_itemIB.CanBeCombined( itemIB ) )
 				{
 					ItemManager.GetInstance().HideDropzones();
-					if( m_Entity.GetHierarchyRootPlayer() == GetGame().GetPlayer() )
+					if( m_Entity.GetHierarchyRootPlayer() == g_Game.GetPlayer() )
 					{
 						ItemManager.GetInstance().GetRightDropzone().SetAlpha( 1 );
 					}
@@ -520,7 +520,7 @@ class HandsContainer: Container
 				}
 				else 
 				{
-					PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+					PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 					Magazine mag = Magazine.Cast(receiver_item);
 					Weapon_Base wpn = Weapon_Base.Cast(receiver_item.GetHierarchyParent());
 				
@@ -549,7 +549,7 @@ class HandsContainer: Container
 						if( GameInventory.CanSwapEntitiesEx( receiver_item, w_entity ) )
 						{
 							ItemManager.GetInstance().HideDropzones();
-							if( m_Entity.GetHierarchyRootPlayer() == GetGame().GetPlayer() )
+							if( m_Entity.GetHierarchyRootPlayer() == g_Game.GetPlayer() )
 							{
 								ItemManager.GetInstance().GetRightDropzone().SetAlpha( 1 );
 							}
@@ -562,7 +562,7 @@ class HandsContainer: Container
 						else if( receiver_itemIB.GetInventory().CanAddAttachment( w_entity ) )
 						{
 							ItemManager.GetInstance().HideDropzones();
-							if( receiver_itemIB.GetHierarchyRootPlayer() == GetGame().GetPlayer() )
+							if( receiver_itemIB.GetHierarchyRootPlayer() == g_Game.GetPlayer() )
 							{
 								ItemManager.GetInstance().GetRightDropzone().SetAlpha( 1 );
 							}
@@ -584,7 +584,7 @@ class HandsContainer: Container
 			else if( receiver_entity.GetInventory().CanAddAttachment( w_entity ) )
 			{
 				ItemManager.GetInstance().HideDropzones();
-				if( receiver_entity.GetHierarchyRootPlayer() == GetGame().GetPlayer() )
+				if( receiver_entity.GetHierarchyRootPlayer() == g_Game.GetPlayer() )
 				{
 					ItemManager.GetInstance().GetRightDropzone().SetAlpha( 1 );
 				}
@@ -624,7 +624,7 @@ class HandsContainer: Container
 	
 	void OnPerformCombination(int combinationFlags)
 	{
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase m_player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if ( m_am_entity1 == null || m_am_entity2 == null ) return;
 
 		if ( combinationFlags == InventoryCombinationFlags.NONE ) return;
@@ -728,7 +728,7 @@ class HandsContainer: Container
 	{
 		if ( entity1 && entity2 ) PrintString( "Showing action menu for " + entity1.GetDisplayName() + " and " + entity2.GetDisplayName() );
 
-		ContextMenu cmenu = ContextMenu.Cast(GetGame().GetUIManager().GetMenu().GetContextMenu());
+		ContextMenu cmenu = ContextMenu.Cast(g_Game.GetUIManager().GetMenu().GetContextMenu());
 		m_am_entity1 = entity1;
 		m_am_entity2 = entity2;
 		cmenu.Hide();
@@ -791,8 +791,8 @@ class HandsContainer: Container
 	int GetCombinationFlags( EntityAI entity1, EntityAI entity2 )
 	{
 		int flags = 0;
-		PlayerBase m_player = PlayerBase.Cast( GetGame().GetPlayer() );
-		EntityAI entity_in_hands = m_player.GetHumanInventory().GetEntityInHands();
+		PlayerBase m_player = PlayerBase.Cast( g_Game.GetPlayer() );
+		EntityAI entity_in_hands = m_player.GetEntityInHands();
 
 		if (!entity1 || !entity2) return flags;
 
@@ -822,7 +822,7 @@ class HandsContainer: Container
 
 		if ( !skipSwap )
 		{
-			if (entity1 == m_player.GetHumanInventory().GetEntityInHands() ) flags = flags | InventoryCombinationFlags.TAKE_TO_HANDS;
+			if (entity1 == m_player.GetEntityInHands() ) flags = flags | InventoryCombinationFlags.TAKE_TO_HANDS;
 			else if (GameInventory.CanSwapEntitiesEx( entity1, entity2 ))
 			{
 				if (!entity1.IsInherited( ZombieBase ) && !entity1.IsInherited( Car ))
@@ -847,11 +847,11 @@ class HandsContainer: Container
 		}
 		if (!entity1.GetInventory().HasEntityInInventory(entity2) && entity1.GetInventory().CanAddEntityInCargo( entity2, entity2.GetInventory().GetFlipCargo() )) flags = flags | InventoryCombinationFlags.ADD_AS_CARGO;
 
-		if (entity1 == m_player.GetHumanInventory().GetEntityInHands() || entity2 == m_player.GetHumanInventory().GetEntityInHands())
+		if (entity1 == m_player.GetEntityInHands() || entity2 == m_player.GetEntityInHands())
 		{
 			ActionManagerClient amc;
 			Class.CastTo(amc, m_player.GetActionManager());
-			if (entity1 == m_player.GetHumanInventory().GetEntityInHands())
+			if (entity1 == m_player.GetEntityInHands())
 			{
 				if (amc.CanSetActionFromInventory( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ) ))
 				{
@@ -877,7 +877,7 @@ class HandsContainer: Container
 	int GetRecipeCount( bool recipe_anywhere, EntityAI entity1, EntityAI entity2 )
 	{
 		PluginRecipesManager plugin_recipes_manager = PluginRecipesManager.Cast( GetPlugin( PluginRecipesManager ) );
-		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), null, PlayerBase.Cast( GetGame().GetPlayer() ) );
+		return plugin_recipes_manager.GetValidRecipes( ItemBase.Cast( entity1 ), ItemBase.Cast( entity2 ), null, PlayerBase.Cast( g_Game.GetPlayer() ) );
 	}
 	
 	void RemoveItem()
@@ -976,8 +976,8 @@ class HandsContainer: Container
 	
 	void DropReceived( Widget w,  int x, int y, CargoContainer cargo )
 	{
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
-		EntityAI item_in_hands = player.GetHumanInventory().GetEntityInHands();
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
+		EntityAI item_in_hands = player.GetEntityInHands();
 		
 		EntityAI item = GetItemPreviewItem( w );
 		if( !item )
@@ -1065,7 +1065,7 @@ class HandsContainer: Container
 	
 	bool DraggingOverGrid( Widget w,  int x, int y, Widget reciever, CargoContainer cargo )
 	{
-		EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+		EntityAI item_in_hands = g_Game.GetPlayer().GetEntityInHands();
 		if( w == null )
 		{
 			return false;
@@ -1136,7 +1136,7 @@ class HandsContainer: Container
 		ItemBase item_base	= ItemBase.Cast( item );
 		float stack_max = item_base.GetTargetQuantityMax(slot_id);
 		
-		PlayerBase player = PlayerBase.Cast( GetGame().GetPlayer() );
+		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if( !item.GetInventory().CanRemoveEntity() || !player.CanManipulateInventory() )
 			return;
 		
@@ -1166,7 +1166,7 @@ class HandsContainer: Container
 				{
 					if( !receiver_item.GetInventory().CanRemoveEntity() )
 						return;
-					GetGame().GetPlayer().PredictiveSwapEntities( item, receiver_item );
+					g_Game.GetPlayer().PredictiveSwapEntities( item, receiver_item );
 				}
 			}
 		}
@@ -1205,11 +1205,11 @@ class HandsContainer: Container
 		}
 		else if( ( target_att_entity.GetInventory().CanAddEntityInCargo( item, item.GetInventory().GetFlipCargo() ) && ( !player.GetInventory().HasEntityInInventory( item ) || !m_Entity.GetInventory().HasEntityInCargo( item )) ) || player.GetHumanInventory().HasEntityInHands( item ) )
 		{
-			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( GetGame().GetPlayer() ), target_att_entity, item );
+			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( g_Game.GetPlayer() ), target_att_entity, item );
 		}
 		/*else if( !player.GetInventory().HasEntityInInventory( item ) || !target_att_entity.GetInventory().HasEntityInCargo( item ) )
 		{
-			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( GetGame().GetPlayer() ), target_att_entity, item );
+			SplitItemUtils.TakeOrSplitToInventory( PlayerBase.Cast( g_Game.GetPlayer() ), target_att_entity, item );
 		}*/
 		
 		ItemManager.GetInstance().HideDropzones();
@@ -1451,7 +1451,7 @@ class HandsContainer: Container
 						break;
 					
 					case MouseState.LEFT:
-						PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+						PlayerBase controlledPlayer = PlayerBase.Cast(g_Game.GetPlayer());
 						if (g_Game.IsLeftCtrlDown())
 						{
 							if (controlledPlayer.CanDropEntity(selectedItem))
@@ -1492,8 +1492,8 @@ class HandsContainer: Container
 			ItemBase item = ItemBase.Cast(iw.GetItem());
 			if (item)
 			{
-				PlayerBase controlledPlayer = PlayerBase.Cast(GetGame().GetPlayer());
-				EntityAI itemInHands = controlledPlayer.GetHumanInventory().GetEntityInHands();
+				PlayerBase controlledPlayer = PlayerBase.Cast(g_Game.GetPlayer());
+				EntityAI itemInHands = controlledPlayer.GetEntityInHands();
 		
 				if (!item.GetInventory().CanRemoveEntity())
 					return;
@@ -1531,7 +1531,7 @@ class HandsContainer: Container
 	
 	void ElectricityIcon()
 	{
-		EntityAI item_in_hands = GetGame().GetPlayer().GetHumanInventory().GetEntityInHands();
+		EntityAI item_in_hands = g_Game.GetPlayer().GetEntityInHands();
 		if( item_in_hands && item_in_hands.GetCompEM() )
 		{
 			if( GetRootWidget().FindAnyWidget( "electricity" ) )

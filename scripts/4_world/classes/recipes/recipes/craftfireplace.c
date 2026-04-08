@@ -91,7 +91,7 @@ class CraftFireplace extends RecipeBase
 		ItemBase ingredient2 = ingredients[1];
 		
 		//clear inventory reservation
-		if ( !GetGame().IsMultiplayer() )
+		if ( !g_Game.IsMultiplayer() )
 		{
 			InventoryLocation loc = new InventoryLocation;
 			ingredient1.GetInventory().GetCurrentInventoryLocation( loc );
@@ -103,7 +103,7 @@ class CraftFireplace extends RecipeBase
 		//Ingredient 1
 		if ( ingredient1.GetQuantity() <= 0 )
 		{
-			if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+			if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 			{
 				player.ServerTakeEntityToTargetAttachment( result, ingredient1 ); // multiplayer server side
 			}
@@ -127,7 +127,7 @@ class CraftFireplace extends RecipeBase
 		//Ingredient 2
 		if ( ingredient2.GetQuantity() <= 0 )
 		{
-			if ( GetGame().IsServer() && GetGame().IsMultiplayer() )
+			if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 			{
 				player.ServerTakeEntityToTargetAttachment( result, ingredient2 ); // multiplayer server side
 			}

@@ -270,10 +270,15 @@ class SKS_Base extends Rifle_Base
 	//Debug menu Spawn Ground Special
 	override void OnDebugSpawn()
 	{
-		super.OnDebugSpawn();
-		
+		SpawnAmmo("Ammo_762x39",SAMF_DEFAULT);
 		GameInventory inventory = GetInventory();
 		inventory.CreateInInventory( "PUScopeOptic" );
 		inventory.CreateInInventory( "SKS_Bayonet" );
+		
+		EntityAI entity;
+		if ( Class.CastTo(entity, this) )
+		{
+			entity.SpawnEntityOnGroundPos("Ammo_762x39", entity.GetPosition());
+		}		
 	}
 };

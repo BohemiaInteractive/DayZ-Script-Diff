@@ -6,7 +6,7 @@
 | RELEASE                                                              | Retail build of the game                                                                          | yes (retail client, retail server)                                                                                 | no                |
 | PREVIEW_BUILD                                                        | Preview build. Currently used only in console builds                                              | yes (preview build)                                                                                                | no                |
 | PLATFORM_WINDOWS \|\| PLATFORM_MACOSX \|\| ENF_LINUX                 | Platform specific defines                                                                         | yes                                                                                                                | yes               |
-| PLATFORM_CONSOLE && (PLATFORM_XBOX \|\| PLATFORM_PS4)                | Platform specific defines                                                                         | yes                                                                                                                | no                |
+| PLATFORM_CONSOLE && (PLATFORM_XBOX \|\| PLATFORM_PS4 \|\| PLATFORM_MSSTORE)                | Platform specific defines                                                                         | yes                                                                                                                | no                |
 | X1_TODO_TEMP_GUI                                                     | Temporary XBOX GUI hacks                                                                          | yes (xbox builds)                                                                                                  | no                |
 | BULDOZER                                                             | Game is launched in land editor mode (-buldozer)                                                  | yes (binarize, debug, release, releaseAsserts, releaseNoOpt, retail client)\n no(server, retail server, xbox, ps4) | yes               |
 | SERVER                                                               | Game runs as server                                                                               | yes (all pc builds, client with -server)                                                                           | no                |
@@ -28,9 +28,9 @@
 
 | Console builds | %Defines used                                                               |
 | -------------- | --------------------------------------------------------------------------- |
-| preview        | RELEASE, PLATFORM_CONSOLE, (PLATFORM_XBOX \|\| PLATFORM_PS4), PREVIEW_BUILD |
-| retail         | RELEASE, PLATFORM_CONSOLE, (PLATFORM_XBOX \|\| PLATFORM_PS4)                |
-| release        | DEVELOPER, PLATFORM_CONSOLE, (PLATFORM_XBOX \|\| PLATFORM_PS4)              |
+| preview        | RELEASE, PLATFORM_CONSOLE, (PLATFORM_XBOX \|\| PLATFORM_PS4 \|\| PLATFORM_MSSTORE), PREVIEW_BUILD |
+| retail         | RELEASE, PLATFORM_CONSOLE, (PLATFORM_XBOX \|\| PLATFORM_PS4 \|\| PLATFORM_MSSTORE)                |
+| release        | DEVELOPER, PLATFORM_CONSOLE, (PLATFORM_XBOX \|\| PLATFORM_PS4 \|\| PLATFORM_MSSTORE)              |
 */
 
 enum StaticDefines
@@ -43,6 +43,7 @@ enum StaticDefines
 	ENF_LINUX,
 	PLATFORM_CONSOLE,
 	PLATFORM_XBOX,
+	PLATFORM_MSSTORE,
 	PLATFORM_PS4,
 	X1_TODO_TEMP_GUI,
 	BULDOZER,

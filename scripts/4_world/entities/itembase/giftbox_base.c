@@ -18,7 +18,7 @@ class GiftBox_Base extends Container_Base
 		
 		if (GameInventory.GetInventoryCheckContext() == InventoryCheckContext.DEFAULT)
 		{
-			if (!GetGame().IsDedicatedServer())
+			if (!g_Game.IsDedicatedServer())
 				return IsOpen();
 		}
 		
@@ -63,7 +63,7 @@ class GiftBox_Base extends Container_Base
 	{
 		super.EEHealthLevelChanged(oldLevel,newLevel,zone);
 		
-		if (newLevel == GameConstants.STATE_RUINED && GetGame().IsServer())
+		if (newLevel == GameConstants.STATE_RUINED && g_Game.IsServer())
 		{
 			MiscGameplayFunctions.DropAllItemsInInventoryInBounds(this, m_HalfExtents);
 			DeleteSafe();

@@ -29,7 +29,7 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 	void ServerBrowserFilterContainer(Widget root, ServerBrowserTab parent)
 	{
 		string player_name;
-		GetGame().GetPlayerName(player_name);
+		g_Game.GetPlayerName(player_name);
 		m_Tab = parent;
 		
 		array<string> character_name_options ={"#server_browser_disabled", player_name};
@@ -126,7 +126,7 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		if (m_Tab.GetTabType() == TabType.LAN || m_Tab.GetTabType() == TabType.FAVORITE)
 			return;
 		
-		GetGame().GetProfileString("SB_Filter_" + m_Tab.GetTabType(), data);
+		g_Game.GetProfileString("SB_Filter_" + m_Tab.GetTabType(), data);
 		
 		m_Options.Clear();
 		
@@ -204,7 +204,7 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		if (!JsonFileLoader<ref map<string, string>>.MakeData(m_Options, data, errorMessage))
 			ErrorEx(errorMessage);
 
-		GetGame().SetProfileString("SB_Filter_" + m_Tab.GetTabType(), data);
+		g_Game.SetProfileString("SB_Filter_" + m_Tab.GetTabType(), data);
 	}
 	
 	void ResetFilters()
@@ -551,6 +551,9 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		
 		input.m_RowsPerPage = SERVER_BROWSER_PAGE_SIZE;
 
+		#ifdef PLATFORM_MSSTORE
+			input.m_Platform = 2;
+		#endif
 		#ifdef PLATFORM_XBOX
 			input.m_Platform = 2;
 		#endif

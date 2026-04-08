@@ -93,7 +93,7 @@ class ActionRepairTent: ActionContinuousBase
 		Object targetParent = action_data.m_Target.GetParent();
 		
 		string damageZone = RepairTentActionData.Cast(action_data).m_DamageZone;
-		if (!GetGame().IsMultiplayer())
+		if (!g_Game.IsMultiplayer())
 			damageZone = m_CurrentDamageZone;
 		
 		if ( targetParent && targetParent.IsInherited(TentBase) && damageZone != "" ) 
@@ -161,11 +161,11 @@ class ActionRepairTent: ActionContinuousBase
 		PluginRepairing module_repairing;
 		Class.CastTo(module_repairing, GetPlugin(PluginRepairing));
 		
-		GetGame().ConfigGetTextArray("" + path + " transferToZonesNames", transfer_zones);
+		g_Game.ConfigGetTextArray("" + path + " transferToZonesNames", transfer_zones);
 		
 		for (int i = 0; i < transfer_zones.Count(); i++)
 		{
-			transfer_to_global_coef += GetGame().ConfigGetFloat("" + path + " Health transferToGlobalCoef");
+			transfer_to_global_coef += g_Game.ConfigGetFloat("" + path + " Health transferToGlobalCoef");
 			if (transfer_zones.Get(i) == damage_zone)
 				continue;
 			
