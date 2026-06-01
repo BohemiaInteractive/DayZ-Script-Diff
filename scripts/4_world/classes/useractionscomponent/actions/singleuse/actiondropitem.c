@@ -60,6 +60,12 @@ class ActionDropItem : ActionSingleUseBase
 		return true;
 	}
 	
+	//! Prevent this action from beeing performed while changing stance
+	override bool CanBePerformedWhileChangingStance()
+	{
+		return false;
+	}
+	
 	override bool HasTarget()
 	{
 		return false;
@@ -77,11 +83,21 @@ class ActionDropItem : ActionSingleUseBase
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		HumanCommandMove hcm = player.GetCommand_Move();
-		if (hcm && hcm.IsChangingStance())
+		if (!player || !item)
 			return false;
-
-		return player && item;
+		
+		HumanInputController hic = player.GetInputController();
+		HumanCommandMove hcm = player.GetCommand_Move();
+		
+		//! Same-frame protection against overlapping inputs
+		if (hic && (hic.IsStanceChange() || hic.IsThrowingModeChange()))
+			return false;
+		
+		//! Ongoing move transition protection
+		if (hcm && (hcm.IsChangingStance() || hcm.IsStandingFromBack()))
+			return false;
+		
+		return true;
 	}
 	
 	override void OnExecuteServer(ActionData action_data)

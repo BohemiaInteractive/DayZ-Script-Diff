@@ -302,12 +302,12 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			m_FlipModeSelector.SetValue( m_FlipModeOption.GetDefaultIndex(), false );
 		#else
 			#ifndef PLATFORM_XBOX
-			m_DisplayModeSelector.SetValue( m_DisplayModeOption.GetDefaultIndex(), false );
-			m_ResolutionSelector.SetValue( m_ResolutionOption.GetDefaultIndex(), false );
-			m_BrightnessSelector.SetValue( m_BrightnessOption.GetDefault(), false );
-			m_VSyncSelector.SetValue( m_VSyncOption.GetDefaultIndex(), false );
 			int idx = m_OverallQualityOption.GetDefaultIndex();
-			m_OverallQualitySelector.SetValue( m_OverallQualityOption.GetDefaultIndex(), true );
+			m_OverallQualitySelector.SetValue( m_OverallQualityOption.GetDefaultIndex() );
+			m_DisplayModeSelector.SetValue( m_DisplayModeOption.GetDefaultIndex() );
+			m_ResolutionSelector.SetValue( m_ResolutionOption.GetDefaultIndex() );
+			m_BrightnessSelector.SetValue( m_BrightnessOption.GetDefault() );
+			m_VSyncSelector.SetValue( m_VSyncOption.GetDefaultIndex() );
 			#endif
 		#endif
 				

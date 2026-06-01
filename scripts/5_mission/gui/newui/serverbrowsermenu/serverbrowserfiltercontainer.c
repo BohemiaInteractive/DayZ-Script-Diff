@@ -11,10 +11,8 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 	ref OptionSelectorMultistate m_RegionFilter;
 	ref OptionSelectorMultistate m_PingFilter;
 	ref OptionSelectorMultistate m_MapFilter;
-	ref OptionSelector m_DLCFilter; // DEPRECATED
 	ref OptionSelector m_FavoritedFilter;
 	ref OptionSelector m_FriendsPlayingFilter;
-	ref OptionSelector m_BattleyeFilter; // DEPRECATED
 	ref OptionSelector m_PasswordFilter;
 	ref OptionSelector m_WhitelistFilter;
 	ref OptionSelector m_KeyboardFilter;
@@ -22,8 +20,6 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 	ref OptionSelector m_VersionMatchFilter;
 	ref OptionSelector m_FullServerFilter;
 	ref OptionSelector m_ThirdPersonFilter;
-	ref OptionSelector m_PublicFilter; // DEPRECATED
-	ref OptionSelector m_AcceleratedTimeFilter; // DEPRECATED
 	protected ServerBrowserTab m_Tab;
 	
 	void ServerBrowserFilterContainer(Widget root, ServerBrowserTab parent)
@@ -625,4 +621,52 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		
 		return input;
 	}
+	
+#ifdef DIAG_DEVELOPER
+	string GetSearchByNameFilterText()
+	{
+		if (!m_SearchByName)
+		{
+			return "";
+		}
+	
+		string text = m_SearchByName.GetText();
+		text.TrimInPlace();
+		text.ToLower();
+		return text;
+	}
+	
+	string GetSearchByIPFilterText()
+	{
+	#ifdef PLATFORM_WINDOWS
+		if (m_SearchByIP)
+		{
+			string text = m_SearchByIP.GetText();
+			text.TrimInPlace();
+			text.ToLower();
+			return text;
+		}
+	#endif
+	
+		return "";
+	}
+	
+	string GetMapFilterInternalName()
+	{
+		if (!m_MapFilter || !m_MapFilter.IsSet())
+		{
+			return "";
+		}
+	
+		string internalMapName = ServerBrowserHelperFunctions.GetInternalMapName(m_MapFilter.GetStringValue());
+		internalMapName.ToLower();
+		return internalMapName;
+	}
+#endif
+	
+	// DEPRECATED BELOW
+	ref OptionSelector m_DLCFilter;
+	ref OptionSelector m_BattleyeFilter;
+	ref OptionSelector m_PublicFilter;
+	ref OptionSelector m_AcceleratedTimeFilter;
 }

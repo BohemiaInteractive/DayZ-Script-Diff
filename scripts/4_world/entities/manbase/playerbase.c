@@ -422,7 +422,7 @@ class PlayerBase extends ManBase
 
 			m_ModifiersManager = new ModifiersManager(this); // player modifiers
 			m_PlayerSoundManagerServer = new PlayerSoundManagerServer(this);
-			m_VirtualHud = new VirtualHud(this);
+			m_VirtualHud = GetVirtualHud();
 			
 			m_AdminLog = PluginAdminLog.Cast(GetPlugin(PluginAdminLog));
 		}
@@ -2403,8 +2403,7 @@ class PlayerBase extends ManBase
 		
 		if (IsControlledPlayer())//true only on client for the controlled character
 		{
-			if (!m_VirtualHud)
-				m_VirtualHud = new VirtualHud(this);
+			m_VirtualHud = GetVirtualHud();
 			
 			Mission mission = g_Game.GetMission();
 			if (m_Hud)
@@ -4183,8 +4182,8 @@ class PlayerBase extends ManBase
 		if (GetActionManager() && GetActionManager().GetRunningAction() && !GetActionManager().GetRunningAction().CanBePerformedWhileChangingStance())
 			return false;
 
-		// Check if the player is playing a throwing animation
-		if (GetThrowing().IsThrowingAnimationPlaying())
+		// Allow stance changes in plain throwing mode, but not once the actual throw wind-up / release animation has started
+		if (GetThrowing().IsThrowingInProgress() || GetThrowing().IsThrowingAnimationPlaying())
 			return false;
 		
 		// don't allow base stance change, only raised hands change
@@ -4196,6 +4195,11 @@ class PlayerBase extends ManBase
 			return false;
 		}
 	
+		// Check if the player tries to drop or throw an item in hands while changing stance
+		UAInterface inputInterface = GetInputInterface();
+		if (inputInterface.SyncedValue_ID(UAThrowitem) > 0 || inputInterface.SyncedValue_ID(UADropitem) > 0)
+			return false;
+		
 	    // Check if the player is going to crouch or raised crouch
 	    if (newStance == DayZPlayerConstants.STANCEIDX_CROUCH || newStance == DayZPlayerConstants.STANCEIDX_RAISEDCROUCH) 
 	    {

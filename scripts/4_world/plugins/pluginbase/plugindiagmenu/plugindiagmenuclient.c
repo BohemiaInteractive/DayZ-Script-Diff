@@ -27,6 +27,8 @@ class PluginDiagMenuClient : PluginDiagMenu
 	#endif
 #endif
 	
+	static ref ScriptInvoker m_SBDiagScriptInvoker = new ScriptInvoker();
+	
 	override void OnInit()
 	{
 		super.OnInit();
@@ -251,6 +253,11 @@ class PluginDiagMenuClient : PluginDiagMenu
 		// LEVEL 2 - Script > Cinematic Camera Tools
 		//---------------------------------------------------------------
 		DiagMenu.BindCallback(DiagMenuIDs.CAMERATOOLS_ENABLE_REMOTE_CAMERA, CBCameraToolsEnableRemoteCamera);
+		
+		//---------------------------------------------------------------
+		// LEVEL 2 - Script > Server Browser
+		//---------------------------------------------------------------
+		DiagMenu.BindCallback(DiagMenuIDs.SERVER_BROWSER_DUMMY_SERVERS, CBUpdateSBDummyServers);
 	}
 	
 	//---------------------------------------------
@@ -1608,5 +1615,16 @@ class PluginDiagMenuClient : PluginDiagMenu
 		CachedObjectsParams.PARAM1_FLOAT.param1 = value;
 		SendDiagRPC(CachedObjectsParams.PARAM1_FLOAT, rpc, serverOnly);
  	}
+	
+	//---------------------------------------------
+	static void CBUpdateSBDummyServers()
+	{
+		m_SBDiagScriptInvoker.Invoke();
+	}
+	
+	static ScriptInvoker GetSBDummyServersInvoker()
+	{
+		return m_SBDiagScriptInvoker;
+	}
 #endif
 }

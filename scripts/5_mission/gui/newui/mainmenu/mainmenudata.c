@@ -87,6 +87,10 @@ class MainMenuData
 		for (int i = 0; i < m_AllDlcsMap.Count(); i++)
 		{
 			ModInfo info = m_AllDlcsMap.GetElement(i);
+			if (info.GetIsOwned())
+			{
+				continue;
+			}
 			JsonDataNewsArticle dlcArticle = new JsonDataNewsArticle;
 			
 			dlcArticle.categoryID = NewsCategory.DLCS;
@@ -118,6 +122,8 @@ class MainMenuData
 	static void ClearAllDLCs()
 	{
 		m_AllMods = null;
+		m_AllDlcsMap = null;
+		m_NewsData = null;
 	}
 	
 	//! DLCs only

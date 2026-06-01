@@ -23,7 +23,7 @@ class ServerBrowserTabPc extends ServerBrowserTab
 	protected ref array<ButtonWidget> m_BtnPages;
 	protected ref array<ref ServerBrowserEntry>	m_ServerListEntries;
 	
-	protected ref TStringArray m_TempTime = new TStringArray;
+	protected ref TStringArray m_TempTime = new TStringArray();
 	
 	protected override void Construct(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
@@ -39,20 +39,20 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		m_ServerList			= SpacerBaseWidget.Cast(m_ServerListScroller.FindAnyWidget("server_list_content"));
 		m_ServerListScroller.VScrollToPos01(0);
 				
-		m_ServerListEntries	= new array<ref ServerBrowserEntry>;		
-		m_EntryWidgets = new map<string, ref ServerBrowserEntry>;
-		m_SortInverted = new map<ESortType, ESortOrder>;
-		m_EntriesSorted = new map<ESortType, ref array<ref GetServersResultRow>>;
-		m_EntryMods = new map<string, ref array<string>>;
+		m_ServerListEntries	= new array<ref ServerBrowserEntry>();		
+		m_EntryWidgets = new map<string, ref ServerBrowserEntry>();
+		m_SortInverted = new map<ESortType, ESortOrder>();
+		m_EntriesSorted = new map<ESortType, ref array<ref GetServersResultRow>>();
+		m_EntryMods = new map<string, ref array<string>>();
 		
-		m_EntriesSorted[ESortType.HOST] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.TIME] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.POPULATION] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.SLOTS] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.PING] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.FAVORITE] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.PASSWORDED] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.MAP] = new array<ref GetServersResultRow>;
+		m_EntriesSorted[ESortType.HOST] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.TIME] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.POPULATION] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.SLOTS] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.PING] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.FAVORITE] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.PASSWORDED] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.MAP] = new array<ref GetServersResultRow>();
 		
 		m_Menu = menu;
 		m_TabType = type;
@@ -152,19 +152,28 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		{
 			SwitchToDetails();
 		}
-	}
-
-	void ~ServerBrowserTabPc()
-	{
 		
+	#ifdef DIAG_DEVELOPER
+		InitDummyServers();
+	#endif
 	}
-
+	
 	override void RefreshList()
 	{
-		for ( int i = 0; i < m_EntriesSorted.Count(); i++ )
+	#ifdef DIAG_DEVELOPER
+		if (m_DummyServersEnabled)
+		{
+			RefreshDummyList();
+			return;
+		}
+	#endif
+		
+		int entriesSortedCount = m_EntriesSorted.Count();
+		for ( int i = 0; i < entriesSortedCount; ++i )
 		{
 			m_EntriesSorted.GetElement(i).Clear();
 		}
+
 		m_ServerListEntries.Clear();
 		
 		OnlineServices.m_ServersAsyncInvoker.Insert( m_Menu.OnLoadServersAsync, EScriptInvokerInsertFlags.NONE );
@@ -247,6 +256,11 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		
 	override void OnLoadServersAsyncPC(GetServersResult result_list, EBiosError error, string response)
 	{
+	#ifdef DIAG_DEVELOPER
+		if (m_DummyServersEnabled)
+			return;
+	#endif
+
 		if (result_list)
 		{			
 			int count = result_list.m_Results.Count();
@@ -860,100 +874,13 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		
 		return target_index;
 	}
-	
-	// DEPRECATED
-	int SortedInsertDesc( GetServersResultRow entry, ESortType sort_type )
-	{
-		array<ref GetServersResultRow> list = m_EntriesSorted[sort_type];
-		
-		int i;
-		int index_min = 0;
-		int index_max = list.Count() - 1;
-		int target_index = Math.Floor( index_max / 2 );
-		
-		if ( index_max == -1 )
-		{
-			list.Insert( entry );
-			return 0;
-		}
-		
-		if ( sort_type == ESortType.HOST )
-		{
-			string entry_value_str = entry.GetValueStr(ESortType.HOST);
-			
-			while ( true )
-			{
-				string target_value_str = list[target_index].GetValueStr(ESortType.HOST);
-				
-				if ( entry_value_str == target_value_str || ((index_max - index_min) <= 1) )
-				{
-					for ( i = index_min; i <= index_max; i++ )
-					{
-						if ( entry_value_str >= list[i].GetValueStr(ESortType.HOST) )
-						{
-							list.InsertAt( entry, i );
-							return i;
-						}
-					}
-					
-					index_max++;
-					list.InsertAt( entry, index_max );
-					return target_index;
-				}
-				else if ( entry_value_str > target_value_str )
-				{
-					index_max = target_index;
-					target_index = Math.Floor( target_index / 2 );
-				}
-				else if ( entry_value_str < target_value_str )
-				{
-					index_min = target_index;
-					target_index += Math.Floor( (index_max - index_min) / 2 );
-				}			
-			}
-		}
-		else
-		{
-			int entry_value_int = entry.GetValueInt( sort_type );
-			
-			while ( true )
-			{
-				int target_value_int = list[target_index].GetValueInt( sort_type );
-				
-				if ( entry_value_int == target_value_int || ((index_max - index_min) <= 1) )
-				{
-					for ( i = index_min; i <= index_max; i++ )
-					{
-						if ( entry_value_int >= list[i].GetValueInt( sort_type ) )
-						{
-							list.InsertAt( entry, i );
-							return i;
-						}
-					}
-					
-					index_max++;
-					list.InsertAt( entry, index_max );
-					return target_index;
-				}
-				else if ( entry_value_int > target_value_int )
-				{
-					index_max = target_index;
-					target_index = Math.Floor( target_index / 2 );
-				}
-				else if ( entry_value_int < target_value_int )
-				{
-					index_min = target_index;
-					target_index += Math.Floor( (index_max - index_min) / 2 );
-				}			
-			}
-		}
-		
-		return target_index;
-	}
 
 	void UpdatePageButtons()
 	{
-		m_PagesCount = Math.Ceil( m_TotalLoadedServers / SERVERS_VISIBLE_COUNT );		
+		m_PagesCount = (m_TotalLoadedServers + SERVERS_VISIBLE_COUNT - 1) / SERVERS_VISIBLE_COUNT;
+		if (m_PagesCount < 1)
+			m_PagesCount = 1;
+
 		if ( m_PagesCount > 1 )
 		{
 			m_PnlPagesPanel.Show( true );
@@ -1260,5 +1187,195 @@ class ServerBrowserTabPc extends ServerBrowserTab
 			m_BtnShowFilters.Show(true);
 			m_FilterRoot.Show(false);
 		}
+	}
+	
+#ifdef DIAG_DEVELOPER
+	protected void RefreshDummyList()
+	{
+		for (int i = 0; i < m_EntriesSorted.Count(); ++i)
+		{
+			m_EntriesSorted.GetElement(i).Clear();
+		}
+	
+		m_ServerListEntries.Clear();
+		m_EntryWidgets.Clear();
+		m_OnlineFavServers.Clear();
+	
+		m_Menu.SetServersLoadingTab(m_TabType);
+		m_LoadingFinished = false;
+		m_Loading = true;
+		m_Initialized = true;
+		m_BegunLoading = false;
+		m_LastLoadedPage = 0;
+		m_TotalPages = -1;
+		m_TotalServers = 0;
+		m_TotalLoadedServers = 0;
+		m_CurrentLoadedPage = 0;
+		m_TotalServersCount = 0;
+		m_ServersEstimateCount = 0;
+		m_PageIndex = 0;
+		m_SelectedServer = null;
+	
+		m_Menu.DeselectCurrentServer();
+	
+		m_CurrentFilterInput = m_Filters.GetFilterOptionsPC();
+	
+		if (!m_DummyServers || !m_DummyServers.m_Results)
+		{
+			m_LoadingFinished = true;
+			m_Loading = false;
+			m_Menu.SetServersLoadingTab(TabType.NONE);
+			UpdateServerList();
+			UpdatePageButtons();
+			UpdateStatusBar();
+			return;
+		}
+	
+		int count = m_DummyServers.m_Results.Count();
+		for (int j = 0; j < count; ++j)
+		{
+			GetServersResultRow result = m_DummyServers.m_Results[j];
+	
+			result.m_SortName = result.m_Name.ToInt();
+			result.m_SortTime = GetTimeOfDayEnum(result.m_TimeOfDay);
+	
+			string ipPort = result.GetIpPort();
+			result.m_Favorite = m_Menu.IsFavorited(ipPort);
+			
+			if (m_TabType == TabType.FAVORITE && !result.m_Favorite)
+				continue;
+	
+			if (PassLocalFilters(result))
+				AddSorted(result);
+		}
+	
+		m_TotalServersCount = m_DummyServers.m_NumServers;
+		m_TotalLoadedServers = m_EntriesSorted[m_SortType].Count();
+		m_ServersEstimateCount = m_TotalLoadedServers;
+	
+		m_LoadingFinished = true;
+		m_Loading = false;
+		m_Menu.SetServersLoadingTab(TabType.NONE);
+	
+		ButtonCancelToRefresh();
+		ButtonEnable(m_RefreshList);
+	
+		m_ServerListScroller.VScrollToPos01(0);
+	
+		UpdateServerList();
+		UpdatePageButtons();
+		UpdateStatusBar();
+	
+		if (m_TotalLoadedServers == 0)
+		{
+			if (m_TabType != TabType.FAVORITE && m_TabType != TabType.LAN)
+			{
+				SwitchToFilters();
+			}
+		}
+	}
+	
+	override void OnDummyServersEnabledChanged()
+	{
+		super.OnDummyServersEnabledChanged();
+	
+		RefreshList();
+	}
+	
+	override int GetServersVisibleCount()
+	{
+		return SERVERS_VISIBLE_COUNT;
+	}
+#endif
+	
+	// DEPRECATED BELOW
+	[Obsolete("1.29: No replacement")]
+	int SortedInsertDesc( GetServersResultRow entry, ESortType sort_type )
+	{
+		array<ref GetServersResultRow> list = m_EntriesSorted[sort_type];
+		
+		int i;
+		int index_min = 0;
+		int index_max = list.Count() - 1;
+		int target_index = Math.Floor( index_max / 2 );
+		
+		if ( index_max == -1 )
+		{
+			list.Insert( entry );
+			return 0;
+		}
+		
+		if ( sort_type == ESortType.HOST )
+		{
+			string entry_value_str = entry.GetValueStr(ESortType.HOST);
+			
+			while ( true )
+			{
+				string target_value_str = list[target_index].GetValueStr(ESortType.HOST);
+				
+				if ( entry_value_str == target_value_str || ((index_max - index_min) <= 1) )
+				{
+					for ( i = index_min; i <= index_max; i++ )
+					{
+						if ( entry_value_str >= list[i].GetValueStr(ESortType.HOST) )
+						{
+							list.InsertAt( entry, i );
+							return i;
+						}
+					}
+					
+					index_max++;
+					list.InsertAt( entry, index_max );
+					return target_index;
+				}
+				else if ( entry_value_str > target_value_str )
+				{
+					index_max = target_index;
+					target_index = Math.Floor( target_index / 2 );
+				}
+				else if ( entry_value_str < target_value_str )
+				{
+					index_min = target_index;
+					target_index += Math.Floor( (index_max - index_min) / 2 );
+				}			
+			}
+		}
+		else
+		{
+			int entry_value_int = entry.GetValueInt( sort_type );
+			
+			while ( true )
+			{
+				int target_value_int = list[target_index].GetValueInt( sort_type );
+				
+				if ( entry_value_int == target_value_int || ((index_max - index_min) <= 1) )
+				{
+					for ( i = index_min; i <= index_max; i++ )
+					{
+						if ( entry_value_int >= list[i].GetValueInt( sort_type ) )
+						{
+							list.InsertAt( entry, i );
+							return i;
+						}
+					}
+					
+					index_max++;
+					list.InsertAt( entry, index_max );
+					return target_index;
+				}
+				else if ( entry_value_int > target_value_int )
+				{
+					index_max = target_index;
+					target_index = Math.Floor( target_index / 2 );
+				}
+				else if ( entry_value_int < target_value_int )
+				{
+					index_min = target_index;
+					target_index += Math.Floor( (index_max - index_min) / 2 );
+				}			
+			}
+		}
+		
+		return target_index;
 	}
 }

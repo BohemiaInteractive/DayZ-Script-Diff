@@ -131,7 +131,7 @@ class NotifierBase
 		float value1;
 		float value2;
 		int nValues = values.Count();
-		for (int i = 0; i < nValues - 1; i++)
+		for (int i = 0; i < nValues - 1; ++i)
 		{
 			value1 = values.Get(i);
 			value2 = values.Get(i + 1);

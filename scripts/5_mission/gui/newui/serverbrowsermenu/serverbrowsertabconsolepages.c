@@ -1,5 +1,7 @@
 class ServerBrowserTabConsolePages extends ServerBrowserTab
 {
+	protected const int SERVERS_VISIBLE_COUNT = 22;
+	
 	private bool m_IsFilterChanged;
 	private bool m_IsFilterFocused;
 	protected bool m_MouseKeyboardControlled
@@ -33,12 +35,12 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		m_ServerList = SpacerBaseWidget.Cast(m_ServerListScroller.FindAnyWidget("server_list_content"));
 		m_ServerListScroller.VScrollToPos01(0);
 		
-		m_ServerListEntiers	= new array<ref ServerBrowserEntry>;
-		m_EntryWidgets = new map<string, ref ServerBrowserEntry>;
-		m_EntriesSorted	= new map<ESortType, ref array<ref GetServersResultRow>>;
+		m_ServerListEntiers	= new array<ref ServerBrowserEntry>();
+		m_EntryWidgets = new map<string, ref ServerBrowserEntry>();
+		m_EntriesSorted	= new map<ESortType, ref array<ref GetServersResultRow>>();
 		
-		m_EntriesSorted[ESortType.HOST] = new array<ref GetServersResultRow>;
-		m_EntriesSorted[ESortType.POPULATION] = new array<ref GetServersResultRow>;
+		m_EntriesSorted[ESortType.HOST] = new array<ref GetServersResultRow>();
+		m_EntriesSorted[ESortType.POPULATION] = new array<ref GetServersResultRow>();
 		
 		m_Menu = menu;
 		m_TabType = type;
@@ -111,6 +113,11 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
 
 		m_Details = new ServerBrowserDetailsContainer(m_Root.FindAnyWidget("details_content"), this);
+		
+	#ifdef DIAG_DEVELOPER
+		InitDummyServers();
+	#endif
+		
 	}
 	
 	void ShowHideConsoleWidgets()
@@ -136,48 +143,63 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	{
 		switch (pInputDeviceType)
 		{
-		case EInputDeviceType.CONTROLLER:
-			ShowHideConsoleWidgets();
-			UpdatePageButtons();
-			m_WidgetNavFilters.Show(m_IsFilterFocused || m_IsDetailsFocused);
-			if (m_TabType != TabType.FAVORITE)
+			case EInputDeviceType.CONTROLLER:
 			{
-				m_WidgetNavServers.Show((!m_IsFilterFocused && !m_IsDetailsFocused));
+				m_MouseKeyboardControlled = false;
+	
+				ShowHideConsoleWidgets();
+	
+				m_WidgetNavFilters.Show(m_IsFilterFocused || m_IsDetailsFocused);
+				if (m_TabType != TabType.FAVORITE)
+				{
+					m_WidgetNavServers.Show(!m_IsFilterFocused && !m_IsDetailsFocused);
+				}
+	
+				m_BtnShowFilters.Show(false);
+				m_BtnShowDetails.Show(false);
+				m_RefreshList.Show(false);
+				m_Root.FindAnyWidget("spacer2").Show(false);
+				m_Root.FindAnyWidget("spacer5").Show(false);
+				m_Menu.GetLayoutRoot().FindAnyWidget("play_panel_root").Show(false);
+				m_Menu.GetLayoutRoot().FindAnyWidget("MouseAndKeyboardWarning").Show(false);
+	
+				UpdatePageButtons();
+				break;
 			}
-			m_BtnShowFilters.Show(false);
-			m_BtnShowDetails.Show(false);
-			m_RefreshList.Show(false);
-			m_Root.FindAnyWidget("spacer2").Show(false);
-			m_Root.FindAnyWidget("spacer5").Show(false);
-			m_Menu.GetLayoutRoot().FindAnyWidget("play_panel_root").Show(false);
-			m_Menu.GetLayoutRoot().FindAnyWidget("MouseAndKeyboardWarning").Show(false);
-			m_MouseKeyboardControlled = false;
-		break;
-
-		default:
-			if (g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+	
+			default:
 			{
-				bool isFavoriteTab = m_TabType == TabType.FAVORITE;	
-				m_WidgetNavFilters.Show(false);
-				m_WidgetNavServers.Show(false);
-				m_ButtonPageLeftImg.Show(false);
-				m_ButtonPageRightImg.Show(false);
-				m_RefreshList.Show(true);
-				m_BtnShowDetails.Show(!m_DetailsRoot.IsVisible());
-				m_BtnShowFilters.Show(!isFavoriteTab);
-				m_Root.FindAnyWidget("spacer").Show(!isFavoriteTab);
-				m_Root.FindAnyWidget("spacer2").Show(true);
-				m_Root.FindAnyWidget("spacer5").Show(!isFavoriteTab);
-				m_Menu.GetLayoutRoot().FindAnyWidget("play_panel_root").Show(true);
-				m_Menu.GetLayoutRoot().FindAnyWidget("MouseAndKeyboardWarning").Show(true);
-				m_MouseKeyboardControlled = true;
+				if (g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+				{
+					bool isFavoriteTab = m_TabType == TabType.FAVORITE;
+	
+					m_MouseKeyboardControlled = true;
+	
+					m_WidgetNavFilters.Show(false);
+					m_WidgetNavServers.Show(false);
+					m_RefreshList.Show(true);
+					m_BtnShowDetails.Show(!m_DetailsRoot.IsVisible());
+					m_BtnShowFilters.Show(!isFavoriteTab);
+					m_Root.FindAnyWidget("spacer").Show(!isFavoriteTab);
+					m_Root.FindAnyWidget("spacer2").Show(true);
+					m_Root.FindAnyWidget("spacer5").Show(!isFavoriteTab);
+					m_Menu.GetLayoutRoot().FindAnyWidget("play_panel_root").Show(true);
+					m_Menu.GetLayoutRoot().FindAnyWidget("MouseAndKeyboardWarning").Show(true);
+	
+					UpdatePageButtons();
+				}
+				break;
 			}
-		break;
 		}
 	}
 	
 	override void OnLoadServersAsyncConsole( GetServersResult result_list, EBiosError error, string response )
 	{
+	#ifdef DIAG_DEVELOPER
+		if (m_DummyServersEnabled)
+			return;
+	#endif
+		
 		if ( error != EBiosError.OK )
 		{
 			m_LoadingText.SetText( string.Format("Error: %1", ErrorModuleHandler.GetClientMessage(ErrorCategory.BIOSError, error)) );
@@ -188,9 +210,45 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		}
 				
 		m_PagesCount = result_list.m_Pages;
-		m_TotalServersCount = result_list.m_NumServers;
+		if (m_PagesCount < 1)
+		    m_PagesCount = 1;
 		
-		LoadEntries( result_list.m_Page, result_list.m_Results );		
+		m_TotalServersCount = result_list.m_NumServers;
+	
+	#ifdef DIAG_DEVELOPER
+		if (m_DummyServersEnabled)
+		{
+			m_PagesCount = m_DummyServers.m_Pages;
+			if (m_PagesCount < 1)
+			    m_PagesCount = 1;
+			
+			m_TotalServersCount = m_DummyServers.m_NumServers;
+		
+			int startIndex = (GetCurrentPage() - 1) * SERVERS_VISIBLE_COUNT;
+			int endIndex = startIndex + SERVERS_VISIBLE_COUNT;
+		
+			int resultCount = m_DummyServers.m_Results.Count();
+			if (endIndex > resultCount)
+			{
+				endIndex = resultCount;
+			}
+		
+			GetServersResultRowArray tempDummyServerResult = new GetServersResultRowArray();
+			for (int i = startIndex; i < endIndex; ++i)
+			{
+				tempDummyServerResult.Insert(m_DummyServers.m_Results[i]);
+			}
+		
+			LoadEntries(GetCurrentPage(), tempDummyServerResult);
+		}
+		else
+		{
+			LoadEntries(result_list.m_Page, result_list.m_Results);
+		}
+	#else
+		LoadEntries(result_list.m_Page, result_list.m_Results);
+	#endif
+		
 		OnLoadServersAsyncFinished();
 		UpdatePageButtons();
 	}
@@ -327,6 +385,14 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void RefreshList()
 	{
+	#ifdef DIAG_DEVELOPER
+		if (m_DummyServersEnabled)
+		{
+			RefreshDummyList();
+			return;
+		}
+	#endif
+		
 		for ( int i = 0; i < m_ServerListEntiers.Count(); i++ )
 		{
 			m_ServerListEntiers[i].Show(false);
@@ -378,17 +444,33 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void PressX()
 	{
+	#ifdef DIAG_DEVELOPER
+		RefreshServerList(!m_DummyServersEnabled);
+	#else
 		RefreshServerList();
+	#endif
 	}
 	
+#ifdef DIAG_DEVELOPER
+	void RefreshServerList(bool forcePageChange = false)
+#else
 	void RefreshServerList()
+#endif
 	{
 		int currentTime = g_Game.GetTime();
+	#ifdef DIAG_DEVELOPER
+		if (!forcePageChange && m_TabType != TabType.FAVORITE && (currentTime - m_TimeLastServerRefresh) < 1000)
+	#else
 		if (m_TabType != TabType.FAVORITE && (currentTime - m_TimeLastServerRefresh) < 1000)
+	#endif
 			return;
 			
 		m_TimeLastServerRefresh = currentTime;
+	#ifdef DIAG_DEVELOPER
+		if (m_IsFilterChanged || forcePageChange)
+	#else
 		if (m_IsFilterChanged)
+	#endif
 		{
 			SetCurrentPage(1);
 		}
@@ -426,13 +508,13 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void Left()
 	{
-		if (!m_IsFilterFocused && !m_IsDetailsFocused)
+		if (CanNavigatePages())
 		{
-			int curr_page = GetCurrentPage();
-			m_PreviousPage = curr_page;
-			if ( curr_page > 1 )
+			int currPage = GetCurrentPage();
+			m_PreviousPage = currPage;
+			if ( currPage > 1 )
 			{
-				SetCurrentPage( curr_page - 1 );
+				SetCurrentPage( currPage - 1 );
 				UpdatePageButtons();
 			}
 		}
@@ -440,7 +522,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void LeftHold()
 	{
-		if (!m_IsFilterFocused && !m_IsDetailsFocused)
+		if (CanNavigatePages())
 		{
 			int currentTime = g_Game.GetTime();
 			if ( (currentTime - m_TimeLastServerRefreshHoldButton) > 100 )
@@ -453,7 +535,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void LeftRelease()
 	{
-		if ( !m_IsFilterFocused && GetCurrentPage() != m_PreviousPage )
+		if ( CanNavigatePages() && GetCurrentPage() != m_PreviousPage )
 		{
 			RefreshList();
 		}
@@ -461,13 +543,13 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void Right()
 	{
-		if (!m_IsFilterFocused && !m_IsDetailsFocused)
+		if (CanNavigatePages())
 		{
-			int curr_page = GetCurrentPage();
-			m_PreviousPage = curr_page;
-			if ( curr_page < m_PagesCount )
+			int currPage = GetCurrentPage();
+			m_PreviousPage = currPage;
+			if (currPage < m_PagesCount)
 			{
-				SetCurrentPage( curr_page + 1 );
+				SetCurrentPage(currPage + 1);
 				UpdatePageButtons();
 			}
 		}
@@ -475,7 +557,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void RightHold()
 	{
-		if (!m_IsFilterFocused && !m_IsDetailsFocused)
+		if (CanNavigatePages())
 		{
 			int currentTime = g_Game.GetTime();
 			if ( (currentTime - m_TimeLastServerRefreshHoldButton) > 100 )
@@ -488,7 +570,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	override void RightRelease()
 	{
-		if ((!m_IsFilterFocused && !m_IsDetailsFocused) && GetCurrentPage() != m_PreviousPage)
+		if (CanNavigatePages() && GetCurrentPage() != m_PreviousPage)
 		{
 			RefreshList();
 		}
@@ -580,7 +662,7 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	{
 		SetEnableFilters(false);
 		SetEnableServers(false);
-		
+			
 		if (!m_MouseKeyboardControlled)
 		{
 			m_WidgetNavFilters.Show(true);
@@ -590,6 +672,9 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		m_Details.Focus();
 		m_IsDetailsFocused = true;
 		m_IsFilterFocused = false;		
+	
+		UpdatePageButtons();
+	
 		m_SelectedPanel = SelectedPanel.DETAILS;
 	}
 	
@@ -656,33 +741,37 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 	
 	void UpdatePageButtons()
 	{
-		TextWidget wgt_page_stat = TextWidget.Cast( m_Root.FindAnyWidget( "servers_navigation_page_status" ) );		
-		
-		wgt_page_stat.SetText( GetCurrentPage().ToString() +" / "+ m_PagesCount.ToString() );
-				
-		if ( (!m_IsFilterFocused && !m_IsDetailsFocused) && (m_PagesCount > 1) && !m_MouseKeyboardControlled )
-		{
-			bool can_left = (GetCurrentPage() > 1);
-			m_ButtonPageLeftImg.Show( can_left );
-			m_BtnPagePrev.Show( can_left );
-			
-			bool can_right = (GetCurrentPage() < m_PagesCount);
-			m_ButtonPageRightImg.Show( can_right );
-			m_BtnPageNext.Show( can_right );
-		}
-		else
-		{
-			m_ButtonPageLeftImg.Show( false );
-			m_BtnPagePrev.Show( false );
-			m_ButtonPageRightImg.Show( false );
-			m_BtnPageNext.Show( false );
-		}
+		TextWidget wgtPageStat = TextWidget.Cast(m_Root.FindAnyWidget("servers_navigation_page_status"));
+	
+		int pagesCount = GetPagesCount();
+		int currentPage = GetCurrentPage();
+	
+		if (currentPage < 1)
+			currentPage = 1;
+
+		if (currentPage > pagesCount)
+			currentPage = pagesCount;
+
+		wgtPageStat.SetText(currentPage.ToString() + " / " + pagesCount.ToString());
+	
+		bool canLeft = currentPage > 1;
+		bool canRight = currentPage < pagesCount;
+	
+		bool showMouseKeyboardPaging = m_MouseKeyboardControlled && (pagesCount > 1);
+		bool showControllerPaging = !m_MouseKeyboardControlled && !m_IsFilterFocused && !m_IsDetailsFocused && (pagesCount > 1);
+	
+		m_BtnPagePrev.Show(showMouseKeyboardPaging && canLeft);
+		m_BtnPageNext.Show(showMouseKeyboardPaging && canRight);
+	
+		m_ButtonPageLeftImg.Show(showControllerPaging && canLeft);
+		m_ButtonPageRightImg.Show(showControllerPaging && canRight);
 	}
 	
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
 		super.OnClick(w, x, y, button);
 		
+		int oldPage;
 		if (button == MouseState.LEFT)
 		{
 			if (w == m_ResetFilters)
@@ -709,12 +798,22 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 			}
 			else if (w == m_BtnPagePrev)
 			{
+				oldPage = GetCurrentPage();
 				Left();
+			
+				if (GetCurrentPage() != oldPage)
+					RefreshList();
+				
 				return true;
 			}
 			else if (w == m_BtnPageNext)
 			{
+				oldPage = GetCurrentPage();
 				Right();
+			
+				if (GetCurrentPage() != oldPage)
+					RefreshList();
+				
 				return true;
 			}
 			else if (w == m_BtnShowDetails)
@@ -837,4 +936,131 @@ class ServerBrowserTabConsolePages extends ServerBrowserTab
 		m_Menu.UpdateYButtonLabel("#server_details_header");
 		m_RightAreaHeaderText.SetText("#STR_server_browser_menu_server_filters");
 	}
+	
+	protected bool CanNavigatePages()
+	{
+		if (m_MouseKeyboardControlled)
+		{
+			return true;
+		}
+	
+		return !m_IsFilterFocused && !m_IsDetailsFocused;
+	}
+	
+	protected int GetPagesCount()
+	{
+		if (m_PagesCount < 1)
+	    {
+	        return 1;
+	    }
+	
+	    return m_PagesCount;
+	}
+	
+#ifdef DIAG_DEVELOPER
+	protected void RefreshDummyList()
+	{
+		for (int i = 0; i < m_ServerListEntiers.Count(); ++i)
+		{
+			m_ServerListEntiers[i].Show(false);
+		}
+	
+		for (int j = 0; j < m_EntriesSorted.Count(); ++j)
+		{
+			array<ref GetServersResultRow> resultRows = m_EntriesSorted.GetElement(j);
+			if (resultRows)
+			{
+				resultRows.Clear();
+			}
+		}
+	
+		m_EntryWidgets.Clear();
+		m_OnlineFavServers.Clear();
+	
+		m_IsFilterChanged = false;
+		m_Filters.SaveFilters();
+	
+		m_Menu.SetServersLoadingTab(m_TabType);
+		m_LoadingFinished = false;
+		m_Initialized = true;
+		m_BegunLoading = false;
+		m_LastLoadedPage = 0;
+		m_TotalPages = -1;
+		m_TotalServers = 0;
+		m_TotalLoadedServers = 0;
+		m_CurrentLoadedPage = 0;
+		m_Loading = true;
+	
+		m_Menu.DeselectCurrentServer();
+	
+		m_CurrentFilterInput = m_Filters.GetFilterOptionsConsoles();
+		m_CurrentFilterInput.m_Page = GetCurrentPage();
+		m_CurrentFilterInput.m_SortBy = GetSortOption();
+		m_CurrentFilterInput.m_SortOrder = m_SortOrder;
+	
+		m_ServerListScroller.VScrollToPos01(0);
+		m_LoadingText.SetText("#dayz_game_loading");
+	
+		GetServersResultRowArray filteredResults = new GetServersResultRowArray();
+	
+		if (m_DummyServers && m_DummyServers.m_Results)
+		{
+			for (int k = 0; k < m_DummyServers.m_Results.Count(); ++k)
+			{
+				GetServersResultRow row = m_DummyServers.m_Results[k];
+				if (PassLocalFilters(row))
+				{
+					filteredResults.Insert(row);
+				}
+			}
+		}
+	
+		m_TotalServersCount = filteredResults.Count();
+		m_PagesCount = (m_TotalServersCount + SERVERS_VISIBLE_COUNT - 1) / SERVERS_VISIBLE_COUNT;
+		if (m_PagesCount < 1)
+		{
+			m_PagesCount = 1;
+		}
+	
+		int safePage = GetCurrentPage();
+		if (safePage < 1)
+		{
+			safePage = 1;
+		}
+		if (safePage > m_PagesCount)
+		{
+			safePage = m_PagesCount;
+		}
+		SetCurrentPage(safePage);
+	
+		int startIndex = (safePage - 1) * SERVERS_VISIBLE_COUNT;
+		int endIndex = Math.Min(startIndex + SERVERS_VISIBLE_COUNT, filteredResults.Count());
+	
+		GetServersResultRowArray pageResults = new GetServersResultRowArray();
+		for (int i2 = startIndex; i2 < endIndex; ++i2)
+		{
+			pageResults.Insert(filteredResults[i2]);
+		}
+	
+		LoadEntries(safePage, pageResults);
+		OnLoadServersAsyncFinished();
+		UpdatePageButtons();
+	}
+	
+	override void OnDummyServersEnabledChanged()
+	{
+		super.OnDummyServersEnabledChanged();
+	
+		SetCurrentPage(1);
+		m_PreviousPage = 1;
+		m_OnlineFavServers.Clear();
+	
+		RefreshServerList(!m_DummyServersEnabled);
+	}
+	
+	override int GetServersVisibleCount()
+	{
+		return SERVERS_VISIBLE_COUNT;
+	}
+#endif
 }

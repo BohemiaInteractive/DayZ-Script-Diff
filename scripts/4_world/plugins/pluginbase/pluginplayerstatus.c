@@ -13,7 +13,7 @@ class PluginPlayerStatus extends PluginBase
 		m_NotifiersIcons = new multiMap<int, string>; // [key] iconName
 		m_NotifiersIcons.Insert( NTFKEY_HUNGRY, "iconHunger" );
 		m_NotifiersIcons.Insert( NTFKEY_THIRSTY, "iconThirsty" );
-		m_NotifiersIcons.Insert( NTFKEY_SICK, "iconHealth" );
+		m_NotifiersIcons.Insert( NTFKEY_HEALTHY, "iconHealth" );
 		m_NotifiersIcons.Insert( NTFKEY_BACTERIA, "iconBacteria" );
 		m_NotifiersIcons.Insert( NTFKEY_BLEEDISH, "iconBlood" );
 		m_NotifiersIcons.Insert( NTFKEY_FEVERISH, "iconTemperature" );

@@ -130,11 +130,19 @@ class ServerBrowserFavoritesTabConsolePages extends ServerBrowserTabConsolePages
 		OnlineServices.LoadServers(m_CurrentFilterInput);
 	}
 	
+#ifdef DIAG_DEVELOPER
+	override void RefreshServerList(bool forcePageChange = false)
+#else
 	override void RefreshServerList()
+#endif
 	{
 		super.RefreshServerList();
 
+	#ifdef DIAG_DEVELOPER
+		if (m_IsFavoriteChanged || forcePageChange)
+	#else
 		if (m_IsFavoriteChanged)
+	#endif
 		{
 			SetCurrentPage(1);
 			m_IsFavoriteChanged = false;

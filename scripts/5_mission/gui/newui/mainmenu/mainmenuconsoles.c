@@ -161,6 +161,7 @@ class MainMenuConsole extends UIScriptedMenu
 			m_NewsCarousel.Destroy();
 			m_NewsCarousel = null;
 			m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
+			m_NewsCarousel.ShowNewsCarousel(true);
 		}
 		#endif
 	}

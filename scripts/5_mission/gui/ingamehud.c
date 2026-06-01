@@ -246,7 +246,7 @@ class IngameHud extends Hud
 		m_StatesWidgets.Clear();
 		m_StatesWidgetNames.Set( NTFKEY_THIRSTY, "Thirsty" );
 		m_StatesWidgetNames.Set( NTFKEY_HUNGRY, "Hungry" );
-		m_StatesWidgetNames.Set( NTFKEY_SICK, "Health" );
+		m_StatesWidgetNames.Set( NTFKEY_HEALTHY, "Health" );
 		m_StatesWidgetNames.Set( NTFKEY_BLEEDISH, "Blood" );
 		m_StatesWidgetNames.Set( NTFKEY_FEVERISH, "Temperature" );
 	

@@ -1,11 +1,23 @@
 class TutorialsMenu extends UIScriptedMenu
 {
-	protected const string PATH_MOUSEKEY 	= "scripts/data/pagedatatutorials.json";
-	protected const string PATH_X1_OLD 		= "xbox/pagedatatutorials.json";
-	protected const string PATH_X1_NEW 		= "xbox/pagedatatutorialsalternate.json";
-	protected const string PATH_PS_OLD 		= "ps4/pagedatatutorials.json";
-	protected const string PATH_PS_NEW 		= "ps4/pagedatatutorialsalternate.json";
+	protected const string PATH_MOUSEKEY 		= "scripts/data/pagedatatutorials.json";
+	protected const string PATH_MOUSEKEY_720P 	= "scripts/data/pagedatatutorials_720p.json";
+	protected const string PATH_X1_OLD 			= "xbox/pagedatatutorials.json";
+	protected const string PATH_X1_OLD_720P 	= "xbox/pagedatatutorials_720p.json";
+	protected const string PATH_X1_NEW 			= "xbox/pagedatatutorialsalternate.json";
+	protected const string PATH_X1_NEW_720p 	= "xbox/pagedatatutorialsalternate_720p.json";
+	protected const string PATH_PS_OLD 			= "ps4/pagedatatutorials.json";
+	protected const string PATH_PS_NEW 			= "ps4/pagedatatutorialsalternate.json";
 	
+	protected const float MIN_LINE_SCALE		= 1.0;
+	protected const float MAX_LINE_SCALE		= 1.5;
+	protected const float WITDH_SCALE_RES		= 1920.0;
+	protected const float HEIGHT_SCALE_RES		= 1080.0;
+	protected const float LINE_THICKNESS_BASE 	= 2.0;
+	protected const float BRANCH_OFFSET_BASE 	= 50.0;
+	
+	protected const int EXACT_TEXT_SIZE_LOW_RES = 32;
+
 	protected string 					m_BackButtonTextID;
 	
 	protected Widget					m_InfoTextLeft;
@@ -16,17 +28,34 @@ class TutorialsMenu extends UIScriptedMenu
 	protected const int 				TABS_COUNT = 4;
 	protected ImageWidget 				m_tab_images[TABS_COUNT];
 	protected TabberUI					m_TabScript;
-	protected ref TutorialKeybinds		m_KeybindsTab;
+	//protected ref TutorialKeybinds		m_KeybindsTab;
+	protected int m_CurrentTabIndex = 0;
+	protected Input m_Input;
+	
+	protected bool m_LowResTutorialMode;
+	
+	void TutorialsMenu()
+	{
+		m_Input = g_Game.GetInput();
+	}
 	
 	//============================================
 	// Init
 	//============================================
 	override Widget Init()
 	{
+		m_LowResTutorialMode = IsLowResTutorialMode();
+		
 		#ifdef PLATFORM_CONSOLE
-		layoutRoot	= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/tutorials.layout");
+		if (m_LowResTutorialMode)
+			layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/tutorials_720p.layout");
+		else
+			layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/tutorials.layout");
 		#else
-		layoutRoot	= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/pc/tutorials.layout");
+		if (m_LowResTutorialMode)
+			layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/pc/tutorials_720p.layout");
+		else
+			layoutRoot = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/pc/tutorials.layout");
 		#endif
 		
 		m_InfoTextLeft	= layoutRoot.FindAnyWidget("InfoTextLeft");
@@ -37,13 +66,15 @@ class TutorialsMenu extends UIScriptedMenu
 		layoutRoot.FindAnyWidget("Tabber").GetScript(m_TabScript);
 		m_TabScript.m_OnTabSwitch.Insert(DrawConnectingLines);
 		
-		#ifdef PLATFORM_CONSOLE
-		if (g_Game.GetInput().IsEnabledMouseAndKeyboard())
+		//! Commented for now as there is no reason to show the tab with mouse and keyboard inputs on console platforms and we don't show the tab on PC or MSS version also
+		//! If we ever decide to remap all PlayStation related input keys so we can localize them correctly we can reanable this tab and display the correct bindigs always.
+		/*#ifdef PLATFORM_CONSOLE
+		if (m_Input.IsEnabledMouseAndKeyboard())
 		{
 			m_KeybindsTab = new TutorialKeybinds(layoutRoot.FindAnyWidget("Tab_6"), this);
 			m_TabScript.EnableTabControl(6, true);
 		}
-		#endif
+		#endif*/
 		
 		m_tab_images[0] = ImageWidget.Cast(layoutRoot.FindAnyWidget("MovementTabBackdropImageWidget"));
 		m_tab_images[1] = ImageWidget.Cast(layoutRoot.FindAnyWidget("WeaponsAndActionsBackdropImageWidget"));
@@ -68,18 +99,61 @@ class TutorialsMenu extends UIScriptedMenu
 		PPERequesterBank.GetRequester(PPERequester_TutorialMenu).Stop();
 	}
 	
+	protected bool IsLowResTutorialMode()
+	{
+		int screenW, screenH;
+		GetScreenSize(screenW, screenH);
+		return screenW <= 1280 || screenH <= 720;
+	}
+	
+	protected float GetTutorialLineScale()
+	{
+		int screenW, screenH;
+		GetScreenSize(screenW, screenH);
+	
+		if (screenW <= 0 || screenH <= 0)
+			return MIN_LINE_SCALE;
+	
+		float widthScale = WITDH_SCALE_RES / screenW;
+		float heightScale = HEIGHT_SCALE_RES / screenH;
+		float scale = Math.Max(widthScale, heightScale);
+		scale = Math.Clamp(scale, MIN_LINE_SCALE, MAX_LINE_SCALE);
+		
+		return scale;
+	}
+	
+	protected float GetTutorialLineThickness()
+	{
+		return LINE_THICKNESS_BASE * GetTutorialLineScale();
+	}
+	
+	protected float GetTutorialBranchOffset()
+	{
+		return BRANCH_OFFSET_BASE * GetTutorialLineScale();
+	}
+	
 	protected void OnInputPresetChanged()
 	{
 		#ifdef PLATFORM_CONSOLE
+		RefreshControlMappings();
+		/*if (m_KeybindsTab)
+		{
+			m_KeybindsTab.Rebuild();
+		}*/
+		#endif
+	}
+	
+	protected void RefreshControlMappings()
+	{
 		UpdateControlsElements();
 		UpdateControlsElementVisibility();
-		#endif
+		DrawConnectingLines(m_CurrentTabIndex);
 	}
 	
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		bool mk = g_Game.GetInput().IsEnabledMouseAndKeyboard();
-		bool mkServer = g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer();
+		bool mk = m_Input.IsEnabledMouseAndKeyboard();
+		bool mkServer = m_Input.IsEnabledMouseAndKeyboardEvenOnServer();
 
 		switch (pInputDeviceType)
 		{
@@ -98,7 +172,11 @@ class TutorialsMenu extends UIScriptedMenu
 		break;
 		}
 		
-		UpdateControlsElementVisibility();
+		RefreshControlMappings();
+		/*if (m_KeybindsTab)
+		{
+			m_KeybindsTab.Rebuild();
+		}*/
 	}
 	
 	override void OnShow()
@@ -106,7 +184,7 @@ class TutorialsMenu extends UIScriptedMenu
 		super.OnShow();
 		
 		SetFocus(null);
-		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
+		OnInputDeviceChanged(m_Input.GetCurrentInputDevice());
 	}
 	
 	void Back()
@@ -116,6 +194,8 @@ class TutorialsMenu extends UIScriptedMenu
 	
 	void DrawConnectingLines(int index)
 	{
+		m_CurrentTabIndex = index;
+		
 		if (index == 6)
 		{
 			m_InfoTextLeft.Show(false);
@@ -125,188 +205,199 @@ class TutorialsMenu extends UIScriptedMenu
 		{
 			m_InfoTextLeft.Show(true);
 			m_InfoTextRight.Show(true);
-			ref array<ref JsonControlMappingInfo> control_mapping_info = new array<ref JsonControlMappingInfo>;
-			ref array<ref array <ref JsonControlMappingInfo>> tab_array = new array<ref array <ref JsonControlMappingInfo>>;
+			array<ref JsonControlMappingInfo> controlMappingInfo = new array<ref JsonControlMappingInfo>;
+			array<ref array <ref JsonControlMappingInfo>> tabArray = new array<ref array <ref JsonControlMappingInfo>>;
 			
-			map<string, ref array<int>> button_marker_groups_unflitred = new map<string, ref array<int>>;
-			map<string, ref array<int>> button_marker_groups = new map<string, ref array<int>>;
+			map<string, ref array<int>> buttonMarkerGroupsUnfiltered = new map<string, ref array<int>>;
+			map<string, ref array<int>> buttonMarkerGroups = new map<string, ref array<int>>;
 			
-			float text_widget_pos_x, text_widget_pos_y;
-			float text_widget_width, text_widget_height;
-			float dot_pos_x, dot_pos_y;
-			float dot_width, dot_height;
-			float draw_pos_x, draw_pos_y;
+			float textWidgetPosX, textWidgetPosY;
+			float textWidgetWidth, textWidgetHeight;
+			float dotPosX, dotPosY;
+			float dotWidth, dotHeight;
+			float drawPosX, drawPosY;
+			float lineThickness;
+			float branchOffset;
 			
-			CanvasWidget canvas_widget = CanvasWidget.Cast(layoutRoot.FindAnyWidget("CanvasWidget_" + index));
-			canvas_widget.Clear();
-			control_mapping_info  = GetControlMappingInfo();
+			CanvasWidget canvasWidget = CanvasWidget.Cast(layoutRoot.FindAnyWidget("CanvasWidget_" + index));
+			canvasWidget.Clear();
+			lineThickness = GetTutorialLineThickness();
+			branchOffset = GetTutorialBranchOffset();
+			controlMappingInfo = GetControlMappingInfo();
 			
 			for (int i = 0; i < m_TabScript.GetTabCount(); i++)
 			{
-				tab_array.Insert(new array<ref JsonControlMappingInfo>);
+				tabArray.Insert(new array<ref JsonControlMappingInfo>);
 				for (int j = 0; j < 30; j++)
 				{
-					tab_array[i].Insert(NULL);
+					tabArray[i].Insert(NULL);
 				}
 			}
 			
 			// insert json info to array by index, so it is sorted
-			for (i = 0; i < control_mapping_info.Count(); i++)
+			int controlMappingInfoCount = controlMappingInfo.Count();
+			for (i = 0; i < controlMappingInfoCount; i++)
 			{
-				JsonControlMappingInfo info = control_mapping_info.Get(i);
-				tab_array[info.m_TabID][info.m_TextWidgetID] = info;
+				JsonControlMappingInfo info = controlMappingInfo.Get(i);
+				tabArray[info.m_TabID][info.m_TextWidgetID] = info;
 			}
 			
 			// create group of buttons which are connected together with line
-			for (int l = 0; l < control_mapping_info.Count(); l++)
+			for (int l = 0; l < controlMappingInfoCount; l++)
 			{
-				JsonControlMappingInfo info1 = control_mapping_info[l];
-				string button_name = info1.m_ButtonName;
-				int text_widget_id = info1.m_TextWidgetID;
+				JsonControlMappingInfo info1 = controlMappingInfo[l];
+				string buttonName = info1.m_ButtonName;
+				int textWidgetID = info1.m_TextWidgetID;
 				if (info1.m_TabID != index)
 				{
 					continue;
 				}
-				if (!button_marker_groups_unflitred.Contains(button_name))
+				if (!buttonMarkerGroupsUnfiltered.Contains(buttonName))
 				{
-					button_marker_groups_unflitred.Insert(button_name, new array<int>);
-					button_marker_groups_unflitred.Get(button_name).Insert(text_widget_id);
+					buttonMarkerGroupsUnfiltered.Insert(buttonName, new array<int>);
+					buttonMarkerGroupsUnfiltered.Get(buttonName).Insert(textWidgetID);
 				}
 				else
 				{
-					button_marker_groups_unflitred.Get(button_name).Insert(text_widget_id);
+					buttonMarkerGroupsUnfiltered.Get(buttonName).Insert(textWidgetID);
 				}
 			}
 			
 			// we want groups which are bigger than 1
-			for (l = 0; l < button_marker_groups_unflitred.Count(); l++)
+			for (l = 0; l < buttonMarkerGroupsUnfiltered.Count(); l++)
 			{
-				if (button_marker_groups_unflitred.GetElement(l).Count() > 1)
+				if (buttonMarkerGroupsUnfiltered.GetElement(l).Count() > 1)
 				{
-					string key = button_marker_groups_unflitred.GetKey(l);
-					button_marker_groups.Insert(button_marker_groups_unflitred.GetKey(l), button_marker_groups_unflitred.Get(key));
+					string key = buttonMarkerGroupsUnfiltered.GetKey(l);
+					buttonMarkerGroups.Insert(buttonMarkerGroupsUnfiltered.GetKey(l), buttonMarkerGroupsUnfiltered.Get(key));
 				}
 			}
 			
 			// hide all button markers
-			Widget xbox_controls_image = layoutRoot.FindAnyWidget("Markers_" + index);
+			Widget xboxControlsImage = layoutRoot.FindAnyWidget("Markers_" + index);
 			
-			Widget panel_widget;
-			Widget button_marker_widget;
+			Widget panelWidget;
+			Widget buttonMarkerWidget;
 			
-			for (l = 0; l < tab_array[index].Count(); l++)
+			for (l = 0; l < tabArray[index].Count(); l++)
 			{
-				panel_widget = layoutRoot.FindAnyWidget("PanelWidget" + l);
-				if (tab_array[index][l] != NULL)
+				panelWidget = layoutRoot.FindAnyWidget("PanelWidget" + l);
+				if (tabArray[index][l] != NULL)
 				{
-					TextWidget text_widget = TextWidget.Cast(panel_widget.FindAnyWidget("TextWidget" + l));
-					button_marker_widget = layoutRoot.FindAnyWidget("button_marker_" + tab_array[index][l].m_ButtonName);
-					text_widget.SetText(tab_array[index][l].m_InfoText);
-					panel_widget.Show(true);
-					panel_widget.Update();
+					RichTextWidget textWidget = RichTextWidget.Cast(panelWidget.FindAnyWidget("TextWidget" + l));
+					buttonMarkerWidget = layoutRoot.FindAnyWidget("button_marker_" + tabArray[index][l].m_ButtonName);
+						
+					if (m_LowResTutorialMode)
+						textWidget.SetTextExactSize(EXACT_TEXT_SIZE_LOW_RES);
 					
-					if (!button_marker_groups.Contains(tab_array[index][l].m_ButtonName))
+					textWidget.SetText(tabArray[index][l].m_InfoText);
+					
+					panelWidget.Show(true);
+					panelWidget.Update();
+					
+					if (!buttonMarkerGroups.Contains(tabArray[index][l].m_ButtonName))
 					{
-						panel_widget.GetScreenPos(text_widget_pos_x, text_widget_pos_y);
-						panel_widget.GetScreenSize(text_widget_width,text_widget_height);
+						panelWidget.GetScreenPos(textWidgetPosX, textWidgetPosY);
+						panelWidget.GetScreenSize(textWidgetWidth,textWidgetHeight);
 						
-						button_marker_widget.GetScreenPos(dot_pos_x, dot_pos_y);
-						button_marker_widget.GetScreenSize(dot_width, dot_height);
+						buttonMarkerWidget.GetScreenPos(dotPosX, dotPosY);
+						buttonMarkerWidget.GetScreenSize(dotWidth, dotHeight);
 						
-						draw_pos_y = text_widget_pos_y + text_widget_height / 2;
+						drawPosY = textWidgetPosY + textWidgetHeight / 2;
 						
 						if (l < 15)
 						{
-							draw_pos_x = text_widget_pos_x + text_widget_width - 1;
+							drawPosX = textWidgetPosX + textWidgetWidth - 1;
 						}
 						else
 						{
-							draw_pos_x = text_widget_pos_x;
+							drawPosX = textWidgetPosX;
 						}
 						
-						canvas_widget.DrawLine(draw_pos_x, draw_pos_y, dot_pos_x+dot_width/2, draw_pos_y, 2, ARGBF(0.6, 1, 1, 1));
-						canvas_widget.DrawLine(dot_pos_x+dot_width/2, draw_pos_y, dot_pos_x+dot_width/2, dot_pos_y+dot_height/2, 2, ARGBF(0.6, 1, 1, 1));	
+						canvasWidget.DrawLine(drawPosX, drawPosY, dotPosX + dotWidth / 2, drawPosY, lineThickness, ARGBF(0.6, 1, 1, 1));
+						canvasWidget.DrawLine(dotPosX + dotWidth / 2, drawPosY, dotPosX + dotWidth / 2, dotPosY + dotHeight / 2, lineThickness, ARGBF(0.6, 1, 1, 1));
 					}
 				}
 				else
 				{
-					panel_widget.Show(false);
+					panelWidget.Show(false);
 				}
-				panel_widget.Update();
+				panelWidget.Update();
 			}
 			
 			// draw connecting lines 
-			for (l = 0; l <  button_marker_groups.Count(); l++)
+			for (l = 0; l <  buttonMarkerGroups.Count(); l++)
 			{
-				text_widget_pos_x = 0;
-				text_widget_pos_y = 0;
-				text_widget_width = 0;
-				text_widget_height = 0;
-				float group_point_x = 0, group_point_y = 0;
-				float first_x = 0, first_y = 0;
+				textWidgetPosX = 0;
+				textWidgetPosY = 0;
+				textWidgetWidth = 0;
+				textWidgetHeight = 0;
+				float groupPointX = 0, groupPointY = 0;
+				float firstX = 0, firstY = 0;
 				
-				ref array<int> element = button_marker_groups.GetElement(l);
-				string key_name = button_marker_groups.GetKey(l);
-				button_marker_widget = layoutRoot.FindAnyWidget("button_marker_" + key_name);
+				array<int> element = buttonMarkerGroups.GetElement(l);
+				string keyName = buttonMarkerGroups.GetKey(l);
+				buttonMarkerWidget = layoutRoot.FindAnyWidget("button_marker_" + keyName);
 				
-				for (int g = 0; g < element.Count(); g++)
+				int elementsCount = element.Count();
+				for (int g = 0; g < elementsCount; g++)
 				{
-					panel_widget = layoutRoot.FindAnyWidget("PanelWidget" + element[g]);
+					panelWidget = layoutRoot.FindAnyWidget("PanelWidget" + element[g]);
 					
-					panel_widget.GetScreenPos(text_widget_pos_x, text_widget_pos_y);
-					panel_widget.GetScreenSize(text_widget_width, text_widget_height);
+					panelWidget.GetScreenPos(textWidgetPosX, textWidgetPosY);
+					panelWidget.GetScreenSize(textWidgetWidth, textWidgetHeight);
 					
 					if (g == 0)
 					{
 						if (element[0] < 15)
 						{
-							first_x = text_widget_pos_x + text_widget_width +50;
+							firstX = textWidgetPosX + textWidgetWidth + branchOffset;
 						}
 						else
 						{
-							first_x = text_widget_pos_x - 50;
+							firstX = textWidgetPosX - branchOffset;
 						}
-						first_y = text_widget_pos_y + text_widget_height/2;
+						firstY = textWidgetPosY + textWidgetHeight/2;
 						
 					}
 					
-					group_point_x += text_widget_pos_x;
-					group_point_y += text_widget_pos_y;
+					groupPointX += textWidgetPosX;
+					groupPointY += textWidgetPosY;
 					
 					if (element[0] < 15)
 					{
-						canvas_widget.DrawLine(text_widget_pos_x + text_widget_width - 1, text_widget_pos_y + text_widget_height/2, text_widget_pos_x + text_widget_width +50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+						canvasWidget.DrawLine(textWidgetPosX + textWidgetWidth - 1, textWidgetPosY + textWidgetHeight / 2, textWidgetPosX + textWidgetWidth + branchOffset, textWidgetPosY + textWidgetHeight / 2, lineThickness, ARGBF(0.6, 1, 1, 1));
 					}
 					else
 					{
-						canvas_widget.DrawLine(text_widget_pos_x, text_widget_pos_y + text_widget_height/2, text_widget_pos_x - 50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+						canvasWidget.DrawLine(textWidgetPosX, textWidgetPosY + textWidgetHeight / 2, textWidgetPosX - branchOffset, textWidgetPosY + textWidgetHeight / 2, lineThickness, ARGBF(0.6, 1, 1, 1));
 					}
 				}
 				
 				if (element[0] < 15)
 				{
-					group_point_x = group_point_x/element.Count() + text_widget_width + 50;
+					groupPointX = groupPointX / elementsCount + textWidgetWidth + branchOffset;
 				}
 				else
 				{
-					group_point_x = group_point_x/element.Count() - 50;
+					groupPointX = groupPointX / elementsCount - branchOffset;
 				}
 				
-				group_point_y = group_point_y/element.Count() + text_widget_height/2;
+				groupPointY = groupPointY/elementsCount + textWidgetHeight/2;
 				
-				button_marker_widget.GetScreenPos(dot_pos_x, dot_pos_y);
-				button_marker_widget.GetScreenSize(dot_width, dot_height);
+				buttonMarkerWidget.GetScreenPos(dotPosX, dotPosY);
+				buttonMarkerWidget.GetScreenSize(dotWidth, dotHeight);
 				
-				canvas_widget.DrawLine(group_point_x, group_point_y, dot_pos_x+dot_width/2, group_point_y, 2, ARGBF(0.6, 1, 1, 1));
-				canvas_widget.DrawLine(dot_pos_x+dot_width/2, group_point_y, dot_pos_x+dot_width/2, dot_pos_y, 2, ARGBF(0.6, 1, 1, 1));
+				canvasWidget.DrawLine(groupPointX, groupPointY, dotPosX + dotWidth / 2, groupPointY, lineThickness, ARGBF(0.6, 1, 1, 1));
+				canvasWidget.DrawLine(dotPosX + dotWidth / 2, groupPointY, dotPosX + dotWidth / 2, dotPosY, lineThickness, ARGBF(0.6, 1, 1, 1));
 				
 				if (element[0] < 15)
 				{
-					canvas_widget.DrawLine(first_x, first_y, text_widget_pos_x + text_widget_width +50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+					canvasWidget.DrawLine(firstX, firstY, textWidgetPosX + textWidgetWidth + branchOffset, textWidgetPosY + textWidgetHeight / 2, lineThickness, ARGBF(0.6, 1, 1, 1));
 				}
 				else
 				{
-					canvas_widget.DrawLine(first_x, first_y, text_widget_pos_x - 50, text_widget_pos_y + text_widget_height/2, 2, ARGBF(0.6, 1, 1, 1));
+					canvasWidget.DrawLine(firstX, firstY, textWidgetPosX - branchOffset, textWidgetPosY + textWidgetHeight / 2, lineThickness, ARGBF(0.6, 1, 1, 1));
 				}
 			}
 		}
@@ -314,38 +405,66 @@ class TutorialsMenu extends UIScriptedMenu
 	
 	protected array<ref JsonControlMappingInfo> GetControlMappingInfo()
 	{
-		array<ref JsonControlMappingInfo> control_mapping_info = new array<ref JsonControlMappingInfo>;
-		string file_path = PATH_MOUSEKEY; //remains set for PC vatiant
-		string profile_name = "";
-		g_Game.GetInput().GetProfileName(g_Game.GetInput().GetCurrentProfile(),profile_name);
+		array<ref JsonControlMappingInfo> controlMappingInfo = new array<ref JsonControlMappingInfo>;
+		string filePath;
 		
-#ifdef PLATFORM_CONSOLE
-		if (!g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer())
+		//! PC variant (also used for MSS build when mouse and keyboard are then active input device).
+		if (!m_LowResTutorialMode)
+			filePath = PATH_MOUSEKEY;
+		else
+			filePath = PATH_MOUSEKEY_720P;
+		
+		string profileName = "";
+		m_Input.GetProfileName(m_Input.GetCurrentProfile(), profileName);
+		
+	#ifdef PLATFORM_CONSOLE
+		bool controllerActive = m_Input.GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		if (controllerActive)
 		{
-			if (profile_name == "#STR_UAPRESET_0")
+			if (profileName == "#STR_UAPRESET_0" || profileName == "#STR_USER")
 			{
+				#ifdef PLATFORM_MSSTORE
+				if (!m_LowResTutorialMode)
+					filePath =	PATH_X1_OLD;
+				else
+					filePath =	PATH_X1_OLD_720P;
+				#endif
 				#ifdef PLATFORM_XBOX
-					file_path =	PATH_X1_OLD;
-				#else 
-					file_path =	PATH_PS_OLD;
+				if (!m_LowResTutorialMode)
+					filePath =	PATH_X1_OLD;
+				else
+					filePath =	PATH_X1_OLD_720P;
+				#endif
+				#ifdef PLATFORM_PS4
+					filePath =	PATH_PS_OLD;
 				#endif
 			}
-			else if (profile_name == "#STR_UAPRESET_1")
+			else if (profileName == "#STR_UAPRESET_1")
 			{
+				#ifdef PLATFORM_MSSTORE
+				if (!m_LowResTutorialMode)
+					filePath =	PATH_X1_NEW;
+				else
+					filePath =	PATH_X1_NEW_720p;
+				#endif
 				#ifdef PLATFORM_XBOX
-					file_path =	PATH_X1_NEW;
-				#else 
-					file_path =	PATH_PS_NEW;
+				if (!m_LowResTutorialMode)
+					filePath =	PATH_X1_NEW;
+				else
+					filePath =	PATH_X1_NEW_720p;
+				#endif
+				#ifdef PLATFORM_PS4
+					filePath =	PATH_PS_NEW;
 				#endif
 			}
 			else
 			{
 				ErrorEx("Invalid file path!");
-				file_path =	"";
+				filePath =	"";
 			}
 		}
-#endif
-		FileHandle file_handle = OpenFile(file_path, FileMode.READ);
+	#endif
+		FileHandle file_handle = OpenFile(filePath, FileMode.READ);
 		JsonSerializer js = new JsonSerializer();
 		
 		string js_error = "";
@@ -359,9 +478,9 @@ class TutorialsMenu extends UIScriptedMenu
 			}
 			CloseFile(file_handle);
 			
-			if (js.ReadFromString(control_mapping_info, content, js_error))
+			if (js.ReadFromString(controlMappingInfo, content, js_error))
 			{
-				return control_mapping_info;
+				return controlMappingInfo;
 			}
 			else
 			{
@@ -373,7 +492,7 @@ class TutorialsMenu extends UIScriptedMenu
 			ErrorEx("FILEHANDLE ERROR => [TutorialsMenu]: " + js_error);
 		}
 		
-		return control_mapping_info;
+		return controlMappingInfo;
 	}
 	
 	override void Update(float timeslice)
@@ -588,7 +707,7 @@ class TutorialsMenu extends UIScriptedMenu
 	{
 		bool toolbarShow = false;
 		#ifdef PLATFORM_CONSOLE
-		toolbarShow = !g_Game.GetInput().IsEnabledMouseAndKeyboardEvenOnServer() || g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
+		toolbarShow = !m_Input.IsEnabledMouseAndKeyboardEvenOnServer() || m_Input.GetCurrentInputDevice() == EInputDeviceType.CONTROLLER;
 		#endif
 		
 		#ifdef PLATFORM_CONSOLE

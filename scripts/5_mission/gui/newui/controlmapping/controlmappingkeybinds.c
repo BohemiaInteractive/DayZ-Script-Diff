@@ -8,66 +8,105 @@ class TutorialKeybinds extends ScriptedWidgetEventHandler
 	void TutorialKeybinds(Widget parent, TutorialsMenu menu)
 	{
 		m_Root							= g_Game.GetWorkspace().CreateWidgets(GetLayoutName(), parent);
-		
 		m_Menu							= menu;
 		
-		int actionCount;
+		Rebuild();
+		m_Root.SetHandler(this);
+	}
+	
+	void Rebuild()
+	{
+		ClearBindingPanels();
+
 		int actionMax = 80;
-		
 		int column_index = 0;
-		int item_index;
+		int item_index = 0;
 		string output = "";
 		string option_text = "";
+		int deviceFlags = GetActiveDeviceFlags();
 		TIntArray actions = new TIntArray;
 		GetUApi().GetActiveInputs(actions);
-		
-		actionCount = actions.Count();
-		for (int i = 0; i < actionCount; i++)
+
+		int actionCount = actions.Count();
+		for (int i = 0; i < actionCount; ++i)
 		{
-			UAInput input		= GetUApi().GetInputByID(actions.Get(i));
-			if (input)
+			UAInput input = GetUApi().GetInputByID(actions.Get(i));
+			if (!input)
+				continue;
+
+			if (item_index < actionMax)
 			{
-				if (item_index < actionMax)
+				output = "";
+				option_text = "";
+				g_Game.GetInput().GetActionDesc(actions.Get(i), option_text);
+
+				if (SetElementTitle(input, deviceFlags, output))
 				{
-					output = "";
-					option_text = "";
-					g_Game.GetInput().GetActionDesc(actions.Get(i), option_text);
-					if (SetElementTitle(input, EUAINPUT_DEVICE_KEYBOARDMOUSE, output))
+					column_index = Math.Floor(item_index / 21);
+					Widget container = m_Root.FindAnyWidget("container" + column_index);
+					if (!container)
+						continue;
+
+					Widget w = g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/keybindings_panels/keybinding_panel.layout", container);
+					Widget spacer = w.FindWidget("Spacer");
+					TextWidget name = TextWidget.Cast(w.FindWidget("KeybindName"));
+					TextWidget mod = TextWidget.Cast(spacer.FindWidget("KeybindModifier"));
+					TextWidget value = TextWidget.Cast(spacer.FindWidget("KeybindButton"));
+
+					string modifier_text = "";
+					name.SetText(option_text);
+					value.SetText(output);
+
+					if (SetElementModifier(input, modifier_text))
 					{
-						column_index		= Math.Floor(item_index / 21);
-						Widget w			= g_Game.GetWorkspace().CreateWidgets("gui/layouts/new_ui/tutorials/xbox/keybindings_panels/keybinding_panel.layout", m_Root.FindAnyWidget("container" + column_index));
-						Widget spacer		= w.FindWidget("Spacer");
-						TextWidget name		= TextWidget.Cast(w.FindWidget("KeybindName"));
-						TextWidget mod		= TextWidget.Cast(spacer.FindWidget("KeybindModifier"));
-						TextWidget value	= TextWidget.Cast(spacer.FindWidget("KeybindButton"));
-						
-						string modifier_text = "";
-						name.SetText(option_text);
-						value.SetText(output);
-						
-						if (SetElementModifier(input, modifier_text))
-						{
-							mod.SetText(modifier_text);
-						}
-						
-						name.Update();
-						mod.Update();
-						value.Update();
-						spacer.Update();
-						
-						item_index++;
+						mod.SetText(modifier_text);
 					}
-				}
-				else
-				{
-					option_text = "";
-					g_Game.GetInput().GetActionDesc(actions[i], option_text);
-					ErrorEx("input action " + option_text + " index out of bounds!",ErrorExSeverity.INFO);
+
+					name.Update();
+					mod.Update();
+					value.Update();
+					spacer.Update();
+
+					item_index++;
 				}
 			}
+			else
+			{
+				option_text = "";
+				g_Game.GetInput().GetActionDesc(actions.Get(i), option_text);
+				ErrorEx("input action " + option_text + " index out of bounds!", ErrorExSeverity.INFO);
+			}
 		}
-		
-		m_Root.SetHandler(this);
+	}
+	
+	protected int GetActiveDeviceFlags()
+	{
+#ifdef PLATFORM_CONSOLE
+		if (g_Game.GetInput().GetCurrentInputDevice() == EInputDeviceType.CONTROLLER)
+		{
+			return EUAINPUT_DEVICE_CONTROLLER;
+		}
+#endif
+		return EUAINPUT_DEVICE_KEYBOARDMOUSE;
+	}
+
+	protected void ClearBindingPanels()
+	{
+		int columnIndex = 0;
+		Widget container = m_Root.FindAnyWidget("container" + columnIndex);
+
+		while (container)
+		{
+			Widget child = container.GetChildren();
+			while (child)
+			{
+				Widget next = child.GetSibling();
+				child = next;
+			}
+
+			columnIndex++;
+			container = m_Root.FindAnyWidget("container" + columnIndex);
+		}
 	}
 	
 	//! assemble all active bindings at widget element

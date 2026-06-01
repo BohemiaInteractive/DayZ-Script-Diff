@@ -14,8 +14,7 @@ class DayZPlayerImplementThrowing
 		{
 			if ( m_bThrowingModeEnabled )
 			{
-				SetThrowingModeEnabled(false);
-				pHcw.SetThrowingMode(false);
+				CancelThrowing(pHic, pHcw);
 			}
 			
 			return;
@@ -40,12 +39,7 @@ class DayZPlayerImplementThrowing
 			
 			if ( !CanContinueThrowingEx(pHic, pEntityInHands) )
 			{
-				SetThrowingModeEnabled(false);
-				ResetState();
-			
-				pHcw.SetActionProgressParams(0, 0);
-				pHcw.SetThrowingMode(false);
-				
+				CancelThrowing(pHic, pHcw);
 				return;
 			}
 			
@@ -88,7 +82,14 @@ class DayZPlayerImplementThrowing
 					HumanCommandMove hcm = m_Player.GetCommand_Move();
 					bool standingFromBack = hcm && hcm.IsStandingFromBack();
 					
-					if ( m_bThrowingInProgress && !standingFromBack)
+					//! bad transition: prone-on-back -> crouch/stand while throw wind-up is active
+					if (m_bThrowingInProgress && standingFromBack)
+					{
+						CancelThrowing(pHic, pHcw);
+						return;
+					}
+					
+					if ( m_bThrowingInProgress)
 					{
 						m_bThrowingInProgress = false;
 						
@@ -118,6 +119,23 @@ class DayZPlayerImplementThrowing
 		else
 		{
 			ResetState();
+		}
+	}
+	
+	void CancelThrowing(HumanInputController pHic, HumanCommandWeapons pHcw)
+	{
+		SetThrowingModeEnabled(false);
+		ResetState();
+		
+		if (pHcw)
+		{
+			pHcw.SetActionProgressParams(0, 0);
+			pHcw.SetThrowingMode(false);
+		}
+		
+		if (pHic)
+		{
+			pHic.ResetThrowingMode();
 		}
 	}
 	
@@ -202,13 +220,15 @@ class DayZPlayerImplementThrowing
 	bool CanContinueThrowing(HumanInputController pHic)
 	{
 		HumanItemBehaviorCfg itemInHandsCfg = m_Player.GetItemAccessor().GetItemInHandsBehaviourCfg();
+		HumanCommandMove hcm = m_Player.GetCommand_Move();
 		bool boo = false;
 		UAInterface input_interface = m_Player.GetInputInterface();
 		if(input_interface && input_interface.SyncedPress("UAGear"))
 		{
 			boo = true;
 		}
-		if( boo || pHic.IsWeaponRaised() || (itemInHandsCfg && itemInHandsCfg.m_iType == ItemBehaviorType.HEAVY) )
+		
+		if( boo || pHic.IsWeaponRaised() || (m_bThrowingInProgress && hcm && (hcm.IsChangingStance() || hcm.IsStandingFromBack())) || (itemInHandsCfg && itemInHandsCfg.m_iType == ItemBehaviorType.HEAVY) )
 		{
 			return false;
 		}

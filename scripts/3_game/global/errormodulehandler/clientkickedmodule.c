@@ -28,7 +28,9 @@ enum EClientKicked
 	
 	QUIT,				// Player closed the game
 	LEAVE,				// Player pressed the Leave button
-	
+
+	PLATFORM_NOT_SUPPORTED,	// Player's platform is not allowed on this server (crossplatform restriction)
+
 	// LoginMachine kicks (0x0030)
 	LOGIN_MACHINE_ERROR = 48,	// Generic LoginMachine error (fallback)
 	PLAYER_STATE_TIMEOUT,		// Player spent too much time in one state of the LoginMachine
@@ -222,6 +224,8 @@ class ClientKickedModule : ErrorHandlerModuleScript
 		
 		InsertErrorProperties(EClientKicked.QUIT); // No handling, just register it exists
 		InsertErrorProperties(EClientKicked.LEAVE); // No handling, just register it exists
+
+		InsertDialogueErrorProperties(EClientKicked.PLATFORM_NOT_SUPPORTED,				"#STR_platform_not_supported");
 
 		// LoginMachine kicks			
 		InsertExtendedPrefixDialogueErrorProperties(EClientKicked.LOGIN_MACHINE_ERROR,				"#server_browser_error_unknown", LOGIN_PREFIX);

@@ -160,9 +160,9 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 			JsonDataNewsArticle article = newsData.News[i];
 			if (article)
 			{
+				ModInfo modInfo = MainMenuData.GetDLCModInfoByName(article.dlcName);
 				if (article.categoryID == NewsCategory.DLCS)
-				{
-					ModInfo modInfo = MainMenuData.GetDLCModInfoByName(article.dlcName);				
+				{			
 					if (modInfo && !modInfo.GetIsOwned())
 					{
 						m_NewsArticles.Insert(article);
@@ -171,7 +171,10 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 				
 				if (article.categoryID == NewsCategory.DLC_PROMO)
 				{
-					m_NewsArticles.Insert(article);
+					if (!modInfo || (modInfo && !modInfo.GetIsOwned()))
+					{
+						m_NewsArticles.Insert(article);
+					}
 				}
 				
 				if (m_NewsArticles.Count() >= MAX_ARTICLES)

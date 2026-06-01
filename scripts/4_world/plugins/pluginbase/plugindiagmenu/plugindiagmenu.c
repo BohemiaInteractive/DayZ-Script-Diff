@@ -541,6 +541,17 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				DiagMenu.RegisterBool(DiagMenuIDs.MATERIALDIAG_GHOSTPP, "", "Ghost PP", DiagMenuIDs.MATERIALDIAG_MENU);
 			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.SERVER_BROWSER_MENU, "Server Browser", DiagMenuIDs.SCRIPTS_MENU);
+			{
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Server Browser
+				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.SERVER_BROWSER_DUMMY_SERVERS, "", "Enable Dummy Servers", DiagMenuIDs.SERVER_BROWSER_MENU);
+			}
 		}
 	}
 	

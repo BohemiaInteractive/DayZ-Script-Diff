@@ -86,6 +86,11 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	
 	protected ref ServerBrowserDetailsContainer	m_Details;
 
+#ifdef DIAG_DEVELOPER
+	protected ref GetServersResult m_DummyServers;
+	protected static bool m_DummyServersEnabled;
+#endif
+	
 	void ServerBrowserTab(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
 		Construct(parent, menu, type);
@@ -95,9 +100,9 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	
 	protected void Construct(Widget parent, ServerBrowserMenuNew menu, TabType type)
 	{
-		m_SortInverted = new map<ESortType, ESortOrder>;
-		m_EntriesSorted = new map<ESortType, ref array<ref GetServersResultRow>>;
-		m_EntryMods = new map<string, ref array<string>>;
+		m_SortInverted = new map<ESortType, ESortOrder>();
+		m_EntriesSorted = new map<ESortType, ref array<ref GetServersResultRow>>();
+		m_EntryMods = new map<string, ref array<string>>();
 		m_LoadingText = TextWidget.Cast(m_Root.FindAnyWidget("loading_servers_info"));
 	}
 	
@@ -111,6 +116,10 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		
 		if (GetGame().GetContentDLCService())
 			GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
+		
+	#ifdef DIAG_DEVELOPER
+	   PluginDiagMenuClient.GetSBDummyServersInvoker().Remove(OnDummyServersEnabledChanged);
+	#endif
 	}
 
 	ServerBrowserMenuNew GetRootMenu()
@@ -822,4 +831,123 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	{
 		return m_SelectedServer;
 	}
+	
+#ifdef DIAG_DEVELOPER
+	protected void InitDummyServers()
+	{
+		m_DummyServersEnabled = DiagMenu.GetBool(DiagMenuIDs.SERVER_BROWSER_DUMMY_SERVERS);
+		PluginDiagMenuClient.GetSBDummyServersInvoker().Insert(OnDummyServersEnabledChanged);
+	
+		m_DummyServers = new GetServersResult();
+		m_DummyServers.m_NumServers = 100;
+		
+		int serversVisibleCount = GetServersVisibleCount();
+		m_DummyServers.m_Pages = (m_DummyServers.m_NumServers + serversVisibleCount - 1) / serversVisibleCount;
+		if (m_DummyServers.m_Pages < 1)
+		{
+			m_DummyServers.m_Pages = 1;
+		}
+		m_DummyServers.m_Page = 1;
+		m_DummyServers.m_Results = new GetServersResultRowArray();
+	
+		TStringArray mapNames = {"chernarusplus", "enoch", "sakhal"};
+		for (int i = 0; i < m_DummyServers.m_NumServers; ++i)
+		{
+			GetServersResultRow row = new GetServersResultRow();
+			
+			string fakeIP = "127.0.0." + ((i % 250) + 1).ToString();
+			int fakePort = 2302 + (i % 10);
+			row.m_Name = string.Format("[TEST] Dummy Server %1", i + 1);
+			row.m_Id = fakeIP + ":" + fakePort.ToString();
+		#ifdef PLATFORM_CONSOLE
+			row.m_HostIp = fakeIP;
+		#endif
+			row.m_HostPort = fakePort;
+			row.m_Favorite = false;
+			row.m_Description = string.Format("Dummy server %1 description. Do not favorite me!", i + 1);
+			row.m_MapNameToRun = mapNames.GetRandomElement();
+			row.m_MaxPlayers = 60;
+			row.m_CurrentNumberPlayers = i % 60;
+			row.m_PlayersInQueue = i % 4;
+			row.m_Ping = 20 + (i % 180);
+			row.m_TimeOfDay = string.Format("%1:%2", 5 + (i % 18), i % 60);
+	
+			m_DummyServers.m_Results.Insert(row);
+		}
+	}
+	
+	protected void OnDummyServersEnabledChanged()
+	{
+		m_DummyServersEnabled = DiagMenu.GetBool(DiagMenuIDs.SERVER_BROWSER_DUMMY_SERVERS);
+	
+		//! Only reload the tab that is currently active/visible.
+		if (!m_Root || !m_Root.IsVisible())
+			return;
+	}
+	
+	protected int GetServersVisibleCount()
+	{
+		return 0;
+	}
+	
+	protected bool PassLocalFilters(GetServersResultRow result)
+	{
+		//! Reuse the existing common logic first:
+		if (!PassFilter(result))
+		{
+			return false;
+		}
+	
+		if (!m_Filters)
+		{
+			return true;
+		}
+	
+		//! Search by name
+		string searchName = m_Filters.GetSearchByNameFilterText();
+		if (searchName != "")
+		{
+			string serverName = result.m_Name;
+			serverName.ToLower();
+	
+			if (serverName.IndexOf(searchName) == -1)
+			{
+				return false;
+			}
+		}
+	
+		//! Search by IP (PC only)
+	#ifdef PLATFORM_WINDOWS
+		string searchIP = m_Filters.GetSearchByIPFilterText();
+		if (searchIP != "")
+		{
+			string hostIp = result.m_HostIp;
+			string ipPort = result.GetIpPort();
+	
+			hostIp.ToLower();
+			ipPort.ToLower();
+	
+			if (hostIp.IndexOf(searchIP) == -1 && ipPort.IndexOf(searchIP) == -1)
+			{
+				return false;
+			}
+		}
+	#endif
+	
+		//! Map
+		string mapFilter = m_Filters.GetMapFilterInternalName();
+		if (mapFilter != "")
+		{
+			string serverMap = result.m_MapNameToRun;
+			serverMap.ToLower();
+	
+			if (serverMap != mapFilter)
+			{
+				return false;
+			}
+		}
+	
+		return true;
+	}
+#endif
 }
