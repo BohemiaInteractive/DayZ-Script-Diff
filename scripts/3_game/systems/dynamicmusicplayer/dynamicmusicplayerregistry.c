@@ -112,11 +112,15 @@ class DynamicMusicPlayerRegistry
 	protected void RegisterTracksMenu()
 	{
 		m_TracksMenu = new array<ref DynamicMusicTrackData>();
-
+		
+		#ifdef DAYZ_1_29 // Road to Badlands exclusive
+		RegisterTrackMenu("Music_Menu_R2B_SoundSet", true);
+		#else
 		RegisterTrackMenu("Music_Menu_SoundSet", true); 
 		RegisterTrackMenu("Music_Menu_2_SoundSet");
 		RegisterTrackMenu("Music_Menu_3_SoundSet");
 		RegisterTrackMenu("Music_Menu_4_SoundSet");
+		#endif
 	}
 //===============================================================================================================================================	
 	protected void RegisterTracksCredits()

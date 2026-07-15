@@ -61,3 +61,4 @@ class Mag_M14_10Rnd: MagazineStorage {};
 class Mag_M14_20Rnd: MagazineStorage {};
 class Mag_Vikhr_30Rnd: MagazineStorage {};
 class Mag_SV98_10Rnd: MagazineStorage {};
+class Mag_SCARH_20Rnd: MagazineStorage {};

@@ -421,7 +421,7 @@ class InGameMenu extends UIScriptedMenu
 	
 	protected void OpenFeedback()
 	{
-		g_Game.OpenURL("https://feedback.bistudio.com/project/view/2/");
+		g_Game.OpenURL("https://report.bistudio.com/projects/dayz");
 	}
 	
 	//! DEPRECATED

@@ -102,7 +102,6 @@ class PlayerBase extends ManBase
 	ref TransferValues				m_TrasferValues;
 	ref DebugMonitorValues			m_DebugMonitorValues;
 	const int 						OVERLOAD_LIMIT = 30000;
-	float 							m_CargoLoad;
 	float							m_VisibilityCoef;
 	float 							m_OriginalSlidePoseAngle;
 	int								m_SoundEvent;
@@ -348,6 +347,7 @@ class PlayerBase extends ManBase
 	//! invokers	
 	protected ref ScriptInvoker		m_OnUnconsciousStart;
 	protected ref ScriptInvoker		m_OnUnconsciousStop;
+	protected ref ScriptInvoker 		m_OnPlayerLoadChanged;
 	
 	private ref map<eAgents, float> m_BloodyHandsPenaltyChancePerAgent;
 	
@@ -382,7 +382,6 @@ class PlayerBase extends ManBase
 		m_UAProgressParam = new Param2<float,float>(0,0);
 		m_QuickBarBase = new QuickBarBase(this);
 		m_QuickBarBonus = Math.Max(ConfigGetInt("quickBarBonus"), 0);
-		m_CargoLoad = 0;
 		m_VisibilityCoef = 1.0;
 		m_Hud = g_Game.GetMission().GetHud();
 		m_RecipePick = 0;
@@ -704,7 +703,23 @@ class PlayerBase extends ManBase
 
 		return m_OnUnconsciousStop;
 	}
+	
+	ScriptInvoker GetOnPlayerLoadChanged()
+	{
+		if (!m_OnPlayerLoadChanged)
+			m_OnPlayerLoadChanged = new ScriptInvoker();
+	
+		return m_OnPlayerLoadChanged;
+	}
 
+	void NotifyPlayerLoadChanged()
+	{
+		if (!IsAuthority())
+			return;
+	
+		GetOnPlayerLoadChanged().Invoke();
+	}
+	
 	void AddMedicalDrugsInUse(EMedicalDrugsType drugType)
 	{
 		if ((m_MedicalDrugsActive & drugType) != drugType)
@@ -5044,23 +5059,6 @@ class PlayerBase extends ManBase
 	bool IsOverloaded()
 	{
 		return GetWeightEx() >= OVERLOAD_LIMIT;
-	}
-
-	void SetPlayerLoad(float load)//Deprecated
-	{
-		m_CargoLoad = load;
-		//Print("m_CargoLoad: " + m_CargoLoad);
-		//Log(ToString(this) + "'s load weight is " + ftoa(m_CargoLoad) + " g.", LogTemplates.TEMPLATE_PLAYER_WEIGHT);
-	}
-
-	//Deprecated, will be overrid by other method calls (in order to ensure stamina calculation is properly set)
-	void AddPlayerLoad(float addedload)//Deprecated
-	{
-		float newload = GetPlayerLoad() + addedload;
-		SetPlayerLoad(newload);
-		
-		// Do not need -> Log is in SetPlayerLoad
-		//PrintString(ToString(this) + "'s load weight is " + ToString(m_CargoLoad) + " g.");
 	}
 
 	bool IsItemInInventory(EntityAI entity)
@@ -9705,6 +9703,8 @@ class PlayerBase extends ManBase
 	private int	m_FaceCoveredForShaveLayers = 0;
 	int m_AntibioticsActive;
 
+	float m_CargoLoad;
+	
 	void SwitchItemTypeAttach(EntityAI item, string slot)
 	{
 		if (!g_Game.IsServer())
@@ -9771,6 +9771,19 @@ class PlayerBase extends ManBase
 	void AntibioticsAttack(float value)
 	{
 		m_AgentPool.DrugsAttack(EMedicalDrugsType.ANTIBIOTICS, value);
+	}
+	
+	[Obsolete("1.30: Not used but kept in the case of modders needing/using it")]
+	void SetPlayerLoad(float load)//Deprecated
+	{
+		m_CargoLoad = load;
+	}
+
+	[Obsolete("1.30: Not used but kept in the case of modders needing/using it")]
+	void AddPlayerLoad(float addedload)//Deprecated
+	{
+		float newload = GetPlayerLoad() + addedload;
+		SetPlayerLoad(newload);
 	}
 }
 

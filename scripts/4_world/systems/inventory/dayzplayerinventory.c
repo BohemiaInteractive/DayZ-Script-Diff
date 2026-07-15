@@ -1051,6 +1051,12 @@ class DayZPlayerInventory : HumanInventoryWithFSM
 		bool success = true;
 
 		HandEventBase e = HandEventBase.CreateHandEventFromContext(ctx);
+		if (!validation.m_IsJuncture && GetDayZPlayerOwner().GetInstanceType() == DayZPlayerInstanceType.INSTANCETYPE_SERVER && e.m_Player != GetManOwner())
+		{
+			Error("[syncinv] Inventory owner " + GetManOwner() + " and event sender " + e.m_Player + " not match.");
+			return true;
+		}
+
 		e.ClearInventoryReservation();
 		
 		//! Pass partial information to guards so guards can do minimal checks if needed

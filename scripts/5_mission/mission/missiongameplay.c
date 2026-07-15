@@ -433,7 +433,7 @@ class MissionGameplay extends MissionBase
 				
 				manualInputUnlockProcessed = true;
 			}
-			else if (GetUApi().GetInputByID(UALookAround).IsLocked() || GetUApi().GetInputByID(UALookAroundToggle).IsLocked())
+			else
 			{
 				GetUApi().GetInputByID(UALookAround).Unlock();	//enable freelook
 				GetUApi().GetInputByID(UALookAroundToggle).Unlock();	//enable freelook

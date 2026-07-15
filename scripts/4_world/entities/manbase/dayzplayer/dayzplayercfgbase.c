@@ -439,6 +439,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("SSG82_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_ssg82.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/ssg82.anm", "dz/anims/anm/player/reloads/SSG82/w_SSG82_states.anm");
 		pType.AddItemInHandsProfileIK("M14_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_m14.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/M14_ik.anm","dz/anims/anm/player/reloads/M14/w_M14_states.anm");
 		pType.AddItemInHandsProfileIK("SV98_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_SV98.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/SV98.anm","dz/anims/anm/player/reloads/SV98/w_SV98_states.anm");
+		pType.AddItemInHandsProfileIK("SCARH_Base",			"dz/anims/workspaces/player/player_main/weapons/player_main_SCARH.asi",			fireArmsItemBehaviour, "dz/anims/anm/player/ik/weapons/SCAR_ik.anm",  "dz/anims/anm/player/reloads/SCAR/w_SCAR_states.anm");
 
 		//! Shotguns
 		pType.AddItemInHandsProfileIK("Izh18Shotgun_Base",		"dz/anims/workspaces/player/player_main/weapons/player_main_izh18_Spartan.asi",	fireArmsItemBehaviour,	"dz/anims/anm/player/ik/weapons/izh18_Spartan.anm", "dz/anims/anm/player/reloads/IZH18Spartan/w_izh18Spartan_states.anm");
@@ -598,6 +599,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("Mag_Ruger1022_15Rnd",				"dz/anims/workspaces/player/player_main/props/player_main_mp5k_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_ruger1022_30rnd.anm");
 		pType.AddItemInHandsProfileIK("Mag_Ruger1022_30Rnd",				"dz/anims/workspaces/player/player_main/props/player_main_mp5k_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_ruger1022_30rnd.anm");
 		pType.AddItemInHandsProfileIK("Mag_FAL_20Rnd",						"dz/anims/workspaces/player/player_main/props/player_main_STANAG_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_fal_20rnd.anm");
+		pType.AddItemInHandsProfileIK("Mag_SCARH_20Rnd",					"dz/anims/workspaces/player/player_main/props/player_main_STANAG_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_SCAR.anm");
 
 		pType.AddItemInHandsProfileIK("Mag_VSS_10Rnd",						"dz/anims/workspaces/player/player_main/props/player_main_STANAG_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_vss_10rnd.anm");
 		pType.AddItemInHandsProfileIK("Mag_Glock_15Rnd",					"dz/anims/workspaces/player/player_main/props/player_main_fnp45_mag.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/magazines/magazine_glock19_15rnd.anm");
@@ -654,6 +656,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("KashtanOptic",						"dz/anims/workspaces/player/player_main/props/player_main_1h_scope.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/attachments/optic/optic_kashtan.anm");
 		pType.AddItemInHandsProfileIK("Crossbow_RedpointOptic",				"dz/anims/workspaces/player/player_main/props/player_main_1h_scope.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/attachments/optic/optic_red_point.anm");
 		pType.AddItemInHandsProfileIK("ReflexOptic",						"dz/anims/workspaces/player/player_main/props/player_main_1h_scope.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/attachments/optic/optic_reflex.anm");
+		pType.AddItemInHandsProfileIK("HoloOptic",							"dz/anims/workspaces/player/player_main/props/player_main_1h_scope.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/attachments/optic/optic_holo.anm");
 		pType.AddItemInHandsProfileIK("GrozaOptic",							"dz/anims/workspaces/player/player_main/props/player_main_1h_scope.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/attachments/optic/optic_ots14.anm");
 		pType.AddItemInHandsProfileIK("KobraOptic",							"dz/anims/workspaces/player/player_main/props/player_main_1h_scope_kobra.asi",		toolsOneHanded,			"dz/anims/anm/player/ik/attachments/optic/optic_kobra.anm");
 		pType.AddItemInHandsProfileIK("KazuarOptic",						"dz/anims/workspaces/player/player_main/props/player_main_1h_scope.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/attachments/optic/optic_1PN51.anm"); 
@@ -690,6 +693,8 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("GhillieAtt_ColorBase",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 		"dz/anims/anm/player/ik/attachments/support/ghillie_wrap.anm");
 		pType.AddItemInHandsProfileIK("Groza_LowerReceiver",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 		"dz/anims/anm/player/ik/gear/banana.anm");
 		pType.AddItemInHandsProfileIK("GrozaGL_LowerReceiver",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 		"dz/anims/anm/player/ik/gear/banana.anm");
+		pType.AddItemInHandsProfileIK("SCAR_StockBttstck",					"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 		"dz/anims/anm/player/ik/attachments/support/buttstock_SCAR.anm");
+		pType.AddItemInHandsProfileIK("SCAR_PrecisionBttstck",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded, 		"dz/anims/anm/player/ik/attachments/support/buttstock_SCAR_Precision.anm");
 	}
 	
 	//! Explosives
@@ -743,6 +748,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 		pType.AddItemInHandsProfileIK("Hatchet",							"dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/gear/Hatchet.anm"); 
 		pType.AddItemInHandsProfileIK("Machete",							"dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/gear/machete.anm"); 
 		pType.AddItemInHandsProfileIK("BrassKnuckles_ColorBase",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,			"dz/anims/anm/player/ik/gear/brassknuckles.anm");
+		pType.AddItemInHandsProfileIK("BrassKnuckles_MenAtArms",			"dz/anims/workspaces/player/player_main/player_main_1h.asi",						toolsOneHanded,			"dz/anims/anm/player/ik/gear/brassknuckles_manatarms.anm");
 		pType.AddItemInHandsProfileIK("TelescopicBaton",					"dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/gear/TelescopicBaton.anm");
 		pType.AddItemInHandsProfileIK("PoliceBaton",						"dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/gear/TelescopicBaton.anm");
 		pType.AddItemInHandsProfileIK("CattleProd",							"dz/anims/workspaces/player/player_main/weapons/player_main_1h_pipe.asi",			toolsOneHanded,			"dz/anims/anm/player/ik/gear/banana.anm"); //Needs Config
@@ -1441,6 +1447,7 @@ void DayZPlayerTypeRegisterItems(DayZPlayerType pType)
 	//! Others
 	{
 		pType.AddItemInHandsProfileIK("Book_Base",				"dz/anims/workspaces/player/player_main/player_main_1h.asi",								toolsOneHanded, 				"dz/anims/anm/player/ik/gear/book.anm");
+		pType.AddItemInHandsProfileIK("MorsecodeLeaflet_ColorBase",		"dz/anims/workspaces/player/player_main/player_main_1h.asi",					    toolsOneHanded,			    	"dz/anims/anm/player/ik/gear/MorseCodeLeaflet.anm");
 	}
 
 	//! Restrained items

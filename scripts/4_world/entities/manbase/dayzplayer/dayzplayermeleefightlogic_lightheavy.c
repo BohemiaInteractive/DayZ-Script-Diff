@@ -914,7 +914,7 @@ class DayZPlayerMeleeFightLogic_LightHeavy
 		return animation;
 	}
 	
-	//! Picks a specific finisher ammo fot the hit type. This gets synchronized and guides further behaviour of the target.
+	//! Picks a specific finisher ammo for the hit type. This gets synchronized and guides further behaviour of the target.
 	string DetermineFinisherAmmo(int finisher_type)
 	{
 		string ret = "";

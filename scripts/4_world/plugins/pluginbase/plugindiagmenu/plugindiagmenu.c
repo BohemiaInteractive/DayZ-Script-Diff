@@ -552,6 +552,20 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				DiagMenu.RegisterBool(DiagMenuIDs.SERVER_BROWSER_DUMMY_SERVERS, "", "Enable Dummy Servers", DiagMenuIDs.SERVER_BROWSER_MENU);
 			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.GEYSERDIAG_MENU, "Geyser Diag", DiagMenuIDs.SCRIPTS_MENU);
+			{
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Geyser Diag
+				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.GEYSERDIAG_ENABLE, "lalt+g", "Enable Geyser Diag", DiagMenuIDs.GEYSERDIAG_MENU);
+				DiagMenu.RegisterRange(DiagMenuIDs.GEYSERDIAG_STATE_INTERVAL, "", "State Interval (s)", DiagMenuIDs.GEYSERDIAG_MENU,"0.0, 120.0, 10.0, 1.0");
+				DiagMenu.RegisterRange(DiagMenuIDs.GEYSERDIAG_STATE_DURATION, "", "State Duration (s)", DiagMenuIDs.GEYSERDIAG_MENU,"0.0, 120.0, 10.0, 1.0");
+			}
+			
 		}
 	}
 	

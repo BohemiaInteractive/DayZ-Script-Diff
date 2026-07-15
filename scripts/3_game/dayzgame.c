@@ -139,11 +139,19 @@ class LoginQueueBase extends LoginScreenBase
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(showToolbar);
 		RichTextWidget toolbar_b = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
 		toolbar_b.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		Widget expNotification = layoutRoot.FindAnyWidget("notification_root");
+		bool isXBoxExperimental = false;
 		#ifdef PLATFORM_XBOX
 		#ifdef BUILD_EXPERIMENTAL
-		layoutRoot.FindAnyWidget("notification_root").Show(true);
+			isXBoxExperimental = true;
 		#endif
 		#endif
+		#ifdef PLATFORM_MSSTORE
+		#ifdef BUILD_EXPERIMENTAL
+			isXBoxExperimental = true;
+		#endif
+		#endif
+		expNotification.Show(isXBoxExperimental);
 		#endif
 
 		return layoutRoot;
@@ -242,11 +250,19 @@ class LoginTimeBase extends LoginScreenBase
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(showToolbar);
 		RichTextWidget toolbar_b = RichTextWidget.Cast(layoutRoot.FindAnyWidget("BackIcon"));
 		toolbar_b.SetText(InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR));
+		Widget expNotification = layoutRoot.FindAnyWidget("notification_root");
+		bool isXBoxExperimental = false;
 		#ifdef PLATFORM_XBOX
 		#ifdef BUILD_EXPERIMENTAL
-		layoutRoot.FindAnyWidget("notification_root").Show(true);
+			isXBoxExperimental = true;
 		#endif
 		#endif
+		#ifdef PLATFORM_MSSTORE
+		#ifdef BUILD_EXPERIMENTAL
+			isXBoxExperimental = true;
+		#endif
+		#endif
+		expNotification.Show(isXBoxExperimental);
 		#endif
 
 		return layoutRoot;
@@ -729,19 +745,20 @@ class LoadingScreen
 		{
 			m_ProgressText.Show(g_Game.CommandlineGetParam("loadingTest", tmp));
 		}
-		m_WidgetRoot.FindAnyWidget("notification_root").Show(false);
-
-		#ifdef PLATFORM_CONSOLE
+		
+		Widget expNotification = m_WidgetRoot.FindAnyWidget("notification_root");
+		bool isXBoxExperimental = false;
 		#ifdef PLATFORM_XBOX
 		#ifdef BUILD_EXPERIMENTAL
-			Widget expNotification = m_WidgetRoot.FindAnyWidget("notification_root");
-			if (expNotification)
-			{
-				expNotification.Show(true);
-			}
+			isXBoxExperimental = true;
 		#endif
 		#endif
+		#ifdef PLATFORM_MSSTORE
+		#ifdef BUILD_EXPERIMENTAL
+			isXBoxExperimental = true;
 		#endif
+		#endif
+		expNotification.Show(isXBoxExperimental);
 		
 		m_ModdedWarning.Show(g_Game.ReportModded());
 		m_ImageLogoMid.Show(true);
@@ -988,6 +1005,7 @@ class DayZGame extends CGame
 	#endif
 	#ifdef DIAG_DEVELOPER
 	ref CameraToolsMenuServer m_CameraToolsMenuServer;
+	ref GeyserDebugData m_GeyserDiagData = new GeyserDebugData();
 	#endif
 
 	// CGame override functions
@@ -3367,7 +3385,18 @@ class DayZGame extends CGame
 					m_CameraToolsMenuServer.OnRPC(rpc_type, ctx);
 					break;
 				}
-
+				case ERPCs.DIAG_GEYSER_VALUES:
+				{
+					auto geyserParams = new Param3<bool, float, float>(false, 0, 0);
+					if (ctx.Read(geyserParams))
+					{
+						if (!m_GeyserDiagData)
+							m_GeyserDiagData = new GeyserDebugData();
+						
+						m_GeyserDiagData.SetData(geyserParams.param1, geyserParams.param2, geyserParams.param3);
+					}
+					break;
+				}
 				#endif
 				#endif
 

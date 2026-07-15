@@ -450,6 +450,14 @@ class Environment
 			return;
 		}
 		
+		if (m_Player.IsClimbingLadder())
+		{
+			pWaterLevel = 0.0;
+			m_IsInWater = false;
+
+			return;			
+		}
+		
 		//! no valid surface under character
 		if (IsUnderRoofBuilding())
 		{
@@ -468,7 +476,7 @@ class Environment
 			case LIQUID_FRESHWATER:
 			case LIQUID_STILLWATER:
 			case LIQUID_HOTWATER:
-				pWaterLevel = m_Player.GetCurrentWaterLevel();
+				pWaterLevel = Math.Max(m_Player.GetCurrentWaterLevel(), 0.0);
 				m_IsInWater = true;
 			break;
 		}
@@ -627,14 +635,15 @@ class Environment
 	{
 		vector playerPos = m_Player.GetPosition();
 		m_PlayerHeightPos = playerPos[1];
+		
+		m_PlayerSpeed = 0.0;
 
 		HumanCommandMove hcm = m_Player.GetCommand_Move();
 		if (hcm)
-		{
 			m_PlayerSpeed = hcm.GetCurrentMovementSpeed();
-		}
-
+		
 		m_PlayerHeat = GetPlayerHeat();
+
 	}
 	
 	// Each tick updates current environment member variables
@@ -1045,9 +1054,9 @@ class Environment
 				heatComfortSum += stomachContentTemperature * GameConstants.ENVIRO_STOMACH_WEIGHT;
 			}
 		}
-
-		float targetHeatComfort = (heatComfortSum + heatItems + (GetPlayerHeat() / 100)) + EnvTempToCoef(m_EnvironmentTemperature);
 		
+		float targetHeatComfort = (heatComfortSum + heatItems + (m_PlayerHeat / 100)) + EnvTempToCoef(m_EnvironmentTemperature);
+				
 		//! uses the raw targetHeatComfort data
 		m_EnvironmentSnapshot.m_ClothingHeatComfort = hcBodyPartTotal;
 		m_EnvironmentSnapshot.m_TargetHeatComfort 	= targetHeatComfort;
@@ -1501,8 +1510,9 @@ class Environment
 			}
 		}
 
-		if (m_Player.GetItemInHands() && m_Player.GetItemInHands().IsUniversalTemperatureSource())
-			m_UTemperatureSources.Insert(m_Player.GetItemInHands().GetUniversalTemperatureSource());
+		ItemBase inHandsItem = m_Player.GetItemInHands();
+		if (inHandsItem && inHandsItem.IsUniversalTemperatureSource())
+			m_UTemperatureSources.Insert(inHandsItem.GetUniversalTemperatureSource());
 	}
 	
 	/**
@@ -1522,7 +1532,7 @@ class Environment
 			return;
 		}
 
-		array<float> utsTemperatures = new array<float>();
+		TFloatArray utsTemperatures = new TFloatArray();
 		
 		// get temperature from the source (based on distance), save it for min/max filtering
 		float itemCoefAverage = 0.0;

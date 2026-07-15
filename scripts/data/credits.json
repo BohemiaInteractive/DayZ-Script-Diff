@@ -31,9 +31,11 @@
                     "SectionName": "#production",
                     "SectionLines": [
                         "Dan Olthen",
+						"Emma Vos",
                         "Filippo Franco",
                         "Ľuboš Kubiš",
                         "Martin Kuchař",
+						"Ondřej Klíma",
                         "Roman Múdry",
                         "Tim Pulsmeier"
                     ]
@@ -60,7 +62,8 @@
                     "SectionName": "#lead_designer",
                     "SectionLines": [
                         "Tomáš Pulkrábek",
-                        "Peter Nespešný"
+                        "Peter Nespešný",
+						"Özgür Nergis"
                     ]
                 }
             ]
@@ -73,7 +76,8 @@
                     "SectionLines": [
                         "Alberto Paparella",
                         "Arthur Joanin",
-			"Jan Pazdera",
+						"Daan Eijkhout",
+						"Jan Pazdera",
                         "Jan Tomášik",
                         "Jana Unzeitigová",
                         "Marek Žilavý",
@@ -81,7 +85,6 @@
                         "Martin Strnad",
                         "Michal Břinda",
                         "Ondřej Malota",
-                        "Özgür Nergis",
                         "Tomáš Pavlík"
                     ]
                 }
@@ -108,7 +111,7 @@
                         "Boris Vacula",
                         "Daniel Dička",
                         "David Soška",
-			"Daniel Donkov",
+						"Daniel Donkov",
                         "Jakub Palkovič",
                         "Kamil Komínek",
                         "Ľuboš Kováč",
@@ -132,14 +135,17 @@
                         "Arseniy Smirnov",
                         "Florian Pelloux",
                         "Ivan Buchta",
+						"Jacques Bellamy",
                         "Kasy Hucková",
+						"Kateřina Szerudová",
                         "Mark Gill",
                         "Martin Hochman",
                         "Martin Pezlar",
                         "Michael Docherty",
-			"Nejc Kokalj",
+						"Nejc Kokalj",
                         "Petr Sedláček",
                         "Radim Vitek",
+						"Ramiro Nicolás Gil",
                         "Suvi Lankila"
                     ]
                 }
@@ -151,7 +157,8 @@
                 {
                     "SectionName": "#lead_programmers",
                     "SectionLines": [
-                        "Lukáš Jagelka",
+					    "Aleš Stupka",
+						"Lukáš Jagelka",
                         "Martin Slavkov",
                         "Mikuláš Florek",
                         "Miroslav Maněna",
@@ -168,11 +175,10 @@
                     "SectionLines": [
                         "Adrian Turcanu",
                         "Aleš Renner",
-                        "Aleš Stupka",
-			"Denis Sion",
+						"Denis Sion",
                         "Eduard Pribula",
                         "Elias Mittet Hernes",
-			"Filip Vondrášek",
+						"Filip Vondrášek",
                         "Floris Leysen",
                         "František Bidlo",
                         "Jacob Kumar",
@@ -189,6 +195,7 @@
                         "Mojmír Svoboda",
                         "Ondrej Ritomský",
                         "Patrik Kalabus",
+						"Pedro Bentes",
                         "Peter Uličiansky",
                         "Peter Ševčík",
                         "Petr Soviš",
@@ -220,6 +227,7 @@
                 {
                     "SectionName": "#art_lead",
                     "SectionLines": [
+						"Alexander Szaloki", 
                         "Michal Ištok"
                     ]
                 }
@@ -231,8 +239,7 @@
                 {
                     "SectionName": "#artists",
                     "SectionLines": [
-                        "Alexander Szaloki", 
-			"Art Shiryaev",
+						"Art Shiryaev",
                         "Boris Joanovič",
                         "Bruno Luccas",
                         "Darko Miladinovikj",
@@ -240,9 +247,11 @@
                         "Jamie Foster",
                         "Jan Kudrnáč",
                         "José Luis Revuelta",
-			"Jose Pellegrino",
+						"Jose Pellegrino",
                         "Kristýna Duhárová",
-			"Manuel J. Gallardo",
+						"Lenka Hlubinková",
+						"Lilo Schrage",
+						"Manuel J. Gallardo",
                         "Marcin Pindara",
                         "Marián Ferko",
                         "Mario Kurty",
@@ -258,11 +267,12 @@
                         "Peter Blažej",
                         "Peter Rendoš",
                         "Peter Švaral",
-			"Philipp Körber",
+						"Philipp Körber",
                         "Roman Gašperík",
-			"Saba Goschadze",
+						"Saba Goschadze",
                         "Sebastian Davies",
-			"Terézia Mičková",
+						"Sofiia Diordiichuk",
+						"Terézia Mičková",
                         "Vaclav Rod",
                         "Vadim Spiridonov",
                         "Vladimír Holík",
@@ -398,7 +408,8 @@
                 {
                     "SectionName": "#quality_assurance_lead",
                     "SectionLines": [
-                        "Eszter Barabás",
+					    "Dominik Novák",
+						"Eszter Barabás",
                         "Filip Konupka"
                     ]
                 }
@@ -411,15 +422,18 @@
                     "SectionName": "#quality_assurance_specialists",
                     "SectionLines": [
                         "Bogdan Ciobanu",
-			"Daniel Fialka",
-                        "Dominik Novák",
+						"Daniel Fialka",
                         "Erik Vrškový",
                         "Jan Jirák",
                         "Ketrin Bitomská",
                         "Kristina Kirichenko",
+						"Marie Hilal",
+						"Martin Bugel",
                         "Martin Polma",
-			"Moritz Ehmcke",
+						"Moritz Ehmcke",
                         "Ondřej Klíma",
+						"Petr Hušek",
+						"Petr Madara",
                         "Rastislav Kluka"
                     ]
                 }
@@ -609,10 +623,11 @@
                 {
                     "SectionName": "#brand_and_pr_management_team",
                     "SectionLines": [
-                        "Jakub Vamberský",
+						"Eszter Barabás",
+						"Htun Lynn Zaw",
+						"Jakub Vamberský",
                         "Jitka Vysloužilová",
                         "Karolina Havelkova",
-                        "Htun Lynn Zaw",
                         "Mark O'Keeffe",
                         "Miguel Raimundo",
                         "Michael Christensen",
@@ -698,7 +713,10 @@
                 {
                     "SectionName": "#platform_support_specialists",
                     "SectionLines": [
-                        "Kristýna Valíková",
+                        "Jakub Pufler",
+						"Kristýna Valíková",
+						"Martin Batel'",
+						"Martin Šalling",
 						"Richard Kužidlo",
                         "Patrik Šedivý"
                     ]
@@ -824,11 +842,14 @@
                         "Adam Vondra",
                         "Adéla Větrovcová",
                         "Akkharapoom Saranupan",
+						"Alexandra Navarová",
                         "Alisa Chomrit",
+						"Anna Anzuli",
                         "Aneta Laudová",
                         "Aneta Steimarová",
                         "Anna Švecová",
                         "Anna Wrnatová",
+						"Antonín Beneš",
                         "Antonín Karoch",
                         "Antonio Janeček",
                         "Artchawin Khempila",
@@ -858,12 +879,15 @@
                         "Jakub Lietavec",
                         "Jakub Šíma",
                         "Jan Doležal",
+						"Jan Foltýn",
                         "Jan Kaleta",
                         "Jan Kočur",
                         "Jan Parma",
+						"Jan Skrzeczek",
                         "Jan Švihálek",
                         "Jan Uher",
                         "Jan Voldřich",
+						"Jana Klimešová",
                         "Jana Michailidu",
                         "Jana Vorlíčková",
                         "Jaroslav Hlaváč",
@@ -886,30 +910,30 @@
                         "Lalisa Leakakul",
                         "Le Do",
                         "Lucie Svobodová",
-			"Lukáš Jaro",
-			"Marek Hvizdoš",
+						"Lukáš Jaro",
+						"Marek Abbod",
+						"Marek Hvizdoš",
                         "Marek Vítek",
-                        "Marie Pazourová",
                         "Marta Hlinková",
                         "Martin Bílek",
-                        "Martin Bugel",
                         "Martin Dettelbacher",
                         "Martin Juráš",
                         "Martin Mayer",
                         "Martin Mokrejš",
-			"Martin Pivon",
+						"Martin Pivon",
                         "Martin Suriak",
                         "Matěj Müller",
                         "Matěj Potůček",
-			"Matouš Hrdlicka",
+						"Matouš Hrdlicka",
                         "Matyáš Soviš",
+						"Matyáš Vráblík",
                         "Max Hejtmánek",
                         "Michal Jandura",
                         "Michal Kolman",
                         "Michal Měřinský",
                         "Michal Rychetník",
                         "Michal Skramuský",
-			"Miroslav Kovář",
+						"Miroslav Kovář",
                         "Nuthapon Pudpaput",
                         "Oldřich Kalous",
                         "Ondřej Borz",
@@ -918,7 +942,7 @@
                         "Ondřej Vanča",
                         "Pankaj Singh",
                         "Patrik Bartošík",
-			"Pavel Fronek",
+						"Pavel Fronek",
                         "Pavel Hamata",
                         "Pavol Sočuvka",
                         "Pavel Štaud",
@@ -926,11 +950,11 @@
                         "Peter Šoltés",
                         "Petr Hlaváč",
                         "Petr Juklíček",
-                        "Petr Madara",
                         "Petr Schiebel",
                         "Petr Secký",
                         "Petr Vlach",
                         "Petra Kočí",
+						"Petra Skulová",
                         "Pinatee Panichauttra",
                         "Pitsanu Jittamart",
                         "Raffaele Galbani",
@@ -946,10 +970,11 @@
                         "Soňa Cicoňová",
                         "Stanislav Zolotuchin",
                         "Štěpán Riedl",
-			"Štěpán Šach",
+						"Štěpán Šach",
                         "Štěpán Šikýř",
                         "Tadeáš Varga",
                         "Teo Kryštůfek",
+						"Tereza Matušková",
                         "Tomáš Herout",
                         "Tomáš Jelínek",
                         "Tomáš Jeřábek",
@@ -964,6 +989,7 @@
                         "Vít Jašek",
                         "Vladimír Krejčík",
                         "Vladimír Pech",
+						"Vojtěch Hájek",
                         "Vojtěch Matouš",
                         "Vojtěch Neoral",
                         "Vojtěch Ondrůj",

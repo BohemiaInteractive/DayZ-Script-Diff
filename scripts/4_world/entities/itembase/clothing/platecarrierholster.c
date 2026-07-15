@@ -3,3 +3,4 @@ class PlateCarrierHolster_Black extends PlateCarrierHolster {};
 class PlateCarrierHolster_Camo extends PlateCarrierHolster {};
 class PlateCarrierHolster_Green extends PlateCarrierHolster {};
 class PlateCarrierHolster_Winter extends PlateCarrierHolster {};
+class PlateCarrierHolster_Desert : PlateCarrierHolster {};

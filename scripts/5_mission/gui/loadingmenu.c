@@ -19,17 +19,20 @@ class LoadingMenu extends UIScriptedMenu
 		m_image.LoadImageFile( 0, GetRandomLoadingBackground() );
 		layoutRoot.FindAnyWidget("notification_root").Show(false);
 		
-		#ifdef PLATFORM_CONSOLE
+		Widget expNotification = layoutRoot.FindAnyWidget("notification_root");
+		bool isXBoxExperimental = false;
 		#ifdef PLATFORM_XBOX
 		#ifdef BUILD_EXPERIMENTAL
-			Widget exp_notifiaction = layoutRoot.FindAnyWidget("notification_root");
-			if (exp_notifiaction)
-			{
-				exp_notifiaction.Show(true);
-			}
+			isXBoxExperimental = true;
 		#endif
 		#endif
+		#ifdef PLATFORM_MSSTORE
+		#ifdef BUILD_EXPERIMENTAL
+			isXBoxExperimental = true;
 		#endif
+		#endif
+		if (expNotification)
+			expNotification.Show(isXBoxExperimental);
 		
 		return layoutRoot;
 	}

@@ -23,15 +23,6 @@ enum PlantType
 	BUSH_SOFT		= 1003,
 }
 
-enum WeightUpdateType
-{
-	FULL = 0,
-	ADD,
-	REMOVE,
-	RECURSIVE_ADD,
-	RECURSIVE_REMOVE
-}
-
 enum EItemManipulationContext
 {
 	UPDATE, //generic operation
@@ -78,6 +69,16 @@ enum EAttExclusions
 	SHAVING_MASK_ATT_0,
 	SHAVING_HEADGEAR_ATT_0,
 	SHAVING_EYEWEAR_ATT_0,
+}
+
+[Obsolete("1.30: No replacement")]
+enum WeightUpdateType
+{
+	FULL = 0,
+	ADD,
+	REMOVE,
+	RECURSIVE_ADD,
+	RECURSIVE_REMOVE
 }
 
 class DebugSpawnParams
@@ -965,6 +966,9 @@ class EntityAI extends Entity
 		EntityAI newOwner = newLoc.GetParent();
 		OnItemLocationChanged(oldOwner, newOwner);
 		
+		NotifyPlayerLoadChanged(oldOwner);
+		NotifyPlayerLoadChanged(newOwner);
+	
 		if (oldLoc.GetType() == InventoryLocationType.ATTACHMENT && newLoc.GetType() == InventoryLocationType.ATTACHMENT)
 			OnItemAttachmentSlotChanged(oldLoc, newLoc);
 		
@@ -1022,6 +1026,7 @@ class EntityAI extends Entity
 	void EEAmmoChanged()
 	{
 		SetWeightDirty();
+		NotifyPlayerInventoryLoadChanged(this);
 	}
 
 	void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
@@ -3636,8 +3641,6 @@ class EntityAI extends Entity
 		return m_WeightEx;
 	}
 	
-	void UpdateWeight(WeightUpdateType updateType = WeightUpdateType.FULL, float weightAdjustment = 0);
-	
 	float GetSingleInventoryItemWeightEx(){}
 
 	void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
@@ -4706,6 +4709,23 @@ class EntityAI extends Entity
 	}
 
 	void ClearInventory();
+	
+	protected void NotifyPlayerInventoryLoadChanged(EntityAI entity)
+	{
+		if (!entity)
+			return;
+	
+		Man player = entity.GetHierarchyRootPlayer();
+		if (player)
+		{
+			NotifyPlayerLoadChanged(player);
+		}
+	}
+
+	void NotifyPlayerLoadChanged(EntityAI owner);
+	
+	[Obsolete("1.30: Use NotifyPlayerInventoryLoadChanged instead")]
+	void UpdateWeight(WeightUpdateType updateType = WeightUpdateType.FULL, float weightAdjustment = 0);
 };
 
 #ifdef DEVELOPER

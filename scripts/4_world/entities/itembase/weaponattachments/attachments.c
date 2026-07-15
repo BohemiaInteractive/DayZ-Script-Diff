@@ -41,3 +41,5 @@ class M4_OEBttstck : ButtstockBase {};
 class MP5k_StockBttstck : ButtstockBase {};
 class Saiga_Bttstck : ButtstockBase {};
 class PP19_Bttstck : ButtstockBase {};
+class SCAR_StockBttstck : ButtstockBase {};
+class SCAR_PrecisionBttstck : ButtstockBase {};

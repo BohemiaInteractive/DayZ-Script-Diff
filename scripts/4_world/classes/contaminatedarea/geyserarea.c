@@ -55,13 +55,47 @@ class GeyserArea : EffectArea
 	{
 		m_TimeElapsed += UPDATE_RATE * 0.001;
 	
+	#ifdef DIAG_DEVELOPER
+		bool diagEnabled;
+		float diagTimeInterval;
+		float diagTimeDuration;
+				
+		GeyserDebugData geyserDebugData = g_Game.m_GeyserDiagData;
+		if (geyserDebugData)
+		{
+			diagEnabled = geyserDebugData.m_DiagEnabled;
+			diagTimeInterval = geyserDebugData.m_DiagTimeInterval;
+			diagTimeDuration = geyserDebugData.m_DiagTimeDuration;
+		}
+		
+		float logInterval = m_RandomizedInterval;
+		if (diagEnabled)
+		{
+			logInterval = diagTimeInterval;
+		}
+	#ifdef ENABLE_LOGGING
+		ErrorEx("Geyser state=" + typename.EnumToString(EGeyserState, m_GeyserTrigger.GetGeyserState()) + " | Bits=" + m_GeyserTrigger.GetGeyserState() + " | Interval=" + logInterval + " | Time Elapsed=" + m_TimeElapsed, ErrorExSeverity.INFO);
+	#endif
+	#endif
+		
 		if (m_GeyserTrigger.CheckGeyserState(EGeyserState.DORMANT))
 		{
 			if (m_TimeElapsed > PRE_ERUPTION_DURATION)
 			{
-				#ifdef ENABLE_LOGGING
+			#ifdef ENABLE_LOGGING
+			#ifndef DIAG_DEVELOPER
 				Debug.Log(m_Name + ": ERUPTION_SOON, interval: " + m_RandomizedInterval + " sec");
-				#endif
+			#else
+				if (!diagEnabled)
+				{
+					Debug.Log(m_Name + ": ERUPTION_SOON, interval: " + m_RandomizedInterval + " sec");
+				}
+				else
+				{
+					Debug.Log(m_Name + ": ERUPTION_SOON, interval: " + diagTimeInterval + " sec");
+				}
+			#endif
+			#endif
 				
 				m_GeyserTrigger.AddGeyserState(EGeyserState.ERUPTION_SOON);
 				
@@ -70,11 +104,26 @@ class GeyserArea : EffectArea
 		}
 		else if (m_GeyserTrigger.CheckGeyserState(EGeyserState.ERUPTION_SOON))
 		{
+		#ifndef DIAG_DEVELOPER
 			if (m_TimeElapsed > m_RandomizedInterval)
+		#else
+			if (!diagEnabled && m_TimeElapsed >= m_RandomizedInterval || diagEnabled && m_TimeElapsed >= diagTimeInterval)
+		#endif
 			{
-				#ifdef ENABLE_LOGGING
+			#ifdef ENABLE_LOGGING
+			#ifndef DIAG_DEVELOPER
 				Debug.Log(m_Name + ": ERUPTING_PRIMARY, interval: " + m_RandomizedDuration + " sec");
-				#endif
+			#else
+				if (!diagEnabled)
+				{
+					Debug.Log(m_Name + ": ERUPTING_PRIMARY, interval: " + m_RandomizedDuration + " sec");
+				}
+				else
+				{
+					Debug.Log(m_Name + ": ERUPTING_PRIMARY, interval: " + diagTimeDuration + " sec");
+				}
+			#endif
+			#endif
 				
 				m_GeyserTrigger.RemoveGeyserState(EGeyserState.ERUPTION_SOON);
 				m_GeyserTrigger.AddGeyserState(EGeyserState.ERUPTING_PRIMARY);
@@ -88,7 +137,11 @@ class GeyserArea : EffectArea
 		}
 		else if (m_GeyserTrigger.CheckGeyserState(EGeyserState.ERUPTING_PRIMARY))
 		{
+		#ifndef DIAG_DEVELOPER
 			if (m_TimeElapsed > m_RandomizedDuration)
+		#else
+			if (!diagEnabled && m_TimeElapsed >= m_RandomizedDuration || diagEnabled && m_TimeElapsed >= diagTimeDuration)
+		#endif
 			{	
 				RandomizeIntervals();
 				
@@ -102,7 +155,11 @@ class GeyserArea : EffectArea
 
 				m_TimeElapsed = 0;
 			}
+		#ifndef DIAG_DEVELOPER
 			else if (Math.IsInRange(m_TimeElapsed, ERUPTION_TALL_DELAY, m_RandomizedDuration - ERUPTION_TALL_DURATION)) 	// Ensure burst do not overlap with state transitions
+		#else
+			else if (!diagEnabled && Math.IsInRange(m_TimeElapsed, ERUPTION_TALL_DELAY, m_RandomizedDuration - ERUPTION_TALL_DURATION) || diagEnabled && Math.IsInRange(m_TimeElapsed, ERUPTION_TALL_DELAY, diagTimeDuration - ERUPTION_TALL_DURATION)) 	// Ensure burst do not overlap with state transitions
+		#endif
 			{
 				if (!m_SecondaryActive && m_TimeSecondaryElapsed < 0) 
 				{

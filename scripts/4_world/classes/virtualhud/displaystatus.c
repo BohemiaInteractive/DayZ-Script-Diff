@@ -171,17 +171,21 @@ class VirtualHud
 	void SendRPC()
 	{
 		PlayerIdentity identity = m_Player.GetIdentity();
-		if (!identity)
-			return;
+		//! ignored for single player (and clients)
+		if (g_Game.IsMultiplayer())
+		{
+			if (!identity)
+				return;
+		}
 		
-		array<int> mask_array = new array<int>;
-		SerializeElements(mask_array);
-		if (!m_LastSentArray || !AreArraysSame(m_LastSentArray, mask_array))
+		array<int> maskArray = new array<int>();
+		SerializeElements(maskArray);
+		if (!m_LastSentArray || !AreArraysSame(m_LastSentArray, maskArray))
 		{
 			ScriptRPC rpc = new ScriptRPC();
-			rpc.Write(mask_array);
+			rpc.Write(maskArray);
 			rpc.Send(m_Player, ERPCs.RPC_SYNC_DISPLAY_STATUS, false, identity);
-			m_LastSentArray = mask_array;
+			m_LastSentArray = maskArray;
 		}
 	}
 

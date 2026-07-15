@@ -39,6 +39,14 @@ class ReflexOptic : ItemOptics
 	}
 }
 
+class HoloOptic : ItemOptics
+{
+	override bool IsUsableWithNV()
+	{
+		return true;
+	}
+}
+
 class KobraOptic : ItemOptics
 {
 	override bool IsSightOnly()

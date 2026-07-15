@@ -682,7 +682,18 @@ class HandEventSwap extends HandEventBase
 
 	override bool AcquireInventoryJunctureFromServer (notnull Man player)
 	{
-		return TryAcquireTwoInventoryJuncturesFromServer(player, m_Src, m_Src2, m_Dst, m_Dst2);
+		InventoryLocation src1 = GetSrc();
+		InventoryLocation src2 = GetSecondSrc();
+		InventoryLocation dst1 = GetDst();
+		InventoryLocation dst2 = GetSecondDst();
+
+		if (src1 && dst1 && src2 && dst2)
+		{
+			return TryAcquireTwoInventoryJuncturesFromServer(player, src1, src2, dst1, dst2);
+		}
+
+		Error("[hndfsm] HandEventSwap. AcquireInventoryJunctureFromServer: no src or dst for ev=" + DumpToString());
+		return JunctureRequestResult.ERROR;
 	}
 
 	override string DumpToString ()

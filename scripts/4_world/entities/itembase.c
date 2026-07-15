@@ -4832,6 +4832,18 @@ class ItemBase extends InventoryItem
 		return true;
 	}
 	
+	override void NotifyPlayerLoadChanged(EntityAI owner)
+	{
+		if (!owner)
+			return;
+	
+		PlayerBase playerBase = PlayerBase.Cast(owner);
+		if (playerBase)
+		{
+			playerBase.NotifyPlayerLoadChanged();
+		}
+	}
+	
 	///////////////////
 	//DEPRECATED BELOW
 	//////////////////

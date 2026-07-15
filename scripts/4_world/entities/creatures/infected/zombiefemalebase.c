@@ -127,3 +127,11 @@ class ZmbF_VillagerOld_Base extends ZombieFemaleBase
 class ZmbF_VillagerOld_LT_Base extends ZombieFemaleBase
 {
 };
+
+class ZmbF_usSoldier_normal_Base extends ZombieFemaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};

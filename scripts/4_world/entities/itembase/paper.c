@@ -72,3 +72,7 @@ class Paper extends ItemBase
 		AddAction(ActionDetach);
 	}
 }
+class MorsecodeLeaflet_ColorBase: Paper {};
+class MorsecodeLeaflet_blood: MorsecodeLeaflet_ColorBase {};
+class MorsecodeLeaflet_coffee: MorsecodeLeaflet_ColorBase {};
+class MorsecodeLeaflet_fire: MorsecodeLeaflet_ColorBase {};

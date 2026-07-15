@@ -96,7 +96,9 @@ class GeyserTrigger : EffectTrigger
 	// Updated from OnVariablesSynchronized
 	protected void UpdateGeyserState()
 	{
-		// Debug.Log("UpdateGeyserState, state: " + m_GeyserState);
+	#ifdef ENABLE_LOGGING
+		Debug.Log("UpdateGeyserState, state: " + m_GeyserState);
+	#endif
 		
 		if (CheckGeyserState(EGeyserState.DORMANT) && !m_bIsDormant)
 		{					
@@ -146,7 +148,8 @@ class GeyserTrigger : EffectTrigger
 			m_bIsErupting = false;
 		}
 		
-		if (CheckGeyserState(EGeyserState.ERUPTING_SECONDARY) && !m_bIsEruptingTall)
+		bool geyserStateEruptSecond = CheckGeyserState(EGeyserState.ERUPTING_SECONDARY);
+		if (geyserStateEruptSecond && !m_bIsEruptingTall)
 		{
 			m_GeyserTallParticle = ParticleManager.GetInstance().PlayInWorld(ParticleList.GEYSER_STRONG, m_DefaultPosition);
 			
@@ -155,20 +158,29 @@ class GeyserTrigger : EffectTrigger
 			
 			m_bIsEruptingTall = true;
 		}
-		else if (!CheckGeyserState(EGeyserState.ERUPTING_SECONDARY) && m_bIsEruptingTall)
+		else if (!geyserStateEruptSecond && m_bIsEruptingTall)
 		{
 			m_GeyserSplashParticle = ParticleManager.GetInstance().PlayInWorld(ParticleList.GEYSER_SPLASH, m_DefaultPosition);
 			m_SoundEruptionSecondaryEnd = SEffectManager.PlaySound(SOUND_ERUPTION_TALL_END, m_DefaultPosition, 0, 0, false);
 			
-			if (m_GeyserTallParticle)
-				m_GeyserTallParticle.StopParticle();
-			if (m_SoundEruptionSecondaryStart)
-				SEffectManager.DestroyEffect(m_SoundEruptionSecondaryStart);
-			if (m_SoundEruptionSecondary)
-				SEffectManager.DestroyEffect(m_SoundEruptionSecondary);
-			
-			m_bIsEruptingTall = false;
+			StopEruption();
 		}
+		else if (geyserStateEruptSecond && m_bIsEruptingTall)
+		{
+			StopEruption();
+		}
+	}
+	
+	protected void StopEruption()
+	{
+		if (m_GeyserTallParticle)
+				m_GeyserTallParticle.StopParticle();
+		if (m_SoundEruptionSecondaryStart)
+			SEffectManager.DestroyEffect(m_SoundEruptionSecondaryStart);
+		if (m_SoundEruptionSecondary)
+			SEffectManager.DestroyEffect(m_SoundEruptionSecondary);
+		
+		m_bIsEruptingTall = false;
 	}
 	
 	// Slightly adjust position of geyser particles
@@ -238,7 +250,7 @@ class GeyserTrigger : EffectTrigger
 		if (state == EGeyserState.DORMANT)
 			return (m_GeyserState == state);
 		else
-			return (m_GeyserState & state);
+			return (m_GeyserState & state) != 0;
 	}
 
 	EGeyserState GetGeyserState()
@@ -251,6 +263,4 @@ class GeyserTrigger : EffectTrigger
 	{
 		return true;
 	}
-	
-	
 }

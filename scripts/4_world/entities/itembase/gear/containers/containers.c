@@ -67,6 +67,7 @@ class PlateCarrierPouches_Black extends PlateCarrierPouches {};
 class PlateCarrierPouches_Camo extends PlateCarrierPouches {};
 class PlateCarrierPouches_Green extends PlateCarrierPouches {};
 class PlateCarrierPouches_Winter extends PlateCarrierPouches {};
+class PlateCarrierPouches_Desert : PlateCarrierPouches {};
 
 class Refrigerator : WorldContainer_Base {};
 class RefrigeratorMinsk : WorldContainer_Base {};

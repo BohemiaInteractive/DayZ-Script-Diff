@@ -114,6 +114,9 @@ class UniversalTemperatureSource
 	
 	vector GetPosition()
 	{
+		if (m_Settings.m_Parent)
+			return m_Settings.m_Parent.GetPosition();
+
 		return m_Settings.m_Position;
 	}
 	

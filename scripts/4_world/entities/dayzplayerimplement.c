@@ -3023,6 +3023,14 @@ class DayZPlayerImplement extends DayZPlayer
 			int finisherType = -1;
 			if (ctx.Read(finisherType))
 			{
+				if (finisherType != -1 && target)
+				{
+					bool isWithinRange = vector.Distance(GetPosition(), target.GetPosition()) <= PlayerConstants.MAX_FINISHER_RANGE;
+					if (!target.IsAlive() || !target.CanBeBackstabbed() || !isWithinRange)
+					{
+						finisherType = -1;
+					}
+				}
 				m_MeleeCombat.SetFinisherType(finisherType);
 			}
 			

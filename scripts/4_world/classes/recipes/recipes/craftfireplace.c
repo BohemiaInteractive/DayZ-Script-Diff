@@ -32,6 +32,9 @@ class CraftFireplace extends RecipeBase
 		InsertIngredient(0,"ItemBook");//you can insert multiple ingredients this way
 		InsertIngredient(0,"Bark_Birch");//you can insert multiple ingredients this way
 		InsertIngredient(0,"Bark_Oak");//you can insert multiple ingredients this way
+		InsertIngredient(0,"MorsecodeLeaflet_blood");//you can insert multiple ingredients this way
+		InsertIngredient(0,"MorsecodeLeaflet_fire");//you can insert multiple ingredients this way
+		InsertIngredient(0,"MorsecodeLeaflet_coffee");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing
@@ -50,6 +53,9 @@ class CraftFireplace extends RecipeBase
 		InsertIngredientEx(1,"Bark_Birch",			"FireplaceDeploy");//you can insert multiple ingredients this way
 		InsertIngredientEx(1,"Bark_Oak",			"FireplaceDeploy");//you can insert multiple ingredients this way
 		InsertIngredientEx(1,"EyeMask_ColorBase",	"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"MorsecodeLeaflet_blood",	"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"MorsecodeLeaflet_fire",	"FireplaceDeploy");//you can insert multiple ingredients this way
+		InsertIngredientEx(1,"MorsecodeLeaflet_coffee",	"FireplaceDeploy");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[1] = 0;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

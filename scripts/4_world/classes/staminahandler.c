@@ -263,6 +263,9 @@ class StaminaHandler
 	protected const float					STAMINA_GAIN_THRESHOLD = 25.0;
 	protected const float					STAMINA_GAIN_MODIFIER = 10.0;
 	
+	protected const float					LOAD_DIFF_UPDATE_THRESHOLD = 1.0;
+	protected const float					LOAD_DIFF_CAP_UPDATE_THRESHOLD = 0.01;
+	
 	protected bool							m_InitUpdate;
 	protected float 						m_PlayerLoad;
 	protected float 						m_StaminaDelta;
@@ -307,6 +310,8 @@ class StaminaHandler
 	protected int m_LastStanceIdx = -1;
 	protected bool m_MovementStateChanged = true; // Force initial processing
 	
+	protected bool m_ForceLoadRecheck;
+	
 	#ifdef DIAG_DEVELOPER
 	protected bool 							m_StaminaDisabled;
 	protected float 						m_DebugTimer = 0;
@@ -320,6 +325,11 @@ class StaminaHandler
 
 		m_State 						= new HumanMovementState();
 		m_Player 						= player;
+		
+		if (m_Player)
+		{
+			m_Player.GetOnPlayerLoadChanged().Insert(MarkLoadDirty);
+		}
 			
 		m_InitUpdate					= false;
 		m_Stamina 						= CfgGameplayHandler.GetStaminaMax(); 
@@ -355,6 +365,11 @@ class StaminaHandler
 	
 	void ~StaminaHandler()
 	{
+		if (m_Player)
+		{
+			m_Player.GetOnPlayerLoadChanged().Remove(MarkLoadDirty);
+		}
+		
 		if (m_CooldownMap)
 		{
 			m_CooldownMap.Clear();
@@ -510,12 +525,31 @@ class StaminaHandler
 		// Calculates actual max stamina based on player's load
 		if (isServerOrSingleplayer)
 		{
-			//! gets the actual players load
-			m_PlayerLoad = m_Player.GetWeightEx();
-			if (m_PlayerLoad != m_LastPlayerLoad)
+			float oldCap = m_StaminaCap;
+			bool forceLoadRecheck = m_ForceLoadRecheck;
+			m_ForceLoadRecheck = false;
+			m_PlayerLoad = m_Player.GetWeightEx(forceLoadRecheck);
+			
+			float loadDiff = Math.AbsFloat(m_PlayerLoad - m_LastPlayerLoad);
+			if (forceLoadRecheck || loadDiff > LOAD_DIFF_UPDATE_THRESHOLD)
 			{
 				RecalculateStaminaCap();
 				m_LastPlayerLoad = m_PlayerLoad;
+		
+				float capDiff = Math.AbsFloat(oldCap - m_StaminaCap);
+				if (capDiff > LOAD_DIFF_CAP_UPDATE_THRESHOLD)
+				{
+					if (m_Stamina > m_StaminaCap)
+					{
+						m_Stamina = m_StaminaCap;
+					}
+		
+					m_StaminaSynced = m_Stamina;
+					m_StaminaCapSynced = m_StaminaCap;
+		
+					SyncStaminaEx();
+					m_Time = 0;
+				}
 			}
 		}
 		else
@@ -1220,6 +1254,11 @@ class StaminaHandler
 		m_StaminaDepletion = move.m_fStaminaDepletion;
 		
 		Update(move.GetTimeSlice(), m_Player.GetCurrentCommandID());
+	}
+	
+	void MarkLoadDirty()
+	{
+		m_ForceLoadRecheck = true;
 	}
 	
 	#ifdef DIAG_DEVELOPER

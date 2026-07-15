@@ -266,11 +266,7 @@ class InGameMenuXbox extends UIScriptedMenu
 		LoadTextStrings();
 		LoadFooterButtonTexts();
 		
-		#ifdef PLATFORM_PS4
-		m_FeedbackQRCode.LoadImageFile(0, "gui/textures/feedback_qr_ps.edds");
-		#else
-		m_FeedbackQRCode.LoadImageFile(0, "gui/textures/feedback_qr_xbox.edds");
-		#endif
+		m_FeedbackQRCode.LoadImageFile(0, "gui/textures/feedback_qr.edds");
 		
 		return layoutRoot;
 	}
@@ -324,11 +320,7 @@ class InGameMenuXbox extends UIScriptedMenu
 				}
 				case IDC_MAIN_ONLINE:
 				{
-					m_OnlineMenu.Show(true);
-					m_SelectAvailable = false;
-					
-					UpdateControlsElements();
-					m_ServerInfoPanel.FocusFirst();
+					OpenOnline();
 					return true;
 				}
 				case IDC_MAIN_TUTORIAL:
@@ -637,9 +629,21 @@ class InGameMenuXbox extends UIScriptedMenu
 	{
 		return m_OnlineMenu.IsVisible();
 	}
+	
+	protected void OpenOnline()
+	{
+		m_ExitButton.Show(false);
+		m_OnlineMenu.Show(true);
+		m_SelectAvailable = false;
+		
+		UpdateControlsElements();
+		m_ServerInfoPanel.FocusFirst();
+		UpdateExitButtonState();
+	}
 
 	void CloseOnline()
 	{
+		m_ExitButton.Show(true);
 		m_OnlineMenu.Show(false);
 		m_SelectAvailable = true;
 		m_MuteAvailable = false;
@@ -647,6 +651,7 @@ class InGameMenuXbox extends UIScriptedMenu
 
 		UpdateControlsElements();
 		SetFocus(m_OnlineButton);
+		UpdateExitButtonState();
 	}
 	
 	void SelectServer()
@@ -985,18 +990,6 @@ class InGameMenuXbox extends UIScriptedMenu
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
 		layoutRoot.FindAnyWidget("top").Show(!onlineOpen);
 		
-		//! Continue/back button handling depending on current view
-		if (onlineOpen)
-		{
-			layoutRoot.FindAnyWidget("bottom").Show(!toolbarShow);
-		}
-		else
-		{
-			layoutRoot.FindAnyWidget("bottom").Show(true);
-		}
-		
-		string contineBtnText = "";
-
 		RichTextWidget toolbarTextWidget = RichTextWidget.Cast(layoutRoot.FindAnyWidget("ContextToolbarText"));
 		string toolbarText = "";
 		
@@ -1034,11 +1027,6 @@ class InGameMenuXbox extends UIScriptedMenu
 			{
 				toolbarText = InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "#close", EUAINPUT_DEVICE_CONTROLLER, InputUtils.ICON_SCALE_TOOLBAR);
 			}
-		}
-		else
-		{
-			//! Set continue button icon if toolbar is not visible (mouse and keyboard is used as input device).
-			contineBtnText = InputUtils.GetRichtextButtonIconFromInputAction("UAUIBack", "", EUAINPUT_DEVICE_CONTROLLER);
 		}
 		
 		toolbarTextWidget.SetText(toolbarText);

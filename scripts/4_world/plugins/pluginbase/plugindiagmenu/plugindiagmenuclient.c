@@ -255,6 +255,13 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.CAMERATOOLS_ENABLE_REMOTE_CAMERA, CBCameraToolsEnableRemoteCamera);
 		
 		//---------------------------------------------------------------
+		// LEVEL 2 - Script > Geyser Diag
+		//---------------------------------------------------------------
+		DiagMenu.BindCallback(DiagMenuIDs.GEYSERDIAG_ENABLE, CBSetGeyserDiagData);
+		DiagMenu.BindCallback(DiagMenuIDs.GEYSERDIAG_STATE_INTERVAL, CBSetGeyserDiagData);
+		DiagMenu.BindCallback(DiagMenuIDs.GEYSERDIAG_STATE_DURATION, CBSetGeyserDiagData);
+		
+		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Server Browser
 		//---------------------------------------------------------------
 		DiagMenu.BindCallback(DiagMenuIDs.SERVER_BROWSER_DUMMY_SERVERS, CBUpdateSBDummyServers);
@@ -1340,6 +1347,18 @@ class PluginDiagMenuClient : PluginDiagMenu
 		
 		auto param = new Param2<bool, EntityAI>(enabled, g_Game.GetPlayer());
 		g_Game.RPCSingleParam( null, ERPCs.DIAG_CAMERATOOLS_CAM_SUBSCRIBE, param, true );
+	}
+	
+	static void CBSetGeyserDiagData()
+	{		
+		//! Build the data struct from current diag menu state
+		bool enabled = DiagMenu.GetBool(DiagMenuIDs.GEYSERDIAG_ENABLE);
+		float timeInterval = DiagMenu.GetRangeValue(DiagMenuIDs.GEYSERDIAG_STATE_INTERVAL);
+		float timeDuration = DiagMenu.GetRangeValue(DiagMenuIDs.GEYSERDIAG_STATE_DURATION);
+		
+		//! Send to server via RPC call in DayZGame
+		Param params = new Param3<bool, float, float>(enabled, timeInterval, timeDuration);
+		g_Game.RPCSingleParam(null, ERPCs.DIAG_GEYSER_VALUES, params, true);
 	}
 	
 	//---------------------------------------------

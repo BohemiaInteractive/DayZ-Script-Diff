@@ -3,6 +3,7 @@ class PlayerConstants
 	static const float WEAPON_RAISE_BLEND_DELAY = 0.2;
 	static const float MELEE2_MOVEMENT_BLEND_DELAY = 0.35;
 	static const float HEAVY_HIT_THRESHOLD = 0.5; //defines what is considered a 'heavy hit' from the indicator's standpoint
+	static const float MAX_FINISHER_RANGE = 5.0; //! [meters]
 
 	static const float FULL_SPRINT_DELAY_DEFAULT 		= 0.5;	//! [seconds]
 	static const float FULL_SPRINT_DELAY_FROM_CROUCH 	= 1.0;	//! [seconds]
