@@ -35,11 +35,16 @@ class VicinityObjects
 	{
 		foreach (Object obj : objects)
 		{
-			if (obj && obj.GetType() != "" && obj.CanBeActionTarget())
+			if (IsValidVicinityObject(obj))
 			{
 				StoreVicinityObject(obj);
 			}
 		}
+	}
+	
+	protected bool IsValidVicinityObject(notnull Object obj)
+	{
+		return obj.CanBeActionTarget();
 	}
 	
 	void ClearVicinityObjects()
@@ -48,9 +53,9 @@ class VicinityObjects
 	}
 
 	//! return simple array of Objects in Vicinity
-	array< Object > GetVicinityObjects()
+	array<Object> GetVicinityObjects()
 	{
-		ref array<Object> vicinityObjects = new array<Object>;
+		array<Object> vicinityObjects = new array<Object>();
 		for (int i = 0; i < m_VicinityObjects.Count(); i++)
 		{
 			//! filters out non-takeable items (won't be shown in vicinity)
@@ -65,9 +70,9 @@ class VicinityObjects
 	}
 	
 	//! return simple array of Objects in Vicinity
-	array< Object > GetRawVicinityObjects()
+	array<Object> GetRawVicinityObjects()
 	{
-		ref array<Object> vicinityObjects = new array<Object>;
+		array<Object> vicinityObjects = new array<Object>();
 		for (int i = 0; i < m_VicinityObjects.Count(); i++)
 		{
 			vicinityObjects.Insert(GetObject(i));
@@ -236,7 +241,7 @@ class ActionTargets
 						if (res.hierLevel > 0)
 						{
 							//! ignores attachments on player and objects with invalid IDs
-							if (res.parent.IsMan() || res.obj.GetID() < 1)
+							if (res.parent.IsMan() || (res.obj.GetID() < 1 && !IsRaycastResultException(res)))
 								continue;
 						}
 						
@@ -341,6 +346,15 @@ class ActionTargets
 			DrawSelectionPos(false);
 		}
 #endif
+	}
+	
+	//! Initial raycast filtering exceptions (can't ask the entity type, sadly)
+	protected bool IsRaycastResultException(RaycastRVResult res)
+	{
+		if (TentBase.Cast(res.parent))
+			return true;
+		
+		return false;
 	}
 	
 	//distance sorting, returns sorted unique distance tiers as ints (float*1000)
