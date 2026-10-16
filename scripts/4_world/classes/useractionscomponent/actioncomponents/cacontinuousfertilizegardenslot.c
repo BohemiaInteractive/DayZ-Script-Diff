@@ -75,7 +75,7 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 		}
 		else
 		{
-			if (m_SpentQuantity <= m_ItemQuantity)
+			if (m_SpentQuantity < m_ItemQuantity)
 			{
 				//! Reset slot fertilizer type and quantity in case current type in target slot is not matching
 				string itemType = action_data.m_MainItem.GetType();
@@ -84,7 +84,7 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 					m_Slot.SetFertilityType(itemType);
 				}
 				
-				m_SpentQuantity = m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
+				m_SpentQuantity = Math.Floor(m_QuantityUsedPerSecond * action_data.m_Player.GetDeltaT());
 				
 				GardenBase gardenBase;
 				if (!Class.CastTo(gardenBase, action_data.m_Target.GetObject()))
@@ -139,7 +139,7 @@ class CAContinuousFertilizeGardenSlot : CAContinuousQuantity
 	}
 	
 	override float GetProgress()
-	{	
+	{
 		return -((m_Slot.GetFertilizerQuantity() - m_AlreadyFilledAmount) / m_SlotFertilizerNeed);
 	}
 	

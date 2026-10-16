@@ -1,164 +1,199 @@
-class DebugAgentData
-{
-	string m_Name;
-	int m_ID;
-	
-	void DebugAgentData( string name, int id )
-	{
-		m_Name = name;
-		m_ID = id;
-	}
-	
-	string GetName()
-	{
-		return m_Name;
-	}
-	
-	int GetID()
-	{
-		return m_ID;
-	}
-	
-	float GetTemporaryResistance()
-	{
+class HudDebugWinCharAgentsEntry extends ScriptedWidgetEventHandler
+{	
+	protected Widget m_Root;
+	protected ButtonWidget m_ActivateButton;
+	protected ButtonWidget m_DeactivateButton;
+	protected HudDebugWinCharAgents m_HudDebugAgents;
+	protected int m_ID;
 		
+	void HudDebugWinCharAgentsEntry(HudDebugWinCharAgents hudDebugAgents, Widget parent, string title, string value, int id, float temporaryResistance)
+	{
+		m_HudDebugAgents = hudDebugAgents;
+		m_ID = id;
+		
+		m_Root = GetGame().GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug_agent.layout", parent);
+		
+		TextWidget txt = TextWidget.Cast(m_Root.FindAnyWidget("TextAgentName"));
+		TextWidget countWidget = TextWidget.Cast(m_Root.FindAnyWidget("TextWidgetAgentCount"));
+		TextWidget tempResistanceWidget = TextWidget.Cast(m_Root.FindAnyWidget("TextWidgetAgentTempResistanceTime"));
+		m_ActivateButton = ButtonWidget.Cast(m_Root.FindAnyWidget("ButtonAgentActivate"));
+		m_DeactivateButton = ButtonWidget.Cast(m_Root.FindAnyWidget("ButtonAgentDeactivate"));
+		
+		countWidget.SetText(value);	
+		txt.SetText(title);
+		if (temporaryResistance > 0.0)
+			tempResistanceWidget.SetText(string.Format("(R-%1s)", Math.Round(temporaryResistance).ToString()));
+		else
+			tempResistanceWidget.SetText("");
+		
+		m_Root.SetHandler(this);
+	}
+	
+	void DestroyEntry()
+	{
+		m_Root.Unlink();
+		delete m_Root;
+	}
+	
+	void DebugGrowAgentsRequest(int agentId, bool shouldGrow)
+	{
+		if(!shouldGrow)//id is minus value to mark killing instead of growing
+		{
+			agentId *= -1;
+		}
+		
+		Param1<int> p1 = new Param1<int>(agentId);
+		Man man = GetGame().GetPlayer();
+		man.RPCSingleParam(ERPCs.DEV_AGENT_GROW, p1, true, man.GetIdentity());
+	}
+		
+	override bool OnClick(Widget w, int x, int y, int button)
+	{
+		super.OnClick(w, x, y, button);
+		
+		if (w == m_ActivateButton)
+		{
+			DebugGrowAgentsRequest(m_ID, true);
+			return true;
+		}
+		else if (w == m_DeactivateButton)
+		{
+			DebugGrowAgentsRequest(m_ID, false);
+			return true;
+		}
+		
+		return false;
 	}
 }
 
-
 class HudDebugWinCharAgents extends HudDebugWinBase
-{	
-	protected Widget m_WgtAgents;
-	protected ref array<ref Widget>	 m_AgentWidgets = new array<ref Widget>;
-	protected ref map<Widget, ref DebugAgentData>		m_AgentWidgetData = new map<Widget, ref DebugAgentData>;
+{
+	protected const float AGENTS_UPDATE_TIME = 0.500;
 	
-	private AutoHeightSpacer WgtModifiersContentPanelScript;
-	//============================================
-	// HudDebugWinCharAgents
-	//============================================
-	void HudDebugWinCharAgents( Widget widget_root )
-	{	
+	protected GridSpacerWidget m_WgtAgents;
+	protected Widget m_WgtHeader;
+	protected ref array<ref HudDebugWinCharAgentsEntry> m_AgentEntries = new array<ref HudDebugWinCharAgentsEntry>;
+	
+	protected float m_UpdateAgentsTimer;
+	
+	void HudDebugWinCharAgents(Widget widget_root)
+	{
 		m_WgtRoot = widget_root;
-		//m_WgtAgents = TextListboxWidget.Cast( m_WgtRoot.FindAnyWidget( "txl_CharAgents_Values" ) );
-		m_WgtAgents = m_WgtRoot.FindAnyWidget( "AgentList" );
+		m_WgtAgents = GridSpacerWidget.Cast(m_WgtRoot.FindAnyWidget("AgentList"));
+		m_WgtHeader = m_WgtRoot.FindAnyWidget("header_CharacterAgents");
 		
-		//FitWindowByContent( m_WgtAgents );
-
-		m_WgtAgents.GetScript(WgtModifiersContentPanelScript);
+		OnInit();
+	}
+	
+	void OnInit()
+	{
+		m_ConfigDebugProfile = PluginConfigDebugProfile.Cast(GetPlugin(PluginConfigDebugProfile));
+		if (m_ConfigDebugProfile)
+		{
+			vector pos = m_ConfigDebugProfile.GetCharacterAgentsPos();
+			if (m_WgtRoot && pos != vector.Zero)
+			{
+				float wx = pos[0];
+				float wy = pos[1];
+				m_WgtRoot.SetPos(wx, wy);
+			}
+		}
 	}
 
 	void ~HudDebugWinCharAgents()
 	{	
-		SetUpdate( false );
+		SetUpdate(false);
 	}
-
-	//============================================
-	// GetWinType
-	//============================================
+	
 	override int GetType()
 	{
 		return HudDebug.HUD_WIN_CHAR_AGENTS;
 	}
 	
-	//============================================
-	// Update
-	//============================================
-	override void SetUpdate( bool state )
+	override void SetUpdate(bool state)
 	{
 		//Disable update on server (PluginDeveloperSync)
 		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
-		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
+		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast(GetPlugin(PluginDeveloperSync));
 		
 		//if client, send RPC
 		if ( g_Game.IsClient() )
 		{
-			ref Param1<bool> params = new Param1<bool>( state );
-			if ( player )
+			Param1<bool> params = new Param1<bool>(state);
+			if (player)
 			{
-				player.RPCSingleParam( ERPCs.DEV_AGENTS_UPDATE, params, true );
+				player.RPCSingleParam(ERPCs.DEV_AGENTS_UPDATE, params, true);
 				SetRPCSent();
 			}
 		}
 		//else set directly
 		else
 		{
-			if ( developer_sync )
+			if (developer_sync)
 			{
-				developer_sync.EnableUpdate( state, ERPCs.DEV_AGENTS_UPDATE, player );	
+				developer_sync.EnableUpdate(state, ERPCs.DEV_AGENTS_UPDATE, player);	
 			}
 		}
 	}
 
-	override void Update()
+	override void Update(float timeslice)
 	{
-		super.Update();
+		super.Update(timeslice);
 		
-		//Print("Update()");
-		
-		//refresh notifiers
-		SetAgents();
+		if (m_IsDragging)
+		{
+			int x,y;
+			GetMousePos(x,y);
+			m_WgtRoot.SetPos(x + m_DraggingOffset[0], y + m_DraggingOffset[1]);
+		}
+		else
+		{
+			m_UpdateAgentsTimer += timeslice;
+			if (m_UpdateAgentsTimer >= AGENTS_UPDATE_TIME)
+			{
+				m_UpdateAgentsTimer = 0;
+				SetAgents();
+			}
+		}
 	}
 	
-	//============================================
-	// Show / Hide
-	//============================================
 	override void Show()
 	{
-		super.Show();
+		super.Show();		
 		
-		//Print("Show()");
-		
-		SetUpdate( true );
+		SetUpdate(true);
 	}
 
 	override void Hide()
 	{
 		super.Hide();
 		
-		//Print("Hide()");
-		
-		SetUpdate( false );
+		SetUpdate(false);
 	}
 	
 	void SetAgents()
 	{
-		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );
+		PluginDeveloperSync developerSync = PluginDeveloperSync.Cast(GetPlugin(PluginDeveloperSync));
 		
 		//clear window
 		ClearAgents();
 			
-		//set agents	
-		if ( developer_sync.m_PlayerAgentsSynced.Count() > 0 )
+		//set agents
+		int agentsCount = developerSync.m_PlayerAgentsSynced.Count();
+		if (agentsCount > 0)
 		{
-			for ( int i = 0; i < developer_sync.m_PlayerAgentsSynced.Count(); i++ )
+			foreach (SyncedValueAgent agent : developerSync.m_PlayerAgentsSynced)
 			{
-				SyncedValueAgent syncedValue = SyncedValueAgent.Cast(developer_sync.m_PlayerAgentsSynced.Get(i));
-				AddAgent(
-					syncedValue.GetName(),
-					syncedValue.GetValue(),
-					syncedValue.GetID(),
-					syncedValue.GetTemporaryResistanceTime(),
-				);
+				AddAgent(agent.GetName(), agent.GetValue(), agent.GetID(), agent.GetTemporaryResistanceTime());
 			}
 		}
 	}
 	
-	bool OnClick( Widget w, int x, int y, int button )
-	{	
-		DebugAgentData data;
-		if (w.GetName() == "ButtonAgentActivate")
-		{
-			data = m_AgentWidgetData.Get(w);
-			DebugGrowAgentsRequest(data.GetID(), true);
-			return true;
-		}
-		else if (w.GetName() == "ButtonAgentDeactivate")
-		{
-			data = m_AgentWidgetData.Get(w);
-			DebugGrowAgentsRequest(data.GetID(), false);
-			return true;
-		}
-		else if (w.GetName() == "ResetAgents")
+	bool OnClick(Widget w, int x, int y, int button)
+	{
+		SetDragging(false);
+				
+		if (w.GetName() == "ResetAgents")
 		{
 			DebugRemoveAgentsRequest();
 			return true;
@@ -166,67 +201,61 @@ class HudDebugWinCharAgents extends HudDebugWinBase
 
 		return false;
 	}
-	
-	void DebugGrowAgentsRequest(int agent_id, bool should_grow)
-	{
-		if(!should_grow)//id is minus value to mark killing instead of growing
-		{
-			agent_id *= -1;
-		}
 		
-		ref Param1<int> p1 = new Param1<int>( agent_id );
-		Man man = g_Game.GetPlayer();
-		man.RPCSingleParam(ERPCs.DEV_AGENT_GROW, p1, true, man.GetIdentity());
-	}
-	
 	void DebugRemoveAgentsRequest()
 	{
-		ref Param1<bool> p1 = new Param1<bool>( false );
+		Param1<bool> p1 = new Param1<bool>(false);
 		Man man = g_Game.GetPlayer();
 		man.RPCSingleParam(ERPCs.DEV_RPC_AGENT_RESET, p1, true, man.GetIdentity());
 	}
 				
 	void AddAgent(string title, string value, int id, float temporaryResistance)
 	{
-		Widget widget = g_Game.GetWorkspace().CreateWidgets("gui/layouts/debug/day_z_hud_debug_agent.layout", m_WgtAgents);
-		ButtonWidget btn = ButtonWidget.Cast( widget.FindAnyWidget( "TextAgentName" ) );
-		TextWidget countWidget = TextWidget.Cast(widget.FindAnyWidget("TextWidgetAgentCount"));
-		TextWidget tempResistanceWidget = TextWidget.Cast(widget.FindAnyWidget("TextWidgetAgentTempResistanceTime"));
-		Widget activateButton = widget.FindAnyWidget("ButtonAgentActivate");
-		Widget deactivateButton = widget.FindAnyWidget("ButtonAgentDeactivate");
-
-		countWidget.SetText(value);	
-		btn.SetText(title);
-		if (temporaryResistance > 0.0)
-			tempResistanceWidget.SetText(string.Format("(R-%1s)", Math.Round(temporaryResistance).ToString()));
-		else
-			tempResistanceWidget.SetText("");
-			
-		DebugAgentData data = new DebugAgentData("", id);
-		m_AgentWidgets.Insert(widget);
-		m_AgentWidgetData.Insert(btn, data);
-		m_AgentWidgetData.Insert(activateButton, data);		
-		m_AgentWidgetData.Insert(countWidget, data);
-		m_AgentWidgetData.Insert(tempResistanceWidget, data);
-		m_AgentWidgetData.Insert(deactivateButton, data);
-
-		WgtModifiersContentPanelScript.Update();
+		HudDebugWinCharAgentsEntry agentEntry = new HudDebugWinCharAgentsEntry(this, m_WgtAgents, title, value, id, temporaryResistance);
+		m_AgentEntries.Insert(agentEntry);
 	}
 
 	void ClearAgents()
 	{
-		m_AgentWidgetData.Clear();
-
-		for (int i = 0; i < m_AgentWidgets.Count(); i++)
+		for (int i = 0; i < m_AgentEntries.Count(); i++)
 		{
-			delete m_AgentWidgets.Get(i);
+			HudDebugWinCharAgentsEntry entry = m_AgentEntries[i];
+			entry.DestroyEntry();
+			delete entry;
 		}
-		
-		m_AgentWidgets.Clear();
+				
+		m_AgentEntries.Clear();
 	}
-
-	void FitWindow()
+	
+	bool OnMouseButtonDown(Widget w, int x, int y, int button)
+	{		
+		if (button == 0 && (w == m_WgtRoot || w == m_WgtHeader))
+		{
+			SetDragging(true);
+			return true;
+		}
+				
+		return false;
+	}
+	
+	bool OnMouseButtonUp(Widget w, int x, int y, int button)
 	{
-		FitWindowByContent( TextListboxWidget.Cast(m_WgtAgents) );
+		if (button == 0 && m_IsDragging)
+		{
+			SetDragging(false);
+			return true;
+		}
+				
+		return false;
+	}
+	
+	override void OnDraggingEnd()
+	{
+		float wx, wy;
+		m_WgtRoot.GetScreenPos(wx,wy);
+		if (m_ConfigDebugProfile)
+		{
+			m_ConfigDebugProfile.SetCharacterAgentsPos(Vector(wx,wy,0));
+		}
 	}
 }

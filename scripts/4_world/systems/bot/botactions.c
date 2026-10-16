@@ -1,3 +1,4 @@
+#ifdef ROBOCLIENT
 /**@class	BotActionBase
  * @brief	represents action executed on transition just between OnExit from old state and OnEntry to new state
  **/
@@ -8,4 +9,4 @@ class BotActionBase
 	 **/
 	void Action (BotEventBase e) { }
 };
-
+#endif

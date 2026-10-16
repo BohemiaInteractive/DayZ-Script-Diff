@@ -3,9 +3,11 @@ class TransmitterBase extends ItemTransmitter
 {
 	//Sounds
 	string SOUND_RADIO_TURNED_ON 		= "";
+	string SOUND_BUNKER_STATIC_NOISE 	= "";
 
 	protected EffectSound m_SoundLoop;
-	
+	protected bool m_BunkerNoisePlaying;		//noise variant the loop currently plays
+
 	// --- SYSTEM EVENTS
 	override void OnStoreSave( ParamsWriteContext ctx )
 	{   
@@ -43,7 +45,9 @@ class TransmitterBase extends ItemTransmitter
 	void SetNextFrequency( PlayerBase player = NULL )
 	{
 		SetNextChannel();
-		
+
+		SetSynchDirty();
+
 		/*
 		if ( player )
 		{
@@ -111,16 +115,40 @@ class TransmitterBase extends ItemTransmitter
 		SwitchOn ( false );
 		
 		//stop sound
-		SoundTurnedOnNoiseStop();		
+		SoundTurnedOnNoiseStop();
 	}
-	
+
+	override void OnVariablesSynchronized()
+	{
+		super.OnVariablesSynchronized();
+
+		if ( m_SoundLoop  &&  m_BunkerNoisePlaying != UseBunkerStaticNoise() )
+		{
+			SoundTurnedOnNoiseStop();
+			SoundTurnedOnNoiseStart();
+		}
+	}
+
 	//================================================================
 	// SOUNDS
 	//================================================================
+	protected bool UseBunkerStaticNoise()
+	{
+		return IsTunedToBunkerFrequency()  &&  SOUND_BUNKER_STATIC_NOISE != "";
+	}
+
 	//Static noise when the radio is turned on
 	protected void SoundTurnedOnNoiseStart()
 	{
-		PlaySoundSetLoop( m_SoundLoop, SOUND_RADIO_TURNED_ON, 1.0, 1.0 );
+		m_BunkerNoisePlaying = UseBunkerStaticNoise();
+
+		string soundSet = SOUND_RADIO_TURNED_ON;
+		if ( m_BunkerNoisePlaying )
+		{
+			soundSet = SOUND_BUNKER_STATIC_NOISE;
+		}
+
+		PlaySoundSetLoop( m_SoundLoop, soundSet, 1.0, 1.0 );
 	}
 
 	protected void SoundTurnedOnNoiseStop()

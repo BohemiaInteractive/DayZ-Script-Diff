@@ -118,6 +118,10 @@ bool TryAcquireTwoInventoryJuncturesFromServer (notnull Man player, notnull Inve
 			
 			if (srcItem2 && !srcItem2.CanPutIntoHands(player))
 			{
+				if (need_j1)
+				{
+					g_Game.ClearJunctureEx(player, srcItem1); // release already acquired juncture for item1
+				}
 				return JunctureRequestResult.JUNCTURE_DENIED;
 			}
 			

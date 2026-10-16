@@ -597,10 +597,8 @@ class array<Class T>
 	
 	void InsertArray(array<T> other)
 	{
-		int nOther = other.Count();
-		for (int i = 0; i < nOther; ++i)
+		foreach(T item : other)
 		{
-			T item = other.Get(i);
 			Insert(item);
 		}
 	}
@@ -706,7 +704,28 @@ class array<Class T>
 		
 		return -1;
 	}
-};
+
+	/**
+	\brief Returns an array with elements from range given on input
+		\return \p array<T> new array with sliced elements of source array
+		@code
+			array<int> arr1 = {0,1,2,3};
+			array<int> output = {};
+			output = arr1.Slice(1, 2);
+			Print(output);
+	
+			>> {1, 2}
+		@endcode
+	*/
+	array<T> Slice(int from, int to)
+	{
+	    array<T> result = new array<T>();
+		for (int i = from; i <= to && i < Count(); ++i)
+	        result.Insert(Get(i));
+
+	    return result;
+	}
+}
 
 //force these to compile so we can link C++ methods to them
 typedef array<string> TStringArray;

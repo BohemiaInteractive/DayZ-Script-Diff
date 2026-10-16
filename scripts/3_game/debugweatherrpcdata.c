@@ -36,3 +36,13 @@ class DebugWeatherRPCData
 	float m_WindDInterpolation			= -1;
 	float m_WindDDuration				= -1;
 }
+
+class DebugSandstormRPCData
+{
+	bool m_StartStorm = false;
+	float m_FadeInTime = -1;
+	float m_FadeOutTime = -1;
+	float m_Duration = 99999;
+	float m_OvercastValue = -1;
+	float m_WindMagnitudeValue = -1;
+}

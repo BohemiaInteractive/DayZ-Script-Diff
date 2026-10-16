@@ -134,6 +134,28 @@ class RockBase : Object
 	class Static_stone7_Trail_G: RockBase {};
 	class Static_stone7_Trail_R: RockBase {};
 	class Static_stone7_Trail_Y: RockBase {};
+
+	//Nasdara
+	class Static_rock_sand_apart1: RockBase {};
+	class Static_rock_sand_apart2: RockBase {};
+	class Static_rock_sand_monolith1: RockBase {};
+	class Static_rock_sand_monolith2: RockBase {};
+	class Static_rock_sand_monolith3: RockBase {};
+	class Static_rock_sand_monolith4: RockBase {};
+	class Static_rock_sand_spike1: RockBase {};
+	class Static_rock_sand_spike2: RockBase {};
+	class Static_rock_sand_spike3: RockBase {};
+	class Static_rock_sand_wallh1: RockBase {};
+	class Static_rock_sand_wallh2: RockBase {};
+	class Static_rock_sand_wallh3: RockBase {};
+	class Static_rock_sand_wallhv: RockBase {};
+	class Static_stone1_sand: RockBase {};
+	class Static_stone2_sand: RockBase {};
+	class Static_stone3_sand: RockBase {};
+	class Static_stone4_sand: RockBase {};
+	class Static_stone5_sand: RockBase {};
+	class Static_stones_sand_erosion: RockBase {};
+
 // 	currently unused rocks
 /*
 	class Static_stones_erosion: RockBase {};

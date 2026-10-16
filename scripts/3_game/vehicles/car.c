@@ -15,18 +15,7 @@ enum CarSoundCtrl
 
 
 //!	Type of vehicle's fluid. (native, do not change or extend)
-enum CarFluid
-{
-	FUEL,
-	OIL,
-	BRAKE,
-	COOLANT,
-
-	USER1, //!< reserved for user / modding support
-	USER2, //!< reserved for user / modding support
-	USER3, //!< reserved for user / modding support
-	USER4  //!< reserved for user / modding support
-};
+enum CarFluid : ETransportFluid {};
 
 
 
@@ -136,7 +125,7 @@ class Car extends Transport
 		
 		return IsAreaAtDoorFree( currentSeat, maxAllowedObjHeight, extents, transform );
 	}
-	
+
 	override Shape DebugFreeAreaAtDoor( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
 	{
 		int color = ARGB(20, 0, 255, 0);
@@ -302,6 +291,13 @@ class Car extends Transport
 		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
 	*/
 	proto native vector WheelGetContactPosition( int wheelIdx );
+	
+	/*!
+		Returns the position of wheel in local space
+
+		\param[in] wheelIdx index of the wheel, they are counted from left-front to rear-right
+	*/	
+	proto native vector WheelGetPositionLS( int wheelIdx );
 
 	/*!
 		Returns the normal of contact in world space, only valid if there was an actual contact

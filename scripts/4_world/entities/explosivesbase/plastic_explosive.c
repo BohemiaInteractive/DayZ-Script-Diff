@@ -12,7 +12,7 @@ class Plastic_Explosive : ExplosivesBase
 		m_RAIB = new RemotelyActivatedItemBehaviour(this);
 		
 		SetAmmoType("Plastic_Explosive_Ammo");
-		SetParticleExplosion(ParticleList.PLASTIC_EXPLOSION);
+		//SetParticleExplosion(ParticleList.PLASTIC_EXPLOSION);
 
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdLow");
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdHigh");

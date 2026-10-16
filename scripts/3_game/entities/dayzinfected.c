@@ -15,6 +15,7 @@ enum DayZInfectedConstants
 	MINDSTATE_ALERTED,
 	MINDSTATE_CHASE,
 	MINDSTATE_FIGHT,
+	MINDSTATE_COWER,
 }
 
 enum DayZInfectedConstantsMovement

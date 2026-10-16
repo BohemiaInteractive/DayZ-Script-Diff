@@ -73,13 +73,17 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 	//! Links types to unique handler types, if needed. Vanilla stuff was already handled in the generic update, left that as it was. (naming!)
 	protected void PairIDToTypes()
 	{
-		m_IDToTypeMap.Insert(EffectWidgetsTypes.BLEEDING_LAYER,GameplayEffectsDataBleeding);
+		m_IDToTypeMap.Insert(EffectWidgetsTypes.BLEEDING_LAYER, GameplayEffectsDataBleeding);
+		m_IDToTypeMap.Insert(EffectWidgetsTypes.SQUINTING, GameplayEffectsMetaDataSquinting);
+		m_IDToTypeMap.Insert(EffectWidgetsTypes.EYE_VEINS, GameplayEffectsMetaDataEyeVeins);
 	}
 	
 	protected void InitLayouts()
 	{
-		RegisterLayouts("gui/layouts/gameplay/CameraEffects.layout",CompileEffectListing());
-		RegisterLayouts("gui/layouts/gameplay/BleedingEffects.layout",{EffectWidgetsTypes.BLEEDING_LAYER});
+		RegisterLayouts("gui/layouts/gameplay/CameraEffects.layout", CompileEffectListing());
+		RegisterLayouts("gui/layouts/gameplay/BleedingEffects.layout", {EffectWidgetsTypes.BLEEDING_LAYER});
+		RegisterLayouts("gui/layouts/gameplay/EyeVeinsEffects.layout", {EffectWidgetsTypes.EYE_VEINS});
+		RegisterLayouts("gui/layouts/gameplay/EyeSquintEffects.layout", {EffectWidgetsTypes.SQUINTING});
 	}
 	
 	protected void InitWidgetSets()
@@ -98,7 +102,9 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		
 		InitWidgetSet(EffectWidgetsTypes.COVER_FLASHBANG);
 		
-		InitWidgetSet(EffectWidgetsTypes.BLEEDING_LAYER,true);
+		InitWidgetSet(EffectWidgetsTypes.BLEEDING_LAYER, true);
+		InitWidgetSet(EffectWidgetsTypes.SQUINTING);
+		InitWidgetSet(EffectWidgetsTypes.EYE_VEINS);
 	}
 	
 ////////////////////////////////////	
@@ -163,7 +169,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		Widget w = parent.GetChildren();
 		if (w)
 		{
-			output = new array<ref Widget>;
+			output = new array<ref Widget>();
 			while (w)
 			{
 				w.Update();
@@ -203,7 +209,7 @@ class GameplayEffectWidgets extends GameplayEffectWidgets_base
 		if (handled_type)
 		{
 			GameplayEffectsData data = GameplayEffectsData.Cast(handled_type.Spawn());
-			data.Init(input,type,m_Layouts.Get(type),user_override);
+			data.Init(input,type,m_Layouts.Get(type),user_override);			
 			m_WidgetDataMap.Set(type, data);
 			return true;
 		}

@@ -45,6 +45,8 @@ class PPERequesterBank extends Managed
 	static const int REQ_HMP_GHOST				= RegisterRequester(PPERequester_HMPGhosts);
 	static const int REQ_LATENCYBLUR			= RegisterRequester(PPERequester_LatencyBlur);
 	static const int REQ_FEEDBACKBLUR			= RegisterRequester(PPERequester_FeedbackBlur);
+	static const int REQ_SQUINT					= RegisterRequester(PPERequester_SquintEffects);
+	static const int REQ_SANDSTORMEFFECT		= RegisterRequester(PPERequester_SandstormEffect);
 	
 	private static ref PPERequesterRegistrations 	m_Registrations; //more registrations to be placed here
 	
@@ -211,6 +213,38 @@ class PPERequesterBank extends Managed
 		
 		//Error("Requester instance " + req + " not valid! Please use registered instances from PPERequesterBank.");
 		Debug.Log("Requester instance '" + req + "' not valid! Please use registered instances from PPERequesterBank.");
+		return false;
+	}
+	
+	//! Check if specific requester is active (started) based on type name
+	static bool IsRequesterRunning(typename type)
+	{
+		PPERequesterBase req = GetRequester(type);
+		if (req)
+		{
+			return req.IsRequesterRunning();
+		}
+		else
+		{
+			Debug.Log("'" + type.ToString() + "' not found in bank! Register first in 'RegisterRequester' method.");
+		}
+		
+		return false;
+	}
+	
+	//! Check if specific requester is active (started) based on requester ID (index)
+	static bool IsRequesterRunning(int index)
+	{
+		PPERequesterBase req = GetRequester(index);
+		if (req)
+		{
+			return req.IsRequesterRunning();
+		}
+		else
+		{
+			Debug.Log("Requester idx '" + index + "' not found in bank! Register first in 'RegisterRequester' method.");
+		}
+		
 		return false;
 	}
 	

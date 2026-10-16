@@ -33,17 +33,23 @@ class ActionOpenDoors: ActionInteractBase
 		if (!IsBuilding(target)) 
 			return false;
 
-		Building building;
+		BuildingBase building;
 		if (Class.CastTo(building, target.GetObject()))
 		{
-			int doorIndex = building.GetDoorIndex(target.GetComponentIndex());
-			if (doorIndex != -1)
+			DoorManipulationParams doorParams = new DoorManipulationParams();
+			doorParams.m_DoorIndex = building.GetDoorIndex(target.GetComponentIndex());
+			if (doorParams.m_DoorIndex != -1)
 			{
 				if (!IsInReach(player, target, UAMaxDistances.DEFAULT)) 
 					return false;
 				
-				return building.CanDoorBeOpened(doorIndex, CheckIfDoorIsLocked());
+				if (!building.DoorsDirectionalCheck(player,target.GetComponentIndex()))
+					return false;
+				
+				doorParams.m_CheckIfLocked = CheckIfDoorIsLocked();
+				doorParams.m_Caller = player;
 
+				return building.CanDoorBeOpened(doorParams);
 			}
 		}
 
@@ -54,16 +60,17 @@ class ActionOpenDoors: ActionInteractBase
 	{
 		super.OnStartServer(action_data);
 		
-		Building building;
+		BuildingBase building;
 		if (Class.CastTo(building, action_data.m_Target.GetObject()))
 		{
-			int doorIndex = building.GetDoorIndex(action_data.m_Target.GetComponentIndex());
-			if (doorIndex != -1)
+			DoorManipulationParams doorParams = new DoorManipulationParams();
+			doorParams.m_DoorIndex = building.GetDoorIndex(action_data.m_Target.GetComponentIndex());
+			if (doorParams.m_DoorIndex != -1)
 			{
-				if (building.CanDoorBeOpened(doorIndex, CheckIfDoorIsLocked()))
-				{
-					building.OpenDoor(doorIndex);
-				}
+				doorParams.m_CheckIfLocked = CheckIfDoorIsLocked();
+				doorParams.m_Caller = action_data.m_Player;
+				if (building.CanDoorBeOpened(doorParams))
+					building.OpenDoor(doorParams.m_DoorIndex);
 			}
 		}
 	}
@@ -78,7 +85,10 @@ class ActionOpenDoors: ActionInteractBase
 		if (noise && CreatesNoise())
 		{
 			if (action_data.m_Player)
-				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
+			{
+				Object targetObj = action_data.m_Target.GetObject();
+				noise.AddNoisePos(action_data.m_Player, action_data.m_Player.GetPosition(), m_NoisePar);
+			}
 		}
 	}
 	
@@ -99,4 +109,4 @@ class ActionLockedDoors : ActionOpenDoors
 	{
 		return false;
 	}
-};
+}

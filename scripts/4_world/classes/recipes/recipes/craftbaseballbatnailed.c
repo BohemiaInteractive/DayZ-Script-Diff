@@ -49,7 +49,7 @@ class CraftBaseBallBatNailed extends RecipeBase
 		m_ResultInheritsColor[0] = -1;// (value) == -1 means do nothing; a (value) >= 0 means this result classname will be a composite of the name provided in AddResult method and config value "color" of ingredient (value)
 		m_ResultToInventory[0] = 1; //(value) == -2 spawn result on the ground;(value) == -1 place anywhere in the players inventory, (value) >= 0 means switch position with ingredient number(value)
 		m_ResultUseSoftSkills[0] = false;// set 'true' to allow modification of the values by softskills on this result
-		m_ResultReplacesIngredient[0] = 1;// value == -1 means do nothing; a value >= 0 means this result will transfer item propertiesvariables, attachments etc.. from an ingredient value
+		m_ResultReplacesIngredient[0] = -1;// value == -1 means do nothing; a value >= 0 means this result will transfer item propertiesvariables, attachments etc.. from an ingredient value
 	}
 
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)

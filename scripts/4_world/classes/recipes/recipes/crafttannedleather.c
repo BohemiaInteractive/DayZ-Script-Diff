@@ -83,9 +83,10 @@ class CraftTannedLeather extends RecipeBase
 		gardenLime.SetQuantity(gardenLime.GetQuantity() - usedLime);
 		
 		//Create output piles
-		vector posHead;
-		MiscGameplayFunctions.GetHeadBonePos(player,posHead);
-		vector posTarget = player.GetPosition() + (player.GetDirection() * DEFAULT_SPAWN_DISTANCE);
+		vector playerPosition = player.GetPosition();
+		vector posHead = MiscGameplayFunctions.GetPlayerHeadPosition(player);
+
+		vector posTarget = playerPosition + (player.GetDirection() * DEFAULT_SPAWN_DISTANCE);
 		MiscGameplayFunctions.CreateItemBasePilesDispersed("TannedLeather",posHead,posTarget,UAItemsSpreadRadius.NARROW,yieldQuantity,float.MAX,player);
 	}
 }

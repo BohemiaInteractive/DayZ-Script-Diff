@@ -21,28 +21,40 @@ class ActionNextCombinationLockDialOnTarget: ActionInteractBase
 		if (!target.GetObject())
 			return false;
 		
-		CombinationLock lock = CombinationLock.Cast( target.GetObject() );
-		if ( lock && lock.GetHierarchyParent() && Fence.Cast(lock.GetHierarchyParent()) )
+		CombinationLock lock = CombinationLock.Cast(target.GetObject());
+		if (!lock)
+			return false;
+		
+		EntityAI parent = lock.GetHierarchyParent();
+		if (!parent)
+			return false;
+		
+		int facingSide = lock.GetLockSideByComponentIndex(target.GetComponentIndex());
+		if (facingSide == -1)
+			return false;
+		
+		if (parent.CanUseConstruction())
 		{
-			ConstructionActionData construction_action_data = player.GetConstructionActionData();
-			construction_action_data.SetCombinationLock( lock );
-			
+			ConstructionActionData constructionActionData = player.GetConstructionActionData();
+			constructionActionData.SetCombinationLock(lock);
+			constructionActionData.SetCombinationLockSide(facingSide);
 			return true;
 		}
 		
 		return false;
 	}
 	
-	override void Start( ActionData action_data )
+	override void Start(ActionData action_data)
 	{
-		super.Start( action_data );
+		super.Start(action_data);
 		
 		//set next dial
-		ConstructionActionData construction_action_data = action_data.m_Player.GetConstructionActionData();
-		CombinationLock combination_lock = construction_action_data.GetCombinationLock();
-		if ( combination_lock )
+		ConstructionActionData constructionActionData = action_data.m_Player.GetConstructionActionData();
+		CombinationLock combinationLock = constructionActionData.GetCombinationLock();
+		int lockSide = constructionActionData.GetCombinationLockSide();
+		if (combinationLock && lockSide != -1)
 		{
-			combination_lock.SetNextDial();
+			combinationLock.SetNextDial(lockSide);
 		}
 	}
 }

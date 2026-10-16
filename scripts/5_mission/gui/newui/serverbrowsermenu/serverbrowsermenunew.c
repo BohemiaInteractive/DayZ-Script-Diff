@@ -181,7 +181,9 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		{
 			if (w == m_Play)
 			{
-				Play();
+				// The 'open store' label already tells the player the DLC is missing,
+				// in that case the store is opened without warning them again
+				Play(!m_OpenStoreButtonLabel.IsVisible());
 				return true;
 			}
 			else if (w == m_Back)
@@ -648,12 +650,6 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	#endif
 	}
 	
-	protected void SwitchToOfficalTab()
-	{
-		if (GetTabberUI())
-			GetTabberUI().PerformSwitchTab(TabType.OFFICIAL);
-	}
-	
 	void SaveFavoriteServersConsoles()
 	{
 		g_Game.SetProfileStringList("SB_Favorites", m_Favorites);
@@ -670,15 +666,17 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		m_SelectedServer = server;
 		
 		string mapNM = m_SelectedServer.GetMapToRun();
-		if (!g_Game.VerifyWorldOwnership(mapNM))
+		ContentDLC contentDLC = g_Game.GetContentDLCService();
+		EDLCId dlcId = contentDLC.GetDLCFromWorld(mapNM);
+		if (!ContentDLC.IsValidDLCID(dlcId) || contentDLC.IsDLCInstalled(dlcId))
+		{
+			m_PlayButtonLabel.Show(true);
+			m_OpenStoreButtonLabel.Show(false);		
+		}	
+		else
 		{
 			m_PlayButtonLabel.Show(false);
 			m_OpenStoreButtonLabel.Show(true);
-		}
-		else 
-		{
-			m_PlayButtonLabel.Show(true);
-			m_OpenStoreButtonLabel.Show(false);
 		}
 	}
 	
@@ -699,25 +697,25 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 		Play();
 	}
 	
-	void Play()
+	//! \param warnAboutMissingDLC when false the store is opened right away, used where the player has already been told the DLC is missing
+	void Play(bool warnAboutMissingDLC = true)
 	{
 		if (m_SelectedServer)
 		{
 			string mapNM = m_SelectedServer.GetMapToRun();
-			
-			if (!g_Game.VerifyWorldOwnership(mapNM))
-			{				
-				/*JsonDataDLCList data = DlcDataLoader.GetData();
-				foreach (JsonDataDLCInfo dlcInfo : data.DLCs)
+			ContentDLC contentDLC = g_Game.GetContentDLCService();
+			EDLCId dlcId = contentDLC.GetDLCFromWorld(mapNM);
+			if (ContentDLC.IsValidDLCID(dlcId))
+			{
+				if (!contentDLC.UseDLC(dlcId))
 				{
-					// fetch mod info
-					// if server runs this dlcInfo && !info.GetIsOwned()
-					//info.GoToStore();
-				}*/
-		
-				g_Game.GetUIManager().ShowDialog("#server_browser_connect_label", "#mod_detail_info_warning", 232, DBT_OK, DBB_NONE, DMT_INFO, g_Game.GetUIManager().GetMenu());
-				g_Game.GoBuyWorldDLC(mapNM);
-				return;
+					if (warnAboutMissingDLC)
+						ContentDLCStorePrompt.WarnAndOpenStore(dlcId);
+					else
+						contentDLC.BuyDLC(dlcId);
+
+					return;
+				}
 			}
 			
 			string ip = m_SelectedServer.GetIP();
@@ -921,15 +919,5 @@ class ServerBrowserMenuNew extends UIScriptedMenu
 	{
 		super.OnHide();
 		PPERequesterBank.GetRequester(PPERequester_ServerBrowserBlur).Stop();
-	}
-	
-	TabberUI GetTabberUI()
-	{
-		return m_Tabber;
-	}
-	
-	ServerBrowserTab GetOfficalTab()
-	{
-		return m_OfficialTab;
 	}
 }

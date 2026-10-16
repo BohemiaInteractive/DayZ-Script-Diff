@@ -7,8 +7,7 @@ class ActionInteractLoopBaseCB : ActionInteractBaseCB
 		{
 			return DefaultCancelCondition();
 		}
-		//SetCommand(DayZPlayerConstants.CMD_ACTIONINT_ACTIONLOOP);
-		//Print("cancel condition enabled: " + GetState().ToString() );
+		
 		if ( !m_Interrupted && (GetState() == STATE_LOOP_LOOP || GetState() == STATE_LOOP_LOOP2) )
 		{	
 			AnimatedActionBase action = AnimatedActionBase.Cast(m_ActionData.m_Action);

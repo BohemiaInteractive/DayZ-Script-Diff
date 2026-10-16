@@ -1127,6 +1127,8 @@ class PluginDayzPlayerDebug extends PluginBase
 		RegisterAnimation("BLOODTEST", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTEST, false);
 		RegisterAnimation("BLOODTESTOTHER", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTESTOTHER, false);
 		RegisterAnimation("BLOODTESTOTHER", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_BLOODTESTOTHER, false);
+		RegisterAnimation("COMBINATION LOCK", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_COMBINATIONLOCK, false);
+		RegisterAnimation("WASHFACE", TYPE_MOD_LOOPING, DayZPlayerConstants.CMD_ACTIONMOD_WASHFACE, false);
 		//! one time
 		RegisterAnimation("PICK UP HANDS", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_PICKUP_HANDS, false);
 		RegisterAnimation("PICK UP INVENTORY", TYPE_MOD_ONETIME, DayZPlayerConstants.CMD_ACTIONMOD_PICKUP_INVENTORY, false);
@@ -1237,6 +1239,17 @@ class PluginDayzPlayerDebug extends PluginBase
 		RegisterAnimation("EATING_SNOW", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_EATING_SNOW, true, DayZPlayerConstants.STANCEMASK_CROUCH);
 		RegisterAnimation("FILLING_CONTAINER_SNOW", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_FILLING_CONTAINER_SNOW, true, DayZPlayerConstants.STANCEMASK_CROUCH);
 		RegisterAnimation("DIGGING_WORMS", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_DIGGIN_WORMS, true, DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT);
+		RegisterAnimation("COMBINATION LOCK", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_COMBINATIONLOCK, true, DayZPlayerConstants.STANCEMASK_PRONE);
+		RegisterAnimation("WASH FACE POND", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_WASHFACEPOND, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("BUILD ROPE LADDER", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_BUILDROPELADDER, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("BRICK_STACKIN", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_BRICKSTACK, true, DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT);
+		RegisterAnimation("BRICK_TROWEL", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_BRICKTROWEL, true, DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT);
+		RegisterAnimation("MIX_MORTAR", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_MIX_MORTAR, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("DRINKWELL_BUCKET", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_DRINKWELL_BUCKET, true, DayZPlayerConstants.STANCEMASK_ERECT);
+		RegisterAnimation("SHARPEN", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_SHARPEN, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("WASHFACE_WELL", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_WASHFACEWELL, true, DayZPlayerConstants.STANCEMASK_ERECT);
+		RegisterAnimation("WETCLOTH", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_WETCLOTH, true, DayZPlayerConstants.STANCEMASK_CROUCH);
+		RegisterAnimation("WETCLOTHWELL", TYPE_FB_LOOPING, DayZPlayerConstants.CMD_ACTIONFB_WETCLOTHWELL, true, DayZPlayerConstants.STANCEMASK_ERECT);
 
 
 		//! one time

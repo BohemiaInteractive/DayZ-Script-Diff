@@ -1,0 +1,4 @@
+class ConstructionPartRebuildTypeData : ConstructionPartTypeData
+{
+	
+}

@@ -87,7 +87,7 @@ class IngameHudVisibility : Managed
 	}
 		
 	// Set flag which changes HUD visibility
-	void SetContextFlag(EHudContextFlags flag, bool state)
+	void SetContextFlag(EHudContextFlags flag, bool state, bool ignoreWidgetVisiblityState)
 	{
 		if (state)
 			m_CtxFlags |= flag;
@@ -97,8 +97,13 @@ class IngameHudVisibility : Managed
 		array<EHudElement> affectedElements = m_ElementLinkMap.Get(flag);
 		foreach (EHudElement element : affectedElements)
 		{
-			UpdateElement(element);
+			UpdateElement(element, ignoreWidgetVisiblityState);
 		}
+	}
+	
+	void SetContextFlag(EHudContextFlags flag, bool state)
+	{
+		SetContextFlag(flag, state, false);
 	}
 	
 	// Check widget visibility
@@ -120,7 +125,7 @@ class IngameHudVisibility : Managed
 		return false;
 	}
 	
-	protected void UpdateElement(EHudElement element)
+	protected void UpdateElement(EHudElement element, bool ignoreWidgetVisiblityState)
 	{
 		bool visible = true;
 
@@ -161,25 +166,39 @@ class IngameHudVisibility : Managed
 		}
 		
 		
-		UpdateVisibility(element, visible);
+		UpdateVisibility(element, visible, ignoreWidgetVisiblityState);
 	}
 	
-	protected void UpdateVisibility(EHudElement element, bool target)
+	protected void UpdateElement(EHudElement element)
+	{
+		UpdateElement(element, false);
+	}
+	
+	protected void UpdateVisibility(EHudElement element, bool target, bool ignoreWidgetVisiblityState)
 	{
 		Widget widget = m_ElementMap.Get(element);
 		if (!widget)
 			return;		
 		
-		if (target && !widget.IsVisible())
+		if (target)
 		{
+			if (!ignoreWidgetVisiblityState && widget.IsVisible())
+				return;
+			
 			widget.Show(true);
-			//Print(typename.EnumToString(EHudElement, element) + " SHOW");
 		}
 		
-		if (!target && widget.IsVisible())
+		if (!target)
 		{
+			if (!ignoreWidgetVisiblityState && !widget.IsVisible())
+				return;
+			
 			widget.Show(false);
-			//Print(typename.EnumToString(EHudElement, element) + " HIDE");
 		}
+	}
+	
+	protected void UpdateVisibility(EHudElement element, bool target)
+	{
+		UpdateVisibility(element, target, false);
 	}
 }

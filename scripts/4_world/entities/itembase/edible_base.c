@@ -705,6 +705,7 @@ class Edible_Base : ItemBase
 	protected void SoundCookingStart(string sound_name)
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (m_SoundPlaying != sound_name)
 		{
 			SoundCookingStop();
@@ -713,17 +714,20 @@ class Edible_Base : ItemBase
 			m_SoundPlaying = sound_name;
 		}
 		#endif
+		#endif
 	}
 
 	protected void SoundCookingStop()
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (m_SoundEffectCooking)
 		{
 			m_SoundEffectCooking.Stop();
 			m_SoundEffectCooking = null;
 			m_SoundPlaying = "";
 		}
+		#endif
 		#endif
 	}
 	
@@ -929,7 +933,7 @@ class Edible_Base : ItemBase
 	
 	protected void UpdateVaporParticle()
 	{
-		if (g_Game.IsDedicatedServer())
+		if (g_Game.IsHeadlessOrDedicatedServer())
 			return;
 		
 		if (m_VarTemperature >= GameConstants.STATE_HOT_LVL_TWO && !m_HotVaporParticle)

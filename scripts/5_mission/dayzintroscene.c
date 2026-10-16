@@ -12,6 +12,22 @@ class DayZIntroScene : Managed
 
 	void DayZIntroScene()
 	{
+		SetScene();
+	}
+	
+	void ~DayZIntroScene()
+	{
+		ClearIntroScene();
+	}
+	
+	protected void ClearIntroScene()
+	{
+		if (PPEManagerStatic.GetPPEManager())
+			PPEManagerStatic.GetPPEManager().StopAllEffects(PPERequesterCategory.ALL);
+	}
+	
+	protected void SetScene()
+	{
 		string root_path = "cfgCharacterScenes " + g_Game.GetWorldName();
 		
 		int count = g_Game.ConfigGetChildrenCount(root_path);
@@ -31,7 +47,8 @@ class DayZIntroScene : Managed
 		float snowfall = g_Game.ConfigGetFloat(scene_path + " snowfall");
 		float fog = g_Game.ConfigGetFloat(scene_path + " fog");
 		float windspeed = -1;
-		if ( g_Game.ConfigIsExisting(scene_path + " windspeed") ) 	windspeed = g_Game.ConfigGetFloat(scene_path + " windspeed");
+		if ( g_Game.ConfigIsExisting(scene_path + " windspeed") ) 
+			windspeed = g_Game.ConfigGetFloat(scene_path + " windspeed");
 		g_Game.ConfigGetFloatArray(scene_path + " storm", storm);
 		
 		World world = g_Game.GetWorld();
@@ -92,18 +109,15 @@ class DayZIntroScene : Managed
 			m_Weather.SetWindFunctionParams(1,1,1);
 		}
 		
+		if (m_Weather.GetSandstorm().IsActive())
+			m_Weather.GetSandstorm().Stop(0, false);
+		
 		m_Character = new IntroSceneCharacter();
 		m_Character.LoadCharacterData(m_CharacterPos, m_CharacterRot);
 		
 		PPEffects.Init(); //Deprecated, left in for legacy purposes only
 		
 		g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(SetInitPostprocesses);
-	}
-	
-	void ~DayZIntroScene()
-	{
-		if (PPEManagerStatic.GetPPEManager())
-			PPEManagerStatic.GetPPEManager().StopAllEffects(PPERequesterCategory.ALL);
 	}
 	
 	//==============================================

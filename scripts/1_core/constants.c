@@ -65,6 +65,8 @@ const int COLOR_RED = 0xFFF22613;
 const int COLOR_GREEN = 0xFF2ECC71;
 const int COLOR_BLUE = 0xFF4B77BE;
 const int COLOR_YELLOW = 0xFFF7CA18;
+const int COLOR_CYAN = 0xFF00FFFF;
+const int COLOR_MAGENTA = 0xFFFF00FF;
 
 const int COLOR_RED_A = 0x1fF22613;
 const int COLOR_GREEN_A = 0x1f2ECC71;
@@ -104,3 +106,10 @@ const int MATERIAL_GRAVEL			= 15;	//gravel
 const int MATERIAL_STONE			= 16;	//rocks, cliffs
 
 /** @}*/
+
+/**
+
+ * EDiagMenu
+ */
+enum EDiagMenu {}
+//#endif

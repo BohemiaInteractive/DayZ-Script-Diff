@@ -4,52 +4,45 @@ class AttachmentsOutOfReach
 	
 	static bool IsAttachmentReachable(EntityAI e, string att_slot_name = "", int slot_id = -1, float range = 1.5)
 	{
-		if( !e.IgnoreOutOfReachCondition() )
+		if (!e.IgnoreOutOfReachCondition())
 		{
 			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
-			if( player.IsInVehicle() )
+			if (player.IsInVehicle())
 			{
 				return false;
 			}
 			else
 			{
-				
-				vector pos_att;
-				if ( slot_id != -1 )
+				vector posAtt;
+				if (slot_id != -1)
 				{
 					att_slot_name = InventorySlots.GetSlotName(slot_id);
 				}
-				if( att_slot_name != "" )
+				if (att_slot_name != "")
 				{
-					if( e.MemoryPointExists(att_slot_name) )
+					if (e.MemoryPointExists(att_slot_name))
 					{
 						vector mem_point = e.GetMemoryPointPos(att_slot_name);
-						pos_att = e.ModelToWorld(mem_point);
+						posAtt = e.ModelToWorld(mem_point);
 					}
 					else
 					{
-						pos_att = e.ModelToWorld(GetAttachmentPosition(e, InventorySlots.GetSlotIdFromString( att_slot_name ) ));
+						posAtt = e.ModelToWorld(GetAttachmentPosition(e, InventorySlots.GetSlotIdFromString(att_slot_name)));
 					}
-					
 				}
 				
-				vector pos_player = player.GetPosition();
+				vector posPlayer = player.GetPosition();
+				float heightDiff = posAtt[1] - posPlayer[1];
+				//float negativeTolerance = -range / 5; //TODO: maybe flat value?
+				float negativeTolerance = -1.0; //-1m tolerance to test with
+				if (heightDiff >= negativeTolerance && (Math.AbsFloat(heightDiff) < range)) //sort of 'dome' shaped detection with some negative leeway
+				{
+					posPlayer[1] = 0;
+					posAtt[1] = 0;
+					return vector.Distance(posPlayer, posAtt) <= range;
+				}
 				
-				float height_diff = Math.AbsFloat( pos_player[1] - pos_att[1] );
-				if( height_diff < range )
-				{
-					pos_player[1] = 0;
-					pos_att[1] = 0;
-					if ( vector.Distance(pos_player, pos_att) <= range )
-					{
-						return true;
-					}
-					return false;
-				}
-				else
-				{
-					return false;
-				}
+				return false;
 			}
 		}
 		else
@@ -60,24 +53,24 @@ class AttachmentsOutOfReach
 	
 	static vector GetAttachmentPosition(EntityAI e, int slot_id)
 	{
-		if ( m_AttData == NULL )
+		if (m_AttData == NULL)
 		{
 			m_AttData = new map<string, ref map<int, vector>>();
 		}
 		
 		string type_name = e.GetType();
 		
-		if ( !m_AttData.Contains( type_name ) )
+		if (!m_AttData.Contains(type_name))
 		{
-			map<int, vector> att = CreateAttachmentPosition( e );
+			map<int, vector> att = CreateAttachmentPosition(e);
 			
-			m_AttData.Insert( type_name, att );
+			m_AttData.Insert(type_name, att);
 		}
 		
-		return m_AttData.Get( type_name ).Get( slot_id );
+		return m_AttData.Get(type_name).Get(slot_id);
 	}
 	
-	static protected map<int, vector> CreateAttachmentPosition( EntityAI entity )
+	static protected map<int, vector> CreateAttachmentPosition(EntityAI entity)
 	{
 		map<int, vector> ret_val = new map<int, vector>();
 		
@@ -103,7 +96,7 @@ class AttachmentsOutOfReach
 		
 		int child_count = g_Game.ConfigGetChildrenCount("CfgNonAIVehicles");
 		
-		for ( int x = 0; x < child_count; ++x )
+		for (int x = 0; x < child_count; ++x)
 		{
 			string child_name;
 			g_Game.ConfigGetChildName("CfgNonAIVehicles",x ,	child_name);
@@ -111,16 +104,16 @@ class AttachmentsOutOfReach
 			string inventory_slot_name;
 			g_Game.ConfigGetText("CfgNonAIVehicles "+ child_name +" inventorySlot", inventory_slot_name);
 			
-			if ( cfg_attachments.Find( inventory_slot_name ) > 0 )
+			if (cfg_attachments.Find(inventory_slot_name) > 0)
 			{
 				string model_path;
 				g_Game.ConfigGetText("CfgNonAIVehicles "+ child_name +" model", model_path);
 				
-				if ( model_path.Length() > 5 )
+				if (model_path.Length() > 5)
 				{										
 					LOD lod = entity.GetLODByName(LOD.NAME_VIEW);
 					
-					if ( lod )
+					if (lod)
 					{
 						model_path = model_path.Substring(0, model_path.Length() - 4);
 						model_path.ToLower();
@@ -128,14 +121,14 @@ class AttachmentsOutOfReach
 						array<Selection> selections = new array<Selection>();
 						lod.GetSelections(selections);
 						
-						for ( int i = 0; i < selections.Count(); ++i )
+						for (int i = 0; i < selections.Count(); ++i)
 						{							
 							string selection = selections[i].GetName();
 							selection.ToLower();
 							
-							if ( selection.Contains(model_path) )
+							if (selection.Contains(model_path))
 							{
-								ret_val.Set(InventorySlots.GetSlotIdFromString( inventory_slot_name ), selections[i].GetVertexPosition(lod, 0));
+								ret_val.Set(InventorySlots.GetSlotIdFromString(inventory_slot_name), selections[i].GetVertexPosition(lod, 0));
 							}
 						}
 					}

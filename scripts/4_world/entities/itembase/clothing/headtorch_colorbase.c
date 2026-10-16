@@ -166,10 +166,12 @@ class Headtorch_ColorBase extends Clothing
 	
 	void AttachLightOnHead(EntityAI person)
 	{
+		int boneIdx;
+		
 		if (person.IsPlayer())
 		{
 			PlayerBase player = PlayerBase.Cast(person);
-			int boneIdx = player.GetBoneIndexByName("Head");
+			boneIdx = player.GetBoneIndexByName("Head");
 			
 			if (boneIdx != -1)
 			{
@@ -184,13 +186,19 @@ class Headtorch_ColorBase extends Clothing
 		}
 		else if (person.IsZombie())
 		{
-			if (m_Light.GetParent())
-				m_Light.DetachFromParent();
-			
-			m_Light.SetPosition(m_OnHeadLocalPos);
-			m_Light.SetOrientation(m_OnHeadLocalOri);
-			
-			person.AddChild(m_Light, 17);
+			ZombieBase zombie = ZombieBase.Cast(person); // infected, not zombies
+			boneIdx = zombie.GetBoneIndexByName("Head");
+
+			if (boneIdx != -1)
+			{
+				if (m_Light.GetParent())
+					m_Light.DetachFromParent();
+				
+				m_Light.SetPosition(m_OnHeadLocalPos);
+				m_Light.SetOrientation(m_OnHeadLocalOri);
+				
+				person.AddChild(m_Light, boneIdx);
+			}
 		}
 	}
 	

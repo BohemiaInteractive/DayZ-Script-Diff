@@ -190,6 +190,7 @@ class FireplaceBase : ItemBase
 	typename ATTACHMENT_BOOK 					= ItemBook;
 	typename ATTACHMENT_BARK_OAK 				= Bark_Oak;
 	typename ATTACHMENT_BARK_BIRCH 				= Bark_Birch;
+	typename ATTACHMENT_BARK_PALM 				= Bark_Palm;
 	typename ATTACHMENT_PAPER 					= Paper;
 	typename ATTACHMENT_GIFTWRAP				= GiftWrapPaper;
 	typename ATTACHMENT_PUNCHEDCARD				= PunchedCard;
@@ -244,6 +245,7 @@ class FireplaceBase : ItemBase
 			m_FireConsumableTypes.Insert(ATTACHMENT_BOOK, 				new FireConsumableType(ATTACHMENT_BOOK, 				20, 	true,	"Book"));
 			m_FireConsumableTypes.Insert(ATTACHMENT_BARK_OAK, 			new FireConsumableType(ATTACHMENT_BARK_OAK, 			10, 	true,	"OakBark"));
 			m_FireConsumableTypes.Insert(ATTACHMENT_BARK_BIRCH, 		new FireConsumableType(ATTACHMENT_BARK_BIRCH, 			8, 	true,	"BirchBark"));
+			m_FireConsumableTypes.Insert(ATTACHMENT_BARK_PALM, 			new FireConsumableType(ATTACHMENT_BARK_PALM, 			8, 	true,	"PalmBark"));
 			m_FireConsumableTypes.Insert(ATTACHMENT_PAPER, 				new FireConsumableType(ATTACHMENT_PAPER, 				5, 	true,	"Paper"));
 			m_FireConsumableTypes.Insert(ATTACHMENT_GIFTWRAP, 			new FireConsumableType(ATTACHMENT_GIFTWRAP, 			5, 	true,	"GiftWrapPaper"));
 			m_FireConsumableTypes.Insert(ATTACHMENT_PUNCHEDCARD,		new FireConsumableType(ATTACHMENT_PUNCHEDCARD, 			5, 	true,	"PunchedCard"));
@@ -337,6 +339,16 @@ class FireplaceBase : ItemBase
 		if (item.IsCookware())
 			SetCookingEquipment(ItemBase.Cast(item));
 	}
+	
+	override void EEItemLocationChanged(notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc)
+	{
+		super.EEItemLocationChanged(oldLoc, newLoc);
+		
+		if (m_AreaDamage && newLoc.GetType() == InventoryLocationType.GROUND)
+		{
+			CreateAreaDamage();
+		}
+	}
 
 	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner) 
 	{
@@ -409,7 +421,9 @@ class FireplaceBase : ItemBase
 
 		// cleanup particles (for cases of leaving burning fplace and going back outside of network bubble)
 		#ifndef SERVER
+		#ifndef NO_GUI
 		StopAllParticlesAndSounds();
+		#endif
 		#endif
 	}	
 		
@@ -673,6 +687,7 @@ class FireplaceBase : ItemBase
 		
 		// Light
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (IsBurning()) 
 		{
 			//turn light on
@@ -724,6 +739,7 @@ class FireplaceBase : ItemBase
 				GetLightEntity().FadeOut();
 			}
 		}
+		#endif
 		#endif
 		
 		//set default burn parameters based on fireplace type
@@ -1093,7 +1109,7 @@ class FireplaceBase : ItemBase
 	//returns true if particle started, false if not
 	protected bool PlayParticle(out Particle particle, int particle_type, vector pos, bool worldpos = false)
 	{
-		if (!particle && g_Game && (!g_Game.IsDedicatedServer()))
+		if (!particle && g_Game && (!g_Game.IsHeadlessOrDedicatedServer()))
 		{
 			if (!worldpos)
 			{
@@ -1113,7 +1129,7 @@ class FireplaceBase : ItemBase
 	//returns true if particle stopped, false if not
 	protected bool StopParticle(out Particle particle)
 	{
-		if (particle && g_Game && (!g_Game.IsDedicatedServer()))
+		if (particle && g_Game && (!g_Game.IsHeadlessOrDedicatedServer()))
 		{
 			particle.Stop();
 			particle = NULL;
@@ -1918,7 +1934,7 @@ class FireplaceBase : ItemBase
 			NoiseSystem noise = g_Game.GetNoiseSystem();
 			if (noise && m_NoisePar)
 			{
-				noise.AddNoisePos(this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
+				noise.AddNoisePos(this, GetPosition(), m_NoisePar);
 			}
 			m_CanNoise = false;
 		}
@@ -2606,11 +2622,6 @@ class FireplaceBase : ItemBase
 			cc_object.SetOrientation(orientation);
 			g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(g_Game.ObjectDelete, 1000, false, cc_object);
 		}
-	}
-		
-	override string GetDeploySoundset()
-	{
-		return "placeFireplace_SoundSet";
 	}
 	
 	//================================================================

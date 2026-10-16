@@ -49,6 +49,19 @@ class TransportMove : PawnMove
 #endif
 };
 
+enum ETransportFluid
+{
+	FUEL,
+	OIL,
+	BRAKE,
+	COOLANT,
+
+	USER1, //!< reserved for user / modding support
+	USER2, //!< reserved for user / modding support
+	USER3, //!< reserved for user / modding support
+	USER4  //!< reserved for user / modding support
+};
+
 //! Uses NetworkMoveStrategy.NONE
 class Transport extends Pawn
 #else
@@ -61,12 +74,36 @@ class Transport extends EntityAI
 	ref TIntArray m_SingleUseActions;
 	ref TIntArray m_ContinuousActions;
 	ref TIntArray m_InteractActions;
+
+	protected bool m_EngineStarted;
+	protected bool m_EngineDestroyed;
+
+	protected int m_HeadlightsState;
+	protected int m_RearLightType;
 	
 	protected bool m_EngineZoneReceivedHit;
 	protected vector m_fuelPos;
 	
 	protected ref set<int> m_UnconsciousCrewMemberIndices;
 	protected ref set<int> m_DeadCrewMemberIndices;
+	
+	ref VehicleContactCache m_ContactCache;
+	protected float m_dmgContactCoef = 0.023;	
+	protected float m_VehicleContactDamageCoef = 0.12;	
+	protected float m_CrewContactDamageCoef = 0.023;
+	protected ref VehicleContactData m_ContactData;
+	protected float m_MomentumPrevTick;
+	protected vector m_VelocityPrevTick;
+
+	protected bool m_PlayCrashSoundLight;
+	protected bool m_PlayCrashSoundHeavy;
+	ref EffectSound m_CrashSoundLight;
+	ref EffectSound m_CrashSoundHeavy;
+	
+	#ifdef DIAG_DEVELOPER
+	static EVehicleDebugOutputType DEBUG_OUTPUT_TYPE;
+	bool m_ContactCalled;
+	#endif
 	
 	void Transport()
 	{
@@ -79,6 +116,29 @@ class Transport extends EntityAI
 		
 		m_UnconsciousCrewMemberIndices 	= new set<int>();
 		m_DeadCrewMemberIndices 		= new set<int>();
+		
+		m_ContactCache = new VehicleContactCache();
+		
+		m_PlayCrashSoundLight = false;
+		m_PlayCrashSoundHeavy = false;
+	}
+
+	void ~Transport()
+	{
+		#ifndef SERVER
+		#ifndef NO_GUI
+		CleanupEffects();
+		#endif
+		#endif
+	}
+	
+	override void EEDelete(EntityAI parent)
+	{
+		#ifndef SERVER
+		#ifndef NO_GUI
+		CleanupEffects();
+		#endif
+		#endif
 	}
 	
 	override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
@@ -86,6 +146,9 @@ class Transport extends EntityAI
 		super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
 
 		SetEngineZoneReceivedHit(dmgZone == "Engine");
+
+		// TODO(kumarjac): Lets call this in native instead after script events have gone through? Cheaper, faster.
+		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(OnUpdateLight, 100, false);
 	}
 
 	override int GetMeleeTargetType()
@@ -249,7 +312,35 @@ class Transport extends EntityAI
 		\param[in] other object with which the vehicle is colliding
 		\param[in] data contact properties
 	*/
-	void OnContact(string zoneName, vector localPos, IEntity other, Contact data) {}
+	void OnContact(string zoneName, vector localPos, IEntity other, Contact data)
+	{
+		if (GetGame().IsServer())
+		{
+			#ifdef DIAG_DEVELOPER
+			m_ContactCalled = true;
+			if (DEBUG_OUTPUT_TYPE & EVehicleDebugOutputType.CONTACT)
+			{
+				string output = "Zone: " + zoneName + " | Impulse:" + data.Impulse;
+				Debug.Log(output);
+			}
+			#endif
+			if (m_ContactCache.Count() == 0)
+			{
+				array<ref VehicleContactData> ccd = new array<ref VehicleContactData>();
+				m_ContactCache.Insert(zoneName, ccd);
+				float momentumDelta = GetMomentum() - m_MomentumPrevTick;
+				float dot = vector.Dot(m_VelocityPrevTick.Normalized(), GetVelocity(this).Normalized());
+				if (dot < 0)
+				{
+					momentumDelta = m_MomentumPrevTick;
+				}
+				
+				VehicleContactData contactData = new VehicleContactData();
+				contactData.SetData(localPos, other, momentumDelta);
+				ccd.Insert(contactData);
+			}
+		}
+	}
 
 	/*!
 		Called after every input simulation step.
@@ -275,6 +366,11 @@ class Transport extends EntityAI
 		return true;
 	}
 	
+	override bool IsDetectableByVicinityCone()
+	{
+		return true;
+	}
+	
 	override bool IsIgnoredByConstruction()
 	{
 		return false;
@@ -295,6 +391,11 @@ class Transport extends EntityAI
 		return EInventoryIconVisibility.HIDE_VICINITY;
 	}
 	
+	override bool CanPutIntoHands(EntityAI parent)
+	{
+		return false;
+	}
+	
 	float GetMomentum()
 	{
 		return GetVelocity(this).Length() * dBodyGetMass(this);
@@ -304,6 +405,51 @@ class Transport extends EntityAI
 	{
 		return true;
 	}
+		
+	bool IsVitalGlowPlug()
+	{
+		return true;
+	}
+	
+	bool IsVitalFuelTank()
+	{
+		return true;
+	}
+	
+	
+	protected void CheckVitalItemCallback(bool isVital, int slotId, Object caller = null, string callbackMethodName = "", Param params = null)
+	{
+		GameInventory inventory = GetInventory();
+		if ( !isVital || !inventory )
+			return;
+
+		EntityAI item = inventory.FindAttachment(slotId);
+
+		if (!item || item.IsRuined())
+		{
+			if (caller && callbackMethodName)
+			{
+				g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallByName(caller, callbackMethodName, params);
+			}
+		}
+	}
+	
+	protected void PartsHealthCheck();
+	
+	//! fluids
+	int GetFluidCapacityScript(ETransportFluid fluidType)
+	{
+		return 0;
+	}
+	
+	float GetFluidFractionScript(ETransportFluid fluidType)
+	{
+		return 0.0;
+	}
+	
+	void FillScript(ETransportFluid fluidType, float amount);
+	
+	void UpdateBattery(IEntity battery);
 	
 	string GetVehicleType()
 	{
@@ -324,6 +470,40 @@ class Transport extends EntityAI
 	{
 		return ModelToWorld( m_fuelPos );
 	}
+
+	//! artificial value that helps to distinguish between different weight categories (mainly for particles)
+	float GetWeightCoef()
+	{
+		return 1.0;
+	}
+	
+
+	protected string GetSelectionFromAnimSource( string animSource )
+	{
+		// Brute force for vehicles that aren't set up
+		
+		TStringArray allSelections = new TStringArray();
+		GetSelectionList(allSelections);
+		
+		int allSelectionCount = allSelections.Count();
+		for (int s = 0; s < allSelectionCount; ++s)
+		{
+			string selectionAll = allSelections[s];
+			string animSrc = GetAnimSourceFromSelection(selectionAll);
+			animSrc.ToLower();
+			if (animSrc != animSource)
+				continue;
+			
+			if (animSrc)
+			{
+				return selectionAll;
+			}
+		}
+
+		return "";
+	}
+	
+	protected EffectSound CreateSoundForAnimationSource(string animSource);
 	
 	protected /*sealed*/ VehicleFlippedContext GetFlipContext()
 	{
@@ -338,7 +518,7 @@ class Transport extends EntityAI
 		
 		return m_FlippedContext;
 	}
-	
+
 	protected bool DetectFlippedUsingSurface(VehicleFlippedContext ctx, float angleTolerance)
 	{
 		vector corners[4];
@@ -449,6 +629,23 @@ class Transport extends EntityAI
 		return false;
 	}
 	
+	bool IsAnyCrewPresent(TIntArray positionIndices)
+	{
+		TIntArray indices = new TIntArray();
+		bool isPresent;
+		for (int index = 0; index < CrewSize(); ++index)
+		{
+			if (CrewMember(index) != null)
+			{
+				isPresent = true;
+				indices.Insert(index);
+			}
+		}
+		
+		positionIndices.Copy(indices);
+		return isPresent;
+	}
+	
 	float GetTransportCameraDistance()
 	{
 		return 4.0;
@@ -471,11 +668,29 @@ class Transport extends EntityAI
 		return 2;
 #endif
 	}
+	
+	bool CanGetIn()
+	{
+		return true;
+	}
 
-	int GetSeatAnimationType( int posIdx )
+	bool HasDirectionalInOutAction()
+	{
+		return false;
+	}
+
+	int GetSeatAnimationType(int posIdx)
 	{
 #ifndef CFGMODS_DEFINE_TEST
 		Error("GetSeatAnimationType() not implemented");
+#endif
+		return 0;
+	}
+	
+	int GetSeatAnimationTypeDirectional(int posIdx, int directionIndex)
+	{
+#ifndef CFGMODS_DEFINE_TEST
+		Error("GetSeatAnimationTypeDirectional() not implemented");
 #endif
 		return 0;
 	}
@@ -488,6 +703,22 @@ class Transport extends EntityAI
 #else
 		return 31;
 #endif
+	}
+
+	/**
+	 * Called from native
+	 */
+	bool CrewCanEject(int posIdx)
+	{
+		return false;
+	}
+
+	/**
+	 * Called from native
+	 */
+	bool CrewShouldEject(int posIdx)
+	{
+		return false;
 	}
 	
 	bool CrewCanGetThrough( int posIdx )
@@ -586,51 +817,30 @@ class Transport extends EntityAI
 	{
 		return m_EngineZoneReceivedHit;
 	}
-
-	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	
+	bool NeedElectricitySourceDevice()
 	{
-		super.GetDebugActions(outputList);
-		
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
-		if (Gizmo_IsSupported())
-			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_OBJECT, "Gizmo Object", FadeColors.LIGHT_GREY));
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_PHYSICS, "Gizmo Physics (SP Only)", FadeColors.LIGHT_GREY)); // intentionally allowed for testing physics desync
-		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+		return true;
 	}
 	
-	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	EntityAI GetElectricitySourceDevice()
 	{
-		if (super.OnAction(action_id, player, ctx))
-			return true;
-
-		if (g_Game.IsClient() || !g_Game.IsMultiplayer())
-		{
-			switch (action_id)
-			{
-				case EActions.GIZMO_OBJECT:
-					if (GetGizmoApi())
-						GetGizmoApi().SelectObject(this);
-					return true;
-				case EActions.GIZMO_PHYSICS:
-					if (GetGizmoApi())
-						GetGizmoApi().SelectPhysics(GetPhysics());
-					return true;
-			}
-		}
-
-		if (g_Game.IsServer())
-		{
-			switch (action_id)
-			{
-				case EActions.DELETE:
-					Delete();
-					return true;
-			}
-		}
-	
-		return false;
+		return null;
 	}
 	
+	string GetElectricitySourceDeviceType()
+	{
+		return "";
+	}
+	
+	string GetAnimSourceFromSelection(string selection)
+	{
+		return "";
+	}
+	
+	//! component helpers
+	Managed GetVehicleHornComponent();
+
 	bool IsAreaAtDoorFree( int currentSeat, float maxAllowedObjHeight, inout vector extents, out vector transform[4] )
 	{
 		GetTransform(transform);
@@ -687,7 +897,158 @@ class Transport extends EntityAI
 		
 		return IsAreaAtDoorFree( currentSeat, maxAllowedObjHeight, extents, transform );
 	}
+
+	bool IsAreaAtDoorFreeDiag(int currentSeat, float maxAllowedObjHeight, inout vector extents, out vector transform[4])
+	{
+		if (DiagMenu.GetBool(DiagMenuIDs.TRANSPORT_FREESPACE_DISABLED))
+			return true;
+
+		return IsAreaAtDoorFree(currentSeat, maxAllowedObjHeight, extents, transform);
+	}
+
+	bool IsAreaAtDoorFreeDiag(int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7)
+	{
+		if (DiagMenu.GetBool(DiagMenuIDs.TRANSPORT_FREESPACE_DISABLED))
+			return true;
+
+		return IsAreaAtDoorFree(currentSeat, maxAllowedObjHeight, horizontalExtents, playerHeight);
+	}
 	
+	// --------------------------------------------------------------------------------
+	
+	protected bool GetCrashLightSound()
+	{
+		return m_PlayCrashSoundLight;
+	}
+	
+	// --------------------------------------------------------------------------------
+	
+	protected bool GetCrashHeavySound()
+	{
+		return m_PlayCrashSoundHeavy;
+	}
+
+	// --------------------------------------------------------------------------------
+	
+	protected void SynchCrashLightSound(bool play)
+	{
+		if (m_PlayCrashSoundLight != play)
+		{
+			m_PlayCrashSoundLight = play;
+			SetSynchDirty();
+		}
+	}
+	
+	// --------------------------------------------------------------------------------
+
+	protected void SynchCrashHeavySound(bool play)
+	{
+		if (m_PlayCrashSoundHeavy != play)
+		{
+			m_PlayCrashSoundHeavy = play;
+			SetSynchDirty();
+		}
+	}
+	
+	// --------------------------------------------------------------------------------
+	
+	protected void PlayCrashLightSound();
+
+	// --------------------------------------------------------------------------------
+
+	protected void PlayCrashHeavySound();
+	
+	// --------------------------------------------------------------------------------
+	
+	protected void PlaySoundEx(string soundset, EffectSound sound, out bool soundbool)
+	{
+		#ifndef SERVER
+		#ifndef NO_GUI
+		if (!sound)
+		{
+			sound =	SEffectManager.PlaySoundCachedParams(soundset, GetPosition());
+			if( sound )
+			{
+				sound.SetAutodestroy(true);
+			}
+		}
+		else
+		{
+			if (!sound.IsSoundPlaying())
+			{
+				sound.SetPosition(GetPosition());
+				sound.SoundPlay();
+			}
+		}
+		
+		soundbool = false;
+		#endif
+		#endif
+	}
+
+	// --------------------------------------------------------------------------------
+	
+	void PlaySound(string soundset, EffectSound sound, out bool soundbool)
+	{
+		PlaySoundEx(soundset, sound, soundbool);
+	}
+
+	// --------------------------------------------------------------------------------
+	
+	void CleanupEffects()
+	{			
+		SEffectManager.DestroyEffect(m_CrashSoundLight);
+		SEffectManager.DestroyEffect(m_CrashSoundHeavy);
+	}
+
+	// --------------------------------------------------------------------------------
+
+	#ifdef DIAG_DEVELOPER
+	override void GetDebugActions(out TSelectableActionInfoArrayEx outputList)
+	{
+		super.GetDebugActions(outputList);
+		
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.DELETE, "Delete", FadeColors.RED));
+		if (Gizmo_IsSupported())
+			outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_OBJECT, "Gizmo Object", FadeColors.LIGHT_GREY));
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.GIZMO_PHYSICS, "Gizmo Physics (SP Only)", FadeColors.LIGHT_GREY)); // intentionally allowed for testing physics desync
+		outputList.Insert(new TSelectableActionInfoWithColor(SAT_DEBUG_ACTION, EActions.SEPARATOR, "___________________________", FadeColors.RED));
+	}
+	
+	override bool OnAction(int action_id, Man player, ParamsReadContext ctx)
+	{
+		if (super.OnAction(action_id, player, ctx))
+			return true;
+
+		if (GetGame().IsClient() || !GetGame().IsMultiplayer())
+		{
+			switch (action_id)
+			{
+				case EActions.GIZMO_OBJECT:
+					if (GetGizmoApi())
+						GetGizmoApi().SelectObject(this);
+					return true;
+				case EActions.GIZMO_PHYSICS:
+					if (GetGizmoApi())
+						GetGizmoApi().SelectPhysics(GetPhysics());
+					return true;
+			}
+		}
+
+		if (GetGame().IsServer())
+		{
+			switch (action_id)
+			{
+				case EActions.DELETE:
+					Delete();
+					return true;
+			}
+		}
+	
+		return false;
+	}
+	#endif
+
 	Shape DebugFreeAreaAtDoor( int currentSeat, float maxAllowedObjHeight = 0.5, float horizontalExtents = 0.5, float playerHeight = 1.7 )
 	{
 		int color = ARGB(20, 0, 255, 0);
@@ -708,7 +1069,77 @@ class Transport extends EntityAI
 		shape.SetMatrix(transform);
 		return shape;
 	}
-};
+}
+
+#ifdef DIAG_DEVELOPER
+enum EVehicleDebugOutputType
+{
+	NONE,
+	DAMAGE_APPLIED = 1,
+	DAMAGE_CONSIDERED = 2,
+	CONTACT = 4
+	//OTHER = 8
+	//OTHER = 16
+}
+
+class CrashDebugData
+{
+	static ref array<ref CrashDebugData> m_CrashData = new array<ref CrashDebugData>;
+	static ref CrashDebugData m_CrashDataPoint;
+	//data is recorded on server, upon request, sent to the client
+	static void SendData(DayZPlayer player)
+	{
+		/*
+		m_CrashData.Clear();
+		CrashDebugData fakeData = new CrashDebugData();
+		fakeData.m_VehicleType = "FakeVehicle";
+		m_CrashData.Insert(fakeData);
+		*/
+		GetGame().RPCSingleParam(player, ERPCs.DIAG_VEHICLES_DUMP_CRASH_DATA_CONTENTS, new Param1<array<ref CrashDebugData>>(m_CrashData), true, player.GetIdentity());
+	}
+	
+	//this is client requesting to dump the data it previously received from the server
+	static void DumpDataArray(array<ref CrashDebugData> dataArray)
+	{
+		Print("Vehicle; DamageType; Damage; Zone; Momentum; Momentum Prev; Momentum Delta; Speedometer; SpeedWorld; SpeedWorld Prev; SpeedWorld Delta; Velocity; Velocity Prev; Velocity Dot; TimeStamp (ms); CrewDamageBase; ShockTemp; DMGHealth; DMGShock");
+		foreach (CrashDebugData data:dataArray)
+		{
+			DumpData(data);
+		}
+	}
+	
+	static void DumpData(CrashDebugData data)
+	{
+		string output = data.m_VehicleType+";"+data.m_DamageType+";"+data.m_Damage+";"+data.m_Zone+";"+data.m_MomentumCurr+";"+data.m_MomentumPrev+";"+data.m_MomentumDelta+";"+data.m_Speedometer;
+		output += ";"+data.m_SpeedWorld+";"+data.m_SpeedWorldPrev+";"+data.m_SpeedWorldDelta+";"+data.m_VelocityCur;
+		output += ";"+data.m_VelocityPrev+";"+data.m_VelocityDot+";"+data.m_Time+";"+data.m_CrewDamageBase+";"+data.m_ShockTemp+";"+data.m_DMGHealth+";"+data.m_DMGShock;
+		Print(output);
+	}
+		
+	string m_VehicleType;
+	string m_DamageType;
+	float m_Damage;
+	string m_Zone;
+	float m_MomentumCurr;
+	float m_MomentumPrev;
+	float m_MomentumDelta;
+	float m_Speedometer;
+	float m_SpeedWorld;
+	float m_SpeedWorldPrev;
+	float m_SpeedWorldDelta;
+	vector m_VelocityCur;
+	vector m_VelocityPrev;
+	float m_VelocityDot;
+	float m_Time;
+	float m_CrewDamageBase;
+	float m_ShockTemp;
+	float m_DMGHealth;
+	float m_DMGShock;
+}
+
+#endif
+
+typedef map<string, ref array<ref VehicleContactData>> VehicleContactCache;
 
 class VehicleContactData
 {
@@ -771,4 +1202,4 @@ class VehicleFlippedContext
 	
 	[Obsolete("no replacement")]
 	protected void HandleByCrewMemberState(ECrewMemberState state);
-};
+}

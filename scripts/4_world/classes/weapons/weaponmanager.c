@@ -1359,9 +1359,12 @@ class WeaponManager
 			else
 			{
 				result = GameInventory.CanForceSwapEntitiesEx(new_mag, null, old_mag, new_il);
-				float dir[4];
 				if ( !result )
 				{
+					vector rotationMatrix[3];
+					float dir[4];
+					Math3D.YawPitchRollMatrix(m_player.GetOrientation(), rotationMatrix);
+					Math3D.MatrixToQuat(rotationMatrix, dir);
 					new_il.SetGroundEx( old_mag,  m_player.GetPosition(), dir);
 				}
 			}

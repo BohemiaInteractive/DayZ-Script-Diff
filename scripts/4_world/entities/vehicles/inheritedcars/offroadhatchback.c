@@ -1,4 +1,4 @@
-class OffroadHatchback extends CarScript
+class OffroadHatchback : CarScript
 {
 	protected ref UniversalTemperatureSource m_UTSource;
 	protected ref UniversalTemperatureSourceSettings m_UTSSettings;
@@ -19,11 +19,18 @@ class OffroadHatchback extends CarScript
 		m_CarDoorCloseSound 	= "offroad_door_close_SoundSet";
 		m_CarSeatShiftInSound 	= "Offroad_SeatShiftIn_SoundSet";
 		m_CarSeatShiftOutSound 	= "Offroad_SeatShiftOut_SoundSet";
+
+		m_LightsComponent.RegisterLight("Front", new VehicleLightData(new OffroadHatchbackLightProfileFront()));
+		m_LightsComponent.RegisterLight("Rear",	 new VehicleLightData(new OffroadHatchbackLightProfileRear()));
 		
-		m_CarHornShortSoundName = "Offroad_Horn_Short_SoundSet";
-		m_CarHornLongSoundName	= "Offroad_Horn_SoundSet";
+		m_HornComponent.RegisterSound(VehicleHornMode.SHORT, 	"Offroad_Horn_Short_SoundSet");
+		m_HornComponent.RegisterSound(VehicleHornMode.LONG, 	"Offroad_Horn_SoundSet");
 		
 		SetEnginePos("0 0.7 1.2");
+		
+		//! DEPRECATED
+		m_CarHornShortSoundName = "Offroad_Horn_Short_SoundSet";
+		m_CarHornLongSoundName	= "Offroad_Horn_SoundSet";
 	}
 	
 	void ~OffroadHatchback()
@@ -49,6 +56,23 @@ class OffroadHatchback extends CarScript
 			m_UTSLEngine						= new UniversalTemperatureSourceLambdaEngine();
 			m_UTSource							= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLEngine);
 		}		
+	}
+	
+	override bool NeedElectricitySourceDevice()
+	{
+		return true;
+	}
+	
+	override EntityAI GetElectricitySourceDevice()
+	{
+		super.GetElectricitySourceDevice();
+		
+		return GetInventory().FindAttachment(CarBattery.SLOT_ID);
+	}
+	
+	override string GetElectricitySourceDeviceType()
+	{
+		return "CarBattery";
 	}
 	
 	override void OnEngineStart()
@@ -110,17 +134,6 @@ class OffroadHatchback extends CarScript
 
 		return 0;
 
-	}
-	
-	
-	override CarRearLightBase CreateRearLight()
-	{
-		return CarRearLightBase.Cast( ScriptedLightBase.CreateLight(OffroadHatchbackRearLight) );
-	}
-	
-	override CarLightBase CreateFrontLight()
-	{
-		return CarLightBase.Cast( ScriptedLightBase.CreateLight(OffroadHatchbackFrontLight) );
 	}
 
 	override bool CanReleaseAttachment(EntityAI attachment)
@@ -378,11 +391,6 @@ class OffroadHatchback extends CarScript
 		return -1;
 	}
 
-	override bool IsVitalTruckBattery()
-	{
-		return false;
-	}
-
 	override bool IsVitalGlowPlug()
 	{
 		return false;
@@ -477,7 +485,7 @@ class OffroadHatchback extends CarScript
 	}
 }
 
-class OffroadHatchback_White extends OffroadHatchback
+class OffroadHatchback_White : OffroadHatchback
 {
 	override void OnDebugSpawn()
 	{
@@ -495,6 +503,7 @@ class OffroadHatchback_White extends OffroadHatchback
 		inventory.CreateInInventory("HatchbackDoors_CoDriver_White");
 		inventory.CreateInInventory("HatchbackHood_White");
 		inventory.CreateInInventory("HatchbackTrunk_White");
+				
 
 		//-----IN CAR CARGO
 		inventory.CreateInInventory("HatchbackWheel");
@@ -502,7 +511,7 @@ class OffroadHatchback_White extends OffroadHatchback
 	}
 }
 
-class OffroadHatchback_Blue extends OffroadHatchback
+class OffroadHatchback_Blue : OffroadHatchback
 {
 	override void OnDebugSpawn()
 	{
@@ -520,7 +529,7 @@ class OffroadHatchback_Blue extends OffroadHatchback
 		inventory.CreateInInventory("HatchbackDoors_CoDriver_Blue");
 		inventory.CreateInInventory("HatchbackHood_Blue");
 		inventory.CreateInInventory("HatchbackTrunk_Blue");
-	
+		
 		//-----IN CAR CARGO
 		inventory.CreateInInventory("HatchbackWheel");
 		inventory.CreateInInventory("HatchbackWheel");

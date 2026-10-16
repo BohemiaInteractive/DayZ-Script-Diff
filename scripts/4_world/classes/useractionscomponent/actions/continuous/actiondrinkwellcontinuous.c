@@ -47,7 +47,16 @@ class ActionDrinkWellContinuous : ActionContinuousBase
 		if (!player.CanEatAndDrink())
 			return false;
 		
-		return target.GetObject() && (target.GetObject().GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || target.GetObject().IsWell());
+		Object targetObject = target.GetObject();
+		if (targetObject)
+		{
+			TIntArray componentIndices = new TIntArray();
+			targetObject.GetActionComponentsForSelectionName(targetObject.GetViewGeometryLevel(), UAMisc.LIQUID_SOURCE_SELECTION, componentIndices);
+			if (componentIndices.Count() > 0 && componentIndices.Find(target.GetComponentIndex()) == -1)
+				return false;
+		}
+		
+		return targetObject && (targetObject.GetWaterSourceObjectType() == EWaterSourceObjectType.WELL || targetObject.IsWell());
 	}
 
 	override void OnStart(ActionData action_data)

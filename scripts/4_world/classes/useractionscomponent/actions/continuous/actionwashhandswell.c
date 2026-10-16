@@ -26,12 +26,21 @@ class ActionWashHandsWell: ActionContinuousBase
 	override void CreateConditionComponents()  
 	{		
 		m_ConditionItem		= new CCINone();
-		m_ConditionTarget	= new CCTObject(UAMaxDistances.DEFAULT);
+		m_ConditionTarget 	= new CCTCursor(UAMaxDistances.DEFAULT);
 	}
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		return player.HasBloodyHands() && !player.GetItemInHands() && target.GetObject() && (target.GetObject().GetWaterSourceObjectType() != EWaterSourceObjectType.NONE || target.GetObject().IsWell()) && !player.GetItemOnSlot("Gloves");
+		Object targetObject = target.GetObject();
+		if (targetObject)
+		{
+			TIntArray componentIndices = new TIntArray();
+			targetObject.GetActionComponentsForSelectionName(targetObject.GetViewGeometryLevel(), UAMisc.LIQUID_SOURCE_SELECTION, componentIndices);
+			if (componentIndices.Count() > 0 && componentIndices.Find(target.GetComponentIndex()) == -1)
+				return false;
+		}
+		
+		return player.HasBloodyHands() && !player.GetItemInHands() && targetObject && (targetObject.GetWaterSourceObjectType() != EWaterSourceObjectType.NONE || targetObject.IsWell()) && !player.GetItemOnSlot("Gloves");
 	}
 
 	override void OnFinishProgressServer(ActionData action_data)

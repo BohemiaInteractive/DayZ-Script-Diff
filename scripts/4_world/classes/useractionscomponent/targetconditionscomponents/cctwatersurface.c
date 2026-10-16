@@ -1,3 +1,5 @@
+//! DEPRECATED
+[Obsolete("1.30: replaced by CCTLiquid")]
 class CCTWaterSurface : CCTBase
 {
 	protected const int HEIGHT_DIFF_LIMIT_METERS 	= 1.0;
@@ -54,6 +56,7 @@ class CCTWaterSurface : CCTBase
 	}
 }
 
+[Obsolete("1.30: replaced by CCTLiquid")]
 class CCTWaterSurfaceEx : CCTBase
 {
 	protected float m_MaximalActionDistanceSq;

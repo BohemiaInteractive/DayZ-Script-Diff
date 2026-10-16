@@ -25,6 +25,9 @@ enum SymptomIDs
 	SYMPTOM_DEAFNESS_COMPLETE,
 	SYMPTOM_HMP_SEVERE,
 	SYMPTOM_GASP,
+	SYMPTOM_SQUINT,
+	SYMPTOM_IRRITATED_EYES,
+	SYMPTOM_FAINT,
 	LAST_INDEX
 };
 
@@ -43,6 +46,60 @@ enum EAnimPlayState
 
 const int DEBUG_PADDING_OFFSET = 2;
 const int MAX_QUEUE_SIZE = 5; 
+
+class SymptomSyncData : Param
+{
+	ref TIntArray m_IntArray;
+	ref TFloatArray m_FloatArray;
+	
+	void SymptomSyncData()
+	{
+		m_IntArray = new TIntArray();
+		m_FloatArray = new TFloatArray();
+	}
+
+	override bool Serialize(Serializer ctx)
+	{
+		bool returnValue = true;
+
+		foreach (int i : m_IntArray)
+		{
+			returnValue = ctx.Read(i);
+			if (!returnValue)
+				return false;
+		}
+		
+		foreach (int f : m_FloatArray)
+		{
+			returnValue = ctx.Read(f);
+			if (!returnValue)
+				return false;
+		}
+		
+		return returnValue;
+	}
+		
+	override bool Deserializer(Serializer ctx)
+	{
+		bool returnValue = true;
+
+		foreach (int i : m_IntArray)
+		{
+			returnValue = ctx.Read(i);
+			if (!returnValue)
+				return false;
+		}
+		
+		foreach (int f : m_FloatArray)
+		{
+			returnValue = ctx.Read(f);
+			if (!returnValue)
+				return false;
+		}
+		
+		return returnValue;
+	}
+}
 
 class SymptomManager
 {
@@ -90,6 +147,9 @@ class SymptomManager
 		RegisterSymptom(new DeafnessCompleteSymptom);
 		RegisterSymptom(new HMP3Symptom);
 		RegisterSymptom(new GaspSymptom);
+		RegisterSymptom(new SquintSymptom);
+		RegisterSymptom(new IrritatedEyes);
+		RegisterSymptom(new FaintSymptom);
 	}
 	
 	int GetStorageVersion()
@@ -206,7 +266,7 @@ class SymptomManager
 		if (m_SymptomsUIDs.Get(SYMPTOM_uid))
 			m_SymptomsUIDs.Get(SYMPTOM_uid).RequestDestroy();
 	}
-
+	
 	bool IsSymptomPrimary(int symptom_id)
 	{
 		return m_AvailableSymptoms.Get(symptom_id).IsPrimary();
@@ -326,7 +386,7 @@ class SymptomManager
 		if (primarySymptom)
 		{
 			if (!primarySymptom.IsActivated() && primarySymptom.CanActivate())
-				primarySymptom.Activate();
+					primarySymptom.Activate();
 
 			if (primarySymptom.IsActivated() && CanUpdateSymptom(primarySymptom))
 				primarySymptom.Update(deltatime);
@@ -342,13 +402,13 @@ class SymptomManager
 			{
 				if (!secondarySymptom.IsActivated())
 					secondarySymptom.Activate();
-	
+
 				if (secondarySymptom.IsActivated() && CanUpdateSymptom(secondarySymptom))
 					secondarySymptom.Update(deltatime);
 				else
 					secondarySymptom.Destroy();
 			}
-		}		
+		}
 	}
 	
 	void OnSymptomExit(SymptomBase Symptom, int uid)
@@ -435,13 +495,20 @@ class SymptomManager
 
 	SymptomBase SpawnSymptom(int symptom_id, int uid = -1)
 	{
+		SymptomBase symptom;
+
 		if (m_AvailableSymptoms.Get(symptom_id))
 		{
-			SymptomBase symptom = SymptomBase.Cast(m_AvailableSymptoms.Get(symptom_id).ClassName().ToType().Spawn());
-			if (uid == -1)
+			symptom = SymptomBase.Cast(m_AvailableSymptoms.Get(symptom_id).ClassName().ToType().Spawn());
+			if (!symptom) 
 			{
-				uid = CreateUniqueID();
+				ErrorEx("Symptom not registered");
+
+				return null;
 			}
+	
+			if (uid == -1)
+				uid = CreateUniqueID();
 
 			symptom.Init(this, m_Player,uid);
 
@@ -451,15 +518,9 @@ class SymptomManager
 			m_SymptomsUIDs.Insert(uid, symptom);
 			IncreaseSymptomCount(symptom_id);
 
-			return symptom;
 		}
 		
-		if (!symptom) 
-		{
-			Error("Symptom not registered");
-		}
-		
-		return null;
+		return symptom;
 	}
 	
 	void CleanUpPrimaryQueue()
@@ -521,10 +582,10 @@ class SymptomManager
 		if (m_Player.IsUnconscious() && !m_AvailableSymptoms.Get(symptom_id).AllowInUnconscious())
 			return null;
 		
-		SymptomBase Symptom = SpawnSymptom(symptom_id, uid);
+		SymptomBase symptom = SpawnSymptom(symptom_id, uid);
 		
-		m_SymptomQueueSecondary.Insert(Symptom);
-		return Symptom;
+		m_SymptomQueueSecondary.Insert(symptom);
+		return symptom;
 	}
 	
 	//! Removes a single Symptom
@@ -589,34 +650,42 @@ class SymptomManager
 	
 	void OnRPC(int rpc_type, ParamsReadContext ctx)
 	{
-		ctx.Read(CachedObjectsParams.PARAM2_INT_INT);
-		int symptom_id = CachedObjectsParams.PARAM2_INT_INT.param1;
-		int uid = CachedObjectsParams.PARAM2_INT_INT.param2;
+		int symptomId;
+		int uid;
 		
-		bool is_primary = m_AvailableSymptoms.Get(symptom_id).IsPrimary();
-		
-		if ( rpc_type == ERPCs.RPC_PLAYER_SYMPTOM_ON )
+		switch (rpc_type)
 		{
-			if ( is_primary )
-			{
-				CleanUpPrimaryQueue();
-				QueueUpPrimarySymptom(symptom_id,uid);
-			}
-			else
-			{
-				QueueUpSecondarySymptom(symptom_id,uid);
-			}
-		}
-		else if ( rpc_type == ERPCs.RPC_PLAYER_SYMPTOM_OFF )
-		{
-			if ( is_primary )
-			{
-				CleanUpPrimaryQueue();
-			}
-			else
-			{
-				RemoveSecondarySymptom( symptom_id );
-			}
+			case ERPCs.RPC_PLAYER_SYMPTOM_ON:
+				ctx.Read(CachedObjectsParams.PARAM2_INT_INT);
+				symptomId = CachedObjectsParams.PARAM2_INT_INT.param1;
+				uid = CachedObjectsParams.PARAM2_INT_INT.param2;
+				if (IsSymptomPrimary(symptomId))
+				{
+					CleanUpPrimaryQueue();
+					QueueUpPrimarySymptom(symptomId, uid);
+				}
+				else
+					QueueUpSecondarySymptom(symptomId, uid);
+
+				break;
+			case ERPCs.RPC_PLAYER_SYMPTOM_OFF:
+				ctx.Read(CachedObjectsParams.PARAM2_INT_INT);
+				symptomId = CachedObjectsParams.PARAM2_INT_INT.param1;
+				uid = CachedObjectsParams.PARAM2_INT_INT.param2;
+				if (IsSymptomPrimary(symptomId))
+				{
+					CleanUpPrimaryQueue();
+				}
+				else
+					RemoveSecondarySymptom(symptomId);
+
+				break;
+			case ERPCs.RPC_SYMPTOM_PARAM_SYNC:
+				Param2<int, ref SymptomSyncData> paramsNew = new Param2<int, ref SymptomSyncData>(0, null);
+				ctx.Read(paramsNew);
+				m_AvailableSymptoms.Get(paramsNew.param1).SetParam(paramsNew);
+	
+				break;
 		}
 	}
 

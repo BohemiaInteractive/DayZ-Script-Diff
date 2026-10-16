@@ -6,7 +6,7 @@ class ChristmasTree extends House
 	
 	void ChristmasTree()
 	{
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			m_TreeLight = XmasTreeLight.Cast( ScriptedLightBase.CreateLight( XmasTreeLight, "0 0 0" ) );
 			m_TreeLight.AttachOnMemoryPoint( this, "action" );
@@ -15,7 +15,7 @@ class ChristmasTree extends House
 	
 	override void EEInit()
 	{
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			PlaySoundSetLoop( m_AmbientSoundLoop, LOOP_SOUND, 0, 0 );
 		}
@@ -23,7 +23,7 @@ class ChristmasTree extends House
 	
 	override void EEDelete(EntityAI parent)
 	{
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			if ( m_TreeLight )
 				m_TreeLight.Destroy();

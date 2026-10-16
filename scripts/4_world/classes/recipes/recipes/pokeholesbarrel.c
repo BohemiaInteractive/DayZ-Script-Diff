@@ -36,9 +36,10 @@ class PokeHolesBarrel extends RecipeBase
 		InsertIngredient(1,"KitchenKnife");
 		InsertIngredient(1,"SteakKnife");
 		InsertIngredient(1,"HayHook");
-		InsertIngredient(1,"StoneKnife");
+		InsertIngredient(1,"Iceaxe");
 		InsertIngredient(1,"Cleaver");
 		InsertIngredient(1,"CombatKnife");
+		InsertIngredient(1,"Jambiya");
 		InsertIngredient(1,"HuntingKnife");
 		InsertIngredient(1,"Machete");
 		InsertIngredient(1,"CrudeMachete");
@@ -54,6 +55,10 @@ class PokeHolesBarrel extends RecipeBase
 		InsertIngredient(1,"M9A1_Bayonet");
 		InsertIngredient(1,"Mosin_Bayonet");
 		InsertIngredient(1,"SKS_Bayonet");
+		InsertIngredient(1,"Scimitar");		
+		InsertIngredient(1,"DonerKnife");
+		InsertIngredient(1,"BrickTrowel");
+		InsertIngredient(1,"Akinaka");
 		
 		m_IngredientAddHealth[1] = -100;
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

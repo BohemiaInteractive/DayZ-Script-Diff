@@ -5,8 +5,6 @@ class BaseBuildingBase extends ItemBase
 	
 	float 				m_ConstructionKitHealth;			//stored health value for used construction kit
 
-	ref Construction 	m_Construction;
-	
 	bool 				m_HasBase;
 	//variables for synchronization of base building parts (2x31 is the current limit)
 	int 				m_SyncParts01;								//synchronization for already built parts (31 parts)
@@ -14,6 +12,7 @@ class BaseBuildingBase extends ItemBase
 	int 				m_SyncParts03;								//synchronization for already built parts (+31 parts)
 	int 				m_InteractedPartId;							//construction part id that an action was performed on
 	int					m_PerformedActionId;						//action id that was performed on a construction part
+	protected ref ConstructionBasic 	m_Construction;
 	
 	//Sounds
 	//build
@@ -63,17 +62,7 @@ class BaseBuildingBase extends ItemBase
 		}
 		
 		ProcessInvulnerabilityCheck(GetInvulnerabilityTypeString());
-	}
-	
-	override void EEDelete(EntityAI parent)
-	{
-		super.EEDelete(parent);
-
-		foreach (AreaDamageManager areaDamage : m_DamageTriggers)
-		{
-			areaDamage.Destroy();
-		}
-		
+		SetAllowDamage(true);
 	}
 	
 	override string GetInvulnerabilityTypeString()
@@ -114,7 +103,7 @@ class BaseBuildingBase extends ItemBase
 	{
 		return "Shelter_Site_Build_Loop_SoundSet";
 	}
-
+	
 	// --- SYNCHRONIZATION
 	void SynchronizeBaseState()
 	{
@@ -275,7 +264,7 @@ class BaseBuildingBase extends ItemBase
 	
 	void SetPartFromSyncData( ConstructionPart part )
 	{
-		string key = part.m_PartName;
+		string key = part.GetPartName();
 		bool is_base = part.IsBase();
 		bool is_part_built_sync = IsPartBuildInSyncData( part.GetId() );
 		bsbDebugSpam("[bsb] " + GetDebugName(this) + " SetPartFromSyncData try to sync: built=" + is_part_built_sync + " key=" + key + " part=" + part.GetPartName() + " part_built=" + part.IsBuilt());
@@ -328,7 +317,7 @@ class BaseBuildingBase extends ItemBase
 		}
 		
 		//regenerate navmesh
-		UpdateNavmesh();		
+		UpdateNavmesh();
 	}
 	
 	protected ConstructionPart GetConstructionPartById( int id )
@@ -417,6 +406,17 @@ class BaseBuildingBase extends ItemBase
 	}	
 	
 	// --- EVENTS
+	override void EEDelete(EntityAI parent)
+	{
+		super.EEDelete(parent);
+
+		foreach (AreaDamageManager areaDamage : m_DamageTriggers)
+		{
+			areaDamage.Destroy();
+		}
+		
+	}
+	
 	override void OnStoreSave( ParamsWriteContext ctx )
 	{   
 		super.OnStoreSave( ctx );
@@ -479,8 +479,8 @@ class BaseBuildingBase extends ItemBase
 		SetPartsFromSyncData();
 		
 		//set base state
-		ConstructionPart construction_part = GetConstruction().GetBaseConstructionPart();
-		SetBaseState( construction_part.IsBuilt() ) ;
+		ConstructionPart part = GetConstruction().GetBaseConstructionPart();
+		SetBaseState( part.IsBuilt() ) ;
 			
 		//synchronize after load
 		SynchronizeBaseState();
@@ -489,6 +489,7 @@ class BaseBuildingBase extends ItemBase
 	override void OnCreatePhysics()
 	{
 		super.OnCreatePhysics();
+		
 		ConstructionInit();
 		SetPartsAfterStoreLoad();
 	}
@@ -499,57 +500,18 @@ class BaseBuildingBase extends ItemBase
 			return;
 		
 		super.EEHealthLevelChanged(oldLevel,newLevel,zone);
-		
-		if (g_Game.IsMultiplayer() && !g_Game.IsServer())
-			return;
-		
-		Construction construction = GetConstruction();
-		string part_name = zone;
-		part_name.ToLower();
-		
-		if ( newLevel == GameConstants.STATE_RUINED )
-		{
-			ConstructionPart construction_part = construction.GetConstructionPart( part_name );
-			
-			if ( construction_part && construction.IsPartConstructed( part_name ) )
-			{
-				construction.DestroyPartServer( null, part_name, AT_DESTROY_PART );
-				construction.DestroyConnectedParts(part_name);
-			}
-			
-			//barbed wire handling (hack-ish)
-			if ( part_name.Contains("barbed") )
-			{
-				BarbedWire barbed_wire = BarbedWire.Cast( FindAttachmentBySlotName( zone ) );
-				if (barbed_wire)
-					barbed_wire.SetMountedState( false );
-			}
-		}
 	}
 	
 	override void EEOnAfterLoad()
 	{
 		if (m_FixDamageSystemInit)
 		{
-			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( SetPartsAfterStoreLoad, 500, false, this );
+			g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( SetPartsAfterStoreLoad, 500, false, this ); //todo: check damage system config presence and 'HasDamageSystem' instead?
 		}
 		
 		super.EEOnAfterLoad();
 	}
 	
-	override void EEInit()
-	{
-		super.EEInit();
-		
-		// init visuals and physics
-		InitBaseState();
-		
-		//debug
-		#ifdef DEVELOPER
-		DebugCustomState();
-		#endif
-	}
-
 	override void EEItemAttached( EntityAI item, string slot_name )
 	{
 		super.EEItemAttached( item, slot_name );
@@ -703,69 +665,14 @@ class BaseBuildingBase extends ItemBase
 		SoundDestroyStart( part_name );
 	}
 	
-	//! Disconnected temporarily
-	protected void HandleItemFalling(ConstructionPart part)
-	{
-		bool process = false;
-		
-		//TODO: add a parameter to parts' config classes?
-		process |= part.m_PartName.Contains("_roof");
-		process |= part.m_PartName.Contains("_platform");
-		process |= part.m_PartName.Contains("_stair");
-		
-		if (process)
-		{
-			if (!MemoryPointExists(part.m_PartName + "_min") || !MemoryPointExists(part.m_PartName + "_max"))
-			{
-				Debug.Log("min/max memory points do not exist for part: " + part.m_PartName);
-				return;
-			}
-			
-			vector mins, maxs;
-			mins = ModelToWorld(GetMemoryPointPos(part.m_PartName + "_min"));
-			maxs = ModelToWorld(GetMemoryPointPos(part.m_PartName + "_max"));
-			
-			//sanitize minmaxs
-			vector minTmp, maxTmp;
-			minTmp[0] = Math.Min(mins[0],maxs[0]);
-			maxTmp[0] = Math.Max(mins[0],maxs[0]);
-			minTmp[1] = Math.Min(mins[1],maxs[1]);
-			maxTmp[1] = Math.Max(mins[1],maxs[1]);
-			minTmp[2] = Math.Min(mins[2],maxs[2]);
-			maxTmp[2] = Math.Max(mins[2],maxs[2]);
-			mins = minTmp;
-			maxs = maxTmp;
-			
-			maxs[1] = maxs[1] + 0.35; //reach a little above..
-			
-			ItemFall(mins,maxs);
-		}
-	}
-	
-	//! Disconnected temporarily
-	protected void ItemFall(vector min, vector max)
-	{
-		array<EntityAI> foundEntities = new array<EntityAI>();
-		DayZPlayerUtils.PhysicsGetEntitiesInBox(min,max,foundEntities);
-		
-		//filtering
-		ItemBase item;
-		foreach (EntityAI entity : foundEntities)
-		{
-			if (Class.CastTo(item,entity) && !item.CanUseConstruction()) //BB items?
-				item.ThrowPhysically(null,vector.Zero);
-		}
-	}
-	
 	// --- UPDATE
 	void InitBaseState()
 	{
 		if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] " + GetDebugName(this) + " BaseBuildingBase::InitBaseState ");
-
+		
 		InitVisuals();
 		UpdateNavmesh(); //regenerate navmesh
-		GetConstruction().InitBaseState();
-	}	
+	}
 	
 	void InitVisuals()
 	{
@@ -780,7 +687,7 @@ class BaseBuildingBase extends ItemBase
 			SetAnimationPhase( ANIMATION_DEPLOYED, 1 );
 		}
 		
-		GetConstruction().UpdateVisuals();
+		GetConstruction().InitVisuals();
 	}
 
 	void UpdateVisuals()
@@ -962,26 +869,20 @@ class BaseBuildingBase extends ItemBase
 	}
 	
 	// --- INIT
-	void ConstructionInit()
+	override protected ConstructionBasic CreateConstructionComponent()
 	{
-		if ( !m_Construction )
-		{
-			m_Construction = new Construction( this );
-		}
-		
-		GetConstruction().Init();
+		m_Construction = new Construction(this);
+		return m_Construction;
 	}
 	
-	Construction GetConstruction()
+	override ConstructionBasic GetConstructionBasic()
 	{
 		return m_Construction;
 	}
 	
-	//--- INVENTORY/ATTACHMENTS CONDITIONS
-	//attachments
-	override bool CanReceiveAttachment( EntityAI attachment, int slotId )
+	Construction GetConstruction()
 	{
-		return super.CanReceiveAttachment(attachment, slotId);
+		return Construction.Cast(m_Construction);
 	}
 	
 	bool HasAttachmentsBesidesBase()
@@ -1043,12 +944,6 @@ class BaseBuildingBase extends ItemBase
 	bool MustBeBuiltFromOutside()
 	{
 		return false;
-	}
-	
-	//camera direction check
-	bool IsFacingCamera( string selection )
-	{
-		return true;
 	}
 	
 	//roof check
@@ -1249,13 +1144,79 @@ class BaseBuildingBase extends ItemBase
 		RemoveAction(ActionTakeItemToHands);
 	}
 	
+	protected void DestroyConstructedParts()
+	{
+		Construction construction = GetConstruction();
+		if (!construction)
+			return;
+		
+		map<string, ref ConstructionPart> constructionParts = construction.GetConstructionParts();
+		for ( int i = constructionParts.Count() - 1; i >= 0; --i )		
+		{
+			ConstructionPart part = constructionParts.GetElement(i);
+			if (part && part.IsBuilt() && !part.IsUtilityPart())
+			{
+				construction.DestroyPartServer(null, part.GetPartName(), -1);
+			}
+		}
+	}
+	
+	protected void HandleFallingForConstructedParts()
+	{
+		Construction construction = GetConstruction();
+		if (!construction)
+			return;
+		
+		map<string, ref ConstructionPart> constructionParts = construction.GetConstructionParts();
+		for ( int i = constructionParts.Count() - 1; i >= 0; --i )		
+		{
+			ConstructionPart part = constructionParts.GetElement(i);
+			if (part && part.IsBuilt() && !part.IsUtilityPart())
+			{
+				construction.HandleEntityFalling(part.GetPartName());
+			}
+		}
+	}
+	
+	//! @Note for modders: This method and is subject to change!
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer())
+			 return;
+		
+		if (!CfgGameplayHandler.GetDisableDropAttachmentsOnFall())
+			DropAttachmentAndCargoItems();
+		
+		if (DestroyOnFall())
+		{
+			if (!CfgGameplayHandler.GetDisableRefundMaterialsOnFall())
+			{
+				DestroyConstructedParts();
+			}
+			else
+			{
+				if (!CfgGameplayHandler.GetDisableItemFalling())
+				{
+					HandleFallingForConstructedParts();
+				}
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(g_Game.ObjectDelete, 100, false, this);
+			}
+		}
+	}
+	
+	void DropAttachmentAndCargoItems()
+	{
+		if (HasAnyAttachmentsOrCargo())
+		{
+			//! @note: Only call this if the entity has rly any cargo/attachment
+			MiscGameplayFunctions.ThrowAllItemsInInventoryEx(this, ThrowEntityFlags.NONE, vector.Zero);
+		}
+	}
+	
 	//================================================================
 	// DEBUG
 	//================================================================	
-	protected void DebugCustomState()
-	{
-	}
-	
+
 	//! Excludes certain parts from being built by OnDebugSpawn, uses Contains to compare
 	array<string> OnDebugSpawnBuildExcludes()
 	{
@@ -1306,6 +1267,24 @@ class BaseBuildingBase extends ItemBase
 		}
 		
 		GetConstruction().UpdateVisuals();
+	}
+	
+	///////////////////////////
+	//Deprecated code playpen//
+	///////////////////////////
+	[Obsolete("handled in the Construction component directly")]
+	protected void HandleItemFalling(ConstructionPart part)
+	{
+	}
+	
+	[Obsolete("handled in the Construction component directly")]
+	protected void ItemFall(vector min, vector max)
+	{
+	}
+	
+	[Obsolete("obsolete debug method")]
+	protected void DebugCustomState()
+	{
 	}
 }
 

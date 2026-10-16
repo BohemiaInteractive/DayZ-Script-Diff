@@ -38,6 +38,8 @@ class BloodLoss extends SymptomBase
 		if ( player.IsPlayerSelected() && player.GetTransferValues() && player.GetTransferValues().GetBlood() != m_BloodSet ) 
 		{
 			m_BloodSet = player.GetTransferValues().GetBlood();
+			
+			#ifndef NO_GUI
 			if (m_BloodSet < 1.0)
 			{
 				m_RequesterBloodLoss.SetBloodLossLevel(m_BloodSet);
@@ -46,6 +48,7 @@ class BloodLoss extends SymptomBase
 			{
 				m_RequesterBloodLoss.Stop();
 			}
+			#endif
 		}
 	}
 	

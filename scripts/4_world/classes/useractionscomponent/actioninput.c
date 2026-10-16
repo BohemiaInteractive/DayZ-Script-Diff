@@ -60,11 +60,12 @@ class ActionInput : ActionInput_Basic
 	void Init(PlayerBase player, ActionManagerClient am)
 	{
 		m_Player = player;
-		
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable())
 		{
 			Debug.ActionLog("n/a",this.ToString(), "n/a","Init()", player.ToString());
 		}
+#endif
 		
 	}
 	
@@ -76,7 +77,7 @@ class ActionInput : ActionInput_Basic
 	protected void SetInput(string input_name)
 	{
 		m_input = GetUApi().GetInputByName(input_name).GetPersistentWrapper();
-		
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable())
 		{
 			if (m_input && m_input.InputP())
@@ -84,6 +85,7 @@ class ActionInput : ActionInput_Basic
 			else
 				Debug.ActionLog("(-) input is not set to " + input_name ,this.ToString(), "n/a","SetInput()","n/a");
 		}
+#endif
 	}
 	
 	int GetInputType()
@@ -351,20 +353,20 @@ class StandardActionInput : ActionInput
 	
 	override void UpdatePossibleActions(PlayerBase player, ActionTarget target, ItemBase item, int action_condition_mask)
 	{
-		if ( ForceActionCheck(player))
+		if (ForceActionCheck(player))
 		{
 			m_SelectActions.Clear();
 			m_SelectActions.Insert(m_ForcedActionData.m_Action);
 			return;
 		}
 		
-		if(m_ForcedTarget)
+		if (m_ForcedTarget)
 		{
 			target = m_ForcedTarget;
 		}
 
 		array<ActionBase> select_actions_all = new array<ActionBase>;
-		int i, last_index;
+		int last_index;
 		bool change = false;
 		m_HasTarget = false;
 		
@@ -372,37 +374,36 @@ class StandardActionInput : ActionInput
 		m_Target = target;
 		m_ConditionMask = action_condition_mask;
 		
-		
-		if( m_DetectFromItem )
+		if (m_DetectFromItem)
 		{
 			_GetSelectedActions( item, select_actions_all, m_HasTarget);
 		}
 		
-
-		if( m_DetectFromTarget )
+		if (m_DetectFromTarget)
 		{	
 			_GetSelectedActions( target.GetObject(), select_actions_all, m_HasTarget);
 			_GetSelectedActions( target.GetParent(), select_actions_all, m_HasTarget);
 		}
 		
-		if( m_DetectFromPlayer )
+		if (m_DetectFromPlayer)
 		{
 			_GetSelectedActions( player, select_actions_all, m_HasTarget);
 		}
 		
-		if (select_actions_all.Count())
+		SortActions(select_actions_all);
+		
+		if (select_actions_all.Count() > 0)
 		{
 			last_index = 0;
-			for ( i = 0; i < select_actions_all.Count(); i++ )
+			foreach (ActionBase action : select_actions_all)
 			{
-				ActionBase action = select_actions_all[i];
-				if ( m_HasTarget )
+				if (m_HasTarget)
 				{
-					if ( action.HasTarget() )
+					if (action.HasTarget())
 					{
-						if ( m_SelectActions.Count() > last_index )
+						if (m_SelectActions.Count() > last_index)
 						{
-							if ( m_SelectActions[last_index] != action )
+							if (m_SelectActions[last_index] != action)
 							{
 								change = true;
 								m_SelectActions[last_index] = action;
@@ -419,9 +420,9 @@ class StandardActionInput : ActionInput
 				}
 				else
 				{
-					if ( m_SelectActions.Count() > last_index )
+					if (m_SelectActions.Count() > last_index)
 					{
-						if ( m_SelectActions[last_index] != action )
+						if (m_SelectActions[last_index] != action)
 						{
 							change = true;
 							m_SelectActions[last_index++] = action;
@@ -447,16 +448,38 @@ class StandardActionInput : ActionInput
 		if (m_SelectActions.Count() > last_index)
 		{
 			change = true;
-			for (i = last_index; i < m_SelectActions.Count(); i++)
+			for (int i = last_index; i < m_SelectActions.Count(); ++i)
 			{
 				m_SelectActions.Remove(last_index);
 			}
 		}
 		
-		if ( change )
+		if (change)
 		{
 			m_selectedActionIndex = 0;
 			m_Player.GetActionManager().SelectFirstActionCategory();
+		}
+	}
+	
+	//! sorts in order: performable -> non-performable (usually info). Extend/override as needed
+	protected void SortActions(array<ActionBase> allActions)
+	{
+		array<ActionBase> tmp = new array<ActionBase>();
+		foreach (ActionBase action : allActions)
+		{
+			if (m_HasTarget && action.HasTarget() /*&& action.IsTargetInfoAction()*/ && !action.CanBeStarted()) //non-startable actions last
+			{
+				tmp.Insert(action);
+			}
+		}
+		
+		if (tmp.Count() > 0)
+		{
+			foreach (ActionBase action2 : tmp)
+			{
+				allActions.RemoveItem(action2);
+			}
+			allActions.InsertAll(tmp);
 		}
 	}
 	
@@ -657,11 +680,11 @@ class DropActionInput : NoIndicationActionInputBase
 	}
 };
 
-class CarHornShortActionInput : ContinuousDefaultActionInput
+class VehicleHornShortActionInput : ContinuousDefaultActionInput
 {
 	ref ActionTarget targetNew;
 
-	void CarHornShortActionInput(PlayerBase player)
+	void VehicleHornShortActionInput(PlayerBase player)
 	{
 		SetInput("UACarHorn");
 		m_InputType 		= ActionInputType.AIT_SINGLE;
@@ -731,9 +754,12 @@ class CarHornShortActionInput : ContinuousDefaultActionInput
 	}
 }
 
-class CarHornLongActionInput : CarHornShortActionInput
+//! backward compatibility (pre 1.30)
+class CarHornShortActionInput : VehicleHornShortActionInput {}
+
+class VehicleHornLongActionInput : VehicleHornShortActionInput
 {
-	void CarHornLongActionInput(PlayerBase player)
+	void VehicleHornLongActionInput(PlayerBase player)
 	{
 		SetInput("UACarHorn");
 		m_InputType 		= ActionInputType.AIT_CONTINUOUS;
@@ -743,6 +769,9 @@ class CarHornLongActionInput : CarHornShortActionInput
 		m_DetectFromPlayer	= false;
 	}
 }
+
+//! backward compatibility (pre 1.30)
+class CarHornLongActionInput : VehicleHornLongActionInput {}
 
 class ToggleLightsActionInput : DefaultActionInput
 {
@@ -789,22 +818,6 @@ class ToggleLightsActionInput : DefaultActionInput
 			else
 				ClearForcedTarget();
 		}
-		else if ( player && player.IsInVehicle() )
-		{
-			HumanCommandVehicle vehCommand = player.GetCommand_Vehicle();
-			if( vehCommand )
-			{
-				Transport trans = vehCommand.GetTransport();
-				if( trans )
-				{
-					target_new = new ActionTarget(trans, null, -1, vector.Zero, -1);
-					ForceActionTarget(target_new);
-				}
-			}
-			
-			if ( !target_new )
-				ClearForcedTarget();
-		}
 		
 		target = m_ForcedTarget;
 		m_Target = m_ForcedTarget;
@@ -832,6 +845,74 @@ class ToggleLightsActionInput : DefaultActionInput
 		return m_SelectAction;
 	}
 };
+
+class ToggleVehicleLightsActionInput : DefaultActionInput
+{
+	ref ActionTarget targetNew;
+	
+	void ToggleVehicleLightsActionInput(PlayerBase player)
+	{
+		SetInput("UAToggleVehicleLights");
+		m_InputType = ActionInputType.AIT_SINGLE;
+		m_Priority = 100;
+	}
+	
+	override void UpdatePossibleActions(PlayerBase player, ActionTarget target, ItemBase item, int action_condition_mask)
+	{
+		if (ForceActionCheck(player))
+		{
+			m_SelectAction = m_ForcedActionData.m_Action;
+			return;
+		}
+		
+		m_SelectAction = null;
+		array<ActionBase_Basic> possibleActions;
+
+		m_MainItem = null;
+		if (player && player.IsInVehicle())
+		{
+			HumanCommandVehicle vehCommand = player.GetCommand_Vehicle();
+			if (vehCommand)
+			{
+				Transport trans = vehCommand.GetTransport();
+				if (trans)
+				{
+					targetNew = new ActionTarget(trans, null, -1, vector.Zero, -1);
+					ForceActionTarget(targetNew);
+				}
+			}
+			
+			if (!targetNew)
+				ClearForcedTarget();
+		}
+		
+		target = m_ForcedTarget;
+		m_Target = m_ForcedTarget;
+		
+		if(target && target.GetObject())
+		{
+			target.GetObject().GetActions(this.Type(), possibleActions);
+			int possibleActionsCount = possibleActions.Count();
+			if(possibleActions)
+			{
+				for (int i = 0; i < possibleActionsCount; ++i)
+				{
+					ActionBase action = ActionBase.Cast(possibleActions.Get(i));
+					if (action.Can(player, target, m_MainItem, action_condition_mask))
+					{
+						m_SelectAction = action;
+						return;
+					}
+				}
+			}
+		}
+	}
+	
+	override ActionBase GetAction()
+	{
+		return m_SelectAction;
+	}
+}
 
 class ToggleNVGActionInput : DefaultActionInput
 {
@@ -861,9 +942,11 @@ class ToggleNVGActionInput : DefaultActionInput
 		if (player) 
 		{
 			CachedEquipmentStorageQuery query = new CachedEquipmentStorageQuery();
-			query.m_Category = ECachedEquipmentItemCategory.NVG;
-			query.m_Placement = ECachedEquipmentPlacement.ATTACHMENT;
-			query.m_MaximumDepth = 2;
+
+			query.m_Category 		= ECachedEquipmentItemCategory.NVG;
+			query.m_Placement 		= ECachedEquipmentPlacement.ATTACHMENT;
+			query.m_ParentPlacement = {InventorySlots.HEADGEAR, InventorySlots.EYEWEAR};
+			query.m_MaximumDepth 	= 2;
 			
 			array<Entity> nvgs = player.GetCachedEquipment().GetEntitiesByCategory(query);
 			Object nvgParent = null;

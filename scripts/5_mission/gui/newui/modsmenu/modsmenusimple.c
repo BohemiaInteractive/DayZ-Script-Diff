@@ -32,7 +32,7 @@ class ModsMenuSimple extends ScriptedWidgetEventHandler
 		
 		for (int i = 0; i < count; i++)
 		{
-			ref ModsMenuSimpleEntry entry = new ModsMenuSimpleEntry(data[i], i, m_Root, this);
+			ModsMenuSimpleEntry entry = new ModsMenuSimpleEntry(data[i], i, m_Root, this);
 			m_Data.Insert(data[i], entry);
 		}
 	}

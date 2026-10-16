@@ -64,11 +64,14 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 	protected ButtonWidget m_DOFDeletePrefabBtn;
 	protected ButtonWidget m_DOFLoadPrefabBtn;
 	
+	protected ButtonWidget m_HideUIButton;
+	protected ImageWidget m_HideUIIcon;
+	
 	protected FreeDebugCamera m_FreeDebugCamera;
 	protected bool m_MouseMovementEnabled;
 	protected bool m_DOFPresetsVisible;
 	protected bool m_IsCTRLPressed;
-	protected bool m_IsCAPSPressed;
+	protected bool m_IsSHIFTPressed;
 	protected bool m_IsReturnPressed;
 	protected bool m_ValueEditboxMode;
 	protected float m_ValueEditModeTime;
@@ -76,9 +79,12 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 	protected ScriptConsoleCameraDOFPreset m_SelectedDOFPreset;
 	protected ref ScriptConsolePresetsList m_DOFPresetsList;
 	protected bool m_CanUseMovement;
+	protected bool m_UIVisibilityState;
 	
-	void ScriptConsoleCameraTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
+	override void InitializeTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		super.InitializeTab(root, console, button, parent);
+		
 		m_FreeDebugCamera = FreeDebugCamera.GetInstance();
 		
 		m_FOVSelector = new ScriptConsoleSelector(root.FindAnyWidget("SliderFOVPanel"), m_FreeDebugCamera.GetCurrentFOV(), this, false, 0.001, 1.0);
@@ -143,6 +149,12 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 		m_DOFShowPresetsBtn.Show(true);
 		m_DOFPresetEditbox.Show(true);
 		m_DOFSavePrefabBtn.Show(true);
+		
+		m_HideUIButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonHideC"));
+		m_HideUIIcon = ImageWidget.Cast(root.FindAnyWidget("ButtonHideIconC"));
+		m_HideUIIcon.LoadImageFile(0, "set:dayz_gui image:PasswordEyeOpen");
+		m_HideUIIcon.LoadImageFile(1, "set:dayz_gui image:PasswordEyeClose");
+		m_HideUIIcon.SetImage(1);
 		
 		if (!m_FirstInit)
 		{
@@ -275,6 +287,8 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 
 	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 	{
+		ButtonNormal(w);
+		
 		if (w == m_DOFPresetEditbox)
 		{
 			g_Game.GetMission().RemoveActiveInputExcludes({"movement"});
@@ -286,6 +300,8 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 	
 	override bool OnMouseEnter(Widget w, int x, int y)
 	{
+		ButtonHighlight(w);
+		
 		if (w == m_DOFPresetEditbox)
 		{
 			g_Game.GetMission().AddActiveInputExcludes({"movement"});
@@ -328,6 +344,10 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 		else if (w == m_DOFDeletePrefabBtn)
 		{
 			DeleteDOFPreset();
+		}
+		else if (w == m_HideUIButton)
+		{
+			ToogleUIVisibility();
 		}
 		
 		return false;
@@ -463,7 +483,7 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 		super.Update(timeslice);
 		
 		m_IsCTRLPressed = KeyState(KeyCode.KC_LCONTROL) || KeyState(KeyCode.KC_RCONTROL);
-		m_IsCAPSPressed = KeyState(KeyCode.KC_CAPITAL);
+		m_IsSHIFTPressed = KeyState(KeyCode.KC_LSHIFT);
 		m_IsReturnPressed = KeyState(KeyCode.KC_RETURN);
 		
 		if (m_IsReturnPressed && m_ValueEditboxMode)
@@ -496,7 +516,7 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 			m_ValueEditModeTime = 0;
 		}
 		
-		if (m_IsCAPSPressed && !m_MouseMovementEnabled && (!GetFocus() || GetFocus() != m_DOFPresetEditbox) && GetWidgetUnderCursor() != m_DOFPresetEditbox)
+		if (m_IsSHIFTPressed && !m_MouseMovementEnabled && (!GetFocus() || GetFocus() != m_DOFPresetEditbox) && GetWidgetUnderCursor() != m_DOFPresetEditbox)
 		{
 			if (g_Game && g_Game.GetMission() && g_Game.GetUIManager())
 			{
@@ -505,7 +525,7 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 				g_Game.GetUIManager().ShowUICursor(false);
 			}
 		}
-		else if (!m_IsCAPSPressed && m_MouseMovementEnabled)
+		else if (!m_IsSHIFTPressed && m_MouseMovementEnabled)
 		{
 			if (g_Game && g_Game.GetMission() && g_Game.GetUIManager())
 			{
@@ -524,6 +544,47 @@ class ScriptConsoleCameraTab : ScriptConsoleTabBase
 		{
 			m_CanUseMovement = false;
 			g_Game.GetMission().AddActiveInputExcludes({"UAMoveForward", "UAMoveBack", "UAMoveLeft", "UAMoveRight", "UAWalkRunTemp"});
+		}
+	}
+	
+	protected void ToogleUIVisibility()
+	{
+		m_UIVisibilityState = !m_UIVisibilityState;
+		m_Root.FindAnyWidget("CameraRoot").Show(m_UIVisibilityState);
+		m_HideUIIcon.SetImage(m_UIVisibilityState);
+	}
+	
+	protected void ButtonHighlight(Widget w)
+	{
+		ButtonWidget wb;
+		if (Class.CastTo(wb, w))
+		{
+			if (wb.GetName() == "ButtonHideC")
+			{
+				ImageWidget iw = ImageWidget.Cast(wb.FindAnyWidget("ButtonHideIconC"));
+				iw.SetColor(ARGB(255, 0, 0, 0));
+			}
+			else
+			{
+				wb.SetTextColor(ARGB(255, 0, 0, 0));
+			}
+		}
+	}
+	
+	protected void ButtonNormal(Widget w)
+	{
+		ButtonWidget wb;
+		if (Class.CastTo(wb, w))
+		{
+			if (wb.GetName() == "ButtonHideC")
+			{
+				ImageWidget iw = ImageWidget.Cast(wb.FindAnyWidget("ButtonHideIconC"));
+				iw.SetColor(ARGB(255, 255, 255, 255));
+			}
+			else
+			{
+				wb.SetTextColor(ARGB(255, 255, 255, 255));
+			}
 		}
 	}
 }

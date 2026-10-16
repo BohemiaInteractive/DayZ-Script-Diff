@@ -1,3 +1,4 @@
+#ifdef ROBOCLIENT
 class BotTestSwapWithCorpse : BotStateBase
 {
 };
@@ -117,4 +118,4 @@ class BotTestSwapG2H : BotStateBase
 		}*/
 	}
 };
-
+#endif

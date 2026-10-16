@@ -366,11 +366,6 @@ class PowerGeneratorBase extends ItemBase
 	// ADVANCED PLACEMENT
 	//================================================================
 		
-	override string GetDeploySoundset()
-	{
-		return "placePowerGenerator_SoundSet";
-	}
-	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -438,6 +433,21 @@ class PowerGeneratorBase extends ItemBase
 		}
 	
 		return false;
+	}
+	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer())
+			 return;
+		
+		if (GetCompEM().IsSwitchedOn())
+			GetCompEM().SwitchOff();
+		
+		int deviceCount	= GetCompEM().GetPluggedDevicesCount();
+		if (deviceCount > 0)
+		{
+			GetCompEM().UnplugAllDevices();
+		}
 	}
 }
 

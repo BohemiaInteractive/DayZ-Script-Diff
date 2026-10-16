@@ -127,6 +127,13 @@ class TreeSoft_t_LarixDecidua_1s_summer:				TreeSoft
 	override bool HasPlayerCollisionSound() { return true; }
 };
 
+//Nasdara
+class TreeSoft_t_PrunusDomestica_1s:					TreeSoft {};
+class TreeSoft_t_PinusBrutia_2s:						TreeSoft {};
+class TreeSoft_t_OleaEuropaea_1s:						TreeSoft {};
+class TreeSoft_t_FicusBenjamina_1s:						TreeSoft {};
+
+
 //-----------------------------------------------
 //TreeHard
 class TreeHard_t_BetulaPendula_2s:						TreeHard_BetulaPendula {};
@@ -295,11 +302,35 @@ class TreeHard_t_salixAlba_2sb_summer:					TreeHard
 
 class TreeHard_t_sorbus_2s_summer:						TreeHard {};
 
-class TreeHard_t_LarixDecidua_2f_summer:			TreeHard {};
-class TreeHard_t_LarixDecidua_2fb_summer:			TreeHard {};
-class TreeHard_t_LarixDecidua_2s_summer:			TreeHard
+class TreeHard_t_LarixDecidua_2f_summer:				TreeHard {};
+class TreeHard_t_LarixDecidua_2fb_summer:				TreeHard {};
+class TreeHard_t_LarixDecidua_2s_summer:				TreeHard
 {
 	override bool HasPlayerCollisionSound() { return true; }
 };
-class TreeHard_t_LarixDecidua_3f_summer:			TreeHard {};
-class TreeHard_t_LarixDecidua_3fb_summer:			TreeHard {};
+class TreeHard_t_LarixDecidua_3f_summer:				TreeHard {};
+class TreeHard_t_LarixDecidua_3fb_summer:				TreeHard {};
+
+//Nasdara
+
+
+class TreeHard_t_PinusBrutia_2sb:						TreeHard {};
+class TreeHard_t_PhoenixRupicola_3s:					TreeHard {};
+class TreeHard_t_PhoenixRupicola_1s:					TreeHard {};
+class TreeHard_t_FicusBenjamina_2d:						TreeHard {};
+class TreeHard_t_FicusBenjamina_2s:						TreeHard {};
+class TreeHard_t_FraxinusExcelsior_2s_spring:			TreeHard {};
+class TreeHard_t_Albizia_3s:							TreeHard {};
+class TreeHard_t_PrunusDomestica_2s:					TreeHard {};
+class TreeHard_t_PinusBrutia_1s	:						TreeHard
+{
+	override bool HasPlayerCollisionSound() { return true; }
+};
+class TreeHard_t_FraxinusExcelsior_2w_spring:			TreeHard
+{
+	override bool HasPlayerCollisionSound() { return true; }
+};
+class TreeHard_t_Populus_2s:							TreeHard {};
+class TreeHard_t_Populus_2sb:							TreeHard {};
+class TreeHard_t_OleaEuropaea_2s:						TreeHard {};
+class TreeHard_t_Broussonetia_1s:						TreeHard {};

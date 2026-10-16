@@ -549,6 +549,10 @@ class EffectSound : Effect
 	void Event_OnSoundWaveStarted()
 	{
 		m_SoundWaveIsPlaying = true;
+		if (m_SoundFadeInDuration > 0)
+		{
+			SetSoundVolume(0);
+		}
 		
 		Event_OnSoundWaveStarted.Invoke(this);
 		

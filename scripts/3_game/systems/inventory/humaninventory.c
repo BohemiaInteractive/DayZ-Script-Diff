@@ -250,6 +250,7 @@ class HumanInventory : GameInventory
 		return super.TakeToDst(mode, src, dst);
 	}
 
+	//[Obsolete("1.30: Use TakeEntityToTargetInventory instead")]
 	override bool TakeEntityToInventory(InventoryMode mode, FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		InventoryLocation src = new InventoryLocation();
@@ -268,70 +269,6 @@ class HumanInventory : GameInventory
 				return false; // no room
 		}
 		Error("HumanInventory::TakeEntityToInventory: No inventory location");
-		return false;
-	}
-
-	/**
-	\brief Put item into into cargo on specific cargo location
-	*/
-	override bool TakeEntityToCargoEx(InventoryMode mode, notnull EntityAI item, int idx, int row, int col)
-	{
-		InventoryLocation src = new InventoryLocation();
-		GameInventory itemInventory = item.GetInventory();
-		if (itemInventory.GetCurrentInventoryLocation(src))
-		{
-			switch (src.GetType())
-			{
-				case InventoryLocationType.HANDS:
-					EntityAI inventoryOwner = GetInventoryOwner();
-					if (inventoryOwner.IsAlive())
-					{
-						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
-						InventoryLocation dst = new InventoryLocation();
-						dst.SetCargo(inventoryOwner, item, idx, row, col, itemInventory.GetFlipCargo());
-
-						HandEvent(mode, new HandEventMoveTo(GetManOwner(), src, dst));
-						return true;
-					}
-
-					return super.TakeEntityToCargoEx(mode, item, idx, row, col);
-
-				default:
-					return super.TakeEntityToCargoEx(mode, item, idx, row, col);
-			}
-		}
-
-		Error("HumanInventory::TakeEntityToCargoEx: No inventory location");
-		return false;
-	}
-
-	override bool TakeEntityAsAttachmentEx(InventoryMode mode, notnull EntityAI item, int slot)
-	{
-		InventoryLocation src = new InventoryLocation();
-		if (item.GetInventory().GetCurrentInventoryLocation(src))
-		{
-			switch (src.GetType())
-			{
-				case InventoryLocationType.HANDS:
-					EntityAI inventoryOwner = GetInventoryOwner();
-					if (inventoryOwner.IsAlive())
-					{
-						if (LogManager.IsInventoryHFSMLogEnable()) hndDebugPrint("[inv] HumanInventory::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
-						InventoryLocation dst = new InventoryLocation();
-						dst.SetAttachment(inventoryOwner, item, slot);
-
-						HandEvent(mode, new HandEventMoveTo(GetManOwner(), src, dst));
-						return true;
-					}
-
-					return super.TakeEntityAsAttachmentEx(mode, item, slot);
-
-				default:
-					return super.TakeEntityAsAttachmentEx(mode, item, slot);
-			}
-		}
-
-		Error("HumanInventory::TakeEntityAsAttachmentEx: No inventory location");
 		return false;
 	}
 
@@ -625,6 +562,18 @@ class HumanInventory : GameInventory
 		ClearUserReservedLocationAtIndex(index);
 		//m_UserReservationToClear = index;
 		
+		return true; 
+	}
+
+	bool ExecuteUserReservationCancelRemote(inout Serializer ctx)
+	{
+		int index = -1;
+		if (!ctx.Read(index))
+		{
+			return false;
+		}
+		
+		ClearUserReservedLocationAtIndex(index);
 		return true; 
 	}
 	

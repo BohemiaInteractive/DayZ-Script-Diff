@@ -48,6 +48,8 @@ class Colors
 	const int COLOR_BURNED			= 0x00888888;
 	const int COLOR_ROTTEN			= 0x00A93F15;
 	
+	const int COLOR_GHOST_ICON		= 0xC8C8C8B4;
+	
 	const int COLOR_DAYZ_RED 				= 0xffd70d11;
 	const int COLOR_DAYZ_DARK_BLUE 			= 0xff13151b;
 	const int COLOR_DAYZ_SMOKY_BLUE 		= 0xff262a33;

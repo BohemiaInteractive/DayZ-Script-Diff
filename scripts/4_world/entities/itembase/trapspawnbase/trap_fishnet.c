@@ -49,7 +49,6 @@ class Trap_FishNet extends TrapSpawnBase
 		return super.CanReceiveAttachment( attachment, slotId );
 	}
 	
-	#ifdef PLATFORM_WINDOWS
 	// How one sees the tripwire when in vicinity
 	override int GetViewIndex()
 	{
@@ -97,7 +96,6 @@ class Trap_FishNet extends TrapSpawnBase
 		}
 		return 0;
 	}
-	#endif
 	
 	//================================================================
 	// ADVANCED PLACEMENT

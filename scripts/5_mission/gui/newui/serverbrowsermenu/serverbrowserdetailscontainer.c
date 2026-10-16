@@ -172,12 +172,13 @@ class ServerBrowserDetailsContainer extends ScriptedWidgetEventHandler
 		string result = "#STR_server_browser_no_server_selected";		
 		switch (mode)
 		{
-			case 0:
+			case ThirdPersonMode.ENABLED:
 			{
 				result = "#STR_server_browser_details_third_person";
 				break;
 			}
-			case 1:
+			case ThirdPersonMode.DISABLED:
+			case ThirdPersonMode.VEHICLES_ONLY:
 			{
 				result = "#STR_server_browser_details_first_person";
 				break;

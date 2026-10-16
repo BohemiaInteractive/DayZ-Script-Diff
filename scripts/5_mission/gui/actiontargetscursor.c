@@ -52,6 +52,10 @@ class ATCCachedObject
 
 class ActionTargetsCursor : ScriptedWidgetEventHandler
 {
+	protected const int ACTION_ORDER_INTERACT_SINGLE = 0;
+	protected const int ACTION_ORDER_INTERACT_CONTINUOUS = 1;
+	protected const int ACTION_ORDER_SINGLE = 2;
+	protected const int ACTION_ORDER_CONTINUOUS = 3;
 	private const ref array<typename> VISION_OBSTRUCTION_PPEFFECTS_TYPES = {
 		PPERequester_BurlapSackEffects,
 		PPERequester_FlashbangEffects
@@ -66,6 +70,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	protected ActionBase					m_ContinuousInteract;
 	protected ActionBase					m_Single;
 	protected ActionBase					m_Continuous;
+	//protected ref set<ActionBase> 			m_InfoActions;
 	protected ActionManagerClient 			m_AM;
 	protected IngameHud						m_Hud;
 	
@@ -85,18 +90,28 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	protected Widget						m_Root;
 	protected Widget						m_Container;
 	protected Widget 						m_ItemLeft;
+	
+	protected ref map<int, ref array<ref TargetActionInfoPanelBase>> 	m_TargetActionInfoPanelMap; //<actionCategory, panelArray>
+	protected ref array<ref TargetActionInfoPanelBase> m_ActiveInfoPanels; //useful for flushing data on ActionTargetsCursor hide
+	protected ref map<int, ActionBase> 	m_ActionMap; //uses ACTION_ORDER constants
+	//protected ref TargetActionInfoPanelBase 			m_ActionInfoPanel;
 
 	//! widget width
 	protected float m_MaxWidthChild;
 	protected float m_RootWidth;
 	protected float m_RootHeight;
+	
+	protected float m_PosX;
+	protected float m_PosY;
 
 	void ActionTargetsCursor()
 	{
+		m_ActionMap 			= new map<int, ActionBase>();
 		m_Interact 				= null;
 		m_ContinuousInteract	= null;
 		m_Single				= null;
 		m_Continuous			= null;
+		//m_InfoActions			= new set<ActionBase>();
 		m_AM					= null;
 		
 		m_HealthEnabled			= true;
@@ -128,18 +143,36 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		m_QuantityEnabled = state;
 	}
 
-	//! DEPRECATED
-	void SetInteractXboxIcon(string imageset_name, string image_name);
-	void SetContinuousInteractXboxIcon(string imageset_name, string image_name);
-	void SetSingleXboxIcon(string imageset_name, string image_name);
-	void SetContinuousXboxIcon(string imageset_name, string image_name);
-	protected void SetXboxIcon(string name, string imageset_name, string image_name);
-	//! ---------
-	
 	protected void SetControllerIcon(string pWidgetName, string pInputName)
 	{
 		RichTextWidget w = RichTextWidget.Cast(m_Root.FindAnyWidget(pWidgetName + "_btn_icon_xbox"));	
 		w.SetText(InputUtils.GetRichtextButtonIconFromInputAction(pInputName, "", EUAINPUT_DEVICE_CONTROLLER));
+	}
+	
+	protected void InitActionInfoPanels()
+	{
+		m_TargetActionInfoPanelMap = new map<int, ref array<ref TargetActionInfoPanelBase>>();
+		m_ActiveInfoPanels = new array<ref TargetActionInfoPanelBase>();
+		
+		CreateActionInfoPanel(ConstructionActionInfoPanel,ACTION_ORDER_INTERACT_CONTINUOUS); //hand builds (regular + indication only)
+		CreateActionInfoPanel(ConstructionActionInfoPanel,ACTION_ORDER_CONTINUOUS); //build (regular + indication only)
+		
+		m_Root.Update();
+	}
+	
+	protected void CreateActionInfoPanel(typename panelType, int actionCategory)
+	{
+		TargetActionInfoPanelBase tInfoPanel = TargetActionInfoPanelBase.Cast(panelType.Spawn());
+		tInfoPanel.SetParentWidget(m_Root);
+		m_Root.AddChild(tInfoPanel.GetMainWidget(),false); //ce n'est pas un LayoutHolder, bypassing inheritance
+		tInfoPanel.Init();
+		
+		if (!m_TargetActionInfoPanelMap.Get(actionCategory))
+			m_TargetActionInfoPanelMap.Set(actionCategory,new array<ref TargetActionInfoPanelBase>());
+		
+		array<ref TargetActionInfoPanelBase> tmp = m_TargetActionInfoPanelMap.Get(actionCategory);
+		tmp.Insert(tInfoPanel);
+		m_TargetActionInfoPanelMap.Set(actionCategory, tmp);
 	}
 	
 	protected void OnWidgetScriptInit(Widget w)
@@ -154,7 +187,8 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 
 		m_Container = w.FindAnyWidget("container");
 		m_ItemLeft = w.FindAnyWidget("item_left");
-
+		InitActionInfoPanels();
+		
 		m_Root.Update();
 	}
 	
@@ -195,6 +229,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 
 	protected void PrepareCursorContent()
 	{
+		//m_InfoActions.Clear();
 		m_TargetItemFrozen = false;
 		int health = -1;
 		int cargoCount = 0;
@@ -215,7 +250,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		SetInteractActionIcon("interact", "interact_icon_frame", "interact_btn_inner_icon", "interact_btn_text");
 		SetItemDesc(GetItemDesc(m_Interact), cargoCount, "item", "item_desc");
 		SetActionWidget(m_Interact, GetActionDesc(m_Interact), "interact", "interact_action_name");
-
+		
 		SetInteractActionIcon("continuous_interact", "continuous_interact_icon_frame", "continuous_interact_btn_inner_icon", "continuous_interact_btn_text");
 		SetActionWidget(m_ContinuousInteract, GetActionDesc(m_ContinuousInteract), "continuous_interact", "continuous_interact_action_name");
 
@@ -225,13 +260,17 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		SetMultipleContinuousItemAction("continuous_mlt_wrapper", "continuous_mlt_wrapper_not_select");
 		SetMultipleInteractAction("interact_mlt_wrapper", "interact_mlt_wrapper_not_select");
 		SetMultipleContinuousInteractAction("continuous_interact_mlt_wrapper", "continuous_interact_mlt_wrapper_not_select");
+		
+		UpdateAdditionalActionInfo();
 	}
 	
-	protected void BuildFixedCursor()
+	protected void BuildFixedCursor(bool forceRebuild = true)
 	{
 		int w, h, x, y;
 
-		PrepareCursorContent();
+		if (forceRebuild)
+			PrepareCursorContent();
+		
 		GetScreenSize(w, h);
 		x = w/2 + 32;
 		y = h/2 + 32;
@@ -241,52 +280,17 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 	
 	protected void BuildFloatingCursor(bool forceRebuild)
 	{
-		float pos_x, pos_y = 0.0;
+		if (forceRebuild)
+			PrepareCursorContent();
 		
-		PrepareCursorContent();
-		
-		//! Get OnScreenPos when forced or targeted component differs
-		if (forceRebuild || m_Target.GetComponentIndex() != m_CachedObject.GetCursorCompIdx())
-		{
-			GetOnScreenPosition(pos_x, pos_y);
-		}
-		//! in case of cached item, all above is reused except the position
-		else
-		{
-			vector screen_pos = TransformToScreenPos(m_CachedObject.GetCursorWorldPos());
-	
-			pos_x = screen_pos[0];
-			pos_y = screen_pos[1];
-		}
-		
-		pos_x = Math.Ceil(pos_x);
-		pos_y = Math.Ceil(pos_y);
-
-		Widget parentWdg = m_Root.GetParent();
-		
-		float screen_w = 0;
-		float screen_h = 0;
-		
-		float wdg_w = 0;
-		float wdg_h = 0; 
-		
-		parentWdg.GetScreenSize(screen_w, screen_h);
-		m_Root.GetSize(wdg_w, wdg_h);
-
-		if (pos_x + wdg_w > screen_w)
-			pos_x = screen_w - wdg_w;
-
-		if (pos_y + wdg_h > screen_h)
-			pos_y = screen_h - wdg_h;
-		
-		m_Root.SetPos(pos_x, pos_y);
+		m_Root.SetPos(m_PosX, m_PosY);
 	}
 	
 	override bool OnUpdate(Widget w)
 	{
 		if (m_Root == w)
 		{
-			Update();
+			Update(false);
 			return true;
 		}
 		
@@ -299,17 +303,18 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		{
 			m_Root.Show(false);
 			m_CachedObject.Invalidate();
+			InfoPanelCleanup();
 		}
 	}
 	
-	void Update()
+	void Update(bool fullUpdate = true)
 	{
 		if (m_Player && !m_Player.IsAlive()) // handle respawn
 		{
 			m_Player = null;
 			m_AM = null;
 		}
-
+		
 		if (!m_Player)
 			GetPlayer();
 
@@ -321,15 +326,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		
 		if (m_Player.IsInVehicle() || m_AM.GetRunningAction())
 			m_Hidden = true;
-		
-		
-		/*
-		#ifdef DIAG_DEVELOPER
-		if (DeveloperFreeCamera.IsFreeCameraEnabled())
-			HideWidget();
-			return;
-		#endif
-		*/
+	
 
 		bool isVisionObstructionActive = PPEManagerStatic.GetPPEManager().IsAnyRequesterRunning(VISION_OBSTRUCTION_PPEFFECTS_TYPES);
 				
@@ -340,110 +337,66 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 			return;
 		}
 
-		GetTarget();
-		GetActions();
-
+		if (fullUpdate)
+		{
+			GetTarget();
+			GetActions();
+		}
+	
 		//! check if action has target, otherwise don't show the widget		
-		bool showTarget = (m_Target && !m_Hidden) || m_Interact || m_ContinuousInteract;
+		bool showTarget = (m_Target && !m_Hidden) || m_Interact || m_ContinuousInteract || (m_Single && m_Single.HasTarget()) || (m_Continuous && m_Continuous.HasTarget());
 		if (!showTarget)
 		{
-			if (m_Single)
-				showTarget = m_Single.HasTarget();
-
-			if (m_Continuous)
-				showTarget = showTarget || m_Continuous.HasTarget();
+			HideRootWidget();
+			return;
 		}
 
-		if (showTarget)
+		Object targetObject = m_Target.GetObject();
+		Object targetParent = m_Target.GetParent();
+		
+		//! cursor with fixed position (environment interaction mainly)
+		if (targetObject == null && (m_Interact || m_ContinuousInteract || m_Single || m_Continuous))
 		{
-			//! cursor with fixed position (environment interaction mainly)
-			if (m_Target.GetObject() == null && (m_Interact || m_ContinuousInteract || m_Single || m_Continuous))
-			{
-				//Print(">> fixed widget");
+			//Print(">> fixed widget");
+			m_CachedObject.Invalidate();
+			BuildFixedCursor(fullUpdate);
+			m_Root.Show(true);
+			m_FixedOnPosition = false;
+			m_Hidden = false;
+			return;
+		}
+		else if (targetObject != null && !targetObject.IsHologram() && (targetObject.IsEntityAI() || targetObject.IsPlainObject() || targetObject.IsWoodBase() || targetObject.IsRock()) && (!targetParent || targetParent && !targetParent.IsHologram()))
+		{
+			CheckRefresherFlagVisibilityEx(m_Target);
+			GetOnScreenPosition(m_PosX, m_PosY);
+			//! build cursor for new target
+			
+			if (targetObject != m_CachedObject.Get())
 				m_CachedObject.Invalidate();
-				BuildFixedCursor();
+			
+			if (!m_FixedOnPosition)
+			{
+				BuildFloatingCursor(fullUpdate);
 				m_Root.Show(true);
-				m_FixedOnPosition = false;
 				m_Hidden = false;
 				return;
 			}
-			else if (m_Target.GetObject() != null && !m_Target.GetObject().IsHologram() && (!m_Target.GetParent() || m_Target.GetParent() && !m_Target.GetParent().IsHologram()))
-			{
-				CheckRefresherFlagVisibilityEx(m_Target);
-				//! build cursor for new target
-				if (m_Target.GetObject() != m_CachedObject.Get())
-				{
-					if (!m_FixedOnPosition)
-					{
-						//Print(">> non-cached widget");
-						m_CachedObject.Invalidate();
-						BuildFloatingCursor(true);
-						m_Root.Show(true);
-						m_Hidden = false;
-						return;
-					}
-					else
-					{
-						//Print(">> non-cached widget (fixed)");
-						m_CachedObject.Invalidate();
-						BuildFixedCursor();
-						m_Root.Show(true);
-						m_FixedOnPosition = false;
-						m_Hidden = false;
-						return;
-					}
-				}
-				//! use cached version for known target - recalculate onscreen pos only
-				else if (m_Target.GetObject() == m_CachedObject.Get())
-				{
-					if (!m_FixedOnPosition)
-					{
-						//Print(">> cached widget");
-						BuildFloatingCursor(true);
-						m_Root.Show(true);
-						m_Hidden = false;
-						return;
-					}
-					else
-					{
-						//Print(">> cached widget (fixed)");
-						m_CachedObject.Invalidate();
-						BuildFixedCursor();
-						m_Root.Show(true);
-						m_FixedOnPosition = false;
-						m_Hidden = false;
-						return;
-					}
-				}
-			}
 			else
 			{
-				if (m_Root.IsVisible())
-				{
-					m_CachedObject.Invalidate();
-					m_Root.Show(false);
-					m_Hidden = false;
-
-					// remove previous backlit
-					GetDayZGame().GetBacklit().HintClear();
-				}
+				BuildFixedCursor(fullUpdate);
+				m_FixedOnPosition = false;
+				m_Root.Show(true);
+				m_Hidden = false;
+				return;
 			}
+				
 		}
 		else
 		{
-			if (m_Root.IsVisible())
-			{
-				m_CachedObject.Invalidate();
-				m_Root.Show(false);
-				m_FixedOnPosition = false;
-
-				// remove previous backlit
-				GetDayZGame().GetBacklit().HintClear();
-			}
-			
-			m_Hidden = false;
+			HideRootWidget();
 		}
 		
+		InfoPanelCleanup();
 		m_MaxWidthChild = 350;
 	}
 	
@@ -567,7 +520,7 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 								worldPos = object.ModelToWorld(modelPos);
 
 								m_FixedOnPosition = false;
-								if (object.GetType() == "Fence" || object.GetType() == "Watchttower" || object.GetType() == "GardenPlot")
+								if (object.CanUseConstruction() || object.GetType() == "GardenPlot")
 									m_FixedOnPosition = true;
 								
 								if (memOffset != 0.0)
@@ -715,9 +668,13 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		if (m_Player.IsInVehicle()) return; // TODO: TMP: Car AM rework needed
 
 		m_Interact = m_AM.GetPossibleAction(InteractActionInput);
+		m_ActionMap.Set(ACTION_ORDER_INTERACT_SINGLE,m_Interact);
 		m_ContinuousInteract = m_AM.GetPossibleAction(ContinuousInteractActionInput);
+		m_ActionMap.Set(ACTION_ORDER_INTERACT_CONTINUOUS,m_ContinuousInteract);
 		m_Single = m_AM.GetPossibleAction(DefaultActionInput);
+		m_ActionMap.Set(ACTION_ORDER_SINGLE,m_Single);
 		m_Continuous = m_AM.GetPossibleAction(ContinuousDefaultActionInput);
+		m_ActionMap.Set(ACTION_ORDER_CONTINUOUS,m_Continuous);
 		
 		m_InteractActionsNum = m_AM.GetPossibleActionCount(InteractActionInput);
 		m_ContinuousInteractActionsNum = m_AM.GetPossibleActionCount(ContinuousInteractActionInput);
@@ -750,14 +707,18 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 			return;
 
 		m_Target = m_AM.FindActionTarget();
-		if (m_Target && m_Target.GetObject() && m_Target.GetObject().IsItemBase())
+		Object targetObj;
+		if (m_Target && Class.CastTo(targetObj,m_Target.GetObject()))
 		{
-			ItemBase item = ItemBase.Cast(m_Target.GetObject());
-			InventoryLocation invLocation = new InventoryLocation();
-			item.GetInventory().GetCurrentInventoryLocation(invLocation);
-
-			if ((!item.IsTakeable() && !item.IsActionTargetVisible()) || (m_Player && m_Player.IsInVehicle()) || invLocation.GetType() != InventoryLocationType.GROUND)
-				m_Hidden = true;
+			if (targetObj.IsItemBase())
+			{
+				ItemBase item = ItemBase.Cast(targetObj);
+				InventoryLocation invLocation = new InventoryLocation();
+				item.GetInventory().GetCurrentInventoryLocation(invLocation);
+	
+				if ((!item.IsTakeable() && !item.IsActionTargetVisible()) || (m_Player && m_Player.IsInVehicle()) || invLocation.GetType() != InventoryLocationType.GROUND)
+					m_Hidden = true;
+			}
 		}
 	}
 	
@@ -803,17 +764,17 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 			
 			EntityAI targetEntity;
 			
-			if (tgParent && (tgParent.IsItemBase() || tgParent.IsTransport()))
+			if (tgParent && (tgParent.IsItemBase() || tgParent.IsTransport() || tgParent.CanUseConstruction()))
 			{
 				targetEntity = EntityAI.Cast(tgParent);
 			}
 			
-			if (tgObject.IsItemBase() || tgObject.IsTransport())
+			if (tgObject.IsItemBase() || tgObject.IsTransport() || tgObject.CanUseConstruction())
 			{
 				targetEntity = EntityAI.Cast(tgObject);
 			}
 			
-			if (targetEntity && targetEntity.ShowZonesHealth())
+			if (targetEntity && targetEntity.ShowZonesHealth()) //TODO: investigate, should ShowZonesHealth be in the 'description' part?
 			{
 				string zone = "";
 				
@@ -883,12 +844,12 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 				return health;
 			}
 			
-			if (tgParent && (tgParent.IsItemBase() || tgParent.IsTransport()))
+			if (tgParent && (tgParent.IsItemBase() || tgParent.IsTransport() || tgParent.CanUseConstruction()))
 			{
 				targetEntity = EntityAI.Cast(tgParent);
 			}
 			
-			if (tgObject.IsItemBase() || tgObject.IsTransport())
+			if (tgObject.IsItemBase() || tgObject.IsTransport() || tgObject.CanUseConstruction())
 			{
 				targetEntity = EntityAI.Cast(tgObject);
 			}
@@ -1135,22 +1096,35 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 				TextWidget actionName;
 				Class.CastTo(actionName, widget.FindAnyWidget(descWidget));
 
-				if (action.GetInput().GetInputType() == ActionInputType.AIT_CONTINUOUS)
+				if (action.GetInput().GetInputType() == ActionInputType.AIT_CONTINUOUS && action.CanBeStarted())
 				{
-					descText = descText + " " + "#action_target_cursor_hold";
-					actionName.SetText(descText);
+					string text = descText + " " + "#action_target_cursor_hold";
+					actionName.SetText(text);
 				}
 				else
 				{
 					actionName.SetText(descText);
 				}
-
+				
 				widget.Show(true);
 				
 				int x, y;
 				actionName.GetTextSize(x, y);
 				if (x > m_MaxWidthChild)
 					m_MaxWidthChild = x;
+				
+				//ShowXboxHidePCIcons(actionWidget,true);
+				
+				if (!action.CanBeStarted())
+				{
+					widget.FindAnyWidget(actionWidget + "_btn_icon_xbox").SetAlpha(0.149);
+					widget.FindAnyWidget(actionWidget + "_btn_icon").SetAlpha(0.149);
+				}
+				else
+				{
+					widget.FindAnyWidget(actionWidget + "_btn_icon_xbox").SetAlpha(1.0);
+					widget.FindAnyWidget(actionWidget + "_btn_icon").SetAlpha(1.0);
+				}
 			}
 			else
 			{
@@ -1291,6 +1265,41 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		textWidget.Show(true);
 	}
 	
+	protected void UpdateAdditionalActionInfo()
+	{
+		m_ActiveInfoPanels.Clear();
+		
+		foreach (int actionType, ActionBase action : m_ActionMap)
+		{
+			bool update = action != null && action.IsTargetInfoAction();
+			array<ref TargetActionInfoPanelBase> tmp = m_TargetActionInfoPanelMap.Get(actionType);
+			if (tmp)
+			{
+				foreach (TargetActionInfoPanelBase panel : tmp)
+				{
+					if (update)
+					{
+						panel.UpdateTargetActionInfoPanel(action.GetClientActionInfo(),m_Target);
+						m_ActiveInfoPanels.Insert(panel);
+					}
+					else if (panel.IsVisible())
+					{
+						panel.PerformPanelCleanup();
+					}
+				}
+			}
+		}
+	}
+	
+	protected void InfoPanelCleanup()
+	{
+		foreach (TargetActionInfoPanelBase panel : m_ActiveInfoPanels)
+		{
+			panel.PerformPanelCleanup();
+		}
+		m_ActiveInfoPanels.Clear();
+	}
+	
 	protected void CheckRefresherFlagVisibilityEx(ActionTarget target)
 	{
 		EntityAI entity = EntityAI.Cast(target.GetObject());
@@ -1341,6 +1350,29 @@ class ActionTargetsCursor : ScriptedWidgetEventHandler
 		return null;
 	}
 	
+	protected void HideRootWidget()
+	{
+		if (m_Root.IsVisible())
+		{
+			m_Root.Show(false);
+			m_FixedOnPosition = false;
+			GetDayZGame().GetBacklit().HintClear();
+		}
+		
+		m_Hidden = false;
+		m_MaxWidthChild = 350;
+	}
+	
 	// deprecated 
 	protected void CheckRefresherFlagVisibility(Object object);
+	[Obsolete("no replacement")]
+	void SetInteractXboxIcon(string imageset_name, string image_name);
+	[Obsolete("no replacement")]
+	void SetContinuousInteractXboxIcon(string imageset_name, string image_name);
+	[Obsolete("no replacement")]
+	void SetSingleXboxIcon(string imageset_name, string image_name);
+	[Obsolete("no replacement")]
+	void SetContinuousXboxIcon(string imageset_name, string image_name);
+	[Obsolete("no replacement")]
+	protected void SetXboxIcon(string name, string imageset_name, string image_name);
 }

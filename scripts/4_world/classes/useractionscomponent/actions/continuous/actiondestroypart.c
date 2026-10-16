@@ -18,6 +18,7 @@ class ActionDestroyPart: ActionContinuousBase
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;		
 		
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
+		m_LockTargetOnUse 	= false;
 		m_Text = "#destroy";
 	}
 	
@@ -29,8 +30,8 @@ class ActionDestroyPart: ActionContinuousBase
 	
 	override void OnActionInfoUpdate( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		ConstructionActionData construction_action_data = player.GetConstructionActionData();	
-		m_Text = "#destroy " + construction_action_data.GetTargetPart();
+		ConstructionActionData cad = player.GetConstructionActionData();	
+		m_Text = "#destroy " + cad.GetTargetPart().GetName();;
 	}
 	
 	override bool CanBeUsedLeaning()
@@ -54,8 +55,8 @@ class ActionDestroyPart: ActionContinuousBase
 	
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
-		BaseBuildingBase base_building = BaseBuildingBase.Cast( action_data.m_Target.GetObject() );
-		Construction construction = base_building.GetConstruction();
+		EntityAI ent = EntityAI.Cast(action_data.m_Target.GetObject());
+		ConstructionBase construction = ConstructionBase.Cast(ent.GetConstructionBasic());
 		ConstructionActionData construction_action_data = action_data.m_Player.GetConstructionActionData();
 		ConstructionPart construction_part = construction_action_data.GetTargetPart();
 		
@@ -64,12 +65,12 @@ class ActionDestroyPart: ActionContinuousBase
 			//build
 			string part_name = construction_part.GetPartName();
 			string zone_name;
-			DamageSystem.GetDamageZoneFromComponentName(base_building,part_name,zone_name);
+			DamageSystem.GetDamageZoneFromComponentName(ent,part_name,zone_name);
 			
 			if (zone_name != "")
 			{
-				base_building.AddHealth(zone_name,"Health",-(base_building.GetMaxHealth(zone_name,"")/CYCLES));
-				if ( base_building.GetHealth(zone_name,"Health") < 1 )
+				ent.AddHealth(zone_name,"Health",-(ent.GetMaxHealth(zone_name,"")/CYCLES));
+				if (ent.GetHealth(zone_name,"Health") < 1)
 					construction.DestroyPartServer( action_data.m_Player, construction_part.GetPartName(), AT_DESTROY_PART );
 			}
 			else
@@ -89,8 +90,8 @@ class ActionDestroyPart: ActionContinuousBase
 		{
 			string part_name = target_object.GetActionComponentName( target.GetComponentIndex() );
 			
-			BaseBuildingBase base_building = BaseBuildingBase.Cast( target_object );
-			Construction construction = base_building.GetConstruction();		
+			EntityAI ent = EntityAI.Cast(target.GetObject());
+			ConstructionBase construction = ConstructionBase.Cast(ent.GetConstructionBasic());
 			ConstructionPart construction_part = construction.GetConstructionPartToDestroy( part_name );
 			
 			if ( construction_part )
@@ -103,7 +104,7 @@ class ActionDestroyPart: ActionContinuousBase
 					{
 						if ( g_Game && ( !g_Game.IsDedicatedServer() ) )
 						{
-							if ( !base_building.IsFacingCamera( part_name ) )
+							if ( !ent.IsFacingCamera( part_name ) )
 							{
 								return false;
 							}

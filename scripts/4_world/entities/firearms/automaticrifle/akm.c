@@ -56,3 +56,6 @@ class AKM_Base : RifleBoltFree_Base
 		SpawnAttachedMagazine("Mag_AKM_Drum75Rnd");
 	}	
 };
+
+class AKM : AKM_Base{};
+class AKM_Gold : AKM_Base{};

@@ -32,18 +32,25 @@ class ActionTakeItem: ActionInteractBase
 	
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		ItemBase tgt_item = ItemBase.Cast( target.GetObject() );
-		if ( tgt_item && !tgt_item.IsTakeable() ) return false;
-		if ( tgt_item && tgt_item.IsBeingPlaced() ) return false;
+		ItemBase tgtItem = ItemBase.Cast(target.GetObject());
+		if (tgtItem && !tgtItem.IsTakeable())
+			return false;
+		if (tgtItem && tgtItem.IsBeingPlaced())
+			return false;
 		
-		EntityAI tgt_parent = EntityAI.Cast( target.GetParent() );
-		EntityAI tgt_entity = EntityAI.Cast( target.GetObject() );
+		EntityAI tgtParent = EntityAI.Cast(target.GetParent());
+		EntityAI tgtEntity = EntityAI.Cast(target.GetObject());
 		
-		if ( tgt_entity && (!tgt_parent || BaseBuildingBase.Cast(tgt_parent)) )
+		if (tgtEntity && (!tgtParent || tgtParent.CanUseConstruction()))
 		{
-			if ( tgt_entity && tgt_entity.IsItemBase() && player.GetInventory().CanAddEntityIntoInventory(tgt_entity) && tgt_entity.GetHierarchyRootPlayer() != player )
+			if (tgtEntity && tgtEntity.IsItemBase() && player.GetInventory().CanAddEntityIntoInventory(tgtEntity) && tgtEntity.GetHierarchyRootPlayer() != player)
 			{
-				if ( tgt_parent && (!tgt_item.CanDetachAttachment(tgt_parent) || !tgt_parent.CanReleaseAttachment(tgt_item)) )
+				if (tgtParent && (!tgtItem.CanDetachAttachment(tgtParent) || !tgtParent.CanReleaseAttachment(tgtItem)))
+					return false;
+				
+				//! Special handling for digital code lock
+				DigitalCodeLock codeLock = DigitalCodeLock.Cast(tgtItem);
+				if (codeLock && !codeLock.CanDetachCodeLock(player, target.GetComponentIndex()))
 					return false;
 				
 				return true;
@@ -56,42 +63,6 @@ class ActionTakeItem: ActionInteractBase
 	{
 		return true;
 	}
-	
-	/*override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
-	{
-		super.WriteToContext(ctx, action_data);
-		InventoryLocation il = action_data.m_ReservedInventoryLocations.Get(0);
-		il.WriteToContext(ctx);
-	}
-	
-	override bool ReadFromContext(ParamsReadContext ctx, out ActionReciveData action_recive_data )
-	{
-		if(!action_recive_data)
-		{
-			action_recive_data = new ActionTakeItemReciveData;
-		}
-		
-		if(super.ReadFromContext(ctx, action_recive_data))
-		{
-			ActionTakeItemReciveData recive_data_ti = ActionTakeItemReciveData.Cast(action_recive_data);
-			recive_data_ti.m_InventoryLocation = new InventoryLocation;
-			if(recive_data_ti.m_InventoryLocation.ReadFromContext(ctx))
-			{
-				return true;
-			}
-		}
-			
-		return false;
-	}
-	
-	override void HandleReciveData(ActionReciveData action_recive_data, ActionData action_data)
-	{
-		super.HandleReciveData(action_recive_data, action_data);
-		ActionTakeItemReciveData recive_data_ti = ActionTakeItemReciveData.Cast(action_recive_data);
-		action_data.m_ReservedInventoryLocations.Insert(recive_data_ti.m_InventoryLocation);
-	} */
-	
-	
 	
 	override bool InventoryReservation(ActionData action_data)
 	{

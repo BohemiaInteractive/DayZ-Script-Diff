@@ -72,7 +72,10 @@ class ActionAttach : ActionSingleUseBase
 	override void OnExecuteServer(ActionData action_data)
 	{
 		if (g_Game.IsMultiplayer())
+		{
+			ClearActionJuncture(action_data);
 			return;
+		}
 		
 		ClearInventoryReservationEx(action_data);
 		AttachActionData action_data_a = AttachActionData.Cast(action_data);

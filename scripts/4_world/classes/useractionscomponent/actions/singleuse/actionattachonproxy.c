@@ -13,34 +13,66 @@ class ActionAttachOnProxy: ActionAttach
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
-	{	
-		Object targetObject = target.GetObject();
-		Object targetParent = target.GetParent();
-		EntityAI target_entity = EntityAI.Cast( targetParent );
-		EntityAI item_entity = item;
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
+	{
+		if (!GetGame().IsDedicatedServer() && item)
+			m_Text = "#attach " + item.GetDisplayName();
 		
-		if ( targetParent )
+		EntityAI targetEntity = EntityAI.Cast(target.GetObject());				
+		if (targetEntity)
 		{
-			if ( target_entity && item_entity )
+			if (CanAttachToProxy(player, targetEntity, item, target.GetComponentIndex()))
+				return true;
+		}
+		
+		EntityAI targetParentEntity = EntityAI.Cast(target.GetParent());
+		if (targetParentEntity)
+		{
+			if (CanAttachToProxy(player, targetParentEntity, item, target.GetComponentIndex()))
+				return true;
+		}
+				
+		return false;
+	}
+	
+	protected bool CanAttachToProxy(PlayerBase player, EntityAI targetEntity, ItemBase item, int componentIndex = -1)
+	{
+		if (targetEntity && item)
+		{
+			GameInventory inventory = targetEntity.GetInventory();
+			InventoryLocation dst = new InventoryLocation();
+			if (inventory && inventory.CanAddAttachment(item) && inventory.FindFreeLocationFor(item, FindInventoryLocationType.ANY_CARGO | FindInventoryLocationType.ATTACHMENT, dst))
 			{
-				if ( target_entity.GetInventory() && target_entity.GetInventory().CanAddAttachment( item_entity ) )
-				{
-					return true;
-				}
-			}	
+				return true;
+			}
 		}
 		
 		return false;
 	}
 	
-	override void OnExecuteClient( ActionData action_data )
+	override void OnExecuteClient(ActionData action_data)
 	{
-		super.OnExecuteClient( action_data );
+		super.OnExecuteClient(action_data);
 		
-		if ( action_data.m_Player.IsPlacingLocal() )
+		if (action_data.m_Player.IsPlacingLocal())
 		{
 			action_data.m_Player.TogglePlacingLocal();
+		}
+	}
+	
+	override protected void AttachItem(AttachActionData action_data)
+	{
+		EntityAI targetEntity = EntityAI.Cast(action_data.m_Target.GetObject());
+		if (targetEntity && CanAttachToProxy(action_data.m_Player, targetEntity, action_data.m_MainItem, action_data.m_Target.GetComponentIndex()))
+		{
+			action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(targetEntity, action_data.m_MainItem, action_data.m_AttSlot);
+			return;
+		}
+		
+		EntityAI targetParentEntity = EntityAI.Cast(action_data.m_Target.GetParent());	
+		if (targetParentEntity && CanAttachToProxy(action_data.m_Player, targetParentEntity, action_data.m_MainItem, action_data.m_Target.GetComponentIndex()))
+		{
+			action_data.m_Player.PredictiveTakeEntityToTargetAttachmentEx(targetParentEntity, action_data.m_MainItem, action_data.m_AttSlot);
 		}
 	}
 }

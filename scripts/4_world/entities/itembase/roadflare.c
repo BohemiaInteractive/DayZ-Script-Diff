@@ -197,21 +197,7 @@ class Roadflare : ItemBase
 			m_Light = RoadflareLight.Cast(  ScriptedLightBase.CreateLight( RoadflareLight, Vector(0,0,0) )  );
 			m_Light.AttachOnMemoryPoint( this, m_Light.m_MemoryPoint );
 		}
-		
-		if ( g_Game.IsServer() )
-		{
-			/*m_NoisePar = new NoiseParams();
-			m_NoisePar.LoadFromPath("cfgVehicles Roadflare NoiseRoadFlare");
-			if ( g_Game.GetWorld().IsNight() )
-			{
-				NoiseSystem noise = g_Game.GetNoiseSystem();
-				if ( noise )
-				{
-					noise.AddNoisePos( this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()) );
-				}
-			}*/
-		}
-		
+
 		SetBurningState(RoadflareBurningState.INITIAL_BURN);
 		SetModelState( RoadflareModelStates.UNCAPPED_IGNITED );
 	}
@@ -249,14 +235,6 @@ class Roadflare : ItemBase
 			}
 			else if ( m_BurningState == RoadflareBurningState.MAIN_BURN )
 			{
-				/*if ( g_Game.GetWorld().IsNight() )
-				{
-					NoiseSystem noise = g_Game.GetNoiseSystem();
-					if ( noise )
-					{
-						noise.AddNoisePos( this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
-					}
-				}*/
 				
 				if ( burning_time >= GetCompEM().GetEnergyMax() - FINAL_BURNING_STATE_TIME )
 				{

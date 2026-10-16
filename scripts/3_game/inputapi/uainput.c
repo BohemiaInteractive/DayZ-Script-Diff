@@ -1,6 +1,16 @@
 
 /** @file */
 
+#ifdef INPUT_OVERRIDE
+enum OverrideInputType
+{
+	PRESS,		// One time input
+	HOLD,		// Permanent input
+	CLICK,		// One time click
+	DBL_CLICK,	// Double click
+	RELEASE		// Release
+};
+#endif
 
 // constants for device (binding device) type determine:
 //
@@ -159,6 +169,36 @@ class UAInterface
 	proto native bool	SyncedClick_ID(int action, bool check_focus = true);
 	proto native bool	SyncedClick(string action, bool check_focus = true);
 	
+#ifdef INPUT_OVERRIDE
+	/**  
+	\brief Returns true when the override happened succesfully
+	@param action id of action, defined in \ref 4_World/Classes/UserActionsComponent/_constants.c
+	@param value of the parameter that should be overwritten (0 for false, anything else for true)
+	@return true if action value was overwritten
+	*/
+	proto native bool	SyncedOverride_ID(int action, float value, OverrideInputType type, bool oneTime);
+	proto native bool	SyncedOverride(string action, float value, OverrideInputType type, bool oneTime);
+	
+	/**  
+	\brief Returns true when the override was removed succesfully
+	@param action id of action, defined in \ref 4_World/Classes/UserActionsComponent/_constants.c
+	@return true if the action override was removed
+	*/
+	proto native bool	SyncedRemoveOverride_ID(int action);
+	proto native bool	SyncedRemoveOverride(string action);
+	
+	proto native bool	SyncedRemoveAllOverrides();
+	
+	/**  
+	\brief Returns true when the override exists and returns the value through value
+	@param action id of action, defined in \ref 4_World/Classes/UserActionsComponent/_constants.c
+	@param type the type of input the override should use
+	@param countUsage whether this call should remove the overwrite when oneTime is true
+	@param value returns the value of the override if it exists
+	@return true if the action override exists
+	*/
+	proto bool	SyncedGetInputOverride(int action, OverrideInputType type, bool countUsage, out float value);
+#endif
 };
 
 // -------------------------------------------------------------------------

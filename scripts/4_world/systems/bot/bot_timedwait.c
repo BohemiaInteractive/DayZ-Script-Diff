@@ -1,4 +1,4 @@
-
+#ifdef ROBOCLIENT
 class BotEventWaitTimeout : BotEventBase { };
 
 class BotTimedWait extends BotStateBase
@@ -50,4 +50,4 @@ class BotTimedWait extends BotStateBase
 		m_Bot.ProcessEvent(new BotEventWaitTimeout(m_Owner));
 	}
 };
-
+#endif

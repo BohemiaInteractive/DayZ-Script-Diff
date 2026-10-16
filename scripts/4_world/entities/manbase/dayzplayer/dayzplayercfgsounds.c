@@ -332,7 +332,7 @@ void DayZPlayerTypeRegisterSounds(DayZPlayerType pType)
 	DayZPlayerTypeVoiceSoundLookupTableImpl voiceTable2 = DayZPlayerTypeVoiceSoundLookupTableImpl.GetInstance();
 	pType.RegisterVoiceSoundLookupTable(voiceTable2);
 	
-	if(!g_Game.IsDedicatedServer())//sounds are unnecessary on server
+	if(!g_Game.IsHeadlessOrDedicatedServer())//sounds are unnecessary on server
 	{
 		pType.RegisterParticleEvent("Particle", -1);
 		//! load and register step sound lookup table

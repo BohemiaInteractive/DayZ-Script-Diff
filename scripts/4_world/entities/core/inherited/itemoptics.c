@@ -222,15 +222,18 @@ class ItemOptics : InventoryItemSuper
 	
 	override void OnWorkStart()
 	{
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
-			ShowReddot(true);
+			if (IsSwitchedOn())
+			{
+				ShowReddot(true);
+			}
 		}
 	}
 	
 	override void OnWorkStop()
 	{
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			ShowReddot(false);
 		}
@@ -242,14 +245,40 @@ class ItemOptics : InventoryItemSuper
 			return true;
 		return false;
 	}
+
+	override void OnSwitchOn()
+	{
+		if (!g_Game.IsHeadlessOrDedicatedServer())
+		{
+			if (IsWorking())
+			{
+				ShowReddot(true);
+			}
+		}
+	}
+
+	override void OnSwitchOff()
+	{
+		if (!g_Game.IsHeadlessOrDedicatedServer())
+		{
+			ShowReddot(false);
+		}
+	}
+	
+	bool IsSwitchedOn()
+	{
+		if (GetCompEM() && GetCompEM().IsSwitchedOn())
+			return true;
+		return false;
+	}
 	
 	void UpdateOpticsReddotVisibility()
 	{
-		if (IsWorking() && !m_reddot_displayed)
+		if (IsWorking() && IsSwitchedOn() && !m_reddot_displayed)
 		{
 			ShowReddot(true);
 		}
-		else if (!IsWorking() && m_reddot_displayed)
+		else if ((!IsWorking() || !IsSwitchedOn()) && m_reddot_displayed)
 		{
 			ShowReddot(false);
 		}
@@ -382,9 +411,9 @@ class ItemOptics : InventoryItemSuper
 	
 	void ShowReddot(bool state)
 	{
-		if (g_Game.IsDedicatedServer())
+		if (g_Game.IsHeadlessOrDedicatedServer())
 		{
-			ErrorEx("should not be called on the server!",ErrorExSeverity.INFO);
+			ErrorEx("should not be called on the server/headless!",ErrorExSeverity.INFO);
 			return;
 		}
 		
@@ -532,14 +561,14 @@ class ItemOptics : InventoryItemSuper
 	void OnOpticModeChange(){}
 	void OnOpticEnter()
 	{
-		if ( g_Game && !g_Game.IsDedicatedServer() )
+		if ( g_Game && !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			HideSelection("hide");
 		}
 	}
 	void OnOpticExit()
 	{
-		if ( g_Game && !g_Game.IsDedicatedServer() )
+		if ( g_Game && !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			ShowSelection("hide");
 		}

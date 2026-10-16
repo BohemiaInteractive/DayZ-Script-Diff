@@ -106,7 +106,7 @@ class ActionPlugTargetIntoThis: ActionSingleUseBase
 		if (Spotlight.CastTo(spotlight, targetIB))
 			spotlight.Unfold();
 		
-		targetIB.GetInventory().TakeEntityAsAttachment(InventoryMode.LOCAL, action_data.m_MainItem);
+		targetIB.GetInventory().TakeEntityAsTargetAttachment(InventoryMode.LOCAL, targetIB, action_data.m_MainItem);
 		action_data.m_Player.ServerDropEntity(action_data.m_MainItem);
 	}
 }

@@ -47,17 +47,20 @@ class ActionCloseFence: ActionInteractBase
 		fence.CloseFence();
 	}
 	
-	override void OnEndServer( ActionData action_data )
+	override void OnEndServer(ActionData action_data)
 	{
 		super.OnEndServer(action_data);
 		
 		m_NoisePar = new NoiseParams();
 		m_NoisePar.LoadFromPath("CfgVehicles SurvivorBase NoiseActionDefault");
 		NoiseSystem noise = g_Game.GetNoiseSystem();
-		if ( noise )
+		if (noise)
 		{
-			if ( action_data.m_Player )
-				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
+			if (action_data.m_Player)
+			{
+				Object targetObj = action_data.m_Target.GetObject();
+				noise.AddNoisePos(action_data.m_Player, targetObj.GetPosition(), m_NoisePar);
+			}
 		}
 	}
 }

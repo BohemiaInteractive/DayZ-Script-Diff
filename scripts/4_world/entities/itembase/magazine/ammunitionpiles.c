@@ -184,7 +184,7 @@ class Ammo_40mm_Base: Ammunition_Base
 
 class Ammo_40mm_Explosive: Ammo_40mm_Base
 {
-	override bool ShootsExplosiveAmmo()
+	override bool IsExplosive()
 	{
 		return true;
 	}
@@ -208,7 +208,9 @@ class Ammo_40mm_Explosive: Ammo_40mm_Base
 	{
 		super.OnDamageDestroyed(oldLevel);
 		#ifndef SERVER
+		#ifndef NO_GUI
 		ClearFlags(EntityFlags.VISIBLE, false);
+		#endif
 		#endif
 	}
 }
@@ -235,8 +237,10 @@ class Ammo_40mm_ChemGas: Ammo_40mm_Base
 		super.OnDamageDestroyed(oldLevel);
 		
 		#ifndef SERVER
+		#ifndef NO_GUI
 		ClearFlags(EntityFlags.VISIBLE, false);
 		ParticleManager.GetInstance().PlayInWorld(ParticleList.GRENADE_CHEM_BREAK, GetPosition());
+		#endif
 		#endif
 	}
 	
@@ -262,6 +266,7 @@ class Ammo_40mm_Smoke_ColorBase: Ammo_40mm_Base
 		if (m_Activated)
 		{
 			#ifndef SERVER
+			#ifndef NO_GUI
 			string particleStrIdentifier = g_Game.ConfigGetTextOut(string.Format("CfgMagazines %1 particleStrIdentifier", GetType()));
 			m_ParticleId = ParticleList.GetParticleIDByName(particleStrIdentifier);
 			if (m_ParticleId > 0)
@@ -269,6 +274,7 @@ class Ammo_40mm_Smoke_ColorBase: Ammo_40mm_Base
 				m_ParticleSmoke = ParticleManager.GetInstance().PlayOnObject(m_ParticleId, this);
 				m_ParticleSmoke.SetWiggle(7, 0.3);
 			}
+			#endif
 			#endif
 		}
 	}
@@ -291,11 +297,13 @@ class Ammo_40mm_Smoke_ColorBase: Ammo_40mm_Base
 
 	override void EEDelete(EntityAI parent)	
 	{
-		#ifndef SERVER	
+		#ifndef SERVER
+		#ifndef NO_GUI
 		if (m_ParticleSmoke)
 		{
 			m_ParticleSmoke.Stop();
 		}
+		#endif
 		#endif
 		
 		super.EEDelete(parent);

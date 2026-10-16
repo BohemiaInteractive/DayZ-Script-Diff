@@ -68,6 +68,12 @@ class ActionManagerClient: ActionManagerBase
 					break;
 			
 				case UA_AM_ACCEPTED:
+#ifdef ENABLE_LOGGING
+					if ( LogManager.IsActionLogEnable() )
+					{
+						Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp() + " UA_AM_ACCEPTED", this.ToString() , "n/a", "Update", m_Player.ToString() );
+					}
+#endif
 					int condition_mask = ActionBase.ComputeConditionMask(m_Player, m_CurrentActionData.m_Target, m_CurrentActionData.m_MainItem);
 					
 					m_CurrentActionData.m_Action.ClearInventoryReservationEx(m_CurrentActionData);
@@ -91,6 +97,12 @@ class ActionManagerClient: ActionManagerBase
 					break;
 				
 				case UA_AM_REJECTED:
+#ifdef ENABLE_LOGGING
+					if ( LogManager.IsActionLogEnable() )
+					{
+						Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp() + " UA_AM_REJECTED", this.ToString() , "n/a", "Update", m_Player.ToString() );
+					}
+#endif
 					OnActionEnd();
 					m_PendingActionAcknowledgmentID = -1;
 					break;
@@ -273,6 +285,12 @@ class ActionManagerClient: ActionManagerBase
 	
 	override void EndActionInput()
 	{
+#ifdef ENABLE_LOGGING
+		if ( LogManager.IsActionLogEnable() )
+		{
+			Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "EndActionInput", m_Player.ToString() );
+		}
+#endif
 		if (!m_ActionInputWantEnd_Send)
 		{
 			m_ActionInputWantEnd = true;
@@ -315,7 +333,7 @@ class ActionManagerClient: ActionManagerBase
 					if (ain.JustActivate())
 					{
 						ActionBase action = ain.GetAction();
-						if (action)
+						if (action && action.CanBeStarted())
 						{
 							ActionStart(action, ain.GetUsedActionTarget(), ain.GetUsedMainItem());
 							break;
@@ -334,10 +352,12 @@ class ActionManagerClient: ActionManagerBase
 			{
 				if (!m_ActionWantEndRequest_Send && ScriptInputUserData.CanStoreInputUserData())
 				{
+#ifdef ENABLE_LOGGING
 					if (LogManager.IsActionLogEnable())
 					{	
-						Debug.ActionLog("Time stamp: " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndRequest", m_CurrentActionData.m_Player.ToString());
+						Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndRequest", m_CurrentActionData.m_Player.ToString());
 					}
+#endif
 					ScriptInputUserData ctx = new ScriptInputUserData;
 					ctx.Write(INPUT_UDT_STANDARD_ACTION_END_REQUEST);
 					ctx.Send();
@@ -364,10 +384,12 @@ class ActionManagerClient: ActionManagerBase
 			{
 				if (!m_ActionInputWantEnd_Send && ScriptInputUserData.CanStoreInputUserData())
 				{
+#ifdef ENABLE_LOGGING
 					if (LogManager.IsActionLogEnable())
 					{
-						Debug.ActionLog("Time stamp: " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndInput", m_CurrentActionData.m_Player.ToString());
+						Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "EndInput", m_CurrentActionData.m_Player.ToString());
 					}
+#endif
 					ScriptInputUserData ctxi = new ScriptInputUserData;
 					ctxi.Write(INPUT_UDT_STANDARD_ACTION_INPUT_END);
 					ctxi.Send();
@@ -566,18 +588,22 @@ class ActionManagerClient: ActionManagerBase
 		bool success = false;
 		if (action_data.m_Action.IsInstant())
 		{
+#ifdef ENABLE_LOGGING
 			if (LogManager.IsActionLogEnable())
 			{
 				Debug.ActionLog("(-) Inventory lock - Not Used", action_data.m_Action.ToString() , "n/a", "LockInventory", action_data.m_Player.ToString());
 			}
+#endif
 			success = true;
 		}
 		else
 		{
+#ifdef ENABLE_LOGGING
 			if (LogManager.IsActionLogEnable())
 			{
 				Debug.ActionLog("(X) Inventory lock", action_data.m_Action.ToString() , "n/a", "LockInventory", action_data.m_Player.ToString());
 			}
+#endif
 			if (action_data.m_Action)
 			{
 				success = action_data.m_Action.InventoryReservation(action_data);
@@ -587,10 +613,12 @@ class ActionManagerClient: ActionManagerBase
 	}
 	void UnlockInventory(ActionData action_data)
 	{
+#ifdef ENABLE_LOGGING
 		if (LogManager.IsActionLogEnable())
 		{
 			Debug.ActionLog("(O) Inventory unlock", action_data.m_Action.ToString() , "n/a", "UnlockInventory", action_data.m_Player.ToString());
 		}
+#endif
 		if (action_data.m_Action)
 			action_data.m_Action.ClearInventoryReservationEx(action_data);
 	}
@@ -599,6 +627,12 @@ class ActionManagerClient: ActionManagerBase
 	{
 		if (!m_CurrentActionData && action && ActionPossibilityCheck(m_Player.GetCurrentCommandID())) 
 		{
+#ifdef ENABLE_LOGGING
+			if ( LogManager.IsActionLogEnable() )
+			{
+				Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "ActionStart", m_Player.ToString() );
+			}
+#endif
 			m_ActionWantEndRequest_Send = false;
 			m_ActionInputWantEnd_Send = false;
 			m_ActionWantEndRequest = false;
@@ -608,7 +642,7 @@ class ActionManagerClient: ActionManagerBase
 				m_Player.SetActionEndInput(action);
 			
 			HandleInputsOnActionStart(action);
-
+#ifdef ENABLE_LOGGING
 			if (LogManager.IsActionLogEnable())
 			{
 				if ( target )
@@ -620,17 +654,19 @@ class ActionManagerClient: ActionManagerBase
 					Debug.ActionLog("Item = " + item + ", no target", action.ToString() , "n/a", "ActionStart", m_Player.ToString());
 				}
 			}
+#endif
 			m_Interrupted = false;
 			if (g_Game.IsMultiplayer() && !action.IsLocal())
 			{
 				if (!ScriptInputUserData.CanStoreInputUserData())
 				{
 					DPrint("ScriptInputUserData already posted - ActionManagerClient");
-					
+#ifdef ENABLE_LOGGING					
 					if (LogManager.IsActionLogEnable())
 					{
 						Debug.ActionLog("Cannot start because ScriptInputUserData is already used", action.ToString() , "n/a", "ActionStart", m_Player.ToString());
 					}
+#endif
 					return;
 				}
 			}
@@ -641,11 +677,12 @@ class ActionManagerClient: ActionManagerBase
 				m_CurrentActionData = NULL;
 				return;
 			}
-			
+#ifdef ENABLE_LOGGING			
 			if (LogManager.IsActionLogEnable())
 			{
 				Debug.ActionLog("Action data created wait to start", action.ToString() , "n/a", "ActionStart", m_Player.ToString());
 			}
+#endif
 
 			if (g_Game.IsMultiplayer() && !action.IsLocal())
 			{
@@ -662,7 +699,12 @@ class ActionManagerClient: ActionManagerBase
 						
 					ctx.Write(m_PendingActionAcknowledgmentID);
 				}
-					
+#ifdef ENABLE_LOGGING
+				if ( LogManager.IsActionLogEnable() )
+				{
+					Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp() + " ctx.Send()", this.ToString() , "n/a", "ActionStart", m_Player.ToString() );
+				}
+#endif					
 				ctx.Send();
 					
 				if (!action.UseAcknowledgment())
@@ -763,19 +805,38 @@ class ActionManagerClient: ActionManagerBase
 	{
 		if (!g_Game.IsMultiplayer())
 		{
-			m_PendingActionData = new ActionData;
+			if (!m_PendingActionData && !m_CurrentActionData)
+			{
+				m_PendingActionData = new ActionData;
 	
-			if (!action.SetupAction(m_Player,target,item,m_PendingActionData,extra_data))
-				m_PendingActionData = null;
+				if (!action.SetupAction(m_Player, target, item, m_PendingActionData, extra_data))
+					m_PendingActionData = null;
+			}
 		}
 		else
+		{
 			ActionStart(action, target, item, extra_data);
+		}
+	}
+	
+	override int GetActionState()
+	{
+		if (m_PendingActionData)
+			return UA_AM_INIT;
+		
+		return super.GetActionState();
 	}
 	
 	override void OnActionEnd()
 	{
 		if (m_CurrentActionData)
 		{
+#ifdef ENABLE_LOGGING
+			if ( LogManager.IsActionLogEnable() )
+			{
+				Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnActionEnd", m_Player.ToString() );
+			}
+#endif
 			UnlockInventory(m_CurrentActionData);
 			if (m_CurrentActionData.m_Action.RemoveForceTargetAfterUse())
 				m_InventoryActionHandler.DeactiveAction();

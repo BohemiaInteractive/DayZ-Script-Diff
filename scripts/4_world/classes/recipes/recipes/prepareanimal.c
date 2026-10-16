@@ -32,6 +32,7 @@ class PrepareAnimal extends RecipeBase
 		InsertIngredient(1,"StoneKnife", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 		InsertIngredient(1,"Cleaver", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 		InsertIngredient(1,"CombatKnife", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
+		InsertIngredient(1,"Jambiya", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 		InsertIngredient(1,"HuntingKnife", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 		InsertIngredient(1,"Machete", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 		InsertIngredient(1,"CrudeMachete", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
@@ -46,6 +47,9 @@ class PrepareAnimal extends RecipeBase
 		InsertIngredient(1,"BoneKnife", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 		InsertIngredient(1,"Screwdriver", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 		InsertIngredient(1,"Iceaxe", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
+		InsertIngredient(1,"Scimitar", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);		
+		InsertIngredient(1,"DonerKnife", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
+		InsertIngredient(1,"Akinaka", DayZPlayerConstants.CMD_ACTIONFB_ANIMALSKINNING, true);
 
 		m_IngredientAddHealth[1]		= -6;			// 0 = do nothing
 		m_IngredientSetHealth[1]		= -1;			// -1 = do nothing

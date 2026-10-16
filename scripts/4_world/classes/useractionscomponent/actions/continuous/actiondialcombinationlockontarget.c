@@ -1,7 +1,7 @@
-class ActionDialCombinationLockOnTargetCB : ActionContinuousBaseCB
+class ActionDialCombinationLockOnTargetCB: ActionContinuousBaseCB
 {
 	private const float REPEAT_AFTER_SEC = 0.5;
-	
+		
 	override void CreateActionComponent()
 	{
 		m_ActionData.m_ActionComponent = new CAContinuousRepeat(REPEAT_AFTER_SEC);
@@ -47,11 +47,22 @@ class ActionDialCombinationLockOnTarget: ActionContinuousBase
 			return false;
 		
 		CombinationLock lock = CombinationLock.Cast(target.GetObject());
-		if (lock && lock.GetHierarchyParent() && Fence.Cast(lock.GetHierarchyParent()))
+		if (!lock)
+			return false;
+		
+		EntityAI parent = lock.GetHierarchyParent();
+		if (!parent)
+			return false;
+		
+		int facingSide = lock.GetLockSideByComponentIndex(target.GetComponentIndex());
+		if (facingSide == -1)
+			return false;
+		
+		if (parent.CanUseConstruction())
 		{
 			ConstructionActionData constructionActionData = player.GetConstructionActionData();
 			constructionActionData.SetCombinationLock(lock);
-			
+			constructionActionData.SetCombinationLockSide(facingSide);
 			return true;
 		}
 		
@@ -59,25 +70,14 @@ class ActionDialCombinationLockOnTarget: ActionContinuousBase
 	}
 
 	override void OnFinishProgressServer(ActionData action_data)
-	{	
+	{
 		//set dialed number
 		ConstructionActionData constructionActionData = action_data.m_Player.GetConstructionActionData();
-		CombinationLock combination_lock = constructionActionData.GetCombinationLock();
-		if (combination_lock)
+		CombinationLock combinationLock = constructionActionData.GetCombinationLock();
+		int lockSide = constructionActionData.GetCombinationLockSide();
+		if (combinationLock && lockSide != -1)
 		{
-			combination_lock.DialNextNumber();
-	
-			//check for unlock state
-			if (!combination_lock.IsLockedOnGate())
-			{
-				if (g_Game.IsMultiplayer())
-					ClearActionJuncture(action_data);
-				else 
-					ClearInventoryReservationEx(action_data);
-				
-				EntityAI target_entity = EntityAI.Cast(action_data.m_Target.GetObject());
-				combination_lock.UnlockServer(action_data.m_Player, target_entity.GetHierarchyParent());
-			}
+			combinationLock.DialNextNumber(lockSide);
 		}
 	}
 }

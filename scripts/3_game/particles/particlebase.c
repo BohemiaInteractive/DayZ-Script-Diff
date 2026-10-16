@@ -65,15 +65,22 @@ class ParticleBase : Entity
 	//! Event invokers
 	protected ref ParticleEvents m_EventInvokers;
 	
-	
+	//! Name of sound set that is going to be played when particle starts playback
+	protected string m_StartSoundSetName;
+	//! Position of sound playback (world)
+	protected vector m_SoundPosition;
 	
 	//! ctor
 	void ParticleBase()
 	{
 		m_EventInvokers = new ParticleEvents();
+		m_EventInvokers.Event_OnParticleStart.Insert(PlayStartSound);
 	}
 	
-	
+	void ~ParticleBase()
+	{
+		m_EventInvokers.Event_OnParticleStart.Remove(PlayStartSound);
+	}
 	
 	//! Have script recognize this as a Particle without casting
 	override bool IsParticle()
@@ -150,10 +157,36 @@ class ParticleBase : Entity
 		ErrorEx("Not implemented.", ErrorExSeverity.WARNING);
 		return false;
 	}
+
+	/**
+	\brief Ask if the particle is still playing
+		\param soundSetName \p string Name of the sound set to be played (DZ/sounds)
+		\param position \p vector World position on which sound is going to be played
+	*/	
+	void SetStartSoundParams(string soundSetName, vector position)
+	{
+		m_StartSoundSetName = soundSetName;
+		m_SoundPosition 	= position;
+	}
 	
-	//@}
-	
-	
+	string GetStartSoundName()
+	{
+		return m_StartSoundSetName;
+	}
+
+	/**
+	\brief Play sound (if set) on OnParticleStart event
+	*/
+	void PlayStartSound()
+	{
+		if (m_StartSoundSetName)
+		{
+			EffectSound sound = SEffectManager.PlaySound(m_StartSoundSetName, m_SoundPosition);
+			sound.SetAutodestroy(true);
+		}
+	}
+
+	//@}	
 	
 	/**
 	\brief Get the events

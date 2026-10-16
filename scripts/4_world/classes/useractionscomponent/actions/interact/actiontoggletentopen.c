@@ -34,7 +34,6 @@ class ActionToggleTentOpen: ActionInteractBase
 				{
 					if ( tent.CanToggleAnimations(selections[s]) )
 					{
-						//Print("nazov selekcie: " + selections[s]);
 						return true;
 					}
 				}

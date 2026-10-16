@@ -4,8 +4,10 @@ class ScriptConsoleOutputTab : ScriptConsoleTabBase
 	protected ButtonWidget 		m_ClientLogClearButton;
 	protected CheckBoxWidget 	m_ClientLogScrollCheckbox;
 	
-	void ScriptConsoleOutputTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
+	override void InitializeTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		super.InitializeTab(root, console, button, parent);
+		
 		m_ClientLogListbox = TextListboxWidget.Cast(root.FindAnyWidget("TextListbox"));
 		m_ClientLogClearButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonClear"));
 		m_ClientLogScrollCheckbox = CheckBoxWidget.Cast(root.FindAnyWidget("CheckBoxAutoScroll"));

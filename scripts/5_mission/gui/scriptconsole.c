@@ -1,8 +1,78 @@
+enum ScriptConsoleTabID
+{
+	GENERAL,
+	ITEMS,
+	CAMERA,
+	CONFIGS,
+	OUTPUT,
+	SCRIPT_CLIENT,
+	SCRIPT_SERVER,
+	SOUNDS,
+	VICINITY,
+	WEATHER,
+	
+	COUNT   //! KEEP AS LAST ENTRY!
+}
+
+class ScriptConsoleTabRegistryEntry
+{
+	int m_ID;
+	string m_DisplayName;
+	string m_PanelWidgetName;
+	typename m_TabClass;
+	
+	void ScriptConsoleTabRegistryEntry(int id, string displayName, string panelWidgetName, typename tabClass)
+	{
+		m_ID = id;
+		m_DisplayName = displayName;
+		m_PanelWidgetName = panelWidgetName;
+		m_TabClass = tabClass;
+	}
+}
+
+class ScriptConsoleTabRegistry
+{
+	protected static ref array<ref ScriptConsoleTabRegistryEntry> s_Entries;
+	
+	static void Register(int id, string displayName, string widgetName, typename tabClass)
+	{
+		if (!s_Entries)
+			s_Entries = new array<ref ScriptConsoleTabRegistryEntry>();
+			
+		s_Entries.Insert(new ScriptConsoleTabRegistryEntry(id, displayName, widgetName, tabClass));
+	}
+	
+	static array<ref ScriptConsoleTabRegistryEntry> GetAll()
+	{
+		return s_Entries;
+	}
+	
+	static void InitializeRegistry()
+	{
+		if (s_Entries && s_Entries.Count() > 0)
+			s_Entries.Clear();
+			
+		// Register new tabs here
+		Register(ScriptConsoleTabID.GENERAL, "General", "GeneralPanel", ScriptConsoleGeneralTab);
+		Register(ScriptConsoleTabID.ITEMS, "Items", "ItemsPanel", ScriptConsoleItemsTab);
+		Register(ScriptConsoleTabID.CAMERA, "Camera", "CameraPanel", ScriptConsoleCameraTab);
+		Register(ScriptConsoleTabID.CONFIGS, "Configs", "ConfigsPanel", ScriptConsoleConfigTab);
+		Register(ScriptConsoleTabID.OUTPUT, "Prints", "OutputPanel", ScriptConsoleOutputTab);
+		Register(ScriptConsoleTabID.SCRIPT_CLIENT, "EnfScript Client", "EnScriptPanel", ScriptConsoleEnfScriptTab);
+		Register(ScriptConsoleTabID.SCRIPT_SERVER, "EnfScript Server", "EnScriptPanel", ScriptConsoleEnfScriptServerTab);
+		Register(ScriptConsoleTabID.SOUNDS, "Sounds", "SoundsPanel", ScriptConsoleSoundsTab);
+		Register(ScriptConsoleTabID.VICINITY, "Vicinity", "VicinityPanel", ScriptConsoleVicinityTab);
+		Register(ScriptConsoleTabID.WEATHER, "Weather", "WeatherPanel", ScriptConsoleWeatherTab);
+	}
+}
+
 class ScriptConsole extends UIScriptedMenu
 {
-	protected bool				m_HintEditMode;
-	protected float 			m_HoverTime;
-	protected bool				m_HoverSuccessTriggered;
+	protected static const string HINTS_PATH_DEFAULT	= "scripts/data/internal/script_console_hints.json";
+	protected static const string HINTS_PATH_OPTIONAL 	= "$mission:script_console_hints.json";
+	const string NO_HINT_TEXT 							= "No hint";
+	
+	// Widgets
 	protected Widget 			m_CurrentHoverWidget;
 	protected Widget 			m_HintWidgetRoot;
 	protected ImageWidget 		m_HintWidgetBackground;
@@ -12,36 +82,46 @@ class ScriptConsole extends UIScriptedMenu
 	protected ButtonWidget 		m_HintCancelButton;
 	protected ButtonWidget 		m_HintClearButton;
 	protected EditBoxWidget 	m_HintInputText;
+	
+	protected Widget			m_HeaderPanelPC;
+	protected GridSpacerWidget	m_ButtonsMenu;
+	protected ButtonWidget 		m_CloseConsoleButton;
+	protected GridSpacerWidget	m_ContextMenuGrid;
+	protected ButtonWidget		m_ContextMenuButton;
+	protected TextWidget		m_ContectMenuButtonLabel;
+	#ifdef PLATFORM_CONSOLE
+	protected Widget 			m_HeaderPanelConsole;
+	protected GridSpacerWidget 	m_ConsoleButtonsMenuGrid;
+	#endif
+	
+	// Member variables
+	protected bool				m_HintEditMode;
+	protected float 			m_HoverTime;
+	protected bool				m_HoverSuccessTriggered;
 	protected float 			m_PrevMouseX;
 	protected float 			m_PrevMouseY;
-	Widget 						m_ButtonsWindowWidget;
 	ScriptConsoleTabBase 		m_SelectedHandler;
-	protected int 				m_Id;
+	protected int 				m_SelectedTab = ScriptConsoleTabID.GENERAL;
 	
-	static ref array<ref MapMarker> 	m_MarkedEntities = new array<ref MapMarker>();
-	int 								m_SelectedTab;
-	protected ref map<Widget, ref ScriptConsoleTabBase> m_TabHandlers = new map<Widget, ref ScriptConsoleTabBase>;
-	protected ref map<int, ref ScriptConsoleTabBase> m_TabHandlersByID = new map<int, ref ScriptConsoleTabBase>;
-
-	ButtonWidget 					m_CloseConsoleButton;
-
-	
-	protected static const string HINTS_PATH_DEFAULT		= "scripts/data/internal/script_console_hints.json";
-	protected static const string HINTS_PATH_OPTIONAL 		= "$mission:script_console_hints.json";
+	static ref array<ref MapMarker> m_MarkedEntities = new array<ref MapMarker>();
+	protected ref map<int, ref ScriptConsoleTabBase> m_TabHandlersByID = new map<int, ref ScriptConsoleTabBase>();
 	
 	static ref JsonHintsData m_JsonData;
 	
-	const string NO_HINT_TEXT = "No hint";
-	
-	
+	protected ref map<int, ref ScriptConsoleMenuElement> m_ContextMenuElements = new map<int, ref ScriptConsoleMenuElement>();
+	protected EInputDeviceType m_CurrentInputDevice;
+		
 	void ScriptConsole()
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (g_Game && g_Game.GetMission() && g_Game.GetMission().GetHud())
 		{
 			g_Game.GetMission().GetHud().ShowHudPlayer(false);
 			g_Game.GetMission().GetHud().ShowQuickbarPlayer(false);
+			g_Game.GetMission().GetHud().HideVehicleInfo();
 		}
+		#endif
 		#endif
 		PluginItemDiagnostic plugin = PluginItemDiagnostic.Cast(GetPlugin(PluginItemDiagnostic));
 		if (plugin)
@@ -51,29 +131,31 @@ class ScriptConsole extends UIScriptedMenu
 	void ~ScriptConsole()
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (g_Game && g_Game.GetMission() && g_Game.GetMission().GetHud())
 		{
+
 			g_Game.GetMission().GetHud().ShowHudPlayer(true);
 			g_Game.GetMission().GetHud().ShowQuickbarPlayer(true);
+			g_Game.GetMission().GetHud().ShowVehicleInfo();
+			g_Game.GetMission().EnableAllInputs(true);
+			
 		}
 		if (m_HintWidgetRoot)
 			m_HintWidgetRoot.Unlink();
 		#endif
+		#endif
 		PluginItemDiagnostic plugin = PluginItemDiagnostic.Cast(GetPlugin(PluginItemDiagnostic));
 		if (plugin)
 			plugin.OnScriptMenuOpened(false);
-		
-		if (g_Game && g_Game.GetMission())
-		{
-			g_Game.GetMission().EnableAllInputs(true);
-		}
 	}
+	
 	
 	ScriptConsoleTabBase GetSelectedHandler()
 	{
 		return m_SelectedHandler;
 	}
-		
+	
 	static void SaveData()
 	{
 		string errorMessage;
@@ -104,17 +186,14 @@ class ScriptConsole extends UIScriptedMenu
 		{
 			int hash = GetWidgetCombinedHash(w);
 			m_JsonData.WidgetHintBindings.Set(hash, text);
-			Print("setting: " + text);
 		}
 		HoverInterrupt();
 	}
 	
-	void RegisterTab(ScriptConsoleTabBase handler)
+	void RegisterTab(int id, ScriptConsoleTabBase handler)
 	{
-		m_TabHandlers.Insert(handler.GetButton(), handler);
-		m_TabHandlersByID.Insert(m_Id, handler);
-		handler.Init(m_Id);
-		m_Id++;
+		handler.Init(id);
+		m_TabHandlersByID.Insert(id, handler);
 	}
 	
 	override Widget Init()
@@ -128,32 +207,139 @@ class ScriptConsole extends UIScriptedMenu
 		m_HintCancelButton = ButtonWidget.Cast(m_EditTooltipRoot.FindAnyWidget("ButtonCancel"));
 		m_HintClearButton = ButtonWidget.Cast(m_EditTooltipRoot.FindAnyWidget("ButtonClear"));
 		m_HintInputText = EditBoxWidget.Cast(m_EditTooltipRoot.FindAnyWidget("InputText"));
-
-		m_ButtonsWindowWidget = layoutRoot.FindAnyWidget("TabButtons");
-		m_ButtonsWindowWidget.Show(true);
-		//(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
-		RegisterTab(new ScriptConsoleItemsTab(layoutRoot.FindAnyWidget("ItemsPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("ItemsButtonWidget"))));
-		RegisterTab(new ScriptConsoleConfigTab(layoutRoot.FindAnyWidget("ConfigsPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("ConfigsButtonWidget"))));
-		RegisterTab(new ScriptConsoleEnfScriptTab(layoutRoot.FindAnyWidget("EnScriptPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("EnScriptButtonWidget"))));
-		RegisterTab(new ScriptConsoleEnfScriptServerTab(layoutRoot.FindAnyWidget("EnScriptPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("EnScriptButtonWidgetServer"))));
-		RegisterTab(new ScriptConsoleGeneralTab(layoutRoot.FindAnyWidget("GeneralPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("GeneralButtonWidget"))));
-		RegisterTab(new ScriptConsoleOutputTab(layoutRoot.FindAnyWidget("OutputPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("OutputButtonWidget"))));
-		RegisterTab(new ScriptConsoleVicinityTab(layoutRoot.FindAnyWidget("VicinityPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("VicinityWidget"))));
-		if (!g_Game.IsDedicatedServer()) // TODO(kumarjac): actually hide the panel - not important though since this is an internal tool
-			RegisterTab(new ScriptConsoleSoundsTab(layoutRoot.FindAnyWidget("SoundsPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("SoundsWidget"))));
-		RegisterTab(new ScriptConsoleWeatherTab(layoutRoot.FindAnyWidget("WeatherPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("WeatherButtonWidget"))));
-		if (!g_Game.IsDedicatedServer()) // TODO(kumarjac): actually hide the panel - not important though since this is an internal tool
-			RegisterTab(new ScriptConsoleCameraTab(layoutRoot.FindAnyWidget("CameraPanel"),this,ButtonWidget.Cast(layoutRoot.FindAnyWidget("CameraButtonWidget"))));
-
-		m_CloseConsoleButton = ButtonWidget.Cast(layoutRoot.FindAnyWidget("CloseConsoleButtonWidget"));
-
+		
+		m_HeaderPanelPC = layoutRoot.FindAnyWidget("HeaderBarPC");
+		m_ButtonsMenu = GridSpacerWidget.Cast(layoutRoot.FindAnyWidget("ButtonsContextMenu"));
+		m_ContextMenuGrid = GridSpacerWidget.Cast(layoutRoot.FindAnyWidget("ContextMenuGrid"));
+		m_ContextMenuButton = ButtonWidget.Cast(layoutRoot.FindAnyWidget("ButtonContextMenu"));
+		m_ContectMenuButtonLabel = TextWidget.Cast(layoutRoot.FindAnyWidget("ButtonContextMenuLabel"));
+		m_CloseConsoleButton = ButtonWidget.Cast(layoutRoot.FindAnyWidget("CloseConsoleButton"));
+		#ifdef PLATFORM_CONSOLE
+		m_HeaderPanelPC.Show(false);
+		m_ButtonsMenu.Show(false);
+		
+		m_HeaderPanelConsole = layoutRoot.FindAnyWidget("HeaderBarConsole");
+		m_ConsoleButtonsMenuGrid = GridSpacerWidget.Cast(layoutRoot.FindAnyWidget("TabButtonsGrid"));
+		
+		m_HeaderPanelConsole.Show(true);
+		#endif
+		
+		BuildContextMenu();
+		
 		// load data from profile
-		m_SelectedTab = m_ConfigDebugProfile.GetTabSelected();
+		int lastOpenedTab = m_ConfigDebugProfile.GetTabSelected();
+		if (lastOpenedTab >= 0 && lastOpenedTab < ScriptConsoleTabID.COUNT)
+			m_SelectedTab = m_ConfigDebugProfile.GetTabSelected();
 		SelectTabByID(m_SelectedTab);
 		
 		m_JsonData = GetData();
-
+		
+		#ifdef PLATFORM_CONSOLE
+		g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
+		OnInputDeviceChanged(g_Game.GetInput().GetCurrentInputDevice());
+		#endif
+		
 		return layoutRoot;
+	}
+	
+	#ifdef PLATFORM_CONSOLE
+	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
+	{
+		m_CurrentInputDevice = pInputDeviceType;
+		BuildContextMenu();
+		
+		switch (pInputDeviceType)
+		{
+			case EInputDeviceType.CONTROLLER:
+			{
+				m_HeaderPanelPC.Show(false);
+				m_ButtonsMenu.Show(false);
+				m_HeaderPanelConsole.Show(true);
+				g_Game.GetUIManager().ShowUICursor(false);
+				g_Game.GetMission().RemoveActiveInputExcludes({"menu_move"});
+				break;
+			}
+			default: // Mouse & Keyboard
+			{
+				m_HeaderPanelConsole.Show(false);
+				m_HeaderPanelPC.Show(true);
+				m_ButtonsMenu.Show(true);
+				g_Game.GetUIManager().ShowUICursor(true);
+				g_Game.GetMission().AddActiveInputExcludes({"menu_move"});
+				break;
+			}
+		}
+		
+		// Notify current tab of input change
+		if (m_SelectedHandler)
+			m_SelectedHandler.OnInputDeviceChanged(pInputDeviceType);
+	}
+	#endif
+	
+	protected void BuildContextMenu()
+	{
+		if (m_ContextMenuElements && m_ContextMenuElements.Count() > 0)
+		{
+			foreach (ScriptConsoleMenuElement element : m_ContextMenuElements)
+			{
+				element.GetRoot().Unlink();
+				delete element.GetRoot();
+			}
+			
+			m_ContextMenuElements.Clear();
+			m_ContextMenuElements = new map<int, ref ScriptConsoleMenuElement>();
+		}
+		
+		ScriptConsoleTabRegistry.InitializeRegistry();
+		
+		array<ref ScriptConsoleTabRegistryEntry> tabEntries = ScriptConsoleTabRegistry.GetAll();
+		foreach (ScriptConsoleTabRegistryEntry entry : tabEntries)
+		{
+			RegisterContextMenuElement(entry.m_ID, entry.m_DisplayName);
+		}
+	}
+	
+	protected void RegisterContextMenuElement(int id, string name)
+	{
+		GridSpacerWidget buttonsGrid = m_ContextMenuGrid;
+		#ifdef PLATFORM_CONSOLE
+		if (m_CurrentInputDevice == EInputDeviceType.CONTROLLER)
+			buttonsGrid = m_ConsoleButtonsMenuGrid;
+		else
+			buttonsGrid = m_ContextMenuGrid;
+		#endif
+		ScriptConsoleMenuElement menuElement = new ScriptConsoleMenuElement(id, buttonsGrid, name, this);
+		m_ContextMenuElements.Insert(id, menuElement);
+		if (m_SelectedHandler && m_SelectedHandler.GetID() == id)
+			menuElement.Select();
+	}
+		
+	protected void HideContextSubElements()
+	{
+		foreach (ScriptConsoleMenuElement element : m_ContextMenuElements)
+		{
+			if (element.HasSubElements())
+			{
+				element.HideGrid();
+			}
+		}
+	}
+	
+	protected bool IsContextElementButton(Widget w)
+	{
+		if (w == m_ContextMenuButton)
+			return true;
+	
+		foreach (ScriptConsoleMenuElement element : m_ContextMenuElements)
+		{
+			if (w == element.GetButton())
+				return true;
+			// Also check sub-elements
+			if (element.IsSubElementButton(w))
+				return true;
+		}
+	
+		return false;
 	}
 	
 	protected void HideHint()
@@ -206,11 +392,121 @@ class ScriptConsole extends UIScriptedMenu
 		m_HintEditMode = false;
 		HideHint();
 	}
-
+	
+	override void OnShow()
+	{
+		super.OnShow();
+		
+		if (g_Game && g_Game.GetMission())
+		{
+			// Inputs excluded when in script console menu
+			array<string> inputExcludes = {
+				// Menu
+				"movement",
+				"aiming",
+				"gestures",
+				"stances",
+				"optics",
+				"actions", 
+				"hotkey",
+				"UAGear",
+				"UAVoiceLevel",
+				"UAVoiceModifierHelper",
+				"UAVoiceDistanceUp",
+				"UAVoiceDistanceDown",
+				"UAVoiceOverNet",
+				"UAVoiceOverNetToggle",
+				"UAVoiceOverNetMute",
+				// Inventory
+				"gestures",
+	    		"stances",
+	    		"optics",
+	   			"actions",
+				// Buldozer
+				"UABuldResetCamera",
+				"UABuldTurbo",
+				"UABuldSlow",
+				"UABuldRunScript",
+				"UABuldSelectToggle",
+				"UABuldFreeLook",
+				"UABuldSelect",
+				"UABuldSelectAddMod",
+				"UABuldSelectRemoveMod",
+				"UABuldModifySelected",
+				"UABuldCycleMod",
+				"UABuldRotationXAxisMod",
+				"UABuldRotationZAxisMod",
+				"UABuldCoordModCycle",
+				"UABuldSampleTerrainHeight",
+				"UABuldSetTerrainHeight",
+				"UABuldScaleMod",
+				"UABuldElevateMod",
+				"UABuldSmoothMod",
+				"UABuldFlattenMod",
+				"UABuldBrushRatioUp",
+				"UABuldBrushRatioDown",
+				"UABuldBrushOuterUp",
+				"UABuldBrushOuterDown",
+				"UABuldBrushStrengthUp",
+				"UABuldBrushStrengthDown",
+				"UABuldToggleNearestObjectArrow",
+				"UABuldCycleBrushMod",
+				"UABuldSelectionType",
+				"UABuldCreateLastSelectedObject",
+				"UABuldDuplicateSelection",
+				"UABuldDeleteSelection",
+				"UABuldUndo",
+				"UABuldRedo",
+				"UABuldMoveLeft",
+				"UABuldMoveRight",
+				"UABuldMoveForward",
+				"UABuldMoveBack",
+				"UABuldMoveUp",
+				"UABuldMoveDown",
+				"UABuldLeft",
+				"UABuldRight",
+				"UABuldForward",
+				"UABuldBack",
+				"UABuldLookLeft",
+				"UABuldLookRight",
+				"UABuldLookUp",
+				"UABuldLookDown",
+				"UABuldZoomIn",
+				"UABuldZoomOut",
+				"UABuldTextureInfo",
+				"UABuldViewerMoveForward",
+				"UABuldViewerMoveBack",
+				"UABuldViewerMoveLeft",
+				"UABuldViewerMoveRight",
+				"UABuldViewerMoveUp",
+				"UABuldViewerMoveDown",
+				"UABuldObjectRotateLeft",
+				"UABuldObjectRotateRight",
+				"UABuldObjectRotateForward",
+				"UABuldObjectRotateBack",
+				"UABuldPreviousAnimation",
+				"UABuldNextAnimation",
+				"UABuldRecedeAnimation",
+				"UABuldAdvanceAnimation",
+				"UABuldLinkCamToTerrain",
+				"UABuldCopyTileCoord",
+				"UABuldMarkUnderground",
+				"UABuldRemoveUnderground"
+			};
+			
+			if (m_SelectedHandler && ScriptConsoleCameraTab.Cast(m_SelectedHandler))
+			{
+				inputExcludes.Remove(0);
+			}
+					
+			g_Game.GetMission().AddActiveInputExcludes(inputExcludes);
+		}
+	}
+		
 	override void OnHide()
 	{
 		super.OnHide();
-		
+				
 		HoverInterrupt();
 	}
 
@@ -218,7 +514,7 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		super.OnKeyPress(w, x, y, key);
 
-		if (m_SelectedHandler.OnKeyPress(w,x,y,key))
+		if (m_SelectedHandler && m_SelectedHandler.OnKeyPress(w,x,y,key))
 			return true;
 		return false;
 
@@ -228,7 +524,7 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		super.OnKeyDown(w, x, y, key);
 		
-		if (m_SelectedHandler.OnKeyDown(w,x,y,key))
+		if (m_SelectedHandler && m_SelectedHandler.OnKeyDown(w,x,y,key))
 			return true;
 		return false;
 
@@ -237,7 +533,7 @@ class ScriptConsole extends UIScriptedMenu
 	override void Update(float timeslice)
 	{
 		super.Update(timeslice);
-
+		
 		int mouseX, mouseY;
 		GetMousePos(mouseX,mouseY);
 		float dist = Math.Sqrt(Math.AbsFloat(mouseX - m_PrevMouseX) + Math.AbsFloat(mouseY - m_PrevMouseY));
@@ -255,13 +551,7 @@ class ScriptConsole extends UIScriptedMenu
 		
 		if(dist > 1 && m_HoverSuccessTriggered)
 			HoverInterrupt();
-		
-		if (g_Game && GetUApi().GetInputByID(UAUIBack).LocalPress())
-		{
-			g_Game.GetUIManager().Back();
-			return;
-		}
-	
+			
 		if (!g_Game.IsMultiplayer() && KeyState(KeyCode.KC_RCONTROL) && KeyState(KeyCode.KC_NUMPAD0) && m_HintWidgetRoot && m_HintWidgetRoot.IsVisible())
 		{
 			ClearKey(KeyCode.KC_NUMPAD0);
@@ -270,40 +560,55 @@ class ScriptConsole extends UIScriptedMenu
 			if (text == NO_HINT_TEXT)
 				text = "";
 			m_HintInputText.SetText(text);
-			
 		}
 		
-		foreach (ScriptConsoleTabBase handler: m_TabHandlers)
+		foreach (ScriptConsoleTabBase handler : m_TabHandlersByID)
 		{
 			if (handler.IsSelected())
 			{
 				handler.Update(timeslice);
 			}
 		}
+		
+		UAInputAPI inputAPI = GetUApi();
+		if (g_Game && inputAPI.GetInputByID(UAUIBack).LocalPress())
+		{
+			g_Game.GetUIManager().Back();
+			return;
+		}
+		if (inputAPI.GetInputByID(UAUITabRight).LocalPress())
+		{
+			m_SelectedTab++;
+			if (m_SelectedTab >= ScriptConsoleTabID.COUNT)
+				m_SelectedTab = 0;
+			
+			SelectTabByID(m_SelectedTab);
+		}
+		else if (inputAPI.GetInputByID(UAUITabLeft).LocalPress())
+		{
+			m_SelectedTab--;
+			if (m_SelectedTab < 0)
+				m_SelectedTab = ScriptConsoleTabID.COUNT - 1;
+			
+			SelectTabByID(m_SelectedTab);
+		}
 	}
-
+		
 	override bool OnMouseButtonDown(Widget w, int x, int y, int button)
 	{
 		super.OnMouseButtonDown(w,x,y,button);
 		
-		if (m_SelectedHandler.OnMouseButtonDown(w,x,y,button))
+		if (m_SelectedHandler && m_SelectedHandler.OnMouseButtonDown(w,x,y,button))
 			return true;
 
 		return false;
 	}
 	
-	
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
 		super.OnClick(w, x, y, button);
-
-		if (w == m_CloseConsoleButton)
-		{		
-			Close();
-			g_Game.GetMission().EnableAllInputs(true);
-			return true;
-		}
-		else if (w == m_HintOkButton)
+		
+		if (w == m_HintOkButton)
 		{
 			SetHintText(m_HintInputText.GetText(), m_CurrentHoverWidget);
 			HoverInterrupt();
@@ -319,12 +624,17 @@ class ScriptConsole extends UIScriptedMenu
 		else if (w == m_HintClearButton)
 		{
 			m_HintInputText.SetText("");
-			
 		}
-
-		SelectTabByButton(w);
-
-		if (m_SelectedHandler.OnClick(w,x,y,button))
+		#ifndef PLATFORM_CONSOLE
+		else if (w == m_CloseConsoleButton)
+		{
+			Close();
+			g_Game.GetMission().EnableAllInputs(true);
+			return true;
+		}
+		#endif
+		
+		if (m_SelectedHandler && m_SelectedHandler.OnClick(w,x,y,button))
 			return true;
 		return false;
 	}
@@ -333,7 +643,7 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		super.OnDoubleClick(w, x, y, button);
 
-		if (m_SelectedHandler.OnDoubleClick(w,x,y,button))
+		if (m_SelectedHandler && m_SelectedHandler.OnDoubleClick(w,x,y,button))
 				return true; 
 		
 		return false;
@@ -346,7 +656,19 @@ class ScriptConsole extends UIScriptedMenu
 		if (!m_EditTooltipRoot.IsVisible())
 			HoverInterrupt();
 		
-		if (m_SelectedHandler.OnMouseLeave(w, enterW, x, y))
+		// Close context menu if we're not entering any context menu related widget
+		if (enterW && !IsContextElementButton(enterW) && !IsChildOfWidget(enterW, m_ButtonsMenu) && w && !IsContextElementButton(w) && !IsChildOfWidget(w, m_ButtonsMenu) && enterW != m_ContextMenuGrid && w != m_ContextMenuGrid)
+		{
+			m_ContextMenuGrid.Show(false);
+			HideContextSubElements();
+			m_ContectMenuButtonLabel.SetColor(ARGB(255, 255, 255, 255));
+		}
+		else if (w == m_ContextMenuButton)
+		{
+			m_ContectMenuButtonLabel.SetColor(ARGB(255, 255, 255, 255));
+		}
+			
+		if (m_SelectedHandler && m_SelectedHandler.OnMouseLeave(w, enterW, x, y))
 			return true;
 		
 		return false;
@@ -355,10 +677,24 @@ class ScriptConsole extends UIScriptedMenu
 	override bool OnMouseEnter(Widget w, int x, int y)
 	{
 		super.OnMouseEnter(w, x, y);
+		
 		if (!m_EditTooltipRoot.IsVisible())
 			m_CurrentHoverWidget = w;
 		
-		if (m_SelectedHandler.OnMouseEnter(w ,x, y))
+		// Close context menu if we're not entering any context menu related widget
+		if (w && !IsContextElementButton(w) && !IsChildOfWidget(w, m_ButtonsMenu) && w != m_ButtonsMenu)
+		{
+			m_ContextMenuGrid.Show(false);
+			HideContextSubElements();
+			m_ContectMenuButtonLabel.SetColor(ARGB(255, 255, 255, 255));
+		}
+		else if (w == m_ContextMenuButton)
+		{
+			m_ContextMenuGrid.Show(true);
+			m_ContectMenuButtonLabel.SetColor(ARGB(255, 0, 0, 0));
+		}
+		
+		if (m_SelectedHandler && m_SelectedHandler.OnMouseEnter(w ,x, y))
 			return true;
 		
 		#ifdef PLATFORM_CONSOLE
@@ -371,7 +707,7 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		super.OnChange(w, x, y, finished);
 		
-		if (m_SelectedHandler.OnChange(w,x,y,finished))
+		if (m_SelectedHandler && m_SelectedHandler.OnChange(w,x,y,finished))
 			return true; 
 		
 		return false;
@@ -381,7 +717,7 @@ class ScriptConsole extends UIScriptedMenu
 	{
 		super.OnItemSelected(w, x, y, row, column, oldRow, oldColumn);
 
-		if (m_SelectedHandler.OnItemSelected(w, x, y, row, column,oldRow, oldColumn))
+		if (m_SelectedHandler && m_SelectedHandler.OnItemSelected(w, x, y, row, column,oldRow, oldColumn))
 			return true;
 		
 		return false;
@@ -389,7 +725,7 @@ class ScriptConsole extends UIScriptedMenu
 	
 	ScriptConsoleTabBase GetTabHandler(typename tabType)
 	{
-		foreach (ScriptConsoleTabBase handler: m_TabHandlers)
+		foreach (ScriptConsoleTabBase handler : m_TabHandlersByID)
 		{
 			if (tabType == handler.Type())
 			{
@@ -398,33 +734,80 @@ class ScriptConsole extends UIScriptedMenu
 		}
 		return null;
 	}
-
-	void SelectTabByID(int id)
+		
+	void SelectTabByID(int tabId)
 	{
-		ScriptConsoleTabBase tab = m_TabHandlersByID.Get(id);
+		ScriptConsoleTabBase tab = m_TabHandlersByID.Get(tabId);
+		
+		if (!tab)
+		{
+			// Find the tab entry in registry
+			ScriptConsoleTabRegistryEntry foundEntry = null;
+			array<ref ScriptConsoleTabRegistryEntry> tabEntries = ScriptConsoleTabRegistry.GetAll();
+			foreach (ScriptConsoleTabRegistryEntry entry : tabEntries)
+			{
+				if (entry.m_ID == tabId)
+				{
+					foundEntry = entry;
+					break;
+				}
+			}
+			
+			if (foundEntry)
+			{
+				// Get the button and panel widget
+				ButtonWidget elementButton = GetContextElementButton(tabId);
+				Widget panel = layoutRoot.FindAnyWidget(foundEntry.m_PanelWidgetName);
+				if (panel && elementButton)
+				{
+					// Instantiate the tab using typename
+					tab = ScriptConsoleTabBase.Cast(foundEntry.m_TabClass.Spawn());
+					tab.InitializeTab(panel, this, elementButton);
+					
+					// Register tab
+					RegisterTab(foundEntry.m_ID, tab);
+				}
+			}
+		}
+		
 		if (tab)
+		{
 			SelectTab(tab);
+			
+			foreach (int elementID, ScriptConsoleMenuElement element : m_ContextMenuElements)
+			{
+				element.SetTextAlignment(m_CurrentInputDevice);
+				
+				if (elementID == tabId)
+				{
+					element.Select();
+				}
+				else
+				{
+					element.Deselect();
+				}
+			}
+		}
 	}
 	
-	void SelectTabByButton(Widget button)
-	{
-		ScriptConsoleTabBase tab = m_TabHandlers.Get(button);
-		if (tab)
-			SelectTab(tab);
-	}
-
 	void SelectTab(ScriptConsoleTabBase selectedHandler)
 	{
-		foreach (ScriptConsoleTabBase handler:m_TabHandlers)
+		foreach (ScriptConsoleTabBase handler: m_TabHandlersByID)
 		{
 			handler.Select(handler == selectedHandler, selectedHandler);
 		}
 		
-		if (ScriptConsoleCameraTab.Cast(selectedHandler))
+		ScriptConsoleCameraTab cameraTab;
+		ScriptConsoleWeatherTab weatherTab;
+		bool isCameraTab = Class.CastTo(cameraTab, selectedHandler);
+		bool isWeatherTab = Class.CastTo(weatherTab, selectedHandler);
+		
+		if (isCameraTab || isWeatherTab)
 		{
 			// Remove alpha background for camera tab
 			ShowMenuBackground(false);
-			g_Game.GetMission().RemoveActiveInputExcludes({"movement"}, true);
+			if (isCameraTab)
+				g_Game.GetMission().RemoveActiveInputExcludes({"movement"}, true);
 		}
 		else
 		{
@@ -437,6 +820,16 @@ class ScriptConsole extends UIScriptedMenu
 		m_ConfigDebugProfile.SetTabSelected(selectedHandler.GetID());
 	}
 	
+	ButtonWidget GetContextElementButton(int tabID)
+	{
+		ButtonWidget buttonW;
+		ScriptConsoleMenuElement element = m_ContextMenuElements.Get(tabID);
+		if (element)
+			buttonW = element.GetButton();
+		
+		return buttonW;
+	}
+	
 	void ShowMenuBackground(bool state)
 	{
 		if (!state)
@@ -447,6 +840,21 @@ class ScriptConsole extends UIScriptedMenu
 		{
 			GetLayoutRoot().FindAnyWidget("MenuWindow").SetColor(ARGB(128, 0, 0, 0));
 		}
+	}
+	
+	protected bool IsChildOfWidget(Widget child, Widget parent)
+	{
+		if (!child || !parent)
+			return false;
+	
+		Widget currentChild = parent.GetChildren();
+		while (currentChild)
+		{
+			if (currentChild == child)
+				return true;
+			currentChild = currentChild.GetSibling();
+		}
+		return false;
 	}
 	
 	protected void DisplayHint(string message)
@@ -490,120 +898,16 @@ class ScriptConsole extends UIScriptedMenu
 		super.OnRPCEx(rpc_type, ctx);
 		#ifdef DIAG_DEVELOPER
 		
-		foreach (ScriptConsoleTabBase handler:m_TabHandlers)
+		foreach (ScriptConsoleTabBase handler : m_TabHandlersByID)
 		{
 			handler.OnRPCEx(rpc_type,ctx);
 		}
 		#endif
 
 	}
-	
-	override void OnShow()
-	{
-		super.OnShow();
 		
-		// Inputs excluded when in script console menu
-		array<string> inputExcludes = {
-			// Menu
-			"movement",
-			"aiming",
-			"gestures",
-			"stances",
-			"optics",
-			"actions", 
-			"hotkey",
-			"UAGear",
-			"UAVoiceLevel",
-			"UAVoiceModifierHelper",
-			"UAVoiceDistanceUp",
-			"UAVoiceDistanceDown",
-			"UAVoiceOverNet",
-			"UAVoiceOverNetToggle",
-			"UAVoiceOverNetMute",
-			// Inventory
-			"gestures",
-    		"stances",
-    		"optics",
-   			"actions",
-			// Buldozer
-			"UABuldResetCamera",
-			"UABuldTurbo",
-			"UABuldSlow",
-			"UABuldRunScript",
-			"UABuldSelectToggle",
-			"UABuldFreeLook",
-			"UABuldSelect",
-			"UABuldSelectAddMod",
-			"UABuldSelectRemoveMod",
-			"UABuldModifySelected",
-			"UABuldCycleMod",
-			"UABuldRotationXAxisMod",
-			"UABuldRotationZAxisMod",
-			"UABuldCoordModCycle",
-			"UABuldSampleTerrainHeight",
-			"UABuldSetTerrainHeight",
-			"UABuldScaleMod",
-			"UABuldElevateMod",
-			"UABuldSmoothMod",
-			"UABuldFlattenMod",
-			"UABuldBrushRatioUp",
-			"UABuldBrushRatioDown",
-			"UABuldBrushOuterUp",
-			"UABuldBrushOuterDown",
-			"UABuldBrushStrengthUp",
-			"UABuldBrushStrengthDown",
-			"UABuldToggleNearestObjectArrow",
-			"UABuldCycleBrushMod",
-			"UABuldSelectionType",
-			"UABuldCreateLastSelectedObject",
-			"UABuldDuplicateSelection",
-			"UABuldDeleteSelection",
-			"UABuldUndo",
-			"UABuldRedo",
-			"UABuldMoveLeft",
-			"UABuldMoveRight",
-			"UABuldMoveForward",
-			"UABuldMoveBack",
-			"UABuldMoveUp",
-			"UABuldMoveDown",
-			"UABuldLeft",
-			"UABuldRight",
-			"UABuldForward",
-			"UABuldBack",
-			"UABuldLookLeft",
-			"UABuldLookRight",
-			"UABuldLookUp",
-			"UABuldLookDown",
-			"UABuldZoomIn",
-			"UABuldZoomOut",
-			"UABuldTextureInfo",
-			"UABuldViewerMoveForward",
-			"UABuldViewerMoveBack",
-			"UABuldViewerMoveLeft",
-			"UABuldViewerMoveRight",
-			"UABuldViewerMoveUp",
-			"UABuldViewerMoveDown",
-			"UABuldObjectRotateLeft",
-			"UABuldObjectRotateRight",
-			"UABuldObjectRotateForward",
-			"UABuldObjectRotateBack",
-			"UABuldPreviousAnimation",
-			"UABuldNextAnimation",
-			"UABuldRecedeAnimation",
-			"UABuldAdvanceAnimation"
-		};
-
-		if (m_SelectedHandler && ScriptConsoleCameraTab.Cast(m_SelectedHandler))
-		{
-			inputExcludes.Remove(0);
-		}
-				
-		g_Game.GetMission().AddActiveInputExcludes(inputExcludes);
-	}
-
 	PluginConfigDebugProfile m_ConfigDebugProfile;
 }
-
 
 class ScriptConsoleToolTipEventHandler : ScriptedWidgetEventHandler
 {
@@ -720,7 +1024,6 @@ class ScriptConsoleToolTipEventHandler : ScriptedWidgetEventHandler
 		HideHint();
 	}
 }
-
 
 class JsonHintsData
 {

@@ -55,6 +55,12 @@ class MissionGameplay extends MissionBase
 	
 	private float					m_ExitButtonDisabledRemainingTime;
 	
+	#ifndef BULDOZER
+	#ifdef DIAG_DEVELOPER	
+	protected BunkerBroadcastHandler m_BunkerBroadcastHandler;
+	#endif
+	#endif
+
 	void MissionGameplay()
 	{
 		DestroyAllMenus();
@@ -108,6 +114,7 @@ class MissionGameplay extends MissionBase
 		{
 			CfgGameplayHandler.LoadData();
 			UndergroundAreaLoader.SpawnAllTriggerCarriers();
+			CfgBunkerBroadcastHandler.LoadData();
 		}
 		#endif
 		#endif
@@ -200,6 +207,8 @@ class MissionGameplay extends MissionBase
 		{
 			// We will load the Effect areas on Default mission start
 			EffectAreaLoader.CreateZones();
+			m_BunkerBroadcastHandler = BunkerBroadcastHandler.GetInstance();
+			CfgBunkerBroadcastHandler.Spawn();
 		}
 		#endif
 		#endif
@@ -703,6 +712,15 @@ class MissionGameplay extends MissionBase
 		
 		if (!g_Game.IsMultiplayer())
 			m_WorldData.UpdateBaseEnvTemperature( timeslice );
+		
+		#ifndef BULDOZER
+		#ifdef DIAG_DEVELOPER
+		if (!GetGame().IsMultiplayer()) //! to make it work in single during development
+		{
+			m_BunkerBroadcastHandler.Update(timeslice);
+		}
+		#endif
+		#endif		
 
 #ifdef DIAG_DEVELOPER
 		DisplayHairDebug();
@@ -713,6 +731,11 @@ class MissionGameplay extends MissionBase
 			m_ProcessInputExcludes = false;
 		}
 		
+#ifdef DEVELOPER
+		if (m_HudDebug)
+			m_HudDebug.Update(timeslice);
+#endif
+		
 		super.OnUpdate( timeslice );
 	}
 	
@@ -720,6 +743,10 @@ class MissionGameplay extends MissionBase
 	{
 		super.OnKeyPress(key);
 		m_Hud.KeyPress(key);
+		
+		DigitalCodeLockUIBase codeLockUI;
+		if (Class.CastTo(codeLockUI, GetGame().GetUIManager().FindMenu(MENU_DIGITAL_CODELOCK)))
+			codeLockUI.KeyPress(key);
 	}
 	
 	override void OnKeyRelease(int key)
@@ -956,6 +983,11 @@ class MissionGameplay extends MissionBase
 					GetUApi().GetInputByID(UAWalkRunForced).ForceEnable(false); // force walk off!
 					break;
 				}
+				case EInputRestrictors.SURRENDER_TRANSITION:
+				{
+					GetUApi().GetInputByID(UATempRaiseWeapon).ForceDisable(false);
+					break;
+				}
 			}
 			
 			if (m_ActiveInputRestrictions && m_ActiveInputRestrictions.Find(restrictor) != -1)
@@ -1020,6 +1052,11 @@ class MissionGameplay extends MissionBase
 				case EInputRestrictors.MAP:
 				{
 					GetUApi().GetInputByID(UAWalkRunForced).ForceEnable(true); // force walk on!
+					break;
+				}
+				case EInputRestrictors.SURRENDER_TRANSITION:
+				{
+					GetUApi().GetInputByID(UATempRaiseWeapon).ForceDisable(true);
 					break;
 				}
 			}
@@ -1351,13 +1388,37 @@ class MissionGameplay extends MissionBase
 			
 			if (m_Logout)
 			{
+				g_Game.LogoutRequestTime();
 				m_Logout.SetLogoutTime();
 			}
 		}		
 	}
 	
+	//! Hands a logout that is already running over to whoever is taking it on. m_Logout outlives
+	//! its dialog, so a countdown armed before can still reach Exit() and abort the mission, and
+	//! its destructor still owes a LogoutRequestCancel that would otherwise land after the new
+	//! owner has asked for a logout of its own. Cancel() settles both, and it must be called
+	//! while the new owner is already the current menu so that its Continue() is a no-op.
+	void TakeOverLogoutMenu()
+	{
+		if (!m_Logout)
+			return;
+
+		m_Logout.Cancel();
+		m_Logout = null;
+	}
+
 	override void StartLogoutMenu(int time)
 	{
+		// the invite dialog waits for the very same logout, it just joins the target server
+		// instead of returning to the main menu once it is over
+		InviteMenu invite = InviteMenu.Cast(GetUIManager().FindMenu(MENU_INVITE_TIMER));
+		if (invite)
+		{
+			invite.StartCountdown(time);
+			return;
+		}
+
 		if (m_Logout)
 		{
 			if (time > 0)
@@ -1443,6 +1504,9 @@ class MissionGameplay extends MissionBase
 				m_DebugMonitor.SetBlood(values.GetBlood());
 				m_DebugMonitor.SetLastDamage(values.GetLastDamage());
 				m_DebugMonitor.SetPosition(MiscGameplayFunctions.TruncateVec(player.GetPosition(),1));
+				m_DebugMonitor.SetEnvironmentTemperature(values.GetEnvironmentTemperature());
+				m_DebugMonitor.SetHeatComfort(values.GetHeatComfort());
+				m_DebugMonitor.SetThermalBias(values.GetThermalBias());
 			}
 		}
 		

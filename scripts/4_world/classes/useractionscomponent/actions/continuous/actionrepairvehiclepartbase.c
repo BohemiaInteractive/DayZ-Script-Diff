@@ -130,4 +130,4 @@ class ActionRepairVehiclePartBase : ActionContinuousBase
 		RepairVehiclePartActionReciveData recieveDataRepair = RepairVehiclePartActionReciveData.Cast(action_recive_data);
 		RepairVehiclePartActionData.Cast(action_data).m_DamageZone = recieveDataRepair.m_DamageZoneRecived;
 	}
-};
+}

@@ -1,3 +1,4 @@
+#ifdef ROBOCLIENT
 class BotStanceRandomizer extends BotStateBase
 {
 	ref HumanMovementState m_State = new HumanMovementState();
@@ -44,3 +45,4 @@ class BotStanceRandomizer extends BotStateBase
 		}
 	}
 };
+#endif

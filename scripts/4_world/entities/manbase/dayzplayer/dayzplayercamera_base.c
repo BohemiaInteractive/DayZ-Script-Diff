@@ -64,13 +64,33 @@ enum NVTypes
 	NV_OPTICS_KAZUAR_NIGHT,
 	NV_OPTICS_STARLIGHT_DAY,
 	NV_OPTICS_STARLIGHT_NIGHT,
+	
+	// ---- Optics condition variants ----
+	NV_OPTICS_UNDERGROUND,
+	NV_OPTICS_SANDSTORM_DAY,
+	NV_OPTICS_SANDSTORM_NIGHT,
+	NV_OPTICS_UNDERGROUND_SANDSTORM,
+	
+	// ---- Glasses/goggles condition variants ----
+	NV_GOGGLES_DAY,
+	NV_GOGGLES_UNDERGROUND,
+	NV_GOGGLES_SANDSTORM,
+	NV_GOGGLES_UNDERGROUND_SANDSTORM,
+	
+	// ---- Pumpkin condition variants ----
+	NV_PUMPKIN_DAY,
+	NV_PUMPKIN_UNDERGROUND,
+	NV_PUMPKIN_SANDSTORM,
+	NV_PUMPKIN_UNDERGROUND_SANDSTORM,
+	
 	MAX
 }
 
 class DayZPlayerCameraBase extends DayZPlayerCamera
 {
 	static const float 	CONST_NEARPLANE_OPTICS_MIN = 0.04; //Minimal safe near plane value, artifacts on the far plane otherwise!
-
+	const float SANDSTORM_NVG_THRESHOLD = 0.15;
+	
 	protected 	Weapon_Base		m_weaponUsed;
 	protected 	ItemOptics 		m_opticsUsed;
 	protected	ref CameraShake		m_CameraShake;
@@ -129,7 +149,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 
 	float UpdateUDAngleUnlocked(out float pAngle, out float pAngleAdd, float pMin, float pMax, float pDt)
 	{
-		float target = m_CommandWeapons.GetBaseAimingAngleUD();
+		float target = 0.0;
 		
 		if (m_pInput.CameraIsTracking())	
  		{
@@ -140,12 +160,6 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
  		}
 		else
 		{
-			if (Math.AbsFloat(pAngleAdd) > 0.001)
-			{
-				pAngleAdd 	= pAngle + pAngleAdd - target;
-				pAngle 		= target;
-			}
-			
 			if (m_pInput.CameraIsFreeLook())	
 	 		{
 				pAngleAdd += m_pInput.GetAimDelta(pDt)[1] * Math.RAD2DEG;
@@ -154,6 +168,10 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	 		}
 	 		else
 	 		{
+				target = m_CommandWeapons.GetBaseAimingAngleUD();
+				pAngleAdd 	= pAngle + pAngleAdd - target;
+				pAngle 		= target;
+
 				PlayerBase player = PlayerBase.Cast(m_pPlayer);
 				if (player)	// handle locking of camera U/D angle movement when performing an action and not in freelook
 				{		
@@ -168,9 +186,11 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 					}
 					else // smooth camera to locked angle, avoiding snap from the angle we started the action to the limit
 					{
-						float vel[1] = m_fUDAngleVel;
-						pMin = Math.SmoothCD(pitch, downLimit, vel, 0.2, 1000, pDt);
-						pMax = Math.SmoothCD(pitch, upLimit, vel, 0.2, 1000, pDt);
+						float velMin[1] = m_fUDAngleVel;
+						pMin = Math.SmoothCD(pitch, downLimit, velMin, 0.2, 1000, pDt);
+
+						float velMax[1] = m_fUDAngleVel;
+						pMax = Math.SmoothCD(pitch, upLimit, velMax, 0.2, 1000, pDt);
 					}
 				}
 				
@@ -182,9 +202,10 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 				pAngle += m_pInput.GetAimDelta(pDt)[1] * Math.RAD2DEG;
 	 		}
 		}
-				
+
 		pAngle = Limit(pAngle, pMin, pMax);
 		pAngleAdd = Limit(pAngle + pAngleAdd, pMin, pMax) - pAngle;
+
 		return pAngle + pAngleAdd;
  	}
 
@@ -316,22 +337,8 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	void StdFovUpdate(float pDt, out DayZPlayerCameraResult pOutResult)
 	{
 		//! change abs FOV for naked eye zoom
-		switch (m_pPlayer.GetEyeZoomLevel())
-		{
-			// ordered in likelihood of occurance for perf. reasons
-			case ECameraZoomType.NONE:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.NONE), m_fFovAbsVel, 0.1, 1000, pDt);
-				break;
-			case ECameraZoomType.NORMAL:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.NORMAL), m_fFovAbsVel, 0.1, 1000, pDt);
-				break;
-			case ECameraZoomType.SHALLOW:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.SHALLOW), m_fFovAbsVel, 0.1, 1000, pDt);
-				break;
-			default:
-				m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(ECameraZoomType.NONE), m_fFovAbsVel, 0.1, 1000, pDt);
-				break;
-		}
+		ECameraZoomType zoomType = m_pPlayer.GetEyeZoomLevel();
+		m_fFovAbsolute = Math.SmoothCD(m_fFovAbsolute, GetDayZGame().GetFOVByZoomType(zoomType), m_fFovAbsVel, 0.1, 1000, pDt);
 		
 		pOutResult.m_fFovAbsolute = m_fFovAbsolute;
 
@@ -423,12 +430,20 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	{
 		if ( !player )
 			return;
-		
-		if ( player.IsNVGWorking() != IsCameraNV() || player.GetNVType() != GetCameraNVType() )
+	
+		bool nvStateChanged = player.IsNVGWorking() != IsCameraNV() || player.GetNVType() != GetCameraNVType();
+	
+		// Re-resolve every tick so the effective variant follows the player between
+		// surface / tunnel / sandstorm without needing to toggle the NVG off and on.
+		// Only triggers a re-apply when the resolved variant actually differs, so a
+		// stable environment causes no extra SetCameraPP calls.
+		bool envChanged = IsCameraNV() && ResolveNVType(player.GetNVType(), player) != m_ResolvedNVType;
+	
+		if ( nvStateChanged || envChanged )
 		{
 			SetCameraNV(player.IsNVGWorking());
 			SetCameraNVType(player.GetNVType());
-			SetCameraPP(true, this);
+			SetCameraPP(true, this);   // SetCameraPP re-resolves and stores m_ResolvedNVType
 		}
 	}
 	
@@ -436,16 +451,20 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	void SetCameraPP(bool state, DayZPlayerCamera launchedFrom)
 	{
 		PPERequesterBank.GetRequester(PPERequester_CameraADS).Stop();
-		
+	
 		if (IsCameraNV())
 		{
-			SetNVPostprocess(GetCameraNVType());
+			// Resolve the raw NV type to its underground / sandstorm variant before applying.
+			int resolvedType = ResolveNVType(GetCameraNVType(), PlayerBase.Cast(m_pPlayer));
+			m_ResolvedNVType = resolvedType;
+			SetNVPostprocess(resolvedType);
 		}
 		else
 		{
+			m_ResolvedNVType = NVTypes.NONE;
 			SetNVPostprocess(NVTypes.NONE);
 		}
-		
+	
 		m_weaponUsed = Weapon_Base.Cast(m_pPlayer.GetEntityInHands());
 		if (m_weaponUsed)
 		{
@@ -502,6 +521,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			//daytime filter modes
 			case NVTypes.NV_OPTICS_KAZUAR_DAY:
 			case NVTypes.NV_OPTICS_STARLIGHT_DAY:
+			case NVTypes.NV_OPTICS_SANDSTORM_DAY:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DAYTIME_OPTICS) );
 			}
@@ -525,12 +545,99 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_GOGGLES_2D:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DEFAULT_GLASSES) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
 			}
 			break;
 			
 			case NVTypes.NV_PUMPKIN:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_PUMPKIN) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+			}
+			break;
+			
+			// ====================== OPTICS condition variants ======================
+			case NVTypes.NV_OPTICS_UNDERGROUND:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_OPTICS) );
+			}
+			break;
+	
+			case NVTypes.NV_OPTICS_SANDSTORM_NIGHT:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_SANDSTORM_OPTICS) );
+			}
+			break;
+	
+			case NVTypes.NV_OPTICS_UNDERGROUND_SANDSTORM:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_SANDSTORM_OPTICS) );
+			}
+			break;
+	
+			// ====================== GLASSES condition variants =====================
+			case NVTypes.NV_GOGGLES_DAY:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DAYTIME_GLASSES) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+			}
+			break;
+	
+			case NVTypes.NV_GOGGLES_UNDERGROUND:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_GLASSES) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+			}
+			break;
+	
+			case NVTypes.NV_GOGGLES_SANDSTORM:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_SANDSTORM_GLASSES) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+			}
+			break;
+	
+			case NVTypes.NV_GOGGLES_UNDERGROUND_SANDSTORM:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_SANDSTORM_GLASSES) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.NVG_OCCLUDER});
+			}
+			break;
+	
+			// ====================== PUMPKIN condition variants =====================
+			case NVTypes.NV_PUMPKIN_DAY:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_DAYTIME_PUMPKIN) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+			}
+			break;
+	
+			case NVTypes.NV_PUMPKIN_UNDERGROUND:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_PUMPKIN) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+			}
+			break;
+	
+			case NVTypes.NV_PUMPKIN_SANDSTORM:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_SANDSTORM_PUMPKIN) );
+				if (mission && mission.GetEffectWidgets())
+					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
+			}
+			break;
+	
+			case NVTypes.NV_PUMPKIN_UNDERGROUND_SANDSTORM:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_SANDSTORM_PUMPKIN) );
 				if (mission && mission.GetEffectWidgets())
 					mission.GetEffectWidgets().AddActiveEffects({EffectWidgetsTypes.PUMPKIN_OCCLUDER});
 			}
@@ -552,6 +659,96 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 		}
 	}
 	
+	int ResolveNVType(int rawType, PlayerBase player)
+	{
+		if (!player)
+			return rawType;
+	
+		// Only the generic "device is on" states get environment upgrades. OFF states,
+		// NONE, and the explicit Kazuar/Starlight day/night variants keep their own handling.
+		bool isOpticsOn = (rawType == NVTypes.NV_OPTICS_ON || rawType == NVTypes.NV_OPTICS_KAZUAR_DAY || rawType == NVTypes.NV_OPTICS_KAZUAR_NIGHT || rawType == NVTypes.NV_OPTICS_STARLIGHT_DAY || rawType == NVTypes.NV_OPTICS_STARLIGHT_NIGHT);
+		bool isGogglesOn = (rawType == NVTypes.NV_GOGGLES || rawType == NVTypes.NV_GOGGLES_2D);
+		bool isPumpkinOn = (rawType == NVTypes.NV_PUMPKIN);
+		
+		if (!isOpticsOn && !isGogglesOn && !isPumpkinOn)
+			return rawType;
+		
+		bool underground = IsPlayerUnderground(player);
+		bool sandstorm   = IsSandstormActiveForPlayer(player);
+		
+		
+		// Nothing special about the environment -> keep the raw type.
+		if (!underground && !sandstorm)
+			return rawType;
+	
+		if (isOpticsOn)
+		{
+			bool isNight = (rawType == NVTypes.NV_OPTICS_ON || rawType == NVTypes.NV_OPTICS_KAZUAR_NIGHT || rawType == NVTypes.NV_OPTICS_STARLIGHT_NIGHT);
+			if (underground && sandstorm)
+			{
+				return NVTypes.NV_OPTICS_UNDERGROUND_SANDSTORM;
+			}
+			
+			if (underground)
+			{
+				return NVTypes.NV_OPTICS_UNDERGROUND;
+			}
+			
+			if (isNight)
+				return NVTypes.NV_OPTICS_SANDSTORM_NIGHT;
+			return NVTypes.NV_OPTICS_SANDSTORM_DAY;
+		}
+	
+		if (isGogglesOn)
+		{
+			if (underground && sandstorm) 
+				return NVTypes.NV_GOGGLES_UNDERGROUND_SANDSTORM;
+			if (underground)			  
+				return NVTypes.NV_GOGGLES_UNDERGROUND;
+			return NVTypes.NV_GOGGLES_SANDSTORM;
+		}
+	
+		// isPumpkinOn
+		if (underground && sandstorm)
+			return NVTypes.NV_PUMPKIN_UNDERGROUND_SANDSTORM;
+		if (underground)			  
+			return NVTypes.NV_PUMPKIN_UNDERGROUND;
+		return NVTypes.NV_PUMPKIN_SANDSTORM;
+	}
+	
+	//! Enclosed / dark space check. The debug HUD exposes "Under roof" / "In Shadow" /
+	//! "Inside" states, so use whatever your project exposes for that. Adjust the body to
+	//! match the real API (e.g. an underground-presence enum from the sandstorm system).
+	bool IsPlayerUnderground(PlayerBase player)
+	{
+		if (!player)
+			return false;
+	
+		// Prefer a dedicated check if available:
+		//   return player.IsUnderground();
+		// Fallback using the roof/shadow signals shown on the debug overlay:
+		return player.GetUndergroundPresence() != EUndergroundPresence.NONE;
+	}
+	
+	//! Active sandstorm at the player's position. Uses the per-player intensity so the
+	//! shelter/underground fade the sandstorm system already applies is respected.
+	bool IsSandstormActiveForPlayer(PlayerBase player)
+	{
+		if (!player || !g_Game)
+			return false;
+	
+		Weather weather = g_Game.GetWeather();
+		if (!weather)
+			return false;
+	
+		ScriptedSandstormController sandstorm = ScriptedSandstormController.Cast(weather.GetSandstorm());
+		if (!sandstorm || !sandstorm.IsActive())
+			return false;
+		
+		float intensity = sandstorm.GetIntensity(player.GetPosition());
+		return intensity > SANDSTORM_NVG_THRESHOLD;
+	}
+	
 	protected float 				m_fLRAngleVel[1];
 	protected float 				m_fUDAngleVel[1];
 	protected float					m_fFovAbsVel[1];
@@ -567,4 +764,5 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 	protected HumanCommandWeapons	m_CommandWeapons;
 	protected bool 					m_IsNightvision;
 	protected int 					m_NightvisionType;
+	protected int					m_ResolvedNVType; //! last applied condition-aware NV variant
 }

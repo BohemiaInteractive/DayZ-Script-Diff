@@ -6,6 +6,11 @@ class PumpkinHelmet : HelmetBase
 	{
 		SetEventMask(EntityEvent.INIT); // Enable EOnInit event
 	}
+
+	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
+	{
+		return ECachedEquipmentItemCategory.MASK;
+	}
 	
 	override void OnMovedInsideCargo(EntityAI container)
 	{

@@ -9,6 +9,7 @@ class PPEGodRays: PPEClassBase
 	//static const int PARAM_SUNMASKMAT = 5; //Warning, not to be used until DECLARE_RESOURCE_NAME solution is implemented!
 	
 	static const int L_0_GLASSES = 100;
+	static const int L_0_SANDSTORM = 200;
 	
 	override int GetPostProcessEffectID()
 	{

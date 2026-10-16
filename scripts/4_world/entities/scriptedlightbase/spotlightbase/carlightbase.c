@@ -1,3 +1,4 @@
+
 class CarLightBase extends SpotLightBase
 {
 	// What follows are just default light parameters which are overwriten down in the hierarchy in constructors.
@@ -15,6 +16,8 @@ class CarLightBase extends SpotLightBase
 	float		m_AggregatedAngle = 100;
 	vector		m_AggregatedColorRGB = Vector(1.0, 0.8, 0.6);
 	
+	VehicleLightProfileBase m_LightProfile;
+	
 	void CarLightBase()
 	{
 		SetVisibleDuringDaylight(true);
@@ -22,11 +25,16 @@ class CarLightBase extends SpotLightBase
 		SetFlareVisible(true);
 		FadeIn(0.3);
 		SetFadeOutTime(0.25);
-		
+	}
+	
+	void SetLightProfile(notnull VehicleLightProfileBase profile)
+	{
+		m_LightProfile = profile;
 	}
 	
 	void AggregateLight()
 	{
+		//! for backward compatibility
 		SetRadiusTo(m_AggregatedRadius);
 		SetSpotLightAngle(m_AggregatedAngle);
 		SetBrightnessTo(m_AggregatedBrightness);
@@ -37,6 +45,20 @@ class CarLightBase extends SpotLightBase
 	
 	void SegregateLight()
 	{
+		if (m_LightProfile)
+		{
+			SetRadiusTo(m_LightProfile.m_SegregatedRadius);
+			SetSpotLightAngle(m_LightProfile.m_SegregatedAngle);
+			SetBrightnessTo(m_LightProfile.m_SegregatedBrightness);
+			vector color = m_LightProfile.m_SegregatedColorRGB;
+			SetAmbientColor(color[0], color[1], color[2]);
+			SetDiffuseColor(color[0], color[1], color[2]);
+			SetFlareVisible(true);
+
+			return;		
+		}
+
+		//! for backward compatibility
 		SetRadiusTo(m_SegregatedRadius);
 		SetSpotLightAngle(m_SegregatedAngle);
 		SetBrightnessTo(m_SegregatedBrightness);

@@ -135,3 +135,64 @@ class ZmbF_usSoldier_normal_Base extends ZombieFemaleBase
 		return true;
 	}
 };
+
+class ZmbF_SoldierNormal_Base extends ZombieFemaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class ZmbF_eastSoldier_Base extends ZombieFemaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class Zmbf_IonSoldier_Normal_1 extends ZombieFemaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class ZmbF_takiCitizenUrbanA_Base extends ZombieFemaleBase
+{
+};
+
+class ZmbF_takiCitizenUrbanB_Base extends ZombieFemaleBase
+{
+};
+
+class ZmbF_takiCitizenUrbanC_Base extends ZombieFemaleBase
+{
+};
+
+class ZmbF_takiCitizenUrbanD_Base extends ZombieFemaleBase
+{
+};
+
+class ZmbF_takiPoliceWoman_Base extends ZombieFemaleBase
+{
+};
+
+class ZmbF_takiCitizenRural_Base extends ZombieFemaleBase
+{
+};
+
+
+class ZmbF_takiOilRigWorker_Base extends ZombieFemaleBase
+{
+};
+
+class ZmbF_PatrolNormal_Base extends ZombieFemaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};

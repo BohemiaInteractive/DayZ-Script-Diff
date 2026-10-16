@@ -111,7 +111,7 @@
                         "Boris Vacula",
                         "Daniel Dička",
                         "David Soška",
-						"Daniel Donkov",
+			"Daniel Donkov",
                         "Jakub Palkovič",
                         "Kamil Komínek",
                         "Ľuboš Kováč",
@@ -767,13 +767,15 @@
                         "Sara Cascianelli",
                         "Andrea Luciano Damico",
                         "Liu Dasheng",
+						"Thomas Faust",
                         "Rafael Galhardi",
+						"Astarion He",
                         "Thiago Hilger",
                         "Lincoln Hui",
                         "Bartosz Klofik",
                         "Dmitry Kornyukhov",
+						"Martin Kořenek",
                         "Joanna Kinga Král",
-                        "Martin Kořenek",
                         "Goulven Le Goff",
                         "Doris Liang",
                         "Scott Liang",
@@ -786,18 +788,21 @@
                         "Jiří Petrů",
                         "Marco Piccinnu",
                         "Aya Pickard",
+						"Alba Calvo Porrúa",
                         "Cristina Righi",
                         "Raphaël Rouby",
                         "Igor Savenkov",
+						"Ronan Shang",
                         "Vojtěch Schubert",
                         "Carmen Simio",
                         "Mathilde Sperduto",
+						"Mattie Su",
                         "Suzu Suzunomiya",
                         "Felix Tappe",
                         "Rumi Tasaki",
                         "Loek van Kooten",
-                        "Tobiáš Zíka",
                         "Will Zheng",
+						"Tobiáš Zíka",
                         "Aleksandra Zrebiec"
 
                     ]
@@ -1187,13 +1192,140 @@
                 }
             ]
         },
+		{
+            "DepartmentName": "Virtuos Global",
+            "Sections": [
+                {
+                    "SectionName": "#ceo",
+                    "SectionLines": [
+                        "Gilles Langourieux"
+                    ]
+                },
+                {
+                    "SectionName": "#business_development_director",
+                    "SectionLines": [
+                        "Matthieu Cheynut"
+                    ]
+                },
+                {
+                    "SectionName": "#business_development_manager",
+                    "SectionLines": [
+                        "Samantha Tran"
+                    ]
+                },
+                {
+                    "SectionName": "#engineering_business_unit_director",
+                    "SectionLines": [
+                        "Marios Michaelides"
+                    ]
+                },
+                {
+                    "SectionName": "#account_manager",
+                    "SectionLines": [
+                        "Alina Obukhovska"
+                    ]
+                }
+            ]
+        },
+		{
+            "DepartmentName": "Virtuos Labs Prague",
+            "Sections": [
+                {
+                    "SectionName": "#studio_general_manager",
+                    "SectionLines": [
+                        "Jan Herodes"
+                    ]
+                },
+                {
+                    "SectionName": "#production_director",
+                    "SectionLines": [
+                        "Patrik Starý"
+                    ]
+                },
+                {
+                    "SectionName": "#head_of_technology",
+                    "SectionLines": [
+                        "Otakar Nieder"
+                    ]
+                },
+                {
+                    "SectionName": "#hr_manager",
+                    "SectionLines": [
+                        "Martin Svoboda"
+                    ]
+                },
+                {
+                    "SectionName": "#hr_business_partner",
+                    "SectionLines": [
+                        "David Janák"
+                    ]
+                },
+                {
+                    "SectionName": "#office_manager",
+                    "SectionLines": [
+                        "Katarína Petrášková"
+                    ]
+                },
+                {
+                    "SectionName": "#it_system_admin",
+                    "SectionLines": [
+                        "Milan Dolejš"
+                    ]
+                },
+                {
+                    "SectionName": "#game_producer",
+                    "SectionLines": [
+                        "Hana Vranák Řiháčková",
+                        "Jakub Začal"
+                    ]
+                },
+                {
+                    "SectionName": "#senior_software_engineer",
+                    "SectionLines": [
+                        "Vojtěch Cimbura",
+ 						"Lukáš Štrůdl",
+                        "Michal Hvězda",
+                        "Matúš Sabol",
+                        "Michal Skalský"
+                    ]
+                },
+                {
+                    "SectionName": "#software_engineer",
+                    "SectionLines": [
+                        "Filip Sedlák",
+ 						"Miroslav Valach",
+                        "Lucie Veverková",
+                        "Petr Kotáb"
+                     ]
+                },
+                {
+                    "SectionName": "#ux_designer",
+                    "SectionLines": [
+                        "Domen Repnik"
+                    ]
+                },
+                {
+                    "SectionName": "#qa_lead",
+                    "SectionLines": [
+                        "Lukáš Nič"
+                    ]
+                },
+                {
+                    "SectionName": "#qa",
+                    "SectionLines": [
+                        "Jakub Kratochvíl",
+                        "Šimon Pčola"
+                    ]
+                }
+            ]
+        },
         {
             "DepartmentName": "#legal_notices",
             "Sections": [
                 {
                     "SectionName": "NVIDIA GameWorks",
                     "SectionLines": [
-                        "© 2007- 2016 NVIDIA Corporation. All rights reserved."
+                        "© 2007- 2016 NVIDIA Corporation. All rights reserved."
                     ]
                 },
                 {
@@ -1285,6 +1417,39 @@
                     "SectionName": "Images",
                     "SectionLines": [
                         "'The Milky Way panorama' by ESO/S.Brunier used under the  CC BY 4.0 license (https://creativecommons.org/licenses/by/4.0/) / Adapted for in-game usage."
+                    ]
+                },
+                {
+                    "SectionName": "Vulkan Memory Allocator",
+                    "SectionLines": [
+                        "Copyright (c) 2017-2026 Advanced Micro Devices, Inc. All rights reserved."
+                    ]
+                },
+                {
+                    "SectionName": "volk",
+                    "SectionLines": [
+                        "Meta-loader for Vulkan",
+                        "Copyright (c) 2018-2026 Arseny Kapoulkine"
+                    ]
+                },
+                {
+                    "SectionName": "sse2neon",
+                    "SectionLines": [
+                        "Helper to convert Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.",
+                        "Copyright (c) 2015-2026 SSE2NEON Contributors"
+                    ]
+                },
+                {
+                    "SectionName": "SPIRV-Reflect",
+                    "SectionLines": [
+                        "C/C++ reflection API for SPIR-V shader bytecode in Vulkan.",
+                        "Copyright (c) 2017-2018 Google Inc."
+                    ]
+                },
+                {
+                    "SectionName": "NVIDIA RTX DLSS SDK",
+                    "SectionLines": [
+                        "Copyright (c) 2018-2026 NVIDIA Coorporation"
                     ]
                 }
             ]

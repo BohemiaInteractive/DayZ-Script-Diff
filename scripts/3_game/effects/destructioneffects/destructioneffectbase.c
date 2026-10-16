@@ -79,30 +79,38 @@ class DestructionEffectBase
 		{
 			if (oldLevel != -1 || entity.m_Initialized)//one time
 			{
+				#ifndef NO_GUI
 				m_POneTime = PlayParticle(m_ParticleOneTime);
 				
 				if (m_POneTime)
 				{
 					m_POneTime.SetOwner(this);
 				}
+				#endif
 								
 				OnEntityDestroyedOneTimeClient(entity, oldLevel, zone);
 				
+				#ifndef NO_GUI
 				m_Entity.PlaySoundSet(m_SOneTime, m_SoundSetOneTime, 0, 0 );
 				m_Entity.PlaySoundSetLoop(m_SPersistent, m_SoundSetPersistent, 0, 0 );
+				#endif
 			}
 			else//Persistent
 			{
 				OnEntityDestroyedPersistentClient(entity, zone);
+				#ifndef NO_GUI
 				m_Entity.PlaySoundSetLoop(m_SPersistent, m_SoundSetPersistent, 0, 0 );
+				#endif
 			}
 			
+			#ifndef NO_GUI
 			m_PPersistent = PlayParticle(m_ParticlePersistent, true);
 			
 			if (m_PPersistent)
 			{
 				m_PPersistent.SetOwner(this);
 			}
+			#endif
 		}
 		#endif
 	}

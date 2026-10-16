@@ -1009,6 +1009,7 @@ class GameInventory
 	 *		and OnCompleteClient with synchronization set to false in order to avoid duplicate
 	 *		synchronization.
 	**/
+	//[Obsolete("1.30: Use TakeEntityToTargetInventory instead")]
 	bool TakeEntityToInventory(InventoryMode mode, FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
@@ -1072,43 +1073,11 @@ class GameInventory
 		return false;
 	}
 
-	/**@fn			TakeEntityToCargo
-	 * @brief		moves item to cargo of this intentory
-	 * @param[in]	mode				inventory mode
-	 * @param[in]	item				item to be put in this inventory as cargo
-	 **/
-	bool TakeEntityToCargo(InventoryMode mode, notnull EntityAI item)
-	{
-		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
-		return TakeEntityToInventory(mode, FindInventoryLocationType.CARGO, item);
-	}
-
 	/// Put item into into cargo of another entity
 	bool TakeEntityToTargetCargo(InventoryMode mode, notnull EntityAI target, notnull EntityAI item)
 	{
 		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2TargetCgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + "to cargo of target=" + target);
 		return TakeEntityToTargetInventory(mode, target, FindInventoryLocationType.CARGO, item);
-	}
-
-	/**@fn			TakeEntityToCargoEx
-	 * @brief		moves item on specific cargo location
-	 * @param[in]	mode				inventory mode
-	 * @param[in]	item				item to be put in this inventory as cargo
-	 **/
-	bool TakeEntityToCargoEx(InventoryMode mode, notnull EntityAI item, int idx, int row, int col)
-	{
-		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
-		InventoryLocation src = new InventoryLocation();
-		GameInventory itemInventory = item.GetInventory();
-		if (itemInventory.GetCurrentInventoryLocation(src))
-		{
-			InventoryLocation dst = new InventoryLocation();
-			dst.SetCargo(GetInventoryOwner(), item, idx, row, col, itemInventory.GetFlipCargo());
-
-			return TakeToDst(mode, src, dst);
-		}
-		Error("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col + " Error - src has no inventory location");
-		return false;
 	}
 
 	/// Put item into into cargo on specific cargo location of another entity
@@ -1125,12 +1094,6 @@ class GameInventory
 		}
 		Error("[inv] I::Take2TargetCgoEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + "to cargo of target=" + cargo.GetCargoOwner() + " row=" + row + " col=" + col);
 		return false;
-	}
-
-	bool TakeEntityAsAttachmentEx(InventoryMode mode, notnull EntityAI item, int slot)
-	{
-		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
-		return TakeEntityAsTargetAttachmentEx(mode, GetInventoryOwner(), item, slot);
 	}
 
 	/// put item as attachment of target
@@ -1174,12 +1137,6 @@ class GameInventory
 		}
 		Error("[inv] I::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " Error - src has no inventory location");
 		return false;
-	}
-
-	bool TakeEntityAsAttachment(InventoryMode mode, notnull EntityAI item)
-	{
-		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
-		return TakeEntityToInventory(mode, FindInventoryLocationType.ATTACHMENT, item);
 	}
 
 	bool TakeEntityAsTargetAttachment(InventoryMode mode, notnull EntityAI target, notnull EntityAI item)
@@ -1379,4 +1336,56 @@ class GameInventory
 	proto native void FlipCargo();
 	proto native void ResetFlipCargo();
 ///@} script functions
+	//OBSOLETE
+	/**@fn			TakeEntityToTargetCargo
+	 * @brief		moves item to cargo of this intentory
+	 * @param[in]	mode				inventory mode
+	 * @param[in]	item				item to be put in this inventory as cargo
+	 **/
+	[Obsolete("1.30: Use TakeEntityToTargetCargo instead")]
+	bool TakeEntityToCargo(InventoryMode mode, notnull EntityAI item)
+	{
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		return TakeEntityToInventory(mode, FindInventoryLocationType.CARGO, item);
+	}
+	
+	/**@fn			TakeEntityToCargoEx
+	 * @brief		moves item on specific cargo location
+	 * @param[in]	mode				inventory mode
+	 * @param[in]	item				item to be put in this inventory as cargo
+	 **/
+	[Obsolete("1.30: Use TakeEntityToTargetCargoEx instead")]
+	bool TakeEntityToCargoEx(InventoryMode mode, notnull EntityAI item, int idx, int row, int col)
+	{
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col);
+		InventoryLocation src = new InventoryLocation();
+		GameInventory itemInventory = item.GetInventory();
+		if (itemInventory.GetCurrentInventoryLocation(src))
+		{
+			InventoryLocation dst = new InventoryLocation();
+			dst.SetCargo(GetInventoryOwner(), item, idx, row, col, itemInventory.GetFlipCargo());
+
+			return TakeToDst(mode, src, dst);
+		}
+		Error("[inv] I::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " row=" + row + " col=" + col + " Error - src has no inventory location");
+		return false;
+	}
+	
+		[Obsolete("1.30: Use TakeEntityAsTargetAttachmentEx instead")]
+	bool TakeEntityAsAttachmentEx(InventoryMode mode, notnull EntityAI item, int slot)
+	{
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item + " slot=" + slot);
+		return TakeEntityAsTargetAttachmentEx(mode, GetInventoryOwner(), item, slot);
+	}
+
+
+	[Obsolete("1.30: Use TakeEntityAsTargetAttachment instead")]
+	bool TakeEntityAsAttachment(InventoryMode mode, notnull EntityAI item)
+	{
+		if (LogManager.IsInventoryMoveLogEnable()) inventoryDebugPrint("[inv] I::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + item);
+		return TakeEntityToInventory(mode, FindInventoryLocationType.ATTACHMENT, item);
+	}
+
+
+
 }

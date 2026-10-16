@@ -350,7 +350,7 @@ class RecipeBase
 					
 					if (ingr)
 					{
-						MiscGameplayFunctions.TransferItemProperties(ingr, res);
+						MiscGameplayFunctions.TransferItemProperties(ingr, res, true, true, false, false);
 						MiscGameplayFunctions.TransferInventory(ingr, res, player);
 					}
 				}

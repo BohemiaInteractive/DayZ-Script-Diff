@@ -1,29 +1,21 @@
-enum eDebugMode
+enum eWeaponDebugMode
 {
     NORMAL,
-	MUZZLE_FIRE,
-	CAMERA_MUZZLE_HYBRID,
+	LOCAL,
 	COUNT
 };
-
-
 
 class WeaponDebug
 {
 	const int BUFFER_SIZE = 1000;
-	const float COLLISIONS_DISTANCE_TOLERANCE = 0.01;
-	const float MAX_MUZZLE_DISTANCE_TOLERANCE = 20;
-	const float CAMERA_BULLET_ORIGIN_OFFSET = 1;
-	const float CAMERA_TRACE_MIN_DISTANCE_TOLERANCE = 0.3;
 	
-	Weapon m_WeaponInHands;
 	int m_BufferIndex;
+	int m_PointCount = 0;
+	bool m_IsDrawKeyHeldDownPrev;
 	bool m_IsDrawKeyHeldDown;
-	bool m_IsLMBPressed;
-	bool m_IsToggleKeyPressed;
 	bool m_IsFireKeyPressed;
 	float m_TargetDistance;
-	eDebugMode m_CurrentMode;
+	eWeaponDebugMode m_CurrentMode;
 	vector m_AimTrailCyclic[BUFFER_SIZE];	
 	vector m_AimTrailOrdered[BUFFER_SIZE];
 	
@@ -31,38 +23,29 @@ class WeaponDebug
 	
 	//ref array<Selection> m_Selections = new array<Selection>();
 	
-	Shape m_Shape_usti;
-	Shape m_Shape_konec;
-	Shape m_ShapeFireDirection1;
-	Shape m_ShapeFireDirection2;
 	Shape m_HitShape;
-	Shape m_ShapeEye;
 	Shape m_ShapeTrailLines;
 	Shape m_ShapeFireDirCamera;
-	Shape m_HitShape2;
-	Shape m_HitShape3;
-	Shape m_HitShape4;
 	//Shape temp_shape;
 	Shape m_PermanentLine1;
 	Shape m_PermanentLine2;
 	
-	Shape m_PermanentShape1;
-	Shape m_PermanentShape2;
-	
 	Weapon GetWeaponInHands()
 	{
-		Weapon weapon_in_hands;
+		Weapon weaponInHands;
 		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
-		if( player && player.GetItemInHands() ) Class.CastTo(weapon_in_hands,  player.GetItemInHands());
+		if (player)
+		{
+			Class.CastTo(weaponInHands,  player.GetItemInHands());
+		}
 		
-		return weapon_in_hands;
+		return weaponInHands;
 	}
 	
 	void WeaponDebug()
 	{
-		m_DebugModesNames.Insert(eDebugMode.NORMAL, "Mode "+eDebugMode.NORMAL.ToString()+": shoot along the weapon barrel");
-		m_DebugModesNames.Insert(eDebugMode.MUZZLE_FIRE,"Mode "+eDebugMode.MUZZLE_FIRE.ToString()+": shoot from muzzle end to camera trace hit point");
-		m_DebugModesNames.Insert(eDebugMode.CAMERA_MUZZLE_HYBRID, "Mode "+eDebugMode.CAMERA_MUZZLE_HYBRID.ToString()+": shoot either from camera lens or from muzzle \n depending on the situation");
+		m_DebugModesNames.Insert(eWeaponDebugMode.NORMAL, "Mode "+eWeaponDebugMode.NORMAL.ToString()+": normal");
+		m_DebugModesNames.Insert(eWeaponDebugMode.LOCAL,"Mode "+eWeaponDebugMode.LOCAL.ToString()+": Ignore mouse move ");
 	}
 	
 	void ~WeaponDebug()
@@ -73,39 +56,27 @@ class WeaponDebug
 
 	void RemoveAllShapes(bool is_exit = false)
 	{
-		Debug.RemoveShape(m_Shape_usti);
-		Debug.RemoveShape(m_Shape_konec);
-		Debug.RemoveShape(m_ShapeFireDirection1);
-		Debug.RemoveShape(m_ShapeFireDirection2);
-		Debug.RemoveShape(m_ShapeEye);
 		Debug.RemoveShape(m_ShapeTrailLines);
 		Debug.RemoveShape(m_ShapeFireDirCamera);
 		Debug.RemoveShape(m_HitShape);
-		Debug.RemoveShape(m_HitShape2);
-		Debug.RemoveShape(m_HitShape3);
-		Debug.RemoveShape(m_HitShape4);
 		
 		if ( is_exit )
 		{
 			Debug.RemoveShape(m_PermanentLine1);
 			Debug.RemoveShape(m_PermanentLine2);
-			Debug.RemoveShape(m_PermanentShape1);
-			Debug.RemoveShape(m_PermanentShape2);
 		}
 	}
 
 
 	void OnCommandHandlerUpdate()
 	{
-			
-		m_IsLMBPressed = false;
 		m_IsFireKeyPressed = false;
 		
-		if (KeyState(KeyCode.KC_LWIN) == 1)
+		if (KeyState(KeyCode.KC_P) == 1)
 		{
 			if (!m_IsDrawKeyHeldDown)
 			{
-				OnKeyDown(KeyCode.KC_LWIN);
+				OnKeyDown(KeyCode.KC_P);
 			}
 			m_IsDrawKeyHeldDown = true;
 		}
@@ -121,18 +92,14 @@ class WeaponDebug
 		if (KeyState(KeyCode.KC_Z) == 1)
 		{
 			ClearKey(KeyCode.KC_Z);
-			CycleDebugMode();
+			CycleWeaponDebugMode();
+			m_PointCount = 0;
 		}
 		
 		if (KeyState(KeyCode.KC_X) == 1)
 		{
 			m_IsFireKeyPressed = true;
 			ClearKey(KeyCode.KC_X);
-		}
-
-		if (GetMouseState(MouseState.LEFT) & MB_PRESSED_MASK)
-		{
-			m_IsLMBPressed = true;
 		}
 	}
 
@@ -141,12 +108,17 @@ class WeaponDebug
 		if (key == KeyCode.KC_X)
 		{
 		}
+		
+		if (key == KeyCode.KC_P)
+		{
+			m_PointCount = 0;
+		}
 	}
 	
-	void CycleDebugMode()
+	void CycleWeaponDebugMode()
 	{
 		m_CurrentMode++;
-		if ( m_CurrentMode == eDebugMode.COUNT )
+		if ( m_CurrentMode == eWeaponDebugMode.COUNT )
 		{
 			m_CurrentMode = 0;
 		}
@@ -155,86 +127,32 @@ class WeaponDebug
 	
 	void OnPostFrameUpdate()
 	{
-		if ( GetWeaponInHands() )
+		Weapon weapon = GetWeaponInHands();
+		if (weapon)
 		{
 			RemoveAllShapes();
-			Weapon weapon = GetWeaponInHands();
+			
 			vector cameraDirection = g_Game.GetCurrentCameraDirection();
 			vector cameraPosition = g_Game.GetCurrentCameraPosition();
-			vector usti_hlavne_position = weapon.GetSelectionPositionMS( "usti hlavne" );//usti hlavne
-			vector konec_hlavne_position = weapon.GetSelectionPositionMS( "konec hlavne" );//konec hlavne
+			vector usti_hlavne_position = weapon.GetSelectionPositionLS( "usti hlavne" );//usti hlavne
 			usti_hlavne_position = weapon.ModelToWorld(usti_hlavne_position);
-			konec_hlavne_position = weapon.ModelToWorld(konec_hlavne_position);
 			
-			if ( m_CurrentMode == eDebugMode.NORMAL ) 
-			{
-				DrawLineOfFire(konec_hlavne_position,usti_hlavne_position );
-			}
-			
-			if ( m_CurrentMode == eDebugMode.MUZZLE_FIRE ) 
-			{
-				DrawLineOfFireMuzzleToHit(usti_hlavne_position, cameraDirection, cameraPosition);
-			}
-			
-			if ( m_CurrentMode == eDebugMode.CAMERA_MUZZLE_HYBRID ) 
-			{
-				DrawLineOfFireCameraHybrid(usti_hlavne_position, cameraDirection, cameraPosition, konec_hlavne_position);
-			}
-			
-			if (m_IsDrawKeyHeldDown)
-			{
-				AddPosToCyclicBuffer(usti_hlavne_position);
-				OrderTrailArray();
-			}
+			DrawLineOfFireMuzzleToHit(usti_hlavne_position, cameraDirection, cameraPosition);
 
-			m_ShapeTrailLines = Debug.DrawLines( m_AimTrailOrdered,BUFFER_SIZE, COLOR_YELLOW, ShapeFlags.NOZBUFFER );
-			
+			if (m_PointCount)
+			{
+				if (m_CurrentMode == eWeaponDebugMode.LOCAL)
+				{
+					m_ShapeTrailLines = Debug.DrawLines( m_AimTrailOrdered,m_PointCount, COLOR_YELLOW, ShapeFlags.NOZBUFFER );//TODO Local space -> world space (player camera)
+				}
+				else
+				{
+					m_ShapeTrailLines = Debug.DrawLines( m_AimTrailOrdered,m_PointCount, COLOR_YELLOW, ShapeFlags.NOZBUFFER );
+				}
+			}
 		
-			DrawEyePoint(weapon);
-			DrawBarrelMemoryPoints(konec_hlavne_position,usti_hlavne_position );
 			DisplayGeneralInfo();
 			DisplayTargetInfo();
-			/*
-			vector pos;
-			weapon.GetProjectedCursorPos3d(pos);
-			Debug.RemoveShape(temp_shape);
-			temp_shape = Debug.DrawSphere(pos, 0.1, Colors.GREEN);
-			*/
-		}
-	}
-
-	void DrawBarrelMemoryPoints(vector begin_point, vector end_point)
-	{
-		if (!m_IsDrawKeyHeldDown)
-		{
-			m_Shape_usti = Debug.DrawSphere(end_point, 0.011, Colors.GREEN, ShapeFlags.TRANSP|ShapeFlags.NOOUTLINE|ShapeFlags.NOZBUFFER);
-			m_Shape_konec = Debug.DrawSphere(begin_point, 0.011, Colors.GREEN, ShapeFlags.TRANSP|ShapeFlags.NOOUTLINE|ShapeFlags.NOZBUFFER);
-		}
-	}
-
-
-	void DrawLineOfFire(vector begin_point, vector end_point)
-	{
-		vector contact_point;
-		vector contact_dir;
-		vector aim_point = end_point - begin_point;
-		int contact_component;
-		
-		aim_point = aim_point.Normalized() * 100;
-		aim_point = aim_point + end_point;
-		
-		m_ShapeFireDirection1 = Debug.DrawLine(end_point, aim_point);
-		m_ShapeFireDirection2 = Debug.DrawLine(begin_point, end_point, ShapeFlags.NOZBUFFER );
-		
-		if ( DayZPhysics.RaycastRV(end_point, aim_point, contact_point, contact_dir, contact_component, null, null, null, false, false, ObjIntersectFire) )
-		{	
-			m_HitShape = Debug.DrawSphere(contact_point, 0.04, COLOR_RED);
-		}
-		
-		if ( m_IsFireKeyPressed )
-		{
-			Debug.RemoveShape(m_PermanentLine1);
-			m_PermanentLine1 = Debug.DrawLine(end_point, contact_point, Colors.RED, ShapeFlags.NOZBUFFER );
 		}
 	}
 
@@ -246,41 +164,25 @@ class WeaponDebug
 		{
 			m_BufferIndex = 0;			
 		}
+		if (m_PointCount < BUFFER_SIZE)
+		{
+			m_PointCount++;
+		}
 	}	
 	
 	void OrderTrailArray()
 	{
 		int unordered_index;
-		
-		for (int i = 0; i < BUFFER_SIZE; i++)
+		for (int i = 0; i < m_PointCount; i++)
 		{
-			unordered_index = m_BufferIndex + i;
-			if ( unordered_index >= BUFFER_SIZE )
+			unordered_index = m_BufferIndex - 1 - i;
+			if ( unordered_index < 0 )
 			{
-				unordered_index = unordered_index - BUFFER_SIZE;
+				unordered_index = BUFFER_SIZE + unordered_index;
 			}
 			m_AimTrailOrdered[i] = m_AimTrailCyclic[unordered_index];
 		}
 	}	
-	
-	void DrawEyePoint(Weapon weapon)
-	{
-		vector position = GetEyePointPosition(weapon);
-		m_ShapeEye = Debug.DrawSphere(position, 0.009, COLOR_BLUE, ShapeFlags.TRANSP|ShapeFlags.NOOUTLINE|ShapeFlags.NOZBUFFER);
-	}
-
-	vector GetEyePointPosition(Weapon weapon)
-	{
-		string memory_point_name = weapon.ConfigGetString("memoryPointCamera");
-		ItemBase optics = weapon.GetAttachedOptics();
-		if (optics)
-		{
-			memory_point_name = optics.ConfigGetString("memoryPointCamera");
-			return optics.ModelToWorld(optics.GetSelectionPositionLS( memory_point_name ));
-		}
-		return weapon.ModelToWorld(weapon.GetSelectionPositionLS( memory_point_name ));
-		
-	}
 
 	void DisplayGeneralInfo()
 	{
@@ -288,11 +190,11 @@ class WeaponDebug
 		DayZPlayerImplement player = DayZPlayerImplement.Cast(g_Game.GetPlayer());
 		float sway_weight = player.GetAimingModel().GetSwayWeight();
 		DbgUI.Text("value: " + sway_weight.ToString());
-		DbgUI.Text("Hold LWIN to draw debug line");
+		DbgUI.Text("Hold P to draw debug line");
 		DbgUI.Text("Press X to simulate fire");
-		DbgUI.Text("Press Z to cycle debug modes");
-		DbgUI.Text("Debug " +m_DebugModesNames.Get(m_CurrentMode) );
-		DbgUI.Text("");
+		//DbgUI.Text("Press Z to cycle debug modes");
+		//DbgUI.Text("Debug " +m_DebugModesNames.Get(m_CurrentMode) );
+		//DbgUI.Text("");
 		DbgUI.End();
 	}
 
@@ -303,139 +205,93 @@ class WeaponDebug
 		DbgUI.End();
 	}
 
-		
 	void DrawLineOfFireMuzzleToHit(vector begin_point, vector camera_dir, vector camera_pos)
 	{
-		vector contact_point_cam_trace;
-		vector contact_point_muzzle_trace;
-		
-		vector contact_dir_muzzle;
-		vector contact_dir_camera;
-		
-		vector contact_point;
-		vector contact_dir;
-		
-		int contact_component;
-		int contact_component_muzzle;
-		
-		vector end_point = camera_pos + camera_dir * 1000;
-		Man player = g_Game.GetPlayer();
-		Object player_o;
-		Class.CastTo(player_o, player);
-		
-		if ( DayZPhysics.RaycastRV(camera_pos, end_point, contact_point_cam_trace, contact_dir_camera, contact_component,null, null, player_o , false, false, ObjIntersectFire, 0.1) )
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
+		if (player.IsRaised())
 		{
-			m_ShapeFireDirCamera = Debug.DrawLine(begin_point, contact_point_cam_trace, Colors.RED, ShapeFlags.NOZBUFFER );
-			m_HitShape2 = Debug.DrawSphere(contact_point_cam_trace, 0.03, Colors.GREEN);
-			m_TargetDistance =  vector.Distance( player.GetPosition(), contact_point_cam_trace);
+			vector transform[4];
+			player.GetTransformWS(transform);
 			
-			if ( m_IsFireKeyPressed )
-			{
-				Debug.RemoveShape(m_PermanentLine1);
-				Debug.RemoveShape(m_PermanentLine2);
-				m_PermanentLine1 = Debug.DrawLine(begin_point, contact_point_cam_trace, Colors.RED, ShapeFlags.NOZBUFFER );
-				m_PermanentLine2 = Debug.DrawLine(camera_pos, contact_point_cam_trace, Colors.GREEN, ShapeFlags.NOZBUFFER );
-			}
+			HumanCommandWeapons hcw = player.GetCommandModifier_Weapons();
+			HumanInputController hic = player.GetInputController();
 			
-		}
-		
-		else
-		{
-			m_ShapeFireDirCamera = Debug.DrawLine(begin_point, end_point, Colors.GREEN, ShapeFlags.NOZBUFFER );
-			m_TargetDistance = -1;
-		}
-		
-		if ( DayZPhysics.RaycastRV(begin_point, contact_point_cam_trace, contact_point_muzzle_trace, contact_dir_muzzle, contact_component_muzzle, null, null, null, false, false, ObjIntersectFire, 0.0) )
-		{
-			m_HitShape3 = Debug.DrawSphere(contact_point_muzzle_trace, 0.03, COLOR_RED);
-		}
-	}
+			float UpDownBase = hcw.GetBaseAimingAngleUD();
+			float LeftRightBase = hcw.GetBaseAimingAngleLR();
+			float UpDownOffset = hcw.GetAimingHandsOffsetUD();
+			float LeftRightOffset = hcw.GetAimingHandsOffsetLR();
+	
+			
+			vector aimAngles = Vector(LeftRightBase + LeftRightOffset, UpDownBase + UpDownOffset, 0.0);
+			vector plrAngles = Math3D.MatrixToAngles(transform);	
+	
+			vector resAngle = aimAngles + plrAngles;
+			
+			vector start = camera_pos;
+			//MiscGameplayFunctions.GetHeadBonePos(player, start);
 
-	void DrawLineOfFireCameraHybrid(vector usti_hlavne_position, vector camera_dir, vector camera_pos, vector konec_hlavne_position)
-	{
-		bool muzzle_shot;
-		vector contact_point_cam_trace;
-		vector contact_point_muzzle_trace;
-		
-		vector aim_at_position;
-		
-		vector contact_dir_muzzle;
-		vector contact_dir;
-		
-		vector contact_point;
-		
-		int contact_component;
-		int contact_component_muzzle;
-		
-		float distance_to_aim_at;
-		vector end_point = camera_pos + camera_dir * 100;
-		vector start_point = camera_pos + (CAMERA_BULLET_ORIGIN_OFFSET * camera_dir);
-		vector weapon_aim_direction = usti_hlavne_position - konec_hlavne_position;
-		weapon_aim_direction.Normalize();
-		
-		Man player = g_Game.GetPlayer();
-		Object player_o;
-		Class.CastTo(player_o, player);
-
-		if ( DayZPhysics.RaycastRV(start_point, end_point, contact_point_cam_trace, contact_dir, contact_component,null, null, player_o , false, false, ObjIntersectFire) )
-		{
-			m_TargetDistance = vector.Distance(start_point, contact_point_cam_trace);
-			aim_at_position = contact_point_cam_trace;
+			vector direction = resAngle.AnglesToVector();
 			
-			if ( DayZPhysics.RaycastRV(usti_hlavne_position, contact_point_cam_trace, contact_point_muzzle_trace, contact_dir, contact_component,null, null, player_o , false, false, ObjIntersectFire, 0.05) )
+			float range = 50.0;
+			
+			vector end = start + (direction * range);
+			vector contact;
+			vector contactDir;
+			int muz;
+			
+			Debug.RemoveShape(m_HitShape);
+			if ( DayZPhysics.RaycastRV(start, end, contact, contactDir, muz, null, null, player, false, false, ObjIntersectFire, 0.0) )
 			{
-				float collision_distance = vector.Distance(contact_point_cam_trace, contact_point_muzzle_trace);
-				float muzzle_collision_distance = vector.Distance(usti_hlavne_position, contact_point_muzzle_trace);
+				m_TargetDistance =  vector.Distance( player.GetPosition(), contact);
+				m_HitShape = Debug.DrawSphere(contact, (m_TargetDistance / 150), COLOR_YELLOW);
+				m_ShapeFireDirCamera = Debug.DrawLine(begin_point, contact, Colors.RED, ShapeFlags.NOZBUFFER );
 				
-				if ((collision_distance > 2 && muzzle_collision_distance < MAX_MUZZLE_DISTANCE_TOLERANCE) || m_TargetDistance < CAMERA_TRACE_MIN_DISTANCE_TOLERANCE)
+	
+				if (m_IsDrawKeyHeldDown)
 				{
-					muzzle_shot = true;
-					aim_at_position = contact_point_muzzle_trace;
+					if (m_CurrentMode == eWeaponDebugMode.LOCAL) 
+						AddPosToCyclicBuffer(contact);//TODO change to local space
+					else
+						AddPosToCyclicBuffer(contact);
+					OrderTrailArray();
 				}
-			}
-		}
-		
-		
-		
-		distance_to_aim_at = vector.Distance(camera_pos, aim_at_position);
-		
-		if ( m_IsFireKeyPressed )
-		{
-			Debug.RemoveShape(m_PermanentLine1);
-			Debug.RemoveShape(m_PermanentLine2);
-			Debug.RemoveShape(m_PermanentShape1);
-			
-			vector contact_point_temp;
-			
-			if (muzzle_shot)
-			{
-				m_PermanentLine1 = Debug.DrawLine(usti_hlavne_position, usti_hlavne_position + weapon_aim_direction * 5, Colors.RED, ShapeFlags.NOZBUFFER );
-				m_PermanentLine2 = Debug.DrawLine(camera_pos, contact_point_cam_trace, Colors.GREEN, ShapeFlags.NOZBUFFER );
-				PrintString("muzle shot");
+				
+				if ( m_IsFireKeyPressed )
+				{
+					Debug.RemoveShape(m_PermanentLine1);
+					Debug.RemoveShape(m_PermanentLine2);
+					m_PermanentLine1 = Debug.DrawLine(begin_point, contact, Colors.RED, ShapeFlags.NOZBUFFER );
+					m_PermanentLine2 = Debug.DrawLine(camera_pos, contact, Colors.GREEN, ShapeFlags.NOZBUFFER );
+				}
+				
+				
+				
+				
 			}
 			else
 			{
-				vector dir = contact_point_cam_trace - camera_pos;
-				dir.Normalize();
-				dir = dir * 100;
-				float dst = vector.Distance(camera_pos, contact_point_cam_trace);
-				float dist2 = vector.Distance(camera_pos, contact_point_cam_trace);
+				m_HitShape = Debug.DrawSphere(end, 0.15, COLOR_RED);
 				
-				//m_PermanentShape1 = Debug.DrawSphere(start_point, 0.015,Colors.GREEN);
-				m_PermanentLine1 = Debug.DrawLine(start_point, contact_point_cam_trace + dir, Colors.RED, ShapeFlags.NOZBUFFER );
-				PrintString("camera shot");
+				m_ShapeFireDirCamera = Debug.DrawLine(begin_point, end, Colors.GREEN, ShapeFlags.NOZBUFFER );
+				m_TargetDistance = -1;
+				
+				if (m_IsDrawKeyHeldDown)
+				{
+					if (m_CurrentMode == eWeaponDebugMode.LOCAL) 
+						AddPosToCyclicBuffer(end);//TODO change to local space
+					else
+						AddPosToCyclicBuffer(end);
+					OrderTrailArray();
+				}
+				
+				if ( m_IsFireKeyPressed )
+				{
+					Debug.RemoveShape(m_PermanentLine1);
+					Debug.RemoveShape(m_PermanentLine2);
+					m_PermanentLine1 = Debug.DrawLine(begin_point, end, Colors.RED, ShapeFlags.NOZBUFFER );
+					m_PermanentLine2 = Debug.DrawLine(camera_pos, end, Colors.GREEN, ShapeFlags.NOZBUFFER );
+				}
 			}
 		}
-		
-		float clamped_distance = Math.Clamp(distance_to_aim_at, 0 , 100);
-		float distance_normalized = Math.InverseLerp(0, 100, clamped_distance);
-		float hit_sphere_size = Math.Lerp(0.025, 0.75, distance_normalized);
-		
-		Debug.RemoveShape(m_HitShape4);
-		Debug.RemoveShape(m_HitShape);
-		m_HitShape = Debug.DrawSphere(contact_point_cam_trace, 0.20,Colors.GREEN, ShapeFlags.TRANSP);
-		m_HitShape4 = Debug.DrawSphere(aim_at_position, hit_sphere_size);
-	
-	}
-	
+	}	
 }

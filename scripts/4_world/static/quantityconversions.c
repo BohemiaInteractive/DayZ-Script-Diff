@@ -148,13 +148,15 @@ class QuantityConversions
 			if ( item.IsMagazine() )
 				return QUANTITY_COUNT;
 			
-			if ( !ib.m_CanShowQuantity )
+			ItemBaseType itemBaseType = ItemBaseType.Cast(ib.GetEntityType());
+			
+			if (!itemBaseType.m_CanShowQuantity)
 				return QUANTITY_HIDDEN;
 			
 			int max = item.GetQuantityMax();
-			if ( max > 0 )
+			if (max > 0)
 			{
-				if ( ib.m_HasQuantityBar )
+				if (itemBaseType.m_HasQuantityBar)
 				{
 					return QUANTITY_PROGRESS;
 				}
@@ -171,6 +173,7 @@ class QuantityConversions
 				}
 			}
 		}
+
 		return QUANTITY_HIDDEN;
 	}	
 }

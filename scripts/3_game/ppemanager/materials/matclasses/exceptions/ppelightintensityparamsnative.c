@@ -8,6 +8,7 @@ class PPELightIntensityParamsNative: PPEClassBase
 	static const int PARAM_LIGHT_MULT = 0;
 	static const int PARAM_NOISE_MULT = 1;
 	
+	static const int L_0_SANDSTORM = 50;
 	static const int L_0_NVG = 100;
 	static const int L_0_TOXIC_TINT = 200;
 	static const int L_1_NVG = 100;

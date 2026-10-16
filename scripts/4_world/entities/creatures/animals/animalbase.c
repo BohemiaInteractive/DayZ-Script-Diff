@@ -1,11 +1,17 @@
 class AnimalBase extends DayZAnimal
 {
 	protected ref ArrowManagerBase m_ArrowManager;
+	protected ref DustEffectCeilingHandlerLocal m_CeilingDustHandler;
 	
 	void AnimalBase()
 	{
 		m_ArrowManager = new ArrowManagerBase(this);
 		CacheSkinningBloodInfectionChance(eAgents.SALMONELLA);
+	}
+	
+	bool TrackNaturalInstinctsAchievement()
+	{
+		return false;
 	}
 	
 	override ArrowManagerBase GetArrowManager()
@@ -32,6 +38,18 @@ class AnimalBase extends DayZAnimal
 			dead_entity.SetHealthMax("","Health");
 		
 		DeleteSafe();
+	}
+	
+	protected void HandleCeilingDustStepEffect(SurfaceInfo surfaceInfo)
+	{
+		//non-player entity, only local
+		if (!GetGame().IsDedicatedServer())
+		{
+			if (!m_CeilingDustHandler)
+				m_CeilingDustHandler = new DustEffectCeilingHandlerLocal(this);
+			
+			m_CeilingDustHandler.OnStepUpdate(surfaceInfo);
+		}
 	}
 }
 
@@ -129,6 +147,7 @@ class Animal_CapraHircus_Spooky extends Animal_CapraHircus
 	}
 	
 	#ifndef SERVER
+	#ifndef NO_GUI
 	protected GoatLight m_EyeLight;
 	
 	override void EEInit()
@@ -148,6 +167,7 @@ class Animal_CapraHircus_Spooky extends Animal_CapraHircus
 			m_EyeLight.FadeOut(15);
 			
 	}
+	#endif
 	#endif
 	
 	override bool ResistContaminatedEffect()
@@ -178,6 +198,11 @@ class Animal_CapreolusCapreolus extends AnimalBase
 	{
 		return "HareChirp_SoundSet";
 	}
+	
+	override bool TrackNaturalInstinctsAchievement()
+	{
+		return true;
+	}
 }
 class Animal_CapreolusCapreolusF extends Animal_CapreolusCapreolus {}
 
@@ -203,6 +228,11 @@ class Animal_CervusElaphus extends AnimalBase
 	{
 		return "DeerRoar_SoundSet";
 	}
+	
+	override bool TrackNaturalInstinctsAchievement()
+	{
+		return true;
+	}
 }
 class Animal_CervusElaphusF extends Animal_CervusElaphus {}
 
@@ -227,6 +257,11 @@ class Animal_RangiferTarandus extends AnimalBase
 	override string ReleaseSound()
 	{
 		return "DeerRoar_SoundSet";
+	}
+	
+	override bool TrackNaturalInstinctsAchievement()
+	{
+		return true;
 	}
 }
 class Animal_RangiferTarandusF extends Animal_RangiferTarandus {}
@@ -336,6 +371,21 @@ class Animal_OvisAries extends AnimalBase
 	}
 }
 class Animal_OvisAriesF extends Animal_OvisAries {}
+
+class Animal_OvisGmelini extends AnimalBase 
+{
+	override void RegisterHitComponentsForAI()
+	{
+		m_DefaultHitComponent = "Zone_Chest";
+		m_DefaultHitPositionComponent = "Pelvis";
+		
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Head", 4);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Chest", 15);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Neck", 55);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Chest", 50);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Legs", 70);
+	}
+}
 
 class Animal_SusDomesticus extends AnimalBase
 {
@@ -459,6 +509,50 @@ class Animal_LepusEuropaeus extends AnimalBase
 	}
 }
 
+class Animal_VaranusGriseus extends AnimalBase {
+	override void RegisterHitComponentsForAI()
+	{
+		m_DefaultHitComponent = "Spine";
+		m_DefaultHitPositionComponent = "Spine";
+		
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Head", 20);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "LFLeg2", 5);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "RFLeg2", 5);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Chest", 70);
+	}
+	
+	override string CaptureSound()
+	{
+		return "HenScream_SoundSet";
+	}
+	
+	override string ReleaseSound()
+	{
+		return "HenCluck_X_SoundSet";
+	}
+	
+	override bool ReplaceOnDeath()
+	{
+		return true;
+	}
+	
+	override bool CanBeSkinned()
+	{
+		return false;
+	}
+	
+	override string GetDeadItemName()
+	{
+		return "DeadLizard";
+	}
+	
+	override bool KeepHealthOnReplace()
+	{
+		return false;
+	}
+}
+
+
 class Animal_VulpesVulpes extends AnimalBase
 {
 	override void RegisterHitComponentsForAI()
@@ -502,3 +596,54 @@ class Animal_VulpesVulpes extends AnimalBase
 		return false;
 	}
 }
+
+class Animal_CanisFamiliaris_Dobermann_ColorBase extends AnimalBase
+{
+	override void RegisterHitComponentsForAI()
+	{
+		m_DefaultHitComponent = "Zone_Chest";
+		m_DefaultHitPositionComponent = "Pelvis";
+		
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Head", 2);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Neck", 65);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Chest", 50);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Legs_Back", 75);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Legs_Front", 70);
+	}
+	
+	override bool IsDanger()
+	{
+		return true;
+	}
+}
+
+class Animal_CanisFamiliaris_Dobermann_Skinny extends Animal_CanisFamiliaris_Dobermann_ColorBase {}
+class Animal_CanisFamiliaris_Dobermann_Bald extends Animal_CanisFamiliaris_Dobermann_ColorBase {}
+class Animal_CanisFamiliaris_Dobermann_Bloody extends Animal_CanisFamiliaris_Dobermann_ColorBase {}
+class Animal_CanisFamiliaris_Dobermann_Brown extends Animal_CanisFamiliaris_Dobermann_ColorBase {}
+class Animal_CanisFamiliaris_Dobermann_Vest extends Animal_CanisFamiliaris_Dobermann_ColorBase {}
+
+class Animal_CanisFamiliaris_GermanShepherd_ColorBase extends AnimalBase
+{
+	override void RegisterHitComponentsForAI()
+	{
+		m_DefaultHitComponent = "Zone_Chest";
+		m_DefaultHitPositionComponent = "Pelvis";
+		
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Head", 2);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Neck", 65);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Chest", 50);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Legs_Back", 75);
+		DayZAIHitComponentHelpers.RegisterHitComponent(m_HitComponentsForAI, "Zone_Legs_Front", 70);
+	}
+	
+	override bool IsDanger()
+	{
+		return true;
+	}
+}
+
+class Animal_CanisFamiliaris_GermanShepherd_Skinny extends Animal_CanisFamiliaris_GermanShepherd_ColorBase {}
+class Animal_CanisFamiliaris_GermanShepherd_Balding extends Animal_CanisFamiliaris_GermanShepherd_ColorBase {}
+class Animal_CanisFamiliaris_GermanShepherd_Bloody extends Animal_CanisFamiliaris_GermanShepherd_ColorBase {}
+class Animal_CanisFamiliaris_GermanShepherd_Harness extends Animal_CanisFamiliaris_GermanShepherd_ColorBase {}

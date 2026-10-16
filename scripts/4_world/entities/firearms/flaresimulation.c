@@ -135,7 +135,7 @@ class FlareSimulation : Managed
 
 		if ( m_NoiseTimer >= NOISE_DELAY )
 		{
-			MiscGameplayFunctions.GenerateAINoiseAtPosition(position, NOISE_DELAY, m_NoisePar);
+			MiscGameplayFunctions.GenerateAINoiseAtPositionEx(m_Flare, NOISE_DELAY, m_NoisePar);
 		
 			m_NoiseTimer = 0;
 		}

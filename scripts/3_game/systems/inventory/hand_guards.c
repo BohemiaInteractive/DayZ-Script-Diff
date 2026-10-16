@@ -296,7 +296,7 @@ class HandGuardCanMove extends HandGuardBase
 	{
 		HandEventMoveTo es = HandEventMoveTo.Cast(e);
 		
-		bool result = e.m_IsJuncture || e.m_IsRemote;
+		bool result = e.m_IsRemote;
 		if (result == false)
 		{
 			result = GameInventory.LocationCanMoveEntity(es.GetSrc(), es.GetDst());
@@ -322,7 +322,7 @@ class HandGuardCanSwap extends HandGuardBase
 	{
 		HandEventSwap es = HandEventSwap.Cast(e);
 
-		bool result = e.m_IsJuncture || e.m_IsRemote;
+		bool result = e.m_IsRemote;
 		if (result == false)
 		{
 			result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
@@ -348,7 +348,7 @@ class HandGuardCanForceSwap extends HandGuardBase
 	{
 		HandEventForceSwap es = HandEventForceSwap.Cast(e);
 
-		bool result = e.m_IsJuncture || e.m_IsRemote;
+		bool result = e.m_IsRemote;
 		if (result == false)
 		{
 			result = GameInventory.CanSwapEntitiesEx(es.GetSrc().GetItem(), es.m_Src2.GetItem());
@@ -401,6 +401,26 @@ class HandGuardInstantForceSwap extends HandGuardBase
 		return result;
 	}
 };
+
+class HandGuardIsNotSurrendered extends HandGuardBase
+{
+	protected Man m_Player;
+	void HandGuardIsNotSurrendered(Man p = NULL) { m_Player = p; }
+	
+	override bool GuardCondition(HandEventBase e)
+	{
+		bool result = !m_Player.IsSurrendered();
+
+		#ifdef ENABLE_LOGGING
+		if (LogManager.IsInventoryHFSMLogEnable())
+		{	
+			Debug.InventoryHFSMLog("GuardCondition result: " + result, "HandGuardIsNotSurrendered" , "n/a", "GuardCondition", m_Player.ToString() );
+		}
+		#endif
+
+		return result;
+	}
+}
 
 ///@} guards
 

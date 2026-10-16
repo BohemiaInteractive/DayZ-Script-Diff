@@ -60,9 +60,9 @@ class PlayerAgentPool
 		EStatLevels immunityLevel = m_Player.GetImmunityLevel();
 		
 		m_TotalAgentCount = 0;
-		for (int i = 0; i < m_VirusPool.Count(); i++)
-		{	
-			int agentId = m_VirusPool.GetKey(i);
+		TIntArray virusPoolAgents = m_VirusPool.GetKeyArray();
+		foreach (int agentId : virusPoolAgents)
+		{
 			int maxCount = m_PluginTransmissionAgents.GetAgentMaxCount(agentId);
 
 			EStatLevels agentPotency = m_PluginTransmissionAgents.GetAgentPotencyEx(agentId, m_Player);

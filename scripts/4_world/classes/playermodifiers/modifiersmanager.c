@@ -8,8 +8,8 @@ enum eModifierSyncIDs
 	MODIFIER_SYNC_ZONE_EXPOSURE 	= 0x00000010,
 	MODIFIER_SYNC_DROWNING 			= 0x00000020,
 	MODIFIER_SYNC_FEVER				= 0x00000040,
-	//0x00000080,
-	//0x00000100,
+	MODIFIER_SYNC_PARTICLE_EYES		= 0x00000080,
+	MODIFIER_SYNC_HEAT_STROKE		= 0x00000100,
 	//0x00000200,
 	//0x00000400,
 	//0x00000800,
@@ -143,6 +143,14 @@ class ModifiersManager
 		AddModifier(new HeavyMetalPhase3Mdfr);
 		AddModifier(new PneumoniaMdfr);
 		AddModifier(new ChelationMdfr);
+		AddModifier(new SandstormExposureStaticMdfr);
+		AddModifier(new SandstormExposureDynamicMdfr);
+		AddModifier(new SilicosisMdfr);
+		AddModifier(new IrritatedEyesMdfr);
+		AddModifier(new HeatStrokePhase1Mdfr);
+		AddModifier(new HeatStrokePhase2Mdfr);
+		AddModifier(new HeatStrokePhase3Mdfr);
+		AddModifier(new HeatStrokePhase4Mdfr);
 	}
 
 	void SetModifiers(bool enable)

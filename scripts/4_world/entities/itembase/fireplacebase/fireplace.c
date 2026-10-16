@@ -69,8 +69,19 @@ class Fireplace extends FireplaceBase
 		
 		if (m_ContactEventProcessing && !m_ContactDeletionProcessing)
 		{
-			MiscGameplayFunctions.ThrowAllItemsInInventory(this, 0);
-			CheckForDestroy();
+			//! We remove the stones when the fireplace has some and starts falling
+			//! as droping so many items at once can cause performance issues
+			ItemBase attachedStones = ItemBase.Cast(GetAttachmentByType(ATTACHMENT_STONES));
+			if (attachedStones)
+			{
+				g_Game.ObjectDelete(attachedStones);
+			}
+			
+			if (HasAnyAttachmentsOrCargo())
+				MiscGameplayFunctions.ThrowAllItemsInInventory(this, ThrowEntityFlags.NONE);
+			
+			DestroyAreaDamage();
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(g_Game.ObjectDelete, DELETE_CHECK_DELAY, false, this);
 			m_ContactDeletionProcessing = true;
 		}
 	}

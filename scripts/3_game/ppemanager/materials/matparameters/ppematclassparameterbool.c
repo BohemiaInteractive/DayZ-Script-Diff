@@ -1,13 +1,13 @@
 class PPEMatClassParameterBool extends PPEMatClassParameterCommandData
 {
-	protected ref map<int,ref array<bool,int>> m_LayerInfo; //<priority,<value,operator>>
+	protected ref map<int,ref array<bool>> m_LayerInfo; //<priority,<value,operator>>
 	
 	protected PPETemplateDefBool m_Bool;
 	protected bool m_ValueDefault;
 	
 	void PPEMatClassParameterBool(int mat_idx, int parameter_idx, PPEClassBase parent)
 	{
-		m_LayerInfo = new map<int,ref array<bool,int>>;
+		m_LayerInfo = new map<int,ref array<bool>>;
 	}
 	
 	override void InitDefaults()

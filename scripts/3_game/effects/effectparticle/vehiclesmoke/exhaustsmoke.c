@@ -1,28 +1,42 @@
 class EffExhaustSmoke : EffVehicleSmoke
 {
+	override void ParticleParamsOverride(notnull ParticleParamsOverrideData data)
+	{
+		if (data.m_FloatModifiers.Count() == 0)
+			return;
+
+		Particle particle = Particle.Cast(GetParticle());
+		if (!particle)
+			return;
+		
+		float speed = data.m_FloatModifiers[0];
+		float lifetimeScale;
+			
+		if (speed < 100)
+			lifetimeScale = 1 + (speed * 0.1);
+		else
+			lifetimeScale = 0.1;
+			
+		float birthrateScale = 1 + (speed * 0.1);
+		
+		particle.ScaleParticleParamFromOriginal(EmitorParam.LIFETIME, lifetimeScale);
+		particle.ScaleParticleParamFromOriginal(EmitorParam.LIFETIME_RND, lifetimeScale);
+		particle.ScaleParticleParamFromOriginal(EmitorParam.BIRTH_RATE, birthrateScale);
+		particle.ScaleParticleParamFromOriginal(EmitorParam.BIRTH_RATE_RND, birthrateScale);
+		particle.SetParticleParam(EmitorParam.SIZE, speed * 2);
+		particle.SetParticleParam(EmitorParam.VELOCITY, speed * 2);
+		particle.SetParticleParam(EmitorParam.AIR_RESISTANCE, 2.0);
+	}
+
+	// kept for possible backward compatibility
 	override void SetParticleStateLight()
 	{
-		SetParticleState( ParticleList.HATCHBACK_EXHAUST_SMOKE );
+		SetParticleState(ParticleList.HATCHBACK_EXHAUST_SMOKE);
 		
-		Car parent = Car.Cast( GetAttachmentParent() );
-		Particle p = GetParticle();
+		Car parent = Car.Cast(GetAttachmentParent());
 		
-		if ( parent && p )
-		{
-			float speed = parent.GetSpeedometerAbsolute();
-			float lifetime_scale;
-				
-			if (speed < 100)
-				lifetime_scale = (100 - speed) / 100;
-			else
-				lifetime_scale = 0.1;
-				
-			float birthrate_scale = 1 + (speed * 0.1 );
-
-			p.ScaleParticleParamFromOriginal( EmitorParam.LIFETIME, lifetime_scale );
-			p.ScaleParticleParamFromOriginal( EmitorParam.LIFETIME_RND, lifetime_scale );
-			p.ScaleParticleParamFromOriginal( EmitorParam.BIRTH_RATE, birthrate_scale );
-			p.ScaleParticleParamFromOriginal( EmitorParam.BIRTH_RATE_RND, birthrate_scale );
-		}
+		ParticleParamsOverrideData data = new ParticleParamsOverrideData();
+		data.m_FloatModifiers.InsertAt(parent.GetSpeed().Length(), 0);
+		ParticleParamsOverride(data);
 	}
 }

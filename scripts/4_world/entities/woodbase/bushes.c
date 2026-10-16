@@ -52,3 +52,19 @@ class BushHard_t_PinusSylvestris_1f_summer:			BushHard {};
 class BushHard_b_FagusSylvatica_1f:					BushHard {};
 class BushHard_t_FagusSylvatica_1fb:				BushHard {};
 class BushHard_t_FagusSylvatica_1fb_summer:			BushHard {};
+
+//Nasdara
+class BushHard_b_Cycas_2s:							BushHard {};
+class BushHard_b_FicusBenjamina_2d:					BushHard {};
+class BushHard_b_FicusBenjamina_2s:					BushHard {};
+class BushHard_b_FicusBenjamina_2sb:				BushHard {};
+class BushHard_b_Gardenia_1s:						BushHard {};
+class BushHard_b_NeriumOleander_1d:					BushHard {};
+class BushHard_b_NeriumOleander_1s:					BushHard {};
+class BushHard_b_NeriumOleander_1sb:				BushHard {};
+class BushHard_b_OpuntiaFicusIndica_1s:				BushHard {};
+class BushHard_b_OpuntiaFicusIndica_1sb:			BushHard {};
+class BushHard_b_OpuntiaFicusIndica_2s:				BushHard {};
+class BushHard_b_OpuntiaFicusIndica_2sb:			BushHard {};
+class BushHard_b_OpuntiaFicusIndica_3s:				BushHard {};
+class BushHard_b_OpuntiaFicusIndica_3sb:			BushHard {};

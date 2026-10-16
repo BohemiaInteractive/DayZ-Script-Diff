@@ -138,6 +138,11 @@ class CfgGameplayHandler
 		return m_Data.WorldsData.lightingConfig;
 	}
 
+	static int GetBunkerBroadcastEnabled()
+	{
+		return m_Data.WorldsData.bunkerBroadcastEnabled;
+	}	
+
 	static TStringArray GetObjectSpawnersArr()
 	{
 		return m_Data.WorldsData.objectSpawnersArr;
@@ -162,6 +167,11 @@ class CfgGameplayHandler
 	static bool GetDisableBaseDamage()
 	{
 		return m_Data.GeneralData.disableBaseDamage;
+	}
+	
+	static bool GetDisableBaseDecay()
+	{
+		return m_Data.GeneralData.disableBaseDecay;
 	}
 	//----------------------------------------------------------------------------------
 	
@@ -339,6 +349,21 @@ class CfgGameplayHandler
 		return m_Data.BaseBuildingData.ConstructionData.disableDistanceCheck;
 	}
 	//----------------------------------------------------------------------------------
+	static bool GetDisableItemFalling()
+	{
+		return m_Data.BaseBuildingData.ConstructionData.disableItemFalling;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetDisableDropAttachmentsOnFall()
+	{
+		return m_Data.BaseBuildingData.ConstructionData.disableDropAttachmentsOnFall;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetDisableRefundMaterialsOnFall()
+	{
+		return m_Data.BaseBuildingData.ConstructionData.disableRefundMaterialsOnFall;
+	}
+	//----------------------------------------------------------------------------------
 	static bool GetDisableColdAreaPlacementCheck()
 	{
 		return m_Data.BaseBuildingData.HologramData.disableColdAreaPlacementCheck;
@@ -463,5 +488,50 @@ class CfgGameplayHandler
 	static float GetBoatDecayMultiplier()
 	{
 		return m_Data.VehicleData.boatDecayMultiplier;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetCanDetachAttachedCarWheels()
+	{
+		return m_Data.VehicleData.canDetachAttachedCarWheels;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetCanDamageAttachedCarWheels()
+	{
+		return m_Data.VehicleData.canDamageAttachedCarWheels;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetCanDetachAttachedBikeWheels()
+	{
+		return m_Data.VehicleData.canDetachAttachedBikeWheels;
+	}
+	//----------------------------------------------------------------------------------
+	static bool GetCanDamageAttachedBikeWheels()
+	{
+		return m_Data.VehicleData.canDamageAttachedBikeWheels;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetExternalLockProtectionTime()
+	{
+		return m_Data.ExternalLockData.protectionTime;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetExternalLockProtectionResetTime()
+	{
+		return m_Data.ExternalLockData.protectionResetTime;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetExternalLockProtectionCountStageOne()
+	{
+		return m_Data.ExternalLockData.protectionCountStageOne;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetExternalLockProtectionCountStageTwo()
+	{
+		return m_Data.ExternalLockData.protectionCountStageTwo;
+	}
+	//----------------------------------------------------------------------------------
+	static float GetSandstormFrequency()
+	{
+		return m_Data.SandstormData.sandstormFrequency;
 	}
 }

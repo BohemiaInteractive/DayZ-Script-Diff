@@ -16,12 +16,9 @@ class NotifierBase
 	float 				m_LastTendency;
 	float				m_LastMA;
 	bool				m_FirstPass = true;
-	
-	PluginPlayerStatus 	m_ModulePlayerStatus;
 		
 	void NotifierBase(NotifiersManager manager)
 	{
-		m_ModulePlayerStatus = PluginPlayerStatus.Cast(GetPlugin(PluginPlayerStatus));
 		m_Active = true; 
 		m_Manager = manager;
 		m_Player = manager.GetPlayer();
@@ -33,16 +30,16 @@ class NotifierBase
 	{
 		int tickTime = (m_TickIntervalLastTick + m_TickInterval);
 		bool tick = (current_time >= tickTime);
-		#ifdef DIAG_NOTIFIER_LOGS
+	#ifdef DIAG_NOTIFIER_LOGS
 		ErrorEx(string.Format("Tick time for notifier %1 is %2 | Current time= %3.", this, tickTime, current_time), ErrorExSeverity.INFO);
 		if (tick)
 		{
-			float timePassed = (current_time - m_TickIntervalLastTick) / 1000.0;
-			float expectedInterval = m_TickInterval / 1000.0;
-			float drift = (current_time - tickTime) / 1000.0;
+			float timePassed = (current_time - m_TickIntervalLastTick) * 0.001;
+			float expectedInterval = m_TickInterval * 0.001;
+			float drift = (current_time - tickTime) * 0.001;
 			ErrorEx(string.Format("Notifier %1 updated after %2s (expected: %3s, drift: +%4s)", this, timePassed, expectedInterval, drift), ErrorExSeverity.INFO);
 		}
-		#endif
+	#endif
 		return tick;
 	}
 
@@ -144,16 +141,16 @@ class NotifierBase
 		values.Set(index, value2);
 	}
 
-	void OnTick(float current_Time)
+	void OnTick(float current_time)
 	{
-		OnTick((int)current_Time);
+		OnTick((int)current_time);
 	}
 	
 	void OnTick(int currentTime)
 	{
-		#ifdef DIAG_NOTIFIER_LOGS
+	#ifdef DIAG_NOTIFIER_LOGS
 		ErrorEx(string.Format("Set last tick interval time on notifier %1 | Time= %2.", m_TickIntervalLastTick, currentTime), ErrorExSeverity.INFO);
-		#endif	
+	#endif	
 		m_TickIntervalLastTick = currentTime;
 		
 		DisplayBadge();
@@ -204,4 +201,7 @@ class NotifierBase
 	{
 		return 0.0;
 	}
+	
+	//! DEPRECTED BELOW
+	PluginPlayerStatus 	m_ModulePlayerStatus;
 }

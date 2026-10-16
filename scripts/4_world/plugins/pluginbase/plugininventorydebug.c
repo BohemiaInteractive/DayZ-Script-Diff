@@ -10,6 +10,8 @@ class PluginInventoryDebug extends PluginBase
 	bool m_IsHandAckEnable			= false;
 	// Repair desync system, if disable server will not send or respond on repair request
 	bool m_IsDesyncRepairEnable 	= true;
+	// Pre split inventory handshake
+	bool m_IsOldProcessInputDataEnable 	= false;
 
 	//---------------------------------------------------
     // gui stuff
@@ -19,6 +21,7 @@ class PluginInventoryDebug extends PluginBase
 		m_IsOnlyLocalMoveEnable = false;
 		m_IsHandAckEnable = false;
 		m_IsDesyncRepairEnable = true;
+		m_IsOldProcessInputDataEnable = false;
 	}
 
 	bool IsLocalOnlyMoveEnable()
@@ -50,6 +53,16 @@ class PluginInventoryDebug extends PluginBase
 	bool IsDesyncRepairEnable()
 	{
 		return m_IsDesyncRepairEnable;
+	}
+	
+	void SetOldProcessInputDataEnable(bool enable)
+	{
+		m_IsOldProcessInputDataEnable = enable;
+	}
+	
+	bool IsOldProcessInputDataEnable()
+	{
+		return m_IsOldProcessInputDataEnable;
 	}
 }
 #endif

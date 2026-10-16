@@ -64,7 +64,6 @@ class ActionDigGardenPlot: ActionDeployObject
 		vector min_max[2];
 		item_GP.GetCollisionBox(min_max);
 		float offset = min_max[1][1] - min_max[0][1];
-		//Print(offset);
 		vector pos_adjusted = item_GP.GetPosition();
 		pos_adjusted[1] = pos_adjusted[1] + offset;
 		

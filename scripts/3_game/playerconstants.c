@@ -46,7 +46,7 @@ class PlayerConstants
 	
 	static const float SL_WATER_CRITICAL = 0;
 	static const float SL_WATER_LOW = 300;
-	static const float SL_WATER_NORMAL = 800;
+	static const float SL_WATER_NORMAL = 1000;
 	static const float SL_WATER_HIGH = 3500;
 	static const float SL_WATER_MAX = 5000;
 	//----------------------------------------------------------
@@ -194,6 +194,20 @@ class PlayerConstants
 
 	static const float CHANCE_TO_BLEED_SLIDING_LADDER_PER_SEC = 0.3; // probability of bleeding source occuring while sliding down ladder without gloves given as percentage per second(0.5 means 50% chance bleeding source will happen every second while sliding down) 
 	static const float GLOVES_DAMAGE_SLIDING_LADDER_PER_SEC = -3;// how much damage the gloves receive while sliding down the ladder (per sec)
+	static const float CHANCE_TO_BLEED_HAND_CONSTRUCTION = 0.5;// probability of bleeding source occuring while constructing (once)
+	static const float GLOVES_DAMAGE_HAND_CONSTRUCTION = -10;// how much damage the gloves receive while constructing (once)
+	
+	//----------------------------------------------------------
+	//						THERMAL BIAS MODIFIERS/THRESHOLDS
+	//----------------------------------------------------------
+	static const float THERMAL_BIAS_WASH_HEAD_DECREMENT = 0.175;
+	static const float THERMAL_BIAS_WASH_HEAD_TEMPORARY_RESISTANCE_TIME = 30.0;
+	
+	static const float THERMAL_BIAS_POSITIVE_HC_DECREMENT 			= 0.0001;
+	
+	static const float THERMAL_BIAS_POSITIVE_HC_LOW_INCREMENT 		= 0.00022;
+	static const float THERMAL_BIAS_POSITIVE_HC_MEDIUM_INCREMENT 	= 0.00032;
+	static const float THERMAL_BIAS_POSITIVE_HC_HIGH_INCREMENT 		= 0.00050;
 	
 	//----------------------------------------------------------
 	//						BADGE THRESHOLDS
@@ -265,6 +279,9 @@ class PlayerConstants
 	
 	static const float	BLOODY_HANDS_FOOD_POISON_AGENT_INCREMENT = 5;
 	
+	static const float  PARTICLE_STEP_EFFECT_VELOCITY_THRESHOLD = 5.0;
+	
 	//! DEPRECATED
 	static const float	BLOODY_HANDS_SALMONELLA_CHANCE		= 0.05; //! replaced by EntityAI::m_BloodInfectionChanceCached
+	
 }

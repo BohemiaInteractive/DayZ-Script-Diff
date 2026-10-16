@@ -1,33 +1,25 @@
 class EffVehicleSmoke : EffectParticle
 {
-	void EffVehicleSmoke()
+	override void SetParticleState(int state)
 	{
-		SetParticleStateLight();
-	}
-	
-	
-	void SetParticleStateLight()
-	{
-		SetParticleState( ParticleList.HATCHBACK_COOLANT_OVERHEATING );
-	}
-	
-	
-	void SetParticleStateHeavy()
-	{
-		SetParticleState( ParticleList.HATCHBACK_COOLANT_OVERHEATED );
-	}
-	
-	void SetParticleState( int state )
-	{
-		bool was_playing = IsPlaying();
+		bool wasPlaying = IsPlaying();
 	
 		Stop();
-		
 		SetParticleID(state);
 		
-		if (was_playing)
-		{
+		if (wasPlaying)
 			Start(); // resume effect
-		}
+	}
+
+	//! not used directly for cars	
+	void SetParticleStateLight()
+	{
+		SetParticleState(ParticleList.HATCHBACK_COOLANT_OVERHEATING);
+	}
+	
+	//! not used directly for cars
+	void SetParticleStateHeavy()
+	{
+		SetParticleState(ParticleList.HATCHBACK_COOLANT_OVERHEATED);
 	}
 }

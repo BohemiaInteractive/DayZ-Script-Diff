@@ -12,7 +12,8 @@ class ModInfo
 	proto owned string GetVersion();
 	proto bool GetDefault();
 	proto bool GetIsDLC();
-	proto bool GetIsOwned();
+	proto bool GetIsOwned(); // owned & installed (it is possible this returns false even though owned when it is not installed)
+	proto EDLCId GetDLCID();
 	proto void GoToStore();
 	
 	static const string DEFAULT_PICTURE = "Gui/textures/modlogo_default_co.edds";
@@ -21,11 +22,13 @@ class ModInfo
 	static const string DEFAULT_LOGO_OVER = "Gui/textures/modlogo_default_hover_co.edds";
 	static const string DEFAULT_OVERVIEW = "";
 	
+	[Obsolete("1.30: no replacement")]
 	static string GetDLCImage(string name)
 	{
 		string imagePath;
 		switch (name)
 		{
+			case "nasdara":
 			case "badlands":
 			{
 				imagePath = "gui/textures/dlc_panel_badlands.edds";

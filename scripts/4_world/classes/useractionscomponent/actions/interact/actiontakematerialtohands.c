@@ -51,7 +51,6 @@ class ActionTakeMaterialToHands: ActionInteractBase
 			
 			ConstructionActionData construction_action_data = player.GetConstructionActionData();
 			string main_part_name = target_entity.GetActionComponentName( target.GetComponentIndex() );
-			//Print(main_part_name);
 			
 			if ( g_Game.IsMultiplayer() || g_Game.IsServer() )
 			{

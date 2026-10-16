@@ -1,4 +1,4 @@
-
+#ifdef ROBOCLIENT
 class BotEventHuntedTargetInSight : BotEventBase
 {
 	//EntityAI m_Entity;
@@ -246,5 +246,4 @@ Man BotSelectNearestTarget (EntityAI bot)
 	}
 	return null;
 }
-
-
+#endif

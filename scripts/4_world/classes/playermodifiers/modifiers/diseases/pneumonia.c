@@ -34,16 +34,12 @@ class PneumoniaMdfr : ModifierBase
 
 	override protected void OnActivate(PlayerBase player)
 	{
-		player.IncreaseDiseaseCount();
-
 		player.GetStaminaHandler().ActivateRecoveryModifier(EStaminaMultiplierTypes.DISEASE_PNEUMONIA);
 		player.GetStaminaHandler().ActivateDepletionModifier(EStaminaMultiplierTypes.DISEASE_PNEUMONIA);
 	}
 
 	override protected void OnDeactivate(PlayerBase player)
 	{
-		player.DecreaseDiseaseCount();
-
 		player.GetStaminaHandler().DeactivateRecoveryModifier(EStaminaMultiplierTypes.DISEASE_PNEUMONIA);
 		player.GetStaminaHandler().DeactivateDepletionModifier(EStaminaMultiplierTypes.DISEASE_PNEUMONIA);
 

@@ -25,7 +25,7 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 	protected ImageWidget 		m_PrevPageBtnIconConsole;
 	#endif
 
-	protected ref array<JsonDataNewsArticle> m_NewsArticles;
+	protected ref array<ref JsonDataNewsArticle> m_NewsArticles;
 	protected JsonDataNewsArticle m_CurrentArticle;
 	protected ModInfo m_CurrentModInfo;
 	protected int m_ArticleIndex;
@@ -140,24 +140,37 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 		{
 			UpdateCarouselInfo();
 		}
-		
-		m_Root.Show(show);
+		else
+		{
+			m_Root.Show(false);
+		}
+	}
+	
+	bool IsVisible()
+	{
+		return m_Root && m_Root.IsVisible();
+	}
+	
+	int GetArticleCount()
+	{
+		if (!m_NewsArticles)
+			return 0;
+		return m_NewsArticles.Count();
 	}
 	
 	protected void UpdateCarouselInfo()
 	{
 		if (!m_NewsArticles)
-			m_NewsArticles = new array<JsonDataNewsArticle>;
+			m_NewsArticles = new array<ref JsonDataNewsArticle>();
 		else
 			m_NewsArticles.Clear();
 		
 		JsonDataNewsList newsData = MainMenuData.GetNewsData();
 		if (!newsData)
 			return;
-
-		for (int i = 0; i < newsData.News.Count(); i++)
+		
+		foreach(JsonDataNewsArticle article: newsData.News)
 		{
-			JsonDataNewsArticle article = newsData.News[i];
 			if (article)
 			{
 				ModInfo modInfo = MainMenuData.GetDLCModInfoByName(article.dlcName);
@@ -183,6 +196,10 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 		}
 		
 		int articlesCount = m_NewsArticles.Count();		
+		
+		m_ArticleIndex = 0;
+		m_SwitchToNext = true;
+		
 		if (articlesCount < MAX_ARTICLES)
 		{
 			if (articlesCount == 0)
@@ -222,20 +239,26 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 			}
 		}
 		
-		if (!m_NewsSwitchTimer && articlesCount > 1)
+		if (m_NewsSwitchTimer)
+		{
+			m_NewsSwitchTimer.Stop();
+			m_NewsSwitchTimer = null;
+		}
+		
+		m_AnimatedSpacer = null;   // force rebuild with the new column count
+		
+		if (articlesCount > 1)
 		{
 			m_NewsSwitchTimer = new Timer(CALL_CATEGORY_GUI);
 			m_NewsSwitchTimer.Run(ARTICLE_SWITCH_TIME, this, "SwitchNews", null, true);
 		}
 		
-		if (!m_AnimatedSpacer)
-		{
-			int maxColums = (articlesCount - 1);
-			m_AnimatedSpacer = new AnimatedGridSpacer(m_GridSpacer, maxColums, 0.4, AnimatedGridSpacerEasingType.EASE_IN_OUT_QUART);
-			m_AnimatedSpacer.m_OnAnimationComplete.Insert(OnAnimationCompleted);
-		}
+		m_AnimatedSpacer = new AnimatedGridSpacer(m_GridSpacer, articlesCount - 1, 0.4, AnimatedGridSpacerEasingType.EASE_IN_OUT_QUART);
+		m_AnimatedSpacer.m_OnAnimationComplete.Insert(OnAnimationCompleted);
 		
 		ShowPost(0);
+		ShowArrowRight(articlesCount > 1);
+   		ShowArrowLeft(false);
 	}
 	
 	protected void ShowPost(int index)
@@ -243,7 +266,7 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 		m_CurrentArticle = null;
 		m_CurrentModInfo = null;
 		
-		if (index == 0 && m_NewsArticles.Count() == 0 || index > m_NewsArticles.Count() - 1)
+		if (index == 0 && m_NewsArticles.Count() == 0 || index >= m_NewsArticles.Count())
 			return;
 		
 		JsonDataNewsArticle article = m_NewsArticles[index];
@@ -327,6 +350,9 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 	
 	protected void NextArticle()
 	{
+		if (!m_NewsArticles || m_NewsArticles.Count() == 0)
+			return;
+		
 		if (!m_AnimatedSpacer || m_AnimatedSpacer.IsAnimating())
 			return;
 		
@@ -418,6 +444,9 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 
 	void ShowPromotion()
 	{
+		if (!m_NewsArticles || m_ArticleIndex < 0 || m_ArticleIndex >= m_NewsArticles.Count())
+			return;
+		
 		JsonDataNewsArticle article = m_NewsArticles[m_ArticleIndex];
 		if (!article)
 		{
@@ -506,7 +535,8 @@ class NewsCarousel extends ScriptedWidgetEventHandler
 		
 	protected void OnInputDeviceChanged(EInputDeviceType pInputDeviceType)
 	{
-		bool showNext = m_ArticleIndex < m_NewsArticles.Count() - 1;
+		int count = GetArticleCount();
+		bool showNext = m_ArticleIndex < count - 1;
 		bool showPrevious = m_ArticleIndex > 0;
 		
 		if (pInputDeviceType == EInputDeviceType.UNKNOWN && g_Game.GetInput().IsActiveGamepadSelected())

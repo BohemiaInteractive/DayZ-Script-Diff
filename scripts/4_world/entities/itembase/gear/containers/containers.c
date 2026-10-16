@@ -80,3 +80,28 @@ class SmallProtectorCase : Container_Base
 }
 
 class TrashCan : WorldContainer_Base {};
+class NBCPack_ColorBase : Container_Base 
+{
+	override bool CanDisplayAttachmentCargo(EntityAI attachment)
+	{
+		return false;
+	}
+	
+	override bool CanReceiveAttachment(EntityAI attachment, int slotId)
+	{
+		if ( !super.CanReceiveAttachment(attachment, slotId) )
+			return false;
+		
+		GameInventory attachmentInv = attachment.GetInventory();
+		if (attachmentInv && attachmentInv.GetCargo() && attachmentInv.GetCargo().GetItemCount() > 0)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
+};
+class NBCPack_Grey : NBCPack_ColorBase {};
+class NBCPack_White : NBCPack_ColorBase {};
+class NBCPack_Yellow : NBCPack_ColorBase {};

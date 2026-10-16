@@ -7,29 +7,45 @@ class HudDebugWinHealthEntry
 	Widget 		m_EntryRootW;
 	TextWidget	m_EntryZoneW;
 	TextWidget 	m_EntryValueW;
+	Widget m_SpacerLine;
 }
 
 class HudDebugWinHealth : HudDebugWinBase
 {	
 	protected bool 			m_IsInit;
 	protected bool 			m_IsModeSelf = true;
-	protected Widget		m_WgtPanel;
+	protected GridSpacerWidget	 m_WgtPanel;
 	protected ScrollWidget	m_WgtPanelScroll;
 	protected TextWidget 	m_TargetDisplayNameW;
 	protected ButtonWidget 	m_ButtonSelf;
 	protected ButtonWidget	m_ButtonTarget;
+	protected Widget m_WgtHeader;
 	
 	protected EntityAI 					m_TargetEntity;
 	protected PluginDeveloperSync		m_DevSyncPlugin;
 	
 	protected ref array<ref HudDebugWinHealthEntry> m_Entries = {};
+	protected float m_ContenHeight;
 	
 	//============================================
 	void HudDebugWinHealth(Widget widget_root)
 	{	
 		m_WgtRoot 			= widget_root;
-		m_WgtPanel 			= Widget.Cast(m_WgtRoot.FindAnyWidget("HealthPanel") );
+		m_WgtPanel 			= GridSpacerWidget.Cast(m_WgtRoot.FindAnyWidget("HealthPanel") );
 		m_WgtPanelScroll 	= ScrollWidget.Cast(m_WgtRoot.FindAnyWidget("HealthPanelScroll") );
+		m_WgtHeader = m_WgtRoot.FindAnyWidget("header_Health");
+		
+		m_ConfigDebugProfile = PluginConfigDebugProfile.Cast(GetPlugin(PluginConfigDebugProfile));
+		if (m_ConfigDebugProfile)
+		{
+			vector pos = m_ConfigDebugProfile.GetHealthDebugPos();
+			if (m_WgtRoot && pos != vector.Zero)
+			{
+				float wx = pos[0];
+				float wy = pos[1];
+				m_WgtRoot.SetPos(wx, wy);
+			}
+		}
 	}
 
 	void ~HudDebugWinHealth()
@@ -37,32 +53,41 @@ class HudDebugWinHealth : HudDebugWinBase
 		SetUpdate(false);
 	}
 	
-	override void Update()
+	override void Update(float timeslice)
 	{
-		super.Update();
+		super.Update(timeslice);
 		
-		if (!m_IsInit)
-			InitDebug();
-		
-		if (m_DevSyncPlugin.GetIsTargetChanged() || !m_TargetEntity)
+		if (m_IsDragging)
 		{
-			m_DevSyncPlugin.SetTargetChanged(false);
-			CleanupEntries();
-			
-			if (m_IsModeSelf)
-				m_TargetEntity = g_Game.GetPlayer();
-			#ifdef DEVELOPER
-			else 
-				m_TargetEntity = EntityAI.Cast(_item);
-			#endif
-			
-			InitEntityEntries();
+			int x,y;
+			GetMousePos(x,y);
+			m_WgtRoot.SetPos(x + m_DraggingOffset[0], y + m_DraggingOffset[1]);
 		}
-		
-		if (m_TargetEntity)
-			UpdateZones();
-		else 
-			m_TargetDisplayNameW.SetText("No target selected");
+		else
+		{
+			if (!m_IsInit)
+				InitDebug();
+			
+			if (m_DevSyncPlugin.GetIsTargetChanged() || !m_TargetEntity)
+			{
+				m_DevSyncPlugin.SetTargetChanged(false);
+				CleanupEntries();
+				
+				if (m_IsModeSelf)
+				m_TargetEntity = g_Game.GetPlayer();
+				#ifdef DEVELOPER
+				else 
+					m_TargetEntity = EntityAI.Cast(_item);
+				#endif
+				
+				InitEntityEntries();
+			}
+			
+			if (m_TargetEntity)
+				UpdateZones();
+			else 
+				m_TargetDisplayNameW.SetText("No target selected");
+		}
 	}
 	
 	override int GetType()
@@ -130,7 +155,9 @@ class HudDebugWinHealth : HudDebugWinBase
 	
 	//! Called from HudDebug.c
 	bool OnClick( Widget w, int x, int y, int button )
-	{	
+	{
+		SetDragging(false);
+		
 		if (!w)
 			return false;
 		
@@ -232,18 +259,21 @@ class HudDebugWinHealth : HudDebugWinBase
 		{
 			InitEntry(data);
 		}
-
-		AutoHeightSpacer WgtModifiersContent_panel_script;
-		m_WgtPanel.GetScript( WgtModifiersContent_panel_script );
-		WgtModifiersContent_panel_script.Update();
+		
+		m_WgtPanel.Update();
+		
+		float widthS, heightS;
+		m_WgtPanelScroll.GetSize(widthS, heightS);
+		m_WgtPanelScroll.SetSize(widthS, m_ContenHeight);
 		m_WgtPanelScroll.VScrollToPos(0);
 	}
 	
 	void InitEntry(SyncedValue data)
-	{	
+	{
 		HudDebugWinHealthEntry entry = new HudDebugWinHealthEntry();
 		entry.m_EntryRootW = g_Game.GetWorkspace().CreateWidgets( "gui/layouts/debug/day_z_hud_debug_health.layout", m_WgtPanel );
 		entry.m_EntryZoneW = TextWidget.Cast(entry.m_EntryRootW.FindAnyWidget("Name"));
+		entry.m_SpacerLine = entry.m_EntryRootW.FindAnyWidget("SpacerLine");
 		
 		if (data.m_ValueNorm == 1)
 			entry.m_HealthMode = "Shock";
@@ -257,7 +287,8 @@ class HudDebugWinHealth : HudDebugWinBase
 		if (entry.m_IsTitleEntry)	//title entry with disabled buttons
 		{
 			entry.m_EntryZoneW.SetText(entry.m_HealthMode);
-			entry.m_EntryZoneW.SetColor(0xFFABABAB); // grey
+			entry.m_EntryZoneW.SetColor(0xFF00FFFF); // blue
+			entry.m_SpacerLine.Show(true);
 			
 			entry.m_EntryRootW.FindAnyWidget("Value").Show(false);
 			entry.m_EntryRootW.FindAnyWidget("Value").Enable(false);
@@ -276,13 +307,17 @@ class HudDebugWinHealth : HudDebugWinBase
 			entry.m_Zone = data.m_Name;
 			entry.m_EntryValueW = TextWidget.Cast(entry.m_EntryRootW.FindAnyWidget("Value"));
 		}
+		
+		float width, height;
+		entry.m_EntryRootW.GetSize(width, height);
+		m_ContenHeight += height;
 				
 		m_Entries.Insert(entry);
 	}
 
 	void UpdateZones()
 	{
-		if (m_Entries.Count() == 0)
+		if (m_Entries.Count() == 0 || !m_TargetEntity)
 			return;
 		
 		array<ref SyncedValue> healthSynched = m_DevSyncPlugin.GetHealthZonesSynched();
@@ -320,5 +355,38 @@ class HudDebugWinHealth : HudDebugWinBase
 		}
 		
 		m_Entries.Clear();
+		m_ContenHeight = 0;
+	}
+	
+	bool OnMouseButtonDown(Widget w, int x, int y, int button)
+	{
+		if (button == 0 && (w == m_WgtRoot || w == m_WgtHeader))
+		{
+			SetDragging(true);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	bool OnMouseButtonUp(Widget w, int x, int y, int button)
+	{
+		if (button == 0 && m_IsDragging)
+		{
+			SetDragging(false);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	override void OnDraggingEnd()
+	{
+		float wx, wy;
+		m_WgtRoot.GetScreenPos(wx,wy);
+		if (m_ConfigDebugProfile)
+		{
+			m_ConfigDebugProfile.SetHealthDebugPos(Vector(wx,wy,0));
+		}
 	}
 }

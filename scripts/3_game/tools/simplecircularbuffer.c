@@ -50,4 +50,22 @@ class SimpleCircularBuffer<Class T>
 	{
 		return m_Samples;
 	}
+	
+	/**
+	\brief Resize the array and set default value (to new items only)
+		\param pNewSize \p size of the buffer to change to
+		\param pDefaultValue \p initial value stored in buffer
+	*/
+	void Resize(int pNewSize, T pDefaultValue)
+	{
+		m_Samples.Resize(pNewSize);
+
+		if (pNewSize > m_Size)
+		{
+			for (int i = 0; i < pNewSize - m_Size; ++i)
+				m_Samples.Insert(pDefaultValue);
+		}
+		
+		m_Size = pNewSize;
+	}
 }

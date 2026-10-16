@@ -179,3 +179,44 @@ class YieldItemDeadChicken_Brown : YieldItemCapraHircusBase
 		m_Type = "DeadChicken_Brown";
 	}
 }
+
+class YieldItemDeadLizard : LandAnimalYieldItemBase
+{
+	override void Init()
+	{
+		super.Init();
+		
+		m_Type = "DeadLizard";
+		m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_FOREST;
+		m_MethodMask = AnimalCatchingConstants.MASK_METHOD_LANDTRAP_SNARE;
+	}
+	
+	override float GetBaitTypeSensitivity(ECatchingBaitCategories type)
+	{
+		switch (type)
+		{
+			case ECatchingBaitCategories.BAIT_TYPE_EMPTY:
+			case ECatchingBaitCategories.BAIT_TYPE_MUSHROOM:
+			case ECatchingBaitCategories.BAIT_TYPE_MEAT_SMALL:
+			case ECatchingBaitCategories.BAIT_TYPE_MEAT_LARGE:
+				return 1.0;
+		}
+		
+		return 0.0;
+	}
+	
+	override string GetCatchDeathSoundset()
+	{
+		return "Red_Fox_Death_SoundSet";
+	}
+	
+	override string GetCatchAINoise()
+	{
+		return "WolfRoarNoise";
+	}
+	
+	override float GetCatchAINoiseBaseStrength()
+	{
+		return 1.0;
+	}
+}

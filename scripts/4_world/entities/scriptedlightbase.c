@@ -124,31 +124,34 @@ class ScriptedLightBase extends EntityLightSource
 	}
 	
 	//! Attaches this light on the parent entity, with optional position and orientation offset.
-	void AttachOnObject(Object parent, vector local_pos = "0 0 0", vector local_ori = "0 0 0")
+	void AttachOnObject(Object parent, vector local_pos = vector.Zero, vector local_ori = vector.Zero)
+	{
+		AttachOnObjectPivot(parent, -1, local_pos, local_ori);
+	}
+	
+	void AttachOnObjectPivot(Object parent, int pivotIndex, vector localPosition = vector.Zero, vector localOrientation = vector.Zero)
 	{
 		if (!parent)
 		{
 			if (m_Parent)
-			{
 				m_Parent.RemoveChild(this);
-			}
 			
 			return;
 		}
 		else
 		{
 			if (m_Parent)
-			{
 				m_Parent.RemoveChild(this);
-			}
 		}
 		
-		m_Parent = parent;
-		m_LocalPos = local_pos;
-		m_LocalOri = local_ori;
-		SetOrientation(local_ori);
-		SetPosition(local_pos);
-		parent.AddChild(this, -1);
+		m_Parent	= parent;
+		m_LocalPos 	= localPosition;
+		m_LocalOri 	= localOrientation;
+
+		SetOrientation(localOrientation);
+		SetPosition(localPosition);
+
+		parent.AddChild(this, pivotIndex);
 		parent.Update();
 	}
 	

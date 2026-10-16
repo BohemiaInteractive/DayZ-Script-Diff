@@ -411,3 +411,97 @@ class BrisketSpread_Opened: Edible_Base
 		AddAction(ActionEatSmallCan);
 	}
 };
+
+//-------------Halva-----------------------------------------------
+class HalvaCan : Edible_Base
+{
+	override void Open()
+	{
+		ReplaceEdibleWithNew("HalvaCan_Opened");
+	}
+		
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionOpen);
+	}
+	
+	override bool IsOpen()
+	{
+		return false;
+	}
+
+	override float GetQuantityNormalizedScripted()
+	{
+		return 1.0;
+	}
+}
+
+class HalvaCan_Opened: Edible_Base
+{
+	override bool CanDecay()
+	{
+		return true;
+	}
+	
+	override bool CanProcessDecay()
+	{
+		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+	}
+	
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionForceFeedSmall);
+		AddAction(ActionEatSmallCan);
+	}
+};
+
+//-------------Sarma-----------------------------------------------
+class SarmaCan : Edible_Base
+{
+	override void Open()
+	{
+		ReplaceEdibleWithNew("SarmaCan_Opened");
+	}
+		
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionOpen);
+	}
+	
+	override bool IsOpen()
+	{
+		return false;
+	}
+
+	override float GetQuantityNormalizedScripted()
+	{
+		return 1.0;
+	}
+}
+
+class SarmaCan_Opened: Edible_Base
+{
+	override bool CanDecay()
+	{
+		return true;
+	}
+	
+	override bool CanProcessDecay()
+	{
+		return !GetIsFrozen() && !( GetAgents() & eAgents.FOOD_POISON );
+	}
+	
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionForceFeedSmall);
+		AddAction(ActionEatSmallCan);
+	}
+};

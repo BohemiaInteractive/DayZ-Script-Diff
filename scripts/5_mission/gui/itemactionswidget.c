@@ -151,9 +151,10 @@ class ItemActionsWidget extends ScriptedWidgetEventHandler
 			SetWeaponModeAndZeroing("ia_item_subdesc", "ia_item_subdesc_up", "ia_item_subdesc_down", true);
 		}
 		//! transmitter/PAS specific
-		else if (m_EntityInHands && m_EntityInHands.IsTransmitter())
+		else if (m_EntityInHands && m_EntityInHands.IsTransmitter() && !m_EntityInHands.IsKindOf("Megaphone"))
 		{
-			SetRadioFrequency(GetRadioFrequency(), "ia_item_subdesc", "ia_item_subdesc_up", "ia_item_subdesc_down", m_QuantityEnabled);
+			string frequency = GetRadioFrequency();
+			SetRadioFrequency(frequency, "ia_item_subdesc", "ia_item_subdesc_up", "ia_item_subdesc_down", frequency.Length() > 0);
 			GetItemQuantity(quantityType, quantityCurrent, quantityMin, quantityMax);
 			SetItemQuantity(quantityType, quantityCurrent, quantityMin, quantityMax, "ia_item", "ia_item_quantity_pb", "ia_item_quantity_text", true);
 		}

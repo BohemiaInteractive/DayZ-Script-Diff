@@ -53,6 +53,9 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftImprovisedLeatherBag);
 		RegisterRecipe(new CraftImprovisedExplosive);
 		RegisterRecipe(new CraftLeatherSack);
+		RegisterRecipe(new CraftLeatherBelt);
+		RegisterRecipe(new CraftLeatherSheath);
+		RegisterRecipe(new CraftLeatherHippack);
 		RegisterRecipe(new CraftFoxHeaddress);
 		RegisterRecipe(new DeCraftLeatherCourierBag);
 		RegisterRecipe(new DeCraftCourierBag);
@@ -65,9 +68,13 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftSplint); // craft splint
 		RegisterRecipe(new DeCraftSplint);
 		RegisterRecipe(new CraftHandDrillKit);
+		RegisterRecipe(new CraftHandDrillKitBirch);
+		RegisterRecipe(new CraftHandDrillKitPalm);
 		RegisterRecipe(new CraftSpearBone);
 		RegisterRecipe(new CraftSpearStone);
 		RegisterRecipe(new DeCraftHandDrillKit);
+		RegisterRecipe(new DeCraftHandDrillKitBirch);
+		RegisterRecipe(new DeCraftHandDrillKitPalm);
 		RegisterRecipe(new DeCraftSpear);
 		//RegisterRecipe(new PatchItem); //we split this recipe to three for adding specific animations
 		RegisterRecipe(new CutOutZucchiniSeeds);
@@ -76,6 +83,7 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CutOutTomatoSeeds);
 		RegisterRecipe(new PeelPotato);
 		RegisterRecipe(new PrepareCarp);
+		RegisterRecipe(new PrepareCatfish);
 		RegisterRecipe(new PrepareMackerel);
 		RegisterRecipe(new PrepareWalleyePollock);
 		RegisterRecipe(new PrepareSteelheadTrout);
@@ -138,6 +146,7 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new PrepareChicken);
 		RegisterRecipe(new PrepareRabbit);
 		RegisterRecipe(new PrepareFox);
+		RegisterRecipe(new PrepareLizard);
 		RegisterRecipe(new CraftSmallFishTrap);
 		RegisterRecipe(new CraftMetalWire);
 		RegisterRecipe(new CraftGasMask_Filter_Improvised);
@@ -151,9 +160,14 @@ class PluginRecipesManagerBase extends PluginBase
 		RegisterRecipe(new CraftDrysackBag);
 		RegisterRecipe(new OpenScientificBriefcase);
 		RegisterRecipe(new CloseScientificBriefcase);
+		RegisterRecipe(new OpenGunCase);
+		RegisterRecipe(new CloseGunCase);
 		RegisterRecipe(new RepairWithTireKit);
 		RegisterRecipe(new RepairWithSewingKit);
 		RegisterRecipe(new RepairWithLeatherSewingKit);
+		RegisterRecipe(new CraftMortarMix);
+		RegisterRecipe(new CraftWaterskin);
+		RegisterRecipe(new DeCraftWaterskin);
 		
 		//"paint" recipes
 		/*RegisterRecipe(new PaintFirefighterAxe);

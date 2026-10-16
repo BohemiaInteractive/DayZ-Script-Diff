@@ -39,9 +39,11 @@ class ActionToggleNVG : ActionBase
 		super.Start(action_data);
 
 		CachedEquipmentStorageQuery query = new CachedEquipmentStorageQuery();
-		query.m_Category = ECachedEquipmentItemCategory.NVG;
-		query.m_Placement = ECachedEquipmentPlacement.ATTACHMENT;
-		query.m_MaximumDepth = 2;
+
+		query.m_Category 		= ECachedEquipmentItemCategory.NVG;
+		query.m_Placement 		= ECachedEquipmentPlacement.ATTACHMENT;
+		query.m_ParentPlacement	= {InventorySlots.HEADGEAR, InventorySlots.EYEWEAR};
+		query.m_MaximumDepth 	= 2;
 		
 		array<Entity> nvgs = action_data.m_Player.GetCachedEquipment().GetEntitiesByCategory(query);
 		foreach (Entity nvg : nvgs)

@@ -22,6 +22,7 @@ class SawOffMagnum extends RecipeBase
 		//INGREDIENTS
 		//ingredient 1
 		InsertIngredient(0,"Magnum");				// you can insert multiple ingredients this way
+		InsertIngredient(0,"Magnum_Gold");			// you can insert multiple ingredients this way
 
 		m_IngredientAddHealth[0]		= 0;		// 0 = do nothing
 		m_IngredientSetHealth[0]		= -1;		// -1 = do nothing
@@ -62,6 +63,14 @@ class SawOffMagnum extends RecipeBase
 			cylinder.Delete();
 		}
 		
-		MiscGameplayFunctions.TurnItemIntoItemEx(player, new TurnItemIntoItemLambda(ingredients[0], "SawedoffMagnum", player));
+		if (ingredients[0].ClassName() == "Magnum")
+		{
+			MiscGameplayFunctions.TurnItemIntoItemEx(player, new TurnItemIntoItemLambda(ingredients[0], "SawedoffMagnum", player));
+		}
+		else if (ingredients[0].ClassName() == "Magnum_Gold")
+		{
+			MiscGameplayFunctions.TurnItemIntoItemEx(player, new TurnItemIntoItemLambda(ingredients[0], "SawedoffMagnum_Gold", player));
+		}
+		
 	}
 };

@@ -99,6 +99,7 @@ class PluginManager
 		RegisterPluginDebug( "PluginInventoryDebug",					true, 	true );
 #endif
 		RegisterPluginDebug( "PluginInventoryRepair",					true, 	false );
+		RegisterPluginDebug( "PluginUndergroundTriggerManager",			true, 	false );
 		
 		g_Game.GetUpdateQueue(CALL_CATEGORY_GAMEPLAY).Insert(MainOnUpdate);
 	}

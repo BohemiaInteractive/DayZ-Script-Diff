@@ -45,6 +45,7 @@ class JsonUndergroundAreaBreadcrumb
 	bool 				UseRaycast;
 	float 				Radius;
 	bool 				LightLerp;	// only used in LinePointFade
+	string				Comment;
 
 	ref BreadcrumbExternalValueController ExternalValueController;
 }
@@ -67,20 +68,7 @@ class BreadcrumbDoorStateController
 
 class JsonUndergroundAreaTriggerData
 {
-	vector GetPosition()
-	{
-		return Vector(Position[0],Position[1],Position[2]);
-	}
-	
-	vector GetOrientation()
-	{
-		return Vector(Orientation[0],Orientation[1],Orientation[2]);
-	}
-	vector GetSize()
-	{
-		return Vector(Size[0],Size[1],Size[2]);
-	}
-	
+	string Comment;
 	bool CustomSpawn;
 	string Tag;						//! used for ObjectSpawner/Manual(custom) spawn
 	ref TIntArray ParentNetworkId;	//! used on map placed objects
@@ -96,6 +84,19 @@ class JsonUndergroundAreaTriggerData
 	
 	ref array<ref JsonUndergroundAreaBreadcrumb> Breadcrumbs;
 	
+	vector GetPosition()
+	{
+		return Vector(Position[0],Position[1],Position[2]);
+	}
+	
+	vector GetOrientation()
+	{
+		return Vector(Orientation[0],Orientation[1],Orientation[2]);
+	}
+	vector GetSize()
+	{
+		return Vector(Size[0], Size[1], Size[2]);
+	}	
 };
 
 

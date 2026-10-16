@@ -66,8 +66,6 @@ class ActionWorldLiquidActionSwitch: ActionSingleUseBase
 		bool state;
 		state = action_data.m_Player.GetLiquidTendencyDrain();
 		action_data.m_Player.SetLiquidTendencyDrain(!state);
-		
-		//Print(action_data.m_Player.GetLiquidTendencyDrain());
 	}
 	
 	override bool IsLocal()

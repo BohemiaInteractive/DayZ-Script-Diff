@@ -62,3 +62,61 @@ class Mag_M14_20Rnd: MagazineStorage {};
 class Mag_Vikhr_30Rnd: MagazineStorage {};
 class Mag_SV98_10Rnd: MagazineStorage {};
 class Mag_SCARH_20Rnd: MagazineStorage {};
+class Mag_Luger_8Rnd: MagazineStorage {};
+class Mag_LeeEnfield_10Rnd: MagazineStorage {};
+class Mag_MP18_Drum32Rnd : MagazineStorage
+{
+	
+	//! at 1.0 the magazine is at max bullets
+	protected float m_AnimStart = 1.0;
+		 
+	//! at 0.0 the magazine is at 12 bullets and anim stops there as requested by designers
+	protected float m_AnimEnd = 0.0; 
+	
+	protected float m_LastAnimPhase = 0.0;
+	
+	//! the number of bullets at which the animation reaches m_AnimEnd (e.g. animation finishes at 12 bullets)
+	protected float m_AmmoOffset = 12;
+	protected float m_MaxAmmoPercentage = 1.0 /(GetAmmoMax() - m_AmmoOffset);
+	protected string m_AnimationSource = "drum";
+	protected string m_DrumLeverSoundset = "wpn_mp18_drum_mag_SoundSet";
+	
+	override void UpdateAnimation()
+	{
+		int ammoCount = GetAmmoCount();
+		float animPhase = Math.Lerp(m_AnimStart, m_AnimEnd, (ammoCount - m_AmmoOffset) * m_MaxAmmoPercentage);
+		SetAnimationPhase(m_AnimationSource, animPhase);
+		m_LastAnimPhase = animPhase;
+		if(g_Game && !g_Game.IsDedicatedServer())
+		{
+			if(ammoCount >= m_AmmoOffset)
+			{
+				EffectSound sound;
+				PlaySoundSetAtMemoryPoint(sound, m_DrumLeverSoundset, "drum_sound");
+				sound.SetAutodestroy(true);
+			}
+		}
+	}
+	
+	override void OnStoreSave(ParamsWriteContext ctx)
+	{
+		super.OnStoreSave(ctx);
+		ctx.Write(m_LastAnimPhase);
+	}
+	
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
+	{
+		if(!super.OnStoreLoad(ctx, version))
+			return false;
+		
+		if(version >= 144)
+		{
+			if(!ctx.Read(m_LastAnimPhase))
+			{
+				return false;
+			}
+		}
+		SetAnimationPhase(m_AnimationSource, m_LastAnimPhase);
+		return true;
+	}
+};

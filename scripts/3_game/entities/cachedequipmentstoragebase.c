@@ -1,8 +1,9 @@
 class CachedEquipmentStorageQuery
 {
 	int m_MaximumDepth = -1;
-	ECachedEquipmentItemCategory m_Category = ECachedEquipmentItemCategory.NONE;
-	ECachedEquipmentPlacement m_Placement 	= ECachedEquipmentPlacement.ANY;
+	ref TIntArray m_ParentPlacement				= new TIntArray();
+	ECachedEquipmentItemCategory m_Category 	= ECachedEquipmentItemCategory.NONE;
+	ECachedEquipmentPlacement m_Placement 		= ECachedEquipmentPlacement.ANY;
 }
 
 class CachedEquipmentItemAttribute
@@ -10,17 +11,13 @@ class CachedEquipmentItemAttribute
 	int m_SlotIndex = -1;
 	
 	int m_InventoryDepth;
+	int m_ParentInventoryPlacement	= InventorySlots.INVALID;
 
 	Entity m_Entity;
 	Entity m_Parent;
 
 	ECachedEquipmentPlacement m_InventoryPlacement = ECachedEquipmentPlacement.ATTACHMENT;
-	
-	bool HasParent()
-	{
-		return m_Parent != null;
-	}
-	
+
 	int InventoryDepth()
 	{
 		return m_InventoryDepth;
@@ -30,19 +27,21 @@ class CachedEquipmentItemAttribute
 	{
 		if (m_SlotIndex >= 0)
 		{
-			return string.Format("entity:%1(%2 - %3), parent:%4, inventoryDepth:%5",
+			return string.Format("entity:%1(%2 - %3), parent:%4(%5), inventoryDepth:%6",
 				m_Entity,
 				EnumTools.EnumToString(ECachedEquipmentPlacement, m_InventoryPlacement),
 				InventorySlots.GetSlotName(m_SlotIndex),
 				m_Parent,
+				EnumTools.EnumToString(InventorySlots, m_ParentInventoryPlacement),
 				m_InventoryDepth,
 			);
 		}
 		
-		return string.Format("entity:%1(%2), parent:%3 , inventoryDepth:%4",
+		return string.Format("entity:%1(%2), parent:%3(%4) , inventoryDepth:%5",
 			m_Entity,
 			EnumTools.EnumToString(ECachedEquipmentPlacement, m_InventoryPlacement),
 			m_Parent,
+			EnumTools.EnumToString(InventorySlots, m_ParentInventoryPlacement),
 			m_InventoryDepth,
 		);
 	}
@@ -69,22 +68,39 @@ class CachedEquipmentStorageBase
 	 */
 	array<Entity> GetEntitiesByCategory(CachedEquipmentStorageQuery query)
 	{
-		array<Entity> entities = new array<Entity>();
-		if (m_ItemsCacheByCategory[query.m_Category])
+		TIntArray categoriesAll = m_ItemsCacheByCategory.GetKeyArray();
+		TIntArray matchedCategories = new TIntArray();
+		
+		foreach (int category: categoriesAll)
 		{
-			foreach (CachedEquipmentItemAttribute itemAttributes : m_ItemsCacheByCategory[query.m_Category])
-			{
-				bool placementMatched = false;
-				bool inventoryDepthMatched = false;
+			if (category & query.m_Category)
+				matchedCategories.Insert(category);
+		}
 
-				if (itemAttributes.m_InventoryPlacement == query.m_Placement || query.m_Placement == ECachedEquipmentPlacement.ANY)
-					placementMatched = true;
-				
-				if (itemAttributes.m_InventoryDepth <= query.m_MaximumDepth || query.m_MaximumDepth == -1)
-					inventoryDepthMatched = true;
-				
-				if (placementMatched && inventoryDepthMatched)
-					entities.Insert(itemAttributes.m_Entity);
+		array<Entity> entities = new array<Entity>();
+
+		if (matchedCategories.Count() > 0)
+		{
+			foreach (int matchedCategory : matchedCategories)
+			{
+				foreach (CachedEquipmentItemAttribute itemAttributes : m_ItemsCacheByCategory[matchedCategory])
+				{
+					bool placementMatched 		= false;
+					bool parentPlacementMatched = false;
+					bool inventoryDepthMatched 	= false;
+	
+					if (itemAttributes.m_InventoryPlacement == query.m_Placement || query.m_Placement == ECachedEquipmentPlacement.ANY)
+						placementMatched = true;
+					
+					if (query.m_ParentPlacement.Count() == 0 || query.m_ParentPlacement.Find(itemAttributes.m_ParentInventoryPlacement) > INDEX_NOT_FOUND)
+						parentPlacementMatched = true;
+					
+					if (itemAttributes.m_InventoryDepth <= query.m_MaximumDepth || query.m_MaximumDepth == -1)
+						inventoryDepthMatched = true;
+					
+					if (placementMatched && parentPlacementMatched && inventoryDepthMatched)
+						entities.Insert(itemAttributes.m_Entity);
+				}
 			}
 		}
 
@@ -99,15 +115,11 @@ class CachedEquipmentStorageBase
 	 */
 	array<Entity> GetEntitiesByCategory(ECachedEquipmentItemCategory category, ECachedEquipmentPlacement placement = ECachedEquipmentPlacement.ANY)
 	{
-		array<Entity> entities = new array<Entity>();
-		if (m_ItemsCacheByCategory[category])
-		{
-			foreach (CachedEquipmentItemAttribute itemAttributes : m_ItemsCacheByCategory[category])
-			{
-				if (itemAttributes.m_InventoryPlacement == placement || placement == ECachedEquipmentPlacement.ANY)
-					entities.Insert(itemAttributes.m_Entity);
-			}
-		}
+		CachedEquipmentStorageQuery query = new CachedEquipmentStorageQuery();
+		query.m_Category = category;
+		query.m_Placement = placement;
+		query.m_MaximumDepth = 2;
+		array<Entity> entities = GetEntitiesByCategory(query);
 
 		return entities;
 	}
@@ -159,6 +171,40 @@ class CachedEquipmentStorageBase
 	
 	// --------------------------------------------------------------------------------
 	
+	void UpdateParents()
+	{
+		array<ECachedEquipmentItemCategory> categories = m_ItemsCacheByCategory.GetKeyArray();
+		if (!categories)
+		    return;
+		
+		InventoryLocation parentInventoryLocation = new InventoryLocation();
+		
+		foreach (ECachedEquipmentItemCategory category : categories)
+		{
+		    if (!m_ItemsCacheByCategory[category])
+		        continue;
+		        
+		    foreach (int index, CachedEquipmentItemAttribute itemAttributes : m_ItemsCacheByCategory[category])
+		    {
+		        if (!itemAttributes || !itemAttributes.m_Parent)
+		            continue;
+		        
+		        EntityAI parent;
+		        if (!Class.CastTo(parent, itemAttributes.m_Parent))
+		            continue;
+		            
+		        GameInventory parentInventory = parent.GetInventory();
+		        if (!parentInventory)
+		            continue;
+		        
+		        parentInventory.GetCurrentInventoryLocation(parentInventoryLocation);
+		        itemAttributes.m_ParentInventoryPlacement = parentInventoryLocation.GetSlot();
+		    }
+		}
+	}
+	
+	// --------------------------------------------------------------------------------
+	
 	#ifdef DIAG_DEVELOPER
 	void PrintCachedEntitiesByCategory(ECachedEquipmentItemCategory category)
 	{
@@ -181,7 +227,7 @@ class CachedEquipmentStorageBase
 		array<ECachedEquipmentItemCategory> categories = m_ItemsCacheByCategory.GetKeyArray();
 		foreach (ECachedEquipmentItemCategory category : categories)
 		{
-			Print(string.Format("[%1]", EnumTools.EnumToString(ECachedEquipmentItemCategory, category)));
+			Print(string.Format("[%1]", EnumTools.EnumFlagsToString(ECachedEquipmentItemCategory, category)));
 			PrintCachedEntitiesByCategory(category);
 		}
 		Print("--------------------------");

@@ -587,9 +587,9 @@ class ServerBrowserFilterContainer extends ScriptedWidgetEventHandler
 		if (m_ThirdPersonFilter.IsSet())
 		{
 			// modeId is used to specify whether third person is allowed on CONSOLE servers
-			// ALLOW third person: modeId = 0
-			// BLOCK third person: modeId = 1
-			input.SetModeIdFilter(!m_ThirdPersonFilter.IsEnabled());	
+			// BLOCK third person: modeId = 0
+			// ALLOW third person: modeId = 1
+			input.SetModeIdFilter(m_ThirdPersonFilter.IsEnabled());	
 		}
 
 		if (m_PasswordFilter.IsSet())

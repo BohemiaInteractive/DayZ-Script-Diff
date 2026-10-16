@@ -1,5 +1,7 @@
 class Battery9V : ItemBase
 {
+	static int SLOT_ID = InventorySlots.GetSlotIdFromString("BatteryD");
+
 	private int				m_Efficiency0To10; // Synchronized variable
 	static private float 	m_EfficiencyDecayStart = 0.1; // At this % of maximum energy the output of the battery starts to weaken.
 	
@@ -64,5 +66,6 @@ class Battery9V : ItemBase
 		super.SetActions();
 		
 		AddAction(ActionMeasureBattery);
+		AddAction(ActionAttachOnProxy);
 	}
 }

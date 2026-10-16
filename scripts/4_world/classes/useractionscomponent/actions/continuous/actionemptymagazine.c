@@ -82,7 +82,7 @@ class ActionEmptyMagazine: ActionContinuousBase
 		float dmg;
 		string ammoType;
 		
-		if (!mag.ServerAcquireCartridge(dmg,ammoType))
+		if (!mag.ServerAcquireCartridgeEx(dmg,ammoType))
 			return;
 					
 		mag.ApplyManipulationDamage();
@@ -92,14 +92,14 @@ class ActionEmptyMagazine: ActionContinuousBase
 					
 		if (!DayZPlayerUtils.HandleStoreCartridge(action_data.m_Player, NULL, -1, dmg, ammoType, magazineTypeName, false))
 		{
-			array< Magazine > piles;
-			vector posHead;
-			MiscGameplayFunctions.GetHeadBonePos(action_data.m_Player,posHead);
-			vector posTarget = action_data.m_Player.GetPosition() + (action_data.m_Player.GetDirection() * DEFAULT_SPAWN_DISTANCE);
+			array<Magazine> piles;
+			vector playerPosition = action_data.m_Player.GetPosition();
+			vector posHead = MiscGameplayFunctions.GetPlayerHeadPosition(action_data.m_Player);
+			vector posTarget = playerPosition + (action_data.m_Player.GetDirection() * DEFAULT_SPAWN_DISTANCE);
 			
 			if (!emActionData.m_magazinePile)
 			{
-				piles = MiscGameplayFunctions.CreateMagazinePilesDispersed(magazineTypeName,posHead,posTarget,UAItemsSpreadRadius.NARROW,1,dmg,action_data.m_Player);
+				piles = MiscGameplayFunctions.CreateMagazinePilesDispersed(magazineTypeName, posHead, posTarget, UAItemsSpreadRadius.NARROW, 1, dmg, action_data.m_Player);
 				if (piles.Count() > 0)
 					emActionData.m_magazinePile = piles[0];
 			}
@@ -107,11 +107,11 @@ class ActionEmptyMagazine: ActionContinuousBase
 			{				
 				if (emActionData.m_magazinePile.GetAmmoMax() > emActionData.m_magazinePile.GetAmmoCount() && emActionData.m_magazinePile.GetType() == magazineTypeName && (vector.DistanceSq(action_data.m_Player.GetPosition(), emActionData.m_magazinePile.GetPosition()) < (UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT)))
 				{
-					emActionData.m_magazinePile.ServerStoreCartridge(dmg,ammoType);
+					emActionData.m_magazinePile.ServerStoreCartridgeEx(dmg,ammoType);
 				}
 				else
 				{
-					piles = MiscGameplayFunctions.CreateMagazinePilesFromBulletDispersed(ammoType,posHead,posTarget,UAItemsSpreadRadius.VERY_NARROW,1,dmg,action_data.m_Player);
+					piles = MiscGameplayFunctions.CreateMagazinePilesFromBulletDispersed(ammoType, posHead, posTarget, UAItemsSpreadRadius.VERY_NARROW, 1, dmg, action_data.m_Player);
 					if (piles.Count() > 0)
 						emActionData.m_magazinePile = piles[0];
 				}	

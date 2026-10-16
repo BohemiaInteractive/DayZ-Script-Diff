@@ -645,7 +645,7 @@ class TrapSpawnBase extends ItemBase
 		NoiseParams m_NoisePar = new NoiseParams();
 		m_NoisePar.Load(noiseType);
 		float noiseMultiplier = yItem.GetCatchAINoiseBaseStrength();
-		noiseMultiplier *= NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather());
+		// weather dampening is now done engine-side
 		g_Game.GetNoiseSystem().AddNoiseTarget(m_PreyPos, 5, m_NoisePar, noiseMultiplier);
 	}
 	

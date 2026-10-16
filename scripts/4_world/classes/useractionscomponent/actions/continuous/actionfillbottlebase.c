@@ -1,3 +1,5 @@
+//! DEPRECATED
+[Obsolete("1.30: replaced by ActionObtainLiquidBaseCB")]
 class ActionFillBottleBaseCB : ActionContinuousBaseCB
 {
 	private int m_liquid_type;
@@ -23,10 +25,10 @@ class ActionFillBottleBaseCB : ActionContinuousBaseCB
 	}
 };
 
+[Obsolete("1.30: replaced by class ActionObtainLiquidBase")]
 class ActionFillBottleBase: ActionContinuousBase
 {
 	private const float WATER_DEPTH = 0.5;
-	private const string ALLOWED_WATER_SURFACES = string.Format("%1|%2|%3", UAWaterType.FRESH, UAWaterType.STILL, UAWaterType.SNOW);
 	protected int m_AllowedLiquidMask;
 	
 	void ActionFillBottleBase()
@@ -53,12 +55,17 @@ class ActionFillBottleBase: ActionContinuousBase
 		Object targetObject = target.GetObject();
 		if (targetObject)
 		{
-			if (vector.DistanceSq(player.GetPosition(), targetObject.GetPosition()) > UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT)
+			if (vector.DistanceSq(player.GetPosition(), target.GetCursorHitPos()) > UAMaxDistances.DEFAULT * UAMaxDistances.DEFAULT)
+				return false;
+			
+			TIntArray componentIndices = new TIntArray();
+			targetObject.GetActionComponentsForSelectionName(targetObject.GetViewGeometryLevel(), UAMisc.LIQUID_SOURCE_SELECTION, componentIndices);
+			if (componentIndices.Count() > 0 && componentIndices.Find(target.GetComponentIndex()) == -1)
 				return false;
 		}
 		else
 		{
-			CCTWaterSurfaceEx waterCheck = new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, m_AllowedLiquidMask);
+			CCTLiquid waterCheck = new CCTLiquid(m_AllowedLiquidMask, UAMaxDistances.DEFAULT, UAMaxDistances.DEFAULT);
 			if (!waterCheck.Can(player, target))
 				return false;
 		}
@@ -149,4 +156,5 @@ class ActionFillBottleBase: ActionContinuousBase
 	
 	// deprecated
 	private const int ALLOWED_LIQUID;
+	private const string ALLOWED_WATER_SURFACES = string.Format("%1|%2|%3", UAWaterType.FRESH, UAWaterType.STILL, UAWaterType.SNOW);
 }

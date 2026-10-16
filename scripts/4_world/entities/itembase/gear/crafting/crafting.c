@@ -10,6 +10,8 @@ class BurlapSack: Inventory_Base
 };
 class GorkaHelmetVisor: Inventory_Base
 {
+	static int SLOT_ID = InventorySlots.GetSlotIdFromString("Glass");
+
 	override protected void InitGlobalExclusionValues()
 	{
 		super.InitGlobalExclusionValues();
@@ -64,6 +66,7 @@ class Rope: Inventory_Base
 		AddAction(ActionRestrainTarget);
 		AddAction(ActionCraftRopeBelt);
 		AddAction(ActionRestrainSelf);
+		AddAction(ActionAttachToConstruction);
 	}
 	
 	InventoryLocation GetTargetLocation()

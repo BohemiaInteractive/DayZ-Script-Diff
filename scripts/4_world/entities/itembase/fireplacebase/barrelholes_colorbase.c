@@ -539,11 +539,6 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		return "barrel_close_SoundSet";
 	}
 	
-	override string GetDeploySoundset()
-	{
-		return "placeBarrel_SoundSet";
-	}
-	
 	override void InitItemSounds()
 	{
 		super.InitItemSounds();
@@ -566,6 +561,22 @@ class BarrelHoles_ColorBase extends FireplaceBase
 		AddAction(ActionCloseBarrelHoles);
 		AddAction(ActionPlaceObject);
 		AddAction(ActionTogglePlaceObject);
+	}
+	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer())
+			 return;
+		
+		DestroyAreaDamage();
+		StopFire(FireplaceFireState.NO_FIRE);
+		
+		if (HasAnyAttachmentsOrCargo())
+		{	
+			MiscGameplayFunctions.ThrowAllItemsInInventory(this, 0);
+		}
+		
+		CheckForDestroy();
 	}
 	
 	override void OnDebugSpawn()

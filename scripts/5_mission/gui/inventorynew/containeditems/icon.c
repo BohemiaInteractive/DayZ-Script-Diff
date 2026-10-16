@@ -140,12 +140,6 @@ class Icon: LayoutHolder
 		#endif
 	}
 	
-	int GetRelevantInventoryAction(int relevantActions)
-	{
-		return 0;
-	
-	}
-
 	void RefreshQuickbar()
 	{
 		InventoryMenu menu = InventoryMenu.Cast(g_Game.GetUIManager().FindMenu(MENU_INVENTORY));
@@ -292,18 +286,20 @@ class Icon: LayoutHolder
 		
 		InventoryLocation il = new InventoryLocation();
 		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
-		int index = player.GetHumanInventory().FindUserReservedLocationIndex(m_Item);
-		
-		if (index >= 0)
-		{	
-			player.GetHumanInventory().GetUserReservedLocation(index, il);
-			
-			if (GameInventory.CanForceSwapEntitiesEx(selectedEntity, null, targetEntity, il))
+		if (selectedEntity.GetHierarchyRootPlayer() == player)
+		{
+			int index = player.GetHumanInventory().FindUserReservedLocationIndex(m_Item);
+			if (index >= 0)
 			{
-				ColorManager.GetInstance().SetColor(w, ColorManager.FSWAP_COLOR);
-				ItemManager.GetInstance().HideDropzones();
-				ItemManager.GetInstance().ShowSourceDropzone(il.GetParent());
-				return;
+				player.GetHumanInventory().GetUserReservedLocation(index, il);
+				
+				if (GameInventory.CanForceSwapEntitiesEx(selectedEntity, null, targetEntity, il))
+				{
+					ColorManager.GetInstance().SetColor(w, ColorManager.FSWAP_COLOR);
+					ItemManager.GetInstance().HideDropzones();
+					ItemManager.GetInstance().ShowSourceDropzone(il.GetParent());
+					return;
+				}
 			}
 		}
 		static int testedFlags = InventoryCombinationFlags.SWAP | InventoryCombinationFlags.FSWAP;
@@ -1011,17 +1007,20 @@ class Icon: LayoutHolder
 		targetEntity.GetInventory().GetCurrentInventoryLocation(ilSrc);
 		Icon icon = ItemManager.GetInstance().GetDraggedIcon();
 		
-		int index = player.GetHumanInventory().FindUserReservedLocationIndex(targetEntity);
-		if (index>=0)
+		if (selectedEntity.GetHierarchyRootPlayer() == player)
 		{
-			player.GetHumanInventory().GetUserReservedLocation(index, ilDst);
-
-			if (GameInventory.CanForceSwapEntitiesEx( selectedEntity, ilSrc, targetEntity, ilDst ))
+			int index = player.GetHumanInventory().FindUserReservedLocationIndex(targetEntity);
+			if (index>=0)
 			{
-				if (m_HandsIcon && !player.GetInventory().HasInventoryReservation(itemInHands, null) && !player.IsItemsToDelete())
+				player.GetHumanInventory().GetUserReservedLocation(index, ilDst);
+	
+				if (GameInventory.CanForceSwapEntitiesEx( selectedEntity, ilSrc, targetEntity, ilDst ))
 				{
-					g_Game.GetPlayer().PredictiveForceSwapEntities(selectedEntity, targetEntity, ilDst);
-					return;
+					if (m_HandsIcon && !player.GetInventory().HasInventoryReservation(itemInHands, null) && !player.IsItemsToDelete())
+					{
+						g_Game.GetPlayer().PredictiveForceSwapEntities(selectedEntity, targetEntity, ilDst);
+						return;
+					}
 				}
 			}
 		}
@@ -1765,6 +1764,16 @@ class Icon: LayoutHolder
 			if (m_HasQuantity)
 				SetQuantity();
 		}
+	}
+	
+	////////////////////////
+	//Deprecated code club//
+	////////////////////////
+	
+	[Obsolete("no replacement")]
+	int GetRelevantInventoryAction(int relevantActions)
+	{
+		return 0;
 	}
 }
 

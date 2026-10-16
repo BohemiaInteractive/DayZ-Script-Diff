@@ -121,6 +121,8 @@ class YieldItemBitterlings : FishYieldItemBase
 	}
 }
 
+
+
 //---------//
 //cool fish//
 //---------//
@@ -163,5 +165,37 @@ class YieldItemShrimp : FishYieldItemBase
 		m_Type = "Shrimp";
 		m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_SEA;
 		m_MethodMask = AnimalCatchingConstants.MASK_METHOD_FISHTRAP_SMALL;
+	}
+}
+
+//---------//
+//arid fish//
+//---------//
+
+class YieldItemRoundGoby : FishYieldItemBase
+{
+	override void Init()
+	{
+		super.Init();
+		
+		//m_HourlyCycleLengthCoefs = {1,1,1,1,1,1,1,1,1,1,1,1,1/*12h*/,1,1,1,1,1,1,1,1,1,1,1};
+		//m_QualityBase = some custom value here;
+		m_Type = "RoundGoby";
+		m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_POND;
+		m_MethodMask = AnimalCatchingConstants.MASK_METHOD_FISHTRAP_SMALL;
+	}
+}
+
+class YieldItemCatfish : FishYieldItemBase
+{
+	override void Init()
+	{
+		super.Init();
+		
+		//m_HourlyCycleLengthCoefs = {1,1,1,1,1,1,1,1,1,1,1,1,1/*12h*/,1,1,1,1,1,1,1,1,1,1,1};
+		//m_QualityBase = some custom value here;
+		m_Type = "Catfish";
+		m_EnviroMask = AnimalCatchingConstants.MASK_ENVIRO_POND;
+		m_MethodMask = AnimalCatchingConstants.MASK_METHOD_ROD|AnimalCatchingConstants.MASK_METHOD_FISHTRAP_LARGE;
 	}
 }

@@ -183,7 +183,7 @@ class SmokeGrenadeBase extends Grenade_Base
 			NoiseSystem noise = g_Game.GetNoiseSystem();
 			if ( noise )
 			{
-				noise.AddNoisePos( this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()) );
+				noise.AddNoisePos( this, GetPosition(), m_NoisePar );
 			}
 		}
 
@@ -199,7 +199,7 @@ class SmokeGrenadeBase extends Grenade_Base
 			NoiseSystem noise = g_Game.GetNoiseSystem();
 			if ( noise )
 			{
-				noise.AddNoisePos( this, GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
+				noise.AddNoisePos( this, GetPosition(), m_NoisePar);
 			}
 		}
 	}

@@ -91,7 +91,7 @@ class ActionUnfoldMapCB : ActionBaseCB
 			if (m_ActionData && m_ActionData.m_ActionComponent)
 				m_ActionData.m_State = m_ActionData.m_ActionComponent.Interrupt(m_ActionData);
 			
-			if ((!g_Game.IsDedicatedServer()) && g_Game.GetUIManager() && g_Game.GetUIManager().IsMenuOpen(MENU_MAP))
+			if ((!g_Game.IsHeadlessOrDedicatedServer()) && g_Game.GetUIManager() && g_Game.GetUIManager().IsMenuOpen(MENU_MAP))
 			{
 				g_Game.GetUIManager().FindMenu(MENU_MAP).Close();
 			}
@@ -128,7 +128,7 @@ class ActionUnfoldMapCB : ActionBaseCB
 				
 				chernomap.SetMapStateOpen(true, m_ActionData.m_Player);
 	
-				if (!g_Game.IsDedicatedServer())
+				if (!g_Game.IsHeadlessOrDedicatedServer())
 				{
 					Mission mission = g_Game.GetMission();
 					UIManager 	m_UIManager;

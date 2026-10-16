@@ -153,6 +153,7 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_CREATE_HIT, "lalt+5", "Create Hit Heavy", DiagMenuIDs.CHEATS_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_CREATE_HIT_LIGHT, "lalt+6", "Create Hit Light", DiagMenuIDs.CHEATS_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_CLIENT_DESYNC_INVENTORY, "", "Client desync inventory - local move", DiagMenuIDs.CHEATS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.CHEATS_OLD_PROCESSINPUTDATA, "", "Old ProcessInputData", DiagMenuIDs.CHEATS_MENU);
 			}
 			
 			//---------------------------------------------------------------
@@ -191,7 +192,19 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.LIFESPAN_BLOODY_HANDS, "", "Bloody hands", DiagMenuIDs.LIFESPAN_MENU);
 				DiagMenu.RegisterRange(DiagMenuIDs.LIFESPAN_PLAYTIME_UPDATE, "", "Playtime in minutes", DiagMenuIDs.LIFESPAN_MENU, "0, 600, 0, 10");
 			}
-			
+
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.TRANSPORT_MENU, "Transport", DiagMenuIDs.SCRIPTS_MENU);
+			{
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Lifespan
+				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.TRANSPORT_FREESPACE_DISABLED, "", "Get-Out Freespace Disabled", DiagMenuIDs.TRANSPORT_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.TRANSPORT_FREESPACE_VIS, "", "Get-Out Freespace Vis.", DiagMenuIDs.TRANSPORT_MENU);
+			}
+
 			//---------------------------------------------------------------
 			// LEVEL 1 - Script
 			//---------------------------------------------------------------
@@ -221,8 +234,6 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PERMANENT_CROSSHAIR, "", "Enable permanent crosshair", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_TELEPORT_BREAKS_SYNC, "", "Teleport Breaks Sync", DiagMenuIDs.MISC_MENU);
-				DiagMenu.RegisterBool(DiagMenuIDs.MISC_VEHICLE_GETOUT_BOX, "", "Debug transport freespace", DiagMenuIDs.MISC_MENU);
-				DiagMenu.RegisterBool(DiagMenuIDs.MISC_VEHICLE_GETOUT_RAYCAST, "", "Debug transport get out raycast", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.MISC_TOGGLE_HUD, "", "Toggle HUD on/off", DiagMenuIDs.MISC_MENU);
 				DiagMenu.RegisterMenu(DiagMenuIDs.MISC_ENVIRONMENT_MENU, "Environment", DiagMenuIDs.MISC_MENU);
 				{
@@ -299,6 +310,48 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterRange(DiagMenuIDs.MISC_FORCE_HINT_INDEX, "", "Force Hint Index", DiagMenuIDs.MISC_MENU, "-1, 512, -1, 1");
 				if (UiHintPanel.m_ForcedIndex != -1)
 					DiagMenu.SetRangeValue(DiagMenuIDs.MISC_FORCE_HINT_INDEX,UiHintPanel.m_ForcedIndex);
+				DiagMenu.RegisterBool(DiagMenuIDs.MISC_PLAYER_SURFACE_DEBUG, "", "Step surface debug", DiagMenuIDs.MISC_MENU);
+				DiagMenu.RegisterMenu(DiagMenuIDs.MISC_DUST_EFFECTS, "Dust Effects", DiagMenuIDs.MISC_MENU);
+				{
+					DustEffectManager DEManager = DustEffectManager.GetDustEffectManager();
+					//---------------------------------------------------------------
+					// LEVEL 3 - Script > Misc > Dust Effects
+					//---------------------------------------------------------------
+					DiagMenu.RegisterBool(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_ENABLE, "", "Ground effect enable", DiagMenuIDs.MISC_DUST_EFFECTS);
+						DiagMenu.SetValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_ENABLE, DEManager.IsGroundEffectEnable());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_THRESHOLD, "", "GE Min wind strength", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 20, 0, 1");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_THRESHOLD, DEManager.GetGroundEffectThreshold());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_INTESITY, "", "GE Frequency", DiagMenuIDs.MISC_DUST_EFFECTS, "1, 100, 1, 1");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_INTESITY, DEManager.GetGroundEffectIntensity());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_RADIUS, "", "GE Distance (m)", DiagMenuIDs.MISC_DUST_EFFECTS, "10, 100, 10, 10");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_RADIUS, DEManager.GetGroundEffectRadius());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_WINDWEIGHT, "", "GE Wind strenght to frequency", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 1, 0, 0.1");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_WINDWEIGHT, DEManager.GetGroundEffectWindWeight());
+					DiagMenu.RegisterBool(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_GETFROMSURFACE, "", "GE Effect from surface", DiagMenuIDs.MISC_DUST_EFFECTS);
+						DiagMenu.SetValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_GETFROMSURFACE, DEManager.IsGroundEffectReadFromSurfaceEnable());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MIN, "", "GE Lifetime min", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 30, 0, 0.5");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MIN, DEManager.GetGroundEffectLifetimeMin());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MAX, "", "GE Lifetime max", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 30, 0, 0.5");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MAX, DEManager.GetGroundEffectLifetimeMax());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MIN, "", "GE Size min", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 50, 0, 0.5");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MIN, DEManager.GetGroundEffectSizeMin());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MAX, "", "GE Size max", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 50, 0, 0.5");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MAX, DEManager.GetGroundEffectSizeMax());
+					
+					
+					DiagMenu.RegisterBool(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_ENABLE, "", "Cloud effect enable", DiagMenuIDs.MISC_DUST_EFFECTS);
+						DiagMenu.SetValue(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_ENABLE, DEManager.IsCloudEffectEnable());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_THRESHOLD, "", "CE Min wind strength", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 20, 0, 1");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_THRESHOLD, DEManager.GetCloudEffectThreshold());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_COOLDOWN, "", "CE Cooldown (s)", DiagMenuIDs.MISC_DUST_EFFECTS, "0, 20, 0, 1");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_COOLDOWN, DEManager.GetCloudEffectCooldownMin());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_DURATION, "", "CE Duration (s)", DiagMenuIDs.MISC_DUST_EFFECTS, "1, 10, 1, 1");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_DURATION, DEManager.GetCloudEffectDurationMin());
+					DiagMenu.RegisterRange(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_DISTANCE, "", "CE Distance(m)", DiagMenuIDs.MISC_DUST_EFFECTS, "4, 40, 4, 4");
+						DiagMenu.SetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_DISTANCE, DEManager.GetCloudEffectDistance());
+					DiagMenu.RegisterBool(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_GETFROMSURFACE, "", "CE Effect from surface", DiagMenuIDs.MISC_DUST_EFFECTS);
+						DiagMenu.SetValue(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_GETFROMSURFACE, DEManager.IsCloudEffectReadFromSurfaceEnable());
+				}
 			}
 			
 			//---------------------------------------------------------------
@@ -344,6 +397,7 @@ class PluginDiagMenu : PluginBase
 				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_PARTICLES, "", "Enable gun particles", DiagMenuIDs.WEAPON_MENU);
 					DiagMenu.SetValue(DiagMenuIDs.WEAPON_PARTICLES, true);
 				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_DEBUG, "", "Show Debug", DiagMenuIDs.WEAPON_MENU); // Doesn't do anything anymore currently
+					DiagMenu.SetValue(DiagMenuIDs.WEAPON_DEBUG, false);
 				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_AIM_NOISE, "", "Weapon Sway", DiagMenuIDs.WEAPON_MENU);
 					DiagMenu.SetValue(DiagMenuIDs.WEAPON_AIM_NOISE, true);
 				DiagMenu.RegisterBool(DiagMenuIDs.WEAPON_RECOIL, "", "Procedural Recoil", DiagMenuIDs.WEAPON_MENU);
@@ -461,6 +515,10 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				DiagMenu.RegisterBool(DiagMenuIDs.BASEBUILDING_WOOD, "", "Spawn uses wood/metal", DiagMenuIDs.BASEBUILDING_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.BASEBUILDING_GATE, "", "Spawn Fence makes gate", DiagMenuIDs.BASEBUILDING_MENU);
+				DiagMenu.RegisterItem(DiagMenuIDs.BASEBUILDING_FASTBUILD, "lalt+b", "Fast&Free building", DiagMenuIDs.BASEBUILDING_MENU, "Disabled,Fast,Instant");
+					DiagMenu.SetValue(DiagMenuIDs.BASEBUILDING_FASTBUILD, EConstructionDebugModes.DISABLED);
+				DiagMenu.RegisterBool(DiagMenuIDs.BASEBUILDING_COLLISIONDEBUG, "", "Collision debug", DiagMenuIDs.BASEBUILDING_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.BASEBUILDING_FULLDEBUG, "lalt+h", "Full debug", DiagMenuIDs.BASEBUILDING_MENU);
 			}
 			
 			//---------------------------------------------------------------
@@ -471,9 +529,6 @@ class PluginDiagMenu : PluginBase
 				//---------------------------------------------------------------
 				// LEVEL 2 - Script > Underground Areas
 				//---------------------------------------------------------------
-				#ifdef DEVELOPER
-				DiagMenu.RegisterBool(DiagMenuIDs.UNDERGROUND_DEBUG, "", "Enable debug", DiagMenuIDs.UNDERGROUND_MENU);
-				#endif
 				DiagMenu.RegisterBool(DiagMenuIDs.UNDERGROUND_SHOW_BREADCRUMB, "", "Show Breadcrumbs", DiagMenuIDs.UNDERGROUND_MENU);
 				DiagMenu.RegisterBool(DiagMenuIDs.UNDERGROUND_DISABLE_DARKENING, "lctrl+f", "Disable Darkening", DiagMenuIDs.UNDERGROUND_MENU);
 			}
@@ -545,6 +600,45 @@ class PluginDiagMenu : PluginBase
 			//---------------------------------------------------------------
 			// LEVEL 1 - Script
 			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.GEYSERDIAG_MENU, "Geyser Diag", DiagMenuIDs.SCRIPTS_MENU);
+			{
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Geyser Diag
+				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.GEYSERDIAG_ENABLE, "lalt+g", "Enable Geyser Diag", DiagMenuIDs.GEYSERDIAG_MENU);
+				DiagMenu.RegisterRange(DiagMenuIDs.GEYSERDIAG_STATE_INTERVAL, "", "State Interval (s)", DiagMenuIDs.GEYSERDIAG_MENU,"0.0, 120.0, 10.0, 1.0");
+				DiagMenu.RegisterRange(DiagMenuIDs.GEYSERDIAG_STATE_DURATION, "", "State Duration (s)", DiagMenuIDs.GEYSERDIAG_MENU,"0.0, 120.0, 10.0, 1.0");
+			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.RADIOGAMEPLAY_MENU, "Radio Gameplay", DiagMenuIDs.SCRIPTS_MENU);
+			{				
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Radio Gameplay
+				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.RADIOGAMEPLAY_LOGGING, "", "Logging", DiagMenuIDs.RADIOGAMEPLAY_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.RADIOGAMEPLAY_DEBUG, "", "Debug", DiagMenuIDs.RADIOGAMEPLAY_MENU);
+			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
+			DiagMenu.RegisterMenu(DiagMenuIDs.ROBOCLIENTS_MENU, "Roboclients", DiagMenuIDs.SCRIPTS_MENU);
+			{
+				//---------------------------------------------------------------
+				// LEVEL 2 - Script > Roboclients
+				//---------------------------------------------------------------
+				DiagMenu.RegisterBool(DiagMenuIDs.ROBOCLIENTS_ACTIVE, "", "Active", DiagMenuIDs.ROBOCLIENTS_MENU);
+				DiagMenu.RegisterBool(DiagMenuIDs.ROBOCLIENTS_RESTART, "", "Restart", DiagMenuIDs.ROBOCLIENTS_MENU);
+
+				DiagMenu.SetValue(DiagMenuIDs.ROBOCLIENTS_ACTIVE, true);
+			}
+			
+			//---------------------------------------------------------------
+			// LEVEL 1 - Script
+			//---------------------------------------------------------------
 			DiagMenu.RegisterMenu(DiagMenuIDs.SERVER_BROWSER_MENU, "Server Browser", DiagMenuIDs.SCRIPTS_MENU);
 			{
 				//---------------------------------------------------------------
@@ -556,16 +650,13 @@ class PluginDiagMenu : PluginBase
 			//---------------------------------------------------------------
 			// LEVEL 1 - Script
 			//---------------------------------------------------------------
-			DiagMenu.RegisterMenu(DiagMenuIDs.GEYSERDIAG_MENU, "Geyser Diag", DiagMenuIDs.SCRIPTS_MENU);
+			DiagMenu.RegisterMenu(DiagMenuIDs.FISHING_MENU, "Fishing", DiagMenuIDs.SCRIPTS_MENU);
 			{
 				//---------------------------------------------------------------
-				// LEVEL 2 - Script > Geyser Diag
+				// LEVEL 2 - Script > Fishing
 				//---------------------------------------------------------------
-				DiagMenu.RegisterBool(DiagMenuIDs.GEYSERDIAG_ENABLE, "lalt+g", "Enable Geyser Diag", DiagMenuIDs.GEYSERDIAG_MENU);
-				DiagMenu.RegisterRange(DiagMenuIDs.GEYSERDIAG_STATE_INTERVAL, "", "State Interval (s)", DiagMenuIDs.GEYSERDIAG_MENU,"0.0, 120.0, 10.0, 1.0");
-				DiagMenu.RegisterRange(DiagMenuIDs.GEYSERDIAG_STATE_DURATION, "", "State Duration (s)", DiagMenuIDs.GEYSERDIAG_MENU,"0.0, 120.0, 10.0, 1.0");
+				DiagMenu.RegisterBool(DiagMenuIDs.SYNTHETIC_FISHING_CURSOR, "", "Synthetic fishing cursor", DiagMenuIDs.FISHING_MENU);
 			}
-			
 		}
 	}
 	
@@ -906,6 +997,17 @@ class PluginDiagMenu : PluginBase
 				}
 				break;
 			}
+			
+			case ERPCs.DIAG_RADIO_GAMEPLAY_LOGGING:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_BOOL))
+				{
+					BunkerBroadcastHandler handler = BunkerBroadcastHandler.GetInstance();
+					if (handler)
+						handler.m_LoggingEnabled = CachedObjectsParams.PARAM1_BOOL.param1;
+				}
+				break;
+			}
 			#endif
 			
 			//---------------------------------------------------------------
@@ -1171,6 +1273,12 @@ class PluginDiagMenu : PluginBase
 				break;
 			}
 			
+			case ERPCs.DIAG_BASEBUILDING_FASTBUILD:
+			{
+				if (ctx.Read(CachedObjectsParams.PARAM1_INT))
+					player.GetConstructionActionData().SetFastConstructionMode(CachedObjectsParams.PARAM1_INT.param1);
+				break;
+			}
 			
 			//---------------------------------------------------------------
 			// LEVEL 2 - Script > Finishers

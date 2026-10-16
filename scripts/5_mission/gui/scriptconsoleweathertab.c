@@ -32,7 +32,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	protected static float m_FogInterpolationTimeValue;
 	protected static float m_FogDurationTimeValue = -1;
 
-	// OVERCAST
+	// Overcast
 	protected SliderWidget m_OvercastValueSetSlider;
 	protected SliderWidget m_OvercastValueGetSlider;
 	
@@ -176,6 +176,22 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	protected static float m_WindDInterpolationTimeValue;
 	protected static float m_WindDDurationTimeValue = -1;
 	
+	// Sandstorm
+	protected TextWidget m_StandstormMagnitudeText;
+	protected TextWidget m_StandstormDurationText;
+	protected TextWidget m_StandstormSpeedText;
+	
+	protected ButtonWidget m_StartSandstormButton;
+	protected ButtonWidget m_StopSandstormButton;
+	
+	protected ButtonWidget m_StartSandstormWeatherButton;
+	protected ButtonWidget m_StopSandstormWeatherButton;
+	
+	protected ScriptConsoleWeatherTab m_WeatherTab;
+	protected float m_SandstormMagnitudeValue = -1;
+	protected float m_SandstormDurationTimeValue = -1;
+	protected float m_SandstormSpeedValue = -1;
+	
 	// Other
 	protected ButtonWidget m_HideUIButton;
 	protected ImageWidget m_HideUIIcon;
@@ -234,8 +250,10 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_VolFogHeightBiasTimeValue = m_VolFogHeightDensityTimeSlider.GetCurrent() / 100 * DURATION_MAX;
 	}
 	
-	void ScriptConsoleWeatherTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
+	override void InitializeTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		super.InitializeTab(root, console, button, parent);
+		
 		// FOG
 		m_FogValueSetSlider = SliderWidget.Cast(root.FindAnyWidget("SliderFogValue"));
 		m_FogValueGetSlider = SliderWidget.Cast(root.FindAnyWidget("SliderFogActualValue"));	
@@ -379,7 +397,16 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_WindDInterpolationEditbox = EditBoxWidget.Cast(root.FindAnyWidget("EditBoxWindDTarget"));
 		m_WindDDurationEditbox = EditBoxWidget.Cast(root.FindAnyWidget("EditBoxWindDDuration"));
 		
-		//Other
+		// Sandstorm
+		m_StartSandstormButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonStartSandstorm"));
+		m_StopSandstormButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonStopSandstorm"));
+		m_StartSandstormWeatherButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonStartSandstormWeather"));
+		m_StopSandstormWeatherButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonStopSandstormWeather"));
+		m_StandstormMagnitudeText = TextWidget.Cast(root.FindAnyWidget("TextSandstormMagnitude"));
+		m_StandstormDurationText = TextWidget.Cast(root.FindAnyWidget("TextSandstormDuration"));
+		m_StandstormSpeedText = TextWidget.Cast(root.FindAnyWidget("TextSandstormSpeed"));
+		
+		// Other
 		m_HideUIButton = ButtonWidget.Cast(root.FindAnyWidget("ButtonHide"));
 		m_HideUIIcon = ImageWidget.Cast(root.FindAnyWidget("ButtonHideIcon"));
 		m_HideUIIcon.LoadImageFile(0, "set:dayz_gui image:PasswordEyeOpen");
@@ -401,8 +428,19 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_WeatherPresetsList = new ScriptConsolePresetsList(m_WeatherPresetsPanel, this);
 		m_WeatherPresetsList.m_ItemSelected.Insert(OnListItemSelected);
 		
+		ScriptedSandstormController sandstormController = ScriptedSandstormController.Cast(g_Game.GetWeather().GetSandstorm());
+		if (sandstormController)
+		{
+			sandstormController.GetSandstormStartSI().Insert(OnSandstormStart);
+		}
+		
 		InitValues();
 		ReloadWeatherPresetsList();
+	}
+	
+	protected void OnSandstormStart()
+	{
+		InitValues();
 	}
 	
 	protected void ReloadWeatherPresetsList()
@@ -509,11 +547,13 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	
 	protected void InitValues(bool forceCurrent = false)
 	{
+		Weather weather = g_Game.GetWeather();
+		
 		// FOG
 		float fogVal = m_FogValue;
 		if (forceCurrent || m_FogValue == -1)
 		{
-			fogVal = g_Game.GetWeather().GetFog().GetActual();
+			fogVal = weather.GetFog().GetActual();
 		}
 		m_FogValueEditbox.SetText(fogVal.ToString());
 
@@ -530,7 +570,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float overcastVal = m_OvercastValue;
 		if (forceCurrent || m_OvercastValue == -1)
 		{
-			overcastVal = g_Game.GetWeather().GetOvercast().GetActual();
+			overcastVal = weather.GetOvercast().GetActual();
 		}
 		m_OvercastValueEditbox.SetText(overcastVal.ToString());
 		
@@ -548,7 +588,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float rainVal = m_RainValue;
 		if (forceCurrent || m_RainValue == -1)
 		{
-			rainVal = g_Game.GetWeather().GetRain().GetActual();
+			rainVal = weather.GetRain().GetActual();
 		}
 
 		m_RainValueEditbox.SetText(rainVal.ToString());
@@ -565,7 +605,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float snowfallVal = m_SnowfallValue;
 		if (forceCurrent || m_SnowfallValue == -1)
 		{
-			snowfallVal = g_Game.GetWeather().GetSnowfall().GetActual();
+			snowfallVal = weather.GetSnowfall().GetActual();
 		}
 
 		m_SnowfallValueEditbox.SetText(snowfallVal.ToString());
@@ -582,7 +622,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float volFogDistanceDensityValue = m_VolFogDistanceDensityValue;
 		if (forceCurrent || m_VolFogDistanceDensityValue == -1)
 		{
-			volFogDistanceDensityValue = g_Game.GetWeather().GetDynVolFogDistanceDensity();
+			volFogDistanceDensityValue = weather.GetDynVolFogDistanceDensity();
 		}
 
 		m_VolFogDistanceDensityEditbox.SetText(volFogDistanceDensityValue.ToString());
@@ -593,7 +633,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float volFogHeightDensityValue = m_VolFogHeightDensityValue;
 		if (forceCurrent || m_VolFogHeightDensityValue == -1)
 		{
-			volFogHeightDensityValue = g_Game.GetWeather().GetDynVolFogHeightDensity();
+			volFogHeightDensityValue = weather.GetDynVolFogHeightDensity();
 		}
 		
 		m_VolFogHeightDensityEditbox.SetText(volFogHeightDensityValue.ToString());
@@ -604,7 +644,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float volFogHeightBiasValue = m_VolFogHeightBiasValue;
 		if (forceCurrent /*|| m_VolFogHeightBiasValue == -500*/)
 		{
-			volFogHeightBiasValue = g_Game.GetWeather().GetDynVolFogHeightBias();
+			volFogHeightBiasValue = weather.GetDynVolFogHeightBias();
 		}
 
 		m_VolFogHeightBiasEditbox.SetText(volFogHeightBiasValue.ToString());
@@ -616,7 +656,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float windMagnitudeVal = m_WindMagnitudeValue;
 		if (forceCurrent || m_WindMagnitudeValue == -1)
 		{
-			windMagnitudeVal = g_Game.GetWeather().GetWindMagnitude().GetActual();
+			windMagnitudeVal = weather.GetWindMagnitude().GetActual();
 		}
 
 		m_WindMValueEditbox.SetText(windMagnitudeVal.ToString());
@@ -633,7 +673,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		float windDirectionVal = m_WindDirectionValue;
 		if (forceCurrent || m_WindDirectionValue == -1)
 		{
-			windDirectionVal = g_Game.GetWeather().GetWindDirection().GetActual();
+			windDirectionVal = weather.GetWindDirection().GetActual();
 		}
 
 		m_WindDValueEditbox.SetText(windDirectionVal.ToString());
@@ -646,6 +686,36 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		m_WindDInterpolationMaxText.SetText(INTERPOLATION_MAX.ToString());
 		m_WindDDurationMaxText.SetText(DURATION_MAX.ToString());
 
+		// Sandstorm
+		Sandstorm sandstorm = weather.GetSandstorm();
+		if (sandstorm)
+		{
+			bool isActive = sandstorm.IsActive();
+			float sandstromMagnitudeVal = m_SandstormMagnitudeValue;
+			if (isActive && (forceCurrent || m_SandstormMagnitudeValue == -1))
+			{
+				sandstromMagnitudeVal = sandstorm.GetMagnitude();
+			}
+			
+			m_StandstormMagnitudeText.SetText(sandstromMagnitudeVal.ToString());
+			
+			float sandstromDurationVal = m_SandstormDurationTimeValue;
+			if (isActive && (forceCurrent || m_SandstormDurationTimeValue == -1))
+			{
+				sandstromDurationVal = sandstorm.GetRemainingMovementDuration();
+			}
+			
+			m_StandstormDurationText.SetText(sandstromDurationVal.ToString());
+			
+			float sandstromSpeedVal = m_SandstormSpeedValue;
+			if (isActive && (forceCurrent || m_SandstormSpeedValue == -1))
+			{
+				sandstromSpeedVal = sandstorm.GetSpeed();
+			}
+			
+			m_StandstormSpeedText.SetText(sandstromSpeedVal.ToString());
+		}
+		
 		UpdateSliderValues();
 	}	
 	
@@ -1059,7 +1129,6 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 			g_Game.CopyToClipboard(output);
 			return true;
 		}
-		
 		else if (w == m_PasteButton)
 		{
 			string input;
@@ -1081,6 +1150,26 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 		else if (w == m_DeletePresetButton)
 		{
 			DeleteWeatherPreset();
+			return true;
+		}
+		else if (w == m_StartSandstormButton)
+		{
+			SendSandstormRPC(GetSandstormRPCData(true));
+			return true;
+		}
+		else if (w == m_StopSandstormButton)
+		{
+			StopSandstormRPC();
+			return true;
+		}
+		else if (w == m_StartSandstormWeatherButton)
+		{
+			StartSandstormFromWeather();
+			return true;
+		}
+		else if (w == m_StopSandstormWeatherButton)
+		{
+			StopSandstormFromWeather();
 			return true;
 		}
 		
@@ -1136,7 +1225,7 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	protected void ToogleUIVisibility()
 	{
 		m_UIVisibilityState = !m_UIVisibilityState;
-		m_ScriptConsole.ShowMenuBackground(m_UIVisibilityState);
+		//m_ScriptConsole.ShowMenuBackground(m_UIVisibilityState);
 		m_Root.FindAnyWidget("WeatherRoot").Show(m_UIVisibilityState);
 		m_HideUIIcon.SetImage(m_UIVisibilityState);
 	}
@@ -1277,41 +1366,102 @@ class ScriptConsoleWeatherTab : ScriptConsoleTabBase
 	
 	protected void UpdateWeatherValues()
 	{
-		float overcast = g_Game.GetWeather().GetOvercast().GetActual();
+		Weather weather = g_Game.GetWeather();
+		
+		float overcast = weather.GetOvercast().GetActual();
 		m_OvercastValueGetSlider.SetCurrent(overcast * 100);
 		m_OvercastValueSetText.SetText(overcast.ToString());
 		
-		float fog = g_Game.GetWeather().GetFog().GetActual();
+		float fog = weather.GetFog().GetActual();
 		m_FogValueGetSlider.SetCurrent(fog * 100);
 		m_FogValueSetText.SetText(fog.ToString());
 		
-		float rain = g_Game.GetWeather().GetRain().GetActual();
+		float rain = weather.GetRain().GetActual();
 		m_RainValueGetSlider.SetCurrent(rain * 100);
 		m_RainValueSetText.SetText(rain.ToString());
 		
-		float snowfall = g_Game.GetWeather().GetSnowfall().GetActual();
+		float snowfall = weather.GetSnowfall().GetActual();
 		m_SnowfallValueGetSlider.SetCurrent(snowfall * 100);
 		m_SnowfallValueSetText.SetText(snowfall.ToString());
 		
-		float volFogDistanceDensity = g_Game.GetWeather().GetDynVolFogDistanceDensity();
+		float volFogDistanceDensity = weather.GetDynVolFogDistanceDensity();
 		//m_VolFogDistanceDensitySlider.SetCurrent(volFogDistanceDensity * 100);
 		m_VolFogDistanceDensitySetText.SetText(volFogDistanceDensity.ToString());
 		
-		float volFogHeightDensity = g_Game.GetWeather().GetDynVolFogHeightDensity();
+		float volFogHeightDensity = weather.GetDynVolFogHeightDensity();
 		//m_VolFogHeightDensitySlider.SetCurrent(volFogHeightDensity * 100);
 		m_VolFogHeightDensitySetText.SetText(volFogHeightDensity.ToString());
 		
-		float volFogHeightBias = g_Game.GetWeather().GetDynVolFogHeightBias();
+		float volFogHeightBias = weather.GetDynVolFogHeightBias();
 		//m_VolFogHeightBiasSlider.SetCurrent(volFogHeightBias * 100);
 		m_VolFogHeightBiasSetText.SetText(volFogHeightBias.ToString());
 		
-		float windMagnitude = g_Game.GetWeather().GetWindMagnitude().GetActual();
+		float windMagnitude = weather.GetWindMagnitude().GetActual();
 		m_WindMValueGetSlider.SetCurrent(windMagnitude);
 		m_WindMValueSetText.SetText(windMagnitude.ToString());
 		
-		float windDirection = g_Game.GetWeather().GetWindDirection().GetActual();
+		float windDirection = weather.GetWindDirection().GetActual();
 		m_WindDValueGetSlider.SetCurrent(windDirection);
 		m_WindDValueSetText.SetText(windDirection.ToString());
+		
+		bool isActive = weather.GetSandstorm().IsActive();
+		if (isActive)
+		{
+			Sandstorm sandstorm = weather.GetSandstorm();
+			if (sandstorm)
+			{
+				m_SandstormMagnitudeValue = sandstorm.GetMagnitude();
+				m_SandstormDurationTimeValue = sandstorm.GetRemainingMovementDuration();
+				m_SandstormSpeedValue = sandstorm.GetSpeed();
+				
+				m_StandstormMagnitudeText.SetText(m_SandstormMagnitudeValue.ToString());
+				m_StandstormDurationText.SetText(m_SandstormDurationTimeValue.ToString());
+				m_StandstormSpeedText.SetText(m_SandstormSpeedValue.ToString());
+			}
+		}
+	}
+	
+	protected DebugSandstormRPCData GetSandstormRPCData(bool startStorm = false)
+	{
+		DebugSandstormRPCData data = new DebugSandstormRPCData();
+		
+		data.m_StartStorm = startStorm;
+		data.m_FadeInTime = 10;
+		data.m_FadeOutTime = 120;
+		data.m_Duration = 99999;
+		
+		// Overcast
+		data.m_OvercastValue = m_OvercastValueSetSlider.GetCurrent() / 100;
+		
+		// Wind Magnitude
+		data.m_WindMagnitudeValue = m_WindMValueSetSlider.GetCurrent();
+				
+		return data;
+	}
+	
+	protected void InvokeSendSandstormRPC()
+	{
+		SendSandstormRPC(GetSandstormRPCData());
+	}
+	
+	protected void SendSandstormRPC(DebugSandstormRPCData data)
+	{
+		g_Game.RPCSingleParam(null, ERPCs.DEV_SET_SANDSTORM, new Param1<DebugSandstormRPCData>(data), true);
+	}
+	
+	protected void StopSandstormRPC()
+	{
+		g_Game.RPCSingleParam(null, ERPCs.DEV_STOP_SANDSTORM, null, true);
+	}
+	
+	protected void StartSandstormFromWeather()
+	{
+		g_Game.RPCSingleParam(null, ERPCs.DEV_SET_SANDSTORM_WEATHER, null, true);
+	}
+	
+	protected void StopSandstormFromWeather()
+	{
+		g_Game.RPCSingleParam(null, ERPCs.DEV_STOP_SANDSTORM_WEATHER, null, true);
 	}
 	
 	override void Update(float timeslice)

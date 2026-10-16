@@ -75,7 +75,6 @@ class ActionWringClothes: ActionContinuousBase
 			wet_change = Math.RandomFloat(GameConstants.STATE_DAMP,GameConstants.STATE_WET);
 		}
 		
-		//Print(wet_change);
 		action_data.m_MainItem.SetWet(wet_change);
 	}
 

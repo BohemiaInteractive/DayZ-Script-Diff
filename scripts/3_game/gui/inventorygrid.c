@@ -31,7 +31,7 @@ class InventoryGridController extends ScriptedWidgetEventHandler
 
 // -----------------------------------------------------------
 //! map: item x vector(index, width, height)
-typedef map<InventoryItem, vector> TItemsMap
+typedef map<InventoryItem, vector> TItemsMap;
 
 class InventoryGrid extends ScriptedWidgetEventHandler
 {

@@ -35,9 +35,27 @@ class ActionUnlockDoors: ActionContinuousBase
 		if (Class.CastTo(building, target.GetObject())&& Class.CastTo(tool, item))
 		{
 			int doorIndex = building.GetDoorIndex(target.GetComponentIndex());
+			
+			// Check door for related lock inventory attachments
+			AdditionalDoorInfo doorInfo = building.GetDoorInfo(doorIndex);
+			if (doorInfo && doorInfo.m_RelatedInventorySlotNames)
+			{
+				foreach(string relatedSlotName: doorInfo.m_RelatedInventorySlotNames)
+				{
+					EntityAI attachmentEntity = building.FindAttachmentBySlotName(relatedSlotName);
+					if (!attachmentEntity)
+						continue;
+					
+					ItemBase attachment = ItemBase.Cast(attachmentEntity);
+					if (attachment && attachment.IsExternalLockType())
+						return false;
+				}
+			}
+			
 			if (doorIndex != -1 && tool.GetKeyCompatibilityType() & building.GetLockCompatibilityType(doorIndex))
 				return building.IsDoorLocked(doorIndex);
 		}
+		
 		return false;
 	}
 

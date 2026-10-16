@@ -72,8 +72,90 @@ class Shemag_ColorBase: Clothing
 		AddAction(ActionBandageSelf);
 		AddAction(ActionWringClothes);
 	}
+		
+	override bool CanBeDisinfected()
+	{
+		return true;
+	}
 	
-	void Shemag_ColorBase()
+	override float GetBandagingEffectivity()
+	{
+		return 0.5;
+	}
+	
+	override float GetInfectionChance(int system = 0, Param param = null)
+	{
+		if (m_Cleanness == 1)
+			return 0.00;
+
+		return 0.15;
+	}
+	
+	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
+	{
+		return ECachedEquipmentItemCategory.MASK;
+	}
+
+	override float GetProtectionLevel(int type, bool consider_filter = false, int system = 0)
+	{
+		if (IsDamageDestroyed())
+			return 0.0;
+
+		InventoryLocation inventoryLocation = new InventoryLocation();	
+		GetInventory().GetCurrentInventoryLocation(inventoryLocation);
+		
+		if (inventoryLocation.GetSlot() == InventorySlots.MASK)
+		{	
+			switch (type)
+			{
+				case DEF_DUST_PARTICLE_BREATH:
+					return 0.65;
+				case DEF_DUST_PARTICLE_EYES:
+					return 0.0;
+			}
+		}
+		
+		return super.GetProtectionLevel(type, consider_filter, system);
+	}
+	
+	override protected set<int> GetAttachmentExclusionInitSlotValue(int slotId)
+	{
+		set<int> ret = super.GetAttachmentExclusionInitSlotValue(slotId);
+		
+		switch (slotId)
+		{
+			case InventorySlots.HEADGEAR:
+				ret.Insert(EAttExclusions.EXCLUSION_MASK_2);
+			break;
+			
+			default:
+				ret.Insert(EAttExclusions.EXCLUSION_MASK_2);
+				ret.Insert(EAttExclusions.EXCLUSION_MASK_3);
+				
+				ret.Insert(EAttExclusions.SHAVING_MASK_ATT_0);
+			break;
+		}
+		return ret;
+	}
+}
+
+class Shemag_Brown: Shemag_ColorBase {}
+class Shemag_Green: Shemag_ColorBase {}
+class Shemag_Red: Shemag_ColorBase {}
+class Shemag_White: Shemag_ColorBase {}
+
+class Keffiyeh_ColorBase: Clothing
+{
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionBandageTarget);
+		AddAction(ActionBandageSelf);
+		AddAction(ActionWringClothes);
+	}
+	
+	void Keffiyeh_ColorBase()
 	{
 
 	}
@@ -100,18 +182,43 @@ class Shemag_ColorBase: Clothing
 		}
 	}
 	
+	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
+	{
+		return ECachedEquipmentItemCategory.MASK;
+	}
+
+	override float GetProtectionLevel(int type, bool consider_filter = false, int system = 0)
+	{
+		if (IsDamageDestroyed())
+			return 0.0;
+
+		InventoryLocation inventoryLocation = new InventoryLocation();	
+		GetInventory().GetCurrentInventoryLocation(inventoryLocation);
+		
+		if (inventoryLocation.GetSlot() == InventorySlots.MASK)
+		{	
+			switch (type)
+			{
+				case DEF_DUST_PARTICLE_BREATH:
+					return 0.65;
+				case DEF_DUST_PARTICLE_EYES:
+					return 0.0;
+			}
+		}
+		
+		return super.GetProtectionLevel(type, consider_filter, system);
+	}
+	
 	override protected set<int> GetAttachmentExclusionInitSlotValue(int slotId)
 	{
 		set<int> ret = super.GetAttachmentExclusionInitSlotValue(slotId);
-		
 		switch (slotId)
 		{
 			case InventorySlots.HEADGEAR:
-				ret.Insert(EAttExclusions.EXCLUSION_MASK_2);
+				return ret;//no discernable conflict here
 			break;
 			
 			default:
-				ret.Insert(EAttExclusions.EXCLUSION_MASK_2);
 				ret.Insert(EAttExclusions.EXCLUSION_MASK_3);
 				
 				ret.Insert(EAttExclusions.SHAVING_MASK_ATT_0);
@@ -120,10 +227,14 @@ class Shemag_ColorBase: Clothing
 		return ret;
 	}
 };
-class Shemag_Brown: Shemag_ColorBase {};
-class Shemag_Green: Shemag_ColorBase {};
-class Shemag_Red: Shemag_ColorBase {};
-class Shemag_White: Shemag_ColorBase {};
+class Keffiyeh_LightBlue: Keffiyeh_ColorBase {};
+class Keffiyeh_LightRed: Keffiyeh_ColorBase {};
+class Keffiyeh_Brown: Keffiyeh_ColorBase {};
+class Keffiyeh_Gray: Keffiyeh_ColorBase {};
+class Keffiyeh_LightBrown: Keffiyeh_ColorBase {};
+class Keffiyeh_Red: Keffiyeh_ColorBase {};
+class Keffiyeh_Blue: Keffiyeh_ColorBase {};
+class Keffiyeh_Black: Keffiyeh_ColorBase {};
 
 class BatteryD: ItemBase {};
 class Bone: ItemBase 

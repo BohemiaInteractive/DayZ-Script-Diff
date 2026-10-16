@@ -1,4 +1,4 @@
-class Sedan_02 extends CarScript
+class Sedan_02 : CarScript
 {
 	protected ref UniversalTemperatureSource m_UTSource;
 	protected ref UniversalTemperatureSourceSettings m_UTSSettings;
@@ -18,10 +18,17 @@ class Sedan_02 extends CarScript
 		m_CarDoorOpenSound		= "offroad_door_open_SoundSet";
 		m_CarDoorCloseSound		= "offroad_door_close_SoundSet";
 		
-		m_CarHornShortSoundName = "Sedan_02_Horn_Short_SoundSet";
-		m_CarHornLongSoundName	= "Sedan_02_Horn_SoundSet";
+		m_LightsComponent.RegisterLight("Front", new VehicleLightData(new Sedan_02LightProfileFront()));
+		m_LightsComponent.RegisterLight("Rear", new VehicleLightData(new Sedan_02LightProfileRear()));
+
+		m_HornComponent.RegisterSound(VehicleHornMode.SHORT, 	"Sedan_02_Horn_Short_SoundSet");
+		m_HornComponent.RegisterSound(VehicleHornMode.LONG, 	"Sedan_02_Horn_SoundSet");
 		
 		SetEnginePos("0 0.7 -1.7");
+
+		//! DEPRECATED		
+		m_CarHornShortSoundName = "Sedan_02_Horn_Short_SoundSet";
+		m_CarHornLongSoundName	= "Sedan_02_Horn_SoundSet";
 	}
 	
 	void ~Sedan_02()
@@ -47,6 +54,23 @@ class Sedan_02 extends CarScript
 			m_UTSLEngine						= new UniversalTemperatureSourceLambdaEngine();
 			m_UTSource							= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLEngine);
 		}		
+	}
+	
+	override bool NeedElectricitySourceDevice()
+	{
+		return true;
+	}
+	
+	override EntityAI GetElectricitySourceDevice()
+	{
+		super.GetElectricitySourceDevice();
+		
+		return GetInventory().FindAttachment(CarBattery.SLOT_ID);
+	}
+	
+	override string GetElectricitySourceDeviceType()
+	{
+		return "CarBattery";
 	}
 	
 	override void OnEngineStart()
@@ -104,18 +128,6 @@ class Sedan_02 extends CarScript
 		return 0;
 	}
 
-	// Override for car-specific light type
-	override CarLightBase CreateFrontLight()
-	{
-		return CarLightBase.Cast(ScriptedLightBase.CreateLight(Sedan_02FrontLight));
-	}
-	
-	// Override for car-specific light type
-	override CarRearLightBase CreateRearLight()
-	{
-		return CarRearLightBase.Cast(ScriptedLightBase.CreateLight(Sedan_02RearLight));
-	}
-	
 	override bool CanReleaseAttachment( EntityAI attachment )
 	{
 		if (!super.CanReleaseAttachment(attachment))
@@ -361,12 +373,6 @@ class Sedan_02 extends CarScript
 		return "";
 	}
 
-
-	override bool IsVitalTruckBattery()
-	{
-		return false;
-	}
-
 	override bool IsVitalGlowPlug()
 	{
 		return false;
@@ -438,7 +444,7 @@ class Sedan_02 extends CarScript
 	}
 }
 
-class Sedan_02_Red extends Sedan_02
+class Sedan_02_Red : Sedan_02
 {
 	override void OnDebugSpawn()
 	{
@@ -465,7 +471,7 @@ class Sedan_02_Red extends Sedan_02
 	}
 }
 
-class Sedan_02_Grey extends Sedan_02
+class Sedan_02_Grey : Sedan_02
 {
 	override void OnDebugSpawn()
 	{

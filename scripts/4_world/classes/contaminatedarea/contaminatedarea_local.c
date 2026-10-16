@@ -35,8 +35,10 @@ class ContaminatedArea_Local : ContaminatedArea_DynamicBase
 
 	override void DeferredInit()
 	{
+		#ifndef NO_GUI
 		if (!m_ToxicClouds)
 			m_ToxicClouds = new array<Particle>();
+		#endif
 
 		SetupZoneData(new EffectAreaParams);
 
@@ -45,6 +47,7 @@ class ContaminatedArea_Local : ContaminatedArea_DynamicBase
 	
 	override void SpawnParticles(ParticlePropertiesArray props, vector centerPos, vector partPos, inout int count)
 	{
+		#ifndef NO_GUI
 		partPos[1] = g_Game.SurfaceRoadY(partPos[0], partPos[2]);	// Snap particles to ground
 		
 		// We make sure that spawned particle is inside the trigger	
@@ -53,6 +56,7 @@ class ContaminatedArea_Local : ContaminatedArea_DynamicBase
 		
 		props.Insert(ParticleProperties(partPos, ParticlePropertiesFlags.PLAY_ON_CREATION, null, g_Game.GetSurfaceOrientation( partPos[0], partPos[2] ), this));
 		++count;
+		#endif
 	}
 	
 	override float GetStartDecayLifetime()

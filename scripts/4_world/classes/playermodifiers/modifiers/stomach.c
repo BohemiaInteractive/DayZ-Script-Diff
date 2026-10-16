@@ -66,5 +66,43 @@ class StomachMdfr: ModifierBase
 		
 		player.GetStatStomachVolume().Set( player.GetStatStomachVolume().Get() * percentage );
 		*/
+		/*
+		float stomachs_combined_before = m_Player.GetStatStomachWater().Get() + m_Player.GetStatStomachEnergy().Get();
+		if(stomachs_combined_before <=0) // takes care of division by 0 also there is no point in doing anything if there is nothing to transfer
+		{
+			m_Player.GetStatStomachVolume().Set(0);
+			return;
+		}
+		
+		// Energy
+		if ( m_Player.GetStatStomachEnergy().Get() >= PlayerConstants.STOMACH_ENERGY_TRANSFERED_PER_SEC*deltaT )
+		{
+			m_Player.GetStatEnergy().Add(PlayerConstants.STOMACH_ENERGY_TRANSFERED_PER_SEC*deltaT);
+			m_Player.GetStatStomachEnergy().Add(-PlayerConstants.STOMACH_ENERGY_TRANSFERED_PER_SEC*deltaT);
+		}
+		else
+		{
+			m_Player.GetStatEnergy().Add(m_Player.GetStatStomachEnergy().Get());
+			m_Player.GetStatStomachEnergy().Set(0);
+		}
+		//Water
+		if (  m_Player.GetStatStomachWater().Get() >= PlayerConstants.STOMACH_WATER_TRANSFERED_PER_SEC*deltaT )
+		{
+			m_Player.GetStatWater().Add(PlayerConstants.STOMACH_WATER_TRANSFERED_PER_SEC*deltaT);
+			m_Player.GetStatStomachWater().Add(-PlayerConstants.STOMACH_WATER_TRANSFERED_PER_SEC*deltaT);
+			
+		}
+		else
+		{
+			m_Player.GetStatWater().Add(m_Player.GetStatStomachWater().Get());
+			m_Player.GetStatStomachWater().Set(0);
+			
+		}
+		
+		float stomachs_combined_after = m_Player.GetStatStomachWater().Get() + m_Player.GetStatStomachEnergy().Get();
+		float percentage = stomachs_combined_after / stomachs_combined_before;
+		
+		m_Player.GetStatStomachVolume().Set( m_Player.GetStatStomachVolume().Get() * percentage );
+		*/
 	}
 };

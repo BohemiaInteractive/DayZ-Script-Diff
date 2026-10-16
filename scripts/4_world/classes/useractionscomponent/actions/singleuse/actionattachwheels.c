@@ -86,8 +86,8 @@ class ActionAttachWheels: ActionAttach
 		Class.CastTo(target_entity,  action_data.m_Target.GetObject() ); // cast to ItemBase
 		int slot_index	= action_data.m_MainItem.GetInventory().GetSlotId(0);
 		int test	= m_wheel_hub;
-		if (!target_entity.LocalTakeEntityAsAttachmentEx( action_data.m_MainItem, slot_index ))
-			target_entity.LocalTakeEntityAsAttachment( action_data.m_MainItem );
+		if (!action_data.m_Player.LocalTakeEntityToTargetAttachmentEx(target_entity, action_data.m_MainItem, slot_index ))
+			action_data.m_Player.LocalTakeEntityToTargetAttachment(target_entity, action_data.m_MainItem );
 	}
 	override void OnExecuteClient( ActionData action_data )
 	{
@@ -95,7 +95,7 @@ class ActionAttachWheels: ActionAttach
 		Class.CastTo(target_entity,  action_data.m_Target.GetObject() ); // cast to ItemBase
 		int slot_index	= action_data.m_MainItem.GetInventory().GetSlotId(0);
 		int test	= m_wheel_hub;
-		if (!target_entity.LocalTakeEntityAsAttachmentEx( action_data.m_MainItem, slot_index ))
-			target_entity.LocalTakeEntityAsAttachment( action_data.m_MainItem );
+		if (!action_data.m_Player.LocalTakeEntityToTargetAttachmentEx(target_entity, action_data.m_MainItem, slot_index ))
+			action_data.m_Player.LocalTakeEntityToTargetAttachment(target_entity, action_data.m_MainItem );
 	}
 };

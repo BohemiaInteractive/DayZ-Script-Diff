@@ -134,6 +134,10 @@ class OptionsMenu extends UIScriptedMenu
 			{
 				g_Game.GetUIManager().ShowUICursor(false);
 			}
+			if (!GetFocus())
+			{
+				FocusLastActiveTab();
+			}
 		break;
 
 		default:
@@ -538,17 +542,6 @@ class OptionsMenu extends UIScriptedMenu
 		#endif
 	}
 	
-	//! Controls visibility and sometimes even state of specific, dependent options across sub-menus
-	void ToggleDependentOptions(int mode, bool state)
-	{
-		m_GameTab.ToggleDependentOptions(mode,state);
-		m_SoundsTab.ToggleDependentOptions(mode,state);
-		m_ControlsTab.ToggleDependentOptions(mode,state);
-		#ifndef PLATFORM_XBOX
-		m_VideoTab.ToggleDependentOptions(mode,state);
-		#endif
-	}
-	
 	void ReloadOptions()
 	{
 		m_Options = new GameOptions();
@@ -919,4 +912,8 @@ class OptionsMenu extends UIScriptedMenu
 		layoutRoot.FindAnyWidget("toolbar_bg").Show(toolbarShow);
 		layoutRoot.FindAnyWidget("play_panel_root").Show(!toolbarShow);
 	}
+	
+	//! DEPRECATED BELOW
+	[Obsolete("1.29: No replacement")]
+	void ToggleDependentOptions(int mode, bool state);
 }

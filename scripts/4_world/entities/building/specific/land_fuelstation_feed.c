@@ -10,7 +10,7 @@ class Land_FuelStation_Feed extends FuelStation
 	override void OnExplosionEffects(Object source, Object directHit, int componentIndex, string surface, vector pos, vector surfNormal, float energyFactor, float explosionFactor, bool isWater, string ammoType)
 	{
 		super.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{	
 			vector n = surfNormal.VectorToAngles() + "0 90 0";
 			Particle p1 = ParticleManager.GetInstance().PlayInWorld(ParticleList.SMOKE_GENERIC_WRECK, pos);
@@ -39,6 +39,17 @@ class Land_FuelStation_Feed extends FuelStation
 			return super.GetLiquidSourceType();
 		return LIQUID_NONE;
 	}
+	
+	override ELiquidSourceObjectType GetLiquidSourceObjectType()
+	{
+		return ELiquidSourceObjectType.FUEL_PUMP;
+	}
+	
+	override void SetActionAnimOverrides()
+	{
+		OverrideActionAnimation(ActionObtainLiquidBase, DayZPlayerConstants.CMD_ACTIONFB_FILLBOTTLEWELL, DayZPlayerConstants.STANCEMASK_CROUCH);
+	}
 };
 
 class Land_FuelStation_Feed_Enoch : Land_FuelStation_Feed {};
+class Land_FuelStation_Feed_Takistan : Land_FuelStation_Feed {};

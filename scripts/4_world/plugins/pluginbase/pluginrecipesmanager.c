@@ -80,7 +80,14 @@ class PluginRecipesManager extends PluginRecipesManagerBase
 
 		return "";
 	}
+	
+	string GetRecipeClassName(int recipe_id)
+	{
+		if (m_RecipeList[recipe_id])
+			return m_RecipeList[recipe_id].ClassName();
 
+		return "";
+	}
 
 	//will fill the map 'ids' with valid recipes for the 'item1' and 'item2' items, where the key is the recipe ID, and the value is the recipe name
 	int GetValidRecipes(ItemBase item1, ItemBase item2, array<int> ids, PlayerBase player)

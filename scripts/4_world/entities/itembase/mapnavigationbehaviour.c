@@ -122,11 +122,11 @@ class MapNavigationBehaviour
 		return m_Player.GetPosition();
 	}
 	
-	static array<int> OrderedPositionNumbersFromGridCoords(EntityAI pEntity)
+	static array<int> OrderedPositionNumbersFromGridCoords(vector pPosition)
 	{
 		float gridSize = g_Game.ConfigGetFloat(string.Format(GRID_SIZE_CFG_PATH, g_Game.GetWorldName()));
 		int gridX, gridZ;
-		g_Game.GetWorld().GetGridCoords(pEntity.GetPosition(), gridSize, gridX, gridZ);
+		GetGame().GetWorld().GetGridCoords(pPosition, gridSize, gridX, gridZ);
 		
 		gridX = Math.AbsInt(gridX);
 		gridZ = Math.AbsInt(gridZ);
@@ -140,7 +140,7 @@ class MapNavigationBehaviour
 		for (i = 0; i < gridXStr.Length(); ++i)
 		{
 			gridCoordNumber = gridXStr.Get(i).ToInt();
-			if (IsOutOfMap(pEntity))
+			if (IsOutOfMap(pPosition))
 			{
 				gridCoordNumber = -1;
 			}
@@ -151,13 +151,21 @@ class MapNavigationBehaviour
 		for (i = 0; i < gridZStr.Length(); ++i)
 		{
 			gridCoordNumber = gridZStr.Get(i).ToInt();
-			if (IsOutOfMap(pEntity))
+			if (IsOutOfMap(pPosition))
 			{
 				gridCoordNumber = -1;
 			}
 
 			positions.Insert(gridCoordNumber);
-		}
+		}	
+		
+		return positions;
+	}
+	
+	static array<int> OrderedPositionNumbersFromGridCoords(EntityAI pEntity)
+	{
+		vector position = pEntity.GetPosition();
+		array<int> positions = OrderedPositionNumbersFromGridCoords(position);
 		
 		return positions;
 	}
@@ -177,15 +185,20 @@ class MapNavigationBehaviour
 		return altArray;
 	}
 	
-	static bool IsOutOfMap(EntityAI pEntity)
+	static bool IsOutOfMap(vector pPosition)
 	{
-		vector worldPos = pEntity.GetPosition();
-
-		if (worldPos[0] < 0 || worldPos[0] > g_Game.GetWorld().GetWorldSize() || worldPos[2] < 0 || worldPos[2] > g_Game.GetWorld().GetWorldSize())
+		if (pPosition[0] < 0 || pPosition[0] > g_Game.GetWorld().GetWorldSize() || pPosition[2] < 0 || pPosition[2] > g_Game.GetWorld().GetWorldSize())
 		{
 			return true;
 		}
 		
 		return false;
+	}
+	
+	static bool IsOutOfMap(EntityAI pEntity)
+	{
+		vector worldPos = pEntity.GetPosition();
+
+		return IsOutOfMap(worldPos);
 	}
 }

@@ -157,6 +157,18 @@ class ZmbM_SkaterYoung_LT_Base extends ZombieMaleBase
 {
 };
 
+class ZmbM_takiCitizenUrbanA_Base extends ZombieMaleBase
+{
+};
+
+class ZmbM_takiCitizenUrbanB_Base extends ZombieMaleBase
+{
+};
+
+class ZmbM_takiCitizenUrbanC_Base extends ZombieMaleBase
+{
+};
+
 class ZmbM_Gamedev_Base extends ZombieMaleBase
 {
 };
@@ -231,9 +243,79 @@ class ZmbM_NBC_White extends ZombieMaleBase
 	}
 };
 
+class ZmbM_takiImam_Base extends ZombieMaleBase
+{
+};
+
+class ZmbM_takiSoldier_Normal_Base extends ZombieMaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class ZmbM_takiSoldier_Officer_Base extends ZombieMaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class ZmbM_IonSoldier_Normal_1_Base extends ZombieMaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class ZmbM_IonSoldier_Normal_2_Base extends ZombieMaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class ZmbM_IonSoldier_Normal_3_Base extends ZombieMaleBase
+{
+	override bool IsZombieMilitary()
+	{
+		return true;
+	}
+};
+
+class ZmbM_takiPoliceman_Base extends ZombieMaleBase
+{
+};
+
+class ZmbM_takiHermitB_Base extends ZombieMaleBase
+{
+};
+
+class ZmbM_takiHermitA_Base extends ZombieMaleBase
+{
+};
+
+class ZmbM_takiHiker_Base extends ZombieMaleBase
+{
+};
+
+class ZmbM_takiCitizenRural_Base extends ZombieMaleBase
+{
+};
+
+
+class ZmbM_takiOilRigWorker_Base extends ZombieMaleBase
+{
+};
+
 class ZmbM_Mummy extends ZombieMaleBase
 {
 	#ifndef SERVER
+	#ifndef NO_GUI
 	protected ZombieMummyLight m_EyeLight;
 	
 	override void EEInit()
@@ -262,6 +344,7 @@ class ZmbM_Mummy extends ZombieMaleBase
 		SetObjectMaterial(index, "dz\\characters\\zombies\data\\Mummy_dead.rvmat");
 		SetObjectTexture(index, "dz\\characters\\zombies\\data\\Mummy_dead_CO.paa");
 	}
+	#endif
 	#endif
 
 	override bool ResistContaminatedEffect()

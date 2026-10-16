@@ -10,8 +10,10 @@ class ScriptConsoleVicinityTab : ScriptConsoleTabBase
 
 	protected ref ContextMenu		m_ContextMenu;
 	
-	void ScriptConsoleVicinityTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
+	override void InitializeTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		super.InitializeTab(root, console, button, parent);
+		
 		m_VicinityListbox = TextListboxWidget.Cast(root.FindAnyWidget("VicinityListbox"));
 		m_WatchItem = ButtonWidget.Cast(root.FindAnyWidget("WatchItemButton"));
 		m_DistanceWidget = EditBoxWidget.Cast(root.FindAnyWidget("DistanceInput"));

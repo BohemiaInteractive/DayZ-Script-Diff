@@ -8,9 +8,6 @@ class ActionRaiseAndViewCB : ActionContinuousBaseCB
 
 	override void OnStateChange(int pOldState, int pCurrentState)
 	{
-		//Print("pOldState = " + pOldState);
-		//Print("pCurrentState = " + pCurrentState);
-		
 		if (pOldState != STATE_LOOP_LOOP)
 			return;
 		

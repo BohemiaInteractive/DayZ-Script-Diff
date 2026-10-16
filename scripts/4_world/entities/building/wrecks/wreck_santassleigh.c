@@ -10,7 +10,7 @@ class Wreck_SantasSleigh extends CrashBase
 
 	void Wreck_SantasSleigh()
 	{
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			//particles - Aurora trail
 			m_ParticleEfx = ParticleManager.GetInstance().PlayOnObject(ParticleList.AURORA_SANTA_WRECK,this,vector.Zero,vector.Zero,true);
@@ -37,7 +37,7 @@ class Wreck_SantasSleigh extends CrashBase
 	{
 		super.EEDelete(parent);
 		
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			if ( m_SleighLight )
 				m_SleighLight.Destroy();

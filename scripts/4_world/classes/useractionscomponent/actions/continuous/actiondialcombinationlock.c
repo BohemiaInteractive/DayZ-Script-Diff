@@ -13,8 +13,8 @@ class ActionDialCombinationLock: ActionContinuousBase
 	void ActionDialCombinationLock()
 	{
 		m_CallbackClass 	= ActionDialCombinationLockCB;
-		m_CommandUID		= DayZPlayerConstants.CMD_ACTIONMOD_OPENITEM;
-		m_CommandUIDProne 	= DayZPlayerConstants.CMD_ACTIONFB_OPENITEM;		
+		m_CommandUID		= DayZPlayerConstants.CMD_ACTIONMOD_COMBINATIONLOCK;
+		m_CommandUIDProne 	= DayZPlayerConstants.CMD_ACTIONFB_COMBINATIONLOCK;		
 		m_SpecialtyWeight 	= UASoftSkillsWeight.ROUGH_LOW;
 		m_Text 				= "#dial_combination_lock";
 	}
@@ -40,14 +40,14 @@ class ActionDialCombinationLock: ActionContinuousBase
 		ConstructionActionData constructionActionData = player.GetConstructionActionData();
 		m_Text = "#dial_combination_lock " + constructionActionData.GetDialNumberText();
 	}
-
+	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
-	{	
+	{
 		if (item.IsInherited(CombinationLock))
 		{
 			ConstructionActionData constructionActionData = player.GetConstructionActionData();
 			constructionActionData.SetCombinationLock(CombinationLock.Cast(item));
-	
+			constructionActionData.SetCombinationLockSide(CombinationLock.FACING_INSIDE);
 			return true;
 		}
 		
@@ -55,10 +55,10 @@ class ActionDialCombinationLock: ActionContinuousBase
 	}
 
 	override void OnFinishProgressServer(ActionData action_data)
-	{	
+	{
 		//set dialed number
 		ConstructionActionData constructionActionData = action_data.m_Player.GetConstructionActionData();
-		CombinationLock combination_lock =  constructionActionData.GetCombinationLock();
-		combination_lock.DialNextNumber();
+		CombinationLock combinationLock = constructionActionData.GetCombinationLock();
+		combinationLock.DialNextNumber(CombinationLock.FACING_INSIDE);
 	}
 }

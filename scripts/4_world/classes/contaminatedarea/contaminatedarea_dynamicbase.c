@@ -69,8 +69,10 @@ class ContaminatedArea_DynamicBase : ContaminatedArea_Base
 	{
 		super.InitZoneClient();
 
+		#ifndef NO_GUI
 		// We spawn VFX on client
 		PlaceParticles(m_Position, m_Radius, m_InnerRings, m_InnerSpacing, m_OuterRingToggle, m_OuterSpacing, m_OuterRingOffset, m_ParticleID);		
+		#endif
 	}
 	
 	override void InitZoneServer()

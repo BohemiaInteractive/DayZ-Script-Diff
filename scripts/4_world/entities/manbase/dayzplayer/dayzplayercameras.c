@@ -17,6 +17,7 @@ class DayZPlayerCameras
 	
 	static const int	DAYZCAMERA_1ST_VEHICLE				= 30;		//!< vehicle 1st person
 	static const int	DAYZCAMERA_3RD_VEHICLE				= 31;		//!< generic vehicle 3rd person
+	static const int	DAYZCAMERA_3RD_VEHICLE_MOTORBIKE	= 32;		//!< motorbike 3rd person
 	
 	static const int 	PERITEMUD_INVALID 			= -1;		//! uninitialized / invalid per item camera user data
 	static const int 	PERITEMUD_EMPTYHANDED 		= 20;		//! for empty hands
@@ -59,6 +60,7 @@ class DayZPlayerCameras
 		
 		pType.RegisterCameraCreator(DAYZCAMERA_1ST_VEHICLE, DayZPlayerCamera1stPersonVehicle);
 		pType.RegisterCameraCreator(DAYZCAMERA_3RD_VEHICLE, DayZPlayerCamera3rdPersonVehicle);
+		pType.RegisterCameraCreator(DAYZCAMERA_3RD_VEHICLE_MOTORBIKE, DayZPlayerCamera3rdPersonVehicleMotorbike);
 
 		
 		//! Blend times when changing cameras

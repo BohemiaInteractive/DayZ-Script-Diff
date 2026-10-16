@@ -103,7 +103,7 @@ class BiosUserManager
 		if (!success)
 		{
 			// Give it a moment and check again (there's a brief moment where the services become unavailable during the user transition) 
-			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CheckUserSwitchResult, 100, false, user);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CheckUserSwitchResult, 100, false, user);
 		}
 		
 		return success;

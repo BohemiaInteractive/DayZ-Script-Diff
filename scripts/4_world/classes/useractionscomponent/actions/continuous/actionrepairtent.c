@@ -70,7 +70,6 @@ class ActionRepairTent: ActionContinuousBase
 			{
 				if ( DamageSystem.GetDamageZoneFromComponentName(tent, selections[s], damageZone) ) //NOTE: relevant fire geometry and view geometry selection names MUST match in order to get a valid damage zone
 				{
-					//Print("selections[s]: " + selections[s] + " | damageZone: " + damageZone);
 					break;
 				}
 			}

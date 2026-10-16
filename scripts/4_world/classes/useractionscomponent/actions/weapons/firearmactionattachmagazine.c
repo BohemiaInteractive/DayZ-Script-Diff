@@ -253,6 +253,9 @@ class FirearmActionAttachMagazineQuick : FirearmActionBase
 		Weapon weapon = Weapon.Cast(item);
 		bool isLoadedMag = false;
 		
+		if (!weapon.TestAttachMagazine(weapon.GetCurrentMuzzle(), mag, false, true))
+			return false;
+		
 		for (int i = 0, count = weapon.GetMuzzleCount(); i < count; ++i)
 			isLoadedMag |= ( mag == weapon.GetMagazine( i ) );
 		

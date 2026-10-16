@@ -44,7 +44,7 @@ class ActionCarDoorsOutside: ActionInteractBase
 					if (animSource != "")
 					{
 						int idx = car.GetSeatIndexFromDoor(animSource);
-						if (idx != -1 && !car.IsAreaAtDoorFree(idx))
+						if (idx != -1 && !car.IsAreaAtDoorFreeDiag(idx))
 						{
 							return false;	//! player is looking at one of the doors, can't open if obstructed
 						}
@@ -101,7 +101,6 @@ class ActionCarDoorsOutside: ActionInteractBase
 		
 		if (car)
 		{
-			car.ForceUpdateLightsStart();
 			car.SetAnimationPhase(animSource, phase);
 		}
 	}
@@ -109,12 +108,6 @@ class ActionCarDoorsOutside: ActionInteractBase
 	override void OnEndServer(ActionData action_data)
 	{
 		super.OnEndServer(action_data);
-		
-		CarScript car = CarScript.Cast(action_data.m_Target.GetParent());
-		if (car)
-		{
-			car.ForceUpdateLightsEnd();
-		}
 	}
 	
 	//--------- Not used for this class

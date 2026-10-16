@@ -36,8 +36,6 @@ class CommonColdMdfr : ModifierBase
 
 	override protected void OnActivate(PlayerBase player)
 	{
-		player.IncreaseDiseaseCount();
-
 		m_ModifiersManager = player.GetModifiersManager();
 		player.GetSymptomManager().QueueUpPrimarySymptom(SymptomIDs.SYMPTOM_SNEEZE);
 	}
@@ -56,7 +54,7 @@ class CommonColdMdfr : ModifierBase
 
 	override protected void OnTick(PlayerBase player, float deltaT)
 	{
-		float chanceOfSneeze = Math.Clamp(player.GetSingleAgentCountNormalized(eAgents.INFLUENZA),0.4,0.75);
+		float chanceOfSneeze = Math.Clamp(player.GetSingleAgentCountNormalized(eAgents.INFLUENZA), 0.4, 0.75);
 		
 		float randomDivider = Math.RandomInt(SNEEZE_RND_DIVIDER_NORMAL_MIN, SNEEZE_RND_DIVIDER_NORMAL_MAX);
 		if (m_ModifiersManager.IsModifierActive(eModifiers.MDF_PAINKILLERS) || m_ModifiersManager.IsModifierActive(eModifiers.MDF_MORPHINE))

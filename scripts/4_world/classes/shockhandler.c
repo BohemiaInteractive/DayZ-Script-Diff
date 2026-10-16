@@ -71,8 +71,6 @@ class ShockHandler
 				return;
 			}
 			
-			//Print("dbgShock | valAdjusted: " + valAdjusted);
-			
 			//Add bobbing to create pulsing effect
 			valAdjusted = AddEffectBobbing(valAdjusted);
 			

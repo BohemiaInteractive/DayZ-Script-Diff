@@ -271,13 +271,13 @@ class InventoryQuickbar extends InventoryGridController
 	override int GetItemQuantityMax( InventoryItem item )
 	{
 		ItemBase ib = ItemBase.Cast(item);
-		return ib.m_VarQuantityMax;
+		return ItemBaseType.Cast(ib.GetEntityType()).m_VarQuantityMax;
 	}
 	
 	override int GetItemCount( InventoryItem item )
 	{
 		ItemBase ib = ItemBase.Cast(item);
-		return ib.m_Count;
+		return ItemBaseType.Cast(ib.GetEntityType()).m_Count;
 	}
 	
 	override bool CanAddItemInHandToInventory()

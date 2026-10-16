@@ -6,7 +6,7 @@ bool pushToChamberFromAttachedMagazine(Weapon_Base weapon, int muzzleIndex)
 		if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " chamberFromAttachedMagazine, using attached magazine mag=" + mag.ToString()); }
 		float damage;
 		string type;
-		if (mag && mag.LocalAcquireCartridge(damage, type))
+		if (mag && mag.LocalAcquireCartridgeEx(damage, type))
 		{
 			weapon.SelectionBulletShow();
 			if (LogManager.IsWeaponLogEnable()) { wpnDebugPrint("[wpnfsm] " + Object.GetDebugName(weapon) + " chamberFromAttachedMagazine, ok - cartridge acquired: dmg=" + damage + " type=" + type); }

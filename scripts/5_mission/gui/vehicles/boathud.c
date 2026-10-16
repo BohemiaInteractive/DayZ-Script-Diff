@@ -49,13 +49,13 @@ class BoatHud : VehicleHudBase
 			m_HasEngine = true;
 		
 		float gearNeutral = m_CurrentVehicle.GetNeutralGear();
-		m_VehicleGearTable.Set(gearNeutral - 2, "");
 		m_VehicleGearTable.Set(gearNeutral - 1, "R");
 		m_VehicleGearTable.Set(gearNeutral, "N");
 		m_VehicleGearTable.Set(gearNeutral + 1, "F");
 		m_VehicleGearTable.Set(gearNeutral + 2, "");
+		m_VehicleGearTable.Set(-1, "");
 		
-		m_EngagedGear = -10; // force initial update
+		m_EngagedGear = -1; // force initial update
 	}
 	
 	override void HideVehicleInfo()

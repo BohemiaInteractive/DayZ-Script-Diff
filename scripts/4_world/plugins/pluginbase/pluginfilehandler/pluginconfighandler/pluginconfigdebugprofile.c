@@ -34,11 +34,14 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	protected const string ITEM_SEARCH						= "console_ItemSearch";
 	protected const string SPAWN_DISTANCE					= "console_SpawnDistance";
 	protected const string CHAR_STATS_VIS					= "console_character_stats_visible";
+	protected const string CHAR_STATS_POS					= "console_character_stats_pos";
 	protected const string CHAR_LEVELS_VIS					= "console_character_levels_visible";
 	protected const string CHAR_MODIFIERS_VIS				= "console_character_modifiers_visible";
 	protected const string CHAR_AGENTS_VIS					= "console_character_agents_visible";
+	protected const string CHAR_AGENTS_POS					= "console_character_agents_pos";
 	protected const string CHAR_DEBUG_VIS					= "console_character_debug_visible";
 	protected const string CHAR_STOMACH_VIS					= "console_character_stomach_visible";
+	protected const string CHAR_HEALTH_POS					= "console_character_health_pos";
 	protected const string FREE_CAMERA_CROSSHAIR			= "console_free_camera_crosshair_visible";
 	protected const string VERSION_VIS						= "console_version_visible";
 	protected const string MERGE_TYPE						= "category_merge_type";
@@ -334,22 +337,24 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 		m_DefaultValues.Insert(SPAWN_DISTANCE, 			GetNewCfgParamFloat(0.0) );
 		m_DefaultValues.Insert(LOGS_ENABLED, 			GetNewCfgParamBool(true) );
 		m_DefaultValues.Insert(CHAR_STATS_VIS, 			GetNewCfgParamBool(false) );
+		m_DefaultValues.Insert(CHAR_STATS_POS,			GetNewCfgParamString("0 0 0"));
 		m_DefaultValues.Insert(CHAR_LEVELS_VIS, 		GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(CHAR_MODIFIERS_VIS, 		GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(CHAR_AGENTS_VIS, 		GetNewCfgParamBool(false) );
+		m_DefaultValues.Insert(CHAR_AGENTS_POS,			GetNewCfgParamString("0 0 0"));
 		m_DefaultValues.Insert(CHAR_DEBUG_VIS, 			GetNewCfgParamBool(false) );
 		m_DefaultValues.Insert(FREE_CAMERA_CROSSHAIR, 	GetNewCfgParamBool(true) );
-		m_DefaultValues.Insert(VERSION_VIS,				GetNewCfgParamBool(true) );
-		m_DefaultValues.Insert(CONFIG_CLASSES_FLAG,		GetNewCfgParamInt(15) );
-		m_DefaultValues.Insert(TEMP_VIS,				GetNewCfgParamBool(false) );
-		m_DefaultValues.Insert(HEALTH_VIS,				GetNewCfgParamBool(false) );
-		m_DefaultValues.Insert(HORTICULTURE_VIS,		GetNewCfgParamBool(false) );
-		m_DefaultValues.Insert(MERGE_TYPE,				GetNewCfgParamBool(false) );
-		m_DefaultValues.Insert(ITEM_PREVIEW,			GetNewCfgParamBool(true) );
-		m_DefaultValues.Insert(BATCH_RECT,				GetNewCfgParamArray(GetDefaultBatchRectParams()) );
-		m_DefaultValues.Insert(BATCH_QUANT,				GetNewCfgParamInt(10) );
-		m_DefaultValues.Insert(SOUNDFILTER,				GetNewCfgParamString("") );
-		m_DefaultValues.Insert(ITEMDEBUG,				GetNewCfgParamString("0 0 0") );
+		m_DefaultValues.Insert(VERSION_VIS,				GetNewCfgParamBool(true));
+		m_DefaultValues.Insert(CONFIG_CLASSES_FLAG,		GetNewCfgParamInt(15));
+		m_DefaultValues.Insert(TEMP_VIS,				GetNewCfgParamBool(false));
+		m_DefaultValues.Insert(HEALTH_VIS,				GetNewCfgParamBool(false));
+		m_DefaultValues.Insert(HORTICULTURE_VIS,		GetNewCfgParamBool(false));
+		m_DefaultValues.Insert(MERGE_TYPE,				GetNewCfgParamBool(false));
+		m_DefaultValues.Insert(ITEM_PREVIEW,			GetNewCfgParamBool(true));
+		m_DefaultValues.Insert(BATCH_RECT,				GetNewCfgParamArray(GetDefaultBatchRectParams()));
+		m_DefaultValues.Insert(BATCH_QUANT,				GetNewCfgParamInt(10));
+		m_DefaultValues.Insert(SOUNDFILTER,				GetNewCfgParamString(""));
+		m_DefaultValues.Insert(ITEMDEBUG,				GetNewCfgParamString("0 0 0"));
 		m_DefaultValues.Insert(SPAWN_LOC_INDEX,			GetNewCfgParamInt(0));
 		m_DefaultValues.Insert(FILTER_REVERSED,			GetNewCfgParamBool(false));
 		m_DefaultValues.Insert(CAMERA_PRESETS_LIST,		GetNewCfgParamArray(GetDefaultCameraPresetsParams()));
@@ -1598,11 +1603,36 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	{
 		return GetBool( CHAR_STATS_VIS );
 	}
-	
 
 	void SetCharacterStatsVisible( bool is_visible )
 	{
 		SetBool( CHAR_STATS_VIS, is_visible );
+	}
+	
+	//========================================
+	// CharacterStatsPos
+	//========================================
+	void SetCharacterStatsPos(vector pos)
+	{
+		 SetString(CHAR_STATS_POS, pos.ToString(false));
+	}
+	
+	vector GetCharacterStatsPos()
+	{
+		return GetString(CHAR_STATS_POS).ToVector();
+	}
+	
+	//========================================
+	// HealthDebugPos
+	//========================================
+	void SetHealthDebugPos(vector pos)
+	{
+		 SetString(CHAR_HEALTH_POS, pos.ToString(false));
+	}
+	
+	vector GetHealthDebugPos()
+	{
+		return GetString(CHAR_HEALTH_POS).ToVector();
 	}
 	
 	//========================================
@@ -1629,6 +1659,19 @@ class PluginConfigDebugProfile extends PluginConfigHandler
 	void SetCharacterAgentsVisible( bool is_visible )
 	{
 		SetBool( CHAR_AGENTS_VIS, is_visible );
+	}
+	
+	//========================================
+	// CharacterAgentsPos
+	//========================================
+	void SetCharacterAgentsPos(vector pos)
+	{
+		 SetString(CHAR_STATS_POS, pos.ToString(false));
+	}
+	
+	vector GetCharacterAgentsPos()
+	{
+		return GetString(CHAR_STATS_POS).ToVector();
 	}
 	
 	//========================================

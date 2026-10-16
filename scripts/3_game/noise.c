@@ -8,6 +8,9 @@ class NoiseSystem
 	
 	//! Will make a noise at that position which the AI will "see" for the duration of 'lifetime'
 	proto void AddNoiseTarget(vector pos, float lifetime, NoiseParams noise_params, float external_strength_multiplier = 1.0);
+
+	//! Absolute noise-strength reduction the environment (weather/sandstorm/sea) applies at 'pos'. Single source of truth used by AI.
+	proto native float GetEnvironmentNoiseReduction(vector pos);
 }
 	
 class NoiseParams

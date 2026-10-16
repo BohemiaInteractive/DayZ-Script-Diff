@@ -22,6 +22,7 @@ class ActionLockAttachment: ActionContinuousBase
 	private const string LOCK_VERSION = "#widget_lock";
 	private const string UNLOCK_VERSION = "#widget_unlock";
 	private string m_Name = LOCK_VERSION;
+	private const string CODE_LOCK_SELECTION_BACK = "back";
 	
 	void ActionLockAttachment()
 	{
@@ -58,7 +59,7 @@ class ActionLockAttachment: ActionContinuousBase
 		EntityAI parent_EAI = EntityAI.Cast(target.GetParent());
 		ItemBase target_IB = ItemBase.Cast(target.GetObject());
 		
-		array<int> compLock = item.m_CompatibleLocks;
+		array<int> compLock = ItemBaseType.Cast(item.GetEntityType()).m_CompatibleLocks;
 		int targetType = eLockTypes.NONE;
 		
 		if ( target_IB && parent_EAI )
@@ -80,6 +81,25 @@ class ActionLockAttachment: ActionContinuousBase
 			}
 			//END OF CAR DOOR SPECIFICS
 			
+			// CONSTRUCTION HANDLING
+			bool hasConstruction = parent_EAI.CanUseConstruction();
+			bool isPlayerInside = parent_EAI.IsPlayerInsideEx(player, "");
+			if (hasConstruction && !isPlayerInside)
+				return false;
+			
+			// CODE LOCK HANDLING
+			DigitalCodeLock codeLock = DigitalCodeLock.Cast(target_IB);
+			if (codeLock)
+			{
+				array<string> selections = new array<string>;
+				codeLock.GetActionComponentNameList(target.GetComponentIndex(), selections);
+				
+				foreach (string selectionName : selections)
+				{
+					if (selectionName != CODE_LOCK_SELECTION_BACK)
+						return false;
+				}
+			}
 			
 			if ( target_IB.IsLockedInSlot() )
 				m_Name = UNLOCK_VERSION;
@@ -136,7 +156,7 @@ class ActionLockAttachment: ActionContinuousBase
 	}
 	
 	override void OnFinishProgressServer( ActionData action_data )
-	{	
+	{
 		ItemBase target_IB = ItemBase.Cast(action_data.m_Target.GetObject());
 		
 		MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, 5);

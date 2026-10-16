@@ -9,13 +9,13 @@ class CCTNonRuined : CCTBase
 	
 	override bool Can( PlayerBase player, ActionTarget target )
 	{	
-		if( !target )
+		if(!target)
 			return false;
 		
 		Object targetObject = target.GetObject();
-		if ( !player || !targetObject || targetObject.IsMan() || targetObject.IsDamageDestroyed() )
+		if (!player || !targetObject || targetObject.IsMan() || targetObject.IsDamageDestroyed())
 			return false;
-				
-		return ( vector.DistanceSq(targetObject.GetPosition(), player.GetPosition()) <= m_MaximalActionDistanceSq );
+		
+		return (vector.DistanceSq(targetObject.GetPosition(), player.GetPosition()) <= m_MaximalActionDistanceSq);
 	}
 };

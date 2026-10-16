@@ -3,10 +3,6 @@ class ShelterSite extends BaseBuildingBase
 	const float MAX_ACTION_DETECTION_ANGLE_RAD 		= 1.3;		//1.3 RAD = ~75 DEG
 	const float MAX_ACTION_DETECTION_DISTANCE 		= 2.0;		//meters
 
-	void ShelterSite()
-	{
-	}
-
 	override string GetConstructionKitType()
 	{
 		return "ShelterKit";
@@ -51,23 +47,24 @@ class ShelterSite extends BaseBuildingBase
 			case "stick": 
 				shelter_type = "ShelterStick";
 			break;
-				
-			default: {};
 		}
 		
 		if (shelter_type != "")
 		{
+			PlayerBase playerBase = PlayerBase.Cast(player);
 			GetConstruction().DropNonUsableMaterialsServer( player, part_name );
-			MiscGameplayFunctions.TurnItemIntoItem(this, shelter_type, PlayerBase.Cast(player));
+
+			InventoryLocation targetIL = new InventoryLocation();
+			auto lambda = BuildShelterFromShelterSiteLambda(this, shelter_type, playerBase);
+			player.ServerReplaceItemWithNew(lambda);
 			
 			PluginAdminLog admin_log = PluginAdminLog.Cast( GetPlugin(PluginAdminLog) );
 			if (admin_log)
 			{
-				string playerPrefix = admin_log.GetPlayerPrefix(PlayerBase.Cast(player), player.GetIdentity());
+				string playerPrefix = admin_log.GetPlayerPrefix(playerBase, player.GetIdentity());
 				admin_log.DirectAdminLogPrint(playerPrefix +" built " + shelter_type + " with Hands ");
 			}
 		}
-		//super.OnPartBuiltServer( part_name, action_id );
 	}
 	
 	override bool CanPutIntoHands( EntityAI parent )
@@ -76,11 +73,6 @@ class ShelterSite extends BaseBuildingBase
 	}
 
 	override bool CanBeRepairedToPristine()
-	{
-		return true;
-	}
-	
-	override bool CanUseHandConstruction()
 	{
 		return true;
 	}
@@ -169,6 +161,37 @@ class ShelterSite extends BaseBuildingBase
 		AddAction(ActionTogglePlaceObject);
 		AddAction(ActionPlaceObject);
 		AddAction(ActionFoldBaseBuildingObject);
-		AddAction(ActionBuildShelter);
+		AddAction(ActionBuildPart);
+	}
+	
+	override bool DestroyOnFall()
+	{
+		return true;
+	}
+	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer())
+			 return;
+		
+		DropAttachmentAndCargoItems();
+		
+		if (DestroyOnFall())
+		{
+			ItemBase constructionKit = CreateConstructionKit();
+			constructionKit.ThrowPhysically(null, vector.Zero);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeleteSafe, 100, false);
+		}
+	}
+	
+	override void OnDebugSpawn()
+	{
+		ItemBase item;
+		
+		GameInventory inventory = GetInventory();
+		if (Class.CastTo(item,inventory.CreateInInventory("LongWoodenStick")))
+			item.SetQuantityMax();
+		if (Class.CastTo(item,inventory.CreateInInventory("Fabric")))
+			item.SetQuantityMax();
 	}
 }

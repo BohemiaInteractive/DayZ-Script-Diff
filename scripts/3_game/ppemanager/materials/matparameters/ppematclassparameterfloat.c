@@ -1,6 +1,6 @@
 class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 {
-	protected ref map<int,ref array<float,int>> m_LayerInfo; //<priority,<value,operator>>
+	protected ref map<int,ref array<float>> m_LayerInfo; //<priority,<value,operator>>
 	
 	protected PPETemplateDefFloat m_Float;
 	protected float m_ValueDefault;
@@ -9,7 +9,7 @@ class PPEMatClassParameterFloat extends PPEMatClassParameterCommandData
 	
 	void PPEMatClassParameterFloat(int mat_idx, int parameter_idx, PPEClassBase parent)
 	{
-		m_LayerInfo = new map<int,ref array<float,int>>;
+		m_LayerInfo = new map<int,ref array<float>>;
 	}
 	
 	override void InitDefaults()

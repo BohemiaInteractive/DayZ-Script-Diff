@@ -25,16 +25,6 @@ class HeavyMetalMdfr : ModifierBase
 		m_TickIntervalInactive 	= DEFAULT_TICK_TIME_INACTIVE;
 		m_TickIntervalActive 	= DEFAULT_TICK_TIME_ACTIVE;
 	}
-	
-	override protected void OnActivate(PlayerBase player)
-	{
-		player.IncreaseDiseaseCount();
-	}
-
-	override protected void OnDeactivate(PlayerBase player)
-	{
-		player.DecreaseDiseaseCount();
-	}
 }
 
 class HeavyMetalPhase1Mdfr : HeavyMetalMdfr
@@ -120,6 +110,12 @@ class HeavyMetalPhase2Mdfr : HeavyMetalMdfr
 		return (player.GetSingleAgentCount(eAgents.HEAVYMETAL) < AGENT_THRESHOLD_ACTIVATE || player.GetSingleAgentCount(eAgents.HEAVYMETAL) > AGENT_THRESHOLD_DEACTIVATE);
 	}
 	
+	override protected void OnDeactivate(PlayerBase player)
+	{
+		DoOnce.Clear(ClassName());
+		player.DecreaseDiseaseCount();
+	}
+	
 	override protected void OnTick(PlayerBase player, float deltaT)
 	{
 		m_Time += deltaT;
@@ -143,6 +139,7 @@ class HeavyMetalPhase2Mdfr : HeavyMetalMdfr
 		float chanceOfDeafness = player.GetSingleAgentCountNormalized(eAgents.HEAVYMETAL);
 		if (Math.RandomFloat01() < chanceOfDeafness / Math.RandomInt(5, 10))
 		{
+			DoOnce.Run(ClassName(), player, "IncreaseDiseaseCount");
 			player.GetSymptomManager().QueueUpSecondarySymptom(SymptomIDs.SYMPTOM_DEAFNESS_COMPLETE);
 			m_Time = 0;
 			m_DeafnessTime = 0;

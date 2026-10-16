@@ -9,6 +9,7 @@ class LogoutMenu extends UIScriptedMenu
 	private ButtonWidget m_bCancelConsole;
 	#endif
 	private int m_iTime;
+	private bool m_bCancelSent;
 	
 	private ref FullTimeData m_FullTime;
 
@@ -195,6 +196,14 @@ class LogoutMenu extends UIScriptedMenu
 
 	void Cancel()
 	{
+		// this menu outlives its widgets, so the destructor can come back here long after an
+		// explicit cancel. Only ever tell the server once, a late second cancel would take back
+		// a logout somebody else has since asked for.
+		if (m_bCancelSent)
+			return;
+
+		m_bCancelSent = true;
+
 		g_Game.GetMission().Continue();	
 		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(this.UpdateTime);
 		

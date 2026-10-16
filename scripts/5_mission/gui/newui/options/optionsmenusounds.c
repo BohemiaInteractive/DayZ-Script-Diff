@@ -9,12 +9,12 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 	protected TextWidget					m_DetailsLabel;
 	protected RichTextWidget				m_DetailsText;
 	
-	protected ref NumericOptionsAccess		m_MasterOption;
-	protected ref NumericOptionsAccess		m_EffectsOption;
-	protected ref NumericOptionsAccess		m_VOIPOption;
-	protected ref NumericOptionsAccess  	m_VOIPThresholdOption;
-	protected ref NumericOptionsAccess		m_MusicOption;
-	protected ref ListOptionsAccess			m_InputModeOption;
+	protected NumericOptionsAccess			m_MasterOption;
+	protected NumericOptionsAccess			m_EffectsOption;
+	protected NumericOptionsAccess			m_VOIPOption;
+	protected NumericOptionsAccess  		m_VOIPThresholdOption;
+	protected NumericOptionsAccess			m_MusicOption;
+	protected ListOptionsAccess				m_InputModeOption;
 	
 	protected ref OptionSelectorSlider		m_MasterSelector;
 	protected ref OptionSelectorSlider		m_EffectsSelector;
@@ -354,14 +354,6 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		Revert();
 	}
 	
-	void ToggleDependentOptions(int mode, bool state)
-	{
-	}
-	
-	void InitDependentOptionsVisibility()
-	{
-	}
-	
 	void UpdateMaster(float value)
 	{
 		m_MasterOption.WriteValue(value);
@@ -422,4 +414,11 @@ class OptionsMenuSounds extends ScriptedWidgetEventHandler
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_VON_THRESHOLD_SLIDER, new Param2<string, string>("#STR_sound_tab_voice_threshold_tip_header", "#STR_sound_tab_voice_threshold_tip"));
 		m_TextMap.Insert(OptionAccessType.AT_OPTIONS_VON_INPUT_MODE, new Param2<string, string>("#STR_sound_tab_voice_mode_tip_header", "#STR_sound_tab_voice_mode_tip")); 
 	}
+	
+	//! DEPRECATED BELOW
+	[Obsolete("1.29: No replacement")]
+	void ToggleDependentOptions(int mode, bool state);
+	
+	[Obsolete("1.29: No replacement")]
+	void InitDependentOptionsVisibility();
 }

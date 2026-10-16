@@ -68,7 +68,7 @@ class ActionRestrainTarget: ActionContinuousBase
 		
 		if ( g_Game.IsServer() && g_Game.IsMultiplayer() )
 		{
-			if ( target_player.IsSurrendered() || !target_player.CanBeRestrained() )
+			if (!target_player.CanBeRestrained() )
 			{
 				return false;
 			}

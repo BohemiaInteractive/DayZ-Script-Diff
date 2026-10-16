@@ -45,6 +45,9 @@ class TrapBase extends ItemBase
 	
 	protected ref array<int> m_ClothingDmg;
 
+	protected bool m_IsFalling = false;
+	protected bool m_FallTriggered = false;
+	
 	void TrapBase()
 	{
 		m_IsInProgress = false;
@@ -73,6 +76,7 @@ class TrapBase extends ItemBase
 		
 		RegisterNetSyncVariableBool("m_IsActive");
 		RegisterNetSyncVariableBool("m_IsInProgress");
+		RegisterNetSyncVariableBoolSignal("m_FallTriggered"); // one-shot signal to clients for visuall effect
 	}
 	
 	void OnUpdate(EntityAI victim);
@@ -94,6 +98,11 @@ class TrapBase extends ItemBase
 			
 			if (m_IsInProgress && !m_IsActive)
 				StartActivate(null);
+		}
+		
+		if (m_FallTriggered && !g_Game.IsDedicatedServer())
+		{
+			OnTriggeredByFallEffectsClient();
 		}
 	}
 	
@@ -678,6 +687,47 @@ class TrapBase extends ItemBase
 		}
 	}
 	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer() || m_IsFalling)
+			 return;
+		
+		m_IsFalling = true;
+	}
+	
+	//! Fires when the (now dynamic) trap actually hits something - the real "it fell" moment.
+	override void EOnContact(IEntity other, Contact extra)
+	{
+		if (!g_Game.IsServer() || !m_IsFalling || m_FallTriggered)
+			return;
+		
+		if (m_IsActive)
+		{
+			OnTriggeredByFall(extra);
+		}
+		
+		m_FallTriggered = true;
+	}
+	
+	//! SERVER: decide what "triggered by falling" means for this trap.
+	protected void OnTriggeredByFall(Contact extra)
+	{
+		if (!g_Game.IsServer() || !m_IsFalling)
+			return;
+		
+		SetInactive(true);
+		
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearIsFalling, 800);
+	}
+	
+	protected void ClearIsFalling()
+	{
+		m_IsFalling = false;
+	}
+	
+	//! CLIENT: one-shot visual/audio feedback for the fall-trigger, called via the BoolSignal sync.
+	protected void OnTriggeredByFallEffectsClient();
+
 	//!DEPRECATED
 	protected ref EffectSound 	m_DeployLoopSound; //DEPRECATED in favor of m_DeployLoopSoundEx
 	

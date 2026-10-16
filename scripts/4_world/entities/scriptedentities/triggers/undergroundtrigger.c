@@ -7,7 +7,7 @@ class UndergroundTriggerCarrier : UndergroundTriggerCarrierBase
 	
 	void UndergroundTriggerCarrier()
 	{
-		RegisterNetSyncVariableInt("m_TriggerIndex", -1, 255);
+		RegisterNetSyncVariableInt("m_TriggerIndex", -1, 4095); // beware of limit and max number of triggers in cfgundergroundtrigger.json file
 		RegisterNetSyncVariableInt("m_ParentObjectNetIdLow");
 		RegisterNetSyncVariableInt("m_ParentObjectNetIdHigh");
 	}
@@ -152,6 +152,7 @@ class UndergroundTrigger : ManTrigger
 		OnEnterClientEvent(insider);
 		#endif
 	}
+
 	override protected void OnLeaveServerEvent(TriggerInsider insider) 
 	{
 		#ifndef SERVER//to make it work in single during development
@@ -186,4 +187,17 @@ class UndergroundTrigger : ManTrigger
 		}
 	}
 
-};
+	EUndergroundPresence TranslateTriggerTypeToPresence()
+	{
+		EUndergroundPresence presence = EUndergroundPresence.NONE;
+
+		if (m_Type == EUndergroundTriggerType.OUTER)
+			presence = EUndergroundPresence.OUTER;
+		else if (m_Type == EUndergroundTriggerType.TRANSITIONING)
+			presence = EUndergroundPresence.TRANSITIONING;
+		else if (m_Type == EUndergroundTriggerType.INNER)
+			presence = EUndergroundPresence.FULL;
+		
+		return presence;
+	}
+}

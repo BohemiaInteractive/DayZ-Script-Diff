@@ -71,11 +71,16 @@ enum EffectWidgetsTypes
 	HELMET2_OCCLUDER = 54,
 	
 	BLEEDING_LAYER = 60,
+	
+	EYE_VEINS = 69,
+	SQUINTING = 70
 }
 
 enum EffectWidgetHandles
 {
 	FLASHBANG,
+	SQUINTING,
+	EYE_VEINS
 }
 
 enum EffectWidgetSuspends
@@ -111,7 +116,8 @@ enum HitIndicatorType
 enum EInputRestrictors
 {
 	INVENTORY,
-	MAP
+	MAP,
+	SURRENDER_TRANSITION
 }
 
 enum EPollution // FLAG - 1,2,4,8...
@@ -213,6 +219,8 @@ const int MENU_WARNING_INPUTDEVICE_DISCONNECT		= 43;
 const int MENU_SCRIPTCONSOLE_UNIVERSAL_INFO_DIALOG	= 44;
 const int MENU_MISSION_LOADER						= 45;
 const int MENU_CONNECTION_DIALOGUE					= 46;
+const int MENU_DIGITAL_CODELOCK						= 47;
+const int MENU_UNDERGROUND_TRIGGER_EDITOR			= 48;
 
 
 const int GUI_WINDOW_MISSION_LOADER = 1;
@@ -431,7 +439,28 @@ class SoundConstants
 	const int ITEM_EXPLOSIVE_ARM = 26;
 	const int ITEM_EXPLOSIVE_DISARM = 27;
 	const int ITEM_EXPLOSIVE_DISARM_UNPAIRED = 28;
-	const int ITEM_KEY_BREAK = 29;											
+	const int ITEM_KEY_BREAK = 29;
+	
+	const int ITEM_COMBINATION_LOCK_LOCK = 30;
+	const int ITEM_COMBINATION_LOCK_UNLOCK = 31;
+	const int ITEM_COMBINATION_LOCK_CHANGE_NUMBER = 32;
+	const int ITEM_COMBINATION_LOCK_CHANGE_DIAL = 33;
+	const int ITEM_COMBINATION_LOCK_WRONG_PIN = 34;
+	const int ITEM_COMBINATION_LOCK_WRONG_COMBINATION = 35;
+	
+	const int ITEM_DIGITAL_LOCK_ACCESS = 40;
+	const int ITEM_DIGITAL_LOCK_LOCK = 41;
+	const int ITEM_DIGITAL_LOCK_UNLOCK = 42;
+	const int ITEM_DIGITAL_LOCK_ERROR = 43;
+	const int ITEM_DIGITAL_LOCK_CONFIRM_INPUT = 44;
+	const int ITEM_DIGITAL_LOCK_CLEAR_INPUT = 45;
+	const int ITEM_DIGITAL_LOCK_DIGIT_INPUT = 46;
+	
+	const int ITEM_CARWHEEL_EXPLOSION_SMALL = 50;
+	const int ITEM_CARWHEEL_EXPLOSION_BIG = 51;
+	
+	const int ITEM_ARMY_FLASHLIGHT_TURN_ON = 60;
+	const int ITEM_ARMY_FLASHLIGHT_TURN_OFF = 61;
 }
 
 /**
@@ -476,14 +505,16 @@ const int       UA_FINISHEDT = 10;
 const int    	UA_ANIM_EVENT = 11;
 const int 		UA_INITIALIZE = 12;
 const int		UA_CHECK_CON = 13;
-const int		UA_AM_PENDING = 14;
-const int		UA_AM_ACCEPTED = 15;
-const int		UA_AM_REJECTED = 16;
-const int		UA_IN_START = 17;
-const int		UA_IN_END = 18;
-const int		UA_SPAWN_DUST_A = 19;
-const int		UA_SPAWN_DUST_B = 20;
-const int		UA_IN_CRAFTING = 21;
+const int		UA_AM_INIT = 14;
+const int		UA_AM_PENDING = 15;
+const int		UA_AM_ACCEPTED = 16;
+const int		UA_AM_REJECTED = 17;
+const int		UA_IN_START = 18;
+const int		UA_IN_END = 19;
+const int		UA_SPAWN_DUST_A = 20;
+const int		UA_SPAWN_DUST_B = 21;
+const int		UA_IN_CRAFTING = 22;
+ 
 	
 const int		UA_ERROR = 24;
 	
@@ -511,9 +542,12 @@ const int AGT_AIRBOURNE_CHEMICAL = 11;
 const int AGT_SNOW				= 12;
 const int AGT_WATER_FRESH		= 13;
 const int AGT_WATER_HOT_SPRING	= 14;
+const int AGT_AIRBOURNE_SOLID	= 15;
 
-const int DEF_BIOLOGICAL		= 1;
-const int DEF_CHEMICAL			= 2;
+const int DEF_BIOLOGICAL			= 1;
+const int DEF_CHEMICAL				= 2;
+const int DEF_DUST_PARTICLE_BREATH	= 3;
+const int DEF_DUST_PARTICLE_EYES	= 4;
 /** @}*/
 			
 const int QUANTITY_HIDDEN = 0;
@@ -723,6 +757,7 @@ class GameConstants
 	const float ENVIRO_TICK_RATE 						= 3;		//! in secs. how often should enviro effet process
 	const float	ENVIRO_TICKS_TO_WETNESS_CALCULATION 	= 2;	  	//! each X (ticks) is processed wetness on items on player
 	const float ENVIRO_TICK_ROOF_RC_CHECK 				= 10;	  	//! in secs. how often we should check if player is under the roof (raycast)
+	const float ENVIRO_TICK_SHADOW_RC_CHECK 			= 30;	  	//! in secs. how often we should check if player might be in shadow (raycast)
 	const float ENVIRO_WET_INCREMENT 					= 0.01;	  	//! amount of wetness added to items wet value each tick if is raining
 	const float ENVIRO_DRY_INCREMENT 					= 0.00005; 	//! amount of wetness subtracted from items wet value each tick if is not raining due to player heat
 	const float ENVIRO_SUN_INCREMENT 					= 0.002;	//! (not used) amount of wetness subtracted from items wet value each tick if is not raining due to sun
@@ -752,6 +787,16 @@ class GameConstants
 	static const float ENVIRO_HEATCOMFORT_HIPS_WEIGHT			= 0.00;
 	//! don't forget to update the weights from above if you are adding/removing them
 	static const float ENVIRO_HEATCOMFORT_WEIGHT_SUMMARY 		= ENVIRO_HEATCOMFORT_HEADGEAR_WEIGHT + ENVIRO_HEATCOMFORT_MASK_WEIGHT +ENVIRO_HEATCOMFORT_VEST_WEIGHT + ENVIRO_HEATCOMFORT_BODY_WEIGHT + ENVIRO_HEATCOMFORT_BACK_WEIGHT + ENVIRO_HEATCOMFORT_GLOVES_WEIGHT + ENVIRO_HEATCOMFORT_LEGS_WEIGHT + ENVIRO_HEATCOMFORT_FEET_WEIGHT + ENVIRO_HEATCOMFORT_HIPS_WEIGHT;
+	
+	// target heatcomfort remapping (while on motorbike)
+	const float ENVIRO_HEATCOMFORT_MOTORBIKE_SPEED_MIN 		= 20.0;		// minimum speed value used for remapping to heatcomfort
+	const float ENVIRO_HEATCOMFORT_MOTORBIKE_SPEED_MAX 		= 100.0;	// maximum speed value used for remapping to heatcomfort
+	const float ENVIRO_HEATCOMFORT_MOTORBIKE_TARGET_MAX		= 0.8;		// maximum target heatcomfort value that will be used on maximal speed (ENVIRO_HEATCOMFORT_MOTORBIKE_SPEED_MAX)
+	
+	// target heatcomfort remapping (while on boat)
+	const float ENVIRO_HEATCOMFORT_BOAT_SPEED_MIN 		= 15.0;		// minimum speed value used for remapping to heatcomfort
+	const float ENVIRO_HEATCOMFORT_BOAT_SPEED_MAX 		= 50.0;		// maximum speed value used for remapping to heatcomfort
+	const float ENVIRO_HEATCOMFORT_BOAT_TARGET_MAX		= 0.8;		// maximum target heatcomfort value that will be used on maximal speed (ENVIRO_HEATCOMFORT_BOAT_SPEED_MAX)
 	
 	const float ENVIRO_STOMACH_WEIGHT					= 0.2;		//! how much stomach content affects final heatcomfort
 	const float ENVIRO_LOW_TEMP_LIMIT					= -20;		//! lowest temperature(deg Celsius) where the player gets lowest possible heat comfort (-1)
@@ -790,7 +835,7 @@ class GameConstants
 	const float ENVIRO_NAKED_BODY_PENALTY_RAIN_MIN_VALUE 		= 0.2; //! how intensive a rain should be to enable rain penalty on naked body
 	const float ENVIRO_NAKED_BODY_PENALTY_SNOWFALL_MIN_VALUE 	= 0.4; //! how intensive a snowfall should be to enable snowfall penalty on naked body
 	
-	const float LIQUID_RAIN_AMOUNT_COEF_BASE = 10.0;
+	const float LIQUID_RAIN_AMOUNT_COEF_BASE = 30.0;
 	const float COLD_AREA_TEMPERATURE_THRESHOLD = 5;				//! (deg Celsius) temperature limit up to which player is allowed to dig garden plots
 	const float COLD_AREA_DIG_WORMS_MODIF = 1.5;					//! time modifier, how much longer it takes to dig up worms while in a cold area
 	
@@ -803,12 +848,12 @@ class GameConstants
 	//! various damage per second constants
 	const float FIRE_ATTACHMENT_DAMAGE_PER_SECOND 		= 0.07;		//! damage per second dealt to attachment by fire
 	
-	const float ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT	= 15.0;
-	const float ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT	= 35.0;
+	static const float ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT	= 15.0;
+	static const float ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT	= 35.0;
 	
 	const float ITEM_TEMPERATURE_QUANTITY_WEIGHT_MULTIPLIER = 0.04;
 	
-	static const float ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE = (GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT + GameConstants.ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT) * 0.5;
+	static const float ITEM_TEMPERATURE_NEUTRAL_ZONE_MIDDLE = (ITEM_TEMPERATURE_NEUTRAL_ZONE_UPPER_LIMIT + ITEM_TEMPERATURE_NEUTRAL_ZONE_LOWER_LIMIT) * 0.5;
 	
 	/** @}*/
 	
@@ -817,6 +862,8 @@ class GameConstants
 	 * \desc Constants for vehicles
 	 * @{
 	 */
+
+	const int VEHICLE_FLUIDS_TICK = 1;
 
 	const float VEHICLE_FLIP_ANGLE_TOLERANCE = 45; //! Angle of the vehicle from the normal of the surface under the vehicle
 	const bool VEHICLE_FLIP_WHEELS_LIMITED = true; //! If the vehicle is not facing directly up, then don't use the "wheels early exit optimization"
@@ -827,7 +874,7 @@ class GameConstants
 	 * \desc Constants for car fluids
 	 * @{
 	 */
-	const int CARS_FLUIDS_TICK 		= 1;
+	const int CARS_FLUIDS_TICK 		= VEHICLE_FLUIDS_TICK;
 	const int CARS_LEAK_TICK_MIN 	= 0.02;
 	const int CARS_LEAK_TICK_MAX 	= 0.05;
 	const int CARS_LEAK_THRESHOLD	= 0.5;
@@ -841,6 +888,17 @@ class GameConstants
 	const float CARS_CONTACT_DMG_THRESHOLD = 750.0;
 	const float CARS_CONTACT_DMG_MIN = 150.0;
 	const float CARS_CONTACT_DMG_KILLCREW = 1200.0;
+	/** @}*/
+	
+	/**
+	 * \defgroup MotorbikeContactConstants Motorbike Contact 
+	 * \desc Constants for motorbike contact event
+	 * @{
+	 */
+	const float MOTORBIKES_CONTACT_DMG_THRESHOLD_SMALL 	= 25.0;
+	const float MOTORBIKES_CONTACT_DMG_THRESHOLD_MID 	= 40.0;
+	const float MOTORBIKES_CONTACT_DMG_MIN 				= 10.0;
+	const float MOTORBIKES_CONTACT_DMG_KILLCREW 		= 80.0;
 	/** @}*/
 	
 	/**
@@ -1069,18 +1127,8 @@ class GameConstants
 	const float AI_MAX_BLOCKABLE_ANGLE = 60; // The angle under which an infected must be relative to player to be blockable
 	const float AI_CONTAMINATION_DMG_PER_SEC = 3; // The amount of damage AI agents take per contaminated area damage event
 	
-	/*
-		Noise multiplier works with a 0-1 value which is then multiplied by noise levels. Noise reduction is a value in 0-1 range depending on phenomenon intensity.
-		noise = (NoiseMultiplier - NoiseReduction) * NOISE_LEVEL_MAX
-	
-		Reduction is substracted from multiplier before the noise conversion happens, meaning that if:
-		RAIN_NOISE_REDUCTION_WEIGHT == 1 && rain instensity == 1, any noise would be reduced to 0
-		RAIN_NOISE_REDUCTION_WEIGHT == 0.5, max possible reduction of noise would be by half
-	
-		In case of multiple phenomenons happening at the same time, the noise reduction does not stack and the stronger one is picked for calculation
-	*/
-	static float RAIN_NOISE_REDUCTION_WEIGHT = 0.5;
-	static float SNOWFALL_NOISE_REDUCTION_WEIGHT = 0.25;
+	const int AI_SPRINT_STEP_MIN_ID = 5;//1, 2 - basic step / 3, 4 rotatings < STEPS IDs during sprint
+	const int AI_SPRINT_STEP_MAX_ID = 20;// 25 - falling / 29, 30 crawling > STEPS IDs during sprint
 	
 	//----------------------------------------------------------
 	//						   MELEE
@@ -1091,6 +1139,11 @@ class GameConstants
 	//!
 	//! DEPRECATED
 	//!
+	//! AI noise dampening is now done natively, configured via AIParams. Kept for HUD and old mods.
+	static float RAIN_NOISE_REDUCTION_WEIGHT = 0.5;
+	static float SNOWFALL_NOISE_REDUCTION_WEIGHT = 0.25;
+	static float SANDSTORM_NOISE_REDUCTION_WEIGHT = 0.5;
+
 	const float ENVIRO_HEATCOMFORT_HEADPARTS_WEIGHT		= 0.3;		//! how much this head parts (clothing) affects final heatcomfort
 	const float ENVIRO_HEATCOMFORT_BODYPARTS_WEIGHT		= 0.8;		//! how much this body parts (clothing) affects final heatcomfort
 	const float ENVIRO_HEATCOMFORT_FEETPARTS_WEIGHT		= 0.4;		//! how much this feet parts (clothing) affects final heatcomfort

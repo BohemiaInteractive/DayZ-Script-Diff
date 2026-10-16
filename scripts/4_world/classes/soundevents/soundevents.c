@@ -9,10 +9,10 @@ class SoundEventBase
 	bool 			m_SkipForControlledCharacter;
 	int				m_Param;
 	
-	
 	void ~SoundEventBase()
 	{
-		if(m_SoundSetCallback) m_SoundSetCallback.Stop();
+		if (g_Game) 
+			Stop();
 	}
 	
 	//obsolete function, now possible to set a param

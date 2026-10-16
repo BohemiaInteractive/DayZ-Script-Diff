@@ -148,7 +148,7 @@ class ContainerWithCargoAndAttachments extends ClosableContainer
 			att_cont.UpdateInterval();
 		}
 		
-		if ( item.GetInventory().GetCargo() )
+		if ( item.GetInventory().GetCargo() && m_Entity.CanDisplayAttachmentCargo( item ) )
 		{
 			updateNeeded = true;
 			

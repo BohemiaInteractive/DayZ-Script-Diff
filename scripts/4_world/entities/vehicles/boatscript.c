@@ -53,10 +53,7 @@ class BoatScript : Boat
 	private static ref map<typename, ref TInputActionMap> m_BoatTypeActionsMap = new map<typename, ref TInputActionMap>();
 	private TInputActionMap m_InputActionMap;
 	private bool m_ActionsInitialized;	
-	
-	protected vector m_VelocityPrevTick;
-	protected float m_MomentumPrevTick;
-	protected ref VehicleContactData m_ContactData;
+
 	protected ref Timer m_DecayTimer;
 	
 	// particles
@@ -85,7 +82,9 @@ class BoatScript : Boat
 	protected ref EffectSound m_SoundPushBoatEffect;
 	protected ref EffectSound m_SoundWaterSplashEffect;
 	protected ref EffectSound m_SoundEngineEffect;
-	protected ref EffectSound m_SoundEngineEffectDeletion; // hold engine sound which is being stopped & deleted while another is starting 
+	protected ref EffectSound m_SoundEngineEffectDeletion; // hold engine sound which is being stopped & deleted while another is starting
+	
+	protected float m_HeatComfortOverride;
 
 	void BoatScript()
 	{
@@ -104,6 +103,17 @@ class BoatScript : Boat
 		RegisterNetSyncVariableBoolSignal("m_PlaySoundImpactLight");
 		RegisterNetSyncVariableBoolSignal("m_PlaySoundImpactHeavy");
 		
+		if (g_Game.IsServer())
+		{
+			m_HeatComfortOverride = 0.0;
+
+			m_DecayTimer = new Timer( CALL_CATEGORY_SYSTEM );
+			m_DecayTimer.Run(DECAY_TICK_FREQUENCY, this, "DecayHealthTick", NULL, true);
+		}
+		
+		if (g_Game.IsHeadlessOrDedicatedServer())
+			return;
+		
 		m_SoundImpactHeavy = "boat_01_hit_light_SoundSet";
 		m_SoundImpactLight = "boat_01_hit_heavy_SoundSet";
 		m_SoundPushBoat = "boat_01_push_SoundSet";
@@ -112,16 +122,10 @@ class BoatScript : Boat
 		m_SoundEngineStop = "boat_01_engine_stop_SoundSet";
 		m_SoundEngineStartNoFuel = "boat_01_engine_start_no_fuel_SoundSet";
 		m_SoundEngineStopNoFuel = "boat_01_engine_stop_no_fuel_SoundSet";
-				
-		if (g_Game.IsServer())
-		{
-			m_DecayTimer = new Timer( CALL_CATEGORY_SYSTEM );
-			m_DecayTimer.Run(DECAY_TICK_FREQUENCY, this, "DecayHealthTick", NULL, true);
-		}
 		
-		if (g_Game.IsDedicatedServer())
+		if (g_Game.IsHeadlessOrDedicatedServer())
 			return;
-		
+	
 		m_WaterEffects[EBoatEffects.PTC_FRONT] 	= new EffectBoatWaterFront();
 		m_WaterEffects[EBoatEffects.PTC_BACK] 	= new EffectBoatWaterBack();
 		m_WaterEffects[EBoatEffects.PTC_SIDE_L] = new EffectBoatWaterSide();
@@ -138,22 +142,6 @@ class BoatScript : Boat
 		
 		if (MemoryPointExists("ptcFxSide2"))
 			m_WaterEffects[EBoatEffects.PTC_SIDE_R].AttachTo(this, GetMemoryPointPos("ptcFxSide2"));
-	}
-	
-	void ~BoatScript()
-	{
-		if (m_DecayTimer)
-			m_DecayTimer.Stop();
-		
-		#ifndef SERVER
-			CleanupEffects();
-		#endif
-	}
-	
-	override void EEDelete(EntityAI parent)
-	{
-		if (!g_Game.IsDedicatedServer())
-			CleanupEffects();
 	}
 
 	void InitializeActions()
@@ -234,6 +222,21 @@ class BoatScript : Boat
 		return true;
 	}
 	
+	override int GetFluidCapacityScript(ETransportFluid fluidType)
+	{
+		return GetFluidCapacity(fluidType);
+	}
+	
+	override float GetFluidFractionScript(ETransportFluid fluidType)
+	{
+		return GetFluidFraction(fluidType);
+	}
+	
+	override void FillScript(ETransportFluid fluidType, float amount)
+	{
+		Fill(fluidType, amount);
+	}
+	
 	override bool IsAreaAtDoorFree(int currentSeat, float maxAllowedObjHeight, inout vector extents, out vector transform[4])
 	{
 		return super.IsAreaAtDoorFree(currentSeat, maxAllowedObjHeight, extents, transform);
@@ -248,6 +251,11 @@ class BoatScript : Boat
 	{
 		EBoatOperationalState state = CheckOperationalRequirements();
 		return state == EBoatOperationalState.OK;
+	}
+	
+	float GetHeatComfortOverride()
+	{
+		return m_HeatComfortOverride;
 	}
 	
 	// Whether the car engine can be started
@@ -303,7 +311,7 @@ class BoatScript : Boat
 	{
 		super.OnEngineStart();
 
-		if (g_Game.IsDedicatedServer())
+		if (g_Game.IsHeadlessOrDedicatedServer())
 			return;
 		
 		FadeEngineSound(true);
@@ -315,7 +323,7 @@ class BoatScript : Boat
 	{
 		super.OnEngineStop();
 		
-		if (g_Game.IsDedicatedServer())
+		if (g_Game.IsHeadlessOrDedicatedServer())
 			return;
 		
 		FadeEngineSound(false);
@@ -371,7 +379,7 @@ class BoatScript : Boat
 			m_MomentumPrevTick = GetMomentum();
 		}
 		
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			if (EngineIsOn())
 				m_UpdateParticles = true;
@@ -400,7 +408,7 @@ class BoatScript : Boat
 	
 	override void EOnFrame(IEntity other, float timeSlice)
 	{
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			if (m_UpdateParticles)
 				UpdateParticles(timeSlice);
@@ -597,7 +605,7 @@ class BoatScript : Boat
 	
 	protected void HandleEngineSound(EBoatEngineSoundState state)
 	{
-		if (g_Game.IsDedicatedServer())
+		if (g_Game.IsHeadlessOrDedicatedServer())
 			return;
 		
 		string soundset;
@@ -639,6 +647,7 @@ class BoatScript : Boat
 	protected void PlaySound(string soundset, inout EffectSound sound, vector position = vector.Zero)
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (position == vector.Zero)
 			position = GetPosition();
 		
@@ -656,6 +665,7 @@ class BoatScript : Boat
 				sound.SoundPlay();
 			}
 		}
+		#endif
 		#endif
 	}
 	
@@ -775,11 +785,12 @@ class BoatScript : Boat
 			actionArray = new array<ActionBase_Basic>;
 			m_InputActionMap.Insert(ai, actionArray);
 		}
-		
+#ifdef ENABLE_LOGGING
 		if (LogManager.IsActionLogEnable())
 		{
 			Debug.ActionLog(action.ToString() + " -> " + ai, this.ToString() , "n/a", "Add action" );
 		}
+#endif
 		
 		actionArray.Insert(action);
 	}
@@ -830,8 +841,10 @@ class BoatScript : Boat
 	}
 	
 	// Called on destroy/stream out
-	protected void CleanupEffects()
-	{		
+	override void CleanupEffects()
+	{
+		super.CleanupEffects();
+
 		for (int i; i < 4; i++)
 		{
 			if (m_WaterEffects[i].IsRegistered())

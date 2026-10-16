@@ -96,6 +96,7 @@ class ActionUnrestrainSelf: ActionContinuousBase
 			}
 			player.SetRestrained(false);
 			item_in_hands.AddHealth(-GameConstants.CLEAN_UNRESTRAIN_DAMAGE);
+			ClearInventoryReservationEx(action_data);
 			MiscGameplayFunctions.TransformRestrainItem(item_in_hands, null, null, player);
 			//string new_item_name = MiscGameplayFunctions.ObtainRestrainItemTargetClassname(item_in_hands);			
 			//MiscGameplayFunctions.TurnItemInHandsIntoItemEx(player, new UnrestrainSelfPlayer(item_in_hands, new_item_name));

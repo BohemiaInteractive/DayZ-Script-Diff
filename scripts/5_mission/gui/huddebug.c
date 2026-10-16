@@ -23,55 +23,41 @@ class HudDebugEventHandler extends ScriptedWidgetEventHandler
 	
 	override bool OnFocus(Widget w, int x, int y)
 	{
-		//Print("OnFocus");
 		return true;
 	}
 	
 	override bool OnFocusLost(Widget w, int x, int y)
 	{
-		//Print("OnFocusLost");
 		return true;
 	}
-	/*
-	override bool OnMouseEnter(Widget w, int x, int y)
-	{
-		Print("OnMouseEnter");
-		return true;
-	}
-	
-	override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
-	{
-		Print("OnMouseLeaves");
-		return true;
-	}*/
 	
 	override bool OnMouseButtonDown(Widget w, int x, int y, int button)
 	{
-		//Print("OnMouseButtonDown");
+		return GetHudDebug().OnMouseButtonDown(w, x, y, button);
 		return true;
 	}
 	
+	override bool OnMouseButtonUp(Widget w, int x, int y, int button)
+	{
+		return GetHudDebug().OnMouseButtonUp(w, x, y, button);
+	}
 	
 	override bool OnSelect(Widget w, int x, int y)
 	{
-		//Print("OnSelect");
 		return true;
 	}
 	override bool OnItemSelected(Widget w, int x, int y, int row, int column, int oldRow, int oldColumn)
 	{
-		//Print("OnItemSelected");
 		return true;
 	}
 	
 	override bool OnModalResult(Widget w, int x, int y, int code, int result)
 	{
-		//Print("OnModalResult");
 		return true;
 	}
 	
 	override bool OnChange(Widget w, int x, int y, bool finished)
 	{
-		//Print("OnChange " + finished);
 		super.OnChange( w, x, y, finished );
 		return GetHudDebug().OnChange( w, x, y, finished );
 	}
@@ -94,7 +80,6 @@ class HudDebug extends Hud
 	Widget							m_WgtRoot;
 	Widget							m_Crosshair;
 	ref array<ref HudDebugWinBase>	m_Panels;
-	ref Timer						m_TimerUpdate;
 	ref HudDebugEventHandler 		m_HudDebugHandler;
 	ref HudDebugWinCharModifiers 	m_WinCharModifiers;
 	ref HudDebugWinCharStats		m_WinCharStats;
@@ -115,7 +100,6 @@ class HudDebug extends Hud
 	void ~HudDebug()
 	{
 		delete m_WgtRoot;
-		m_TimerUpdate.Stop();
 	}
 	
 	//============================================
@@ -169,15 +153,9 @@ class HudDebug extends Hud
 		
 		m_WinHorticulture = new HudDebugWinHorticulture( m_WgtRoot.FindAnyWidget( "wdw_Horticulture" ) );
 		m_Panels.Insert( m_WinHorticulture );
-		
-		
 				
-		
 		RefreshByLocalProfile();
 		RefreshCrosshairVisibility();
-		
-		m_TimerUpdate = new Timer();
-		m_TimerUpdate.Run( 1.0, this, "Update", NULL, true );
 		
 		//set ui event handler
 		m_HudDebugHandler = new HudDebugEventHandler( this );
@@ -187,13 +165,13 @@ class HudDebug extends Hud
 	//============================================
 	// Update
 	//============================================
-	override void Update( float timeslice )
+	override void Update(float timeslice)
 	{
-		for ( int i = 0; i < m_Panels.Count(); ++i )
+		for (int i = 0; i < m_Panels.Count(); ++i)
 		{
-			if ( m_Panels.Get( i ).IsVisible() )
+			if (m_Panels.Get(i).IsVisible())
 			{
-				m_Panels.Get( i ).Update();
+				m_Panels.Get(i).Update(timeslice);
 			}
 		}
 	}
@@ -324,45 +302,29 @@ class HudDebug extends Hud
 	//============================================
 	// OnClick
 	//============================================
-	bool OnClick( Widget w, int x, int y, int button )
-	{	
+	bool OnClick(Widget w, int x, int y, int button)
+	{
 		//send OnClick to HudDebugWinCharModifiers
-		if ( m_WinCharModifiers )
-		{
-			if (m_WinCharModifiers.OnClick( w, x, y, button ))
-				return true;
-		}
+		if (m_WinCharModifiers)
+			m_WinCharModifiers.OnClick(w, x, y, button);
 		
-		if ( m_WinCharAgents )
-		{
-			if (m_WinCharAgents.OnClick( w, x, y, button ))
-				return true;
-		}
+		if (m_WinCharAgents)
+			m_WinCharAgents.OnClick(w, x, y, button);
 		
-		if ( m_WinCharStats )
-		{
-			if (m_WinCharStats.OnClick( w, x, y, button ))
-				return true;
-		}
+		if (m_WinCharStats)
+			m_WinCharStats.OnClick(w, x, y, button);
 		
-		if ( m_WinHealth )
-		{
-			if (m_WinHealth.OnClick( w, x, y, button ))
-				return true;
-		}
+		if (m_WinHealth)
+			m_WinHealth.OnClick(w, x, y, button);
 				
-		if ( m_WinHorticulture )
-		{
-			if (m_WinHorticulture.OnClick( w, x, y, button ))
-				return true;
-		}
+		if (m_WinHorticulture)
+			m_WinHorticulture.OnClick(w, x, y, button);
 		
 		return false;
 	}
 	
 	bool OnChange(Widget w, int x, int y, bool finished)
 	{
-
 		if ( m_WinCharStats )
 		{
 			if (m_WinCharStats.OnChange( w, x, y, finished ))
@@ -371,4 +333,31 @@ class HudDebug extends Hud
 		return false;
 	}
 	
+	bool OnMouseButtonDown(Widget w, int x, int y, int button)
+	{
+		if (m_WinCharStats)
+			m_WinCharStats.OnMouseButtonDown(w, x, y, button);
+		
+		if (m_WinCharAgents)
+			m_WinCharAgents.OnMouseButtonDown(w, x, y, button);
+		
+		if (m_WinHealth)
+			m_WinHealth.OnMouseButtonDown(w, x, y, button);
+		
+		return false;
+	}
+	
+	bool OnMouseButtonUp(Widget w, int x, int y, int button)
+	{
+		if (m_WinCharStats)
+			m_WinCharStats.OnMouseButtonUp(w, x, y, button);
+		
+		if (m_WinCharAgents)
+			m_WinCharAgents.OnMouseButtonUp(w, x, y, button);
+		
+		if (m_WinHealth)
+			m_WinHealth.OnMouseButtonUp(w, x, y, button);
+		
+		return false;
+	}
 }

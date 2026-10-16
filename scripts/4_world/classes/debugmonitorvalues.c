@@ -5,6 +5,11 @@ class DebugMonitorValues
 	const int TYPE_BODY_TEMP 	= 3;
 	const int TYPE_POSITION 	= 4;
 	const int TYPE_LAST_DAMAGE 	= 5;
+
+	const int TYPE_ENVIRONMENT_TEMPERATURE = 6;
+
+	const int TYPE_HEAT_COMFORT = 7;
+	const int TYPE_THERMAL_BIAS	= 8;
 	
 	const int LAST_DAMAGE_FALL	= 1;
 	const int LAST_DAMAGE_HIT	= 2;
@@ -19,6 +24,9 @@ class DebugMonitorValues
 	
 	float m_LastHealthUpdate;
 	float m_LastBloodUpdate;
+	
+	float m_LastStatsUpdate;
+
 	string m_lastDamageUpdate;
 	
 	float m_HealthMaxValue;
@@ -26,6 +34,11 @@ class DebugMonitorValues
 
 	float m_BloodClient;
 	float m_HealthClient;
+	
+	float m_EnvironmentTemperatureClient;
+	float m_HeatComfortClient;
+	float m_ThermalBiasClient;
+
 	string m_LastDamageClient;
 	
 	void DebugMonitorValues(PlayerBase player)
@@ -59,6 +72,16 @@ class DebugMonitorValues
 		CheckHealth();
 		CheckBlood();
 		CheckLastDamage();
+		
+		if (m_LastStatsUpdate >= 5.0)
+		{
+			m_LastStatsUpdate = 0.0;
+			CheckEnvironmentTemperature();
+			CheckHeatComfort();
+			CheckThermalBias();
+		}
+		
+		m_LastStatsUpdate += VALUE_CHECK_INTERVAL;
 	}
 	
 	float GetBlood()
@@ -74,6 +97,21 @@ class DebugMonitorValues
 	string GetLastDamage()
 	{
 		return m_LastDamageClient;
+	}
+	
+	float GetEnvironmentTemperature()
+	{
+		return m_EnvironmentTemperatureClient;
+	}
+	
+	float GetHeatComfort()
+	{
+		return m_HeatComfortClient;
+	}
+	
+	float GetThermalBias()
+	{
+		return m_ThermalBiasClient;
 	}
 	
 	void SetLastDamage(string value)
@@ -123,12 +161,36 @@ class DebugMonitorValues
 		}
 	}
 	
+	protected void CheckEnvironmentTemperature()
+	{
+		float environmentTemperature = m_Player.m_Environment.GetTemperature();
+		Param1<float> param = new Param1<float>(environmentTemperature);
+		SendValue(TYPE_ENVIRONMENT_TEMPERATURE, param);
+	}
+	
+	protected void CheckHeatComfort()
+	{
+		float heatComfort = m_Player.GetStatHeatComfort().Get();
+		Param1<float> param = new Param1<float>(heatComfort);
+		SendValue(TYPE_HEAT_COMFORT, param);
+	}
+	
+	protected void CheckThermalBias()
+	{
+		float thermalBias = m_Player.GetThermalBiasHandler().Get();
+		Param1<float> param = new Param1<float>(thermalBias);
+		SendValue(TYPE_THERMAL_BIAS, param);
+	}
+	
 	void SendValue(int value_type, Param param)
 	{
 		switch(value_type)
 		{
 		case DebugMonitorValues.TYPE_HEALTH:
 		case DebugMonitorValues.TYPE_BLOOD:
+		case DebugMonitorValues.TYPE_ENVIRONMENT_TEMPERATURE:
+		case DebugMonitorValues.TYPE_HEAT_COMFORT:
+		case DebugMonitorValues.TYPE_THERMAL_BIAS:
 			{	
 				Param1<float> value_float = Param1<float>.Cast( param );
 
@@ -169,6 +231,24 @@ class DebugMonitorValues
 				Param1<float> valueBlood = Param1<float>.Cast( param );
 				//Print("ReceivedValue blood " + valueBlood.param1.ToString());
 				m_BloodClient = valueBlood.param1;
+			}
+			break;
+		case DebugMonitorValues.TYPE_ENVIRONMENT_TEMPERATURE:
+			{
+				Param1<float> valueEnvironmentTemperature = Param1<float>.Cast(param);
+				m_EnvironmentTemperatureClient = valueEnvironmentTemperature.param1;
+			}
+			break;
+		case DebugMonitorValues.TYPE_HEAT_COMFORT:
+			{
+				Param1<float> heatComfort = Param1<float>.Cast(param);
+				m_HeatComfortClient = heatComfort.param1;
+			}
+			break;
+		case DebugMonitorValues.TYPE_THERMAL_BIAS:
+			{
+				Param1<float> thermalBias = Param1<float>.Cast(param);
+				m_ThermalBiasClient = thermalBias.param1;
 			}
 			break;
 		case DebugMonitorValues.TYPE_LAST_DAMAGE:

@@ -1,3 +1,19 @@
+class ScriptConsoleItem
+{
+	string m_Name;
+	string m_DisplayName;
+	int m_Scope;
+	int m_CategoryMask = -1;
+
+	void ScriptConsoleItem(string name, string displayName, int scope, int categoryMask = -1)
+	{
+		m_Name = name;
+		m_DisplayName = displayName;
+		m_Scope = scope;
+		m_CategoryMask = categoryMask;
+	}
+}
+
 typedef Param7<EntityAI, string, float, float, bool, string, FindInventoryLocationType> DevSpawnItemParams;//(target, item_name, health, quantity, special, presetName, locationType );
 class PluginDeveloper extends PluginBase
 {
@@ -5,6 +21,8 @@ class PluginDeveloper extends PluginBase
 	protected int									m_FeaturesMask;
 	UIScriptedMenu									m_ScriptConsole;
 	
+	static ref map<string, ref ScriptConsoleItem> 	m_Items = new map<string, ref ScriptConsoleItem>();
+		
 	static PluginDeveloper GetInstance()
 	{
 		return PluginDeveloper.Cast( GetPlugin( PluginDeveloper ) );
@@ -56,6 +74,37 @@ class PluginDeveloper extends PluginBase
 		super.OnInit();
 		
 		DeveloperFreeCamera.OnInit();
+		
+		#ifdef DIAG_DEVELOPER
+		if (!m_Items || !m_Items.Count())
+			InitItems();
+		#endif
+	}
+	
+	protected TStringArray GetItemClasses()
+	{
+		return {CFG_VEHICLESPATH, CFG_WEAPONSPATH, CFG_MAGAZINESPATH, CFG_AMMO};
+	}
+	
+	protected void InitItems()
+	{
+		for (int i = 0; i < GetItemClasses().Count(); i++)
+		{
+			string configPath = GetItemClasses().Get(i);
+
+			int objectsCount = g_Game.ConfigGetChildrenCount(configPath);
+			for (int j = 0; j < objectsCount; j++)
+			{
+				string childName;
+				g_Game.ConfigGetChildName(configPath, j, childName);
+				int scope = g_Game.ConfigGetInt(configPath + " " + childName + " scope");
+				int categoryMask = g_Game.ConfigGetInt(configPath + " " + childName + " debug_ItemCategory") - 1;
+				string displayName;
+				g_Game.ConfigGetText(configPath + " " + childName + " displayName", displayName);
+				
+				m_Items.Insert(childName, new ScriptConsoleItem(childName, displayName, scope, categoryMask));
+			}
+		}
 	}
 	
 	void OnRPC(PlayerBase player, int rpc_type, ParamsReadContext ctx)
@@ -749,7 +798,7 @@ class PluginDeveloper extends PluginBase
 		{			
 			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 
-				if ( player && !g_Game.GetWorld().Is3rdPersonDisabled() )
+				if ( player && g_Game.GetWorld().GetThirdPersonViewMode() == ThirdPersonMode.ENABLED )
 				{
 					player.SetIsInThirdPerson(!player.IsInThirdPerson());//this counters the effect of switching camera through pressing the 'V' key
 				}
@@ -1012,5 +1061,10 @@ class PluginDeveloper extends PluginBase
 			SetDeveloperItemClientEx(entity, true);
 		}
 		#endif
+	}
+
+	map<string, ref ScriptConsoleItem> GetItems()
+	{
+		return m_Items;
 	}
 }

@@ -18,8 +18,8 @@ class ActionWashHandsSnow : ActionWashHandsWater
 	}
 	
 	override void CreateConditionComponents()
-	{		
+	{
 		m_ConditionItem		= new CCINone();
-		m_ConditionTarget 	= new CCTWaterSurfaceEx(UAMaxDistances.DEFAULT, LIQUID_SNOW);
+		m_ConditionTarget 	= new CCTLiquid(LIQUID_SNOW, UAMaxDistances.DEFAULT, UAMaxDistances.DEFAULT);
 	}
 }

@@ -232,26 +232,9 @@ class ServerBrowserTabPc extends ServerBrowserTab
 		
 		if (m_TotalLoadedServers == 0)
 		{
-			switch (m_TabType)
-			{
-				case TabType.OFFICIAL:
-				case TabType.COMMUNITY:
-				{
-					SwitchToFilters();
-					break;
-				}
-			}
+			if (m_TabType != TabType.FAVORITE && m_TabType != TabType.LAN)
+				SwitchToFilters();
 		}
-		
-		int totalVisibleEntries = 0;
-		foreach(string serverID, ServerBrowserEntry entry: m_EntryWidgets)
-		{
-			if (entry.GetRoot().IsVisible())
-				totalVisibleEntries++;
-		}
-		
-		if (GetTabType() == TabType.FAVORITE && totalVisibleEntries == 0)
-			g_Game.GetCallQueue(CALL_CATEGORY_GUI).Call(m_Menu.SwitchToOfficalTab);
 	}
 		
 	override void OnLoadServersAsyncPC(GetServersResult result_list, EBiosError error, string response)

@@ -428,7 +428,7 @@ class IntroSceneCharacter extends Managed
 		
 		if (entity)
 		{
-			m_CharacterObj.LocalTakeEntityAsAttachmentEx(entity, slot);
+			m_CharacterObj.LocalTakeEntityToTargetAttachmentEx(m_CharacterObj, entity, slot);
 		}
 	}
 	

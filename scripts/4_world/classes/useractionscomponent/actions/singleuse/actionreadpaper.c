@@ -12,7 +12,7 @@ class ActionReadPaperCB : ActionContinuousBaseCB
 	
 	override void OnStateChange(int pOldState, int pCurrentState)
 	{
-		if (pCurrentState == STATE_NONE && (!g_Game.IsDedicatedServer()))
+		if (pCurrentState == STATE_NONE && (!g_Game.IsHeadlessOrDedicatedServer()))
 		{
 			if (g_Game.GetUIManager() && g_Game.GetUIManager().IsMenuOpen(MENU_NOTE))
 				g_Game.GetUIManager().FindMenu(MENU_NOTE).Close();
@@ -53,7 +53,7 @@ class ActionReadPaper: ActionContinuousBase
 	{
 		super.OnUpdate(action_data);
 		
-		if(!g_Game.IsDedicatedServer())
+		if(!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			if (action_data.m_State == UA_FINISHED && g_Game.GetUIManager() && !g_Game.GetUIManager().IsMenuOpen(MENU_NOTE))
 			{

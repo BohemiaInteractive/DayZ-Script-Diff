@@ -13,8 +13,10 @@ class Blowtorch extends ItemBase
 		super.OnWorkStart();
 
 		#ifndef SERVER
+		#ifndef NO_GUI
 		m_Light = BlowtorchLight.Cast(ScriptedLightBase.CreateLight(BlowtorchLight, "0 0 0"));
 		m_Light.AttachOnMemoryPoint(this, "light");
+		#endif
 		#endif
 
 		RefreshFlameVisual(true);
@@ -24,10 +26,12 @@ class Blowtorch extends ItemBase
 	override void OnWorkStop()
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (m_Light)
 		{
 			m_Light.FadeOut();
 		}
+		#endif
 		#endif
 		
 		RefreshFlameVisual(false);
@@ -102,8 +106,11 @@ class Blowtorch extends ItemBase
 
 		AddAction(ActionLightItemOnFireWithBlowtorch);
 		AddAction(ActionRepairCarEngineWithBlowtorch);
+		AddAction(ActionRepairMotorbikeEngineWithBlowtorch);
 		AddAction(ActionRepairCarChassisWithBlowtorch);
+		AddAction(ActionRepairMotorbikeChassisWithBlowtorch);
 		AddAction(ActionRepairCarPartWithBlowtorch);
+		AddAction(ActionRepairMotorbikePartWithBlowTorch);
 		AddAction(ActionRepairItemWithBlowtorch);
 		AddAction(ActionRepairBoatEngine);
 	}

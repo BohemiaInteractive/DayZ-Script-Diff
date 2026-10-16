@@ -23,13 +23,16 @@ class ActionCloseDoors: ActionInteractBase
 		if (!IsBuilding(target))
 			return false;
 		
-		Building building;
+		BuildingBase building;
 		if (Class.CastTo(building, target.GetObject()))
 		{
 			int doorIndex = building.GetDoorIndex(target.GetComponentIndex());
 			if (doorIndex != -1)
 			{
 				if (!IsInReach(player, target, UAMaxDistances.DEFAULT))
+					return false;
+				
+				if (!building.DoorsDirectionalCheck(player,target.GetComponentIndex()))
 					return false;
 
 				return building.CanDoorBeClosed(doorIndex);
@@ -43,7 +46,7 @@ class ActionCloseDoors: ActionInteractBase
 	{
 		super.OnStartServer(action_data);
 		
-		Building building;
+		BuildingBase building;
 		if (Class.CastTo(building, action_data.m_Target.GetObject()))
 		{
 			int doorIndex = building.GetDoorIndex(action_data.m_Target.GetComponentIndex());
@@ -67,7 +70,10 @@ class ActionCloseDoors: ActionInteractBase
 		if (noise)
 		{
 			if (action_data.m_Player)
-				noise.AddNoisePos(action_data.m_Player, action_data.m_Target.GetObject().GetPosition(), m_NoisePar, NoiseAIEvaluate.GetNoiseReduction(g_Game.GetWeather()));
+			{
+				Object targetObj = action_data.m_Target.GetObject();
+				noise.AddNoisePos(action_data.m_Player, action_data.m_Player.GetPosition(), m_NoisePar);
+			}
 		}
 	}
 	

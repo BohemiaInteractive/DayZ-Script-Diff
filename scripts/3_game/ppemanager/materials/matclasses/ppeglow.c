@@ -39,14 +39,17 @@ class PPEGlow: PPEClassBase
 	static const int PARAM_LENSCENTERY = 30;
 	
 	//layer info
+	static const int L_20_SANDSTORM = 50;
 	static const int L_20_HIT = 100;
 	static const int L_20_FLASHBANG = 300;
 	static const int L_20_SHOCK = 500;
 	
+	static const int L_21_SANDSTORM_NVG = 50;
 	static const int L_21_SHOCK = 100;
 	static const int L_21_HIT = 300;
 	static const int L_21_FLASHBANG = 500;
 	
+	static const int L_22_SANDSTORM_NVG = 50;
 	static const int L_22_BLOODLOSS = 100;
 	
 	static const int L_23_GLASSES = 100;

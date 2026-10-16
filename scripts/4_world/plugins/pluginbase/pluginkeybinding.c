@@ -52,6 +52,8 @@ class PluginKeyBinding extends PluginBase
 		RegisterKeyBind(	 MENU_NONE|MENU_SCRIPTCONSOLE	,KeyCode.KC_RCONTROL	,KeyCode.KC_GRAVE	,"PluginDeveloper"		,"ToggleScriptConsole" 			,"[RCTRL]+[~]"					,"Show/Hide this script console");
 		RegisterKeyBind(	 MENU_NONE|MENU_SCENE_EDITOR	,KeyCode.KC_LCONTROL	,KeyCode.KC_TAB		,"PluginSceneManager"	,"EditorToggle"					,"[LCTRL]+[TAB]"				,"Show/Hide Scripted Scene Editor");
 		RegisterKeyBind(	 MENU_NONE|MENU_SCENE_EDITOR	,KeyCode.KC_RCONTROL	,KeyCode.KC_TAB		,"PluginSceneManager"	,"EditorToggle"					,"[RCTRL]+[TAB]"				,"Show/Hide Scripted Scene Editor");
+		RegisterKeyBind(	 MENU_NONE|MENU_UNDERGROUND_TRIGGER_EDITOR	,KeyCode.KC_LCONTROL	,KeyCode.KC_SLASH		,"PluginUndergroundTriggerManager"		,"EditorToggle"			,"[LCTRL]+[/]"			,"Show/Hide Underground Trigger Editor");
+		RegisterKeyBind(	 MENU_NONE|MENU_UNDERGROUND_TRIGGER_EDITOR	,KeyCode.KC_F	,-1		,"PluginUndergroundTriggerManager"		,"FocusOnObject"		,"[F]"							,"Focus on selected object");
 		RegisterKeyBind(	 MENU_NONE						,KeyCode.KC_LCONTROL	,KeyCode.KC_V		,"PluginDeveloper"		,"SpawnFromClipboard"			,"[Right Shift]"				,"Spawn item from clipboard");
 		#endif
 		
@@ -60,6 +62,7 @@ class PluginKeyBinding extends PluginBase
 		RegisterKeyBind(	 MENU_NONE						,KeyCode.KC_HOME		,-1					,"PluginDeveloper"		,"ToggleFreeCamera"				,"[Home]"						,"Toggle free camera and teleport player to its position");
 		RegisterKeyBind(	 MENU_NONE						,KeyCode.KC_DIVIDE		,-1					,"PluginDeveloper"		,"ToggleFreeCameraBackPos"		,"[Divide numeric]"				,"Toggle free camera, no player teleport");
 		RegisterKeyBind(	 MENU_NONE						,KeyCode.KC_LCONTROL	,KeyCode.KC_NUMPAD9	,"PluginDeveloperSync"	,"ToggleFocus"					,"[LCtrl]+[NUMPAD9]"			,"Toggle game focus");
+		RegisterKeyBind(	 MENU_NONE						,KeyCode.KC_LCONTROL	,KeyCode.KC_B	,"PluginDeveloperSync"	,"ToggleFocus"					,"[LCtrl]+[B]"			,"Toggle game focus");
 		#endif
 		
 		#ifdef DEVELOPER
@@ -102,11 +105,14 @@ class PluginKeyBinding extends PluginBase
 		RegisterMouseBind( 	MENU_SCENE_EDITOR	,MouseState.MIDDLE		,MB_EVENT_CLICK			,"PluginSceneManager"	,"Event_OnClickMiddle"		,"[MMB] Click"			,"Mission Editor => Link clicked object with selected object");
 		RegisterMouseBind( 	MENU_SCENE_EDITOR	,MouseState.RIGHT		,MB_EVENT_PRESS			,"PluginSceneManager"	,"FreeCameraControlEnable"	,"[RMB] Hold"			,"Mission Editor => Enable camera movement");
 		RegisterMouseBind( 	MENU_SCENE_EDITOR	,MouseState.RIGHT		,MB_EVENT_RELEASE		,"PluginSceneManager"	,"FreeCameraControlDisable"	,"[RMB] Release"		,"Mission Editor => Disable camera movement");
+
+		RegisterMouseBind( 	MENU_UNDERGROUND_TRIGGER_EDITOR	,MouseState.LEFT		,MB_EVENT_CLICK			,"PluginUndergroundTriggerManager"	,"Event_OnClick"			,"[LMB] Click"			,"Underground Trigger Editor => Select object in scene");
+		RegisterMouseBind( 	MENU_UNDERGROUND_TRIGGER_EDITOR	,MouseState.LEFT		,MB_EVENT_DOUBLECLICK	,"PluginUndergroundTriggerManager"	,"Event_OnDoubleClick" 		,"[LMB] Double Click"	,"Underground Trigger Editor => Create new object in scene");
+		RegisterMouseBind( 	MENU_UNDERGROUND_TRIGGER_EDITOR	,MouseState.RIGHT		,MB_EVENT_PRESS			,"PluginUndergroundTriggerManager"	,"FreeCameraControlEnable"	,"[RMB] Hold"			,"Underground Trigger Editor => Enable camera movement");
+		RegisterMouseBind( 	MENU_UNDERGROUND_TRIGGER_EDITOR	,MouseState.RIGHT		,MB_EVENT_RELEASE		,"PluginUndergroundTriggerManager"	,"FreeCameraControlDisable"	,"[RMB] Release"		,"Underground Trigger Editor => Disable camera movement");
+
 		RegisterMouseBind( 	MENU_NONE			,MouseState.LEFT		,MB_EVENT_CLICK			,"PluginDayZCreatureAIDebug","Event_OnClick"		,"[LMB] Click"			,"DayZCreature graph debug => Capture entity during capture mode");
 		RegisterMouseBind( 	MENU_CAMERA_TOOLS	,MouseState.RIGHT		,MB_EVENT_RELEASE		,"PluginCameraTools"	,"CursorShow"				,"[LMB] Click"			,"DayZCreature graph debug => Capture entity during capture mode");
-		// TO DO: (Boris V.) Remove the following commented-out mouse binds when weapon particles can be implemented properly. Also remove the events they call.
-		//RegisterMouseBind( 	MENU_NONE			,MouseState.LEFT		,MB_EVENT_PRESS			,"PluginDeveloper"		,"MuzzleParticleTestStart"	,"[LMB] Hold"			,"Debug particle");
-		//RegisterMouseBind( 	MENU_NONE			,MouseState.LEFT		,MB_EVENT_RELEASE		,"PluginDeveloper"		,"MuzzleParticleTestEnd"	,"[LMB] Release"		,"Debug particle2");
 		#endif
 		//--------------------------------------------------------------------------------------------------------------------------------------------------------------
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

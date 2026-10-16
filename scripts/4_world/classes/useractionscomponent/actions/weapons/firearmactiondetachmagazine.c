@@ -1,12 +1,16 @@
+//! OBSOLETE: Should be removed once we remove the whole FirearmActionDetachMagazine_Old class
 class DetachMagActionReciveData : ActionReciveData
 {
 	ref InventoryLocation  m_ilMagazine;
 }
+
+//! OBSOLETE: Should be removed once we remove the whole FirearmActionDetachMagazine_Old class
 class DetachMagActionData : ActionData
 {
 	ref InventoryLocation  m_ilMagazine;
 }
 
+[Obsolete("1.30: Use class FirearmActionDetachMagazine instead")];
 class FirearmActionDetachMagazine_Old : FirearmActionBase
 {	
 	void FirearmActionDetachMagazine_Old() 
@@ -146,18 +150,13 @@ class AdvDetachMagActionData : SequentialActionData
 
 class FirearmActionDetachMagazine : ActionSequentialBase
 {
-	void FirearmActionDetachMagazine()
-	{
-	}
-	
 	override ActionData CreateActionData()
 	{
 		ActionData action_data = new AdvDetachMagActionData;
 		return action_data;
 	}
-	
 
-	override bool InventoryReservation( ActionData action_data)
+	override bool InventoryReservation(ActionData action_data)
 	{
 		Weapon_Base wpn = Weapon_Base.Cast(action_data.m_MainItem);
 		Magazine mag = Magazine.Cast(action_data.m_Target.GetObject());
@@ -165,30 +164,27 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 		InventoryLocation ilWpn = new InventoryLocation();
 		InventoryLocation ilMag = new InventoryLocation();
 		
-		
 		int ur_index = action_data.m_Player.GetHumanInventory().FindUserReservedLocationIndex(wpn);
-			
 		if(ur_index > -1)
+		{
 			action_data.m_Player.GetHumanInventory().GetUserReservedLocation(ur_index,ilWpn);
+		}
 		else
 		{
 			action_data.m_Player.GetInventory().FindFreeLocationFor(wpn, FindInventoryLocationType.ANY_CARGO | FindInventoryLocationType.ATTACHMENT, ilWpn);
-			
-			
-				//return false;
 		}
 		
-		if( !action_data.m_Player.GetInventory().FindFreeLocationFor(mag, FindInventoryLocationType.ANY_CARGO, ilMag) )
+		if(!action_data.m_Player.GetInventory().FindFreeLocationFor(mag, FindInventoryLocationType.ANY_CARGO, ilMag))
 			return false;
 		
-		if( !super.InventoryReservation( action_data ) )
+		if(!super.InventoryReservation(action_data))
 			return false;
 
 		AdvDetachMagActionData action_data_dm = AdvDetachMagActionData.Cast(action_data);
-		if( !action_data.m_Player.GetInventory().AddInventoryReservationEx(wpn,ilWpn,10000) )
+		if(!action_data.m_Player.GetInventory().AddInventoryReservationEx(wpn,ilWpn,10000))
 			return false;
 		
-		if( !action_data.m_Player.GetInventory().AddInventoryReservationEx(mag,ilMag,10000) )
+		if(!action_data.m_Player.GetInventory().AddInventoryReservationEx(mag,ilMag,10000))
 			return false;
 			
 		action_data_dm.m_ReservedInventoryLocations.Insert(ilWpn);
@@ -199,7 +195,7 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 		return true;
 	}
 	
-	override void WriteToContext (ParamsWriteContext ctx, ActionData action_data)
+	override void WriteToContext(ParamsWriteContext ctx, ActionData action_data)
 	{
 		super.WriteToContext(ctx, action_data);
 		
@@ -221,7 +217,7 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 			return false;
 		
 		AdvDetachMagActionReciveData recive_data_dm;
-		recive_data_dm = AdvDetachMagActionReciveData.Cast( action_recive_data );
+		recive_data_dm = AdvDetachMagActionReciveData.Cast(action_recive_data);
 		
 		recive_data_dm.m_ilWeapon = new InventoryLocation;
 		recive_data_dm.m_ilMagazine = new InventoryLocation;
@@ -262,13 +258,18 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 	{
 		return true;
 	}
+
+	override bool CanBePerformedFromInventory()
+	{
+		return true;
+	}
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if (!super.ActionCondition( player, target, item ))
+		if (!super.ActionCondition(player, target, item))
 			return false;
 		
-		Weapon_Base wpn = Weapon_Base.Cast( item );
+		Weapon_Base wpn = Weapon_Base.Cast(item);
 		int mi = wpn.GetCurrentMuzzle();
 		return wpn && wpn.GetMagazine(mi) == target.GetObject();
 	}
@@ -280,17 +281,16 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 	
 	override void OnStageStart(SequentialActionData action_data)
 	{
-		if( action_data.m_ReciveEndInput )
+		if(action_data.m_ReciveEndInput)
 		{
-			End( action_data );
+			End(action_data);
 			return;
 		}
+		
 		super.OnStageStart(action_data);
-		Weapon_Base wpn;
-		Magazine mag;
-		//InventoryLocation il = new InventoryLocation();
+		
 		AdvDetachMagActionData action_data_dm = AdvDetachMagActionData.Cast(action_data);
-
+		
 		switch (action_data.m_Stage)
 		{
 			case 0:
@@ -298,37 +298,36 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 				break;
 			
 			case 1:
-				if ( !action_data_dm.m_ilWeapon.IsValid() )
+				if (!action_data_dm.m_ilWeapon.IsValid())
 				{
-					End( action_data );
+					End(action_data);
 					break;
 				}
 				
-				wpn = Weapon_Base.Cast(action_data.m_MainItem);
-				mag = Magazine.Cast(action_data.m_Target.GetObject());
-			
-				action_data.m_Player.GetHumanInventory().ClearUserReservedLocation(wpn);
-				if ( ( !g_Game.IsDedicatedServer() ) && !mag.GetHierarchyParent() )
+				Weapon_Base wpn = Weapon_Base.Cast(action_data.m_MainItem);
+				Magazine mag = Magazine.Cast(action_data.m_Target.GetObject());
+				
+				if (!g_Game.IsDedicatedServer() && !mag.GetHierarchyParent())
 				{
 					InventoryMode invMode = InventoryMode.PREDICTIVE;
 					
-					if ( action_data.m_Player.NeedInventoryJunctureFromServer(mag, action_data.m_Player, action_data.m_Player) || action_data.m_Player.NeedInventoryJunctureFromServer(wpn, action_data.m_Player, action_data.m_Player) )
+					if (action_data.m_Player.NeedInventoryJunctureFromServer(mag, action_data.m_Player, action_data.m_Player) || action_data.m_Player.NeedInventoryJunctureFromServer(wpn, action_data.m_Player, action_data.m_Player))
 						invMode = InventoryMode.JUNCTURE;
 				
 					action_data.m_Player.GetInventory().ForceSwapEntities(invMode, mag, wpn, action_data_dm.m_ilWeapon);
 				}
 
-				End( action_data );
+				End(action_data);
 				break;
 			default:
-				End( action_data );
+				End(action_data);
 				break;
 		}
 	}
 	
-	override void OnUpdate( ActionData action_data )
+	override void OnUpdate(ActionData action_data)
 	{
-		super.OnUpdate( action_data );
+		super.OnUpdate(action_data);
 		
 		SequentialActionData ad = SequentialActionData.Cast(action_data);
 		if(ad)
@@ -337,15 +336,10 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 			{
 				case 0:
 					Weapon_Base wpn = Weapon_Base.Cast(action_data.m_MainItem);
-		
-					if ( (!wpn || ad.m_Player.GetItemInHands()!=wpn || !ad.m_Player.GetWeaponManager().IsRunning()) && !ad.m_Player.IsJumpInProgress() )
+					if ((!wpn || ad.m_Player.GetItemInHands() != wpn || !ad.m_Player.GetWeaponManager().IsRunning()) && !ad.m_Player.IsJumpInProgress())
 					{
 						SetStage(1, ad);
 					}
-					break;
-				case 1:
-					//action_data.m_Player.GetHandFs
-					
 					break;
 				default:
 					break;
@@ -353,7 +347,7 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 		}
 	}
 	
-	override void OnStartServer( ActionData action_data )
+	override void OnStartServer(ActionData action_data)
 	{
 		super.OnStartServer(action_data);
 		
@@ -361,7 +355,7 @@ class FirearmActionDetachMagazine : ActionSequentialBase
 		g_Game.AddInventoryJunctureEx(action_data.m_Player, EntityAI.Cast(action_data.m_Target.GetObject()),action_data_dm.m_ilMagazine, true, 10000);
 	}
 	
-	override void OnEndServer( ActionData action_data )
+	override void OnEndServer(ActionData action_data)
 	{
 		super.OnEndServer(action_data);
 		

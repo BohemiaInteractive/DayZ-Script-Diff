@@ -730,10 +730,11 @@ class DynamicMusicPlayer
 		if (mission)
 		{
 			m_ActualTimeOfDay = mission.GetWorldData().GetDaytime();
+			m_ActualTimeOfDay = DynamicMusicPlayerTimeOfDay.Translate(m_ActualTimeOfDay);
 			return;
 		}
 
-		m_ActualTimeOfDay = DynamicMusicPlayerTimeOfDay.DAY;
+		m_ActualTimeOfDay = DynamicMusicPlayerTimeOfDay.Translate(DynamicMusicPlayerTimeOfDay.DAY);
 	}
 	
 	protected float GetWaitTimeForCategory(EDynamicMusicPlayerCategory category)
@@ -1049,6 +1050,47 @@ class DynamicMusicPlayer
 	}
 }
 
+//! simplified WorldDataDaytime
+class DynamicMusicPlayerTimeOfDay : WorldDataDaytime
+{
+	//! translates WorldDataDaytime -> DynamicMusicPlayerTimeOfDay
+	static int Translate(int value)
+	{
+		switch (value)
+		{
+			case MORNING:
+				return DAY;
+			case NOON:
+				return DAY;
+			case AFTERNOON:
+				return DAY;
+			case EVENING:
+				return NIGHT;
+			default:
+				return value;
+		}
+		
+		return value;
+	}
 
-//! for backward compatibility
-class DynamicMusicPlayerTimeOfDay : WorldDataDaytime {}
+	override static string ToString(int value)
+	{
+		switch (value)
+		{
+			case NIGHT:
+			case EVENING:
+				return "NIGHT";
+			case DAY:
+			case MORNING:
+			case NOON:
+			case AFTERNOON:
+				return "DAY";
+			case DUSK:
+				return "DUSK";
+			case DAWN:
+				return "DAWN";
+		}
+		
+		return "ANYTIME";
+	}
+}

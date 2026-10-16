@@ -89,7 +89,7 @@ class Liquid
 		
 		float source_quantity 	= source_ent.GetQuantity();
 		float target_quantity 	= target_ent.GetQuantity();
-		float targetCfgWeight 	= target_ent.m_ConfigWeight;
+		float targetCfgWeight 	= ItemBaseType.Cast(target_ent.GetEntityType()).m_ConfigWeight;
 		int source_liquid_type 	= source_ent.GetLiquidType();
 		
 		float available_capacity = target_ent.GetQuantityMax() - target_quantity;
@@ -171,7 +171,7 @@ class Liquid
 	//! Filled from any enviro source (fuel feed, pond, snow...)
 	static void FillContainerEnviro(ItemBase container, int liquid_type, float amount, bool inject_agents = true)
 	{
-		float containerCfgWeight = container.m_ConfigWeight;
+		float containerCfgWeight = ItemBaseType.Cast(container.GetEntityType()).m_ConfigWeight;
 		float retultTemp = (GetLiquidTypeEnviroTemperature(liquid_type) * amount + container.GetTemperature() * (containerCfgWeight + container.GetQuantity())) / (container.GetQuantity() + containerCfgWeight + amount);
 		container.SetTemperature(retultTemp);
 		AffectContainerOnFill(container,liquid_type,amount);
@@ -184,6 +184,7 @@ class Liquid
 			int agtSource;
 			switch (liquid_type)
 			{
+				case LIQUID_WATER:
 				case LIQUID_FRESHWATER:
 				case LIQUID_RIVERWATER:
 				case LIQUID_STILLWATER:

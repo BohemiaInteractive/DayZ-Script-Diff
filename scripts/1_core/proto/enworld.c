@@ -110,6 +110,9 @@ proto native void SetCameraPostProcessEffect(int cam, int priority, PostProcessE
 proto vector	ProjectVector(int cam, IEntity ent, vector vec);
 proto vector	UnprojectVector(int cam, float x, float y, vector dir);
 
+proto vector ProjectWorldToViewport(vector posWS, float w, float h, int cam);
+proto vector ProjectViewportToWorld(float x, float y, float w, float h, out vector dir, int cam);
+
 //@}
 
 //----------------------------------------------

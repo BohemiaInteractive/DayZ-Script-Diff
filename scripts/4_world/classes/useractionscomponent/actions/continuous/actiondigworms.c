@@ -61,17 +61,8 @@ class ActionDigWorms: ActionContinuousBase
 	override void OnFinishProgressServer(ActionData action_data)
 	{	
 		int count = action_data.m_MainItem.GetOnDigWormsAmount();
-		for (int i = 0; i < count; i++)
-		{
-			/*
-			vector posHead;
-			MiscGameplayFunctions.GetHeadBonePos(action_data.m_Player,posHead);
-			vector posRandom = MiscGameplayFunctions.GetRandomizedPositionVerified(posHead,action_data.m_Target.GetCursorHitPos(),UAItemsSpreadRadius.NARROW,action_data.m_Player);
-			
-			g_Game.CreateObjectEx("Worm", posRandom, ECE_PLACE_ON_SURFACE);
-			*/
+		for (int i = 0; i < count; ++i)
 			g_Game.CreateObjectEx("Worm", action_data.m_Target.GetCursorHitPos(), ECE_PLACE_ON_SURFACE);
-		}
 		
 		MiscGameplayFunctions.DealEvinronmentAdjustedDmg(action_data.m_MainItem, action_data.m_Player, 4);
 	}

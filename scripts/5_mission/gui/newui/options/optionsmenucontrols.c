@@ -19,19 +19,19 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	protected OptionsMenu					m_Menu;
 	
 	// console options accessors
-	protected ref SwitchOptionsAccess		m_KeyboardOption;
-	protected ref SwitchOptionsAccess		m_AimHelperOption;
+	protected SwitchOptionsAccess		m_KeyboardOption;
+	protected SwitchOptionsAccess		m_AimHelperOption;
 	
 	// console options selectors
 	protected ref OptionSelectorMultistate	m_KeyboardSelector;
 	protected ref OptionSelectorMultistate	m_AimHelperSelector;
 
 	// mouse accessors
-	protected ref SwitchOptionsAccess		m_Mouse_InvertOption;
-	protected ref NumericOptionsAccess		m_Mouse_VSensitivityOption;
-	protected ref NumericOptionsAccess		m_Mouse_HSensitivityOption;
-	protected ref NumericOptionsAccess		m_Mouse_AimMod_VSensitivityOption;
-	protected ref NumericOptionsAccess		m_Mouse_AimMod_HSensitivityOption;
+	protected SwitchOptionsAccess		m_Mouse_InvertOption;
+	protected NumericOptionsAccess		m_Mouse_VSensitivityOption;
+	protected NumericOptionsAccess		m_Mouse_HSensitivityOption;
+	protected NumericOptionsAccess		m_Mouse_AimMod_VSensitivityOption;
+	protected NumericOptionsAccess		m_Mouse_AimMod_HSensitivityOption;
 	
 	// mouse selectors
 	protected ref OptionSelectorMultistate	m_Mouse_InvertSelector;
@@ -41,18 +41,18 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	protected ref OptionSelectorSlider		m_Mouse_AimMod_HSensitivitySelector;
 
 	// gamepad/controller accessors
-	protected ref NumericOptionsAccess		m_ControllerLS_VSensitivityOption;
-	protected ref NumericOptionsAccess		m_ControllerLS_HSensitivityOption;
-	protected ref NumericOptionsAccess		m_ControllerLS_VehicleMod_HSensitivityOption;
-	protected ref SwitchOptionsAccess		m_ControllerRS_InvertOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_VSensitivityOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_HSensitivityOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_CurvatureOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_AimMod_VSensitivityOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_AimMod_HSensitivityOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_AimMod_CurvatureOption;
-	protected ref NumericOptionsAccess		m_ControllerLS_DeadZoneOption;
-	protected ref NumericOptionsAccess		m_ControllerRS_DeadZoneOption;
+	protected NumericOptionsAccess		m_ControllerLS_VSensitivityOption;
+	protected NumericOptionsAccess		m_ControllerLS_HSensitivityOption;
+	protected NumericOptionsAccess		m_ControllerLS_VehicleMod_HSensitivityOption;
+	protected SwitchOptionsAccess		m_ControllerRS_InvertOption;
+	protected NumericOptionsAccess		m_ControllerRS_VSensitivityOption;
+	protected NumericOptionsAccess		m_ControllerRS_HSensitivityOption;
+	protected NumericOptionsAccess		m_ControllerRS_CurvatureOption;
+	protected NumericOptionsAccess		m_ControllerRS_AimMod_VSensitivityOption;
+	protected NumericOptionsAccess		m_ControllerRS_AimMod_HSensitivityOption;
+	protected NumericOptionsAccess		m_ControllerRS_AimMod_CurvatureOption;
+	protected NumericOptionsAccess		m_ControllerLS_DeadZoneOption;
+	protected NumericOptionsAccess		m_ControllerRS_DeadZoneOption;
 	
 	// gamepad/controller selectors
 	protected ref OptionSelectorSlider		m_ControllerLS_VSensitivitySelector;
@@ -868,14 +868,6 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 		Revert();
 	}
 	
-	void ToggleDependentOptions(int mode, bool state)
-	{
-	}
-	
-	void InitDependentOptionsVisibility()
-	{
-	}
-	
 	void FillTextMap()
 	{
 		m_TextMap = new map<int, ref Param2<string, string>>;
@@ -935,4 +927,11 @@ class OptionsMenuControls extends ScriptedWidgetEventHandler
 	{
 		return m_ActiveOption;
 	}
+	
+	//! DEPRECATED BELOW
+	[Obsolete("1.29: No replacement")]
+	void ToggleDependentOptions(int mode, bool state);
+	
+	[Obsolete("1.29: No replacement")]
+	void InitDependentOptionsVisibility();
 }

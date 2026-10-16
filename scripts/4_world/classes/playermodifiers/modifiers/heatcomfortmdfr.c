@@ -1,4 +1,4 @@
-class HeatComfortMdfr: ModifierBase
+class HeatComfortMdfr : ModifierBase
 {
 	override void Init()
 	{
@@ -6,6 +6,7 @@ class HeatComfortMdfr: ModifierBase
 		m_ID 					= eModifiers.MDF_TEMPERATURE;
 		m_TickIntervalInactive 	= DEFAULT_TICK_TIME_INACTIVE;
 		m_TickIntervalActive 	= DEFAULT_TICK_TIME_ACTIVE;
+
 		DisableDeactivateCheck();
 	}
 
@@ -37,43 +38,76 @@ class HeatComfortMdfr: ModifierBase
 	
 	override void OnTick(PlayerBase player, float deltaT)
 	{
-		float heat_comfort = player.GetStatHeatComfort().Get();
-		float health_loss;
-		float value_normalized;
+		float heatComfortValue = player.GetStatHeatComfort().Get();
+		ThermalBiasHandler thermalBiasHandler = player.GetThermalBiasHandler();
+		float thermalBiasValue = thermalBiasHandler.Get();
+		PlayerStat<float> waterStat = player.GetStatWater();
+		float waterValue = waterStat.Get();
+		float valueNormalized;
 		
-		if( heat_comfort > PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_LOW )
+		if (heatComfortValue > PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_LOW)
 		{
-			value_normalized = Math.Lerp(PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_LOW, PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_HIGH, heat_comfort);
-			value_normalized = Math.Clamp(value_normalized, 0, 1);
-			float water_loss = deltaT * Math.Lerp(PlayerConstants.WATER_LOSS_HC_PLUS_LOW, PlayerConstants.WATER_LOSS_HC_PLUS_HIGH, value_normalized);
-			player.GetStatWater().Add(-water_loss);
-
-			if( heat_comfort > PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_HIGH )
-			{
-				value_normalized = Math.Lerp(PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_HIGH, 1.0, heat_comfort);
-				value_normalized = Math.Clamp(value_normalized, 0, 1);
-				health_loss = deltaT * Math.Lerp(PlayerConstants.HEALTH_LOSS_HC_PLUS_LOW, PlayerConstants.HEALTH_LOSS_HC_PLUS_HIGH, Easing.EaseInQuad(value_normalized));
-			}
+			valueNormalized = Math.Lerp(PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_LOW, PlayerConstants.WATER_LOSS_THRESHOLD_HC_PLUS_HIGH, heatComfortValue);
+			valueNormalized = Math.Clamp(valueNormalized, 0, 1);
+			float waterLoss = deltaT * Math.Lerp(PlayerConstants.WATER_LOSS_HC_PLUS_LOW, PlayerConstants.WATER_LOSS_HC_PLUS_HIGH, valueNormalized);
+			waterStat.Add(-waterLoss);
 		}
-		if( heat_comfort < PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_LOW )
+		if (heatComfortValue < PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_LOW)
 		{
-			value_normalized = Math.InverseLerp(PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_LOW, PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_HIGH, heat_comfort);
-			value_normalized = Math.Clamp(value_normalized, 0, 1);
-			float energy_loss = deltaT * Math.Lerp(PlayerConstants.ENERGY_LOSS_HC_MINUS_LOW, PlayerConstants.ENERGY_LOSS_HC_MINUS_HIGH, value_normalized);
-			player.GetStatEnergy().Add(-energy_loss);
+			valueNormalized 	= Math.InverseLerp(PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_LOW, PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_HIGH, heatComfortValue);
+			valueNormalized 	= Math.Clamp(valueNormalized, 0, 1);
+			float energyLoss 	= deltaT * Math.Lerp(PlayerConstants.ENERGY_LOSS_HC_MINUS_LOW, PlayerConstants.ENERGY_LOSS_HC_MINUS_HIGH, valueNormalized);
+			player.GetStatEnergy().Add(-energyLoss);
 
-			if( heat_comfort < PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_HIGH )
+			if(heatComfortValue < PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_HIGH)
 			{
-				value_normalized = Math.InverseLerp(PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_HIGH, -1.0, heat_comfort);
-				value_normalized = Math.Clamp(value_normalized, 0, 1);
-				health_loss = deltaT * Math.Lerp(PlayerConstants.HEALTH_LOSS_HC_MINUS_LOW, PlayerConstants.HEALTH_LOSS_HC_MINUS_HIGH, Easing.EaseInQuad(value_normalized));
+				valueNormalized = Math.InverseLerp(PlayerConstants.ENERGY_LOSS_THRESHOLD_HC_MINUS_HIGH, -1.0, heatComfortValue);
+				valueNormalized = Math.Clamp(valueNormalized, 0, 1);
+
+				float healthLoss = deltaT * Math.Lerp(PlayerConstants.HEALTH_LOSS_HC_MINUS_LOW, PlayerConstants.HEALTH_LOSS_HC_MINUS_HIGH, Easing.EaseInQuad(valueNormalized));
+				//! direct health loss handling
+				if (healthLoss != 0.0)
+					player.AddHealth("", "", -healthLoss);
 			}
 		}
 
-		if( health_loss != 0 )
+		//! Thermal Bias value feeding (based on HeatStroke stages)	
+		if (heatComfortValue > PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_EMPTY)
 		{
-			player.AddHealth("","",-health_loss);
+			thermalBiasHandler.Add(PlayerConstants.THERMAL_BIAS_POSITIVE_HC_HIGH_INCREMENT * deltaT);
+		}
+		else if (heatComfortValue > PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_CRITICAL)
+		{
+			thermalBiasHandler.Add(PlayerConstants.THERMAL_BIAS_POSITIVE_HC_MEDIUM_INCREMENT * deltaT);
+		}
+
+		if (heatComfortValue > PlayerConstants.THRESHOLD_HEAT_COMFORT_PLUS_WARNING)
+		{		
+			if (waterValue < PlayerConstants.SL_WATER_NORMAL && !player.IsUnconscious())
+			{
+				if (thermalBiasValue > HeatStrokeMdfr.STAGE_THRESHOLDS[3])
+					thermalBiasHandler.Add(PlayerConstants.THERMAL_BIAS_POSITIVE_HC_HIGH_INCREMENT * deltaT);
+				else if (thermalBiasValue >= HeatStrokeMdfr.STAGE_THRESHOLDS[2])
+					thermalBiasHandler.Add(PlayerConstants.THERMAL_BIAS_POSITIVE_HC_MEDIUM_INCREMENT * deltaT);
+				else
+					thermalBiasHandler.Add(PlayerConstants.THERMAL_BIAS_POSITIVE_HC_LOW_INCREMENT * deltaT);
+			}
+			else if (waterValue < PlayerConstants.SL_WATER_HIGH && !player.IsUnconscious())
+			{
+				if (thermalBiasValue < HeatStrokeMdfr.STAGE_THRESHOLDS[1])
+				{
+					thermalBiasHandler.Add(PlayerConstants.THERMAL_BIAS_POSITIVE_HC_LOW_INCREMENT * deltaT);
+				}
+				else
+					thermalBiasHandler.Add(-PlayerConstants.THERMAL_BIAS_POSITIVE_HC_DECREMENT * deltaT);
+			}
+		}
+		else
+		{
+			//! keep the value at 0.0 if we are bellow the positive yellow HC
+			thermalBiasHandler.Add(-PlayerConstants.THERMAL_BIAS_POSITIVE_HC_DECREMENT * deltaT);
+			if (thermalBiasValue <= 0.0)
+				thermalBiasHandler.Set(0.0);
 		}
 	}
-};
-
+}

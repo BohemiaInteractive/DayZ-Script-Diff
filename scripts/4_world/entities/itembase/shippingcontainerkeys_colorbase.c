@@ -53,3 +53,11 @@ class ShippingContainerKeys_Red : ShippingContainerKeys_ColorBase
 		return 1 << EBuildingLockType.SHIP_CONTAINER_3;
 	}
 };
+
+class ShippingContainerKeys_Green : ShippingContainerKeys_ColorBase
+{
+	override int GetKeyCompatibilityType()
+	{
+		return 1 << EBuildingLockType.SHIP_CONTAINER_4;
+	}
+};

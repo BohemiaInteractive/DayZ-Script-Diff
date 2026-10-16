@@ -2,6 +2,7 @@
 \brief Static data holder for certain ammo config values
 	\note Kept the names similar to what is in config, but it might be a little deceiving as this is mainly used for explosives
 */
+//Obsolete
 class AmmoEffects
 {	
 	//! Key: Ammo class name; Data: ParticleList ID
@@ -45,11 +46,14 @@ class AmmoEffects
 	//! Attempt to play the ammo particle at pos if found, returns true on success
 	static bool PlayAmmoParticle(string ammoType, vector pos)
 	{
-		int particleID = GetAmmoParticleID(ammoType);
+		string surfaceType;
+		g_Game.SurfaceGetType3D(pos[0], pos[1], pos[2], surfaceType);
+		ExplosiveEffectData explosiveEffectData = AmmoTypesAPI.GetExplosiveEffectData(ammoType, surfaceType);
+		//int particleID = GetAmmoParticleID(ammoType);
 		
-		if (ParticleList.IsValidId(particleID))
+		if (ParticleList.IsValidId(explosiveEffectData.m_ParticleID))
 		{
-			return ParticleManager.GetInstance().PlayInWorld(particleID, pos) != null;
+			return ParticleManager.GetInstance().PlayInWorld(explosiveEffectData.m_ParticleID, pos) != null;
 		}
 		
 		return false;
@@ -92,6 +96,9 @@ class AmmoEffects
 	//! Attempt to play the ammo effect at pos if found, returns true on success
 	static bool PlayAmmoEffect(string ammoType, vector pos)
 	{
+		string surfaceType;
+		g_Game.SurfaceGetType3D(pos[0], pos[1], pos[2], surfaceType);
+
 		typename typeName = GetAmmoEffectTypename(ammoType);
 		
 		if ( typeName )

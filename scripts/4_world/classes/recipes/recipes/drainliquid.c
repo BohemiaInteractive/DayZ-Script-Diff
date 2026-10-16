@@ -30,8 +30,10 @@ class DrainLiquid extends RecipeBase
 		InsertIngredient(0,"WaterBottle");//you can insert multiple ingredients this way
 		InsertIngredient(0,"FilteringBottle");//you can insert multiple ingredients this way
 		InsertIngredient(0,"GlassBottle");//you can insert multiple ingredients this way
+		InsertIngredient(0,"WineBottle");//you can insert multiple ingredients this way
 		InsertIngredient(0,"WaterPouch_ColorBase");//you can insert multiple ingredients this way
 		InsertIngredient(0,"Barrel_ColorBase");//you can insert multiple ingredients this way
+		InsertIngredient(0,"AyranBottle");//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[0] = 0;// 0 = do nothing
 		m_IngredientSetHealth[0] = -1; // -1 = do nothing
@@ -46,9 +48,10 @@ class DrainLiquid extends RecipeBase
 		InsertIngredient(1,"WaterBottle");//you can insert multiple ingredients this way
 		InsertIngredient(1,"FilteringBottle");//you can insert multiple ingredients this way
 		InsertIngredient(1,"GlassBottle");//you can insert multiple ingredients this way
+		InsertIngredient(1,"WineBottle");//you can insert multiple ingredients this way
 		InsertIngredient(1,"WaterPouch_ColorBase");//you can insert multiple ingredients this way
 		InsertIngredient(1,"Barrel_ColorBase");//you can insert multiple ingredients this way
-		
+		InsertIngredient(0,"AyranBottle");//you can insert multiple ingredients this way		
 		m_IngredientAddHealth[1] = 0;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing
 		m_IngredientAddQuantity[1] = 0;// 0 = do nothing

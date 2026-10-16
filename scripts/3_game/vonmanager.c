@@ -40,6 +40,9 @@ class VONManagerImplementation : VONManagerBase
 	*/
 	override void HideVoiceNotification()
 	{
+#ifdef NO_GUI
+		return;
+#endif
 		if (g_Game.IsMissionMainMenu())
 		{
 			return;

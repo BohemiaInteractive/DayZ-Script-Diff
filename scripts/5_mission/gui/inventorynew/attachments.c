@@ -183,9 +183,9 @@ class Attachments
 						}
 						else
 						{
-							if( player.GetHumanInventory().CanAddEntityInHands( focused_item ) )
+							if (player.GetHumanInventory().CanAddEntityInHands(focused_item))
 							{
-								player.PredictiveTakeEntityToHands( focused_item );
+								player.PredictiveTakeEntityToHands(focused_item);
 								return true;
 							}
 						}
@@ -276,6 +276,7 @@ class Attachments
 		EntityAI entity = GetFocusedItem();
 		if( entity && !GetFocusedSlotsIcon().IsOutOfReach() )
 		{
+			PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 			g_Game.GetPlayer().PredictiveTakeEntityToInventory( FindInventoryLocationType.CARGO, entity );
 			return true;
 		}

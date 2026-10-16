@@ -23,13 +23,13 @@ class DayZPlayerImplementFallDamage
 	static const string	FALL_DAMAGE_AMMO_HEALTH_ATTACHMENT			= "FallDamageHealthAttachment";
 	static const string	FALL_DAMAGE_AMMO_HEALTH_OTHER_ATTACHMENTS	= "FallDamageHealthOtherAttachments";
 
-	const float		HEALTH_HEIGHT_LOW 		= 5;
-	const float		HEALTH_HEIGHT_HIGH 		= 14;
+	const float		HEALTH_HEIGHT_LOW 		= 2;
+	const float		HEALTH_HEIGHT_HIGH 		= 12;
 
-	private const float		SHOCK_HEIGHT_LOW 		= 3;
-	private const float		SHOCK_HEIGHT_HIGH 		= 12;
-	private const float		BROKENLEGS_HEIGHT_LOW 	= 5;
-	private const float		BROKENLEGS_HEIGHT_HIGH 	= 9;
+	private const float		SHOCK_HEIGHT_LOW 		= 0;
+	private const float		SHOCK_HEIGHT_HIGH 		= 8;
+	private const float		BROKENLEGS_HEIGHT_LOW 	= 3;
+	private const float		BROKENLEGS_HEIGHT_HIGH 	= 8;
 	
 	private const float		GLOVES_HEALTH_HEIGHT_LOW 		= 5;
 	private const float		GLOVES_HEALTH_HEIGHT_HIGH 		= 15;
@@ -38,7 +38,7 @@ class DayZPlayerImplementFallDamage
 	private const float		PANTS_HEALTH_HEIGHT_LOW 		= 5;
 	private const float		PANTS_HEALTH_HEIGHT_HIGH 		= 16;
 	
-	private const float		BLEEDINGHANDS_HEIGHT_LOW 	= 5;
+	private const float		BLEEDINGHANDS_HEIGHT_LOW 	= 3;
 	private const float		BLEEDINGFEET_HEIGHT_LOW 	= 3;
 	private const float		BLEEDINGLEGS_HEIGHT_LOW 	= 10;
 
@@ -89,67 +89,79 @@ class DayZPlayerImplementFallDamage
 	{
 		return m_FallDamageData.m_LandType;
 	}
+	float CurveExp(float low, float high, float value, float power)
+	{
+	    float t = Math.InverseLerp(low, high, value);
+	    t = Math.Clamp(t, 0, 1);
+	    return Math.Pow(t, power);
+	}
 
 	void HandleFallDamage(FallDamageData pData)
 	{
-		m_FallDamageData = pData;
-		
-		m_FallDamageData.m_HealthCoef = Math.InverseLerp(HEALTH_HEIGHT_LOW, HEALTH_HEIGHT_HIGH, pData.m_Height);
-		m_FallDamageData.m_HealthCoef = Randomize(DAMAGE_TYPE_GLOBAL, m_FallDamageData.m_HealthCoef);
-		m_FallDamageData.m_HealthCoef = Math.Clamp(m_FallDamageData.m_HealthCoef, 0, 1);
-
-		m_FallDamageData.m_ShockCoef = Math.InverseLerp(SHOCK_HEIGHT_LOW, SHOCK_HEIGHT_HIGH, pData.m_Height);
-		m_FallDamageData.m_ShockCoef = Math.Clamp(m_FallDamageData.m_ShockCoef, 0, 1);
-
-		m_FallDamageData.m_BrokenLegsCoef = Math.InverseLerp(BROKENLEGS_HEIGHT_LOW, BROKENLEGS_HEIGHT_HIGH, pData.m_Height);
-		m_FallDamageData.m_BrokenLegsCoef = Randomize(DAMAGE_TYPE_LEGS, m_FallDamageData.m_BrokenLegsCoef);
-		m_FallDamageData.m_BrokenLegsCoef = Math.Clamp(m_FallDamageData.m_BrokenLegsCoef, 0, 1);
-
-		m_FallDamageData.m_BleedingHandsCoef = Math.InverseLerp(0, BLEEDINGHANDS_HEIGHT_LOW, pData.m_Height);
-		m_FallDamageData.m_BleedingHandsCoef = Math.Clamp(m_FallDamageData.m_BleedingHandsCoef, 0, 1);
-		
-		m_FallDamageData.m_BleedingFeetCoef = Math.InverseLerp(0, BLEEDINGFEET_HEIGHT_LOW, pData.m_Height);
-		m_FallDamageData.m_BleedingFeetCoef = Math.Clamp(m_FallDamageData.m_BleedingFeetCoef, 0, 1);
-
-		m_FallDamageData.m_BleedingLegsCoef = Math.InverseLerp(0, BLEEDINGLEGS_HEIGHT_LOW, pData.m_Height);
-		m_FallDamageData.m_BleedingLegsCoef = Math.Clamp(m_FallDamageData.m_BleedingLegsCoef, 0, 1);
-		
-		m_FallDamageData.m_GlovesHealthCoef = Math.InverseLerp(GLOVES_HEALTH_HEIGHT_LOW, GLOVES_HEALTH_HEIGHT_HIGH, pData.m_Height);
-		m_FallDamageData.m_GlovesHealthCoef = Randomize(DAMAGE_TYPE_ATTACHMENTS, m_FallDamageData.m_GlovesHealthCoef);
-		m_FallDamageData.m_GlovesHealthCoef = Math.Clamp(m_FallDamageData.m_GlovesHealthCoef, 0, 1);
-		
-		m_FallDamageData.m_ShoesHealthCoef = Math.InverseLerp(SHOES_HEALTH_HEIGHT_LOW, SHOES_HEALTH_HEIGHT_HIGH, pData.m_Height);
-		m_FallDamageData.m_ShoesHealthCoef = Randomize(DAMAGE_TYPE_ATTACHMENTS, m_FallDamageData.m_ShoesHealthCoef);
-		m_FallDamageData.m_ShoesHealthCoef = Math.Clamp(m_FallDamageData.m_ShoesHealthCoef, 0, 1);
-		
-		m_FallDamageData.m_PantsHealthCoef = Math.InverseLerp(PANTS_HEALTH_HEIGHT_LOW, PANTS_HEALTH_HEIGHT_HIGH, pData.m_Height);
-		m_FallDamageData.m_PantsHealthCoef = Randomize(DAMAGE_TYPE_ATTACHMENTS, m_FallDamageData.m_PantsHealthCoef);
-		m_FallDamageData.m_PantsHealthCoef = Math.Clamp(m_FallDamageData.m_PantsHealthCoef, 0, 1);
-		
-		m_FallDamageData.m_BleedingChanceCoef = Math.InverseLerp(BLEEDING_CHANCE_HEIGHT_LOW, BLEEDING_CHANCE_HEIGHT_HIGH, pData.m_Height);
-		m_FallDamageData.m_BleedingChanceCoef = Math.Clamp(m_FallDamageData.m_BleedingChanceCoef, 0, 0.7);
-		
-		m_FallDamageData.m_BleedingChanceLegsCoef = 0.15;
-		
-		if (g_Game.IsServer())
-		{
-			PlayerBase playerBase = PlayerBase.Cast(m_Player);
-			if (playerBase)
-			{
-				AttachBleedingToZonesByHeight(playerBase);
-				DamageAttachedGear(playerBase);
-				playerBase.DamageAllLegs(BROKENLEGS_HEALTH_DAMAGE_MAX * m_FallDamageData.m_BrokenLegsCoef);
-				playerBase.ForceUpdateInjuredState();
-			}
-
-			m_Player.ProcessDirectDamage(DamageType.CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_HEALTH, vector.Zero, m_FallDamageData.m_HealthCoef);
-			m_Player.ProcessDirectDamage(DamageType.CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_SHOCK, vector.Zero, m_FallDamageData.m_ShockCoef);
-				
-		}
+	    m_FallDamageData = pData;
+	
+	    // Main player damage
+	    m_FallDamageData.m_HealthCoef = CurveExp(HEALTH_HEIGHT_LOW, HEALTH_HEIGHT_HIGH, pData.m_Height, 2.0);
+	    m_FallDamageData.m_HealthCoef = Randomize(DAMAGE_TYPE_GLOBAL, m_FallDamageData.m_HealthCoef);
+	    m_FallDamageData.m_HealthCoef = Math.Clamp(m_FallDamageData.m_HealthCoef, 0, 1);
+	
+	    m_FallDamageData.m_ShockCoef = CurveExp(SHOCK_HEIGHT_LOW, SHOCK_HEIGHT_HIGH, pData.m_Height, 2.0);
+	    m_FallDamageData.m_ShockCoef = Math.Clamp(m_FallDamageData.m_ShockCoef, 0, 1);
+	
+	    m_FallDamageData.m_BrokenLegsCoef = CurveExp(BROKENLEGS_HEIGHT_LOW, BROKENLEGS_HEIGHT_HIGH, pData.m_Height, 2.5);
+	    m_FallDamageData.m_BrokenLegsCoef = Randomize(DAMAGE_TYPE_LEGS, m_FallDamageData.m_BrokenLegsCoef);
+	    m_FallDamageData.m_BrokenLegsCoef = Math.Clamp(m_FallDamageData.m_BrokenLegsCoef, 0, 1);
+	
+	    // Bleeding zones
+	    m_FallDamageData.m_BleedingHandsCoef = CurveExp(0, BLEEDINGHANDS_HEIGHT_LOW, pData.m_Height, 1.8);
+	    m_FallDamageData.m_BleedingHandsCoef = Math.Clamp(m_FallDamageData.m_BleedingHandsCoef, 0, 1);
+	
+	    m_FallDamageData.m_BleedingFeetCoef = CurveExp(0, BLEEDINGFEET_HEIGHT_LOW, pData.m_Height, 1.8);
+	    m_FallDamageData.m_BleedingFeetCoef = Math.Clamp(m_FallDamageData.m_BleedingFeetCoef, 0, 1);
+	
+	    m_FallDamageData.m_BleedingLegsCoef = CurveExp(0, BLEEDINGLEGS_HEIGHT_LOW, pData.m_Height, 2.0);
+	    m_FallDamageData.m_BleedingLegsCoef = Math.Clamp(m_FallDamageData.m_BleedingLegsCoef, 0, 1);
+	
+	    // Attached gear damage
+	    m_FallDamageData.m_GlovesHealthCoef = CurveExp(GLOVES_HEALTH_HEIGHT_LOW, GLOVES_HEALTH_HEIGHT_HIGH, pData.m_Height, 2.0);
+	    m_FallDamageData.m_GlovesHealthCoef = Randomize(DAMAGE_TYPE_ATTACHMENTS, m_FallDamageData.m_GlovesHealthCoef);
+	    m_FallDamageData.m_GlovesHealthCoef = Math.Clamp(m_FallDamageData.m_GlovesHealthCoef, 0, 1);
+	
+	    m_FallDamageData.m_ShoesHealthCoef = CurveExp(SHOES_HEALTH_HEIGHT_LOW, SHOES_HEALTH_HEIGHT_HIGH, pData.m_Height, 2.2);
+	    m_FallDamageData.m_ShoesHealthCoef = Randomize(DAMAGE_TYPE_ATTACHMENTS, m_FallDamageData.m_ShoesHealthCoef);
+	    m_FallDamageData.m_ShoesHealthCoef = Math.Clamp(m_FallDamageData.m_ShoesHealthCoef, 0, 1);
+	
+	    m_FallDamageData.m_PantsHealthCoef = CurveExp(PANTS_HEALTH_HEIGHT_LOW, PANTS_HEALTH_HEIGHT_HIGH, pData.m_Height, 2.0);
+	    m_FallDamageData.m_PantsHealthCoef = Randomize(DAMAGE_TYPE_ATTACHMENTS, m_FallDamageData.m_PantsHealthCoef);
+	    m_FallDamageData.m_PantsHealthCoef = Math.Clamp(m_FallDamageData.m_PantsHealthCoef, 0, 1);
+	
+	    // Bleeding chance
+	    m_FallDamageData.m_BleedingChanceCoef = CurveExp(BLEEDING_CHANCE_HEIGHT_LOW, BLEEDING_CHANCE_HEIGHT_HIGH, pData.m_Height, 2.0);
+	    m_FallDamageData.m_BleedingChanceCoef = Math.Clamp(m_FallDamageData.m_BleedingChanceCoef, 0, 0.7);
+	
+	    m_FallDamageData.m_BleedingChanceLegsCoef = 0.15;
+	
+	    if (g_Game.IsServer())
+	    {
+	        PlayerBase playerBase = PlayerBase.Cast(m_Player);
+	        if (playerBase)
+	        {
+	            AttachBleedingToZonesByHeight(playerBase);
+	            DamageAttachedGear(playerBase);
+	            playerBase.DamageAllLegs(BROKENLEGS_HEALTH_DAMAGE_MAX * m_FallDamageData.m_BrokenLegsCoef);
+	            playerBase.ForceUpdateInjuredState();
+	        }
+	
+	        m_Player.ProcessDirectDamage(DamageType.CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_HEALTH, vector.Zero, m_FallDamageData.m_HealthCoef);
+	        m_Player.ProcessDirectDamage(DamageType.CUSTOM, m_Player, "", FALL_DAMAGE_AMMO_SHOCK, vector.Zero, m_FallDamageData.m_ShockCoef);
+	    }
 	}
 	
 	private float Randomize(int pType, float pValue)
 	{
+		if (pValue == 1)
+			return pValue;
+		
 		Math.Randomize(g_Game.GetTime());
 		
 		int randomizedSign = -1;

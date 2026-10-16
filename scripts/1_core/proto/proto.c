@@ -357,6 +357,91 @@ int LerpARGB(int c1, int c2)
 	return cb1 << 8 | c1;
 }
 
+// Converts RGB to HSV color space
+// ToDo: Might drop this to native side or use some API that would perform the conversion on GPU
+static vector RGBToHSV(vector rgb)
+{
+	float r = rgb[0];
+	float g = rgb[1];
+	float b = rgb[2]; 
+	
+	float maxVal = Math.Max(r, Math.Max(g, b));
+	float minVal = Math.Min(r, Math.Min(g, b));
+	float delta = maxVal - minVal;
+	
+	float h = 0, s = 0, v = maxVal; 
+	
+	if (maxVal != 0)
+		s = delta / maxVal; 
+	
+	if (delta != 0)
+	{
+		switch (maxVal)
+		{
+			case r:
+			{
+				h = (g - b) / delta;
+				if (g < b)
+					h += 6;
+			}
+			break;
+			case g:
+				h = (b - r) / delta + 2;
+			break;
+			case b:
+				h = (r - g) / delta + 4;
+			break;
+		}
+		h = h / 6;
+	}
+
+	return Vector(h * 360, s, v); // H in degrees, S and V in 0-1
+}
+
+// Converts HSV to RGB color space
+// ToDo: Might drop this to native side or use some API that would perform the conversion on GPU
+static vector HSVToRGB(vector hsv)
+{
+	float h = hsv[0] / 360.0; // Convert degrees to 0-1
+	float s = hsv[1];
+	float v = hsv[2]; 
+	
+	float c = v * s;
+	float hSector = h * 6; 
+	
+	// Calculate which sector we're in (0-5)
+	int sector = (int)hSector;
+	float remainder = hSector - sector; 
+	
+	float x = c * (1 - Math.AbsFloat(remainder - 1));
+	float m = v - c; 
+	
+	float r = 0, g = 0, b = 0; 
+	
+	switch (sector)
+	{
+		case 0:
+			r = c; g = x; b = 0;
+		break;
+		case 1:
+			r = x; g = c; b = 0;
+		break;
+		case 2:
+			r = 0; g = c; b = x;
+		break;
+		case 3:
+			r = 0; g = x; b = c;
+		break;
+		case 4:
+			r = x; g = 0; b = c;
+		break;
+		default:
+			r = c; g = 0; b = x;
+	}
+	
+	return Vector(r + m, g + m, b + m);
+}
+
 //-------------------------------------------------------------------------
 class Link<Class T>
 {

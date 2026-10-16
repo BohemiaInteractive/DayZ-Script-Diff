@@ -102,7 +102,7 @@ class PlayerSoundManagerClient extends PlayerSoundManagerBase
 	void PlayerSoundManagerClient(PlayerBase player)
 	{
 		
-		if( !g_Game.IsDedicatedServer() ) 
+		if( !g_Game.IsHeadlessOrDedicatedServer() ) 
 		{
 			m_ClientCharacterDistanceCheck.Run(2, this, "CheckAllowUpdate", null, true);
 		}

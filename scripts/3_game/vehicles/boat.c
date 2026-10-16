@@ -10,10 +10,7 @@ enum BoatSoundCtrl
 };
 
 //!	Type of vehicle's fluid. (native, do not change or extend)
-enum BoatFluid
-{
-	FUEL
-};
+enum BoatFluid : ETransportFluid {}
 
 class BoatType : TransportType
 {
@@ -40,6 +37,22 @@ class Boat extends Transport
 	protected override event typename GetMoveType()
 	{
 		return BoatMove;
+	}
+	
+	//!	Returns the current speed of the vehicle in km/h.
+	float GetSpeedometer()
+	{
+		vector transform[4];
+		GetTransform(transform);
+
+		float velocity = GetVelocity(this).InvMultiply3(transform)[2];
+		return velocity * 3.6;
+	}
+	
+	//! Returns the current speed of the vehicle in km/h. Value is absolute
+	float GetSpeedometerAbsolute()
+	{
+		return Math.AbsFloat(GetSpeedometer());
 	}
 
 	//!	Returns the actual steering value in range <-1, 1>.

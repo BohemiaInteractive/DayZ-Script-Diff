@@ -94,11 +94,6 @@ class CableReel extends ItemBase
 			playerPB.GetHologramLocal().SetSelectionToRefresh(selections);
 	}
 	
-	override string GetDeploySoundset()
-	{
-		return "placeCableReel_SoundSet";
-	}
-	
 	override void SetActions()
 	{
 		super.SetActions();
@@ -113,5 +108,17 @@ class CableReel extends ItemBase
 		AddAction(ActionRepositionPluggedItem);
 		AddAction(ActionPlaceObject);
 		AddAction(ActionTakeItemToHands);
+	}
+	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer())
+			 return;
+		
+		int deviceCount	= GetCompEM().GetPluggedDevicesCount();
+		if (deviceCount > 0)
+		{
+			GetCompEM().UnplugAllDevices();
+		}
 	}
 }

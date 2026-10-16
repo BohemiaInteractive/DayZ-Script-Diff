@@ -26,9 +26,9 @@ class HudDebugWinVersion extends HudDebugWinBase
 	//============================================
 	// Update
 	//============================================
-	override void Update()
+	override void Update(float timeslice)
 	{
-		super.Update();
+		super.Update(timeslice);
 	}
 
 	//============================================

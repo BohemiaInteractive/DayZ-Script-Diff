@@ -645,13 +645,13 @@ class FlammableBase : ItemBase
 			}
 		}
 		
-		if ( !m_LoopSoundEntity && g_Game && ( !g_Game.IsDedicatedServer() ) )
+		if ( !m_LoopSoundEntity && g_Game && ( !g_Game.IsHeadlessOrDedicatedServer() ) )
 		{
 			m_LoopSoundEntity = PlaySoundLoop(GetSoundName(), 50);
 		}
 		
 		// Effect scaling by fuel
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			UpdateLight();
 			UpdateParticle();
@@ -704,7 +704,7 @@ class FlammableBase : ItemBase
 		if (m_Light)
 			m_Light.FadeOut();
 		
-		if ( m_LoopSoundEntity && g_Game && ( !g_Game.IsDedicatedServer() ) )
+		if ( m_LoopSoundEntity && g_Game && ( !g_Game.IsHeadlessOrDedicatedServer() ) )
 		{
 			g_Game.ObjectDelete( m_LoopSoundEntity );
 			m_LoopSoundEntity = NULL;

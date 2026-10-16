@@ -1,3 +1,7 @@
+#ifndef BUILD_EXPERIMENTAL
+	#define ENABLE_CAROUSEL
+#endif
+
 class MainMenu extends UIScriptedMenu
 {
 	protected ref MainMenuStats		m_Stats;
@@ -107,15 +111,14 @@ class MainMenu extends UIScriptedMenu
 		g_Game.GetUIManager().ScreenFadeOut(0);
 
 		SetFocus(null);
-		
 		Refresh();
-		
 		LoadMods();
-		
+		MainMenuData.SubscribeDLCUpdate();
+		MainMenuData.GetOnDLCChangedSI().Insert(OnDLCChange);
 		CheckWidth();
 		
-		#ifndef BUILD_EXPERIMENTAL
-		m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
+		#ifdef ENABLE_CAROUSEL
+		RefreshNewsCarousel();
 		#else
 		m_NewsCarousel = null;
 		#endif
@@ -136,7 +139,23 @@ class MainMenu extends UIScriptedMenu
 		{
 			g_Game.GetMission().GetOnModMenuVisibilityChanged().Remove(ShowNewsCarousel);
 		}
+		
+		MainMenuData.GetOnDLCChangedSI().Remove(OnDLCChange);
+		MainMenuData.UnsubscribeDLCUpdate();
 	}
+	
+	#ifdef ENABLE_CAROUSEL
+	protected void RefreshNewsCarousel()
+	{
+		if (m_NewsCarousel)
+		{
+			m_NewsCarousel.Destroy();
+			m_NewsCarousel = null;
+		}
+	
+		m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
+	}
+	#endif
 	
 	void ShowNewsCarousel(bool show)
 	{
@@ -145,8 +164,17 @@ class MainMenu extends UIScriptedMenu
 			m_NewsCarousel.ShowNewsCarousel(show);
 	}
 	
+	void OnDLCChange(EDLCId dlcId)
+	{
+		#ifdef ENABLE_CAROUSEL
+		RefreshNewsCarousel();
+		#endif
+	}
+	
 	void LoadMods()
 	{
+		if (m_ModsTooltip)
+			delete m_ModsTooltip;
 		if (m_ModsSimple)
 			delete m_ModsSimple;
 		if (m_ModsDetailed)
@@ -381,6 +409,9 @@ class MainMenu extends UIScriptedMenu
 		OnChangeCharacter(false);
 		m_Stats.UpdateStats();
 		LoadMods();
+		#ifdef ENABLE_CAROUSEL
+		RefreshNewsCarousel();
+		#endif
 		return;
 	}
 	
@@ -723,14 +754,9 @@ class MainMenu extends UIScriptedMenu
 				
 		if (m_PrevWidth != m_Width || m_PrevHeight != m_Height)
 		{
-			//! Recreate news carousel when screen size has changed
-			if (m_NewsCarousel)
-			{
-				m_NewsCarousel.Destroy();
-				m_NewsCarousel = null;
-				m_NewsCarousel = new NewsCarousel(m_NewsCarouselFrame, this);
-			}
-			
+			#ifdef ENABLE_CAROUSEL
+			RefreshNewsCarousel();
+			#endif
 			m_PrevWidth = w;
 			m_PrevHeight = h;
 		}

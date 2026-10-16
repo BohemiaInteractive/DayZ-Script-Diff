@@ -559,7 +559,7 @@ class Inventory: LayoutHolder
 		
 					if (stackable == 0 || stackable >= item.GetQuantity())
 					{
-						player.PredictiveTakeEntityAsAttachment(item);
+						player.PredictiveTakeEntityToTargetAttachment(player, item);
 					}
 					else
 					{
@@ -1075,20 +1075,14 @@ class Inventory: LayoutHolder
 				{
 					if (m_RightArea.CanCombine())
 					{
-						if (m_RightArea.Combine())
-						{
-							mission.HideInventory();
-						}
+						m_RightArea.Combine();
 					}
 				}
 				else if (m_LeftArea.IsActive())
 				{
 					if (m_LeftArea.CanCombine())
 					{
-						if (m_LeftArea.Combine())
-						{
-							mission.HideInventory();
-						}
+						m_LeftArea.Combine();
 					}
 				}
 			#endif

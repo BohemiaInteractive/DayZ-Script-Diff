@@ -2,15 +2,30 @@
 // Binded values from engine
 enum EDLCId
 {
-	DLC_UNKNOWN,
-	DLC_FROSTLINE,
+	UNKNOWN,
+	FROSTLINE,
+	BADLANDS,
+};
+
+enum EDLCChange
+{
+	UNKNOWN,
+	AVAILABLE,
+	UNAVAILABLE,
 };
 
 //! ContentDLC is for query installed DLC (only as entitlement keys, not content)
 class ContentDLC
 {
-	//! void(EDLCId dlcId)
-	ref ScriptInvoker m_OnChange = new ScriptInvoker();
+	private void ContentDLC();
+	private void ~ContentDLC();
+	
+	//! Subscribe to changes: void() OR void(EDLCId) OR void(EDLCId,EDLCChange)
+	proto void Subscribe(func fnc);
+	proto void Unsubscribe(func fnc);
+	
+	//! Check if a DLC ID is valid
+	static proto native bool IsValidDLCID(EDLCId dlcId);
 	
 	/*!
 		For getting current entitlements on device (console). Could be called 
@@ -22,9 +37,41 @@ class ContentDLC
 	
 	/*!
 		\param dlcId ID of DLC
-		\return current state of availability of unlocking' dlc. Only DLC with valid license return true.
+		\return current state of availability of dlc. Only DLC with valid license which has been installed returns true.
 	*/
-	proto native bool IsDLCInstalled(EDLCId dlcId);
+	proto bool IsDLCInstalled(EDLCId dlcId);
+	
+	/*!
+		\param dlcId ID of DLC
+		\return state of mount of DLC on console/device for current user (a DLC must be in the mounted state to use it)
+	*/
+	proto bool IsDLCMounted(EDLCId dlcId);
+	
+	/*!
+		\param dlcId ID of DLC
+		\return attempt to use a DLC, DLC needs to be installed and mounted, tries to mount if possible
+	*/
+	proto bool UseDLC(EDLCId dlcId);
+
+	/*!
+		Opens the platform store page for the DLC. The player is expected to be
+		informed about the missing DLC before this is called.
+		\param dlcId ID of DLC
+		\return true when the store page was opened
+	*/
+	proto bool BuyDLC(EDLCId dlcId);
+
+	/*!
+		\param world World name
+		\return ID of DLC which this world belongs to, otherwise EDLCId.DLC_UNKNOWN
+	*/
+	proto EDLCId GetDLCFromWorld(string world);
+
+	/*!
+		\param dlcId ID of DLC
+		\return localized name of the DLC, placeholder text for an unknown DLC
+	*/
+	proto string GetLocalizedName(EDLCId dlcId);
 	
 	bool OwnsAllDLC()
 	{
@@ -38,16 +85,5 @@ class ContentDLC
 		}
 		
 		return true;
-	}
-	
-	/*!
-		Called from engine for notifing script after any change in additional 
-		content (installed, lost license). There should be check for current state of entitlements.
-		On Xbox should be problem with event lost license! (system bug)
-		\param dlcId ID of DLC that was changed. Could be empty string if console does not report concrete DLC ID.
-	*/
-	void OnChange(EDLCId dlcId)
-	{
-		m_OnChange.Invoke(dlcId);
 	}
 };

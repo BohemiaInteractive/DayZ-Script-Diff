@@ -49,7 +49,7 @@ class HoloOptic : ItemOptics
 
 class KobraOptic : ItemOptics
 {
-	override bool IsSightOnly()
+	override bool IsUsableWithNV()
 	{
 		return true;
 	}
@@ -112,7 +112,7 @@ class KazuarOptic: ItemOptics
 			
 			case GameConstants.OPTICS_STATE_DAY:
 				ShowSelection("hide_cover");
-				if ( !g_Game.IsDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
+				if ( !g_Game.IsHeadlessOrDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
 				{
 					ShowSelection("hide_cover_pilot");
 				}
@@ -185,7 +185,7 @@ class StarlightOptic: ItemOptics
 			
 			case GameConstants.OPTICS_STATE_DAY:
 				ShowSelection("hide_cover");
-				if ( !g_Game.IsDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
+				if ( !g_Game.IsHeadlessOrDedicatedServer() && !IsInOptics() ) //quick sanity check, just in case
 				{
 					ShowSelection("hide_cover_pilot");
 				}

@@ -1,5 +1,10 @@
 class GreatHelm extends HelmetBase
 {
+	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
+	{
+		return ECachedEquipmentItemCategory.MASK;
+	}
+
 	override array<int> GetEffectWidgetTypes()
 	{
 		return {EffectWidgetsTypes.HELMET_OCCLUDER/*,EffectWidgetsTypes.HELMET_BREATH*/};

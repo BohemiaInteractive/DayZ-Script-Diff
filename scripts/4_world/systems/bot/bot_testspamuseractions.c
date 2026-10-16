@@ -1,4 +1,4 @@
-
+#ifdef ROBOCLIENT
 class BotTestSpamUserActions_Start : BotTimedWait
 {
 	override void OnEntry (BotEventBase e)
@@ -193,4 +193,4 @@ class BotTestSpamUserActions : BotStateBase
 		super.OnUpdate(dt);
 	}
 }
-
+#endif

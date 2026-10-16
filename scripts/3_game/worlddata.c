@@ -8,6 +8,7 @@ class WorldData
 	float m_TemperaturePerHeightReductionModifier; 	//! amount of °C reduced for each 100 meteres of height above water level
 	float m_CloudsTemperatureEffectModifier; 		//! how many % of environment temperature can be lowered by clouds
 	float m_TemperatureInsideBuildingsModifier;
+	ref map<int, float> m_TemperatureUnderSunModifier;
 	float m_WaterContactTemperatureModifier;
 
 	protected float SUDDENCHANGE_TIME_MULTIPLIER 	= 0.2;
@@ -25,11 +26,16 @@ class WorldData
 	protected float m_Sunset_Jan;
 	protected float m_Sunrise_Jul;
 	protected float m_Sunset_Jul;
+		
+	protected int m_ShortestDayOfYear = 1;
+	protected int m_LongestDayOfYear  = 1;
+	
 	protected ref array<vector> m_FiringPos; // Where we should fire from. On Init set the relevant data
 	protected bool m_Pollution;
 	protected ref CatchYieldBank m_YieldBank;
 	protected ref WorldDataWeatherSettings m_WeatherDefaultSettings;
 	protected ref WorldDataLiquidSettings m_LiquidSettings;
+	protected ref DustEffectsSettings m_DustEffectsSettings;
 	protected ref TStringArray m_DefaultPlayerRestrictedAreas;
 
 	//! weather related
@@ -37,6 +43,8 @@ class WorldData
 	protected int m_ClearWeatherChance;
 	protected bool m_IsSuddenChange;
 	protected float m_WorldWindCoef;
+	protected bool m_IsSandstorm;
+	protected bool m_IsSandstormStartedByWeather;
 
 	protected float m_UniversalTemperatureSourceCapModifier;	
 	
@@ -59,6 +67,7 @@ class WorldData
 	{
 		SetupWeatherSettings();
 		SetupLiquidTemperatures();
+		SetupDustEffects();
 
 		m_EnTempUpdated = false;
 		m_Weather = g_Game.GetWeather();
@@ -78,6 +87,7 @@ class WorldData
 		m_TemperaturePerHeightReductionModifier = 0.02;
 		m_CloudsTemperatureEffectModifier 		= 3.0;
 		m_TemperatureInsideBuildingsModifier 	= 1.0;
+		m_TemperatureUnderSunModifier			= new map<int, float>();
 		m_WaterContactTemperatureModifier 		= 20.0;
 		
 		m_ClearWeatherChance = m_WeatherDefaultSettings.m_ClearWeatherChance;
@@ -342,6 +352,53 @@ class WorldData
 		return temperatureOut;
 	}
 	
+	float GetSunEffectOnTemperature(int m_DayTime)
+	{
+		float overcastEffectOnSunModifier = 1 - Math.InverseLerp(m_WeatherDefaultSettings.m_OvercastEffectMinLimitOnSunExposure, m_WeatherDefaultSettings.m_OvercastEffectMaxLimitOnSunExposure, m_Weather.GetOvercast().GetActual());
+		overcastEffectOnSunModifier = Math.Clamp(overcastEffectOnSunModifier, 0, 1);
+		return m_TemperatureUnderSunModifier[m_DayTime] * overcastEffectOnSunModifier;
+	}
+	
+	/*!
+	* \brief Returns number of day in current year (eg. 1 - 365)
+	*/
+	protected int DayOfYear(int day, int month)
+    {
+        int daysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        int dayNumber = 0;
+
+        for (int i = 0; i < month - 1; i++)
+        {
+            dayNumber += daysInMonth[i];
+        }
+		
+        dayNumber += day;
+        return dayNumber;
+    }	
+
+	/*!
+	* \brief Returns sunrise time for passed day
+	*/
+	protected float GetSunriseTime(float dayNumber)
+	{
+		float avg = (m_Sunrise_Jan + m_Sunrise_Jul) / 2.0;
+		float amp = (m_Sunrise_Jul - m_Sunrise_Jan) / 2.0;
+		float angle = Math.PI2 * (dayNumber - m_LongestDayOfYear) / 365;
+		return avg + amp * Math.Cos(angle);
+	}
+
+	/*!
+	* \brief Returns sunset time for passed day
+	*/
+	protected float GetSunsetTime( float dayNumber )
+	{
+		float avg = (m_Sunset_Jan + m_Sunset_Jul) / 2.0;
+		float amp = (m_Sunset_Jul - m_Sunset_Jan) / 2.0;
+		float angle =  Math.PI2 * (dayNumber - m_LongestDayOfYear) / 365;
+		
+		return avg - amp * Math.Cos(angle);
+	}
+	
 	protected float WindEffectTemperatureValue(float temperatureInput)
 	{
 		float temperatureOutput = 0.0;
@@ -369,7 +426,20 @@ class WorldData
 	
 	protected void SetupWeatherSettings()
 	{
-		m_WeatherDefaultSettings = new WorldDataWeatherSettings();
+		m_WeatherDefaultSettings = new WorldDataWeatherSettings();		
+		
+		// Obtain the 'sandstormFrequency' from cfgGameplay.json; this defines the rate at which sandstorms should occur,
+		// for example:
+		//   0.0 : No sandstorms whatsoever
+		//   0.5 : Sandstorms are twice as less likely to occur
+		//   1.0 : Sandstorms are ocurring at their normal rate
+		//   2.0 : Sandstorms are twice as likely to occur
+		m_WeatherDefaultSettings.m_sandstormFrequency = CfgGameplayHandler.GetSandstormFrequency();
+		
+		if ( m_WeatherDefaultSettings.m_sandstormFrequency < 0 )
+		{
+			m_WeatherDefaultSettings.m_sandstormFrequency = 0;
+		}
 	}
 	
 	protected void SetupLiquidTemperatures()
@@ -385,6 +455,11 @@ class WorldData
 		m_LiquidSettings.m_Temperatures[LIQUID_SNOW] 		= -5.0;
 	}
 	
+	protected void SetupDustEffects()
+	{
+		m_DustEffectsSettings = new DustEffectsSettings();
+	}
+	
 	CatchYieldBank GetCatchYieldBank()
 	{
 		return m_YieldBank;
@@ -394,6 +469,63 @@ class WorldData
 	{
 		return m_DefaultPlayerRestrictedAreas;
 	}
+	
+	/*!
+	* \brief Helper function that starts the sandstorm while setting an internal flag
+	*        that allows WorldData identify the source of the call.
+	*/
+	protected void StartSandstorm(float timeToGather)
+	{
+		// Set instigator flag to identify that this request
+		// is coming from WorldData
+		bool lastStartedByWeather     = m_IsSandstormStartedByWeather;
+		m_IsSandstormStartedByWeather = true;
+		
+		// In case of a failure make sure to reset the flag
+		// to its original state as this request did not pass
+		if (!m_Weather.GetSandstorm().Start(timeToGather, true))
+		{
+			m_IsSandstormStartedByWeather = lastStartedByWeather;
+		}
+	}
+	/*!
+	* \brief Event propagated from SandstormController::OnStart raised when the
+	*        sandstorm starts and begins fading in to its target magnitude.
+	*/
+	sealed void WeatherSandstormStart(bool continuedSession)
+	{
+		// Read the state of the flag and restore it to default state
+		bool isStartedByWeather = false;
+		if (!continuedSession)
+		{
+			isStartedByWeather = m_IsSandstormStartedByWeather;
+		}
+		else
+		{
+			isStartedByWeather = true;
+		}
+		
+		m_IsSandstormStartedByWeather = false;
+		// Pass this information to the callback
+		OnSandstormStart(isStartedByWeather);
+	}
+	/*!
+	* \brief Event propagated from SandstormController::OnStop raised when the
+	*        sandstorm fades out and terminates.
+	*/
+	sealed void WeatherSandstormStop(bool calledFromWeather)
+	{
+		OnSandstormStop(calledFromWeather);
+	}
+	/*!
+	* \see See `WeatherSandstormStart` instead.
+	* \param isStartedByWeather Whether the start is instigated by WorldData (true) or external factors (false).
+	*/
+	protected void OnSandstormStart(bool isStartedByWeather);
+	/*!
+	* \see See `WeatherSandstormStop` instead.
+	*/
+	protected void OnSandstormStop(bool calledFromWeather);
 
 
 	//!
@@ -411,6 +543,11 @@ class WorldData
 	float GetNightTemperature()
 	{
 		return m_NightTemperature;
+	}
+	
+	DustEffectsSettings GetDustEffectsSettings()
+	{
+		return m_DustEffectsSettings;
 	}
 }
 
@@ -453,6 +590,14 @@ class WorldDataWeatherSettings
 	
 	int m_CalmAfterStormTimeMin = 480;
 	int m_CalmAfterStormTimeMax = 600;
+	
+	float m_SandstormMinWindDirection = -1.77;
+	float m_SandstormMaxWindDirection = -1.20;
+	float m_SandstormMinWindMagnitude = 18;
+	float m_sandstormFrequency = 1;
+	
+	float m_OvercastEffectMinLimitOnSunExposure = 0.6;
+	float m_OvercastEffectMaxLimitOnSunExposure = 1;
 }
 
 class WorldDataLiquidSettings
@@ -462,11 +607,15 @@ class WorldDataLiquidSettings
 
 class WorldDataDaytime
 {
-	static int ANY		= -1;
-	static int NIGHT 	= 0;
-	static int DAY 		= 1;
-	static int DUSK		= 2;
-	static int DAWN		= 3;
+	static int ANY			= -1;
+	static int NIGHT 		= 0;
+	static int DAY 			= 1;
+	static int DUSK			= 2;
+	static int DAWN			= 3;
+	static int MORNING		= 4;
+	static int NOON			= 5;
+	static int AFTERNOON	= 6;
+	static int EVENING		= 7;
 	
 	static string ToString(int value)
 	{
@@ -480,8 +629,49 @@ class WorldDataDaytime
 				return "DUSK";
 			case DAWN:
 				return "DAWN";
+			case MORNING:
+				return "MORNING";
+			case NOON:
+				return "NOON";
+			case AFTERNOON:
+				return "AFTERNOON";
+			case EVENING:
+				return "EVENING";
 		}
 		
 		return "ANYTIME";
 	}
+	
+	static bool IsInRange(int current, TIntArray range)
+	{
+		foreach (int value : range)
+		{
+			if (current == value)
+				return true;
+		}
+		
+		return false;
+	}
+}
+
+class DustEffectsSettings
+{
+	bool 	m_GroundEffectEnable = false;
+    float 	m_GroundEffectMinWindStrength = 0;
+    float	m_GroundEffectDistance = 10;
+    float	m_GroundEffectFrequency = 1;
+    float	m_GroundEffectWindWeight = 0;
+    bool	m_GroundEffectEndPoindTest = true;
+    float	m_GroundEffectLifetimeMin = 1;
+    float	m_GroundEffectLifetimeMax = 10;
+    float	m_GroundEffectSizeMin = 1;
+    float	m_GroundEffectSizeMax = 10;
+    bool	m_CloudEffectEnable = false;
+    float	m_CloudEffectMinWindStrength = 0;
+    float	m_CloudEffectCooldownMin = 10;
+	float	m_CloudEffectCooldownMax = 35;
+    float	m_CloudEffectDurationMin = 3;
+	float	m_CloudEffectDurationMax = 7;
+    float 	m_CloudEffectDistance = 16;
+	bool	m_CloudEffectFromSurface = true;
 }

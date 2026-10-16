@@ -78,18 +78,17 @@ class DamageSystem
 		DamageZoneMap zoneMap = entity.GetEntityDamageZoneMap();
 		array<array<string>> components;
 		components = zoneMap.GetValueArray();
-		for (int i = 0; i < components.Count(); i++)
+		int countComponents = components.Count();
+		for (int i = 0; i < countComponents; ++i)
 		{
 			array<string> inner = components.Get(i);
-			for (int j = 0; j < inner.Count(); j++)
+			foreach (string innerComponentName : inner)
 			{
-				string innerComponentName = inner.Get(j);
-				innerComponentName.ToLower();
-				
-				//We don't have a component name, no need to proceed
-				if ( innerComponentName == "" )
+				//We don't have a valid component name, no need to proceed
+				if (innerComponentName == "")
 					break;
 				
+				innerComponentName.ToLower();
 				if (innerComponentName == component)
 				{
 					damageZone = zoneMap.GetKey(i);

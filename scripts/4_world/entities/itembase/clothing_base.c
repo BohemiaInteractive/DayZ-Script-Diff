@@ -111,7 +111,7 @@ class Clothing extends Clothing_Base
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
 		super.EEHealthLevelChanged(oldLevel, newLevel, zone);
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			PlayerBase player_owner = PlayerBase.Cast(GetHierarchyParent());
 			
@@ -171,7 +171,14 @@ class Glasses_Base : Clothing
 		
 		AddSingleExclusionValueGlobal(EAttExclusions.EXCLUSION_GLASSES_REGULAR_0);
 	}
-};
+	
+	
+	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
+	{
+		return ECachedEquipmentItemCategory.EYEWEAR;
+	}
+}
+
 class Gloves_Base : Clothing {};
 class HeadGear_Base : Clothing {};
 class Mask_Base : Clothing
@@ -184,6 +191,11 @@ class Mask_Base : Clothing
 			ret.Insert(EAttExclusions.SHAVING_MASK_ATT_0);
 		}
 		return ret;
+	}
+
+	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
+	{
+		return ECachedEquipmentItemCategory.MASK;
 	}
 };
 class Pants_Base : Clothing {};

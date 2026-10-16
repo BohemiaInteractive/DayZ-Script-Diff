@@ -9,13 +9,13 @@ class ActionSwitchLights: ActionInteractBase
 
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem = new CCINone;
-		m_ConditionTarget = new CCTNone;
+		m_ConditionItem 	= new CCINone();
+		m_ConditionTarget 	= new CCTNone();
 	}
 
 	override typename GetInputType()
 	{
-		return ToggleLightsActionInput;
+		return ToggleVehicleLightsActionInput;
 	}
 	
 	override bool HasTarget()
@@ -23,37 +23,30 @@ class ActionSwitchLights: ActionInteractBase
 		return false;
 	}
 
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{	
 		HumanCommandVehicle vehCommand = player.GetCommand_Vehicle();
-
-		if ( vehCommand )
+		if (vehCommand)
 		{
-			Transport trans = vehCommand.GetTransport();
-			if ( trans )
+			Transport transport = vehCommand.GetTransport();
+			if (transport)
 			{
-				CarScript car;
-				if ( Class.CastTo(car, trans) )
+				if (transport.CrewMemberIndex(player) == DayZPlayerConstants.VEHICLESEAT_DRIVER)
 				{
-					if ( car.CrewMemberIndex( player ) == DayZPlayerConstants.VEHICLESEAT_DRIVER )
+					if (!transport.LightIsOn())
 					{
-						if ( !car.IsScriptedLightsOn() )
+						if (transport.NeedElectricitySourceDevice())
 						{
-							EntityAI neededItem = null;
-
-							if ( car.IsVitalCarBattery() ) neededItem = car.FindAttachmentBySlotName("CarBattery");
-							if ( car.IsVitalTruckBattery() ) neededItem = car.FindAttachmentBySlotName("TruckBattery");
+							EntityAI neededItem = transport.GetElectricitySourceDevice();
 							
 							if (neededItem && !neededItem.IsRuined())
-							{
 								return neededItem.GetCompEM() && neededItem.GetCompEM().GetEnergy() > 0;
-							}
 						}
 						else
-						{
 							return true;
-						}
 					}
+					else
+						return true;
 				}
 			}
 		}
@@ -61,20 +54,14 @@ class ActionSwitchLights: ActionInteractBase
 		return false;
 	}
 
-	override void OnExecuteServer( ActionData action_data )
+	override void OnExecuteServer(ActionData action_data)
 	{
 		HumanCommandVehicle vehCommand = action_data.m_Player.GetCommand_Vehicle();
-		if ( vehCommand )
+		if (vehCommand)
 		{
-			Transport trans = vehCommand.GetTransport();
-			if ( trans )
-			{
-				CarScript car;
-				if ( Class.CastTo(car, trans) )
-				{
-					car.ToggleHeadlights();
-				}
-			}
+			Transport transport = vehCommand.GetTransport();
+			if (transport)
+				transport.LightToggle();
 		}
 	}
 	
@@ -82,4 +69,4 @@ class ActionSwitchLights: ActionInteractBase
 	{
 		return true;
 	}
-};
+}

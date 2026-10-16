@@ -176,6 +176,14 @@ class Magnum_Base extends Weapon_Base
 	{
 		super.AssembleGun();
 		
+		SetGunParts();
+
+		ForceSyncSelectionState();
+		SyncCylinderRotation();
+	}
+	
+	void SetGunParts()
+	{
 		if ( !FindAttachmentBySlotName(ATT_SLOT_EJECTOR) )
 		{
 			GetInventory().CreateAttachment("Magnum_Ejector");
@@ -185,9 +193,6 @@ class Magnum_Base extends Weapon_Base
 		{
 			GetInventory().CreateAttachment("Magnum_Cylinder");
 		}
-
-		ForceSyncSelectionState();
-		SyncCylinderRotation();
 	}
 	
 	static float GetCylinderRotation(int muzzleIndex)
@@ -394,5 +399,38 @@ class Magnum extends Magnum_Base
 }
 
 class SawedoffMagnum extends Magnum_Base {};
+class Magnum_Gold : Magnum 
+{
+	override void SetGunParts()
+	{
+		if ( !FindAttachmentBySlotName(ATT_SLOT_EJECTOR) )
+		{
+			GetInventory().CreateAttachment("Magnum_Ejector_Gold");
+		}
+		
+		if ( !FindAttachmentBySlotName(ATT_SLOT_CYLINDER) )
+		{
+			GetInventory().CreateAttachment("Magnum_Cylinder_Gold");
+		}
+	}
+};
+class SawedoffMagnum_Gold : SawedoffMagnum 
+{
+	override void SetGunParts()
+	{
+		if ( !FindAttachmentBySlotName(ATT_SLOT_EJECTOR) )
+		{
+			GetInventory().CreateAttachment("Magnum_Ejector_Gold");
+		}
+		
+		if ( !FindAttachmentBySlotName(ATT_SLOT_CYLINDER) )
+		{
+			GetInventory().CreateAttachment("Magnum_Cylinder_Gold");
+		}
+	}
+};
+
 class Magnum_Cylinder extends DummyItem {};
 class Magnum_Ejector extends DummyItem {};
+class Magnum_Cylinder_Gold : Magnum_Cylinder {};
+class Magnum_Ejector_GOld : Magnum_Ejector {};

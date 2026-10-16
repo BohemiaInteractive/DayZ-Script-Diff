@@ -203,6 +203,11 @@ class Weather
 		\note Wind magnitude is the absolute speed in m/s.
 	*/
 	proto native WindMagnitude GetWindMagnitude();
+	
+	/*!
+		\brief Returns the sandstorm phenomenon weather controller.
+	*/
+	proto native Sandstorm GetSandstorm();
 
 	/*!
 		\brief Sets the thunderstorm properties.
@@ -379,7 +384,6 @@ class Weather
 	*/
 	proto native float GetDynVolFogHeightBias();
 	
-	
 	void MissionWeather( bool use )
 	{
 		m_missionWeather = use;
@@ -400,7 +404,54 @@ class Weather
 		return m_UpdateFrozen;
 	}
 	
-	// Noise reduction due to environmental conditions, used for AI noise evaluation
+	[Obsolete("1.30: AI noise dampening is now done natively via AIParams config parameters. Kept for HUD and old mods.")]
+	float GetNoiseReductionByWeatherEx(notnull Object object)
+	{
+		float rainReduction = GetRainNoiseReduction();
+		float snowfallReduction = GetSnowfallNoiseReduction();
+		float sandstormReduction = GetSandstormNoiseReduction(object);
+		
+		// If all reductions are zero, return 1 (no reduction)
+		if (rainReduction == 0 && snowfallReduction == 0 && sandstormReduction == 0)
+			return 1;
+		
+		float maxReduction = Math.Max(rainReduction, Math.Max(snowfallReduction, sandstormReduction));
+		return 1 - maxReduction;
+	}
+	
+	private float GetRainNoiseReduction()
+	{
+		return GetRain().GetActual() * GameConstants.RAIN_NOISE_REDUCTION_WEIGHT;
+	}
+	
+	private float GetSnowfallNoiseReduction()
+	{
+		return GetSnowfall().GetActual() * GameConstants.SNOWFALL_NOISE_REDUCTION_WEIGHT;
+	}
+	
+	private float GetSandstormNoiseReduction(notnull Object object)
+	{
+		SandstormController sandstormController = GetSandstorm();
+		if (sandstormController.IsActive())
+		{
+			Man player = Man.Cast(object);
+			if (player)
+			{
+				return sandstormController.GetIntensityForPlayer(player) * GameConstants.SANDSTORM_NOISE_REDUCTION_WEIGHT;
+			}
+			else
+			{
+				return sandstormController.GetIntensity(object.GetPosition()) * GameConstants.SANDSTORM_NOISE_REDUCTION_WEIGHT;
+			}
+		}
+		
+		return 0;
+	}
+	
+	////////////////////////////
+	// deprecated - do not use
+	////////////////////////////
+	[Obsolete("Use Weather.GetNoiseReductionByWeatherEx instead!")]
 	float GetNoiseReductionByWeather()
 	{
 		float rainReduction = GetRain().GetActual() * GameConstants.RAIN_NOISE_REDUCTION_WEIGHT;

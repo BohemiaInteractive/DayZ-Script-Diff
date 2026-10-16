@@ -64,6 +64,11 @@ class ActionFertilizeSlot: ActionContinuousBase
 	
 	override void OnFinishProgressServer( ActionData action_data )
 	{
-		// The functionality is in the Execute event of this user action's component.
+		// Main functionality is in the Execute event of this user action's component.
+		super.OnFinishProgressServer(action_data);
+		
+		// Delete fertilizer item when quantity reaches quantity min
+		if (action_data.m_MainItem.GetQuantity() == action_data.m_MainItem.GetQuantityMin())
+			action_data.m_MainItem.DeleteSafe();
 	}
 };

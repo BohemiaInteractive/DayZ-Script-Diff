@@ -159,16 +159,34 @@ class ActionManagerBase
 		switch (pJunctureID)
 		{
 			case DayZPlayerSyncJunctures.SJ_ACTION_ACK_ACCEPT:
+#ifdef ENABLE_LOGGING
+				if ( LogManager.IsActionLogEnable() )
+				{
+					Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp() + " SJ_ACTION_ACK_ACCEPT", this.ToString() , "n/a", "OnSyncJuncture", m_Player.ToString() );
+				}
+#endif
 				pCtx.Read(AcknowledgmentID);
 				if (m_CurrentActionData && AcknowledgmentID == m_PendingActionAcknowledgmentID)
 					m_CurrentActionData.m_State = UA_AM_ACCEPTED;
 				break;
 			case DayZPlayerSyncJunctures.SJ_ACTION_ACK_REJECT:
+#ifdef ENABLE_LOGGING
+				if ( LogManager.IsActionLogEnable() )
+				{
+					Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp() + " SJ_ACTION_ACK_REJECT", this.ToString() , "n/a", "OnSyncJuncture", m_Player.ToString() );
+				}
+#endif
 				pCtx.Read(AcknowledgmentID);
 				if (m_CurrentActionData && AcknowledgmentID == m_PendingActionAcknowledgmentID)
 					m_CurrentActionData.m_State = UA_AM_REJECTED;
 				break;
 			case DayZPlayerSyncJunctures.SJ_ACTION_INTERRUPT:
+#ifdef ENABLE_LOGGING
+				if ( LogManager.IsActionLogEnable() )
+				{
+					Debug.ActionLog("STS = " + m_Player.GetSimulationTimeStamp() + " SJ_ACTION_INTERRUPT", this.ToString() , "n/a", "OnSyncJuncture", m_Player.ToString() );
+				}
+#endif
 				m_Interrupted = true;
 				break;
 		}
@@ -310,12 +328,6 @@ class ActionManagerBase
 	
 	void OnActionEnd()
 	{
-		if (LogManager.IsActionLogEnable())
-		{
-			if (m_CurrentActionData)
-				Debug.ActionLog("Time stamp: " + m_CurrentActionData.m_Player.GetSimulationTimeStamp(), m_CurrentActionData.m_Action.ToString() , "n/a", "OnActionEnd", m_CurrentActionData.m_Player.ToString());
-			Debug.ActionLog("Action data cleared ", this.ToString() , "n/a", "ActionEnd", m_CurrentActionData.m_Player.ToString());
-		}
 		if (m_CurrentActionData)
 			m_CurrentActionData.m_Action.ActionCleanup(m_CurrentActionData);
 		m_CurrentActionData = NULL;

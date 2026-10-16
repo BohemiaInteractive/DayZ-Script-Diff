@@ -29,6 +29,7 @@ class CraftRag extends RecipeBase
 		InsertIngredient(0,"StoneKnife");
 		InsertIngredient(0,"Cleaver");
 		InsertIngredient(0,"CombatKnife");
+		InsertIngredient(0,"Jambiya");
 		InsertIngredient(0,"HuntingKnife");
 		InsertIngredient(0,"KukriKnife");
 		InsertIngredient(0,"FangeKnife");
@@ -50,7 +51,12 @@ class CraftRag extends RecipeBase
 		InsertIngredient(0,"Shovel");
 		InsertIngredient(0,"FieldShovel");
 		InsertIngredient(0,"BoneKnife");
-		InsertIngredient(0,"Iceaxe");	
+		InsertIngredient(0,"Iceaxe");
+		InsertIngredient(0,"BrickTrowel");	
+		InsertIngredient(0,"Scimitar");		
+		InsertIngredient(0,"DonerKnife");
+		InsertIngredient(0,"BrickTrowel");
+		InsertIngredient(0,"Akinaka");
 	
 		m_IngredientAddHealth[0]			= -2;				// 0 = do nothing
 		m_IngredientSetHealth[0]			= -1;				// -1 = do nothing
@@ -84,20 +90,37 @@ class CraftRag extends RecipeBase
 	override bool CanDo(ItemBase ingredients[], PlayerBase player)
 	{
 		ItemBase ingredient2 = ingredients[1];
-		if( ingredient2.ConfigGetFloat("ragQuantity") > 0 && ingredient2.IsEmpty())
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return ingredient2.ConfigGetFloat("ragQuantity") > 0 && (ingredient2.GetHierarchyRootPlayer() || !ingredient2.GetInventory().IsAttachment());
 	}
 
 	//gets called upon recipe's completion
 	override void Do(ItemBase ingredients[], PlayerBase player,array<ItemBase> results, float specialty_weight)
 	{
-		int quantity = ingredients[1].ConfigGetFloat("ragQuantity");
-		results.Get(0).SetQuantity(quantity);
+		ItemBase sourceItem = ingredients[1];
+		//drop inventory contents
+		MiscGameplayFunctions.DropAllItemsInInventoryInBounds(sourceItem, Vector(0.5, 0, 0.5));
+		
+		//spawn additional fullstacks and adjusy leftover qty 
+		int targetQty = sourceItem.ConfigGetFloat("ragQuantity");
+		ItemBase firstResult = results[0];
+		int qtyMax = firstResult.GetQuantityMax();
+		int qtyMin = firstResult.GetQuantityMin();
+		int stackCount = (int)Math.Ceil(targetQty / qtyMax);
+		
+		ItemBase result;
+		if (stackCount > 1)
+		{
+			for (int i = 1; i < stackCount; ++i)
+			{
+				result = ItemBase.Cast(player.SpawnEntityOnGroundRaycastDispersed(firstResult.GetType()));
+				if (result)
+					MiscGameplayFunctions.TransferItemProperties(sourceItem, result, true, true, true, true);
+			}
+			firstResult.SetQuantity((int)Math.ModFloat(targetQty, qtyMax));
+		}
+		else
+		{
+			firstResult.SetQuantity((int)Math.Clamp(targetQty, qtyMin, qtyMax));
+		}
 	}
 };

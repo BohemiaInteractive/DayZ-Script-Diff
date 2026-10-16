@@ -22,9 +22,6 @@ class PluginDiagMenuClient : PluginDiagMenu
 	ref FallDamageDebugData m_FallDamageDebugData;
 #ifndef SERVER
 	ref WeaponLiftDiag m_WeaponLiftDiag = new WeaponLiftDiag();
-	#ifdef DEVELOPER
-	ref UndergroundDiag m_UndergroundDiag = new UndergroundDiag();
-	#endif
 #endif
 	
 	static ref ScriptInvoker m_SBDiagScriptInvoker = new ScriptInvoker();
@@ -71,6 +68,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_CREATE_HIT, CBCreateHit);
 		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_CREATE_HIT_LIGHT, CBCreateHitLight);
 		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_CLIENT_DESYNC_INVENTORY, CBClientDesync);
+		DiagMenu.BindCallback(DiagMenuIDs.CHEATS_OLD_PROCESSINPUTDATA, CBOldProcessInputData);
 		
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Player Agents
@@ -158,6 +156,27 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_DEBUG_MONITOR, CBDebugMonitor);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_SHOW_PRA_ALL, CBPRADrawAll);
 		DiagMenu.BindCallback(DiagMenuIDs.MISC_PRA_DETECT, CBPRADetect);
+		
+		//---------------------------------------------------------------
+		// LEVEL 3 - Script > Misc > Dust Effects
+		//---------------------------------------------------------------		
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_ENABLE, CBDEGroundEnable);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_THRESHOLD, CBDEGroundThreshold);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_INTESITY, CBDEGroundIntensity);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_RADIUS, CBDEGroundRadius);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_WINDWEIGHT, CBDEWindWeight);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_GETFROMSURFACE, CBDEGroundFromSurfaceEnable);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MIN, CBDEGroundLifetimeRange);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MAX, CBDEGroundLifetimeRange);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MIN, CBDEGroundSizeRange);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MAX, CBDEGroundSizeRange);
+		
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_ENABLE, CBDECloudEnable);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_THRESHOLD, CBDECloudThreshold);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_COOLDOWN, CBDECloudCooldown);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_DURATION, CBDECloudDuration);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_DISTANCE, CBDECloudDistance);
+		DiagMenu.BindCallback(DiagMenuIDs.MISC_DUST_EFFECTS_CLOUD_GETFROMSURFACE, CBDECloudFromSurfaceEnable);
 
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Simulate script
@@ -170,7 +189,8 @@ class PluginDiagMenuClient : PluginDiagMenu
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Weapon
 		//---------------------------------------------------------------
-		DiagMenu.BindCallback(DiagMenuIDs.WEAPON_PARTICLES, CBWeaponParticles);		
+		DiagMenu.BindCallback(DiagMenuIDs.WEAPON_PARTICLES, CBWeaponParticles);	
+		DiagMenu.BindCallback(DiagMenuIDs.WEAPON_DEBUG, CBWeaponDebug);	
 		DiagMenu.BindCallback(DiagMenuIDs.WEAPON_AIM_NOISE, CBWeaponAimNoise);
 		DiagMenu.BindCallback(DiagMenuIDs.WEAPON_RECOIL, CBWeaponRecoil);
 		DiagMenu.BindCallback(DiagMenuIDs.WEAPON_UNLIMITED_AMMO, CBWeaponUnlimitedAmmo);
@@ -243,6 +263,9 @@ class PluginDiagMenuClient : PluginDiagMenu
 		//---------------------------------------------------------------
 		DiagMenu.BindCallback(DiagMenuIDs.BASEBUILDING_WOOD, CBBaseBuildingWood);
 		DiagMenu.BindCallback(DiagMenuIDs.BASEBUILDING_GATE, CBBaseBuildingGate);
+		DiagMenu.BindCallback(DiagMenuIDs.BASEBUILDING_FASTBUILD, CBBaseBuildingFast);
+		DiagMenu.BindCallback(DiagMenuIDs.BASEBUILDING_FULLDEBUG, CBBaseBuildingDebug);
+		DiagMenu.BindCallback(DiagMenuIDs.BASEBUILDING_COLLISIONDEBUG, CBBaseBuildingCollisionDebug);
 			
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Finishers
@@ -261,6 +284,18 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.BindCallback(DiagMenuIDs.GEYSERDIAG_STATE_INTERVAL, CBSetGeyserDiagData);
 		DiagMenu.BindCallback(DiagMenuIDs.GEYSERDIAG_STATE_DURATION, CBSetGeyserDiagData);
 		
+		//---------------------------------------------------------------
+		// LEVEL 2 - Script > Radio Gameplaz
+		//---------------------------------------------------------------
+		DiagMenu.BindCallback(DiagMenuIDs.RADIOGAMEPLAY_LOGGING, CBSetRadioGameplayLogging);
+
+	#ifdef ROBOCLIENT
+		//---------------------------------------------------------------
+		// LEVEL 2 - Script > Roboclients
+		//---------------------------------------------------------------
+		DiagMenu.BindCallback(DiagMenuIDs.ROBOCLIENTS_ACTIVE, CBRoboclientActive);
+		DiagMenu.BindCallback(DiagMenuIDs.ROBOCLIENTS_RESTART, CBRoboclientRestart);
+	#endif
 		//---------------------------------------------------------------
 		// LEVEL 2 - Script > Server Browser
 		//---------------------------------------------------------------
@@ -318,12 +353,11 @@ class PluginDiagMenuClient : PluginDiagMenu
 		
 		UpdateMiscVehicleGetOutBox();
 		UpdateEnvironmentDebug();
-		CheckTimeAccel();		
+		CheckTimeAccel();
 		UpdateMaterialDebug();
 		UpdateWeaponLiftDiag(delta_time);
-		#ifdef DEVELOPER // TODO@RR - temporary, 
-		UpdateUndegroundDiag(delta_time);
-		#endif
+		UpdateBaseBuildingFullDebug();
+		UpdateCharacterStepSurfaceDebug();
 	}
 	
 	//---------------------------------------------
@@ -368,6 +402,11 @@ class PluginDiagMenuClient : PluginDiagMenu
 		pluginInventoryDebug.SetLocalOnlyMoveEnable(enable);
 	}
 	
+	static void CBOldProcessInputData(bool enable, int id)
+	{
+		PluginInventoryDebug pluginInventoryDebug = PluginInventoryDebug.Cast(GetPlugin(PluginInventoryDebug));
+		pluginInventoryDebug.SetOldProcessInputDataEnable(enable);
+	}
 	//---------------------------------------------
 	static void CBCraftingGenerate(bool enabled, int id)
 	{
@@ -548,7 +587,7 @@ class PluginDiagMenuClient : PluginDiagMenu
 	//---------------------------------------------		
 	void UpdateMiscVehicleGetOutBox()
 	{
-		if ( DiagMenu.GetBool(DiagMenuIDs.MISC_VEHICLE_GETOUT_BOX) )
+		if ( DiagMenu.GetBool(DiagMenuIDs.TRANSPORT_FREESPACE_VIS) )
 		{
 			if (m_VehicleFreeAreaBox)
 			{
@@ -619,6 +658,24 @@ class PluginDiagMenuClient : PluginDiagMenu
 		#endif
 	}
 	
+	//---------------------------------------------
+	void UpdateBaseBuildingFullDebug()
+	{
+		#ifdef DIAG_DEVELOPER
+		if (DiagMenu.GetBool(DiagMenuIDs.BASEBUILDING_FULLDEBUG))
+			ConstructionDebug.Update();
+		#endif
+	}
+	
+	//---------------------------------------------
+	void UpdateCharacterStepSurfaceDebug()
+	{
+		#ifdef DIAG_DEVELOPER
+		if (DiagMenu.GetBool(DiagMenuIDs.MISC_PLAYER_SURFACE_DEBUG))
+			CharacterStepsDebug.Update();
+		#endif
+	}
+	
 	#ifndef SERVER
 	//---------------------------------------------
 	static WeaponLiftDiag GetWeaponLiftDiag()
@@ -627,16 +684,6 @@ class PluginDiagMenuClient : PluginDiagMenu
 		return pluginDiag.m_WeaponLiftDiag;
 	}
 	#endif
-	
-	void UpdateUndegroundDiag(float deltaTIme)
-	{
-		#ifndef SERVER
-		#ifdef DEVELOPER
-		if (DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_DEBUG))
-			m_UndergroundDiag.DrawDiag(deltaTIme);
-		#endif
-		#endif
-	}
 	
 	//---------------------------------------------
 	void MatGhostDebug()
@@ -955,6 +1002,101 @@ class PluginDiagMenuClient : PluginDiagMenu
 		DiagMenu.SetValue(DiagMenuIDs.MISC_PRA_DETECT, false);
 	}
 	
+	//-------------------------------------------------------
+	//Dust effect
+	
+	static void CBDEGroundEnable(bool enabled)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetGroundEffectEnable(enabled);
+	}
+	
+	static void CBDECloudEnable(bool enabled)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetCloudEffectEnable(enabled);
+	}
+	
+	//Ground effect
+	static void CBDEGroundThreshold(float value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetGroundEffectThreshold(value);
+	}
+
+	static void CBDEGroundRadius(float value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetGroundEffectRadius(value);
+	}
+	
+	static void CBDEGroundIntensity(float value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetGroundEffectIntensity(value);
+	}
+	
+	static void CBDEGroundFromSurfaceEnable(bool value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetGroundEffectReadFromSurfaceEnable(value);
+	}
+	
+	static void CBDEWindWeight(float weight)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetGroundEffectWindWeight(weight);
+	}
+
+	static void CBDEGroundLifetimeRange(float value)
+	{
+		DustEffectManager dem = DustEffectManager.GetDustEffectManager();
+		float minVal = DiagMenu.GetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MIN);
+		float maxVal = DiagMenu.GetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_LIFETIME_MAX);
+		dem.SetGroundEffectLifetimeRange(minVal, maxVal);
+	}
+
+	static void CBDEGroundSizeRange(float value)
+	{
+		DustEffectManager dem = DustEffectManager.GetDustEffectManager();
+		float minVal = DiagMenu.GetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MIN);
+		float maxVal = DiagMenu.GetRangeValue(DiagMenuIDs.MISC_DUST_EFFECTS_GROUND_SIZE_MAX);
+		dem.SetGroundEffectSizeRange(minVal, maxVal);
+	}
+	
+	//Cloud effect
+	static void CBDECloudThreshold(float value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetCloudEffectThreshold(value);
+	}
+	
+	static void CBDECloudDistance(float value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetCloudEffectDistance(value);
+	}
+	
+	static void CBDECloudCooldown(float value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetCloudEffectCooldownMin(value);
+		DustEffectManager.GetDustEffectManager().SetCloudEffectCooldownMax(value);
+	}
+	
+	static void CBDECloudDuration(float value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetCloudEffectDurationMin(value);
+		DustEffectManager.GetDustEffectManager().SetCloudEffectDurationMax(value);
+	}
+	
+	static void CBDECloudFromSurfaceEnable(bool value)
+	{
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		DustEffectManager.GetDustEffectManager().SetCloudEffectReadFromSurfaceEnable(value);
+	}
+
 	//---------------------------------------------
 	static void CBMiscFreezeEntity(bool enabled, int id)
 	{
@@ -1326,6 +1468,28 @@ class PluginDiagMenuClient : PluginDiagMenu
 	}
 	
 	//---------------------------------------------
+	static void CBBaseBuildingFast(int value)
+	{
+		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
+		player.GetConstructionActionData().SetFastConstructionMode(value);
+		SendDiagRPC(value, ERPCs.DIAG_BASEBUILDING_FASTBUILD);
+	}
+	
+	//---------------------------------------------
+	static void CBBaseBuildingDebug(bool enabled)
+	{
+		DiagMenu.SetValue(DiagMenuIDs.BASEBUILDING_COLLISIONDEBUG, enabled);
+		ConstructionDebug.ResetValues();
+	}
+
+	//---------------------------------------------
+	static void CBBaseBuildingCollisionDebug(bool enabled)
+	{
+		if (DiagMenu.GetBool(DiagMenuIDs.BASEBUILDING_FULLDEBUG) && !enabled) //can't disable if main one is enabled
+			DiagMenu.SetValue(DiagMenuIDs.BASEBUILDING_COLLISIONDEBUG, true);
+	}
+	
+	//---------------------------------------------
 	static void CBFinishersFinisherForced(int value)
 	{
 		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
@@ -1348,6 +1512,8 @@ class PluginDiagMenuClient : PluginDiagMenu
 		auto param = new Param2<bool, EntityAI>(enabled, g_Game.GetPlayer());
 		g_Game.RPCSingleParam( null, ERPCs.DIAG_CAMERATOOLS_CAM_SUBSCRIBE, param, true );
 	}
+
+	//---------------------------------------------	
 	
 	static void CBSetGeyserDiagData()
 	{		
@@ -1360,6 +1526,58 @@ class PluginDiagMenuClient : PluginDiagMenu
 		Param params = new Param3<bool, float, float>(enabled, timeInterval, timeDuration);
 		g_Game.RPCSingleParam(null, ERPCs.DIAG_GEYSER_VALUES, params, true);
 	}
+	
+	static void CBSetRadioGameplayLogging(bool enabled)
+	{
+		SendDiagRPC(enabled, ERPCs.DIAG_RADIO_GAMEPLAY_LOGGING);
+		}
+	
+#ifdef ROBOCLIENT
+	//---------------------------------------------		
+	static void CBRoboclientActive(bool enabled)
+	{
+		PlayerBase player = GetPlayer();
+		
+		if (!player || !player.m_Bot)
+			return;
+		
+		if (enabled)
+		{
+			player.m_Bot.Start();
+			return;
+		}
+		player.m_Bot.Stop();
+	}
+		
+	//---------------------------------------------		
+	static void CBRoboclientRestart(bool enabled)
+	{
+		if (!enabled)
+			return;
+		
+		DiagMenu.SetValue(DiagMenuIDs.ROBOCLIENTS_RESTART, false);
+		if (!DiagMenu.GetBool(DiagMenuIDs.ROBOCLIENTS_ACTIVE))
+			return;
+		
+		PlayerBase player = GetPlayer();
+		
+		if (!player || !player.m_Bot)
+			return;
+		
+		player.m_Bot.Restart();
+	}
+	
+	//---------------------------------------------
+	static void CBRoboclientChangeStateMachine(int index)
+	{
+		PlayerBase player = GetPlayer();
+		
+		if (!player || !player.m_Bot)
+			return;
+		
+		player.m_Bot.ChangeStateMachine(index);
+	}
+#endif
 	
 	//---------------------------------------------
 	// Misc		

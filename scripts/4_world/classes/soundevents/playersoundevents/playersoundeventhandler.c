@@ -35,6 +35,7 @@ enum EPlayerSoundEventID
 	THIRST,
 	FORCE_FEED,
 	FORCE_DRINK,
+	HEAVY_BREATHING,
 	//--------------
 	// Count bellow, put enums above
 	//--------------
@@ -95,6 +96,7 @@ class PlayerSoundEventHandler extends SoundEventHandler
 		RegisterState(new ThirstSoundEvent());
 		RegisterState(new ForceFeedSoundEvent());
 		RegisterState(new ForceDrinkSoundEvent());
+		RegisterState(new HeavyBreathEvent1());
 
 	}
 	

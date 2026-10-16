@@ -70,9 +70,9 @@ class HudDebugWinTemperature extends HudDebugWinBase
 	//============================================
 	// Update
 	//============================================
-	override void Update()
+	override void Update(float timeslice)
 	{
-		super.Update();
+		super.Update(timeslice);
 		PluginDeveloperSync developer_sync = PluginDeveloperSync.Cast( GetPlugin( PluginDeveloperSync ) );		
 		
 		m_EnviroTextWidget.SetText(developer_sync.m_EnvironmentDebugMessage);

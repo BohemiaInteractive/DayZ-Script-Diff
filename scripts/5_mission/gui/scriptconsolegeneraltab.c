@@ -1,3 +1,7 @@
+#ifdef DIAG_DEVELOPER
+#define BROADCAST_BUNKER_SP_VIS_ENABLED
+#endif
+
 class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 {
 	static int 		m_ObjectsScope = 2;
@@ -69,10 +73,10 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	
 	protected FreeDebugCamera m_FreeDebugCamera;
 	
-	//-----------------------------------------------------------------------------------
-	
-	void ScriptConsoleGeneralTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
+	override void InitializeTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		super.InitializeTab(root, console, button, parent);
+		
 		m_MissionGameplay			= MissionGameplay.Cast(g_Game.GetMission());
 		
 		m_DiagToggleTextListbox = TextListboxWidget.Cast(root.FindAnyWidget("DiagToggle"));
@@ -125,13 +129,22 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		m_HelpTextListboxWidget = TextListboxWidget.Cast(root.FindAnyWidget("HelpTextListboxWidget"));
 		m_Developer	= PluginDeveloper.Cast(GetPlugin(PluginDeveloper));
 		m_FreeDebugCamera = FreeDebugCamera.GetInstance();
-		
+
+		#ifdef DIAG_DEVELOPER
+		if (g_Game.Event_OnRPC.Count(BunkerBroadcastHandler.OnRPC) == 0)
+			g_Game.Event_OnRPC.Insert(BunkerBroadcastHandler.OnRPC);
+		#endif
+
 		Init();
-		LateInit();
+		//LateInit();
 	}
 	
 	void ~ScriptConsoleGeneralTab()
 	{
+		#ifdef DIAG_DEVELOPER
+		g_Game.Event_OnRPC.Remove(BunkerBroadcastHandler.OnRPC);
+		#endif
+		
 		DEBUG_MAP_ZOOM = m_DebugMapWidget.GetScale();
 
 		PluginRemotePlayerDebugClient plugin_remote_client = PluginRemotePlayerDebugClient.Cast(GetPluginSafe(PluginRemotePlayerDebugClient));
@@ -918,14 +931,13 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 	override void OnRPCEx(int rpc_type, ParamsReadContext ctx)
 	{
 		super.OnRPCEx(rpc_type, ctx);
+
 		#ifdef DIAG_DEVELOPER
 		switch (rpc_type)
 		{
 			case ERPCs.DEV_PLAYER_DEBUG_DATA:
-			{
 				ctx.Read(m_PlayerDebugStats);
 				break;
-			}
 		}
 		#endif
 	}
@@ -991,5 +1003,48 @@ class ScriptConsoleGeneralTab : ScriptConsoleTabBase
 		{
 			m_DebugMapWidget.AddUserMark(marker.GetMarkerPos(), marker.GetMarkerText(), marker.GetMarkerColor(), MapMarkerTypes.GetMarkerTypeFromID(marker.GetMarkerIcon()));
 		}
+		
+		#ifdef BROADCAST_BUNKER_SP_VIS_ENABLED
+		BunkerComponentsArray bunkers;
+		TIntArray bunkersHistory;
+		if (!g_Game.IsMultiplayer() && g_Game.IsServer())
+		{
+			bunkers = BunkerBroadcastHandler.GetInstance().GetRegisteredBunkers();
+			bunkersHistory = BunkerBroadcastHandler.GetInstance().GetActiveBunkersHistory();
+		}
+		else
+		{
+			bunkers = BunkerBroadcastHandler.GetInstance().m_RegisteredBunkersStorage;
+			bunkersHistory = BunkerBroadcastHandler.GetInstance().m_BunkersHistoryStorage;
+		}
+
+		if (bunkers && bunkers.Count() > 0)
+		{
+			foreach (BunkerBroadcastComponentBase bunker : bunkers)
+			{
+				int color = 0xFFFFA500;
+
+				int bunkerId = bunker.GetId();
+				if (bunkersHistory.Find(bunkerId) != INDEX_NOT_FOUND && !bunker.IsActive())
+				{
+					color = COLOR_RED;
+				}
+				else
+				{
+					if (bunker.IsActive())
+						color = COLOR_GREEN;
+				}
+	
+				MapMarker bunkerMarker = new MapMarker(bunker.GetPosition(), string.Format("bunker #%1", bunkerId), color, eMapMarkerTypes.MARKERTYPE_MAP_MONUMENT);
+				
+				m_DebugMapWidget.AddUserMark(bunkerMarker.GetMarkerPos(), bunkerMarker.GetMarkerText(), bunkerMarker.GetMarkerColor(), MapMarkerTypes.GetMarkerTypeFromID(bunkerMarker.GetMarkerIcon()));
+			}
+		}
+		#endif
+	}
+	
+	override void OnSelected()
+	{
+		SetFocus(m_PositionsListbox);
 	}
 }

@@ -15,11 +15,13 @@ class NoiseAIEvaluate
 		return avgNoise;
 	}
 	
-	static float GetNoiseReduction(Weather weather)
+	[Obsolete("1.30: AI noise dampening is now done natively via AIParams config parameters. Kept for HUD and old mods.")]
+	static float GetNoiseReductionEx(notnull Object object)
 	{
+		Weather weather = GetGame().GetWeather();
 		if (weather)
-			return weather.GetNoiseReductionByWeather();
-		 
+			return weather.GetNoiseReductionByWeatherEx(object);
+		
 		return 0;
 	}
 		
@@ -82,5 +84,17 @@ class NoiseAIEvaluate
 	static float GetNoiseMultiplierBySurface(DayZPlayerImplement playerImplement)
 	{
 		return playerImplement.GetSurfaceNoise(); 
+	}
+	
+	////////////////////////////
+	// deprecated - do not use
+	////////////////////////////
+	[Obsolete("Use GetNoiseReductionEx instead!")]
+	static float GetNoiseReduction(Weather weather)
+	{
+		if (weather)
+			return weather.GetNoiseReductionByWeather();
+		 
+		return 0;
 	}
 }

@@ -48,7 +48,6 @@ class Trap_SmallFish extends TrapSpawnBase
 		return super.CanReceiveAttachment( attachment, slotId );
 	}
 	
-	#ifdef PLATFORM_WINDOWS
 	// How one sees the tripwire when in vicinity
 	override int GetViewIndex()
 	{
@@ -96,7 +95,6 @@ class Trap_SmallFish extends TrapSpawnBase
 		}
 		return 0;
 	}
-	#endif
 }
 
 class SmallFishTrap extends Trap_SmallFish 

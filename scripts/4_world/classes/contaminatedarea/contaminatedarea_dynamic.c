@@ -149,8 +149,10 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 		SetupZoneData(new EffectAreaParams);
 		
 		// If a player arrives slightly later during the creation process we check if playing the flare FX is relevant
+		#ifndef NO_GUI
 		if (m_DecayState == eAreaDecayStage.INIT)
 			PlayFlareVFX();
+		#endif
 		
 		if (m_DecayState >= eAreaDecayStage.LIVE)
 			InitZone(); // If it has already been created, we simply do the normal setup, no cool effects, force the LIVE state
@@ -220,11 +222,14 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 	
 	void PlayExplosionLight()
 	{
+		#ifndef NO_GUI
 		m_ShellLight = ShellLight.Cast( ScriptedLightBase.CreateLight( ShellLight, m_OffsetPos ) );
+		#endif
 	}
 	
 	void PlayFlareVFX()
 	{
+		#ifndef NO_GUI
 		if ( g_Game.IsClient() || ( g_Game.IsServer() && !g_Game.IsMultiplayer() ) )
 		{
 			// We spawn locally the dummy object which will be used to move and manage the particle
@@ -233,5 +238,6 @@ class ContaminatedArea_Dynamic : ContaminatedArea_DynamicBase
 			// We add some light to reinforce the effect
 			m_FlareLight = FlareLightContamination.Cast(ScriptedLightBase.CreateLight( FlareLightContamination, m_OffsetPos ));
 		}
+		#endif
 	}
 }

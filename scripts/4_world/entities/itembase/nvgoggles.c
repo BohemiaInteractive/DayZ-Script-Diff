@@ -10,7 +10,7 @@ class NVGoggles extends PoweredOptic_Base
 	
 	override ECachedEquipmentItemCategory GetCachedEquipmentCategory()
 	{
-		return ECachedEquipmentItemCategory.NVG;
+		return ECachedEquipmentItemCategory.NVG|ECachedEquipmentItemCategory.EYEWEAR;
 	}
 	
 	override void SetActions()
@@ -37,7 +37,16 @@ class NVGoggles extends PoweredOptic_Base
 
 		PlayerBase player;
 		if (m_Strap && PlayerBase.CastTo(player, GetHierarchyRootPlayer()))
-			m_Strap.UpdateNVGStatus(player, false, true);
+		{
+			if (!g_Game.IsDedicatedServer())
+ 	 	 	{
+				EntityAI headgear = player.FindAttachmentBySlotName("Headgear");
+				EntityAI glasses = player.FindAttachmentBySlotName("Eyewear");
+				
+				if ((headgear == m_Strap || glasses == m_Strap))
+					m_Strap.UpdateNVGStatus(player, false, true);
+			}
+		}
 	}
 	
 	override void OnWasAttached(EntityAI parent, int slot_id)
@@ -58,11 +67,31 @@ class NVGoggles extends PoweredOptic_Base
 		PlayerBase player;
 		if (m_Strap == parent && PlayerBase.CastTo(player, parent.GetHierarchyRootPlayer()))
 		{
-			if (parent && Clothing.Cast(parent))
-				Clothing.Cast(parent).UpdateNVGStatus(player, false, true);
+			if (!g_Game.IsDedicatedServer())
+ 	 	 	{
+				EntityAI headgear = player.FindAttachmentBySlotName("Headgear");
+				EntityAI glasses = player.FindAttachmentBySlotName("Eyewear");
+				
+				if ((headgear == m_Strap || glasses == m_Strap))
+					m_Strap.UpdateNVGStatus(player, false, true);
+			}
 		}
 		
 		m_Strap = null;
+	}
+	
+	override float GetProtectionLevel(int type, bool consider_filter = false, int system = 0)
+	{
+		if (IsDamageDestroyed())
+			return 0.0;
+
+		if (m_IsLowered)
+		{	
+			if (type == DEF_DUST_PARTICLE_EYES)
+				return 1.0;
+		}
+		
+		return super.GetProtectionLevel(type, consider_filter, system);
 	}
 	
 	override void OnWorkStart()
@@ -70,12 +99,10 @@ class NVGoggles extends PoweredOptic_Base
 		super.OnWorkStart();
 
 		PlayerBase player;
-		EntityAI headgear;
-		EntityAI glasses;
 		if (m_Strap && PlayerBase.CastTo(player, m_Strap.GetHierarchyParent()))
 		{
-			headgear = player.FindAttachmentBySlotName("Headgear");
-			glasses = player.FindAttachmentBySlotName("Eyewear");
+			EntityAI headgear = player.FindAttachmentBySlotName("Headgear");
+			EntityAI glasses = player.FindAttachmentBySlotName("Eyewear");
 			
 			//adjust on load - ComponentEnergyManager stores the 'working' state independently
 			if (!m_IsLowered)
@@ -94,12 +121,10 @@ class NVGoggles extends PoweredOptic_Base
 		super.OnWorkStop();
 
 		PlayerBase player;
-		EntityAI headgear;
-		EntityAI glasses;
 		if (m_Strap && PlayerBase.CastTo(player, m_Strap.GetHierarchyParent()))
 		{
-			headgear = player.FindAttachmentBySlotName("Headgear");
-			glasses = player.FindAttachmentBySlotName("Eyewear");
+			EntityAI headgear = player.FindAttachmentBySlotName("Headgear");
+			EntityAI glasses = player.FindAttachmentBySlotName("Eyewear");
 			
 			if (!g_Game.IsServer() || !g_Game.IsMultiplayer())
 			{

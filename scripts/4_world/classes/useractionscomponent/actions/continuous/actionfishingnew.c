@@ -171,7 +171,7 @@ class ActionFishingNew: ActionContinuousBase
 	override void CreateConditionComponents()  
 	{
 		m_ConditionItem 	= new CCINonRuined();
-		m_ConditionTarget 	= new CCTWaterSurfaceEx(30, LIQUID_SALTWATER|LIQUID_FRESHWATER);
+		m_ConditionTarget 	= new CCTLiquid(LIQUID_SALTWATER | LIQUID_FRESHWATER, UAMaxDistances.FISHING, UAMaxDistances.FISHING, SurfaceDetectionType.Roadway, true);
 	}
 	
 	override bool HasTarget()
@@ -191,9 +191,14 @@ class ActionFishingNew: ActionContinuousBase
 	
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item )
 	{
-		ItemBase hook;
-		hook = ItemBase.Cast(item.FindAttachmentBySlotName("Hook"));
+		//! Other conditions are handled in CCTLiquid
+		CCTLiquid cctLiquid = CCTLiquid.Cast(m_ConditionTarget);
+		int waterSourceType = cctLiquid.GetWaterSourceType();
+		int liquidSourceType = cctLiquid.GetLiquidSourceType();
+		if (waterSourceType != EWaterSourceObjectType.NONE || liquidSourceType != ELiquidSourceObjectType.NONE)
+			return false;
 		
+		ItemBase hook = ItemBase.Cast(item.FindAttachmentBySlotName("Hook"));		
 		return hook && !hook.IsRuined() && !hook.IsPendingDeletion();
 	}
 	

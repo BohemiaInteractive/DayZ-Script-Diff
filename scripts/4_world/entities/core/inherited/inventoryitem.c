@@ -22,6 +22,7 @@ class ItemTransmitter extends InventoryItemSuper
 	proto native bool IsReceiving();
 	proto native int GetTunedFrequencyIndex();
 	proto native void SetFrequencyByIndex(int index);
+	proto native bool IsTunedToBunkerFrequency();
 };
 
 //-----------------------------------------------------------------------------
@@ -192,8 +193,8 @@ class ItemCompass extends InventoryItemSuper
 //-----------------------------------------------------------------------------
 class CarWheel extends InventoryItemSuper
 {
-	protected string m_AttachSound = "Offroad_Wheel_Attach_SoundSet";
-	protected string m_DetachSound = "Offroad_Wheel_Remove_SoundSet";
+	protected const string WHEEL_ATTACH_SOUND = "Offroad_Wheel_Attach_SoundSet";
+	protected const string WHEEL_DETACH_SOUND = "Offroad_Wheel_Remove_SoundSet";
 	
 	//! Returns current wheel radius.
 	proto native float GetRadius();
@@ -213,48 +214,16 @@ class CarWheel extends InventoryItemSuper
 
 	string GetRuinedReplacement()
 	{
-		string newWheel = "";
-		switch (GetType())
-		{
-			case "HatchbackWheel":
-				newWheel = "HatchbackWheel_Ruined";
-				break;
-	
-			case "CivSedanWheel":
-				newWheel = "CivSedanWheel_Ruined";
-				break;
-	
-			case "Hatchback_02_Wheel":
-				newWheel = "Hatchback_02_Wheel_Ruined";
-				break;
-			
-			case "Sedan_02_Wheel":
-				newWheel = "Sedan_02_Wheel_Ruined";
-				break;
-	
-			case "Truck_01_Wheel":
-				newWheel = "Truck_01_Wheel_Ruined";
-				break;
-	
-			case "Truck_01_WheelDouble":
-				newWheel = "Truck_01_WheelDouble_Ruined";
-				break;
-
-			case "Offroad_02_Wheel":
-				newWheel = "Offroad_02_Wheel_Ruined";
-				break;
-		}
-		return newWheel;
+		return CarWheelType.Cast(GetEntityType()).m_RuinedType;
 	}
 	
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
 		super.EEHealthLevelChanged(oldLevel, newLevel, zone);
 		
-		if (newLevel ==  GameConstants.STATE_RUINED)
+		if (m_Initialized && newLevel == GameConstants.STATE_RUINED)
 		{
 			string newWheel = GetRuinedReplacement();
-			
 			if (newWheel != "")
 			{
 				//Unlock to allow creating a new item
@@ -278,6 +247,15 @@ class CarWheel extends InventoryItemSuper
 		}
 	}
 	
+	override void InitItemSounds()
+	{
+		super.InitItemSounds();
+		
+		//! Register wheel attach/detach sounds
+		GetItemSoundHandler().AddSound(SoundConstants.ITEM_ATTACH, WHEEL_ATTACH_SOUND);
+		GetItemSoundHandler().AddSound(SoundConstants.ITEM_DETACH, WHEEL_DETACH_SOUND);
+	}
+	
 	override int GetMeleeTargetType()
 	{
 		return EMeleeTargetType.NONALIGNABLE;
@@ -290,29 +268,57 @@ class CarWheel extends InventoryItemSuper
 		AddAction(ActionAttachOnSelection);
 	}
 	
-	override void OnWasAttached(EntityAI parent, int slot_id)
+	override bool EEOnDamageCalculated(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
 	{
-		super.OnWasAttached(parent, slot_id);
+		CarScript car;
+		EntityAI wheelParent = GetHierarchyRoot();
+		if (!CfgGameplayHandler.GetCanDamageAttachedCarWheels() && wheelParent && Class.CastTo(car, wheelParent))
+			return false;
 		
-		#ifndef SERVER
-		EffectSound effect = SEffectManager.PlaySound(m_AttachSound, GetPosition());
-		effect.SetAutodestroy(true);
-		#endif
+		return super.EEOnDamageCalculated(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
 	}
 	
-	override void OnWasDetached(EntityAI parent, int slot_id)
+	override bool CanDetachAttachment(EntityAI parent)
 	{
-		super.OnWasDetached(parent, slot_id);
+		CarScript car;
+		if (!CfgGameplayHandler.GetCanDetachAttachedCarWheels() && Class.CastTo(car, parent))
+			return false;
 		
-		#ifndef SERVER
-		EffectSound effect = SEffectManager.PlaySound(m_DetachSound, GetPosition());
-		effect.SetAutodestroy(true);
-		#endif
+		return super.CanDetachAttachment(parent);
 	}
 };
 
 class CarWheel_Ruined : CarWheel
 {
+	protected const string WHEEL_EXPLOSION_SMALL_SOUND = "tire_small_explosion_SoundSet";
+	protected const string WHEEL_EXPLOSION_BIG_SOUND = "tire_big_explosion_SoundSet";
+	
+	//! Play wheel exposion sound when destroyed (called from ReplaceWheelLambda::OnSuccess)
+	void PlayWheelExlosionSound()
+	{
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
+		{
+			switch (GetType())
+			{
+				case "HatchbackWheel_Ruined":
+				case "CivSedanWheel_Ruined":
+				case "Hatchback_02_Wheel_Ruined":
+				case "Sedan_02_Wheel_Ruined":
+				case "Motorbike_01_Wheel_1_Ruined":
+				case "Motorbike_01_Wheel_2_Ruined":
+				case "Motorbike_02_Wheel_1_Ruined":
+				case "Motorbike_02_Wheel_2_Ruined":
+					StartItemSoundServer(SoundConstants.ITEM_CARWHEEL_EXPLOSION_SMALL);
+					break;
+				case "Offroad_02_Wheel_Ruined":
+				case "Truck_01_Wheel_Ruined":
+				case "Truck_01_WheelDouble_Ruined":
+					StartItemSoundServer(SoundConstants.ITEM_CARWHEEL_EXPLOSION_BIG);
+					break;
+			}
+		}
+	}
+	
 	override bool CanPutAsAttachment(EntityAI parent)
 	{
 		// So that the lambda can always put it to the Transport
@@ -335,49 +341,17 @@ class CarWheel_Ruined : CarWheel
 
 	string GetReplacement()
 	{
-		string newWheel = "";
-		switch (GetType())
-		{
-			case "HatchbackWheel_Ruined":
-				newWheel = "HatchbackWheel";
-				break;
-	
-			case "CivSedanWheel_Ruined":
-				newWheel = "CivSedanWheel";
-				break;
-	
-			case "Hatchback_02_Wheel_Ruined":
-				newWheel = "Hatchback_02_Wheel";
-				break;
-			
-			case "Sedan_02_Wheel_Ruined":
-				newWheel = "Sedan_02_Wheel";
-				break;
-	
-			case "Truck_01_Wheel_Ruined":
-				newWheel = "Truck_01_Wheel";
-				break;
-	
-			case "Truck_01_WheelDouble_Ruined":
-				newWheel = "Truck_01_WheelDouble";
-				break;
-
-			case "Offroad_02_Wheel_Ruined":
-				newWheel = "Offroad_02_Wheel";
-				break;
-		}
-		return newWheel;
+		return CarWheelType.Cast(GetEntityType()).m_NormalType;
 	}
 	
 	override void EEHealthLevelChanged(int oldLevel, int newLevel, string zone)
 	{
 		super.EEHealthLevelChanged( oldLevel, newLevel, zone );
-#ifdef DIAG_DEVELOPER
+	#ifdef DIAG_DEVELOPER
 		// used when fixing the whole car through debug
-		if (newLevel ==  GameConstants.STATE_PRISTINE)
+		if (m_Initialized && newLevel == GameConstants.STATE_PRISTINE)
 		{
 			string newWheel = GetReplacement();
-
 			if (newWheel != "")
 			{
 				//Unlock to allow creating a new item
@@ -389,9 +363,50 @@ class CarWheel_Ruined : CarWheel
 				GetInventory().ReplaceItemWithNew(InventoryMode.SERVER, lambda);
 			}
 		}
-#endif
+	#endif
 	}
 	
+	override void InitItemSounds()
+	{
+		super.InitItemSounds();
+		
+		//! Register wheel exposion sounds
+		GetItemSoundHandler().AddSound(SoundConstants.ITEM_CARWHEEL_EXPLOSION_SMALL, WHEEL_EXPLOSION_SMALL_SOUND);
+		GetItemSoundHandler().AddSound(SoundConstants.ITEM_CARWHEEL_EXPLOSION_BIG, WHEEL_EXPLOSION_BIG_SOUND);
+	}
+}
+
+class MotorbikeWheel : CarWheel 
+{
+	override bool EEOnDamageCalculated(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
+	{
+		MotorbikeScript bike;
+		EntityAI wheelParent = GetHierarchyRoot();
+		if (!CfgGameplayHandler.GetCanDamageAttachedBikeWheels() && wheelParent && Class.CastTo(bike, wheelParent))
+			return false;
+		
+		return super.EEOnDamageCalculated(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
+	}
+	
+	override bool CanDetachAttachment(EntityAI parent)
+	{
+		MotorbikeScript bike;
+		if (!CfgGameplayHandler.GetCanDetachAttachedBikeWheels() && Class.CastTo(bike, parent))
+			return false;
+		
+		return super.CanDetachAttachment(parent);
+	}
+}
+
+class MotorbikeWheel_Ruined : CarWheel_Ruined {}
+class MotorbikePart : ItemBase
+{
+	protected bool m_IsMotorbikeAttached;
+
+	float GetHeatComfortOverride()
+	{
+		return 0.0;
+	}
 }
 
 class ReplaceWheelLambda : TurnItemIntoItemLambda
@@ -415,6 +430,16 @@ class ReplaceWheelLambda : TurnItemIntoItemLambda
 	override protected void OnSuccess(EntityAI new_item)
 	{
 		super.OnSuccess(new_item);
+		
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
+		{
+			//! Play wheel exposion sound when destroyed (CarWheel_Ruined::PlayWheelExlosionSound).
+			CarWheel_Ruined ruinedCarWheel = CarWheel_Ruined.Cast(new_item);
+			if (ruinedCarWheel)
+			{
+				ruinedCarWheel.PlayWheelExlosionSound();
+			}
+		}
 		
 		if (new_item)
 			new_item.SetOrientation(m_oldOri);
@@ -441,6 +466,104 @@ class Truck_01_WheelDouble_Ruined extends CarWheel_Ruined {};
 
 class Offroad_02_Wheel extends CarWheel {};
 class Offroad_02_Wheel_Ruined extends CarWheel_Ruined {};
+
+class Motorbike_01_Wheel_1 extends MotorbikeWheel {};
+class Motorbike_01_Wheel_1_Ruined extends MotorbikeWheel_Ruined {};
+class Motorbike_01_Wheel_2 extends MotorbikeWheel {};
+class Motorbike_01_Wheel_2_Ruined extends MotorbikeWheel_Ruined {};
+
+class Motorbike_02_Wheel_1 extends MotorbikeWheel {};
+class Motorbike_02_Wheel_1_Ruined extends MotorbikeWheel_Ruined {};
+class Motorbike_02_Wheel_2 extends MotorbikeWheel {};
+class Motorbike_02_Wheel_2_Ruined extends MotorbikeWheel_Ruined {};
+
+class Motorbike_02_ShieldFront_ColorBase: MotorbikePart
+{
+	override float GetHeatComfortOverride()
+	{
+		return 0.15;
+	}
+};
+class Motorbike_02_ShieldLeft_ColorBase: MotorbikePart
+{
+	override float GetHeatComfortOverride()
+	{
+		return 0.0;
+	}
+
+	override void SetActions()
+	{
+		super.SetActions();
+
+		if (m_IsMotorbikeAttached)
+			AddAction(ActionPickUpMotorbike);
+	}
+
+	override void OnWasAttached(EntityAI parent, int slot_id)
+	{
+		super.OnWasAttached(parent, slot_id);
+
+		if (MotorbikeScript.Cast(parent))
+		{
+			m_IsMotorbikeAttached = true;
+
+			if (m_InputActionMap)
+				AddAction(ActionPickUpMotorbike);
+		}
+	}
+
+	override void OnWasDetached(EntityAI parent, int slot_id)
+	{
+		super.OnWasDetached(parent, slot_id);
+
+		if (MotorbikeScript.Cast(parent))
+		{
+			m_IsMotorbikeAttached = false;
+			if (m_InputActionMap)
+				RemoveAction(ActionPickUpMotorbike);
+		}
+	}
+};
+class Motorbike_02_ShieldRight_ColorBase: MotorbikePart
+{
+	override float GetHeatComfortOverride()
+	{
+		return 0.0;
+	}
+	
+	override void SetActions()
+	{
+		super.SetActions();
+
+		if (m_IsMotorbikeAttached)
+			AddAction(ActionPickUpMotorbike);
+	}
+
+	override void OnWasAttached(EntityAI parent, int slot_id)
+	{
+		super.OnWasAttached(parent, slot_id);
+
+		if (MotorbikeScript.Cast(parent))
+		{
+			m_IsMotorbikeAttached = true;
+
+			if (m_InputActionMap)
+				AddAction(ActionPickUpMotorbike);
+		}
+	}
+
+	override void OnWasDetached(EntityAI parent, int slot_id)
+	{
+		super.OnWasDetached(parent, slot_id);
+
+		if (MotorbikeScript.Cast(parent))
+		{
+			m_IsMotorbikeAttached = false;
+			if (m_InputActionMap)
+				RemoveAction(ActionPickUpMotorbike);
+		}
+	}
+};
 
 class CarDoor extends InventoryItemSuper
 {
@@ -694,6 +817,19 @@ class Offroad_02_Door_2_1_Rust extends CarDoor {};
 class Offroad_02_Door_2_2_Rust extends CarDoor {};
 class Offroad_02_Trunk_Rust extends CarDoor {};
 
+
+class Offroad_02_Door_1_1_Beige extends CarDoor {};
+class Offroad_02_Door_1_2_Beige extends CarDoor {};
+class Offroad_02_Door_2_1_Beige extends CarDoor {};
+class Offroad_02_Door_2_2_Beige extends CarDoor {};
+class Offroad_02_Trunk_Beige extends CarDoor {};
+
+class Offroad_02_Door_1_1_BeigeRust extends CarDoor {};
+class Offroad_02_Door_1_2_BeigeRust extends CarDoor {};
+class Offroad_02_Door_2_1_BeigeRust extends CarDoor {};
+class Offroad_02_Door_2_2_BeigeRust extends CarDoor {};
+class Offroad_02_Trunk_BeigeRust extends CarDoor {};
+
 //-------------------------------------
 class CarRadiator extends InventoryItemSuper
 {
@@ -802,6 +938,8 @@ class WindscreenBox extends ItemBase {};
 
 class GlowPlug extends ItemBase
 {
+	static int SLOT_ID = InventorySlots.GetSlotIdFromString("GlowPlug");
+
 	override void SetActions()
 	{
 		super.SetActions();
@@ -813,6 +951,8 @@ class GlowPlug extends ItemBase
 
 class SparkPlug extends ItemBase
 {
+	static int SLOT_ID = InventorySlots.GetSlotIdFromString("SparkPlug");
+
 	override bool DisplayNameRuinAttach()
 	{
 		return true;
@@ -860,18 +1000,23 @@ class Clothing_Base extends ItemBase
 	
 	void UpdateNVGStatus(PlayerBase player, bool attaching = false, bool force_disable = false)
 	{
-		bool hasNVGSlot;
-		for (int i = 0; i < GetInventory().GetAttachmentSlotsCount(); ++i)
+		CachedEquipmentStorageQuery query = new CachedEquipmentStorageQuery();
+
+		query.m_Category 		= ECachedEquipmentItemCategory.NVG;
+		query.m_Placement 		= ECachedEquipmentPlacement.ATTACHMENT;
+		query.m_ParentPlacement = {InventorySlots.HEADGEAR, InventorySlots.EYEWEAR};
+		query.m_MaximumDepth 	= 2;
+		
+		NVGoggles nvgAttachment;
+		array<Entity> nvgs = player.GetCachedEquipment().GetEntitiesByCategory(query);
+		foreach (Entity nvg : nvgs)
 		{
-			hasNVGSlot = GetInventory().GetAttachmentSlotId(i) == InventorySlots.GetSlotIdFromString("NVG");
-			if (hasNVGSlot)
+			if (NVGoggles.CastTo(nvgAttachment, nvg))
 				break;
 		}
 		
-		if (player && hasNVGSlot)
+		if (player)
 		{
-			NVGoggles nvgAttachment;
-			nvgAttachment = NVGoggles.Cast(FindAttachmentBySlotName("NVG"));
 			if (nvgAttachment)
 			{
 				if (attaching)

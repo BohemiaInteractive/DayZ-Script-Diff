@@ -81,7 +81,6 @@ class FlashGrenade extends Grenade_Base
 		SetAmmoType("FlashGrenade_Ammo");
 		SetFuseDelay(2);
 		SetGrenadeType(EGrenadeType.ILLUMINATING);
-		SetParticleExplosion(ParticleList.GRENADE_M84);
 	}
 	
 	protected override void CreateLight()

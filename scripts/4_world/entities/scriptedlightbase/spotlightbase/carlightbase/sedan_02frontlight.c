@@ -1,3 +1,4 @@
+[Obsolete("use VehicleLightBase and VehicleLightProfileBase instead")]
 class Sedan_02FrontLight extends CarLightBase
 {
 	void Sedan_02FrontLight()

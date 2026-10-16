@@ -73,7 +73,7 @@ class ActionPlugIn: ActionSingleUseBase
 	{
 		ItemBase targetIB = ItemBase.Cast(action_data.m_Target.GetObject());
 
-		targetIB.GetInventory().TakeEntityAsAttachment(InventoryMode.LOCAL, action_data.m_MainItem);
+		targetIB.GetInventory().TakeEntityAsTargetAttachment(InventoryMode.LOCAL, targetIB, action_data.m_MainItem);
 	}
 	
 	override void OnExecuteClient(ActionData action_data)

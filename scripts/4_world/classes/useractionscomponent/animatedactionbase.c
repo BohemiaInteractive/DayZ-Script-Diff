@@ -26,13 +26,15 @@ class ActionBaseCB : HumanCommandActionCallback
 	//Command events
 	override void OnFinish(bool pCanceled)	
 	{
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable() )
 		{
 			if ( m_ActionData)
-				Debug.ActionLog("Time stamp: " + m_ActionData.m_Player.GetSimulationTimeStamp(), m_ActionData.m_Action.ToString() , "n/a", "OnFinish", m_ActionData.m_Player.ToString() );
+				Debug.ActionLog("STS = " + m_ActionData.m_Player.GetSimulationTimeStamp(), m_ActionData.m_Action.ToString() , "n/a", "OnFinish", m_ActionData.m_Player.ToString() );
 			else
 				Debug.ActionLog("n/a", this.ToString() , "n/a", "OnFinish", "n/a" );
 		}
+#endif
 		if ( m_SoundObject ) 
 		{
 			g_Game.ObjectDelete(m_SoundObject);
@@ -84,10 +86,12 @@ class ActionBaseCB : HumanCommandActionCallback
 	{
 		if ( g_Game.IsServer() )
 		{
+#ifdef ENABLE_LOGGING
 			if ( LogManager.IsActionLogEnable() )
 			{
 				Debug.ActionLog("n/a", this.ToString() , "n/a", "Interrupt", m_ActionData.m_Player.ToString() );	
 			}
+#endif
 			if ( g_Game.IsMultiplayer() )
 			{
 				DayZPlayerSyncJunctures.SendActionInterrupt(m_ActionData.m_Player);
@@ -214,13 +218,13 @@ class AnimatedActionBase : ActionBase
 	{
 		if (action_data.m_DelayedAnimationEventID != UA_NONE)
 		{
-			#ifdef ENABLE_LOGGING
+#ifdef ENABLE_LOGGING
 			if ( LogManager.IsActionLogEnable() )
 			{
 				if (action_data)
-					Debug.ActionLog("STS: " + action_data.m_Player.GetSimulationTimeStamp() + " Event: " + action_data.m_DelayedAnimationEventID, action_data.m_Action.ToString() , "n/a", "OnAnimationEvent", action_data.m_Player.ToString() );
+					Debug.ActionLog("STS = " + action_data.m_Player.GetSimulationTimeStamp() + " Event: " + action_data.m_DelayedAnimationEventID, action_data.m_Action.ToString() , "n/a", "OnAnimationEvent", action_data.m_Player.ToString() );
 			}
-			#endif
+#endif
 			OnAnimationEvent(action_data);
 			action_data.m_DelayedAnimationEventID = UA_NONE;
 		}
@@ -277,14 +281,17 @@ class AnimatedActionBase : ActionBase
 		if (!actionData.m_MainItem)
 			return -1;
 		
-		TActionAnimOverrideMap overrideMap = ItemBase.m_ItemActionOverrides.Get(this.Type());
+		TActionAnimOverrideMap overrideMap = EntityAI.m_EntityActionOverrides.Get(this.Type());
 		if (!overrideMap)
 			return -1;
 		
 		ActionOverrideData overrideData = overrideMap.Get(actionData.m_MainItem.Type());
+		if (!overrideData && actionData.m_Target.GetObject())
+			overrideData = overrideMap.Get(actionData.m_Target.GetObject().Type());
+		
 		if (overrideData)
 		{
-			if ( HasProneException() && actionData.m_Player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE) )
+			if (HasProneException() && actionData.m_Player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE))
 				return overrideData.m_CommandUIDProne;
 			else 
 				return overrideData.m_CommandUID;
@@ -297,7 +304,7 @@ class AnimatedActionBase : ActionBase
 	{
 		if (item)
 		{
-			TActionAnimOverrideMap overrideMap = ItemBase.m_ItemActionOverrides.Get(this.Type());
+			TActionAnimOverrideMap overrideMap = EntityAI.m_EntityActionOverrides.Get(this.Type());
 			if (overrideMap)
 			{
 				ActionOverrideData overrideData = overrideMap.Get(item.Type());
@@ -323,6 +330,12 @@ class AnimatedActionBase : ActionBase
 	//TODO MW - add comment 
 	protected void CreateAndSetupActionCallback( ActionData action_data )
 	{
+#ifdef ENABLE_LOGGING
+		if ( LogManager.IsActionLogEnable() )
+		{
+			Debug.ActionLog("STS = " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "CreateAndSetupActionCallback", action_data.m_Player.ToString() );
+		}
+#endif
 		//Print("ActionBase.c | CreateAndSetupActionCallback | DBG ACTION CALLBACK CREATION CALLED");
 		ActionBaseCB callback;
 		if (  IsFullBodyEx(action_data.m_Player, action_data.m_Target, action_data.m_MainItem) )
@@ -395,7 +408,7 @@ class AnimatedActionBase : ActionBase
 			}
 			else
 			{
-				Debug.ActionLog("PLAYER LOST", this.ToString() , "n/a", "Do", action_data.m_Player.ToString() );
+				Debug.ActionLog("PLAYER LOST", this.ToString() , "n/a", "Do", "n/a" );
 			}	
 		}
 		else
@@ -478,10 +491,12 @@ class AnimatedActionBase : ActionBase
 		}
 		else
 		{
+#ifdef ENABLE_LOGGING
 			if ( LogManager.IsActionLogEnable() )
 			{
 				Debug.ActionLog("Ation could not be finished right at the end", this.ToString() , "n/a", "End", action_data.m_Player.ToString() );
 			}
+#endif
 			action_data.m_Callback.Interrupt();
 		}
 	}

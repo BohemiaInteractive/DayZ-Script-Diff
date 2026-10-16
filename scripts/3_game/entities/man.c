@@ -63,6 +63,8 @@ class Man extends EntityAI
 	bool IsUnconscious();
 	//! uncon command might be still in progress but state already changed (for simple checks only - eg.: UI)
 	bool IsUnconsciousStateOnly();
+	
+	bool IsSurrendered();
 
 	int GetPlayerState()
 	{
@@ -103,14 +105,14 @@ class Man extends EntityAI
 		return m_OnItemRemovedFromHands;
 	}
 	
-	void EEItemIntoHands(EntityAI item)
+	override void EEItemIntoHands(EntityAI item)
 	{
 		SetWeightDirty();
 		if( m_OnItemAddedToHands )
 			m_OnItemAddedToHands.Invoke( item, this );
 	}
 	
-	void EEItemOutOfHands(EntityAI item)
+	override void EEItemOutOfHands(EntityAI item)
 	{
 		SetWeightDirty();
 		if( m_OnItemRemovedFromHands )
@@ -158,7 +160,12 @@ class Man extends EntityAI
 
 	override bool CanDropEntity (notnull EntityAI item) { return true; }
 
-	void OnItemInHandsChanged () { }
+	void OnItemInHandsChanged () 
+	{
+		OnItemInHandsChangedEx(); 
+	}
+	
+	void OnItemInHandsChangedEx (bool pInstant = false, bool pChangeAnimationInstance = true) { }
 
 	bool NeedInventoryJunctureFromServer (notnull EntityAI item, EntityAI currParent, EntityAI newParent) { return false; }
 
@@ -364,11 +371,13 @@ class Man extends EntityAI
 	///@} hand replace2
 
 	///@{ to inv juncture
+	//[Obsolete("1.30: Use JunctureTakeEntityToTargetInventory instead")]
 	bool JunctureTakeEntityToInventory (FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		return TakeEntityToInventoryImpl(InventoryMode.JUNCTURE, flags, item);
 	}
 
+	//[Obsolete("1.30: Use PredictiveTakeEntityToTargetInventory instead")]
 	override bool PredictiveTakeEntityToInventory (FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		if (!ScriptInputUserData.CanStoreInputUserData())
@@ -383,16 +392,19 @@ class Man extends EntityAI
 			return TakeEntityToInventoryImpl(InventoryMode.PREDICTIVE, flags, item);
 	}
 
+	//[Obsolete("1.30: Use LocalTakeEntityToTargetInventory instead")]
 	override bool LocalTakeEntityToInventory (FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		return TakeEntityToInventoryImpl(InventoryMode.LOCAL, flags, item);
 	}
 
+	//[Obsolete("1.30: Use ServerTakeEntityToTargetInventory instead")]
 	override bool ServerTakeEntityToInventory (FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		return TakeEntityToInventoryImpl(InventoryMode.SERVER, flags, item);
 	}
 
+	//[Obsolete("1.30: Use TakeEntityToTargetInventoryImpl instead")]
 	protected bool TakeEntityToInventoryImpl (InventoryMode mode, FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " ::Take2Inv(" + typename.EnumToString(InventoryMode, mode) + ") item=" + Object.GetDebugName(item));
@@ -400,124 +412,6 @@ class Man extends EntityAI
 		UpdateInventoryMenu();
 		return code;
 	}
-	///@} to inv juncture
-
-	///@{ to cgo juncture
-	bool JunctureTakeEntityToCargo (notnull EntityAI item)
-	{
-		return TakeEntityToCargoImpl(InventoryMode.JUNCTURE, item);
-	}
-
-	override bool PredictiveTakeEntityToCargo (notnull EntityAI item)
-	{
-		if (!ScriptInputUserData.CanStoreInputUserData())
-		{
-			Print("[inv] " + GetSimulationTimeStamp() + " Man@" + this + " ::PredictiveTakeEntityToCargo input data not sent yet, cannot allow another input action");
-			return false;
-		}
-
-		if (NeedInventoryJunctureFromServer(item, item.GetHierarchyParent(), this))
-			return JunctureTakeEntityToCargo(item);
-		else
-			return TakeEntityToCargoImpl(InventoryMode.PREDICTIVE, item);
-	}
-
-	override bool LocalTakeEntityToCargo (notnull EntityAI item)
-	{
-		return TakeEntityToCargoImpl(InventoryMode.LOCAL, item);
-	}
-
-	override bool ServerTakeEntityToCargo (notnull EntityAI item)
-	{
-		return TakeEntityToCargoImpl(InventoryMode.SERVER, item);
-	}
-
-	protected bool TakeEntityToCargoImpl (InventoryMode mode, notnull EntityAI item)
-	{
-		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " ::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + Object.GetDebugName(item));
-		bool code = GetHumanInventory().TakeEntityToCargo(mode, item);
-		UpdateInventoryMenu();
-		return code;
-	}
-	///@} to cgo juncture
-
-	///@{ as att juncture
-	bool JunctureTakeEntityAsAttachment (notnull EntityAI item)
-	{
-		return TakeEntityAsAttachmentImpl(InventoryMode.JUNCTURE, item);
-	}
-
-	override bool PredictiveTakeEntityAsAttachment (notnull EntityAI item)
-	{
-		if (!ScriptInputUserData.CanStoreInputUserData())
-		{
-			Print("[inv] " + GetSimulationTimeStamp() + " Man@" + this + " ::PredictiveTakeEntityAsAttachment input data not sent yet, cannot allow another input action");
-			return false;
-		}
-
-		if (NeedInventoryJunctureFromServer(item, item.GetHierarchyParent(), this))
-			return JunctureTakeEntityAsAttachment(item);
-		else
-			return TakeEntityAsAttachmentImpl(InventoryMode.PREDICTIVE, item);
-	}
-
-	override bool LocalTakeEntityAsAttachment (notnull EntityAI item)
-	{
-		return TakeEntityAsAttachmentImpl(InventoryMode.LOCAL, item);
-	}
-
-	override bool ServerTakeEntityAsAttachment (notnull EntityAI item)
-	{
-		return TakeEntityAsAttachmentImpl(InventoryMode.SERVER, item);
-	}
-
-	protected bool TakeEntityAsAttachmentImpl (InventoryMode mode, notnull EntityAI item)
-	{
-		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " ::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + Object.GetDebugName(item));
-		bool code = GetHumanInventory().TakeEntityAsAttachment(mode, item);
-		UpdateInventoryMenu();
-		return code;
-	}
-	///@} as att juncture
-
-	///@{ as att ex juncture
-	bool JunctureTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
-	{
-		return TakeEntityAsAttachmentExImpl(InventoryMode.JUNCTURE, item, slot);
-	}
-
-	override bool PredictiveTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
-	{
-		if (!ScriptInputUserData.CanStoreInputUserData())
-		{
-			Print("[inv] " + GetSimulationTimeStamp() + " Man@" + this + " ::PredictiveTakeEntityAsAttachmentEx input data not sent yet, cannot allow another input action");
-			return false;
-		}
-
-		if (NeedInventoryJunctureFromServer(item, item.GetHierarchyParent(), this))
-			return JunctureTakeEntityAsAttachmentEx(item, slot);
-		else
-			return TakeEntityAsAttachmentExImpl(InventoryMode.PREDICTIVE, item, slot);
-	}
-
-	override bool LocalTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
-	{
-		return TakeEntityAsAttachmentExImpl(InventoryMode.LOCAL, item, slot);
-	}
-
-	override bool ServerTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
-	{
-		return TakeEntityAsAttachmentExImpl(InventoryMode.SERVER, item, slot);
-	}
-
-	protected bool TakeEntityAsAttachmentExImpl (InventoryMode mode, notnull EntityAI item, int slot)
-	{
-		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " ::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + Object.GetDebugName(item));
-		bool code = GetHumanInventory().TakeEntityAsAttachmentEx(mode, item, slot);
-		UpdateInventoryMenu();
-		return code;
-	}
-	///@} as att ex juncture
 
 	///@{ swap juncture
 	bool JunctureSwapEntities (notnull EntityAI item1, notnull EntityAI item2)
@@ -640,7 +534,7 @@ class Man extends EntityAI
 	{
 		if( GetInventory().CanAddAttachment( item ) )
 		{
-			return PredictiveTakeEntityAsAttachment( item );
+			return PredictiveTakeEntityToTargetAttachment(this, item);
 		}
 		else
 		{
@@ -982,5 +876,57 @@ class Man extends EntityAI
 	protected array<InventoryItem> OnDrawOptics2D()
 	{
 		return null;
+	}
+	
+	
+	//OBSOLETE
+		///@{ to cgo juncture
+	[Obsolete("1.30: Use JunctureTakeEntityToTargetCargo instead")]
+	bool JunctureTakeEntityToCargo (notnull EntityAI item)
+	{
+		return TakeEntityToCargoImpl(InventoryMode.JUNCTURE, item);
+	}
+
+	[Obsolete("1.30: Use TakeEntityToTargetCargoImpl instead")]
+	protected bool TakeEntityToCargoImpl (InventoryMode mode, notnull EntityAI item)
+	{
+		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " ::Take2Cgo(" + typename.EnumToString(InventoryMode, mode) + ") item=" + Object.GetDebugName(item));
+		bool code = GetHumanInventory().TakeEntityToCargo(mode, item);
+		UpdateInventoryMenu();
+		return code;
+	}
+	///@} to cgo juncture
+
+	///@{ as att juncture
+	[Obsolete("1.30: Use JunctureTakeEntityToTargetAttachment instead")]
+	bool JunctureTakeEntityAsAttachment (notnull EntityAI item)
+	{
+		return TakeEntityAsAttachmentImpl(InventoryMode.JUNCTURE, item);
+	}
+
+	[Obsolete("1.30: Use TakeEntityToTargetAttachmentImpl instead")]
+	protected bool TakeEntityAsAttachmentImpl (InventoryMode mode, notnull EntityAI item)
+	{
+		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " ::Take2Att(" + typename.EnumToString(InventoryMode, mode) + ") item=" + Object.GetDebugName(item));
+		bool code = GetHumanInventory().TakeEntityAsAttachment(mode, item);
+		UpdateInventoryMenu();
+		return code;
+	}
+	///@} as att juncture
+
+	///@{ as att ex juncture
+	[Obsolete("1.30: Use JunctureTakeEntityToTargetAttachmentEx instead")]
+	bool JunctureTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
+	{
+		return TakeEntityAsAttachmentExImpl(InventoryMode.JUNCTURE, item, slot);
+	}
+
+	[Obsolete("1.30: Use TakeEntityToTargetAttachmentExImpl instead")]
+	protected bool TakeEntityAsAttachmentExImpl (InventoryMode mode, notnull EntityAI item, int slot)
+	{
+		if (LogManager.IsSyncLogEnable()) syncDebugPrint("[inv] " + GetDebugName(this) + " STS = " + GetSimulationTimeStamp() + " ::Take2AttEx(" + typename.EnumToString(InventoryMode, mode) + ") item=" + Object.GetDebugName(item));
+		bool code = GetHumanInventory().TakeEntityAsAttachmentEx(mode, item, slot);
+		UpdateInventoryMenu();
+		return code;
 	}
 };

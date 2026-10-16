@@ -159,10 +159,17 @@ class BiosSessionService
 					if (found)
 					{
 						OnlineServices.SetInviteServerInfo( session_address, session_port );
-						g_Game.GetUIManager().CloseAll();
-						if (!g_Game.GetUIManager().EnterScriptedMenu( MENU_INVITE_TIMER, null ))
+
+						// an earlier invite already started the logout and it cannot be taken
+						// back, so only retarget it, do not tear the dialog down and ask the
+						// server for a second logout it would ignore anyway
+						if (!g_Game.GetUIManager().IsMenuOpen( MENU_INVITE_TIMER ))
 						{
-							NotificationSystem.AddNotification( NotificationType.CONNECT_FAIL_GENERIC, NotificationSystem.DEFAULT_TIME_DISPLAYED );
+							g_Game.GetUIManager().CloseAll();
+							if (!g_Game.GetUIManager().EnterScriptedMenu( MENU_INVITE_TIMER, null ))
+							{
+								NotificationSystem.AddNotification( NotificationType.CONNECT_FAIL_GENERIC, NotificationSystem.DEFAULT_TIME_DISPLAYED );
+							}
 						}
 					}
 					else

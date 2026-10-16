@@ -25,6 +25,7 @@ class Bonfire extends BuildingSuper
 		super.EEInit();
 		
 		#ifndef SERVER
+		#ifndef NO_GUI
 		// object creation - create effects (light, particles, sound)
 		
 		// light
@@ -53,6 +54,7 @@ class Bonfire extends BuildingSuper
 			PlaySoundSetLoop(m_SoundFireLoop, "HeavyFire_SoundSet", 1.0, 2.0);
 		}
 		#endif
+		#endif
 		
 		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
@@ -76,6 +78,7 @@ class Bonfire extends BuildingSuper
 		super.EEDelete(parent);
 
 		#ifndef SERVER
+		#ifndef NO_GUI
 		// outside of bubble - do effects cleanup (light, particles, sound)
 		
 		// light
@@ -100,6 +103,7 @@ class Bonfire extends BuildingSuper
 		{
 			m_SoundFireLoop.SoundStop();
 		}
+		#endif
 		#endif
 		
 		if (g_Game.IsServer() || !g_Game.IsMultiplayer())

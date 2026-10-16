@@ -39,8 +39,10 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 	protected CheckBoxWidget		m_CheckBoxBodyAtt;
 	protected CheckBoxWidget		m_CheckBoxBackAtt;
 	
-	void ScriptConsoleSoundsTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
+	override void InitializeTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		super.InitializeTab(root, console, button, parent);
+		
 		m_MouseCurPos		= TextWidget.Cast(root.FindAnyWidget("MapSoundsPos"));
 		m_MapDistWidget		= TextWidget.Cast(root.FindAnyWidget("MapSoundsDistance"));
 		m_MapHeadingWidget	= TextWidget.Cast(root.FindAnyWidget("MapHeadingSounds"));
@@ -458,4 +460,8 @@ class ScriptConsoleSoundsTab : ScriptConsoleTabBase
 		ChangeFilter(GetSoundClasses(), m_SoundsTextListbox, m_SoundFilter, 0,true);
 	}
 	
+	override void OnSelected()
+	{
+		SetFocus(m_SoundsTextListbox);
+	}	
 }

@@ -71,10 +71,32 @@ class ActionAnimateSeats: ActionAnimateCarSelection
 	
 	override bool AddActionJuncture(ActionData action_data)
 	{
-		Transport trans = Transport.Cast(action_data.m_Target.GetObject());
-		bool accepted = false;
-		int nextSeat = trans.CrewPositionIndex( action_data.m_Target.GetComponentIndex() );
 		Transport transport = Transport.Cast(action_data.m_Target.GetObject());
+		bool accepted = false;
+		int nextSeat = -1;
+		
+		array<string> selections = new array<string>();
+		transport.GetActionComponentNameList(action_data.m_Target.GetComponentIndex(), selections);
+
+		for (int i = 0; i < selections.Count(); i++)
+		{
+			m_AnimSource = transport.GetAnimSourceFromSelection( selections[i]) ;
+			if ( m_AnimSource != "" )
+			{
+				HumanCommandVehicle vehCmd = action_data.m_Player.GetCommand_Vehicle();
+
+				if (m_AnimSource == "SeatDriver")
+				{
+					nextSeat = DayZPlayerConstants.VEHICLESEAT_DRIVER;
+				}
+				else if (m_AnimSource == "SeatCoDriver")
+				{
+					nextSeat = DayZPlayerConstants.VEHICLESEAT_CODRIVER;
+				}
+				break;
+			}
+		}
+
 		InventoryLocation il = new InventoryLocation;
 		if (transport)
 		{
@@ -87,7 +109,6 @@ class ActionAnimateSeats: ActionAnimateCarSelection
 				action_data.m_ReservedInventoryLocations.Insert(il);
 			}
 		}
-		
 		return accepted;
 	}
 };

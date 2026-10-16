@@ -69,11 +69,7 @@ class ComponentEnergyManager : Component
 	EntityAI						m_EnergySource; // Energy source can be any EntityAI object
 	ref array<EntityAI> 			m_PluggedDevices;
 	ref map<string,EntityAI>		m_DeviceByPlugSelection;
-	
-	ref Timer 						m_UpdateTimer;
-	ref Timer 						m_UpdateQuantityTimer;
-	ref Timer 						m_DebugUpdate;
-	
+		
 	const int MAX_SOCKETS_COUNT 	= 4;
 	EntityAI m_Sockets[MAX_SOCKETS_COUNT];
 	
@@ -112,11 +108,9 @@ class ComponentEnergyManager : Component
 	{
 		if ( GetDebugPlugs() )
 		{
-			if ( g_Game.IsMultiplayer()  &&  g_Game.IsServer() )
+			if (g_Game.IsMultiplayer() && g_Game.IsServer())
 			{
-				if (m_DebugUpdate)
-					m_DebugUpdate.Stop();
-				
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(DebugUpdate);
 				return;
 			}
 		
@@ -221,10 +215,7 @@ class ComponentEnergyManager : Component
 		{
 			if (m_ConvertEnergyToQuantity)
 			{
-				if (!m_UpdateQuantityTimer)
-					m_UpdateQuantityTimer = new Timer( CALL_CATEGORY_SYSTEM );
-				
-				m_UpdateQuantityTimer.Run( 0.3 , this, "OnEnergyAdded", NULL, false);
+				g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(OnEnergyAdded, 300); //! 300 ms
 			}
 		}
 		
@@ -347,11 +338,7 @@ class ComponentEnergyManager : Component
 	{
 		if ( m_DebugPlugs )
 		{
-			if ( !m_DebugUpdate )
-				m_DebugUpdate = new Timer( CALL_CATEGORY_SYSTEM );
-			
-			if ( !m_DebugUpdate.IsRunning() )
-				m_DebugUpdate.Run(0.01, this, "DebugUpdate", NULL, true);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DebugUpdate, 10, true); //! 10 ms
 		}
 		else
 		{
@@ -1413,11 +1400,7 @@ class ComponentEnergyManager : Component
 	{
 		if (m_DebugPlugs)
 		{
-			if (!m_DebugUpdate)
-				m_DebugUpdate = new Timer( CALL_CATEGORY_SYSTEM );
-			
-			if (!m_DebugUpdate.IsRunning())
-				m_DebugUpdate.Run(0.01, this, "DebugUpdate", NULL, true);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DebugUpdate, 10, true); //! 10 ms
 		}
 		
 		UpdateCanWork();
@@ -1510,13 +1493,10 @@ class ComponentEnergyManager : Component
 	{
 		if (!m_IsPassiveDevice)
 		{
-			if (!m_UpdateTimer)
-				m_UpdateTimer = new Timer(CALL_CATEGORY_SYSTEM);
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(DeviceUpdate);
 			
-			if (!m_UpdateTimer.IsRunning()) // Makes sure the timer is NOT running already
-			{
-				m_UpdateTimer.Run(GetUpdateInterval(), this, "DeviceUpdate", null, true);
-			}
+			float updateInterval = GetUpdateInterval() * 1000;
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeviceUpdate, updateInterval, true);
 		}
 	}
 	
@@ -1529,13 +1509,7 @@ class ComponentEnergyManager : Component
 	
 	//! Energy manager: Called when energy was added on this device
 	void OnEnergyAdded()
-	{
-		if (m_UpdateQuantityTimer)
-		{
-			m_UpdateQuantityTimer.Stop();
-			m_UpdateQuantityTimer = NULL;
-		}
-		
+	{		
 		if (m_ThisEntityAI)
 			m_ThisEntityAI.OnEnergyAdded();
 	}
@@ -1548,11 +1522,7 @@ class ComponentEnergyManager : Component
 	// Stops the device's main cycle
 	protected void StopUpdates()
 	{
-		if (m_UpdateTimer)
-		{
-			m_UpdateTimer.Stop();
-			m_UpdateTimer = NULL; // Delete timer from memory
-		}
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(DeviceUpdate);
 	}
 
 	//! Gets called originally when the player is interacting with an item containing this energy component, then recursively following the branches of connection from the original item to the peripheries
@@ -1906,4 +1876,9 @@ class ComponentEnergyManager : Component
 			}
 		}
 	}
+	
+	//! DEPRECATED BELOW
+	ref Timer m_UpdateTimer;
+	ref Timer m_UpdateQuantityTimer;
+	ref Timer m_DebugUpdate;
 }

@@ -72,7 +72,16 @@ class SEffectManager
 		// Stop the effect first, just in case
 		eff.Stop();
 		
-		int id = EffectRegister(eff);
+		int id;
+		
+		if (eff.IsRegistered())
+		{
+			id = eff.GetID();
+		}
+		else
+		{
+			id = EffectRegister(eff);
+		}
 		
 		if (!obj)
 		{
@@ -524,7 +533,7 @@ class SEffectManager
 		m_IsCleanup = true;
 		
 		// There should not be anything in here on server
-		if (g_Game && g_Game.IsDedicatedServer())
+		if (g_Game && g_Game.IsHeadlessOrDedicatedServer())
 		{
 			if (m_ParamsMap.Count() > 0)
 				ErrorEx(string.Format("SEffectManager containing SoundParams on server."), ErrorExSeverity.WARNING);
@@ -635,6 +644,11 @@ class SEffectManager
 			m_EffectersMap.Remove(effecterID);
 			eff.DeleteSafe();
 		}
+	}
+	
+	static EffecterBase GetEffecterByID(int effecterID)
+	{
+		return m_EffectersMap.Get(effecterID);
 	}
 	
 	static void OnUpdate(float timeslice)
@@ -794,7 +808,7 @@ class ParticleEffecter : EffecterBase
 			}
 			else
 			{
-				m_Effect = new EffectParticleGeneral();
+				m_Effect = EffectParticleGeneral.Cast(GetEffectTypename().Spawn());
 				m_Effect.SetParticle(m_ParticleEffectIDSync);
 				SEffectManager.PlayInWorld(m_Effect, GetWorldPosition());
 			}
@@ -838,6 +852,11 @@ class ParticleEffecter : EffecterBase
 			
 			m_Command = m_CommandSync;
 		}
+	}
+	
+	protected typename GetEffectTypename()
+	{
+		return EffectParticleGeneral;
 	}
 	
 	void ~ParticleEffecter()

@@ -52,7 +52,7 @@ class ActionDestroyCombinationLock: ActionContinuousBase
 				
 				if ( combination_lock.IsDamageDestroyed() )
 				{
-					combination_lock.UnlockServer( action_data.m_Player, fence );
+					combination_lock.UnlockOnServer( action_data.m_Player, fence );
 					g_Game.GetCallQueue( CALL_CATEGORY_GAMEPLAY ).CallLater( combination_lock.DestroyLock, 200, false );
 				}
 			}

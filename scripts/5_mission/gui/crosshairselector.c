@@ -14,8 +14,6 @@ class CrossHair
 		m_Current = false;
 	}
 
-	void ~CrossHair() {}
-
 	string GetName()
 	{
 		return m_Name;
@@ -107,34 +105,33 @@ class CrossHairSelector extends ScriptedWidgetEventHandler
 				ShowCrossHair(null);
 			
 			return;
-		};
+		}
 
 		if(m_Player && !m_Player.IsAlive()) // handle respawn
 		{
 			m_Player = null;
 			m_AM = null;
 		}
-		if(!m_Player) GetPlayer();
-		if(!m_AM) GetActionManager();
+
+		if(!m_Player)
+			GetPlayer();
+		if(!m_AM)
+			GetActionManager();
 		
 		if(m_Player && m_Player.IsPlayerSelected())
-		{
 			SelectCrossHair();
-		}
 	}
 	
 	// getters
  	protected void GetPlayer()
 	{
-		Class.CastTo(m_Player, g_Game.GetPlayer());
+		m_Player = PlayerBase.Cast(g_Game.GetPlayer());
 	}
 
 	protected void GetActionManager()
 	{
-		if( m_Player && m_Player.IsPlayerSelected() )
-		{
-			Class.CastTo(m_AM, m_Player.GetActionManager());
-		}
+		if(m_Player && m_Player.IsPlayerSelected())
+			m_AM = ActionManagerBase.Cast(m_Player.GetActionManager());
 		else
 			m_AM = null;
 	}
@@ -163,7 +160,8 @@ class CrossHairSelector extends ScriptedWidgetEventHandler
 	
 	protected void SelectCrossHair()
 	{
-		if(!m_AM) return;
+		if(!m_AM)
+			return;
 
 		HumanInputController hic = m_Player.GetInputController();
 		ActionBase action = m_AM.GetRunningAction();
@@ -171,33 +169,28 @@ class CrossHairSelector extends ScriptedWidgetEventHandler
 		bool firearmInHands = m_Player.GetItemInHands() && m_Player.GetItemInHands().IsWeapon();
 
 		//! firearms
-		if ( firearmInHands && m_Player.IsRaised() && !m_Player.IsInIronsights() && !m_Player.IsInOptics() && !hic.CameraIsFreeLook() && !m_Player.GetCommand_Melee2() )
-		{
+		if (firearmInHands && m_Player.IsRaised() && !m_Player.IsInIronsights() && !m_Player.IsInOptics() && !hic.CameraIsFreeLook() && !m_Player.GetCommand_Melee2())
 			ShowCrossHair(GetCrossHairByName("crossT_128x128"));
-		}
 		//! On Continuous Actions
 		else if (action && action.GetActionCategory() == AC_CONTINUOUS)
 		{
 			int actionState = m_AM.GetActionState(action);
 
-			if ( actionState != UA_NONE )
+			if (actionState != UA_NONE)
 				ShowCrossHair(null);
 		}
 		//! raised hands(bare + non-firearm) + melee cmd
 		else if ( m_Player.IsRaised() || m_Player.GetCommand_Melee2() || g_Game.GetUIManager().GetMenu() != null )
-		{
 			ShowCrossHair(null);
-		}
 		//! handle unconscious state
-		else if ( m_Player.GetCommand_Unconscious() )
-		{
+		else if (m_Player.GetCommand_Unconscious())
 			ShowCrossHair(null);
-		}
-		//! default
+		//! do not show crosshair for 3rd person vehicle cameras
+		else if (m_Player.IsInVehicle() && m_Player.IsInThirdPerson())
+			ShowCrossHair(null);
+		//! default crosshair
 		else
-		{
 			ShowCrossHair(GetCrossHairByName("dot"));
-		}
 	}
 	
 	protected void ShowCrossHair(CrossHair crossHair)

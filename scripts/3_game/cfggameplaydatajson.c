@@ -19,7 +19,8 @@ class CfgGameplayJson
 	ref ITEM_UIData UIData 						= new ITEM_UIData;
 	ref ITEM_MapData MapData 					= new ITEM_MapData;
 	ref ITEM_VehicleData VehicleData 			= new ITEM_VehicleData;
-	
+	ref ITEM_ExternalLockData ExternalLockData 	= new ITEM_ExternalLockData;
+	ref ITEM_SandstormData SandstormData        = new ITEM_SandstormData;
 };
 
 class ITEM_DataBase
@@ -44,6 +45,7 @@ class ITEM_GeneralData : ITEM_DataBase
 	override void InitServer()
 	{
 		disableBaseDamage = g_Game.ServerConfigGetInt( "disableBaseDamage" );
+		//disableBaseDecay = g_Game.ServerConfigGetInt( "disableBaseDecay" );
 		disableContainerDamage = g_Game.ServerConfigGetInt( "disableContainerDamage" );
 		disableRespawnDialog = g_Game.ServerConfigGetInt("disableRespawnDialog");
 	}
@@ -55,6 +57,7 @@ class ITEM_GeneralData : ITEM_DataBase
 	//-------------------------------------------------------------------------------------------------
 	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
 	bool disableBaseDamage;
+	bool disableBaseDecay;
 	bool disableContainerDamage;
 	bool disableRespawnDialog;
 	bool disableRespawnInUnconsciousness;
@@ -187,7 +190,8 @@ class ITEM_WorldData : ITEM_DataBase
 	//-------------------------------------------------------------------------------------------------
 	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
 	int lightingConfig;
-	
+	bool bunkerBroadcastEnabled;
+
 	ref array<string> objectSpawnersArr;
 	ref array<float> environmentMinTemps;
 	ref array<float> environmentMaxTemps;
@@ -256,6 +260,10 @@ class ITEM_ConstructionData : ITEM_DataBase
 	
 	override void InitServer()
 	{
+	#ifdef SERVER_FOR_CONSOLE
+		disableDropAttachmentsOnFall = true;
+		disableRefundMaterialsOnFall = true;
+	#endif
 	}
 	
 	override bool ValidateServer()
@@ -268,6 +276,9 @@ class ITEM_ConstructionData : ITEM_DataBase
 	bool disablePerformRoofCheck;
 	bool disableIsCollidingCheck;
 	bool disableDistanceCheck;
+	bool disableItemFalling;
+	bool disableDropAttachmentsOnFall;
+	bool disableRefundMaterialsOnFall;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
@@ -401,4 +412,48 @@ class ITEM_VehicleData : ITEM_DataBase
 	//-------------------------------------------------------------------------------------------------
 	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
 	float boatDecayMultiplier = 1;
+	bool canDetachAttachedCarWheels = true;
+	bool canDamageAttachedCarWheels = true;
+	bool canDetachAttachedBikeWheels = true;
+	bool canDamageAttachedBikeWheels = true;
+};
+
+class ITEM_ExternalLockData : ITEM_DataBase
+{
+	override void InitServer()
+	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
+	int protectionCountStageOne = 3;
+	int protectionCountStageTwo = 1;
+	float protectionTime = 30.0;
+	float protectionResetTime = 3600.0;
+};
+
+class ITEM_SandstormData : ITEM_DataBase
+{
+	override void InitServer()
+	{
+	}
+	
+	override bool ValidateServer()
+	{
+		return true;
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	//!!! all member variables must correspond with the cfggameplay.json file contents !!!!
+	
+	/*!
+	* \brief Rate at which the sandstorm should occur.
+	* \note Example values: 0 => never occur, 1 => occur at normal rate, 2 => occur twice as frequently.
+	*/ 
+	float sandstormFrequency = 1.0;
 };

@@ -1,3 +1,4 @@
+#ifdef ROBOCLIENT
 /**@class	BotEventBase
  * @brief	represents event that triggers transition from state to state
  **/
@@ -21,6 +22,10 @@ class BotEventEndFail : BotEventBase { };
 class BotEventEndTimeout : BotEventBase { };
 class BotEventOnItemInHandsChanged : BotEventBase { };
 
+class BotEventValidForward : BotEventBase { };
+class BotEventObstacle : BotEventBase { };
+class BotEventAttacked : BotEventBase { };
+
 class BotEventStartDebug : BotEventBase
 {
 	int m_Id;
@@ -32,3 +37,4 @@ class BotEventStartDebug : BotEventBase
 	
 	override string DumpToString () { return "id: " + m_Id; }
 };
+#endif

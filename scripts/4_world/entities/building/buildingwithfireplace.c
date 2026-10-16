@@ -8,7 +8,31 @@ class BuildingWithFireplace : BuildingSuper
 	{
 		return "FireplaceIndoor";
 	}
+	
+	string GetOvenType(int firePointIndex)
+	{
+		return "OvenIndoor";
+	}
 };
+
+//! TODO move this to the DLC related scripts before release of Badlands
+class BuildingWithFireplaceNasdara : BuildingWithFireplace
+{
+	void BuildingWithFireplaceNasdara()
+	{
+	}
+	
+	override string GetFireplaceType(int firePointIndex)
+	{
+		return "FireplaceTandoor";
+	}
+	
+	override string GetOvenType(int firePointIndex)
+	{
+		return "FireplaceTandoor";
+	}
+	
+}
 
 //Moved from bliss folder
 class Land_Mil_ControlTower				: BuildingWithFireplace {};

@@ -24,8 +24,10 @@ class ScriptConsoleConfigTab : ScriptConsoleTabBase
 	protected PluginConfigViewer 	m_ModuleConfigViewer;
 	protected int					m_Row;
 	
-	void ScriptConsoleConfigTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
+	override void InitializeTab(Widget root, ScriptConsole console, Widget button, ScriptConsoleTabBase parent = null)
 	{
+		super.InitializeTab(root, console, button, parent);
+		
 		m_WgtClassesConfig 				= root.FindAnyWidget("ClassesPanel");
 		m_DumpParamButton				= ButtonWidget.Cast(root.FindAnyWidget("DumpParamButton"));
 		m_ObjectConfigFilter 			= EditBoxWidget.Cast(root.FindAnyWidget("ObjectConfigFilter"));

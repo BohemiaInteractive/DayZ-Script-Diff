@@ -4,16 +4,6 @@ class ActionPickBerryCB : ActionInteractLoopBaseCB
 	{
 		m_ActionData.m_ActionComponent = new CAInteractLoop(UATimeSpent.DEFAULT_PICK);
 	}
-	/*override void OnAnimationEvent(int pEventID)	
-	{
-		Print("ActionInteractLoopBase.c | OnAnimationEvent | OnAnimationEvent called");
-		if ( !m_Interrupted && pEventID == UA_ANIM_EVENT ) 
-		{
-			SetCommand(DayZPlayerConstants.CMD_ACTIONINT_END);
-			m_State = UA_FINISHED;
-			m_ActionData.Do(this,m_State,m_ActionComponent,m_Player,m_Target,m_Item);
-		}	
-	}*/
 };
 
 //!DEPRECATED

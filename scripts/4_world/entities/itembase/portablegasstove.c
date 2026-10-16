@@ -146,8 +146,10 @@ class PortableGasStove extends ItemBase
 		super.OnWorkStart();
 
 		#ifndef SERVER
+		#ifndef NO_GUI
 		m_Light = StoveLight.Cast(ScriptedLightBase.CreateLight(StoveLight, "0 0 0"));
 		m_Light.AttachOnMemoryPoint(this, "light");
+		#endif
 		#endif
 		
 		//refresh visual
@@ -160,10 +162,12 @@ class PortableGasStove extends ItemBase
 	override void OnWorkStop()
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (m_Light)
 		{
 			m_Light.FadeOut();
 		}
+		#endif
 		#endif
 		
 		//refresh visual

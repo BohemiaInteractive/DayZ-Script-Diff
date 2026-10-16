@@ -68,6 +68,11 @@ class Hit_MeatBones : EffBulletImpactBase
 	void BloodSplatGround( vector start_pos, vector speed_vector, float decay_coef )
 	{
 		vector pos = start_pos;
+		
+		float groundHeight = g_Game.SurfaceY(pos[0], pos[2]);
+		if (groundHeight > start_pos[1])
+			return;
+		
 		float power = m_StoppingForce;
 		float upscale = 1;
 		float rnd_offset = 0.5;

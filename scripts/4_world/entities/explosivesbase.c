@@ -37,15 +37,17 @@ class ExplosivesBase : ItemBase
 	protected vector					m_ParticlePosition;
 	protected vector					m_ParticleOrientation;
 	
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
 	static protected ref map<string, ref map<string, int>> m_TypeToSurfaceParticleIDMap;
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
+	static protected ref map<string, ref ExplosionEffectsData> m_SurfaceToExplosionEffectsData;
 	
 	void ExplosivesBase()
 	{
 		m_DeleteTimer 	= new Timer();
 		m_AmmoTypes 	= new array<string>();
 
-		SetAmmoType(DEFAULT_AMMO_TYPE);		
-		SetParticleExplosion(ParticleList.INVALID); //! no effect
+		SetAmmoType(DEFAULT_AMMO_TYPE);	
 		SetParticlePosition(WorldToModel(GetPosition()));
 		SetParticleOrientation(vector.Zero);
 		
@@ -64,37 +66,7 @@ class ExplosivesBase : ItemBase
 	override void OnExplosionEffects(Object source, Object directHit, int componentIndex, string surface, vector pos, vector surfNormal, float energyFactor, float explosionFactor, bool isWater, string ammoType)
 	{
 		super.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
-
-		if (m_ParticleExplosionId > ParticleList.INVALID)
-		{
-			EntityAI parent = this;
-			if (GetHierarchyParent())
-			{
-				parent = GetHierarchyParent();
-			}
-			
-			//SEffectManager.CreateParticleServer(pos, new TreeEffecterParameters("TreeEffecter", 1.0, 10 * explosionFactor));
-			int particleID = GetParticleExplosionID(surface);
-
-			ParticleSource p = ParticleManager.GetInstance().PlayOnObject(particleID, parent, m_ParticlePosition, m_ParticleOrientation);
-			m_ParticleExplosionArr.Insert(p);
-			m_ParticleExplosion = p;
-		}
-
 		CreateLight();
-	}
-
-	override void EEDelete(EntityAI parent)
-	{
-		super.EEDelete(parent);
-		
-		if (m_ParticleExplosion)
-		{
-			foreach (ParticleSource p : m_ParticleExplosionArr)
-			{
-				DestroyParticle(p);
-			}
-		}
 	}
 	
 	override void EEKilled(Object killer)
@@ -107,9 +79,9 @@ class ExplosivesBase : ItemBase
 		UnpairRemote();	
 	}
 	
-	override void OnCEUpdate()
+	override void OnCEIterate(float currentTime, float elapsedTime)
 	{
-		super.OnCEUpdate();
+		super.OnCEIterate(currentTime, elapsedTime);
 		
 		if (!IsRuined() && GetArmed() && GetPairDevice())
 		{
@@ -188,10 +160,12 @@ class ExplosivesBase : ItemBase
 	protected void DestroyParticle(Particle p)
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (p != null)
 		{
 			p.Stop();
 		}
+		#endif
 		#endif
 	}
 	
@@ -329,6 +303,7 @@ class ExplosivesBase : ItemBase
 		m_AmmoTypes = pAmmoTypes;
 	}
 	
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
 	void SetParticleExplosion(int particle)
 	{
 		m_ParticleExplosionId = particle;
@@ -396,49 +371,84 @@ class ExplosivesBase : ItemBase
 	
 	void Init()
 	{
-		#ifndef SERVER
-		if (!m_TypeToSurfaceParticleIDMap)
-		{
-			m_TypeToSurfaceParticleIDMap = new map<string, ref map<string, int>>;
-		}
-		
-		if(!m_TypeToSurfaceParticleIDMap.Contains(GetName()))
-		{
-			map<string, int> extraSurfaceeffect = new map<string, int>();
-			m_TypeToSurfaceParticleIDMap.Insert(GetName(), extraSurfaceeffect);
-			InitSpecificsExplosionEffectForSurface();
-		}
-		#endif
 	}
 	
 	static void Cleanup()
 	{
-		if (m_TypeToSurfaceParticleIDMap)
-		{
-			m_TypeToSurfaceParticleIDMap.Clear();
-		}
 	}
 	
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
 	void InitSpecificsExplosionEffectForSurface()
 	{
 		//Here add in override call AddExplosionEffectForSurface for specific explosion on surface 
 	}
 	
-	void AddExplosionEffectForSurface(string surface, int effectID)
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
+	void AddExplosionEffectForSurface(ExplosionEffectsData data)
 	{
-		map<string, int> extraSurfaceeffect;
-		m_TypeToSurfaceParticleIDMap.Find(GetName(), extraSurfaceeffect);
-		extraSurfaceeffect.Insert(surface, effectID);
+		ExplosionEffectsData explosionEffectData;
+		if (!m_SurfaceToExplosionEffectsData.Find(data.m_Surface, explosionEffectData))
+			m_SurfaceToExplosionEffectsData.Insert(data.m_Surface, data);
 	}
 	
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
 	int GetParticleExplosionID(string surface)
 	{
-		map<string, int> extraSurfaceeffect;
-		m_TypeToSurfaceParticleIDMap.Find(GetName(), extraSurfaceeffect);
-		
 		int particleID;
-		if (extraSurfaceeffect.Find(surface, particleID))
-			return particleID;
+		
+		// kept for backward compatibility - looked up first
+		map<string, int> extraSurfaceEffect;
+		m_TypeToSurfaceParticleIDMap.Find(GetName(), extraSurfaceEffect);
+		
+		if (extraSurfaceEffect)
+		{
+			if (extraSurfaceEffect.Find(surface, particleID))
+				return particleID;
+		}
+		
+		ExplosionEffectsData explosionEffectData;
+		if (m_SurfaceToExplosionEffectsData.Find(surface, explosionEffectData))
+		{
+			if (explosionEffectData)
+				return explosionEffectData.m_ParticleId;
+		}
+
 		return m_ParticleExplosionId;
+	}
+	
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
+	string GetExplosionSoundSetName(string surface)
+	{
+		ExplosionEffectsData explosionEffectData;
+		if (m_SurfaceToExplosionEffectsData.Find(surface, explosionEffectData))
+		{
+			if (explosionEffectData)
+				return explosionEffectData.m_SoundSetName;
+		}
+		
+		return "";
+	}
+	
+	[Obsolete("1.30: Handled in AmmoTypes instead")]
+	void AddExplosionEffectForSurface(string surface, int effectID)
+	{
+		map<string, int> extraSurfaceEffect;
+		m_TypeToSurfaceParticleIDMap.Find(GetName(), extraSurfaceEffect);
+		extraSurfaceEffect.Insert(surface, effectID);
+	}
+}
+
+//[Obsolete("1.30: Handled in AmmoTypes instead")]
+class ExplosionEffectsData
+{
+	string m_Surface;
+	int m_ParticleId;
+	string m_SoundSetName;
+	
+	void ExplosionEffectsData(string surface, int particleId, string soundSetName = "")
+	{
+		m_Surface 		= surface;
+		m_ParticleId 	= particleId;
+		m_SoundSetName	= soundSetName;
 	}
 }

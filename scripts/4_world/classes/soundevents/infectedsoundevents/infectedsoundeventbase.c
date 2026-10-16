@@ -12,11 +12,6 @@ class InfectedSoundEventBase extends SoundEventBase
 		m_Type = EInfectedSoundEventType.GENERAL;
 	}
 	
-	void ~InfectedSoundEventBase()
-	{
-		if (m_SoundSetCallback) m_SoundSetCallback.Stop();
-	}
-
 	void Init(ZombieBase pInfected)
 	{
 		m_Infected = pInfected;

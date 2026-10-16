@@ -31,8 +31,13 @@ class ShelterBase extends TentBase
 	
 	void Deconstruct()
 	{
-		StaticConstructionMethods.SpawnConstructionMaterialPiles(this, null, GetMaterialPath(), GetShelterVariant());
-		SpawnKit();
+		DeconstructEx();
+	}
+	
+	void DeconstructEx(bool createdItemsFall = false)
+	{
+		StaticConstructionMethods.SpawnConstructionMaterialPilesEx(this, null, GetMaterialPath(), GetShelterVariant(), "", false, createdItemsFall);
+		SpawnKitEx(createdItemsFall);
 		Delete();
 	}
 	
@@ -48,8 +53,16 @@ class ShelterBase extends TentBase
 	
 	void SpawnKit()
 	{
+		SpawnKitEx();
+	}
+	
+	void SpawnKitEx(bool shouldKitFall = false)
+	{
 		ItemBase constructionKit = ItemBase.Cast(g_Game.CreateObjectEx("ShelterKit", GetPosition(), ECE_PLACE_ON_SURFACE));
 		constructionKit.SetHealth01("", "", GetHealth01());
+		
+		if (shouldKitFall)
+			constructionKit.ThrowPhysically(null, vector.Zero);
 	}
 	
 	override bool IsPlayerInside(PlayerBase player, string selection)
@@ -86,6 +99,18 @@ class ShelterBase extends TentBase
 		{
 			return true;
 		}
+	}
+	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer() || m_IsFalling)
+			 return;
+		
+		DropCargoItems();
+		DeconstructEx(true);
+		m_IsFalling = true;
+		
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearIsFalling, 800);
 	}
 }
 

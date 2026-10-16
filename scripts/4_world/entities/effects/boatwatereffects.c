@@ -289,7 +289,7 @@ class EffectBoatWaterBase : EffectParticle
 		super.AttachTo(obj, local_pos, local_ori, force_rotation_to_world);
 	}
 	
-	void SetParticleState(int state)
+	override void SetParticleState(int state)
 	{
 		bool was_playing = IsPlaying();
 	

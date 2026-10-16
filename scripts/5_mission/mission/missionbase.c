@@ -24,6 +24,7 @@ class MissionBase extends MissionBaseWorld
 
 		m_InventoryDropCallback = new EntityPlacementCallback();
 		SoundSetMap.Init();
+		ConstructionManagerStatic.Init();
 		
 		GetDayZGame().GetYieldDataInitInvoker().Insert(InitWorldYieldDataDefaults);
 		InitialiseWorldData();
@@ -86,7 +87,9 @@ class MissionBase extends MissionBaseWorld
 		super.OnUpdate(timeslice);
 		
 		#ifndef SERVER
+		#ifndef NO_GUI
 		m_DynamicMusicPlayer.OnUpdate(timeslice);
+		#endif
 		#endif
 		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
 		{
@@ -122,6 +125,16 @@ class MissionBase extends MissionBaseWorld
 			case "sakhal":
 				m_WorldData = new SakhalData();
 				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistrySakhal();
+				break;
+			
+			case "nasdara":
+				m_WorldData = new NasdaraData();
+				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistryNasdara();
+				break;
+			
+			case "samplemap5":
+				m_WorldData = new NasdaraData();
+				m_DynamicMusicPlayerRegistry = new DynamicMusicPlayerRegistryNasdara();
 				break;
 			
 			#ifdef PLATFORM_CONSOLE
@@ -321,6 +334,14 @@ class MissionBase extends MissionBaseWorld
 			break;
 		case MENU_CONNECTION_DIALOGUE:
 			menu = new ConnectionDialogue;
+			break;
+		case MENU_DIGITAL_CODELOCK:
+			menu = new DigitalCodeLockUI;
+			break;
+#ifdef DIAG_DEVELOPER
+		case MENU_UNDERGROUND_TRIGGER_EDITOR:
+			menu = new UndergroundTriggerEditorMenu();
+#endif
 			break;
 		}
 

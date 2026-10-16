@@ -170,7 +170,7 @@ class ActionRepackTent: ActionContinuousBase
 		}
 		else
 		{
-			Print("Error: check " + item + " behaviour");
+			ErrorEx("Error: check " + item + " behaviour");
 		}
 	}
 	

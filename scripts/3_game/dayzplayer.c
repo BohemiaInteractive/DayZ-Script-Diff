@@ -59,7 +59,7 @@ class DayZPlayerCamera
 		m_pInput 		= pInput;
 	}
 
-	//! this overrides freelook for cameras
+	//! this overrides freelook for cameras - called from native
 	bool CanFreeLook()
 	{
 		return true;
@@ -763,6 +763,8 @@ enum DayZPlayerConstants
 	CMD_ACTIONMOD_RESET_KITCHENTIMER			= 253,
 	CMD_ACTIONMOD_BLOODTEST 		    		= 254,      // erc,cro          [end]
 	CMD_ACTIONMOD_BLOODTESTOTHER 				= 255,      // erc,cro          [end]
+	CMD_ACTIONMOD_COMBINATIONLOCK 				= 256,      // erc,cro          [end]
+	CMD_ACTIONMOD_WASHFACE
 	
 	// onetime 
 	CMD_ACTIONMOD_PICKUP_HANDS					= 500,		// erc,cro
@@ -884,6 +886,17 @@ enum DayZPlayerConstants
 	CMD_ACTIONFB_EATING_SNOW	        		= 126,		// cro              [end]
 	CMD_ACTIONFB_FILLING_CONTAINER_SNOW			= 127,		// cro              [end]
 	CMD_ACTIONFB_DIGGIN_WORMS	        		= 128,		// erc,cro              [end]
+	CMD_ACTIONFB_COMBINATIONLOCK				= 256,		// pne				[end]
+	CMD_ACTIONFB_WASHFACEPOND					= 257,		// cro 	      	    [end]
+	CMD_ACTIONFB_BUILDROPELADDER				= 258,		// cro 	      	    [end]
+	CMD_ACTIONFB_BRICKSTACK						= 259,		// erc,cro 	      	    [end]
+	CMD_ACTIONFB_BRICKTROWEL					= 260,		// erc,cro	      	    [end]
+	CMD_ACTIONFB_MIX_MORTAR						= 261,		// cro	      	    [end]
+	CMD_ACTIONFB_DRINKWELL_BUCKET				= 262,		// erc	      	    [end]
+	CMD_ACTIONFB_SHARPEN				        = 263,		// cro	      	    [end]
+	CMD_ACTIONFB_WASHFACEWELL				    = 264,		// erc	      	    [end]
+	CMD_ACTIONFB_WETCLOTH				        = 265,		// cro	      	    [end]
+	CMD_ACTIONFB_WETCLOTHWELL				    = 266,		// erc	      	    [end]
 
 
 	
@@ -1167,8 +1180,13 @@ class DayZPlayer extends Human
 	
 	//! returns appropriate DayZPlayerType
 	proto native DayZPlayerType		GetDayZPlayerType();
-	
+
 	proto native DayZPlayerInstanceType 	GetInstanceType();
+
+	//! Returns true if this is the first tick of the render frame.
+	//! If the client FPS is below 30fps, the player could tick multiple times in one render frame, some systems don't 
+	//! need to be processed on the client again if it has no visible effect to the screen or server simulation.
+	proto native bool IsFirstRenderFrame();
 
 	override string GetDebugName()
 	{
@@ -1311,7 +1329,11 @@ class DayZPlayer extends Human
 	
 	void SetCurrentWaterLevel(float pWaterLevel);
 	float GetCurrentWaterLevel();
-
+	
+	//! ---------------- surface functions  -------------------------
+	
+	//! returns the entire cached SurfaceInfo of the surface the player is currently on
+	proto		SurfaceInfo GetCurrentSurfaceInfo();
 
 	//! ---------------- camera additiona functions -------------------------
 	

@@ -82,6 +82,10 @@ class ActionAttachExplosivesTrigger : ActionContinuousBase
 	
 	override void OnFinishProgressServer(ActionData action_data)
 	{
+		if (g_Game.IsMultiplayer())
+		{
+			ClearActionJuncture(action_data);;
+		}
 		ClearInventoryReservationEx(action_data);
 		
 		ExplosivesBase explosive = ExplosivesBase.Cast(action_data.m_Target.GetObject());

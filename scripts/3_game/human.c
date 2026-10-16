@@ -226,6 +226,25 @@ class HumanInputController
 	//! is sprint disabled
 	proto native bool			LimitsIsSprintDisabled();
 	
+	//! set maximum speed (0 - Idle, 1 - Walk, 2 - Run, 3 - Sprint)
+	proto native void			SetErectSpeedLimit(bool bShouldDisable, int pMaxErectSpeed = DayZPlayerConstants.MOVEMENTIDX_SPRINT);
+	proto native void			SetCrouchSpeedLimit(bool bShouldDisable, int pMaxErectSpeed = DayZPlayerConstants.MOVEMENTIDX_SPRINT);
+	proto native void			SetProneSpeedLimit(bool bShouldDisable, int pMaxErectSpeed = DayZPlayerConstants.MOVEMENTIDX_SPRINT);
+	
+	//! get maximum speed (0 - Idle, 1 - Walk, 2 - Run, 3 - Sprint)
+	proto native int			GetErectSpeedLimit();
+	proto native int			GetCrouchSpeedLimit();
+	proto native int			GetProneSpeedLimit();
+	
+	//! disable horizontal camera rotation
+	proto native void			DisableErectCameratHorizontalRotation(bool pDisable);
+	proto native void			DisableCrouchCameratHorizontalRotation(bool pDisable);
+	proto native void			DisableProneCameraHorizontalRotation(bool pDisable);
+	
+	//! is horizontal rotation disabled in stance
+	proto native bool			IsErectCameraHorizontalRotationDisabled();
+	proto native bool			IsCrouchCameraHorizontalRotationDisabled();
+	proto native bool			IsProneCameraHorizontalRotationDisabled();
 
 	//--------------------------------------------------------------
 	// overrides
@@ -297,6 +316,7 @@ class HumanAnimInterface
 
 	//!
 	proto native TAnimGraphTag 			BindTag(string pTagName);
+	proto native bool                   IsTag(TAnimGraphTag iTag);
 
 	//!
 	proto native TAnimGraphEvent		BindEvent(string pEventName);
@@ -623,6 +643,8 @@ class HumanCommandUnconscious
 	
 	proto native void 	WakeUp(int targetStance = -1);
 	proto native bool	IsWakingUp();
+
+	proto native bool   IsRagdoll();
 	
 	proto native bool	IsOnLand();
 	proto native bool	IsInWater();
@@ -709,6 +731,11 @@ class HumanCommandVehicle
 	proto native void				SetClutchState(bool pState);
 	proto native void				KeepInVehicleSpaceAfterLeave(bool pState);
 	proto native void				ProcessLeaveEvents();
+
+	bool IsTransitioning()
+	{
+		return IsGettingIn() || IsGettingOut() || IsSwitchSeat();
+	}
 
 	bool IsObjectIgnoredOnGettingOut(IEntity entity)
 	{
@@ -1353,6 +1380,9 @@ class Human : Man
 	//! makes test if there's enough space for character's collider assuming that character can be pushed away from obstacle - usable for checking if character is in some tight space
 	proto native	bool		CheckFreeSpace(vector localDir, float distance, bool useHeading, vector posOffset = vector.Zero, float xzScale = 1.0);
 
+	//! sets the animation instance of the player character - careful when using, could create desync if not used properly
+	proto native	void		SetAnimationInstanceByName(string animationInstanceName, float blendingTime);
+	
 	//! makes test if character can physically move in given world space direction - length of dir means distance, returns distance fraction
 	proto			float		CollisionMoveTest(vector dir, vector offset, float xzScale, IEntity ignoreEntity, out IEntity hitEntity, out vector hitPosition, out vector hitNormal);
 	
@@ -1394,6 +1424,7 @@ class Human : Man
 	// physic props
 		
 	//! returns true if physics controller is falling 
+	//! returns true if the ragdoll is moving greater than 1m/s
 	proto native 	bool		PhysicsIsFalling(bool pValidate);
 	
 	//! entity below us
@@ -1414,8 +1445,11 @@ class Human : Man
 	proto native	bool		PhysicsIsSolid();
 	proto native	void		PhysicsSetSolid(bool pSolid);
 
-	//! Sets and synchronize interaction layers 'RAGDOLL' and 'RAGDOLL_NO_CHARACTER' to prevent body stacking and players going through dead creatures
+	//! Old system for handling player death state, was previously handled by PhysicsSetRagdoll
+	proto native	void		PhysicsSetSimpleDeath(bool pEnable);
+	
 	proto native	void		PhysicsSetRagdoll(bool pEnable);
+	proto native	bool		PhysicsIsRagdoll();
 
 	//---------------------------------------------------------
 	// controller 

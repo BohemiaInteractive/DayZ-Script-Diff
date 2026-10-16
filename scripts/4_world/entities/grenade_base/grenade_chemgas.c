@@ -7,7 +7,7 @@ class Grenade_ChemGas : Grenade_Base
 	
 	void Grenade_ChemGas()
 	{
-		SetParticleExplosion(ParticleList.RGD5);
+		//SetParticleExplosion(ParticleList.RGD5);
 		SetGrenadeType(EGrenadeType.CHEMICAL);
 		m_Pinned = false;
 		SetPinnable(false);
@@ -54,9 +54,11 @@ class Grenade_ChemGas : Grenade_Base
 			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Delete, 1000);
 		}
 		#ifndef SERVER
+		#ifndef NO_GUI
 		ClearFlags(EntityFlags.VISIBLE, false);
 		m_ParticleExploded = ParticleManager.GetInstance().PlayInWorld(ParticleList.GRENADE_CHEM_BREAK, GetPosition());
 		PlaySoundSet( m_ExplosionSound, GetExplosionSoundSet(), 0, 0 );
+		#endif
 		#endif
 
 	}

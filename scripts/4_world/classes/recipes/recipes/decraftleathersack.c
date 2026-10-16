@@ -43,6 +43,7 @@ class DeCraftLeatherSack extends RecipeBase
 		InsertIngredient(1,"StoneKnife");
 		InsertIngredient(1,"Cleaver");
 		InsertIngredient(1,"CombatKnife");
+		InsertIngredient(1,"Jambiya");
 		InsertIngredient(1,"HuntingKnife");
 		InsertIngredient(1,"Machete");
 		InsertIngredient(1,"CrudeMachete");
@@ -59,6 +60,10 @@ class DeCraftLeatherSack extends RecipeBase
 		InsertIngredient(1,"Mosin_Bayonet");
 		InsertIngredient(1,"SKS_Bayonet");	
 		InsertIngredient(1,"BoneKnife");
+		InsertIngredient(1,"Scimitar");		
+		InsertIngredient(1,"DonerKnife");
+		InsertIngredient(1,"BrickTrowel");
+		InsertIngredient(1,"Akinaka");
 		
 		m_IngredientAddHealth[1] = -12;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

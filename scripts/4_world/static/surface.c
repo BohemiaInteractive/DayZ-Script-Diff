@@ -1,15 +1,5 @@
 class Surface
 {
-	static int GetStepsParticleID(string surface_name) 
-	{
-		return SurfaceInfo.GetByName(surface_name).GetStepParticleId();
-	}
-	
-	static int GetWheelParticleID(string surface_name) 
-	{
-		return SurfaceInfo.GetByName(surface_name).GetWheelParticleId();
-	}
-	
 	static int GetParamInt(string surface_name, string param_name)
 	{
 		return g_Game.ConfigGetInt("CfgSurfaces " + surface_name + " " + param_name);
@@ -69,5 +59,17 @@ class Surface
 		}
 
 		return success;
+	}
+	
+	[Obsolete("1.30: use SurfaceInfo.GetStepParticleId directly")]
+	static int GetStepsParticleID(string surface_name) 
+	{
+		return SurfaceInfo.GetByName(surface_name).GetStepParticleId();
+	}
+	
+	[Obsolete("1.30: use SurfaceInfo.GetWheelParticleId directly")]
+	static int GetWheelParticleID(string surface_name) 
+	{
+		return SurfaceInfo.GetByName(surface_name).GetWheelParticleId();
 	}
 }

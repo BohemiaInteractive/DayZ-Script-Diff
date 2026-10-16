@@ -1,9 +1,9 @@
 enum TabType
 {
-	FAVORITE,
 	OFFICIAL,
 	COMMUNITY,
 	LAN,
+	FAVORITE,
 	NONE
 }
 
@@ -95,7 +95,7 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	{
 		Construct(parent, menu, type);
 		m_OnlineFavServers = new set<string>();
-		GetGame().GetContentDLCService().m_OnChange.Insert(OnDLCChange);
+		g_Game.GetContentDLCService().Subscribe(OnDLCChange);
 	}
 	
 	protected void Construct(Widget parent, ServerBrowserMenuNew menu, TabType type)
@@ -114,8 +114,8 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 		if (m_Root)
 			delete m_Root;
 		
-		if (GetGame().GetContentDLCService())
-			GetGame().GetContentDLCService().m_OnChange.Remove(OnDLCChange);
+		if (g_Game.GetContentDLCService())
+			g_Game.GetContentDLCService().Unsubscribe(OnDLCChange);
 		
 	#ifdef DIAG_DEVELOPER
 	   PluginDiagMenuClient.GetSBDummyServersInvoker().Remove(OnDummyServersEnabledChanged);
@@ -131,28 +131,13 @@ class ServerBrowserTab extends ScriptedWidgetEventHandler
 	{
 		return m_LoadingFinished;
 	}
-	
-	bool IsLoadingServers()
-	{
-		return m_Loading;
-	}
 
-	void OnDLCChange(EDLCId dlcId)
+	void OnDLCChange()
 	{
-		switch (dlcId)
+		array<ServerBrowserEntry> serverEntries = m_EntryWidgets.GetValueArray();
+		foreach (ServerBrowserEntry entry : serverEntries)
 		{
-			case EDLCId.DLC_FROSTLINE:
-			{
-				array<ServerBrowserEntry> serverEntries = m_EntryWidgets.GetValueArray();
-				foreach (ServerBrowserEntry entry : serverEntries)
-				{
-					entry.RefreshDLCIcon();
-				}
-				break;
-			}
-			
-			default:
-				break;
+			entry.RefreshDLCIcon();
 		}
 	}
 	

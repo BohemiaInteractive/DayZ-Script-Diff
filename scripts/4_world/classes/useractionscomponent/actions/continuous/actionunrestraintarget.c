@@ -77,7 +77,6 @@ class ActionUnrestrainTarget: ActionContinuousBase
 		
 		if( other_player.IsRestrained() )
 		{
-			//Print("is restrained");
 			EntityAI item_in_hands_target = other_player.GetItemInHands();
 			
 			CachedObjectsArrays.ARRAY_STRING.Clear();
@@ -139,7 +138,7 @@ class ActionUnrestrainTarget: ActionContinuousBase
 			MiscGameplayFunctions.DealAbsoluteDmg(action_data.m_MainItem, damageToTool);
 			//---------------------------
 			
-			MiscGameplayFunctions.TransformRestrainItem(restraining_item, unrestraining_tool, player_source, player_target);
+			MiscGameplayFunctions.TransformRestrainItem(restraining_item, unrestraining_tool, player_source, player_target, true);
 		}
 	}
 };

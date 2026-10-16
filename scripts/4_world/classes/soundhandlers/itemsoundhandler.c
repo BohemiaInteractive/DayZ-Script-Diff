@@ -94,13 +94,17 @@ class ItemSoundHandler : Managed
 			case SoundConstants.ITEM_ATTACH:
 			{
 				if (itemType)
-				soundSet = itemType.GetSlotAttachSoundSet(slotId);
+					soundSet = itemType.GetSlotAttachSoundSet(slotId);
+				if (soundSet == "")
+					soundSet = m_AvailableSoundsets[id];
 				break;
 			}
 			case SoundConstants.ITEM_DETACH:
 			{
 				if (itemType)
-				soundSet = itemType.GetSlotDetachSoundSet(slotId);
+					soundSet = itemType.GetSlotDetachSoundSet(slotId);
+				if (soundSet == "")
+					soundSet = m_AvailableSoundsets[id];
 				break;
 			}
 			default:
@@ -114,7 +118,7 @@ class ItemSoundHandler : Managed
 	
 	void StopItemSoundClient(int id)
 	{
-		if (g_Game.IsDedicatedServer())
+		if (g_Game.IsHeadlessOrDedicatedServer())
 			return;
 				
 		EffectSound sound = m_PlayingSounds.Get(id);

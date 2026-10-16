@@ -26,109 +26,88 @@ class CAContinuousFillFuel : CAContinuousBase
 		m_TimeElpased = 0;
 		m_SpentQuantity = 0;
 		
-		if ( !m_SpentUnits )
-		{
-			m_SpentUnits = new Param1<float>( 0 );
-		}
+		if (!m_SpentUnits)
+			m_SpentUnits = new Param1<float>(0);
 		else
-		{
 			m_SpentUnits.param1 = 0;
-		}
 			
-		Transport vehicle = Transport.Cast(action_data.m_Target.GetObject());
-		m_QuantityUsedPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(),vehicle.GetLiquidThroughputCoef());
+		Transport transport = Transport.Cast(action_data.m_Target.GetObject());
+		m_QuantityUsedPerSecond *= Math.Min(action_data.m_MainItem.GetLiquidThroughputCoef(), transport.GetLiquidThroughputCoef());
 		
-		Car car = Car.Cast(vehicle);
-		Boat boat = Boat.Cast(vehicle);
-		
-		float fuelCapacity, currentFuel;
-		if (car)
-		{
-			fuelCapacity = car.GetFluidCapacity( CarFluid.FUEL );
-			currentFuel = car.GetFluidFraction( CarFluid.FUEL );
-		}
-		else if (boat)
-		{
-			fuelCapacity = boat.GetFluidCapacity( BoatFluid.FUEL );
-			currentFuel = boat.GetFluidFraction( BoatFluid.FUEL );
-		}
-
+		int fuelCapacity 	= transport.GetFluidCapacityScript(ETransportFluid.FUEL);
+		float currentFuel 	= transport.GetFluidFractionScript(ETransportFluid.FUEL);
 		
 		currentFuel = currentFuel * fuelCapacity;
 		m_EmptySpace = (fuelCapacity - currentFuel) * 1000;
 		m_ItemQuantity = action_data.m_MainItem.GetQuantity();
 
-		if ( m_EmptySpace <= m_ItemQuantity )
+		if (m_EmptySpace <= m_ItemQuantity)
 			m_ItemQuantity = m_EmptySpace;
 
 	}
 
 	//---------------------------------------------------------------------------
-	override int Execute( ActionData action_data  )
+	override int Execute(ActionData action_data)
 	{		
-		if ( !action_data.m_Player )
-		{
+		if (!action_data.m_Player)
 			return UA_ERROR;
-		}
 		
-		if ( m_ItemQuantity <= 0 )
+		if (m_ItemQuantity <= 0)
 		{
 			return UA_FINISHED;
 		}
 		else
 		{
-			if ( m_SpentQuantity_total < m_ItemQuantity )
+			if (m_SpentQuantity_total < m_ItemQuantity)
 			{
 				m_AdjustedQuantityUsedPerSecond = m_QuantityUsedPerSecond;//removed softskills 
 				m_SpentQuantity += m_AdjustedQuantityUsedPerSecond * action_data.m_Player.GetDeltaT();
 				m_TimeElpased += action_data.m_Player.GetDeltaT();
 				
-				if ( m_TimeElpased >= m_DefaultTimeStep )
+				if (m_TimeElpased >= m_DefaultTimeStep)
 				{
-					CalcAndSetQuantity( action_data );
+					CalcAndSetQuantity(action_data);
 					m_TimeElpased = 0;
-					//Setup(action_data);	//reset data after repeat
 				}
 				
 				return UA_PROCESSING;
 			}
 			else
 			{
-				CalcAndSetQuantity( action_data );
+				CalcAndSetQuantity(action_data);
 				OnCompletePogress(action_data);
+
 				return UA_FINISHED;
 			}
 		}
 	}
 	
 	//---------------------------------------------------------------------------
-	override int Cancel( ActionData action_data )
+	override int Cancel(ActionData action_data)
 	{
-		if ( !action_data.m_Player )
-		{
+		if (!action_data.m_Player)
 			return UA_ERROR;
-		}
 		
-		CalcAndSetQuantity( action_data );
+		CalcAndSetQuantity(action_data);
+
 		return UA_CANCEL;
 	}	
 	
 	//---------------------------------------------------------------------------
 	override float GetProgress()
 	{
-		if ( m_ItemQuantity <= 0 )
+		if (m_ItemQuantity <= 0)
 			return 1;
 
 		return -(m_SpentQuantity_total / m_ItemQuantity);
 	}
 	
 	//---------------------------------------------------------------------------
-	void CalcAndSetQuantity( ActionData action_data )
+	void CalcAndSetQuantity(ActionData action_data)
 	{
-
 		m_SpentQuantity_total += m_SpentQuantity;
 	
-		if ( m_SpentUnits )
+		if (m_SpentUnits)
 		{
 			m_SpentUnits.param1 = m_SpentQuantity;
 			SetACData(m_SpentUnits);
@@ -137,19 +116,9 @@ class CAContinuousFillFuel : CAContinuousBase
 		
 		if ( g_Game.IsServer() )
 		{
-			Car car = Car.Cast(action_data.m_Target.GetObject());
-			Boat boat = Boat.Cast(action_data.m_Target.GetObject());	
-			
-			if (car)
-			{
-				action_data.m_MainItem.AddQuantity( -m_SpentQuantity );
-				car.Fill( CarFluid.FUEL, (m_SpentQuantity * 0.001) );
-			}	
-			else if (boat)
-			{
-				action_data.m_MainItem.AddQuantity( -m_SpentQuantity );
-				boat.Fill( BoatFluid.FUEL, (m_SpentQuantity * 0.001) );
-			}
+			Transport transport = Transport.Cast(action_data.m_Target.GetObject());
+			action_data.m_MainItem.AddQuantity(-m_SpentQuantity);
+			transport.FillScript(ETransportFluid.FUEL, (m_SpentQuantity * 0.001));
 		}
 		
 		m_SpentQuantity = 0;

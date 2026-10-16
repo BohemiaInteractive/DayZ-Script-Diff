@@ -97,7 +97,7 @@ class HandEventBase
 		//! Do not check for action validity on remotes or when performing through juncture. 
 		//! Juncture locks guarentee the item is safe to interact with and the server has validated the command at this point. 
 		//! Checking at this point is both wasteful and can result in a failure which leads to desync
-		if (validation.m_IsRemote || validation.m_IsJuncture)
+		if (validation.m_IsRemote)
 			return true;
 		
 		return CheckRequest();
@@ -196,7 +196,7 @@ class HandEventBase
 	void ClearInventoryReservation()
 	{
 		InventoryLocation il = GetDst();
-		if (il)
+		if (!il)
 		{
 			il = GetSrc();
 		}
@@ -237,11 +237,6 @@ class HandEventTake extends HandEventBase
 	
 	override bool CanPerformEventEx(InventoryValidation validation)
 	{
-		if (validation.m_IsJuncture)
-		{
-			return true;
-		}
-		
 		if (!GameInventory.LocationCanMoveEntity(GetSrc(), GetDst()))
 		{
 			#ifdef ENABLE_LOGGING

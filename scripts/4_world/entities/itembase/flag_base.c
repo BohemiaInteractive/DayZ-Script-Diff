@@ -8,10 +8,6 @@ class Flag_Base extends ItemBase
 		HideSelection("unfolded");
 	}
 	
-	void ~Flag_Base()
-	{
-	}
-	
 	// --- SYNCHRONIZATION
 	void Synchronize()
 	{
@@ -21,51 +17,7 @@ class Flag_Base extends ItemBase
 		}
 	}
 	
-	override void OnVariablesSynchronized()
-	{
-		super.OnVariablesSynchronized();
-		
-		
-	}
-	
 	// --- EVENTS
-	override void OnStoreSave( ParamsWriteContext ctx )
-	{   
-		super.OnStoreSave( ctx );
-	}
-	
-	override bool OnStoreLoad( ParamsReadContext ctx, int version )
-	{
-		if ( !super.OnStoreLoad( ctx, version ) )
-			return false;
-		
-		return true;
-	}
-	
-	override void AfterStoreLoad()
-	{	
-		super.AfterStoreLoad();
-				
-		//set mounted state based on locked slot after everything is loaded
-		//SetMountedState( GetSlotLockedState() );
-	}
-	
-	/*override void OnInventoryEnter(Man player)
-	{
-		super.OnInventoryEnter(player);
-		
-		ShowSelection("folded");
-		HideSelection("unfolded");
-	}
-	
-	override void OnInventoryExit(Man player)
-	{
-		super.OnInventoryExit(player);
-		
-		HideSelection("folded");
-		ShowSelection("unfolded");
-	}*/
-	
 	override void OnWasAttached(EntityAI parent, int slot_id)
 	{
 		super.OnWasAttached(parent,slot_id);

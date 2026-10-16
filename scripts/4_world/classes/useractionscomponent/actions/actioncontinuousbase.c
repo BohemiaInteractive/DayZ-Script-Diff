@@ -207,10 +207,12 @@ class ActionContinuousBase : AnimatedActionBase
 	
 	void OnStartAnimationLoop( ActionData action_data )
 	{
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable() )
 		{
-			Debug.ActionLog("Time stamp: " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnStartAnimationLoop", action_data.m_Player.ToString() );
+			Debug.ActionLog("STS = " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnStartAnimationLoop", action_data.m_Player.ToString() );
 		}
+#endif
 		
 		if (g_Game.IsServer())
 		{
@@ -225,10 +227,12 @@ class ActionContinuousBase : AnimatedActionBase
 	
 	void OnEndAnimationLoop( ActionData action_data )
 	{
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable() )
 		{
-			Debug.ActionLog("Time stamp: " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnEndAnimationLoop", action_data.m_Player.ToString() );
+			Debug.ActionLog("STS = " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnEndAnimationLoop", action_data.m_Player.ToString() );
 		}
+#endif
 		if (g_Game.IsServer())
 		{
 			OnEndAnimationLoopServer(action_data);
@@ -241,11 +245,13 @@ class ActionContinuousBase : AnimatedActionBase
 	}
 	
 	void OnFinishProgress( ActionData action_data )
-	{	
+	{
+#ifdef ENABLE_LOGGING
 		if ( LogManager.IsActionLogEnable() )
 		{
-			Debug.ActionLog("Time stamp: " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnFinishProgress", action_data.m_Player.ToString() );
-		}	
+			Debug.ActionLog("STS = " + action_data.m_Player.GetSimulationTimeStamp(), this.ToString() , "n/a", "OnFinishProgress", action_data.m_Player.ToString() );
+		}
+#endif
 		if (g_Game.IsServer())
 		{
 			OnFinishProgressServer(action_data);

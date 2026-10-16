@@ -62,7 +62,7 @@ class ParticleManager : Managed
 	//! Access to the static ParticleManager
 	static ParticleManager GetInstance()
 	{
-		if (!g_ParticleManager && !g_Game.IsDedicatedServer())
+		if (!g_ParticleManager && !g_Game.IsHeadlessOrDedicatedServer())
 		{
 			g_ParticleManager = new ParticleManager(
 				new ParticleManagerSettings(

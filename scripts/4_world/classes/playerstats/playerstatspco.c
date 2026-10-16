@@ -306,16 +306,60 @@ class PlayerStatsPCO_v115 extends PlayerStatsPCO_Base
 };
 
 //---------------------------------------------------------------
+//------------------------- version 130 -------------------------
+//---------------------------------------------------------------
+
+enum EPlayerStats_v130
+{
+	HEATCOMFORT = 0,
+	TREMOR = 1,
+	WET = 2,
+	ENERGY = 3,
+	WATER,
+	DIET,
+	STAMINA,
+	SPECIALTY,
+	BLOODTYPE,
+	TOXICITY,
+	HEATBUFFER,
+	THERMAL_BIAS
+};
+
+class PlayerStatsPCO_v130 extends PlayerStatsPCO_Base
+{
+	override int GetVersion()
+	{
+		return 130;
+	}
+	
+	override void Init()
+	{
+		RegisterStat(EPlayerStats_v130.HEATCOMFORT,  	new PlayerStat<float>	(-1,	1,								0,								"HeatComfort",		EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.TREMOR,		  	new PlayerStat<float>	(0,		1,								0,								"Tremor",			EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.WET,  			new PlayerStat<int>		(0,		1,								0,								"Wet",				EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.ENERGY,  		new PlayerStat<float>	(0,		PlayerConstants.SL_ENERGY_MAX,	600,							"Energy",			EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.WATER,  			new PlayerStat<float>	(0,		PlayerConstants.SL_WATER_MAX,	600,							"Water",			EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.DIET,  			new PlayerStat<float>	(0,		5000,							2500,							"Diet",				EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.STAMINA,  		new PlayerStat<float>	(0,		CfgGameplayHandler.GetStaminaMax(),		100,					"Stamina",			EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.SPECIALTY,  		new PlayerStat<float>	(-1,	1,								0,								"Specialty",		EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.BLOODTYPE,  		new PlayerStat<int>		(0,		128,							BloodTypes.GenerateBloodType(),	"BloodType",		EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.TOXICITY,  		new PlayerStat<float>	(0,		100,							0,								"Toxicity",			EPSstatsFlags.EMPTY));
+		RegisterStat(EPlayerStats_v130.HEATBUFFER,  	new PlayerStat<float>	(-30,	30,								0,								"HeatBuffer",		EPSstatsFlags.SYNCED));
+		RegisterStat(EPlayerStats_v130.THERMAL_BIAS,  	new PlayerStat<float>	(-1.0,	1.0,							0.0,							"ThermalBias",		EPSstatsFlags.EMPTY));
+	}
+};
+
+//---------------------------------------------------------------
 //------------------------- version current ---------------------
 //---------------------------------------------------------------
 
-enum EPlayerStats_current: EPlayerStats_v115
+enum EPlayerStats_current: EPlayerStats_v130
 {
 	
 };
 
 //mod this class, it will always point to the latest version
-class PlayerStatsPCO_current extends PlayerStatsPCO_v115
+class PlayerStatsPCO_current extends PlayerStatsPCO_v130
 {
 
 };

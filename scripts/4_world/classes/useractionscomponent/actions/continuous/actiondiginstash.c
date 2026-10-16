@@ -162,8 +162,7 @@ class ActionDigInStash: ActionContinuousBase
 		if (stash)
 		{
 			ClearActionJuncture(action_data);
-			stash.PlaceOnGround();
-			InventoryLocation ilj = new InventoryLocation;
+			InventoryLocation ilj = new InventoryLocation();
 			stash.GetInventory().GetCurrentInventoryLocation(ilj);
 		
 			if (GameInventory.LocationCanRemoveEntity(targetIL))

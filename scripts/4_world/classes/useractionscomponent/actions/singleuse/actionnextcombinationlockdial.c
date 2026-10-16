@@ -31,28 +31,28 @@ class ActionNextCombinationLockDial: ActionSingleUseBase
 		return true;
 	}
 	
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
+	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 	{
-		if ( item.IsInherited( CombinationLock ) )
+		if ( item.IsInherited(CombinationLock))
 		{
-			ConstructionActionData construction_action_data = player.GetConstructionActionData();
-			construction_action_data.SetCombinationLock( CombinationLock.Cast( item ) );
-
+			ConstructionActionData constructionActionData = player.GetConstructionActionData();
+			constructionActionData.SetCombinationLock(CombinationLock.Cast(item));
+			constructionActionData.SetCombinationLockSide(CombinationLock.FACING_OUTSIDE);
 			return true;
 		}
 		
 		return false;
 	}
 
-	override void Start( ActionData action_data )
+	override void Start(ActionData action_data)
 	{
-		super.Start( action_data );
+		super.Start(action_data);
 		
 		//set next dial
-		CombinationLock combination_lock = CombinationLock.Cast( action_data.m_MainItem );
-		if ( combination_lock )
+		CombinationLock combinationLock = CombinationLock.Cast(action_data.m_MainItem);
+		if (combinationLock)
 		{
-			combination_lock.SetNextDial();
+			combinationLock.SetNextDial(CombinationLock.FACING_INSIDE);
 		}
 	}
 }

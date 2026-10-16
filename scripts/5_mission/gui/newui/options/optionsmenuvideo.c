@@ -47,36 +47,36 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 	#endif
 	
 	#ifdef PLATFORM_PS4
-		protected ref ListOptionsAccess			m_FlipModeOption;
+		protected ListOptionsAccess			m_FlipModeOption;
 	#else
 		#ifndef PLATFORM_XBOX
 			//Overall
-			protected ref ListOptionsAccess			m_OverallQualityOption;
+			protected ListOptionsAccess			m_OverallQualityOption;
 			
 			//Screen
-			protected ref ListOptionsAccess			m_DisplayModeOption;
-			protected ref ListOptionsAccess			m_ResolutionOption;
-			protected ref NumericOptionsAccess		m_BrightnessOption;
-			protected ref ListOptionsAccess			m_VSyncOption;
-			//protected ref ListOptionsAccess			m_ColorDepthOption;
+			protected ListOptionsAccess			m_DisplayModeOption;
+			protected ListOptionsAccess			m_ResolutionOption;
+			protected NumericOptionsAccess		m_BrightnessOption;
+			protected ListOptionsAccess			m_VSyncOption;
+			//protected ListOptionsAccess			m_ColorDepthOption;
 			
 			//Scene
-			protected ref ListOptionsAccess			m_ObjectDetailOption;
-			protected ref ListOptionsAccess			m_TerrainDetailOption;
-			protected ref ListOptionsAccess			m_TextureDetailOption;
-			protected ref ListOptionsAccess			m_ShadowDetailOption;
-			protected ref ListOptionsAccess			m_VisibilityOption;
-			protected ref ListOptionsAccess			m_ObjectVisibilityOption;
+			protected ListOptionsAccess			m_ObjectDetailOption;
+			protected ListOptionsAccess			m_TerrainDetailOption;
+			protected ListOptionsAccess			m_TextureDetailOption;
+			protected ListOptionsAccess			m_ShadowDetailOption;
+			protected ListOptionsAccess			m_VisibilityOption;
+			protected ListOptionsAccess			m_ObjectVisibilityOption;
 			
 			//Rendering
-			protected ref ListOptionsAccess			m_TextureFilteringOption;
-			protected ref ListOptionsAccess			m_TerrainSurfaceDetailOption;
-			protected ref ListOptionsAccess			m_PPAAOption;
-			protected ref ListOptionsAccess			m_HWAAOption;
-			protected ref ListOptionsAccess			m_ATOCOption;
-			protected ref ListOptionsAccess			m_AOOption;
-			protected ref ListOptionsAccess			m_PPQualityOption;	
-			protected ref ListOptionsAccess			m_SSRQualityOption;	
+			protected ListOptionsAccess			m_TextureFilteringOption;
+			protected ListOptionsAccess			m_TerrainSurfaceDetailOption;
+			protected ListOptionsAccess			m_PPAAOption;
+			protected ListOptionsAccess			m_HWAAOption;
+			protected ListOptionsAccess			m_ATOCOption;
+			protected ListOptionsAccess			m_AOOption;
+			protected ListOptionsAccess			m_PPQualityOption;	
+			protected ListOptionsAccess			m_SSRQualityOption;	
 		#endif
 	#endif
 	
@@ -353,14 +353,6 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 				m_SSRQualityOption				= ListOptionsAccess.Cast( m_Options.GetOptionByType( OptionAccessType.AT_WATER_DETAIL ) );
 			#endif
 		#endif
-	}
-	
-	void ToggleDependentOptions(int mode, bool state)
-	{
-	}
-	
-	void InitDependentOptionsVisibility()
-	{
 	}
 	
 	void RefreshCustom()
@@ -677,4 +669,11 @@ class OptionsMenuVideo extends ScriptedWidgetEventHandler
 			#endif
 		#endif
 	}
+	
+	//! DEPRECATED BELOW
+	[Obsolete("1.29: No replacement")]
+	void ToggleDependentOptions(int mode, bool state);
+	
+	[Obsolete("1.29: No replacement")]
+	void InitDependentOptionsVisibility();
 }

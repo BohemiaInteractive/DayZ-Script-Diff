@@ -47,7 +47,27 @@ class SurfaceInfo : SurfaceProperties
 	//! See 'ParticleList', if config entry not set, value is 'ParticleList.NONE', 
 	//! if config entry is set but doesn't exist, value is 'ParticleList.INVALID'
 	proto int GetStepParticleId();
+	proto string GetStepSoundSetName();
 	proto int GetWheelParticleId();
+	proto string GetWheelSoundSetName();
+	proto int GetWheelContactParticleId();
+	proto string GetWheelContactSoundSetName();
+	proto int GetVehicleDustParticleId();
+	proto string GetVehicleDustSoundSetName();
+	
+	//kickup dust effects
+	proto int GetDustKickupEffectId();
+	proto int GetDustKickupEffectSmallId();
+	proto int GetDustKickupEffectBigId();
+	
+	//ambient Effect
+	proto int GetCloudEffectParticleId();
+	proto string GetCloudEffectSoundSetName();
+	proto int GetGroundEffectParticleId();
+	proto string GetGroundEffectSoundSetName();
+	
+	//ceiling dust effect
+	proto int GetCeilingDustParticleId();
 };
 
 enum UseObjectsMode

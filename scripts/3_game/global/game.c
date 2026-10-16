@@ -2,7 +2,7 @@
  *  Game Class provide most "world" or global engine API functions.
  */
 
-static int GAME_STORAGE_VERSION = 142;
+static int GAME_STORAGE_VERSION = 144;
 
 class CGame
 {
@@ -78,6 +78,7 @@ class CGame
 		
 		// Is initialized in StartupEvent
 		ParticleManager.CleanupInstance();
+		DustKickupEffects.CleanupInstance();
 		g_Game = null;
 	}
 	
@@ -676,7 +677,7 @@ class CGame
 	*/
 	proto native bool		PreloadObject( string type, float distance );
 
-	proto native Object		CreateStaticObjectUsingP3D(string p3dFilename, vector position, vector orientation, float scale = 1.0, bool createLocal = false);
+	proto native Object		CreateStaticObjectUsingP3D(string p3dFilename, vector position, vector orientation, float scale = 1.0, bool createLocal = false, bool objSpawner = false);
 	
 	/**
 	\brief Creates object of certain type
@@ -687,7 +688,7 @@ class CGame
 	@param init_ai if creating object is LightAI class, by this param is initialised AI or not
 	\return new Object
 	*/
-	proto native Object CreateObject( string type, vector pos, bool create_local = false, bool init_ai = false, bool create_physics = true );
+	proto native Object CreateObject( string type, vector pos, bool create_local = false, bool init_ai = false, bool create_physics = true, bool objSpawner = false);
 	proto native SoundOnVehicle CreateSoundOnObject(Object source, string sound_name, float distance, bool looped, bool create_local = false);
 	proto native SoundWaveOnVehicle CreateSoundWaveOnObject(Object source, SoundObject soundObject, AbstractWave soundWave);
 
@@ -937,9 +938,6 @@ class CGame
 		return world_name;
 	}
 
-	proto native bool VerifyWorldOwnership( string sWorldName );
-	proto native bool GoBuyWorldDLC( string sWorldName );
-
 	proto void					FormatString( string format, string params[], out string output);
 	proto void					GetVersion( out string version );
 	proto native UIManager	GetUIManager();
@@ -1125,6 +1123,17 @@ class CGame
 	 	\note You may want to use #ifdef SERVER instead for slight performance gain...
 	*/
 	proto native bool		IsDedicatedServer();
+	
+	/**
+	 \brief Check whether the application is headless or not (applies to both server and headless roboclients or anything else that is headless)
+	*/
+	proto native bool		IsHeadless();
+	
+	/**
+	 \brief Check whether the application is headless or a dedicated server (it combines IsDedicatedServer and IsHeadless)
+		\note This includes servers with a head as well (-headlessMode=0)
+	*/
+	proto native bool		IsHeadlessOrDedicatedServer();
 
 	//! Server config parsing. Returns 0 if not found.
 	proto native int		ServerConfigGetInt(string name);
@@ -1158,12 +1167,18 @@ class CGame
 	
 	//! API for surface detection
 	proto native bool		GetSurface(SurfaceDetectionParameters params, SurfaceDetectionResult result);
+	//! Direct SurfaceInfo access
+	proto SurfaceInfo 		GetSurfaceInfoOn(float x, float z, out float height);
+	proto SurfaceInfo 		GetSurfaceInfoUnderObject(notnull Object object);
+	proto SurfaceInfo 		GetSurfaceInfoUnderObjectByBone(notnull Object object, int boneType);
+
 	
 	proto native float		SurfaceY(float x, float z);
 	proto native float		SurfaceRoadY(float x, float z, RoadSurfaceDetection rsd = RoadSurfaceDetection.LEGACY);
 	proto native float		SurfaceRoadY3D(float x, float y, float z, RoadSurfaceDetection rsd);
 	//! Returns: Y position the surface was found
 	proto float				SurfaceGetType(float x, float z, out string type);
+	
 	//! Y input: Maximum Y to trace down from; Returns: Y position the surface was found
 	proto float				SurfaceGetType3D(float x, float y, float z, out string type);
 	proto void				SurfaceUnderObject(notnull Object object, out string type, out int liquidType);
@@ -1185,6 +1200,8 @@ class CGame
 	proto native float		GetWaterSurfaceHeightNoFakeWave(vector posWS);
 	//! Get the nearest water or object surface under a point, ignoring land (with the fake wave that's on top of the real wave)
 	proto native float		GetWaterSurfaceHeightWithFakeWave(vector posWS);
+	//! Returns whether tile at provided world coordinates is a hole.
+	proto native bool		SurfaceIsHole(float x, float z);
 	
 	proto native void 		UpdatePathgraphRegion(vector regionMin, vector regionMax);
 	
@@ -1255,18 +1272,22 @@ class CGame
 	
 	void SurfaceUnderObjectCorrectedLiquid(notnull Object object, out string type, out int liquidType)
 	{
-		SurfaceUnderObject(object, type, liquidType);
-		liquidType = CorrectLiquidType(liquidType);
+		SurfaceInfo surfaceInfo = GetSurfaceInfoUnderObject(object);
+		type = surfaceInfo.GetSurfaceType();
+		liquidType = CorrectLiquidType(surfaceInfo.GetLiquidType());
 	}
 	void SurfaceUnderObjectExCorrectedLiquid(notnull Object object, out string type, out string impact, out int liquidType)
 	{
-		SurfaceUnderObjectEx(object, type, impact, liquidType);
-		liquidType = CorrectLiquidType(liquidType);
+		SurfaceInfo surfaceInfo = GetSurfaceInfoUnderObject(object);
+		type = surfaceInfo.GetSurfaceType();
+		impact = surfaceInfo.GetImpact();
+		liquidType = CorrectLiquidType(surfaceInfo.GetLiquidType());
 	}
 	void SurfaceUnderObjectByBoneCorrectedLiquid(notnull Object object, int boneType, out string type, out int liquidType)
 	{
-		SurfaceUnderObjectByBone(object, boneType, type, liquidType);
-		liquidType = CorrectLiquidType(liquidType);
+		SurfaceInfo surfaceInfo = GetSurfaceInfoUnderObjectByBone(object, boneType);
+		type = surfaceInfo.GetSurfaceType();
+		liquidType = CorrectLiquidType(surfaceInfo.GetLiquidType());
 	}
 	
 	void UpdatePathgraphRegionByObject(Object object)
@@ -1347,6 +1368,9 @@ class CGame
 		
 	//! Returns weather controller object.
 	proto native Weather GetWeather();
+	
+	//! Returns bunker broadcast manager object.
+	proto native BunkerBroadcastManager GetBunkerBroadcastManager();
 
 	//! Sets custom camera camera EV. range: -50.0..50.0? //TODO
 	proto native void	SetEVUser(float value);

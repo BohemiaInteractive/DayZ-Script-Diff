@@ -200,16 +200,16 @@ class Pistol_Base extends Weapon_Base
 		// basic weapon states
 		// open-closed | discharged-charged | nobullet-bullet | nomag-mag
 		// regexp: [OC][CDJ][01][01]
-		CD00 = new Pistol_CLO_DIS_BU0_MA0(this, NULL, PistolAnimState.DEFAULT);
-		CC00 = new Pistol_CLO_CHG_BU0_MA0(this, NULL, PistolAnimState.CLOSED_CHARGED);
-		CC10 = new Pistol_CLO_CHG_BU1_MA0(this, NULL, PistolAnimState.CLOSED_CHARGED);
-		CJF0 = new Pistol_CLO_JAM_BU1_MA0(this, NULL, PistolAnimState.JAMMED);
-		OD00 = new Pistol_OPE_DIS_BU0_MA0(this, NULL, PistolAnimState.OPENED_DISCHARGED);
-		CD01 = new Pistol_CLO_DIS_BU0_MA1(this, NULL, PistolAnimState.DEFAULT);
-		CC01 = new Pistol_CLO_CHG_BU0_MA1(this, NULL, PistolAnimState.CLOSED_CHARGED);
-		CC11 = new Pistol_CLO_CHG_BU1_MA1(this, NULL, PistolAnimState.CLOSED_CHARGED);
-		CJF1 = new Pistol_CLO_JAM_BU1_MA1(this, NULL, PistolAnimState.JAMMED);
-		OD01 = new Pistol_OPE_DIS_BU0_MA1(this, NULL, PistolAnimState.OPENED_DISCHARGED);
+		CD00 = new Pistol_CLO_DIS_BU0_MA0(this, NULL, GetDischargedPistolAnimState());
+		CC00 = new Pistol_CLO_CHG_BU0_MA0(this, NULL, GetChargedPistolAnimState());
+		CC10 = new Pistol_CLO_CHG_BU1_MA0(this, NULL, GetChargedPistolAnimState());
+		CJF0 = new Pistol_CLO_JAM_BU1_MA0(this, NULL, GetJammedPistolAnimState());
+		OD00 = new Pistol_OPE_DIS_BU0_MA0(this, NULL, GetOpenPistolAnimState());
+		CD01 = new Pistol_CLO_DIS_BU0_MA1(this, NULL, GetDischargedPistolAnimState());
+		CC01 = new Pistol_CLO_CHG_BU0_MA1(this, NULL, GetChargedPistolAnimState());
+		CC11 = new Pistol_CLO_CHG_BU1_MA1(this, NULL, GetChargedPistolAnimState());
+		CJF1 = new Pistol_CLO_JAM_BU1_MA1(this, NULL, GetJammedPistolAnimState());
+		OD01 = new Pistol_OPE_DIS_BU0_MA1(this, NULL, GetOpenPistolAnimState());
 
 		// unstable (intermediate) states
 		WeaponCharging Mech_CD00 = new WeaponCharging(this, NULL, WeaponActions.MECHANISM, WeaponActionMechanismTypes.MECHANISM_CLOSED_UNCOCKED);
@@ -606,6 +606,26 @@ class Pistol_Base extends Weapon_Base
 		}
 		
 		return chanceToJam;
+	}
+
+	int GetDischargedPistolAnimState()
+	{
+		return PistolAnimState.DEFAULT;
+	}
+
+	int GetChargedPistolAnimState()
+	{
+		return PistolAnimState.CLOSED_CHARGED;
+	}
+
+	int GetOpenPistolAnimState()
+	{
+		return PistolAnimState.OPENED_DISCHARGED;
+	}
+
+	int GetJammedPistolAnimState()
+	{
+		return PistolAnimState.JAMMED;
 	}
 	
 	/*override bool GetInventoryHandAnimation(notnull InventoryLocation loc, out int value)

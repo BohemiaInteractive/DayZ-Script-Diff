@@ -22,17 +22,17 @@ class CachedObjectsParams
 	
 	static void Init()
 	{
-		PARAM1_INT = new Param1<int>(0);
-		PARAM1_BOOL = new Param1<bool>(false);
-		PARAM1_FLOAT = new Param1<float>(0);
-		PARAM1_STRING = new Param1<string>("");
+		PARAM1_INT		= new Param1<int>(0);
+		PARAM1_BOOL 	= new Param1<bool>(false);
+		PARAM1_FLOAT 	= new Param1<float>(0);
+		PARAM1_STRING	= new Param1<string>("");
 		
-		PARAM2_INT_INT = new Param2<int,int>(0,0);
-		PARAM2_INT_FLOAT = new Param2<int,float>(0,0);
-		PARAM2_INT_STRING = new Param2<int,string>(0,"");
-		PARAM2_STRING_FLOAT = new Param2<string,float>("",0);
-		PARAM2_STRING_STRING = new Param2<string,string>("","");
-		PARAM2_FLOAT_FLOAT = new Param2<float,float>(0,0);
+		PARAM2_INT_INT 			= new Param2<int,int>(0,0);
+		PARAM2_INT_FLOAT 		= new Param2<int,float>(0,0);
+		PARAM2_INT_STRING 		= new Param2<int,string>(0,"");
+		PARAM2_STRING_FLOAT 	= new Param2<string,float>("",0);
+		PARAM2_STRING_STRING 	= new Param2<string,string>("","");
+		PARAM2_FLOAT_FLOAT 		= new Param2<float,float>(0,0);
 	}
 };
 

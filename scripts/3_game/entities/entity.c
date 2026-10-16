@@ -18,7 +18,7 @@ class Entity extends ObjectTyped
 
 	proto string GetUserAnimationSourceName(int index);
 
-	//! Same as SetAnimationPhase, only ignores any animation and sets the phase immediately
+	//! Same as SetAnimationPhase, only ignores any animation times and sets the phase immediately
 	void SetAnimationPhaseNow(string animation, float phase)
 	{
 		ResetAnimationPhase(animation, phase);

@@ -1,4 +1,4 @@
-class CivilianSedan extends CarScript
+class CivilianSedan : CarScript
 {
 	protected ref UniversalTemperatureSource m_UTSource;
 	protected ref UniversalTemperatureSourceSettings m_UTSSettings;
@@ -17,11 +17,18 @@ class CivilianSedan extends CarScript
 
 		m_CarDoorOpenSound		= "offroad_door_open_SoundSet";
 		m_CarDoorCloseSound		= "offroad_door_close_SoundSet";
+
+		m_LightsComponent.RegisterLight("Front", new VehicleLightData(new CivilianSedanLightProfileFront()));
+		m_LightsComponent.RegisterLight("Rear", new VehicleLightData(new CivilianSedanLightProfileRear()));
 		
-		m_CarHornShortSoundName = "CivilianSedan_Horn_Short_SoundSet";
-		m_CarHornLongSoundName	= "CivilianSedan_Horn_SoundSet";
+		m_HornComponent.RegisterSound(VehicleHornMode.SHORT, 	"CivilianSedan_Horn_Short_SoundSet");
+		m_HornComponent.RegisterSound(VehicleHornMode.LONG, 	"CivilianSedan_Horn_SoundSet");
 		
 		SetEnginePos("0 0.7 1.6");
+		
+		//! DEPRECATED
+		m_CarHornShortSoundName = "CivilianSedan_Horn_Short_SoundSet";
+		m_CarHornLongSoundName	= "CivilianSedan_Horn_SoundSet";
 	}
 	
 	void ~CivilianSedan()
@@ -47,6 +54,23 @@ class CivilianSedan extends CarScript
 			m_UTSLEngine						= new UniversalTemperatureSourceLambdaEngine();
 			m_UTSource							= new UniversalTemperatureSource(this, m_UTSSettings, m_UTSLEngine);
 		}		
+	}
+	
+	override bool NeedElectricitySourceDevice()
+	{
+		return true;
+	}
+	
+	override EntityAI GetElectricitySourceDevice()
+	{
+		super.GetElectricitySourceDevice();
+		
+		return GetInventory().FindAttachment(CarBattery.SLOT_ID);
+	}
+	
+	override string GetElectricitySourceDeviceType()
+	{
+		return "CarBattery";
 	}
 	
 	override void OnEngineStart()
@@ -107,18 +131,6 @@ class CivilianSedan extends CarScript
 		}
 
 		return 0;
-	}
-	
-	// Override for car-specific light type
-	override CarLightBase CreateFrontLight()
-	{
-		return CarLightBase.Cast( ScriptedLightBase.CreateLight(CivilianSedanFrontLight) );
-	}
-	
-	// Override for car-specific light type
-	override CarRearLightBase CreateRearLight()
-	{
-		return CarRearLightBase.Cast( ScriptedLightBase.CreateLight(CivilianSedanRearLight) );
 	}
 	
 	override bool CanReleaseAttachment( EntityAI attachment )
@@ -355,11 +367,6 @@ class CivilianSedan extends CarScript
 		return "";
 	}
 
-	override bool IsVitalTruckBattery()
-	{
-		return false;
-	}
-
 	override bool IsVitalGlowPlug()
 	{
 		return false;
@@ -435,7 +442,7 @@ class CivilianSedan extends CarScript
 	}
 }
 
-class CivilianSedan_Wine extends CivilianSedan
+class CivilianSedan_Wine : CivilianSedan
 {
 	override void OnDebugSpawn()
 	{
@@ -462,7 +469,7 @@ class CivilianSedan_Wine extends CivilianSedan
 	}
 }
 
-class CivilianSedan_Black extends CivilianSedan
+class CivilianSedan_Black : CivilianSedan
 {
 	override void OnDebugSpawn()
 	{

@@ -45,6 +45,7 @@ class SplitBroom extends RecipeBase
 		InsertIngredient(1,"StoneKnife", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 		InsertIngredient(1,"Cleaver", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 		InsertIngredient(1,"CombatKnife", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
+		InsertIngredient(1,"Jambiya", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 		InsertIngredient(1,"HuntingKnife", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 		InsertIngredient(1,"Machete", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 		InsertIngredient(1,"CrudeMachete", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
@@ -60,7 +61,11 @@ class SplitBroom extends RecipeBase
 		InsertIngredient(1,"Mosin_Bayonet", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 		InsertIngredient(1,"SKS_Bayonet", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
 		InsertIngredient(1,"BoneKnife", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);	
-		
+		InsertIngredient(1,"Scimitar", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);		
+		InsertIngredient(1,"DonerKnife", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
+		InsertIngredient(1,"BrickTrowel", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
+		InsertIngredient(1,"Akinaka", DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD, true);
+				
 		m_IngredientAddHealth[1] = -4;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing
 		m_IngredientAddQuantity[1] = 0;// 0 = do nothing

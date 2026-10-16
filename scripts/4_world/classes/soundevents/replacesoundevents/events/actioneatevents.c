@@ -27,7 +27,7 @@ class EatingVoiceOverrideBase : ReplaceSoundEventBase
 	override protected void SelectSoundID()
 	{
 		string cfgPath = "cfgVehicles " + m_Player.GetItemInHands().GetType() + " AnimEvents Sound VoiceEatOverride eating_loop_default";
-		if (GetGame().ConfigIsExisting(cfgPath))
-			m_ReplacedSoundAnimID = GetGame().ConfigGetInt(cfgPath);
+		if (g_Game.ConfigIsExisting(cfgPath))
+			m_ReplacedSoundAnimID = g_Game.ConfigGetInt(cfgPath);
 	}
 }

@@ -130,7 +130,7 @@ class LayoutHolder extends ScriptedWidgetEventHandler
 	{
 		if ( m_Parent )
 		{
-			ref LayoutHolder container = m_Parent.GetRoot();
+			LayoutHolder container = m_Parent.GetRoot();
 			return container;
 		}
 		else

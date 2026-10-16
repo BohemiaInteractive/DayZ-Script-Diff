@@ -7,12 +7,12 @@ This should be handled by adding "repair_action_type" array to basebuilding and 
 
 class RepairPartActionReciveData : ActionReciveData
 {
-	int m_ComponentIndexRecived;
+	int m_ComponentIndexRecived; //DEPRECATED, target is fully synced anyway
 }
 
 class RepairPartActionData : ActionData
 {
-	int m_ComponentIndex;
+	int m_ComponentIndex; //DEPRECATED, target is fully synced anyway
 }
 
 class ActionRepairPartCB : ActionContinuousBaseCB
@@ -46,13 +46,14 @@ class ActionRepairPart: ActionDismantlePart
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;	
 		
 		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
+		m_LockTargetOnUse 	= false;
 		m_Text = "#repair";
 	}
 	
 	override void CreateConditionComponents()  
 	{	
-		m_ConditionItem = new CCINonRuined;
-		m_ConditionTarget = new CCTNonRuined( UAMaxDistances.BASEBUILDING );
+		m_ConditionItem = new CCINonRuined();
+		m_ConditionTarget = new CCTCursor();
 	}
 	
 	override void OnActionInfoUpdate( PlayerBase player, ActionTarget target, ItemBase item )
@@ -94,23 +95,36 @@ class ActionRepairPart: ActionDismantlePart
 	
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
-		BaseBuildingBase base_building = BaseBuildingBase.Cast( action_data.m_Target.GetObject() );
-		Construction construction = base_building.GetConstruction();
+		EntityAI ent = EntityAI.Cast(action_data.m_Target.GetObject());
+		ConstructionBase construction = ConstructionBase.Cast(ent.GetConstructionBasic());
+		array<string> compNames = new array<string>();
+		ent.GetActionComponentNameList(action_data.m_Target.GetComponentIndex(), compNames);
+		string partName;
+		foreach (string testName : compNames)
+		{
+			if (construction.IsPartConstructed(testName))
+			{
+				partName = testName;
+				break;
+			}
+		}
 		
-		//repairing
-		string part_name = action_data.m_Target.GetObject().GetActionComponentName( RepairPartActionData.Cast(action_data).m_ComponentIndex );
-		string zone_name;
-		PluginRepairing module_repairing;
-		Class.CastTo(module_repairing, GetPlugin(PluginRepairing));
+		if (partName == "")
+		{
+			ErrorEx("Invalid part name on component idx: " + action_data.m_Target.GetComponentIndex());
+			return;
+		}
 		
-		DamageSystem.GetDamageZoneFromComponentName(base_building,part_name,zone_name);
-		module_repairing.Repair(action_data.m_Player,action_data.m_MainItem,base_building,m_SpecialtyWeight,zone_name);
+		string zoneName;
+		PluginRepairing moduleRrepairing = PluginRepairing.Cast(GetPlugin(PluginRepairing));
+		DamageSystem.GetDamageZoneFromComponentName(ent, partName, zoneName);
+		moduleRrepairing.Repair(action_data.m_Player, action_data.m_MainItem, ent,m_SpecialtyWeight, zoneName);
 		
 		//consume materials
-		construction.TakeMaterialsServer(part_name,true);
+		construction.TakeMaterialsServer(partName, true);
 		
 		//add damage to tool
-		action_data.m_MainItem.DecreaseHealth( UADamageApplied.REPAIR, false );
+		action_data.m_MainItem.DecreaseHealth(UADamageApplied.REPAIR, false);
 	}
 	
 	protected override void SetBuildingAnimation( ItemBase item )
@@ -134,7 +148,7 @@ class ActionRepairPart: ActionDismantlePart
 	
 	override ActionData CreateActionData()
 	{
-		RepairPartActionData action_data = new RepairPartActionData;
+		RepairPartActionData action_data = new RepairPartActionData();
 		return action_data;
 	}
 	
@@ -154,7 +168,7 @@ class ActionRepairPart: ActionDismantlePart
 	{
 		if(!action_recive_data)
 		{
-			action_recive_data = new RepairPartActionReciveData;
+			action_recive_data = new RepairPartActionReciveData();
 		}
 		RepairPartActionReciveData recive_data_repair = RepairPartActionReciveData.Cast(action_recive_data);
 		
@@ -182,50 +196,17 @@ class ActionRepairPart: ActionDismantlePart
 	protected bool RepairCondition( PlayerBase player, ActionTarget target, ItemBase item, bool camera_check )
 	{
 		string zone_name;
+		EntityAI ent = EntityAI.Cast(target.GetObject());
 		
-		Object target_object = target.GetObject();
-		if ( target_object && target_object.CanUseConstruction() )
+		if (ent && ent.CanUseConstruction())
 		{
-			string part_name = target_object.GetActionComponentName( target.GetComponentIndex() );
-			
-			BaseBuildingBase base_building = BaseBuildingBase.Cast( target_object );
-			Construction construction = base_building.GetConstruction();
-			ConstructionPart construction_part = construction.GetConstructionPart( part_name );
-			
-			if ( construction_part )
+			ConstructionBase construction = ConstructionBase.Cast(ent.GetConstructionBasic());
+			array<string> compNames = new array<string>();
+			ent.GetActionComponentNameList(target.GetComponentIndex(), compNames);
+			foreach (string partName : compNames)
 			{
-				//camera and position checks
-				if ( !base_building.IsFacingPlayer( player, part_name ) && !player.GetInputController().CameraIsFreeLook() && base_building.HasProperDistance( construction_part.GetMainPartName(), player ) )
-				{
-					//Camera check (client-only)
-					if ( camera_check )
-					{
-						if ( g_Game && ( !g_Game.IsDedicatedServer() ) )
-						{
-							if ( base_building.IsFacingCamera( part_name ) )
-							{
-								return false;
-							}
-						}
-					}
-					
-					//damage check
-					DamageSystem.GetDamageZoneFromComponentName(base_building,part_name,zone_name);
-					if ( base_building.GetHealthLevel(zone_name) < GameConstants.STATE_WORN || base_building.GetHealthLevel(zone_name) == GameConstants.STATE_RUINED )
-					{
-						return false;
-					}
-					
-					//materials check
-					if ( !construction.HasMaterials(part_name,true) )
-					{
-						return false;
-					}
-					
-					ConstructionActionData construction_action_data = player.GetConstructionActionData();
-					construction_action_data.SetTargetPart( construction_part );
-					return true;
-				}
+				if (construction.IsPartConstructed(partName))
+					return construction.CanRepairPart(partName, item, player, camera_check);
 			}
 		}
 		

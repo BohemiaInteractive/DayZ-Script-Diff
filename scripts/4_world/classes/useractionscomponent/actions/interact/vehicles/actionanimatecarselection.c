@@ -1,4 +1,4 @@
-class ActionAnimateCarSelection: ActionInteractBase
+class ActionAnimateCarSelection : ActionInteractBase
 {
 	string m_AnimSource = "";
 
@@ -6,13 +6,14 @@ class ActionAnimateCarSelection: ActionInteractBase
 	{
 		m_CommandUID	= DayZPlayerConstants.CMD_ACTIONMOD_OPENDOORFW;
 		m_StanceMask	= DayZPlayerConstants.STANCEMASK_ALL;
+
 		m_Text = "#manipulate";
 	}
 	
 	override void CreateConditionComponents()  
 	{
-		m_ConditionItem		= new CCINone;
-		m_ConditionTarget	= new CCTNone;
+		m_ConditionItem		= new CCINone();
+		m_ConditionTarget	= new CCTNone();
 	}
 
 	override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
@@ -27,23 +28,18 @@ class ActionAnimateCarSelection: ActionInteractBase
 			return false;
 		}
 
-		Object targetObject = target.GetObject();
-		Entity targetEnt = Entity.Cast(targetObject);
+		CarScript car = CarScript.Cast(target.GetObject());
+		if (!car)
+			return false;
 
-		array<string> selections = new array<string>();
-		targetObject.GetActionComponentNameList(target.GetComponentIndex(), selections);
+		TStringArray selections = new TStringArray();
+		car.GetActionComponentNameList(target.GetComponentIndex(), selections);
 
-		CarScript car;
-		if (Class.CastTo(car, targetEnt))
+		foreach (string selection : selections)
 		{
-			for (int i = 0; i < selections.Count(); i++)
-			{
-				m_AnimSource = car.GetAnimSourceFromSelection(selections[i]);
-				if (m_AnimSource != "")
-				{
-					return true;
-				}
-			}
+			m_AnimSource = car.GetAnimSourceFromSelection(selection);
+			if (m_AnimSource != "")
+				return true;
 		}
 
 		return false;
@@ -57,31 +53,15 @@ class ActionAnimateCarSelection: ActionInteractBase
 		if (Class.CastTo(targetEnt, action_data.m_Target.GetObject()))
 		{
 			if (targetEnt.GetAnimationPhase(m_AnimSource) > 0.5)
-			{
 				targetEnt.SetAnimationPhase(m_AnimSource, 0.0);
-			}
 
 			if (targetEnt.GetAnimationPhase(m_AnimSource) <= 0.5)
-			{
 				targetEnt.SetAnimationPhase(m_AnimSource, 1.0);
-			}
-		}
-		
-		CarScript car;
-		if (Class.CastTo(car, action_data.m_Target.GetObject()))
-		{
-			car.ForceUpdateLightsStart();
 		}
 	}
 	
-	override void OnEndServer( ActionData action_data )
+	override void OnEndServer(ActionData action_data)
 	{
 		super.OnEndServer(action_data);
-		
-		CarScript car;
-		if (Class.CastTo(car, action_data.m_Target.GetObject()))
-		{
-			car.ForceUpdateLightsEnd();
-		}
 	}
-};
+}

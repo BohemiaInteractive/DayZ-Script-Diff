@@ -1,10 +1,5 @@
 class World: Managed
 {
-	// exposed from native, do not touch
-	#ifdef DIAG_DEVELOPER
-	const int DM_GAME_WORLD_SIMUL_ACCELERATION;
-	#endif
-
 	//proto private void ~World();
 	//proto private void World();
 
@@ -53,6 +48,8 @@ class World: Managed
 	proto native float	GetLongitude();
 	proto native float	GetMoonIntensity();
 	proto native float	GetSunOrMoon();
+	//! when GetSunOrMoon() >= 0.5 returns sun direction; otherwise moon direction
+	proto native vector	GetSunOrMoonDirection();
 	proto native bool	IsNight();
 		
 	proto native float	GetEyeAccom();
@@ -122,7 +119,17 @@ class World: Managed
 	For entities that aren't a house, any animation source that contains "door" is treated as a door by the pathgraph.
 	Using the phase value where 0=CLOSED, 1=OPENED, we can update the state of the door without regenerating the tile
 	*/	
+	[Obsolete("1.30: Use UpdatePathgraphEntityState")]
 	proto native void UpdatePathgraphDoorByAnimationSourceName(notnull Object object, string animSourceName);
+
+	/**
+	tbd. document this
+	As Mr Rebuilding wrote, this is the MangoBrand™ navmesh methods to fix the very poor server
+	performance on startup time with rebuilding feature. 
+	second fix will be to introduce navmesh persistence for runtime structures. 
+	This fixes server performance with maptime structures.
+	*/	
+	proto native bool UpdatePathgraphEntityState(notnull Object object);
 	
 	proto native void MarkObjectForPathgraphUpdate(Object object);
 	proto native void ProcessMarkedObjectsForPathgraphUpdate();
@@ -165,9 +172,9 @@ class World: Managed
 	}
 	
 	/*!
-	checks if 3rd person camera is disabled from server
+	returns the currend 3rd person camera mode (0 = disabled, 1 = enabled, 2 = enabled for vehicles only)
 	*/
-	proto native bool Is3rdPersonDisabled();
+	proto native ThirdPersonMode GetThirdPersonViewMode();
 	
 	/*!
 	checks if crosshair is disabled from server
@@ -279,4 +286,21 @@ class World: Managed
 	\param maxHeight01	maximum relative height of flattening, 0 = no flatten
 	*/
 	proto native void FlattenGrassRect(float x, float z, float sideX, float sideZ, float offset, float angleRAD, float centerLerp01, float timeDown01, float maxHeight01);
+	
+	// OBSOLETE BELOW
+	[Obsolete("1.30: replaced by World::GetThirdPersonViewMode returning current thrid person mode")]
+	proto native bool Is3rdPersonDisabled();
 };
+
+
+/**
+ * \defgroup Third person mode API (type is int and is overridden from C++)
+ * @{
+ */
+
+enum ThirdPersonMode
+{
+	DISABLED,
+	ENABLED,
+	VEHICLES_ONLY
+}

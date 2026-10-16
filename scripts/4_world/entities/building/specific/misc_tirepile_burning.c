@@ -21,6 +21,7 @@ class Misc_TirePile_Burning_DE : BuildingSuper
 		super.EEInit();
 		
 		#ifndef SERVER
+		#ifndef NO_GUI
 		// object creation - create effects (light, particles, sound)
 		if (!m_Light)
 		{
@@ -35,6 +36,7 @@ class Misc_TirePile_Burning_DE : BuildingSuper
 		
 		if (!m_SoundFireLoop)
 			PlaySoundSetLoop(m_SoundFireLoop, "HeavyFire_SoundSet", 1.0, 2.0);
+		#endif
 		#endif
 		
 		if (g_Game.IsServer() || !g_Game.IsMultiplayer())
@@ -58,6 +60,7 @@ class Misc_TirePile_Burning_DE : BuildingSuper
 		super.EEDelete(parent);
 
 		#ifndef SERVER
+		#ifndef NO_GUI
 		// outside of bubble - do effects cleanup (light, particles, sound)
 		
 		if (m_Light)
@@ -68,6 +71,7 @@ class Misc_TirePile_Burning_DE : BuildingSuper
 			
 		if (m_SoundFireLoop)
 			m_SoundFireLoop.SoundStop();
+		#endif
 		#endif
 		
 		if (g_Game.IsServer() || !g_Game.IsMultiplayer())

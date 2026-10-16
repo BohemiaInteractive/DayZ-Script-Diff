@@ -59,6 +59,9 @@ enum ParticlePropertiesFlags
 	FORCE_WORLD_ROT,
 	//! By default, a particle unparents when it ends, this disables this behaviour
 	KEEP_PARENT_ON_END,
+	/// Not created in player review 
+	DISABLED_IN_UI,
+	
 };
 
 //! Properties while creating a ParticleSource
@@ -96,6 +99,7 @@ class ParticleProperties
 	proto bool IsPlayOnCreation();
 	proto bool IsForceWorldRotation();	
 	proto bool IsKeepParentOnEnd();
+	proto bool IsDisabledInUI();
 	//@}
 }
 

@@ -111,10 +111,15 @@ class ActionPackGift: ActionContinuousBase
 			else return;
 			
 			
-			if(!g_Game.IsDedicatedServer())
+			if (!g_Game.IsDedicatedServer())
+			{
 				player.RemoveQuickBarEntityShortcut(item_to_pack);
-			
-			ClearActionJuncture(action_data);
+				ClearInventoryReservationEx(action_data);
+			}
+			else
+			{
+				ClearActionJuncture(action_data);
+			}
 			
 			lambda = new ReplaceWithNewReciveCargoLambda( item, typeName, player,item_to_pack);
 			player.ServerReplaceItemWithNew(lambda);

@@ -7,12 +7,15 @@ class ClaymoreMine : ExplosivesBase
 	protected ref RemotelyActivatedItemBehaviour 	m_RAIB;
 	protected ERemoteDetonatorLEDState 				m_LastLEDState;
 	
+	protected bool m_IsFalling = false;
+	protected bool m_FallTriggered = false;
+	
 	void ClaymoreMine()
 	{
 		m_RAIB = new RemotelyActivatedItemBehaviour(this);
 		
 		SetAmmoTypes({"ClaymoreMine_Ammo","ClaymoreMine_Secondary_Ammo"});
-		SetParticleExplosion(ParticleList.CLAYMORE_EXPLOSION);
+		//SetParticleExplosion(ParticleList.CLAYMORE_EXPLOSION);
 		SetParticleOrientation("90 0 0");
 
 		RegisterNetSyncVariableInt("m_RAIB.m_PairDeviceNetIdLow");
@@ -234,6 +237,39 @@ class ClaymoreMine : ExplosivesBase
 		AddAction(ActionTogglePlaceObject);
 		AddAction(ActionDeployObject);
 		AddAction(ActionArmExplosive);
+	}
+	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer())
+			 return;
+		
+		m_IsFalling = true;
+	}
+	
+	//! Fires when the (now dynamic) trap actually hits something - the real "it fell" moment.
+	override void EOnContact(IEntity other, Contact extra)
+	{
+		if (!g_Game.IsServer() || !m_IsFalling || m_FallTriggered)
+			return;
+		
+		OnTriggeredByFall(extra);
+		m_FallTriggered = true;
+	}
+	
+	//! SERVER: decide what "triggered by falling" means for this mine.
+	protected void OnTriggeredByFall(Contact extra)
+	{
+		if (!g_Game.IsServer() || !m_IsFalling)
+			return;
+		
+		InitiateExplosion();
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearIsFalling, 800);
+	}
+	
+	protected void ClearIsFalling()
+	{
+		m_IsFalling = false;
 	}
 	
 	override int GetViewIndex()

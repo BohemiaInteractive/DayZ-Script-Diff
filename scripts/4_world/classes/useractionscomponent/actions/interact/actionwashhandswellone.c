@@ -1,3 +1,5 @@
+//!DEPRECATED
+[Obsolete("1.30: Not used!")]
 class ActionWashHandsWellOneCB : ActionInteractLoopBaseCB
 {
 	override void CreateActionComponent()
@@ -6,7 +8,7 @@ class ActionWashHandsWellOneCB : ActionInteractLoopBaseCB
 	}
 }
 
-//!DEPRECATED
+[Obsolete("1.30: Not used and not registered in action constructor!")]
 class ActionWashHandsWellOne extends ActionInteractLoopBase
 {
 	void ActionWashHandsWellOne()

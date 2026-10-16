@@ -33,7 +33,7 @@ class SharpenMelee extends RecipeBase
 		m_IngredientUseSoftSkills[0] = true;// set 'true' to allow modification of the values by softskills on this ingredient
 		
 		//ingredient 2
-		InsertIngredient(1,"Inventory_Base");//you can insert multiple ingredients this way
+		InsertIngredient(1,"Inventory_Base",DayZPlayerConstants.CMD_ACTIONFB_SHARPEN,true);//you can insert multiple ingredients this way
 		
 		m_IngredientAddHealth[1] = 0;// 0 = do nothing
 		m_IngredientSetHealth[1] = -1; // -1 = do nothing

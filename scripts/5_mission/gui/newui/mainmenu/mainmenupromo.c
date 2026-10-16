@@ -28,8 +28,9 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 		m_ThisModInfo = info;
 		Init();
 		
+		g_Game.GetContentDLCService().Subscribe(OnDLCChange);
+		
 		#ifdef PLATFORM_CONSOLE
-		g_Game.GetContentDLCService().m_OnChange.Insert(OnDLCChange);
 		if (g_Game.GetMission())
 		{
 			g_Game.GetMission().GetOnInputDeviceChanged().Insert(OnInputDeviceChanged);
@@ -39,10 +40,8 @@ class MainMenuDlcHandlerBase extends ScriptedWidgetEventHandler
 	
 	void ~MainMenuDlcHandlerBase()
 	{
-		#ifdef PLATFORM_CONSOLE
 		if (g_Game.GetContentDLCService())
-			g_Game.GetContentDLCService().m_OnChange.Remove(OnDLCChange);
-		#endif
+			g_Game.GetContentDLCService().Unsubscribe(OnDLCChange);
 	}
 	
 	void Init()

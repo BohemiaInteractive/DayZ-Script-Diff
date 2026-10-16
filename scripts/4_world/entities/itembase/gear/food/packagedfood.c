@@ -30,3 +30,14 @@ class Snack_ColorBase: Edible_Base
 		AddAction(ActionEatSmall);
 	}
 };
+
+class Achar: Edible_Base
+{
+	override void SetActions()
+	{
+		super.SetActions();
+		
+		AddAction(ActionForceFeedSmall);
+		AddAction(ActionEatSmall);
+	}
+};

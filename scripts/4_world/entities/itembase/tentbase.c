@@ -37,6 +37,8 @@ class TentBase extends ItemBase
 	protected CamoNet 			m_CamoNet;
 	protected vector m_HalfExtents; // The Y value contains a heightoffset and not the halfextent !!!
 	
+	protected bool m_IsFalling;
+	
 	void TentBase()
 	{
 		m_ToggleAnimations = new map<ref ToggleAnimations, bool>;
@@ -979,6 +981,32 @@ class TentBase extends ItemBase
 	{
 		m_IsBeingPacked = isBeingPacked;
 		SetSynchDirty();
+	}
+	
+	override void OnItemFallRebuilding()
+	{
+		if (!g_Game.IsServer() || m_IsFalling)
+			 return;
+		
+		DropCargoItems();
+		Pack(false);  //! Pack if it is a normal tent
+		m_IsFalling = true;
+		
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ClearIsFalling, 800);
+	}
+	
+	void DropCargoItems()
+	{
+		if (HasAnyAttachmentsOrCargo())
+		{
+			//! @note: Only call this if the entity has rly any cargo/attachment
+			MiscGameplayFunctions.ThrowAllItemsInInventoryEx(this, ThrowEntityFlags.NONE, vector.Zero);
+		}
+	}
+	
+	protected void ClearIsFalling()
+	{
+		m_IsFalling = false;
 	}
 	
 	//!DEPRECATED

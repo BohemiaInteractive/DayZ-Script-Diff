@@ -91,8 +91,10 @@ class TripwireTrap : TrapBase
 		
 		// We play the trap trigger sound
 		#ifndef SERVER
+		#ifndef NO_GUI
 		EffectSound sound = SEffectManager.PlaySound("TripwireTrap_Trigger_SoundSet", GetPosition());
 		sound.SetAutodestroy(true);
+		#endif
 		#endif
 	}
 	
@@ -188,7 +190,6 @@ class TripwireTrap : TrapBase
 	{
 		return m_WireMaterial;
 	}
-	
 
 	override void RefreshState()
 	{
@@ -277,7 +278,6 @@ class TripwireTrap : TrapBase
 		SetState( FOLDED );
 	}
 	
-	#ifdef PLATFORM_WINDOWS
 	// How one sees the tripwire when in vicinity
 	override int GetViewIndex()
 	{
@@ -329,7 +329,6 @@ class TripwireTrap : TrapBase
 		}
 		return 0;
 	}
-	#endif
 	
 	//================================================================
 	// ADVANCED PLACEMENT
@@ -386,6 +385,18 @@ class TripwireTrap : TrapBase
 		
 		AddAction(ActionTogglePlaceObject);
 		AddAction(ActionDeployObject);
+	}
+	
+	override void OnTriggeredByFall(Contact extra)
+	{
+		SetState(TRIGGERED);
+		SetInactive(false);
+	}
+	
+	override void OnTriggeredByFallEffectsClient()
+	{
+		EffectSound sound = SEffectManager.PlaySound("TripwireTrap_Trigger_SoundSet", GetPosition());
+		sound.SetAutodestroy(true);
 	}
 	
 	// ====================================

@@ -9,9 +9,10 @@ class CachedEquipmentStorageInventoryEntry
 	GameInventory m_GameInventory;
 	
 	ECachedEquipmentOperationMode m_OperationMode;
+	ECachedEquipmentPlacement m_InventoryPlacement = ECachedEquipmentPlacement.ANY;
 }
 
-typedef map<ECachedEquipmentItemCategory, ref array<ref CachedEquipmentItemAttribute>> CachedItemAttributesPerCategory
+typedef map<ECachedEquipmentItemCategory, ref array<ref CachedEquipmentItemAttribute>> CachedItemAttributesPerCategory;
 
 class CachedEquipmentStorage : CachedEquipmentStorageBase
 {
@@ -52,6 +53,7 @@ class CachedEquipmentStorage : CachedEquipmentStorageBase
 		params.m_OperationMode 		= ECachedEquipmentOperationMode.INSERT;
 		
 		ProcessItemInventory(params);
+		UpdateParents();
 	}
 	
 	// --------------------------------------------------------------------------------
@@ -95,7 +97,7 @@ class CachedEquipmentStorage : CachedEquipmentStorageBase
 			newItemAttributes.m_Parent 						= item.GetHierarchyParent();
 			newItemAttributes.m_InventoryDepth 				= item.GetHierarchyLevel();
 			newItemAttributes.m_InventoryPlacement 			= ECachedEquipmentPlacement.CARGO;
-
+			
 			#ifdef ENABLE_LOGGING
 			LogMessage(string.Format("parent:%1 entity:%2", item.GetHierarchyParent(), entity), "OnItemCargoIn");
 			#endif
@@ -185,13 +187,17 @@ class CachedEquipmentStorage : CachedEquipmentStorageBase
 			
 			if (params.m_OperationMode == ECachedEquipmentOperationMode.INSERT && IsStored(attachment, category))
 				continue;
-	        
+			
+			InventoryLocation parentInventoryLocation = new InventoryLocation();
+			params.m_GameInventory.GetCurrentInventoryLocation(parentInventoryLocation);
+			
 	        CachedEquipmentItemAttribute newItemAttributes 	= new CachedEquipmentItemAttribute();
 	        newItemAttributes.m_Entity 						= attachment;
 	        newItemAttributes.m_Parent 						= attachment.GetHierarchyParent();
+			newItemAttributes.m_ParentInventoryPlacement	= parentInventoryLocation.GetSlot();
 	        newItemAttributes.m_InventoryDepth 				= attachment.GetHierarchyLevel();
 	        newItemAttributes.m_SlotIndex 					= params.m_SlotId;
-	        newItemAttributes.m_InventoryPlacement 			= ECachedEquipmentPlacement.ATTACHMENT;
+			newItemAttributes.m_InventoryPlacement 			= ECachedEquipmentPlacement.ATTACHMENT;
 	
 	        array<ref CachedEquipmentItemAttribute> arr;
 	        if (!attachmentAttributesPerCategory.Find(category, arr))
@@ -231,13 +237,18 @@ class CachedEquipmentStorage : CachedEquipmentStorageBase
 
 				if (params.m_OperationMode == ECachedEquipmentOperationMode.INSERT && IsStored(cargo, category))
 					continue;
+				
+				InventoryLocation parentInventoryLocation = new InventoryLocation();
+				params.m_GameInventory.GetCurrentInventoryLocation(parentInventoryLocation);
 
 				CachedEquipmentItemAttribute newItemAttributes = new CachedEquipmentItemAttribute();
 				
-				newItemAttributes.m_Entity 					= cargo;
-				newItemAttributes.m_Parent 					= cargo.GetHierarchyParent();				
-				newItemAttributes.m_InventoryDepth 			= cargo.GetHierarchyLevel();
-				newItemAttributes.m_InventoryPlacement 		= ECachedEquipmentPlacement.CARGO;
+				newItemAttributes.m_Entity 						= cargo;
+				newItemAttributes.m_Parent 						= cargo.GetHierarchyParent();				
+				newItemAttributes.m_ParentInventoryPlacement	= parentInventoryLocation.GetSlot();
+				newItemAttributes.m_InventoryDepth 				= cargo.GetHierarchyLevel();
+				newItemAttributes.m_InventoryPlacement 			= ECachedEquipmentPlacement.CARGO;
+				
 
 		        array<ref CachedEquipmentItemAttribute> arr;
 		        if (!cargoAttributesPerCategory.Find(category, arr))

@@ -35,6 +35,23 @@ class Truck_02 extends CarScript
 		}		
 	}
 	
+	override bool NeedElectricitySourceDevice()
+	{
+		return true;
+	}
+	
+	override EntityAI GetElectricitySourceDevice()
+	{
+		super.GetElectricitySourceDevice();
+		
+		return GetInventory().FindAttachment(TruckBattery.SLOT_ID);
+	}
+
+	override string GetElectricitySourceDeviceType()
+	{
+		return "TruckBattery";
+	}
+	
 	override void OnEngineStart()
 	{
 		super.OnEngineStart();
@@ -204,11 +221,6 @@ class Truck_02 extends CarScript
 		}
 
 		return "";
-	}
-
-	override bool IsVitalCarBattery()
-	{
-		return false;
 	}
 
 	override bool IsVitalSparkPlug()

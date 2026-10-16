@@ -78,7 +78,7 @@ class CAContinuousQuantity : CAContinuousBase
 	
 	void CalcAndSetQuantity( ActionData action_data )
 	{
-		if ( g_Game.IsServer() )
+		if (g_Game.IsServer() || !g_Game.IsMultiplayer()) // Server side or single player
 		{
 			if ( m_SpentUnits )
 			{
@@ -88,7 +88,7 @@ class CAContinuousQuantity : CAContinuousBase
 			
 			if (action_data.m_MainItem)
 			{
-				action_data.m_MainItem.AddQuantity(- m_SpentQuantity,false,false);
+				action_data.m_MainItem.AddQuantity(-m_SpentQuantity, false, false);
 			}
 		}
 	}

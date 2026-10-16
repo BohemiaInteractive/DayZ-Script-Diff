@@ -103,8 +103,10 @@ class Spotlight extends ItemBase
 	override void OnWorkStart()
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		m_Light = SpotlightLight.Cast(ScriptedLightBase.CreateLight(SpotlightLight, "0 0 0"));
 		m_Light.AttachOnObject(this, m_LightLocalPosition, m_LightLocalOrientation);
+		#endif
 		#endif
 		
 		UpdateAllSelections();
@@ -113,8 +115,10 @@ class Spotlight extends ItemBase
 	override void OnWorkStop()
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (m_Light)
 			m_Light.FadeOut();
+		#endif
 		#endif
 		
 		UpdateAllSelections();

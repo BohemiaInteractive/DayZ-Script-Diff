@@ -24,9 +24,9 @@ class HudDebugWinCharDebug extends HudDebugWinBase
 	//============================================
 	// Update
 	//============================================
-	override void Update()
+	override void Update(float timeslice)
 	{
-		super.Update();
+		super.Update(timeslice);
 		
 		PlayerBase player = PlayerBase.Cast( g_Game.GetPlayer() );
 		if ( player != NULL )

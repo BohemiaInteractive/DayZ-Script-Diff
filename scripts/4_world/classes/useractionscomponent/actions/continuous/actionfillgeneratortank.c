@@ -1,6 +1,6 @@
 class ActionFillGeneratorTankCB : ActionContinuousBaseCB
 {
-	private const float QUANTITY_FILLED_PER_SEC = 400;
+	private const float QUANTITY_FILLED_PER_SEC = 50;
 	
 	override void CreateActionComponent()
 	{

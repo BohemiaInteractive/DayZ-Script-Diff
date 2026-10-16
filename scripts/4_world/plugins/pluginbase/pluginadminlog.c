@@ -170,6 +170,19 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 				LogPrint( playerPrefix + " killed by " + playerPrefix2 + " with " + source.GetDisplayName() + " from " + m_Distance + " meters " );
 			}
 		}
+		else if (source.IsTransport())
+		{
+			string vehicle = source.GetType();
+			Transport transport = Transport.Cast(source);
+			Human driver = transport.CrewDriver();
+			playerSource = PlayerBase.Cast(driver);
+			if (playerSource)
+				playerPrefix2 = GetPlayerPrefix( playerSource ,  playerSource.GetIdentity() );
+			else
+				playerPrefix2 = "NO DRIVER";
+		
+			LogPrint( playerPrefix + " killed by " + playerPrefix2 + " (" + vehicle + ")" );
+		}
 		else
 		{
 			if (playerSource)
@@ -296,6 +309,19 @@ class PluginAdminLog extends PluginBase			// Class for admin log messages handle
 						{
 							LogPrint( playerPrefix + " hit by " + parent.GetType() + " with " + ammo );	
 						}
+					}
+					else if (source.IsTransport())
+					{
+						string vehicle = source.GetType();
+						Transport transport = Transport.Cast(source);
+						Human driver = transport.CrewDriver();
+						playerSource = PlayerBase.Cast(driver);
+						if (playerSource)
+							playerPrefix2 = GetPlayerPrefix( playerSource ,  playerSource.GetIdentity() );
+						else
+							playerPrefix2 = "NO DRIVER";
+					
+						LogPrint( playerPrefix + " hit by " + playerPrefix2 + " with " + ammo + " (" + vehicle + ")" );
 					}
 					else
 					{

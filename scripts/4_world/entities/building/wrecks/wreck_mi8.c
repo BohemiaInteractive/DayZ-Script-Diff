@@ -3,7 +3,7 @@ class Wreck_Mi8_Crashed extends CrashBase
 {
 	void Wreck_Mi8_Crashed()
 	{
-		if ( !g_Game.IsDedicatedServer() )
+		if ( !g_Game.IsHeadlessOrDedicatedServer() )
 		{
 			m_ParticleEfx = ParticleManager.GetInstance().PlayOnObject(ParticleList.SMOKING_HELI_WRECK, this, Vector(2, 0, -5));
 		}

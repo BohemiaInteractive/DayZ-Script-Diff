@@ -142,6 +142,11 @@ class PASBroadcaster extends AdvancedCommunication
 {
 	proto native void SwitchOn(bool onOff);
 	proto native bool IsOn();
+	
+	override bool IsDetectableByVicinityCone()
+	{
+		return true;
+	}
 };
 
 class StaticTransmitter extends AdvancedCommunication

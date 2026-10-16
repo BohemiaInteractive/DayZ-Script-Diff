@@ -1,3 +1,5 @@
+//#define GEYSER_LOGGING
+
 enum EGeyserState
 {
 	DORMANT 			= 0,
@@ -73,7 +75,8 @@ class GeyserArea : EffectArea
 		{
 			logInterval = diagTimeInterval;
 		}
-	#ifdef ENABLE_LOGGING
+	
+	#ifdef GEYSER_LOGGING
 		ErrorEx("Geyser state=" + typename.EnumToString(EGeyserState, m_GeyserTrigger.GetGeyserState()) + " | Bits=" + m_GeyserTrigger.GetGeyserState() + " | Interval=" + logInterval + " | Time Elapsed=" + m_TimeElapsed, ErrorExSeverity.INFO);
 	#endif
 	#endif
@@ -83,6 +86,7 @@ class GeyserArea : EffectArea
 			if (m_TimeElapsed > PRE_ERUPTION_DURATION)
 			{
 			#ifdef ENABLE_LOGGING
+			#ifdef GEYSER_LOGGING
 			#ifndef DIAG_DEVELOPER
 				Debug.Log(m_Name + ": ERUPTION_SOON, interval: " + m_RandomizedInterval + " sec");
 			#else
@@ -94,6 +98,7 @@ class GeyserArea : EffectArea
 				{
 					Debug.Log(m_Name + ": ERUPTION_SOON, interval: " + diagTimeInterval + " sec");
 				}
+			#endif
 			#endif
 			#endif
 				
@@ -111,6 +116,7 @@ class GeyserArea : EffectArea
 		#endif
 			{
 			#ifdef ENABLE_LOGGING
+			#ifdef GEYSER_LOGGING
 			#ifndef DIAG_DEVELOPER
 				Debug.Log(m_Name + ": ERUPTING_PRIMARY, interval: " + m_RandomizedDuration + " sec");
 			#else
@@ -122,6 +128,7 @@ class GeyserArea : EffectArea
 				{
 					Debug.Log(m_Name + ": ERUPTING_PRIMARY, interval: " + diagTimeDuration + " sec");
 				}
+			#endif
 			#endif
 			#endif
 				
@@ -146,7 +153,9 @@ class GeyserArea : EffectArea
 				RandomizeIntervals();
 				
 				#ifdef ENABLE_LOGGING
+				#ifdef GEYSER_LOGGING
 				Debug.Log(m_Name + ": ERUPTION_SOON, interval: " + m_RandomizedInterval + " sec");
+				#endif
 				#endif
 				
 				m_GeyserTrigger.RemoveGeyserState(EGeyserState.ERUPTING_PRIMARY);

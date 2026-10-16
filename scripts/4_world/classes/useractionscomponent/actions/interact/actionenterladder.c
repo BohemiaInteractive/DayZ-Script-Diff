@@ -36,20 +36,24 @@ class ActionEnterLadder: ActionInteractBase
 		if(!lod.GetSelections(memSelection))
 			return false;
 
-		//!
-		string compName = building.GetActionComponentName( target.GetComponentIndex() );				
-		if( compName.Length() < 6 || compName.Substring(0,6) != "ladder" )
+		array<string> selections = new array<string>();
+		string compName = "";
+		building.GetActionComponentNameList(target.GetComponentIndex(), selections);
+		foreach (string tmp : selections)
 		{
-			return false;
+			if (tmp.Length() >= 6 && tmp.Substring(0,6) == "ladder" && tmp.IndexOfFrom(6,"_") < 0)
+			{
+				compName = tmp;
+				break;
+			}
 		}
-				
-		// ze stringu compName dostat posledni cislo a to je index zebriku 
-				
-		//building.GetActionComponentNameList( action_data.m_Target.GetComponentIndex(), components );
-				
+		
+		if (compName == string.Empty)
+			return false;
+		
 		string condCompName = string.Format("%1_con", compName);
 		vector pos = player.GetPosition();
-		//Print(w);
+		
 		bool found = false;
 		vector ladderEnterPointGlobal;
 		vector ladderDirPointGlobal;
@@ -112,15 +116,24 @@ class ActionEnterLadder: ActionInteractBase
 	
 	override void Start( ActionData action_data )
 	{
-		super.Start( action_data );
-		Building 	b;
-		Class.CastTo(b, action_data.m_Target.GetObject());
+		super.Start(action_data);
 		
-		if (b)
+		Building building;
+		if (Class.CastTo(building, action_data.m_Target.GetObject()))
 		{
-			string compName 	= b.GetActionComponentName( action_data.m_Target.GetComponentIndex() );
-			int 	ladderIndex = HumanCommandLadder.DebugGetLadderIndex(compName);
-
+			array<string> selections = new array<string>();
+			string compName = "";
+			building.GetActionComponentNameList(action_data.m_Target.GetComponentIndex(), selections);
+			foreach (string tmp : selections)
+			{
+				if (tmp.Length() >= 6 && tmp.Substring(0,6) == "ladder" && tmp.IndexOfFrom(6,"_") < 0)
+				{
+					compName = tmp;
+					break;
+				}
+			}
+			
+			int ladderIndex = HumanCommandLadder.DebugGetLadderIndex(compName);
 			LOD geomLod = action_data.m_Target.GetObject().GetLODByName(GEOM_LOD_NAME);
 			string ladderType = "metal";
 
@@ -134,67 +147,9 @@ class ActionEnterLadder: ActionInteractBase
 			}
 
 			action_data.m_Player.SetClimbingLadderType(ladderType);
-			action_data.m_Player.StartCommand_Ladder(b, ladderIndex );
+			action_data.m_Player.StartCommand_Ladder(building, ladderIndex );
 		}
-
-
-		/* if( g_Game.IsServer() )
-		{
-			OnStartServer(action_data);
-		}
-		else
-		{
-			OnStartClient(action_data);
-		}*/
 	}
-	
-/*	override void WriteToContext (ParamsWriteContext ctx,ActionTarget target)
-	{
-		ctx.Write(INPUT_UDT_STANDARD_ACTION);
-		ctx.Write(GetType());
-		
-		PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
-		ActionManagerClient AM = ActionManagerClient.Cast( player.GetActionManager());
-		//ActionTarget target = AM.FindActionTarget();
-		Object targetObject = target.GetObject();
-		ctx.Write(targetObject);
-		Object targetParent = target.GetParent();
-		ctx.Write(targetParent);
-		int componentIndex = target.GetComponentIndex();
-		ctx.Write(componentIndex);
-	}
-
-	override void OnStartServer( ActionData action_data )
-	{
-		Print("psovis - server/single");
-		
-		Building building;
-		if ( Class.CastTo(building, action_data.m_Target.GetObject()) )
-		{
-			ref array<Selection> memSelections	= new array<Selection>();
-
-			// Get memory LOD from p3d and save all its selections
-			LOD lod = building.GetLODByName(MEM_LOD_NAME);
-			if(lod != NULL && lod.GetSelections(memSelections))
-			{						
-				Print("Memory selections:");
-				for( int i =0; i < memSelections.Count(); i++ )
-				{ 
-					if (memSelections[i].GetVertexCount() > 0)
-					{					
-						vector pos = memSelections[i].GetVertexPosition(lod, 0);
-						Print(memSelections[i].GetName());					
-						Print(pos);					
-					}						
-				}
-			}
-		}		
-	}*/
-	
-	/*override void OnStartClient( ActionData action_data )
-	{
-		Print("psovis - client");
-	}*/
 	
 	override bool IsLockTargetOnUse()
 	{

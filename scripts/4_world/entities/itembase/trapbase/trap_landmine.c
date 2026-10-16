@@ -45,7 +45,7 @@ class LandMineTrap extends TrapBase
 	{
 		super.StartActivate(player);
 		
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			if (m_SafetyPinSound)
 			{
@@ -66,7 +66,7 @@ class LandMineTrap extends TrapBase
 	
 	override void OnActivate()
 	{
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			if (m_TimerLoopSound)
 			{
@@ -210,7 +210,7 @@ class LandMineTrap extends TrapBase
 	
 	void PlaySoundActivate()
 	{
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			EffectSound sound = SEffectManager.PlaySound("landmineActivate_SoundSet", GetPosition(), 0, 0, false);
 			sound.SetAutodestroy(true);
@@ -231,7 +231,6 @@ class LandMineTrap extends TrapBase
 		
 		if ( g_Game.IsServer() )
 		{
-			SynchExplosion();
 			vector offset = Vector(0, 0.1, 0); //Vertical offset applied to landmine explosion (in meters)
 			DamageSystem.ExplosionDamage(this, NULL, ammoType, GetPosition() + offset, damageType); //Offset explosion on Y axis
 			DeleteThis();
@@ -311,6 +310,12 @@ class LandMineTrap extends TrapBase
 		AddAction(ActionDetach);
 		AddAction(ActionTogglePlaceObject);
 		AddAction(ActionDeployObject);
+	}
+	
+	override void OnTriggeredByFall(Contact extra)
+	{
+		// Explode() already handles the server check and cleans itself up via DeleteThis()
+		Explode(DamageType.EXPLOSION);
 	}
 	
 #ifdef DEVELOPER	

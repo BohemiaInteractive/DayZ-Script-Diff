@@ -100,12 +100,22 @@ class DebugSpawnParams
 	}
 };
 
+class ActionOverrideData : Managed
+{
+	int m_CommandUID = -1;
+	int m_CommandUIDProne = -1;
+	int m_StanceMask = -1;
+}
+
 class TSelectableActionInfoArrayEx extends array<ref Param> {}
 typedef Param3<int, int, string> TSelectableActionInfo;
 typedef Param4<int, int, string, int> TSelectableActionInfoWithColor;
+typedef map<typename,ref ActionOverrideData> TActionAnimOverrideMap;
 
 class EntityAI extends Entity
 {
+	static ref map<typename, ref TActionAnimOverrideMap> m_EntityActionOverrides = new map<typename, ref TActionAnimOverrideMap>; 
+	
 	bool 								m_DeathSyncSent;
 	bool 								m_KilledByHeadshot;
 	bool 								m_PreparedToDelete = false;
@@ -133,10 +143,7 @@ class EntityAI extends Entity
 	
 	float							m_Weight;
 	float							m_WeightEx;
-	float 							m_ConfigWeight = ConfigGetInt("weight");
-	protected bool 					m_CanDisplayWeight;
-	private float 					m_LastUpdatedTime; //CE update time
-	protected float					m_ElapsedSinceLastUpdate; //CE update time
+
 	protected float 				m_PreviousRoofTestTime = 0;
 	
 	protected UTemperatureSource m_UniversalTemperatureSource;
@@ -153,15 +160,6 @@ class EntityAI extends Entity
 	
 	// Temperature
 	float m_VarTemperature;
-	float m_VarTemperatureInit;
-	float m_VarTemperatureMin;
-	float m_VarTemperatureMax;
-	float m_VarTemperatureFreezeThreshold;
-	float m_VarTemperatureThawThreshold;
-	float m_VarTemperatureFreezeTime;
-	float m_VarTemperatureThawTime;
-	float m_VarTemperatureOverheatTime;
-	float m_VarHeatPermeabilityCoef;
 	
 	protected ref TemperatureAccessComponent m_TAC;
 	
@@ -232,10 +230,6 @@ class EntityAI extends Entity
 		
 		m_AttachmentsWithCargo			= new array<EntityAI>();
 		m_AttachmentsWithAttachments	= new array<EntityAI>();
-		m_LastUpdatedTime = 0.0;
-		m_ElapsedSinceLastUpdate = 0.0;
-		
-		m_CanDisplayWeight = ConfigGetBool("displayWeight");
 		
 		InitDamageZoneMapping();
 		InitDamageZoneDisplayNameMapping();
@@ -244,8 +238,15 @@ class EntityAI extends Entity
 		m_HiddenSelectionsData = new HiddenSelectionsData( GetType() );
 		
 		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeferredInit,34);
-
+		
 		m_BloodInfectionChanceCached = new map<eAgents, float>();
+		
+		SetActionAnimOverrides();
+		
+		g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Call(InitializeInstanceAttachmentGroupsData);
+		
+		if (g_Game.ConfigIsExisting("cfgVehicles" + " " + GetType() + " " + "Construction"))
+			ConstructionInit();
 	}
 	
 	void ~EntityAI()
@@ -255,35 +256,9 @@ class EntityAI extends Entity
 	
 	void InitItemVariables()
 	{
-		m_VarTemperatureInit = ConfigGetFloat("varTemperatureInit");
-		m_VarTemperatureMin = ConfigGetFloat("varTemperatureMin");
-		m_VarTemperatureMax = ConfigGetFloat("varTemperatureMax");
-		
-		if (ConfigIsExisting("varTemperatureFreezePoint"))
-			m_VarTemperatureFreezeThreshold = ConfigGetFloat("varTemperatureFreezePoint");
-		else
-			m_VarTemperatureFreezeThreshold = float.LOWEST;
-		
-		if (ConfigIsExisting("varTemperatureThawPoint"))
-			m_VarTemperatureThawThreshold = ConfigGetFloat("varTemperatureThawPoint");
-		else
-			m_VarTemperatureThawThreshold = float.LOWEST;
-		
-		m_VarTemperatureFreezeTime = Math.Clamp(ConfigGetFloat("varTemperatureFreezeTime"),1,float.MAX);
-		m_VarTemperatureThawTime = Math.Clamp(ConfigGetFloat("varTemperatureThawTime"),1,float.MAX);
-		if (ConfigIsExisting("varTemperatureOverheatTime"))
-			m_VarTemperatureOverheatTime = ConfigGetFloat("varTemperatureOverheatTime");
-		else
-			m_VarTemperatureOverheatTime = -1;
-		
-		if (ConfigIsExisting("varHeatPermeabilityCoef"))
-			m_VarHeatPermeabilityCoef = ConfigGetFloat("varHeatPermeabilityCoef");
-		else
-			m_VarHeatPermeabilityCoef = 1;
-		
 		if (CanHaveTemperature())
 		{
-			RegisterNetSyncVariableFloat("m_VarTemperature", GetTemperatureMin(),GetTemperatureMax());
+			RegisterNetSyncVariableFloat("m_VarTemperature", GetTemperatureMin(), GetTemperatureMax());
 			RegisterNetSyncVariableBool("m_IsFrozen");
 			
 			if (g_Game.IsServer())
@@ -292,6 +267,11 @@ class EntityAI extends Entity
 			if (!g_Game.IsMultiplayer() || g_Game.IsClient())
 				m_FreezeThawProgress = -1;
 		}
+	}
+	
+	TypeAttachmentGroupsDataHolder GetTypeAttachmentGroupInfoHolder()
+	{
+		return EntityAIType.Cast(GetEntityType()).GetTypeAttachmentGroupsDataHolder();
 	}
 	
 	void DeferredInit()
@@ -308,6 +288,11 @@ class EntityAI extends Entity
 	int GetHideIconMask()
 	{
 		return EInventoryIconVisibility.ALWAYS;
+	}
+	
+	bool IsDetectableByVicinityCone()
+	{
+		return false;
 	}
 
 	private ref ComponentsBank m_ComponentsBank;
@@ -473,7 +458,7 @@ class EntityAI extends Entity
 	//! 'displayWeight' in item config
 	bool CanDisplayWeight()
 	{
-		return m_CanDisplayWeight;
+		return EntityAIType.Cast(GetEntityType()).m_CanDisplayWeight;
 	}
 
 	//! Log
@@ -675,14 +660,33 @@ class EntityAI extends Entity
 		return false;
 	}
 
-	//! is this container empty or not, checks only cargo
+	//! Is this container empty or not, checks only cargo
+	//! @note: Does NOT include count of items in cargo of items that are themselves in cargo
 	bool HasAnyCargo()
 	{
+		//! Does the item has any cargo?
 		CargoBase cargo = GetInventory().GetCargo();
-		
-		if(!cargo) return false;//this is not a cargo container
+		if (!cargo)
+			return false;
 		
 		return cargo.GetItemCount() > 0;
+	}
+	
+	//! Is there any attachments on the object or not, checks only attachments
+	//! @note: Does NOT include count of items of attachments of items that are themselves in cargo or attached
+	bool HasAnyAttachments()
+	{
+		return GetInventory().AttachmentCount() > 0;
+	}
+	
+	//! Is there any attachments or cargo items in the object
+	//! @note: Does NOT include count of items in cargo or attachments of items that are themselves in cargo or attached
+	bool HasAnyAttachmentsOrCargo()
+	{
+		if (!HasAnyCargo() && !HasAnyAttachments())
+			return false;
+		
+		return true;
 	}
 	
 	array<EntityAI> GetAttachmentsWithCargo()
@@ -771,7 +775,7 @@ class EntityAI extends Entity
 	 *			ItemBase item = g_Game.GetPlayer().CreateInInventory("GrenadeRGD5");
 	 *			item.Delete();
 	 * @endcode
-	**/
+	*/
 	override void Delete()
 	{
 		m_PendingDelete = true;
@@ -929,6 +933,13 @@ class EntityAI extends Entity
 		
 		if (CanHaveTemperature() && g_Game.IsServer())
 			InitTemperature();
+		
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		if (constructionComponent)
+		{
+			constructionComponent.EEInitConstruction();
+			constructionComponent.InitBaseState(); //delayed to handle physics init states
+		}
 	}
 	
 	//! Called right before object deleting
@@ -945,7 +956,9 @@ class EntityAI extends Entity
 	{
 		super.OnExplosionEffects(source, directHit, componentIndex, surface, pos, surfNormal, energyFactor, explosionFactor, isWater, ammoType);
 		#ifndef SERVER
+		#ifndef NO_GUI
 		g_Game.GetWorld().AddEnvShootingSource(pos, 1.0);
+		#endif
 		#endif
 		if (m_DestructionBehaviourObj && m_DestructionBehaviourObj.HasExplosionDamage())
 		{
@@ -1013,8 +1026,6 @@ class EntityAI extends Entity
 	void EEInventoryIn(Man newParentMan, EntityAI diz, EntityAI newParent);
 	void EEInventoryOut(Man oldParentMan, EntityAI diz, EntityAI newParent)
 	{
-		m_LastUpdatedTime = g_Game.GetTickTime();		
-		
 		if (newParent == null)
 		{
 			GameInventory inventory = GetInventory();
@@ -1046,6 +1057,9 @@ class EntityAI extends Entity
 			}
 			AttemptDestructionBehaviour(oldLevel,newLevel, zone);
 		}
+	
+		if (GetConstructionBasic())
+			HandleDamageLevelConstruction(oldLevel,newLevel,zone);
 	}
 	
 	//! Called when the health gets to the min value, 'oldLevel' is previous health level, 'oldLevel' -1 means this entity was just spawned
@@ -1076,6 +1090,13 @@ class EntityAI extends Entity
 		}
 	}
 	
+	protected void HandleDamageLevelConstruction(int oldLevel, int newLevel, string zone)
+	{
+		if (g_Game.IsMultiplayer() && !g_Game.IsServer())
+			return;
+		
+		GetConstructionBasic().OnHealthLevelChanged(oldLevel, newLevel, zone);
+	}
 	
 	void SetTakeable(bool pState);
 	
@@ -1140,7 +1161,7 @@ class EntityAI extends Entity
 		int slotId = InventorySlots.GetSlotIdFromString(slot_name);
 		PropagateExclusionValueRecursive(item.GetAttachmentExclusionMaskAll(slotId), slotId); //Performed from parent to avoid event order issues on swap
 		SetWeightDirty();
-
+	
 		Man player = GetHierarchyRootPlayer();
 		if (player)
 			player.GetCachedEquipment().OnItemAttached(item, slotId, this);
@@ -1180,7 +1201,7 @@ class EntityAI extends Entity
 		int slotId = InventorySlots.GetSlotIdFromString(slot_name);
 		ClearExclusionValueRecursive(item.GetAttachmentExclusionMaskAll(slotId), slotId); //Performed from parent to avoid event order issues on swap
 		SetWeightDirty();
-
+	
 		Man player = GetHierarchyRootPlayer();
 		if (player)
 			player.GetCachedEquipment().OnItemDetached(item, slotId, this);
@@ -1213,26 +1234,28 @@ class EntityAI extends Entity
 	void EECargoIn(EntityAI item)
 	{
 		SetWeightDirty();
-		
+	
 		if( m_OnItemAddedIntoCargo )
 			m_OnItemAddedIntoCargo.Invoke( item, this );
 
 		Man player = item.GetHierarchyRootPlayer();
-		if (player)		
+		if (player)
 			player.GetCachedEquipment().OnItemCargoIn(item);
+		
 		item.OnMovedInsideCargo(this);
 	}
 
 	void EECargoOut(EntityAI item)
 	{
 		SetWeightDirty();
-		
+	
 		if( m_OnItemRemovedFromCargo )
 			m_OnItemRemovedFromCargo.Invoke( item, this );
 	
 		Man player = item.GetHierarchyRootPlayer();
 		if (player)
 			player.GetCachedEquipment().OnItemCargoOut(item);
+		
 		item.OnRemovedFromCargo(this);
 	}
 
@@ -1496,14 +1519,14 @@ class EntityAI extends Entity
 				GameInventory inventory = GetInventory();
 				if (inventory)
 				{
-					InventoryLocation il = new InventoryLocation();
+			InventoryLocation il = new InventoryLocation();
 					attachmentInventory.GetCurrentInventoryLocation( il );
-					if( il.IsValid() )
-					{
-						int slot = il.GetSlot();
+			if( il.IsValid() )
+			{
+				int slot = il.GetSlot();
 						return !inventory.GetSlotLock( slot );
-					}
-				}
+			}
+		}
 			}
 		}
 		return true;
@@ -1674,7 +1697,7 @@ class EntityAI extends Entity
 					return false;
 				}
 				
-				//hands treated as regular attachment here
+				//hands treated as regular attachment slot here
 				if (lcnType == InventoryLocationType.ATTACHMENT || lcnType == InventoryLocationType.HANDS)
 				{
 					attachmentDepth++;
@@ -1685,6 +1708,29 @@ class EntityAI extends Entity
 		}
 		
 		return attachmentDepth <= GameConstants.INVENTORY_MAX_REACHABLE_DEPTH_ATT;
+	}
+	
+	//Construction methods
+	//! useful for construction and inventory related systems
+	bool IsFacingPlayerEx(DayZPlayer player, string selection)
+	{
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		if (constructionComponent)
+			return constructionComponent.IsPartFacingPlayer(player, selection);
+		
+		return true;
+	}
+	
+	//! useful for construction and inventory related systems (lower implement does not know 'PlayerBase')
+	bool IsPlayerInsideEx(DayZPlayer player, string selection)
+	{
+		return true;
+	}
+	
+	//camera direction check for construction
+	bool IsFacingCamera( string selection )
+	{
+		return false;
 	}
 	
 	bool IsBeingPlaced()
@@ -1736,16 +1782,6 @@ class EntityAI extends Entity
 	}
 
 	/**@fn		CanDisplayAttachmentSlot
-	 * @param	slot_name->name of the attachment slot that will or won't be displayed
-	 * @return	true if attachment icon can be displayed in UI (inventory)
-	 **/	
-	bool CanDisplayAttachmentSlot( string slot_name )
-	{
-		Debug.LogWarning("Obsolete function - use CanDisplayAttachmentSlot with slot id parameter");
-		return InventorySlots.GetShowForSlotId(InventorySlots.GetSlotIdFromString(slot_name));
-	}
-	
-	/**@fn		CanDisplayAttachmentSlot
 	 * @param	slot_id->id of the attachment slot that will or won't be displayed
 	 * @return	true if attachment icon can be displayed in UI (inventory)
 	 **/	
@@ -1777,7 +1813,7 @@ class EntityAI extends Entity
 	/**@fn		CanDisplayAttachmentCategory
 	 * @param	category_name->name of the attachment category that will or won't be displayed
 	 * @return	true if attachment icon can be displayed in UI (inventory)
-	 **/		
+	 **/
 	bool CanDisplayAttachmentCategory( string category_name )
 	{
 		return true;
@@ -1785,15 +1821,24 @@ class EntityAI extends Entity
 	
 	/**@fn		CanDisplayCargo
 	 * @return	true if cargo can be displayed in UI (inventory)
-	 **/		
+	 **/
 	bool CanDisplayCargo()
 	{
 		return GetInventory().GetCargo() != null;
 	}
-	
+
+	/**@fn		CanDisplayAttachmentCargo
+	 * @param	attachment->attachment whose cargo will or won't be displayed
+	 * @return	true if the cargo of the attached item can be displayed (inventory)
+	 **/
+	bool CanDisplayAttachmentCargo(EntityAI attachment)
+	{
+		return true;
+	}
+
 	/**@fn		CanAssignToQuickbar
 	 * @return	true if item can be assigned to quickbar safely
-	 **/		
+	 **/
 	bool CanAssignToQuickbar()
 	{
 		return true;
@@ -1809,7 +1854,7 @@ class EntityAI extends Entity
 	
 	/**@fn		IgnoreOutOfReachCondition
 	 * @return	if true, attachment condition for out of reach (inventory) will be ignored
-	 **/		
+	 **/
 	bool IgnoreOutOfReachCondition()
 	{
 		return GetHierarchyRootPlayer() == g_Game.GetPlayer();
@@ -1905,6 +1950,8 @@ class EntityAI extends Entity
 	/**
 	\brief Put item anywhere into this entity (as attachment or into cargo, recursively)
 	*/
+	
+	//[Obsolete("1.30: Use PredictiveTakeEntityToTargetInventory instead")]
 	bool PredictiveTakeEntityToInventory (FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		if ( g_Game.IsMultiplayer() )
@@ -1912,10 +1959,12 @@ class EntityAI extends Entity
 		else
 			return GetInventory().TakeEntityToInventory(InventoryMode.PREDICTIVE, flags, item);
 	}
+	//[Obsolete("1.30: Use LocalTakeEntityToTargetInventory instead")]
 	bool LocalTakeEntityToInventory (FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		return GetInventory().TakeEntityToInventory(InventoryMode.LOCAL, flags, item);
 	}
+	//[Obsolete("1.30: Use ServerTakeEntityToTargetInventory instead")]
 	bool ServerTakeEntityToInventory (FindInventoryLocationType flags, notnull EntityAI item)
 	{
 		return GetInventory().TakeEntityToInventory(InventoryMode.SERVER, flags, item);
@@ -1935,24 +1984,6 @@ class EntityAI extends Entity
 	{
 		return GetInventory().TakeEntityToTargetInventory(InventoryMode.SERVER, target, flags, item);
 	}
-	/**
-	\brief Put item into into cargo
-	*/
-	bool PredictiveTakeEntityToCargo (notnull EntityAI item)
-	{
-		if ( g_Game.IsMultiplayer() )
-			return GetInventory().TakeEntityToCargo(InventoryMode.JUNCTURE, item);
-		else
-			return GetInventory().TakeEntityToCargo(InventoryMode.PREDICTIVE, item);
-	}
-	bool LocalTakeEntityToCargo (notnull EntityAI item)
-	{
-		return GetInventory().TakeEntityToCargo(InventoryMode.LOCAL, item);
-	}
-	bool ServerTakeEntityToCargo (notnull EntityAI item)
-	{
-		return GetInventory().TakeEntityToCargo(InventoryMode.SERVER, item);
-	}
 
 	bool PredictiveTakeEntityToTargetCargo (notnull EntityAI target, notnull EntityAI item)
 	{
@@ -1969,20 +2000,6 @@ class EntityAI extends Entity
 	{
 		return GetInventory().TakeEntityToTargetCargo(InventoryMode.SERVER, target, item);
 	}
-	/**
-	\brief Put item into into cargo on specific cargo location
-	*/
-	bool PredictiveTakeEntityToCargoEx (notnull EntityAI item, int idx, int row, int col)
-	{
-		if ( g_Game.IsMultiplayer() )
-			return GetInventory().TakeEntityToCargoEx(InventoryMode.JUNCTURE, item, idx, row, col);
-		else
-			return GetInventory().TakeEntityToCargoEx(InventoryMode.PREDICTIVE, item, idx, row, col);
-	}
-	bool LocalTakeEntityToCargoEx (notnull EntityAI item, int idx, int row, int col)
-	{
-		return GetInventory().TakeEntityToCargoEx(InventoryMode.LOCAL, item, idx, row, col);
-	}
 
 	bool PredictiveTakeEntityToTargetCargoEx (notnull CargoBase cargo, notnull EntityAI item, int row, int col)
 	{
@@ -1998,24 +2015,6 @@ class EntityAI extends Entity
 	bool ServerTakeEntityToTargetCargoEx (notnull CargoBase cargo, notnull EntityAI item, int row, int col)
 	{
 		return GetInventory().TakeEntityToTargetCargoEx(InventoryMode.SERVER, cargo, item, row, col);
-	}
-	/**
-	\brief Returns if item can be added as attachment on specific slot. Note that slot index IS NOT slot ID! Slot ID is defined in DZ/data/config.cpp
-	*/
-	bool PredictiveTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
-	{
-		if ( g_Game.IsMultiplayer() )
-			return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.JUNCTURE, item, slot);
-		else
-			return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.PREDICTIVE, item, slot);
-	}
-	bool LocalTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
-	{
-		return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.LOCAL, item, slot);
-	}
-	bool ServerTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
-	{
-		return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.SERVER, item, slot);
 	}
 
 	bool PredictiveTakeEntityToTargetAttachmentEx (notnull EntityAI target, notnull EntityAI item, int slot)
@@ -2066,25 +2065,6 @@ class EntityAI extends Entity
 		return GetInventory().TakeToDst(InventoryMode.SERVER, src, dst);
 	}
 
-	/**
-	\brief Put item into as attachment
-	*/
-	bool PredictiveTakeEntityAsAttachment(notnull EntityAI item)
-	{
-		if (g_Game.IsMultiplayer())
-			return GetInventory().TakeEntityAsAttachment(InventoryMode.JUNCTURE, item);
-		else
-			return GetInventory().TakeEntityAsAttachment(InventoryMode.PREDICTIVE, item);
-	}
-	bool LocalTakeEntityAsAttachment (notnull EntityAI item)
-	{
-		return GetInventory().TakeEntityAsAttachment(InventoryMode.LOCAL, item);
-	}
-	bool ServerTakeEntityAsAttachment (notnull EntityAI item)
-	{
-		return GetInventory().TakeEntityAsAttachment(InventoryMode.SERVER, item);
-	}
-
 	bool PredictiveDropEntity(notnull EntityAI item)
 	{
 		return false;
@@ -2128,7 +2108,7 @@ class EntityAI extends Entity
 			EntityAI attachment = inventory.GetAttachmentFromIndex ( i );
 			if ( attachment.IsKindOf ( type ) )
 				return attachment;
-		}
+			}
 		return NULL;
 	}
 	/**
@@ -2296,7 +2276,7 @@ class EntityAI extends Entity
 		
 		if (UseConfigInitTemperature())
 		{
-			SetTemperatureDirect(m_VarTemperatureInit);
+			SetTemperatureDirect(EntityAIType.Cast(GetEntityType()).m_VarTemperatureInit);
 		}
 		else if (isParentAliveOrganism) //living player's inventory etc.
 		{
@@ -2466,17 +2446,17 @@ class EntityAI extends Entity
 	
 	float GetTemperatureInit()
 	{
-		return m_VarTemperatureInit;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureInit;
 	}
 	
 	float GetTemperatureMin()
 	{
-		return m_VarTemperatureMin;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureMin;
 	}
 
 	float GetTemperatureMax()
 	{
-		return m_VarTemperatureMax;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureMax;
 	}
 	
 	//! specifically for cooking system, to get heat source target temperatures
@@ -2491,27 +2471,27 @@ class EntityAI extends Entity
 	*/
 	float GetHeatPermeabilityCoef()
 	{
-		return m_VarHeatPermeabilityCoef;
+		return EntityAIType.Cast(GetEntityType()).m_VarHeatPermeabilityCoef;
 	}
 	
 	float GetTemperatureFreezeThreshold()
 	{
-		return m_VarTemperatureFreezeThreshold;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureFreezeThreshold;
 	}
 	
 	float GetTemperatureThawThreshold()
 	{
-		return m_VarTemperatureThawThreshold;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureThawThreshold;
 	}
 	
 	float GetTemperatureFreezeTime()
 	{
-		return m_VarTemperatureFreezeTime;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureFreezeTime;
 	}
 	
 	float GetTemperatureThawTime()
 	{
-		return m_VarTemperatureThawTime;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureThawTime;
 	}
 	
 	//! on server only
@@ -2664,7 +2644,7 @@ class EntityAI extends Entity
 	//! any configured value >= 0 will simulate overheating
 	float GetItemOverheatTime()
 	{
-		return m_VarTemperatureOverheatTime;
+		return EntityAIType.Cast(GetEntityType()).m_VarTemperatureOverheatTime;
 	}
 	
 	bool IsItemOverheated()
@@ -2927,8 +2907,12 @@ class EntityAI extends Entity
 	}
 	@endcode
 	*/
-	void OnStoreSave(ParamsWriteContext ctx)
+	void OnStoreSave (ParamsWriteContext ctx)
 	{
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		if (constructionComponent)
+			constructionComponent.HandleStoreSave(ctx);
+		
 		// Saving of energy related states
 		if ( m_EM )
 		{		
@@ -2993,6 +2977,12 @@ class EntityAI extends Entity
 	
 	bool OnStoreLoad (ParamsReadContext ctx, int version)
 	{
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		if (version >= 143 && constructionComponent)
+		{
+			constructionComponent.HandleStoreLoad(ctx,version);
+		}
+		
 		// Restoring of energy related states
 		if ( m_EM )
 		{
@@ -3125,6 +3115,10 @@ class EntityAI extends Entity
 			m_IsFrozenLocal = m_IsFrozen;
 			OnFreezeStateChangeClient();
 		}
+		
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		if (constructionComponent)
+			constructionComponent.OnConstructionVariablesSynchronized();
 	}
 	
 	//-----------------------------
@@ -3467,6 +3461,49 @@ class EntityAI extends Entity
 	void OnEnergyAdded() {}
 	///@} energy manager
 	
+	protected void ConstructionInit()
+	{
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		if (!constructionComponent && Class.CastTo(constructionComponent, CreateConstructionComponent()))
+		{
+			RegisterConstructionSyncVariables();
+			constructionComponent.Init();
+		}
+	}
+	
+	protected ConstructionBasic CreateConstructionComponent()
+	{
+		//m_Construction = new ConstructionBasic(this);
+		return null;
+	}
+	
+	//! override to register necessary synced variables on parent type
+	protected void RegisterConstructionSyncVariables()
+	{
+	}
+			
+	override bool CanUseConstruction()
+	{
+		return GetConstructionBasic() != null;
+	}
+	
+	override bool CanUseConstructionBuild()
+	{
+		return GetConstructionBasic() != null;
+	}
+	
+	override bool CanUseHandConstruction()
+	{
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		return constructionComponent && constructionComponent.CanUseHandConstruction();
+	}
+	
+	//! Construction itself is defined on module 4. Workaround. Don't forget to cast!
+	ConstructionBasic GetConstructionBasic()
+	{
+		return null;
+	}
+			
 	override void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx)
 	{
 		super.OnRPC(sender, rpc_type, ctx);
@@ -3512,7 +3549,7 @@ class EntityAI extends Entity
 			for (i = 0; i < AttachmentsCount; ++i)
 			{
 				inventory.GetAttachmentFromIndex(i).FixEntity();
-			}
+				}
 		
 			CargoBase cargo = inventory.GetCargo();
 			if (cargo)
@@ -3534,7 +3571,7 @@ class EntityAI extends Entity
 
 	float GetConfigWeightModified()
 	{
-		return m_ConfigWeight * GetWetWeightModifier();	
+		return EntityAIType.Cast(GetEntityType()).m_ConfigWeight * GetWetWeightModifier();	
 	}
 
 	#ifdef DEVELOPER
@@ -3542,7 +3579,7 @@ class EntityAI extends Entity
 	{
 		if (WeightDebug.m_VerbosityFlags & WeightDebugType.RECALC_FORCED)
 		{
-			return "(" + m_ConfigWeight + "(config weight) * " + GetWetWeightModifier() + "(Wetness Modifier))";
+			return "(" + EntityAIType.Cast(GetEntityType()).m_ConfigWeight + "(config weight) * " + GetWetWeightModifier() + "(Wetness Modifier))";
 		}
 		return string.Empty;
 	}
@@ -3557,7 +3594,6 @@ class EntityAI extends Entity
 
 	void ClearWeightDirty()
 	{
-		//Print("ent:" + this + " - ClearWeightDirty");
 		m_WeightDirty = 0;
 	}
 
@@ -3853,32 +3889,28 @@ class EntityAI extends Entity
 	{
 		return false;
 	}
-	
+
 	/**
 	\brief Central economy calls this function whenever going over all the entities 
 	@code
-	void OnCEUpdate()
+	void OnCEIterate(float currentTime, float elapsedTime)
 	{
 		// dont forget to propagate this call trough class hierarchy! - always at the start of the function
-		super.OnCEUpdate();
-	
-		// use m_ElapsedSinceLastUpdate for time-related purposes
+		super.OnCEIterate(currentTime, elapsedTime);
+
 	}
 	@endcode
 	*/
-	void OnCEUpdate()
+	void OnCEIterate(float currentTime, float elapsedTime)
 	{
-		float currentTime = g_Game.GetTickTime();
-		if (m_LastUpdatedTime == 0)
-			m_LastUpdatedTime = currentTime;
+		ProcessVariables(elapsedTime);
 		
-		m_ElapsedSinceLastUpdate = currentTime - m_LastUpdatedTime; 
-		m_LastUpdatedTime = currentTime;
-		
-		ProcessVariables();
+		ConstructionBasic constructionComponent = GetConstructionBasic();
+		if (constructionComponent && ConstructionBasic.CanConstructionDecay() && GetAllowDamage()) //checks if server allows damage AND decay
+			constructionComponent.ProcessConstructionDecay(elapsedTime);
 	}
 	
-	void ProcessVariables()
+	void ProcessVariables(float elapsedTime)
 	{
 		//currently only temperature on EntityAI
 		if (g_Game.IsWorldWetTempUpdateEnabled())
@@ -3896,7 +3928,7 @@ class EntityAI extends Entity
 						ent = ent.GetHierarchyParent();
 					}
 					
-					SetTemperatureEx(new TemperatureDataInterpolated(target,ETemperatureAccessTypes.ACCESS_WORLD,m_ElapsedSinceLastUpdate,GameConstants.TEMP_COEF_WORLD,heatPermCoef));
+					SetTemperatureEx(new TemperatureDataInterpolated(target,ETemperatureAccessTypes.ACCESS_WORLD,elapsedTime,GameConstants.TEMP_COEF_WORLD,heatPermCoef));
 				}
 			}
 		}
@@ -3906,7 +3938,20 @@ class EntityAI extends Entity
 	{
 		OnDebugSpawn();
 	}
-	
+
+	#ifdef AUTOTEST
+	// Can be overwritten, if a entity has custom rebuild logic (only relevant for benchmark missions / autotests)
+	bool UseCustomRebuildDebug()
+	{
+		return false;
+	}
+
+	void OnCustomRebuildDebug()
+	{
+
+	}
+	#endif
+
 	void OnDebugSpawn() 
 	{
 		array<string> slots = new array<string>;
@@ -4094,27 +4139,46 @@ class EntityAI extends Entity
 			m_TransportHitVelocity = GetVelocity(transport);
 			Car car;
 			Boat boat;
+			Motorbike motorbike;
 			float damage;
 			vector impulse;
 			
 			// a different attempt to solve hits from "standing" car to the players
 			if (Car.CastTo(car, transport))
 			{
-				if (car.GetSpeedometerAbsolute() > 2 )
+				float carSpeed = car.GetSpeedometerAbsolute();
+				if (carSpeed > 2.0)
 				{
 					damage = m_TransportHitVelocity.Length();
 					ProcessDirectDamage(DT_CUSTOM, transport, "", "TransportHit", "0 0 0", damage);
 				}
 				else
-				{
 					m_TransportHitRegistered = false;
-				}
 
 				// compute impulse and apply only if the body dies
-				if (IsDamageDestroyed() && car.GetSpeedometerAbsolute() > 3)
+				if (IsDamageDestroyed() && carSpeed > 3.0)
 				{
 					impulse = 40 * m_TransportHitVelocity;
 					impulse[1] = 40 * 1.5;
+					dBodyApplyImpulse(this, impulse);
+				}
+			}
+			else if (Motorbike.CastTo(motorbike, transport))
+			{
+				float motorbikeSpeed = motorbike.GetSpeedometerAbsolute();
+				if (motorbikeSpeed > 2.0)
+				{
+					damage = m_TransportHitVelocity.Length();
+					ProcessDirectDamage(DT_CUSTOM, transport, "", "TransportHit", "0 0 0", damage);
+				}
+				else
+					m_TransportHitRegistered = false;
+
+				// compute impulse and apply only if the body dies
+				if (IsDamageDestroyed() && motorbikeSpeed > 3.0)
+				{
+					impulse = 5.0 * m_TransportHitVelocity;
+					impulse[1] = 5.0;
 					dBodyApplyImpulse(this, impulse);
 				}
 			}
@@ -4134,7 +4198,7 @@ class EntityAI extends Entity
 				}
 				else
 					m_TransportHitRegistered = false;
-			}			
+			}	
 			else //old solution just in case if somebody use it
 			{
 				// avoid damage because of small movements
@@ -4710,22 +4774,163 @@ class EntityAI extends Entity
 
 	void ClearInventory();
 	
+	void SetActionAnimOverrides();	// Override action animation for specific item
+
+	// Allows override of default action command per item, defined in the SetActionAnimOverrides() of the item's class
+	// Set -1 for params which should stay in default state
+	void OverrideActionAnimation(typename action, int commandUID, int stanceMask = -1, int commandUIDProne = -1)
+	{
+		ActionOverrideData overrideData = new ActionOverrideData();
+		overrideData.m_CommandUID = commandUID;
+		overrideData.m_CommandUIDProne = commandUIDProne;
+		overrideData.m_StanceMask = stanceMask;
+		
+		TActionAnimOverrideMap actionMap = m_EntityActionOverrides.Get(action);
+		if (!actionMap)	// create new map of action > overidables map
+		{
+			actionMap = new TActionAnimOverrideMap();
+			m_EntityActionOverrides.Insert(action, actionMap);
+		}
+		
+		actionMap.Insert(this.Type(), overrideData); // insert item -> overrides
+	}
+	
 	protected void NotifyPlayerInventoryLoadChanged(EntityAI entity)
 	{
-		if (!entity)
-			return;
+	    if (!entity)
+	        return;
 	
-		Man player = entity.GetHierarchyRootPlayer();
-		if (player)
-		{
-			NotifyPlayerLoadChanged(player);
-		}
+	    Man player = entity.GetHierarchyRootPlayer();
+	    if (player)
+	    {
+	        NotifyPlayerLoadChanged(player);
+	    }
 	}
 
 	void NotifyPlayerLoadChanged(EntityAI owner);
+
+	//! Override on children to create the desired data class subtype
+	protected void InitializeInstanceAttachmentGroupsData();
+
+	protected InstancedAttachmentGroupDataBase GetInstancedAttGroupData()
+	{
+		return null;
+	}
+
+	//! Override on children to handle destruction of construction parts of falling rebuilding and base building objects
+	bool DestroyOnFall()
+	{
+		return false;
+	}
 	
+	//! @Note for modders: This method and its overrides are subjects to change!
+	//! Override on children to handle desired events when item is falling from rebuilding and base building construction parts
+	//! Method is called from the ConstructionBase::ItemFall method
+	void OnItemFallRebuilding();
+	
+	//OBSOLETE
+	/**
+	\brief Put item into into cargo
+	*/
+	[Obsolete("1.30: Use PredictiveTakeEntityToTargetCargo instead")]
+	bool PredictiveTakeEntityToCargo (notnull EntityAI item)
+	{
+		if ( g_Game.IsMultiplayer() )
+			return GetInventory().TakeEntityToCargo(InventoryMode.JUNCTURE, item);
+		else
+			return GetInventory().TakeEntityToCargo(InventoryMode.PREDICTIVE, item);
+	}
+	[Obsolete("1.30: Use LocalTakeEntityToTargetCargo instead")]
+	bool LocalTakeEntityToCargo (notnull EntityAI item)
+	{
+		return GetInventory().TakeEntityToCargo(InventoryMode.LOCAL, item);
+	}
+	[Obsolete("1.30: Use ServerTakeEntityToTargetCargo instead")]
+	bool ServerTakeEntityToCargo (notnull EntityAI item)
+	{
+		return GetInventory().TakeEntityToCargo(InventoryMode.SERVER, item);
+	}
+	/**
+	\brief Put item into into cargo on specific cargo location
+	*/
+	[Obsolete("1.29: Use PredictiveTakeEntityToTargetCargoEx instead")]
+	bool PredictiveTakeEntityToCargoEx (notnull EntityAI item, int idx, int row, int col)
+	{
+		if ( g_Game.IsMultiplayer() )
+			return GetInventory().TakeEntityToCargoEx(InventoryMode.JUNCTURE, item, idx, row, col);
+		else
+			return GetInventory().TakeEntityToCargoEx(InventoryMode.PREDICTIVE, item, idx, row, col);
+	}
+	[Obsolete("1.30: Use LocalTakeEntityToTargetCargoEx instead")]
+	bool LocalTakeEntityToCargoEx (notnull EntityAI item, int idx, int row, int col)
+	{
+		return GetInventory().TakeEntityToCargoEx(InventoryMode.LOCAL, item, idx, row, col);
+	}
+	/**
+	\brief Returns if item can be added as attachment on specific slot. Note that slot index IS NOT slot ID! Slot ID is defined in DZ/data/config.cpp
+	*/
+	[Obsolete("1.30: Use PredictiveTakeEntityToTargetAttachmentEx instead")]
+	bool PredictiveTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
+	{
+		if ( g_Game.IsMultiplayer() )
+			return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.JUNCTURE, item, slot);
+		else
+			return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.PREDICTIVE, item, slot);
+	}
+	[Obsolete("1.30: Use LocalTakeEntityToTargetAttachmentEx instead")]
+	bool LocalTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
+	{
+		return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.LOCAL, item, slot);
+	}
+	[Obsolete("1.30: Use ServerTakeEntityToTargetAttachmentEx instead")]
+	bool ServerTakeEntityAsAttachmentEx (notnull EntityAI item, int slot)
+	{
+		return GetInventory().TakeEntityAsAttachmentEx(InventoryMode.SERVER, item, slot);
+	}
+	/**
+	\brief Put item into as attachment
+	*/
+	[Obsolete("1.30: Use PredictiveTakeEntityToTargetAttachment instead")]
+	bool PredictiveTakeEntityAsAttachment(notnull EntityAI item)
+	{
+		if (g_Game.IsMultiplayer())
+			return GetInventory().TakeEntityAsAttachment(InventoryMode.JUNCTURE, item);
+		else
+			return GetInventory().TakeEntityAsAttachment(InventoryMode.PREDICTIVE, item);
+	}
+	[Obsolete("1.30: Use LocalTakeEntityToTargetAttachment instead")]
+	bool LocalTakeEntityAsAttachment (notnull EntityAI item)
+	{
+		return GetInventory().TakeEntityAsAttachment(InventoryMode.LOCAL, item);
+	}
+	[Obsolete("1.30: Use ServerTakeEntityToTargetAttachment instead")]
+	bool ServerTakeEntityAsAttachment (notnull EntityAI item)
+	{
+		return GetInventory().TakeEntityAsAttachment(InventoryMode.SERVER, item);
+	}
 	[Obsolete("1.30: Use NotifyPlayerInventoryLoadChanged instead")]
 	void UpdateWeight(WeightUpdateType updateType = WeightUpdateType.FULL, float weightAdjustment = 0);
+
+	/**@fn		CanDisplayAttachmentSlot
+	 * @param	slot_name->name of the attachment slot that will or won't be displayed
+	 * @return	true if attachment icon can be displayed in UI (inventory)
+	 **/	
+	[Obsolete("1.30: Use CanDisplayAttachmentSlot( int slot_id ) instead")]
+	bool CanDisplayAttachmentSlot( string slot_name )
+	{
+		return CanDisplayAttachmentSlot(InventorySlots.GetSlotIdFromString(slot_name));
+	}
+
+	[Obsolete("1.30: Use OnCEIterate(float currentTime, float elapsedTime) instead")]
+	void OnCEUpdate();
+
+	void EEFired(int muzzleType, int mode, string ammoType){}
+	void EEItemIntoHands(EntityAI item){}
+	void EEItemOutOfHands(EntityAI item){}
+	void EEInventoryLocked(){}
+	void EEInventoryUnlocked(){}
+	void EERestore(){}
+	void EEUserAnimDone(){}
 };
 
 #ifdef DEVELOPER
@@ -4733,7 +4938,6 @@ void SetDebugDeveloper_item(Object entity)//without a setter,the place where the
 {
 	if (entity)
 		entity.SetDebugItem();
-
 }
 Object _item;//watched item goes here(LCTRL+RMB->Watch)
 #endif

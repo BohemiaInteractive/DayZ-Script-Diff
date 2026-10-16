@@ -259,7 +259,7 @@ class UniversalTemperatureSource
 	}
 }
 
-typedef UniversalTemperatureSourceDebug UTemperatureSourceDebug
+typedef UniversalTemperatureSourceDebug UTemperatureSourceDebug;
 
 class UniversalTemperatureSourceDebug
 {

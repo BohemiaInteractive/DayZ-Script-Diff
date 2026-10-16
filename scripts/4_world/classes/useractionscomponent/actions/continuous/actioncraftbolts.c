@@ -26,6 +26,7 @@ class ActionCraftBolts: ActionContinuousBase
 		CUTTING_TYPES.Insert("StoneKnife");
 		CUTTING_TYPES.Insert("Cleaver");
 		CUTTING_TYPES.Insert("CombatKnife");
+		CUTTING_TYPES.Insert("Jambiya");
 		CUTTING_TYPES.Insert("HuntingKnife");
 		CUTTING_TYPES.Insert("Machete");
 		CUTTING_TYPES.Insert("CrudeMachete");
@@ -37,6 +38,10 @@ class ActionCraftBolts: ActionContinuousBase
 		CUTTING_TYPES.Insert("M9A1_Bayonet");
 		CUTTING_TYPES.Insert("SKS_Bayonet");
 		CUTTING_TYPES.Insert("BoneKnife");
+		CUTTING_TYPES.Insert("Sword");
+		CUTTING_TYPES.Insert("Scimitar");
+		CUTTING_TYPES.Insert("DonerKnife");
+		CUTTING_TYPES.Insert("Akinaka");
 	}
 	
 	void ActionCraftBolts()

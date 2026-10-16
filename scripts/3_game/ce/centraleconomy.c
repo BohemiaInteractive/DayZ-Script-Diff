@@ -12,6 +12,7 @@ const int ECE_CENTER						= 8;	// use center from shape (model) for placement
 
 const int ECE_UPDATEPATHGRAPH				= 32;	// update navmesh when object placed upon it
 
+const int ECE_OBJECT_SPAWNER				= 256;	// set when the object is spawned through object spwner
 const int ECE_ROTATIONFLAGS					= 512;	// enable rotation flags for object placement
 const int ECE_CREATEPHYSICS					= 1024;	// create collision envelope and related physics data (if object has them)
 const int ECE_INITAI						= 2048; // init ai

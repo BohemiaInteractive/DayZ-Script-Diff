@@ -97,6 +97,9 @@ class DayZIntroSceneXbox: Managed
 		m_Weather.GetSnowfall().Set(snowfall, 0, 0);
 		m_Weather.GetFog().Set(fog, 0, 0);
 		
+		if (m_Weather.GetSandstorm().IsActive())
+			m_Weather.GetSandstorm().Stop(0, false);
+		
 		m_Character = new IntroSceneCharacter();
 		m_Character.LoadCharacterData(m_CharacterPos, m_CharacterDir);
 		

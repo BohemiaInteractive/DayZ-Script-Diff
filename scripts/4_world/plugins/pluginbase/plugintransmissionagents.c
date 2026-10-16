@@ -28,6 +28,8 @@ class PluginTransmissionAgents extends PluginBase
 		RegisterAgent(new WoundAgent);
 		RegisterAgent(new NerveAgent);
 		RegisterAgent(new HeavyMetalAgent);
+		RegisterAgent(new SilicosisAgent);
+		RegisterAgent(new EyesIrritationAgent);
 	}
 
 	/**
@@ -306,8 +308,13 @@ class PluginTransmissionAgents extends PluginBase
 		//Debug.Log("Transmitting agents for source: " +source.ToString()+", target: " +target.ToString(),"Agents");
 		int sourceAgents = agents;
 		int targetAgents;
-		if(!sourceAgents && source) sourceAgents = source.GetAgents();//do not set sourceAgents again if already set
-		if(target) targetAgents = target.GetAgents();
+
+		if (!sourceAgents && source)
+			sourceAgents = source.GetAgents();//do not set sourceAgents again if already set
+		
+		if (target)
+			targetAgents = target.GetAgents();
+		
 		int pollution = g_Game.GetMission().GetWorldData().GetPollution();
 		
 		float count = 0;
@@ -368,19 +375,65 @@ class PluginTransmissionAgents extends PluginBase
 				break;
 
 			case AGT_AIRBOURNE_BIOLOGICAL:
-				float prot_level_mask_target = GetProtectionLevel(DEF_BIOLOGICAL,InventorySlots.MASK, Man.Cast( target ));
-				float prot_level_mask_source = GetProtectionLevel(DEF_BIOLOGICAL,InventorySlots.MASK, Man.Cast( source ));
-				float prot_level_headgear_target = GetProtectionLevel(DEF_BIOLOGICAL,InventorySlots.HEADGEAR, Man.Cast( target ));
-				float prot_level_headgear_source = GetProtectionLevel(DEF_BIOLOGICAL,InventorySlots.HEADGEAR, Man.Cast( source ));
-				float prot_level_target = Math.Max(prot_level_mask_target, prot_level_headgear_target);//find the bigger of the 2, TODO: should be improved
-				float prot_level_source = Math.Max(prot_level_mask_source, prot_level_headgear_source);//find the bigger of the 2, TODO: should be improved
-				float prot_level_combined = 1 - (1 - prot_level_target) * (1 - prot_level_source);
-				InjectAgentsWithPlayer( target, sourceAgents , prot_level_combined, 1, InjectTypes.PLAYER_AIR_PLAYER );
+				Man manTarget = Man.Cast(target);
+				Man manSource = Man.Cast(source);
+				float targetMaskProtection = GetProtectionLevelCachedEquipment(
+						DEF_BIOLOGICAL,
+						ECachedEquipmentItemCategory.MASK,
+						manTarget,
+					);
+				float sourceMaskProtection = GetProtectionLevelCachedEquipment(
+						DEF_BIOLOGICAL,
+						ECachedEquipmentItemCategory.MASK,
+						manSource,
+					);
+				float targetHeadgearProtection = GetProtectionLevelCachedEquipment(
+						DEF_BIOLOGICAL,
+						ECachedEquipmentItemCategory.EYEWEAR|ECachedEquipmentItemCategory.MASK,
+						manTarget,
+					);
+				float sourceHeadgearProtection = GetProtectionLevelCachedEquipment(
+						DEF_BIOLOGICAL,
+						ECachedEquipmentItemCategory.EYEWEAR|ECachedEquipmentItemCategory.MASK,
+						manSource,
+					);
+				float targetProtection = Math.Max(targetMaskProtection, targetHeadgearProtection);
+				float sourceProtection = Math.Max(sourceMaskProtection, sourceHeadgearProtection);
+				float combinedProtection = 1 - (1 - targetProtection) * (1 - sourceProtection);
+				InjectAgentsWithPlayer(target, sourceAgents , combinedProtection, 1, InjectTypes.PLAYER_AIR_PLAYER);
 				break;
 			case AGT_AIRBOURNE_CHEMICAL:
-				float prot_level_mask_target2 = GetProtectionLevel(DEF_CHEMICAL,InventorySlots.MASK, Man.Cast( target ));
+				float targetMaskProtectionChemical = GetProtectionLevelCachedEquipment(
+						DEF_CHEMICAL,
+						ECachedEquipmentItemCategory.MASK,
+						Man.Cast(target),
+					);
 
-				count = InjectAgentWithPlayerDose( target, agents , prot_level_mask_target2, dose_size, InjectTypes.PLAYER_AIR_PLAYER );
+				count = InjectAgentWithPlayerDose(target, agents, targetMaskProtectionChemical, dose_size, InjectTypes.PLAYER_AIR_PLAYER);
+				break;
+			case AGT_AIRBOURNE_SOLID:
+				switch (sourceAgents)
+				{
+					float protectionLevel = 0.0;
+					Man man = Man.Cast(target);
+
+					case eAgents.SILICOSIS:
+						protectionLevel = GetProtectionLevelCachedEquipment(
+							DEF_DUST_PARTICLE_BREATH,
+							ECachedEquipmentItemCategory.MASK,
+							man,
+						);
+						break;				
+					case eAgents.EYES_IRRITATION:
+						protectionLevel = GetProtectionLevelCachedEquipment(
+							DEF_DUST_PARTICLE_EYES,
+							ECachedEquipmentItemCategory.EYEWEAR|ECachedEquipmentItemCategory.MASK|ECachedEquipmentItemCategory.NVG,
+							man,
+						);
+						break;
+				}
+			
+				count = InjectAgentWithPlayerDose(target, sourceAgents , protectionLevel, dose_size, InjectTypes.ITEM_TO_PLAYER);
 				break;
 			default:
 				break;
@@ -511,6 +564,34 @@ class PluginTransmissionAgents extends PluginBase
 		return attachment.GetProtectionLevel(type, consider_filter, system);
 		
 	}
+	
+	/**
+	 * \brief Protection level of an attachment against enviromental hazard (mask/filters for example) based on result from CachedEquipmentStorage
+	 * @param type Type of protection (see DEF_BIOLOGICAL in constants.c for example)
+	 * @param slot Inventory slot id
+	 * @param player Player reference
+	 * @param consider_filter (unused parameter for now)
+	 * @param system (unused parameter for now)
+	 * \return Attachment protechtion level
+	 */
+	static float GetProtectionLevelCachedEquipment(int type, int cachedEquipmentStorageMask, Man player)
+	{
+		CachedEquipmentStorageQuery query = new CachedEquipmentStorageQuery();
+		query.m_Category = cachedEquipmentStorageMask;
+		query.m_Placement = ECachedEquipmentPlacement.ATTACHMENT;
+		query.m_MaximumDepth = 2;
+
+		float protectionLevel = 0.0;
+		array<Entity> attachments = player.GetCachedEquipment().GetEntitiesByCategory(query);
+		foreach (Entity attachmentEntity : attachments)
+		{
+			ItemBase attachment = ItemBase.Cast(attachmentEntity);
+			protectionLevel += attachment.GetProtectionLevel(type);
+		}
+		
+		return protectionLevel;
+		
+	}
 
 	/**
 	 * \brief Protection level of an attachment against enviromental hazard (mask/filters for example) (see GetProtectionLevelEx())
@@ -601,7 +682,7 @@ class PluginTransmissionAgents extends PluginBase
 	//------------------------------------------------------------------------------------------------------
 
 
-	//! DEPRECATED
+	[Obsolete("replaced by GrowDuringMedicalDrugsAttack")]
 	bool GrowDuringAntibioticsAttack(int agent_id, PlayerBase player)
 	{
 		if (!m_AgentList.Get(agent_id))

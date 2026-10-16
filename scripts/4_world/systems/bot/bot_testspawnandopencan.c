@@ -1,3 +1,4 @@
+#ifdef ROBOCLIENT
 class BotEventEntityInHands : BotEventBase { };
 
 class BotSpawnEntityInHands extends BotStateBase
@@ -313,4 +314,4 @@ class Bot_TestSpawnOpenEat extends Bot_TestSpawnOpen
 		super.OnUpdate(dt);
 	}
 };
-
+#endif

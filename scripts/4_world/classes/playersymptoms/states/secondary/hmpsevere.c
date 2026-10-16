@@ -23,7 +23,7 @@ class HMP3Symptom extends SymptomBase
 		m_SyncToClient = true;
 		m_MaxCount = 1;
 		
-		if (!g_Game.IsDedicatedServer())
+		if (!g_Game.IsHeadlessOrDedicatedServer())
 		{
 			Class.CastTo(m_Requester,PPERequesterBank.GetRequester(PPERequesterBank.REQ_HMP_GHOST));
 		}
@@ -31,6 +31,7 @@ class HMP3Symptom extends SymptomBase
 	
 	override void OnUpdateClient(PlayerBase player, float deltatime)
 	{
+		#ifndef NO_GUI
 		m_Time += deltatime;
 		if (m_EffectStartTime <= 0)
 		{
@@ -50,6 +51,7 @@ class HMP3Symptom extends SymptomBase
 				m_Time = 0;
 			}
 		}
+		#endif
 	}
 	
 	//!gets called once on an Symptom which is being activated

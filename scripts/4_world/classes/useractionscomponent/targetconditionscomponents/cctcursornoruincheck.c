@@ -7,12 +7,12 @@ class CCTCursorNoRuinCheck : CCTBase
 	const float HEIGHT_CROUCH = 1.05;
 	const float HEIGHT_PRONE = 0.66;
 	
-	void CCTCursorNoRuinCheck( float maximal_target_distance = UAMaxDistances.DEFAULT )
+	void CCTCursorNoRuinCheck(float maximal_target_distance = UAMaxDistances.DEFAULT)
 	{
 		m_MaximalActionDistanceSq = maximal_target_distance * maximal_target_distance;
 	}
 	
-	override bool Can( PlayerBase player, ActionTarget target )
+	override bool Can(PlayerBase player, ActionTarget target)
 	{
 		if (!target)
 			return false;
@@ -23,13 +23,15 @@ class CCTCursorNoRuinCheck : CCTBase
 		
 		if (!player || !targetObject)
 			return false;
+
+		vector playerPosition = player.GetPosition();
+		vector playerHeadPos = MiscGameplayFunctions.GetPlayerHeadPosition(player);
 		
-		vector playerHeadPos;
-		MiscGameplayFunctions.GetHeadBonePos(player, playerHeadPos);
+		vector cursorHitPosition = target.GetCursorHitPos();	
 		
-		float distanceRoot = vector.DistanceSq(target.GetCursorHitPos(), player.GetPosition());
-		float distanceHead = vector.DistanceSq(target.GetCursorHitPos(), playerHeadPos);
+		float distanceRoot = vector.DistanceSq(cursorHitPosition, playerPosition);
+		float distanceHead = vector.DistanceSq(cursorHitPosition, playerHeadPos);
 		
 		return (distanceRoot <= m_MaximalActionDistanceSq || distanceHead <= m_MaximalActionDistanceSq);
 	}
-};
+}

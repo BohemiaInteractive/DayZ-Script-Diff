@@ -273,7 +273,17 @@ class ProxySubpart extends Entity
 //-----------------------------------------------------------------------------
 // custom widgets
 //-----------------------------------------------------------------------------
-class ItemPreviewWidget: Widget
+class PreviewWidget: Widget
+{
+	proto native void		ApplyToCamera(int cam);
+
+	proto native void		SetModelOrientation(vector vOrientation);
+	proto native vector		GetModelOrientation();
+	proto native void		SetModelPosition(vector vPos);
+	proto native vector		GetModelPosition();
+};
+
+class ItemPreviewWidget: PreviewWidget
 {
 	proto native void SetItem(EntityAI object);
 	proto native EntityAI GetItem();
@@ -286,18 +296,13 @@ class ItemPreviewWidget: Widget
 	* ...	
 	*/
 	proto native void SetView(int viewIndex);
-
-	proto native void		SetModelOrientation(vector vOrientation);
-	proto native vector GetModelOrientation();
-	proto native void		SetModelPosition(vector vPos);
-	proto native vector GetModelPosition();
 	
 	proto native void SetForceFlipEnable(bool enable);
 	proto native void SetForceFlip(bool value);
 };
 
 //-----------------------------------------------------------------------------
-class PlayerPreviewWidget: Widget
+class PlayerPreviewWidget: PreviewWidget
 {
 	proto native void		UpdateItemInHands(EntityAI object);
 	proto native void		SetPlayer(DayZPlayer player);
@@ -305,11 +310,6 @@ class PlayerPreviewWidget: Widget
 	proto native DayZPlayer	GetDummyPlayer();
 	
 	proto native void		Refresh();
-
-	proto native void		SetModelOrientation(vector vOrientation);
-	proto native vector		GetModelOrientation();
-	proto native void		SetModelPosition(vector vPos);
-	proto native vector		GetModelPosition();
 };
 
 //-----------------------------------------------------------------------------
@@ -1317,7 +1317,7 @@ const float OPTIONS_FIELD_OF_VIEW_MIN = 0.75242724772f;
 const float OPTIONS_FIELD_OF_VIEW_MAX = 1.30322025726f;
 */
 
-class OptionsAccess: Managed
+class OptionsAccess: Class
 {
 	//proto private void ~OptionsAccess();
 	//proto private void OptionsAccess();

@@ -42,6 +42,7 @@ class CargoContainerRow: LayoutHolder
 			#ifdef PLATFORM_WINDOWS
 			#ifndef PLATFORM_CONSOLE
 			#ifndef SERVER_FOR_CONSOLE
+			#ifndef NO_GUI
 			CargoGrid grid = CargoGrid.Cast(m_Entity.GetInventory().GetCargo());
 			if(grid)
 			{
@@ -64,6 +65,7 @@ class CargoContainerRow: LayoutHolder
 			#endif
 			#endif
 			#endif
+			#endif
 		}
 		
 		m_NumberColumnFocused = 0;
@@ -79,6 +81,7 @@ class CargoContainerRow: LayoutHolder
 		#ifdef PLATFORM_WINDOWS
 		#ifndef PLATFORM_CONSOLE
 		#ifndef SERVER_FOR_CONSOLE
+		#ifndef NO_GUI
 		CargoGrid grid = CargoGrid.Cast(m_Entity.GetInventory().GetCargo());
 		if(grid)
 		{
@@ -100,6 +103,7 @@ class CargoContainerRow: LayoutHolder
 		#endif
 		#endif
 		#endif
+		#endif
 	}
 	
 	bool GetIconSize(int row, int column, out int width, out int height)
@@ -107,6 +111,7 @@ class CargoContainerRow: LayoutHolder
 		#ifdef PLATFORM_WINDOWS
 		#ifndef PLATFORM_CONSOLE
 		#ifndef SERVER_FOR_CONSOLE
+		#ifndef NO_GUI
 		CargoGrid grid = CargoGrid.Cast(m_Entity.GetInventory().GetCargo());
 		if(grid)
 		{
@@ -124,6 +129,7 @@ class CargoContainerRow: LayoutHolder
 				}
 			}
 		}
+		#endif
 		#endif
 		#endif
 		#endif

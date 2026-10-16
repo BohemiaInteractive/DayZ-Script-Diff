@@ -48,9 +48,14 @@ class ActionAttachPowerSourceToPanel: ActionSingleUseBase
 	override void OnExecuteServer( ActionData action_data )
 	{
 		if (g_Game.IsMultiplayer())
+		{
+			ClearActionJuncture(action_data);
 			return; // multiplayer handled on client side via OnExecuteClient
+		}
 		else
+		{
 			OnExecuteImpl(action_data); // single player
+		}
 	}
 	
 	override void OnEndClient( ActionData action_data )

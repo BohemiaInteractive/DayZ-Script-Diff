@@ -4,4 +4,4 @@ class TacticalGoggles extends Glasses_Base
 	{
 		return PPERequesterBank.REQ_GLASSESTACTICAL;
 	}
-};
+}

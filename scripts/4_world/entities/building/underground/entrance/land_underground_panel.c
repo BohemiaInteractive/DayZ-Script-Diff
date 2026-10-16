@@ -164,6 +164,7 @@ class Land_Underground_Panel: House
 	void SetLEDState(ELEDColors color, ELEDState state)
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (color == ELEDColors.RED)
 		{
 			if (m_LedStateRed != state)
@@ -180,6 +181,7 @@ class Land_Underground_Panel: House
 				OnLEDStateChanged();
 			}
 		}
+		#endif
 		#endif
 	}
 	

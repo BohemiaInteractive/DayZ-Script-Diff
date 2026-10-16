@@ -542,11 +542,6 @@ class Barrel_ColorBase : DeployableContainer_Base
 			handler.AddSound(SoundConstants.ITEM_BARREL_CLOSE, GetBarrelCloseSoundset());
 	}
 	
-	override string GetDeploySoundset()
-	{
-		return "placeBarrel_SoundSet";
-	}
-	
 	string GetBarrelOpenSoundset()
 	{
 		return "barrel_open_SoundSet";

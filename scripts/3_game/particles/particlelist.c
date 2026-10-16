@@ -45,6 +45,13 @@ class ParticleList
 	static const int HOUSE_NORMAL_SMOKE				= RegisterParticle("smoke_medium_house_01");
 	static const int HOUSE_FIRE_END					= RegisterParticle("fire_small_house_01_end");
 	static const int HOUSE_FIRE_STEAM_2END			= RegisterParticle("steam_medium_house_2end");
+	// Fireplace tandoor
+	static const int TANDOOR_HOUSE_SMALL_FIRE 		= RegisterParticle("tandoor_fire_small_house_01_start");
+	static const int TANDOOR_HOUSE_SMALL_SMOKE 		= RegisterParticle("tandoor_smoke_small_house_01");
+	static const int TANDOOR_HOUSE_NORMAL_FIRE		= RegisterParticle("tandoor_fire_small_house_01");
+	static const int TANDOOR_HOUSE_NORMAL_SMOKE		= RegisterParticle("tandoor_smoke_medium_house_01");
+	static const int TANDOOR_HOUSE_FIRE_END			= RegisterParticle("tandoor_fire_small_house_01_end");
+	static const int TANDOOR_HOUSE_FIRE_STEAM_2END	= RegisterParticle("tandoor_steam_medium_house_2end");
 	// Fireplace in barrel with holes
 	static const int BARREL_FIRE_START				= RegisterParticle("fire_small_barrel_01_start");
 	static const int BARREL_SMALL_FIRE 				= RegisterParticle("fire_small_barrel_01");
@@ -135,6 +142,8 @@ class ParticleList
 	// GRENADE EXPLOSION BY SURFACE
 	static const int EXPLOSION_GRENADE_SNOW			= RegisterParticle("explosion_grenade_snow");
 	static const int EXPLOSION_GRENADE_ICE			= RegisterParticle("explosion_grenade_ice");
+	static const int EXPLOSION_GRENADE_SAND			= RegisterParticle("explosion_grenade_sand");
+	static const int EXPLOSION_GRENADE_DESERT_SAND	= RegisterParticle("explosion_grenade_desert_sand");
 	
 	// ELECTRICITY	        
 	static const int POWER_GENERATOR_SMOKE			= RegisterParticle("smoke_small_generator_01");
@@ -254,6 +263,12 @@ class ParticleList
 	static const int IMPACT_SAND_ENTER				= RegisterParticle("impacts/hit_sand_ent_01");
 	static const int IMPACT_SAND_RICOCHET			= RegisterParticle("impacts/hit_sand_ric_01");
 	static const int IMPACT_SAND_EXIT				= RegisterParticle("impacts/hit_sand_ext_01");
+	static const int IMPACT_DESERT_SAND_ENTER		= RegisterParticle("impacts/hit_desert_sand_ent_01");
+	static const int IMPACT_DESERT_SAND_RICOCHET	= RegisterParticle("impacts/hit_desert_sand_ric_01");
+	static const int IMPACT_DESERT_SAND_EXIT		= RegisterParticle("impacts/hit_desert_sand_ext_01");
+	static const int IMPACT_MUD_BRICK_ENTER			= RegisterParticle("impacts/hit_mud_brick_ent_01");
+	static const int IMPACT_MUD_BRICK_RICOCHET		= RegisterParticle("impacts/hit_mud_brick_ric_01");
+	static const int IMPACT_MUD_BRICK_EXIT			= RegisterParticle("impacts/hit_mud_brick_ext_01");
 	static const int IMPACT_PLASTIC_ENTER			= RegisterParticle("impacts/hit_plastic_ent_01");
 	static const int IMPACT_PLASTIC_RICOCHET		= RegisterParticle("impacts/hit_plastic_ric_01");
 	static const int IMPACT_PLASTIC_EXIT			= RegisterParticle("impacts/hit_plastic_ext_01");
@@ -359,10 +374,21 @@ class ParticleList
 	static const int STEP_DESERT					= RegisterParticle("step_desert");
 	static const int STEP_SOIL						= RegisterParticle("step_soil");
 	
+	// CEILING DUST
+	static const int CEILING_WOOD					= RegisterParticleByFullPath("graphics/particles/dust/dust_ceiling_wood");
+	
+	// PART DESTRUCTION
+	static const int BUILDNG_DESTRUCT_WOOD			= RegisterParticle("building_destruction_wood");
+	static const int BUILDNG_DESTRUCT_BRICK			= RegisterParticle("building_destruction_brick");
+	static const int BUILDNG_DESTRUCT_METAL			= RegisterParticle("building_destruction_metal");
+	
+	
 	// STEPS
 	static const int VEHICLE_WHEEL_SNOW				= RegisterParticle("vehicle_wheel_snow");//
 	static const int VEHICLE_WHEEL_GRAVEL			= RegisterParticle("vehicle_wheel_gravel");//
 	static const int VEHICLE_WHEEL_ASPHALT			= RegisterParticle("vehicle_wheel_asphalt");//
+	static const int VEHICLE_WHEEL_SOIL				= RegisterParticle("vehicle_wheel_soil");//
+	static const int VEHICLE_WHEEL_DESERT			= RegisterParticle("vehicle_wheel_desert");//
 	
 	//TREE FALLING PARTICLES
 	static const int TREE_FALLING_SNOW				= RegisterParticle("tree_falling_snow");//
@@ -374,8 +400,16 @@ class ParticleList
 	static const int BUSH_FALLING_SNOW				= RegisterParticle("bush_falling_snow");//
 	//TREE PASSING ParticleSource
 	static const int TREE_PASSING_SNOW				= RegisterParticle("tree_passing_snow");//
-	static const int BUSH_PASSING_SNOW				= RegisterParticle("bush_passing_snow");// same as bush_falling_snow
+	static const int BUSH_PASSING_SNOW				= RegisterParticle("bush_passing_snow");// same as bush_falling_snow	
 	
+	static const int DUST_GROUND					= RegisterParticle("dust/dust_grnd_01");
+	static const int DUST_CLOUD						= RegisterParticle("dust/dust_effect_01"/*"smoke_M18_red_02"*/);
+
+	static const int DUST_VEHICLE					= RegisterParticle("dust_vehicle");
+	static const int DUST_VEHICLE_SOFT				= RegisterParticle("dust_vehicle_soft");
+	
+	static const int OIL_FIRE1						= RegisterParticle("fire_oil1");
+	static const int OIL_FIRE2						= RegisterParticle("fire_oil2");
 	
 	static int RegisterParticle(string file_name)
 	{
@@ -417,6 +451,16 @@ class ParticleList
 	//! Registers a particle and returns its ID
 	static int RegisterParticle(string root_path, string file_name)
 	{
+		//takes care of case sensitivity issue
+		root_path.ToLower();
+		file_name.ToLower();
+		
+		//makes sure filename is really just a filename
+		string justName = file_name;
+		int lastIndex = file_name.LastIndexOf("/");
+		if (lastIndex >= 0)
+			justName = justName.Substring(lastIndex + 1, justName.Length() - (lastIndex + 1));
+		
 		if (!m_ParticlePaths)
 			m_ParticlePaths = new map<int, string>;
 		
@@ -436,15 +480,15 @@ class ParticleList
 				fullPath, devMsgSuffix), ErrorExSeverity.WARNING);
 			//return ParticleList.INVALID;
 		}
-
+		
 		int existingNameId;
-		if (m_ParticleNames.Find(file_name, existingNameId))
+		if (m_ParticleNames.Find(justName, existingNameId))
 		{
 			int existingPathId;
 			if (m_ParticlePaths.GetKeyByValueChecked(path, existingPathId))
 			{
 				if (existingNameId == existingPathId)
-				{				
+				{
 					return existingNameId; // We have already registered this exact file
 				}
 				else
@@ -459,7 +503,7 @@ class ParticleList
 		}
 		else
 		{
-			m_ParticleNames.Insert(file_name, m_lastID + 1);
+			m_ParticleNames.Insert(justName, m_lastID + 1);
 		}
 		
 		++m_lastID;
@@ -496,6 +540,8 @@ class ParticleList
 	//! Returns particle's ID based on the path (without .ptc suffix)
 	static int GetParticleID(string particle_file)
 	{
+		particle_file.ToLower();
+		
 		int id = m_ParticlePaths.GetKeyByValue(particle_file);
 		if (!IsValidId(id)) // valid id starts from 1, 0 is invalid
 			ErrorEx(string.Format("No particle registered with path: %1", particle_file), ErrorExSeverity.WARNING);		
@@ -505,13 +551,15 @@ class ParticleList
 	//! Returns particle's ID based on the filename (without .ptc suffix)
 	static int GetParticleIDByName(string name)
 	{
-		int id = 0;
+		name.ToLower();
+		
+		int id = ParticleList.NONE;
 		if (!m_ParticleNames.Find(name, id))
 			ErrorEx(string.Format("No particle registered with name: %1", name), ErrorExSeverity.WARNING);		
 		return id;
 	}
 	
-	//! Returns base path to all particles
+	//! Returns BASE path to all particles
 	static string GetPathToParticles()
 	{
 		return "graphics/particles/";

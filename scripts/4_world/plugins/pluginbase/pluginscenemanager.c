@@ -1134,7 +1134,7 @@ class PluginSceneManager extends PluginBase
 	//------------------------------------------
 	// DeselectObject
 	//------------------------------------------
-	private void DeselectObject()
+	protected void DeselectObject()
 	{
 		m_SelectedObject = NULL;
 	}
@@ -1200,7 +1200,7 @@ class PluginSceneManager extends PluginBase
 	//------------------------------------------
 	// SceneEditorMenuRefresh
 	//------------------------------------------
-	private void SceneEditorMenuCmdRefresh()
+	protected void SceneEditorMenuCmdRefresh()
 	{
 		CallMethod(CALL_ID_SCENE_EDITOR_COMMAND, new Param2<int, Param>(SCENE_EDITOR_CMD_REFRESH, NULL));
 	}
@@ -1208,7 +1208,7 @@ class PluginSceneManager extends PluginBase
 	//------------------------------------------
 	// SceneEditorMenuCmdPopup
 	//------------------------------------------
-	private void SceneEditorMenuCmdPopup(string message)
+	protected void SceneEditorMenuCmdPopup(string message)
 	{
 		CallMethod(CALL_ID_SCENE_EDITOR_COMMAND, new Param2<int, Param1<string>>(SCENE_EDITOR_CMD_POPUP, new Param1<string>(message)));
 	}
@@ -1216,7 +1216,7 @@ class PluginSceneManager extends PluginBase
 	//------------------------------------------
 	// SceneEditorMenuCmdSave
 	//------------------------------------------
-	private void SceneEditorMenuCmdSave()
+	protected void SceneEditorMenuCmdSave()
 	{
 		CallMethod(CALL_ID_SCENE_EDITOR_COMMAND, new Param2<int, Param>(SCENE_EDITOR_CMD_SAVE, NULL));
 	}
@@ -1224,7 +1224,7 @@ class PluginSceneManager extends PluginBase
 	//------------------------------------------
 	// IsMouseInScene
 	//------------------------------------------
-	private bool IsMouseInScene()
+	protected bool IsMouseInScene()
 	{
 		Widget widget_under_mouse = GetWidgetUnderCursor();
 		
@@ -1239,7 +1239,7 @@ class PluginSceneManager extends PluginBase
 	//------------------------------------------
 	// EditorUpdateRuler
 	//------------------------------------------
-	private void EditorUpdateRuler()
+	protected void EditorUpdateRuler()
 	{
 		RulerClearVisuals();
 		
@@ -1260,7 +1260,7 @@ class PluginSceneManager extends PluginBase
 	//------------------------------------------
 	// GetMousePositionInScene
 	//------------------------------------------
-	private vector GetMousePositionInScene()
+	protected vector GetMousePositionInScene()
 	{
 		vector dir = g_Game.GetPointerDirection();
 		vector from = FreeDebugCamera.GetInstance().GetPosition(); 

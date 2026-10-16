@@ -137,6 +137,7 @@ class Land_WarheadStorage_Main : House
 	override void OnDoorOpenStart(DoorStartParams params)
 	{		
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (IsBunkerDoor(params.param1))
 		{
 			EffectSound sound;
@@ -148,6 +149,7 @@ class Land_WarheadStorage_Main : House
 			m_SoundDoorLoop[effectID] = sound;
 			m_SoundDoorLoop[effectID].SetAutodestroy(true);
 		}
+		#endif
 		#endif
 
 		if (!IsBunkerDoor(params.param1))
@@ -164,6 +166,7 @@ class Land_WarheadStorage_Main : House
 	override void OnDoorOpenFinish(DoorFinishParams params)
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (IsBunkerDoor(params.param1))
 		{
 			int effectID = GetBunkerEffectIndexByDoor(params.param1);
@@ -173,6 +176,7 @@ class Land_WarheadStorage_Main : House
 				StopSoundSet(sound);
 			}
 		}
+		#endif
 		#endif
 	}
 	
@@ -225,6 +229,7 @@ class Land_WarheadStorage_Main : House
 	override void OnDoorCloseStart(DoorStartParams params)
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (IsBunkerDoor(params.param1))
 		{
 			EffectSound sound;
@@ -240,6 +245,7 @@ class Land_WarheadStorage_Main : House
 			m_SoundDoorLoop[effectID].SetAutodestroy(true);
 		}
 		#endif
+		#endif
 
 		RemoveDoorTimer(params.param1);
 	}
@@ -247,6 +253,7 @@ class Land_WarheadStorage_Main : House
 	override void OnDoorCloseFinish(DoorFinishParams params)
 	{
 		#ifndef SERVER
+		#ifndef NO_GUI
 		if (IsBunkerDoor(params.param1))
 		{
 			EffectSound sound;
@@ -260,6 +267,7 @@ class Land_WarheadStorage_Main : House
 				StopSoundSet(sound);
 			}
 		}
+		#endif
 		#endif
 	}
 	

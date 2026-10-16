@@ -335,7 +335,7 @@ class DayZCreatureAI extends DayZCreature
 		if(g_Game.IsServer())
 		{
 			if(sound_event.m_NoiseParams != NULL)
-				g_Game.GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, g_Game.GetWeather().GetNoiseReductionByWeather());
+				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams);
 		}
 	}
 
@@ -356,7 +356,7 @@ class DayZCreatureAI extends DayZCreature
 		if(g_Game.IsServer())
 		{
 			if(sound_event.m_NoiseParams != NULL)
-				g_Game.GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams, g_Game.GetWeather().GetNoiseReductionByWeather());
+				GetGame().GetNoiseSystem().AddNoise(this, sound_event.m_NoiseParams);
 		}
 	}
 

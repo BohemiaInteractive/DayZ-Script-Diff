@@ -85,6 +85,7 @@ class UATimeSpent
 	const float UNLOCK = 2;
 	const float UNPACK = 2;
 	const float WASH_HANDS = 3;
+	const float WASH_FACE_ITEM = 0.5;
 	const float WRING = 8;
 	const float DISARM_MINE = 15;
 	const float DISARM_EXPLOSIVE_REMOTE_PAIRED = 6;
@@ -102,6 +103,7 @@ class UATimeSpent
 	//const float INFINITE = -1;
 	
 	const float EXPLOSIVE_ARM = 6;
+	const float MORTAR_MIX = 8; 
 };
 
 /**@class	Constants for maximal Distances where from the action can be done
@@ -114,6 +116,7 @@ class UAMaxDistances
 	const float LARGE = 8.0;
 	const float LADDERS = 1.3;
 	const float BASEBUILDING = 20;
+	const float FISHING = 20.0;
 	const float BASEBUILDING_SHORT = 1.0;
 	const float EXPLOSIVE_REMOTE_ACTIVATION = 100.0;
 };
@@ -173,6 +176,8 @@ class UAMisc
 {
 	const float FLAG_STEP_INCREMENT = 0.2; //0..1
 	const float CONSUMPTION_SLOWDOWN_COEF_HOT = 5.0;
+	
+	const string LIQUID_SOURCE_SELECTION = "liquid_source";
 };
 
 class UAFishingConstants

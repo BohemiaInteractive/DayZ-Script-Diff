@@ -23,18 +23,17 @@ class ActionVariantManager
 	
 	void SetActionVariantCount( int count )
 	{
-		if ( count < m_VariantActions.Count() )
+		if (count != m_VariantActions.Count())
 		{
 			m_VariantActions.Clear();
+			
+			for (int i = 0; i < count; i++ )
+			{
+				ActionBase action = ActionManagerBase.GetActionVariant( m_type );
+				action.SetVariantID(i);
+				m_VariantActions.Insert(action);
+			}
 		}
-
-		for (int i = m_VariantActions.Count(); i < count; i++ )
-		{
-			ActionBase action = ActionManagerBase.GetActionVariant( m_type );
-			action.SetVariantID(i);
-			m_VariantActions.Insert(action);
-		}
-		
 	}
 	
 	int GetActions( out array<ref ActionBase> variants_action)
