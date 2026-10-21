@@ -171,6 +171,9 @@ class Transport extends EntityAI
 	//! Synchronizes car's state in case the simulation is not running.
 	proto native void Synchronize();
 
+	//! Returns true if at least one member of crew is present.
+	proto native bool HasCrew();
+	
 	//! Returns crew capacity of this vehicle.
 	proto native int CrewSize();
 
@@ -811,6 +814,12 @@ class Transport extends EntityAI
 	{
 		m_EngineZoneReceivedHit = pState;
 		SetSynchDirty();
+	}
+	
+	bool IsMoving()
+	{
+		Error("IsMoving() not implemented");
+		return false;
 	}
 	
 	bool HasEngineZoneReceivedHit()

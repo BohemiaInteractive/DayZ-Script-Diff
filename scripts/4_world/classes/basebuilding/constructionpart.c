@@ -368,19 +368,25 @@ class ConstructionPart
 		return m_PartTypeData.GetPartTypeStaticsSupportData();
 	}
 	
-	int GetSupportProvided(int category)
+	bool GetSupportProvided(int category, out int providedStrength)
 	{
-		return m_PartTypeData.GetPartTypeSupportProvided(category);
+		return m_PartTypeData.GetPartTypeSupportProvided(category, providedStrength);
 	}
 	
-	int GetSupportRequirement(int category)
+	bool GetSupportRequirement(int category, out int requiredStrength)
 	{
-		return m_PartTypeData.GetPartTypeSupportRequirement(category);
+		return m_PartTypeData.GetPartTypeSupportRequirement(category, requiredStrength);
 	}
 	
 	set<int> GetConfiguredSupportCategories()
 	{
 		return m_PartTypeData.GetPartTypeConfiguredSupportCategories();
+	}
+	
+	//! Inverts reaction to support fullfilment
+	bool InvertSupportBehavior()
+	{
+		return false;
 	}
 	
 	///////////
@@ -482,7 +488,7 @@ class ConstructionPart
 		parent.SetAnimationPhase(animSourceName, 1);
 	}
 	
-	void TryHandleUtilityParts(EntityAI parent);
+	void TryQueueUtilityPartsUpdate(ConstructionBase con);
 	
 	/////////////
 	//obsoletes//
@@ -875,27 +881,13 @@ class ConstructionPartRebuild : ConstructionPart
 	/////////
 	//utils//
 	/////////
-	//! Currently only local part state + animations, not a proper synced build!
-	override void TryHandleUtilityParts(EntityAI parent)
+	//! Queues utility part update, if needed
+	override void TryQueueUtilityPartsUpdate(ConstructionBase con)
 	{
-		super.TryHandleUtilityParts(parent);
+		super.TryQueueUtilityPartsUpdate(con);
 		
-		ConstructionBase con = ConstructionBase.Cast(parent.GetConstructionBasic());
-		array<string> list = m_PartTypeData.GetPartTypeUtilityAutobuildPartsList();
-		foreach (string partName : list)
-		{
-			ConstructionPart part = con.GetConstructionPart(partName);
-			if (con.CanBuildUtilityPart(partName))
-			{
-				con.AddToConstructedParts(partName);
-				ConstructionManagerStatic.AddPartToProcess(con, part);
-			}
-			else if (part.IsBuilt())
-			{
-				con.RemoveFromConstructedParts(partName);
-				ConstructionManagerStatic.AddPartToProcess(con, part);
-			}
-		}
+		if (m_PartTypeData.TriggersUtilityPartsUpdate())
+			con.QueueUpdateUtilityParts();
 	}
 }
 

@@ -23,6 +23,10 @@ class PPERequester_CameraNV extends PPERequester_GameplayBase
 	static const int NV_UNDERGROUND_PUMPKIN		   = 14;
 	static const int NV_SANDSTORM_PUMPKIN			 = 15;
 	static const int NV_UNDERGROUND_SANDSTORM_PUMPKIN = 16;
+
+	// ---- Daytime OPTICS condition variants -------------------------------------
+	static const int NV_UNDERGROUND_DAYTIME_OPTICS        = 17;
+	static const int NV_UNDERGROUND_SANDSTORM_DAYTIME_OPTICS = 18;
 	// ----------------------------------------------------------------------------
 
 	// ---- Exposure safety tuning ------------------------------------------------
@@ -75,10 +79,15 @@ class PPERequester_CameraNV extends PPERequester_GameplayBase
 		SetTargetValueFloat(PPEExceptions.NVLIGHTPARAMS,PPELightIntensityParamsNative.PARAM_NOISE_MULT,false,noiseMult,PPELightIntensityParamsNative.L_1_NVG,PPOperators.HIGHEST);
 	}
 
+	float GetUndergroundExposureCoef()
+	{
+		return m_UGExposureCoef;
+	}
+
 	protected void SetNVMode(int mode)
 	{
 		SetTargetValueFloat(PPEExceptions.EYEACCOM,PPEEyeAccomodationNative.PARAM_INTENSITY,false,1.0,PPEEyeAccomodationNative.L_0_NVG_GENERIC,PPOperators.SET);
-		
+
 		switch (mode)
 		{
 			case NV_NO_BATTERY: //battery off
@@ -91,11 +100,14 @@ class PPERequester_CameraNV extends PPERequester_GameplayBase
 				break;
 			
 			// ============================ OPTICS ============================
-			case NV_DEFAULT_OPTICS:				ApplyOpticsProfile(7.0, 2.0); break; //night, surface
-			case NV_DAYTIME_OPTICS:				ApplyOpticsProfile(2.0, 1.0); break; //daytime, surface
-			case NV_UNDERGROUND_OPTICS:			ApplyOpticsProfile(7.0, 2.0); break; //enclosed/dark, daytime/nighttime
-			case NV_SANDSTORM_OPTICS:			  ApplyOpticsProfile(3.5, 2.0); break; //surface, sandstorm + nighttime
-			case NV_UNDERGROUND_SANDSTORM_OPTICS:  ApplyOpticsProfile(1.0, 2.0); break; //tunnel + daytime/nighttime + sandstorm
+			case NV_DEFAULT_OPTICS:                ApplyOpticsProfile(7.0, 2.0); break; //night, surface
+			case NV_DAYTIME_OPTICS:                ApplyOpticsProfile(2.0, 1.0); break; //daytime, surface
+			case NV_UNDERGROUND_OPTICS:            ApplyOpticsProfile(7.0, 2.0); break; //enclosed/dark, nighttime
+			case NV_UNDERGROUND_DAYTIME_OPTICS:    ApplyOpticsProfile(2.0, 1.0); break; //enclosed/dark, daytime
+			case NV_SANDSTORM_OPTICS:              ApplyOpticsProfile(3.5, 2.0); break; //surface, sandstorm + nighttime
+			case NV_UNDERGROUND_SANDSTORM_OPTICS:  ApplyOpticsProfile(1.0, 2.0); break; //tunnel + sandstorm, nighttime
+			case NV_UNDERGROUND_SANDSTORM_DAYTIME_OPTICS:
+				ApplyOpticsProfile(1.0, 1.0); break; //tunnel + sandstorm, daytime
 
 			// ============================ GLASSES ===========================
 			case NV_DEFAULT_GLASSES:			   ApplyGlassesProfile(7.0, 1.0); break; //night, surface

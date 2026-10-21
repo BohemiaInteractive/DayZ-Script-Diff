@@ -26,4 +26,9 @@ class ActionHandcuffTarget: ActionSingleUseBase
 	{	
 		g_Game.GetAnalyticsClient().OnActionRestrain();
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

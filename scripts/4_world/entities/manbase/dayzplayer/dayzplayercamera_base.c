@@ -67,9 +67,11 @@ enum NVTypes
 	
 	// ---- Optics condition variants ----
 	NV_OPTICS_UNDERGROUND,
+	NV_OPTICS_UNDERGROUND_DAY,
 	NV_OPTICS_SANDSTORM_DAY,
 	NV_OPTICS_SANDSTORM_NIGHT,
 	NV_OPTICS_UNDERGROUND_SANDSTORM,
+	NV_OPTICS_UNDERGROUND_SANDSTORM_DAY,
 	
 	// ---- Glasses/goggles condition variants ----
 	NV_GOGGLES_DAY,
@@ -149,7 +151,11 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 
 	float UpdateUDAngleUnlocked(out float pAngle, out float pAngleAdd, float pMin, float pMax, float pDt)
 	{
-		float target = 0.0;
+		//! overriding the limits here so that they match the ones that are used in C++
+		float unk0, unk1;
+		m_pPlayer.GetLookLimits(pMin, pMax, unk0, unk1);
+		
+		float target = m_CommandWeapons.GetBaseAimingAngleUD();
 		
 		if (m_pInput.CameraIsTracking())	
  		{
@@ -160,6 +166,12 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
  		}
 		else
 		{
+			if(Math.AbsFloat(pAngleAdd) > 0.001)
+			{
+				pAngleAdd 	= pAngle + pAngleAdd - target;
+				pAngle 		= target;
+			}
+
 			if (m_pInput.CameraIsFreeLook())	
 	 		{
 				pAngleAdd += m_pInput.GetAimDelta(pDt)[1] * Math.RAD2DEG;
@@ -167,33 +179,7 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 				m_fUDAngleVel[0] = 0;
 	 		}
 	 		else
-	 		{
-				target = m_CommandWeapons.GetBaseAimingAngleUD();
-				pAngleAdd 	= pAngle + pAngleAdd - target;
-				pAngle 		= target;
-
-				PlayerBase player = PlayerBase.Cast(m_pPlayer);
-				if (player)	// handle locking of camera U/D angle movement when performing an action and not in freelook
-				{		
-					float pitch = pAngle + pAngleAdd; 
-					float downLimit, upLimit, leftLimit, rightLimit;
-					player.GetLookLimits(downLimit, upLimit, leftLimit, rightLimit);
-					
-					if (pitch < (upLimit + 1) && pitch > (downLimit - 1)) // stop smoothing once within sufficiently small difference
-					{
-						pMin = downLimit;
-						pMax = upLimit;
-					}
-					else // smooth camera to locked angle, avoiding snap from the angle we started the action to the limit
-					{
-						float velMin[1] = m_fUDAngleVel;
-						pMin = Math.SmoothCD(pitch, downLimit, velMin, 0.2, 1000, pDt);
-
-						float velMax[1] = m_fUDAngleVel;
-						pMax = Math.SmoothCD(pitch, upLimit, velMax, 0.2, 1000, pDt);
-					}
-				}
-				
+	 		{				
 				pAngleAdd = Math.SmoothCD(pAngleAdd, 0.0, m_fUDAngleVel, 0.14, 1000, pDt);
 			}
 	
@@ -211,6 +197,10 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 
 	float UpdateLRAngleUnlocked(out float pAngle, out float pAngleAdd, float pMin, float pMax, float pDt)
 	{
+		//! overriding the limits here so that they match the ones that are used in C++
+		float unk0, unk1;
+		m_pPlayer.GetLookLimits(unk0, unk1, pMin, pMax);
+		
 		float target = 0;
 		
 		if (m_pInput.CameraIsTracking())	
@@ -565,6 +555,12 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			}
 			break;
 	
+			case NVTypes.NV_OPTICS_UNDERGROUND_DAY:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_DAYTIME_OPTICS) );
+			}
+			break;
+	
 			case NVTypes.NV_OPTICS_SANDSTORM_NIGHT:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_SANDSTORM_OPTICS) );
@@ -574,6 +570,12 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			case NVTypes.NV_OPTICS_UNDERGROUND_SANDSTORM:
 			{
 				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_SANDSTORM_OPTICS) );
+			}
+			break;
+	
+			case NVTypes.NV_OPTICS_UNDERGROUND_SANDSTORM_DAY:
+			{
+				PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV).Start( new Param1<int>(PPERequester_CameraNV.NV_UNDERGROUND_SANDSTORM_DAYTIME_OPTICS) );
 			}
 			break;
 	
@@ -664,8 +666,9 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 		if (!player)
 			return rawType;
 	
-		// Only the generic "device is on" states get environment upgrades. OFF states,
-		// NONE, and the explicit Kazuar/Starlight day/night variants keep their own handling.
+		// Only "device is on" states get environment upgrades. OFF states and NONE
+		// keep their own handling; the Kazuar/Starlight day/night variants are
+		// upgraded too, preserving their day/night distinction in the result.
 		bool isOpticsOn = (rawType == NVTypes.NV_OPTICS_ON || rawType == NVTypes.NV_OPTICS_KAZUAR_DAY || rawType == NVTypes.NV_OPTICS_KAZUAR_NIGHT || rawType == NVTypes.NV_OPTICS_STARLIGHT_DAY || rawType == NVTypes.NV_OPTICS_STARLIGHT_NIGHT);
 		bool isGogglesOn = (rawType == NVTypes.NV_GOGGLES || rawType == NVTypes.NV_GOGGLES_2D);
 		bool isPumpkinOn = (rawType == NVTypes.NV_PUMPKIN);
@@ -686,12 +689,16 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 			bool isNight = (rawType == NVTypes.NV_OPTICS_ON || rawType == NVTypes.NV_OPTICS_KAZUAR_NIGHT || rawType == NVTypes.NV_OPTICS_STARLIGHT_NIGHT);
 			if (underground && sandstorm)
 			{
-				return NVTypes.NV_OPTICS_UNDERGROUND_SANDSTORM;
+				if (isNight)
+					return NVTypes.NV_OPTICS_UNDERGROUND_SANDSTORM;
+				return NVTypes.NV_OPTICS_UNDERGROUND_SANDSTORM_DAY;
 			}
 			
 			if (underground)
 			{
-				return NVTypes.NV_OPTICS_UNDERGROUND;
+				if (isNight)
+					return NVTypes.NV_OPTICS_UNDERGROUND;
+				return NVTypes.NV_OPTICS_UNDERGROUND_DAY;
 			}
 			
 			if (isNight)
@@ -716,9 +723,8 @@ class DayZPlayerCameraBase extends DayZPlayerCamera
 		return NVTypes.NV_PUMPKIN_SANDSTORM;
 	}
 	
-	//! Enclosed / dark space check. The debug HUD exposes "Under roof" / "In Shadow" /
-	//! "Inside" states, so use whatever your project exposes for that. Adjust the body to
-	//! match the real API (e.g. an underground-presence enum from the sandstorm system).
+	//! Enclosed / dark space check, driven by the underground trigger system
+	//! (UndergroundHandlerClient sets the presence on the player).
 	bool IsPlayerUnderground(PlayerBase player)
 	{
 		if (!player)

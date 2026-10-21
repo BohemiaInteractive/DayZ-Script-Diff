@@ -45,6 +45,11 @@ class ActionCollectBloodTarget: ActionContinuousBase
 			action_data.m_Player.ServerReplaceItemInHandsWithNew(lambda);
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };
 
 class ActionCollectBloodTargetLambda : ReplaceItemWithNewLambda

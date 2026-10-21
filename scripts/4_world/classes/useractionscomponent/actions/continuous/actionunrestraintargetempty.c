@@ -97,4 +97,9 @@ class ActionUnrestrainTargetHands: ActionContinuousBase
 		if ( action_data.m_Player ) action_data.m_Player.TryHideItemInHands(false);
 	}
 	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
+	
 };

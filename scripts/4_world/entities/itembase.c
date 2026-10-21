@@ -2084,7 +2084,11 @@ class ItemBase extends InventoryItem
 							PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
 							if (!player.GetInventory().FindFreeLocationFor(this, FindInventoryLocationType.CARGO, dst) || !playerOwner)
 							{
-								SetInventoryLocationToVicinityOrCurrent(player, dst); //dropping on the ground next to the spliting player
+								//dropping on the ground next to the spliting player
+								vector m4[4];
+								Math3D.MatrixIdentity4(m4);
+								GameInventory.PrepareDropEntityPos(player, this, m4, false, GameConstants.INVENTORY_ENTITY_DROP_OVERLAP_DEPTH);
+								dst.SetGround(this, m4);
 							}
 							else
 							{

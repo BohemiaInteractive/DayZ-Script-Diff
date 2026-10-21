@@ -446,7 +446,7 @@ class ActionTargets
 	
 	private bool IsObstructedEx(Object object, IsObjectObstructedCache cache)
 	{
-		return MiscGameplayFunctions.IsObjectObstructedEx(object, cache);
+		return MiscGameplayFunctions.IsObjectObstructedEx(object, cache, false, "0 0 0", 10);
 	}
  	
 	//! returns count of founded targets
@@ -500,6 +500,9 @@ class ActionTargets
 				//! ground and static objects
 				if (pTarget.GetType() == string.Empty)
 					return 0.01;
+				
+				if (pTarget.IsTree() || pTarget.IsBush())
+					return 0.1;
 
 				if (pTarget.IsBuilding())
 					return 0.25;

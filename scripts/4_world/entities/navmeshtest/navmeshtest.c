@@ -1,9 +1,9 @@
 // for testing NavmeshEntityType
-class NavmeshTest : Building
+class Land_NavmeshTest : Building
 {
 	ref array<ref Param2<string, bool>> m_Signals = new array<ref Param2<string, bool>>();
 	
-	void NavmeshTest()
+	void Land_NavmeshTest()
 	{
 	}
 	
@@ -115,17 +115,17 @@ class NavmeshTest : Building
 
 // use case examples
 
-class NavmeshTest_A : NavmeshTest
+class Land_NavmeshTest_A : Land_NavmeshTest
 {
-	void NavmeshTest_A()
+	void Land_NavmeshTest_A()
 	{
 		AddSignal("Wall_Hide", true);
 	}
 };
 
-class NavmeshTest_B : NavmeshTest
+class Land_NavmeshTest_B : Land_NavmeshTest
 {
-	void NavmeshTest_B()
+	void Land_NavmeshTest_B()
 	{
 		AddSignal("Wall_Hide", true);
 		AddSignal("Door_Hide", true);
@@ -133,27 +133,27 @@ class NavmeshTest_B : NavmeshTest
 	}
 };
 
-class NavmeshTest_C : NavmeshTest
+class Land_NavmeshTest_C : Land_NavmeshTest
 {
-	void NavmeshTest_C()
+	void Land_NavmeshTest_C()
 	{
 		AddSignal("Wall_Hide", true);
 		AddSignal("Window_Hide", true);
 	}
 };
 
-class NavmeshTest_D : NavmeshTest
+class Land_NavmeshTest_D : Land_NavmeshTest
 {
-	void NavmeshTest_D()
+	void Land_NavmeshTest_D()
 	{
 		AddSignal("Wall_Hide", true);
 		AddSignal("Roof_Hide", true);
 	}
 };
 
-class NavmeshTest_E : NavmeshTest
+class Land_NavmeshTest_E : Land_NavmeshTest
 {
-	void NavmeshTest_E()
+	void Land_NavmeshTest_E()
 	{
 		AddSignal("Wall_Hide", true);
 		AddSignal("Door_Hide", true);
@@ -162,9 +162,9 @@ class NavmeshTest_E : NavmeshTest
 	}
 };
 
-class NavmeshTest_F : NavmeshTest
+class Land_NavmeshTest_F : Land_NavmeshTest
 {
-	void NavmeshTest_F()
+	void Land_NavmeshTest_F()
 	{
 		AddSignal("Wall_Hide", true);
 		AddSignal("Window_Hide", true);

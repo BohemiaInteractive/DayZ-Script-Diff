@@ -628,15 +628,24 @@ class Rebuilding : ConstructionBase
 		
 		ConstructionPartRebuild rebPart = GetRebuildingPart(part_name);
 		set<int> tmp = rebPart.GetConfiguredSupportCategories();
-		if (tmp.Count() > 0) //can fail only if some support category is defined
+		if (tmp.Count() > 0) //can fail only if some REQUIREMENT support category is defined
 		{
+			bool validRequirementDefined;
 			foreach (int category : tmp)
 			{
-				if (rebPart.GetSupportRequirement(category) <= m_SupportFulfillment.Get(category))
-					return true;
+				int requirement;
+				if (rebPart.GetSupportRequirement(category, requirement))
+				{
+					validRequirementDefined = true;
+					if (requirement <= m_SupportFulfillment.Get(category))
+						return !rebPart.InvertSupportBehavior();
+				}
 			}
 			
-			return false;
+			if (validRequirementDefined)
+				return rebPart.InvertSupportBehavior();
+			
+			return true;
 		}
 		
 		return true;
@@ -648,7 +657,8 @@ class Rebuilding : ConstructionBase
 		set<int> tmp = rebPart.GetConfiguredSupportCategories();
 		foreach (int category : tmp)
 		{
-			if (m_SupportRequirement.Get(category) > (m_SupportFulfillment.Get(category) - rebPart.GetSupportProvided(category)))
+			int provided;
+			if (rebPart.GetSupportProvided(category, provided) && m_SupportRequirement.Get(category) > (m_SupportFulfillment.Get(category) - provided))
 				return false;
 		}
 		
@@ -659,15 +669,14 @@ class Rebuilding : ConstructionBase
 	{
 		ConstructionPartRebuild rebPart = GetRebuildingPart(part_name);
 		set<int> tmp = rebPart.GetConfiguredSupportCategories();
-		int value;
+		int provided;
 		foreach (int category : tmp)
 		{
-			value = rebPart.GetSupportProvided(category);
-			if (m_SupportFulfillment.Contains(category))
+			if (rebPart.GetSupportProvided(category, provided))
 			{
-				value = Math.Clamp(m_SupportFulfillment.Get(category) + value, 0, int.MAX);
+				provided = Math.Clamp(m_SupportFulfillment.Get(category) + provided, 0, int.MAX);
+				m_SupportFulfillment.Set(category, provided);
 			}
-			m_SupportFulfillment.Set(category, value);
 		}
 	}
 	
@@ -675,55 +684,52 @@ class Rebuilding : ConstructionBase
 	{
 		ConstructionPartRebuild rebPart = GetRebuildingPart(part_name);
 		set<int> tmp = rebPart.GetConfiguredSupportCategories();
-		int value;
+		int provided;
 		foreach (int category : tmp)
 		{
-			value = rebPart.GetSupportProvided(category);
-			if (m_SupportFulfillment.Contains(category))
+			if (rebPart.GetSupportProvided(category, provided))
 			{
-				value = Math.Clamp(m_SupportFulfillment.Get(category) - value, 0, int.MAX);
+				provided = Math.Clamp(m_SupportFulfillment.Get(category) - provided, 0, int.MAX);
+				m_SupportFulfillment.Set(category, provided);
 			}
-			m_SupportFulfillment.Set(category, value);
 		}
 	}
 	
 	protected void AddSupportRequirementFromSourcePart(string part_name)
 	{
 		ConstructionPartRebuild rebPart = GetRebuildingPart(part_name);
-		//skipping utility part requirement propagation
+		//skipping utility part requirement propagation, fulfillment checked separately
 		if (rebPart.IsUtilityPart())
 			return;
 		
 		set<int> tmp = rebPart.GetConfiguredSupportCategories();
-		int value;
+		int required;
 		foreach (int category : tmp)
 		{
-			value = rebPart.GetSupportRequirement(category);
-			if (m_SupportRequirement.Contains(category))
+			if (rebPart.GetSupportRequirement(category, required))
 			{
-				value = Math.Clamp(m_SupportRequirement.Get(category) + value, 0, int.MAX);
+				required = Math.Clamp(m_SupportRequirement.Get(category) + required, 0, int.MAX);
+				m_SupportRequirement.Set(category, required);
 			}
-			m_SupportRequirement.Set(category, value);
 		}
 	}
 	
 	protected void RemoveSupportRequirementFromSourcePart(string part_name)
 	{
 		ConstructionPartRebuild rebPart = GetRebuildingPart(part_name);
-		//skipping utility part requirement propagation
+		//skipping utility part requirement propagation, fulfillment checked separately
 		if (rebPart.IsUtilityPart())
 			return;
 		
 		set<int> tmp = rebPart.GetConfiguredSupportCategories();
-		int value;
+		int required;
 		foreach (int category : tmp)
 		{
-			value = rebPart.GetSupportRequirement(category);
-			if (m_SupportRequirement.Contains(category))
+			if (rebPart.GetSupportRequirement(category, required))
 			{
-				value = Math.Clamp(m_SupportRequirement.Get(category) - value, 0, int.MAX);
+				required = Math.Clamp(m_SupportRequirement.Get(category) - required, 0, int.MAX);
+				m_SupportRequirement.Set(category, required);
 			}
-			m_SupportRequirement.Set(category, value);
 		}
 	}
 	
@@ -763,7 +769,7 @@ class Rebuilding : ConstructionBase
 		ConstructionPartRebuild rebPart;
 		foreach (ConstructionPart part : m_BuiltConstructionPartArray)
 		{
-			if (Class.CastTo(rebPart, part))
+			if (Class.CastTo(rebPart, part) && !rebPart.IsUtilityPart())
 			{
 				name = rebPart.GetPartName();
 				array<string> reqPartsArray = rebPart.GetRequiredParts();
@@ -796,6 +802,13 @@ class Rebuilding : ConstructionBase
 		return dependentParts;
 	}
 	
+	//! Houses are usually not mobile to become a dynamic problem; overlap with
+	//! houses placed touching the rebuilt one is accepted by design
+	override bool IgnoreHouseCollisions()
+	{
+		return true;
+	}
+	
 	//============================================
 	//UI-related getters
 	//============================================
@@ -815,7 +828,6 @@ class Rebuilding : ConstructionBase
 			}
 		}
 		
-		//legacy dependency check, just in case
 		ConstructionPartRebuild rebPart = GetRebuildingPart(categoryName);
 		if (rebPart)
 		{

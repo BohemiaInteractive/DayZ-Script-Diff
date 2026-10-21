@@ -44,6 +44,7 @@ class ConstructionBase : ConstructionBasic
 	protected ref array<ConstructionPart> m_BuiltConstructionPartArray; //built parts array
 	protected EntityAI 	m_EntityParent;
 	protected bool m_AnyPartBuildableByHands;
+	protected bool m_UpdateUtilityParts;
 	
 	#ifdef DIAG_DEVELOPER
 	//Debug
@@ -144,7 +145,7 @@ class ConstructionBase : ConstructionBasic
 		{
 			if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_EntityParent) + " AddToConstructedParts part=" + part.GetPartName());
 			part.SetBuiltState(true);
-			part.TryHandleUtilityParts(m_EntityParent);
+			part.TryQueueUtilityPartsUpdate(this);
 			if (m_BuiltConstructionPartArray.Find(part) == -1)
 				m_BuiltConstructionPartArray.Insert(part);
 			
@@ -162,7 +163,7 @@ class ConstructionBase : ConstructionBasic
 		{
 			if (LogManager.IsBaseBuildingLogEnable()) bsbDebugPrint("[bsb] Construction " + Object.GetDebugName(m_EntityParent) + " RemoveFromConstructedParts part=" + part.GetPartName());
 			part.SetBuiltState(false);
-			part.TryHandleUtilityParts(m_EntityParent);
+			part.TryQueueUtilityPartsUpdate(this);
 			m_BuiltConstructionPartArray.RemoveItem(part);
 			
 			#ifndef SERVER
@@ -612,8 +613,6 @@ class ConstructionBase : ConstructionBasic
 	//! Simplified condition for utility (non-)parts
 	bool CanBuildUtilityPart(string partName)
 	{
-		if (IsPartConstructed(partName))
-			return false;
 		if (!HasRequiredPart(partName))
 			return false;
 		if (!PartHasAnySupportFulfilled(partName))
@@ -622,6 +621,48 @@ class ConstructionBase : ConstructionBasic
 			return false;
 		
 		return true;
+	}
+	
+	void QueueUpdateUtilityParts()
+	{
+		if (!m_UpdateUtilityParts)
+		{
+			m_UpdateUtilityParts = true;
+			g_Game.GetPostUpdateQueue(CALL_CATEGORY_SYSTEM).Insert(this.UpdateUtilityParts);
+		}
+	}
+	
+	//! returns 'true' if changed
+	bool UpdateUtilityParts()
+	{
+		m_UpdateUtilityParts = false;
+		bool changed = false;
+		
+		foreach (ConstructionPart part : m_ConstructionPartArray)
+		{
+			if (part.IsUtilityPart())
+			{
+				bool built = part.IsBuilt();
+				string partName = part.GetPartName();
+				if (CanBuildUtilityPart(partName))
+				{
+					if (!built)
+					{
+						AddToConstructedParts(partName);
+						ConstructionManagerStatic.AddPartToProcess(this, part);
+					}
+				}
+				else if (built)
+				{
+					RemoveFromConstructedParts(partName);
+					ConstructionManagerStatic.AddPartToProcess(this, part);
+				}
+			}
+		}
+		
+		g_Game.GetPostUpdateQueue(CALL_CATEGORY_SYSTEM).Remove(this.UpdateUtilityParts);
+		
+		return changed;
 	}
 	
 	bool MaterialIsRuined(string part_name)
@@ -1246,10 +1287,7 @@ class ConstructionBase : ConstructionBasic
 			
 			ItemBase attachment = ItemBase.Cast(parentInv.FindAttachment(slotId));
 			if (!attachment)
-			{
-				ErrorEx(string.Format("Attachment is not present for material type '%1' on part %2", dta.m_MaterialType, part_name));
 				continue;
-			}
 	
 			if (LogManager.IsBaseBuildingLogEnable())
 				bsbDebugPrint("[bsb] " + Object.GetDebugName(m_EntityParent) + " DropNonUsableMaterials UNlocking slot=" + slotId + " (" + dta.m_MaterialSlotName + ")");
@@ -1477,6 +1515,14 @@ class ConstructionBase : ConstructionBasic
 	//============================================
 	// Collision check
 	//============================================
+	//! Whether House entities are skipped in the part collision check.
+	//! Rebuildable buildings are static, so a part may legitimately overlap
+	//! a House placed touching the rebuilt one (map authoring decision).
+	bool IgnoreHouseCollisions()
+	{
+		return false;
+	}
+	
 	//! Collision check for building part
 	bool IsCollidingEx(CollisionCheckData check_data)
 	{
@@ -1519,6 +1565,9 @@ class ConstructionBase : ConstructionBasic
 					EntityAI entity = EntityAI.Cast(collidedObjects.Get(i));
 					if (entity && !entity.IsIgnoredByConstruction())
 					{
+						if (House.Cast(entity) && IgnoreHouseCollisions())
+							continue;
+						
 						validCollision = true;
 						#ifdef DIAG_DEVELOPER 
 						if (collisionDebugEnabled)

@@ -223,27 +223,6 @@ class vector
 	{
 		return value * vector.Up;
 	}
-
-	/**
-	\brief Returns cross product of this vector with passed vector.
-	    \return \p vector cross product of vectors
-		@code
-			vector v1 = vector.Up; // "0 1 0"
-			vector v2 = vector.Forward; // "0 0 1"
-			vector cross = v1.Cross(v2);
-			Print(cross);
-
-			>> <1, 0, 0>
-		@endcode
-	*/
-	vector Cross(vector v)
-	{
-    	float x = value[1] * v[2] - value[2] * v[1];
-    	float y = value[2] * v[0] - value[0] * v[2];
-    	float z = value[0] * v[1] - value[1] * v[0];
-
-    	return Vector(x, y, z);
-	}
 	
 	/**
 	\brief Returns direction vector from point p1 to point p2

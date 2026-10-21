@@ -68,4 +68,9 @@ class ActionGagTarget: ActionContinuousBase
 		}
 		return false;
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

@@ -56,6 +56,11 @@ class ActionCoverHeadTarget: ActionContinuousBase
 		}
 		return false;
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };
 
 class CoverHeadOfTargetPlayerLambda : TurnItemIntoItemLambda

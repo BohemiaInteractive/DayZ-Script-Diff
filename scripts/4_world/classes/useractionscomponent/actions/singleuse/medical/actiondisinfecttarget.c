@@ -50,4 +50,9 @@ class ActionDisinfectTarget: ActionDisinfectBase
 			}
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

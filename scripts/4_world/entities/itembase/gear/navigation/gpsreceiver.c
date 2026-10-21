@@ -166,6 +166,16 @@ class GPSReceiver : ItemGPS
 		}
 	}
 	
+	override void EEItemLocationChanged(notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc)
+	{
+		super.EEItemLocationChanged(oldLoc, newLoc);
+		
+		if(!ClothingBase.Cast(newLoc.GetParent()) && !PlayerBase.Cast(newLoc.GetParent()))
+		{
+			GetCompEM().SwitchOff();
+		}
+	}
+	
 	protected int GetHiddenSelection(string selection)
 	{	
 		int idx = GetHiddenSelectionIndex(selection);

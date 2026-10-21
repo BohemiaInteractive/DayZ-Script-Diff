@@ -47,4 +47,9 @@ class ActionBurnSewTarget: ActionContinuousBase
 			action_data.m_MainItem.DecreaseHealth ( "", "", 5 );
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

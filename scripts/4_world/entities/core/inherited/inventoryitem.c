@@ -105,7 +105,7 @@ class ItemGPS extends InventoryItemSuper
 			player = PlayerBase.Cast(parent.GetHierarchyRoot());			
 		}
 
-		if ( player )
+		if ( player && !ClothingBase.Cast(parent))
 		{
 			player.MapNavigationItemNotInPossession(this);
 		}
@@ -125,7 +125,7 @@ class ItemCompass extends InventoryItemSuper
 		}
 
 		PlayerBase pb = PlayerBase.Cast(player);
-		if ( pb )
+		if ( pb && (PlayerBase.Cast(GetHierarchyParent()) || ClothingBase.Cast(GetHierarchyParent())))
 		{
 			pb.MapNavigationItemInPossession(this);
 		}
@@ -183,7 +183,7 @@ class ItemCompass extends InventoryItemSuper
 			player = PlayerBase.Cast(parent.GetHierarchyParent());			
 		}
 
-		if ( player )
+		if ( player && !ClothingBase.Cast(parent) )
 		{
 			player.MapNavigationItemNotInPossession(this);
 		}

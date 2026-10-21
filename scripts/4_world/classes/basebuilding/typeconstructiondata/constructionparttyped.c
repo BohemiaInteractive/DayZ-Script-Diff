@@ -15,6 +15,7 @@ class ConstructionPartTypeData
 	protected bool 		m_IsBase;			//defines if this part is the foundation of the whole construction
 	protected bool 		m_IsGate;			//defines part gate state
 	protected bool 		m_IsUtilityPart; //! Special helper parts with invalid IDs
+	protected bool 		m_TriggersUtilityPartUpdate; //! speficies whether a part state change toggles utility part update step. Maybe default should be 'true'??
 	protected bool 		m_DamageHandsOnBuild;
 	protected bool 		m_CanPartDecayConfig; //! determined by, in sequence: 'can_decay_general' in class Construction > 'can_decay' on the part itself
 	protected float 	m_PartDecayThresholdConfig;
@@ -37,7 +38,6 @@ class ConstructionPartTypeData
 	protected ref array<int> m_ProxyRoadwayBehaviorInverted;	//dictates behavior of ProxyRoadway from 'm_ProxyRoadwayNames'. 0 == matches the phase of the animation, non-zero == inverted
 	protected ref array<string> m_AnimSourceNameOverrides;	//used by 'SetAnimationPhase' instead of m_PartName
 	protected ref array<int> m_AnimSourceBehaviorOverridesInverted;	//dictates behavior of animSources from 'm_AnimSourceNameOverrides'. 0 == matches the hide/show state of the animation, non-zero == inverted
-	protected ref array<string> m_UtilityAutomaticBuild;
 	protected ref TConstructionPartVariantArray m_ReqPartVariants;
 	protected ref ConstructionPartStaticsSupportData m_StaticsData;
 	protected ref ConstructionPartEffectsData m_EffectsData;
@@ -263,13 +263,13 @@ class ConstructionPartTypeData
 		m_IsUtilityPart = g_Game.ConfigGetInt(path);
 	}
 	
+	//! not all parts need to invoke utility update step, config needs to specify
 	protected void InitUtilityBuildData()
 	{
-		string path = m_PartPath + " utility_build";
-		m_UtilityAutomaticBuild = {};
+		string path = m_PartPath + " toggle_utility_part_update";
 		if (g_Game.ConfigIsExisting(path))
 		{
-			g_Game.ConfigGetTextArray(path, m_UtilityAutomaticBuild);
+			m_TriggersUtilityPartUpdate = g_Game.ConfigGetInt(path);
 		}
 	}
 	
@@ -475,6 +475,11 @@ class ConstructionPartTypeData
 		return m_IsUtilityPart;
 	}
 	
+	bool TriggersUtilityPartsUpdate()
+	{
+		return m_TriggersUtilityPartUpdate;
+	}
+	
 	bool CanPartDecayConfig()
 	{
 		return m_CanPartDecayConfig;
@@ -625,14 +630,14 @@ class ConstructionPartTypeData
 		return m_StaticsData;
 	}
 	
-	int GetPartTypeSupportProvided(int category)
+	bool GetPartTypeSupportProvided(int category, out int providedStrength)
 	{
-		return m_StaticsData.GetSupportProvided(category);
+		return m_StaticsData.GetSupportProvided(category, providedStrength);
 	}
 	
-	int GetPartTypeSupportRequirement(int category)
+	bool GetPartTypeSupportRequirement(int category, out int requiredStrength)
 	{
-		return m_StaticsData.GetSupportRequirement(category);
+		return m_StaticsData.GetSupportRequirement(category, requiredStrength);
 	}
 	
 	set<int> GetPartTypeConfiguredSupportCategories()
@@ -669,11 +674,6 @@ class ConstructionPartTypeData
 	array<int> GetPartTypeProxyRoadwayBehaviorInverts()
 	{
 		return m_ProxyRoadwayBehaviorInverted;
-	}
-	
-	array<string> GetPartTypeUtilityAutobuildPartsList()
-	{
-		return m_UtilityAutomaticBuild;
 	}
 	
 	ConstructionPartEffectsData GetPartTypeEffectsData()

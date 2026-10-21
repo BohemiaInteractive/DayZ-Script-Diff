@@ -59,4 +59,24 @@ class Compass : ItemCompass
 		AddAction(ActionClose);
 		AddAction(ActionViewCompass);
 	}
+	
+	override void EEItemLocationChanged(notnull InventoryLocation oldLoc, notnull InventoryLocation newLoc)
+	{
+		super.EEItemLocationChanged(oldLoc, newLoc);
+		
+		PlayerBase pb = PlayerBase.Cast(GetHierarchyRoot());
+		
+		if(pb)
+		{
+			if(ClothingBase.Cast(newLoc.GetParent()))
+			{
+				pb.MapNavigationItemInPossession(this);
+			}
+			else
+			{
+				pb.MapNavigationItemNotInPossession(this);
+			}
+		}
+	}
+
 }

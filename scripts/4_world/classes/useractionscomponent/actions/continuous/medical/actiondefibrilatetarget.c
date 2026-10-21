@@ -41,4 +41,9 @@ class ActionDefibrilateTarget: ActionDefibrilateBase
 		
 		DefibrillateServer(target_player, defib);
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

@@ -107,7 +107,13 @@ class Cauldron : Bottle_Base
 		
 		RemoveAction(ActionDrink);
 		RemoveAction(ActionEmptyBottleBase);
+		RemoveAction(ActionWetClothingFromContainer);
+		RemoveAction(ActionWashHandsItemContinuous);
+		RemoveAction(ActionWashHeadItemContinuous);
 		AddAction(ActionDrinkCookingPot);
+		AddAction(ActionWashHandsItemContinuous);
+		AddAction(ActionWashHeadItemContinuous);
+		AddAction(ActionWetClothingFromContainer);
 		AddAction(ActionEmptyCookingPot);
 	}
 }

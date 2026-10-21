@@ -2,7 +2,7 @@ class Motorbike_02LightProfileFront : VehicleLightProfileFront
 {
 	void Motorbike_02LightProfileFront()
 	{
-		m_SegregatedBrightness 	= 3;
+		m_SegregatedBrightness 	= 8;
 		m_SegregatedRadius 		= 65;
 		m_SegregatedAngle 		= 65;
 		m_SegregatedColorRGB 	= Vector(0.85, 0.85, 0.68);

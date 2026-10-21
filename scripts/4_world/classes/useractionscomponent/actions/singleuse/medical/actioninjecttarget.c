@@ -43,4 +43,9 @@ class ActionInjectTarget: ActionSingleUseBase
 		//PlayerBase ntarget = PlayerBase.Cast( action_data.m_Target.GetObject() );
 		//ntarget.GiveShock(100);
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

@@ -3,7 +3,7 @@ class OpenDirPlugin: WorkbenchPlugin
 {
 	override void Run()
 	{
-		ScriptEditor mod = Workbench.GetModule("ScriptEditor");
+		ScriptEditor mod = Workbench.GetModule(ScriptEditor);
 		if (mod)
 		{
 			string file;

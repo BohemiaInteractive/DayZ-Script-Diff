@@ -60,4 +60,9 @@ class ActionUncoverHeadTarget: ActionUncoverHeadBase
 		}
 		return false;
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

@@ -141,6 +141,11 @@ class ActionUnrestrainTarget: ActionContinuousBase
 			MiscGameplayFunctions.TransformRestrainItem(restraining_item, unrestraining_tool, player_source, player_target, true);
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };
 
 class ReplaceAndDestroyLambda : TurnItemIntoItemLambdaAnimSysNotifyLambda

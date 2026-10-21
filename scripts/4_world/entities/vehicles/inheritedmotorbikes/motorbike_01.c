@@ -16,6 +16,8 @@ class Motorbike_01_ColorBase : MotorbikeScript
 		m_LightsComponent.RegisterLight("Front", new VehicleLightData(new Motorbike_01LightProfileFront()));
 		m_LightsComponent.RegisterLight("Rear", new VehicleLightData(new Motorbike_01LightProfileRear()));
 		
+		m_LightsComponent.RegisterSelection("FrontOn",	{new VehicleLightSelectionData(3, "frontReflectorMatOn")});
+		m_LightsComponent.RegisterSelection("FrontOff",	{new VehicleLightSelectionData(3, "frontReflectorMatOff")});
 		m_LightsComponent.RegisterSelection("BrakeOn",	{new VehicleLightSelectionData(2, "brakeReflectorMatOn")});
 		m_LightsComponent.RegisterSelection("BrakeOff",	{new VehicleLightSelectionData(2, "brakeReflectorMatOff")});
 		
@@ -23,11 +25,6 @@ class Motorbike_01_ColorBase : MotorbikeScript
 		m_HornComponent.RegisterSound(VehicleHornMode.LONG, 	"Motorbike_01_Horn_SoundSet");
 		
 		SetEnginePos("0 0.3 -0.06");
-	}
-	
-	override bool HasGangedTailAndBrakeLights()
-	{
-		return true;
 	}
 	
 	override bool NeedElectricitySourceDevice()

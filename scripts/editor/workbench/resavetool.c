@@ -16,14 +16,14 @@ class ResavePlugin: WorkbenchPlugin
 	{
 		if (Workbench.ScriptDialog("Resave", "Which files you want to resave?", this))
 		{
-			m_module = Workbench.GetModule("ResourceManager");
+			m_module = Workbench.GetModule(ResourceManager);
 			Workbench.SearchResources(Extension, Resave);
 		}
 	}
 	
 	override void RunCommandline() 
 	{
-		m_module = Workbench.GetModule("ResourceManager");
+		m_module = Workbench.GetModule(ResourceManager);
 		
 		if (m_module.GetCmdLine("-extension", Extension))
 		{
@@ -31,7 +31,7 @@ class ResavePlugin: WorkbenchPlugin
 		}
 		
 		Workbench.SearchResources(Extension, Resave);
-		Workbench.GetModule("ResourceManager").Close();
+		Workbench.GetModule(ResourceManager).Close();
 	}
 	
 	[ButtonAttribute("Re-Save")]

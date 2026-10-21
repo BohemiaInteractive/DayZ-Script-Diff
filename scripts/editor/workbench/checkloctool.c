@@ -39,7 +39,7 @@ class CheckLocalisationPlugin: WorkbenchPlugin
 	
 	override void Run()
 	{
-		m_module = Workbench.GetModule("ResourceManager");
+		m_module = Workbench.GetModule(ResourceManager);
 		Workbench.SearchResources(".layout", CheckTextIDs);
 		
 		if (m_results.Count())

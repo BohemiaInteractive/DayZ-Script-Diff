@@ -262,6 +262,8 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 			return;
 		}
 		
+		int resolvedType;
+		
 		//if (!state || !m_weaponUsed || (PlayerBase.Cast(m_pPlayer) && launchedFrom != PlayerBase.Cast(m_pPlayer).GetCurrentPlayerCamera()))
 		if (!state || !m_weaponUsed)
 		{
@@ -269,7 +271,7 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 			
 			if (IsCameraNV())
 			{
-				int resolvedType = ResolveNVType(GetCameraNVType(), PlayerBase.Cast(m_pPlayer));
+				resolvedType = ResolveNVType(GetCameraNVType(), PlayerBase.Cast(m_pPlayer));
 				m_ResolvedNVType = resolvedType;
 				SetNVPostprocess(resolvedType);
 			}
@@ -300,7 +302,9 @@ class DayZPlayerCameraIronsights extends DayZPlayerCameraBase
 			
 			if (IsCameraNV())
 			{
-				SetNVPostprocess(GetCameraNVType());
+				resolvedType = ResolveNVType(GetCameraNVType(), PlayerBase.Cast(m_pPlayer));
+				m_ResolvedNVType = resolvedType;
+				SetNVPostprocess(resolvedType);
 			}
 			else
 			{

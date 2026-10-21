@@ -61,4 +61,9 @@ class ActionUngagTarget: ActionContinuousBase
 		}
 		return false;
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

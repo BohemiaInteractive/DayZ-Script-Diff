@@ -200,8 +200,8 @@ class MotorbikeScript : Motorbike
 		m_VFXComponent.RegisterEffect(EVehicleVFXEffect.ENGINE_SMOKE, EffEngineSmoke, new VehicleVFXDataParams(m_VFXComponent.ConvertMemPointToPosition("ptcEnginePos")));
 		m_VFXComponent.RegisterEffect(EVehicleVFXEffect.EXHAUST_SMOKE, EffExhaustSmoke, new VehicleVFXDataParams(exhaustPosition, exhaustDirection));
 
-		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_SMOKE, EffWheelSmoke, WheelCount(), new VehicleVFXDataParams(vector.Zero, "0 1 -1", 5.0));		
-		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_CONTACT, EffWheelContact, WheelCount(), new VehicleVFXDataParams(vector.Zero, vector.Up, 5.0));
+		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_SMOKE, EffWheelSmoke, WheelCount(), new VehicleVFXDataParams(vector.Zero, "0 1 -1", 2.0));		
+		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_CONTACT, EffWheelContact, WheelCount(), new VehicleVFXDataParams(vector.Zero, vector.Up, 2.0));
 	}
 	
 	override vector GetDefaultHitPosition()
@@ -607,6 +607,21 @@ class MotorbikeScript : Motorbike
 		
 		UpdateHeadlightState();
 		UpdateLights();
+	}
+	
+	override bool CanReleaseAttachment(EntityAI attachment)
+	{
+		if (!super.CanReleaseAttachment(attachment))
+		{
+			return false;
+		}
+
+		if (EngineIsOn() || HasCrew())
+		{
+			return false;
+		}
+
+		return true;
 	}
 	
 	override void EOnPostFrame(IEntity other, int extra)
@@ -1230,7 +1245,7 @@ class MotorbikeScript : Motorbike
 
 				default:
 					if (!HasGangedTailAndBrakeLights())
-						m_LightsComponent.SetSelectionMaterial("BrakesOff");
+						m_LightsComponent.SetSelectionMaterial("BrakeOff");
 			}
 		}
 		else

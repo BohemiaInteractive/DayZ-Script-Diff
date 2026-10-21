@@ -100,4 +100,9 @@ class ActionGiveBloodTarget: ActionContinuousBase
 			
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

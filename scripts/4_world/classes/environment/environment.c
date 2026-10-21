@@ -693,8 +693,8 @@ class Environment
 		if (Math.AbsFloat(vector.Dot(forward, up)) > 0.99)
 		    forward = vector.Aside; // when parallel
 
-		vector right = forward.Cross(up).Normalized(); 	// X axis
-		vector back = up.Cross(right).Normalized(); 	// Z axis
+		vector right = (forward * up).Normalized(); 	// X axis
+		vector back = (up * right).Normalized(); 	// Z axis
 		
 		vector transform[4];
 		transform[0] = right;

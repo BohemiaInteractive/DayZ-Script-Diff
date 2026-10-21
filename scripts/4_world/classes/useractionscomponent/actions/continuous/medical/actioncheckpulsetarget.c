@@ -108,4 +108,9 @@ class ActionCheckPulseTarget: ActionContinuousBase
 			action_data.m_Player.m_CheckPulseLastTarget = ntarget;
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

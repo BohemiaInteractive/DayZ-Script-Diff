@@ -36,4 +36,9 @@ class ActionGiveSalineTarget: ActionContinuousBase
 		
 		action_data.m_MainItem.Delete();
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

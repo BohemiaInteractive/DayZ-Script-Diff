@@ -205,12 +205,12 @@ class ActionConstructor
 		actions.Insert(ActionWashHandsWater);
 		actions.Insert(ActionWashHandsSnow);
 		actions.Insert(ActionWashHandsWell);
+		actions.Insert(ActionDrinkCan);
 		actions.Insert(ActionWashHeadWater);
 		actions.Insert(ActionWashHeadWell);
 		actions.Insert(ActionWetClothingInHandsWater);
 		actions.Insert(ActionWetClothingInHandsWell);
 		actions.Insert(ActionWetClothingFromContainer);
-		actions.Insert(ActionDrinkCan);
 		actions.Insert(ActionBuildOven);
 		actions.Insert(ActionDismantleOven);
 		actions.Insert(ActionBuildStoneCircle);

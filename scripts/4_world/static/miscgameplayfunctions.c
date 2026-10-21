@@ -212,6 +212,8 @@ enum ThrowEntityFlags
 
 class MiscGameplayFunctions
 {
+	static const float OBJECT_OBSTRUCTION_MIN_DISTANCE_SQ = 0.0625; //! squared distance below which an obstruction raycast is pointless, nothing can fit in between [default 0.25m]
+	
 	//! truncate float to specified precision
 	static float Truncate(float value, int decimals = 2)
 	{
@@ -1290,7 +1292,7 @@ class MiscGameplayFunctions
 			randomPos = Vector(position[0] + Math.RandomFloat(minmax[0][0], minmax[1][0]),
 								position[1] + Math.RandomFloat(minmax[0][1], minmax[1][1]),
 								position[2] + Math.RandomFloat(minmax[0][2], minmax[1][2]));
-			ThrowEntityFromInventory(ent, randomPos, direction, force, ThrowEntityFlags.NONE);
+			ThrowEntityFromInventory(ent, randomPos, direction, -GetVelocity(parent), ThrowEntityFlags.NONE);
 		}
 	}
 	
@@ -1432,116 +1434,31 @@ class MiscGameplayFunctions
 	    return obj.IsTransport() || obj.CanUseConstruction();
 	}
 	
-	//! group objects that are close to each other together	
+	//! filters out objects obstructed from 'origin' by a raycast per object
 	static void FilterObstructedObjectsByGrouping(vector origin, float range, float distanceDelta, array<Object> objects, array<Object> obstructingObjects, out array<Object> filteredObjects, bool doDistanceCheck = false, bool checkIfDistanceCanBeIgnored = false, float maxDist = 0)
 	{
-		array<Object> vicinityObjects= new array<Object>;
-		vicinityObjects.Copy(objects);
-
-		int i = 0;
-		int j = 0;
-		int k = 0;			
-		int mCount = vicinityObjects.Count();
-		
 		if (!filteredObjects)
 			filteredObjects = new array<Object>();
-		
-		// Remove objects that are too far from the player anyways
-		if ( doDistanceCheck )
+
+		if (!objects)
+			return;
+
+		int count = objects.Count();
+		float maxDistSq = maxDist * maxDist;
+
+		IsObjectObstructedCache cache = new IsObjectObstructedCache(origin, count);
+		for (int i = 0; i < count; ++i)
 		{
-			for ( i = vicinityObjects.Count() - 1; i >= 0; --i )
-			{
-				Object obj = vicinityObjects[i];
-				if ( obj && !CanIgnoreDistanceCheck( obj ) && vector.DistanceSq(origin, obj.GetPosition()) > maxDist * maxDist )
-					vicinityObjects.Remove(i);
-			}
-		}
+			Object obj = objects[i];
+			if (!obj)
+				continue;
 
-		// Sort obstructingObjects to have the furthest one first
-		array<Object> sortedObstructingObjects = new array<Object>();
-		array<float> distanceHelper = new array<float>();
-		array<float> distanceHelperUnsorted = new array<float>();
-		float distance, dist1, dist2;
+			// Skip objects that are too far from the player anyways
+			if (doDistanceCheck && !CanIgnoreDistanceCheck(obj) && vector.DistanceSq(origin, obj.GetPosition()) > maxDistSq)
+				continue;
 
-		for ( i = 0; i < obstructingObjects.Count(); ++i )
-		{
-			distance = vector.DistanceSq(obstructingObjects[i].GetWorldPosition(), origin);
-			distanceHelper.Insert(distance);
-		}
-
-		distanceHelperUnsorted.Copy(distanceHelper);
-		distanceHelper.Sort();
-
-		for ( i = distanceHelper.Count() - 1; i >= 0; --i )
-			sortedObstructingObjects.Insert(obstructingObjects[distanceHelperUnsorted.Find(distanceHelper[i])]);
-
-		array<ref array<Object>> tempGroups = new array<ref array<Object>>();
-		array<ref array<Object>> objectGroups = new array<ref array<Object>>();
-		array<Object> group;
-		
-		float cos = Math.Cos(90);
-		float sin = Math.Sin(90);
-
-		// Iterate through sorted obstructingObjects
-		for ( i = 0; i < sortedObstructingObjects.Count(); ++i )
-		{
-			Object obstrObj = sortedObstructingObjects[i];
-			vector worldPos = obstrObj.GetWorldPosition();
-			vector min, max;
-			vector minMax[2];
-			if ( obstrObj.GetCollisionBox(minMax) )
-			{
-				min = minMax[0];
-				max = minMax[1];
-				max = max * (obstrObj.GetOrientation() * range);
-
-				vector center, dx, dy, dz, half;
-				center = (min + max) * 0.5;
-				dz = obstrObj.GetOrientation();
-				dx = vector.RotateAroundZero(dz, vector.Up, cos, sin);
-				dy = vector.RotateAroundZero(dz, vector.Aside, cos, sin);
-				half = (max - min) * 0.5;
-				half = Vector(Math.AbsFloat(half[0]), Math.AbsFloat(half[1]), Math.AbsFloat(half[2]));
-
-				group = new array<Object>();
-
-				// Group objects within the above box
-				for ( j = vicinityObjects.Count() - 1; j >= 0; --j )
-				{
-					Object vicObj = vicinityObjects[j];
-					if ( vicObj )
-					{
-						vector d = vicObj.GetWorldPosition() - worldPos + center;
-						if ( Math.AbsFloat(vector.Dot(d, dx)) <= half[0] && Math.AbsFloat(vector.Dot(d, dy)) <= half[1] && Math.AbsFloat(vector.Dot(d, dz)) <= half[2] )
-						{
-							group.Insert(vicObj);
-							vicinityObjects.Remove(j);
-						}
-					}
-				}
-
-				if ( group.Count() > 0 )
-					tempGroups.Insert(group);
-			}
-		}
-
-		// Go through the objects grouped by obstruction to split them by distance too
-		for ( i = 0; i < tempGroups.Count(); ++i )
-			SplitArrayIntoGroupsByDistance(tempGroups[i], objectGroups, distanceDelta);
-
-		// Split initial groups by distance
-		SplitArrayIntoGroupsByDistance(vicinityObjects, objectGroups, distanceDelta);
-
-		// Raycast items in groups (previously sample item in group which is not enough, sadly)
-		IsObjectObstructedCache cache = new IsObjectObstructedCache(origin, mCount);
-		foreach (array<Object> objectGroup : objectGroups)
-		{
-			foreach (Object filteredObject : objectGroup)
-			{
-				if (!IsObjectObstructedEx(filteredObject, cache))
-					filteredObjects.Insert(filteredObject);
-			}
-
+			if (!IsObjectObstructedEx(obj, cache))
+				filteredObjects.Insert(obj);
 		}
 
 		cache.ClearCache();
@@ -1600,7 +1517,18 @@ class MiscGameplayFunctions
 			return true;
 
 		cache.ObjectCenterPos = object.GetCenter();
-		
+
+		if (maxDist > 0 && vector.DistanceSq(cache.RaycastStart, cache.ObjectCenterPos) > maxDist * maxDist)
+		{
+			vector rayDir = cache.ObjectCenterPos - cache.RaycastStart;
+			rayDir.Normalize();
+			cache.RaycastEnd = cache.RaycastStart + rayDir * maxDist;
+		}
+		else
+		{
+			cache.RaycastEnd = cache.ObjectCenterPos;
+		}
+
 		return IsObjectObstructedFilterEx(object, cache, player);
 	}
  	
@@ -1608,7 +1536,7 @@ class MiscGameplayFunctions
 	{
 		if (object.CanProxyObstruct())
 		{
-			RaycastRVParams rayInput = new RaycastRVParams(cache.RaycastStart, cache.ObjectCenterPos, player);
+			RaycastRVParams rayInput = new RaycastRVParams(cache.RaycastStart, cache.RaycastEnd, player);
 			DayZPhysics.RaycastRVProxy(rayInput, cache.HitProxyObjects);				
 			if (cache.HitProxyObjects)
 			{
@@ -1664,14 +1592,35 @@ class MiscGameplayFunctions
 	//! groups 'RaycastRVProxy' and 'RaycastRV' approaches into one method, allowes for comprehensive geometry override, if desired
 	static bool IsObjectObstructedFilterEx(Object object, IsObjectObstructedCache cache, PlayerBase player, int geometryTypeOverride = -1)
 	{
-		//first proxy geometries
-		RaycastRVParams rayInput = new RaycastRVParams(cache.RaycastStart, cache.ObjectCenterPos, player);
-		rayInput.flags = CollisionFlags.NEARESTCONTACT;
-		if (geometryTypeOverride != -1)
-			rayInput.type = geometryTypeOverride; //default 'ObjIntersectView'
-		DayZPhysics.RaycastRVProxy(rayInput, cache.HitProxyObjects);
+		//nothing can fit between the ray start and the target, skip the raycasts entirely
+		if (vector.DistanceSq(cache.RaycastStart, cache.ObjectCenterPos) < OBJECT_OBSTRUCTION_MIN_DISTANCE_SQ)
+			return false;
+		
 		int count;
 		int i;
+		
+		//first, regular raycast (cheaper)
+		int geometry = ObjIntersectFire; //default for the RV raycast
+		if (geometryTypeOverride != -1)
+			geometry = geometryTypeOverride;
+
+		//ALLOBJECTS colllision check here
+		DayZPhysics.RaycastRV(cache.RaycastStart, cache.RaycastEnd, cache.ObjectContactPos, cache.ObjectContactDir, cache.ContactComponent, cache.HitObjects, object, player, false, false, geometry, 0.0, CollisionFlags.ALLOBJECTS);
+		count = cache.HitObjects.Count();
+		for (i = 0; i < count; ++i)
+		{
+			Object hitObject = cache.HitObjects[i];
+			if (hitObject && hitObject.CanObstruct())
+				return true;
+		}
+		
+		//second, proxy geometries
+		RaycastRVParams rayInput = cache.GetRaycastParams(cache.RaycastStart, cache.RaycastEnd, player);
+		if (geometryTypeOverride != -1)
+			rayInput.type = geometryTypeOverride; //default 'ObjIntersectView'
+	
+		//! uses the NEARESTCONTACT collision check from RaycastParams
+		DayZPhysics.RaycastRVProxy(rayInput, cache.HitProxyObjects);
 		
 		if (cache.HitProxyObjects)
 		{
@@ -1679,9 +1628,10 @@ class MiscGameplayFunctions
 			Object parent;
 			for (i = 0; i < count; ++i)
 			{
-				if (cache.HitProxyObjects[i].hierLevel > 0) //parent has to exist, skipping nullcheck
+				RaycastRVResult result = cache.HitProxyObjects[i];
+				if (result.hierLevel > 0) //parent has to exist, skipping nullcheck
 				{
-					parent = cache.HitProxyObjects[i].parent;
+					parent = result.parent;
 					if (parent && !parent.IsMan() && parent.CanProxyObstruct())
 					{
 						if (parent != object || (parent == object && object.CanProxyObstructSelf()))
@@ -1689,18 +1639,6 @@ class MiscGameplayFunctions
 					}	
 				}
 			}
-		}
-		
-		//second, regular raycast
-		int geometry = ObjIntersectFire; //default for the RV raycast
-		if (geometryTypeOverride != -1)
-			geometry = geometryTypeOverride;
-		DayZPhysics.RaycastRV(cache.RaycastStart, cache.ObjectCenterPos, cache.ObjectContactPos, cache.ObjectContactDir, cache.ContactComponent, cache.HitObjects, object, g_Game.GetPlayer(), false, false, geometry, 0.0, CollisionFlags.ALLOBJECTS);
-		count = cache.HitObjects.Count();
-		for (i = 0; i < count; ++i)
-		{
-			if (cache.HitObjects[i].CanObstruct())
-				return true;
 		}
 		
 		return false;
@@ -2115,11 +2053,14 @@ class IsObjectObstructedCache // Pretending this is a struct
 	
 	// Inside data
 	vector ObjectCenterPos = "0 0 0";
+	vector RaycastEnd = "0 0 0"; // actual raycast end point, optionally clamped to the caller-provided maxDist from RaycastStart; ObjectCenterPos remains the true, unclamped object center
 	vector ObjectContactPos = "0 0 0";
 	vector ObjectContactDir = "0 0 0";
 	int ContactComponent = -1;
-	ref array<ref RaycastRVResult> HitProxyObjects = new array<ref RaycastRVResult>;	
-	ref set<Object> HitObjects = new set<Object>;
+	ref array<ref RaycastRVResult> HitProxyObjects = new array<ref RaycastRVResult>();	
+	ref set<Object> HitObjects = new set<Object>();
+	//! reused between calls
+	private ref RaycastRVParams RaycastParams = new RaycastRVParams("0 0 0", "0 0 0");
 	
 	void IsObjectObstructedCache(vector rayCastStart, int totalObjects)
 	{
@@ -2127,10 +2068,28 @@ class IsObjectObstructedCache // Pretending this is a struct
 		TotalObjects = totalObjects;
 	}
 	
+	//! returns the cached instance re-initialized to the given values, instead of allocating a new one
+	RaycastRVParams GetRaycastParams(vector begPos, vector endPos, Object ignore)
+	{
+		RaycastParams.begPos = begPos;
+		RaycastParams.endPos = endPos;
+		RaycastParams.ignore = ignore;
+		RaycastParams.with = null;
+		RaycastParams.radius = 0.0;
+		//deliberate: the proxy obstruction check only needs the nearest contact, so its result loop is single-iteration
+		RaycastParams.flags = CollisionFlags.NEARESTCONTACT;
+		RaycastParams.type = ObjIntersectView;
+		RaycastParams.sorted = false;
+		RaycastParams.groundOnly = false;
+		
+		return RaycastParams;
+	}
+	
 	// Only inside data
 	void ClearCache()
-	{		
+	{
 		ObjectCenterPos = "0 0 0";
+		RaycastEnd = "0 0 0";
 		ObjectContactPos = "0 0 0";
 		ObjectContactDir = "0 0 0";
 		ContactComponent = -1;

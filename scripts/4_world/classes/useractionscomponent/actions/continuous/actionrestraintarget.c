@@ -154,6 +154,11 @@ class ActionRestrainTarget: ActionContinuousBase
 		
 		g_Game.GetAnalyticsClient().OnActionRestrain();
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };
 
 class ChainedDropAndRestrainLambda : DestroyItemInCorpsesHandsAndCreateNewOnGndLambda

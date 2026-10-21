@@ -63,25 +63,36 @@ class ConstructionPartStaticsSupportData
 			//now insert as 'StaticsSupportCategoryValues'
 			foreach (int category : m_ConfiguredCategories)
 			{
-				m_ValueMap.Insert(category, new StaticsSupportCategoryValues(category, providerMap.Get(category), requirementMap.Get(category)));
+				//default invalid values
+				int provided = -1;
+				if (providerMap.Contains(category))
+					provided = providerMap.Get(category);
+				
+				int required = -1;
+				if (requirementMap.Contains(category))
+					required = requirementMap.Get(category);
+				
+				m_ValueMap.Insert(category, new StaticsSupportCategoryValues(category, provided, required));
 			}
 		}
 	}
 	
-	int GetSupportProvided(int category)
+	bool GetSupportProvided(int category, out int providedStrength)
 	{
 		if (!m_ValueMap || !m_ValueMap.Contains(category))
-			return 0;
+			return false;
 		
-		return m_ValueMap.Get(category).m_ProvidedSupport;
+		providedStrength = m_ValueMap.Get(category).m_ProvidedSupport;
+		return providedStrength > -1;
 	}
 	
-	int GetSupportRequirement(int category)
+	bool GetSupportRequirement(int category, out int requiredStrength)
 	{
 		if (!m_ValueMap || !m_ValueMap.Contains(category))
-			return 0;
+			return false;
 		
-		return m_ValueMap.Get(category).m_RequiredSupport;
+		requiredStrength = m_ValueMap.Get(category).m_RequiredSupport;
+		return requiredStrength > -1;
 	}
 	
 	set<int> GetConfiguredSupportCategories()

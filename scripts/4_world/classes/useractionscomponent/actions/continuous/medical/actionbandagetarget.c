@@ -67,4 +67,9 @@ class ActionBandageTarget : ActionBandageBase
 	{
 		return true;
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 }

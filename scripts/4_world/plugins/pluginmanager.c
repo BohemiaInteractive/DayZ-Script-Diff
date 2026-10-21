@@ -55,6 +55,7 @@ class PluginManager
 		RegisterPlugin( "PluginConfigEmotesProfile",					true, 	true );
 		RegisterPlugin( "PluginPresenceNotifier",						true,	false );
 		RegisterPlugin( "PluginAdminLog",								false, 	true );
+		RegisterPlugin( "PluginInventoryRepair",					    true, 	false );
 		
 		// Developer + Diag
 #ifdef NO_GUI
@@ -98,7 +99,7 @@ class PluginManager
 #ifdef DIAG_DEVELOPER
 		RegisterPluginDebug( "PluginInventoryDebug",					true, 	true );
 #endif
-		RegisterPluginDebug( "PluginInventoryRepair",					true, 	false );
+		
 		RegisterPluginDebug( "PluginUndergroundTriggerManager",			true, 	false );
 		
 		g_Game.GetUpdateQueue(CALL_CATEGORY_GAMEPLAY).Insert(MainOnUpdate);

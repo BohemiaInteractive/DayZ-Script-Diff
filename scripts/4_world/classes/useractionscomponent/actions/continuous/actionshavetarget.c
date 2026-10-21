@@ -48,4 +48,9 @@ class ActionShaveTarget: ActionContinuousBase
 			}		
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

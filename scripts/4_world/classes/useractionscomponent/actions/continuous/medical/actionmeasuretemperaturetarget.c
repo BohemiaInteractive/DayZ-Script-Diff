@@ -34,4 +34,9 @@ class ActionMeasureTemperatureTarget : ActionContinuousBase
 			ntarget.SetLastUAMessage("" + thermometer.GetTemperatureValue(ntarget).ToString() + "#degrees_celsius");
 		}
 	}
+	
+	override bool IsLockTargetOnUse()
+	{
+		return false;
+	}
 };

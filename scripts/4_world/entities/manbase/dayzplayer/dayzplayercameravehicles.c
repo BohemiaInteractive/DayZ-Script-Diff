@@ -404,6 +404,9 @@ class DayZPlayerCamera3rdPersonVehicleMotorbike : DayZPlayerCameraBase
 			rot[1] = UP_ANGLE_CAP;
 		}
 		
+		rot[0] = Limit(rot[0], CONST_UD_MIN, CONST_UD_MAX);
+		rot[1] = Limit(rot[1], CONST_UD_MIN, CONST_UD_MAX);
+		
 		Math3D.YawPitchRollMatrix(rot, pOutResult.m_CameraTM);
 		
 		//! setup position		

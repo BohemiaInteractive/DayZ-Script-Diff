@@ -378,8 +378,8 @@ class CarScript extends Car
 		m_VFXComponent.RegisterEffect(EVehicleVFXEffect.ENGINE_SMOKE, EffEngineSmoke, new VehicleVFXDataParams(m_VFXComponent.ConvertMemPointToPosition("ptcEnginePos")));
 		m_VFXComponent.RegisterEffect(EVehicleVFXEffect.COOLANT_STEAM, EffCoolantSteam, new VehicleVFXDataParams(m_VFXComponent.ConvertMemPointToPosition("ptcCoolantPos")));
 		m_VFXComponent.RegisterEffect(EVehicleVFXEffect.EXHAUST_SMOKE, EffExhaustSmoke, new VehicleVFXDataParams(m_exhaustPtcPos, m_exhaustPtcDir));
-		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_SMOKE, EffWheelSmoke, WheelCount(), new VehicleVFXDataParams(vector.Zero, "0 1 -1", 5.0));
-		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_CONTACT, EffWheelContact, WheelCount(), new VehicleVFXDataParams(vector.Zero, vector.Up, 5.0));
+		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_SMOKE, EffWheelSmoke, WheelCount(), new VehicleVFXDataParams(vector.Zero, "0 1 -1", 2.0));
+		m_VFXComponent.RegisterEffectGroup(EVehicleVFXEffectGroup.WHEEL_CONTACT, EffWheelContact, WheelCount(), new VehicleVFXDataParams(vector.Zero, vector.Up, 2.0));
 	}
 	
 	override float GetLiquidThroughputCoef()
@@ -2218,7 +2218,7 @@ class CarScript extends Car
 		return m_Radiator;
 	}
 	
-	bool IsMoving()
+	override bool IsMoving()
 	{
 		return GetSpeedometerAbsolute() > 3.5;
 	}

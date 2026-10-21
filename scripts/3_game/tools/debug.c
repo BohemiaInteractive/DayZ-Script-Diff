@@ -16,7 +16,7 @@ class Debug
 	private static const string LOG_DEBUG_MELEE				= "Melee";
 	private static const string LOG_DEBUG_WEATHER			= "Weather";
 	private static const string LOG_DEBUG_RADIO_GAMEPLAY	= "RadioGameplay";
-	private static const string LOG_DEBUG_AUTOTEST			= "Autotest";
+	private static const string LOG_DEBUG_AUTOTEST			= "AutotestLog";
 	private static const string	LOG_INFO					= "Info";
 	private static const string	LOG_WARNING					= "Warning";
 	private static const string	LOG_ERROR					= "Error";

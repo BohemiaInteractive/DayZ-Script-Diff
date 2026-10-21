@@ -40,6 +40,17 @@ class CodeLockVisualManager
 	private const float LIGHT_VISIBLE = 0.0;    // Animation phase for visible light
 	private const float LIGHT_HIDDEN = 1.0;     // Animation phase for hidden light
 	
+	private const float FRONT_PART_DEFAULT = 0.0; // Default animation phase of front part
+	private const float FRONT_PART_HOUSE_REVERSED = 0.50; // Animation phase of front part when lock state is reversed and parent is some type of house
+	
+	private const float BACK_PART_DEFAULT = 0.0; // Default animation phase of back part offset
+	private const float BACK_PART_HOUSE = 0.50; // Animation phase of back part offset when parent is some type of house
+	private const float BACK_PART_BB = 0.92; // Animation phase of back part offset when parent is some type of base building object (Fence)
+	
+	private const float FRONT_PART_ROTATION_DEFAULT = 0.0; // Default animation phase of front part rotation
+	private const float FRONT_PART_ROTATION_REVERSED = 180.0; // Animation phase of front part rotation when lock state is reversed
+	private const float BACK_PART_ROTATION = 90.0; // Animation phase of back part rotation
+	
 	private const string CODELOCK_ANIMATED_FRONT = "CodelockFrontTranslation";
 	private const string CODELOCK_ANIMATED_BACK = "CodelockBackTranslation";
 	private const string CODELOCK_ANIMATED_BACK_R = "CodelockBackRotation";
@@ -59,6 +70,8 @@ class CodeLockVisualManager
 		"CodelockBatteryBar5Hide",
 		"CodelockBatteryBar6Hide"
 	};
+	
+	private const int MAX_BATTERY_INDICATORS = 6;
 	
 	void CodeLockVisualManager(DigitalCodeLock codeLock, CodeLockComponent component)
 	{
@@ -402,10 +415,14 @@ class CodeLockVisualManager
 		bool reversed = m_CodeLock.GetReversedState(); // Assuming this is accessible
 		float rotationPhase;
 		if (reversed)
-			rotationPhase = 180.0;
+		{
+			rotationPhase = FRONT_PART_ROTATION_REVERSED;
+		}
 		else
-			rotationPhase = 0;
-	
+		{
+			rotationPhase = FRONT_PART_ROTATION_DEFAULT;
+		}
+		
 		m_CodeLock.SetAnimationPhase(CODELOCK_ANIMATED_R, rotationPhase);
 		
 		// Handle position based on parent type
@@ -415,17 +432,17 @@ class CodeLockVisualManager
 		m_CodeLock.SetAnimationPhase(CODELOCK_ANIMATED_FRONT, m_LastAnimationPhaseFront);
 		m_CodeLock.SetAnimationPhase(CODELOCK_ANIMATED_BACK, m_LastAnimationPhaseBack);
 		m_CodeLock.SetAnimationPhase(CODELOCK_ANIMATED_ZIP, 1.0);
-		m_CodeLock.SetAnimationPhase(CODELOCK_ANIMATED_BACK_R, 90.0);
+		m_CodeLock.SetAnimationPhase(CODELOCK_ANIMATED_BACK_R, BACK_PART_ROTATION);
 	}
 	
 	protected float GetAnimationPhaseForFrontPart(EntityAI hierarchyParent, bool reversed)
 	{
-		float animationPhase = 0.0;
+		float animationPhase = FRONT_PART_DEFAULT;
 		if (hierarchyParent.IsInherited(House))
 		{
 			if (reversed)
 			{
-				animationPhase = 0.50;
+				animationPhase = FRONT_PART_HOUSE_REVERSED;
 			}
 		}
 		
@@ -434,21 +451,14 @@ class CodeLockVisualManager
 	
 	protected float GetAnimationPhaseForBackPart(EntityAI hierarchyParent, bool reversed)
 	{
-		float animationPhase = 0;
+		float animationPhase = BACK_PART_DEFAULT;
 		if (hierarchyParent.IsInherited(House))
 		{
-			if (reversed)
-			{
-				animationPhase = 0.50;
-			}
-			else
-			{
-				animationPhase = 0.60;
-			}
+			animationPhase = BACK_PART_HOUSE;
 		}
 		else if (hierarchyParent.IsInherited(BaseBuildingBase))
 		{
-			animationPhase = 0.92;
+			animationPhase = BACK_PART_BB;
 		}
 		
 		return animationPhase;
@@ -504,9 +514,8 @@ class CodeLockVisualManager
 		if (batteryPercent <= 0)
 			return 0;
 			
-		const int maxBars = 6;
-		float barsFloat = Math.Ceil((batteryPercent / 100.0) * maxBars);
-		return Math.Max(0, Math.Min(maxBars, barsFloat));
+		float barsFloat = Math.Ceil((batteryPercent / 100.0) * MAX_BATTERY_INDICATORS);
+		return Math.Max(0, Math.Min(MAX_BATTERY_INDICATORS, barsFloat));
 	}
 	
 	// Get current light state (for debugging/external access)
